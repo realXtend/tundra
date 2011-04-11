@@ -44,6 +44,9 @@ public:
 public slots:
     void Resize(int newWidth, int newHeight);
 
+signals:
+	void resizing();
+
 private:
     void CreateRenderTargetOverlay(int width, int height);
     Ogre::RenderWindow *renderWindow;

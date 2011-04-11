@@ -107,7 +107,6 @@ private:
     QTimer *ready_poller_;
     QLabel *error_label_;
 
-    request_tag_t video_request_tag_;
     event_category_id_t asset_event_category_;
 };
 

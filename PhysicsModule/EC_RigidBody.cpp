@@ -195,6 +195,21 @@ void EC_RigidBody::ApplyTorqueImpulse(const Vector3df& torqueImpulse)
     }
 }
 
+void EC_RigidBody::ApplyGravity(const Vector3df& gravity)
+{
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+            
+    if (!body_)
+        CreateBody();
+    if (body_)
+    {
+        Activate();
+        body_->setGravity(ToBtVector3(gravity));
+    }
+}
+
 void EC_RigidBody::Activate()
 {
     // Cannot modify server-authoritative physics object

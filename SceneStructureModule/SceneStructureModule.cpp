@@ -15,19 +15,21 @@
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
 
+#include "SceneAPI.h"
+#include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "SceneManager.h"
 #include "Entity.h"
 #include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "RenderServiceInterface.h"
 #include "SceneImporter.h"
 #include "EC_OgreCamera.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 #include "NaaliMainWindow.h"
 #include "LoggingFunctions.h"
@@ -52,12 +54,15 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 SceneStructureModule::SceneStructureModule() :
     IModule("SceneStructure"),
     sceneWindow(0),
-    assetsWindow(0)
+    assetsWindow(0),
+    toolTipWidget(0)
 {
 }
 
 SceneStructureModule::~SceneStructureModule()
 {
+	if (GetFramework()->IsHeadless())
+		return; 
     SAFE_DELETE(sceneWindow);
     SAFE_DELETE(toolTipWidget);
 }
@@ -78,33 +83,38 @@ void SceneStructureModule::PostInitialize()
 	//Scene panel
 	sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
-	sceneWindow->SetScene(framework_->GetDefaultWorldScene());
-	connect(framework_, SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)),sceneWindow, SLOT(SetNewScene()));
+	sceneWindow->SetScene(framework_->Scene()->GetDefaultScene());
+	connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)),sceneWindow, SLOT(SetNewScene()));
     ui->AddWidgetToScene(sceneWindow, true, true);
 	ui->AddWidgetToMenu(sceneWindow, "Scene", "View");
 
-    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window.", this, SLOT(ShowSceneStructureWindow()));
-    framework_->Console()->RegisterCommand("assets", "Shows the Assets window.", this, SLOT(ShowAssetsWindow()));
+    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", this, SLOT(ToggleSceneStructureWindow()));
+    framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", this, SLOT(ToggleAssetsWindow()));
 
-    inputContext = framework_->GetInput()->RegisterInputContext("SceneStructureInput", 90);
-    connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 
-    connect(framework_->Ui()->GraphicsView(), SIGNAL(DragEnterEvent(QDragEnterEvent *)), SLOT(HandleDragEnterEvent(QDragEnterEvent *)));
-    connect(framework_->Ui()->GraphicsView(), SIGNAL(DragLeaveEvent(QDragLeaveEvent *)), SLOT(HandleDragLeaveEvent(QDragLeaveEvent *)));
-    connect(framework_->Ui()->GraphicsView(), SIGNAL(DragMoveEvent(QDragMoveEvent *)), SLOT(HandleDragMoveEvent(QDragMoveEvent *)));
-    connect(framework_->Ui()->GraphicsView(), SIGNAL(DropEvent(QDropEvent *)), SLOT(HandleDropEvent(QDropEvent *)));
+    // Don't allocate the widget memory for nothing if we are headless.
+    if (!framework_->IsHeadless())
+    {
+        inputContext = framework_->Input()->RegisterInputContext("SceneStructureInput", 102);
+        connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 
-    toolTipWidget = new QWidget(0, Qt::ToolTip);
-    toolTipWidget->setLayout(new QHBoxLayout());
-    toolTipWidget->layout()->setMargin(0);
-    toolTipWidget->layout()->setSpacing(0);
-    toolTipWidget->setContentsMargins(0,0,0,0);
-    toolTipWidget->setStyleSheet("QWidget { background-color: transparent; } QLabel { padding: 2px; border: 0.5px solid grey; border-radius: 0px; \
-                                  background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(246, 246, 246, 255), stop:1 rgba(237, 237, 237, 255)); }");
-    
-    toolTip = new QLabel(toolTipWidget);
-    toolTip->setTextFormat(Qt::RichText);
-    toolTipWidget->layout()->addWidget(toolTip);
+        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragEnterEvent(QDragEnterEvent *)), SLOT(HandleDragEnterEvent(QDragEnterEvent *)));
+        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragLeaveEvent(QDragLeaveEvent *)), SLOT(HandleDragLeaveEvent(QDragLeaveEvent *)));
+        connect(framework_->Ui()->GraphicsView(), SIGNAL(DragMoveEvent(QDragMoveEvent *)), SLOT(HandleDragMoveEvent(QDragMoveEvent *)));
+        connect(framework_->Ui()->GraphicsView(), SIGNAL(DropEvent(QDropEvent *)), SLOT(HandleDropEvent(QDropEvent *)));
+
+        toolTipWidget = new QWidget(0, Qt::ToolTip);
+        toolTipWidget->setLayout(new QHBoxLayout());
+        toolTipWidget->layout()->setMargin(0);
+        toolTipWidget->layout()->setSpacing(0);
+        toolTipWidget->setContentsMargins(0,0,0,0);
+        toolTipWidget->setStyleSheet("QWidget { background-color: transparent; } QLabel { padding: 2px; border: 0.5px solid grey; border-radius: 0px; \
+                                      background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(246, 246, 246, 255), stop:1 rgba(237, 237, 237, 255)); }");
+        
+        toolTip = new QLabel(toolTipWidget);
+        toolTip->setTextFormat(Qt::RichText);
+        toolTipWidget->layout()->addWidget(toolTip);
+    }
 }
 
 QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene)
@@ -121,7 +131,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
 {
     QList<Scene::Entity *> ret;
 
-    const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogError("Could not retrieve default world scene.");
@@ -148,6 +158,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
         {
             TundraLogic::SceneImporter importer(scene);
             if (IsUrl(filename))
+                ///\todo Perhaps download the mesh before instantiating so we could inspect the mesh binar for materials and skeleton? The path is already there for tundra scene file web drops
                 sceneDescs.append(importer.GetSceneDescForMesh(QUrl(filename)));
             else
                 sceneDescs.append(importer.GetSceneDescForMesh(filename));
@@ -159,6 +170,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
                 AssetTransferPtr transfer = framework_->Asset()->RequestAsset(filename);
                 if (transfer.get())
                 {
+                    urlToDropPos[filename] = worldPos;
                     connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleSceneDescLoaded(AssetPtr)));
                     connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(HandleSceneDescFailed(IAssetTransfer*, QString)));
                     break; // Only allow one .txml drop at a time
@@ -174,6 +186,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
                 AssetTransferPtr transfer = framework_->Asset()->RequestAsset(filename);
                 if (transfer.get())
                 {
+                    urlToDropPos[filename] = worldPos;
                     connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleSceneDescLoaded(AssetPtr)));
                     connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(HandleSceneDescFailed(IAssetTransfer*, QString)));
                     break; // Only allow one .tbin drop at a time
@@ -312,7 +325,7 @@ void SceneStructureModule::CleanReference(QString &fileRef)
     }
 }
 
-void SceneStructureModule::ShowSceneStructureWindow()
+void SceneStructureModule::ToggleSceneStructureWindow()
 {
     UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
 	if (ui && sceneWindow){
@@ -333,13 +346,13 @@ void SceneStructureModule::ShowSceneStructureWindow()
 
     sceneWindow = new SceneStructureWindow(framework_, ui->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
-    sceneWindow->SetScene(framework_->GetDefaultWorldScene());
+    sceneWindow->SetScene(GetFramework()->Scene()->GetDefaultScene());
     //sceneWindow->show();
     ui->AddWidgetToScene(sceneWindow);
     ui->ShowWidget(sceneWindow);*/
 }
 
-void SceneStructureModule::ShowAssetsWindow()
+void SceneStructureModule::ToggleAssetsWindow()
 {
     UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
 	if (ui && assetsWindow){
@@ -349,12 +362,11 @@ void SceneStructureModule::ShowAssetsWindow()
 
    /* if (assetsWindow)
     {
-        //ui->ShowWidget(assetsWindow);
-        assetsWindow->show();
+        assetsWindow->setVisible(!assetsWindow->isVisible());
         return;
     }
 
-    NaaliUi *ui = GetFramework()->Ui();
+    UiAPI *ui = GetFramework()->Ui();
     if (!ui)
         return;
 
@@ -372,16 +384,22 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
     if (e->eventType != KeyEvent::KeyPressed || e->keyPressCount > 1)
         return;
 
-    Input &input = *framework_->GetInput();
+    InputAPI &input = *framework_->Input();
 
     const QKeySequence &showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
     const QKeySequence &showAssets = input.KeyBinding("ShowAssetsWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_A));
 
     QKeySequence keySeq(e->keyCode | e->modifiers);
     if (keySeq == showSceneStruct)
-        ShowSceneStructureWindow();
+    {
+        ToggleSceneStructureWindow();
+        e->handled = true;
+    }
     if (keySeq == showAssets)
-        ShowAssetsWindow();
+    {
+        ToggleAssetsWindow();
+        e->handled = true;
+    }
 }
 
 void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
@@ -439,6 +457,8 @@ void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
 
 void SceneStructureModule::HandleDragLeaveEvent(QDragLeaveEvent *e)
 {
+    if (!toolTipWidget)
+        return;
     toolTipWidget->hide();
     currentToolTipSource.clear();
     currentToolTipDestination.clear();
@@ -517,7 +537,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
         }
     }
     
-    if (!currentToolTipSource.isEmpty())
+    if (toolTipWidget && !currentToolTipSource.isEmpty())
     {
         if (currentToolTipDestination.isEmpty())
             currentToolTipDestination = "</p>";
@@ -535,7 +555,8 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
 
 void SceneStructureModule::HandleDropEvent(QDropEvent *e)
 {
-    toolTipWidget->hide();
+    if (toolTipWidget)
+        toolTipWidget->hide();
 
     if (e->mimeData()->hasUrls())
     {
@@ -563,7 +584,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         if (!res->entity_)
         {
             // No entity hit, use camera's position with hard-coded offset.
-            const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+            const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
             if (!scene)
                 return;
 
@@ -663,7 +684,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                     }
                     else
                     {
-                        const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+                        const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
                         if (!scene)
                         {
                             LogError("Could not retrieve default world scene.");
@@ -767,13 +788,22 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
 {
     QApplication::restoreOverrideCursor();
 
-    const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogError("Could not retrieve default world scene.");
         return;
     }
 
+    // Resolve the adjust raycast pos of this drop
+    Vector3df adjustPos = Vector3df::ZERO;
+    if (urlToDropPos.contains(asset->Name()))
+    {
+        adjustPos = urlToDropPos[asset->Name()];
+        urlToDropPos.remove(asset->Name());
+    }
+
+    // Get xml data
     std::vector<u8> data;
     asset->SerializeTo(data);
     if (data.empty())
@@ -809,6 +839,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
     // Show add content window
     AddContentWindow *addContent = new AddContentWindow(framework_, scene);
     addContent->AddDescription(sceneDesc);
+    addContent->AddPosition(adjustPos);
     addContent->show();
 }
 
@@ -817,6 +848,9 @@ void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QStri
     QApplication::restoreOverrideCursor();
     QString error = QString("Failed to download %1 with reason %2").arg(transfer->source.ref, reason);
     LogError(error.toStdString());
+
+    if (urlToDropPos.contains(transfer->GetSourceUrl()))
+        urlToDropPos.remove(transfer->GetSourceUrl());
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

@@ -19,8 +19,6 @@ namespace Console
     struct CommandResult;
 }
 
-class IComponentFactory;
-class IComponent;
 class ComponentManager;
 class ConfigurationManager;
 class ModuleManager;
@@ -28,9 +26,6 @@ class IEventData;
 class EventManager;
 class ServiceManager;
 
-typedef boost::shared_ptr<IComponent> ComponentPtr;
-typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
-typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
 typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
 typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
 typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
@@ -44,7 +39,6 @@ namespace Foundation
     class ThreadTaskManager;
     class Framework;
     class KeyBindings;
-    class MainWindow;
     class Profiler;
 
     typedef boost::shared_ptr<Platform> PlatformPtr;
@@ -57,15 +51,6 @@ namespace Foundation
 }
 
 class RaycastResult;
-
-class IAttribute;
-typedef std::vector<IAttribute*> AttributeVector;
-
-class KeyEvent;
-class MouseEvent;
-class InputContext;
-class InputServiceInterface;
-typedef boost::shared_ptr<InputContext> InputContextPtr;
 
 class UiServiceInterface;
 typedef boost::shared_ptr<UiServiceInterface> UiServicePtr;

@@ -6,7 +6,6 @@ if (!framework.IsHeadless() && !iseditionless)
     engine.ImportExtension("qt.gui");
 
     var menu = ui.MainWindow().menuBar();
-    menu.clear();
 
     var fileMenu = menu.addMenu("&File");
     if (framework.GetModuleQObj("UpdateModule"))
@@ -105,12 +104,12 @@ if (!framework.IsHeadless() && !iseditionless)
 /*
     function OpenSceneWindow()
     {
-        framework.GetModuleQObj("SceneStructure").ShowSceneStructureWindow();
+        framework.GetModuleQObj("SceneStructure").ToggleSceneStructureWindow();
     }
 
     function OpenAssetsWindow()
     {
-        framework.GetModuleQObj("SceneStructure").ShowAssetsWindow();
+        framework.GetModuleQObj("SceneStructure").ToggleAssetsWindow();
     }
 
     function OpenProfilerWindow()

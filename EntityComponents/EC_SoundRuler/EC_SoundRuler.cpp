@@ -47,7 +47,7 @@ EC_SoundRuler::~EC_SoundRuler()
 {
     // OgreRendering module might be already deleted. If so, the cloned entity is also already deleted.
     // In this case, just set pointer to 0.
-    if (!renderer_.expired())
+    if (!renderer_.expired() && rulerObject)
     {
         Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
             sceneMgr->destroyManualObject(rulerObject);

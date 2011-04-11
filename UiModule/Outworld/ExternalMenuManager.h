@@ -47,6 +47,16 @@ namespace UiServices
          */
         bool AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu);
 
+		/*! \brief	Insert the given meu in the Menu of the main window
+         *  \param  action menu
+         *  \param  name Name of the menu
+		 *	\param	menu name of the Menu to put the menu inside it
+		 *	\param	icon Icon of the menu
+         *         
+         *  \return true if everything is ok (action addded)
+         */
+		bool AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon);
+
         /*! Removes menu item.
          *  \param widget Controlled widget.
          */
@@ -70,9 +80,7 @@ namespace UiServices
 		 */
 		void DisableMenus();
 
-		/*!Slot used when the scene is changed, if we "go" to ether Scene, then disable the Menu "Panels" in the Menu Bar
-		 */
-		void SceneChanged(const QString &old_name, const QString &new_name);
+		void ModifyPanelVisibility(bool vis);
 
     private slots:
 
@@ -100,6 +108,7 @@ namespace UiServices
         QMap<QString, QWidget*> controller_panels_;
 		QMap<QString, QAction*> controller_actions_;
         QMap<QString, QMenu*> category_menu_;
+		QMap<QString, bool> controller_panels_visibility_;
 
         //! Pointer to the main menu Bar
         QMenuBar *root_menu_;

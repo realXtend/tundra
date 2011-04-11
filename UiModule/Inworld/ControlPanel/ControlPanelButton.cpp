@@ -16,7 +16,7 @@ namespace CoreUi
         type_(type)
     {
         setupUi(internal_widget_);
-        setWidget(internal_widget_);
+        //setWidget(internal_widget_);
         connect(actionButton, SIGNAL(clicked()), SLOT(Clicked()));
 
         InitStyle();

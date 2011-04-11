@@ -42,7 +42,8 @@ class ObjectEdit(Component):
     MANIPULATE_MOVE = 1
     MANIPULATE_SCALE = 2
     MANIPULATE_ROTATE = 3
-    
+    MANIPULATE_SELECT = 4
+  
     def __init__(self):
         if naali.framework.IsEditionless() or naali.framework.IsHeadless():
             return
@@ -63,15 +64,17 @@ class ObjectEdit(Component):
                 
         self.editingKeyTrigger = (Qt.Key_M, Qt.ShiftModifier)
         self.shortcuts = {
-            self.editingKeyTrigger : self.toggleEditingKeyTrigger,
-            (Qt.Key_R, Qt.NoModifier) : self.rotateObject,
-            (Qt.Key_S, Qt.NoModifier) : self.scaleObject,
-            (Qt.Key_G, Qt.NoModifier) : self.translateObject,
-            (Qt.Key_Tab, Qt.NoModifier) : self.cycleManipulator,
-            (Qt.Key_Z, Qt.ControlModifier) : self.undo,
-            (Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
-            (Qt.Key_L, Qt.AltModifier) : self.linkObjects,
-            (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
+			self.editingKeyTrigger : self.toggleEditingKeyTrigger,
+			(Qt.Key_5, Qt.NoModifier) : self.rotateObject,
+			(Qt.Key_4, Qt.NoModifier) : self.scaleObject,
+			(Qt.Key_3, Qt.NoModifier) : self.translateObject,
+			(Qt.Key_2, Qt.NoModifier) : self.freemoveObject,
+			(Qt.Key_1, Qt.NoModifier) : self.selectObject,
+			(Qt.Key_Tab, Qt.NoModifier) : self.cycleManipulator,
+			(Qt.Key_Z, Qt.ControlModifier) : self.undo,
+			(Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
+			(Qt.Key_L, Qt.AltModifier) : self.linkObjects,
+			(Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
         }
 
         # Connect to key pressed signal from input context
@@ -81,7 +84,7 @@ class ObjectEdit(Component):
         self.edit_inputcontext.connect('KeyPressed(KeyEvent*)', self.on_keypressed)
 
         # Connect to mouse events
-        self.edit_inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
+        #self.edit_inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
         self.edit_inputcontext.connect('MouseLeftPressed(MouseEvent*)', self.on_mouseleftpressed)
         self.edit_inputcontext.connect('MouseLeftReleased(MouseEvent*)', self.on_mouseleftreleased)
         self.edit_inputcontext.connect('MouseMove(MouseEvent*)', self.on_mousemove)
@@ -98,12 +101,12 @@ class ObjectEdit(Component):
         self.selection_box_inited = False
         
         self.menuToggleAction = None
-        mainWindow = naali.uicore.MainWindow()
-        print mainWindow
-        if mainWindow:
-            menuBar = mainWindow.menuBar()
-            self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
-            self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
+        # mainWindow = naali.uicore.MainWindow()
+        # print mainWindow
+        # if mainWindow:
+            # menuBar = mainWindow.menuBar()
+            # self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
+            # self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
         self.toggleEditing(False)
         
         """
@@ -132,12 +135,15 @@ class ObjectEdit(Component):
         if not self.editing:
             self.deselect_all()
             self.hideManipulator()
+            self.resetManipulators()
             self.resetValues()
         if self.menuToggleAction != None:
             if self.editing:
                 self.menuToggleAction.setText("Disable Manipulation")
             else:
                 self.menuToggleAction.setText("Enable Manipulation")   
+        if self.toolbar != None:
+            self.toolbar.toogleEditing(editing)				
     
     def rotateObject(self):
         self.changeManipulator(self.MANIPULATE_ROTATE)
@@ -147,6 +153,12 @@ class ObjectEdit(Component):
 
     def translateObject(self):
         self.changeManipulator(self.MANIPULATE_MOVE)
+
+    def freemoveObject(self):
+        self.changeManipulator(self.MANIPULATE_FREEMOVE)
+
+    def selectObject(self):
+        self.changeManipulator(self.MANIPULATE_SELECT)
 
     def on_keypressed(self, k):
         #print "on_keypressed",k,k.keyCode,k.modifiers
@@ -196,13 +208,14 @@ class ObjectEdit(Component):
         self.manipulators[self.MANIPULATE_SCALE] =  transform.ScaleManipulator()
         self.manipulators[self.MANIPULATE_FREEMOVE] =  transform.FreeMoveManipulator()
         self.manipulators[self.MANIPULATE_ROTATE] =  transform.RotationManipulator()
-        self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
+        self.manipulators[self.MANIPULATE_SELECT] =  transform.SelectionManipulator()		
+        self.manipulator = self.manipulators[self.MANIPULATE_SELECT]
  
     def getCurrentManipType(self):
         for (type, manip) in self.manipulators.iteritems():
             if manip == self.manipulator:
                 return type
-        return self.MANIPULATE_FREEMOVE
+        return self.MANIPULATE_SELECT
         
     def baseselect(self, ent):
         self.sel_activated = False
@@ -210,7 +223,7 @@ class ObjectEdit(Component):
         self.ec_selected(ent)
         self.changeManipulator(self.getCurrentManipType())
         self.window.selected(ent)
-        self.toolbar.selected()
+        self.toolbar.selected(ent)
         return ent
         
     def select(self, ent):        
@@ -312,6 +325,8 @@ class ObjectEdit(Component):
         elif self.manipulator == self.manipulators[self.MANIPULATE_SCALE]:
             self.changeManipulator(self.MANIPULATE_ROTATE)
         elif self.manipulator == self.manipulators[self.MANIPULATE_ROTATE]:
+            self.changeManipulator(self.MANIPULATE_SELECT)
+        elif self.manipulator == self.manipulators[self.MANIPULATE_SELECT]:
             self.changeManipulator(self.MANIPULATE_FREEMOVE)
 
     def changeManipulator(self, id):
@@ -322,6 +337,8 @@ class ObjectEdit(Component):
             self.manipulator = newmanipu
         self.manipulator.showManipulator(self.sels)
         self.window.changeManipulator(id)
+        if self.toolbar != None:
+            self.toolbar.update_toolbar()
     
     def hideManipulator(self):
         if self.manipulator:
@@ -567,7 +584,7 @@ class ObjectEdit(Component):
         
     def createObject(self):
         avatar = naali.getUserAvatar()
-        pos = avatar.placeable.Position
+        pos = avatar.placeable.transform.position()
 
         # TODO determine what is right in front of avatar and use that instead
         start_x = pos.x() + .7
@@ -593,16 +610,22 @@ class ObjectEdit(Component):
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         ent = self.active
         if ent is not None:
-            qpos = QVector3D(ent.placeable.Position)
+            #qpos = QVector3D(ent.placeable.Position)
+            ent_trans = ent.placeable.transform
+            pos = ent_trans.position()
             if i == 0:
-                qpos.setX(v)
+                #qpos.setX(v)
+                ent_trans.SetPos(v, pos.y(), pos.z())
             elif i == 1:
-                qpos.setY(v)
+                #qpos.setY(v)
+                ent_trans.SetPos(pos.x(), v, pos.z())
             elif i == 2:
-                qpos.setZ(v)
+                #qpos.setZ(v)
+                ent_trans.SetPos(pos.x(), pos.y(), v)
 
-            ent.placeable.Position = qpos
+            #ent.placeable.Position = qpos
             #ent.network.Position = qpos
+            ent.placeable.settransform(ent_trans)
             self.manipulator.moveTo(self.sels)
 
             #if not self.dragging:
@@ -613,9 +636,10 @@ class ObjectEdit(Component):
     def changescale(self, i, v):
         ent = self.active
         if ent is not None:
-            qscale = ent.placeable.Scale
-            #oldscale = list((qscale.x(), qscale.y(), qscale.z()))
-            scale = list((qscale.x(), qscale.y(), qscale.z()))
+            #ent_scale = ent.placeable.Scale
+            ent_trans = ent.placeable.transform
+            ent_scale = ent_trans.scale()
+            scale = list((ent_scale.x(), ent_scale.y(), ent_scale.z()))
                 
             if not self.float_equal(scale[i],v):
                 scale[i] = v
@@ -627,7 +651,9 @@ class ObjectEdit(Component):
 #                        if index != i:
 #                            scale[index] += diff
                 
-                ent.placeable.Scale = QVector3D(scale[0], scale[1], scale[2])
+                #ent.placeable.Scale = QVector3D(scale[0], scale[1], scale[2])
+                ent_trans.SetScale(scale[0], scale[1], scale[2])
+                ent.placeable.settransform(ent_trans)
                 
                 #if not self.dragging:
                 #    r.networkUpdate(ent.Id)
@@ -640,8 +666,12 @@ class ObjectEdit(Component):
         #print "pos index %i changed to: %f" % (i, v[i])
         ent = self.active
         if ent is not None and not self.usingManipulator:
-            ort = mu.euler_to_quat(v)
-            ent.placeable.Orientation = ort
+            #Use transform instead of Orientation attribute
+            #ort = mu.euler_to_quat(v)
+            #ent.placeable.Orientation = ort
+            ent_trans = ent.placeable.transform
+            ent_trans.SetRot(v[0], v[1], v[2])
+            ent.placeable.settransform(ent_trans)
             #ent.network.Orientation = ort
             #if not self.dragging:
             #    r.networkUpdate(ent.Id)

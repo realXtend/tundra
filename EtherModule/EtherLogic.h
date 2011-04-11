@@ -51,6 +51,7 @@ namespace Ether
             EtherLoginNotifier *GetLoginNotifier() const { return login_notifier_; }
             QPair<QString, QString> GetLastLoginScreenshotData(std::string conf_path);
             void UpdateUiPixmaps();
+			void LoginSuccesful();
 
         private slots:
             void SetVisibleItems();

@@ -15,6 +15,7 @@
 #include "SceneEvents.h"
 #include "EC_Placeable.h"
 #include "NaaliApplication.h"
+#include "SceneAPI.h"
 
 #include <QColor>
 
@@ -56,7 +57,7 @@ namespace Camera
 
         //Get Scene and Network event Category 
         scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
-        connect(framework_, SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager*)), this, SLOT(DefaultWorldSceneChanged(Scene::SceneManager*)));        
+		connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)), SLOT(DefaultWorldSceneChanged(Scene::SceneManager *)));        
 
         //Generate widgets
         ReadConfig();

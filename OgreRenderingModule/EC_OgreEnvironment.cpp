@@ -15,6 +15,7 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "OgreConversionUtils.h"
+#include "SceneAPI.h"
 #include "SceneManager.h"
 
 #include <QFile>
@@ -346,7 +347,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     cameraFarClip_ = renderer->GetViewDistance();
     
     // Go through all water components.
-    // Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    // Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     // EntityList lst = scene->GetEntitiesWithComponent(EC_WaterPlane::TypeNameStatic());
    /*
     if ( sceneManager->hasEntity("WaterEntity") )

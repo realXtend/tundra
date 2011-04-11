@@ -11,6 +11,7 @@
 
 #include "DebugStatsModuleApi.h"
 #include "IModule.h"
+#include "InputFwd.h"
 #include "ModuleLoggingFunctions.h"
 #include "RexTypes.h"
 

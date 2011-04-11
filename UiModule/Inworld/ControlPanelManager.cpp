@@ -26,16 +26,17 @@
 
 namespace CoreUi
 {
-    ControlPanelManager::ControlPanelManager(QObject *parent, AnchorLayoutManager *layout_manager) :
+	ControlPanelManager::ControlPanelManager(UiServices::InworldSceneController *parent, AnchorLayoutManager *layout_manager) :
         QObject(parent),
         layout_manager_(layout_manager),
         backdrop_widget_(new CoreUi::BackdropWidget()),
         settings_widget_(0),
         language_widget_(0),
-        changetheme_widget_(0)
+        changetheme_widget_(0),
+		owner_(parent)
     {
         // Controls panel
-        layout_manager_->AddCornerAnchor(backdrop_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
+        //layout_manager_->AddCornerAnchor(backdrop_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
         CreateBasicControls();
 
         // Settings widget
@@ -54,8 +55,10 @@ namespace CoreUi
         language_widget_ = new LanguageWidget(settings_widget_);
         settings_widget_->AddWidget(language_widget_, "Language");
 
+		Foundation::Framework *frame = dynamic_cast<UiServices::InworldSceneController *>(parent)->framework_;
+
         // Adding change theme tab
-        changetheme_widget_ = new ChangeThemeWidget(settings_widget_);
+        changetheme_widget_ = new ChangeThemeWidget(settings_widget_, frame);
         settings_widget_->AddWidget(changetheme_widget_, "Change theme");
     }
 
@@ -70,19 +73,21 @@ namespace CoreUi
     {
         QList<UiServices::ControlButtonType> buttons;
         /// @todo: Read from ini
-		buttons << UiServices::Notifications << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
+		buttons << UiServices::Notifications << UiServices::Settings << UiServices::Quit;// << UiServices::Build << UiServices::Ether;
 
         ControlPanelButton *button = 0;
+
         previous_button = 0;
         foreach(UiServices::ControlButtonType button_type, buttons)
         {
             // Create the button and anchor in scene
             button = new ControlPanelButton(button_type); 
-            if (previous_button)
+            /*if (previous_button)
                 layout_manager_->AnchorWidgetsHorizontally(previous_button, button);
             else
-                layout_manager_->AddCornerAnchor(button, Qt::TopRightCorner, Qt::TopRightCorner);
-
+                layout_manager_->AddCornerAnchor(button, Qt::TopRightCorner, Qt::TopRightCorner);*/
+			owner_->AddInternalWidgetToScene(button->GetInternalWidget(), Qt::TopRightCorner, Qt::Horizontal, 0, true);
+			
             // Add to internal lists
             control_buttons_.append(button);
             if (button_type == UiServices::Notifications || button_type == UiServices::Settings /*|| button_type == UiServices::Teleport*/)

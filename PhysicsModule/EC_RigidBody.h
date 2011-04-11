@@ -119,7 +119,7 @@ class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState
     friend class Physics::PhysicsWorld;
     
     Q_OBJECT
-    Q_ENUMS(EventType)
+    Q_ENUMS(ShapeType)
     
     DECLARE_EC(EC_RigidBody);
 public:
@@ -254,6 +254,11 @@ public slots:
      */
     void ApplyTorqueImpulse(const Vector3df& torqueImpulse);
     
+	//! Set body gravity
+    /*! \param gravity Gravity
+     */
+	void ApplyGravity(const Vector3df& gravity);
+
     //! Force the body to activate (wake up)
     void Activate();
     

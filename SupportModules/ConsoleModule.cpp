@@ -14,7 +14,7 @@
 #include "ServiceManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 
 #include <QObject>
@@ -54,7 +54,7 @@ namespace Console
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
         manager_->SetUiInitialized(!manager_->IsUiInitialized());
 
-        inputContext = framework_->GetInput()->RegisterInputContext("Console", 100);
+        inputContext = framework_->Input()->RegisterInputContext("Console", 100);
         inputContext->SetTakeKeyboardEventsOverQt(true);
         connect(inputContext.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
     }
@@ -111,11 +111,9 @@ namespace Console
             }
             case Console::Events::EVENT_CONSOLE_PRINT_LINE:
             {
-		ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData*>(data);
-		if (!ui_console_manager_)
-		    std::cout << console_data->message << std::endl;
-		else
-		    ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
+		        ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData*>(data);
+		        if (ui_console_manager_)
+		            ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
                 break;
             }
             default:

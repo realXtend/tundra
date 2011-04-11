@@ -6,6 +6,7 @@
 #include "ExternalMenuManager.h"
 
 #include <QDebug>
+#include <QTabBar>
 
 #include "MemoryLeakCheck.h"
 
@@ -19,6 +20,7 @@ namespace UiServices
 			owner_(owner),
 			controller_panels_(),
 			controller_actions_(),
+			controller_panels_visibility_(),
 			category_menu_()
 	{
         root_menu_->setVisible(false); // todo read from ini
@@ -35,6 +37,9 @@ namespace UiServices
 		if (!root_menu_)
 			return;
 
+		if (category_menu_.contains(name))
+			return;
+
 		if (!root_menu_->isVisible())
 			root_menu_->setVisible(true);
 		//Qicon TODO
@@ -42,6 +47,26 @@ namespace UiServices
 		category_menu_[name] = menu;
     }
 
+	bool ExternalMenuManager::AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon)
+	{
+		if (menu.isEmpty())  
+        {
+			AddMenu("Others");
+            category_menu_["Others"]->addMenu(new_menu);
+        }
+        else if (category_menu_.contains(menu))
+        {
+            category_menu_[menu]->addMenu(new_menu);
+        }
+        else
+        {
+            AddMenu(menu);
+            category_menu_[menu]->addMenu(new_menu);
+        }
+		if (!category_menu_.contains(new_menu->title()))
+			category_menu_[new_menu->title()] = new_menu;
+		return true;	
+	}
 
 	bool ExternalMenuManager::AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon)
     {
@@ -59,7 +84,7 @@ namespace UiServices
             AddMenu(menu);
             category_menu_[menu]->addAction(action);
         }
-		
+		action->setCheckable(true);
 		QString *aux = new QString(name+menu);
         controller_actions_[*aux] = action;
 		return true;	
@@ -71,6 +96,7 @@ namespace UiServices
 		if (controller_panels_.contains(QString(menu+"+"+widget->windowTitle())))
 			return false;
 		QAction *action = new QAction(name, widget);
+		action->setCheckable(true);
 		if (menu.isEmpty())		
         {
 			AddMenu("Others");
@@ -86,12 +112,24 @@ namespace UiServices
             category_menu_[menu]->addAction(action);
         }
 
-		QString *aux = new QString(widget->windowTitle());
-        controller_panels_[*aux] = widget;
-		controller_actions_[*aux]= action;		
+		//QString *aux = new QString(widget->windowTitle());
+        controller_panels_[widget->windowTitle()] = widget;
+		controller_actions_[widget->windowTitle()]= action;
+		controller_panels_visibility_[widget->windowTitle()] = dynamic_cast<QDockWidget *>(widget)->isVisible();
 		connect(action, SIGNAL(triggered()), SLOT(ActionNodeClicked()));
+		connect(widget, SIGNAL(visibilityChanged(bool)), SLOT(ModifyPanelVisibility(bool)));
 		return true;
     }
+
+	void ExternalMenuManager::ModifyPanelVisibility(bool vis)
+	{
+		QDockWidget *qdoc = dynamic_cast<QDockWidget*>(sender());
+		if (!controller_panels_visibility_.contains(qdoc->objectName()))
+			return;
+		controller_panels_visibility_[qdoc->objectName()] = vis;
+		QAction* act= controller_actions_.value(qdoc->windowTitle());
+		act->setChecked(vis);
+	}
 
     bool ExternalMenuManager::RemoveExternalMenuPanel(QWidget *controlled_widget)
     { 
@@ -121,11 +159,26 @@ namespace UiServices
     {
 		QAction *act = dynamic_cast<QAction*>(sender());
 
-		QWidget  *aux = dynamic_cast<QWidget *>(act->parentWidget());
+		QDockWidget  *aux = dynamic_cast<QDockWidget *>(act->parentWidget());
+
+		if (controller_panels_visibility_[aux->objectName()]){
+			aux->hide();
+		}
+		else
+		{
+			aux->show();
+			QList<QDockWidget *> docks = dynamic_cast<QMainWindow *>(root_menu_->parentWidget())->tabifiedDockWidgets(aux);
+			QDockWidget *value;
+			foreach (value, docks)
+				dynamic_cast<QMainWindow *>(root_menu_->parentWidget())->tabifyDockWidget(value, aux);
+		}
+
+		/*
 		if (aux->isHidden())
 			aux->show();
 		else
 			aux->hide();
+			*/
 	}
 
 	void ExternalMenuManager::EnableMenus(){
@@ -147,12 +200,4 @@ namespace UiServices
 				i.value()->setEnabled(false);
 		}
 	}
-
-	void ExternalMenuManager::SceneChanged(const QString &old_name, const QString &new_name)
-    {
-        if (new_name == "Ether")
-			DisableMenus();   			
-		else
-			EnableMenus();
-    }
 }

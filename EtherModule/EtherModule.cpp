@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -12,7 +13,7 @@
 #include "EtherLogic.h"
 
 #include "UiServiceInterface.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "LoginServiceInterface.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
@@ -24,6 +25,11 @@
 #include "Entity.h"
 #include "Renderer.h"
 #include "ConfigurationManager.h"
+
+#include "TundraLogicModule.h"
+#include "Client.h"
+#include "SceneManager.h"
+#include "SceneAPI.h"
 
 #include <Ogre.h>
 
@@ -67,7 +73,7 @@ namespace Ether
 
 	void EtherModule::PostInitialize()
 	{
-		input_ = framework_->GetInput()->RegisterInputContext("EtherInput", 101);
+		input_ = framework_->Input()->RegisterInputContext("EtherInput", 101);
 		input_->SetTakeKeyboardEventsOverQt(true);
 		connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
@@ -121,6 +127,10 @@ namespace Ether
 			connect(worldLogic, SIGNAL(AboutToDeleteWorld()), SLOT(TakeEtherScreenshots()));
 		else
 			LogWarning("Could not get world logic service.");
+
+		boost::shared_ptr<TundraLogic::Client> client=framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient();
+		if(client)
+			connect(client.get(), SIGNAL(AboutToDisconnect()), SLOT(TakeEtherScreenshotsForTundra()));
 	}
 
 	void EtherModule::Uninitialize()
@@ -202,7 +212,10 @@ namespace Ether
 		if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
 			return;
 
-		const QKeySequence &toggleMenu = framework_->GetInput()->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
+		if (framework_->IsEditionless())
+			return;
+
+		const QKeySequence &toggleMenu = framework_->Input()->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
 		if (key->keyCode == toggleMenu)
 		{
 			UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
@@ -260,6 +273,58 @@ namespace Ether
 		{
 			// Fallback: will get screwed up shot but not finding the headbone should not happen, ever
 			avatar_head_position = ec_placeable->GetPosition();
+		}
+
+		//Get paths where to store the screenshots and pass to renderer for screenshots.
+		QPair<QString, QString> paths = ether_logic_->GetLastLoginScreenshotData(framework_->GetConfigManager()->GetPath());
+		boost::shared_ptr<Foundation::RenderServiceInterface> render_service = 
+		    framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer).lock();
+
+		if (render_service && !paths.first.isEmpty() && !paths.second.isEmpty())
+		{
+		    QPixmap render_result;
+		    render_result = render_service->RenderImage();
+		    render_result.save(paths.first);
+		    render_result = render_service->RenderAvatar(avatar_head_position, avatar_orientation);
+		    render_result.save(paths.second);
+		}
+	}
+
+	void EtherModule::TakeEtherScreenshotsForTundra()
+	{
+		
+		boost::shared_ptr<TundraLogic::Client> client=framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient();
+		QString name= "Avatar" + QString::number(client->GetConnectionID());
+		Scene::EntityPtr avatar_entity = framework_->Scene()->GetDefaultSceneRaw()->GetEntityByName(name);
+
+		if (!avatar_entity)
+			return;
+
+		EC_Placeable *ec_placeable = avatar_entity->GetComponent<EC_Placeable>().get();
+		EC_Mesh *ec_mesh = avatar_entity->GetComponent<EC_Mesh>().get();
+
+		if (!ec_placeable || !ec_mesh || !avatar_entity->HasComponent("EC_AvatarAppearance"))
+			return;
+		if (!ec_mesh->GetEntity())
+			return;
+
+		// Head bone pos setup
+		Vector3df avatar_position = ec_placeable->GetPosition();
+		Quaternion avatar_orientation = ec_placeable->GetOrientation();
+		Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
+		float adjustheight = ec_mesh->GetAdjustPosition().z;
+		Vector3df avatar_head_position;
+		if(skel->hasBone("Bip01_Head")){
+			Ogre::Bone* bone = skel->getBone("Bip01_Head");
+			adjustheight += 0.15f;
+			Ogre::Vector3 headpos = bone->_getDerivedPosition();
+			Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
+			avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);
+		}else{
+			adjustheight += 0.8f;
+			Ogre::Vector3 headpos = skel->getRootBone()->_getDerivedPosition();
+			Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
+			avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);
 		}
 
 		//Get paths where to store the screenshots and pass to renderer for screenshots.

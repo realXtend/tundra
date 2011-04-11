@@ -16,6 +16,7 @@
 #include <QObject>
 //$ BEGIN_MOD $
 #include <QToolBar>
+#include <QMenu>
 #include <QVariantList>
 //$ END_MOD $
 
@@ -59,7 +60,18 @@ public slots:
      *  @param widget Proxy widget.
      */
     virtual bool AddWidgetToScene(UiProxyWidget *widget) = 0;
+
 	virtual bool AddProxyWidgetToScene(UiProxyWidget *proxy) = 0;
+
+	/* Adds a widget in a layout in the scene in the position and orientation selected
+	* @param widget widget to be placed in the layout
+	* @param corner Corner of the screen: Could be enumCorner { TopLeftCorner, TopRightCorner, BottomLeftCorner, BottomRightCorner }
+	* @param orientation orientation arround the corner, could be { Horizontal, Vertical }
+	* @param priority higher priority means closer to the corner selected
+	*
+	* @return true if evertything allright
+	*/
+	virtual bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence) = 0;
 
     /** Adds widget to menu without any spesific properties: adds entry to the root menu,
      *  takes name from the window title and uses default icon.
@@ -88,6 +100,16 @@ public slots:
      *  @note Doesn't add the widget to the scene.
      */
     virtual void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu = "", const QString &icon = "") = 0;
+
+	/*! \brief	Insert the given meu in the Menu of the main window
+         *  \param  action menu
+         *  \param  name Name of the menu
+		 *	\param	menu name of the Menu to put the menu inside it
+		 *	\param	icon Icon of the menu
+         *         
+         *  \return true if everything is ok (action addded)
+         */
+	virtual bool AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon = 0) = 0;
 
     /** Removes widget from the scene.
      *  @param widget Widget.
@@ -203,6 +225,10 @@ public slots:
         @todo move NotificationBaseWidget class to an public interface.
      */
     virtual void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) = 0;
+
+	virtual void ShowNotification(int hide_in_msec, const QString &message) = 0;
+
+
 //$ BEGIN_MOD $
 
 	/*! \brief	Insert the given action in the Menu of the main window

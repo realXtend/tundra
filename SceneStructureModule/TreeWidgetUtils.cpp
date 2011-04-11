@@ -63,7 +63,7 @@ void TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter
     }
 }
 
-void TreeWidgetExpandOrCollapseAll(QTreeWidget *treeWidget)
+bool TreeWidgetExpandOrCollapseAll(QTreeWidget *treeWidget)
 {
     bool expand = true;
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
@@ -80,6 +80,7 @@ void TreeWidgetExpandOrCollapseAll(QTreeWidget *treeWidget)
         treeWidget->expandAll();
     else
         treeWidget->collapseAll();
+    return expand;
 }
 
 void TreeWidgetSetCheckStateForAllItems(QTreeWidget *treeWidget, int column, Qt::CheckState state)

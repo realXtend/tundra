@@ -11,21 +11,18 @@
 #include <QObject>
 #include <QKeySequence>
 
-#include "InputApi.h"
-
 class QGraphicsItem;
 
 namespace QtInputEvents
 {
     // These are the mouse-related input events provided by the Input API.
     // For input events on keyboard, see \see KeyEvent.h.
-
-	static const event_id_t MousePressed = 3;
-	static const event_id_t MouseReleased = 4;
-	static const event_id_t MouseClicked = 5;
-	static const event_id_t MouseDoubleClicked = 6;
-	static const event_id_t MouseMove = 7;
-	static const event_id_t MouseScroll = 8;
+    static const event_id_t MousePressed = 3;
+    static const event_id_t MouseReleased = 4;
+    static const event_id_t MouseClicked = 5;
+    static const event_id_t MouseDoubleClicked = 6;
+    static const event_id_t MouseMove = 7;
+    static const event_id_t MouseScroll = 8;
 }
 
 /// MouseEvent is the event data structure passed as the parameter in all Naali mouse-related events.
@@ -34,9 +31,19 @@ class MouseEvent : public QObject, public IEventData
     Q_OBJECT
     Q_ENUMS(MouseButton)
     Q_ENUMS(EventType)
+    // Meta-information wrappers for dynamic languages.
+    Q_PROPERTY(int x READ X)
+    Q_PROPERTY(int y READ Y)
+    Q_PROPERTY(int z READ Z)
+    Q_PROPERTY(int relativeX READ RelativeX)
+    Q_PROPERTY(int relativeY READ RelativeY)
+    Q_PROPERTY(int relativeZ READ RelativeZ)
+    Q_PROPERTY(int globalX READ GlobalX)
+    Q_PROPERTY(int globalY READ GlobalY)
+    Q_PROPERTY(unsigned long otherButtons READ OtherButtons)
 
 public:
-	MouseEvent()
+    MouseEvent()
     :eventType(MouseEventInvalid),
     button(MouseEvent::NoButton),
     origin(PressOriginNone),
@@ -49,31 +56,31 @@ public:
     itemUnderMouse(0)
     {
     }
-	virtual ~MouseEvent() {}
+    virtual ~MouseEvent() {}
 
     /// These correspond to Qt::MouseEvent enum. See http://doc.trolltech.com/4.6/qt.html#MouseButton-enum 
-	enum MouseButton
-	{
+    enum MouseButton
+    {
         NoButton = 0,
-		LeftButton = 1,
-		RightButton = 2,
-		MiddleButton = 4,
-		Button4 = 8,
-		Button5 = 16,
+        LeftButton = 1,
+        RightButton = 2,
+        MiddleButton = 4,
+        Button4 = 8,
+        Button5 = 16,
         MaxButtonMask = 32
-	};
+    };
 
-	enum EventType
-	{
+    enum EventType
+    {
         MouseEventInvalid, ///< An invalid event. Used to check for improperly filled structure.
-		MouseMove, ///< The mouse cursor moved. This event is passed independent of which buttons were down.
-		MouseScroll, ///< The mouse wheel position moved.
-		MousePressed, ///< A mouse button was pressed down.
-		MouseReleased, ///< A mouse button was released.
+        MouseMove, ///< The mouse cursor moved. This event is passed independent of which buttons were down.
+        MouseScroll, ///< The mouse wheel position moved.
+        MousePressed, ///< A mouse button was pressed down.
+        MouseReleased, ///< A mouse button was released.
 ///\todo Offer these additional events.
-//		MouseClicked,  ///< A mouse click occurs when mouse button is pressed and released inside a short interval.
-		MouseDoubleClicked
-	};
+//        MouseClicked,  ///< A mouse click occurs when mouse button is pressed and released inside a short interval.
+        MouseDoubleClicked
+    };
 
     /// PressOrigin tells whether a mouse press originated on top of a Qt widget or on top of the 3D scene area.
     enum PressOrigin
@@ -83,40 +90,40 @@ public:
         PressOriginQtWidget
     };
 
-	EventType eventType;
+    EventType eventType;
 
-	/// The button that this event corresponds to.
-	MouseButton button;
+    /// The button that this event corresponds to.
+    MouseButton button;
 
     /// If eventType==MousePress, this field tells whether the click originates on the 3D scene or on a Qt widget.
     PressOrigin origin;
 
-	// The mouse coordinates in the client coordinate area.
-	int x;
-	int y;
-	/// The mouse wheel absolute position.
-	int z;
+    // The mouse coordinates in the client coordinate area.
+    int x;
+    int y;
+    /// The mouse wheel absolute position.
+    int z;
 
-	// The difference that occurred during this event and the previous one.
-	int relativeX;
-	int relativeY;
-	// The difference in the mouse wheel position (for most mouses).
-	int relativeZ;
+    // The difference that occurred during this event and the previous one.
+    int relativeX;
+    int relativeY;
+    // The difference in the mouse wheel position (for most mouses).
+    int relativeZ;
 
-	// The global mouse coordinates where the event occurred.
-	int globalX;
-	int globalY;
+    // The global mouse coordinates where the event occurred.
+    int globalX;
+    int globalY;
 
-	/// What other mouse buttons were held down when this event occurred. This is a combination of MouseButton flags.
-	unsigned long otherButtons;
+    /// What other mouse buttons were held down when this event occurred. This is a combination of MouseButton flags.
+    unsigned long otherButtons;
 
     /// A bitfield of the keyboard modifiers (Ctrl, Shift, ...) associated with this key event.
     /// Use Qt::KeyboardModifier, http://doc.trolltech.com/4.6/qt.html#KeyboardModifier-enum to access these.
     /// Also see \see KeyEvent::HasShiftModifier.
-	unsigned long modifiers;
+    unsigned long modifiers;
 
-	/// Which keyboard keys were held down when this event occurred.
-	std::vector<Qt::Key> heldKeys;
+    /// Which keyboard keys were held down when this event occurred.
+    std::vector<Qt::Key> heldKeys;
 
     /// The coordinates in window client coordinate space denoting where the mouse left [0] /middle [1] /right [2] /XButton1 [3] /XButton2 [4] 
     /// buttons were pressed down. These are useful in mouse drag situations where it is necessary to know the coordinates where the 
@@ -151,14 +158,29 @@ public:
     /// topmost of them is returned here.
     QGraphicsItem *itemUnderMouse;
 
-	///\todo Add a time stamp of the event.
+    ///\todo Add a time stamp of the event.
+
+    int X() const { return x; }
+    int Y() const { return y; }
+    int Z() const { return z; }
+
+    int RelativeX() const { return relativeX; }
+    int RelativeY() const { return relativeY; }
+    int RelativeZ() const { return relativeZ; }
+
+    int GlobalX() const { return globalX; }
+    int GlobalY() const { return globalY; }
+
+    unsigned long OtherButtons() const { return otherButtons; }
+
+    QGraphicsItem *ItemUnderMouse() const { return itemUnderMouse; }
 
 public slots:
     /// Marks this event as having been handled already, which will suppress this event from
     /// going on to lower input context levels.
     void Suppress() { handled = true; }
 
-	/// @return True if the key with the given keycode was held down when this event occurred.
+    /// @return True if the key with the given keycode was held down when this event occurred.
     bool HadKeyDown(Qt::Key keyCode) const { return std::find(heldKeys.begin(), heldKeys.end(), keyCode) != heldKeys.end(); }
 
     /// Returns the mouse coordinates in local client coordinate frame denoting where the given mouse button was last pressed
@@ -175,41 +197,13 @@ public slots:
     bool IsRightButtonDown() const { return IsButtonDown(RightButton); }
 
     // Modifier check functions
-	bool HasShiftModifier() const { return (modifiers & Qt::ShiftModifier) != 0; }
-	bool HasCtrlModifier() const { return (modifiers & Qt::ControlModifier) != 0; }
+    bool HasShiftModifier() const { return (modifiers & Qt::ShiftModifier) != 0; }
+    bool HasCtrlModifier() const { return (modifiers & Qt::ControlModifier) != 0; }
     bool HasAltModifier() const { return (modifiers & Qt::AltModifier) != 0; }
-	bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; } // On windows, this is associated to the Win key.
+    bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; } // On windows, this is associated to the Win key.
 
     // Returns if mouse is over a graphics item in the scene
     bool IsItemUnderMouse() const { if (itemUnderMouse) return true; else return false; }
-
-public:
-
-    // Meta-information wrappers for dynamic languages.
-    Q_PROPERTY(int x READ X)
-    Q_PROPERTY(int y READ Y)
-    Q_PROPERTY(int z READ Z)
-    Q_PROPERTY(int relativeX READ RelativeX)
-    Q_PROPERTY(int relativeY READ RelativeY)
-    Q_PROPERTY(int relativeZ READ RelativeZ)
-    Q_PROPERTY(int globalX READ GlobalX)
-    Q_PROPERTY(int globalY READ GlobalY)
-    Q_PROPERTY(unsigned long otherButtons READ OtherButtons)
-
-    int X() const { return x; }
-    int Y() const { return y; }
-    int Z() const { return z; }
-
-    int RelativeX() const { return relativeX; }
-    int RelativeY() const { return relativeY; }
-    int RelativeZ() const { return relativeZ; }
-
-    int GlobalX() const { return globalX; }
-    int GlobalY() const { return globalY; }
-
-    unsigned long OtherButtons() const { return otherButtons; }
-
-    QGraphicsItem *ItemUnderMouse() const { return itemUnderMouse; }
 };
 
 #endif

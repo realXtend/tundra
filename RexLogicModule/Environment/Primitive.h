@@ -63,7 +63,7 @@ namespace RexLogic
 
         void HandleLogout();
 
-        typedef std::map<std::pair<request_tag_t, asset_type_t>, entity_id_t> EntityResourceRequestMap;
+//        typedef std::map<std::pair<request_tag_t, asset_type_t>, entity_id_t> EntityResourceRequestMap;
 
         // Send RexPrimData of a prim entity to server
         ///\todo Move to WorldStream?
@@ -204,7 +204,7 @@ namespace RexLogic
         void HandlePrimScaleAndVisibility(entity_id_t entityid);
 
         //! discards request tags for certain entity
-        void DiscardRequestTags(entity_id_t, EntityResourceRequestMap& map);
+//        void DiscardRequestTags(entity_id_t, EntityResourceRequestMap& map);
 
         // Go through dirty lists & send changed components to server
         void SerializeECsToNetwork();
@@ -219,7 +219,7 @@ namespace RexLogic
         static std::string UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id);
 
         //! maps tags of all pending resource request to prim entities.
-        EntityResourceRequestMap prim_resource_request_tags_;
+//        EntityResourceRequestMap prim_resource_request_tags_;
 
         //! pending rexprimdatas. This map exists because in some cases the network messages that describe prim parameters
         //! are received before the actual objects have been created (first ObjectUpdate is received). Any such pending

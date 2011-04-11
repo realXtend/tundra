@@ -22,14 +22,6 @@ class QString;
 class QScrollArea;
 QT_END_NAMESPACE
 
-namespace Resource
-{
-    namespace Events
-    {
-        class ResourceReady;
-    }
-}
-
 namespace Foundation
 {
     class Framework;
@@ -88,7 +80,7 @@ public slots:
     void RequestTextureAsset(const QString &asset_id);
 
     //! handles resouce ready event and if tag fits, convert it into QImage format and set it to image label.
-    void HandleResouceReady(Resource::Events::ResourceReady *res);
+//    void HandleResouceReady(Resource::Events::ResourceReady *res);
 
     //! Listenes when image label has been pressed.
     void TextureLabelClicked(QMouseEvent *ev);
@@ -139,7 +131,7 @@ private:
     QString inventoryId_;
     QString assetId_;
     asset_type_t assetType_;
-    request_tag_t request_tag_;
+//    request_tag_t request_tag_;
     bool useOriginalImageSize_;
 };
 

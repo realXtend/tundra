@@ -125,14 +125,6 @@ namespace UiServices
 			s->widget()->setEnabled(false);
 	}
 
-	void ExternalPanelManager::SceneChanged(const QString &old_name, const QString &new_name)
-    {
-        if (new_name == "Ether")
-			DisableDockWidgets();  
-		else if(old_name == "Ether")
-			EnableDockWidgets();
-    }
-
 	QDockWidget* ExternalPanelManager::GetExternalMenuPanel(QString &widget){
 		QDockWidget *s;
 		foreach( s , all_qdockwidgets_in_window_ )

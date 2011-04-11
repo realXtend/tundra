@@ -547,6 +547,7 @@ void EC_AnimationController::UpdateSignals()
     if (parent)
     {
         parent->ConnectAction("PlayAnim", this, SLOT(PlayAnim(const QString &, const QString &, const QString &)));
+		parent->ConnectAction("PlayExclusiveAnim", this, SLOT(EnableExclusiveAnimation(const QString &, bool looped, float fadein, float fadeout, bool high_priority)));
         parent->ConnectAction("PlayLoopedAnim", this, SLOT(PlayLoopedAnim(const QString &, const QString &, const QString &)));
         parent->ConnectAction("PlayReverseAnim", this, SLOT(PlayReverseAnim(const QString &, const QString &, const QString &)));
         parent->ConnectAction("PlayAnimAutoStop", this, SLOT(PlayAnimAutoStop(const QString &, const QString &, const QString &)));

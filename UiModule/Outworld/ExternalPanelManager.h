@@ -80,12 +80,6 @@ namespace UiServices
 		 */
 		void EnableDockWidgets();
 
-		/*!Slot used when the scene is changed, if we "go" to ether Scene, then disable all QdockWidgets
-		 * \param old_name Old Scene
-		 * \param new_name New Scene
-		 */
-		void SceneChanged(const QString &old_name, const QString &new_name);
-
 		/*! Returns the QDockWidget where the widget with the name widget is in the QMainWindow. Used (at least) to use WorldBuildingModule with this module.
          *  \param widget Name of the widget.
          */

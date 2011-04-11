@@ -7,6 +7,7 @@
 #include "ECComponentEditor.h"
 #include "TreeWidgetItemExpandMemory.h"
 
+#include "SceneAPI.h"
 #include "Entity.h"
 #include "IComponent.h"
 #include "SceneManager.h"
@@ -468,7 +469,7 @@ void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *prev
 
 void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type) 
 {
-    Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
+    Scene::EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->GetParentEntity()->GetId());
     if(!HasEntity(entity_ptr))
         return;
     ComponentPtr comp_ptr;
@@ -497,7 +498,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
 
 void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
 {
-    Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
+    Scene::EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->GetParentEntity()->GetId());
     if(!HasEntity(entity_ptr))
         return;
 
@@ -634,7 +635,7 @@ void ECBrowser::DynamicComponentChanged()
         group->editor_->UpdateUi();
 }
 
-void ECBrowser::ComponentNameChanged(const QString &newName)
+void ECBrowser::OnComponentNameChanged(const QString &newName)
 {
     IComponent *component = dynamic_cast<IComponent*>(sender());
     if (!component)
@@ -739,7 +740,7 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
             EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
             connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
             connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
-            connect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString&)),
+            connect(dc, SIGNAL(ComponentNameChanged(const QString&, const QString&)),
                     SLOT(ComponentNameChanged(const QString&)), Qt::UniqueConnection);
         }
         return;
@@ -786,7 +787,7 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
         EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
         connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
         connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
-        connect(dc, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(ComponentNameChanged(const QString&)), Qt::UniqueConnection);
+        connect(dc, SIGNAL(ComponentNameChanged(const QString &, const QString &)), SLOT(OnComponentNameChanged(const QString&)), Qt::UniqueConnection);
     }
 
     ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, dynamic);
@@ -818,7 +819,7 @@ void ECBrowser::RemoveComponentFromGroup(ComponentPtr comp)
                 assert(dc);
                 disconnect(dc, SIGNAL(AttributeAdded(IAttribute *)), this, SLOT(DynamicComponentChanged()));
                 disconnect(dc, SIGNAL(AttributeRemoved(const QString &)), this, SLOT(DynamicComponentChanged()));
-                disconnect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString &)), this, SLOT(ComponentNameChanged(const QString&)));
+                disconnect(dc, SIGNAL(ComponentNameChanged(const QString&, const QString &)), this, SLOT(OnComponentNameChanged(const QString&)));
             }
             comp_group->RemoveComponent(comp);
             // Check if the component group still contains any components in it and if not, remove it from the browser list.

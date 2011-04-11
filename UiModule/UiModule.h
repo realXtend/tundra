@@ -10,7 +10,6 @@
 #include "UiModuleApi.h"
 #include "UiModuleFwd.h"
 #include "UiTypes.h"
-#include "IEventData.h"
 
 #include <QObject>
 #include <QMap>
@@ -41,7 +40,6 @@ namespace UiServices
 	class ExternalPanelManager;
 	class ExternalMenuManager;
 	class ExternalToolBarManager;
-	class StaticToolBar;
 	class ViewManager;
 
     typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
@@ -83,7 +81,7 @@ namespace UiServices
 		ExternalMenuManager *GetExternalMenuManager() const { return external_menu_manager_; }
 		ExternalPanelManager *GetExternalPanelManager() const { return external_panel_manager_; }
 		ExternalToolBarManager *GetExternalToolBarManager() const { return external_toolbar_manager_;}
-		bool HasBeenPostinitializaded() const { return postInitialize_; }
+		bool HasBeenPostinitializaded() const { return win_restored_; }
 
         //! Logging
         MODULE_LOGGING_FUNCTIONS;
@@ -93,6 +91,9 @@ namespace UiServices
 
     private slots:
         void OnKeyPressed(KeyEvent *key);
+		
+		//To restore it after postinitialize all modules
+		void RestoreMainWindow();
 
     private:
         //! Notify all ui module components of connected/disconnected state
@@ -109,11 +110,6 @@ namespace UiServices
 		ExternalMenuManager *external_menu_manager_;
 		ExternalPanelManager *external_panel_manager_;
 		ExternalToolBarManager *external_toolbar_manager_;
-
-        /// Event manager.
-        EventManagerPtr eventManager_;
-		
-		event_category_id_t uiEventCategory_;
 
         //! Current query categories
         QStringList event_query_categories_;
@@ -139,9 +135,6 @@ namespace UiServices
 		//! Manager of views
 		ViewManager* viewManager_;
 
-		//! Static toolbar
-		StaticToolBar* staticToolBar_;
-
         //! Current World Stream pointer
         boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
 
@@ -151,37 +144,10 @@ namespace UiServices
         //! Input context for Ether
         boost::shared_ptr<InputContext> input;
 
-		bool postInitialize_;
+		bool win_restored_;
 
     };
 
-	//namespace Events
- //   {
-	///*	class DynamicWidgetData : public IEventData
- //       {
- //       public:
- //           DynamicWidgetData(QString name,QString module,QVariantList properties) : name_(width), module_(height),properties_(properties) {}
- //           virtual ~DynamicWidgetData() {}
-	//		
-	//		QString name_;
-	//		QString module_;
-	//		QVariantList properties_;
- //       };*/
-
- //       class DynamicWidgetEventData : public IEventData
- //       {
-	//		public:
-	//			QString name;
-	//			QString module;
-	//			QVariantList properties;
- //       };
-
- //       //! Sent when a work result has arrived. Uses the event data structure ThreadTaskResult and its subclasses
- //       static const event_id_t DYNAMIC_WIDGET_ADD = 1;
- //       static const event_id_t DYNAMIC_WIDGET_DEL = 2;
- //   }
 }
-
-
 
 #endif // incl_UiModule_UiModule_h

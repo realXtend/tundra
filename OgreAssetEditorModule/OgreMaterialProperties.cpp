@@ -21,7 +21,8 @@
 #include <QVector>
 #include <QTextStream>
 
-OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset)
+//OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset)
+OgreMaterialProperties::OgreMaterialProperties(const QString &name, void *asset)
     ///\todo Regression. Reimplement using the new Asset API. -jj.
 //:material_(0)
 {

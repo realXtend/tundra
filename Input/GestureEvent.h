@@ -10,18 +10,16 @@
 #include <QString>
 #include <QGesture>
 
-#include "InputApi.h"
-
 namespace QtInputEvents
 {
-	static const event_id_t GestureStarted = 9;
-	static const event_id_t GestureUpdated = 10;
-	static const event_id_t GestureFinished = 11;
+    static const event_id_t GestureStarted = 9;
+    static const event_id_t GestureUpdated = 10;
+    static const event_id_t GestureFinished = 11;
     static const event_id_t GestureCanceled = 11;
 }
 
 /// GestureEvent is the event data structure passed as the parameter in all Naali in-scene Gesture events.
-class INPUT_API GestureEvent : public QObject, public IEventData
+class GestureEvent : public QObject, public IEventData
 {
     Q_OBJECT
     Q_ENUMS(EventType)

@@ -39,17 +39,20 @@ EC_Placeable::EC_Placeable(IModule* module) :
     visible(this, "Visible", true),
     position(this, "Position", QVector3D(0,0,0)),
     scale(this, "Scale", QVector3D(1,1,1))
-
 {
     // Enable network interpolation for the transform
     static AttributeMetadata transAttrData;
+    static AttributeMetadata nonDesignableAttrData;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
     {
         transAttrData.interpolation = AttributeMetadata::Interpolate;
+        nonDesignableAttrData.designable = false;
         metadataInitialized = true;
     }
     transform.SetMetadata(&transAttrData);
+    position.SetMetadata(&nonDesignableAttrData);
+    scale.SetMetadata(&nonDesignableAttrData);
 
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();

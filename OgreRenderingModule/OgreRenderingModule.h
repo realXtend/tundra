@@ -5,7 +5,6 @@
 
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
-#include "Renderer.h"
 #include "OgreModuleApi.h"
 
 namespace Foundation
@@ -54,8 +53,6 @@ namespace OgreRenderer
         //! callback for console command
         Console::CommandResult ConsoleStats(const StringVector &params);
 
-     
-
     private:
         //! Type name of the module.
         static std::string type_name_static_;
@@ -65,12 +62,6 @@ namespace OgreRenderer
 
         //! renderer settings
         RendererSettingsPtr renderer_settings_;
-
-        //! asset event category
-        event_category_id_t asset_event_category_;
-
-        //! resource event category
-        event_category_id_t resource_event_category_;
 
         //! input event category
         event_category_id_t input_event_category_;

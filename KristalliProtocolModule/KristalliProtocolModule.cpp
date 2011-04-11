@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -12,10 +13,12 @@
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 #include "kNet.h"
 #include "kNet/qt/NetworkDialog.h"
+
+#include "UiServiceInterface.h"
 
 #include <algorithm>
 
@@ -134,6 +137,15 @@ void KristalliProtocolModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand(
             "kNet", "Shows the kNet statistics window.", 
             Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
+//$ BEGIN_MOD $
+	if (!framework_->IsHeadless() && !framework_->IsEditionless()) {
+		networkDialog = new NetworkDialog(0, &network);
+		UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+		if (ui)
+			ui->AddWidgetToScene(networkDialog, true, true);
+			ui->AddWidgetToMenu(networkDialog, "knet Statistics", "View");
+	}
+//$ END_MOD $
 }
 
 void KristalliProtocolModule::Uninitialize()
@@ -143,11 +155,21 @@ void KristalliProtocolModule::Uninitialize()
 
 Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
 {
-    NetworkDialog *networkDialog = new NetworkDialog(0, &network);
-    networkDialog->setAttribute(Qt::WA_DeleteOnClose);
-    networkDialog->show();
-
-    return Console::ResultSuccess();
+//$ BEGIN_MOD $
+	if (framework_->IsHeadless() && !framework_->IsEditionless()) {
+		networkDialog = new NetworkDialog(0, &network);
+		networkDialog->setAttribute(Qt::WA_DeleteOnClose);
+		networkDialog->show();
+		return Console::ResultSuccess();
+	}
+	else
+	{
+		UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+		if (ui)
+			ui->ShowWidget(networkDialog);
+		return Console::ResultSuccess();
+	}
+//$ END_MOD $	
 }
 
 void KristalliProtocolModule::Update(f64 frametime)

@@ -220,10 +220,10 @@ namespace Avatar
         std::map<entity_id_t, HttpUtilities::HttpTaskPtr> appearance_downloaders_;
         
         //! Avatar resource request tags associated to entity
-        std::map<request_tag_t, entity_id_t> avatar_resource_tags_;
+//        std::map<request_tag_t, entity_id_t> avatar_resource_tags_;
 
         //! Avatar appearance xml asset request tags associated to entity, for inventory based appearance
-        std::map<request_tag_t, entity_id_t> avatar_appearance_tags_;
+//        std::map<request_tag_t, entity_id_t> avatar_appearance_tags_;
         
         //! Amount of pending avatar resource requests. When hits 0, should be able to build avatar
         std::map<entity_id_t, uint> avatar_pending_requests_;

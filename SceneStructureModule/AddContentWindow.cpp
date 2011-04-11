@@ -12,7 +12,7 @@
 #include "SceneStructureModule.h"
 #include "TreeWidgetUtils.h"
 
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 #include "Framework.h"
 #include "AssetAPI.h"
@@ -144,7 +144,18 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
     setAttribute(Qt::WA_DeleteOnClose);
-    setWindowTitle(" "); //setWindowTitle(tr("Add Content")); imo the add content name is kind of not needed
+    setWindowTitle("Entity And Asset Import");
+
+    // If not parent was given, lets make our main window the parent
+    // and set the window flags to match the other tundra dialogs/windows
+    if (!parent && framework->Ui()->MainWindow())
+    {
+        setParent(framework->Ui()->MainWindow());
+        setWindowFlags(Qt::Tool);
+    }
+    else if (parent && (parent == framework->Ui()->MainWindow()))
+        setWindowFlags(Qt::Tool);
+
     QPixmap nullIcon(16,16); // do a null icon to hide the default ugly one
     nullIcon.fill(Qt::transparent);
     setWindowIcon(nullIcon);
@@ -175,7 +186,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     entityTreeWidget->setHeaderLabels(QStringList(QStringList() << tr("Create") << tr("ID") << tr("Name")));
     entityTreeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
     entityTreeWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
+	entityTreeWidget->setMinimumHeight(120);
 
     QPushButton *selectAllEntitiesButton = new QPushButton(tr("Select All"));
     QPushButton *deselectAllEntitiesButton = new QPushButton(tr("Deselect All"));
@@ -217,6 +228,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     labels << tr("Upload") << tr("Type") << tr("Source name") << tr("Source subname") << tr("Destination name");
     assetTreeWidget->setHeaderLabels(labels);
     assetTreeWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	assetTreeWidget->setMinimumHeight(120);
 
     QPushButton *selectAllAssetsButton = new QPushButton(tr("Select All"));
     QPushButton *deselectAllAssetsButton = new QPushButton(tr("Deselect All"));
@@ -394,19 +406,20 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     }
 
     entityTreeWidget->setSortingEnabled(true);
-
+//$ BEGIN_MOD $
     // Set a minimum height for our treeview
-    int fullHeight = entityTreeWidget->header()->height();
-    fullHeight += (entityTreeWidget->sizeHintForRow(0)+5) * entityTreeWidget->model()->rowCount();
-    int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
-    if (fullHeight < halfDeskHeight-50)
-    {
-        entityTreeWidget->setMinimumHeight(fullHeight);
-    }
-    else
-    {
-        entityTreeWidget->setMinimumHeight(halfDeskHeight - 100);
-    }
+    //int fullHeight = entityTreeWidget->header()->height();
+    //fullHeight += (entityTreeWidget->sizeHintForRow(0)+5) * entityTreeWidget->model()->rowCount();
+    //int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
+    //if (fullHeight < halfDeskHeight-50)
+    //{
+    //    entityTreeWidget->setMinimumHeight(fullHeight);
+    //}
+    //else
+    //{
+    //    entityTreeWidget->setMinimumHeight(halfDeskHeight - 100);
+    //}
+//$ END_MOD $
 }
 
 void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
@@ -459,21 +472,21 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
     // Enable sorting, resize header sections to contents.
     assetTreeWidget->setSortingEnabled(true);
     assetTreeWidget->header()->resizeSections(QHeaderView::ResizeToContents);
-
+//$ BEGIN_MOD $
     // Set a minimum height for our treeview
-    int fullHeight = assetTreeWidget->header()->height();
-    fullHeight += (assetTreeWidget->sizeHintForRow(0)+5) * assetTreeWidget->model()->rowCount();
-    
-    int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
-    if(fullHeight<(halfDeskHeight-50))
-    {
-        assetTreeWidget->setMinimumHeight(fullHeight);
-    }
-    else
-    {
-        assetTreeWidget->setMinimumHeight(halfDeskHeight - 100);
-    }    
-
+    //int fullHeight = assetTreeWidget->header()->height();
+    //fullHeight += (assetTreeWidget->sizeHintForRow(0)+5) * assetTreeWidget->model()->rowCount();
+    //
+    //int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
+    //if(fullHeight<(halfDeskHeight-50))
+    //{
+    //    assetTreeWidget->setMinimumHeight(fullHeight);
+    //}
+    //else
+    //{
+    //    assetTreeWidget->setMinimumHeight(halfDeskHeight - 100);
+    //}    
+//$ END_MOD $
     // Set the windows minumum width from assets tree view
     int minWidth = 10;
     for (int i=0; i<assetTreeWidget->columnCount(); i++)

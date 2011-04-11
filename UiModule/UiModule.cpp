@@ -8,7 +8,7 @@
 //#include "UiSettingsService.h"
 #include "UiDarkBlueStyle.h"
 #include "UiStateMachine.h"
-#include "Input.h"
+#include "InputAPI.h"
 
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"
@@ -22,12 +22,11 @@
 #include "Outworld/ExternalPanelManager.h"
 #include "Outworld/ExternalMenuManager.h"
 #include "Outworld/ExternalToolBarManager.h"
-#include "Outworld/StaticToolBar.h"
 #include "Outworld/ViewManager.h"
 
 #include "Common/UiAction.h"
 #include "UiSceneService.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 
 #include "EventManager.h"
@@ -68,9 +67,8 @@ namespace UiServices
 		external_menu_manager_(0),
 		external_panel_manager_(0),
 		external_toolbar_manager_(0),
-		staticToolBar_(0),
         inworld_notification_manager_(0),
-		postInitialize_(false)
+		win_restored_(false)
     {
     }
 
@@ -83,9 +81,9 @@ namespace UiServices
 
     void UiModule::Load()
     {
-		QApplication::setStyle(new UiDarkBlueStyle());
-        QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
-        QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
+		//QApplication::setStyle(new UiDarkBlueStyle());
+        //QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
+        //QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
         event_query_categories_ << "Framework" << "Scene" << "Input";
     }
 
@@ -97,7 +95,7 @@ namespace UiServices
 
     void UiModule::Initialize()
     {
-		framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
+		//framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
 
 		if (GetFramework()->IsHeadless())
 			return;
@@ -136,11 +134,14 @@ namespace UiServices
 			//qWin_->setObjectName("Naali MainWindow");
 		   //Create MenuManager and PanelManager and ToolBarManager
            external_menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
+		   //connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_menu_manager_, SLOT(DisableMenus()));
+		   //connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_menu_manager_, SLOT(EnableMenus()));
 		   external_panel_manager_ = new ExternalPanelManager(qWin_, this);
+		   connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_panel_manager_, SLOT(DisableDockWidgets()));
+		   connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_panel_manager_, SLOT(EnableDockWidgets()));
 		   external_toolbar_manager_ = new ExternalToolBarManager(qWin_, this);
-		   
-		   //Configure Static Stuff of the main window
-		   //createStaticContent();
+		   connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_toolbar_manager_, SLOT(DisableToolBars()));
+		   connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_toolbar_manager_, SLOT(EnableToolBars()));
         }
         else
 			LogWarning("Could not acquire QMainWindow!");
@@ -154,22 +155,44 @@ namespace UiServices
 			SubscribeToEventCategories();
 			ui_scene_service_->CreateSettingsPanel();
 
-			//Restore values
-			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
-			if (!settings.contains("win_state")){
-				//Set default settings
-				QSettings default_settings("data/uiexternaldefault.ini", QSettings::IniFormat);
-				qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());		
-			} 
-			else
-				qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
-
 			//Create the view manager
-			viewManager_=new ViewManager(this);
-			//Notify that the restore of the main window has been done
-			postInitialize_ = true;
+			if (!framework_->IsEditionless())
+				viewManager_=new ViewManager(this);
 		}
     }
+
+	void UiModule::RestoreMainWindow()
+	{
+		bool window_fullscreen = true;
+		//Restore values
+		if (framework_->IsEditionless()) {
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+			if (!settings.contains("win_state") && !framework_->IsEditionless()){
+				//Set default settings
+				QSettings default_settings("data/uidefault.ini", QSettings::IniFormat);
+				qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());
+			} 
+			else if (settings.contains("win_state"))
+				qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+			window_fullscreen = settings.value("win_fullscreen", false).toBool();
+		}
+		else
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+			if (!settings.contains("win_state") && !framework_->IsEditionless()){
+				//Set default settings
+				QSettings default_settings("data/uidefault.ini", QSettings::IniFormat);
+				qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());
+				//First time, show it maximized
+				qWin_->showMaximized();
+			} 
+			else if (settings.contains("win_state"))
+				qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+			window_fullscreen = settings.value("win_fullscreen", false).toBool();
+		}
+		if (window_fullscreen)
+			qWin_->showFullScreen();
+	}
 
     void UiModule::Uninitialize()
     {
@@ -178,8 +201,31 @@ namespace UiServices
 		//Save state of the MainWindow
 		if (qWin_)
 		{
-			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
-			settings.setValue("win_state", qWin_->saveState());
+			QSettings settings;
+			if (framework_->IsEditionless())
+			{
+				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+				settings.setValue("win_state", qWin_->saveState());
+				if (!qWin_->isFullScreen())
+				{
+					settings.setValue("win_width", qWin_->width());
+					settings.setValue("win_height", qWin_->height());
+					settings.setValue("win_pos", qWin_->pos());
+				}
+				settings.setValue("win_fullscreen", qWin_->isFullScreen());
+			}
+			else
+			{
+				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+				settings.setValue("win_state", qWin_->saveState());
+				if (!qWin_->isFullScreen())
+				{
+					settings.setValue("win_width", qWin_->width());
+					settings.setValue("win_height", qWin_->height());
+					settings.setValue("win_pos", qWin_->pos());
+				}
+				settings.setValue("win_fullscreen", qWin_->isFullScreen());
+			}
 		}
 
 		if (ui_scene_service_)
@@ -191,6 +237,11 @@ namespace UiServices
 
     void UiModule::Update(f64 frametime)
     {
+		//Notify that the restore of the main window has been done
+		if (!win_restored_ && !framework_->IsEditionless() && qWin_){
+			win_restored_ = true;
+			RestoreMainWindow();
+		}
     }
 	//void UiModule::RegisterUiEvents()
 	//{
@@ -230,24 +281,25 @@ namespace UiServices
         }
         else if (category == "NetworkState")
         {
+            using namespace ProtocolUtilities;
             switch (event_id)
             {
-			case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
+                case Events::EVENT_CONNECTION_FAILED:
                 {
-					ProtocolUtilities::ConnectionFailedEvent *in_data = static_cast<ProtocolUtilities::ConnectionFailedEvent *>(data);
+                    ConnectionFailedEvent *in_data = static_cast<ConnectionFailedEvent *>(data);
                     if (in_data)
                         PublishConnectionState(Failed, in_data->message);
                     else
                         PublishConnectionState(Failed, "Unknown connection error");
                     break;
                 }
-			case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
+                case Events::EVENT_SERVER_DISCONNECTED:
                     PublishConnectionState(Disconnected);
                     break;
-                case ProtocolUtilities::Events::EVENT_USER_KICKED_OUT:
+                case Events::EVENT_USER_KICKED_OUT:
                     PublishConnectionState(Disconnected);
                     break;
-                case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
+                case Events::EVENT_SERVER_CONNECTED:
                     break;
                 default:
                     break;

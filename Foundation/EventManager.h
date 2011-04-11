@@ -136,7 +136,7 @@ public:
     /*! By having a global source for the tags there is no risk for collisions between
         different modules/subsystems.
      */
-    request_tag_t GetNextRequestTag();
+//    request_tag_t GetNextRequestTag();
 
     /// Registers component to listen only event which is defined by given @p category_id and @p event_id.
     /** @param component is component which will get event. 
@@ -207,7 +207,7 @@ private:
     event_category_id_t next_category_id_;
 
     //! Next free request tag to be used
-    request_tag_t next_request_tag_;
+//    request_tag_t next_request_tag_;
 
     //! Map for assigned event category id's
     EventCategoryMap event_category_map_;

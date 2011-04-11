@@ -105,7 +105,7 @@ namespace Foundation
         
         return ThreadTaskPtr();
     }
-    
+/*    
     request_tag_t ThreadTaskManager::AddRequest(const std::string& task_description, ThreadTaskRequestPtr request)
     {
         if (request)
@@ -132,7 +132,7 @@ namespace Foundation
         
         return 0;
     }
-    
+*/    
     void ThreadTaskManager::QueueResult(ThreadTaskResultPtr result)
     {
         MutexLock lock(result_mutex_);

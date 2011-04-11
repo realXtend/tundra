@@ -11,13 +11,15 @@
 
 #include "IModule.h"
 #include "SceneFwd.h"
+#include "InputFwd.h"
+#include "AssetFwd.h"
 #include "Vector3D.h"
-#include "AssetAPI.h"
 #include "AssetReference.h"
 
 #include <QPointer>
 #include <QWidget>
 #include <QLabel>
+#include <QHash>
 
 class QDragEnterEvent;
 class QDragMoveEvent;
@@ -99,11 +101,11 @@ public slots:
     */
     static void CleanReference(QString &fileRef);
 
-    /// Shows Scene Structure window.
-    void ShowSceneStructureWindow();
+    /// Toggles visibility of Scene Structure window.
+    void ToggleSceneStructureWindow();
 
-    /// Shows Assets window.
-    void ShowAssetsWindow();
+    /// Toggles visibility of Assets window.
+    void ToggleAssetsWindow();
 
 private:
     SceneStructureWindow *sceneWindow; ///< Scene Structure window.
@@ -111,11 +113,12 @@ private:
     boost::shared_ptr<InputContext> inputContext; ///< Input context.
 
     SceneMaterialDropData materialDropData;
-    
+    QHash<QString, Vector3df> urlToDropPos;
+
     QWidget *toolTipWidget;
     QLabel *toolTip;
     QString currentToolTipSource;
-    QString currentToolTipDestination;
+    QString currentToolTipDestination;   
 
 private slots:
     /// Handles KeyPressed() signal from input context.

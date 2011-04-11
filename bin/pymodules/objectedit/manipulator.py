@@ -419,8 +419,23 @@ class ScaleManipulator(Manipulator):
             self.manipulator.gizmo.AddEditableAttribute(e.placeable, "Scale", "")
             
 class FreeMoveManipulator(Manipulator):
-    NAME = "FreeMoveManipulator"
-    USES_MANIPULATOR = False
+	NAME = "FreeMoveManipulator"
+	MANIPULATOR_MESH_NAME = "freemove.mesh"
+	MANIPULATORORIENTATION = QQuaternion(0, 0, 1, 1)
+
+	MATERIALNAMES = {
+		0: "axis_green",
+		1: "axis_red",
+		2: "axis_blue"
+	}
+
+	AXIS_GREEN = 0
+	AXIS_RED = 1
+	AXIS_BLUE = 2
+
+	GREENARROW = [0]
+	REDARROW = [1]
+	BLUEARROW = [2]
     
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
     def _manipulate(self, ent, amountx, amounty, changevec):
@@ -590,3 +605,14 @@ class RotationManipulator(Manipulator):
 
     def setAttributes(self, ents):
         pass
+
+class SelectionManipulator(Manipulator):
+    NAME = "SelectManipulator"
+    USES_MANIPULATOR = False
+    
+    """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
+    def _manipulate(self, ent, amountx, amounty, changevec):
+        pass
+    def setAttributes(self, ents):
+        pass
+

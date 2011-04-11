@@ -8,6 +8,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 
@@ -178,7 +179,7 @@ namespace Environment
             }
         }
 
-        if (framework_->GetDefaultWorldScene())
+        if (GetFramework()->Scene()->GetDefaultScene())
         {
             if (environment_.get() != 0)
                 environment_->Update(frametime);
@@ -221,7 +222,7 @@ namespace Environment
         {
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
             {
-                if (GetFramework()->GetDefaultWorldScene())
+                if (GetFramework()->Scene()->GetDefaultScene())
                 {
                     CreateEnvironment();
                     CreateTerrain();
@@ -277,7 +278,7 @@ namespace Environment
         {
             if (event_id == TundraLogic::Events::EVENT_TUNDRA_CONNECTED)
             {
-                Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+                Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
                 if (scene)
                 {
                     CreateEnvironment();
@@ -554,7 +555,7 @@ namespace Environment
     Scene::EntityPtr EnvironmentModule::CreateEnvironmentEntity(const QString& entity_name, const QString& component_name) 
     {
         
-        Scene::ScenePtr active_scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr active_scene = GetFramework()->Scene()->GetDefaultScene();
         // Search first that does there exist environment entity
         Scene::EntityPtr entity = active_scene->GetEntityByName(entity_name);
         if (entity != 0)
@@ -595,7 +596,7 @@ namespace Environment
 
     void EnvironmentModule::RemoveLocalEnvironment()
     {
-        Scene::ScenePtr active_scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr active_scene = GetFramework()->Scene()->GetDefaultScene();
         Scene::Entity* entity = active_scene->GetEntityByName("LocalEnvironment").get();
     
         if ( entity == 0)
@@ -731,8 +732,8 @@ namespace Environment
     {
         terrain_ = TerrainPtr(new Terrain(this));
 
-        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
-        Scene::EntityPtr entity = scene->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
+        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+        Scene::EntityPtr entity = scene->CreateEntity(GetFramework()->Scene()->GetDefaultScene()->GetNextFreeId());
         
         entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
         scene->EmitEntityCreated(entity);
@@ -770,8 +771,8 @@ namespace Environment
         if (!GetEnvironmentHandler()->IsCaelum())
             sky_->CreateDefaultSky(true);*/
  /*       
-        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
-        Scene::EntityPtr sky_entity = scene->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
+        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+        Scene::EntityPtr sky_entity = scene->CreateEntity(GetFramework()->Scene()->GetDefaultScene()->GetNextFreeId());
 
         sky_entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
         scene->EmitEntityCreated(sky_entity);

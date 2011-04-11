@@ -143,6 +143,12 @@ private:
     /*! For client, this will always be server_syncstate_.
      */
     SceneSyncState* GetSceneSyncState(kNet::MessageConnection* connection);
+
+    Scene::ScenePtr GetRegisteredScene()
+    {
+        return scene_.lock();
+    }
+
     
     //! Owning module
     TundraLogicModule* owner_;

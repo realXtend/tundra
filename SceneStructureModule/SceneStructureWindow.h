@@ -5,7 +5,7 @@
  *  @brief  Window with tree view showing every entity in a scene.
  *
  *          This class will only handle adding and removing of entities and components and updating
- *          their names. The SceneTreeWidget implements most of the functionlity.
+ *          their names. The SceneTreeWidget implements most of the functionality.
  */
 
 #ifndef incl_SceneStructureModule_SceneStructureWindow_h
@@ -15,6 +15,8 @@
 #include "SceneFwd.h"
 
 #include <QWidget>
+#include <QLineEdit>
+#include <QPushButton>
 #include <QMap>
 
 class QTreeWidgetItem;
@@ -23,7 +25,7 @@ class SceneTreeWidget;
 
 /// Window with tree view showing every entity in a scene.
 /** This class will only handle adding and removing of entities and components and updating
-    their names. The SceneTreeWidget implements most of the functionlity.
+    their names. The SceneTreeWidget implements most of the functionality.
 */
 class SceneStructureWindow : public QWidget
 {
@@ -46,6 +48,9 @@ public:
     */
     void SetScene(const Scene::ScenePtr &s);
 
+    /// Event filter to catch and react to child widget events
+    virtual bool eventFilter(QObject *obj, QEvent *e);
+
 public slots:
     /// Sets do we want to show components in the tree view.
     /** @param show Visibility of components in the tree view.
@@ -56,7 +61,7 @@ public slots:
     /** @param show Visibility of asset references in the tree view.
     */
     void ShowAssetReferences(bool show);
-	void SetNewScene();
+	//void SetNewScene();
 
 protected:
     /// QWidget override.
@@ -99,11 +104,17 @@ private:
     bool showComponents; ///< Do we show components also in the tree view.
     bool showAssets; ///< Do we show asset references also in the tree view.
 
+    QLineEdit *searchField;
+    QPushButton *expandAndCollapseButton;
+    bool expandingOrCollapsing;
+
 private slots:
     /// Adds the entity to the tree widget.
     /** @param entity Entity to be added.
     */
     void AddEntity(Scene::Entity *entity);
+
+	void SetNewScene();
 
     /// Removes entity from the tree widget.
     /** @param entity Entity to be removed.
@@ -117,7 +128,7 @@ private slots:
     void AddComponent(Scene::Entity *entity, IComponent *comp);
 
     /// Removes entity from the tree widget.
-    /** @param entity Aletred entity.
+    /** @param entity Altered entity.
         @param comp Component which was removed.
     */
     void RemoveComponent(Scene::Entity *entity, IComponent *comp);
@@ -164,6 +175,9 @@ private slots:
 
     /// Expands or collapses the whole tree view, depending on the previous action.
     void ExpandOrCollapseAll();
+
+    /// Checks the expand status to mark it to the expand/collapse button
+    void CheckTreeExpandStatus(QTreeWidgetItem *item);
 };
 
 #endif

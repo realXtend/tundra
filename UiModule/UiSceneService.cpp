@@ -18,6 +18,7 @@
 #include "LoggingFunctions.h"
 #include "Inworld/Menus/MenuManager.h"
 #include "Inworld/NotificationManager.h"
+#include "Inworld/Notifications/MessageNotification.h"
 
 #include <QUiLoader>
 #include <QSettings>
@@ -48,14 +49,22 @@ namespace UiServices
 
     UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, bool dockable , bool outside, Qt::WindowFlags flags)
     {
-		//QSettings settings("Naali UIExternal2", "UiExternal Settings");
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
 		QString pos = "vacio";
 		if (widget->windowTitle() == "")
 			return 0;
-		
-		pos = settings.value(widget->windowTitle()+"/position", QString("vacio")).toString();
 
+		QSettings settings;
+		if (owner_->GetFramework()->IsEditionless())
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+			pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
+		}
+		else
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+			pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
+		}
+		
 		if (pos == "outside" && !external_dockeable_widgets_.contains(widget->windowTitle()))
 			external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
 		else if(pos == "inside" && !internal_widgets_.contains(widget->windowTitle())) {
@@ -67,6 +76,7 @@ namespace UiServices
 			if (outside && dockable && !external_dockeable_widgets_.contains(widget->windowTitle())) 
 			{
 				external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
+				settings.setValue(widget->windowTitle()+"/position", "outside");
 			}
 
 			else if (outside && !dockable && !external_nondockeable_widgets_.contains(widget->windowTitle()))
@@ -74,6 +84,7 @@ namespace UiServices
 			else if (!outside && !internal_widgets_.contains(widget->windowTitle()))
 			{
 				internal_widgets_[widget->windowTitle()] = owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
+				settings.setValue(widget->windowTitle()+"/position", "inside");
 				return internal_widgets_[widget->windowTitle()];
 			}
 		}
@@ -109,6 +120,11 @@ namespace UiServices
 			owner_->GetInworldSceneController()->AddWidgetToMenu(external_nondockeable_widgets_[widget->windowTitle()], widget->windowTitle(), "", "");
     }
 
+	bool UiSceneService::AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence)
+	{
+		return owner_->GetInworldSceneController()->AddInternalWidgetToScene(widget, corner, orientation, priority, persistence);
+	}
+
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu, const QString &icon)
     {
 		//Save initial values
@@ -136,6 +152,10 @@ namespace UiServices
 		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
 			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],entry,menu);
     }
+
+	bool UiSceneService::AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon){
+		return owner_->GetExternalMenuManager()->AddExternalMenu(new_menu,menu,icon);
+	}
 
     void UiSceneService::RemoveWidgetFromMenu(QWidget *widget)
     {
@@ -169,6 +189,8 @@ namespace UiServices
 		}
 		else
 			return;
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+		settings.remove(widget->windowTitle());
     }
 
     void UiSceneService::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
@@ -185,6 +207,10 @@ namespace UiServices
 			SAFE_DELETE(widget);
 			external_nondockeable_widgets_.remove(widget->windowTitle());
 		}
+		else
+			return;
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+		settings.remove(widget->windowTitle());
 
     }
 
@@ -269,6 +295,7 @@ namespace UiServices
 		else
 			return 0;
 	}
+
 	QList<QString> UiSceneService::GetAllWidgetsNames() const
 	{
 		QList<QString> list;
@@ -340,6 +367,11 @@ namespace UiServices
         owner_->GetNotificationManager()->ShowNotification(notification_widget);
     }
 
+	void UiSceneService::ShowNotification(int hide_in_msec, const QString &message)
+	{
+		owner_->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(message,hide_in_msec));
+	}
+
     QWidget *UiSceneService::LoadFromFile(const QString &file_path, bool add_to_scene, QWidget *parent)
     {
         /*QWidget *widget = 0;
@@ -377,8 +409,7 @@ namespace UiServices
 			}
 
 			// Get original data and replace refs
-			QByteArray data = uiAsset->GetRawData();
-			uiAsset->ReplaceAssetReferences(data);
+			QByteArray data = uiAsset->GetRefReplacedAssetData();
 	        
 			QUiLoader loader;
 			QDataStream dataStream(&data, QIODevice::ReadOnly);

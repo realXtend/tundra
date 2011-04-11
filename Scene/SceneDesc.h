@@ -92,6 +92,22 @@ struct EntityDesc
     bool temporary; ///< Is entity temporary.
     QList<ComponentDesc> components; ///< List of components the entity has.
 
+    /// Default constructor.
+    EntityDesc()
+    {
+        local = false;
+        temporary = false;
+    }
+    
+    /// Constructor with full input param list.
+    EntityDesc(QString id_, QString name_ = QString(), bool local_ = false, bool temporary_ = false)
+    {
+        id = id_;
+        name = name_;
+        local = local_;
+        temporary = temporary_;
+    }
+
     /// Equality operator. Returns true if ID and name match, false otherwise.
     bool operator ==(const EntityDesc &rhs) const
     {

@@ -8,10 +8,12 @@
 #include "Common/AnchorLayoutManager.h"
 #include "Menus/MenuManager.h"
 #include "Inworld/ControlPanel/SettingsWidget.h"
-
 #include "UiProxyWidget.h"
 
 #include "MemoryLeakCheck.h"
+#include "TundraLogicModule.h"
+#include "Client.h"
+#include "Renderer.h"
 
 #include <QGraphicsView>
 
@@ -34,6 +36,8 @@ namespace UiServices
 
         // Init layout manager with scene
         layout_manager_ = new CoreUi::AnchorLayoutManager(this, inworld_scene_);
+		boost::shared_ptr<TundraLogic::Client> client=framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient();
+		connect(client.get(), SIGNAL(Disconnected()), SLOT(worldDisconnected()));
 
         // Init UI managers with layout manager
         control_panel_manager_ = new CoreUi::ControlPanelManager(this, layout_manager_);
@@ -44,7 +48,11 @@ namespace UiServices
         
         // Apply new positions to active widgets when the inworld_scene_ is resized
         connect(inworld_scene_, SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
-    }
+		//OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
+		boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+		if(renderer)
+			connect(renderer.get(),SIGNAL(resizeWindow()),this,SLOT(AddInternalWidgets()));
+	}
 
     InworldSceneController::~InworldSceneController()
     {
@@ -110,6 +118,286 @@ namespace UiServices
 
         return true;
     }
+
+	bool InworldSceneController::AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence) 
+	{
+		//Create the QGraphicsProxyWidget
+		QGraphicsProxyWidget *qgrap = new QGraphicsProxyWidget(0, Qt::Widget);
+		qgrap->setWidget(widget);
+
+		//Add to non_priority list if not persistent between worlds
+		if (!persistence)
+			non_persistent_widgets.append(qgrap);
+
+		//Case
+		switch(corner)
+		{
+		case Qt::BottomLeftCorner:
+			{
+				if (orientation == Qt::Horizontal)
+				{
+					if (bottomleft_horiz_.empty())
+						bottomleft_horiz_.push_back(internal_element(qgrap, priority));
+					else
+					{
+						int i = 0;
+						while (i < bottomleft_horiz_.size()) {
+							if (bottomleft_horiz_.at(i).second < priority)
+								break;
+							i++;
+						}
+						bottomleft_horiz_.insert(i, internal_element(qgrap, priority));
+					}
+				}
+				else
+				{
+					if (bottomleft_horiz_.empty()) //HORIZ!
+						bottomleft_horiz_.push_back(internal_element(qgrap, priority));
+					else
+					{
+						int i = 0;
+						while (i < bottomleft_vert_.size()) {
+							if (bottomleft_vert_.at(i).second < priority)
+								break;
+							i++;
+						}
+						bottomleft_vert_.insert(i, internal_element(qgrap, priority));
+					}
+				}
+				break;
+			}
+		case Qt::BottomRightCorner:
+			{
+				if (orientation == Qt::Horizontal)
+				{
+					if (bottomright_horiz_.empty())
+						bottomright_horiz_.push_back(internal_element(qgrap, priority));
+					else
+					{
+						int i = 0;
+						while (i < bottomright_horiz_.size()) {
+							if (bottomright_horiz_.at(i).second < priority)
+								break;
+							i++;
+						}
+						bottomright_horiz_.insert(i, internal_element(qgrap, priority));
+					}
+				}
+				else
+				{
+					if (bottomright_horiz_.empty()) //HORIZ!
+						bottomright_horiz_.push_back(internal_element(qgrap, priority));
+					else
+					{
+						int i = 0;
+						while (i < bottomright_vert_.size()) {
+							if (bottomright_vert_.at(i).second < priority)
+								break;
+							i++;
+						}
+						bottomright_vert_.insert(i, internal_element(qgrap, priority));
+					}
+				}
+				break;
+			}
+		case Qt::TopLeftCorner:
+			{
+				if (orientation == Qt::Horizontal)
+				{
+					if (topleft_horiz_.empty())
+						topleft_horiz_.push_back(internal_element(qgrap, priority));
+					else
+					{
+						int i = 0;
+						while (i < topleft_horiz_.size()) {
+							if (topleft_horiz_.at(i).second < priority)
+								break;
+							i++;
+						}
+						topleft_horiz_.insert(i, internal_element(qgrap, priority));
+					}
+				}
+				else
+				{
+					if (topleft_horiz_.empty()) //HORIZ!
+						topleft_horiz_.push_back(internal_element(qgrap, priority));
+					else
+					{
+						int i = 0;
+						while (i < topleft_vert_.size()) {
+							if (topleft_vert_.at(i).second < priority)
+								break;
+							i++;
+						}
+						topleft_vert_.insert(i, internal_element(qgrap, priority));
+					}
+				}
+				break;
+			}
+		default: //case Qt::Corner::TopRightCorner:
+			{
+				if (orientation == Qt::Horizontal)
+				{
+					if (topright_horiz_.empty())
+						topright_horiz_.push_back(internal_element(qgrap, priority));
+					else
+					{
+						int i = 0;
+						while (i < topright_horiz_.size()) {
+							if (topright_horiz_.at(i).second < priority)
+								break;
+							i++;
+						}
+						topright_horiz_.insert(i, internal_element(qgrap, priority));
+					}
+				}
+				else
+				{
+					if (topright_horiz_.empty()) //HORIZ!
+						topright_horiz_.push_back(internal_element(qgrap, priority));
+					else
+					{
+						int i = 0;
+						while (i < topright_vert_.size()) {
+							if (topright_vert_.at(i).second < priority)
+								break;
+							i++;
+						}
+						topright_vert_.insert(i, internal_element(qgrap, priority));
+					}
+				}
+			}
+		}
+		AddInternalWidgets();
+		return true;
+	}
+	void InworldSceneController::worldDisconnected()
+	{
+		//Clean lists
+		int i = 0;
+		while(i<bottomleft_horiz_.size())
+			if (non_persistent_widgets.contains(bottomleft_horiz_.at(i).first))
+				bottomleft_horiz_.removeAt(i);
+			else
+				i++;
+		//bottomleft_vert_
+		i = 0;
+		while(i<bottomleft_vert_.size())
+			if (non_persistent_widgets.contains(bottomleft_vert_.at(i).first))
+				bottomleft_vert_.removeAt(i);
+			else
+				i++;
+		//bottomright_horiz_
+		i = 0;
+		while(i<bottomright_horiz_.size())
+			if (non_persistent_widgets.contains(bottomright_horiz_.at(i).first))
+				bottomright_horiz_.removeAt(i);
+			else
+				i++;
+		i = 0;
+		//bottomright_vert_
+		while(i<bottomright_vert_.size())
+			if (non_persistent_widgets.contains(bottomright_vert_.at(i).first))
+				bottomright_vert_.removeAt(i);
+			else
+				i++;
+		//topleft_horiz_
+		while(i<topleft_horiz_.size())
+			if (non_persistent_widgets.contains(topleft_horiz_.at(i).first))
+				topleft_horiz_.removeAt(i);
+			else
+				i++;
+		//topleft_vert_
+		while(i<topleft_vert_.size())
+			if (non_persistent_widgets.contains(topleft_vert_.at(i).first))
+				topleft_vert_.removeAt(i);
+			else
+				i++;
+		//topleft_vert_
+		while(i<topright_horiz_.size())
+			if (non_persistent_widgets.contains(topright_horiz_.at(i).first))
+				topright_horiz_.removeAt(i);
+			else
+				i++;
+		//topleft_vert_
+		while(i<topright_vert_.size())
+			if (non_persistent_widgets.contains(topright_vert_.at(i).first))
+				topright_vert_.removeAt(i);
+			else
+				i++;
+		AddInternalWidgets();
+	}
+
+	void InworldSceneController::AddInternalWidgets()
+	{
+		//Delete items from layout/ Clear it
+		layout_manager_->resetLayout();
+		//Get each list and add it to the main layout
+
+		//Qt::Corner::BottomLeftCorner
+		if (!bottomleft_horiz_.empty())
+		{
+			layout_manager_->AddCornerAnchor(bottomleft_horiz_.at(0).first, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
+			if (bottomleft_horiz_.size() > 1)
+				for(int i = 1; i<bottomleft_horiz_.size(); i++)
+					layout_manager_->AnchorWidgetsHorizontally(bottomleft_horiz_.at(i).first, bottomleft_horiz_.at(i-1).first);
+
+			//bottomleft_vert_
+			if (!bottomleft_vert_.empty()){
+				layout_manager_->AnchorWidgetsVertically(bottomleft_horiz_.at(0).first, bottomleft_vert_.at(0).first);
+				for(int i = 1; i<bottomleft_vert_.size(); i++)
+					layout_manager_->AnchorWidgetsVertically(bottomleft_vert_.at(i-1).first, bottomleft_vert_.at(i).first);
+			}
+		}
+
+		//Qt::Corner::BottomRightCorner
+		if (!bottomright_horiz_.empty())
+		{
+			layout_manager_->AddCornerAnchor(bottomright_horiz_.at(0).first, Qt::BottomRightCorner, Qt::BottomRightCorner);
+			if (bottomright_horiz_.size() > 1)
+				for(int i = 1; i<bottomright_horiz_.size(); i++)
+					layout_manager_->AnchorWidgetsHorizontally(bottomright_horiz_.at(i-1).first, bottomright_horiz_.at(i).first);
+
+			//bottomright_vert_
+			if (!bottomright_vert_.empty()){
+				layout_manager_->AnchorWidgetsVertically(bottomright_horiz_.at(0).first, bottomright_vert_.at(0).first);
+				for(int i = 1; i<bottomright_vert_.size(); i++)
+					layout_manager_->AnchorWidgetsVertically(bottomright_vert_.at(i-1).first, bottomright_vert_.at(i).first);
+			}
+		}
+
+		//Qt::Corner::TopLeftCorner
+		if (!topleft_horiz_.empty())
+		{
+			layout_manager_->AddCornerAnchor(topleft_horiz_.at(0).first, Qt::TopLeftCorner, Qt::TopLeftCorner);
+			if (topleft_horiz_.size() > 1)
+				for(int i = 1; i<topleft_horiz_.size(); i++)
+					layout_manager_->AnchorWidgetsHorizontally(topleft_horiz_.at(i).first, topleft_horiz_.at(i-1).first);
+
+			//topleft_vert_
+			if (!topleft_vert_.empty()){
+				layout_manager_->AnchorWidgetsVertically(topleft_vert_.at(0).first, topleft_horiz_.at(0).first);
+				for(int i = 1; i<topleft_vert_.size(); i++)
+					layout_manager_->AnchorWidgetsVertically(topleft_vert_.at(i).first, topleft_vert_.at(i-1).first);
+			}
+		}
+
+		//Qt::Corner::TopRightCorner
+		if (!topright_horiz_.empty())
+		{
+			layout_manager_->AddCornerAnchor(topright_horiz_.at(0).first, Qt::TopRightCorner, Qt::TopRightCorner);
+			if (topright_horiz_.size() > 1)
+				for(int i = 1; i<topright_horiz_.size(); i++)
+					layout_manager_->AnchorWidgetsHorizontally(topright_horiz_.at(i-1).first, topright_horiz_.at(i).first);
+
+			//topright_vert_
+			if (!topright_vert_.empty()){
+				layout_manager_->AnchorWidgetsVertically(topright_vert_.at(0).first, topright_horiz_.at(0).first);
+				for(int i = 1; i<topright_vert_.size(); i++)
+					layout_manager_->AnchorWidgetsVertically(topright_vert_.at(i).first, topright_vert_.at(i-1).first);
+			}
+		}
+	}
 
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {

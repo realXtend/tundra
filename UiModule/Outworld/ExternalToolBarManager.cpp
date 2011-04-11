@@ -5,7 +5,6 @@
 #include "DebugOperatorNew.h"
 #include "ExternalToolBarManager.h"
 #include "ExternalMenuManager.h"
-#include "UiExternalServiceInterface.h"
 
 #include <QDebug>
 
@@ -27,14 +26,6 @@ namespace UiServices
     {
         //SAFE_DELETE(root_menu_);
     }
-
-	void ExternalToolBarManager::SceneChanged(const QString &old_name, const QString &new_name)
-    {
-        if (new_name == "Ether")
-			DisableToolBars();
-		else
-			EnableToolBars();
-	}
 
 	void ExternalToolBarManager::DisableToolBars(){
 		foreach (QToolBar *tool, controller_toolbar_){
@@ -61,6 +52,7 @@ namespace UiServices
 		controller_toolbar_[name]=toolbar;
 		//Put an entry in the menu Bar
 		QAction *menuAc = new QAction(name, toolbar);
+		menuAc->setCheckable(true);
 		owner_->GetExternalMenuManager()->AddExternalMenuAction(menuAc, name, "ToolBars");
 		connect(menuAc, SIGNAL(triggered()), SLOT(ActionNodeClicked()));
 		
@@ -73,10 +65,13 @@ namespace UiServices
 		QAction *act = dynamic_cast<QAction*>(sender());
 
 		QToolBar  *aux = dynamic_cast<QToolBar *>(act->parentWidget());
-		if (aux->isHidden())
+		if (aux->isHidden()){
 			aux->show();
-		else
+			act->setChecked(true);
+		}else{
 			aux->hide();
+			act->setChecked(false);
+		}
 	}
 
 	bool ExternalToolBarManager::RemoveExternalToolbar(QString name){

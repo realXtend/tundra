@@ -10,6 +10,7 @@
 #include <QListIterator>
 #include <QMessageBox>
 #include <QVariantList>
+#include <QMainWindow>
 
 namespace UiServices
 {

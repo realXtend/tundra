@@ -11,14 +11,14 @@
 #include "TreeWidgetItemExpandMemory.h"
 
 #include "EventManager.h"
-#include "SceneEvents.h"
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "ModuleManager.h"
 #include "EC_DynamicComponent.h"
 #include "UiServiceInterface.h"
-#include "Input.h"
-#include "NaaliUi.h"
+#include "InputAPI.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 
 #include "MemoryLeakCheck.h"
@@ -29,8 +29,6 @@ std::string ECEditorModule::name_static_ = "ECEditor";
 
 ECEditorModule::ECEditorModule() :
     IModule(name_static_),
-    scene_event_category_(0),
-    network_state_event_category_(0),
     xmlEditor_(0)
 {
 }
@@ -72,12 +70,9 @@ void ECEditorModule::PostInitialize()
         " 0 = The symbol to fetch the documentation for.",
         Console::Bind(this, &ECEditorModule::ShowDocumentation)));
 
-    scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
-    network_state_event_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
-
     AddEditorWindowToUI();
 
-    inputContext = framework_->GetInput()->RegisterInputContext("ECEditorInput", 90);
+    inputContext = framework_->Input()->RegisterInputContext("ECEditorInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 }
 
@@ -140,7 +135,7 @@ void ECEditorModule::AddEditorWindowToUI()
     UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>(); 
     if (!ui_service)
         return;
-    NaaliUi *ui = GetFramework()->Ui();
+    UiAPI *ui = GetFramework()->Ui();
     if (!ui)
         return;
 
@@ -204,7 +199,7 @@ Console::CommandResult ECEditorModule::ShowDocumentation(const StringVector &par
  */
 Console::CommandResult ECEditorModule::EditDynamicComponent(const StringVector &params)
 {
-    Scene::SceneManager *sceneMgr = framework_->GetDefaultWorldScene().get();
+    Scene::SceneManager *sceneMgr = GetFramework()->Scene()->GetDefaultScene().get();
     if(!sceneMgr)
         return Console::ResultFailure("Failed to find main scene.");
 
@@ -278,7 +273,7 @@ QVariantList ECEditorModule::GetSelectedEntities() const
 void ECEditorModule::CreateXmlEditor(const QList<Scene::EntityPtr> &entities)
 {
     //UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    NaaliUi *ui = GetFramework()->Ui();
+    UiAPI *ui = GetFramework()->Ui();
     if (entities.empty() || !ui)
         return;
 
@@ -303,7 +298,7 @@ void ECEditorModule::CreateXmlEditor(ComponentPtr component)
 
 void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
 {
-    NaaliUi *ui = GetFramework()->Ui();
+    UiAPI *ui = GetFramework()->Ui();
     if (!components.empty() && !ui)
         return;
 
@@ -324,9 +319,7 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
     if (e->eventType != KeyEvent::KeyPressed || e->keyPressCount > 1)
         return;
 
-    Input &input = *framework_->GetInput();
-
-    const QKeySequence showEcEditor = input.KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
+    const QKeySequence showEcEditor = framework_->Input()->KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
     if (QKeySequence(e->keyCode | e->modifiers) == showEcEditor)
     {
         if (!active_editor_)
@@ -337,7 +330,6 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
         //active_editor_->show();
 
     }
-        //ShowWindow(StringVector());  
 }
 
 void ECEditorModule::ActiveECEditorDestroyed(QObject *obj)

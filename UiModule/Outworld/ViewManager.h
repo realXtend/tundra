@@ -4,8 +4,9 @@
 
 #include "UiModule.h"
 #include "UiServiceInterface.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "ViewDialog.h"
+#include <QMainWindow>
 
 #include <QActionGroup>
 

@@ -3,15 +3,13 @@
 #ifndef incl_Input_InputContext_h
 #define incl_Input_InputContext_h
 
-#include <map>
-#include <set>
-
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 #include "GestureEvent.h"
-
 #include "KeyEventSignal.h"
-#include "InputApi.h"
+
+#include <map>
+#include <set>
 
 struct KeyPressInformation
 {
@@ -29,7 +27,7 @@ struct KeyPressInformation
 };
 typedef std::map<Qt::Key, KeyPressInformation> HeldKeysMap;
 
-class INPUT_API InputContext : public QObject
+class InputContext : public QObject
 {
     Q_OBJECT
 

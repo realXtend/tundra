@@ -14,17 +14,17 @@
 #include "Environment.h"
 #include "EC_OgreEnvironment.h"
 
+#include "Renderer.h"
 #include "SceneManager.h"
-
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "OgreMaterialUtils.h"
 #include "InputEvents.h"
-#include "../Input/Input.h"
+#include "InputAPI.h"
 #include "OgreRenderingModule.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include <AttributeChangeType.h>
+#include "AttributeChangeType.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -74,9 +74,6 @@ namespace Environment
     {
         // Those two arrays size should always be the same as how many terrain textures we are using.
         terrain_texture_id_list_.resize(cNumberOfTerrainTextures);
-        terrain_texture_requests_.resize(cNumberOfTerrainTextures);
-        for (unsigned i = 0; i < cNumberOfTerrainTextures; ++i)
-            terrain_texture_requests_[i] = 0;
 
         InitEditorWindow();
         mouse_position_[0] = 0;
@@ -1757,7 +1754,7 @@ namespace Environment
                 continue;
             line_edit->setText(QString::fromStdString(terrain_id));
 
-            terrain_texture_requests_[i] = RequestTerrainTexture(i);
+//            terrain_texture_requests_[i] = RequestTerrainTexture(i);
         }
     }
 
@@ -1790,7 +1787,7 @@ namespace Environment
                     terrain->SetTerrainTextures(texture_id);
 
                     //Request a new texture asser even if it's already loaded to cache.
-                    terrain_texture_requests_[line_edit_number] = RequestTerrainTexture(line_edit_number);
+//                    terrain_texture_requests_[line_edit_number] = RequestTerrainTexture(line_edit_number);
                 }
             }
         }
@@ -1831,7 +1828,7 @@ namespace Environment
                             texture_id[i] = terrain_texture_id_list_[i];
                         terrain->SetTerrainTextures(texture_id);
 
-                        terrain_texture_requests_[button_number] = RequestTerrainTexture(button_number);
+//                        terrain_texture_requests_[button_number] = RequestTerrainTexture(button_number);
 
                         environment_module_->SendTextureDetailMessage(texture_id[button_number], button_number);
                     }
@@ -1852,7 +1849,7 @@ namespace Environment
         assert(environment_module_);
 
         // Priority 110: Must be over EtherInput priority (100, see UiModule.cpp) to get the ESC edit cancel message.
-        terrainPaintInputContext = environment_module_->GetFramework()->GetInput()->RegisterInputContext("TerrainPaint", 110);
+        terrainPaintInputContext = environment_module_->GetFramework()->Input()->RegisterInputContext("TerrainPaint", 110);
         terrainPaintInputContext->SetTakeKeyboardEventsOverQt(true); // To be able to process ESC over Qt and Ether.
         terrainPaintInputContext->SetTakeMouseEventsOverQt(true);
 
@@ -2116,7 +2113,7 @@ namespace Environment
                     continue;
                 line_edit->setText(QString::fromStdString(terrain_id));
 
-                terrain_texture_requests_[i] = RequestTerrainTexture(i);
+//                terrain_texture_requests_[i] = RequestTerrainTexture(i);
             }
             terrainPaintMode_ = INACTIVE;
         }
@@ -2124,10 +2121,10 @@ namespace Environment
             terrainPaintMode_ = INACTIVE;
     }
 
-    void EnvironmentEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
-    {
         ///\todo Regression. Use the new Asset API here instead. -jj.
 /*
+    void EnvironmentEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
+    {
         for(uint index = 0; index < terrain_texture_requests_.size(); index++)
         {
             if(terrain_texture_requests_[index] == res->tag_)
@@ -2150,8 +2147,8 @@ namespace Environment
                     texture_label->setPixmap(QPixmap::fromImage(img));
             }
         }
-*/
     }
+*/
 /*
     QImage EnvironmentEditor::ConvertToQImage(Foundation::TextureInterface &tex)
     {
@@ -2362,11 +2359,11 @@ namespace Environment
             manual_paint_node_ = 0;
         }
     }
-
+/*
     request_tag_t EnvironmentEditor::RequestTerrainTexture(uint index)
     {
         ///\todo Regression. Use the new Asset API here instead. -jj.
-/*
+
         if(index > cNumberOfTerrainTextures) index = cNumberOfTerrainTextures;
 
         ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
@@ -2382,10 +2379,10 @@ namespace Environment
                 // Request texture assets.
                 return texture_service->RequestTexture(terrain_texture_id_list_[index]);
             }
-        }*/
+        }
         return 0;
     }
-
+*/
     void EnvironmentEditor::UpdateGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
     {
         // Adjust editor widget.

@@ -17,11 +17,14 @@ namespace CoreUi
 
     public:
         ControlPanelButton(UiServices::ControlButtonType type);
+		QWidget *internal_widget_;
 
     public slots:
         qreal GetContentWidth();
         UiServices::ControlButtonType GetType();
         void CheckStyle(bool item_visible);
+		QWidget* GetInternalWidget() { return internal_widget_; }
+		
         
     private slots:
         void InitStyle();
@@ -31,7 +34,7 @@ namespace CoreUi
         void ControlButtonClicked(UiServices::ControlButtonType);
 
     private:
-        QWidget *internal_widget_;
+        
         UiServices::ControlButtonType type_;
 
     };
