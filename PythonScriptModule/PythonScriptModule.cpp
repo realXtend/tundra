@@ -59,7 +59,7 @@
 #include "AudioAPI.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
-//#include "UiMainWindow.h"
+#include "UiMainWindow.h"
 #include "DebugAPI.h"
 
 //Kristalli UserConnection
@@ -1880,8 +1880,8 @@ namespace PythonScript
 
             // Ui() - naali.uicore
             PythonQt::self()->registerClass(&UiAPI::staticMetaObject);
-            /*PythonQt::self()->registerClass(&UiMainWindow::staticMetaObject);
-	      PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);*/
+            PythonQt::self()->registerClass(&UiMainWindow::staticMetaObject);
+	    /*  PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);*/
             // UiService() - naali.ui
             PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
             //PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
