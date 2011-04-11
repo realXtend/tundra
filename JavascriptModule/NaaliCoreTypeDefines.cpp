@@ -29,6 +29,7 @@ Q_DECLARE_METATYPE(ComponentPtr);
 Q_DECLARE_METATYPE(QList<Scene::Entity*>);
 Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(std::string);
+Q_DECLARE_METATYPE(EntityList);
 
 QScriptValue toScriptValueColor(QScriptEngine *engine, const Color &s)
 {
@@ -218,6 +219,41 @@ QScriptValue toScriptValueEntityList(QScriptEngine *engine, const QList<Scene::E
     return obj;
 }
 
+void fromScriptValueEntitStdyList(const QScriptValue &obj, EntityList &ents)
+{
+    ents.clear();
+    QScriptValueIterator it(obj);
+    while(it.hasNext())
+    {
+        it.next();
+        QObject *qent = it.value().toQObject();
+        if (qent)
+        {
+            Scene::Entity *ent = qobject_cast<Scene::Entity*>(qent);
+            if (ent)
+                ents.push_back(ent->shared_from_this());
+        }
+    }
+}
+
+QScriptValue toScriptValueEntityStdList(QScriptEngine *engine, const EntityList &ents)
+{
+    QScriptValue obj = engine->newArray();
+    std::list<EntityPtr>::const_iterator iter = ents.begin();
+    int i = 0;
+    while(iter != ents.end())
+    {
+        EntityPtr entPtr = (*iter);
+        if (entPtr.get())
+        {
+            obj.setProperty(i, engine->newQObject(entPtr.get()));
+            i++;
+        }
+        ++iter;
+    }
+    return obj;
+}
+
 void fromScriptValueStdString(const QScriptValue &obj, std::string &s)
 {
     s = obj.toString().toStdString();
@@ -286,6 +322,7 @@ void RegisterNaaliCoreMetaTypes()
     qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
     qRegisterMetaType<IAttribute*>("IAttribute*");
     qRegisterMetaType< QList<Scene::Entity*> >("QList<Scene::Entity*>");
+    qRegisterMetaType< EntityList >("EntityList");
     qRegisterMetaType<std::string>("std::string");
 }
 
@@ -303,8 +340,9 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType<EntityPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<ComponentPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<QList<Scene::Entity*> >(engine, toScriptValueEntityList, fromScriptValueEntityList);
+    qScriptRegisterMetaType< EntityList >(engine, toScriptValueEntityStdList, fromScriptValueEntitStdyList);
     qScriptRegisterMetaType<std::string >(engine, toScriptValueStdString, fromScriptValueStdString);
-
+    
     // Register constructors
     QScriptValue ctorColor = engine->newFunction(createColor);
     engine->globalObject().setProperty("Color", ctorColor);
