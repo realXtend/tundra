@@ -144,7 +144,7 @@ namespace OgreRenderer
         virtual void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
 
         /// set maximum view distance
-        virtual void SetViewDistance(float distance) { view_distance_ = distance; }
+        virtual void SetViewDistance(float distance);
 
         /// get maximum view distance
         virtual float GetViewDistance()const { return view_distance_; }
