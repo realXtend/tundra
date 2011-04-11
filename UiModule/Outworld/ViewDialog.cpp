@@ -74,7 +74,7 @@ namespace UiServices
 
 	void ViewDialog::OnRenameButtonClicked()
 	{
-		if(name_line_edit_->text()!="" && view_combo_box_->currentText()!="Building" && !views_.contains(name_line_edit_->text()))
+		if(name_line_edit_->text()!="" && view_combo_box_->currentText()!="Previous" && view_combo_box_->currentText()!="Building" && !views_.contains(name_line_edit_->text()))
 			emit Rename(view_combo_box_->currentText(),name_line_edit_->text());
 		else{
 			QMessageBox* msgInfo=new QMessageBox();
@@ -95,7 +95,7 @@ namespace UiServices
 		int option = msgBox->exec();
 		switch (option) {
 			case QMessageBox::Yes:
-				if(name_line_edit_->text()!="Building"){
+				if(name_line_edit_->text()!="Building" && name_line_edit_->text()!="Previous"){
 					emit Save(view_combo_box_->currentText());
 					QMessageBox* msgInfo=new QMessageBox();
 					msgInfo->setText("The view "+view_combo_box_->currentText()+" has been saved");
@@ -156,6 +156,7 @@ namespace UiServices
 		views_=views;
 		view_combo_box_->clear();
 		views_.removeOne("Building");
+		views_.removeOne("Previous");
 		view_combo_box_->addItems(views_);
 	}
 

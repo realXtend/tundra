@@ -7,7 +7,7 @@
 #include "UiAPI.h"
 #include "ViewDialog.h"
 #include <QMainWindow>
-
+#include <QAction>
 #include <QActionGroup>
 
 namespace UiServices
@@ -37,6 +37,11 @@ namespace UiServices
 
         //! Hide view: hide all widgets.
 		void HideView();
+
+        /*! Save o delete the current view when it is changed
+         * \param save True save the current view / false delete the current view
+         */
+		void TogglePreviousView(bool save);
 
         /*! Show the selected view.
          * \param name Name of view to show
@@ -73,6 +78,7 @@ namespace UiServices
 		ViewDialog* configWindow_;
 		QList<QAction*> actions_;
 		QActionGroup* actionGroup_;
+		QAction* previous_;
 
 	};
 }

@@ -61,8 +61,12 @@ namespace UiServices
 		actionGroup_=new QActionGroup(menu_);
 		connect(actionGroup_, SIGNAL(triggered(QAction*)), SLOT(ActionChanged(QAction*)));
 
+		previous_ = new QAction(tr("Previous"), menu_);
+		actionGroup_->addAction(previous_);
+		menu_->addAction(previous_);
+		previous_->setVisible(false);
+
 		QAction* hide = new QAction(tr("Hide"), menu_);
-		connect(hide, SIGNAL(triggered()), SLOT(HideView()));
 		actionGroup_->addAction(hide);
 		menu_->addAction(hide);
 
@@ -103,7 +107,6 @@ namespace UiServices
 
 		QListIterator<QString> i(widgets);
 		while(i.hasNext()){
-			//uiService_->HideWidget(i.next());
 			QWidget* widget = uiService_->GetWidget(i.next());
 			if(dynamic_cast<QDockWidget*>(widget->parentWidget()) && !widget->property("dynamic").isValid())
 				widget->parentWidget()->hide();
@@ -111,7 +114,49 @@ namespace UiServices
 				widget->hide();
 		}
 	}
+	void ViewManager::TogglePreviousView(bool save)
+	{
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/ConfigurationViews");
 
+		if(save){
+
+			previous_->setVisible(true);
+
+			settings.beginGroup("Previous");
+
+			//Delete the old widgets
+			QStringList keys = settings.allKeys();
+			QListIterator<QString> key(keys);
+			while(key.hasNext())
+				settings.remove(key.next());
+
+			settings.setValue("win_state", qWin_->saveState());
+
+			QList<QString> widgets = uiService_->GetAllWidgetsNames();
+			QListIterator<QString> i(widgets);
+
+			while(i.hasNext()){
+				QString nameWidget = i.next();
+				QWidget* widget = uiService_->GetWidget(nameWidget);
+				if(dynamic_cast<QDockWidget*>(widget))
+					widget = dynamic_cast<QDockWidget*>(widget)->widget();
+				if(widget->property("dynamic").isValid()){
+					settings.beginGroup(nameWidget);
+					QList<QByteArray> properties = widget->dynamicPropertyNames();
+					QListIterator<QByteArray> p(properties);
+					while(p.hasNext()){
+						QString s = p.next();
+						if(s.startsWith("DP_"))
+							 settings.setValue(s, widget->property(s.toAscii()));
+					}
+				}
+			}
+			settings.endGroup();
+		}else{
+			settings.remove("Previous");
+			previous_->setVisible(false);
+		}
+	}
 	void ViewManager::ShowView(const QString &name)
 	{
 		//Restore values
@@ -256,6 +301,16 @@ namespace UiServices
 
 	void ViewManager::ActionChanged(QAction* action)
 	{
-		ShowView(actionGroup_->checkedAction()->text());
+		if(actionGroup_->checkedAction()->text()=="Previous"){
+			ShowView(actionGroup_->checkedAction()->text());
+			TogglePreviousView(false);
+		}else if(actionGroup_->checkedAction()->text()=="Hide"){
+			TogglePreviousView(true);
+			HideView();
+		}else{
+			TogglePreviousView(true);
+			ShowView(actionGroup_->checkedAction()->text());
+		}
+
 	}
 }

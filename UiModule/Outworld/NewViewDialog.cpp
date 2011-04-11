@@ -56,7 +56,7 @@ namespace UiServices
 
 	void NewViewDialog::OnSaveButtonClicked()
 	{
-		if(views_.contains(name_line_edit_->text()) || name_line_edit_->text()=="Hide"){
+		if(views_.contains(name_line_edit_->text()) || name_line_edit_->text()=="Hide" || name_line_edit_->text()=="Previous"){
 			QMessageBox* msgInfo=new QMessageBox();
 			msgInfo->setText("The view already exist");
 			msgInfo->setIcon(QMessageBox::Warning);

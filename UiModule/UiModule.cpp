@@ -233,6 +233,8 @@ namespace UiServices
 			framework_->GetServiceManager()->UnregisterService(ui_scene_service_);
 			ui_scene_service_.reset();
 		}
+
+		viewManager_->DeleteView("Previous");
     }
 
     void UiModule::Update(f64 frametime)
