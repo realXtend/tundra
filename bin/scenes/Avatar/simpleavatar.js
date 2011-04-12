@@ -345,7 +345,7 @@ function ClientInitialize() {
         own_avatar = true;
         ClientCreateInputMapper();
         ClientCreateAvatarCamera();
-        crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
+        crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ false);
         var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
         soundlistener.active = true;
 
@@ -779,7 +779,21 @@ function ClientHandleMouseMove(mouseevent)
     }
     
     if (!first_person)
+    {
+        //\ note: Right click look also hides/shows cursor, so this is to ensure that the cursor is visible in non-fps mode
+        //\       This may be kinda bad if the stack contains more cursors
+        if (!crosshair.isUsingLabel)
+            if (input.IsMouseCursorVisible())
+                QApplication.restoreOverrideCursor();
         return;
+    }
+
+    if (input.IsMouseCursorVisible())
+    {
+        input.SetMouseCursorVisible(false);
+        if (!crosshair.isUsingLabel)
+            QApplication.setOverrideCursor(crosshair.cursor);
+    }
 
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if (cameraentity == null)
@@ -792,23 +806,8 @@ function ClientHandleMouseMove(mouseevent)
     var cameraplaceable = cameraentity.placeable;
     var cameratransform = cameraplaceable.transform;
 
-    var cursorOffset = 0;
-    if (crosshair.isUsingLabel)
-    //\note: An arbitrary value to move the cursor a little bit up when using label for a crosshair, 
-    //\      so that we get clicks on scene and not on the label
-        cursorOffset = 9;
-    var view = ui.GraphicsView();
-    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2 + cursorOffset);
-    input.lastMouseX = centeredCursorPosLocal.x;
-    input.lastMouseY = centeredCursorPosLocal.y;
-
-    var centeredCursorPosGlobal = new QPoint()
-    centeredCursorPosGlobal = view.mapToGlobal(centeredCursorPosLocal);
-    if (centeredCursorPosGlobal.x() == QCursor.pos().x() && centeredCursorPosGlobal.y() == QCursor.pos().y())
-        return;
-
     if (mouseevent.relativeX != 0)
-        me.Exec(2, "MouseLookX", String(mouse_rotate_sensitivity * parseInt(mouseevent.relativeX)));
+        me.Exec(2, "MouseLookX", String(mouse_rotate_sensitivity*2 * parseInt(mouseevent.relativeX)));
     if (mouseevent.relativeY != 0)
         cameratransform.rot.x -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeY);
         
@@ -818,10 +817,6 @@ function ClientHandleMouseMove(mouseevent)
     if (cameratransform.rot.x > 180)
         cameratransform.rot.x = 180;
 
-    QCursor.setPos(centeredCursorPosGlobal);
-    var mousePos = view.mapFromGlobal(QCursor.pos());
-    input.lastMouseX = mousePos.x;
-    input.lastMouseY = mousePos.y;
     cameraplaceable.transform = cameratransform;
 }
 
