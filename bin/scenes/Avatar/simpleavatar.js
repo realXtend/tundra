@@ -1,8 +1,14 @@
-// !ref: local://crosshair.js
 // !ref: local://default_avatar.xml
+// !ref: local://crosshair.js
+
+if (!server.IsRunning() && !framework.IsHeadless())
+{
+    engine.ImportExtension("qt.core");
+    engine.ImportExtension("qt.gui");
+    engine.IncludeFile("local://crosshair.js");    
+}
 
 // A simple walking avatar with physics & third person camera
-engine.IncludeFile("local://crosshair.js");
 var rotate_speed = 150.0;
 var mouse_rotate_sensitivity = 0.3;
 var move_force = 15.0;
@@ -777,7 +783,7 @@ function ClientHandleMouseMove(mouseevent)
             return;
         }
     }
-    
+
     if (!first_person)
         return;
 
@@ -794,7 +800,7 @@ function ClientHandleMouseMove(mouseevent)
 
     var cursorOffset = 0;
     if (crosshair.isUsingLabel)
-    //\note: An arbitrary value to move the cursor a little bit up when using label for a crosshair, 
+    //\note: An arbitrary value to move the cursor a little bit up when using label for a crosshair,
     //\      so that we get clicks on scene and not on the label
         cursorOffset = 9;
     var view = ui.GraphicsView();

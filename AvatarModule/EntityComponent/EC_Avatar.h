@@ -67,10 +67,10 @@ public slots:
     void SetupAppearance();
     //! Refresh dynamic parts of the appearance (morphs, bone modifiers)
     void SetupDynamicAppearance();
+    //! Return the avatar description asset, if set
+    AvatarDescAssetPtr GetAvatarDesc();
     //! Get a generic property from the avatar description, or empty string if not found
     QString GetAvatarProperty(const QString& name);
-    //! Return the avatar description asset
-    AvatarDescAsset* GetAvatarDesc() { return avatarAsset_.get(); }
     
 private slots:
     //! Called when some of the attributes has been changed.
@@ -97,8 +97,10 @@ private:
     //! Lookup absolute asset reference
     QString LookupAsset(const QString& ref);
 
-    //! The current avatar description asset
-    AvatarDescAssetPtr avatarAsset_;
+    //! Ref listener for the avatar asset
+    AssetRefListenerPtr avatarAssetListener_;
+    //! Last set avatar asset
+    boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 };
 
 #endif

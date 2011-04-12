@@ -1,19 +1,16 @@
-// !ref: local://firstpersonmouseicon.png 
+// !ref: local://firstpersonmouseicon.png
 
 if (!server.IsRunning() && !framework.IsHeadless())
 {
     function Crosshair(useLabel)
     {
-        engine.ImportExtension("qt.core");
-        engine.ImportExtension("qt.gui");
-
         // Init
         this.is_active = false;
         this.is_ready = false;
         this.isUsingLabel = useLabel;
         this.sideLength = 8;
 
-        var iconAsset = asset.GetAsset("local://firstpersonmouseicon.png").get();
+        var iconAsset = asset.GetAsset("local://firstpersonmouseicon.png");
         if (iconAsset == null)
         {
             print("Could not find icon asset, cannot use first person mouse icon!");

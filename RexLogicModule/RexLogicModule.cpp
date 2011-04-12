@@ -655,12 +655,13 @@ Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QS
 
 const QString &RexLogicModule::GetAvatarAppearanceProperty(const QString &name) const
 {
+    const static QString noProperty;
     /// \todo Deprecated. Reimplement using EC_Avatar if needed.
     /*
     static const QString prop = GetUserAvatarEntity()->GetComponent<EC_AvatarAppearance>()->GetProperty(name.toStdString()).c_str();
     return prop;
     */
-    return QString();
+    return noProperty;
 }
 
 float RexLogicModule::GetCameraControllablePitch() const
