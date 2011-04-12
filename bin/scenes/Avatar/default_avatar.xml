@@ -3,8 +3,8 @@
  <version>0.2</version>
  <base name="default" mesh="Jack.mesh"/>
  <skeleton name="Jack.skeleton"/>
- <material name="Jack_body.material"/>
- <material name="Jack_face.material"/>
+ <material name="Jack_Body.material"/>
+ <material name="Jack_Face.material"/>
  <dynamic_animation_parameter position="0.5" name="Height_Adjust"/>
  <dynamic_animation name="Height_Adjust">
   <base_animations/>
