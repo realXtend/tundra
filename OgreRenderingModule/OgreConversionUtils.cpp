@@ -1,19 +1,22 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-/// @file OgreConversionUtils.cpp
-/// Contains some common methods for conversions between Ogre and Core variable types.
+/** 
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   OgreConversionUtils.cpp
+ *  @brief  Contains some common methods for conversions between Ogre and Core variable types.
+ */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "CoreStringUtils.h"
 #include "OgreConversionUtils.h"
+#include "MemoryLeakCheck.h"
 
 namespace OgreRenderer
 {
 
 Ogre::ColourValue ToOgreColor(const Color& color)
 {
-	return Ogre::ColourValue(color.r, color.g, color.b, color.a);
+    return Ogre::ColourValue(color.r, color.g, color.b, color.a);
 }
 
 Color ToCoreColor(const Ogre::ColourValue& ogreColour)
@@ -38,6 +41,11 @@ Ogre::Vector3 ToOgreVector3(const Vector3df &vector)
 Ogre::Quaternion ToOgreQuaternion(const Quaternion &quat)
 {
     return Ogre::Quaternion(quat.w, quat.x, quat.y, quat.z);
+}
+
+std::string SanitateAssetIdForOgre(const QString& input)
+{
+    return SanitateAssetIdForOgre(input.toStdString());
 }
 
 std::string SanitateAssetIdForOgre(const std::string& input)

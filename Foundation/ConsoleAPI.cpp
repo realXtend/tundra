@@ -2,13 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   ConsoleAPI.cpp
- *  @brief  Exposes debug console functionality to scripting languages.
- *
- *          Allows printing text to console, executing console commands programmatically
- *          and registering new console commands.
- *
- *  @note   Currently just simple wrapper class but the idea is to refactor
- *          whole console system later on.
+ *  @brief  Console core API.
  */
 
 #include "StableHeaders.h"
@@ -22,7 +16,7 @@
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("ConsoleAPI")
 
-void Command::Invoke(const QStringList &params)
+void ConsoleCommand::Invoke(const QStringList &params)
 {
     emit Invoked(params);
 }
@@ -32,9 +26,9 @@ ConsoleAPI::~ConsoleAPI()
     qDeleteAll(commands_);
 }
 
-Command *ConsoleAPI::RegisterCommand(const QString &name, const QString &desc)
+ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &desc)
 {
-    Command *command = 0;
+    ConsoleCommand *command = 0;
     Console::ConsoleCommandServiceInterface *consoleCommand = framework_->GetService<Console::ConsoleCommandServiceInterface>();
     if (consoleCommand)
     {
@@ -44,7 +38,7 @@ Command *ConsoleAPI::RegisterCommand(const QString &name, const QString &desc)
             return commands_[name];
         }
 
-        command = new Command(name);
+        command = new ConsoleCommand(name);
         commands_.insert(name, command);
 
         Console::Command cmd = { name.toStdString(), desc.toStdString(), Console::CallbackPtr(), false };
@@ -63,7 +57,7 @@ void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, const
     Console::ConsoleCommandServiceInterface *consoleCommand = framework_->GetService<Console::ConsoleCommandServiceInterface>();
     if (consoleCommand && !commands_.contains(name))
     {
-        Command *command = new Command(name);
+        ConsoleCommand *command = new ConsoleCommand(name);
         commands_.insert(name, command);
         connect(command, SIGNAL(Invoked(const QStringList &)), receiver, member);
 
@@ -96,9 +90,9 @@ ConsoleAPI::ConsoleAPI(Foundation::Framework *fw) :
 {
 }
 
-void ConsoleAPI::CheckForCommand(const QString &name, const QStringList &params) const
+void ConsoleAPI::InvokeCommand(const QString &name, const QStringList &params) const
 {
-    QMap<QString, Command *>::const_iterator i = commands_.find(name);
+    QMap<QString, ConsoleCommand *>::const_iterator i = commands_.find(name);
     if (i != commands_.end())
         i.value()->Invoke(params);
 }

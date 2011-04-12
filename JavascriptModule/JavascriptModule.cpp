@@ -11,7 +11,7 @@
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
 #include "JavascriptInstance.h"
-#include "NaaliCoreTypeDefines.h"
+#include "ScriptCoreTypeDefines.h"
 
 #include "SceneAPI.h"
 #include "Entity.h"
@@ -72,7 +72,7 @@ void JavascriptModule::Initialize()
 
 void JavascriptModule::PostInitialize()
 {
-    RegisterNaaliCoreMetaTypes();
+    RegisterCoreMetaTypes();
     
     RegisterConsoleCommand(Console::CreateCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 

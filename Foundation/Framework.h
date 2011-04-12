@@ -22,6 +22,7 @@ class ConsoleAPI;
 class DebugAPI;
 class SceneAPI;
 class ConfigAPI;
+class Application;
 
 namespace Poco
 {
@@ -32,8 +33,6 @@ namespace Poco
 
 namespace Foundation
 {
-    class NaaliApplication;
-
     /// Contains entry point for the framework.
     /*! Allows access to the core API objects, various managers and services. The standard way of using
         the framework is by first creating the framework and then calling Framework::Go()
@@ -54,7 +53,7 @@ namespace Foundation
 
     public:
         /// Constructs and initializes the framework.
-        /** @param arc Command line argument count as provided by the operating system.
+        /** @param arcc Command line argument count as provided by the operating system.
             @param arcv Command line arguments as provided by the operating system.
         */
         Framework(int argc, char** argv);
@@ -184,57 +183,54 @@ namespace Foundation
         void UnloadModules();
 
         /// Get main QApplication
-        NaaliApplication *GetNaaliApplication() const;
+        Application *GetApplication() const;
 
         /// Returns module by class T.
         /** @param T class type of the module.
             @return The module, or null if the module doesn't exist. Always remember to check for null pointer.
             @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
          */
-        template <class T> T *GetModule()
-        {
-            return GetModuleManager()->GetModule<T>().lock().get();
-        }
+        template <class T>
+        T *GetModule() { return GetModuleManager()->GetModule<T>().lock().get(); }
 
         /// Returns service by class T.
         /** @param T class type of the service.
             @return The service, or null if the service doesn't exist. Always remember to check for null pointer.
             @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
          */
-        template <class T> T *GetService()
-        {
-            return GetServiceManager()->GetService<T>().lock().get();
-        }
+        template <class T>
+        T *GetService() { return GetServiceManager()->GetService<T>().lock().get(); }
 
     public slots:
-        /// Returns the Naali core API UI object.
+        /// Returns the core API UI object.
+        /** @note Never returns a null pointer. Use IsHeadless() to check out if we're running the headless mode or not. */
         UiAPI *Ui() const;
 
-        /// Returns the Naali core API Input object.
+        /// Returns the core API Input object.
         InputAPI *Input() const;
 
-        /// Returns the Naali core API Frame object.
+        /// Returns the core API Frame object.
         FrameAPI *Frame() const;
 
-        /// Returns the Naali core API Console object.
+        /// Returns the core API Console object.
         ConsoleAPI *Console() const;
 
-        /// Returns the Naali core API Audio object.
+        /// Returns the core API Audio object.
         AudioAPI *Audio() const;
 
-        /// Returns Naali core API Asset object.
+        /// Returns core API Asset object.
         AssetAPI *Asset() const;
 
-        /// Returns Naali core API Debug object.
+        /// Returns core API Debug object.
         DebugAPI *Debug() const;
 
-        /// Returns Naali core API Scene object.
+        /// Returns core API Scene object.
         SceneAPI *Scene() const;
 
-        /// Returns Naali core API Config object.
+        /// Returns core API Config object.
         ConfigAPI *Config() const;
 
-        /// Returns if Naali is headless
+        /// Returns if we're running the application in headless or not.
         bool IsHeadless() const { return headless_; }
 
         /// Returns the given module, if it is loaded into the system, and if it derives from QObject.
@@ -271,7 +267,6 @@ namespace Foundation
         PlatformPtr platform_; ///< Platform.
         ThreadTaskManagerPtr thread_task_manager_; ///< Thread task manager.
         ConfigurationManagerPtr config_manager_; ///< Default configuration
-        ApplicationPtr application_; ///< Application data.
         bool exit_signal_; ///< If true, exit application.
         std::vector<Poco::Channel*> log_channels_; ///< Logger channels
         Poco::Formatter *log_formatter_; ///< Logger default formatter
@@ -284,16 +279,16 @@ namespace Foundation
         bool headless_; ///< Are we running in the headless mode.
         Poco::SplitterChannel *splitterchannel; ///< Sends log prints for multiple channels.
         
-        NaaliApplication *naaliApplication; ///< Naali implementation of the main QApplication object.
-        FrameAPI *frame; ///< The Naali Frame API.
-        ConsoleAPI *console; ///< The Naali console API.
-        UiAPI *ui; ///< The Naali UI API.
-        InputAPI *input; ///< The Naali Input API.
-        AssetAPI *asset; ///< The Naali Asset API.
-        AudioAPI *audio; ///< The Naali Audio API.
-        DebugAPI *debug; ///< The Naali Debug API.
-        SceneAPI *scene; ///< The Naali Scene API.
-        ConfigAPI *config; ///< The Naali Config API.
+        Application *application; ///< Naali implementation of the main QApplication object.
+        FrameAPI *frame; ///< The Frame API.
+        ConsoleAPI *console; ///< The console API.
+        UiAPI *ui; ///< The UI API.
+        InputAPI *input; ///< The Input API.
+        AssetAPI *asset; ///< The Asset API.
+        AudioAPI *audio; ///< The Audio API.
+        DebugAPI *debug; ///< The Debug API.
+        SceneAPI *scene; ///< The Scene API.
+        ConfigAPI *config; ///< The Config API.
 
         int argc_; ///< Command line argument count as supplied by the operating system.
         char **argv_; ///< Command line arguments as supplied by the operating system.

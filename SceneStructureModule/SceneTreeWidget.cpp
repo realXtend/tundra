@@ -36,7 +36,7 @@
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #ifdef OGREASSETEDITOR_ENABLED
 #include "MeshPreviewEditor.h"
 #include "TexturePreviewEditor.h"
@@ -586,24 +586,24 @@ void SceneTreeWidget::Edit()
         /*ui->AddWidgetToScene(ecEditor);
         ui->ShowWidget(ecEditor);
         ui->BringWidgetToFront(ecEditor);*/ 
-    } else
+    }
+    else
     {
 #ifdef OGREASSETEDITOR_ENABLED
         foreach(AssetRefItem *aItem, selection.assets)
         {
             //int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
+            QWidget *editor = 0;
             QString type = GetResourceTypeFromResourceFileName(aItem->id.toLatin1());
-
             if (type == "OgreMesh")
-            {
-                MeshPreviewEditor::OpenMeshPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), aItem->type);
-            } else if (type ==  "OgreTexture")
-            {
-                TexturePreviewEditor::OpenPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
-            } else if (type == "OgreMaterial")
-            {
-                OgreScriptEditor::OpenOgreScriptEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), RexTypes::RexAT_MaterialScript);
-            }
+                editor = MeshPreviewEditor::OpenMeshPreviewEditor(framework, OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str());
+            else if (type ==  "OgreTexture")
+                editor = TexturePreviewEditor::OpenPreviewEditor(OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str(), 0);
+            else if (type == "OgreMaterial")
+                editor = OgreScriptEditor::OpenOgreScriptEditor(OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str(), RexTypes::RexAT_MaterialScript);
+
+            if (editor)
+                editor->show();
         }
 #endif
     }

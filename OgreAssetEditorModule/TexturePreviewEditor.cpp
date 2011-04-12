@@ -1,19 +1,23 @@
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   TexturePreviewEditor.cpp
+ *  @brief  Preview window for textures.
+ */
+
 #include "StableHeaders.h"
-#include "Framework.h"
 #include "DebugOperatorNew.h"
+
 #include "TexturePreviewEditor.h"
 #include "OgreAssetEditorModule.h"
 
-#include "UiServiceInterface.h"
-#include "UiProxyWidget.h"
-#include "ModuleManager.h"
-#include "Inventory/InventoryEvents.h"
+//#include "UiServiceInterface.h"
+//#include "UiProxyWidget.h"
+//#include "ModuleManager.h"
+//#include "Inventory/InventoryEvents.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("TexturePreviewEditor")
-
-#include <Renderer.h>
-#include <NaaliRenderWindow.h>
 
 #include <QUiLoader>
 #include <QFile>
@@ -24,7 +28,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("TexturePreviewEditor")
 #include <QScrollArea>
 
 #include "MemoryLeakCheck.h"
-
 
 TextureLabel::TextureLabel(QWidget *parent, Qt::WindowFlags flags):
     QLabel(parent, flags)
@@ -40,26 +43,21 @@ void TextureLabel::mousePressEvent(QMouseEvent *ev)
     emit MouseClicked(ev);
 }
 
-TexturePreviewEditor::TexturePreviewEditor(Foundation::Framework *framework,
-                                           const QString &inventory_id,
-                                           const asset_type_t &asset_type,
-                                           const QString &name,
-                                           const QString &asset_id,
-                                           QWidget *parent):
-QWidget(parent),
-framework_(framework),
-inventoryId_(inventory_id),
-assetId_(asset_id),
-assetType_(asset_type),
-mainWidget_(0),
-okButtonName_(0),
-headerLabel_(0),
-imageLabel_(0),
-scaleLabel_(0),
-layout_(0),
-//request_tag_(0),
-imageSize_(QSize(0,0)),
-useOriginalImageSize_(true)
+TexturePreviewEditor::TexturePreviewEditor(const QString &inventory_id,
+    const asset_type_t &asset_type, const QString &name, const QString &asset_id, QWidget *parent) :
+    QWidget(parent),
+    inventoryId_(inventory_id),
+    assetId_(asset_id),
+    assetType_(asset_type),
+    mainWidget_(0),
+    okButtonName_(0),
+    headerLabel_(0),
+    imageLabel_(0),
+    scaleLabel_(0),
+    layout_(0),
+    //request_tag_(0),
+    imageSize_(QSize(0,0)),
+    useOriginalImageSize_(true)
 {
     setObjectName(name);
     Initialize();
@@ -68,15 +66,11 @@ useOriginalImageSize_(true)
 
 TexturePreviewEditor::~TexturePreviewEditor()
 {
-
+    LogInfo("Deleting TexturePreviewEditor " + objectName());
 }
 
-
-TexturePreviewEditor::TexturePreviewEditor(Foundation::Framework *framework, QWidget* parent) :
+TexturePreviewEditor::TexturePreviewEditor(QWidget* parent) :
     QWidget(parent),
-    framework_(framework),
-    inventoryId_(""),
-    assetId_(""),
     assetType_(0),
     mainWidget_(0),
     okButtonName_(0),
@@ -91,14 +85,12 @@ TexturePreviewEditor::TexturePreviewEditor(Foundation::Framework *framework, QWi
      Initialize();
 }
 
-void TexturePreviewEditor::Closed()
+void TexturePreviewEditor::Close()
 {
-    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return
-
-    ui->RemoveWidgetFromScene(this);
-
+//    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
+//    if (!ui)
+//        return
+//    ui->RemoveWidgetFromScene(this);
     // Must be last line in this function, since it is possible this causes the deletion of this object
     emit Closed(inventoryId_);
 }
@@ -132,7 +124,7 @@ void TexturePreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *r
         if(tex)
         {
             QImage img = ConvertToQImage(tex->GetData(), tex->GetWidth(), tex->GetHeight(), tex->GetComponents());
-            // Only show chessboard patern if image has an alfa channel.
+            // Only show chessboard pattern if image has an alpha channel.
             if(tex->GetComponents() == 4 || tex->GetComponents() == 2) 
             {
                 imageLabel_->setStyleSheet("QLabel#previewImageLabel"
@@ -216,9 +208,9 @@ void TexturePreviewEditor::resizeEvent(QResizeEvent *ev)
 
 void TexturePreviewEditor::Initialize()
 {
-    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
+//    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
+//    if (!ui)
+//        return;
 
     // Create widget from ui file
     QUiLoader loader;
@@ -232,6 +224,8 @@ void TexturePreviewEditor::Initialize()
     mainWidget_ = loader.load(&file);
     file.close();
 
+    setAttribute(Qt::WA_DeleteOnClose);
+
     resize(cWindowMinimumWidth, cWindowMinimumHeight);
 
     layout_ = new QVBoxLayout;
@@ -241,7 +235,7 @@ void TexturePreviewEditor::Initialize()
 
     // Get controls
     okButtonName_ = mainWidget_->findChild<QPushButton *>("okButton");
-    QObject::connect(okButtonName_, SIGNAL(clicked()), this, SLOT(Closed()));
+    connect(okButtonName_, SIGNAL(clicked()), this, SLOT(Closed()));
 
     headerLabel_ = mainWidget_->findChild<QLabel *>("imageNameLabel");
     scaleLabel_ = mainWidget_->findChild<QLabel *>("imageScaleLabel");
@@ -267,16 +261,15 @@ void TexturePreviewEditor::Initialize()
 
     // Add widget to UI via ui services module
     setWindowTitle(tr("Texture: ") + objectName());
-    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
-    QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
-    proxy->show();
-    ui->BringWidgetToFront(proxy);
+//    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
+//    connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
+//    proxy->show();
+//    ui->BringWidgetToFront(proxy);
 }
 
 void TexturePreviewEditor::OpenOgreTexture(const QString& name)
 {
-
-    if ( name.contains(".dds") )
+    if (name.contains(".dds"))
     {
         LogWarning("currently cannot show .dds files. ");
         // Set black background image that will be replaced once the real image has been received.
@@ -284,12 +277,10 @@ void TexturePreviewEditor::OpenOgreTexture(const QString& name)
         emptyImage.fill(qRgba(0,0,0,0));
         if ( imageLabel_ != 0)
             imageLabel_->setPixmap(QPixmap::fromImage(emptyImage));
-        
+
         return;
     }
 
-
-     
     Ogre::ResourcePtr res = Ogre::TextureManager::getSingleton().getByName(name.toStdString().c_str());
     Ogre::Texture* tex = static_cast<Ogre::Texture* >(res.get());
     if (!tex)
@@ -319,20 +310,17 @@ void TexturePreviewEditor::OpenOgreTexture(const QString& name)
         imageLabel_->show();
     }
 
-  
-
     delete[] pixelData;
-    
-    
-
 }
 
-void TexturePreviewEditor::OpenPreviewEditor(Foundation::Framework *framework, const QString &texture, QWidget* parent)
+TexturePreviewEditor *TexturePreviewEditor::OpenPreviewEditor(const QString &texture, QWidget* parent)
 {
-    TexturePreviewEditor *editor = new TexturePreviewEditor(framework, parent);
-    QObject::connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(Deleted()), Qt::QueuedConnection);
+    TexturePreviewEditor *editor = new TexturePreviewEditor(parent);
+    //connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(Deleted()), Qt::QueuedConnection);
+    connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(close()));
     editor->OpenOgreTexture(texture);
-    editor->show();
+    return editor;
+    //editor->show();
 }
 
 void TexturePreviewEditor::UseTextureOriginalSize(bool use)
@@ -344,7 +332,7 @@ void TexturePreviewEditor::UseTextureOriginalSize(bool use)
         scrollAreaWidget_->widget()->setMinimumSize(imageSize_);
         scrollAreaWidget_->widget()->setMaximumSize(imageSize_);
         //Do we want to display the texture in it's real size or not. if texture's size is over 512 x 512 we will stay 
-        //at smaller window size cause that texture would take too much screenspace.
+        //at smaller window size cause that texture would take too much screen space.
         if(imageSize_.width() <= 512 && imageSize_.height() <= 512)
         {
             QSize mainWidgetSize = QSize(imageSize_.width() + 12, imageSize_.height() + 80);

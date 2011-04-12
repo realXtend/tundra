@@ -52,9 +52,9 @@ void TundraLogicModule::Initialize()
 {
     tundraEventCategory_ = framework_->GetEventManager()->RegisterEventCategory("Tundra");
     
-    syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this, framework_));
-    client_ = boost::shared_ptr<Client>(new Client(this, framework_));
-    server_ = boost::shared_ptr<Server>(new Server(this, framework_));
+    syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this));
+    client_ = boost::shared_ptr<Client>(new Client(this));
+    server_ = boost::shared_ptr<Server>(new Server(this));
     
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());

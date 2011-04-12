@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Ui_NaaliGraphicsView_h
-#define incl_Ui_NaaliGraphicsView_h
+#ifndef incl_Ui_UiGraphicsView_h
+#define incl_Ui_UiGraphicsView_h
 
 #include "UiFwd.h"
 #include "UiApiExport.h"
@@ -14,18 +14,18 @@ class QDragMoveEvent;
 class QMouseEvent;
 class QWheelEvent;
 
-/// The main view of Naali consists of a single QGraphicsView that spans the whole viewport.
-/** NaaliGraphicsView implements pixel-perfect alpha-tested mouse hotspots for Qt widgets to
+/// The main view consists of a single QGraphicsView that spans the whole viewport.
+/** UiGraphicsView implements pixel-perfect alpha-tested mouse hotspots for Qt widgets to
     determine whether clicks should go to the scene or to Qt widgets.
 */
-class UI_API NaaliGraphicsView : public QGraphicsView
+class UI_API UiGraphicsView : public QGraphicsView
 {
     Q_OBJECT;
 
 public:
-    explicit NaaliGraphicsView(QWidget *parent);
+    explicit UiGraphicsView(QWidget *parent);
 
-    ~NaaliGraphicsView();
+    ~UiGraphicsView();
 
     /// Returns the currently shown UI content as an image.
     QImage *BackBuffer();
@@ -33,11 +33,18 @@ public:
     /// Returns true if there are rectangles pending repaint in the view.
     bool IsViewDirty() const;
 
-    /// Marks the whole UI screen dirty, pending a full repaing.
+    /// Marks the whole UI screen dirty, pending a full repaint.
     void MarkViewUndirty();
 
     /// Returns the rectangle that represents the dirty area of the screen, pending a Qt repaint.
     QRectF DirtyRectangle() const;
+
+public slots:
+    /// Returns the topmost visible QGraphicsItem in the given application main window coordinates.
+    QGraphicsItem *GetVisibleItemAtCoords(int x, int y) const;
+
+    /// Sets a new size for this widget. Will emit the WindowResized signal.
+    void Resize(int newWidth, int newHeight);
 
 signals:
     /// Emitted when this widget has been resized to a new size.
@@ -63,13 +70,6 @@ signals:
     */
     void DropEvent(QDropEvent *e);
 
-public slots:
-    /// Returns the topmost visible QGraphicsItem in the given application main window coordinates.
-    QGraphicsItem *GetVisibleItemAtCoords(int x, int y);
-
-    /// Sets a new size for this widget. Will emit the WindowResized signal.
-    void Resize(int newWidth, int newHeight);
-
 private:
     QImage *backBuffer;
     QRectF dirtyRectangle;
@@ -77,6 +77,7 @@ private:
     /// This virtual function is overridden from the QGraphicsView original to disable any background drawing functionality.
     /// The NaaliGraphicsView background displays the 3D scene rendered using Ogre.
     void drawBackground(QPainter *, const QRectF &);
+
     /// Overridden to disable QEvent::UpdateRequest, QEvent::Paint and QEvent::Wheel events from being processed in the base class,
     /// which cause flickering on the screen (Qt internals have some hard-coded full-screen rectangle repaints on these signals).
     bool event(QEvent *event);

@@ -14,7 +14,7 @@ from circuits import handler, Component
 from circuits.net.sockets import TCPClient, Connect
 from circuits.net.protocols.irc import IRC, PRIVMSG, USER, NICK, JOIN, Nick
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     from circuits import Debugger
 

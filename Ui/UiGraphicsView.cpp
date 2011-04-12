@@ -2,7 +2,7 @@
 
 #include "DebugOperatorNew.h"
 
-#include "NaaliGraphicsView.h"
+#include "UiGraphicsView.h"
 
 #include <QRect>
 #include <QList>
@@ -18,7 +18,7 @@
 
 using namespace std;
 
-NaaliGraphicsView::NaaliGraphicsView(QWidget *parent)
+UiGraphicsView::UiGraphicsView(QWidget *parent)
 :QGraphicsView(parent), backBuffer(0)
 {
     setAutoFillBackground(false);
@@ -34,32 +34,32 @@ NaaliGraphicsView::NaaliGraphicsView(QWidget *parent)
     setAttribute(Qt::WA_DontShowOnScreen, true);
 }
 
-NaaliGraphicsView::~NaaliGraphicsView()
+UiGraphicsView::~UiGraphicsView()
 {
     delete backBuffer;
 }
 
-QImage *NaaliGraphicsView::BackBuffer()
+QImage *UiGraphicsView::BackBuffer()
 { 
     return backBuffer;
 }
 
-void NaaliGraphicsView::MarkViewUndirty()
+void UiGraphicsView::MarkViewUndirty()
 {
     dirtyRectangle = QRectF(-1, -1, -1, -1);
 }
 
-bool NaaliGraphicsView::IsViewDirty() const
+bool UiGraphicsView::IsViewDirty() const
 {
     return dirtyRectangle.right() >= 0;
 }
 
-QRectF NaaliGraphicsView::DirtyRectangle() const
+QRectF UiGraphicsView::DirtyRectangle() const
 { 
     return dirtyRectangle;
 }
 
-void NaaliGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
+void UiGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
 {
     // Default backgroudBrush for QGraphicsScene and QGraphicsView is NoBrush,
     // so this will essentially just paint the animated ether login screen background.
@@ -67,7 +67,7 @@ void NaaliGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
     return QGraphicsView::drawBackground(painter, rect);
 }
 
-bool NaaliGraphicsView::event(QEvent *event)
+bool UiGraphicsView::event(QEvent *event)
 {
     if (event->type() == QEvent::UpdateRequest || event->type() == QEvent::Paint || event->type() == QEvent::Wheel)// || event->type() == QEvent::Resize)
         return true;
@@ -82,7 +82,7 @@ bool NaaliGraphicsView::event(QEvent *event)
     return QGraphicsView::event(event);
 }
 
-void NaaliGraphicsView::Resize(int newWidth, int newHeight)
+void UiGraphicsView::Resize(int newWidth, int newHeight)
 {
     newWidth = max(1, newWidth);
     newHeight = max(1, newHeight);
@@ -98,7 +98,7 @@ void NaaliGraphicsView::Resize(int newWidth, int newHeight)
     emit WindowResized(newWidth, newHeight);
 }
 
-void NaaliGraphicsView::resizeEvent(QResizeEvent *e)
+void UiGraphicsView::resizeEvent(QResizeEvent *e)
 {
     QGraphicsView::resizeEvent(e);
 /*
@@ -143,7 +143,7 @@ void NaaliGraphicsView::resizeEvent(QResizeEvent *e)
 */
 }
 
-void NaaliGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)
+void UiGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)
 {
     using namespace std;
 
@@ -173,11 +173,11 @@ void NaaliGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)
     dirtyRectangle.setBottom(min<int>(dirtyRectangle.bottom(), height()));
 }
 
-QGraphicsItem *NaaliGraphicsView::GetVisibleItemAtCoords(int x, int y)
+QGraphicsItem *UiGraphicsView::GetVisibleItemAtCoords(int x, int y) const
 {
     // Silently just ignore any invalid coordinates we get. (and we do get them, it seems!)
     if (x < 0 || y < 0 || x >= width() || y >= height())
-		return 0;
+        return 0;
 
     QGraphicsItem *item = 0;
     ///\bug Not sure if this function returns the items in the proper depth order! We might not get the topmost window
@@ -185,26 +185,26 @@ QGraphicsItem *NaaliGraphicsView::GetVisibleItemAtCoords(int x, int y)
     QList<QGraphicsItem *> itemsUnderCoord = items(x, y);
     for(int i = 0; i < itemsUnderCoord.size(); ++i)
         if (itemsUnderCoord[i]->isVisible())
-		{
-			item = itemsUnderCoord[i];
-			break;
-		}    
+        {
+            item = itemsUnderCoord[i];
+            break;
+        }    
 
-	if (!item)
-		return 0;
+    if (!item)
+        return 0;
 
     if (!backBuffer)
         throw Exception("NaaliGraphicsView::backBuffer not initialized properly!");
 
-	// Do alpha keying: If we have clicked on a transparent part of a widget, act as if we didn't click on a widget at all.
+    // Do alpha keying: If we have clicked on a transparent part of a widget, act as if we didn't click on a widget at all.
     // This allows clicks to go through to the 3D scene from transparent parts of a widget.
     if (x < backBuffer->width() && y < backBuffer->height() && (backBuffer->pixel(x, y) & 0xFF000000) == 0x00000000)
-		item = 0;
+        item = 0;
 
     return item;
 }
 
-void NaaliGraphicsView::dropEvent(QDropEvent *e)
+void UiGraphicsView::dropEvent(QDropEvent *e)
 {
     // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
     if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
@@ -218,7 +218,7 @@ void NaaliGraphicsView::dropEvent(QDropEvent *e)
     emit DropEvent(e);
 }
 
-void NaaliGraphicsView::dragEnterEvent(QDragEnterEvent *e)
+void UiGraphicsView::dragEnterEvent(QDragEnterEvent *e)
 {           
     // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
     if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
@@ -232,13 +232,13 @@ void NaaliGraphicsView::dragEnterEvent(QDragEnterEvent *e)
     emit DragEnterEvent(e);
 }   
 
-void NaaliGraphicsView::dragLeaveEvent(QDragLeaveEvent *e)
+void UiGraphicsView::dragLeaveEvent(QDragLeaveEvent *e)
 {
     emit DragLeaveEvent(e);
     QGraphicsView::dragLeaveEvent(e);
 }
 
-void NaaliGraphicsView::dragMoveEvent(QDragMoveEvent *e)
+void UiGraphicsView::dragMoveEvent(QDragMoveEvent *e)
 {
     // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
     if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
@@ -253,27 +253,27 @@ void NaaliGraphicsView::dragMoveEvent(QDragMoveEvent *e)
 }
 
 #ifdef Q_WS_MAC
-void NaaliGraphicsView::mousePressEvent(QMouseEvent *event)
+void UiGraphicsView::mousePressEvent(QMouseEvent *event)
 {
     QGraphicsView::mousePressEvent(event);
 }
 
-void NaaliGraphicsView::mouseReleaseEvent(QMouseEvent *event)
+void UiGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 {
     QGraphicsView::mouseReleaseEvent(event);
 }
 
-void NaaliGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
+void UiGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     QGraphicsView::mouseDoubleClickEvent(event);
 }
 
-void NaaliGraphicsView::mouseMoveEvent(QMouseEvent *event)
+void UiGraphicsView::mouseMoveEvent(QMouseEvent *event)
 {
     QGraphicsView::mouseMoveEvent(event);
 }
 
-void NaaliGraphicsView::wheelEvent(QWheelEvent *event)
+void UiGraphicsView::wheelEvent(QWheelEvent *event)
 {
     QGraphicsView::wheelEvent(event);
 }

@@ -23,9 +23,17 @@
 #include "NetworkEvents.h"
 #include "Inventory/InventoryEvents.h"
 #include "UiAPI.h"
+#include "UiMainWindow.h"
 #include "UiProxyWidget.h"
+#include "IAsset.h"
+#include "OgreConversionUtils.h"
 
 #include "MemoryLeakCheck.h"
+
+EditorAction::EditorAction(const AssetPtr &asset, const QString &text, QMenu *menu) : QAction(text, menu)
+{
+    this->asset = asset;
+}
 
 std::string OgreAssetEditorModule::typeNameStatic = "OgreAssetEditor";
 
@@ -86,6 +94,7 @@ void OgreAssetEditorModule::Update(f64 frametime)
 
 bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
+/*
     if (category_id == frameworkEventCategory)
     {
         if (event_id == Foundation::NETWORKING_REGISTERED)
@@ -94,10 +103,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
             return false;
         }
     }
-    
-    
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-        /*
+
     if ( category_id == assetEventCategory_ )
     {
         if (event_id == Asset::Events::ASSET_OPEN)
@@ -116,8 +122,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                   if(!editorManager_->Exists(id, name.toUInt()))
                     {
                         MeshPreviewEditor *editor = new MeshPreviewEditor(framework_);
-                        
-                        QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
+                        connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
                                 editorManager_, SLOT(Delete(const QString &, asset_type_t)));
                         editorManager_->Add(id, name.toUInt(), editor);
                         editor->Open(id, name);
@@ -150,8 +155,8 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                   if(!editorManager_->Exists(id, type.toUInt()))
                     {
                         TexturePreviewEditor *editor = new TexturePreviewEditor(framework_);
-                        QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
-                                editorManager_, SLOT(Delete(const QString &, asset_type_t)));
+                        connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
+                            editorManager_, SLOT(Delete(const QString &, asset_type_t)));
                         editorManager_->Add(id, type.toUInt(), editor);
                         editor->RequestTextureAsset(id);
                         return true;
@@ -173,7 +178,6 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
             }
         }
     }
-        */
 
     if (category_id == inventoryEventCategory)
     {
@@ -214,7 +218,6 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
                         editorManager, SLOT(Delete(const QString &, asset_type_t)));
                     editorManager->Add(id, at, editor);
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
 //                    editor->HandleAssetReady(downloaded->asset);
 
                     // Add widget to scene, show and bring to front
@@ -241,10 +244,9 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                 if(!editorManager->Exists(id, at))
                 {
                     AudioPreviewEditor *editor = new AudioPreviewEditor(framework_, id, at, name);
-                    QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
-                            editorManager, SLOT(Delete(const QString &, asset_type_t)));
+                    connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
+                        editorManager, SLOT(Delete(const QString &, asset_type_t)));
                     editorManager->Add(id, at, editor);
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
 //                    editor->HandleAssetReady(downloaded->asset);
                 }
                 else
@@ -255,11 +257,8 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     {
                         //uiService_.lock()->BringWidgetToFront(editor);
                         AudioPreviewEditor *audioWidget = qobject_cast<AudioPreviewEditor*>(editor);
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-/*
                         if(audioWidget)
                             audioWidget->HandleAssetReady(downloaded->asset);
-*/
                     }
                 }
 
@@ -268,8 +267,6 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
             }
             case RexTypes::RexAT_Mesh:
             {
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-                /*
                 const QString &id = downloaded->inventoryId.ToString().c_str();
                 const QString &name = downloaded->name.c_str();
                 if(!editorManager_->Exists(id, at))
@@ -294,13 +291,10 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                 }
 
                 downloaded->handled = true;
-                */
                 return true;
             }
             case RexTypes::RexAT_Texture:
             {
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-                /*
                 const QString &id = downloaded->inventoryId.ToString().c_str();
                 const QString &name = downloaded->name.c_str();
                 if(!editorManager_->Exists(id, at))
@@ -319,7 +313,6 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                 }
 
                 downloaded->handled = true;
-                */
                 return true;
             }
             default:
@@ -332,8 +325,6 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
             editorManager->DeleteAll();
     }
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-    /*
     else if (category_id == resourceEventCategory_)
     {
         if (event_id == Resource::Events::RESOURCE_CANCELED)
@@ -376,8 +367,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
             }
         }
     }
-        */
-
+*/
     return false;
 }
 
@@ -391,10 +381,84 @@ void OgreAssetEditorModule::UploadBuffer(Inventory::InventoryUploadBufferEventDa
     framework_->GetEventManager()->SendEvent(inventoryEventCategory, Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, data);
 }
 
+bool OgreAssetEditorModule::IsSupportedAssetTypes(const QString &type) const
+{
+    if (type == "OgreMesh" || type == "OgreMaterial" || type == "OgreParticle" || type == "Audio" || type == "Texture")
+        return true;
+    else
+        return false;
+}
+
 void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
 {
-    std::cout << "joujou " << targets.size() << std::endl;
+/*
+    if (targets.size())
+    {
+        foreach(QObject *target, targets)
+            if (!dynamic_cast<IAsset *>(target))
+                return;
+
+        AssetPtr asset = dynamic_cast<IAsset *>(targets[0])->shared_from_this();
+        if (IsSupportedAssetTypes(asset->Type()))
+        {
+            menu->addSeparator();
+            EditorAction *openAction = new EditorAction(asset, tr("Open"), menu);
+            connect(openAction, SIGNAL(triggered()), SLOT(OpenAssetInEditor()));
+            menu->addAction(openAction);
+        }
+    }
+*/
 }
+
+void OgreAssetEditorModule::OpenAssetInEditor()
+{
+    EditorAction *action = dynamic_cast<EditorAction *>(sender());
+    if (!action)
+        return;
+    if (action->asset.expired())
+        return;
+
+    AssetPtr asset = action->asset.lock();
+    QWidget *editor = 0;
+    QString assetName = ""; // OgreRenderer::SanitateAssetIdForOgre(asset->Name());
+
+    if (asset->Type() == "OgreMesh")
+    {
+        MeshPreviewEditor *meshEditor = new MeshPreviewEditor(framework_);
+        meshEditor->Open(assetName);
+        editor = meshEditor;
+    }
+    else if (asset->Type() == "OgreMaterial")
+    {
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(QString(), RexTypes::RexAT_MaterialScript, assetName);
+        scriptEditor->Open();
+        editor = scriptEditor;
+    }
+    else if (asset->Type() == "OgreParticle")
+    {
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(QString(), RexTypes::RexAT_ParticleScript, assetName);
+        editor = scriptEditor;
+
+    }
+    else if (asset->Type() == "Audio")
+    {
+        //AudioPreviewEditor *editor = new AudioPreviewEditor(framework_, id, at, name);
+    }
+    else if (asset->Type() == "Texture")
+    {
+        TexturePreviewEditor *texEditor = new TexturePreviewEditor(0);
+        texEditor->OpenOgreTexture(assetName);
+        editor = texEditor;
+    }
+
+    if (editor)
+    {
+        editor->setParent(framework_->Ui()->MainWindow());
+        editor->setWindowFlags(Qt::Tool);
+        editor->show();
+    }
+}
+
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
