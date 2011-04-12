@@ -54,7 +54,7 @@ SET(UISERVICE_TEST 1)
 SET(OPENASSETIMPORT 0)
 
 # Enables Ogre asset editor module
-SET(OGREASSETEDITOR 1)
+SET(OGREASSETEDITOR 0)
 
 # The following are the core modules that are required for the project to build. None of these can be omitted.
 add_subdirectory(Core)
@@ -85,25 +85,25 @@ AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition) # Req
 # The following EC's are declared by RexLogicModule and are optional. You may comment these lines out to disable any ECs you do not want to include.
 AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 AddEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)
-AddEntityComponent(EntityComponents/EC_Movable EC_Movable)
+#AddEntityComponent(EntityComponents/EC_Movable EC_Movable)
 AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
 AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
 AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
 AddEntityComponent(EntityComponents/EC_3DCanvasSource EC_3DCanvasSource)
 AddEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
-AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
+#AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
 AddEntityComponent(EntityComponents/EC_Light EC_Light)
 AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
-AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
+#AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
 AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
 AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
-AddEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
-AddEntityComponent(EntityComponents/EC_Gizmo EC_Gizmo)
-AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
-AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
+#AddEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
+#AddEntityComponent(EntityComponents/EC_Gizmo EC_Gizmo)
+#AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
+#AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
 
 # The following EC's are declared by AvatarModule. Optional.
-AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
+#AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
 
 # The following two are declared by both PythonScriptModule and JavascriptModule. They are optional.
 AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)      # Required by ECEditorModule.
@@ -127,7 +127,7 @@ add_subdirectory(ProtocolModuleTaiga)   # Required with OpenSim.
 
 if (UISERVICE_TEST)
     add_subdirectory(UiServiceModule)
-    add_subdirectory(LoginScreenModule)
+#    add_subdirectory(LoginScreenModule)
 else()
     add_subdirectory(UiModule)          # Depends on OgreRenderingModule.
 endif()
@@ -139,9 +139,9 @@ if (OGREASSETEDITOR)
     add_subdirectory(OgreAssetEditorModule) # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
 endif()
 add_subdirectory(DebugStatsModule)      # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule and Taiga subsystem.
-add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
+#add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
 add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script instances.
-add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
+#add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
 #add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
 #add_subdirectory(CAVEStereoModule)     # Implements CAVE and Stereoscopy functionality
 add_subdirectory(SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
