@@ -381,6 +381,41 @@ namespace Scene
         return ret;
     }
 
+    
+    QVariantList SceneManager::LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
+    {
+        //copied from LoadSceneXML and edited
+        QVariantList ret;
+ 
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            LogError("Failed to open file " + filename.toStdString() + " when loading scene xml.");
+            return ret;
+        }
+
+        // Set codec to ISO 8859-1 a.k.a. Latin 1
+        QTextStream stream(&file);
+        stream.setCodec("ISO 8859-1");
+        QDomDocument scene_doc("Scene");
+        if (!scene_doc.setContent(stream.readAll()))
+        {
+            LogError("Parsing scene XML from "+ filename.toStdString() + " failed when loading scene xml.");
+            file.close();
+            return ret;
+        }
+
+        // Purge all old entities. Send events for the removal
+        if (clearScene)
+            RemoveAllEntities(true, change);
+
+        QList<Scene::Entity *> entities = CreateContentFromXml(scene_doc, useEntityIDsFromFile, change);
+        foreach(Entity * e, entities)
+            ret.append(QVariant(e->GetId()));
+
+        return ret;
+    }
+
     QList<Entity *> SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;

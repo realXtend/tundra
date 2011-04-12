@@ -8,6 +8,9 @@
 #include "SceneManager.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
+#include "OgreRenderingModule.h"
+#include "TextureAsset.h"
+
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyBox")
 
 #include <Ogre.h>
@@ -47,7 +50,7 @@ EC_SkyBox::EC_SkyBox(IModule *module) :
          AssetReferenceList lst;
          if (names.size() == cSkyBoxTextureCount)
          {
-            // This code block is not currently working, but if for some reason GetTextureNamesFromMaterialn understands cubic_textures this codeblock is runned
+            // This code block is not currently working, but if for some reason GetTextureNamesFromMaterial understands cubic_textures this codeblock is runned
             for(int i = 0; i < cSkyBoxTextureCount; ++i)
                 lst.Append(AssetReference(names[i].c_str()));
          }
@@ -68,19 +71,32 @@ EC_SkyBox::EC_SkyBox(IModule *module) :
 
     // Disable old sky.
     // DisableSky();
-     CreateSky();
+    CreateSky();
 
-     lastMaterial_ = materialRef.Get().ref;
-     lastOrientation_ = orientation.Get();
-     lastDistance_ = distance.Get();
-     lastDrawFirst_ = drawFirst.Get();
-     lastTextures_ = textureRefs.Get();
+    lastMaterial_ = materialRef.Get().ref;
+    lastOrientation_ = orientation.Get();
+    lastDistance_ = distance.Get();
+    lastDrawFirst_ = drawFirst.Get();
+   
+    while(textureAssets.size() < cSkyBoxTextureCount)
+        textureAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
+
+
+    for(int i = 0; i < cSkyBoxTextureCount; ++i)
+        {
+            connect(textureAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnTextureAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+            //materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].ref);
+        }
+   
 }
 
 EC_SkyBox::~EC_SkyBox()
 {
     DisableSky();
     renderer_.reset();
+     
+   while(textureAssets.size() > cSkyBoxTextureCount)
+        textureAssets.pop_back();
 }
 
 void EC_SkyBox::CreateSky()
@@ -94,6 +110,7 @@ void EC_SkyBox::CreateSky()
     QString currentMaterial = materialRef.Get().ref;
 
     Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
+    //Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(framework_->Asset()->LookupAssetRefToStorage(materialRef.Get().ref).toStdString().c_str());
     if (materialPtr.isNull())
     {
         LogError("Could not get SkyBox material : " + currentMaterial.toStdString());
@@ -121,6 +138,43 @@ void EC_SkyBox::View(const QString &attributeName)
     /// @todo implement this.
 }
 
+void EC_SkyBox::OnTextureAssetLoaded(AssetPtr tex)
+{
+    TextureAsset* texture = dynamic_cast<TextureAsset* >(tex.get());
+   
+    std::vector<std::string> texture_names;
+    texture_names.reserve(cSkyBoxTextureCount);
+    bool assetUsed = false;
+    
+    AssetReferenceList textureList = textureRefs.Get();
+    
+    for(int i = 0; i < textureList.Size(); ++i)
+        if (textureList[i].ref == texture->Name() ||
+            framework_->Asset()->LookupAssetRefToStorage(textureList[i].ref) == texture->Name()) ///<///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
+        {
+         
+            texture_names.push_back(texture->ogreAssetName.toStdString());
+            assetUsed = true;
+        }
+        else
+        {
+            texture_names.push_back(textureList[i].ref.toStdString());
+        }
+
+    if ( assetUsed )
+    {
+     
+         Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
+         if (!materialPtr.isNull() && texture_names.size() == cSkyBoxTextureCount)
+         {
+            materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setCubicTextureName(&texture_names[0], false);
+         }
+    }
+    
+    CreateSky();
+    
+}
+
 void EC_SkyBox::AttributeUpdated(IAttribute* attribute)
 {
     if (!ViewEnabled())
@@ -140,25 +194,41 @@ void EC_SkyBox::AttributeUpdated(IAttribute* attribute)
     }
     else if (name == textureRefs.GetNameString() )
     {
-        // What texture has changed?
-        SetTextures();
+      
+        AssetReferenceList textures = textureRefs.Get();
+
+        // Reallocate the number of texture asset reflisteners.
+        while(textureAssets.size() > textures.Size())
+            textureAssets.pop_back();
+        while(textureAssets.size() < textures.Size())
+            textureAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
+
+        for(int i = 0; i < textures.Size(); ++i)
+        {
+            connect(textureAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnTextureAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+            textureAssets[i]->HandleAssetRefChange(framework_->Asset(), textures[i].ref);
+        }
+
+     
+        //SetTextures();
     }
 }
 
 void EC_SkyBox::SetTextures()
 {
+    // Depricated..
     if (!ViewEnabled())
         return;
 
     AssetReferenceList lst = textureRefs.Get();
     std::vector<std::string> texture_names;
-    texture_names.reserve(6);
+    texture_names.reserve(cSkyBoxTextureCount);
 
-    for(int i = 0; i < lst.Size() && i <= 6; ++i)
+    for(int i = 0; i < lst.Size() && i <= cSkyBoxTextureCount; ++i)
         texture_names.push_back(lst[i].ref.toStdString());
 
     Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
-    if (!materialPtr.isNull() && texture_names.size() == 6)
+    if (!materialPtr.isNull() && texture_names.size() == cSkyBoxTextureCount)
         materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setCubicTextureName(&texture_names[0], false);
         //skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureScale(1, -1);
     else if(!materialPtr.isNull() )
