@@ -23,7 +23,7 @@ EC_ProximityTrigger::EC_ProximityTrigger(IModule *module) :
     period(this, "Period", 0.0f)
 {
     SetUpdateMode();
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_ProximityTrigger::~EC_ProximityTrigger()
