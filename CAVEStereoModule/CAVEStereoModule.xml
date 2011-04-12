@@ -1,5 +1,4 @@
 <config>
     <entry>CAVEStereoModule</entry>
-	<dependency>OgreRenderingModule</dependency>
-	<dependency>UiModule</dependency>
+    <dependency>OgreRenderingModule</dependency>
 </config>
