@@ -45,7 +45,8 @@ namespace Ether
               framework_(framework),
               data_manager_(new Data::DataManager(this)),
               card_size_(QRectF(0, 0, 470, 349)),
-              previous_scene_(0)
+              previous_scene_(0),
+			  has_been_connected_(false)
         {
 #ifdef DYNAMIC_LOGIN_SCENE
             StoreDataToFilesIfEmpty();
@@ -528,23 +529,30 @@ namespace Ether
                     scene_controller_->ShowStatusInformation("Joining world");
                     scene_controller_->RevertLoginAnimation(true);
                     scene_->SetConnectionStatus(true);
+					has_been_connected_ = true;
                     break;
                 case Ether::Disconnected:
                     UpdateUiPixmaps();
+					scene_controller_->ResetStatusWidget();
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
-                    scene_controller_->ShowStatusInformation("Disconnected");
+                    scene_controller_->ShowStatusInformation(QString("Disconnected"));
                     scene_->SetConnectionStatus(false);
                     break;
                 case Ether::Failed:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
-                    scene_controller_->ShowStatusInformation("Failed to connect:\n"+ message);
+					if (!has_been_connected_)
+						scene_controller_->ShowStatusInformation("Failed to connect to the world with avatar selected \n"+ message);
+					else
+						scene_controller_->ShowStatusInformation("You were kicked from the server");
+					has_been_connected_ = false;
                     scene_controller_->RevertLoginAnimation(false);
                     scene_->SetConnectionStatus(false);
                     break;
                 case Ether::Kicked:
                     UpdateUiPixmaps();
+					scene_controller_->ResetStatusWidget();
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
                     scene_controller_->ShowStatusInformation("You were kicked from the server");

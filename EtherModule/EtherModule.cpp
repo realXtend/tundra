@@ -93,7 +93,6 @@ namespace Ether
 				this, SLOT(SceneChanged(const QString&, const QString&)));
 			LogDebug("Ether Logic STARTED");
 
-
 			//window_ = new LoginWidget(framework_);
 			//connect(window_, SIGNAL(ExitClicked()), SLOT(Exit()));
 
@@ -187,6 +186,7 @@ namespace Ether
 				connected_ = true;
 				if (ui && ether_logic_)
 				{
+					ether_logic_->GetSceneController()->ShowStatusInformation("Connected, loading world content...", 60000);
 					ether_logic_->SetConnectionState(Connected);
 					ui->SwitchToMainScene();
 					//ui->SwitchToScene("Inworld");
@@ -197,6 +197,14 @@ namespace Ether
 				if (ui && ether_logic_)
 				{
 					ether_logic_->SetConnectionState(Disconnected);
+				    ui->SwitchToScene("Ether");
+				}
+				break;
+			case TundraLogic::Events::EVENT_TUNDRA_LOGIN_FAILED:
+				connected_ = false;
+				if (ui && ether_logic_)
+				{
+					ether_logic_->SetConnectionState(Failed);
 				    ui->SwitchToScene("Ether");
 				}
 				break;
@@ -292,7 +300,9 @@ namespace Ether
 
 	void EtherModule::TakeEtherScreenshotsForTundra()
 	{
-		
+		if (!connected_)
+			return;
+
 		boost::shared_ptr<TundraLogic::Client> client=framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient();
 		QString name= "Avatar" + QString::number(client->GetConnectionID());
 		Scene::EntityPtr avatar_entity = framework_->Scene()->GetDefaultSceneRaw()->GetEntityByName(name);

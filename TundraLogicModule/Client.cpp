@@ -307,6 +307,12 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
     else
     {
         Logout(true);
+		//$ BEGIN_MOD $
+		Events::TundraConnectedEventData event_data;
+        event_data.user_id_ = msg.userID;
+		framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_LOGIN_FAILED, &event_data);
+		//$ END_MOD $
+
     }
 }
 

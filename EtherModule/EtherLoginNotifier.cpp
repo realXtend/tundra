@@ -58,6 +58,8 @@ namespace Ether
 
 			// $ BEGIN_MOD $
 			connect (framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient().get(), SIGNAL(Connected()), SLOT(EmitLoginSuccessful()));
+			connect (this, SIGNAL(Disconnect()), framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient().get(), SLOT(Logout()));
+			//connect (framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient().get(), SIGNAL(Disconnected()), owner_ SLOT(ControlsWidgetHandler("")));
 			// $ END_MOD $
 
 			//@todo: teleport

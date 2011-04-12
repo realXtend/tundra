@@ -91,6 +91,8 @@ namespace Ether
             void SetConnectingState(bool connecting) { login_in_progress_ = connecting; }
             void SetConnected(bool connected);
 
+			void EtherSceneController::ResetStatusWidget();
+
         private slots:
             void ControlsWidgetHandler(QString request_type);
             void ActiveItemChanged(View::InfoCard *);

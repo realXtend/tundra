@@ -331,7 +331,7 @@ namespace Ether
             layout->setContentsMargins(0,5,0,5);
             parent_->setLayout(layout);
 
-            layout->addWidget(text_label_);    
+            layout->addWidget(text_label_);
         }
 
         void ControlProxyWidget::UpdateGeometry(QRectF new_rect, qreal scale, bool do_fade)
@@ -454,8 +454,9 @@ namespace Ether
 
         void ControlProxyWidget::UpdateStatusText(QString text)
         {
-            if (text_label_)
+			if (text_label_) {
                 text_label_->setText(text);
+			}
         }
 
         // Emit type of action request

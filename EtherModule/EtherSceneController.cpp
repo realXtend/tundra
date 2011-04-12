@@ -288,7 +288,8 @@ namespace Ether
             AddCornerAnchor(status_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner); 
             AddCornerAnchor(status_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
             status_widget_->setZValue(51);
-            status_widget_->hide(); 
+			scene_->addItem(status_widget_);
+			status_widget_->hide(); 
         }
 
         void EtherSceneController::LoadClassicLoginWidget(EtherLoginNotifier *login_notifier, bool default_view, QMap<QString,QString> stored_login_data)
@@ -587,6 +588,8 @@ namespace Ether
         {
             if (login_in_progress_)
                 return;
+			if (connected_world_ != 0)
+				ControlsWidgetHandler("disconnect");
             
             QPair<View::InfoCard*, View::InfoCard*> selected_cards;
             selected_cards.first = top_menu_->GetHighlighted();
@@ -736,6 +739,10 @@ namespace Ether
                 connected_world_ = bottom_menu_->GetHighlighted();
             else
                 connected_world_ = 0;
+			//$ BEGIN_MOD $
+			if (!connected)				
+				SuppressControlWidgets(false);
+			//$ END_MOD $
         }
 
         void EtherSceneController::SuppressControlWidgets(bool suppress)
@@ -745,11 +752,15 @@ namespace Ether
 
         void EtherSceneController::UiServiceSceneChanged(const QString &old_name, const QString &new_name)
         {
-            if (old_name.toLower() == "ether")
-                HideStatusWidget();
-            if (new_name.toLower() == "ether")
-                RecalculateMenus();
+            //if (old_name.toLower() == "ether")
+            //    HideStatusWidget();
+			if (new_name.toLower() == "ether") {
+                RecalculateMenus();				
+				SuppressControlWidgets(false);
+			}
         }
+
+
 
         void EtherSceneController::ShowStatusInformation(const QString &text, int hideout)
         {
@@ -760,6 +771,18 @@ namespace Ether
                 info_hide_timer_->start(hideout);
             }
         }
+
+		void EtherSceneController::ResetStatusWidget()
+		{
+			// Notify widget
+			delete(status_widget_);
+            status_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::StatusWidget, View::ControlProxyWidget::NoneDirection);
+            AddCornerAnchor(status_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner); 
+            AddCornerAnchor(status_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
+            status_widget_->setZValue(51);
+			scene_->addItem(status_widget_);
+			status_widget_->hide(); 
+		}
 
         void EtherSceneController::HideStatusWidget()
         {
