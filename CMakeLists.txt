@@ -164,7 +164,7 @@ add_definitions (-DPCH_ENABLED)
 SET(PCH_ENABLED 1)
 
 # Set normalized path for common environment variables
-file(TO_CMAKE_PATH "$ENV{NAALI_DEP_PATH}" ENV_NAALI_DEP_PATH)
+file(TO_CMAKE_PATH "$ENV{TUNDRAQT47_DEP_PATH}" ENV_NAALI_DEP_PATH)
 file(TO_CMAKE_PATH "$ENV{QTDIR}" ENV_QT_DIR)
 file(TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 
@@ -173,7 +173,7 @@ configure_boost()
 configure_poco()
 configure_qt4()
 configure_python()
-configure_python_qt()
+#configure_python_qt()
 configure_ogre()
 configure_xmlrpc()
 configure_curl()

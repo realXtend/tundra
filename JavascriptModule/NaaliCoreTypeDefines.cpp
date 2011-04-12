@@ -29,6 +29,7 @@ Q_DECLARE_METATYPE(Scene::EntityPtr);
 Q_DECLARE_METATYPE(QList<Scene::Entity*>);
 Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(std::string);
+Q_DECLARE_METATYPE(ComponentPtr);
 
 QScriptValue toScriptValueEntity(QScriptEngine *engine, const Scene::EntityPtr &e)
 {
@@ -301,16 +302,35 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueTransform, fromScriptValueTransform);
     qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
     qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
-    qScriptRegisterMetaType<Scene::ScenePtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+
+    int id = qRegisterMetaType<Scene::ScenePtr>("ScenePtr");
+    qScriptRegisterMetaType_helper(
+        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(qScriptValueFromBoostSharedPtr<Scene::SceneManager>),
+        reinterpret_cast<QScriptEngine::DemarshalFunction>(qScriptValueToBoostSharedPtr<Scene::SceneManager>),
+        QScriptValue());
+
+    id = qRegisterMetaType<Scene::ScenePtr>("Scene::ScenePtr");
+    qScriptRegisterMetaType_helper(
+        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(qScriptValueFromBoostSharedPtr<Scene::SceneManager>),
+        reinterpret_cast<QScriptEngine::DemarshalFunction>(qScriptValueToBoostSharedPtr<Scene::SceneManager>),
+        QScriptValue());
+
+    qScriptRegisterMetaType<ComponentPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
 
     //qScriptRegisterMetaType<IAttribute*>(engine, toScriptValueIAttribute, fromScriptValueIAttribute);
-    int id = qRegisterMetaType<IAttribute*>("IAttribute*");
+    id = qRegisterMetaType<IAttribute*>("IAttribute*");
     qScriptRegisterMetaType_helper(
         engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueIAttribute),
         reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueIAttribute),
         QScriptValue());
 
     id = qRegisterMetaType<Scene::EntityPtr>("Scene::EntityPtr");
+    qScriptRegisterMetaType_helper(
+        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueEntity),
+        reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueEntity),
+        QScriptValue());
+
+    id = qRegisterMetaType<Scene::EntityPtr>("EntityPtr");
     qScriptRegisterMetaType_helper(
         engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueEntity),
         reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueEntity),

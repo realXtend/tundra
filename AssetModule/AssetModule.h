@@ -6,6 +6,8 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
+#include <QObject>
+
 #include "ConsoleCommandServiceInterface.h"
 #include "IAssetProvider.h"
 #include "AssetModuleApi.h"
@@ -21,8 +23,10 @@ namespace Asset
     */
 
     //! Asset module.
-    class ASSET_MODULE_API AssetModule : public IModule
+    class ASSET_MODULE_API AssetModule : public QObject, public IModule
     {
+        Q_OBJECT
+
     public:
         AssetModule();
         virtual ~AssetModule();
@@ -39,6 +43,10 @@ namespace Asset
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
+
+    public slots:
+        /// Loads from all the registered local storages all assets that have the given suffix.
+        void LoadAllLocalAssetsWithSuffix(const QString &suffix);
 
     private:
         void ProcessCommandLineOptions();

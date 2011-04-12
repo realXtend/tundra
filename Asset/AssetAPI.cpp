@@ -938,7 +938,8 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
     }
 
     pendingDownloadRequests.erase(transfer->source.ref);
-    currentTransfers.erase(iter);
+    if (iter != currentTransfers.end())
+        currentTransfers.erase(iter);
 }
 
 void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer)
@@ -1174,6 +1175,8 @@ QString GetResourceTypeFromResourceFileName(const char *name)
 
     QString file(name);
     file = file.trimmed().toLower();
+    if (file.endsWith(".qml"))
+        return "QML";
     if (file.endsWith(".mesh"))
         return "OgreMesh";
     if (file.endsWith(".skeleton"))

@@ -115,7 +115,7 @@ public:
 
 public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
-    AssetMap &GetAllAssets() { return assets; }
+    AssetMap GetAllAssets() { return assets; }
 
     /// Opens the internal Asset API asset cache to the given directory. When the Asset API starts up, the asset cache is not created. This allows
     /// the Asset API to be operated in a mode that does not perform writes to the disk when assets are fetched. This will cause assets fetched from

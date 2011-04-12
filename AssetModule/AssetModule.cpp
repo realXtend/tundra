@@ -12,6 +12,7 @@
 #include "ServiceManager.h"
 #include "CoreException.h"
 #include "AssetAPI.h"
+#include "LocalAssetStorage.h"
 
 #include <QDir>
 
@@ -46,6 +47,8 @@ namespace Asset
 
         dir = QDir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "media").toStdString().c_str());
         local->AddStorageDirectory(dir.absolutePath().toStdString(), "Ogre Media", true);
+
+        framework_->RegisterDynamicObject("assetModule", this);
     }
 
     void AssetModule::PostInitialize()
@@ -127,6 +130,17 @@ namespace Asset
             return Console::ResultFailure();
         framework_->Asset()->AddAssetStorage(params[0].c_str(), params[1].c_str(), true);       
         return Console::ResultSuccess();
+    }
+
+    void AssetModule::LoadAllLocalAssetsWithSuffix(const QString &suffix)
+    {
+        std::vector<AssetStoragePtr> storages = framework_->Asset()->GetAssetStorages();
+        for(size_t i = 0; i < storages.size(); ++i)
+        {
+            LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(storages[i].get());
+            if (storage)
+                storage->LoadAllAssetsOfType(framework_->Asset(), suffix);
+        }
     }
 }
 
