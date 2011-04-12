@@ -66,7 +66,7 @@ void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, const
 
         // Use UniqueConnection so that we don't have duplicate connections.
         connect(consoleCommand, SIGNAL(CommandInvoked(const QString &, const QStringList &)),
-            SLOT(CheckForCommand(const QString &, const QStringList &)), Qt::UniqueConnection);
+        SLOT(InvokeCommand(const QString &, const QStringList &)), Qt::UniqueConnection);
     }
 }
 
