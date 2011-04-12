@@ -79,7 +79,8 @@ public:
     
 signals:
     /// Trigger signal. When active flag is on, is sent each frame for every other entity that also has an EC_ProximityTrigger and is close enough.
-    void Triggered(Scene::Entity* otherEntity, float distance);
+    /// Note: needs to be lowercase for QML to accept connections to it
+    void triggered(Scene::Entity* otherEntity, float distance);
 
 public slots:
     /// Attribute has been updated

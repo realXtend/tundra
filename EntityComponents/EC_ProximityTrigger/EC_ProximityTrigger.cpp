@@ -66,7 +66,7 @@ void EC_ProximityTrigger::Update(float timeStep)
             
             if ((threshold <= 0.0f) || (distance <= threshold))
             {
-                emit Triggered(otherEntity, distance);
+                emit triggered(otherEntity, distance);
             }
         }
     }
