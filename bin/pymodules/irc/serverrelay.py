@@ -10,7 +10,7 @@ import ircclient
 
 from circuits.net.protocols import irc #IRC, PRIVMSG, USER, NICK, JOIN, Nick
 
-IRCCHANNEL = "#realxtend"
+IRCCHANNEL = "#realxtend-dev"
 NICKNAME = "tundraserver"
 IRCSERVER = "irc.freenode.net"
 PORT = 6667
@@ -37,6 +37,23 @@ class ServerRelay(circuits.Component):
             self.chatapp = self.scene.GetEntityByNameRaw("ChatApplication")
             self.init_chatapp_handlers()
 
+        self.cmds = {
+            'help': self.help,
+            'users': self.users,
+            'fps': self.fps
+            }
+
+    def help(self):
+        msg = "i know: %s" % self.cmds.keys()
+        self.say(msg)
+
+    def users(self):
+        msg = "i have %d users (client connections) in-world" % len(naali.server.GetConnectionIDs())
+        self.say(msg)
+
+    def fps(self):
+        self.say("60fps, of course! (no, sorry, actually i didn't check")
+
     def init_chatapp_handlers(self):
         csm = self.chatapp.Action("ClientSendMessage")
         csm.connect("Triggered(QString, QString, QString, QStringList)", self.onClientSendMessage)
@@ -60,7 +77,10 @@ class ServerRelay(circuits.Component):
     def onClientSendMessage(self, sender, msg):
         print "IRC onClientSendMessage:", sender, msg
         toirc = "[%s] %s" % (sender, msg)
-        self.push(irc.PRIVMSG(IRCCHANNEL, toirc))
+        self.say(toirc)
+
+    def say(self, msg):
+        self.push(irc.PRIVMSG(IRCCHANNEL, msg))
 
     #a circuits event from the underlying irc client (self.client)
     def message(self, source, target, message):
@@ -72,4 +92,20 @@ class ServerRelay(circuits.Component):
         print "IRC:", s
 
         if self.chatapp is not None:
-            self.chatapp.Exec(4, "ServerSendMessage", s)            
+            self.chatapp.Exec(4, "ServerSendMessage", s)
+
+        nick = self.client.nick
+        #copy-paste from kbd -- consider just using kbd: https://bitbucket.org/prologic/kdb/src/0982b3f52af0/kdb/plugin.py
+        print "MSG, NICK:", message, nick
+        if message.startswith(nick):
+            message = message[len(nick):]
+            while len(message) > 0 and message[0] in [",", ":", " "]:
+                message = message[1:]
+                
+            words = message.split()
+            cmd = words[0]
+            print "CMD", cmd
+            #args = words[1:]
+            if cmd in self.cmds:
+                self.cmds[cmd]() #(args)
+                
