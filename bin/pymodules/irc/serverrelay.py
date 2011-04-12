@@ -31,6 +31,9 @@ class ServerRelay(circuits.Component):
         self.scene = None
         self.chatapp = None
 
+        naali.server.connect("UserConnected(int, UserConnection*)", self.onUserConnected)
+        naali.server.connect("UserDisconnected(int, UserConnection*)", self.onUserDisconnected)
+
         #when live reloading, chatapp is already there:
         self.scene = naali.getDefaultScene()
         if self.scene is not None:
@@ -74,6 +77,12 @@ class ServerRelay(circuits.Component):
             self.scene.disconnect("EntityCreated(Scene::Entity*, AttributeChange::Type)", self.onNewEntity)
             self.init_chatapp_handlers()
 
+    def onUserConnected(self, connid, user):
+        self.note("New user connected: %s" % user.GetProperty("username"))
+
+    def onUserDisconnected(self, connid, user):
+        self.note("User %s disconnected." % user.GetProperty("username"))
+
     def onClientSendMessage(self, sender, msg):
         print "IRC onClientSendMessage:", sender, msg
         toirc = "[%s] %s" % (sender, msg)
@@ -81,6 +90,9 @@ class ServerRelay(circuits.Component):
 
     def say(self, msg):
         self.push(irc.PRIVMSG(IRCCHANNEL, msg))
+
+    def note(self, msg):
+        self.push(irc.NOTICE(IRCCHANNEL, msg))
 
     #a circuits event from the underlying irc client (self.client)
     def message(self, source, target, message):
