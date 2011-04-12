@@ -75,7 +75,6 @@ namespace Scene
         */
         ComponentPtr GetComponent(const QString &type_name, const QString &name) const;
 
-    public:
         //! This is an overloaded function.
         /*! \param type_has Type name hash of the component
             \param name name of the component
@@ -124,6 +123,7 @@ namespace Scene
         ComponentPtr CreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::Default);
         ComponentPtr CreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
+    public:
         typedef std::vector<ComponentPtr> ComponentVector; //!< Component container.
         typedef QMap<QString, EntityAction *> ActionMap; //!< Action container
 

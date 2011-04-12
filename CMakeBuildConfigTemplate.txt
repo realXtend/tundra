@@ -51,11 +51,11 @@ SET(USE_UIMODULE 0)
 # mesh formats.
 SET(OPENASSETIMPORT 0)
 if (MSVC)
-    SET(OPENASSETIMPORT 1)
+#    SET(OPENASSETIMPORT 1)
 endif()
 
 # Enables Ogre asset editor module
-SET(OGREASSETEDITOR 1)
+SET(OGREASSETEDITOR 0)
 
 # The following are the core modules that are required for the project to build. None of these can be omitted.
 add_subdirectory(Core)
@@ -95,18 +95,18 @@ AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
 AddEntityComponent(EntityComponents/EC_Light EC_Light)
 AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
 AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
-AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
+#AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
 AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
-AddEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
+#AddEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
 AddEntityComponent(EntityComponents/EC_ProximityTrigger EC_ProximityTrigger)
 AddEntityComponent(EntityComponents/EC_Gizmo EC_Gizmo)
-AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
+#AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
 AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
 AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
 AddEntityComponent(EntityComponents/EC_QmlApp EC_QmlApp)
 
 # The following EC's are declared by AvatarModule. Optional.
-AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
+#AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
 
 # The following two are declared by both PythonScriptModule and JavascriptModule. They are optional.
 AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)      # Required by ECEditorModule.

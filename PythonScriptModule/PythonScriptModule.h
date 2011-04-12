@@ -82,7 +82,7 @@ namespace PythonScript
         Communications::ServiceInterface* GetCommunicationsService() const;
         
         void RemoveQtDynamicProperty(QObject* qobj, char* propname);
-        QList<Scene::Entity*> ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate);
+        //QList<Scene::Entity*> ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate);
 
         /// Prepares Python script instance used with EC_Script for execution.
         /** The script is executed instantly only if the runOnLoad attribute of the script EC is true.

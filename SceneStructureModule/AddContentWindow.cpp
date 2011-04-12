@@ -13,7 +13,7 @@
 #include "TreeWidgetUtils.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #include "Framework.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"

@@ -7,12 +7,9 @@
 #include "OgreAssetEditorModule.h"
 
 #include "Renderer.h"
-#include "UiServiceInterface.h"
-#include "UiProxyWidget.h"
-#include "ModuleManager.h"
 #include "CoreMath.h"
 #include "OgreRenderingModule.h"
-#include "NaaliRenderWindow.h"
+#include "RenderWindow.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -25,22 +22,23 @@
 MeshPreviewLabel::MeshPreviewLabel(QWidget *parent, Qt::WindowFlags flags):
     QLabel(parent, flags)
 {
-     setMouseTracking(true);
+    setMouseTracking(true);
 }
 
 MeshPreviewLabel::~MeshPreviewLabel()
-{}
+{
+}
 
 void MeshPreviewLabel::mousePressEvent(QMouseEvent* ev)
 {
-    if ( ev->buttons() == Qt::RightButton )
+    if (ev->buttons() == Qt::RightButton)
         sendMouseEvent(ev);
 }
 
 void MeshPreviewLabel::mouseReleaseEvent(QMouseEvent* ev)
 {
- //   if ( ev->buttons() == Qt::RightButton )
-        sendMouseEvent(ev);
+//   if (ev->buttons() == Qt::RightButton)
+    sendMouseEvent(ev);
 }
 
 void MeshPreviewLabel::wheelEvent(QWheelEvent* ev)
@@ -48,22 +46,14 @@ void MeshPreviewLabel::wheelEvent(QWheelEvent* ev)
     sendWheelEvent(ev);
 }
 
-void MeshPreviewLabel::mouseMoveEvent(QMouseEvent *event)
+void MeshPreviewLabel::mouseMoveEvent(QMouseEvent *ev)
 {
-
-    if ( event->buttons() == Qt::RightButton )
-        sendMouseEvent(event);
-  
-   
+    if (ev->buttons() == Qt::RightButton)
+        sendMouseEvent(ev);
 }
 
-
-MeshPreviewEditor::MeshPreviewEditor(Foundation::Framework *framework,
-                                       const QString &inventory_id,
-                                       const asset_type_t &asset_type,
-                                       const QString &name,
-                                       const QString &assetID,
-                                       QWidget *parent):
+MeshPreviewEditor::MeshPreviewEditor(Foundation::Framework *framework, const QString &inventory_id,
+    const asset_type_t &asset_type, const QString &name, const QString &assetID, QWidget *parent) :
     QWidget(parent),
     framework_(framework),
     assetType_(asset_type),
@@ -85,17 +75,15 @@ MeshPreviewEditor::MeshPreviewEditor(Foundation::Framework *framework,
     render_texture_(0),
     width_(400),
     height_(400)
-  
 {
-   
     setObjectName(name);
     InitializeEditorWidget();
     RequestMeshAsset(assetId_);
     setMouseTracking(true);
 }
 
-    MeshPreviewEditor::MeshPreviewEditor(Foundation::Framework *framework, QWidget* parent): 
-    QWidget(parent),framework_(framework), lastPos_(QPointF()),
+MeshPreviewEditor::MeshPreviewEditor(Foundation::Framework *framework, QWidget* parent): 
+    QWidget(parent), framework_(framework), lastPos_(QPointF()),
     camAlphaAngle_(0), mouseDelta_(0),label_(0),
     manager_(0),
     camera_(0),
@@ -107,40 +95,39 @@ MeshPreviewEditor::MeshPreviewEditor(Foundation::Framework *framework,
     width_(400),
     height_(400)
 {
-   InitializeEditorWidget();
-   setMouseTracking(true);
-
+    InitializeEditorWidget();
+    setMouseTracking(true);
 }
 
-void MeshPreviewEditor::Open(const QString &asset_id, const QString &type)
- {
+void MeshPreviewEditor::Open(const QString &asset_id)
+{
     mesh_id_ = asset_id;
+
      // Add widget to UI via ui services module
     setWindowTitle((tr("Mesh: ")) + asset_id);
     try
     {
         Update();
-    } catch (Ogre::Exception &e)
+    }
+    catch (Ogre::Exception &e)
     {
         OgreAssetEditorModule::LogError("Exception while opening mesh " + asset_id.toStdString() + " for editing.");
         OgreAssetEditorModule::LogError(e.what());
     }
- }
+}
 
-void MeshPreviewEditor::OpenMeshPreviewEditor(Foundation::Framework *framework, const QString &asset_id, const QString &asset_type, QWidget* parent)
+MeshPreviewEditor *MeshPreviewEditor::OpenMeshPreviewEditor(Foundation::Framework *framework, const QString &asset_id, QWidget* parent)
 {
     MeshPreviewEditor *editor = new MeshPreviewEditor(framework, parent);
-    QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)), editor, SLOT(Deleted()), Qt::QueuedConnection);
-    editor->Open(asset_id, asset_type);
-    editor->show();
+    connect(editor, SIGNAL(Closed(const QString &, asset_type_t)), editor, SLOT(close()));
+    editor->Open(asset_id);
+    //editor->show();
+    return editor;
 }
 
 MeshPreviewEditor::~MeshPreviewEditor()
 {
-    // Does not own
-    label_ = 0;
-
-    if ( renderer_ != 0)
+    if (renderer_)
     {
         OgreRenderer::OgreRootPtr root = renderer_->GetRoot();
         render_texture_->removeAllViewports();
@@ -150,14 +137,13 @@ MeshPreviewEditor::~MeshPreviewEditor()
         manager_->destroySceneNode(scene_);
         manager_->destroyCamera(camera_);
         manager_->destroyLight(newLight_);
-        
+
         root->destroySceneManager(manager_);
     }
 }
 
-
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-    /*
+///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
 void MeshPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res)
 {
     if(request_tag_ == res->tag_)
@@ -166,18 +152,18 @@ void MeshPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res)
        Update();
     }
 }
-    */
+*/
 
 void MeshPreviewEditor::RequestMeshAsset(const QString &asset_id)
 {
     ///\todo Regression. Reimplement using the new Asset API. -jj.
-    /*
+/*
      boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
         framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock();
     OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
     if (renderer != 0)
         request_tag_ = renderer->RequestResource(asset_id.toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
-        */
+*/
 }
 
 void MeshPreviewEditor::Update()
@@ -186,10 +172,7 @@ void MeshPreviewEditor::Update()
         return;
 
     if ( render_texture_ == 0 )
-    {
         CreateRenderTexture();
-        
-    }
 
     // Hide the main UI Overlay, because otherwise Ogre will paint the Overlay onto the Mesh preview screen as well,
     // which is not desired.
@@ -198,7 +181,7 @@ void MeshPreviewEditor::Update()
     AdjustScene();
 
     render_texture_->update();
-       
+
     Ogre::Box bounds(0, 0, width_, height_);
     Ogre::uchar* pixelData = new Ogre::uchar[width_ * height_ * 4];
     Ogre::PixelBox pixels(bounds, Ogre::PF_A8R8G8B8, pixelData);
@@ -210,52 +193,40 @@ void MeshPreviewEditor::Update()
     u8* p = static_cast<u8 *>(pixels.data);
     int width = pixels.getWidth();
     int height = pixels.getHeight();
-    
+
     QImage img = ConvertToQImage(p, width, height, 4);
 
     if(!img.isNull() && label_ != 0)
         label_->setPixmap(QPixmap::fromImage(img));
-    
-
-    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
-
-    proxy_->show();
-    ui->BringWidgetToFront(proxy_);
 
     delete[] pixelData;
-    
+
     // Remember to re-enable the main UI now we're finished with the Ogre render.
     renderer_->GetRenderWindow()->ShowOverlay(true);
 }
 
 void MeshPreviewEditor::AdjustScene()
 {
-    if ( scene_ == 0)
+    if (scene_ == 0)
         return;
-    
-    scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * PI/180.0));         
+
+    scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * PI/180.0));
 
     Ogre::AxisAlignedBox box = entity_->getBoundingBox();
     Ogre::Vector3 boxCenterPos = box.getHalfSize();
-        
-    Ogre::Vector3 volume= box.getSize();
-         
+    Ogre::Vector3 volume = box.getSize();
+
     // Get biggest side :
-        
     double biggest = boxCenterPos.x;
-    if ( biggest < boxCenterPos.y )
+    if (biggest < boxCenterPos.y)
         biggest = boxCenterPos.y;
-    if ( biggest < boxCenterPos.z )
+    if (biggest < boxCenterPos.z)
         biggest = boxCenterPos.z;
 
     // Create camera position vector
-    
     double r = sqrt(2.0) * 2*biggest * tan(camera_->getFOVy().valueRadians() * camera_->getAspectRatio());
 
     // Adjust r by using mouse roll
-
     int numSteps = ( mouseDelta_ / 8 ) / 15 ;
     r = r + numSteps;
 
@@ -267,104 +238,83 @@ void MeshPreviewEditor::AdjustScene()
 
     camera_->setPosition(pos);
     camera_->lookAt(boxCenterPos);
-
 }
-
 
 void MeshPreviewEditor::CreateRenderTexture()
 {
-      boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
-            framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock();
+    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
 
-        if (!rendering_module)
-            return;
+    // Create scene node and attach camera to it
+    OgreRenderer::OgreRootPtr root = renderer_->GetRoot();
+    manager_ = root->createSceneManager(Ogre::ST_GENERIC,mesh_id_.toStdString().c_str());
 
-         renderer_ = rendering_module->GetRenderer();
-       
-         // Create scenenode and attach camera to it
-    
-         OgreRenderer::OgreRootPtr root = renderer_->GetRoot();
-         manager_ = root->createSceneManager(Ogre::ST_GENERIC,mesh_id_.toStdString().c_str());
-       
-         camera_ = manager_->createCamera(mesh_id_.toStdString().c_str());
-         
-         entity_ = manager_->createEntity("entity", mesh_id_.toStdString());
-         entity_->setMaterialName("BaseWhite");
-         
-         Ogre::AxisAlignedBox box = entity_->getBoundingBox();
-         Ogre::Vector3 boxCenterPos = box.getHalfSize();
-        
-         Ogre::Vector3 volume= box.getSize();
-         
-         // Get biggest side :
-        
-         double biggest = boxCenterPos.x;
-         if ( biggest < boxCenterPos.y )
-             biggest = boxCenterPos.y;
-         if ( biggest < boxCenterPos.z )
-             biggest = boxCenterPos.z;
+    camera_ = manager_->createCamera(mesh_id_.toStdString().c_str());
+
+    entity_ = manager_->createEntity("entity", mesh_id_.toStdString());
+    entity_->setMaterialName("BaseWhite");
+
+    Ogre::AxisAlignedBox box = entity_->getBoundingBox();
+    Ogre::Vector3 boxCenterPos = box.getHalfSize();
+
+    Ogre::Vector3 volume= box.getSize();
+
+    // Get biggest side :
+
+    double biggest = boxCenterPos.x;
+    if ( biggest < boxCenterPos.y )
+     biggest = boxCenterPos.y;
+    if ( biggest < boxCenterPos.z )
+     biggest = boxCenterPos.z;
 
 
-         scene_ = manager_->createSceneNode(rendering_module->GetRenderer()->GetUniqueObjectName(("MeshPreview_" + mesh_id_).toStdString()));
-         scene_->attachObject(entity_);
-         scene_->showBoundingBox(true);
-         scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * PI/180.0));            
-   
-         root_scene_ = manager_->getRootSceneNode();
-         root_scene_->addChild(scene_);
-       
-         camera_->setNearClipDistance(0.1f);
-         camera_->setFarClipDistance(2000.f);
-         
-         // Create camera position vector
-         
-         double r = sqrt(2.0) * 2*biggest * tan(camera_->getFOVy().valueRadians() * camera_->getAspectRatio());
-        
-         // Adjust r by using mouse roll
+    scene_ = manager_->createSceneNode(renderer_->GetUniqueObjectName(("MeshPreview_" + mesh_id_).toStdString()));
+    scene_->attachObject(entity_);
+    scene_->showBoundingBox(true);
+    scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * PI/180.0));
 
-         int numDegrees = mouseDelta_ / 8;
-         int numSteps = numDegrees / 15;
-         r = r + numSteps;
+    root_scene_ = manager_->getRootSceneNode();
+    root_scene_->addChild(scene_);
 
-         double x = 0;
-         double y = boxCenterPos.y;
-         double z = r;
+    camera_->setNearClipDistance(0.1f);
+    camera_->setFarClipDistance(2000.f);
 
-         Ogre::Vector3 pos(x,y,z);
-         camera_->setPosition(pos);
-         camera_->lookAt(boxCenterPos);
+    // Create camera position vector
 
-         newLight_ = manager_->createLight("light");
+    double r = sqrt(2.0) * 2*biggest * tan(camera_->getFOVy().valueRadians() * camera_->getAspectRatio());
 
-         newLight_->setDirection(Ogre::Vector3(-x,-y,-z));
-         newLight_->setType(Ogre::Light::LT_DIRECTIONAL);
-         newLight_->setDiffuseColour(Ogre::ColourValue::White);
-         manager_->setAmbientLight(Ogre::ColourValue::Black);
-        
-         // Render camera view to texture 
-      
-        Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().createManual(
-            mesh_id_.toStdString().c_str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-            Ogre::TEX_TYPE_2D, width_, height_, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
+    // Adjust r by using mouse roll
 
-        render_texture_ = tex->getBuffer()->getRenderTarget();
-        render_texture_->setAutoUpdated(false);
-}
+    int numDegrees = mouseDelta_ / 8;
+    int numSteps = numDegrees / 15;
+    r = r + numSteps;
 
-void MeshPreviewEditor::Closed()
-{
-    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
-    ui->RemoveWidgetFromScene(this);
+    double x = 0;
+    double y = boxCenterPos.y;
+    double z = r;
 
-    emit Closed(inventoryId_, assetType_);
+    Ogre::Vector3 pos(x,y,z);
+    camera_->setPosition(pos);
+    camera_->lookAt(boxCenterPos);
+
+    newLight_ = manager_->createLight("light");
+
+    newLight_->setDirection(Ogre::Vector3(-x,-y,-z));
+    newLight_->setType(Ogre::Light::LT_DIRECTIONAL);
+    newLight_->setDiffuseColour(Ogre::ColourValue::White);
+    manager_->setAmbientLight(Ogre::ColourValue::Black);
+
+    // Render camera view to texture 
+
+    Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().createManual(
+    mesh_id_.toStdString().c_str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+    Ogre::TEX_TYPE_2D, width_, height_, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
+
+    render_texture_ = tex->getBuffer()->getRenderTarget();
+    render_texture_->setAutoUpdated(false);
 }
 
 void MeshPreviewEditor::InitializeEditorWidget()
 {
-    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
-
     // Create widget from ui file
     QUiLoader loader;
     QFile file("./data/ui/mesh_preview.ui");
@@ -373,23 +323,24 @@ void MeshPreviewEditor::InitializeEditorWidget()
         OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");
         return;
     }
+
     mainWidget_ = loader.load(&file);
     file.close();
 
+    setAttribute(Qt::WA_DeleteOnClose);
+
     okButton_ = mainWidget_->findChild<QPushButton *>("okButton");
-    QObject::connect(okButton_, SIGNAL(clicked()), this, SLOT(Closed()));
-    
+
     QVBoxLayout* vLayout = mainWidget_->findChild<QVBoxLayout* >("imageLayout");
     
     label_ = new MeshPreviewLabel(mainWidget_);
     label_->setObjectName("meshImageLabel");
-    
+
     label_->setMinimumSize(300,300);
 
-
     // Kind of hack, in this way we assure that we will get mouseMove-event with left and right button pressed.
-    QObject::connect(label_, SIGNAL(sendMouseEvent(QMouseEvent*)), this, SLOT(MouseEvent(QMouseEvent*)));
-    QObject::connect(label_, SIGNAL(sendWheelEvent(QWheelEvent*)), this, SLOT(MouseWheelEvent(QWheelEvent*)));
+    connect(label_, SIGNAL(sendMouseEvent(QMouseEvent*)), this, SLOT(MouseEvent(QMouseEvent*)));
+    connect(label_, SIGNAL(sendWheelEvent(QWheelEvent*)), this, SLOT(MouseWheelEvent(QWheelEvent*)));
     vLayout->addWidget(label_);
 
     QVBoxLayout *layout = new QVBoxLayout;
@@ -399,9 +350,6 @@ void MeshPreviewEditor::InitializeEditorWidget()
 
     // Add widget to UI via ui services module
     setWindowTitle((tr("Mesh: ")) + objectName());
-
-    proxy_ = ui->AddWidgetToScene(this);
-    QObject::connect(proxy_, SIGNAL(Closed()), this, SLOT(Closed()));
 }
 
 void MeshPreviewEditor::MouseWheelEvent(QWheelEvent* ev)
@@ -429,9 +377,8 @@ void MeshPreviewEditor::MouseEvent(QMouseEvent* event)
         return;
     }
 
-    if ( event->buttons() == Qt::RightButton )
+    if (event->buttons() == Qt::RightButton)
     {
-        
         if ( pos.x() > lastPos_.x() )
         {
             int width = label_->size().width();
@@ -443,27 +390,22 @@ void MeshPreviewEditor::MouseEvent(QMouseEvent* event)
                 camAlphaAngle_ = - ( abs(camAlphaAngle_) % 360 ); 
             else
                 camAlphaAngle_ = camAlphaAngle_ % 360;
-         
-            
+
             Update();
         }
         else if ( pos.x() < lastPos_.x())
         {
-         
             int width = label_->size().width();
             double pix = (2* 360.0 ) / width;
-         
+
             camAlphaAngle_ = camAlphaAngle_ - pix * abs(lastPos_.x() - pos.x() );
-            
-            
-            if ( camAlphaAngle_ < 0 )
+            if (camAlphaAngle_ < 0)
                 camAlphaAngle_ = - (abs(camAlphaAngle_) % 360); 
             else
                 camAlphaAngle_ = camAlphaAngle_ % 360;
-           
+
             Update();
         }
-    
     }
 
    lastPos_ = pos;

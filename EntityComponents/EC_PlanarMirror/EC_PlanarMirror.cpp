@@ -17,7 +17,7 @@
 #include "EC_OgreCamera.h"
 #include "EC_RttTarget.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_PlanarMirror")
 

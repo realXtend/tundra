@@ -1,45 +1,64 @@
-#if 0
-/// For conditions of distribution and use, see copyright notice in license.txt
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_Foundation_Application_h
 #define incl_Foundation_Application_h
 
-#include "CoreStringUtils.h"
+#include <QTimer>
+#include <QApplication>
+#include <QStringList>
+
+class QDir;
+class QGraphicsView;
+class QTranslator;
 
 namespace Foundation
 {
     class Framework;
-
-    //! shortcuts for accessing application specific data, such as name and version. //\todo Refactor-remote this. -jj.
-    /*! \ingroup Foundation_group
-    */   
-    class Application : public boost::noncopyable
-    {
-        Application();
-
-    public:
-        //! constructor that takes a framework
-        explicit Application(Framework *framework);
-
-        //! destructor
-        ~Application();
-
-        //! shortcut for application name
-        static std::string Name();
-
-        //! shortcut for application name, returns wide string
-        static std::wstring NameW() { return ToWString(Name()); }
-
-        //! shortcut for application version string
-        static std::string Version();
-
-        //! shortcut for application version string, returns wide string
-        static std::wstring VersionW() { return ToWString(Version()); }
-
-    private:
-        static Framework *framework_;
-    };
 }
 
-#endif
+/// Represents the subclassed instance of the Qt's QApplication singleton.
+class Application : public QApplication
+{
+    Q_OBJECT
+
+public:
+    /// Constructor.
+    /** Qt requires its own data copy of the argc/argv parameters, so NaaliApplication
+        caches them. Pass in received command-line parameters here.
+        @param owner Pass in the root framework pointer here.
+    */
+    Application(Foundation::Framework *owner, int &argc, char **argv);
+
+    ~Application();
+
+    virtual bool notify(QObject *receiver, QEvent *e);
+
+    void Go();
+
+public slots:
+    void UpdateFrame();
+    void ChangeLanguage(const QString& file);
+    void AboutToExit();
+
+signals:
+    /// This signal is sent when QApplication language is changed, provided for convenience.
+    void LanguageChanged();
+
+    /// This signal is sent when the main window is closed or framework exit has been requested.
+    void ExitRequested();
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+
+private:
+    QStringList GetQmFiles(const QDir &dir);
+    Foundation::Framework *framework;
+    QTimer frameUpdateTimer;
+    bool appActivated;
+    QTranslator *nativeTranslator;
+    QTranslator *appTranslator;
+    int argc; ///< Command line argument count as supplied by the operating system.
+    char **argv; ///< Command line arguments as supplied by the operating system.
+};
+
 #endif

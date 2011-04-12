@@ -7,6 +7,7 @@
 #include "IAssetStorage.h"
 
 class QFileSystemWatcher;
+class AssetAPI;
 
 namespace Asset
 {
@@ -33,6 +34,8 @@ public:
 
     /// Stops and deallocates the directory change listener.
     void RemoveWatcher();
+
+    void LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix);
 
 public slots:
     bool Writable() const { return true; }

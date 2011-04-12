@@ -29,8 +29,8 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "UiAPI.h"
-#include "NaaliGraphicsView.h"
-#include "NaaliMainWindow.h"
+#include "UiGraphicsView.h"
+#include "UiMainWindow.h"
 #include "LoggingFunctions.h"
 #include "SceneDesc.h"
 
@@ -313,6 +313,8 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     if (sceneWindow)
     {
         sceneWindow->setVisible(!sceneWindow->isVisible());
+        if (!sceneWindow->isVisible())
+            sceneWindow->close();
         return;
     }
 
@@ -333,6 +335,8 @@ void SceneStructureModule::ToggleAssetsWindow()
     if (assetsWindow)
     {
         assetsWindow->setVisible(!assetsWindow->isVisible());
+        if (!assetsWindow->isVisible())
+            assetsWindow->close();
         return;
     }
 
