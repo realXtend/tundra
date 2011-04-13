@@ -197,7 +197,7 @@ namespace UiServices
     void UiModule::Uninitialize()
     {
 		//Save the position of widgets (inside/outside)
-		ui_scene_service_->SaveViewConfiguration();
+		//ui_scene_service_->SaveViewConfiguration(); //done in each call to uiservice add or delete
 		//Save state of the MainWindow
 		if (qWin_)
 		{

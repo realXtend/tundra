@@ -329,7 +329,7 @@ namespace Foundation
             ("passwd", po::value<std::string>(), "OpenSim login password")
             ("server", po::value<std::string>(), "World server and port")
             ("auth_server", po::value<std::string>(), "RealXtend authentication server address and port")
-            ("auth_login", po::value<std::string>(), "RealXtend authentication server user name");
+            ("auth_login", po::value<std::string>(), "RealXtend authentication server user name")
 // $ BEGIN_MOD $
             ("editionless", "Run in editionless mode without external widgets");
 // $ END_MOD $

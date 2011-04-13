@@ -434,7 +434,7 @@ namespace UiServices
 		return widget;
  }
 
-	void UiSceneService::SaveViewConfiguration()
+	/*void UiSceneService::SaveViewConfiguration()
 	{
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");	
 		
@@ -455,7 +455,7 @@ namespace UiServices
 			settings.setValue(k.key()+"/position", "inside");
 			++k;
 		}
-	}
+	}*/
 
     void UiSceneService::TranferWidgets()
     {

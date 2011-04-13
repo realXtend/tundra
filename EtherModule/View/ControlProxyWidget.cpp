@@ -455,7 +455,7 @@ namespace Ether
         void ControlProxyWidget::UpdateStatusText(QString text)
         {
 			if (text_label_) {
-                text_label_->setText(text);
+                text_label_->setText("      "+text);
 			}
         }
 

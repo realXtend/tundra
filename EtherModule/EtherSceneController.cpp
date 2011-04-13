@@ -284,7 +284,7 @@ namespace Ether
             scene_->addItem(control_widget_);
 
             // Notify widget
-            status_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::StatusWidget, View::ControlProxyWidget::NoneDirection);
+			status_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::StatusWidget, View::ControlProxyWidget::NoneDirection);
             AddCornerAnchor(status_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner); 
             AddCornerAnchor(status_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
             status_widget_->setZValue(51);

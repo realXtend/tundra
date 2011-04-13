@@ -100,6 +100,7 @@ void setup (Foundation::Framework &fw)
     fw.GetModuleManager()->ExcludeModule("CommunicationsModule");
     fw.GetModuleManager()->ExcludeModule("SceneStructureModule");
     fw.GetModuleManager()->ExcludeModule("DebugStatsModule");
+	fw.GetModuleManager()->ExcludeModule("CameraModule");
 }
 
 int run (int argc, char **argv)
