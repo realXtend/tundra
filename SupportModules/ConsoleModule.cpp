@@ -56,7 +56,7 @@ namespace Console
 
         inputContext = framework_->Input()->RegisterInputContext("Console", 100);
         inputContext->SetTakeKeyboardEventsOverQt(true);
-        connect(inputContext.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+        connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
     }
 
     void ConsoleModule::ToggleConsole()
