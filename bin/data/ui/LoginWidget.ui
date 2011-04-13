@@ -39,10 +39,13 @@
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>13</width>
-            <height>13</height>
+            <height>70</height>
            </size>
           </property>
          </spacer>
@@ -72,25 +75,83 @@
               <enum>QLayout::SetDefaultConstraint</enum>
              </property>
              <item>
-              <widget class="QLabel" name="logoLabel">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
+              <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <item>
+                <widget class="QLabel" name="logoLabel">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>300</width>
+                   <height>121</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap>images/sandbox_logo.png</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_6">
                <item>
+                <spacer name="verticalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Fixed</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_3">
                  <item>
                   <widget class="QLabel" name="label_4">
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>12</pointsize>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
                    <property name="text">
-                    <string>Palvelimen osoite</string>
+                    <string>Palvelimen osoite:</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="serverAddressLineEdit"/>
+                  <widget class="QLineEdit" name="serverAddressLineEdit">
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>12</pointsize>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </item>
@@ -111,6 +172,14 @@
                  </item>
                  <item>
                   <widget class="QPushButton" name="loginButton">
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>12</pointsize>
+                     <weight>50</weight>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="text">
                     <string>Yhdistä</string>
                    </property>
@@ -146,6 +215,9 @@
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>13</width>
@@ -162,5 +234,22 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>serverAddressLineEdit</sender>
+   <signal>editingFinished()</signal>
+   <receiver>loginButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>479</x>
+     <y>282</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>560</x>
+     <y>313</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

@@ -29,13 +29,6 @@ function SetupLoginScreen()
     // Background image
     var loginScreenWidget = findChild(widget, "mainFrame");
     loginScreenWidget.setStyleSheet("QFrame#mainFrame { border-image: url('./data/ui/images/login_background.png') } ");
-//    var palette = new QPalette();
-//    palette.setBrush(loginScreenWidget.backgroundRole(), new QBrush(new QImage("./data/ui/images/login_background.png")));
-//    loginScreenWidget.palette = palette;
-
-//    var palette = loginScreenWidget.palette;
-//    palette.setBrush(QPalette.Base, new QBrush(new QPixmap("./data/ui/images/login_background.png")));
-//    loginScreenWidget.palette = palette;
 
     login_button = findChild(widget, "loginButton");
     login_button.clicked.connect(LoginPressed);
@@ -43,7 +36,6 @@ function SetupLoginScreen()
 
     // Sandbox logo
     var logoLabel = findChild(widget, "logoLabel");
-    logoLabel.scaledContents = true;
     logoLabel.pixmap = new QPixmap("./data/ui/images/sandbox_logo.png");
 
     client.Connected.connect(HideLoginScreen);
