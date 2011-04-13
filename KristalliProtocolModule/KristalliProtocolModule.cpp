@@ -9,13 +9,13 @@
 #include "Profiler.h"
 #include "EventManager.h"
 #include "CoreStringUtils.h"
-#include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
-
 #include "UiAPI.h"
 #include "UiMainWindow.h"
-#include "kNet.h"
-#include "kNet/qt/NetworkDialog.h"
+#include "ConsoleAPI.h"
+
+#include <kNet.h>
+#include <kNet/qt/NetworkDialog.h>
 
 #include <algorithm>
 
@@ -131,7 +131,7 @@ void KristalliProtocolModule::Initialize()
 
 void KristalliProtocolModule::PostInitialize()
 {
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(Console::CreateCommand(
             "kNet", "Shows the kNet statistics window.", 
             Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
 }

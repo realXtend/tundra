@@ -2,13 +2,16 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "CommandManager.h"
-#include "ConsoleModule.h"
-#include "Framework.h"
+#include "ConsoleManager.h"
 #include "Native.h"
 
+#include "Framework.h"
+
 #include <boost/tokenizer.hpp>
+
+#include "MemoryLeakCheck.h"
 
 bool nocase_compare(const std::string &lhs, const std::string &rhs)
 {
@@ -20,20 +23,18 @@ namespace Console
     typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
     typedef boost::tokenizer< boost::escaped_list_separator<char> > escape_tokenizer;
 
-    CommandManager::CommandManager(IModule *parent, ConsoleServiceInterface *console) :
-        Console::ConsoleCommandServiceInterface(),
-        parent_ (checked_static_cast< ConsoleModule* >(parent)),
+    CommandManager::CommandManager(ConsoleManager *console, Foundation::Framework *fw) :
+        framework_(fw),
         console_(console),
         nativeinput_(0)
     {
         RegisterCommand(Console::CreateCommand("Help", "Display available commands", Console::Bind(this, &CommandManager::ConsoleHelp)));
         RegisterCommand(Console::CreateCommand("Exit", "Exit application", Console::Bind(this, &CommandManager::ConsoleExit)));
-        RegisterCommand(Console::CreateCommand("Look", "Look around", Console::Bind(this, &CommandManager::ConsoleLook)));
 #ifdef _DEBUG
         RegisterCommand(Console::CreateCommand("Test", "Echoes parameters supplied with this command", Console::Bind(this, &CommandManager::ConsoleTest)));
 #endif
-        if (parent_->GetFramework()->IsHeadless())
-            nativeinput_ = new Native(this, parent_->GetFramework());
+        if (framework_->IsHeadless())
+            nativeinput_ = new Native(this, framework_);
     }
 
     CommandManager::~CommandManager()
@@ -69,15 +70,14 @@ namespace Console
 
         if (commands_.find(command.name_) != commands_.end())
         {
-            ConsoleModule::LogError("Command " + command.name_ + " already registered.");
+            RootLogWarning("Command " + command.name_ + " already registered.");
             return;
         }
-    
+
         std::string name = command.name_;
         boost::to_lower(name);
         commands_[name] = command;
     }
-
 
     void CommandManager::UnregisterCommand(const std::string &name)
     {
@@ -88,7 +88,7 @@ namespace Console
         CommandMap::iterator it = commands_.find(name_low);
         if (it == commands_.end())
         {
-            ConsoleModule::LogWarning("Trying to unregister command " + name + ", but it has not been registered.");
+            RootLogWarning("Trying to unregister command " + name + ", but it has not been registered.");
             return;
         }
         commands_.erase(it);
@@ -262,7 +262,7 @@ namespace Console
     Console::CommandResult CommandManager::ConsoleExit(const StringVector &params)
     {
         console_->Print("Exiting");
-        parent_->GetFramework()->Exit();
+        framework_->Exit();
 
         return Console::ResultSuccess();
     }
@@ -282,6 +282,5 @@ namespace Console
         return Console::ResultSuccess();
     }
 
-    //Console::CommandResult ConsoleLook(const StringVector &params);
 }
 

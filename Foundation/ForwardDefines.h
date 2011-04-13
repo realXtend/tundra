@@ -13,12 +13,6 @@
 
 #include <vector>
 
-namespace Console
-{
-    struct Command;
-    struct CommandResult;
-}
-
 class ComponentManager;
 class ConfigurationManager;
 class ModuleManager;

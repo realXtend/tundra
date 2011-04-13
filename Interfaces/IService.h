@@ -37,8 +37,6 @@ namespace Service
         ST_WorldLogic,
         ST_PythonScripting,
         ST_JavascriptScripting,
-        ST_Console,
-        ST_ConsoleCommand,
         ST_Asset,
         ST_Texture,
         ST_Sound,

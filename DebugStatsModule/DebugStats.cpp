@@ -79,32 +79,32 @@ void DebugStatsModule::PostInitialize()
 #ifdef PROFILING
     framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
 
-    RegisterConsoleCommand(Console::CreateCommand("rin", 
+    framework_->Console()->RegisterCommand(Console::CreateCommand("rin", 
         "Sends a random network message in.",
         Console::Bind(this, &DebugStatsModule::SendRandomNetworkInPacket)));
 
-    RegisterConsoleCommand(Console::CreateCommand("rout", 
+    framework_->Console()->RegisterCommand(Console::CreateCommand("rout", 
         "Sends a random network message out.",
         Console::Bind(this, &DebugStatsModule::SendRandomNetworkOutPacket)));
 #endif
 
-    RegisterConsoleCommand(Console::CreateCommand("Participant", 
+    framework_->Console()->RegisterCommand(Console::CreateCommand("Participant", 
         "Shows the participant window.",
         Console::Bind(this, &DebugStatsModule::ShowParticipantWindow)));
 
-    RegisterConsoleCommand(Console::CreateCommand("iddqd",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("iddqd",
         "Requests god-mode on from the server.",
         Console::Bind(this, &DebugStatsModule::RequestGodMode)));
 
-    RegisterConsoleCommand(Console::CreateCommand("kick",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("kick",
         "Kicks user out from the server. Usage: \"kick(fullname)\"",
         Console::Bind(this, &DebugStatsModule::KickUser)));
 
-    RegisterConsoleCommand(Console::CreateCommand("dumptextures",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("dumptextures",
         "Dumps all currently existing J2K decoded textures as PNG files into the viewer working directory.",
         Console::Bind(this, &DebugStatsModule::DumpTextures)));
         
-    RegisterConsoleCommand(Console::CreateCommand("exec",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("exec",
         "Invokes action execution in entity",
         Console::Bind(this, &DebugStatsModule::Exec)));
 

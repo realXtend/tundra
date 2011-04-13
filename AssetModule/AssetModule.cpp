@@ -12,6 +12,7 @@
 #include "ServiceManager.h"
 #include "CoreException.h"
 #include "AssetAPI.h"
+#include "ConsoleAPI.h"
 
 #include <QDir>
 
@@ -50,11 +51,11 @@ namespace Asset
 
     void AssetModule::PostInitialize()
     {
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(Console::CreateCommand(
             "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
             Console::Bind(this, &AssetModule::ConsoleRequestAsset)));
 
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(Console::CreateCommand(
             "AddHttpStorage", "Adds a new Http asset storage to the known storages. Usage: AddHttpStorage(url, name)", 
             Console::Bind(this, &AssetModule::AddHttpStorage)));
 

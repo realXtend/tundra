@@ -3,7 +3,6 @@
 #ifndef incl_Interfaces_ConsoleCommandServiceInterface_h
 #define incl_Interfaces_ConsoleCommandServiceInterface_h
 
-#include "IService.h"
 #include "CoreStringUtils.h"
 #include "ConsoleCommand.h"
 
@@ -56,7 +55,7 @@ namespace Console
         virtual CommandResult operator()(const StringVector &params)
         {
             return (*object_.*function_)(params);
-        }       
+        }
 
     private:
         //! pointer to the object
@@ -94,7 +93,7 @@ namespace Console
         virtual CommandResult operator()(const StringVector &params)
         {
             return (*function_)(params);
-        }       
+        }
 
     private:
         //! pointer to function
@@ -143,6 +142,7 @@ namespace Console
         return CallbackPtr(new Callback<T>(object, function));
     }
 
+#if 0
     //! Interface for console command service.
     /*! One can register and execute registered console commands by using this service.
         Commands can be parsed and executed from a commandline string, or executed directly.
@@ -179,7 +179,7 @@ void MyClass::Update()
         \ingroup Services_group
         \ingroup DebugConsole_group
     */
-    class ConsoleCommandServiceInterface : public QObject, public IService
+    class ConsoleCommandServiceInterface : public QObject
     {
         Q_OBJECT
 
@@ -243,11 +243,7 @@ void MyClass::Update()
         */
         void CommandInvoked(const QString &command, const QStringList &params = QStringList());
     };
-
-    //! \ingroup DebugConsole_group
-    typedef ConsoleCommandServiceInterface CommandService;
-    //! Shared pointer for command manager. \ingroup DebugConsole_group
-    typedef boost::shared_ptr<CommandService> CommandManagerPtr;
+#endif
 }
 
 #endif

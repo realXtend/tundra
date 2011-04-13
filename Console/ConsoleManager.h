@@ -17,6 +17,7 @@ namespace Foundation
 
 namespace Console
 {
+    class CommandManager;
     class ConsoleChannel;
     class LogListener;
 
@@ -27,17 +28,11 @@ namespace Console
     /*!
         See \ref DebugConsole "Using the debug console".
     */
-    class ConsoleManager :  public Console::ConsoleServiceInterface
+    class ConsoleManager //:  public ConsoleServiceInterface
     {
-        friend class ConsoleModule;
-    private:
-        ConsoleManager();
-        ConsoleManager(const ConsoleManager &other);
-
-        //! constructor that takes a parent module
-        explicit ConsoleManager(IModule *parent);
-
     public:
+        explicit ConsoleManager(Foundation::Framework *fw);
+
         //! destructor
         virtual ~ConsoleManager();
 
@@ -59,21 +54,18 @@ namespace Console
         virtual bool IsUiInitialized() const { return ui_initialized_; }
 
         //! Returns command manager
-        CommandManagerPtr GetCommandManager() const {return command_manager_; }
+        CommandManager *GetCommandManager() const { return command_manager_; }
 
         //! Removes the Console from the list of Ogre log listeners.
         void UnsubscribeLogListener();
 
     private:
+        Q_DISABLE_COPY(ConsoleManager);
 
-        //Console event category
-        event_category_id_t console_category_id_;
+        Foundation::Framework *framework_;
 
         //! command manager
-        CommandManagerPtr command_manager_;
-
-        //! parent module
-        IModule *parent_;
+        CommandManager *command_manager_;
 
         //! Custom logger to get logmessages from Pogo
         PocoLogChannelPtr console_channel_;

@@ -21,8 +21,6 @@
 #include "SceneEvents.h"
 #include "NetworkEvents.h"
 #include "Entity.h"
-#include "ConsoleServiceInterface.h"
-#include "ConsoleCommandServiceInterface.h"
 #include "RendererSettings.h"
 #include "ConfigurationManager.h"
 #include "EventManager.h"
@@ -33,6 +31,8 @@
 #include "OgreSkeletonAsset.h"
 #include "OgreMaterialAsset.h"
 #include "TextureAsset.h"
+#include "ConsoleAPI.h"
+#include "ConsoleCommandServiceInterface.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -119,7 +119,7 @@ namespace OgreRenderer
 
         renderer_->PostInitialize();
 
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(Console::CreateCommand(
                 "RenderStats", "Prints out render statistics.", 
                 Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
         renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
@@ -193,18 +193,14 @@ namespace OgreRenderer
     {
         if (renderer_)
         {
-            Console::ConsoleServiceInterface *console = GetFramework()->GetService<Console::ConsoleServiceInterface>();
-            if (console)
-            {
-                const Ogre::RenderTarget::FrameStats& stats = renderer_->GetCurrentRenderWindow()->getStatistics();
-                console->Print("Average FPS: " + ToString(stats.avgFPS));
-                console->Print("Worst FPS: " + ToString(stats.worstFPS));
-                console->Print("Best FPS: " + ToString(stats.bestFPS));
-                console->Print("Triangles: " + ToString(stats.triangleCount));
-                console->Print("Batches: " + ToString(stats.batchCount));
-
-                return Console::ResultSuccess();
-            }
+            ConsoleAPI *c = framework_->Console();
+            const Ogre::RenderTarget::FrameStats& stats = renderer_->GetCurrentRenderWindow()->getStatistics();
+            c->Print("Average FPS: " + QString::number(stats.avgFPS));
+            c->Print("Worst FPS: " + QString::number(stats.worstFPS));
+            c->Print("Best FPS: " + QString::number(stats.bestFPS));
+            c->Print("Triangles: " + QString::number(stats.triangleCount));
+            c->Print("Batches: " + QString::number(stats.batchCount));
+            return Console::ResultSuccess();
         }
 
         return Console::ResultFailure("No renderer found.");

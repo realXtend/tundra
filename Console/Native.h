@@ -13,7 +13,7 @@ namespace Foundation
 
 namespace Console
 {
-    class ConsoleCommandServiceInterface;
+    class CommandManager;
     
     class NativeInput
     {
@@ -25,13 +25,13 @@ namespace Console
         //! (thread) entry point
         void operator()();
 
-        void SetCommandManager(Console::ConsoleCommandServiceInterface *command_service) { command_service_ = command_service; assert (command_service_); }
+        void SetCommandManager(CommandManager *command_service) { command_service_ = command_service; assert (command_service_); }
         void SetFramework(Foundation::Framework *framework) { framework_ = framework; assert (framework_); }
 
     private:
         NativeInput(const NativeInput &other);
 
-        Console::ConsoleCommandServiceInterface *command_service_;
+        CommandManager *command_service_;
         Foundation::Framework *framework_;
     };
 
@@ -41,7 +41,7 @@ namespace Console
         Native();
     public:
         //! constructor
-        Native(Console::ConsoleCommandServiceInterface *command_service, Foundation::Framework *framework);
+        Native(Console::CommandManager *command_service, Foundation::Framework *framework);
         //! destructor
         virtual ~Native();
 

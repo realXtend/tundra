@@ -1,9 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#if 0
+
 #ifndef incl_Interfaces_ConsoleServiceInterface_h
 #define incl_Interfaces_ConsoleServiceInterface_h
 
-#include "IService.h"
 #include "CoreTypes.h"
 
 namespace Console
@@ -18,7 +19,7 @@ namespace Console
         \ingroup Services_group
         \ingroup DebugConsole_group
     */
-    class ConsoleServiceInterface : public IService
+    class ConsoleServiceInterface
     {
     public:
         //! default constructor
@@ -47,10 +48,8 @@ namespace Console
         //! Returns false if UI is not initialized, true otherwise
         virtual bool IsUiInitialized() const = 0;
     };
-
-    //! smart pointer for console services. \ingroup DebugConsole_group
-    typedef boost::shared_ptr<ConsoleServiceInterface> ConsolePtr;
 }
 
 #endif
 
+#endif

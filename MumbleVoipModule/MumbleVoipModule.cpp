@@ -19,6 +19,7 @@
 #include "SettingsWidget.h"
 #include "UiServiceInterface.h"
 #include "EC_VoiceChannel.h"
+#include "ConsoleAPI.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -196,17 +197,21 @@ namespace MumbleVoip
 
     void MumbleVoipModule::InitializeConsoleCommands()
     {
-        RegisterConsoleCommand(Console::CreateCommand("mumble link", "Start Mumble link plugin: 'mumble link(user_id, context_id)'",
+        framework_->Console()->RegisterCommand(Console::CreateCommand("mumble link",
+            "Start Mumble link plugin: 'mumble link(user_id, context_id)'",
             Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleLink)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble unlink", "Stop Mumble link plugin: 'mumble unlink'",
+        framework_->Console()->RegisterCommand(Console::CreateCommand("mumble unlink",
+            "Stop Mumble link plugin: 'mumble unlink'",
             Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'",
+        framework_->Console()->RegisterCommand(Console::CreateCommand("mumble start",
+            "Start Mumble client application: 'mumble start(server_url)'",
             Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble stats", "Show mumble statistics", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStats)));
+        framework_->Console()->RegisterCommand(Console::CreateCommand("mumble stats",
+            "Show mumble statistics", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStats)));
 
-        //RegisterConsoleCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector",
+        //framework_->Console()->RegisterCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector",
         //    Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
-        //RegisterConsoleCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector",
+        //framework_->Console()->RegisterCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector",
         //    Console::Bind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
     }
 

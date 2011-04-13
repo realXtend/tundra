@@ -6,9 +6,8 @@
 #include "UiConsoleManager.h"
 #include "ui_ConsoleWidget.h"
 #include "ConsoleProxyWidget.h"
-#include "ConsoleEvents.h"
 #include "ConsoleManager.h"
-#include "ConsoleModule.h"
+#include "ConsoleAPI.h"
 
 #include "UiAPI.h"
 #include "UiProxyWidget.h"
@@ -74,8 +73,6 @@ namespace Console
         connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
         // Print queuing with Qt::QueuedConnection to avoid problems when printing from threads
         connect(this, SIGNAL(PrintOrderReceived(const QString &)), SLOT(PrintToConsole(const QString &)), Qt::QueuedConnection);
-        // Init event categories
-        console_category_id_ = framework_->GetEventManager()->QueryEventCategory("Console");
     }
 
     UiConsoleManager::~UiConsoleManager()
@@ -88,9 +85,9 @@ namespace Console
     {
         if (!console_ui_)
             return; // Headless
+
         QString text = console_ui_->ConsoleInputArea->text();
-        Console::ConsoleEventData event_data(text.toStdString());
-        framework_->GetEventManager()->SendEvent(console_category_id_, Console::Events::EVENT_CONSOLE_COMMAND_ISSUED, &event_data);
+        framework_->Console()->consoleManager->ExecuteCommand(text.toStdString());
         console_ui_->ConsoleInputArea->clear();
     }
 

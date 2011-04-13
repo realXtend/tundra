@@ -16,6 +16,7 @@
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "AvatarDescAsset.h"
+#include "ConsoleAPI.h"
 
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
@@ -26,8 +27,6 @@
 #ifdef EC_HoveringWidget_ENABLED
 #include "EC_HoveringWidget.h"
 #endif
-
-
 
 namespace Avatar
 {
@@ -86,7 +85,7 @@ namespace Avatar
 
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("GenericAvatarXml")));
         
-        RegisterConsoleCommand(Console::CreateCommand("editavatar",
+        framework_->Console()->RegisterCommand(Console::CreateCommand("editavatar",
             "Edits the avatar in a specific entity. Usage: editavatar(entityname)",
             Console::Bind(this, &AvatarModule::EditAvatar)));
     }

@@ -75,9 +75,6 @@ namespace Console
         //! Console opacity
         qreal opacity_;
 
-        //! Console event category
-        event_category_id_t console_category_id_;
-
         //! Framework pointer
         Foundation::Framework* framework_;
 
