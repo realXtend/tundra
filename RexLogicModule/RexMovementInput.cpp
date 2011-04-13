@@ -26,8 +26,8 @@ RexMovementInput::RexMovementInput(Foundation::Framework *framework_)
     input->SetTakeMouseEventsOverQt(true);
 
     // Listen on both key and mouse input signals.
-    connect(input.get(), SIGNAL(OnKeyEvent(KeyEvent *)), this, SLOT(HandleKeyEvent(KeyEvent *)));
-    connect(input.get(), SIGNAL(OnMouseEvent(MouseEvent *)), this, SLOT(HandleMouseEvent(MouseEvent *)));
+    connect(input.get(), SIGNAL(KeyEventReceived(KeyEvent *)), this, SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), this, SLOT(HandleMouseEvent(MouseEvent *)));
 }
 
 // Either sends an input event press or release, depending on the key event type.

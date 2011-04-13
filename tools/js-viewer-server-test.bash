@@ -19,7 +19,7 @@ case $testfile in
     *.txml)
 	echo "Setting up args for a txml file ($testfile)"
 	servercmd="./server --file $testfile --run exitdelay.js"
-	viewercmd="./viewer --storage `dirname $testfile` --run v.js"
+	viewercmd="./viewer --storage `dirname $testfile`/ --run v.js"
 	;;
 esac
 
@@ -33,8 +33,10 @@ grep . exitstatus.?
 grep Error: [sv].out
 test -f core && exit 1
 if test `cat exitstatus.s` = 0 && test `cat exitstatus.v` = 0; then
+    echo 'test outcome: success'
     exit 0
 else
+    echo 'test outcome: failure'
     exit 1
 fi
 
