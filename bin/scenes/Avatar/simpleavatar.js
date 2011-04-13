@@ -56,6 +56,10 @@ function ServerInitialize() {
     var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
     var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
 
+    // Create an inactive proximitytrigger, so that other proximitytriggers can detect the avatar
+    var proxtrigger = me.GetOrCreateComponentRaw("EC_ProximityTrigger");
+    proxtrigger.active = false;
+
     // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
     var r = avatar.appearanceRef;
     r.ref = "local://default_avatar.xml";
