@@ -24,15 +24,18 @@ function SetupLoginScreen()
     widget.setVisible(true);
 
     widget.layout().addWidget(child, 0, 0);
+    widget.layout().setContentsMargins(0, 0, 0, 0);
 
     // Background image
-    var loginScreenWidget = findChild(widget, "MainFrame");
+    var loginScreenWidget = findChild(widget, "mainFrame");
+    loginScreenWidget.setStyleSheet("QFrame#mainFrame { border-image: url('./data/ui/images/login_background.png') } ");
 //    var palette = new QPalette();
 //    palette.setBrush(loginScreenWidget.backgroundRole(), new QBrush(new QImage("./data/ui/images/login_background.png")));
 //    loginScreenWidget.palette = palette;
-    var palette = loginScreenWidget.palette;
-    palette.setBrush(QPalette.Base, new QBrush(new QPixmap("./data/ui/images/login_background.png")));
-    loginScreenWidget.palette = palette;
+
+//    var palette = loginScreenWidget.palette;
+//    palette.setBrush(QPalette.Base, new QBrush(new QPixmap("./data/ui/images/login_background.png")));
+//    loginScreenWidget.palette = palette;
 
     login_button = findChild(widget, "loginButton");
     login_button.clicked.connect(LoginPressed);

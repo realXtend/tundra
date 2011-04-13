@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Tundra</string>
   </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
     <number>0</number>
@@ -21,7 +24,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="MainFrame">
+    <widget class="QFrame" name="mainFrame">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
