@@ -249,7 +249,7 @@ void RexLogicModule::Load()
 //#ifdef EC_Name_ENABLED
     DECLARE_MODULE_EC(EC_Name);
 //#endif
-#ifdef EC_Movable_ENABLED
+#ifdef EC_ParticleSystem_ENABLED
     DECLARE_MODULE_EC(EC_ParticleSystem);
 #endif
 #ifdef EC_SoundListener_ENABLED
