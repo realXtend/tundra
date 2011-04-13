@@ -36,31 +36,34 @@ public:
 
     ~InputContext();
 
-    /// Updates the buffered key presses. Called by the input service to
-    /// proceed on to the next input frame.
+    /// Updates the buffered key presses. Called by the input service to proceed on to the next input frame.
     void UpdateFrame();
 
 signals:
-    ///\todo remove On and make KeyEventReceived
     /// Emitted for each key code, for each event type.
-    void OnKeyEvent(KeyEvent *key);
-    ///\todo remove On and make MouseEventReceived
+    void KeyEventReceived(KeyEvent *key);
+
     /// Emitted for each mouse event (move, scroll, button press/release).
-    void OnMouseEvent(MouseEvent *mouse);
+    void MouseEventReceived(MouseEvent *mouse);
+
     /// Emitted for every gesture event (started, updated, finished and canceled)
     void GestureEventReceived(GestureEvent *gesture);
 
     /// This signal is emitted when any key is pressed in this context.
     void KeyPressed(KeyEvent *key);
+
     /// This signal is emitted for each application frame when this key is pressed down in this context.
     void KeyDown(KeyEvent *key);
+
     /// This signal is emitted when any key is released in this context.
     void KeyReleased(KeyEvent *key);
 
     /// Emitted when the mouse cursor is moved, independent of whether any buttons are down.
     void MouseMove(MouseEvent *mouse);
+
     /// Mouse wheel was scrolled.
     void MouseScroll(MouseEvent *mouse);
+
     /// Mouse double click
     void MouseDoubleClicked(MouseEvent *mouse);
 
@@ -75,10 +78,13 @@ signals:
     void MouseMiddleReleased(MouseEvent *mouse);
     void MouseRightReleased(MouseEvent *mouse);
 
-    /// Gesture events. Note that you need to accept a the started in order to receive updates.
-    /// Call gesture->Accept() to get updates and a finished signal for it.
+    /// @note You need to accept the started event using Accept() in order to receive update and finished events.
     void GestureStarted(GestureEvent *gesture);
+
+    /// @note You need to accept the started event in order to receive update events.
     void GestureUpdated(GestureEvent *gesture);
+
+    /// @note You need to accept the started event in order to receive update events.
     void GestureFinished(GestureEvent *gesture);
 
 public slots:
