@@ -1,12 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ConsoleConsoleManager_h
-#define incl_ConsoleConsoleManager_h
+#ifndef incl_Console_ConsoleManager_h
+#define incl_Console_ConsoleManager_h
 
 #include <Poco/Channel.h>
 #include <Poco/Message.h>
 
-#include "ConsoleServiceInterface.h"
 #include "CommandManager.h"
 #include "LogListenerInterface.h"
 
@@ -15,94 +14,91 @@ namespace Foundation
     class Framework;
 }
 
-namespace Console
+class CommandManager;
+class ConsoleChannel;
+class LogListener;
+
+typedef boost::shared_ptr<LogListener> LogListenerPtr;
+typedef boost::shared_ptr<ConsoleChannel> PocoLogChannelPtr;
+
+//! Generic debug console manager, directs input and output to available consoles.
+/*!
+    See \ref DebugConsole "Using the debug console".
+*/
+class ConsoleManager //:  public ConsoleServiceInterface
 {
-    class CommandManager;
-    class ConsoleChannel;
-    class LogListener;
+public:
+    explicit ConsoleManager(Foundation::Framework *fw);
 
-    typedef boost::shared_ptr<LogListener> LogListenerPtr;
-    typedef boost::shared_ptr<ConsoleChannel> PocoLogChannelPtr;
+    //! destructor
+    virtual ~ConsoleManager();
 
-    //! Generic debug console manager, directs input and output to available consoles.
-    /*!
-        See \ref DebugConsole "Using the debug console".
-    */
-    class ConsoleManager //:  public ConsoleServiceInterface
-    {
-    public:
-        explicit ConsoleManager(Foundation::Framework *fw);
+    __inline virtual void Update(f64 frametime);
 
-        //! destructor
-        virtual ~ConsoleManager();
+    //! Print text in parameter
+    __inline virtual void Print(const std::string &text);
 
-        __inline virtual void Update(f64 frametime);
+    //! Execute command in parameter
+    virtual void ExecuteCommand(const std::string &command);
 
-        //! Print text in parameter
-        __inline virtual void Print(const std::string &text);
+    //! Toggle console on/off
+    virtual void ToggleConsole() {}
 
-        //! Execute command in parameter
-        virtual void ExecuteCommand(const std::string &command);
+    //! Sets Ui initialized/uninitialized
+    virtual void SetUiInitialized(bool initialized);
 
-        //! Toggle console on/off
-        virtual void ToggleConsole() {}
+    //! Returns false if UI is not initialized, true otherwise
+    virtual bool IsUiInitialized() const { return ui_initialized_; }
 
-        //! Sets Ui initialized/uninitialized
-        virtual void SetUiInitialized(bool initialized);
+    //! Returns command manager
+    CommandManager *GetCommandManager() const { return command_manager_; }
 
-        //! Returns false if UI is not initialized, true otherwise
-        virtual bool IsUiInitialized() const { return ui_initialized_; }
+    //! Removes the Console from the list of Ogre log listeners.
+    void UnsubscribeLogListener();
 
-        //! Returns command manager
-        CommandManager *GetCommandManager() const { return command_manager_; }
+private:
+    Q_DISABLE_COPY(ConsoleManager);
 
-        //! Removes the Console from the list of Ogre log listeners.
-        void UnsubscribeLogListener();
+    Foundation::Framework *framework_;
 
-    private:
-        Q_DISABLE_COPY(ConsoleManager);
+    //! command manager
+    CommandManager *command_manager_;
 
-        Foundation::Framework *framework_;
+    //! Custom logger to get logmessages from Pogo
+    PocoLogChannelPtr console_channel_;
 
-        //! command manager
-        CommandManager *command_manager_;
+    //! Listener to get logs from renderer 
+    LogListenerPtr log_listener_;
 
-        //! Custom logger to get logmessages from Pogo
-        PocoLogChannelPtr console_channel_;
+    //! This is a buffer for messages generated before actual console UI
+    std::vector<std::string> early_messages_;
 
-        //! Listener to get logs from renderer 
-        LogListenerPtr log_listener_;
+    //!indicates whether the UI is initialized
+    bool ui_initialized_;
+};
 
-        //! This is a buffer for messages generated before actual console UI
-        std::vector<std::string> early_messages_;
+//! loglistener is used to listen log messages from renderer
+class LogListener : public Foundation::LogListenerInterface
+{
+    LogListener();
 
-        //!indicates whether the UI is initialized
-        bool ui_initialized_;
-    };
+public:
+    explicit LogListener(ConsoleManager *console) : Foundation::LogListenerInterface(), mngr_(console) {}
+    virtual ~LogListener() {}
 
-    //! loglistener is used to listen log messages from renderer
-    class LogListener : public Foundation::LogListenerInterface
-    {
-        LogListener();
+    virtual void LogMessage(const std::string &message){ if(mngr_) mngr_->Print(message); }
+    ConsoleManager* mngr_;
+};
 
-    public:
-        explicit LogListener(ConsoleManager *console) : Foundation::LogListenerInterface(), mngr_(console) {}
-        virtual ~LogListener() {}
-
-        virtual void LogMessage(const std::string &message){ if(mngr_) mngr_->Print(message); }
-        ConsoleManager* mngr_;
-    };
-
-    //! Class to get messages from poco logger
-    class ConsoleChannel: public Poco::Channel
-    {
-    public:
-        explicit ConsoleChannel(ConsoleManager* mngr){ mngr_ = mngr; }
-        void log(const Poco::Message & msg){ if (mngr_) mngr_->Print(msg.getText()); }
-    private:
-        ConsoleManager* mngr_;
-    };
-}
+//! Class to get messages from poco logger
+class ConsoleChannel: public Poco::Channel
+{
+public:
+    explicit ConsoleChannel(ConsoleManager* mngr){ mngr_ = mngr; }
+    void log(const Poco::Message & msg){ if (mngr_) mngr_->Print(msg.getText()); }
+private:
+    ConsoleManager* mngr_;
+};
 
 #endif
 

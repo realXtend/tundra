@@ -32,7 +32,7 @@
 #include "OgreMaterialAsset.h"
 #include "TextureAsset.h"
 #include "ConsoleAPI.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -119,9 +119,9 @@ namespace OgreRenderer
 
         renderer_->PostInitialize();
 
-        framework_->Console()->RegisterCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
                 "RenderStats", "Prints out render statistics.", 
-                Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
+                ConsoleBind(this, &OgreRenderingModule::ConsoleStats)));
         renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
     }
 
@@ -189,7 +189,7 @@ namespace OgreRenderer
         RESETPROFILER;
     }
 
-    Console::CommandResult OgreRenderingModule::ConsoleStats(const StringVector &params)
+    ConsoleCommandResult OgreRenderingModule::ConsoleStats(const StringVector &params)
     {
         if (renderer_)
         {
@@ -200,10 +200,10 @@ namespace OgreRenderer
             c->Print("Best FPS: " + QString::number(stats.bestFPS));
             c->Print("Triangles: " + QString::number(stats.triangleCount));
             c->Print("Batches: " + QString::number(stats.batchCount));
-            return Console::ResultSuccess();
+            return ConsoleResultSuccess();
         }
 
-        return Console::ResultFailure("No renderer found.");
+        return ConsoleResultFailure("No renderer found.");
     }
 }
 

@@ -5,8 +5,8 @@
  *  @brief  Console core API.
  */
 
-#ifndef incl_Foundation_ConsoleAPI
-#define incl_Foundation_ConsoleAPI
+#ifndef incl_Console_ConsoleAPI
+#define incl_Console_ConsoleAPI
 
 #include "CoreTypes.h"
 #include "InputFwd.h"
@@ -20,12 +20,9 @@ namespace Foundation
     class Framework;
 }
 
-namespace Console
-{
-    class ConsoleManager;
-    class UiConsoleManager;
-    struct Command;
-}
+class ConsoleManager;
+class UiConsoleManager;
+struct ConsoleCommandStruct;
 
 /// Convenience class for scripting languages
 /** Cannot be created directly, created by ConsoleAPI.
@@ -111,7 +108,7 @@ public slots:
     /// Registers console command for this module.
     /** @param command Console command.
     */
-    void RegisterCommand(const Console::Command &command);
+    void RegisterCommand(const ConsoleCommandStruct &command);
 
 private:
     Q_DISABLE_COPY(ConsoleAPI);
@@ -135,8 +132,8 @@ private slots:
     void InvokeCommand(const QString &name, const QStringList &params) const;
 
 public:
-    Console::ConsoleManager *consoleManager;
-    Console::UiConsoleManager *uiConsoleManager;
+    ConsoleManager *consoleManager;
+    UiConsoleManager *uiConsoleManager;
     InputContextPtr inputContext;
 
 private slots:

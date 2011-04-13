@@ -12,7 +12,7 @@
 #include "EventManager.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 #include "ModuleManager.h"
 #include "EC_DynamicComponent.h"
 #include "InputAPI.h"
@@ -48,11 +48,11 @@ void ECEditorModule::Initialize()
 
 void ECEditorModule::PostInitialize()
 {
-    /*framework_->Console()->RegisterCommand(Console::CreateCommand("ECEditor",
+    /*framework_->Console()->RegisterCommand(CreateConsoleCommand("ECEditor",
         "Shows the EC editor.",
-        Console::Bind(this, &ECEditorModule::ShowWindow)));*/
+        ConsoleBind(this, &ECEditorModule::ShowWindow)));*/
 
-    framework_->Console()->RegisterCommand(Console::CreateCommand("EditDynComp",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("EditDynComp",
         "Command that will create/remove components from the dynamic component."
         "Params:"
         " 0 = entity id."
@@ -61,13 +61,13 @@ void ECEditorModule::PostInitialize()
         " 3 = attribute name."
         " 4 = attribute type. (Add only)"
         " 5 = attribute value. (Add only)",
-        Console::Bind(this, &ECEditorModule::EditDynamicComponent)));
+        ConsoleBind(this, &ECEditorModule::EditDynamicComponent)));
 
-    framework_->Console()->RegisterCommand(Console::CreateCommand("ShowDocumentation",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("ShowDocumentation",
         "Prints the class documentation for the given symbol."
         "Params:"
         " 0 = The symbol to fetch the documentation for.",
-        Console::Bind(this, &ECEditorModule::ShowDocumentation)));
+        ConsoleBind(this, &ECEditorModule::ShowDocumentation)));
 
     AddEditorWindowToUI();
 
@@ -151,38 +151,38 @@ void ECEditorModule::AddEditorWindowToUI()
     //ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
 }
 
-/*Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
+/*ConsoleCommandResult ECEditorModule::ShowWindow(const StringVector &params)
 {
     UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
     if (!ui)
-        return Console::ResultFailure("Failed to acquire UiModule pointer!");
+        return ConsoleResultFailure("Failed to acquire UiModule pointer!");
 
     if (editor_window_)
     {
         ui->BringWidgetToFront(editor_window_);
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
     else
-        return Console::ResultFailure("EC Editor window was not initialised, something went wrong on startup!");
+        return ConsoleResultFailure("EC Editor window was not initialised, something went wrong on startup!");
 }*/
 
-Console::CommandResult ECEditorModule::ShowDocumentation(const StringVector &params)
+ConsoleCommandResult ECEditorModule::ShowDocumentation(const StringVector &params)
 {
     if (params.size() == 0)
-        return Console::ResultFailure("The first parameter must be the documentation symbol to find!");
+        return ConsoleResultFailure("The first parameter must be the documentation symbol to find!");
 
     QUrl styleSheetPath;
     QString documentation;
     /*bool success = */DoxygenDocReader::GetSymbolDocumentation(params[0].c_str(), &documentation, &styleSheetPath);
     if (documentation.length() == 0)
-        return Console::ResultFailure("Failed to find documentation!");
+        return ConsoleResultFailure("Failed to find documentation!");
 
     QWebView *webview = new QWebView();
     webview->setHtml(documentation, styleSheetPath);
     webview->show();
     webview->setAttribute(Qt::WA_DeleteOnClose);
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 /* Params
@@ -193,28 +193,28 @@ Console::CommandResult ECEditorModule::ShowDocumentation(const StringVector &par
  * 4 = attribute type
  * 5 = attribute value
  */
-Console::CommandResult ECEditorModule::EditDynamicComponent(const StringVector &params)
+ConsoleCommandResult ECEditorModule::EditDynamicComponent(const StringVector &params)
 {
     Scene::SceneManager *sceneMgr = GetFramework()->Scene()->GetDefaultScene().get();
     if(!sceneMgr)
-        return Console::ResultFailure("Failed to find main scene.");
+        return ConsoleResultFailure("Failed to find main scene.");
 
     if(params.size() == 6)
     {
         entity_id_t id = ParseString<entity_id_t>(params[0]);
         Scene::Entity *ent = sceneMgr->GetEntity(id).get();
         if(!ent)
-            return Console::ResultFailure("Cannot find entity by name of " + params[0]);
+            return ConsoleResultFailure("Cannot find entity by name of " + params[0]);
 
         if(params[1] == "add")
         {
             ComponentPtr comp = ent->GetComponent(QString::fromStdString(params[2]));
             EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
             if(!dynComp)
-                return Console::ResultFailure("Invalid component type " + params[2]);
+                return ConsoleResultFailure("Invalid component type " + params[2]);
             IAttribute *attribute = dynComp->CreateAttribute(QString::fromStdString(params[4]), params[3].c_str());
             if(!attribute)
-                return Console::ResultFailure("Failed to create attribute type " + params[4]);
+                return ConsoleResultFailure("Failed to create attribute type " + params[4]);
             attribute->FromString(params[5], AttributeChange::Default);
             //dynComp->ComponentChanged("Default");//AttributeChange::Local); 
         }
@@ -224,19 +224,19 @@ Console::CommandResult ECEditorModule::EditDynamicComponent(const StringVector &
         entity_id_t id = ParseString<entity_id_t>(params[0]);
         Scene::Entity *ent = sceneMgr->GetEntity(id).get();
         if(!ent)
-            return Console::ResultFailure("Cannot find entity by name of " + params[0]);
+            return ConsoleResultFailure("Cannot find entity by name of " + params[0]);
 
         else if(params[1] == "rem")
         {
             ComponentPtr comp = ent->GetComponent(QString::fromStdString(params[2]));
             EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
             if(!dynComp)
-                return Console::ResultFailure("Wrong component typename " + params[2]);
+                return ConsoleResultFailure("Wrong component typename " + params[2]);
             dynComp->RemoveAttribute(QString::fromStdString(params[3]));
             dynComp->ComponentChanged(AttributeChange::Default);
         }
     }
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 void ECEditorModule::CreateXmlEditor(Scene::EntityPtr entity)

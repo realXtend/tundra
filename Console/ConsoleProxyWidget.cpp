@@ -7,23 +7,20 @@
 
 #include <QWidget>
 
-namespace Console
+ConsoleProxyWidget::ConsoleProxyWidget(QWidget *widget) :
+    QGraphicsProxyWidget(0, Qt::Widget),
+    con_relative_height_(0.5)
 {
-    ConsoleProxyWidget::ConsoleProxyWidget(QWidget *widget) :
-        QGraphicsProxyWidget(0, Qt::Widget),
-        con_relative_height_(0.5)
-    {
-        setWidget(widget);
-    }
+    setWidget(widget);
+}
 
-    ConsoleProxyWidget::~ConsoleProxyWidget(void)
-    {
-    }
+ConsoleProxyWidget::~ConsoleProxyWidget(void)
+{
+}
 
-    void ConsoleProxyWidget::SetConsoleRelativeHeight(qreal height)
-    {
-        if (height < 0 || height > 1)
-            height /= height;
-        con_relative_height_ = height;
-    }
+void ConsoleProxyWidget::SetConsoleRelativeHeight(qreal height)
+{
+    if (height < 0 || height > 1)
+        height /= height;
+    con_relative_height_ = height;
 }

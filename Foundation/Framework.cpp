@@ -495,10 +495,10 @@ namespace Foundation
         return application;
     }
 
-    Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleLoadModule(const StringVector &params)
     {
         if (params.size() != 2 && params.size() != 1)
-            return Console::ResultInvalidParameters();
+            return ConsoleResultInvalidParameters();
 
         std::string lib = params[0];
         std::string entry = params[0];
@@ -508,27 +508,27 @@ namespace Foundation
         bool result = module_manager_->LoadModuleByName(lib, entry);
 
         if (!result)
-            return Console::ResultFailure("Library or module not found.");
+            return ConsoleResultFailure("Library or module not found.");
 
-        return Console::ResultSuccess("Module " + entry + " loaded.");
+        return ConsoleResultSuccess("Module " + entry + " loaded.");
     }
 
-    Console::CommandResult Framework::ConsoleUnloadModule(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleUnloadModule(const StringVector &params)
     {
         if (params.size() != 1)
-            return Console::ResultInvalidParameters();
+            return ConsoleResultInvalidParameters();
 
         bool result = false;
         if (module_manager_->HasModule(params[0]))
             result = module_manager_->UnloadModuleByName(params[0]);
 
         if (!result)
-            return Console::ResultFailure("Module not found.");
+            return ConsoleResultFailure("Module not found.");
 
-        return Console::ResultSuccess("Module " + params[0] + " unloaded.");
+        return ConsoleResultSuccess("Module " + params[0] + " unloaded.");
     }
 
-    Console::CommandResult Framework::ConsoleListModules(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleListModules(const StringVector &params)
     {
         if (console)
         {
@@ -538,21 +538,21 @@ namespace Foundation
                 console->Print(modules[i].module_->Name().c_str());
         }
 
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
-    Console::CommandResult Framework::ConsoleSendEvent(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleSendEvent(const StringVector &params)
     {
         if (params.size() != 2)
-            return Console::ResultInvalidParameters();
+            return ConsoleResultInvalidParameters();
         
         event_category_id_t event_category = event_manager_->QueryEventCategory(params[0], false);
         if (event_category == IllegalEventCategory)
-            return Console::ResultFailure("Event category not found.");
+            return ConsoleResultFailure("Event category not found.");
         else
         {
             event_manager_->SendEvent(event_category, ParseString<event_id_t>(params[1]), 0);
-            return Console::ResultSuccess();
+            return ConsoleResultSuccess();
         }
     }
 
@@ -633,7 +633,7 @@ namespace Foundation
             level -= 2;
     }
 
-    Console::CommandResult Framework::ConsoleProfile(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleProfile(const StringVector &params)
     {
 #ifdef PROFILING
         if (console)
@@ -649,31 +649,31 @@ namespace Foundation
 //            profiler.Release();
         }
 #endif
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
     void Framework::RegisterConsoleCommands()
     {
-        console->RegisterCommand(Console::CreateCommand("LoadModule",
+        console->RegisterCommand(CreateConsoleCommand("LoadModule",
             "Loads a module from shared library. Usage: LoadModule(lib, entry)",
-            Console::Bind(this, &Framework::ConsoleLoadModule)));
+            ConsoleBind(this, &Framework::ConsoleLoadModule)));
 
-        console->RegisterCommand(Console::CreateCommand("UnloadModule",
+        console->RegisterCommand(CreateConsoleCommand("UnloadModule",
             "Unloads a module. Usage: UnloadModule(name)", 
-            Console::Bind(this, &Framework::ConsoleUnloadModule)));
+            ConsoleBind(this, &Framework::ConsoleUnloadModule)));
 
-        console->RegisterCommand(Console::CreateCommand("ListModules",
+        console->RegisterCommand(CreateConsoleCommand("ListModules",
             "Lists all loaded modules.", 
-            Console::Bind(this, &Framework::ConsoleListModules)));
+            ConsoleBind(this, &Framework::ConsoleListModules)));
 
-        console->RegisterCommand(Console::CreateCommand("SendEvent",
+        console->RegisterCommand(CreateConsoleCommand("SendEvent",
             "Sends an internal event. Only for events that contain no data. Usage: SendEvent(event category name, event id)",
-            Console::Bind(this, &Framework::ConsoleSendEvent)));
+            ConsoleBind(this, &Framework::ConsoleSendEvent)));
 
 #ifdef PROFILING
-        console->RegisterCommand(Console::CreateCommand("Profile", 
+        console->RegisterCommand(CreateConsoleCommand("Profile", 
             "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block",
-            Console::Bind(this, &Framework::ConsoleProfile)));
+            ConsoleBind(this, &Framework::ConsoleProfile)));
 #endif
     }
 

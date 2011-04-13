@@ -4,51 +4,48 @@
 #include "DebugOperatorNew.h"
 
 #include "Native.h"
-//#include "ConsoleCommandServiceInterface.h"
+//#include "ConsoleCommandUtils.h"
 #include "CommandManager.h"
 
 #include "MemoryLeakCheck.h"
 
-namespace Console
+void NativeInput::operator()()
 {
-    void NativeInput::operator()()
-    {
 #ifndef WINDOWS_APP
-        assert (command_service_);
+    assert (command_service_);
 
-        while (true)
+    while (true)
+    {
+        std::string command_line;
+        std::getline(std::cin, command_line);
+
+        boost::this_thread::interruption_point();
+
+        if (std::cin.fail())
         {
-            std::string command_line;
-            std::getline(std::cin, command_line);
-
-            boost::this_thread::interruption_point();
-
-            if (std::cin.fail())
-            {
-                command_service_->QueueCommand("exit");
-                break;
-            }
-
-            command_service_->QueueCommand(command_line);
+            command_service_->QueueCommand("exit");
+            break;
         }
+
+        command_service_->QueueCommand(command_line);
+    }
 #endif
-    }
+}
 
-    // ***********************************************************
+// ***********************************************************
 
-    Native::Native(CommandManager *command_service, Foundation::Framework *framework)
-    {
-        assert (command_service);
-        input_.SetCommandManager(command_service);
-        input_.SetFramework(framework);
-        
-        thread_ = boost::thread(boost::ref(input_));
-    }
+NativeConsole::NativeConsole(CommandManager *command_service, Foundation::Framework *framework)
+{
+    assert (command_service);
+    input_.SetCommandManager(command_service);
+    input_.SetFramework(framework);
+    
+    thread_ = boost::thread(boost::ref(input_));
+}
 
-    Native::~Native()
-    {
-        thread_.interrupt();
-        //thread_.join();
-    }
+NativeConsole::~NativeConsole()
+{
+    thread_.interrupt();
+    //thread_.join();
 }
 

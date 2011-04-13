@@ -73,7 +73,7 @@
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
 #include "ConsoleCommand.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 #include "ServiceManager.h"
 #include "ComponentManager.h"
 #include "IEventData.h"
@@ -384,23 +384,23 @@ void RexLogicModule::PostInitialize()
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
     
-    framework_->Console()->RegisterCommand(Console::CreateCommand("Login", 
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
-        Console::Bind(this, &RexLogicModule::ConsoleLogin)));
+        ConsoleBind(this, &RexLogicModule::ConsoleLogin)));
 
-    framework_->Console()->RegisterCommand(Console::CreateCommand("Logout", 
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("Logout", 
         "Logout from server.",
-        Console::Bind(this, &RexLogicModule::ConsoleLogout)));
+        ConsoleBind(this, &RexLogicModule::ConsoleLogout)));
         
-    framework_->Console()->RegisterCommand(Console::CreateCommand("Fly",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("Fly",
         "Toggle flight mode.",
-        Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
+        ConsoleBind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
 #ifdef EC_Highlight_ENABLED
-    framework_->Console()->RegisterCommand(Console::CreateCommand("Highlight",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("Highlight",
         "Adds/removes EC_Highlight for every prim and mesh. Usage: highlight(add|remove)."
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
-        Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
+        ConsoleBind(this, &RexLogicModule::ConsoleHighlightTest)));
 #endif
 
     obj_camera_controller_->PostInitialize();
@@ -1225,7 +1225,7 @@ OgreRenderer::RendererPtr RexLogicModule::GetOgreRendererPtr() const
     return framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
 }
 
-Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
+ConsoleCommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
 {
     std::string name = "Test User";
     std::string passwd = "test";
@@ -1246,38 +1246,38 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
 
     StartLoginOpensim(name.c_str(), passwd.c_str(), server.c_str());
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
+ConsoleCommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 {
     if (world_stream_->IsConnected())
     {
         LogoutAndDeleteWorld();
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
     else
     {
-        return Console::ResultFailure("Not connected to server.");
+        return ConsoleResultFailure("Not connected to server.");
     }
 }
 
-Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
+ConsoleCommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
 {
     event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
     GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::TOGGLE_FLYMODE, 0);
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
+ConsoleCommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
 {
 #ifdef EC_Highlight_ENABLED
     Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene found.");
+        return ConsoleResultFailure("No active scene found.");
 
     if (params.size() != 1 || (params[0] != "add" && params[0] != "remove"))
-        return Console::ResultFailure("Invalid syntax. Usage: highlight(add|remove).");
+        return ConsoleResultFailure("Invalid syntax. Usage: highlight(add|remove).");
 
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
@@ -1311,7 +1311,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
         }
     }
 #endif
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 void RexLogicModule::EmitIncomingEstateOwnerMessageEvent(QVariantList params)

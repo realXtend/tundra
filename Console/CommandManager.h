@@ -1,9 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ConsoleCommandManager_h
-#define incl_ConsoleCommandManager_h
+#ifndef incl_Console_ConsoleCommandManager_h
+#define incl_Console_ConsoleCommandManager_h
 
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 #include "CoreThread.h"
 
 #include <QObject>
@@ -12,86 +12,139 @@
 
 namespace Foundation { class Framework; }
 
-namespace Console
-{
-    class ConsoleManager;
-    class Native;
+class ConsoleManager;
+class NativeConsole;
 
-    /// Handles console commands
-    /** see ConsoleCommandServiceInterface for more information
+//! Handles console commands
+/*! One can register and execute registered console commands by using this service.
+    Commands can be parsed and executed from a commandline string, or executed directly.
 
-        @note nothing is handled very efficiently, but should not be necessary as commands are issued rarely.
-    */
-    class CommandManager : public QObject //: public ConsoleCommandServiceInterface
-    {
-        Q_OBJECT
+    One can register new commands with RegisterCommand() - functions.
+    Each command has a name and a short description. Command names are case-insensitive.
+    Each command is associated with C++ callback function, the function can be a static
+    function or a member function, but it should have the signature:
 
-    public:
-        CommandManager(ConsoleManager *console, Foundation::Framework *fw);
-        virtual ~CommandManager();
+        ConsoleCommandResult Foo(const StringVector& parameters)
 
-        virtual void Update();
-        virtual void RegisterCommand(const Console::Command &command);
-        virtual void UnregisterCommand(const std::string &name);
+    where parameters contains parameters supplied with the command.
 
-        /// Queue console command. The command will be called in the console's thread
-        /*! @note if a commandline containing the same command gets queued multiple times,
-                  the most recent command's parameters take precedence and the command
-                  is only queued once.
+    For threadsafe execution of the callbacks, use QueueCommand() when supplying
+    commandlines from the user (only for Console-type of classes), and register commands
+    with delayed execution and use Poll() to execute the commands in the caller's
+    thread context.
+    F.ex.
+    \verbatim
+        // register command for delayed execution
+        RegisterCommand("MyCommand", "My great command", &MyClass::MyFunction, true);
+    \endverbatim
 
-            @param commandline string that contains the command and any parameters
-        */
-        virtual void QueueCommand(const std::string &commandline);
-
-        virtual boost::optional<CommandResult> Poll(const std::string &command);
-
-        virtual Console::CommandResult ExecuteCommand(const std::string &commandline);
-
-        /// Execute command
-        /** It is assumed that name and params are trimmed and need no touching
-
-            \param name Name of the command to execute
-            \param params Parameters to pass to the command
-        */
-        __inline virtual Console::CommandResult ExecuteCommand(const std::string &name, const StringVector &params)
+        then in MyClass' update function, in thread context other than the main thread
+    \verbatim
+        void MyClass::Update()
         {
-            return ExecuteCommandAlways(name, params, false);
+            ConsoleCommandService->Poll("MyCommand"); // If MyCommand was queued previously, it now gets executed.
+            // ...
         }
+    \endverbatim
 
-        /// Print out available commands to console
-        Console::CommandResult ConsoleHelp(const StringVector &params);
+    \note All functions should be threadsafe.
+    @note nothing is handled very efficiently, but should not be necessary as commands are issued rarely.
+*/
+class CommandManager : public QObject //: public ConsoleCommandServiceInterface
+{
+    Q_OBJECT
 
-        /// Exit application
-        Console::CommandResult ConsoleExit(const StringVector &params);
+public:
+    CommandManager(ConsoleManager *console, Foundation::Framework *fw);
+    virtual ~CommandManager();
 
-        /// Test command
-        Console::CommandResult ConsoleTest(const StringVector &params);
+    //! Updates the service. Should be called in main thread context. For internal use.
+    virtual void Update();
 
-    signals:
-        /// Emitted when console command with no callback pointer is invoked.
-        /** @param command Command name.
-            @param params Parameters (optional).
-        */
-        void CommandInvoked(const QString &command, const QStringList &params = QStringList());
+    //! Register a command to the debug console
+    /*!
+        Shortcut functions are present to make registering easier, see
+            ConsoleCommandStruct CreateCommand(const std::string &name, const std::string &description, const ConsoleCallbackPtr &callback, bool delayed)
+            ConsoleCommandStruct CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed)
 
-    private:
-        Console::CommandResult ExecuteCommandAlways(const std::string &name, const StringVector &params, bool always);
+        \param command the command to register
+    */
 
-        typedef std::map<std::string, Console::Command> CommandMap;
-        typedef std::queue<std::string> StringQueue;
-        typedef std::map< std::string, StringVector> CommandParamMap;
+    virtual void RegisterCommand(const ConsoleCommandStruct &command);
 
-        Foundation::Framework *framework_;
+    //! Unregister console command
+    /*! See RegisterCommand()
 
-        CommandMap commands_; ///< Available commands
-        RecursiveMutex commands_mutex_; ///< Mutex for handling registered commands.
-        StringQueue commandlines_; ///< Queue of command lines.
-        Mutex commandlines_mutex_; ///< Mutex for handling command line queue.
-        CommandParamMap delayed_commands_; ///< Map of commands that have delayed execution.
-        ConsoleManager *console_; ///< Console.
-        Native* nativeinput_; ///< Native input for headless mode.
-    };
-}
+        \param name Name of the command to unregister
+    */
+    virtual void UnregisterCommand(const std::string &name);
+
+    /// Queue console command. The command will be called in the console's thread
+    /*! @note if a commandline containing the same command gets queued multiple times,
+              the most recent command's parameters take precedence and the command
+              is only queued once.
+
+        @param commandline string that contains the command and any parameters
+    */
+    virtual void QueueCommand(const std::string &commandline);
+
+    //! Poll to see if command has been queued and executes it immediately, in the caller's thread context.
+    /*! For each possible command, this needs to be called exactly once.
+        The command must have been created as 'delayed'.
+
+        \param command name of the command to poll for.
+        \return Result of executing the command, 
+    */
+
+    virtual boost::optional<ConsoleCommandResult> Poll(const std::string &command);
+
+
+    //! Parse and execute command line. The command is called in the caller's thread. For internal use.
+    virtual ConsoleCommandResult ExecuteCommand(const std::string &commandline);
+
+    /// Execute command
+    /** It is assumed that name and params are trimmed and need no touching
+
+        \param name Name of the command to execute
+        \param params Parameters to pass to the command
+    */
+    __inline virtual ConsoleCommandResult ExecuteCommand(const std::string &name, const StringVector &params)
+    {
+        return ExecuteCommandAlways(name, params, false);
+    }
+
+    /// Print out available commands to console
+    ConsoleCommandResult ConsoleHelp(const StringVector &params);
+
+    /// Exit application
+    ConsoleCommandResult ConsoleExit(const StringVector &params);
+
+    /// Test command
+    ConsoleCommandResult ConsoleTest(const StringVector &params);
+
+signals:
+    /// Emitted when console command with no callback pointer is invoked.
+    /** @param command Command name.
+        @param params Parameters (optional).
+    */
+    void CommandInvoked(const QString &command, const QStringList &params = QStringList());
+
+private:
+    ConsoleCommandResult ExecuteCommandAlways(const std::string &name, const StringVector &params, bool always);
+
+    typedef std::map<std::string, ConsoleCommandStruct> CommandMap;
+    typedef std::queue<std::string> StringQueue;
+    typedef std::map< std::string, StringVector> CommandParamMap;
+
+    Foundation::Framework *framework_;
+
+    CommandMap commands_; ///< Available commands
+    RecursiveMutex commands_mutex_; ///< Mutex for handling registered commands.
+    StringQueue commandlines_; ///< Queue of command lines.
+    Mutex commandlines_mutex_; ///< Mutex for handling command line queue.
+    CommandParamMap delayed_commands_; ///< Map of commands that have delayed execution.
+    ConsoleManager *console_; ///< Console.
+    NativeConsole* nativeinput_; ///< Native input for headless mode.
+};
 
 #endif
-

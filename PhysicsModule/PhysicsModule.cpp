@@ -22,7 +22,7 @@
 #include "Profiler.h"
 #include "Renderer.h"
 #include "ConsoleAPI.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 
 #include <btBulletDynamicsCommon.h>
 
@@ -93,18 +93,18 @@ void PhysicsModule::Initialize()
 
 void PhysicsModule::PostInitialize()
 {
-    framework_->Console()->RegisterCommand(Console::CreateCommand("physicsdebug",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("physicsdebug",
         "Toggles drawing of physics debug geometry.",
-        Console::Bind(this, &PhysicsModule::ConsoleToggleDebugGeometry)));
-    framework_->Console()->RegisterCommand(Console::CreateCommand("stopphysics",
+        ConsoleBind(this, &PhysicsModule::ConsoleToggleDebugGeometry)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("stopphysics",
         "Stops physics simulation.",
-        Console::Bind(this, &PhysicsModule::ConsoleStopPhysics)));
-    framework_->Console()->RegisterCommand(Console::CreateCommand("startphysics",
+        ConsoleBind(this, &PhysicsModule::ConsoleStopPhysics)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("startphysics",
         "(Re)starts physics simulation.",
-        Console::Bind(this, &PhysicsModule::ConsoleStartPhysics)));
-    framework_->Console()->RegisterCommand(Console::CreateCommand("autocollisionmesh",
+        ConsoleBind(this, &PhysicsModule::ConsoleStartPhysics)));
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("autocollisionmesh",
         "Auto-assigns static rigid bodies with collision mesh to all visible meshes.",
-        Console::Bind(this, &PhysicsModule::ConsoleAutoCollisionMesh)));
+        ConsoleBind(this, &PhysicsModule::ConsoleAutoCollisionMesh)));
 }
 
 void PhysicsModule::Uninitialize()
@@ -113,32 +113,32 @@ void PhysicsModule::Uninitialize()
     SetDrawDebugGeometry(false);
 }
 
-Console::CommandResult PhysicsModule::ConsoleToggleDebugGeometry(const StringVector& params)
+ConsoleCommandResult PhysicsModule::ConsoleToggleDebugGeometry(const StringVector& params)
 {
     SetDrawDebugGeometry(!drawDebugGeometry_);
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult PhysicsModule::ConsoleStopPhysics(const StringVector& params)
+ConsoleCommandResult PhysicsModule::ConsoleStopPhysics(const StringVector& params)
 {
     SetRunPhysics(false);
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult PhysicsModule::ConsoleStartPhysics(const StringVector& params)
+ConsoleCommandResult PhysicsModule::ConsoleStartPhysics(const StringVector& params)
 {
     SetRunPhysics(true);
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVector& params)
+ConsoleCommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVector& params)
 {
     Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene");
+        return ConsoleResultFailure("No active scene");
     
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
@@ -157,7 +157,7 @@ Console::CommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVecto
         }
     }
     
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 void PhysicsModule::Update(f64 frametime)
