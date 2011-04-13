@@ -215,7 +215,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 
                 if (entity)
                 {
-                    emit EntityLeave(entity.get());
+                    emit entityLeave(entity.get());
                     disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
                 }
                 continue;
@@ -243,7 +243,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
         {
             if (entities_.find(entity) == entities_.end())
             {
-                emit EntityEnter(otherEntity);
+                emit entityEnter(otherEntity);
                 connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
             }
 
@@ -256,7 +256,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
             // make sure the entity isn't already inside the volume
             if (entities_.find(entity) == entities_.end())
             {
-                emit EntityEnter(otherEntity);
+                emit entityEnter(otherEntity);
                 connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
             }
         }
@@ -272,7 +272,7 @@ void EC_VolumeTrigger::OnEntityRemoved(Scene::Entity *entity)
     {
         entities_.erase(i);
 
-        emit EntityLeave(entity);
+        emit entityLeave(entity);
     }
 }
 
