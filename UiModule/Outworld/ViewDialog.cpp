@@ -24,6 +24,7 @@ namespace UiServices
 		setModal(true);
 		this->adjustSize();
 		views_.removeOne("Building");
+		views_.removeOne("Previous");
 
 		//Create layout
 		QGridLayout *layout = new QGridLayout(this);
@@ -74,80 +75,95 @@ namespace UiServices
 
 	void ViewDialog::OnRenameButtonClicked()
 	{
-		if(name_line_edit_->text()!="" && view_combo_box_->currentText()!="Previous" && view_combo_box_->currentText()!="Building" && !views_.contains(name_line_edit_->text()))
-			emit Rename(view_combo_box_->currentText(),name_line_edit_->text());
-		else{
+		if(view_combo_box_->count()==0){
 			QMessageBox* msgInfo=new QMessageBox();
-			msgInfo->setText("This name is not available");
+			msgInfo->setText("There aren't any view to rename");
 			msgInfo->setIcon(QMessageBox::Information);
 			msgInfo->exec();
+		}else{
+			if(name_line_edit_->text()==""){
+				QMessageBox* msgInfo=new QMessageBox();
+				msgInfo->setText("The name can't be empty");
+				msgInfo->setIcon(QMessageBox::Information);
+				msgInfo->exec();
+			}else if(name_line_edit_->text()=="Previous" && name_line_edit_->text()=="Building"){
+				QMessageBox* msgInfo=new QMessageBox();
+				msgInfo->setText("This name is not available");
+				msgInfo->setIcon(QMessageBox::Information);
+				msgInfo->exec();
+			}else if (views_.contains(name_line_edit_->text())){
+				QMessageBox* msgInfo=new QMessageBox();
+				msgInfo->setText("The view already exist");
+				msgInfo->setIcon(QMessageBox::Information);
+				msgInfo->exec();
+			}else
+				emit Rename(view_combo_box_->currentText(),name_line_edit_->text());
 		}
 	}
 
 	void ViewDialog::OnSaveButtonClicked()
 	{
-		QMessageBox* msgBox=new QMessageBox();
-		msgBox->setText("The view has been modified");
-		msgBox->setInformativeText("Do you want to save your changes in  "+view_combo_box_->currentText());
-		msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-		msgBox->setDefaultButton(QMessageBox::Yes);
-		msgBox->setIcon(QMessageBox::Question);
-		int option = msgBox->exec();
-		switch (option) {
-			case QMessageBox::Yes:
-				if(name_line_edit_->text()!="Building" && name_line_edit_->text()!="Previous"){
+		if(view_combo_box_->count()==0){
+			QMessageBox* msgInfo=new QMessageBox();
+			msgInfo->setText("There aren't any view to save");
+			msgInfo->setIcon(QMessageBox::Information);
+			msgInfo->exec();
+		}else{
+			QMessageBox* msgBox=new QMessageBox();
+			msgBox->setText("The view has been modified");
+			msgBox->setInformativeText("Do you want to save your changes in  "+view_combo_box_->currentText());
+			msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox->setDefaultButton(QMessageBox::Yes);
+			msgBox->setIcon(QMessageBox::Question);
+			int option = msgBox->exec();
+			QMessageBox* msgInfo=new QMessageBox();
+			switch (option) {
+				case QMessageBox::Yes:
 					emit Save(view_combo_box_->currentText());
-					QMessageBox* msgInfo=new QMessageBox();
 					msgInfo->setText("The view "+view_combo_box_->currentText()+" has been saved");
 					msgInfo->setIcon(QMessageBox::Information);
 					msgInfo->exec();
-				}else{
-					QMessageBox* msgInfo=new QMessageBox();
-					msgInfo->setText("Sorry, the view can not be saved");
-					msgInfo->setIcon(QMessageBox::Information);
-					msgInfo->exec();
-				}
-				break;
-			case QMessageBox::No:
-				// Don't Save was clicked
-				break;
-			default:
-				// should never be reached
-				break;
-
+					break;
+				case QMessageBox::No:
+					// Don't Save was clicked
+					break;
+				default:
+					// should never be reached
+					break;
+			}
 		}
 	}
 
 	void ViewDialog::OnDeleteButtonClicked()
 	{
-		QMessageBox* msgBox=new QMessageBox();
-		msgBox->setText("The view will be deleted.");
-		msgBox->setInformativeText("Do you want to delete the view "+view_combo_box_->currentText());
-		msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-		msgBox->setDefaultButton(QMessageBox::No);
-		msgBox->setIcon(QMessageBox::Question);
-		int option = msgBox->exec();
-		switch (option) {
-			case QMessageBox::Yes:
-				if(view_combo_box_->currentText()=="Building"){
-					QMessageBox* msgInfo=new QMessageBox();
-					msgInfo->setText("The Building view can't be deleted");
-					msgInfo->setIcon(QMessageBox::Information);
-					msgInfo->exec();
-				}else{
-					QMessageBox* msgInfo=new QMessageBox();
+		if(view_combo_box_->count()==0){
+			QMessageBox* msgInfo=new QMessageBox();
+			msgInfo->setText("There aren't any view to save");
+			msgInfo->setIcon(QMessageBox::Information);
+			msgInfo->exec();
+		}else{
+			QMessageBox* msgBox=new QMessageBox();
+			msgBox->setText("The view will be deleted.");
+			msgBox->setInformativeText("Do you want to delete the view "+view_combo_box_->currentText());
+			msgBox->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox->setDefaultButton(QMessageBox::No);
+			msgBox->setIcon(QMessageBox::Question);
+			int option = msgBox->exec();
+			QMessageBox* msgInfo=new QMessageBox();
+			switch (option) {
+				case QMessageBox::Yes:
 					emit Delete(view_combo_box_->currentText());
 					msgInfo->setText("The view has been deleted");
 					msgInfo->setIcon(QMessageBox::Information);
 					msgInfo->exec();
-				}
-			break;
-			case QMessageBox::No:
-				// Don't Save was clicked
-				break;
-			default:
-				// should never be reached
-				break;
+					break;
+				case QMessageBox::No:
+					// Don't Save was clicked
+					break;
+				default:
+					// should never be reached
+					break;
+			}
 		}
 	}
 
