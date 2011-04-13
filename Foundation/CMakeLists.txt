@@ -14,11 +14,11 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-use_modules (Foundation Core Interfaces Scene Ui Input Asset Audio)
+use_modules (Foundation Core Interfaces Scene Ui Input Asset Audio Console)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Interfaces Scene Ui Input Asset Audio)
+link_modules (Core Interfaces Scene Ui Input Asset Audio Console)
 
 SetupCompileFlagsWithPCH()
 

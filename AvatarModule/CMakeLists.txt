@@ -29,8 +29,8 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 add_definitions (-DAVATAR_MODULE_EXPORTS)
 
 # Includes
-use_modules(AvatarModule Core Foundation Interfaces Scene RexCommon SupportModules ProtocolUtilities
-    HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset)
+use_modules(AvatarModule Core Foundation Interfaces Scene RexCommon ProtocolUtilities
+    HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -38,11 +38,11 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RE
 link_ogre()
 
 if (APPLE)
-    link_modules(Core Foundation Interfaces Scene RexCommon SupportModules ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga
-        HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset)
+    link_modules(Core Foundation Interfaces Scene RexCommon ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga
+        HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset Console)
 else()
-    link_modules(Core Foundation Interfaces Scene RexCommon SupportModules ProtocolUtilities
-        HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset)
+    link_modules(Core Foundation Interfaces Scene RexCommon ProtocolUtilities
+        HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset Console)
 endif()
 
 LinkEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)

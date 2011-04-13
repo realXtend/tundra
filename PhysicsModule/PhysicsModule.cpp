@@ -2,16 +2,18 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "EC_Mesh.h"
-#include "EC_Placeable.h"
-#include "EC_RigidBody.h"
-#include "EC_Terrain.h"
-#include "EC_VolumeTrigger.h"
+
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "CollisionShapeUtils.h"
 #include "ConvexHull.h"
-#include "MemoryLeakCheck.h"
+#include "EC_RigidBody.h"
+#include "EC_VolumeTrigger.h"
+#include "OgreBulletCollisionsDebugLines.h"
+
+#include "EC_Mesh.h"
+#include "EC_Placeable.h"
+#include "EC_Terrain.h"
 #include "Entity.h"
 #include "SceneAPI.h"
 #include "Framework.h"
@@ -19,13 +21,16 @@
 #include "ServiceManager.h"
 #include "Profiler.h"
 #include "Renderer.h"
+#include "ConsoleAPI.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "OgreBulletCollisionsDebugLines.h"
-#include "btBulletDynamicsCommon.h"
+
+#include <btBulletDynamicsCommon.h>
 
 #include <QtScript>
 
 #include <Ogre.h>
+
+#include "MemoryLeakCheck.h"
 
 Q_DECLARE_METATYPE(Physics::PhysicsModule*);
 Q_DECLARE_METATYPE(Physics::PhysicsWorld*);
@@ -88,16 +93,16 @@ void PhysicsModule::Initialize()
 
 void PhysicsModule::PostInitialize()
 {
-    RegisterConsoleCommand(Console::CreateCommand("physicsdebug",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("physicsdebug",
         "Toggles drawing of physics debug geometry.",
         Console::Bind(this, &PhysicsModule::ConsoleToggleDebugGeometry)));
-    RegisterConsoleCommand(Console::CreateCommand("stopphysics",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("stopphysics",
         "Stops physics simulation.",
         Console::Bind(this, &PhysicsModule::ConsoleStopPhysics)));
-    RegisterConsoleCommand(Console::CreateCommand("startphysics",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("startphysics",
         "(Re)starts physics simulation.",
         Console::Bind(this, &PhysicsModule::ConsoleStartPhysics)));
-    RegisterConsoleCommand(Console::CreateCommand("autocollisionmesh",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("autocollisionmesh",
         "Auto-assigns static rigid bodies with collision mesh to all visible meshes.",
         Console::Bind(this, &PhysicsModule::ConsoleAutoCollisionMesh)));
 }
@@ -263,7 +268,9 @@ void PhysicsModule::SetDrawDebugGeometry(bool enable)
         
         if (!debugGeometryObject_)
         {
+#include "DisableMemoryLeakCheck.h"
             debugGeometryObject_ = new DebugLines();
+#include "EnableMemoryLeakCheck.h"
             scenemgr->getRootSceneNode()->attachObject(debugGeometryObject_);
         }
     }
@@ -318,7 +325,9 @@ boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogr
         return iter->second;
     
     // Create new, then interrogate the Ogre mesh
+#include "DisableMemoryLeakCheck.h"
     ptr = boost::shared_ptr<btTriangleMesh>(new btTriangleMesh());
+#include "EnableMemoryLeakCheck.h"
     GenerateTriangleMesh(mesh, ptr.get(), true);
     
     triangleMeshes_[mesh->getName()] = ptr;

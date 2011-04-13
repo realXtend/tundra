@@ -18,6 +18,7 @@
 #include "InputAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
+#include "ConsoleAPI.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -47,11 +48,11 @@ void ECEditorModule::Initialize()
 
 void ECEditorModule::PostInitialize()
 {
-    /*RegisterConsoleCommand(Console::CreateCommand("ECEditor",
+    /*framework_->Console()->RegisterCommand(Console::CreateCommand("ECEditor",
         "Shows the EC editor.",
         Console::Bind(this, &ECEditorModule::ShowWindow)));*/
 
-    RegisterConsoleCommand(Console::CreateCommand("EditDynComp",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("EditDynComp",
         "Command that will create/remove components from the dynamic component."
         "Params:"
         " 0 = entity id."
@@ -62,7 +63,7 @@ void ECEditorModule::PostInitialize()
         " 5 = attribute value. (Add only)",
         Console::Bind(this, &ECEditorModule::EditDynamicComponent)));
 
-    RegisterConsoleCommand(Console::CreateCommand("ShowDocumentation",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("ShowDocumentation",
         "Prints the class documentation for the given symbol."
         "Params:"
         " 0 = The symbol to fetch the documentation for.",

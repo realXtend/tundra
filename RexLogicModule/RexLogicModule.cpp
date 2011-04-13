@@ -90,6 +90,7 @@
 #include "EC_Mesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
+#include "ConsoleAPI.h"
 
 // External EC's
 #ifdef EC_Highlight_ENABLED
@@ -383,20 +384,20 @@ void RexLogicModule::PostInitialize()
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
     
-    RegisterConsoleCommand(Console::CreateCommand("Login", 
+    framework_->Console()->RegisterCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
         Console::Bind(this, &RexLogicModule::ConsoleLogin)));
 
-    RegisterConsoleCommand(Console::CreateCommand("Logout", 
+    framework_->Console()->RegisterCommand(Console::CreateCommand("Logout", 
         "Logout from server.",
         Console::Bind(this, &RexLogicModule::ConsoleLogout)));
         
-    RegisterConsoleCommand(Console::CreateCommand("Fly",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("Fly",
         "Toggle flight mode.",
         Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
 #ifdef EC_Highlight_ENABLED
-    RegisterConsoleCommand(Console::CreateCommand("Highlight",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("Highlight",
         "Adds/removes EC_Highlight for every prim and mesh. Usage: highlight(add|remove)."
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));

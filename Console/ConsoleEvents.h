@@ -1,5 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#if 0
 #ifndef incl_SupportModules_ConsoleEvents_h
 #define incl_SupportModules_ConsoleEvents_h
 
@@ -23,5 +24,7 @@ namespace Console
         std::string message;
     };
 }
+
+#endif
 
 #endif

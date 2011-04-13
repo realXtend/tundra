@@ -4,8 +4,8 @@
 #include "DebugOperatorNew.h"
 
 #include "Native.h"
-#include "ConsoleModule.h"
-#include "ConsoleCommandServiceInterface.h"
+//#include "ConsoleCommandServiceInterface.h"
+#include "CommandManager.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -13,7 +13,7 @@ namespace Console
 {
     void NativeInput::operator()()
     {
-        #ifndef WINDOWS_APP    
+#ifndef WINDOWS_APP
         assert (command_service_);
 
         while (true)
@@ -31,14 +31,12 @@ namespace Console
 
             command_service_->QueueCommand(command_line);
         }
-        #endif
+#endif
     }
-
 
     // ***********************************************************
 
-
-    Native::Native(Console::ConsoleCommandServiceInterface *command_service, Foundation::Framework *framework)
+    Native::Native(CommandManager *command_service, Foundation::Framework *framework)
     {
         assert (command_service);
         input_.SetCommandManager(command_service);

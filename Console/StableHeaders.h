@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_SupportModules_StableHeaders_h__
-#define incl_SupportModules_StableHeaders_h__
+#ifndef incl_Console_StableHeaders_h
+#define incl_Console_StableHeaders_h
 
 #include "CoreStdIncludes.h"
 

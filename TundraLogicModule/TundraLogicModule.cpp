@@ -24,6 +24,7 @@
 #include "CoreStringUtils.h"
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
+#include "ConsoleAPI.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -65,32 +66,32 @@ void TundraLogicModule::PostInitialize()
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
     
-    RegisterConsoleCommand(Console::CreateCommand("startserver", 
+    framework_->Console()->RegisterCommand(Console::CreateCommand("startserver", 
         "Starts a server. Usage: startserver(port)",
         Console::Bind(this, &TundraLogicModule::ConsoleStartServer)));
-    RegisterConsoleCommand(Console::CreateCommand("stopserver", 
+    framework_->Console()->RegisterCommand(Console::CreateCommand("stopserver", 
         "Stops the server",
         Console::Bind(this, &TundraLogicModule::ConsoleStopServer)));
-    RegisterConsoleCommand(Console::CreateCommand("connect", 
+    framework_->Console()->RegisterCommand(Console::CreateCommand("connect", 
         "Connects to a server. Usage: connect(address,port,username,password)",
         Console::Bind(this, &TundraLogicModule::ConsoleConnect)));
-    RegisterConsoleCommand(Console::CreateCommand("disconnect", 
+    framework_->Console()->RegisterCommand(Console::CreateCommand("disconnect", 
         "Disconnects from a server.",
         Console::Bind(this, &TundraLogicModule::ConsoleDisconnect)));
     
-    RegisterConsoleCommand(Console::CreateCommand("savescene",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("savescene",
         "Saves scene into XML or binary. Usage: savescene(filename,binary)",
         Console::Bind(this, &TundraLogicModule::ConsoleSaveScene)));
-    RegisterConsoleCommand(Console::CreateCommand("loadscene",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("loadscene",
         "Loads scene from XML or binary. Usage: loadscene(filename,binary)",
         Console::Bind(this, &TundraLogicModule::ConsoleLoadScene)));
     
-    RegisterConsoleCommand(Console::CreateCommand("importscene",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("importscene",
         "Loads scene from a dotscene file. Optionally clears the existing scene."
         "Replace-mode can be optionally disabled. Usage: importscene(filename,clearscene=false,replace=true)",
         Console::Bind(this, &TundraLogicModule::ConsoleImportScene)));
     
-    RegisterConsoleCommand(Console::CreateCommand("importmesh",
+    framework_->Console()->RegisterCommand(Console::CreateCommand("importmesh",
         "Imports a single mesh as a new entity. Position can be specified optionally."
         "Usage: importmesh(filename,x,y,z,xrot,yrot,zrot,xscale,yscale,zscale)",
         Console::Bind(this, &TundraLogicModule::ConsoleImportMesh)));

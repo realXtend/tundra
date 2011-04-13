@@ -4,44 +4,42 @@
 #define incl_ConsoleCommandManager_h
 
 #include "ConsoleCommandServiceInterface.h"
-#include "ConsoleServiceInterface.h"
 #include "CoreThread.h"
+
+#include <QObject>
 
 #include <queue>
 
-class IModule;
+namespace Foundation { class Framework; }
 
 namespace Console
 {
-    class ConsoleModule;
+    class ConsoleManager;
     class Native;
-    
-    //! Handles console commands
-    /*! see ConsoleCommandServiceInterface for more information
 
-        \note nothing is handled very efficiently, but should not be necessary as commands are issued rarely.
+    /// Handles console commands
+    /** see ConsoleCommandServiceInterface for more information
+
+        @note nothing is handled very efficiently, but should not be necessary as commands are issued rarely.
     */
-    class CommandManager : public Console::ConsoleCommandServiceInterface
+    class CommandManager : public QObject //: public ConsoleCommandServiceInterface
     {
         Q_OBJECT
 
     public:
-        //! default constructor
-        CommandManager(IModule *parent, ConsoleServiceInterface *console);
-        //! destructor
+        CommandManager(ConsoleManager *console, Foundation::Framework *fw);
         virtual ~CommandManager();
 
         virtual void Update();
         virtual void RegisterCommand(const Console::Command &command);
         virtual void UnregisterCommand(const std::string &name);
 
-        //! Queue console command. The command will be called in the console's thread
-        /*! 
-            \note if a commandline containing the same command gets queued multiple times,
+        /// Queue console command. The command will be called in the console's thread
+        /*! @note if a commandline containing the same command gets queued multiple times,
                   the most recent command's parameters take precedence and the command
                   is only queued once.
-            
-            \param commandline string that contains the command and any parameters
+
+            @param commandline string that contains the command and any parameters
         */
         virtual void QueueCommand(const std::string &commandline);
 
@@ -49,8 +47,8 @@ namespace Console
 
         virtual Console::CommandResult ExecuteCommand(const std::string &commandline);
 
-        //! Execute command
-        /*! It is assumed that name and params are trimmed and need no touching
+        /// Execute command
+        /** It is assumed that name and params are trimmed and need no touching
 
             \param name Name of the command to execute
             \param params Parameters to pass to the command
@@ -60,17 +58,22 @@ namespace Console
             return ExecuteCommandAlways(name, params, false);
         }
 
-        //! Print out available commands to console
+        /// Print out available commands to console
         Console::CommandResult ConsoleHelp(const StringVector &params);
 
-        //! Exit application
+        /// Exit application
         Console::CommandResult ConsoleExit(const StringVector &params);
 
-        //! Test command
+        /// Test command
         Console::CommandResult ConsoleTest(const StringVector &params);
 
-        //! Look command
-        Console::CommandResult ConsoleLook(const StringVector &params) { return Console::ResultSuccess("It's dark."); }
+    signals:
+        /// Emitted when console command with no callback pointer is invoked.
+        /** @param command Command name.
+            @param params Parameters (optional).
+        */
+        void CommandInvoked(const QString &command, const QStringList &params = QStringList());
+
     private:
         Console::CommandResult ExecuteCommandAlways(const std::string &name, const StringVector &params, bool always);
 
@@ -78,29 +81,15 @@ namespace Console
         typedef std::queue<std::string> StringQueue;
         typedef std::map< std::string, StringVector> CommandParamMap;
 
-        //! Available commands
-        CommandMap commands_;
+        Foundation::Framework *framework_;
 
-        //! mutex for handling registered commands
-        RecursiveMutex commands_mutex_;
-
-        //! Queue of command lines
-        StringQueue commandlines_;
-
-        //! mutex for handling command line queue
-        Mutex commandlines_mutex_;
-
-        //! map of commands that have delayed execution
-        CommandParamMap delayed_commands_;
-
-        //! parent module;
-        ConsoleModule *parent_;
-
-        //! console
-        ConsoleServiceInterface *console_;
-        
-        //! native input for headless mode
-        Native* nativeinput_;
+        CommandMap commands_; ///< Available commands
+        RecursiveMutex commands_mutex_; ///< Mutex for handling registered commands.
+        StringQueue commandlines_; ///< Queue of command lines.
+        Mutex commandlines_mutex_; ///< Mutex for handling command line queue.
+        CommandParamMap delayed_commands_; ///< Map of commands that have delayed execution.
+        ConsoleManager *console_; ///< Console.
+        Native* nativeinput_; ///< Native input for headless mode.
     };
 }
 

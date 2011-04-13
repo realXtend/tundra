@@ -74,15 +74,15 @@ void JavascriptModule::PostInitialize()
 {
     RegisterCoreMetaTypes();
     
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(Console::CreateCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
         Console::Bind(this, &JavascriptModule::ConsoleRunString)));
 
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(Console::CreateCommand(
         "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",
         Console::Bind(this, &JavascriptModule::ConsoleRunFile)));
     
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(Console::CreateCommand(
         "JsReloadScripts", "Reloads and re-executes startup scripts.",
         Console::Bind(this, &JavascriptModule::ConsoleReloadScripts)));
     
