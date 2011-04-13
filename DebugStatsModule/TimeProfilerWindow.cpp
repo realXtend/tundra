@@ -2184,7 +2184,10 @@ void AddOgreTUState(QTreeWidgetItem *parent, Ogre::TextureUnitState *node, int i
 
 void AddOgrePass(QTreeWidgetItem *parent, Ogre::Pass *node, int idx)
 {
-    QString str = QString("Pass ") + QString::number(idx) + ": " + node->getName().c_str();
+    QString str = QString("Pass ") + QString::number(idx) + ": \"" + node->getName().c_str() + "\"";
+
+    if (node->getNumTextureUnitStates() == 0)
+        str += ", contains 0 TextureUnitStates";
 
     QTreeWidgetItem *item = AddNewItem(parent, str);
 
@@ -2251,6 +2254,15 @@ void AddOgreVertexElement(QTreeWidgetItem *parent, const Ogre::VertexElement *no
     /*QTreeWidgetItem *nodeItem = */AddNewItem(parent, str);
 }
 
+void AddOgreMaterial(QTreeWidgetItem *parent, Ogre::MaterialPtr material)
+{
+    if (material.get())
+    {
+        for(int i = 0; i < material->getNumTechniques(); ++i)
+            AddOgreTechnique(parent, material->getTechnique(i), i);
+    }
+}
+
 void AddOgreSubEntity(QTreeWidgetItem *parent, Ogre::SubEntity *node, int idx)
 {
     QString str = QString("SubEntity ") + QString::number(idx);
@@ -2261,12 +2273,8 @@ void AddOgreSubEntity(QTreeWidgetItem *parent, Ogre::SubEntity *node, int idx)
         str += "(not loaded)";
 
     QTreeWidgetItem *item = AddNewItem(parent, str);
-
     if (material.get())
-    {
-        for(int i = 0; i < material->getNumTechniques(); ++i)
-            AddOgreTechnique(item, material->getTechnique(i), i);
-    }
+        AddOgreMaterial(item, material);
 
     Ogre::SubMesh *submesh = node->getSubMesh();
     if (submesh && submesh->vertexData && !submesh->useSharedVertices && submesh->vertexData->vertexDeclaration)
@@ -2297,7 +2305,24 @@ void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
             str += ", (null MeshPtr)";
     }
 
+    Ogre::ParticleSystem *ps = dynamic_cast<Ogre::ParticleSystem*>(node);
+    if (ps)
+    {
+        str += QString(", material: ") + ps->getMaterialName().c_str();
+
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(ps->getMaterialName());
+        if (!material.get())
+            str += " (not loaded)";
+    }
+
     QTreeWidgetItem *nodeItem = AddNewItem(parent, str);
+
+    if (ps)
+    {
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(ps->getMaterialName());
+        if (material.get())
+            AddOgreMaterial(nodeItem, material);
+    }
 
     if (e)
     {
