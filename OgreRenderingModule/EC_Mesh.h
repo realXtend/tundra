@@ -323,7 +323,7 @@ public slots:
         \return name if successful, empty if no entity / illegal index
      */
     const std::string& GetMaterialName(uint index) const;
-    const QString& GetMatName(uint index) const;
+    QString GetMatName(uint index) const;
 
     //! gets material name from attachment mesh
     /*! \param index attachment index

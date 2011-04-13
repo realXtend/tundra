@@ -673,10 +673,9 @@ const std::string& EC_Mesh::GetMaterialName(uint index) const
     return entity_->getSubEntity(index)->getMaterialName();
 }
 
-const QString& EC_Mesh::GetMatName(uint index) const
+QString EC_Mesh::GetMatName(uint index) const
 {
-    const QString &name(GetMaterialName(index).c_str());
-    return name;
+    return GetMaterialName(index).c_str();
 }
 
 const std::string& EC_Mesh::GetAttachmentMaterialName(uint index, uint submesh_index) const
