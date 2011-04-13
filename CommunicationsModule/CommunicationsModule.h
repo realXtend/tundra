@@ -45,7 +45,7 @@ namespace CommunicationsService
 
     private:
         void InitializeConsoleCommands();
-        Console::CommandResult OnConsoleCommandCommunications(const StringVector &params);
+        ConsoleCommandResult OnConsoleCommandCommunications(const StringVector &params);
         static std::string type_name_static_;
         Communications::CommunicationsServicePtr communications_service_;
     };

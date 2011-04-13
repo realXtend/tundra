@@ -12,7 +12,7 @@
 #include "ConsoleManager.h"
 #include "CommandManager.h"
 #include "UiConsoleManager.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 
 #include "Framework.h"
 #include "UiAPI.h"
@@ -21,8 +21,6 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("ConsoleAPI")
 
 #include "MemoryLeakCheck.h"
-
-using namespace Console;
 
 void ConsoleCommand::Invoke(const QStringList &params)
 {
@@ -45,7 +43,7 @@ ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &
     ConsoleCommand *command = new ConsoleCommand(name);
     commands_.insert(name, command);
 
-    Console::Command cmd = { name.toStdString(), desc.toStdString(), Console::CallbackPtr(), false };
+    ConsoleCommandStruct cmd = { name.toStdString(), desc.toStdString(), ConsoleCallbackPtr(), false };
     consoleManager->GetCommandManager()->RegisterCommand(cmd);
 
     // Use UniqueConnection so that we don't have duplicate connections.
@@ -63,7 +61,7 @@ void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, const
         commands_.insert(name, command);
         connect(command, SIGNAL(Invoked(const QStringList &)), receiver, member);
 
-        Console::Command cmd = { name.toStdString(), desc.toStdString(), Console::CallbackPtr(), false };
+        ConsoleCommandStruct cmd = { name.toStdString(), desc.toStdString(), ConsoleCallbackPtr(), false };
         consoleManager->GetCommandManager()->RegisterCommand(cmd);
 
         // Use UniqueConnection so that we don't have duplicate connections.
@@ -82,26 +80,27 @@ void ConsoleAPI::Print(const QString &message)
     consoleManager->Print(message.toStdString());
 }
 
-void ConsoleAPI::RegisterCommand(const Console::Command &command)
+void ConsoleAPI::RegisterCommand(const ConsoleCommandStruct &command)
 {
     consoleManager->GetCommandManager()->RegisterCommand(command);
 }
 
 ConsoleAPI::ConsoleAPI(Foundation::Framework *fw) :
     QObject(fw),
-    framework_(fw)
+    framework_(fw),
+    uiConsoleManager(0)
 {
     consoleManager = new ConsoleManager(fw);
 
     UiGraphicsView *ui_view = framework_->Ui()->GraphicsView();
     if (ui_view)
-        uiConsoleManager = new Console::UiConsoleManager(framework_, ui_view);
+        uiConsoleManager = new UiConsoleManager(framework_, ui_view);
 
     consoleManager->SetUiInitialized(!consoleManager->IsUiInitialized());
 
     inputContext = framework_->Input()->RegisterInputContext("Console", 100);
     inputContext->SetTakeKeyboardEventsOverQt(true);
-    connect(inputContext.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 }
 
 void ConsoleAPI::ToggleConsole()

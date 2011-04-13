@@ -61,16 +61,16 @@ public:
     static const std::string moduleName;
     
     //! Toggles physics debug geometry
-    Console::CommandResult ConsoleToggleDebugGeometry(const StringVector& params);
+    ConsoleCommandResult ConsoleToggleDebugGeometry(const StringVector& params);
 
     //! Stops physics
-    Console::CommandResult ConsoleStopPhysics(const StringVector& params);
+    ConsoleCommandResult ConsoleStopPhysics(const StringVector& params);
     
     //! Starts physics
-    Console::CommandResult ConsoleStartPhysics(const StringVector& params);
+    ConsoleCommandResult ConsoleStartPhysics(const StringVector& params);
     
     //! Autoassigns static rigid bodies with collision meshes to visible meshes
-    Console::CommandResult ConsoleAutoCollisionMesh(const StringVector& params);
+    ConsoleCommandResult ConsoleAutoCollisionMesh(const StringVector& params);
     
     //! IDebugDraw override
     virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);

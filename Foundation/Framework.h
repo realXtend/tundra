@@ -146,22 +146,22 @@ namespace Foundation
         void RemoveLogChannel(Poco::Channel *channel);
 
         /// load and init module
-        Console::CommandResult ConsoleLoadModule(const StringVector &params);
+        ConsoleCommandResult ConsoleLoadModule(const StringVector &params);
 
         /// uninit and unload a module
-        Console::CommandResult ConsoleUnloadModule(const StringVector &params);
+        ConsoleCommandResult ConsoleUnloadModule(const StringVector &params);
 
         /// List all loaded modules
-        Console::CommandResult ConsoleListModules(const StringVector &params);
+        ConsoleCommandResult ConsoleListModules(const StringVector &params);
 
         /// send event
-        Console::CommandResult ConsoleSendEvent(const StringVector &params);
+        ConsoleCommandResult ConsoleSendEvent(const StringVector &params);
 
         /// Output profiling data
-        Console::CommandResult ConsoleProfile(const StringVector &params);
+        ConsoleCommandResult ConsoleProfile(const StringVector &params);
 
         /// limit frames
-        Console::CommandResult ConsoleLimitFrames(const StringVector &params);
+        ConsoleCommandResult ConsoleLimitFrames(const StringVector &params);
 
         /// Returns name of the configuration group used by the framework
         /*! The group name is used with ConfigurationManager, for framework specific

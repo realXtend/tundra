@@ -1,59 +1,52 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ConsoleNative_h
-#define incl_ConsoleNative_h
-
-#include "ConsoleServiceInterface.h"
-
+#ifndef incl_Console_Native_h
+#define incl_Console_Native_h
 
 namespace Foundation
 {
     class Framework;
 }
 
-namespace Console
+class CommandManager;
+
+class NativeInput
 {
-    class CommandManager;
-    
-    class NativeInput
-    {
-    public:
-        //! constructor
-        NativeInput() : command_service_(0) { }
-        //! destructor
-        ~NativeInput() {}
-        //! (thread) entry point
-        void operator()();
+public:
+    //! constructor
+    NativeInput() : command_service_(0) { }
 
-        void SetCommandManager(CommandManager *command_service) { command_service_ = command_service; assert (command_service_); }
-        void SetFramework(Foundation::Framework *framework) { framework_ = framework; assert (framework_); }
+    //! destructor
+    ~NativeInput() {}
 
-    private:
-        NativeInput(const NativeInput &other);
+    //! (thread) entry point
+    void operator()();
 
-        CommandManager *command_service_;
-        Foundation::Framework *framework_;
-    };
+    void SetCommandManager(CommandManager *command_service) { command_service_ = command_service; assert (command_service_); }
+    void SetFramework(Foundation::Framework *framework) { framework_ = framework; assert (framework_); }
 
-    //! Native debug input console
-    class Native
-    {
-        Native();
-    public:
-        //! constructor
-        Native(Console::CommandManager *command_service, Foundation::Framework *framework);
-        //! destructor
-        virtual ~Native();
+private:
+    NativeInput(const NativeInput &other);
 
-    private:
+    CommandManager *command_service_;
+    Foundation::Framework *framework_;
+};
 
-        //! input thread
-        Thread thread_;
+//! Native debug input console
+class NativeConsole
+{
+    NativeConsole();
+public:
+    //! constructor
+    NativeConsole(CommandManager *command_service, Foundation::Framework *framework);
 
-        //! Handles input from native console
-        NativeInput input_;
-    };
-}
+    //! destructor
+    virtual ~NativeConsole();
+
+private:
+    Thread thread_; //!< input thread
+    NativeInput input_; //!< Handles input from native console
+};
 
 #endif
 
