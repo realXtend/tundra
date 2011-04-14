@@ -438,18 +438,12 @@ Vector3df EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df
 
 void EC_Placeable::Show()
 {
-    if (!link_scene_node_)
-        return;
-
-    link_scene_node_->setVisible(true);
+	visible.Set(true, AttributeChange::Default);
 }
 
 void EC_Placeable::Hide()
 {
-    if (!link_scene_node_)
-        return;	
-
-    link_scene_node_->setVisible(false);
+	visible.Set(false, AttributeChange::Default);
 }
 
 void EC_Placeable::ToggleVisibility()

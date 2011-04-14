@@ -21,6 +21,7 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "EC_Name.h"
+#include "EC_Placeable.h"
 #include "AssetReference.h"
 //#ifdef EC_DynamicComponent_ENABLED
 #include "EC_DynamicComponent.h"
@@ -349,6 +350,14 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
                     SLOT(UpdateAssetReference(IAttribute *)), Qt::UniqueConnection);
             }
 //#endif
+			if (comp->TypeName() == EC_Placeable::TypeNameStatic())
+            {
+                eItem->SetText(entity);
+                DecorateEntityItem(entity, eItem);
+
+                connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
+                    SLOT(UpdateVisible(IAttribute *)), Qt::UniqueConnection);
+            }
             // Add possible asset references.
             foreach(IAttribute *attr, comp->GetAttributes())
                 if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
@@ -410,22 +419,20 @@ void SceneStructureWindow::DecorateEntityItem(Scene::Entity *entity, QTreeWidget
 {
     bool local = entity->IsLocal();
     bool temp = entity->IsTemporary();
+	QString info;
 
-    QString info;
-    if (local)
-    {
-        item->setTextColor(0, QColor(Qt::blue));
-        info.append("Local");
-    }
-
-    if (temp)
-    {
-        item->setTextColor(0, QColor(Qt::red));
-        if (!info.isEmpty())
-            info.append(" ");
-        info.append("Temporary");
-    }
-
+	if (local)
+	{
+		item->setTextColor(0, QColor(Qt::blue));
+		info.append("Local");
+	}
+	if (temp)
+	{
+		item->setTextColor(0, QColor(Qt::red));
+		if (!info.isEmpty())
+			info.append(" ");
+		info.append("Temporal");
+	}
     if (!info.isEmpty())
     {
         QString text = item->text(0);
@@ -441,7 +448,6 @@ void SceneStructureWindow::DecorateComponentItem(IComponent *comp, QTreeWidgetIt
 {
     bool sync = comp->GetNetworkSyncEnabled();
     bool temporary = comp->IsTemporary();
-
     QString info;
     if (!sync)
     {
@@ -657,6 +663,31 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
     }
 }
 
+void SceneStructureWindow::UpdateVisible(IAttribute *attr)
+{
+    EC_Placeable *nameComp = dynamic_cast<EC_Placeable *>(sender());
+    if (!nameComp || (attr != &nameComp->visible) || (nameComp->GetParentEntity() == 0))
+        return;
+
+    Entity *entity = nameComp->GetParentEntity();
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
+        if (item && (item->Id() == entity->GetId()))
+        {
+            item->SetText(entity);
+			bool esvisible=nameComp->visible.Get();
+			if( esvisible == false){
+				DecorateEntityItem(entity, item);
+				item->setFont(0, QFont("Arial",-1,-1,true));
+			}
+			else{
+				DecorateEntityItem(entity, item);
+				item->setFont(0, QFont("Arial",-1,-1,false));
+			}
+		}
+    }
+}
 void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QString &newName)
 {
     IComponent *comp = dynamic_cast<IComponent *>(sender());

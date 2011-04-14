@@ -162,6 +162,11 @@ private slots:
     */
     void UpdateComponentName(const QString &oldName, const QString &newName);
 
+	 /// Updates entity's name in the tree widget if the entity is hide.
+	/** @param attr AssetReference attribute.
+    */
+	void UpdateVisible(IAttribute *attr);
+
     /// Sort items in the tree widget. The outstanding sort order is used.
     /** @param criteria Sorting criteria. Currently tr("ID") and tr("Name") are supported.
     */
