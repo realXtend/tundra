@@ -90,7 +90,7 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 
 		//Assign parameters to our window
 		//setWindowTitle("Tundra 1.0.3");
-		parentWin_->setWindowTitle("Tundra 1.0.3");
+		parentWin_->setWindowTitle("Tundra 1.0.5");
 		//parentWin_->setMinimumSize(width,height);		
 		parentWin_->setDockNestingEnabled(true);
 

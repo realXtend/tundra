@@ -109,7 +109,7 @@ namespace Foundation
 
             // Create config manager
             config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
-            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
+            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("Tundra"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
 
@@ -139,16 +139,16 @@ namespace Foundation
             config_manager_->Load();
 
             // Set config values we explicitly always want to override
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("1"));
 
 // $ BEGIN_MOD $     
             if (IsEditionless())
             {
-                config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0 Player-0.1"));
+                config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.5 Player-0.1"));
             }
             else
             {
-                config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0"));
+                config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("0.5"));
             }
 // $ END_MOD $
             CreateLoggingSystem(); // depends on config and platform
