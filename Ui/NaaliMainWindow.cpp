@@ -52,8 +52,9 @@ int NaaliMainWindow::DesktopHeight()
 
 void NaaliMainWindow::LoadWindowSettingsFromFile()
 {
-    int width = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_width", 800);
-    int height = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_height", 600);
+    // In SandBox, default to 1024x768 on each startup.
+    int width = 1024;//owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_width", 800);
+    int height = 768; //owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_height", 600);
     int windowX = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_left", -1);
     int windowY = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_top", -1);
     bool maximized = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_maximized", false);

@@ -89,6 +89,9 @@ EC_OgreEnvironment* Environment::GetEnvironmentComponent()
 
 void Environment::CreateEnvironment()
 {
+    // SandBox: do not create local environment entity
+    return;
+
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeIdLocal());
 
@@ -98,7 +101,7 @@ void Environment::CreateEnvironment()
     activeEnvEntity_ = entity;
 
     // Creates Caelum component!!
-    entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreEnvironment"));
+    //entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreEnvironment"));
     
     // Creates default fog component
     

@@ -151,6 +151,10 @@
                      <bold>true</bold>
                     </font>
                    </property>
+                   <property name="styleSheet">
+                    <string notr="true">background-color: rgb(255, 255, 255);
+border-radius: 5px;</string>
+                   </property>
                   </widget>
                  </item>
                 </layout>
