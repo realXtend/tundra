@@ -41,6 +41,8 @@ JavascriptModule::JavascriptModule() :
 #ifndef QT_NO_SCRIPTTOOLS
 	debugger(0),
 	debuggerWindow(0),
+	debuggerAttachedEngine(0),
+	debuggerAttachedEngineEvaluating(false),
 #endif
     engine(new QScriptEngine(this))
 {
@@ -149,10 +151,32 @@ void JavascriptModule::Uninitialize()
 	if (!GetFramework()->IsHeadless() && !GetFramework()->IsEditionless())
 	{
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/Javascript");
-		if (debugger)
-			settings.setValue("debugging", QVariant(true));
-		else
+		if (!debugger)
 			settings.setValue("debugging", QVariant(false));
+		else
+		{
+			settings.setValue("debugging", QVariant(true));
+			if (debuggerAttachedEngine && (debuggerAttachedEngineEvaluating || debuggerAttachedEngine->isEvaluating()))
+			{
+				debuggerAttachedEngine->abortEvaluation();
+				debuggerAttachedEngine = 0;
+			}
+			if (debuggerWindow)
+			{
+				//On exit, UiModule could have been uninitialized before.
+				UiServiceInterface* uiservice = GetFramework()->UiService();
+				if (uiservice)
+				{
+					uiservice->RemoveWidgetFromMenu(debuggerWindow);
+					uiservice->RemoveWidgetFromScene(debuggerWindow);
+				}
+				debuggerWindow = 0;//It is removed with debugger
+			}
+
+			debugger->detach();
+			debugger->deleteLater();
+			debugger = 0;
+		}
 	}
 #endif
 }
@@ -203,18 +227,18 @@ void JavascriptModule::RunString(const QString &codestr, const QVariantMap &cont
         engine->globalObject().setProperty(i.key(), engine->newQObject(i.value().value<QObject*>()));
     }
 #ifndef QT_NO_SCRIPTTOOLS
-	if(debugger)
+	bool attachedToDebugger = attachToDebugger(engine);
+	if(attachedToDebugger)
 	{
-		debugger->detach();
-		debugger->attachTo(engine);
+		setAttachedEngineEvaluating(true);
 	}
 #endif
 
 	engine->evaluate(codestr);
 
 #ifndef QT_NO_SCRIPTTOOLS
-	if(debugger)
-		debugger->detach();
+	if(attachedToDebugger)
+		setAttachedEngineEvaluating(false);
 #endif
     
 }
@@ -224,18 +248,18 @@ void JavascriptModule::RunScript(const QString &scriptFileName)
     QFile scriptFile(scriptFileName);
     scriptFile.open(QIODevice::ReadOnly);
 #ifndef QT_NO_SCRIPTTOOLS
-	if(debugger)
+	bool attachedToDebugger = attachToDebugger(engine);
+	if(attachedToDebugger)
 	{
-		debugger->detach();
-		debugger->attachTo(engine);
+		setAttachedEngineEvaluating(true);
 	}
 #endif
 
 	engine->evaluate(scriptFile.readAll(), scriptFileName);
 
 #ifndef QT_NO_SCRIPTTOOLS
-	if(debugger)
-		debugger->detach();
+	if(attachedToDebugger)
+		setAttachedEngineEvaluating(false);
 #endif
     
     scriptFile.close();
@@ -394,19 +418,14 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
 #ifndef QT_NO_SCRIPTTOOLS
 void JavascriptModule::OnToogleDebugging(bool checked)
 {
-	if (checked)
+	if (!checked || debugger)
 	{
-		debugger = new QScriptEngineDebugger;
-		if (debugger)
+		if (debuggerAttachedEngine && debuggerAttachedEngine->isEvaluating())
 		{
-			connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
-			debuggerWindow = (QWidget*) debugger->standardWindow();
-			GetFramework()->UiService()->AddWidgetToScene(debuggerWindow,true,true);
-			GetFramework()->UiService()->AddWidgetToMenu(debuggerWindow,"Show Debugger", "Scripts");
+			debuggerAction->setChecked(true);
+			return;
 		}
-	}
-	else
-	{
+
 		if (debuggerWindow)
 		{
 			GetFramework()->UiService()->RemoveWidgetFromMenu(debuggerWindow);
@@ -420,18 +439,31 @@ void JavascriptModule::OnToogleDebugging(bool checked)
 			debugger = 0;
 		}
 	}
+	if (checked)
+	{
+		debugger = new QScriptEngineDebugger;
+		if (debugger)
+		{
+			connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
+			debuggerWindow = (QWidget*) debugger->standardWindow();
+			GetFramework()->UiService()->AddWidgetToScene(debuggerWindow,true,true);
+			GetFramework()->UiService()->AddWidgetToMenu(debuggerWindow,"Show Debugger", "Scripts");
+		}
+	}
+
 }
 
-void JavascriptModule::setDebuggerAttached(bool attached)
+void JavascriptModule::setAttachedEngineEvaluating(bool evaluating)
 {
-	if (attached)
+	debuggerAttachedEngineEvaluating = evaluating;
+	if (evaluating)
 	{
 		if (debuggerAction)
 			debuggerAction->setEnabled(false);
 	}
 	else
 	{
-		if (debuggerAction)
+		if (debuggerAction && debugger && debugger->state() == QScriptEngineDebugger::RunningState)
 			debuggerAction->setEnabled(true);
 	}
 }
@@ -451,11 +483,33 @@ void JavascriptModule::OnEvaluationSuspended(void)
 void JavascriptModule::OnEvaluationResumed(void)
 {
 	//Wait for enabling debuggerAction until the scriptengine has been detached
-	//if (debuggerAction)
-	//	debuggerAction->setEnabled(true);
+	if (debuggerAction && !debuggerAttachedEngineEvaluating)
+		debuggerAction->setEnabled(true);
 
-	if (debuggerWindow)
-		GetFramework()->UiService()->HideWidget(debuggerWindow);
+	//Disable automatic hiding of debugger
+	//if (debuggerWindow)
+	//	GetFramework()->UiService()->HideWidget(debuggerWindow);
+}
+
+bool JavascriptModule::attachToDebugger(QScriptEngine* scriptEngine)
+{
+	if(!debuggerAttachedEngineEvaluating && debugger)
+	{
+		debugger->detach();
+		debugger->attachTo(scriptEngine);
+		debuggerAttachedEngine = scriptEngine;
+		return true;
+	}
+	return false;
+}
+
+void JavascriptModule::detachFromDebugger(QScriptEngine* scriptEngine)
+{
+	if (debuggerAttachedEngine == scriptEngine)
+	{
+		debugger->detach();
+		debuggerAttachedEngine = 0;
+	}
 }
 #endif
 
