@@ -765,7 +765,7 @@ namespace Scene
         foreach(EntityDesc e, desc.entities)
         {
             entity_id_t id;
-            if (e.id.isEmpty() && !useEntityIDsFromFile)
+            if (e.id.isEmpty() || !useEntityIDsFromFile)
                 id = e.local ? GetNextFreeIdLocal() : GetNextFreeId();
             else
                 id = ParseString<entity_id_t>(e.id.toStdString());
