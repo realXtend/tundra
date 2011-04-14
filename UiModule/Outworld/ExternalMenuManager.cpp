@@ -176,15 +176,6 @@ namespace UiServices
 			foreach (value, docks)
 				dynamic_cast<QMainWindow *>(root_menu_->parentWidget())->tabifyDockWidget(value, aux);
 		}
-
-		RemoveExternalMenuPanel(aux->widget());
-
-		/*
-		if (aux->isHidden())
-			aux->show();
-		else
-			aux->hide();
-			*/
 	}
 
 	void ExternalMenuManager::EnableMenus(){
