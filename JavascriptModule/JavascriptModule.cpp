@@ -163,8 +163,13 @@ void JavascriptModule::Uninitialize()
 			}
 			if (debuggerWindow)
 			{
-				GetFramework()->UiService()->RemoveWidgetFromMenu(debuggerWindow);
-				GetFramework()->UiService()->RemoveWidgetFromScene(debuggerWindow);
+				//On exit, UiModule could have been uninitialized before.
+				UiServiceInterface* uiservice = GetFramework()->UiService();
+				if (uiservice)
+				{
+					uiservice->RemoveWidgetFromMenu(debuggerWindow);
+					uiservice->RemoveWidgetFromScene(debuggerWindow);
+				}
 				debuggerWindow = 0;//It is removed with debugger
 			}
 
