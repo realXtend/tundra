@@ -1,4 +1,4 @@
-// !ref: local://default_avatar.xml
+// !ref: local://default_avatar.xml, GenericAvatarXml
 // !ref: local://crosshair.js
 
 if (!server.IsRunning() && !framework.IsHeadless())

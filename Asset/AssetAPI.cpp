@@ -619,7 +619,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
 AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref)
 {
-    return RequestAsset(ref.ref);
+    return RequestAsset(ref.ref, ref.type);
 }
 
 AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType)
@@ -1022,16 +1022,16 @@ void AssetAPI::RequestAssetDependencies(AssetPtr asset)
     std::vector<AssetReference> refs = asset->FindReferences();
     for(size_t i = 0; i < refs.size(); ++i)
     {
-        QString ref = refs[i].ref;
-        if (ref.isEmpty())
+        AssetReference ref = refs[i];
+        if (ref.ref.isEmpty())
             continue;
 
-        AssetPtr existing = GetAsset(ref);
+        AssetPtr existing = GetAsset(ref.ref);
         if (existing)
             asset->DependencyLoaded(existing);
         else // We don't have the given asset yet, request it.
         {
-            LogDebug("Asset " + asset->ToString() + " depends on asset " + ref + " which has not been loaded yet. Requesting..");
+            LogDebug("Asset " + asset->ToString() + " depends on asset " + ref.ref + " (type=\"" + ref.type + "\") which has not been loaded yet. Requesting..");
             RequestAsset(ref);
         }
     }
@@ -1175,7 +1175,7 @@ QString GetResourceTypeFromResourceFileName(const char *name)
 
     QString file(name);
     file = file.trimmed().toLower();
-    if (file.endsWith(".qml"))
+    if (file.endsWith(".qml") || file.endsWith(".qmlzip"))
         return "QML";
     if (file.endsWith(".mesh"))
         return "OgreMesh";
