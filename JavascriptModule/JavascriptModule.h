@@ -115,8 +115,9 @@ private:
 
 #ifndef QT_NO_SCRIPTTOOLS
 public:
-	QScriptEngineDebugger* GetDebugger() {return debugger;}
-	void setDebuggerAttached(bool attached);
+	void setAttachedEngineEvaluating(bool evaluating);
+	bool attachToDebugger(QScriptEngine* scriptEngine);
+	void detachFromDebugger(QScriptEngine* scriptEngine);
 
 private slots:
 	//! Debugger has suspended script evaluation
@@ -131,6 +132,8 @@ private slots:
 private:
 	// Script debugger
 	QScriptEngineDebugger *debugger;
+	QScriptEngine* debuggerAttachedEngine;
+	bool debuggerAttachedEngineEvaluating;
 	QWidget *debuggerWindow;
 	QAction *debuggerAction;
 #endif

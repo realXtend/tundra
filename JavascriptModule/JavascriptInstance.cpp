@@ -181,13 +181,11 @@ void JavascriptInstance::Run()
 
 #ifndef QT_NO_SCRIPTTOOLS
 	bool attachedToDebugger = false;
-	QScriptEngineDebugger* debugger = module_->GetDebugger();
-	if (!engine_->isEvaluating() && debugger)
+	if (!engine_->isEvaluating())
 	{
-		module_->setDebuggerAttached(true);
-		debugger->detach();
-		debugger->attachTo(engine_);
-		attachedToDebugger = true;
+		attachedToDebugger = module_->attachToDebugger(engine_);
+		if (attachedToDebugger)
+			module_->setAttachedEngineEvaluating(true);
 	}
 #endif
 
@@ -196,12 +194,7 @@ void JavascriptInstance::Run()
 #ifndef QT_NO_SCRIPTTOOLS
 	if (attachedToDebugger)
 	{
-		debugger = module_->GetDebugger();
-		if(debugger)
-		{
-			debugger->detach();
-			module_->setDebuggerAttached(false);
-		}
+		module_->setAttachedEngineEvaluating(false);
 	}
 #endif
 
@@ -374,6 +367,9 @@ void JavascriptInstance::DeleteEngine()
     QScriptValue destructor = engine_->globalObject().property("OnScriptDestroyed");
     if (!destructor.isUndefined())
         destructor.call();
+#ifndef QT_NO_SCRIPTTOOLS
+	module_->detachFromDebugger(engine_);
+#endif
     SAFE_DELETE(engine_);
     //SAFE_DELETE(debugger_);
 }
