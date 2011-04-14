@@ -55,8 +55,7 @@ void ScriptAsset::ParseReferences()
     for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {
         AssetReference ref;
-        ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
-        ref.ref = assetAPI->LookupAssetRefToStorage((*iter)[1].str().c_str());
+        ref.ref = assetAPI->LookupAssetRefToStorage(Name(), (*iter)[1].str().c_str());
         if ((*iter)[3].matched)
             ref.type = (*iter)[3].str().c_str();
         
@@ -73,8 +72,7 @@ void ScriptAsset::ParseReferences()
     for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {
         AssetReference ref;
-        ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
-        ref.ref = assetAPI->LookupAssetRefToStorage((*iter)[1].str().c_str());
+        ref.ref = assetAPI->LookupAssetRefToStorage(Name(), (*iter)[1].str().c_str());
         if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
         {
             references.push_back(ref);

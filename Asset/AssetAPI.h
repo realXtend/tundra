@@ -106,12 +106,28 @@ public:
 
     enum AssetRefType
     {
+        AssetRefInvalid,
         AssetRefLocalPath,      ///< The assetRef points to the local filesystem, e.g "C:\myassets\texture.png".
-        AssetRefLocalUrl,       ///< The assetRef points to the local filesystem, using a local specifier like local://.
-        AssetRefExternalUrl,    ///< The assetRef points to a location external to the system, using a URL protocol specifier.
-        AssetRefDefaultStorage, ///< The assetRef points to the default system storage.
-        AssetRefNamedStorage    ///< The assetRef points to an explicitly named storage.
+        AssetRefLocalUrl,       ///< The assetRef points to the local filesystem, using a local specifier like local:// or file://. E.g. "local://texture.png".
+        AssetRefExternalUrl,    ///< The assetRef points to a location external to the system, using a URL protocol specifier. "http://server.com/asset.png".
+        AssetRefRelativePath,   ///< The assetRef is a path relative to some context. "asset.png" or "relativePath/model.mesh".
+        AssetRefNamedStorage    ///< The assetRef points to an explicitly named storage. "storageName:asset.png".
     };
+
+    /// Breaks the given assetRef into pieces, and returns the parsed type.
+    /// @param assetRef The assetRef to parse.
+    /// @param outProtocolPart [out] Receives the protocol part of the ref, e.g. "http://server.com/asset.png" -> "http". If it doesn't exist, returns an empty string.
+    /// @param outNamedStorage [out] Receives the named storage specifier in the ref, e.g. "myStorage:asset.png" -> "myStorage". If it doesn't exist, returns an empty string.
+    /// @param outProtocolAndPath [out] Receives the "path name" identifying where the asset is stored in.
+    ///                                e.g. "http://server.com/path/folder2/asset.png" -> "http://server.com/path/folder2/". 
+    ///                                     "myStorage:asset.png" -> "myStorage:". Always has a trailing slash if necessary.
+    /// @param outPathFnameAndSubAssetName [out] Gets the combined path name, asset name and asset subname in the ref, if this ref is a relative ref.
+    ///                                e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
+    /// @param outPath [out] Returns the path part of the ref, e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/". Has a trailing slash when necessary.
+    /// @param outLocalFilename [out] Returns the base filename of the asset. e.g. "local://path/folder/asset.png, subAsset" -> "asset.png".
+    /// @param outSubAssetName [out] Returns the subasset name in the ref. e.g. "local://path/folder/asset.png, subAsset" -> "subAsset".
+    static AssetRefType ParseAssetRef(QString assetRef, QString *outProtocolPart, QString *outNamedStorage, QString *outProtocolAndPath, QString *outPathFnameAndSubAssetName, 
+        QString *outPath, QString *outLocalFilename, QString *outSubAssetName);
 
 public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
@@ -226,8 +242,11 @@ public slots:
     /// Removes the explicitly named asset storage from this assetRef, and returns the local name of the asset.
     static QString RemoveAssetStorageFromAssetRef(QString ref);
 
-    /// Parses an assetRef that uses a named storage specifier, and returns an absolute assetRef pointing to the same asset in that storage.
-    QString LookupAssetRefToStorage(QString ref);
+    /// Parses an assetRef in the given context, and returns an assetRef pointing to the same asset as an absolute asset ref.
+    /// For example: context: "local://myasset.material", ref: "texture.png" returns "local://texture.png".
+    /// context: "http://myserver.com/path/myasset.material", ref: "texture.png" returns "http://myserver.com/path/texture.png".
+    /// The context string may be left empty, in which case the current default storage (GetDefaultAssetStorage()) is used as the context.
+    QString LookupAssetRefToStorage(QString context, QString ref);
 
     /// Recursively iterates through the given path and all its subdirectories and tries to find the given file.
     /** Returns the absolute path for that file, if it exists. The path contains the filename,
