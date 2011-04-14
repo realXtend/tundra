@@ -118,11 +118,12 @@ void mainPS(float4 pos    : POSITION,
 {
     //Get texture and their weights
 	float4 weights = tex2D(map0, tex1);
-	weights /= (weights.x + weights.y + weights.z + weights.w);
+//	weights /= (weights.x + weights.y + weights.z + weights.w);
+	weights /= (weights.x + weights.y + weights.z);
     float4 c1 = tex2D(map1, tex0) * weights.x;
     float4 c2 = tex2D(map2, tex0) * weights.y;
     float4 c3 = tex2D(map3, tex0) * weights.z;
-    float4 c4 = tex2D(map4, tex0) * weights.w;
+    float4 c4 = float4(0,0,0,0);//tex2D(map4, tex0) * weights.w;
 
     float lightness = 1.f;
 #ifdef SHADOW_MAPPING
