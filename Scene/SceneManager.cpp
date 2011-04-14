@@ -773,9 +773,7 @@ namespace Scene
         foreach(EntityDesc e, desc.entities)
         {
             entity_id_t id;
-            if (!e.id.isEmpty() && useEntityIDsFromFile)
-                id = ParseString<entity_id_t>(e.id.toStdString());
-            else
+            if (e.id.isEmpty() || !useEntityIDsFromFile)
                 id = e.local ? GetNextFreeIdLocal() : GetNextFreeId();
 
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
