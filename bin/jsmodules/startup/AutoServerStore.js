@@ -10,9 +10,9 @@ engine.IncludeFile("jsmodules/lib/class.js");
     of server crashes.
 
     1. Can load the last stored scene on startup
-    1. Can stores the current scene as is when server shuts down cleanly. This cant be promised if
+    2. Can stores the current scene as is when server shuts down cleanly. This cant be promised if
        server crashes unexpectedly. For 'minimizing damages' on crashes you can use the interval store.
-    2. Can enable auto store of the scene with time interval.
+    3. Can enable auto store of the scene with time interval.
 
     Configuration:
     - This script will pop up configure dialogs if the values are not found from config, 
