@@ -12,27 +12,17 @@ var exitButton;
 var tcpButton;
 var udpButton;
 
-var configFile = "tundra";
-var configSection = "client";
-
 var configServer = null;
 var configUsername = null;
 var configProtocol = null;
-
-// Only show login window if we are using a viewer.
-if (!server.IsAboutToStart())
-    SetupLoginScreen();
 
 function SetupLoginScreen() {
     widget = new QWidget();
     widget.setLayout(new QVBoxLayout());
 
-    widget.setWindowState(Qt.WindowFullScreen);
     var child = ui.LoadFromFile("./data/ui/LoginWidget.ui", false);
     child.setParent(widget);
-    ui.AddWidgetToScene(widget);
-    widget.setVisible(true);
-
+    widget.setVisible(false);
     widget.layout().addWidget(child, 0, 0);
 
     loginButton = findChild(widget, "pushButton_Connect");
@@ -55,6 +45,7 @@ function SetupLoginScreen() {
     client.Disconnected.connect(ShowLoginScreen);
 
     ReadConfigToUi();
+    return widget;
 }
 
 function ReadConfigToUi() {
