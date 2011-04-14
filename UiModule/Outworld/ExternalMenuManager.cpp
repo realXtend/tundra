@@ -128,7 +128,8 @@ namespace UiServices
 			return;
 		controller_panels_visibility_[qdoc->objectName()] = vis;
 		QAction* act= controller_actions_.value(qdoc->windowTitle());
-		act->setChecked(vis);
+		if (act)
+			act->setChecked(vis);
 	}
 
     bool ExternalMenuManager::RemoveExternalMenuPanel(QWidget *controlled_widget)
@@ -140,6 +141,9 @@ namespace UiServices
 			QAction *adel = controller_actions_[del];
 			QObject::disconnect(adel, SIGNAL(triggered()), this, SLOT(ActionNodeClicked()));
 			//Delete action from menu..
+			controller_panels_visibility_.remove(del);
+			controller_panels_.remove(del);
+			controller_actions_.remove(del);
 			SAFE_DELETE(adel);
 			//Check if any menu has 0 items, then delete it!
 			QMutableMapIterator<QString, QMenu*> i(category_menu_);
@@ -172,6 +176,8 @@ namespace UiServices
 			foreach (value, docks)
 				dynamic_cast<QMainWindow *>(root_menu_->parentWidget())->tabifyDockWidget(value, aux);
 		}
+
+		RemoveExternalMenuPanel(aux->widget());
 
 		/*
 		if (aux->isHidden())
