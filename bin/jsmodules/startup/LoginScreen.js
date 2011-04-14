@@ -19,6 +19,7 @@ var configProtocol = null;
 function SetupLoginScreen() {
     widget = new QWidget();
     widget.setLayout(new QVBoxLayout());
+	widget.layout().setContentsMargins(0,0,0,0);
 
     var child = ui.LoadFromFile("./data/ui/LoginWidget.ui", false);
     child.setParent(widget);
