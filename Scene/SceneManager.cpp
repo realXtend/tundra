@@ -151,16 +151,14 @@ namespace Scene
     entity_id_t SceneManager::GetNextFreeId()
     {
         // Find the largest non-local entity ID in the scene.
+        // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
         entity_id_t largestEntityId = 0;
-        for(EntityMap::const_reverse_iterator iter = entities_.rbegin(); iter != entities_.rend(); ++iter)
+        for(EntityMap::const_iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
             if ((iter->first & LocalEntity) == 0)
-            {
-                largestEntityId = iter->first;
-                break;
-            }
+                largestEntityId = std::max(largestEntityId, iter->first);
 
         // Ensure that the entity id we give out is always larger than the largest entity id currently existing in the scene.
-        gid_ = std::max(gid_, largestEntityId+1);
+        gid_ = std::max(gid_ + 1, largestEntityId+1);
 
         while(entities_.find(gid_) != entities_.end())
         {
@@ -175,16 +173,14 @@ namespace Scene
     entity_id_t SceneManager::GetNextFreeIdLocal()
     {
         // Find the largest local entity ID in the scene.
+        // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
         entity_id_t largestEntityId = 0;
-        for(EntityMap::const_reverse_iterator iter = entities_.rbegin(); iter != entities_.rend(); ++iter)
+        for(EntityMap::const_iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
             if ((iter->first & LocalEntity) != 0)
-            {
-                largestEntityId = iter->first;
-                break;
-            }
+                largestEntityId = std::max(largestEntityId, iter->first);
 
         // Ensure that the entity id we give out is always larger than the largest entity id currently existing in the scene.
-        gid_local_ = std::max(gid_local_, (largestEntityId+1) | LocalEntity);
+        gid_local_ = std::max((gid_local_ + 1) | LocalEntity, (largestEntityId+1) | LocalEntity);
 
         while(entities_.find(gid_local_) != entities_.end())
         {
