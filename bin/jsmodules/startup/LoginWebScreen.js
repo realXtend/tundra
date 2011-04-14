@@ -94,9 +94,9 @@ var BrowserManager = Class.extend
         this.actionRefreshStop = this.browserToolBar.addAction(iconRefresh, "");
         this.actionRefreshStop.triggered.connect(this.onRefreshStop);
         this.actionRefreshStop.tooltip = "Refresh";
-        var browserTool = this.browserToolBar.addAction(new QIcon(imageBase + "browser/home.png"), "");
-        browserTool.triggered.connect(this.onHome);
-        browserTool.toolTip = "Go to home page " + this.homepage;
+        this.actionHome = this.browserToolBar.addAction(new QIcon(imageBase + "browser/home.png"), "");
+        this.actionHome.triggered.connect(this.onHome);
+        this.actionHome.toolTip = "Go to home page " + this.homepage;
         
         // Toolbar for inworld widgets
         // \todo change to QToolBar
@@ -208,7 +208,7 @@ var BrowserManager = Class.extend
     writeConfig: function()
     {
         config.Set(p_.configFile, p_.configSection, "login_web_homepage", p_.homepage);
-        p_.browserTool.toolTip = "Go to home page " + p_.homepage;
+        p_.actionHome.toolTip = "Go to home page " + p_.homepage;
     },
 
     openUrl: function(url)
@@ -252,7 +252,7 @@ var BrowserManager = Class.extend
         // Disable bookmarks for now
         // \todo Implement bookmarks
         messageBox.addButton("Set As Homepage", QMessageBox.YesRole);
-        messageBox.addButton("Add To Bookmarks", QMessageBox.AcceptRole); //.enabled = false;
+        messageBox.addButton("Add To Bookmarks", QMessageBox.AcceptRole).enabled = false;
         messageBox.addButton("Cancel", QMessageBox.NoRole);
         messageBox.iconPixmap = new QPixmap("./data/ui/images/browser/favorites.png");
         
