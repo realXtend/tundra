@@ -6,12 +6,42 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>871</width>
-    <height>525</height>
+    <width>785</width>
+    <height>503</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Tundra</string>
+  </property>
+  <property name="styleSheet">
+   <string>QWidget {
+	font: Adab MT;
+	font-size: 8pt;
+}
+
+QWidget#groupBox_2 {
+	font-weight: bold;
+}
+
+QLabel#labelInfo {
+	color: grey;
+}
+
+QPushButton {	
+	background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(218, 218, 218, 255), stop:1 rgba(236, 236, 236, 255));
+	border: 1px solid grey;
+	border-radius: 3px;
+	padding: 3px;
+	min-width: 80px;
+}
+QPushButton::hover {
+	background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(218, 218, 218, 150), stop:1 rgba(236, 236, 236, 150));
+	border: 1px solid rgb(90, 90, 90);
+}
+QPushButton::pressed {
+	background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:1 rgba(218, 218, 218, 150), stop:0 rgba(236, 236, 236, 150));
+	border: 1px solid rgb(90, 90, 90);
+}</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -29,6 +59,9 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="margin">
+       <number>9</number>
+      </property>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_BottomContainer">
         <item>
@@ -50,285 +83,262 @@
            <layout class="QVBoxLayout" name="verticalLayout_LoginHolder">
             <item>
              <widget class="QLabel" name="label_ClientLogo">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string/>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
               </property>
+              <property name="indent">
+               <number>0</number>
+              </property>
              </widget>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_8">
-              <property name="bottomMargin">
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
-               <widget class="QGroupBox" name="groupBox_2">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
-                <property name="font">
-                 <font>
-                  <weight>75</weight>
-                  <bold>true</bold>
-                 </font>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
                 </property>
-                <property name="title">
-                 <string>Log in to Tundra</string>
+               </spacer>
+              </item>
+              <item>
+               <layout class="QFormLayout" name="formLayout">
+                <property name="fieldGrowthPolicy">
+                 <enum>QFormLayout::FieldsStayAtSizeHint</enum>
                 </property>
-                <layout class="QVBoxLayout" name="verticalLayout_3">
-                 <property name="margin">
-                  <number>20</number>
-                 </property>
-                 <item>
-                  <layout class="QFormLayout" name="formLayout">
-                   <property name="fieldGrowthPolicy">
-                    <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-                   </property>
-                   <property name="labelAlignment">
-                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                   </property>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_WorldAddress">
-                     <property name="font">
-                      <font>
-                       <weight>50</weight>
-                       <bold>false</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>Server address</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                     </property>
-                     <property name="margin">
-                      <number>0</number>
-                     </property>
-                     <property name="indent">
-                      <number>0</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLineEdit" name="lineEdit_WorldAddress">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>250</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>250</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_Username">
-                     <property name="font">
-                      <font>
-                       <weight>50</weight>
-                       <bold>false</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>Username</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                     </property>
-                     <property name="indent">
-                      <number>0</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLineEdit" name="lineEdit_Username">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>250</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>250</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_Password">
-                     <property name="font">
-                      <font>
-                       <weight>50</weight>
-                       <bold>false</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>Password</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                     </property>
-                     <property name="indent">
-                      <number>0</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QLineEdit" name="lineEdit_Password">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>250</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>250</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="echoMode">
-                      <enum>QLineEdit::Password</enum>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="0">
-                    <widget class="QLabel" name="label_Protocol">
-                     <property name="font">
-                      <font>
-                       <weight>50</weight>
-                       <bold>false</bold>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>Protocol</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="1">
-                    <layout class="QHBoxLayout" name="horizontalLayout">
-                     <item>
-                      <widget class="QRadioButton" name="radioButton_ProtocolTCP">
-                       <property name="font">
-                        <font>
-                         <weight>50</weight>
-                         <bold>false</bold>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>TCP</string>
-                       </property>
-                       <property name="checked">
-                        <bool>true</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QRadioButton" name="radioButton_ProtocolUDP">
-                       <property name="font">
-                        <font>
-                         <weight>50</weight>
-                         <bold>false</bold>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>UDP</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <spacer name="horizontalSpacer">
-                       <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
-                       </property>
-                       <property name="sizeHint" stdset="0">
-                        <size>
-                         <width>40</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                      </spacer>
-                     </item>
-                    </layout>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_3">
-                   <property name="font">
-                    <font>
-                     <weight>50</weight>
-                     <bold>false</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>If no port is specified, 2345 is used by default.</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_2">
-                   <property name="font">
-                    <font>
-                     <weight>50</weight>
-                     <bold>false</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Username may not contain spaces.</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label">
-                   <property name="font">
-                    <font>
-                     <weight>50</weight>
-                     <bold>false</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Depending on the server, the password field may be left empty.</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
+                <property name="labelAlignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_WorldAddress">
+                  <property name="font">
+                   <font>
+                    <family>MT</family>
+                    <pointsize>8</pointsize>
+                    <weight>50</weight>
+                    <italic>false</italic>
+                    <bold>false</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Server Address</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="margin">
+                   <number>0</number>
+                  </property>
+                  <property name="indent">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="lineEdit_WorldAddress">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>250</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>250</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_Username">
+                  <property name="font">
+                   <font>
+                    <family>MT</family>
+                    <pointsize>8</pointsize>
+                    <weight>50</weight>
+                    <italic>false</italic>
+                    <bold>false</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Username</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="indent">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="lineEdit_Username">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>250</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>250</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_Password">
+                  <property name="font">
+                   <font>
+                    <family>MT</family>
+                    <pointsize>8</pointsize>
+                    <weight>50</weight>
+                    <italic>false</italic>
+                    <bold>false</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Password</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="indent">
+                   <number>0</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLineEdit" name="lineEdit_Password">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>250</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>250</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="echoMode">
+                   <enum>QLineEdit::Password</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_Protocol">
+                  <property name="font">
+                   <font>
+                    <family>MT</family>
+                    <pointsize>8</pointsize>
+                    <weight>50</weight>
+                    <italic>false</italic>
+                    <bold>false</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Protocol</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <layout class="QHBoxLayout" name="horizontalLayout">
+                  <item>
+                   <widget class="QRadioButton" name="radioButton_ProtocolTCP">
+                    <property name="font">
+                     <font>
+                      <family>MT</family>
+                      <pointsize>8</pointsize>
+                      <weight>50</weight>
+                      <italic>false</italic>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>TCP</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="radioButton_ProtocolUDP">
+                    <property name="font">
+                     <font>
+                      <family>MT</family>
+                      <pointsize>8</pointsize>
+                      <weight>50</weight>
+                      <italic>false</italic>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>UDP</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>1</width>
+                  <height>1</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </item>
@@ -369,6 +379,15 @@
              <property name="spacing">
               <number>10</number>
              </property>
+             <item>
+              <widget class="QLabel" name="labelInfo">
+               <property name="text">
+                <string>Username may not contain spaces. 
+If no port is specified, 2345 is used by default.
+Depending on the server, the password field may be left empty.</string>
+               </property>
+              </widget>
+             </item>
              <item>
               <spacer name="horizontalSpacer_3">
                <property name="orientation">
