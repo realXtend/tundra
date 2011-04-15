@@ -188,6 +188,7 @@ public slots:
     /// @param name Name of the asset storage, can be used to identify storage in upload functions.
     /// @param setAsDefault Optional parameter if this storage should be set a default. Default value is true.
     /// @return AssetStoragePtr of created or found asset storage.
+    /// \todo Delete this function and replace with a proper deserialization from string. -jj.
     AssetStoragePtr AddAssetStorage(const QString &url, const QString &name, bool setAsDefault = true);
 
     /// Returns the AssetStorage that should be used by default when assets are requested by their local name only, e.g. when an assetRef only contains
