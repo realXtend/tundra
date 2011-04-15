@@ -560,6 +560,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         KeyEvent keyEvent;
         keyEvent.keyCode = StripModifiersFromKey(e->key());
+        keyEvent.sequence = QKeySequence(e->key() | e->modifiers());
         keyEvent.keyPressCount = 1;
         keyEvent.modifiers = e->modifiers();
         keyEvent.text = e->text();

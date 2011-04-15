@@ -1,8 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
 #include "DebugOperatorNew.h"
+#include "InputContext.h"
 #include <QList>
 #include "MemoryLeakCheck.h"
-#include "InputContext.h"
 
 InputContext::InputContext(const char *name_, int priority_)
 :name(name_), priority(priority_), takeMouseEventsOverQt(false), takeKeyboardEventsOverQt(false)
