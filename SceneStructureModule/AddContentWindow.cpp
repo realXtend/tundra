@@ -437,7 +437,7 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
 
         QString basePath(fs::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
         QString outFilePath;
-        AssetAPI::FileQueryResult res = framework->Asset()->QueryFileLocation(a.source, basePath, outFilePath);
+        AssetAPI::FileQueryResult res = framework->Asset()->ResolveLocalAssetPath(a.source, basePath, outFilePath);
 
         /*if (res == AssetAPI::FileQueryLocalFileFound)
         {
@@ -551,7 +551,7 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
                         {
                             QString ref = AssetAPI::ExtractFilenameFromAssetRef(value);
                             ///\todo Perf hit, find a better way and remove this.
-                            AssetAPI::QueryFileLocation(ref, path, value);
+                            framework->Asset()->ResolveLocalAssetPath(ref, path, value);
                         }
 
                         SceneDesc::AssetMapKey key = qMakePair(value, subname);

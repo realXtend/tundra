@@ -96,12 +96,12 @@ public:
         }
     };
 
-    /// Specifies the different possible results for AssetAPI::QueryFileLocation.
+    /// Specifies the different possible results for AssetAPI::ResolveLocalAssetPath.
     enum FileQueryResult
     {
         FileQueryLocalFileFound, ///< The asset reference specified a local filesystem file, and the absolute path name for it was found.
         FileQueryLocalFileMissing, ///< The asset reference specified a local filesystem file, but there was no file in that location.
-        FileQueryExternalFile ///< The asset reference points to a file in an external source, which cannot be checked for existence (too costly performance-wise).
+        FileQueryExternalFile ///< The asset reference points to a file in an external source, which cannot be checked for existence in the current function (would require a network lookup).
     };
 
     enum AssetRefType
@@ -118,16 +118,20 @@ public:
     /// @param assetRef The assetRef to parse.
     /// @param outProtocolPart [out] Receives the protocol part of the ref, e.g. "http://server.com/asset.png" -> "http". If it doesn't exist, returns an empty string.
     /// @param outNamedStorage [out] Receives the named storage specifier in the ref, e.g. "myStorage:asset.png" -> "myStorage". If it doesn't exist, returns an empty string.
-    /// @param outProtocolAndPath [out] Receives the "path name" identifying where the asset is stored in.
+    /// @param outProtocol_Path [out] Receives the "path name" identifying where the asset is stored in.
     ///                                e.g. "http://server.com/path/folder2/asset.png" -> "http://server.com/path/folder2/". 
     ///                                     "myStorage:asset.png" -> "myStorage:". Always has a trailing slash if necessary.
-    /// @param outPathFnameAndSubAssetName [out] Gets the combined path name, asset name and asset subname in the ref, if this ref is a relative ref.
+    /// @param outPath_Filename_SubAssetName [out] Gets the combined path name, asset filename and asset subname in the ref.
     ///                                e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
+    ///                                     "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
+    /// @param outPath_Filename [out] Gets the combined path name and asset filename in the ref.
+    ///                                e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/asset.png".
+    ///                                     "namedStorage:path/folder/asset.png, subAsset" -> "path/folder/asset.png, subAsset".
     /// @param outPath [out] Returns the path part of the ref, e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/". Has a trailing slash when necessary.
-    /// @param outLocalFilename [out] Returns the base filename of the asset. e.g. "local://path/folder/asset.png, subAsset" -> "asset.png".
+    /// @param outFilename [out] Returns the base filename of the asset. e.g. "local://path/folder/asset.png, subAsset" -> "asset.png".
     /// @param outSubAssetName [out] Returns the subasset name in the ref. e.g. "local://path/folder/asset.png, subAsset" -> "subAsset".
-    static AssetRefType ParseAssetRef(QString assetRef, QString *outProtocolPart = 0, QString *outNamedStorage = 0, QString *outProtocolAndPath = 0, 
-        QString *outPathFnameAndSubAssetName = 0, QString *outPath = 0, QString *outLocalFilename = 0, QString *outSubAssetName = 0);
+    static AssetRefType ParseAssetRef(QString assetRef, QString *outProtocolPart = 0, QString *outNamedStorage = 0, QString *outProtocol_Path = 0, 
+        QString *outPath_Filename_SubAssetName = 0, QString *outPath_Filename = 0, QString *outPath = 0, QString *outFilename = 0, QString *outSubAssetName = 0);
 
 public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
@@ -217,34 +221,22 @@ public slots:
     /// Sets the asset storage to be used when assets are requested by their local names.
     void SetDefaultAssetStorage(const AssetStoragePtr &storage);
 
-    /// Performs a lookup of the given source asset reference, and returns in outFilePath the absolute path of that file, if it was found.
-    /** @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
-               usually the local path of the scene content that is being added. */
-    static FileQueryResult QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath);
-
-    /// Parses the local filename of the given assetRef. For example: ExtractLocalName("C:\assets\my.mesh") will return "my.mesh",
-    /// ExtractLocalName("local://xxx.png") will return "xxx.png"). ExtractLocalName("local://collada.dae/subMeshName") will
-    /// return "collada.dae/subMeshName". ///\todo Implement.
-//    static QString ExtractLocalName(QString assetRef);
-
     /// Tries to find the filename in an url/assetref.
     /** For example, all "my.mesh", "C:\files\my.mesh", "local://path/my.mesh", "http://www.web.com/my.mesh" will return "my.mesh".
-        \todo It is the intent that "local://collada.dae/subMeshName" would return "collada.dae" and "file.zip/path1/path2/my.mesh"
-        would return "file.zip", but this hasn't been implemented (since those aren't yet supported). */
+        "local://collada.dae,subMeshName" returns "collada.dae". */
     static QString ExtractFilenameFromAssetRef(QString ref);
 
-    /// Tries to extract the AssetStorage name that is specified in this assetRef. Assumes that ParseAssetRefType(ref) == AssetRefNamedStorage.
-    /// Returns the name of the asset storage contained in the assetRef.
-    static QString ExtractAssetStorageFromAssetRef(QString ref);
-
-    /// Removes the explicitly named asset storage from this assetRef, and returns the local name of the asset.
-    static QString RemoveAssetStorageFromAssetRef(QString ref);
-
-    /// Parses an assetRef in the given context, and returns an assetRef pointing to the same asset as an absolute asset ref.
+    /// Parses a (relative) assetRef in the given context, and returns an assetRef pointing to the same asset as an absolute asset ref.
     /// For example: context: "local://myasset.material", ref: "texture.png" returns "local://texture.png".
     /// context: "http://myserver.com/path/myasset.material", ref: "texture.png" returns "http://myserver.com/path/texture.png".
     /// The context string may be left empty, in which case the current default storage (GetDefaultAssetStorage()) is used as the context.
+    /// If ref is an absolute asset reference, it is returned unmodified (no need for context).
     QString ResolveAssetRef(QString context, QString ref);
+
+    /// Given an assetRef, turns it into a native OS file path to the asset. The given ref is resolved in the context of "local://", if it is
+    /// a relative asset ref. If ref contains a subAssetName, it is stripped from outFilePath, and returned in subAssetName.
+    /// If the assetRef doesn't represent a file on the local filesystem, FileQueryExternalFile is returned and outFilePath is set to equal best effort to parse 'ref' locally.
+    FileQueryResult ResolveLocalAssetPath(QString ref, QString baseDirectoryContext, QString &outFilePath, QString *subAssetName = 0);
 
     /// Recursively iterates through the given path and all its subdirectories and tries to find the given file.
     /** Returns the absolute path for that file, if it exists. The path contains the filename,

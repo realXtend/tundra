@@ -907,7 +907,7 @@ namespace Scene
 
                                 // Rewrite source refs for asset descs, if necessary.
                                 QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
-                                framework_->Asset()->QueryFileLocation(value, basePath, ad.source);
+                                framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
                                 ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
                                 sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
@@ -973,7 +973,7 @@ namespace Scene
                     ad.dataInMemory = false;
 
                     QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
-                    framework_->Asset()->QueryFileLocation(scriptDependency, basePath, ad.source);
+                    framework_->Asset()->ResolveLocalAssetPath(scriptDependency, basePath, ad.source);
                     ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
                     
                     // We have to check if the asset is already added. As we do this recursively there is a danger of a infinite loop.
@@ -1093,7 +1093,7 @@ namespace Scene
 
                                             // Rewrite source refs for asset descs, if necessary.
                                             QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
-                                            framework_->Asset()->QueryFileLocation(value, basePath, ad.source);
+                                            framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
                                             ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
                                             sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
