@@ -140,7 +140,7 @@ var BrowserManager = Class.extend
         // Connect signals
         this.addressBar.lineEdit().returnPressed.connect(this.onAddressBarRequest);
         this.tabs.tabCloseRequested.connect(this.onTabCloseRequest);
-        this.tabs.currentChanged.connect(this.onTabIndexChanged);
+        this.tabs['currentChanged(int)'].connect(this.onTabIndexChanged);
         
         newTabButton.clicked.connect(this.onTabNewRequest);
         
