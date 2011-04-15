@@ -1,16 +1,12 @@
 // !ref: local://LoginWebWidget.ui
+// !ref: local://LoginWebSettings.ui
 
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 engine.ImportExtension("qt.webkit");
 
-// Define here common used things with LoginScreen and LoginWebScreen.
-var configFile = "tundra";
-var configSection = "client";
-
 engine.IncludeFile("jsmodules/lib/class.js");
 engine.IncludeFile("jsmodules/startup/LoginScreen.js");
-
 
 var iconRefresh = new QIcon("./data/ui/images/browser/refresh.png");
 var iconStop = new QIcon("./data/ui/images/browser/stop.png");
@@ -31,9 +27,7 @@ var BrowserManager = Class.extend
         this.connected = false;
         this.squeezeEnabled = false;
         
-        this.configFile = configFile;
-        this.configSection = configSection;
-        this.readConfig();
+        this.settings = new BrowserSettings(this);
 
         var uiBase = "./data/ui/";
         var imageBase = uiBase + "images/";
@@ -117,6 +111,9 @@ var BrowserManager = Class.extend
         this.actionAddFavorite = this.favoritesToolBar.addAction(new QIcon(imageBase + "browser/favorites.png"), "");
         this.actionAddFavorite.triggered.connect(this.onFavoritePressed);
         this.actionAddFavorite.tooltip = "Add as home page or add to bookmarks";
+        this.actionSettings = this.favoritesToolBar.addAction(new QIcon(imageBase + "browser/settings.png"), "");
+        this.actionSettings.triggered.connect(this.settings.onSettingsPressed);
+        this.actionSettings.tooltip = "Browser settings";
         
         this.addressAndFavoritesBar = new QWidget();
         this.addressAndFavoritesBar.setFixedHeight(26);
@@ -152,6 +149,14 @@ var BrowserManager = Class.extend
     {
         this.setVisible(true);
         this.onTabIndexChanged(this.tabs.currentIndex);
+        
+        if (this.settings.startupLoadHomePage)
+        {
+            if (HasTundraScheme(this.settings.homepage))
+                if (!this.settings.startupConnectToHomePage)
+                    return;
+            this.openUrl(this.settings.homepage);
+        }
     },
     
     setVisible: function(visible)
@@ -185,7 +190,6 @@ var BrowserManager = Class.extend
             this.browser.maximumHeight = magicHeightValue; // Here be dragons
             this.squeezeEnabled = true;
             this.loginscreen.visible = false;
-
         }
         else
         {
@@ -195,22 +199,6 @@ var BrowserManager = Class.extend
         }
     },
     
-    readConfig: function()
-    {
-        this.homepage = config.Get(this.configFile, this.configSection, "login_web_homepage");
-        if (this.homepage == null)
-        {
-            this.homepage = "http://www.realxtend.org/";
-            config.Set(this.configFile, this.configSection, "login_web_homepage", this.homepage);    
-        }
-    },
-    
-    writeConfig: function()
-    {
-        config.Set(p_.configFile, p_.configSection, "login_web_homepage", p_.homepage);
-        p_.actionHome.toolTip = "Go to home page " + p_.homepage;
-    },
-
     openUrl: function(url)
     {
         // Check if current is classic login/3d tab
@@ -260,8 +248,8 @@ var BrowserManager = Class.extend
         // Return is StandarButton not ButtonRole
         if (result == 0) // QMessageBox.YesRole
         {
-            p_.homepage = addressBarInput;
-            p_.writeConfig();
+            p_.settings.homepage = addressBarInput;
+            p_.settings.writeConfig();
         }
         else if (result == 1) // QMessageBox.AcceptRole
         {
@@ -293,12 +281,25 @@ var BrowserManager = Class.extend
     
     onTabNewRequest: function()
     {
-        // If homepage is tundra:// url we open google
-        // \todo you can do better!
-        if (!HasTundraScheme(p_.homepage))
-            p_.openUrl(p_.homepage);
+        if (HasTundraScheme(p_.settings.homepage))
+        {
+            // This should never happen, settings will prevent you from
+            // inserting a tundra:// url as new tab url. But user might
+            // set it manually to config so lets still handle the case.
+            if (HasTundraScheme(p_.settings.newTabUrl))
+            {
+                p_.tabCallBack("weblogin", p_.settings.newTabUrl, 0);
+                p_.tabs.currentIndex = 0;
+            }
+            else
+                p_.openUrl(p_.settings.newTabUrl);
+            return;
+        }
+            
+        if (p_.settings.newTabOpenHomepage)
+            p_.openUrl(p_.settings.homepage);
         else
-            p_.openUrl("http://www.google.com");
+            p_.openUrl(p_.settings.newTabUrl);
     },
     
     onTabIndexChanged: function(index)
@@ -376,13 +377,13 @@ var BrowserManager = Class.extend
     
     onHome: function()
     {
-        if (HasTundraScheme(p_.homepage))
+        if (HasTundraScheme(p_.settings.homepage))
         {
-            p_.tabCallBack("weblogin", p_.homepage, p_.tabs.currentIndex);
+            p_.tabCallBack("weblogin", p_.settings.homepage, p_.tabs.currentIndex);
             return;
         }
         
-        var qUrl = QUrl.fromUserInput(p_.homepage);
+        var qUrl = QUrl.fromUserInput(p_.settings.homepage);
         if (p_.tabs.currentIndex == 0)
         {
             p_.openUrl(qUrl);
@@ -591,6 +592,174 @@ var BrowserTab = Class.extend
             this.webview.page().mainFrame().setHtml(html);
         }
     }
+});
+
+var BrowserSettings = Class.extend
+({
+    init: function(browserManager)
+    {
+        this.browserManager = browserManager;
+        
+        this.configFile = "browsersettings";
+        this.urlSection = "url";
+        this.behaviourSection = "behaviour";
+        
+        this.widget = ui.LoadFromFile("./data/ui/LoginWebSettings.ui", false);
+        this.widget.setWindowFlags(Qt.Tool);
+        this.widget.visible = false;
+        
+        var button = null;
+        button = findChild(this.widget, "buttonSave");
+        button.clicked.connect(this.onSettingsSave);
+        button = findChild(this.widget, "buttonCancel");
+        button.clicked.connect(this.onSettingsCancel);
+        
+        this.readConfig();
+    },
+    
+    onSettingsPressed: function()
+    {
+        var p_s = p_.settings;
+        if (p_s.widget.visible)
+        {
+            p_s.widget.visible = false;
+            return;
+        }
+        p_s.setCurrentToUi();
+        
+        var mainWinPosi = ui.MainWindow().pos;
+        var mainWinSize = ui.MainWindow().size;
+        
+        var center_x = mainWinPosi.x() + (mainWinSize.width() / 2);
+        var center_y = mainWinPosi.y() + (mainWinSize.height() / 2);       
+        
+        p_s.widget.pos = new QPoint(center_x - (p_s.widget.width / 2), center_y - (p_s.widget.height / 2));
+        p_s.widget.visible = true;
+    },
+    
+    onSettingsSave: function()
+    {
+        var p_s = p_.settings;
+        var child = null;
+        
+        child = findChild(p_s.widget, "newTabPageLineEdit");
+        if (child.text.toLowerCase().substring(0,9) == "tundra://")
+        {
+            var errorBox = new QMessageBox(QMessageBox.Warning, "Invalid new tab page",
+                                             "The new tab url cannot be a tundra:// server", QMessageBox.NoButton,
+                                             p_s.widget, Qt.Tool);
+            errorBox.addButton("Close", QMessageBox.NoRole);
+            errorBox.exec();
+            return;
+        }
+        p_s.newTabUrl = QUrl.fromUserInput(child.text).toString();
+        
+        child = findChild(p_s.widget, "homePageLineEdit");
+        p_s.homepage = QUrl.fromUserInput(child.text).toString();
+               
+        child = findChild(p_s.widget, "openHomePageOnNewTab");
+        p_s.newTabOpenHomepage = child.checked;
+        
+        child = findChild(p_s.widget, "loadHomePageOnStartup");
+        p_s.startupLoadHomePage = child.checked;
+        
+        child = findChild(p_s.widget, "connectToHomePage");
+        p_s.startupConnectToHomePage = child.checked;
+        
+        p_.settings.widget.visible = false;
+        p_s.writeConfig();
+    },
+    
+    onSettingsCancel: function()
+    {
+        p_.settings.widget.visible = false;
+    },
+    
+    setCurrentToUi: function()
+    {
+        var p_s = p_.settings;
+        var child = null;
+        
+        child = findChild(p_s.widget, "homePageLineEdit");
+        child.text = p_s.homepage;
+
+        child = findChild(p_s.widget, "newTabPageLineEdit");
+        child.text = p_s.newTabUrl;
+        
+        child = findChild(p_s.widget, "openHomePageOnNewTab");
+        child.checked = p_s.newTabOpenHomepage;
+        
+        child = findChild(p_s.widget, "loadHomePageOnStartup");
+        child.checked = p_s.startupLoadHomePage;
+        
+        child = findChild(p_s.widget, "connectToHomePage");
+        child.checked = p_s.startupConnectToHomePage;
+    },
+    
+    readConfig: function()
+    {
+        this.homepage = config.Get(this.configFile, this.urlSection, "homepage");
+        if (this.homepage == null)
+        {
+            this.homepage = "http://www.realxtend.org/";
+            config.Set(this.configFile, this.urlSection, "homepage", this.homepage);    
+        }
+        
+        this.newTabUrl = config.Get(this.configFile, this.urlSection, "newtab");
+        if (this.newTabUrl == null)
+        {
+            this.newTabUrl = "http://www.realxtend.org/";
+            config.Set(this.configFile, this.urlSection, "newtab", this.newTabUrl);    
+        }
+        
+        // Note: QSettings/QVariant and js booleans dont mix up too well. It will give you a string back of the config value.
+        // new Boolean("false") in js will be true, so it cant be used. Inspect the string value and set the booleans right.
+        // Also init write will be a string, its a stupid and confusing thing but a work around.
+        this.newTabOpenHomepage = config.Get(this.configFile, this.behaviourSection, "newtab_load_homepage");
+        if (this.newTabOpenHomepage == null)
+        {
+            this.newTabOpenHomepage = "false";
+            config.Set(this.configFile, this.behaviourSection, "newtab_load_homepage", this.newTabOpenHomepage);
+        }
+        if (this.newTabOpenHomepage == "true")
+            this.newTabOpenHomepage = true;
+        else
+            this.newTabOpenHomepage = false;
+        
+        this.startupLoadHomePage = config.Get(this.configFile, this.behaviourSection, "startup_load_homepage");
+        if (this.startupLoadHomePage == null)
+        {
+            this.startupLoadHomePage = "true";
+            config.Set(this.configFile, this.behaviourSection, "startup_load_homepage", this.startupLoadHomePage);    
+        }
+        if (this.startupLoadHomePage == "true")
+            this.startupLoadHomePage = true;
+        else
+            this.startupLoadHomePage = false;
+        
+        this.startupConnectToHomePage = config.Get(this.configFile, this.behaviourSection, "startup_load_homeserver");
+        if (this.startupConnectToHomePage == null)
+        {
+            this.startupConnectToHomePage = "false";
+            config.Set(this.configFile, this.behaviourSection, "startup_load_homeserver", this.startupConnectToHomePage);    
+        }
+        if (this.startupConnectToHomePage == "true")
+            this.startupConnectToHomePage = true;
+        else
+            this.startupConnectToHomePage = false;
+    },
+    
+    writeConfig: function()
+    {
+        config.Set(this.configFile, this.urlSection, "homepage", this.homepage);
+        config.Set(this.configFile, this.urlSection, "newtab", this.newTabUrl);
+        config.Set(this.configFile, this.behaviourSection, "newtab_load_homepage", this.newTabOpenHomepage);
+        config.Set(this.configFile, this.behaviourSection, "startup_load_homepage", this.startupLoadHomePage);
+        config.Set(this.configFile, this.behaviourSection, "startup_load_homeserver", this.startupConnectToHomePage); 
+
+        this.browserManager.toolTip = "Go to home page " + this.homepage;
+    },
+    
 });
 
 function HasTundraScheme(urlString)

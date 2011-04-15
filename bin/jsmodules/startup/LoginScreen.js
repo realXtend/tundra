@@ -12,6 +12,9 @@ var exitButton;
 var tcpButton;
 var udpButton;
 
+var configFile = "tundra";
+var configSection = "client";
+
 var configServer = null;
 var configUsername = null;
 var configProtocol = null;
