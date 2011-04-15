@@ -1,11 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
 #include "DebugOperatorNew.h"
 #include "InputAPI.h"
+#include "InputContext.h"
 #include <QList>
 #include <QCursor>
 #include <boost/make_shared.hpp>
 #include "MemoryLeakCheck.h"
-#include "InputContext.h"
 
 InputContext::InputContext(InputAPI *owner, const char *name_, int priority_)
 :inputApi(owner), name(name_), priority(priority_), takeMouseEventsOverQt(false), takeKeyboardEventsOverQt(false)
