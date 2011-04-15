@@ -352,14 +352,12 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
 
     const QKeySequence &showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
     const QKeySequence &showAssets = input.KeyBinding("ShowAssetsWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_A));
-
-    QKeySequence keySeq(e->keyCode | e->modifiers);
-    if (keySeq == showSceneStruct)
+    if (e->Sequence()== showSceneStruct)
     {
         ToggleSceneStructureWindow();
         e->handled = true;
     }
-    if (keySeq == showAssets)
+    if (e->Sequence() == showAssets)
     {
         ToggleAssetsWindow();
         e->handled = true;
