@@ -1369,4 +1369,3 @@ using namespace RexLogic;
 POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(RexLogicModule)
 POCO_END_MANIFEST
-
