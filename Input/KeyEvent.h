@@ -16,7 +16,7 @@ namespace QtInputEvents
     static const event_id_t KeyReleased = 2;
 }
 
-/// KeyEvent is the event data structure passed as the parameter in all Naali in-scene KeyPressed and KeyReleased events.
+/// KeyEvent is the event data structure passed as the parameter in all in-scene KeyPressed and KeyReleased events.
 class KeyEvent : public QObject, public IEventData
 {
     Q_OBJECT
