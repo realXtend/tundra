@@ -90,7 +90,7 @@ var BrowserManager = Class.extend
         this.actionRefreshStop.tooltip = "Refresh";
         this.actionHome = this.browserToolBar.addAction(new QIcon(imageBase + "browser/home.png"), "");
         this.actionHome.triggered.connect(this.onHome);
-        this.actionHome.toolTip = "Go to home page " + this.homepage;
+        this.actionHome.toolTip = "Go to home page " + this.settings.homepage;
         
         // Toolbar for inworld widgets
         // \todo change to QToolBar
@@ -362,6 +362,7 @@ var BrowserManager = Class.extend
             return;
         p_.tabs.widget(index).stop();
         p_.tabs.widget(index).close();
+        p_.tabs.widget(index).deleteLater();
         p_.tabs.removeTab(index);
     },
     
@@ -743,7 +744,7 @@ var BrowserSettings = Class.extend
         config.Set(this.configFile, this.behaviourSection, "startup_load_homepage", this.startupLoadHomePage);
         config.Set(this.configFile, this.behaviourSection, "startup_load_homeserver", this.startupConnectToHomePage); 
 
-        this.browserManager.toolTip = "Go to home page " + this.homepage;
+        this.browserManager.actionHome.toolTip = "Go to home page " + this.homepage;
     },
     
 });
