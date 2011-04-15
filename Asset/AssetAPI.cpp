@@ -95,10 +95,10 @@ AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &nam
 
     // Inspect if a storage already exists for this url and name combination
     std::vector<AssetStoragePtr> currentStorages = provider->GetStorages();
-    for(int i=0; i<currentStorages.size(); ++i)
+    for(size_t i = 0; i < currentStorages.size(); ++i)
     {
         newStorage = currentStorages.at(i);
-        if (!newStorage.get())
+        if (!newStorage)
             continue;
         if (newStorage->BaseURL() == url && newStorage->Name() == name)
         {
