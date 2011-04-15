@@ -9,7 +9,7 @@
 #include <QString>
 #include <QKeySequence>
 
-/// KeyEvent is the event data structure passed as the parameter in all Naali in-scene KeyPressed and KeyReleased events.
+/// KeyEvent is the event data structure passed as the parameter in all in-scene KeyPressed and KeyReleased events.
 class KeyEvent : public QObject
 {
     Q_OBJECT

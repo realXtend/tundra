@@ -38,7 +38,7 @@ signals:
     /// Emitted when this command is invoked.
     /** @param params Provided parameters, if applicable.
     */
-    void Invoked(QStringList params);
+    void Invoked(const QStringList &params);
 
 private:
     Q_DISABLE_COPY(ConsoleCommand);
@@ -61,8 +61,6 @@ private slots:
 /// Console core API.
 /** Allows printing text to console, executing console commands programmatically
     and registering new console commands. This object can be created by Framework only.
-
-    @todo Currently just simple wrapper class but the idea is to refactor the whole console system later on.
 */
 class ConsoleAPI : public QObject
 {
@@ -73,6 +71,13 @@ class ConsoleAPI : public QObject
 public:
     /// Destructor.
     ~ConsoleAPI();
+
+    // Note: these are public temporarily due to ongoing console refactoring.
+    ConsoleManager *consoleManager;
+    UiConsoleManager *uiConsoleManager;
+
+    ///\todo Temporary function. Remove.
+    void Uninitialize();
 
 public slots:
     /// Registers new console command and connects its execution signal to receiver object and member slot.
@@ -92,6 +97,12 @@ public slots:
     */
     ConsoleCommand *RegisterCommand(const QString &name, const QString &desc);
 
+    /// This is an overloaded function.
+    /** @note Uses the old ConsoleCommandStruct. This function will be removed at some point and should not be used anymore.
+        @param command Console command.
+    */
+    void RegisterCommand(const ConsoleCommandStruct &command);
+
     /// Executes console command.
     /** @param command Console command, syntax: "command(param1, param2, param3, ...)".
     */
@@ -102,11 +113,6 @@ public slots:
     */
     void Print(const QString &message);
 
-    /// Registers console command for this module.
-    /** @param command Console command.
-    */
-    void RegisterCommand(const ConsoleCommandStruct &command);
-
 private:
     Q_DISABLE_COPY(ConsoleAPI);
 
@@ -115,11 +121,9 @@ private:
     */
     explicit ConsoleAPI(Framework *fw);
 
-    /// Framework.
-    Framework *framework_;
-
-    /// List of registered console commands.
-    QMap<QString, ConsoleCommand *> commands_;
+    Foundation::Framework *framework_; ///< Framework.
+    QMap<QString, ConsoleCommand *> commands_; ///< List of registered console commands.
+    InputContextPtr inputContext;
 
 private slots:
     /// Checks if we have executed console command object stored. If we have, we invoke it.
@@ -128,16 +132,8 @@ private slots:
     */
     void InvokeCommand(const QString &name, const QStringList &params) const;
 
-public:
-    ConsoleManager *consoleManager;
-    UiConsoleManager *uiConsoleManager;
-    InputContextPtr inputContext;
-
-private slots:
-    void HandleKeyEvent(KeyEvent *keyEvent);
+    void HandleKeyEvent(KeyEvent *e);
     void ToggleConsole();
-public:
-    void Uninitialize();
 };
 
 #endif
