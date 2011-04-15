@@ -192,7 +192,7 @@ void TundraLogicModule::LoadStartupScene()
     // and added the appropriate path as a local asset storage. Here we assume that is the case, so that the
     // scene we now load will be able to refer to local:// assets in its subfolders.
     AssetAPI::AssetRefType sceneRefType = AssetAPI::ParseAssetRefType(QString::fromStdString(startupScene));
-    if (sceneRefType != AssetAPI::AssetRefLocalPath && sceneRefType != AssetAPI::AssetRefDefaultStorage)
+    if (sceneRefType != AssetAPI::AssetRefLocalPath && sceneRefType != AssetAPI::AssetRefRelativePath)
     {
         AssetTransferPtr sceneTransfer = framework_->Asset()->RequestAsset(startupScene);
         if (!sceneTransfer.get())
