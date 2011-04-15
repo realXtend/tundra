@@ -87,8 +87,10 @@ public:
     virtual bool IsSerializable() const { return true; }
 
 signals:
-    void EntityEnter(Scene::Entity* entity/*, const Vector3df& position*/);
-    void EntityLeave(Scene::Entity* entity/*, const Vector3df& position*/);
+    /// Note: needs to be lowercase for QML to accept connections to it
+    void entityEnter(Scene::Entity* entity/*, const Vector3df& position*/);
+    /// Note: needs to be lowercase for QML to accept connections to it
+    void entityLeave(Scene::Entity* entity/*, const Vector3df& position*/);
 
 public slots:
     //! Get a list of entities currently residing inside the volume.
