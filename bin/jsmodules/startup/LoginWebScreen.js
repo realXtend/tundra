@@ -698,51 +698,37 @@ var BrowserSettings = Class.extend
     
     readConfig: function()
     {
+        if (!config.HasValue(this.configFile, this.urlSection, "homepage"))
+            config.Set(this.configFile, this.urlSection, "homepage", QUrl.fromUserInput("http://www.realxtend.org/").toString());
         this.homepage = config.Get(this.configFile, this.urlSection, "homepage");
-        if (this.homepage == null)
-        {
-            this.homepage = "http://www.realxtend.org/";
-            config.Set(this.configFile, this.urlSection, "homepage", this.homepage);    
-        }
         
+        if (!config.HasValue(this.configFile, this.urlSection, "newtab"))
+            config.Set(this.configFile, this.urlSection, "newtab", QUrl.fromUserInput("http://www.realxtend.org/").toString());
         this.newTabUrl = config.Get(this.configFile, this.urlSection, "newtab");
-        if (this.newTabUrl == null)
-        {
-            this.newTabUrl = "http://www.realxtend.org/";
-            config.Set(this.configFile, this.urlSection, "newtab", this.newTabUrl);    
-        }
         
         // Note: QSettings/QVariant and js booleans dont mix up too well. It will give you a string back of the config value.
         // new Boolean("false") in js will be true, so it cant be used. Inspect the string value and set the booleans right.
         // Also init write will be a string, its a stupid and confusing thing but a work around.
+        
+        if (!config.HasValue(this.configFile, this.behaviourSection, "newtab_load_homepage"))
+            config.Set(this.configFile, this.behaviourSection, "newtab_load_homepage", "false");
         this.newTabOpenHomepage = config.Get(this.configFile, this.behaviourSection, "newtab_load_homepage");
-        if (this.newTabOpenHomepage == null)
-        {
-            this.newTabOpenHomepage = "false";
-            config.Set(this.configFile, this.behaviourSection, "newtab_load_homepage", this.newTabOpenHomepage);
-        }
         if (this.newTabOpenHomepage == "true")
             this.newTabOpenHomepage = true;
         else
             this.newTabOpenHomepage = false;
         
+        if (!config.HasValue(this.configFile, this.behaviourSection, "startup_load_homepage"))
+            config.Set(this.configFile, this.behaviourSection, "startup_load_homepage", "true");
         this.startupLoadHomePage = config.Get(this.configFile, this.behaviourSection, "startup_load_homepage");
-        if (this.startupLoadHomePage == null)
-        {
-            this.startupLoadHomePage = "true";
-            config.Set(this.configFile, this.behaviourSection, "startup_load_homepage", this.startupLoadHomePage);    
-        }
         if (this.startupLoadHomePage == "true")
             this.startupLoadHomePage = true;
         else
             this.startupLoadHomePage = false;
         
+        if (!config.HasValue(this.configFile, this.behaviourSection, "startup_load_homeserver"))
+            config.Set(this.configFile, this.behaviourSection, "startup_load_homeserver", "false");
         this.startupConnectToHomePage = config.Get(this.configFile, this.behaviourSection, "startup_load_homeserver");
-        if (this.startupConnectToHomePage == null)
-        {
-            this.startupConnectToHomePage = "false";
-            config.Set(this.configFile, this.behaviourSection, "startup_load_homeserver", this.startupConnectToHomePage);    
-        }
         if (this.startupConnectToHomePage == "true")
             this.startupConnectToHomePage = true;
         else
