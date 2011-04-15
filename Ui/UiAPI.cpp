@@ -268,7 +268,7 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
 {
     QWidget *widget = 0;
 
-    if (AssetAPI::ParseAssetRefType(filePath) != AssetAPI::AssetRefLocalPath)
+    if (AssetAPI::ParseAssetRef(filePath) != AssetAPI::AssetRefLocalPath)
     {
         AssetPtr asset = owner->Asset()->GetAsset(filePath);
         if (!asset)

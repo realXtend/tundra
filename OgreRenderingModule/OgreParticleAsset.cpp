@@ -117,7 +117,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                             {
                                 // Tundra: we only support material refs in particle scripts
                                 std::string mat_name = line_vec[1];
-                                references_.push_back(AssetReference(assetAPI->LookupAssetRefToStorage(Name(), mat_name.c_str())));
+                                references_.push_back(AssetReference(assetAPI->ResolveAssetRef(Name(), mat_name.c_str())));
                                 line = "material " + SanitateAssetIdForOgre(mat_name);
                             }
                         }

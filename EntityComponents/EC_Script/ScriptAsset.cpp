@@ -55,7 +55,7 @@ void ScriptAsset::ParseReferences()
     for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {
         AssetReference ref;
-        ref.ref = assetAPI->LookupAssetRefToStorage(Name(), (*iter)[1].str().c_str());
+        ref.ref = assetAPI->ResolveAssetRef(Name(), (*iter)[1].str().c_str());
         if ((*iter)[3].matched)
             ref.type = (*iter)[3].str().c_str();
         
@@ -72,7 +72,7 @@ void ScriptAsset::ParseReferences()
     for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {
         AssetReference ref;
-        ref.ref = assetAPI->LookupAssetRefToStorage(Name(), (*iter)[1].str().c_str());
+        ref.ref = assetAPI->ResolveAssetRef(Name(), (*iter)[1].str().c_str());
         if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
         {
             references.push_back(ref);

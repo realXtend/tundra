@@ -82,6 +82,7 @@ AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
     return AssetStoragePtr();
 }
 
+/// \todo Delete this function and replace with a proper deserialization from string. -jj.
 AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &name, bool setAsDefault)
 {
     AssetStoragePtr newStorage;
@@ -199,22 +200,6 @@ AssetAPI::FileQueryResult AssetAPI::QueryFileLocation(QString sourceRef, QString
     outFilePath = sourceRef; ///<\todo review
 
     return FileQueryLocalFileMissing;
-}
-
-AssetAPI::AssetRefType AssetAPI::ParseAssetRefType(QString assetRef)
-{
-    assetRef = assetRef.trimmed();
-    if (assetRef.startsWith("local://", Qt::CaseInsensitive) || assetRef.startsWith("file://", Qt::CaseInsensitive))
-        return AssetRefLocalUrl;
-    if (assetRef.contains("://"))
-        return AssetRefExternalUrl;
-    if (assetRef.contains(":/") || assetRef.contains(":\\"))
-        return AssetRefLocalPath; // Windows-style local path \bug This is not exact.
-    if (assetRef.startsWith("/") || assetRef.startsWith("./"))
-        return AssetRefLocalPath; // Unix-style local path.
-    if (assetRef.contains(":"))
-        return AssetRefNamedStorage;
-    return AssetRefRelativePath;
 }
 
 QString QStringfromWCharArray(const wchar_t *string, int size)
@@ -697,7 +682,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     }
 
     // Turn named storage (and default storage) specifiers to absolute specifiers.
-    assetRef = LookupAssetRefToStorage("", assetRef);
+    assetRef = ResolveAssetRef("", assetRef);
 
     // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
     // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since
@@ -814,7 +799,7 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
     // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
-    AssetRefType assetRefType = ParseAssetRefType(assetRef);
+    AssetRefType assetRefType = ParseAssetRef(assetRef);
     if (assetRefType == AssetRefRelativePath)
     {
         AssetStoragePtr defaultStorage = GetDefaultAssetStorage();
@@ -838,7 +823,7 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     return AssetProviderPtr();
 }
 
-QString AssetAPI::LookupAssetRefToStorage(QString context, QString assetRef)
+QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
 {
     context = context.trimmed();
 

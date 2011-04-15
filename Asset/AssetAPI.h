@@ -126,8 +126,8 @@ public:
     /// @param outPath [out] Returns the path part of the ref, e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/". Has a trailing slash when necessary.
     /// @param outLocalFilename [out] Returns the base filename of the asset. e.g. "local://path/folder/asset.png, subAsset" -> "asset.png".
     /// @param outSubAssetName [out] Returns the subasset name in the ref. e.g. "local://path/folder/asset.png, subAsset" -> "subAsset".
-    static AssetRefType ParseAssetRef(QString assetRef, QString *outProtocolPart, QString *outNamedStorage, QString *outProtocolAndPath, QString *outPathFnameAndSubAssetName, 
-        QString *outPath, QString *outLocalFilename, QString *outSubAssetName);
+    static AssetRefType ParseAssetRef(QString assetRef, QString *outProtocolPart = 0, QString *outNamedStorage = 0, QString *outProtocolAndPath = 0, 
+        QString *outPathFnameAndSubAssetName = 0, QString *outPath = 0, QString *outLocalFilename = 0, QString *outSubAssetName = 0);
 
 public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
@@ -222,9 +222,6 @@ public slots:
                usually the local path of the scene content that is being added. */
     static FileQueryResult QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath);
 
-    /// Examines the given assetRef and returns what kind of assetRef it is. ///\todo This function is only partially implemented.
-    static AssetRefType ParseAssetRefType(QString assetRef);
-
     /// Parses the local filename of the given assetRef. For example: ExtractLocalName("C:\assets\my.mesh") will return "my.mesh",
     /// ExtractLocalName("local://xxx.png") will return "xxx.png"). ExtractLocalName("local://collada.dae/subMeshName") will
     /// return "collada.dae/subMeshName". ///\todo Implement.
@@ -247,7 +244,7 @@ public slots:
     /// For example: context: "local://myasset.material", ref: "texture.png" returns "local://texture.png".
     /// context: "http://myserver.com/path/myasset.material", ref: "texture.png" returns "http://myserver.com/path/texture.png".
     /// The context string may be left empty, in which case the current default storage (GetDefaultAssetStorage()) is used as the context.
-    QString LookupAssetRefToStorage(QString context, QString ref);
+    QString ResolveAssetRef(QString context, QString ref);
 
     /// Recursively iterates through the given path and all its subdirectories and tries to find the given file.
     /** Returns the absolute path for that file, if it exists. The path contains the filename,
