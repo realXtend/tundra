@@ -10,7 +10,7 @@
 #include "EC_Placeable.h"
 #include "WorldLogicInterface.h"
 #include "Entity.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 #include "EventManager.h"
 #include "LinkPlugin.h"
 #include "Provider.h"
@@ -19,6 +19,7 @@
 #include "SettingsWidget.h"
 #include "UiServiceInterface.h"
 #include "EC_VoiceChannel.h"
+#include "ConsoleAPI.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -196,27 +197,31 @@ namespace MumbleVoip
 
     void MumbleVoipModule::InitializeConsoleCommands()
     {
-        RegisterConsoleCommand(Console::CreateCommand("mumble link", "Start Mumble link plugin: 'mumble link(user_id, context_id)'",
-            Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleLink)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble unlink", "Stop Mumble link plugin: 'mumble unlink'",
-            Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'",
-            Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble stats", "Show mumble statistics", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStats)));
+        framework_->Console()->RegisterCommand(CreateConsoleCommand("mumble link",
+            "Start Mumble link plugin: 'mumble link(user_id, context_id)'",
+            ConsoleBind(this, &MumbleVoipModule::OnConsoleMumbleLink)));
+        framework_->Console()->RegisterCommand(CreateConsoleCommand("mumble unlink",
+            "Stop Mumble link plugin: 'mumble unlink'",
+            ConsoleBind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
+        framework_->Console()->RegisterCommand(CreateConsoleCommand("mumble start",
+            "Start Mumble client application: 'mumble start(server_url)'",
+            ConsoleBind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
+        framework_->Console()->RegisterCommand(CreateConsoleCommand("mumble stats",
+            "Show mumble statistics", ConsoleBind(this, &MumbleVoipModule::OnConsoleMumbleStats)));
 
-        //RegisterConsoleCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector",
-        //    Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
-        //RegisterConsoleCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector",
-        //    Console::Bind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
+        //framework_->Console()->RegisterCommand(CreateConsoleCommand("mumble enable vad", "Enable voice activity detector",
+        //    ConsoleBind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
+        //framework_->Console()->RegisterCommand(CreateConsoleCommand("mumble disable vad", "Disable voice activity detector",
+        //    ConsoleBind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
     }
 
-    Console::CommandResult MumbleVoipModule::OnConsoleMumbleLink(const StringVector &params)
+    ConsoleCommandResult MumbleVoipModule::OnConsoleMumbleLink(const StringVector &params)
     {
         if (!link_plugin_)
-            return Console::ResultFailure("Link plugin is not initialized.");
+            return ConsoleResultFailure("Link plugin is not initialized.");
         if (params.size() != 2)
         {
-            return Console::ResultFailure("Wrong number of arguments: usage 'mumble link(id, context)'");
+            return ConsoleResultFailure("Wrong number of arguments: usage 'mumble link(id, context)'");
         }
         QString id = params[0].c_str();
         QString context = params[1].c_str();
@@ -231,48 +236,48 @@ namespace MumbleVoip
         {
             QString error_message = "Link plugin connection cannot be established. ";
             error_message.append(link_plugin_->GetReason());
-            return Console::ResultFailure(error_message.toStdString());
+            return ConsoleResultFailure(error_message.toStdString());
         }
 
         QString message = QString("Mumbe link plugin started: id=%1 context=%2").arg(id).arg(context);
-        return Console::ResultSuccess(message.toStdString());
+        return ConsoleResultSuccess(message.toStdString());
     }
 
-    Console::CommandResult MumbleVoipModule::OnConsoleMumbleUnlink(const StringVector &params)
+    ConsoleCommandResult MumbleVoipModule::OnConsoleMumbleUnlink(const StringVector &params)
     {
         if (!link_plugin_)
-            return Console::ResultFailure("Link plugin is not initialized.");
+            return ConsoleResultFailure("Link plugin is not initialized.");
         if (params.size() != 0)
         {
-            return Console::ResultFailure("Wrong number of arguments: usage 'mumble unlink'");
+            return ConsoleResultFailure("Wrong number of arguments: usage 'mumble unlink'");
         }
 
         if (!link_plugin_->IsRunning())
         {
-            return Console::ResultFailure("Mumbe link plugin was not running.");
+            return ConsoleResultFailure("Mumbe link plugin was not running.");
         }
 
         link_plugin_->Stop();
-        return Console::ResultSuccess("Mumbe link plugin stopped.");
+        return ConsoleResultSuccess("Mumbe link plugin stopped.");
     }
 
-    Console::CommandResult MumbleVoipModule::OnConsoleMumbleStart(const StringVector &params)
+    ConsoleCommandResult MumbleVoipModule::OnConsoleMumbleStart(const StringVector &params)
     {
         if (params.size() != 1)
         {
-            return Console::ResultFailure("Wrong number of arguments: usage 'mumble start(server_url)'");
+            return ConsoleResultFailure("Wrong number of arguments: usage 'mumble start(server_url)'");
         }
         QString server_url = params[0].c_str();
 
         try
         {
             ApplicationManager::StartMumbleClient(server_url);
-            return Console::ResultSuccess("Mumbe client started.");
+            return ConsoleResultSuccess("Mumbe client started.");
         }
         catch(Exception &e)
         {
             QString error_message = QString("Cannot start Mumble client: %1").arg(e.what());
-            return Console::ResultFailure(error_message.toStdString());        
+            return ConsoleResultFailure(error_message.toStdString());        
         }
     }
 
@@ -325,7 +330,7 @@ namespace MumbleVoip
         }
     }
 
-    Console::CommandResult MumbleVoipModule::OnConsoleMumbleStats(const StringVector &params)
+    ConsoleCommandResult MumbleVoipModule::OnConsoleMumbleStats(const StringVector &params)
     {
         
         if (in_world_voice_provider_)
@@ -337,7 +342,7 @@ namespace MumbleVoip
             }
         }
         QString message = QString("");
-        return Console::ResultSuccess(message.toStdString());
+        return ConsoleResultSuccess(message.toStdString());
     }
 
     void MumbleVoipModule::SetupSettingsWidget()
@@ -364,18 +369,18 @@ namespace MumbleVoip
         ui->AddSettingsWidget(settings_widget_, "Voice");
     }
 
-//    Console::CommandResult MumbleVoipModule::OnConsoleEnableVoiceActivityDetector(const StringVector &params)
+//    ConsoleCommandResult MumbleVoipModule::OnConsoleEnableVoiceActivityDetector(const StringVector &params)
 //    {
 ////        connection_manager_->EnableVAD(true);
 //        QString message = QString("Voice activity detector enabled.");
-//        return Console::ResultSuccess(message.toStdString());
+//        return ConsoleResultSuccess(message.toStdString());
 //    }
 
-  //  Console::CommandResult MumbleVoipModule::OnConsoleDisableVoiceActivityDetector(const StringVector &params)
+  //  ConsoleCommandResult MumbleVoipModule::OnConsoleDisableVoiceActivityDetector(const StringVector &params)
   //  {
   ////      connection_manager_->EnableVAD(false);
   //      QString message = QString("Voice activity detector disabled.");
-  //      return Console::ResultSuccess(message.toStdString());
+  //      return ConsoleResultSuccess(message.toStdString());
   //  }
 
 } // end of namespace: MumbleVoip

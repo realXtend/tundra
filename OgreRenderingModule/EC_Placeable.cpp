@@ -334,7 +334,7 @@ void EC_Placeable::SetQOrientation(QQuaternion newort)
     trans.rotation.z = eulers.z * RADTODEG;
     transform.Set(trans, AttributeChange::Default);
     
-    OrientationChanged(newort);
+    emit OrientationChanged(newort);
 }
 
 QVector3D EC_Placeable::GetQScale() const
@@ -364,7 +364,7 @@ void EC_Placeable::SetQOrientationEuler(QVector3D newrot)
     Quaternion orientation(DEGTORAD * newrot.x(),
                       DEGTORAD * newrot.y(),
                       DEGTORAD * newrot.z());
-    OrientationChanged(QQuaternion(orientation.w, orientation.x, orientation.y, orientation.z));
+    emit OrientationChanged(QQuaternion(orientation.w, orientation.x, orientation.y, orientation.z));
 }
 
 QVector3D EC_Placeable::GetQOrientationEuler() const
@@ -527,4 +527,3 @@ Vector3df EC_Placeable::GetRelativeVector(const Vector3df& vec)
 {
     return GetOrientation() * vec;
 }
-

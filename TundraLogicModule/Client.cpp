@@ -81,11 +81,7 @@ void Client::Login(const QUrl& loginUrl)
     if (port < 0)
         port = 2345;
 
-    // Set login parameters and login
-    SetLoginProperty("username", username);
-    SetLoginProperty("password", "");
-    SetLoginProperty("protocol", protocol);
-    SetLoginProperty("port", QString::number(port));
+    // Set custom login parameters and login
     if (!avatarurl.isEmpty())
         SetLoginProperty("avatarurl", avatarurl);
 
@@ -94,11 +90,17 @@ void Client::Login(const QUrl& loginUrl)
 
 void Client::Login(const QString& address, unsigned short port, const QString& username, const QString& password, const QString &protocol)
 {
+    // Make sure to logout, our scene manager gets confused when you login again
+    // when already connected to another or same server.
+    if (IsConnected())
+        Logout();
+
+    SetLoginProperty("address", address);
+    SetLoginProperty("port", QString::number(port));
     SetLoginProperty("username", username);
     SetLoginProperty("password", password);
-    SetLoginProperty("address", address);
     SetLoginProperty("protocol", protocol);
-    SetLoginProperty("port", QString::number(port));
+    
     kNet::SocketTransportLayer transportLayer = kNet::InvalidTransportLayer;
     if (protocol.toLower() == "tcp")
         transportLayer = kNet::SocketOverTCP;

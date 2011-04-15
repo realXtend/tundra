@@ -60,20 +60,24 @@ SET(OGREASSETEDITOR 0)
 # The following are the core modules that are required for the project to build. None of these can be omitted.
 add_subdirectory(Core)
 add_subdirectory(Foundation)
-add_subdirectory(Interfaces)
-add_subdirectory(RexCommon)
+
+add_subdirectory(Asset)
+add_subdirectory(Audio)
+add_subdirectory(Console)
+add_subdirectory(Input)
+add_subdirectory(Ui)
 add_subdirectory(Scene)
+
 add_subdirectory(OgreRenderingModule)
+add_subdirectory(KristalliProtocolModule)
+add_subdirectory(TundraLogicModule)
+
 add_subdirectory(Viewer)
 add_subdirectory(Server)
 
-add_subdirectory(Input)
-add_subdirectory(Ui)
-add_subdirectory(Asset)
-add_subdirectory(Audio)
-
-add_subdirectory(KristalliProtocolModule)
-add_subdirectory(TundraLogicModule)
+#To-be-deprecated, but required for now:
+add_subdirectory(Interfaces)
+add_subdirectory(RexCommon)
 
 # The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
 # they will not be able to conditionally compile the EC.
@@ -114,7 +118,6 @@ AddEntityComponent(EntityComponents/EC_Script EC_Script)
 
 # The following modules are required.
 add_subdirectory(RexLogicModule)        # Depends on OgreRenderingModule, EnvironmentModule, AvatarModule and Taiga subsystem.
-add_subdirectory(SupportModules)
 add_subdirectory(AvatarModule)          # Depends on OgreRenderingModule.
 add_subdirectory(AssetModule)           # Depends on Taiga subsystem.
 add_subdirectory(HttpUtilities)
@@ -131,7 +134,7 @@ add_subdirectory(ProtocolModuleTaiga)   # Required with OpenSim.
 if (USE_UIMODULE)
     add_subdirectory(UiModule)          # Depends on OgreRenderingModule.
 else()
-    add_subdirectory(LoginScreenModule)
+#    add_subdirectory(LoginScreenModule)
 endif()
 
 # The following are optional.

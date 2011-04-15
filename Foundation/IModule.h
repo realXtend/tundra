@@ -2,12 +2,11 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   IModule.h
- *  @brief  Interface for Naali modules.
- *          See @ref ModuleArchitecture for details.
+ *  @brief  Interface for modules.
  */
 
-#ifndef incl_Interfaces_IModule_h
-#define incl_Interfaces_IModule_h
+#ifndef incl_Foundation_IModule_h
+#define incl_Foundation_IModule_h
 
 // Disable C4251 warnings in MSVC: 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
 #ifdef _MSC_VER
@@ -18,10 +17,10 @@
 #include "IComponentRegistrar.h"
 #include "CoreTypes.h"
 #include "ForwardDefines.h"
-#include "ConsoleCommand.h"
+#include "../Console/ConsoleCommand.h"
 #include "CoreModuleApi.h"
 
-/// this define can be used to make component declaration automatic when the parent module gets loaded / unloaded.
+/// This define can be used to make component declaration automatic when the parent module gets loaded / unloaded.
 #define DECLARE_MODULE_EC(component) \
     { ComponentRegistrarPtr registrar = ComponentRegistrarPtr(new component::component##Registrar); \
     DeclareComponent(registrar); } \
@@ -62,7 +61,7 @@ public:
     */
     virtual void Load() {}
 
-    /// Pre-initialization for the module. Called before modules are initializated.
+    /// Pre-initialization for the module. Called before modules are initialized.
     /// Only override if you need. Do not call.
     virtual void PreInitialize() {}
 
@@ -74,14 +73,12 @@ public:
     /// Only override if you need. Do not call.
     virtual void PostInitialize() {}
 
-    /** Uninitialize the module. Called when module is removed from use
-        Override in your own module. Do not call.
-    */
+    /// Uninitialize the module. Called when module is removed from use.
+    /// Override in your own module. Do not call.
     virtual void Uninitialize() {}
 
-    /** Called when module is unloaded from memory. Do not trust that framework can be used.
-        Override in your own module. Do not call.
-    */
+    /// Called when module is unloaded from memory. Do not trust that framework can be used.
+    /// Override in your own module. Do not call.
     virtual void Unload() {}
 
     /** Synchronized update for the module
@@ -116,11 +113,6 @@ protected:
     /// Parent framework
     Foundation::Framework *framework_;
 
-    /// Registers console command for this module.
-    /** @param command Console command.
-    */
-    void RegisterConsoleCommand(const Console::Command &command);
-
 private:
     // Modules are noncopyable.
     IModule(const IModule &);
@@ -149,19 +141,9 @@ private:
     /// Unregisters all declared components
     void UninitializeInternal();
 
-    /// Component registrars
-    RegistrarVector component_registrars_;
-
-    typedef std::vector<Console::Command> CommandVector;
-
-    /// list of console commands that should be registered / unregistered automatically
-    CommandVector console_commands_;
-
-    /// name of the module
-    const std::string name_;
-
-    /// Current state of the module
-    ModuleState state_;
+    RegistrarVector component_registrars_; ///< Component registrars
+    const std::string name_; ///< Name of the module
+    ModuleState state_; ///< Current state of the module
 };
 
 #ifdef _MSC_VER

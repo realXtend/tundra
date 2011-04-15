@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ConsoleWidget</class>
+ <widget class="QWidget" name="ConsoleWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>513</width>
+    <height>142</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ConsoleWidget</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QPlainTextEdit {
+	border: 0px;
+	padding: 0px;
+	background-color: rgb(0,0,0);
+	font-size: 12px;
+	color: #33CC00;
+	margin: 0px;
+}
+
+QLineEdit {
+	border: 0px;
+	border-top: 1px solid rgba(255,255,255,100);
+	border-bottom: 1px rgba(255,255,255,100);
+	padding: 0px;
+	padding-left: 3px;
+	background-color: rgb(0,0,0);
+	font-size: 12px;
+	color:#33CC00;
+}
+
+QScrollBar{
+	background-color: rgb(0,0,0);
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QPlainTextEdit" name="ConsoleTextArea">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="plainText">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="ConsoleInputArea"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

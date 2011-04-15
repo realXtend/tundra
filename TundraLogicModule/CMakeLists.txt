@@ -20,14 +20,14 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 add_definitions (-DTUNDRALOGIC_MODULE_EXPORTS)
 
 use_package_bullet()
-use_modules (Core Foundation Interfaces Asset Scene AssetModule KristalliProtocolModule
+use_modules (Core Foundation Interfaces Asset Scene Console AssetModule KristalliProtocolModule
     OgreRenderingModule PhysicsModule EntityComponents/EC_DynamicComponent)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 #LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
 
-link_modules (Core Foundation Interfaces Asset Scene AssetModule KristalliProtocolModule
+link_modules (Core Foundation Interfaces Asset Scene Console AssetModule KristalliProtocolModule
     OgreRenderingModule PhysicsModule EC_DynamicComponent)
 link_ogre()
 

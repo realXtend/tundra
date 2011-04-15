@@ -7,8 +7,8 @@
 #include "ModuleLoggingFunctions.h"
 
 #include <QObject>
+#include "ConsoleCommandUtils.h"
 
-#include "ConsoleCommandServiceInterface.h"
 #include "IAssetProvider.h"
 #include "AssetModuleApi.h"
 
@@ -37,9 +37,9 @@ namespace Asset
         MODULE_LOGGING_FUNCTIONS
 
         //! callback for console command
-        Console::CommandResult ConsoleRequestAsset(const StringVector &params);
+        ConsoleCommandResult ConsoleRequestAsset(const StringVector &params);
 
-        Console::CommandResult AddHttpStorage(const StringVector &params);
+        ConsoleCommandResult AddHttpStorage(const StringVector &params);
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }

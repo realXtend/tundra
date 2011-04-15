@@ -9,7 +9,7 @@ Naali has the following dependencies:
 
 - Ogre 1.6.1 or newer; on Windows we use 1.7.1 by default http://www.ogre3d.org 
 
-- Qt 4.6.1 or newer, http://www.qtsoftware.com/ 
+- Qt 4.6.2 (2010.02.1) or newer, http://www.qtsoftware.com/ 
 
 - Python 2.6 or newer (but not 3.* currently): http://www.python.org/
 
