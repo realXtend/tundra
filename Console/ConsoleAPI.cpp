@@ -88,10 +88,9 @@ void ConsoleAPI::RegisterCommand(const ConsoleCommandStruct &command)
 ConsoleAPI::ConsoleAPI(Foundation::Framework *fw) :
     QObject(fw),
     framework_(fw),
-    uiConsoleManager(0)
+    uiConsoleManager(0),
+    consoleManager(new ConsoleManager(fw))
 {
-    consoleManager = new ConsoleManager(fw);
-
     UiGraphicsView *ui_view = framework_->Ui()->GraphicsView();
     if (ui_view)
         uiConsoleManager = new UiConsoleManager(framework_, ui_view);
@@ -109,10 +108,11 @@ void ConsoleAPI::ToggleConsole()
         uiConsoleManager->ToggleConsole();
 }
 
-void ConsoleAPI::HandleKeyEvent(KeyEvent *keyEvent)
+void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
 {
-    if (keyEvent->keyCode == Qt::Key_F1 && keyEvent->eventType == KeyEvent::KeyPressed)
-        uiConsoleManager->ToggleConsole();
+    const QKeySequence &toggleConsole = framework_->Input()->KeyBinding("ToggleConsole", QKeySequence(Qt::Key_F1));
+    if (e->sequence == toggleConsole)
+        ToggleConsole();
 }
 
 void ConsoleAPI::Uninitialize()
