@@ -1,5 +1,12 @@
 <!DOCTYPE Scene>
 <scene>
+ <entity id="6">
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="local://avatarmenu.js" name="Script ref"/>
+  </component>
+ </entity>
  <entity id="5">
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>

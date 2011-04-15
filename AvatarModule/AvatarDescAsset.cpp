@@ -52,7 +52,9 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     
     // Then try to parse
     QDomDocument avatarDoc("Avatar");
-    avatarDoc.setContent(avatarAppearanceXML_);
+    // If invalid XML, empty it so we will report IsLoaded == false
+    if (!avatarDoc.setContent(avatarAppearanceXML_))
+        avatarAppearanceXML_ = "";
     ReadAvatarAppearance(avatarDoc);
     
     emit AppearanceChanged();
@@ -189,6 +191,9 @@ bool AvatarDescAsset::ReadAvatarAppearance(const QDomDocument& source)
         
         property_elem = property_elem.nextSiblingElement("property");
     }
+    
+    // Refresh slave modifiers
+    CalculateMasterModifiers();
     
     // Assetmap not used (deprecated), as asset refs are stored directly
     return true;
