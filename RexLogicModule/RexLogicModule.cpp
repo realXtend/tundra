@@ -649,7 +649,8 @@ const QString &RexLogicModule::GetAvatarAppearanceProperty(const QString &name) 
     static const QString prop = GetUserAvatarEntity()->GetComponent<EC_AvatarAppearance>()->GetProperty(name.toStdString()).c_str();
     return prop;
     */
-    return QString();
+    static QString dummy;
+    return dummy;
 }
 
 float RexLogicModule::GetCameraControllablePitch() const
