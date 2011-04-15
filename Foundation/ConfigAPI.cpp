@@ -29,6 +29,19 @@ QString ConfigAPI::GetFilePath(const QString &file)
     return filePath;
 }
 
+bool ConfigAPI::HasValue(const QString &file, QString key)
+{
+    return HasValue(file, QString(), key);
+}
+
+bool ConfigAPI::HasValue(const QString &file, const QString &section, QString key)
+{
+    QSettings config(GetFilePath(file), QSettings::IniFormat);
+    if (!section.isEmpty())
+        key = section + "/" + key;
+    return config.allKeys().contains(key);
+}
+
 QVariant ConfigAPI::Get(const QString &file, const QString &key)
 {
     return Get(file, QString(), key);

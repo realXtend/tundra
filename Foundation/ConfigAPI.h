@@ -31,6 +31,11 @@ namespace Foundation { class Framework; }
     etc.
     \endcode
 
+    \note QSettings/QVariant and JavaScript booleans don't mix up too well. It will give you a string back of the config value.
+    This is problematic because new Boolean("false") in JavaScript returns a true boolean. The current work around would be to
+    set config booleans as JavaScript booleans, but when reading one from config always expect it to be "true", "false" or
+    null if the key could not be located. Then do checks of the string value and set a proper JavaScript boolean to your boolean var.
+
     \note All file, key and section parameters are case insensitive. This means all of them are transformed to 
     lower case before any accessing files. "MyKey" will get and set you same value as "mykey".
 */
@@ -40,6 +45,20 @@ class ConfigAPI : public QObject
 Q_OBJECT
 
 public slots:
+
+    //! Check if a config has a value for section/key.
+    /// \param file QString. Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
+    /// \param key QString. Key that value gets returned. For example: "username".
+    /// \return bool True if value exists in section/key of file, false otherwise.
+    bool HasValue(const QString &file, QString key);
+    
+    //! Check if a config has a value for section/key.
+    /// \param file QString. Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
+    /// \param section QString. The section in the config where key is. For example: "login".
+    /// \param key QString. Key that value gets returned. For example: "username".
+    /// \return bool True if value exists in section/key of file, false otherwise.
+    bool HasValue(const QString &file, const QString &section, QString key);
+
     //! Gets a value of key from a config file
     /// \param file QString. Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
     /// \param key QString. Key that value gets returned. For example: "username".
