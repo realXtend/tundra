@@ -19,7 +19,7 @@ case $testfile in
     *.txml)
 	echo "Setting up args for a txml file ($testfile)"
 	servercmd="./server --headless --file $testfile --run exitdelay.js"
-	viewercmd="./viewer --headless --storage `dirname $testfile`/ --run v.js
+	viewercmd="./viewer --headless --storage `dirname $testfile`/ --run v.js"
 	;;
 esac
 
