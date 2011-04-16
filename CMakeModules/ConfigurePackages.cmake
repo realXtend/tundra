@@ -156,7 +156,7 @@ macro (configure_ogre)
         sagase_configure_report (OGRE)
     else()
         # DX blitting define for naali
-#        add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
+        add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
         include_directories($ENV{OGRE_HOME})
         # Ogre built from sources
         include_directories($ENV{OGRE_HOME}/include) 
