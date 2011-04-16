@@ -728,7 +728,7 @@ namespace PythonScript
 
 //        Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetWorldLogic();
 
-        Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
+        EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
         foreach(Scene::EntityPtr e, prims)
         {
             submeshes_.clear();
@@ -1066,7 +1066,7 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
     // Iterate the scene to find all submeshes that use this texture uuid
     QList<uint> submeshes_;
     bool submeshes_found_ = false;
-    Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
+    EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
     foreach(Scene::EntityPtr e, prims)
     {
         Scene::Entity &entity = *e.get();
@@ -1361,7 +1361,7 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 PyObject* GetApplicationDataDirectory(PyObject *self)
 {
     PythonScriptModule* module = PythonScriptModule::GetInstance();
-    std::string cache_path = module->GetFramework()->GetPlatform()->GetApplicationDataDirectory();
+    std::string cache_path = Application::UserDataDirectory().toStdString();
     //PyString_New
     return PyString_FromString(cache_path.c_str());
     //return QString(cache_path.c_str());

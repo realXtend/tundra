@@ -50,8 +50,8 @@ void EC_ProximityTrigger::Update(float timeStep)
     if (!placeable)
         return;
     
-    Scene::EntityList otherTriggers = mgr->GetEntitiesWithComponent(EC_ProximityTrigger::TypeNameStatic());
-    for(Scene::EntityList::iterator i = otherTriggers.begin(); i != otherTriggers.end(); ++i)
+    EntityList otherTriggers = mgr->GetEntitiesWithComponent(EC_ProximityTrigger::TypeNameStatic());
+    for(EntityList::iterator i = otherTriggers.begin(); i != otherTriggers.end(); ++i)
     {
         Scene::Entity* otherEntity = (*i).get();
         if (otherEntity != entity)

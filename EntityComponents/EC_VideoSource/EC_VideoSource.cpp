@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "Platform.h"
 
 #include "EC_VideoSource.h"
 
@@ -454,7 +453,7 @@ void EC_VideoSource::UpdateSignals()
  
     // The magic number of instances before certain unstability is two, 
     // lets not let instantiate more phonon players than that for now
-    Scene::EntityList list = GetFramework()->Scene()->GetDefaultScene()->GetEntitiesWithComponent(TypeNameStatic());
+    EntityList list = GetFramework()->Scene()->GetDefaultScene()->GetEntitiesWithComponent(TypeNameStatic());
     if (list.size() < 2)
     {
         LogDebug(QString("Launching video ec in %1 ms").arg(rand_time).toStdString());
