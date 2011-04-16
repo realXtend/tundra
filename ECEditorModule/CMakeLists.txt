@@ -34,9 +34,6 @@ link_ogre()
 link_package (QT_PROPERTY_BROWSER)
 link_modules (Framework Scene OgreRenderingModule Input Console)
 
-LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
-
 SetupCompileFlagsWithPCH()
-
 
 final_target ()

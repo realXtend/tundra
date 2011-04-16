@@ -21,9 +21,7 @@
 #include "Entity.h"
 #include "EC_Name.h"
 #include "AssetReference.h"
-//#ifdef EC_DynamicComponent_ENABLED
 #include "EC_DynamicComponent.h"
-//#endif
 
 #include <QTreeWidgetItemIterator>
 

@@ -31,6 +31,7 @@
 #include "MemoryLeakCheck.h"
 
 #include "EC_Name.h"
+#include "EC_DynamicComponent.h"
 
 #ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
@@ -115,7 +116,9 @@ void TundraLogicModule::PreInitialize()
 }
 
 void TundraLogicModule::Load()
-{
+{    
+    DECLARE_MODULE_EC(EC_DynamicComponent);
+
     // External EC's
 #ifdef EC_Highlight_ENABLED
     DECLARE_MODULE_EC(EC_Highlight);

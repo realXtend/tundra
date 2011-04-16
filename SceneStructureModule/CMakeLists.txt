@@ -27,7 +27,6 @@ endif()
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
 GetOpenAssetImport()
 GetOgreAssetEditor()
 

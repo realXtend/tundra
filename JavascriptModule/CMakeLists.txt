@@ -24,7 +24,6 @@ use_modules (Framework Scene Input Audio Console)
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 LinkEntityComponent(EntityComponents/EC_Script EC_Script)
-LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
 
 link_modules (Framework EC_Script Input Audio Console)
 link_ogre()
