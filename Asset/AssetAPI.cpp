@@ -167,12 +167,12 @@ AssetAPI::FileQueryResult AssetAPI::ResolveLocalAssetPath(QString ref, QString b
         outFilePath = refLocal; // Return the path that was tried.
         return FileQueryExternalFile;
     }
-    if (sourceRefType == AssetRefLocalPath)
+    else if (sourceRefType == AssetRefLocalPath)
     {
         outFilePath = pathFilename;
         return QFile::exists(outFilePath) ? FileQueryLocalFileFound : FileQueryLocalFileMissing;
     }
-    if (sourceRefType == AssetRefLocalUrl)
+    else if (sourceRefType == AssetRefLocalUrl)
     {
         outFilePath = pathFilename;
         if (QFile::exists(outFilePath))
@@ -187,6 +187,12 @@ AssetAPI::FileQueryResult AssetAPI::ResolveLocalAssetPath(QString ref, QString b
 
         outFilePath = ref;
         return FileQueryLocalFileMissing;
+    }
+    else
+    {
+        // Unknown reference type.
+        outFilePath = ref;
+        return FileQueryExternalFile;
     }
 }
 

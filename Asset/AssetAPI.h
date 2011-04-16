@@ -107,10 +107,10 @@ public:
     enum AssetRefType
     {
         AssetRefInvalid,
-        AssetRefLocalPath,      ///< The assetRef points to the local filesystem, e.g "C:\myassets\texture.png".
-        AssetRefLocalUrl,       ///< The assetRef points to the local filesystem, using a local specifier like local:// or file://. E.g. "local://texture.png".
-        AssetRefExternalUrl,    ///< The assetRef points to a location external to the system, using a URL protocol specifier. "http://server.com/asset.png".
+        AssetRefLocalPath,      ///< The assetRef points to the local filesystem using an *absolute* pathname, e.g "C:\myassets\texture.png".
         AssetRefRelativePath,   ///< The assetRef is a path relative to some context. "asset.png" or "relativePath/model.mesh".
+        AssetRefLocalUrl,       ///< The assetRef points to the local filesystem, using a local URL syntax like local:// or file://. E.g. "local://texture.png".
+        AssetRefExternalUrl,    ///< The assetRef points to a location external to the system, using a URL protocol specifier. "http://server.com/asset.png".
         AssetRefNamedStorage    ///< The assetRef points to an explicitly named storage. "storageName:asset.png".
     };
 
