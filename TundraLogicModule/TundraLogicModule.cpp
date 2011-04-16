@@ -44,10 +44,6 @@
 #include "EC_Clone.h"
 #endif
 
-#ifdef EC_Light_ENABLED
-#include "EC_Light.h"
-#endif
-
 #ifdef EC_Touchable_ENABLED
 #include "EC_Touchable.h"
 #endif
@@ -134,9 +130,6 @@ void TundraLogicModule::Load()
 #endif
 #ifdef EC_Clone_ENABLED
     DECLARE_MODULE_EC(EC_Clone);
-#endif
-#ifdef EC_Light_ENABLED
-    DECLARE_MODULE_EC(EC_Light);
 #endif
 #ifdef EC_Touchable_ENABLED
     DECLARE_MODULE_EC(EC_Touchable);

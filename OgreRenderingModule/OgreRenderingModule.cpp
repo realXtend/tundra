@@ -11,6 +11,7 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_AnimationController.h"
 #include "EC_Camera.h"
+#include "EC_Light.h"
 #include "EC_OgreCompositor.h"
 #include "EC_RttTarget.h"
 #include "EC_SelectionBox.h"
@@ -48,6 +49,7 @@ namespace OgreRenderer
     {
         DECLARE_MODULE_EC(EC_Placeable);
         DECLARE_MODULE_EC(EC_Mesh);
+        DECLARE_MODULE_EC(EC_Light);
         DECLARE_MODULE_EC(EC_OgreCustomObject);
         DECLARE_MODULE_EC(EC_AnimationController);
         DECLARE_MODULE_EC(EC_Camera);
