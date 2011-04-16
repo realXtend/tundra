@@ -41,8 +41,8 @@ if (isserver) {
 }
 
 function ServerInitialize() {   
-    var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
-    var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
+    var avatar = me.GetOrCreateComponent("EC_Avatar");
+    var rigidbody = me.GetOrCreateComponent("EC_RigidBody");
 
     // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
     // Note: for now, you need the default_avatar.xml in your bin/data/assets folder
@@ -230,7 +230,7 @@ function ServerHandleStop(param) {
 }
 
 function ServerHandleToggleFly() {
-    var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
+    var rigidbody = me.GetOrCreateComponent("EC_RigidBody");
     flying = !flying;
     if (flying) {
         rigidbody.mass = 0;
@@ -352,7 +352,7 @@ function ClientInitialize() {
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {
-                var hoveringWidget = me.GetOrCreateComponentRaw("EC_HoveringWidget", 2, false);
+                var hoveringWidget = me.GetOrCreateComponent("EC_HoveringWidget", 2, false);
                 if (hoveringWidget != null) {
                     hoveringWidget.SetNetworkSyncEnabled(false);
                     hoveringWidget.SetTemporary(true);
@@ -458,7 +458,7 @@ function ClientUpdate(frametime)
 
 function ClientCreateInputMapper() {
     // Create a nonsynced inputmapper
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
+    var inputmapper = me.GetOrCreateComponent("EC_InputMapper", 2, false);
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = true;
     inputmapper.takeKeyboardEventsOverQt = true;
@@ -494,7 +494,7 @@ function ClientCreateInputMapper() {
     inputContext.GestureUpdated.connect(GestureUpdated);
     
     // Local camera matter for mouse scroll
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", "CameraMapper", 2, false);
+    var inputmapper = me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
     inputmapper.SetNetworkSyncEnabled(false);
     inputmapper.contextPriority = 100;
     inputmapper.takeMouseEventsOverQt = true;
@@ -514,8 +514,8 @@ function ClientCreateAvatarCamera() {
     cameraentity.SetName("AvatarCamera");
     cameraentity.SetTemporary(true);
 
-    var camera = cameraentity.GetOrCreateComponentRaw("EC_Camera");
-    var placeable = cameraentity.GetOrCreateComponentRaw("EC_Placeable");
+    var camera = cameraentity.GetOrCreateComponent("EC_Camera");
+    var placeable = cameraentity.GetOrCreateComponent("EC_Placeable");
 
     camera.AutoSetPlaceable();
     camera.SetActive();

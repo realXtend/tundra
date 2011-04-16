@@ -10,7 +10,7 @@ var avatar_area_z = 20;
 var isserver = server.IsRunning();
 
 if (isserver == false) {
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
+    var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
     inputmapper.SetTemporary(true);
     inputmapper.contextPriority = 102;
     inputmapper.RegisterMapping("Ctrl+Tab", "ToggleCamera", 1);

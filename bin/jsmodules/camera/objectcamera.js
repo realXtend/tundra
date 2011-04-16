@@ -10,10 +10,10 @@ var global_transform;
 
 if (!me.HasComponent("EC_Camera"))
 {
-    var camera = me.GetOrCreateComponentRaw("EC_Camera");
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
-    var placeable = me.GetOrCreateComponentRaw("EC_Placeable");
-    var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
+    var camera = me.GetOrCreateComponent("EC_Camera");
+    var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
+    var placeable = me.GetOrCreateComponent("EC_Placeable");
+    var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
     soundlistener.active = true;    
 
     camera.AutoSetPlaceable();

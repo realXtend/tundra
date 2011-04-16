@@ -52,11 +52,11 @@ if (isserver) {
 }
 
 function ServerInitialize() {
-    var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
-    var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
+    var avatar = me.GetOrCreateComponent("EC_Avatar");
+    var rigidbody = me.GetOrCreateComponent("EC_RigidBody");
 
     // Create an inactive proximitytrigger, so that other proximitytriggers can detect the avatar
-    var proxtrigger = me.GetOrCreateComponentRaw("EC_ProximityTrigger");
+    var proxtrigger = me.GetOrCreateComponent("EC_ProximityTrigger");
     proxtrigger.active = false;
 
     // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
@@ -355,7 +355,7 @@ function ClientInitialize() {
         ClientCreateInputMapper();
         ClientCreateAvatarCamera();
         crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
-        var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
+        var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
         soundlistener.active = true;
 
         me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
@@ -366,7 +366,7 @@ function ClientInitialize() {
         var avatarurl = client.GetLoginProperty("avatarurl");
         if (avatarurl && avatarurl.length > 0)
         {
-            var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
+            var avatar = me.GetOrCreateComponent("EC_Avatar");
             var r = avatar.appearanceRef;
             r.ref = "local://default_avatar.xml";
             avatar.appearanceRef = r;
@@ -380,7 +380,7 @@ function ClientInitialize() {
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {
-                var hoveringWidget = me.GetOrCreateComponentRaw("EC_HoveringWidget", 2, false);
+                var hoveringWidget = me.GetOrCreateComponent("EC_HoveringWidget", 2, false);
                 if (hoveringWidget != null) {
                     hoveringWidget.SetNetworkSyncEnabled(false);
                     hoveringWidget.SetTemporary(true);
@@ -435,7 +435,7 @@ function ClientUpdate(frametime)
 
 function ClientCreateInputMapper() {
     // Create a nonsynced inputmapper
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
+    var inputmapper = me.GetOrCreateComponent("EC_InputMapper", 2, false);
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = false;
     inputmapper.takeKeyboardEventsOverQt = false;
@@ -472,7 +472,7 @@ function ClientCreateInputMapper() {
     inputContext.MouseMove.connect(ClientHandleMouseMove);
 
     // Local camera matter for mouse scroll
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", "CameraMapper", 2, false);
+    var inputmapper = me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
     inputmapper.SetNetworkSyncEnabled(false);
     inputmapper.contextPriority = 100;
     inputmapper.takeMouseEventsOverQt = true;
@@ -491,8 +491,8 @@ function ClientCreateAvatarCamera() {
     cameraentity.SetName("AvatarCamera");
     cameraentity.SetTemporary(true);
 
-    var camera = cameraentity.GetOrCreateComponentRaw("EC_Camera");
-    var placeable = cameraentity.GetOrCreateComponentRaw("EC_Placeable");
+    var camera = cameraentity.GetOrCreateComponent("EC_Camera");
+    var placeable = cameraentity.GetOrCreateComponent("EC_Placeable");
 
     camera.AutoSetPlaceable();
     camera.SetActive();
@@ -854,7 +854,7 @@ function CreateFish() {
     // Do not act until the actual avatar has been created
     if ((avatarmesh) && (avatarmesh.HasMesh())) {
         // Create a local mesh component into the same entity
-        var fishmesh = me.GetOrCreateComponentRaw("EC_Mesh", "fish", 2, false);
+        var fishmesh = me.GetOrCreateComponent("EC_Mesh", "fish", 2, false);
         var r = fishmesh.meshRef;
         if (r.ref != "local://fish.mesh") {
             r.ref = "local://fish.mesh";

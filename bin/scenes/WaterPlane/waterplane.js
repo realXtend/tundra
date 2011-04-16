@@ -4,9 +4,9 @@ function Entity (position)
 {
 	this.EntityId = scene.NextFreeId();
 	ParticleEntity = scene.CreateEntityRaw(this.EntityId, "", 2, false);
-	ParticleEntity.GetOrCreateComponentRaw("EC_ParticleSystem");
+	ParticleEntity.GetOrCreateComponent("EC_ParticleSystem");
 	ParticleEntity.particlesystem.particleId = "file://splash.particle";
-	ParticleEntity.GetOrCreateComponentRaw("EC_Placeable");
+	ParticleEntity.GetOrCreateComponent("EC_Placeable");
 	var trans = ParticleEntity.placeable.transform;
 	trans.pos.x = position.x;
 	trans.pos.y = position.y;
