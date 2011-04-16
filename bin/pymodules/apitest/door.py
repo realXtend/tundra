@@ -93,8 +93,8 @@ class DoorHandler(circuits.BaseComponent):
         locked = self.locked
 
         newpos = OPENPOS if opened else CLOSEPOS
-        ent.placeable.Position = newpos        
-        #print opened, type(opened), ent.placeable.Position
+        ent.placeable.position = newpos        
+        #print opened, type(opened), ent.placeable.position
 
         self.openbut.text = "Close" if opened else "Open"
         self.lockbut.text = "Unlock" if locked else "Lock"
@@ -108,7 +108,7 @@ class DoorHandler(circuits.BaseComponent):
         at all. the object is moved in all clients only.
         when logging back to a server, wasn't seeing the right positions,
         probably because server send pos update after the comp sync."""
-        self.forcepos = ent.placeable.Position
+        self.forcepos = ent.placeable.position
         
     def get_opened(self):
         if self.comp is not None:
@@ -161,7 +161,7 @@ class DoorHandler(circuits.BaseComponent):
             return # nothing useful to do anyway
 
         if self.forcepos is not None:
-            ent.placeable.Position = self.forcepos
+            ent.placeable.position = self.forcepos
 
     @circuits.handler("on_logout")
     def removegui(self, evid):
