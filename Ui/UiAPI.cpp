@@ -7,6 +7,7 @@
 #include "UiGraphicsView.h"
 #include "QtUiAsset.h"
 #include "UiProxyWidget.h"
+#include "Application.h"
 
 #include "Framework.h"
 #include "AssetAPI.h"
@@ -73,7 +74,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     
     mainWindow = new UiMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
-    mainWindow->setWindowIcon(QIcon("./data/ui/images/icon/naali_logo_32px_RC1.ico"));
+    mainWindow->setWindowIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/naali_logo_32px_RC1.ico"));
     connect(mainWindow, SIGNAL(WindowCloseEvent()), owner, SLOT(Exit()));
 
     // Prepare graphics view and scene

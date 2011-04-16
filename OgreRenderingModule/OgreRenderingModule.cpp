@@ -89,14 +89,25 @@ namespace OgreRenderer
 
         // Create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
         std::string window_title = framework_->Config()->GetApplicationIdentifier().toStdString();
+
         renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
+
     }
 
     void OgreRenderingModule::Initialize()
     {
         assert (renderer_);
         assert (!renderer_->IsInitialized());
+
+        // Initializing the Renderer crashes inside Ogre if the current working directory is not the same as the directory where Ogre plugins reside in.
+        // So, temporarily set the working dir to the installation directory, and restore it after succeeding to load the plugins.
+        QString cwd = Application::CurrentWorkingDirectory();
+        Application::SetCurrentWorkingDirectory(Application::InstallationDirectory());
+
         renderer_->Initialize();
+
+        // Restore the original cwd to not disturb the enviroment we are running in.
+        Application::SetCurrentWorkingDirectory(cwd);
 
         framework_->GetServiceManager()->RegisterService(Service::ST_Renderer, renderer_);
 

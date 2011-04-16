@@ -147,7 +147,7 @@ void ECEditorModule::AddEditorWindowToUI()
     //connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);
 
     // We don't need to worry about attaching ECEditorWindow to ui scene, because ECEditorWindow's initialize operation will do it automaticly.
-    //ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+    //ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", Application::InstallationDirectory() + "data/ui/images/menus/edbutton_OBJED_normal.png");
     //ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
 }
 

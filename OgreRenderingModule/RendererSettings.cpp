@@ -9,6 +9,7 @@
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "Framework.h"
+#include "Application.h"
 #include "UiServiceInterface.h"
 #include "InputAPI.h"
 
@@ -44,7 +45,7 @@ namespace OgreRenderer
             return;
 
         QUiLoader loader;
-        QFile file("./data/ui/renderersettings.ui");
+        QFile file(Application::InstallationDirectory() + "data/ui/renderersettings.ui");
 
         if (!file.exists())
         {

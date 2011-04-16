@@ -107,7 +107,7 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     //UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
     connect(profilerWindow_, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 
-    //ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+    //ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), Application::InstallationDirectory() + "data/ui/images/menus/edbutton_MATWIZ_hover.png");
 }
 
 void DebugStatsModule::StartProfiling(bool visible)

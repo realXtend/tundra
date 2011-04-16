@@ -13,6 +13,7 @@
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "Framework.h"
+#include "Application.h"
 #include "SceneManager.h"
 #include "UiProxyWidget.h"
 #include "ConsoleCommandUtils.h"
@@ -50,7 +51,7 @@ namespace Environment
 
         QUiLoader loader;
         loader.setLanguageChangeEnabled(true);
-        QString str("./data/ui/terrainwtex_editor.ui");
+        QString str(Application::InstallationDirectory() + "data/ui/terrainwtex_editor.ui");
         QFile file(str);
         if(!file.exists())
         {

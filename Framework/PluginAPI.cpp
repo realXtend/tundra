@@ -64,7 +64,7 @@ void PluginAPI::LoadPlugin(const QString &filename)
     QString path = Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix;
 
     path = path.replace("/", "\\");
-    LogInfo("Loading up plugin \"" + filename + "\" in path \"" + path + "\".");
+    LogInfo("Loading plugin \"" + filename + "\".");
     ///\todo Cross-platform -> void* & dlopen.
     ///\todo Unicode support!
     HMODULE module = LoadLibraryA(path.toStdString().c_str());

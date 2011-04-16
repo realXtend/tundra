@@ -13,6 +13,7 @@
 #include "JavascriptInstance.h"
 #include "ScriptCoreTypeDefines.h"
 
+#include "Application.h"
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "AssetAPI.h"
@@ -233,7 +234,7 @@ void JavascriptModule::LoadStartupScripts()
 {
     UnloadStartupScripts();
     
-    std::string path = "./jsmodules/startup";
+    std::string path = Application::InstallationDirectory().toStdString() + "jsmodules/startup";
     std::vector<std::string> scripts;
 
     try

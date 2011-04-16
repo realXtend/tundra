@@ -11,6 +11,7 @@
 #include <cassert>
 
 #include "Framework.h"
+#include "Application.h"
 #include "InputAPI.h"
 
 #include "KeyBindingsConfigWindow.h"
@@ -28,7 +29,7 @@
 void KeyBindingsConfigWindow::ShowWindow()
 {
     QUiLoader loader;
-    QFile file("./data/ui/KeyBindingsConfig.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/KeyBindingsConfig.ui");
     file.open(QFile::ReadOnly);
     QWidget *contents_widget_ = loader.load(&file, this);
     assert(contents_widget_);

@@ -48,7 +48,7 @@ const QString DEFAULT_LOG_DIR("logs");
 TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(fw)
 {
     QUiLoader loader;
-    QFile file("./data/ui/profiler.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/profiler.ui");
     file.open(QFile::ReadOnly);
     contents_widget_ = loader.load(&file, this);
     assert(contents_widget_);

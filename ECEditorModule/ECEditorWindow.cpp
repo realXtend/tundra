@@ -8,6 +8,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Application.h"
 #include "ECEditorWindow.h"
 #include "ECBrowser.h"
 #include "EntityPlacer.h"
@@ -697,7 +698,7 @@ void ECEditorWindow::Initialize()
 {
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
-    QFile file("./data/ui/eceditor.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/eceditor.ui");
     file.open(QFile::ReadOnly);
     QWidget *contents = loader.load(&file, this);
     if (!contents)

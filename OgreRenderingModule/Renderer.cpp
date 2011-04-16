@@ -314,10 +314,7 @@ namespace OgreRenderer
         view_distance_ = framework_->Config()->Get(configData, "view distance").toFloat();
 
         // Load plugins
-        QString cwd = Application::CurrentWorkingDirectory();
-        Application::SetCurrentWorkingDirectory(Application::InstallationDirectory());
         LoadPlugins(plugins_filename_);
-        Application::SetCurrentWorkingDirectory(cwd);
 
 #ifdef _WINDOWS
         // WIN default to DirectX
@@ -489,6 +486,9 @@ namespace OgreRenderer
             {
                 type_name = i->first;
                 arch_name = i->second;
+                if (QDir::isRelativePath(arch_name.c_str()))
+                    arch_name = QDir::cleanPath(Application::InstallationDirectory() + arch_name.c_str()).toStdString();
+
                 Ogre::ResourceGroupManager::getSingleton().addResourceLocation(arch_name, type_name, sec_name);
             }
         }
@@ -497,13 +497,13 @@ namespace OgreRenderer
         switch (shadowquality_)
         {
         case Shadows_Off:
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/materials/scripts/shadows_off", "FileSystem", "General");
+            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/materials/scripts/shadows_off", "FileSystem", "General");
             break;
         case Shadows_High:
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/materials/scripts/shadows_high", "FileSystem", "General");
+            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/materials/scripts/shadows_high", "FileSystem", "General");
             break;
         default:
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/materials/scripts/shadows_low", "FileSystem", "General");
+            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/materials/scripts/shadows_low", "FileSystem", "General");
             break;
         }
         
