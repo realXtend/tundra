@@ -20,6 +20,7 @@
 #include <QScrollBar>
 #include <QUiLoader>
 #include <QFile>
+#include <QDir>
 
 #include "MemoryLeakCheck.h"
 
@@ -288,7 +289,17 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
     }
     else // The file is from absolute source location.
     {
-        QFile file(filePath);
+        QString path = filePath;
+        // If the user submitted a relative path, try to lookup whether a path relative to cwd or the application installation directory was meant.
+        if (QDir::isRelativePath(path))
+        {
+            QString cwdPath = Application::CurrentWorkingDirectory() + filePath;
+            if (QFile::exists(cwdPath))
+                path = cwdPath;
+            else
+                path = Application::InstallationDirectory() + filePath;
+        }
+        QFile file(path);
         QUiLoader loader;
         file.open(QFile::ReadOnly);
         widget = loader.load(&file, parent);
