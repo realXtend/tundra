@@ -13,7 +13,7 @@
 #include "TreeWidgetUtils.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #include "Framework.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
@@ -363,7 +363,7 @@ void AddContentWindow::AddFiles(const QStringList &fileNames)
         AssetDesc ad;
         ad.source = file;
         ad.dataInMemory = false;
-        QString type = GetResourceTypeFromResourceFileName(file.toStdString().c_str());
+        QString type = AssetAPI::GetResourceTypeFromAssetRef(file);
         ad.typeName = type.isEmpty() ? "Binary" : type;
         ad.destinationName = fs::path(file.toStdString()).leaf().c_str();
         desc.assets[qMakePair(ad.source, ad.subname)]= ad;
@@ -435,7 +435,7 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
 
         QString basePath(fs::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
         QString outFilePath;
-        AssetAPI::FileQueryResult res = framework->Asset()->QueryFileLocation(a.source, basePath, outFilePath);
+        AssetAPI::FileQueryResult res = framework->Asset()->ResolveLocalAssetPath(a.source, basePath, outFilePath);
 
         /*if (res == AssetAPI::FileQueryLocalFileFound)
         {
@@ -549,7 +549,7 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
                         {
                             QString ref = AssetAPI::ExtractFilenameFromAssetRef(value);
                             ///\todo Perf hit, find a better way and remove this.
-                            AssetAPI::QueryFileLocation(ref, path, value);
+                            framework->Asset()->ResolveLocalAssetPath(ref, path, value);
                         }
 
                         SceneDesc::AssetMapKey key = qMakePair(value, subname);

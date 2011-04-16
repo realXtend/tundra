@@ -789,8 +789,8 @@ void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisi
     if (shapeType.Get() == Shape_TriMesh)
         m = 0.0f;
     // On client, all server-side entities become static to not desync or try to send updates we should not
-    if (!HasAuthority())
-        m = 0.0f;
+    //if (!HasAuthority())
+    //   m = 0.0f;
     
     if ((shape_) && (m > 0.0f))
         shape_->calculateLocalInertia(m, localInertia);

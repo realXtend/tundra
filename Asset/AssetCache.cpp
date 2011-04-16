@@ -192,19 +192,15 @@ qint64 AssetCache::expire()
     return maximumCacheSize() / 2;
 }
 
-QString AssetCache::GetDiskSource(const QString &assetRef)
+QString AssetCache::FindInCache(const QString &assetRef)
 {
     // Deny http:// and https:// asset references to be gotten from cache
     // as the QAccessManager will request it from the overrides above later!
     // You can get the path if you ask directly as a url.
-    if (assetRef.startsWith("http://") || assetRef.startsWith("https://"))
+    if (assetRef.startsWith("http://") || assetRef.startsWith("https://")) ///\todo Remove this. The Asset Cache needs to be protocol agnostic. -jj.
         return "";
-    return GetDiskSource(QUrl(assetRef, QUrl::TolerantMode));
-}
 
-QString AssetCache::GetDiskSource(const QUrl &assetUrl)
-{
-    QString absolutePath = assetDataDir.absolutePath() + "/" + SanitateAssetRefForCache(assetUrl.toString());
+    QString absolutePath = assetDataDir.absolutePath() + "/" + SanitateAssetRefForCache(assetRef);
     if (QFile::exists(absolutePath))
         return absolutePath;
     return "";

@@ -11,22 +11,22 @@
 #include "ComponentManager.h"
 #include "ServiceManager.h"
 #include "RenderServiceInterface.h"
-#include "ConsoleServiceInterface.h"
-#include "ConsoleCommandServiceInterface.h"
 #include "CoreException.h"
 
-#include "NaaliApplication.h"
+#include "Application.h"
 
 #include "InputAPI.h"
 #include "FrameAPI.h"
 #include "AssetAPI.h"
 #include "AudioAPI.h"
 #include "ConsoleAPI.h"
+#include "ConsoleManager.h"
 #include "DebugAPI.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
 #include "PluginAPI.h"
 #include "UiAPI.h"
+#include "UiMainWindow.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -38,9 +38,9 @@ namespace Foundation
         argv_(argv),
         initialized_(false),
         headless_(false),
-        naaliApplication(0),
+        application(0),
         frame(new FrameAPI(this)),
-        console(new ConsoleAPI(this)),
+        console(0),
         debug(new DebugAPI(this)),
         scene(new SceneAPI(this)),
         input(0),
@@ -89,7 +89,7 @@ namespace Foundation
             event_manager_ = EventManagerPtr(new EventManager(this));
 
             // Create QApplication
-            naaliApplication = new NaaliApplication(this, argc_, argv_);
+            application = new Application(this, argc_, argv_);
             initialized_ = true;
 
             // Create AssetAPI.
@@ -105,6 +105,7 @@ namespace Foundation
             // Create Input and PluginAPI.
             input = new InputAPI(this);
             plugin = new PluginAPI(this);
+            console = new ConsoleAPI(this);
 
             // Initialize SceneAPI.
             scene->Initialise();
@@ -116,7 +117,7 @@ namespace Foundation
             RegisterDynamicObject("asset", asset);
             RegisterDynamicObject("audio", audio);
             RegisterDynamicObject("debug", debug);
-            RegisterDynamicObject("application", naaliApplication);
+            RegisterDynamicObject("application", application);
         }
     }
 
@@ -137,7 +138,7 @@ namespace Foundation
         // This delete must be the last one in Framework since naaliApplication derives QApplication.
         // When we delete QApplication, we must have ensured that all QObjects have been deleted.
         ///\bug Framework is itself a QObject and we should delete naaliApplication only after Framework has been deleted. A refactor is required.
-        delete naaliApplication;
+        delete application;
     }
 
     void Framework::ParseProgramOptions()
@@ -241,6 +242,8 @@ namespace Foundation
                 frame->Update(frametime);
             }
 
+            console->consoleManager->Update(frametime);
+
             // if we have a renderer service, render now
             boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
             if (renderer.expired() == false)
@@ -261,7 +264,7 @@ namespace Foundation
         }
         
         // Run our QApplication subclass NaaliApplication.
-        naaliApplication->Go();
+        application->Go();
 
         // Qt main loop execution has ended, we are existing.
         exit_signal_ = true;
@@ -276,15 +279,15 @@ namespace Foundation
     void Framework::Exit()
     {
         exit_signal_ = true;
-        if (naaliApplication)
-            naaliApplication->AboutToExit();
+        if (application)
+            application->AboutToExit();
     }
     
     void Framework::ForceExit()
     {
         exit_signal_ = true;
-        if (naaliApplication)
-            naaliApplication->quit();
+        if (application)
+            application->quit();
     }
     
     void Framework::CancelExit()
@@ -293,8 +296,8 @@ namespace Foundation
 
         // Our main loop is stopped when we are exiting,
         // we need to start it back up again if something canceled the exit.
-        if (naaliApplication)
-            naaliApplication->UpdateFrame();
+        if (application)
+            application->UpdateFrame();
     }
 
     void Framework::LoadModules()
@@ -315,43 +318,44 @@ namespace Foundation
     {
         event_manager_->ClearDelayedEvents();
         module_manager_->UninitializeModules();
+        ///\todo Horrible uninit call here now due to console refactoring
+        console->Uninitialize();
         module_manager_->UnloadModules();
     }
 
-    NaaliApplication *Framework::GetNaaliApplication() const
+    Application *Framework::GetApplication() const
     {
-        return naaliApplication;
+        return application;
     }
-
-    Console::CommandResult Framework::ConsoleListModules(const StringVector &params)
+/*
+    ConsoleCommandResult Framework::ConsoleListModules(const StringVector &params)
     {
-        boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Service::ST_Console).lock();
         if (console)
         {
             console->Print("Loaded modules:");
             const ModuleManager::ModuleVector &modules = module_manager_->GetModuleList();
             for(size_t i = 0 ; i < modules.size() ; ++i)
-                console->Print(modules[i].module_->Name());
+                console->Print(modules[i].module_->Name().c_str());
         }
 
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
-    Console::CommandResult Framework::ConsoleSendEvent(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleSendEvent(const StringVector &params)
     {
         if (params.size() != 2)
-            return Console::ResultInvalidParameters();
+            return ConsoleResultInvalidParameters();
         
         event_category_id_t event_category = event_manager_->QueryEventCategory(params[0], false);
         if (event_category == IllegalEventCategory)
-            return Console::ResultFailure("Event category not found.");
+            return ConsoleResultFailure("Event category not found.");
         else
         {
             event_manager_->SendEvent(event_category, ParseString<event_id_t>(params[1]), 0);
-            return Console::ResultSuccess();
+            return ConsoleResultSuccess();
         }
     }
-
+*/
     static std::string FormatTime(double time)
     {
         char str[128];
@@ -373,7 +377,7 @@ namespace Foundation
     /// @param node The root node where to start the printing.
     /// @param showUnused If true, even blocks that haven't been called will be included. If false, only
     ///        the blocks that were actually recently called are included. 
-    void PrintTimingsToConsole(const Console::ConsolePtr &console, const ProfilerNodeTree *node, bool showUnused)
+    void PrintTimingsToConsole(ConsoleAPI *console, ProfilerNodeTree *node, bool showUnused)
     {
         const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
 
@@ -414,7 +418,7 @@ namespace Foundation
                     timings.append("&nbsp;");
                 timings += str;
 
-                console->Print(timings);
+                console->Print(timings.c_str());
             }
         }
 
@@ -428,11 +432,10 @@ namespace Foundation
         if (timings_node)
             level -= 2;
     }
-
-    Console::CommandResult Framework::ConsoleProfile(const StringVector &params)
+/*
+    ConsoleCommandResult Framework::ConsoleProfile(const StringVector &params)
     {
 #ifdef PROFILING
-        boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Service::ST_Console).lock();
         if (console)
         {
             Profiler &profiler = GetProfiler();
@@ -446,28 +449,25 @@ namespace Foundation
 //            profiler.Release();
         }
 #endif
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
-
+*/
     void Framework::RegisterConsoleCommands()
     {
-        boost::shared_ptr<Console::CommandService> console = GetService<Console::CommandService>(Service::ST_ConsoleCommand).lock();
-        if (console)
-        {
-            console->RegisterCommand(Console::CreateCommand("ListModules", 
-                "Lists all loaded modules.", 
-                Console::Bind(this, &Framework::ConsoleListModules)));
+/*
+        console->RegisterCommand(CreateConsoleCommand("ListModules",
+            "Lists all loaded modules.", 
+            ConsoleBind(this, &Framework::ConsoleListModules)));
 
-            console->RegisterCommand(Console::CreateCommand("SendEvent", 
-                "Sends an internal event. Only for events that contain no data. Usage: SendEvent(event category name, event id)", 
-                Console::Bind(this, &Framework::ConsoleSendEvent)));
+        console->RegisterCommand(CreateConsoleCommand("SendEvent",
+            "Sends an internal event. Only for events that contain no data. Usage: SendEvent(event category name, event id)",
+            ConsoleBind(this, &Framework::ConsoleSendEvent)));
 
 #ifdef PROFILING
-            console->RegisterCommand(Console::CreateCommand("Profile", 
-                "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block", 
-                Console::Bind(this, &Framework::ConsoleProfile)));
-#endif
-        }
+        console->RegisterCommand(CreateConsoleCommand("Profile", 
+            "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block",
+            ConsoleBind(this, &Framework::ConsoleProfile)));
+#endif*/
     }
 
 #ifdef PROFILING

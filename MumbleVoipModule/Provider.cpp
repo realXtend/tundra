@@ -16,7 +16,7 @@
 #include "Client.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include "LoggingFunctions.h"
 
@@ -122,8 +122,6 @@ namespace MumbleVoip
     void Provider::ShowMicrophoneAdjustmentDialog()
     {
         if (framework_->IsHeadless())
-            return;
-        if (!framework_->Ui()->MainWindow())
             return;
 
         if (microphone_adjustment_widget_)

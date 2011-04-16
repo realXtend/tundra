@@ -11,7 +11,7 @@
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
 #include "JavascriptInstance.h"
-#include "NaaliCoreTypeDefines.h"
+#include "ScriptCoreTypeDefines.h"
 
 #include "SceneAPI.h"
 #include "Entity.h"
@@ -25,7 +25,7 @@
 #include "AudioAPI.h"
 #include "FrameAPI.h"
 #include "ConsoleAPI.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 
 #include "ScriptAsset.h"
 
@@ -73,19 +73,19 @@ void JavascriptModule::Initialize()
 
 void JavascriptModule::PostInitialize()
 {
-    RegisterNaaliCoreMetaTypes();
+    RegisterCoreMetaTypes();
     
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
-        Console::Bind(this, &JavascriptModule::ConsoleRunString)));
+        ConsoleBind(this, &JavascriptModule::ConsoleRunString)));
 
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
         "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",
-        Console::Bind(this, &JavascriptModule::ConsoleRunFile)));
+        ConsoleBind(this, &JavascriptModule::ConsoleRunFile)));
     
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
         "JsReloadScripts", "Reloads and re-executes startup scripts.",
-        Console::Bind(this, &JavascriptModule::ConsoleReloadScripts)));
+        ConsoleBind(this, &JavascriptModule::ConsoleReloadScripts)));
     
     // Initialize startup scripts
     LoadStartupScripts();
@@ -112,30 +112,30 @@ void JavascriptModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-Console::CommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
+ConsoleCommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
 {
     if (params.size() != 1)
-        return Console::ResultFailure("Usage: JsExec(print 1 + 1)");
+        return ConsoleResultFailure("Usage: JsExec(print 1 + 1)");
 
     JavascriptModule::RunString(QString::fromStdString(params[0]));
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult JavascriptModule::ConsoleRunFile(const StringVector &params)
+ConsoleCommandResult JavascriptModule::ConsoleRunFile(const StringVector &params)
 {
     if (params.size() != 1)
-        return Console::ResultFailure("Usage: JsLoad(myfile.js)");
+        return ConsoleResultFailure("Usage: JsLoad(myfile.js)");
 
     JavascriptModule::RunScript(QString::fromStdString(params[0]));
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult JavascriptModule::ConsoleReloadScripts(const StringVector &params)
+ConsoleCommandResult JavascriptModule::ConsoleReloadScripts(const StringVector &params)
 {
     LoadStartupScripts();
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 JavascriptModule *JavascriptModule::GetInstance()

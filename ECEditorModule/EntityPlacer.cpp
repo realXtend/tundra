@@ -58,7 +58,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
 
     input_->SetTakeMouseEventsOverQt(true);
 
-    connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), this, SLOT(OnMouseEvent(MouseEvent *)));
+    connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), this, SLOT(OnMouseEvent(MouseEvent *)));
     connect(input_.get(), SIGNAL(MouseMove(MouseEvent *)), this, SLOT(MouseMove(MouseEvent *)));
 }
 

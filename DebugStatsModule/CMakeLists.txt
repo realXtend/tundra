@@ -17,8 +17,7 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DDEBUGSTATS_MODULE_EXPORTS) 
 
-use_modules (Framework Scene OgreRenderingModule EnvironmentModule
-    SupportModules AssetModule Input Ui)
+use_modules (Framework Scene OgreRenderingModule EnvironmentModule AssetModule Input Ui Console)
 
 if (OGREASSETEDITOR)
 use_modules(OgreAssetEditorModule)
@@ -28,8 +27,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
 
-link_modules (Framework Scene OgreRenderingModule EnvironmentModule
-    SupportModules AssetModule Input Ui)
+link_modules (Framework Scene OgreRenderingModule EnvironmentModule AssetModule Input Ui Console)
 
 if (OGREASSETEDITOR)
 link_modules(OgreAssetEditorModule)

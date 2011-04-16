@@ -19,7 +19,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 use_package_assimp()
 
 use_modules (Framework Ui Input Scene ECEditorModule TundraLogicModule
-    OgreRenderingModule AssetModule)
+    OgreRenderingModule AssetModule Console)
 
 if (OGREASSETEDITOR)
 use_modules(OgreAssetEditorModule)
@@ -32,7 +32,7 @@ GetOpenAssetImport()
 GetOgreAssetEditor()
 
 link_modules (Framework Ui Input Scene ECEditorModule TundraLogicModule
-    OgreRenderingModule)
+    OgreRenderingModule Console)
 
 if (OGREASSETEDITOR)
 link_modules(OgreAssetEditorModule)

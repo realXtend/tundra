@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <Tundra>
-	<plugin path="SupportModules" />
 	<plugin path="AssetModule" />	
 	<plugin path="OgreRenderingModule" />	
 	<plugin path="AvatarModule" />	

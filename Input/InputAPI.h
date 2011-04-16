@@ -19,7 +19,6 @@
 class QGraphicsItem;
 class QGraphicsView;
 
-
 /// The Input API provides other modules with different methods of acquiring keyboard and mouse input.
 /** The input service works with the notion of 'input contexts', which are objects that modules acquire
     to receive input events. The contexts have a priority that determine the order in which the input 
@@ -132,10 +131,10 @@ public slots:
     /// to the system.
     void TriggerKeyEvent(KeyEvent &key);
 
-    /// This is the same as OnKeyEvent, but for mouse events.
+    /// This is the same as TriggerKeyEvent, but for mouse events.
     void TriggerMouseEvent(MouseEvent &mouse);
 
-    /// This emits gesture events to the input contexes
+    /// This emits gesture events to the input contexts
     void TriggerGestureEvent(GestureEvent &gesture);
 
     /// Returns the highest-priority input context that gets all events first to handle (even before going to Qt widgets).

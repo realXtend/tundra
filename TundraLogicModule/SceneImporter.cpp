@@ -596,7 +596,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
             compDesc.typeName = EC_Mesh::TypeNameStatic();
 
             meshFiles << path + "/" + mesh_name; // TODO: This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
-            //AssetAPI::QueryFileLocation();
+            //AssetAPI::ResolveLocalAssetPath();
 
             /// Create dummy placeable desc.
             ComponentPtr placeable = scene_->GetFramework()->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic());
@@ -641,7 +641,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
 //                QSet<QString> material_names_set;
                 QString skeleton_name;
                 // TODO: This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
-                //AssetAPI::QueryFileLocation();
+                //AssetAPI::ResolveLocalAssetPath();
                 ParseMeshForMaterialsAndSkeleton(path + "/" + mesh_name, material_names, skeleton_name);
                 for(uint i = 0; i < material_names.size(); ++i)
                 {
@@ -1402,7 +1402,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     foreach(QString skeleton, skeletons)
     {
         AssetDesc ad;
-        ad.source = path + "/" + skeleton; // This is already an absolute path. Don't use QueryFileLocation.
+        ad.source = path + "/" + skeleton; // This is already an absolute path. No need to use ResolveLocalAssetPath.
         ad.dataInMemory = false;
         ad.typeName = "skeleton";
         ad.destinationName = skeleton;
@@ -1448,7 +1448,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         AssetDesc ad;
         ad.typeName = "texture";
         ad.dataInMemory = false;
-        AssetAPI::FileQueryResult result = AssetAPI::QueryFileLocation(tex, path, ad.source);
+        AssetAPI::FileQueryResult result = scene_->GetFramework()->Asset()->ResolveLocalAssetPath(tex, path, ad.source);
         if (result == AssetAPI::FileQueryLocalFileMissing)
             LogWarning("Texture file \"" + tex.toStdString() + "\" cannot be found from path \"" + path.toStdString() + "\"!");
         ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(tex); // The destination name must be local to the destination asset storage.
@@ -1461,7 +1461,7 @@ void SceneImporter::RewriteAssetRef(const QString &sceneFileName, QString &ref) 
 {
     QString basePath(boost::filesystem::path(sceneFileName.toStdString()).branch_path().string().c_str());
     QString outFilePath;
-    AssetAPI::FileQueryResult res = scene_->GetFramework()->Asset()->QueryFileLocation(ref, basePath, outFilePath);
+    AssetAPI::FileQueryResult res = scene_->GetFramework()->Asset()->ResolveLocalAssetPath(ref, basePath, outFilePath);
     if (res == AssetAPI::FileQueryLocalFileFound)
         ref = outFilePath;
 }

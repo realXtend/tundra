@@ -12,6 +12,7 @@
 #include <QObject>
 #include <QList>
 #include <QMap>
+#include "ConsoleCommand.h"
 
 namespace Avatar
 {
@@ -55,7 +56,7 @@ namespace Avatar
 
     private:
         /// Console command: start editing a specific entity's avatar
-        Console::CommandResult EditAvatar(const StringVector &params);
+        ConsoleCommandResult EditAvatar(const StringVector &params);
 
         /// AvatarModules input context
         InputContextPtr avatar_context_;

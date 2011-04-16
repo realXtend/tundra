@@ -32,8 +32,8 @@ void SceneInteract::Initialize(Foundation::Framework *framework)
     {
         input_->SetTakeMouseEventsOverQt(true);
 
-        connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-        connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+        connect(input_.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+        connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
         connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
     }
 }

@@ -1,0 +1,106 @@
+/**
+
+\page BuildOnWindows Building and Running Tundra on Windows 
+
+This page describes the necessary steps for building Tundra from the sources on Windows.
+
+\section Prereqs Prerequisites
+
+<ol>
+<li>Tundra uses CMake as its build system. Download the latest CMake from <a href="http://www.cmake.org/">http://www.cmake.org/</a>.</li>
+<li>Currently, only Visual Studio 2008 (Standard, Pro or Express) is officially supported. Tundra can be built on VS2010, but it requires more manual work, since the dependency repository currently only contains binaries for VS2008.</li>
+<li>Obtain the Tundra source code from the <a href="https://github.com/realXtend/naali/">realXtend Naali online repository</a> at GitHub. Install the <a href="http://git-scm.com/">Git</a> SCM software and clone the repository on to your local computer.</li> <b>Switch to the <i>tundra</i> branch in that repository.</b> This folder will be referred to later as <i>C:/TundraGitTrunk/</i>. 
+<li>(Optional, but <b>highly</b> recommended) Tundra depends on a number 3rd party libraries. A prebuilt bundle of the Tundra dependencies is hosted online at Google Code in the repository <a href="http://code.google.com/p/realxtend-naali-deps/">realxtend-naali-deps</a>. Download and install the <a href="http://subversion.tigris.org/">SVN</a> SCM software and check out this repository from Google Code.
+<div><b>Note:</b> The SVN repository is structured to contain both the <i>sources</i> and the build and runtime <i>binaries</i> of the dependencies. If you want to resort on the prebuilt dependencies (recommended), check out the path <b>http://realxtend-naali-deps.googlecode.com/svn/bin/</b>. This folder will be referred to later as <i>C:/NaaliDepsSVN/bin/</i>. If you want to manually build the 3rd party dependencies as well, check out the path <b>http://realxtend-naali-deps.googlecode.com/svn/trunk/</b>. 
+</li>
+ 
+ </ol>
+ 
+ \section SettingUp Setting up the Build
+ 
+<ol>
+  <li>The CMake build system needs to be informed about the location of where you checked out the build dependencies to. Set the <b>NAALI_DEP_PATH</b> system environment variable to point to "C:/NaaliDepsSVN/bin/build_deps" where C:/NaaliDepsSVN is the path to your checkout of the dependency SVN repository.</li>
+  <li>Tundra is based on a modular architecture. To be able to support applications with different features, the features are implemented in modules. The file CMakeBuildConfigTemplate.txt contains the default build settings. When CMake is run for the first time, this file is copied to CMakeBuildConfig.txt, which defines the build settings local to your system. To generate your customized build settings, run <b>cmake_vs2008.bat</b> (or manually copy CMakeBuildConfigTemplate.txt to CMakeBuildConfig.txt). Whenever you make changes to CMakeBuildConfig.txt, cmake has to be rerun.</li>
+  <li>To generate the Visual Studio .sln file for building Tundra, run cmake_vs2008.bat.</li>
+  <li>From the folder <i>C:/NaaliDepsSVN/bin/runtime_deps</i>, <b>SVN export</b> all content to the folder <i>C:/TundraGitTrunk/bin/</i>.  </li>
+  </ol>
+  
+  \section BuildingTundra Building and Running Tundra   
+
+Open the generated .sln file and do a full build. After finishing, two executables <b>server.exe</b> and <b>viewer.exe</b> (or <b>serverd.exe</b> and <b>viewerd.exe</b> for debug builds) will be generated to the folder <i>C:/TundraGitTrunk/bin/</i>. All the built modules will be placed to the folder <i>C:/TundraGitTrunk/bin/modules/core</i>. The debug builds of modules will have the <b>...d.dll</b> suffix. The server.exe and viewer.exe are the exact same applications, except that server.exe immediately starts up a listen server, whereas viewer.exe brings up the login screen to a server. 
+
+  \section BuildingCustomQt Building Using a Custom Qt Version
+  
+The dependency SVN comes with a pre-bundled version of Qt (currently 4.6.2, or 2010.02.1). To build Tundra using a custom version of Qt on your system, do the following:
+<ol>
+<li>Make sure your version of Qt is properly installed and built for Visual Studio 2008.</li>
+<li>Edit the cmake_vs2008.bat and update the <b>QMAKESPEC</b> and <b>QTDIR</b> environment variables to point to your custom Qt installation.</li>
+<li>(Optional.) Edit <i>C:/TundraGitTrunk/CMakeModules/ConfigurePackages.cmake</i> at the point <b>macro(configure_qt4)</b> to include or exclude the components of Qt you want Tundra to use.</li>
+<li>Build the 3rd party dependencies QtPropertyBrowser, QtScriptGenerator and kNet against your custom version of Qt.</li>
+<li>If you are using PythonScriptModule, build the 3rd party dependency PythonQt against your custom version of Qt.</li>
+</ol>
+
+It is recommended that you alter the Qt built-in build configurations to include debug information (add /Zi compilation flag) with the debug build, so that you can step inside Qt code when debugging. See <a href="http://developer.qt.nokia.com/faq/answer/how_to_build_pdb_for_release_version_of_qt">How to build pdb for release version of Qt</a> for instructions.   
+
+  \section BuildingCustomKNet Building Using a Custom kNet Version
+ 
+Tundra uses the <a href="https://bitbucket.org/clb/knet">kNet</a> library for networking. If you want to compile Tundra against your own build of <a href="https://bitbucket.org/clb/knet">kNet</a>, do the following:
+
+<ol>
+<li>Make sure <a href="https://bitbucket.org/clb/knet">kNet</a> is properly built for each desired cmake target for Visual Studio 2008.</li> 
+<li>Set the <b>KNET_DIR</b> environment variable to point to where you checked out the kNet repository.</li>
+<li>Match the compilation flags in <i>C:/TundraGitTrunk/CMakeModules/ConfigurePackages.cmake</i> at the point <b>macro(use_package_knet)</b> to correspond with the ones you built kNet with.</li>   
+</ol>
+
+  \section BuildingCustomOgre Building Using a Custom Ogre3D Version
+
+ <ol>
+<li>Make sure Ogre3D is properly built for each desired cmake target for Visual Studio 2008.</li> 
+<li>Set the <b>OGRE_HOME</b> environment variable to point to where you checked out the Ogre3D repository.</li>
+<li>(Optional) Enable or disable the add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT) flag in <i>C:/TundraGitTrunk/CMakeModules/ConfigurePackages.cmake</i> at the point <b>macro (configure_ogre)</b>, based on whether you are depending on D3D9.</li>
+</ol>
+    
+  \section OpeningScenes Opening a Scene
+ 
+The prebuilt installers come with registered context menu handlers for <b>.txml</b> and <b>.tbin</b> files. For a development build, these need to be registered manually. For information about that, see help on \ref TundraDocumentfiles "Tundra Document Files". Alternatively, use the command-line parameters to specify the scene to load. These are documented on the page \ref TundraCommandLineOptions "Command line options". 
+
+  \section PreparingAnInstaller How to Generate an Installer
+
+  The Tundra repository comes with premade installer scripts for the NSIS system.
+   
+<h4>Prerequisites:</h4>
+<ul>
+<li>Have Nullsoft Scriptable Install System (NSIS) from http://nsis.sourceforge.net/ installed. </li>
+<li>Have an up-to-date MS Visual Studio 2008 Runtime Redistributable (vcredist_x86.exe) from http://www.microsoft.com/downloads/details.aspx?familyid=A5C84275-3B97-4AB7-A40D-3802B2AF5FC2&displaylang=en . </li>
+<li>Have OpenAL installer (oalinst.exe) from http://connect.creativelabs.com/openal/Downloads/Forms/AllItems.aspx (unzip oalinst.zip). </li>
+<li>Have an up-to-date dxwebsetup.exe from http://www.microsoft.com/downloads/details.aspx?FamilyID=2da43d38-db71-4c1b-bc6a-9b6652cd92a3&displaylang=en .</li>
+<li>Have up-to-date Tundra binary runtime dependencies from the dependency svn (the "runtime_deps" directory) copied to your viewer "bin" directory. </li>
+</ul>
+
+<h4>Steps:</h4>
+<ol><li>Check that the files vcredist_x86.exe, oalinst.exe and dxwebsetup.exe exist in your viewer checkout root directory. They should be versioned there, if not, download from the addresses above.</li>
+<li>Ensure that you do not have unnecessary files in your viewer "bin" directory. Own configuration files and compiled Python (.pyc) files are OK, they will be deleted by makebuild.bat.</li>
+<li>Execute the makebuild.bat from the root of Tundra source checkout. This creates a "build" directory for NSIS to work from, with everything copied.</li>
+<li>Execute the NSIS script (tundra-installer.nsi) and let it package the Tundra installer.</li>
+<li>You are now done. The generated installer should appear in the root directory. </li>
+</ol>
+
+<p>When you make builds repeatedly, only steps 3) & 4) have to be repeated, unless dependencies change.
+
+<p>If you want to change the version identifier of Tundra, you must change it in the following files:
+<ol>
+<li>server/main.cpp      
+<li>viewer/main.cpp     
+<li>Foundation/Framework.cpp  
+<li>tundra-installer.nsi
+</ol>
+	
+<p>If you want to set an icon for your installer file:
+<ol><li>Add icon resource to viewer project: right-click the viewer project, Add->Resource, Import bin\data\ui\images\tundra_icon.ico file
+<li>Rebuild viewer project
+</ol>
+
+<b>! Make sure that you do not commit any of the customized changes to the installer files back to the repository ! </b>
+</ol>
+
+ */

@@ -21,7 +21,7 @@ struct AssetDesc
     /// the data is loaded from disk, specified by the filename 'source'.
     bool dataInMemory;
 
-    QString subname; ///< If the source filename is a container for multiple files, subname represents name withing the file.
+    QString subname; ///< If the source filename is a container for multiple files, subname represents name within the file.
     QString typeName; ///< Type name of the asset.
     QString destinationName; ///< Name for the asset in the destination asset storage.
 

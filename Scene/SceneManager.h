@@ -197,11 +197,13 @@ public slots:
         /// Return a scene document with just the desired entity
         QByteArray GetEntityXml(Scene::Entity *entity);
 
-        void LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change) { LoadSceneXML(filename, clearScene, useEntityIDsFromFile, change); }
         void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
         void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
 
         void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
+
+        /// Returns IDs of loaded entities
+        QVariantList LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
         /// Is scene view enabled (i.e. rendering-related components actually create stuff).
         bool ViewEnabled() const { return viewEnabled_; }

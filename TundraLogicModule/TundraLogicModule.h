@@ -4,9 +4,8 @@
 #define incl_TundraLogicModule_TundraLogicModule_h
 
 #include "IModule.h"
+#include "ConsoleCommand.h"
 #include "TundraLogicModuleApi.h"
-
-
 #include "AssetFwd.h"
 
 namespace kNet
@@ -48,28 +47,28 @@ public:
     static const std::string &NameStatic() { return type_name_static_; }
 
     /// Starts a server (console command)
-    Console::CommandResult ConsoleStartServer(const StringVector &params);
+    ConsoleCommandResult ConsoleStartServer(const StringVector &params);
     
     /// Stops a server (console command)
-    Console::CommandResult ConsoleStopServer(const StringVector &params);
+    ConsoleCommandResult ConsoleStopServer(const StringVector &params);
     
     /// Connects to server (console command)
-    Console::CommandResult ConsoleConnect(const StringVector &params);
+    ConsoleCommandResult ConsoleConnect(const StringVector &params);
     
     /// Disconnects from server (console command)
-    Console::CommandResult ConsoleDisconnect(const StringVector &params);
+    ConsoleCommandResult ConsoleDisconnect(const StringVector &params);
 
     /// Saves scene to an XML file
-    Console::CommandResult ConsoleSaveScene(const StringVector &params);
+    ConsoleCommandResult ConsoleSaveScene(const StringVector &params);
 
     /// Loads scene from an XML file.
-    Console::CommandResult ConsoleLoadScene(const StringVector &params);
+    ConsoleCommandResult ConsoleLoadScene(const StringVector &params);
     
     /// Imports a dotscene
-    Console::CommandResult ConsoleImportScene(const StringVector& params);
+    ConsoleCommandResult ConsoleImportScene(const StringVector& params);
     
     /// Imports one mesh as a new entity
-    Console::CommandResult ConsoleImportMesh(const StringVector& params);
+    ConsoleCommandResult ConsoleImportMesh(const StringVector& params);
     
     /// Check whether we are a server
     bool IsServer() const;

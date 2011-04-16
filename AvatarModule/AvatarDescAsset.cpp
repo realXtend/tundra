@@ -19,6 +19,12 @@ std::string modifierMode[] = {
     "cumulative"
 };
 
+AvatarDescAsset::AvatarDescAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+    IAsset(owner, type_, name_),
+    assetCounter_(0)
+{
+}
+
 AvatarDescAsset::~AvatarDescAsset()
 {
     Unload();
@@ -437,7 +443,7 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
     attachments_.push_back(attachment);
 }
 
-void AvatarDescAsset::SetMasterModifierValue(QString name, float value)
+void AvatarDescAsset::SetMasterModifierValue(const QString& name, float value)
 {
     std::string nameStd = name.toStdString();
     
@@ -462,7 +468,7 @@ void AvatarDescAsset::SetMasterModifierValue(QString name, float value)
     }
 }
 
-void AvatarDescAsset::SetModifierValue(QString name, float value)
+void AvatarDescAsset::SetModifierValue(const QString& name, float value)
 {
     std::string nameStd = name.toStdString();
     
@@ -487,6 +493,15 @@ void AvatarDescAsset::SetModifierValue(QString name, float value)
     }
 }
 
+void AvatarDescAsset::SetMaterial(uint index, const QString& ref)
+{
+    if (index >= materials_.size())
+        return;
+    materials_[index] = ref;
+    
+    AssetReferencesChanged();
+}
+
 bool AvatarDescAsset::HasProperty(QString name) const
 {
     QMap<QString, QString>::const_iterator i = properties_.find(name);
@@ -496,9 +511,33 @@ bool AvatarDescAsset::HasProperty(QString name) const
     return value.length() > 0;
 }
 
-const QString& AvatarDescAsset::GetProperty(QString name)
+const QString& AvatarDescAsset::GetProperty(const QString& name)
 {
     return properties_[name];
+}
+
+void AvatarDescAsset::AssetReferencesChanged()
+{
+    assetCounter_ = FindReferences().size();
+    // If no references (unlikely), send AppearanceChanged() immediately
+    if (!assetCounter_)
+        emit AppearanceChanged();
+    else
+    {
+        // Otherwise request the (possibly new) assets
+        assetAPI->RequestAssetDependencies(this->shared_from_this());
+    }
+}
+
+void AvatarDescAsset::DependencyLoaded(AssetPtr dependee)
+{
+    if (assetCounter_ > 0)
+    {
+        --assetCounter_;
+        // Check if all loaded
+        if (!assetCounter_)
+            emit AppearanceChanged();
+    }
 }
 
 void AvatarDescAsset::CalculateMasterModifiers()
@@ -543,7 +582,7 @@ void AvatarDescAsset::AddReference(std::vector<AssetReference>& refs, const QStr
 {
     if (ref.length())
     {
-        AssetReference newRef(assetAPI->LookupAssetRefToStorage(ref));
+        AssetReference newRef(assetAPI->ResolveAssetRef("", ref));
         refs.push_back(newRef);
     }
 }

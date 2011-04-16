@@ -16,7 +16,7 @@
 #include "UiAPI.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 
 #include "SceneAPI.h"
 #include "SceneManager.h"
@@ -26,7 +26,7 @@
 #include "ConsoleAPI.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include <utility>
 #include <QDebug>
@@ -64,9 +64,9 @@ void DebugStatsModule::PostInitialize()
 
 #endif
 
-    RegisterConsoleCommand(Console::CreateCommand("exec",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("exec",
         "Invokes action execution in entity",
-        Console::Bind(this, &DebugStatsModule::Exec)));
+        ConsoleBind(this, &DebugStatsModule::Exec)));
 
     inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -99,12 +99,8 @@ void DebugStatsModule::AddProfilerWidgetToUi()
         return;
     }
 
-    UiAPI *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
-
     profilerWindow_ = new TimeProfilerWindow(framework_);
-    profilerWindow_->setParent(ui->MainWindow());
+    profilerWindow_->setParent(framework_->Ui()->MainWindow());
     profilerWindow_->setWindowFlags(Qt::Tool);
     //profilerWindow_->move(100, 100);
     profilerWindow_->resize(650, 530);
@@ -122,16 +118,16 @@ void DebugStatsModule::StartProfiling(bool visible)
         profilerWindow_->OnProfilerWindowTabChanged(-1); 
 }
 
-Console::CommandResult DebugStatsModule::ShowProfilingWindow()
+ConsoleCommandResult DebugStatsModule::ShowProfilingWindow()
 {
     // If the window is already created, bring it to front.
     if (profilerWindow_)
     {
         framework_->Ui()->BringWidgetToFront(profilerWindow_);
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
     else
-        return Console::ResultFailure("Profiler window has not been initialized, something went wrong on startup!");
+        return ConsoleResultFailure("Profiler window has not been initialized, something went wrong on startup!");
 }
 
 void DebugStatsModule::Update(f64 frametime)
@@ -166,22 +162,22 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
     return false;
 }
 
-Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
+ConsoleCommandResult DebugStatsModule::Exec(const StringVector &params)
 {
     if (params.size() < 2)
-        return Console::ResultFailure("Not enough parameters.");
+        return ConsoleResultFailure("Not enough parameters.");
 
     int id = ParseString<int>(params[0], 0);
     if (id == 0)
-        return Console::ResultFailure("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
+        return ConsoleResultFailure("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
 
     Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene.");
+        return ConsoleResultFailure("No active scene.");
 
     EntityPtr entity = scene->GetEntity(id);
     if (!entity)
-        return Console::ResultFailure("No entity found for entity ID " + params[0]);
+        return ConsoleResultFailure("No entity found for entity ID " + params[0]);
 
     QStringList execParameters;
     
@@ -197,7 +193,7 @@ Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
     else
         entity->Exec(EntityAction::Local, params[1].c_str(), execParameters);
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 }

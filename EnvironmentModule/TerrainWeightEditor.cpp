@@ -9,13 +9,13 @@
 #include "EC_Terrain.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "Framework.h"
 #include "SceneManager.h"
 #include "UiProxyWidget.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 
 #include <QUiLoader>
 #include <QFile>

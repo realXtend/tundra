@@ -9,6 +9,7 @@
 #include "Quaternion.h"
 #include "AssetReference.h"
 #include "OgreModuleFwd.h"
+#include "AssetRefListener.h"
 
 namespace Environment
 {
@@ -87,6 +88,9 @@ Currently Caelum must be disabled before these features can be used.
         /// Disables the sky box.
         void DisableSky();
 
+        /// Called when texture asset has been downloaded.
+        void OnTextureAssetLoaded(AssetPtr tex);
+
     private:
         /// Constructor.
         /** @param module Module where component belongs.
@@ -100,10 +104,11 @@ Currently Caelum must be disabled before these features can be used.
         float lastDistance_;
         bool lastDrawFirst_;
         Quaternion lastOrientation_;
-        AssetReferenceList lastTextures_;
 
         /// Renderer
         OgreRenderer::RendererWeakPtr renderer_;
+
+        std::vector<AssetRefListenerPtr> textureAssets;
     };
 }
 

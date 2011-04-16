@@ -9,8 +9,8 @@
 #include "EC_Placeable.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "NaaliRenderWindow.h"
-#include "NaaliGraphicsView.h"
+#include "RenderWindow.h"
+#include "UiGraphicsView.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
 #include "OgreDefaultHardwareBufferManager.h"
@@ -22,8 +22,8 @@
 #include "SceneAPI.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
-#include "NaaliGraphicsView.h"
+#include "UiMainWindow.h"
+#include "UiGraphicsView.h"
 
 #include "ConfigAPI.h"
 
@@ -363,7 +363,7 @@ namespace OgreRenderer
                 int height = framework_->Ui()->GraphicsView()->viewport()->size().height();
                 int window_left = 0;
                 int window_top = 0;
-                renderWindow = new NaaliRenderWindow();
+                renderWindow = new RenderWindow();
                 bool fullscreen = false;
 
                 renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
@@ -588,7 +588,7 @@ namespace OgreRenderer
             
         PROFILE(Renderer_Render_QtBlit);
 
-        NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
+        UiGraphicsView *view = framework_->Ui()->GraphicsView();
 
         QImage *backBuffer = view->BackBuffer();
         if (!backBuffer)
@@ -647,7 +647,7 @@ namespace OgreRenderer
         bool applyFPSLimit = true;
         UNREFERENCED_PARAM(applyFPSLimit);
 
-        NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
+        UiGraphicsView *view = framework_->Ui()->GraphicsView();
 
 #ifdef USE_D3D9_SUBSURFACE_BLIT
         if (view->IsViewDirty() || resized_dirty_)
@@ -782,7 +782,7 @@ namespace OgreRenderer
             }
         }
 #else // Not using the subrectangle blit - just do a full UI blit.
-        if (view->IsViewDirty())
+        if (view->IsViewDirty() || resized_dirty_)
         {
             DoFullUIRedraw();
         }

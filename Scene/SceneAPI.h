@@ -73,9 +73,11 @@ public slots:
 
     /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
+    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     void SetDefaultScene(const QString &name);
 
     /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
+    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     void SetDefaultScene(const Scene::ScenePtr &scene);
     
@@ -85,6 +87,7 @@ public slots:
     const Scene::ScenePtr &GetDefaultScene() const;
 
     /// Returns the default scene ptr.
+    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     Scene::SceneManager* GetDefaultSceneRaw() const;
 

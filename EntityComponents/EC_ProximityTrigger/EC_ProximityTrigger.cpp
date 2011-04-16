@@ -18,10 +18,10 @@ EC_ProximityTrigger::EC_ProximityTrigger(IModule *module) :
     IComponent(module->GetFramework()),
     active(this, "Is active", true),
     thresholdDistance(this, "Threshold distance", 0.0f),
-    period(this, "Period", 0.0f)
+    interval(this, "Trigger signal interval", 0.0f)
 {
     SetUpdateMode();
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_ProximityTrigger::~EC_ProximityTrigger()
@@ -30,7 +30,7 @@ EC_ProximityTrigger::~EC_ProximityTrigger()
 
 void EC_ProximityTrigger::OnAttributeUpdated(IAttribute* attr)
 {
-    if (attr == &period)
+    if (attr == &interval)
         SetUpdateMode();
 }
 
@@ -64,7 +64,7 @@ void EC_ProximityTrigger::Update(float timeStep)
             
             if ((threshold <= 0.0f) || (distance <= threshold))
             {
-                emit Triggered(otherEntity, distance);
+                emit triggered(otherEntity, distance);
             }
         }
     }
@@ -74,8 +74,8 @@ void EC_ProximityTrigger::SetUpdateMode()
 {
     FrameAPI* frame = framework_->Frame();
     
-    float perSec = period.Get();
-    if (perSec <= 0.0f)
+    float intervalSec = interval.Get();
+    if (intervalSec <= 0.0f)
     {
         // Update every frame
         connect(frame, SIGNAL(Updated(float)), this, SLOT(Update(float)));
@@ -84,17 +84,17 @@ void EC_ProximityTrigger::SetUpdateMode()
     {
         // Update periodically
         disconnect(frame, SIGNAL(Updated(float)), this, SLOT(Update(float)));
-        frame->DelayedExecute(perSec, this, SLOT(PeriodicUpdate()));
+        frame->DelayedExecute(intervalSec, this, SLOT(PeriodicUpdate()));
     }
 }
 
 void EC_ProximityTrigger::PeriodicUpdate()
 {
     // Set up the next periodic update
-    float perSec = period.Get();
-    if (perSec > 0.0f)
-        framework_->Frame()->DelayedExecute(perSec, this, SLOT(PeriodicUpdate()));
+    float intervalSec = interval.Get();
+    if (intervalSec > 0.0f)
+        framework_->Frame()->DelayedExecute(intervalSec, this, SLOT(PeriodicUpdate()));
     
-    Update(perSec);
+    Update(intervalSec);
 }
 

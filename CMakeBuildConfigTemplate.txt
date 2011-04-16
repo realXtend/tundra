@@ -45,7 +45,7 @@ endif()
 # mesh formats.
 SET(OPENASSETIMPORT 0)
 if (MSVC)
-    SET(OPENASSETIMPORT 1)
+#    SET(OPENASSETIMPORT 1)
 endif()
 
 # Enables Ogre asset editor module.
@@ -58,14 +58,15 @@ use_package(VORBIS)
 # The following are the core modules that are required for the project to build. None of these can be omitted.
 add_subdirectory(Framework)
 add_subdirectory(Scene)
-add_subdirectory(OgreRenderingModule)
 add_subdirectory(Tundra)
 
-add_subdirectory(Input)
-add_subdirectory(Ui)
 add_subdirectory(Asset)
 add_subdirectory(Audio)
+add_subdirectory(Console)
+add_subdirectory(Input)
+add_subdirectory(Ui)
 
+add_subdirectory(OgreRenderingModule)
 add_subdirectory(KristalliProtocolModule)
 
 # The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
@@ -90,13 +91,13 @@ AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
 #AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
 #AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
 #AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
+AddEntityComponent(EntityComponents/EC_QmlApp EC_QmlApp)
 
 # The following two are declared by both PythonScriptModule and JavascriptModule. They are optional.
 AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)      # Required by ECEditorModule.
 AddEntityComponent(EntityComponents/EC_Script EC_Script)
 
 add_subdirectory(TundraLogicModule)   
-add_subdirectory(SupportModules)
 add_subdirectory(AvatarModule)          # Depends on OgreRenderingModule.
 add_subdirectory(AssetModule)           # Depends on Taiga subsystem.
 add_subdirectory(EnvironmentModule)     # Depends on OgreRenderingModule and Taiga subsystem. 

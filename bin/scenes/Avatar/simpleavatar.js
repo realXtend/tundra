@@ -1,8 +1,14 @@
+// !ref: local://default_avatar.xml, GenericAvatarXml
 // !ref: local://crosshair.js
-// !ref: local://default_avatar.xml
+
+if (!server.IsRunning() && !framework.IsHeadless())
+{
+    engine.ImportExtension("qt.core");
+    engine.ImportExtension("qt.gui");
+    engine.IncludeFile("local://crosshair.js");    
+}
 
 // A simple walking avatar with physics & third person camera
-engine.IncludeFile("local://crosshair.js");
 var rotate_speed = 150.0;
 var mouse_rotate_sensitivity = 0.3;
 var move_force = 15.0;
@@ -48,6 +54,10 @@ if (isserver) {
 function ServerInitialize() {
     var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
     var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
+
+    // Create an inactive proximitytrigger, so that other proximitytriggers can detect the avatar
+    var proxtrigger = me.GetOrCreateComponentRaw("EC_ProximityTrigger");
+    proxtrigger.active = false;
 
     // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
     var r = avatar.appearanceRef;
@@ -408,7 +418,7 @@ function ClientUpdate(frametime)
             var active = avatarcameraentity.ogrecamera.IsActive();
             if (inputmapper.enabled != active) {
                 inputmapper.enabled = active;
-        }
+            }
         }
         ClientUpdateAvatarCamera(frametime);
     }
@@ -609,19 +619,19 @@ function ClientUpdateAvatarCamera() {
     var cameraplaceable = cameraentity.placeable;
     var avatarplaceable = me.placeable;
 
-    var cameratransform = cameraplaceable.transform;
-    var avatartransform = avatarplaceable.transform;
-    var offsetVec = new Vector3df();
-    offsetVec.x = -avatar_camera_distance;
-    offsetVec.z = avatar_camera_height;
-    offsetVec = avatarplaceable.GetRelativeVector(offsetVec);
-    cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
-    cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
-    cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
-    // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
-    cameratransform.rot.x = 90;
-    cameratransform.rot.z = avatartransform.rot.z - 90;
-
+        var cameratransform = cameraplaceable.transform;
+        var avatartransform = avatarplaceable.transform;
+        var offsetVec = new Vector3df();
+        offsetVec.x = -avatar_camera_distance;
+        offsetVec.z = avatar_camera_height;
+        offsetVec = avatarplaceable.GetRelativeVector(offsetVec);
+        cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
+        cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
+        cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
+        // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
+        if(!first_person)
+            cameratransform.rot.x = 90;
+        cameratransform.rot.z = avatartransform.rot.z - 90;
     cameraplaceable.transform = cameratransform;
 }
 
@@ -716,7 +726,7 @@ function ClientHandleMouseMove(mouseevent)
             return;
         }
     }
-    
+
     if (!first_person)
         return;
 
@@ -733,7 +743,7 @@ function ClientHandleMouseMove(mouseevent)
 
     var cursorOffset = 0;
     if (crosshair.isUsingLabel)
-    //\note: An arbitrary value to move the cursor a little bit up when using label for a crosshair, 
+    //\note: An arbitrary value to move the cursor a little bit up when using label for a crosshair,
     //\      so that we get clicks on scene and not on the label
         cursorOffset = 9;
     var view = ui.GraphicsView();

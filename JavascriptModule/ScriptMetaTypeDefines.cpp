@@ -26,9 +26,8 @@
 #include "SoundChannel.h"
 #include "InputContext.h"
 #include "RenderServiceInterface.h"
-#include "CommunicationsService.h"
-#include "NaaliMainWindow.h"
-#include "NaaliGraphicsView.h"
+#include "UiMainWindow.h"
+#include "UiGraphicsView.h"
 #include "EntityAction.h"
 #include "InputFwd.h"
 #include "ConfigAPI.h"
@@ -81,8 +80,8 @@ void qScriptValueToAssetMap(const QScriptValue &value, AssetMap &assetMap)
 
 /// Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
-Q_DECLARE_METATYPE(NaaliMainWindow*);
-Q_DECLARE_METATYPE(NaaliGraphicsView*);
+Q_DECLARE_METATYPE(UiMainWindow*);
+Q_DECLARE_METATYPE(UiGraphicsView*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 /// Naali Scene defines.
@@ -99,7 +98,7 @@ Q_DECLARE_METATYPE(AttributeChange::Type);
 Q_DECLARE_METATYPE(Foundation::Framework*);
 Q_DECLARE_METATYPE(FrameAPI*);
 Q_DECLARE_METATYPE(ConsoleAPI*);
-Q_DECLARE_METATYPE(Command*);
+Q_DECLARE_METATYPE(ConsoleCommand*);
 Q_DECLARE_METATYPE(DelayedSignal*);
 Q_DECLARE_METATYPE(DebugAPI*);
 
@@ -114,8 +113,8 @@ Q_DECLARE_METATYPE(ConfigAPI*);
 Q_DECLARE_METATYPE(RaycastResult*);
 
 /// Communications metatype
-Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
-Q_DECLARE_METATYPE(Communications::InWorldVoice::ParticipantInterface*);
+//Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
+//Q_DECLARE_METATYPE(Communications::InWorldVoice::ParticipantInterface*);
 
 QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
 {
@@ -215,7 +214,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     
     // Console metatypes.
     qScriptRegisterQObjectMetaType<ConsoleAPI*>(engine);
-    qScriptRegisterQObjectMetaType<Command*>(engine);
+    qScriptRegisterQObjectMetaType<ConsoleCommand*>(engine);
 
     // Frame metatypes.
     qScriptRegisterQObjectMetaType<FrameAPI*>(engine);
@@ -246,8 +245,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterMetaType<AssetMap>(engine, qScriptValueFromAssetMap, qScriptValueToAssetMap);
 
     // Ui metatypes.
-    qScriptRegisterQObjectMetaType<NaaliMainWindow*>(engine);
-    qScriptRegisterQObjectMetaType<NaaliGraphicsView*>(engine);
+    qScriptRegisterQObjectMetaType<UiMainWindow*>(engine);
+    qScriptRegisterQObjectMetaType<UiGraphicsView*>(engine);
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
     qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
 
@@ -270,8 +269,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<RaycastResult*>(engine);
 
     // Communications metatypes
-    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::SessionInterface*>(engine);
-    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::ParticipantInterface*>(engine);
+//    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::SessionInterface*>(engine);
+//    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::ParticipantInterface*>(engine);
 }
 
 

@@ -8,7 +8,7 @@
 //#include "EventManager.h"
 #include "RenderServiceInterface.h"
 #include "UiAPI.h"
-#include "NaaliGraphicsView.h"
+#include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
 
 #include "ConfigAPI.h"

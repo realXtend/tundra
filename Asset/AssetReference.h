@@ -7,6 +7,8 @@
 #include <QMetaType>
 #include <QVariantList>
 
+#include <cassert>
+
 /// Represents a reference to an asset. This structure can be used as a parameter type to an EC attribute.
 struct AssetReference
 {
@@ -28,6 +30,10 @@ public:
 
     /// Specifies the URL of the asset that is being pointed to.
     QString ref;
+    /// Specifies the type of the asset to load from that URL. If "", the type is interpreted directly from the ref string.
+    /// Not all asset types can support this kind of interpretation. For example, avatar assets are of type .xml, which can
+    /// only be distinguished from generic xml files by explicitly specifying the type here.
+    QString type;
 };
 
 /// Represents list of asset references.

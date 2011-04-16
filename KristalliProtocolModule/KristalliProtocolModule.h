@@ -6,7 +6,7 @@
 #include "Foundation.h"
 #include "IModule.h"
 #include "KristalliProtocolModuleApi.h"
-
+#include "ConsoleCommand.h"
 #include "UserConnection.h"
 
 #include "kNet.h"
@@ -29,7 +29,7 @@ namespace KristalliProtocol
         void Uninitialize();
         void Update(f64 frametime);
 
-        Console::CommandResult OpenKNetLogWindow(const StringVector &);
+        ConsoleCommandResult OpenKNetLogWindow(const StringVector &);
 
         /// Connects to the Kristalli server at the given address.
         void Connect(const char *ip, unsigned short port, kNet::SocketTransportLayer transport);

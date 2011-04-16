@@ -394,7 +394,7 @@ if 0:
         print e
     #print dir(naali.inputcontext)
     #naali.inputcontext.disconnect()
-    naali.inputcontext.connect('OnKeyEvent(KeyEvent&)', keypressed)
+    naali.inputcontext.connect('KeyEventReceived(KeyEvent&)', keypressed)
 
 if 0: #QVector3D
     import PythonQt.QtGui

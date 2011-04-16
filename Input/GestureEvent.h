@@ -31,26 +31,26 @@ public:
     {
     }
 
-	virtual ~GestureEvent() {}
+    virtual ~GestureEvent() {}
 
-	enum EventType
-	{
+    enum EventType
+    {
         GestureInvalid = 0, ///< An invalid event. Used to check for improperly filled structure.
         GestureStarted = 1, ///< The gestures start event
         GestureUpdated = 2, ///< The gestures update event
         GestureFinished = 3, ///< The gestures finish event
         GestureCanceled = 4 ///< The gestures canceled event, if the event was canceled while it was ongoing
-	};
+    };
 
     /// Pointer to the qt gesture class
-	QGesture *gesture;
+    QGesture *gesture;
 
     /// Type of the gesture ptr for casts into the correct subclass 
     /// http://doc.trolltech.com/4.6/qgesture.html
     Qt::GestureType gestureType;
 
     /// Identifies of the gesture state this event is
-	EventType eventType;
+    EventType eventType;
 
     /// This field is used as an accept/suppression flag. When you are handling this event, settings this to true signals that
     /// your module handled this keyevent, and it should not be passed on to Qt for further processing. Of course you can

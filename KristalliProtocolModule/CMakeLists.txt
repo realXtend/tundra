@@ -17,11 +17,11 @@ add_definitions (-DKRISTALLIPROTOCOL_MODULE_EXPORTS)
 add_definitions (-D_WINSOCKAPI_)
 add_definitions (-DNAALI_CLIENT)
 
-use_modules (Framework Scene)
+use_modules (Framework Scene Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Framework Scene)
+link_modules (Framework Scene Console)
 
 # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
 if (MSVC)

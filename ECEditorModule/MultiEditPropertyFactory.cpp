@@ -5,7 +5,7 @@
 #include "qteditorfactory.h"
 #include <QLayout>
 
-#include "NaaliApplication.h"
+#include "Application.h"
 
 #include "MemoryLeakCheck.h"
 

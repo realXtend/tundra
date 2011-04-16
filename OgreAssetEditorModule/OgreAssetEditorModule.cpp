@@ -22,7 +22,7 @@
 #include "NetworkEvents.h"
 #include "Inventory/InventoryEvents.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #include "UiProxyWidget.h"
 #include "IAsset.h"
 #include "OgreConversionUtils.h"
@@ -101,7 +101,7 @@ bool OgreAssetEditorModule::IsSupportedAssetTypes(const QString &type) const
 
 void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
 {
-    std::cout << targets.size()  << std::endl;
+/*
     if (targets.size())
     {
         foreach(QObject *target, targets)
@@ -117,6 +117,7 @@ void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject 
             menu->addAction(openAction);
         }
     }
+*/
 }
 
 void OgreAssetEditorModule::OpenAssetInEditor()
@@ -129,13 +130,25 @@ void OgreAssetEditorModule::OpenAssetInEditor()
 
     AssetPtr asset = action->asset.lock();
     QWidget *editor = 0;
+    QString assetName = ""; // OgreRenderer::SanitateAssetIdForOgre(asset->Name());
+
     if (asset->Type() == "OgreMesh")
     {
-        //MeshPreviewEditor *editor = new MeshPreviewEditor(framework_);
+        MeshPreviewEditor *meshEditor = new MeshPreviewEditor(framework_);
+        meshEditor->Open(assetName);
+        editor = meshEditor;
     }
-    else if (asset->Type() == "OgreMaterial" || asset->Type() == "OgreParticle")
+    else if (asset->Type() == "OgreMaterial")
     {
-        //OgreScriptEditor *editor = new OgreScriptEditor(id, at, name);
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(QString(), RexTypes::RexAT_MaterialScript, assetName);
+        scriptEditor->Open();
+        editor = scriptEditor;
+    }
+    else if (asset->Type() == "OgreParticle")
+    {
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(QString(), RexTypes::RexAT_ParticleScript, assetName);
+        editor = scriptEditor;
+
     }
     else if (asset->Type() == "Audio")
     {
@@ -144,7 +157,7 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     else if (asset->Type() == "Texture")
     {
         TexturePreviewEditor *texEditor = new TexturePreviewEditor(0);
-        texEditor->OpenOgreTexture(QString(OgreRenderer::SanitateAssetIdForOgre(asset->Name().toStdString()).c_str()));
+        texEditor->OpenOgreTexture(assetName);
         editor = texEditor;
     }
 

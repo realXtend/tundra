@@ -32,11 +32,11 @@ use_package (OPENSSL) # NEEDED BY MUMBLECLIENT
 use_package (MUMBLECLIENT)
 use_package (CELT)
 
-use_modules (Framework OgreRenderingModule Scene Audio TundraLogicModule)
+use_modules (Framework OgreRenderingModule Scene Audio TundraLogicModule Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Framework OgreRenderingModule Scene Audio TundraLogicModule)
+link_modules (Framework OgreRenderingModule Scene Audio TundraLogicModule Console)
 
 link_package (PROTOBUF) # NEEDED BY MUMBLECLIENT
 link_package (OPENSSL) # NEEDED BY MUMBLECLIENT

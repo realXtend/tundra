@@ -50,6 +50,7 @@ public:
     /// @param location Location of the new storage
     /// @param name of the new storage
     /// @return AssetStoragePtr The created provider
+    /// \todo Delete this function and replace with a proper deserialization from string. -jj.
     virtual AssetStoragePtr AddStorage(const QString &location, const QString &name) { return AssetStoragePtr(); }
 
     /// Returns the list of all asset storages registered into this asset provider.

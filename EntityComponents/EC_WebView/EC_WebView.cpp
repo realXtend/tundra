@@ -15,7 +15,7 @@
 #include "RenderServiceInterface.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include "TundraLogicModule.h"
 #include "Client.h"
@@ -92,6 +92,10 @@ EC_WebView::EC_WebView(IModule *module) :
     // to have perfect browsing sync as the entity actions are sent to "peers" as in other clients.
     if (!ViewEnabled() || GetFramework()->IsHeadless())
         return;
+
+    // Connect window size changes to update rendering as the ogre textures go black.
+    if (GetFramework()->Ui()->MainWindow())
+        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(RenderDelayed()), Qt::UniqueConnection);
 
     // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);

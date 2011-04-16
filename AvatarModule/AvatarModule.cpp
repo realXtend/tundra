@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "AvatarModule.h"
 #include "AvatarEditing/AvatarEditor.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 #include "EventManager.h"
 #include "InputAPI.h"
 #include "SceneManager.h"
@@ -11,6 +11,7 @@
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "AvatarDescAsset.h"
+#include "ConsoleAPI.h"
 
 #include "EntityComponent/EC_Avatar.h"
 
@@ -50,9 +51,9 @@ namespace Avatar
 
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("GenericAvatarXml")));
         
-        RegisterConsoleCommand(Console::CreateCommand("editavatar",
+        framework_->Console()->RegisterCommand(CreateConsoleCommand("editavatar",
             "Edits the avatar in a specific entity. Usage: editavatar(entityname)",
-            Console::Bind(this, &AvatarModule::EditAvatar)));
+            ConsoleBind(this, &AvatarModule::EditAvatar)));
     }
 
     void AvatarModule::Uninitialize()
@@ -80,18 +81,18 @@ namespace Avatar
     
     }
     
-    Console::CommandResult AvatarModule::EditAvatar(const StringVector &params)
+    ConsoleCommandResult AvatarModule::EditAvatar(const StringVector &params)
     {
         if (params.size() < 1)
-            return Console::ResultFailure("No entity name given");
+            return ConsoleResultFailure("No entity name given");
         
         QString name = QString::fromStdString(params[0]);
         Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
-            return Console::ResultFailure("No scene");
+            return ConsoleResultFailure("No scene");
         EntityPtr entity = scene->GetEntityByName(name);
         if (!entity)
-            return Console::ResultFailure("No such entity " + params[0]);
+            return ConsoleResultFailure("No such entity " + params[0]);
         
         /// \todo Clone the avatar asset for editing
         /// \todo Allow avatar asset editing without an avatar entity in the scene
@@ -100,7 +101,7 @@ namespace Avatar
         if (avatar_editor_)
             avatar_editor_->show();
         
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 }
 

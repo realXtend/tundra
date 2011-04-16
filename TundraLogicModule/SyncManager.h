@@ -45,7 +45,7 @@ class SyncManager : public QObject
     
 public:
     /// Constructor
-    SyncManager(TundraLogicModule* owner, Foundation::Framework* fw);
+    explicit SyncManager(TundraLogicModule* owner);
     
     /// Destructor
     ~SyncManager();

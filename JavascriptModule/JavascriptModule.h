@@ -20,6 +20,7 @@
 #include <QObject>
 #include <QString>
 #include <QVariantMap>
+#include "ConsoleCommand.h"
 
 /// Enables Javascript execution and scripting by using QtScript.
 class JavascriptModule : public QObject, public IModule//, public Foundation::ScriptServiceInterface
@@ -45,9 +46,9 @@ public:
     void RunScript(const QString &scriptname);
     void RunString(const QString &codestr, const QVariantMap &context = QVariantMap());
 
-    Console::CommandResult ConsoleRunString(const StringVector &params);
-    Console::CommandResult ConsoleRunFile(const StringVector &params);
-    Console::CommandResult ConsoleReloadScripts(const StringVector &params);
+    ConsoleCommandResult ConsoleRunString(const StringVector &params);
+    ConsoleCommandResult ConsoleRunFile(const StringVector &params);
+    ConsoleCommandResult ConsoleReloadScripts(const StringVector &params);
 
     /// Prepares script instance by registering all needed services to it.
     /** If script is part of the scene, i.e. EC_Script component is present, we add some special services.

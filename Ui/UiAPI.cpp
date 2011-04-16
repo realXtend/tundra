@@ -3,8 +3,8 @@
 #include "DebugOperatorNew.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
-#include "NaaliGraphicsView.h"
+#include "UiMainWindow.h"
+#include "UiGraphicsView.h"
 #include "QtUiAsset.h"
 #include "UiProxyWidget.h"
 
@@ -71,14 +71,13 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     if (owner->IsHeadless())
         return;
     
-    // Prepare main window
-    mainWindow = new NaaliMainWindow(owner);
+    mainWindow = new UiMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
     mainWindow->setWindowIcon(QIcon("./data/ui/images/icon/naali_logo_32px_RC1.ico"));
     connect(mainWindow, SIGNAL(WindowCloseEvent()), owner, SLOT(Exit()));
 
     // Prepare graphics view and scene
-    graphicsView = new NaaliGraphicsView(mainWindow);
+    graphicsView = new UiGraphicsView(mainWindow);
 
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
 
@@ -92,7 +91,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
-    viewportWidget->setAttribute(Qt::WA_DontShowOnScreen, true);
+//    viewportWidget->setAttribute(Qt::WA_DontShowOnScreen, true);
     viewportWidget->setGeometry(0, 0, graphicsView->width(), graphicsView->height());
     viewportWidget->setContentsMargins(0,0,0,0);
 
@@ -135,12 +134,12 @@ UiAPI::~UiAPI()
     delete viewportWidget;
 }
 
-NaaliMainWindow *UiAPI::MainWindow() const
+UiMainWindow *UiAPI::MainWindow() const
 {
     return mainWindow;
 }
 
-NaaliGraphicsView *UiAPI::GraphicsView() const
+UiGraphicsView *UiAPI::GraphicsView() const
 {
     return graphicsView;
 }
@@ -257,7 +256,8 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
 {
     QWidget *widget = 0;
 
-    if (AssetAPI::ParseAssetRefType(filePath) != AssetAPI::AssetRefLocalPath)
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(filePath);
+    if (refType != AssetAPI::AssetRefLocalPath && refType != AssetAPI::AssetRefRelativePath)
     {
         AssetPtr asset = owner->Asset()->GetAsset(filePath);
         if (!asset)

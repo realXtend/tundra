@@ -49,14 +49,17 @@ void ScriptAsset::ParseReferences()
     if (assetAPI->IsHeadless())
         ignoredAssetTypes << "QtUiFile" << "Texture" << "OgreParticle" << "OgreMaterial" << "Audio";
 
-    boost::regex expression("!ref:\\s*(.*?)\\s*(\\n|$)");
+    // Script asset dependencies are expressed in code comments using lines like "// !ref: http://myserver.com/myasset.png".
+    // The asset type can be specified using a comma: "// !ref: http://myserver.com/avatarasset.xml, GenericAvatarXml".
+    boost::regex expression("!ref:\\s*(.*?)(\\s*,\\s*(.*?))?\\s*(\\n|$)");
     for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {
         AssetReference ref;
-        ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
-        ref.ref = assetAPI->LookupAssetRefToStorage((*iter)[1].str().c_str());
+        ref.ref = assetAPI->ResolveAssetRef(Name(), (*iter)[1].str().c_str());
+        if ((*iter)[3].matched)
+            ref.type = (*iter)[3].str().c_str();
         
-        if (ignoredAssetTypes.contains(assetAPI->GetAssetTypeFromFileName(ref.ref)))
+        if (ignoredAssetTypes.contains(AssetAPI::GetResourceTypeFromAssetRef(ref.ref)))
             continue;
         if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
         {
@@ -69,8 +72,7 @@ void ScriptAsset::ParseReferences()
     for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {
         AssetReference ref;
-        ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
-        ref.ref = assetAPI->LookupAssetRefToStorage((*iter)[1].str().c_str());
+        ref.ref = assetAPI->ResolveAssetRef(Name(), (*iter)[1].str().c_str());
         if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
         {
             references.push_back(ref);

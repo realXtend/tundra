@@ -6,7 +6,8 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB UI_FILES ui/*.ui)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES Water.h Environment.h Sky.h Terrain.h EnvironmentEditor.h EnvironmentModule.h TerrainLabel.h PostProcessWidget.h EC_*.h TerrainWeightEditor.h)
+file (GLOB MOC_FILES Water.h Environment.h Sky.h Terrain.h EnvironmentEditor.h EnvironmentModule.h
+    TerrainLabel.h PostProcessWidget.h EC_*.h TerrainWeightEditor.h)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
@@ -22,21 +23,21 @@ add_definitions (-DENVIRONMENT_MODULE_EXPORTS)
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${UI_FILES} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
 if (CAELUM)
-	add_definitions (-DCAELUM)
+    add_definitions (-DCAELUM)
 endif (CAELUM)
 
 if (HYDRAX)
-	add_definitions (-DHYDRAX)
+    add_definitions (-DHYDRAX)
 endif (HYDRAX)
 
 if (CAELUM)
     use_package (CAELUM)
 endif (CAELUM)
 
-use_modules (Framework Scene OgreRenderingModule Asset)
+use_modules (Framework Scene OgreRenderingModule Asset Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
-link_modules (Framework Scene OgreRenderingModule Asset)
+link_modules (Framework Scene OgreRenderingModule Asset Console)
 
 link_ogre()
 
@@ -45,6 +46,5 @@ if (CAELUM)
 endif (CAELUM)
 
 SetupCompileFlagsWithPCH()
-
 
 final_target ()

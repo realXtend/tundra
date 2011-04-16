@@ -29,16 +29,14 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 add_definitions (-DAVATAR_MODULE_EXPORTS)
 
 # Includes
-use_modules(AvatarModule Framework Scene SupportModules
-    AssetModule OgreRenderingModule Input Asset)
+use_modules(AvatarModule Framework Scene AssetModule OgreRenderingModule Input Asset Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 # Linking
 link_ogre()
 
-link_modules(Framework Scene SupportModules 
-    AssetModule OgreRenderingModule Input Asset)
+link_modules(Framework Scene AssetModule OgreRenderingModule Input Asset Console)
 
 LinkEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
 LinkEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)

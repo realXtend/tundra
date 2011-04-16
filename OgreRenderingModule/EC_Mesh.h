@@ -321,7 +321,7 @@ public slots:
         \return name if successful, empty if no entity / illegal index
      */
     const std::string& GetMaterialName(uint index) const;
-    const QString& GetMatName(uint index) const;
+    QString GetMatName(uint index) const;
 
     /// gets material name from attachment mesh
     /** \param index attachment index
@@ -371,6 +371,10 @@ public slots:
 
     /// Detach from the bone and reattach to placeable if was attached
     void DetachMeshFromBone();
+
+    //! Helper for setting asset ref from js with less code (and at all from py, due to some trouble with assetref decorator setting)
+    void SetMeshRef(const AssetReference& newref) { setmeshRef(newref); }
+    void SetMeshRef(const QString& newref) { setmeshRef(AssetReference(newref)); }
     
 signals:
     /// Signal is emitted when mesh has successfully loaded and applied to entity.

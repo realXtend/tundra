@@ -17,6 +17,7 @@
 #include <QPointer>
 
 #include <Windows.h>
+#include "ConsoleCommand.h"
 
 class EC_Placeable;
 
@@ -45,7 +46,7 @@ namespace DebugStats
 
     public slots:
         /// Creates and shows the profiling window.
-        Console::CommandResult ShowProfilingWindow(/*const StringVector &params*/);
+        ConsoleCommandResult ShowProfilingWindow(/*const StringVector &params*/);
 
     private slots:
         void AddProfilerWidgetToUi();
@@ -60,7 +61,7 @@ namespace DebugStats
         Q_DISABLE_COPY(DebugStatsModule);
 
         /// Invokes action in entity.
-        Console::CommandResult Exec(const StringVector &params);
+        ConsoleCommandResult Exec(const StringVector &params);
 
         /// A history of estimated frame times.
         std::vector<std::pair<u64, double> > frameTimes;
