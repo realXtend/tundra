@@ -7,9 +7,7 @@
  *  @note   Only one entity can have active sound listener at a time.
  */
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "EC_SoundListener.h"
 #include "IModule.h"
 #include "Entity.h"
@@ -19,6 +17,7 @@
 #include "AudioAPI.h"
 #include "SceneAPI.h"
 #include "FrameAPI.h"
+#include "MemoryLeakCheck.h"
 
 EC_SoundListener::EC_SoundListener(IModule *module):
     IComponent(module->GetFramework()),

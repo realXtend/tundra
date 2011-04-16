@@ -6,7 +6,6 @@
  *  @note   The entity must have EC_Placeable component available in advance.
  */
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "EC_ChatBubble.h"

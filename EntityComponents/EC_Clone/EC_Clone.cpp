@@ -8,7 +8,6 @@
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Clone.h"
 #include "IModule.h"

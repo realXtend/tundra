@@ -27,6 +27,6 @@ link_package (QT4)
 link_ogre()
 link_modules (Framework Scene OgreRenderingModule)
 
-SetupCompileFlagsWithPCH()
+SetupCompileFlags()
 
 final_target ()

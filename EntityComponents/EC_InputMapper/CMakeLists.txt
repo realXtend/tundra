@@ -21,6 +21,6 @@ build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
 link_modules (Framework Scene)
 
-SetupCompileFlagsWithPCH()
+SetupCompileFlags()
 
 final_target ()

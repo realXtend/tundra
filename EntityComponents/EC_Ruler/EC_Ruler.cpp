@@ -7,7 +7,6 @@
  *
  */
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Ruler.h"
 #include "IModule.h"

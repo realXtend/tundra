@@ -8,7 +8,6 @@
 #ifndef incl_EC_ProximityTrigger_EC_ProximityTrigger_h
 #define incl_EC_ProximityTrigger_EC_ProximityTrigger_h
 
-#include "StableHeaders.h"
 #include "IComponent.h"
 #include "Declare_EC.h"
 

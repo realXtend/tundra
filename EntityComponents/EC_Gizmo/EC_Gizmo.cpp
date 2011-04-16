@@ -6,7 +6,6 @@
  *  @author Nathan Letwory | http://www.letworyinteractive.com
  */
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Gizmo.h"
 #include "IModule.h"

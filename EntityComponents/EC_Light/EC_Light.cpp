@@ -1,11 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
+#include "CoreStdIncludes.h"
 #include <QList>
 #include <QVector>
 #include "MemoryLeakCheck.h"
-#include "EC_Light.h"
 #include "IModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
@@ -14,9 +14,11 @@
 #include "XMLUtilities.h"
 #include "LoggingFunctions.h"
 
-#include <Ogre.h>
-
 #include <QDomDocument>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+
+#include "EC_Light.h"
 
 using namespace OgreRenderer;
 

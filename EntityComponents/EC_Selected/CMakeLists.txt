@@ -26,6 +26,6 @@ link_package (BOOST)
 link_package (QT4)
 link_modules (Framework Scene)
 
-SetupCompileFlagsWithPCH()
+SetupCompileFlags()
 
 final_target ()

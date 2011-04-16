@@ -6,7 +6,6 @@
  *  @note   The entity must have EC_Placeable component available in advance.
  */
 
-#include "StableHeaders.h"
 #include "EC_Billboard.h"
 #include "IModule.h"
 #include "Renderer.h"
@@ -18,6 +17,10 @@
 #include <OgreBillboardSet.h>
 #include <OgreTextureManager.h>
 #include <OgreResource.h>
+#include <OgreBillboard.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreMaterialManager.h>
 
 #include <QTimer>
 

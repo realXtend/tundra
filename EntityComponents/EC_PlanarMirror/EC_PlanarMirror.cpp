@@ -6,7 +6,6 @@
  *  @note   The entity should have EC_Placeable available in advance.
  */
 
-#include "StableHeaders.h"
 #include "EC_PlanarMirror.h"
 
 #include "Renderer.h"

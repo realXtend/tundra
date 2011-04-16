@@ -23,6 +23,6 @@ LinkEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
 link_ogre()
 link_modules (Framework Ui Input Scene Asset Console OgreRenderingModule TundraLogicModule KristalliProtocolModule)
 
-SetupCompileFlagsWithPCH()
+SetupCompileFlags()
 
 final_target ()

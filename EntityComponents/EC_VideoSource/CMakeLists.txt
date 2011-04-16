@@ -27,6 +27,6 @@ link_package (QT4)
 link_ogre()
 link_modules (Framework Scene AssetModule OgreRenderingModule EC_3DCanvas)
 
-SetupCompileFlagsWithPCH()
+SetupCompileFlags()
 
 final_target ()

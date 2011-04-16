@@ -6,7 +6,6 @@
  *  @note   The entity must EC_Placeable available in advance.
  */
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "EC_HoveringText.h"

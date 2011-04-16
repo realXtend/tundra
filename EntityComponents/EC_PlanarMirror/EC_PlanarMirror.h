@@ -9,13 +9,13 @@
 #ifndef incl_EC_PlanarMirror_EC_PlanarMirror_h
 #define incl_EC_PlanarMirror_EC_PlanarMirror_h
 
-#include "StableHeaders.h"
 #include "IComponent.h"
 #include "Declare_EC.h"
 #include "OgreModuleFwd.h"
 
 #include <QVector3D>
 #include <QQuaternion>
+#include <OgreTexture.h>
 
 /// EntityComponent that will create a planar mirror texture (and optionally a plane showing it).
 /**

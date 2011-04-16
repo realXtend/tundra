@@ -22,6 +22,6 @@ build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 link_ogre()
 link_modules (Framework Audio Scene OgreRenderingModule EC_SoundListener)
 
-SetupCompileFlagsWithPCH()
+SetupCompileFlags()
 
 final_target ()

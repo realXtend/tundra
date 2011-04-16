@@ -1,8 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "EC_3DCanvas.h"
 
 #include "Renderer.h"
@@ -13,10 +11,16 @@
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 
+#include <OgreTextureManager.h>
+#include <OgreMaterialManager.h>
+#include <OgreHardwarePixelBuffer.h>
 #include <QWidget>
 #include <QPainter>
+#include <QTimer>
 
 #include <QDebug>
+
+#include "MemoryLeakCheck.h"
 
 EC_3DCanvas::EC_3DCanvas(IModule *module) :
     IComponent(module->GetFramework()),

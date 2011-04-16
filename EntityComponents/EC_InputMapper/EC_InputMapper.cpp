@@ -6,9 +6,7 @@
  *          given set of keys to Entity Actions on the entity the component is part of.
  */
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "EC_InputMapper.h"
 
 #include "IAttribute.h"
@@ -16,6 +14,7 @@
 #include "Entity.h"
 
 #include "LoggingFunctions.h"
+#include "MemoryLeakCheck.h"
 
 EC_InputMapper::~EC_InputMapper()
 {

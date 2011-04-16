@@ -5,7 +5,6 @@
  *  @brief  EC_ProximityTrigger reports distance, each frame, of other entities that also have EC_ProximityTrigger component
  */
 
-#include "StableHeaders.h"
 #include "EC_ProximityTrigger.h"
 
 #include "Entity.h"

@@ -11,7 +11,6 @@
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "EC_Touchable.h"
@@ -24,6 +23,9 @@
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
 
+#include <OgreException.h>
+#include <OgreSceneManager.h>
+#include <OgreEntity.h>
 #include <QApplication>
 #include <QTimer>
 

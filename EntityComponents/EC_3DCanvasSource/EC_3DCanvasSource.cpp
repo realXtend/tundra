@@ -1,6 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "EC_3DCanvasSource.h"
@@ -14,6 +13,7 @@
 #include "UiAPI.h"
 #include "UiProxyWidget.h"
 #include "LoggingFunctions.h"
+#include "Application.h"
 
 #include <QWebView>
 #include <QLineEdit>
@@ -25,6 +25,8 @@
 #include <QPushButton>
 #include <QProgressBar>
 #include <QSize>
+#include <QTimer>
+#include <QFile>
 
 #include "MemoryLeakCheck.h"
 
@@ -475,7 +477,7 @@ void EC_3DCanvasSource::CreateWidget()
 
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
-    QFile file("./data/ui/3dcanvassource.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/3dcanvassource.ui");
     file.open(QFile::ReadOnly);
     widget_ = loader.load(&file);
     file.close();
