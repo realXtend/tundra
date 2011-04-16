@@ -71,6 +71,8 @@ public slots:
     /// Remember to hold on to a shared_ptr of the input context as long as you are using the context.
     InputContextPtr RegisterInputContext(const QString &name, int priority);
 
+    InputContext *RegisterInputContextRaw(const QString &name, int priority);
+
     /// Sets the mouse cursor in absolute (the usual default) or relative movement (FPS-like) mode.
     /// @param visible If true, shows mouse cursor and allows free movement. If false, hides the mouse cursor 
     ///                and switches into relative mouse movement input mode.
@@ -165,6 +167,9 @@ public slots:
 
 private:
     Q_DISABLE_COPY(InputAPI)
+
+    /// Stores all InputContexts that have been registered from a script and can't hold strong refs on their own.
+    std::list<InputContextPtr> untrackedInputContexts;
 
     bool eventFilter(QObject *obj, QEvent *event);
 

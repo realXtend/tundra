@@ -223,6 +223,13 @@ void InputAPI::DumpInputContexts()
     }
 }
 
+InputContext *InputAPI::RegisterInputContextRaw(const QString &name, int priority)
+{
+    InputContextPtr context = RegisterInputContext(name, priority);
+    untrackedInputContexts.push_back(context);
+    return context.get();
+}
+
 InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
 {
     boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(name.toStdString().c_str(), priority);
