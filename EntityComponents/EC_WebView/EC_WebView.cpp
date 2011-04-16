@@ -4,6 +4,7 @@
 #include "EC_WebView.h"
 
 #include "IModule.h"
+#include "Application.h"
 #include "SceneAPI.h"
 #include "SceneInteract.h"
 #include "Entity.h"
@@ -282,7 +283,7 @@ QMenu *EC_WebView::GetInteractionMenu(bool createSubmenu)
     int currentControlId = getcontrollerId();
     
     QMenu *actionMenu = new QMenu(0);
-    actionMenu->addAction(QIcon("./data/ui/images/icon/browser.ico"), "Show", this, SLOT(InteractShowRequest()));
+    actionMenu->addAction(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/browser.ico"), "Show", this, SLOT(InteractShowRequest()));
     if (currentControlId == NoneControlID && !webviewLoading_)
         actionMenu->addAction("Share Browsing", this, SLOT(InteractControlRequest()));
     else if (currentControlId == NoneControlID && webviewLoading_)
@@ -307,7 +308,7 @@ QMenu *EC_WebView::GetInteractionMenu(bool createSubmenu)
     if (createSubmenu)
     {
         QMenu *rootMenu = new QMenu(0);
-        QMenu *subMenu = rootMenu->addMenu(QIcon("./data/ui/images/icon/browser.ico"), "Browser");
+        QMenu *subMenu = rootMenu->addMenu(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/browser.ico"), "Browser");
         subMenu->addActions(actionMenu->actions());
         return rootMenu;
     }

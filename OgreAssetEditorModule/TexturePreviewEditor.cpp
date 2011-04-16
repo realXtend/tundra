@@ -127,7 +127,7 @@ void TexturePreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *r
             {
                 imageLabel_->setStyleSheet("QLabel#previewImageLabel"
                                            "{"
-                                                "background-image: url(\"./data/ui/images/image_background.png\");"
+                                                "background-image: url(\Application::InstallationDirectory + "data/ui/images/image_background.png\");"
                                                 "background-repeat: repeat-xy;"
                                            "}");
             }
@@ -212,7 +212,7 @@ void TexturePreviewEditor::Initialize()
 
     // Create widget from ui file
     QUiLoader loader;
-    QFile file("./data/ui/texture_preview.ui");
+    QFile file(Application::InstallationDirectory + "data/ui/texture_preview.ui");
     if (!file.exists())
     {
         OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");

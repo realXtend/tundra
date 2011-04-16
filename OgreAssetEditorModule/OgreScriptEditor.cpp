@@ -43,7 +43,7 @@ OgreScriptEditor::OgreScriptEditor(const QString &inventory_id, asset_type_t ass
 {
     // Create widget from ui file
     QUiLoader loader;
-    QFile file("./data/ui/ogrescripteditor.ui");
+    QFile file(Application::InstallationDirectory + "data/ui/ogrescripteditor.ui");
     if (!file.exists())
     {
         OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");

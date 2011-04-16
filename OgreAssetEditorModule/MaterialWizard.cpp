@@ -26,7 +26,7 @@ MaterialWizard::MaterialWizard(QWidget *parent) :
     scriptName_("")
 {
     QUiLoader loader;
-    QFile file("./data/ui/materialwizard.ui");
+    QFile file(Application::InstallationDirectory + "data/ui/materialwizard.ui");
     if (!file.exists())
     {
         OgreAssetEditorModule::LogError("Cannot find Material Wizard .ui file.");
@@ -73,7 +73,7 @@ MaterialWizard::~MaterialWizard()
 
 void MaterialWizard::Create()
 {
-    QString filename("./media/materials/templates/");
+    QString filename(Application::InstallationDirectory + "media/materials/templates/");
     filename.append(GetCurrentMaterialFilename());
     filename.append(".material");
 

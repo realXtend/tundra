@@ -316,7 +316,7 @@ void MeshPreviewEditor::InitializeEditorWidget()
 {
     // Create widget from ui file
     QUiLoader loader;
-    QFile file("./data/ui/mesh_preview.ui");
+    QFile file(Application::InstallationDirectory + "data/ui/mesh_preview.ui");
     if (!file.exists())
     {
         OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");
