@@ -82,7 +82,6 @@ void PluginAPI::LoadPlugin(const QString &filename)
         return;
     }
 
-    LogInfo("Starting up plugin \"" + path + "\".");
     mainEntryPoint(owner);
 }
 

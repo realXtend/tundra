@@ -27,6 +27,8 @@
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
 #include "ConsoleAPI.h"
+#include "AssetAPI.h"
+#include "GenericAssetFactory.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -86,6 +88,11 @@
 
 #ifdef EC_ProximityTrigger_ENABLED
 #include "EC_ProximityTrigger.h"
+#endif
+
+#ifdef EC_QmlApp_ENABLED
+#include "EC_QmlApp.h"
+#include "QmlAsset.h"
 #endif
 
 #include "EC_Camera.h"
@@ -174,6 +181,10 @@ void TundraLogicModule::Load()
 
 #ifdef EC_ProximityTrigger_ENABLED
     DECLARE_MODULE_EC(EC_ProximityTrigger);
+#endif
+#ifdef EC_QmlApp_ENABLED
+    DECLARE_MODULE_EC(EC_QmlApp);
+    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QmlAsset>("QML")));
 #endif
 }
 
