@@ -59,7 +59,7 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
         return AssetTransferPtr();
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
-        assetType = GetResourceTypeFromResourceFileName(assetRef.toStdString().c_str());
+        assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef.toStdString().c_str());
 
     AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer);
     transfer->source.ref = assetRef.trimmed();

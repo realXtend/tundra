@@ -365,7 +365,7 @@ void AddContentWindow::AddFiles(const QStringList &fileNames)
         AssetDesc ad;
         ad.source = file;
         ad.dataInMemory = false;
-        QString type = GetResourceTypeFromResourceFileName(file.toStdString().c_str());
+        QString type = AssetAPI::GetResourceTypeFromAssetRef(file);
         ad.typeName = type.isEmpty() ? "Binary" : type;
         ad.destinationName = fs::path(file.toStdString()).leaf().c_str();
         desc.assets[qMakePair(ad.source, ad.subname)]= ad;

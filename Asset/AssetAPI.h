@@ -23,9 +23,6 @@ bool CopyAssetFile(const char *sourceFile, const char *destFile);
 /// Saves the given raw data buffer to destFile. Returns true on success.
 bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile);
 
-/// Returns an asset type name of the given asset file name.
-QString GetResourceTypeFromResourceFileName(const QString &filename);
-
 /// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
 QString GuaranteeTrailingSlash(const QString &source);
 
@@ -184,9 +181,6 @@ public slots:
     /// from memory and need to access a file.
     QString GenerateTemporaryNonexistingAssetFilename(QString filename);
 
-    /// Resolve the asset type from filename
-    QString GetAssetTypeFromFileName(QString filename) const;
-
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
     AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);
 
@@ -225,6 +219,10 @@ public slots:
     /** For example, all "my.mesh", "C:\files\my.mesh", "local://path/my.mesh", "http://www.web.com/my.mesh" will return "my.mesh".
         "local://collada.dae,subMeshName" returns "collada.dae". */
     static QString ExtractFilenameFromAssetRef(QString ref);
+
+    /// Returns an asset type name of the given assetRef. e.g. "asset.png" -> "Texture". The Asset type name is a unique type identifier string
+    /// each asset type has.
+    static QString GetResourceTypeFromAssetRef(QString assetRef);
 
     /// Parses a (relative) assetRef in the given context, and returns an assetRef pointing to the same asset as an absolute asset ref.
     /// For example: context: "local://myasset.material", ref: "texture.png" returns "local://texture.png".

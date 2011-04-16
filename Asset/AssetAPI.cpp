@@ -650,7 +650,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     {
         QString assetFilename;
         ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &assetFilename);
-        assetType = GetResourceTypeFromResourceFileName(assetFilename);
+        assetType = GetResourceTypeFromAssetRef(assetFilename);
     }
 
     // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
@@ -765,7 +765,7 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     assetRef = assetRef.trimmed();
 
     if (assetType.length() == 0)
-        assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
+        assetType = GetResourceTypeFromAssetRef(assetRef.toLower().toStdString().c_str());
 
     // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
     QString namedStorage;
@@ -934,11 +934,6 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
     return asset;
 }
 
-QString AssetAPI::GetAssetTypeFromFileName(QString filename) const
-{
-    return GetResourceTypeFromResourceFileName(filename.toStdString().c_str());
-}
-
 AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
 {
     for(size_t i = 0; i < assetTypeFactories.size(); ++i)
@@ -950,6 +945,9 @@ AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
 
 AssetPtr AssetAPI::GetAsset(QString assetRef)
 {
+    // Normalize and resolve the lookup of the given asset.
+    assetRef = ResolveAssetRef("", assetRef);
+
     AssetMap::iterator iter = assets.find(assetRef);
     if (iter != assets.end())
         return iter->second;
@@ -1334,8 +1332,11 @@ namespace
     }
 }
 
-QString GetResourceTypeFromResourceFileName(const QString &filename)
+QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
 {
+    QString filename;
+    ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &filename);
+
     ///\todo This whole function is to be removed, and moved into the asset type providers for separate access. -jj.
 
     QString file = filename.trimmed().toLower();
