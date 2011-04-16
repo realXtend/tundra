@@ -39,7 +39,7 @@ link_ogre()
 link_modules(Framework Scene AssetModule OgreRenderingModule Input Asset Console)
 
 LinkEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
-LinkEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
+LinkEntityComponent(EntityComponents/EC_Sound EC_Sound)
 LinkEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition)
 
 SetupCompileFlagsWithPCH()

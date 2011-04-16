@@ -34,7 +34,6 @@ LinkEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)
 LinkEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
 LinkEntityComponent(EntityComponents/EC_Gizmo EC_Gizmo)
 LinkEntityComponent(EntityComponents/EC_Selected EC_Selected)
-LinkEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
 
 LinkEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 LinkEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)

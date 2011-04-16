@@ -60,12 +60,9 @@
 #include "EC_Ruler.h"
 #endif
 
-#ifdef EC_SoundListener_ENABLED
-#include "EC_SoundListener.h"
-#endif
-
 #ifdef EC_Sound_ENABLED
 #include "EC_Sound.h"
+#include "EC_SoundListener.h"
 #endif
 
 #ifdef EC_InputMapper_ENABLED
@@ -152,11 +149,9 @@ void TundraLogicModule::Load()
 #ifdef EC_Movable_ENABLED
     DECLARE_MODULE_EC(EC_ParticleSystem);
 #endif
-#ifdef EC_SoundListener_ENABLED
-    DECLARE_MODULE_EC(EC_SoundListener);
-#endif
 #ifdef EC_Sound_ENABLED
     DECLARE_MODULE_EC(EC_Sound);
+    DECLARE_MODULE_EC(EC_SoundListener);
 #endif
 #ifdef EC_InputMapper_ENABLED    
     DECLARE_MODULE_EC(EC_InputMapper);

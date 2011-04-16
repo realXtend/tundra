@@ -5,7 +5,7 @@ init_target (EC_Sound)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES EC_Sound.h)
+file (GLOB MOC_FILES EC_Sound.h EC_SoundListener.h)
 
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder ()
@@ -15,12 +15,12 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_modules (Framework Audio Scene OgreRenderingModule EntityComponents/EC_SoundListener)
+use_modules (Framework Audio Scene OgreRenderingModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
 link_ogre()
-link_modules (Framework Audio Scene OgreRenderingModule EC_SoundListener)
+link_modules (Framework Audio Scene OgreRenderingModule)
 
 SetupCompileFlags()
 
