@@ -17,6 +17,7 @@
 #include "PhysicsWorld.h"
 
 #include "SceneAPI.h"
+#include "ConfigAPI.h"
 
 #include "MsgLogin.h"
 #include "MsgLoginReply.h"

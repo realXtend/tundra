@@ -188,7 +188,6 @@ private:
     void SetApplication(const QString &applicationOrganization, const QString &applicationName, const QString &applicationVersion);
 
     /// Prepares the data directory where config api will be working. This call will make sure that the folder path exists.
-    /// \note Frameworks Platform object needs to be ready and prepared before this gets called.
     /// \param configFolderName QString. The sub folder name on where to store configs.
     void PrepareDataFolder(const QString &configFolderName);
     

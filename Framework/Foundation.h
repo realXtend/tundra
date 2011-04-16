@@ -5,7 +5,6 @@
 
 #include "ForwardDefines.h"
 #include "Framework.h"
-#include "Platform.h"
 #include "Profiler.h"
 
 /** \defgroup Foundation_group Foundation Client Interface
@@ -38,9 +37,6 @@
 
     - Application provides convenient shortcuts for accessing application
       specific configuration options, such as the name of the application.
-
-    - Platform provides platform-specific functionality, such as accessing
-      application data folder, or displaying a message box to the user.
 
     - Framework class is the entry point for the viewer. It contains the main
     loop and is responsible for all the other parts of the foundation.

@@ -125,7 +125,7 @@ int run (int argc, char **argv)
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch(std::exception& e)
     {
-        Foundation::Platform::Message("An exception has occurred!", e.what());
+        Application::Message("An exception has occurred!", e.what());
 #if defined(_DEBUG)
         throw;
 #else
@@ -232,9 +232,9 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     message += szFileName;
 
     if (bMiniDumpSuccessful)
-        Foundation::Platform::Message(L"Minidump generated!", message);
+        Application::Message(L"Minidump generated!", message);
     else
-        Foundation::Platform::Message(szAppName, L"Unexpected error was encountered while generating minidump!");
+        Application::Message(szAppName, L"Unexpected error was encountered while generating minidump!");
 
     return EXCEPTION_EXECUTE_HANDLER;
 }

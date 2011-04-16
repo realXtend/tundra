@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Application.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
@@ -16,7 +17,6 @@
 #include "OgreDefaultHardwareBufferManager.h"
 #include "SceneManager.h"
 #include "EventManager.h"
-#include "Platform.h"
 #include "CoreException.h"
 #include "Entity.h"
 #include "SceneAPI.h"
@@ -283,7 +283,7 @@ namespace OgreRenderer
 #endif
 
         // Create Ogre root with logfile
-        QDir logDir(framework_->GetPlatform()->GetApplicationDataDirectory().c_str());
+        QDir logDir(Application::UserDataDirectory());
         if (!logDir.exists("logs"))
             logDir.mkdir("logs");
         logDir.cd("logs");
@@ -314,7 +314,10 @@ namespace OgreRenderer
         view_distance_ = framework_->Config()->Get(configData, "view distance").toFloat();
 
         // Load plugins
+        QString cwd = Application::CurrentWorkingDirectory();
+        Application::SetCurrentWorkingDirectory(Application::InstallationDirectory());
         LoadPlugins(plugins_filename_);
+        Application::SetCurrentWorkingDirectory(cwd);
 
 #ifdef _WINDOWS
         // WIN default to DirectX
@@ -440,6 +443,8 @@ namespace OgreRenderer
         }
 
         Ogre::String plugin_dir = file.getSetting("PluginFolder");
+        if (plugin_dir == ".")
+            plugin_dir = boost::filesystem::path(plugin_filename).branch_path().string();
         Ogre::StringVector plugins = file.getMultiSetting("Plugin");
         
         if (plugin_dir.length())

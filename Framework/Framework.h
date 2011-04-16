@@ -91,9 +91,6 @@ namespace Foundation
         /// Returns event manager.
         EventManagerPtr GetEventManager() const;
 
-        /// Returns platform abstraction object.
-        PlatformPtr GetPlatform() const;
-
         /// Cancel a pending exit
         void CancelExit();
 
@@ -143,6 +140,8 @@ namespace Foundation
             static std::string group("Foundation");
             return group;
         }
+
+        void LoadPlugins(QString pluginConfigurationFile);
 
         /// Loads all available modules. Do not call normally.
         void LoadModules();
@@ -230,7 +229,6 @@ namespace Foundation
         ServiceManagerPtr service_manager_; ///< Service manager.
         EventManagerPtr event_manager_; ///< Event manager.
 
-        PlatformPtr platform_; ///< Platform.
         bool exit_signal_; ///< If true, exit application.
 #ifdef PROFILING
         Profiler profiler_; ///< Profiler.

@@ -22,6 +22,11 @@
 
 #include <QString>
 
+QString QStringfromWCharArray(const wchar_t *string, int size);
+int QStringtoWCharArray(QString qstr, wchar_t *array);
+std::wstring QStringToWString(const QString &qstr);
+QString WStringToQString(const std::wstring &str);
+
 std::wstring ToWString(const std::string &str);
 
 /// Converts value to a string. May throw boost::bad_lexical_cast.

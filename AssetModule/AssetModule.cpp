@@ -14,6 +14,7 @@
 #include "AssetAPI.h"
 #include "LocalAssetStorage.h"
 #include "ConsoleAPI.h"
+#include "Application.h"
 
 #include <QDir>
 
@@ -37,17 +38,17 @@ namespace Asset
         boost::shared_ptr<LocalAssetProvider> local = boost::shared_ptr<LocalAssetProvider>(new LocalAssetProvider(framework_));
         framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(local));
 
-        QDir dir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "data/assets").toStdString().c_str());
-        local->AddStorageDirectory(dir.absolutePath().toStdString(), "System", true);
+        QString systemAssetDir = Application::InstallationDirectory() + "data/assets";
+        local->AddStorageDirectory(systemAssetDir.toStdString(), "System", true);
         // Set asset dir as also as AssetAPI property
-        framework_->Asset()->setProperty("assetdir", QVariant(GuaranteeTrailingSlash(dir.absolutePath())));
-        framework_->Asset()->setProperty("inbuiltassetdir", QVariant(GuaranteeTrailingSlash(dir.absolutePath())));
+        framework_->Asset()->setProperty("assetdir", systemAssetDir);
+        framework_->Asset()->setProperty("inbuiltassetdir", systemAssetDir);
         
-        dir = QDir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "jsmodules").toStdString().c_str());
-        local->AddStorageDirectory(dir.absolutePath().toStdString(), "Javascript", true);
+        QString jsAssetDir = Application::InstallationDirectory() + "jsmodules";
+        local->AddStorageDirectory(jsAssetDir.toStdString(), "Javascript", true);
 
-        dir = QDir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "media").toStdString().c_str());
-        local->AddStorageDirectory(dir.absolutePath().toStdString(), "Ogre Media", true);
+        QString ogreAssetDir = Application::InstallationDirectory() + "media";
+        local->AddStorageDirectory(ogreAssetDir.toStdString(), "Ogre Media", true);
 
         framework_->RegisterDynamicObject("assetModule", this);
     }

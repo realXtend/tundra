@@ -20,7 +20,6 @@
 #include "IAssetUploadTransfer.h"
 #include "GenericAssetFactory.h"
 #include "AssetCache.h"
-#include "Platform.h"
 #include <QDir>
 #include <QFileSystemWatcher>
 
@@ -192,57 +191,6 @@ AssetAPI::FileQueryResult AssetAPI::ResolveLocalAssetPath(QString ref, QString b
         outFilePath = ref;
         return FileQueryExternalFile;
     }
-}
-
-QString QStringfromWCharArray(const wchar_t *string, int size)
-{
-    QString qstr;
-    if (sizeof(wchar_t) == sizeof(QChar)) {
-        return qstr.fromUtf16((const ushort *)string, size);
-    } else {
-        return qstr.fromUcs4((uint *)string, size);
-    }
-}
-
-int QStringtoWCharArray(QString qstr, wchar_t *array)
-{
-    if (sizeof(wchar_t) == sizeof(QChar)) {
-        memcpy(array, qstr.utf16(), sizeof(wchar_t)*qstr.length());
-        return qstr.length();
-    } else {
-        wchar_t *a = array;
-        const unsigned short *uc = qstr.utf16();
-        for (int i = 0; i < qstr.length(); ++i) {
-            uint u = uc[i];
-            if (QChar::isHighSurrogate(u) && i + 1 < qstr.length()) {
-                ushort low = uc[i+1];
-                if (QChar::isLowSurrogate(low)) {
-                    u = QChar::surrogateToUcs4(u, low);
-                    ++i;
-                }
-            }
-            *a = wchar_t(u);
-            ++a;
-        }
-        return a - array;
-    }
-}
-std::wstring QStringToWString(const QString &qstr)
-{
-    if (qstr.length() == 0)
-        return L"";
-
-    std::wstring str;
-    str.resize(qstr.length());
-
-    str.resize(QStringtoWCharArray(qstr, &(*str.begin())));
-    return str;
-}
-QString WStringToQString(const std::wstring &str)
-{
-    if (str.length() == 0)
-        return "";
-    return QStringfromWCharArray(str.data(), str.size());
 }
 
 AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outProtocolPart, QString *outNamedStorage, QString *outProtocol_Path, 

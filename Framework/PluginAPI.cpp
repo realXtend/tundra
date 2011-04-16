@@ -2,6 +2,7 @@
 #include "PluginAPI.h"
 #include "LoggingFunctions.h"
 #include "Framework.h"
+#include "Application.h"
 
 #include <QtXml>
 #include <iostream>
@@ -55,13 +56,17 @@ typedef void (*TundraPluginMainSignature)(Foundation::Framework *owner);
 void PluginAPI::LoadPlugin(const QString &filename)
 {
 #ifdef _DEBUG
-    QString path = "plugins/" + filename.trimmed() + "d.dll";
+    const QString pluginSuffix = "d.dll";
 #else
-    QString path = "plugins/" + filename.trimmed() + ".dll";
+    const QString pluginSuffix = ".dll";
 #endif
+
+    QString path = Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix;
+
     path = path.replace("/", "\\");
-    LogInfo("Loading up plugin \"" + filename + "\".");
+    LogInfo("Loading up plugin \"" + filename + "\" in path \"" + path + "\".");
     ///\todo Cross-platform -> void* & dlopen.
+    ///\todo Unicode support!
     HMODULE module = LoadLibraryA(path.toStdString().c_str());
     if (module == NULL)
     {

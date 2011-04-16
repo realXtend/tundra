@@ -34,12 +34,9 @@ typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
 
 namespace Foundation
 {
-    class Platform;
     class Framework;
     class KeyBindings;
     class Profiler;
-
-    typedef boost::shared_ptr<Platform> PlatformPtr;
 
     class RenderServiceInterface;
     typedef boost::shared_ptr<RenderServiceInterface> RendererPtr;

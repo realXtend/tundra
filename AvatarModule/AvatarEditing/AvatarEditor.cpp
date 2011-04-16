@@ -14,7 +14,6 @@
 #include "Entity.h"
 
 #include "ConfigAPI.h"
-#include "Platform.h"
 
 #include <QUiLoader>
 #include <QFile>

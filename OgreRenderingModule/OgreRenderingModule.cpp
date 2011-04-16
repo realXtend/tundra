@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Application.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
@@ -73,7 +74,7 @@ namespace OgreRenderer
 
     void OgreRenderingModule::PreInitialize()
     {
-        std::string ogre_config_filename = "ogre.cfg";
+        std::string ogre_config_filename = Application::InstallationDirectory().toStdString() + "ogre.cfg"; ///\todo Unicode support!
 #if defined (_WINDOWS) && (_DEBUG)
         std::string plugins_filename = "pluginsd.cfg";
 #elif defined (_WINDOWS)
@@ -83,6 +84,8 @@ namespace OgreRenderer
 #else
         std::string plugins_filename = "plugins-unix.cfg";
 #endif
+
+        plugins_filename = Application::InstallationDirectory().toStdString() + plugins_filename; ///\todo Unicode support!
 
         // Create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
         std::string window_title = framework_->Config()->GetApplicationIdentifier().toStdString();

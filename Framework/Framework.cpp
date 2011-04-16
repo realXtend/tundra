@@ -4,7 +4,6 @@
 #include "DebugOperatorNew.h"
 
 #include "Framework.h"
-#include "Platform.h"
 #include "Foundation.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
@@ -70,14 +69,14 @@ namespace Foundation
             ProfilerSection::SetProfiler(&profiler_);
 #endif
             PROFILE(FW_Startup);
-            
+
+            // Create QApplication
+            application = new Application(this, argc_, argv_);
+            initialized_ = true;
+
             // Create ConfigAPI and pass application data.
             config = new ConfigAPI(this);
             config->SetApplication(applicationOrganization, applicationName, applicationVersion);
-
-            // Create and prepare platform. Depends on application name being set to ConfigAPI.
-            platform_ = PlatformPtr(new Platform(this));
-            platform_->PrepareApplicationDataDirectory();
 
             // Prepare ConfigAPIs working directory
             config->PrepareDataFolder("configuration");
@@ -88,13 +87,9 @@ namespace Foundation
             service_manager_ = ServiceManagerPtr(new ServiceManager());
             event_manager_ = EventManagerPtr(new EventManager(this));
 
-            // Create QApplication
-            application = new Application(this, argc_, argv_);
-            initialized_ = true;
-
             // Create AssetAPI.
             asset = new AssetAPI(headless_);
-            asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + "/assetcache").c_str());
+            asset->OpenAssetCache(Application::UserDataDirectory() + "assetcache");
 
             // Create AssetAPI.
             ui = new UiAPI(this);                
@@ -127,7 +122,6 @@ namespace Foundation
         service_manager_.reset();
         component_manager_.reset();
         module_manager_.reset();
-        platform_.reset();
 
         // Delete the QObjects that don't have a parent.
         delete input;
@@ -176,6 +170,7 @@ namespace Foundation
 
         srand(time(0));
 
+        LoadPlugins("plugins.xml");
         LoadModules();
 
         // PostInitialize SceneAPI.
@@ -300,18 +295,24 @@ namespace Foundation
             application->UpdateFrame();
     }
 
+    void Framework::LoadPlugins(QString pluginConfigurationFile)
+    {
+        // If a relative path was specified, lookup from cwd first, then from application installation directory.
+        if (QDir::isRelativePath(pluginConfigurationFile))
+        {
+            QString cwdPath = Application::CurrentWorkingDirectory() + pluginConfigurationFile;
+            if (QFile::exists(cwdPath))
+                pluginConfigurationFile = cwdPath;
+            else
+                pluginConfigurationFile = Application::InstallationDirectory() + pluginConfigurationFile;
+        }
+
+        plugin->LoadPluginsFromXML(pluginConfigurationFile);
+    }
+
     void Framework::LoadModules()
     {
-        {
-            PROFILE(FW_LoadModules);
-            LogDebug("\n\nLOADING MODULES\n================================================================\n");
-            plugin->LoadPluginsFromXML("plugins.xml");
-        }
-        {
-            PROFILE(FW_InitializeModules);
-            LogDebug("\n\nINITIALIZING MODULES\n================================================================\n");
-            module_manager_->InitializeModules();
-        }
+        module_manager_->InitializeModules();
     }
 
     void Framework::UnloadModules()
@@ -495,11 +496,6 @@ namespace Foundation
     EventManagerPtr Framework::GetEventManager() const
     {
         return event_manager_;
-    }
-
-    PlatformPtr Framework::GetPlatform() const
-    {
-        return platform_;
     }
 
     FrameAPI *Framework::Frame() const

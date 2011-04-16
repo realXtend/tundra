@@ -2,8 +2,8 @@
 
 #include "StableHeaders.h"
 #include "Framework.h"
-#include "Platform.h"
 #include "ConfigAPI.h"
+#include "Application.h"
 
 #include "LoggingFunctions.h"
 
@@ -36,14 +36,8 @@ void ConfigAPI::SetApplication(const QString &applicationOrganization, const QSt
 
 void ConfigAPI::PrepareDataFolder(const QString &configFolderName)
 {
-    if (!framework_->GetPlatform())
-    {
-        LogFatal("ConfigAPI::PrepareDataFolder: Framworks Platform objects has not been initialized yet, aborting!");
-        return;
-    }
-
     /// \todo Should get the unicode GetApplicationDataDirectoryW() QString::fromStdWString seems to give a weird linker error, types wont match?
-    QString applicationDataDir = QString::fromStdString(framework_->GetPlatform()->GetApplicationDataDirectory());
+    QString applicationDataDir = Application::UserDataDirectory();
     
     // Prepare application data dir path
     applicationDataDir.replace("\\", "/");

@@ -8,6 +8,7 @@
 #include "DebugStats.h"
 #include "HighPerfClock.h"
 #include "Framework.h"
+#include "Application.h"
 #include "SceneManager.h"
 #include "RenderServiceInterface.h"
 
@@ -205,7 +206,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
         connect(checkBoxLogTraffic, SIGNAL(stateChanged (int)), this, SLOT(SetNetworkLogging(int)));
 
     // Set/init working directory for log files.
-    logDirectory_ = framework_->GetPlatform()->GetApplicationDataDirectory().c_str();
+    logDirectory_ = Application::UserDataDirectory();
     if (!logDirectory_.exists(DEFAULT_LOG_DIR))
         logDirectory_.mkdir(DEFAULT_LOG_DIR);
     logDirectory_.cd(DEFAULT_LOG_DIR);
