@@ -41,11 +41,11 @@ if (!me.HasComponent("EC_OgreCamera"))
 
 function Update(frametime)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
+    var camera = me.GetComponent("EC_OgreCamera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.GetComponent("EC_Placeable");
 
     if (zooming)
     {
@@ -62,7 +62,7 @@ function Update(frametime)
 
 function HandleMouseLookX(param)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
+    var camera = me.GetComponent("EC_OgreCamera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
@@ -70,7 +70,7 @@ function HandleMouseLookX(param)
 	return;
 
     var move = parseInt(param);
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.GetComponent("EC_Placeable");
 
     var newtransform = placeable.transform;
     newtransform.rot.z -= rotate_sensitivity * move;
@@ -85,12 +85,12 @@ function HandleMouseLookX(param)
 
 function HandleMouseLookY(param)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
+    var camera = me.GetComponent("EC_OgreCamera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
     var move = parseInt(param);
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.GetComponent("EC_Placeable");
 
     var newtransform = placeable.transform;
     newtransform.rot.x -= rotate_sensitivity * move;
@@ -141,11 +141,11 @@ function mouseLeftPress(event)
 
 function mouseScroll(event)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
+    var camera = me.GetComponent("EC_OgreCamera");
     if (camera.IsActive() == false)
         return;
 
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.GetComponent("EC_Placeable");
 
     var delta;
 
@@ -242,11 +242,11 @@ function keyRelease(event)
 
 function cameraZoom()
 {
-    var entityplaceable = last_clicked.GetComponentRaw("EC_Placeable");
+    var entityplaceable = last_clicked.GetComponent("EC_Placeable");
     var cameraentity = scene.GetEntityByNameRaw("ObjectCamera");
     if (cameraentity == null)
         return;
-    var cameraplaceable = cameraentity.GetComponentRaw("EC_Placeable");
+    var cameraplaceable = cameraentity.GetComponent("EC_Placeable");
     var cameratransform = cameraplaceable.transform;
 
     var dir = new Vector3df();

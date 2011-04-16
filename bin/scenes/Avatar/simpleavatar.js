@@ -376,7 +376,7 @@ function ClientInitialize() {
     else
     {
         // Make hovering name tag for other clients
-        var clientName = me.GetComponentRaw("EC_Name");
+        var clientName = me.GetComponent("EC_Name");
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {
@@ -638,7 +638,7 @@ function ClientUpdateAvatarCamera() {
 function ClientCheckState()
 {    
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    var avatar_placeable = me.GetComponentRaw("EC_Placeable");
+    var avatar_placeable = me.GetComponent("EC_Placeable");
     
     // If ent got destroyed or something fatal, return cursor
     if (cameraentity == null || avatar_placeable == null)
@@ -850,7 +850,7 @@ function CommonUpdateAnimation(frametime) {
 function CreateFish() {
     // Note: attaching meshes to bone of another mesh is strictly client-only! It does not replicate.
     // Therefore this needs to be run locally on every client
-    var avatarmesh = me.GetComponentRaw("EC_Mesh", "");
+    var avatarmesh = me.GetComponent("EC_Mesh", "");
     // Do not act until the actual avatar has been created
     if ((avatarmesh) && (avatarmesh.HasMesh())) {
         // Create a local mesh component into the same entity

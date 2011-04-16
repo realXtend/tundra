@@ -14,7 +14,7 @@ function prevSlide() {
 
 function changeSlide(dir) {
     print("Changing slide!");
-    var dyn = me.GetComponentRaw("EC_DynamicComponent", "Slidelist");
+    var dyn = me.GetComponent("EC_DynamicComponent", "Slidelist");
     var slide_index = parseInt(dyn.GetAttribute("Current")) + dir;
     var max = dyn.GetAttribute("MaxIndex");
 
@@ -30,17 +30,17 @@ function changeSlide(dir) {
 
 function changeSlideTo(slide_index) {
     print("Changing slide!");
-    var dyn = me.GetComponentRaw("EC_DynamicComponent", "Slidelist");
+    var dyn = me.GetComponent("EC_DynamicComponent", "Slidelist");
     dyn.SetAttribute("Current", slide_index + "");
 }
 
 
 function onSlideChanged(attribute, type) {
     print('I changes!!!!11!');
-    var dyn = me.GetComponentRaw("EC_DynamicComponent", "Slidelist");
+    var dyn = me.GetComponent("EC_DynamicComponent", "Slidelist");
     var index = dyn.GetAttribute('Current');
     
-    var canvassource = me.GetComponentRaw('EC_3DCanvasSource');
+    var canvassource = me.GetComponent('EC_3DCanvasSource');
     var slide = dyn.GetAttribute(index + "");
     print('new url is ' + slide);
     canvassource.source = slide;
@@ -53,14 +53,14 @@ function onSlideChanged(attribute, type) {
 // here so we wait for some time before we start it. Should prolably
 // to connect some signal or something.
 frame.DelayedExecute(1).Triggered.connect(this, function () {
-	var canvas = me.GetComponentRaw('EC_3DCanvas');
+	var canvas = me.GetComponent('EC_3DCanvas');
 	canvas.Start();
     });
 
 // Maybe create the thumbnal view here
 //me.Action("MousePress").Triggered.connect(nextSlide);
 
-var dyn = me.GetComponentRaw("EC_DynamicComponent", "Slidelist");
+var dyn = me.GetComponent("EC_DynamicComponent", "Slidelist");
 dyn.AttributeChanged.connect(onSlideChanged);
 
 var prev = scene.GetEntityByNameRaw('Button prev (' + me.name.name + ' ' + me.Id + ')');

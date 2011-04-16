@@ -11,7 +11,7 @@ print("Loading EC_Sound example script.");
 var touchable_comp = 0;
 if (me.HasComponent("EC_Touchable"))
 {
-    touchable_comp = me.GetComponentRaw("EC_Touchable");
+    touchable_comp = me.GetComponent("EC_Touchable");
     AddConnections();
 }
 else
@@ -19,7 +19,7 @@ else
 
 function OnObjectClicked()
 {
-    var sound = me.GetComponentRaw("EC_Sound");
+    var sound = me.GetComponent("EC_Sound");
     sound.triggerSound = true;
     sound.ComponentChanged(0);
 }

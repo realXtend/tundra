@@ -29,8 +29,8 @@ var waterEntity = scene.GetEntityIdsWithComponent("EC_WaterPlane");
 var Water = scene.GetEntityRaw(waterEntity[0]);
 var inWater;
 
-var CollisionSound = me.GetComponentRaw("EC_Sound", "Collision");
-var RigidBody = me.GetComponentRaw("EC_RigidBody");
+var CollisionSound = me.GetComponent("EC_Sound", "Collision");
+var RigidBody = me.GetComponent("EC_RigidBody");
 
 if(CollisionSound && RigidBody && Water)
 {

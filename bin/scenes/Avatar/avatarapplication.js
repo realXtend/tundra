@@ -41,9 +41,9 @@ function ClientHandleToggleCamera() {
     // For camera switching to work, must have both the freelookcamera & avatarcamera in the scene
     var freelookcameraentity = scene.GetEntityByNameRaw("FreeLookCamera");
     var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    var freecameralistener = freelookcameraentity.GetComponentRaw("EC_SoundListener");
+    var freecameralistener = freelookcameraentity.GetComponent("EC_SoundListener");
     var avatarent = scene.GetEntityByNameRaw("Avatar" + client.GetConnectionID());
-    var avatarlistener = avatarent.GetComponentRaw("EC_SoundListener");
+    var avatarlistener = avatarent.GetComponent("EC_SoundListener");
     if ((freelookcameraentity == null) || (avatarcameraentity == null))
         return;
     var freelookcamera = freelookcameraentity.ogrecamera;

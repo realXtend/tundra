@@ -348,7 +348,7 @@ function ClientInitialize() {
     else
     {
         // Make hovering name tag for other clients
-        clientName = me.GetComponentRaw("EC_Name");
+        clientName = me.GetComponent("EC_Name");
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {

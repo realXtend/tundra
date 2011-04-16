@@ -150,13 +150,13 @@ Block.prototype.playerBlockClicked = function()
 print("Loading TestGame.");
 
 //Gamestats
-var compGameStats = me.GetComponentRaw("EC_DynamicComponent");
+var compGameStats = me.GetComponent("EC_DynamicComponent");
 var mode = compGameStats.GetUpdateMode();
 print(mode.value);
 mode.value = 3;
 compGameStats.SetUpdateMode(mode);
 
-server = me.GetComponentRaw("EC_DynamicComponent", "server");
+server = me.GetComponent("EC_DynamicComponent", "server");
 
 if (server)
 {

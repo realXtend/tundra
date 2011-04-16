@@ -160,7 +160,7 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     }
 
     // set source to first slide
-    canvassource = entity.GetComponentRaw('EC_3DCanvasSource')
+    canvassource = entity.GetComponent('EC_3DCanvasSource')
     canvassource.show2d = false;
     canvassource.source = slides[0];
     canvassource.submesh = 1;
@@ -307,7 +307,7 @@ function createCanvas(event) {
         var ids = scene.GetEntityIdsWithComponent('EC_OgreCamera');
         for (i = 0; i < ids.length; i++) {
         var camentity = scene.GetEntityRaw(ids[i]);
-            var placeable = camentity.GetComponentRaw('EC_Placeable');
+            var placeable = camentity.GetComponent('EC_Placeable');
             if (placeable) {
             var q = placeable.Orientation;
 

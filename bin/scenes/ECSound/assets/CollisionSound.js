@@ -4,8 +4,8 @@
 print("Loading Collision Sound Script for enity");
 
 //Test that needed components excist
-var CollisionSound = me.GetComponentRaw("EC_Sound", "Collision");
-var RigidBody = me.GetComponentRaw("EC_RigidBody");
+var CollisionSound = me.GetComponent("EC_Sound", "Collision");
+var RigidBody = me.GetComponent("EC_RigidBody");
 
 if(CollisionSound && RigidBody)
 {	

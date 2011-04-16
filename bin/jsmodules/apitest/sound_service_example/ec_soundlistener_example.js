@@ -3,7 +3,7 @@ print("Loading EC_SoundListener example script.");
 var touchable_comp = 0;
 if (me.HasComponent("EC_Touchable"))
 {
-	touchable_comp = me.GetComponentRaw("EC_Touchable");
+	touchable_comp = me.GetComponent("EC_Touchable");
 	AddConnections();
 }
 else
@@ -11,7 +11,7 @@ else
 
 function OnObjectClicked()
 {
-	var sound_listener = me.GetComponentRaw("EC_SoundListener");
+	var sound_listener = me.GetComponent("EC_SoundListener");
 	sound_listener.active = true;
 	sound_listener.OnChanged();
 }
