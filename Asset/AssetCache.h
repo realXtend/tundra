@@ -67,17 +67,10 @@ public:
     virtual qint64 expire();
 
 public slots:
-    /// Returns an absolute path to a disk source of the url.
-    /// @param QString asset ref
-    /// @return QString absolute path to the assets disk source. Return empty string if asset is not in the cache.
-    /// @note this will always return an empty string for http/https assets. This will force the AssetAPI to check that it has the latest asset from the source.
-    QString GetDiskSource(const QString &assetRef);
-
-    /// Returns an absolute path to a disk source of the url.
-    /// @param QUrl url of the asset ref
-    /// @return QString absolute path to the assets disk source. Return empty string if asset is not in the cache.
-    /// @note this will return you the disk source for http/https assets unlike the QString overload.
-    QString GetDiskSource(const QUrl &assetUrl);
+    /// Searches if the cache contains the asset with the given assetRef. Returns an absolute path to the asset on the local file system, if it is found.
+    /// @return An absolute path to the assets disk source, or an empty string if asset is not in the cache.
+    /// @note Currently this will always return an empty string for http/https assets. This will force the AssetAPI to check that it has the latest asset from the source.
+    QString FindInCache(const QString &assetRef);
 
     /// Checks whether the asset cache contains an asset with the given content hash, and returns the absolute path name to it, if so.
     /// Otherwise returns an empty string.
