@@ -184,7 +184,6 @@ public slots:
         //! Return a scene document with just the desired entity
         QByteArray GetEntityXml(Scene::Entity *entity);
 
-        void LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change) { LoadSceneXML(filename, clearScene, useEntityIDsFromFile, change); }
         void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
         void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
 

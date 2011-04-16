@@ -385,10 +385,10 @@ namespace Scene
         return ret;
     }
 
-    QList<Entity *> SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
     QVariantList SceneManager::LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         //copied from LoadSceneXML and edited
+        ///\todo Delete this copied and edited version of the LoadSceneXML function, and replace it with one that calls that function instead. -jj.    
         QVariantList ret;
  
         QFile file(filename);
@@ -771,6 +771,8 @@ namespace Scene
             entity_id_t id;
             if (e.id.isEmpty() || !useEntityIDsFromFile)
                 id = e.local ? GetNextFreeIdLocal() : GetNextFreeId();
+            else
+                id =  ParseString<entity_id_t>(e.id.toStdString());
 
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
             {
