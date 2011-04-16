@@ -174,7 +174,7 @@ void EC_SkyBox::DisableSky()
     if (!ViewEnabled())
         return;
 
-    if (renderer_.expired())
+    if (!renderer_.expired())
         renderer_.lock()->GetSceneManager()->setSkyBox(false, "");
 }
 
