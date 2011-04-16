@@ -9,7 +9,6 @@
 #include "Framework.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
-#include "ConfigurationManager.h"
 #include "LocalAssetStorage.h"
 #include "IAssetUploadTransfer.h"
 #include "IAssetTransfer.h"

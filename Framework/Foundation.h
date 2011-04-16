@@ -32,9 +32,6 @@
       you create yourself.
     For creating new components, see ComponentManager.
 
-    - ConfigurationManager provides access to name-value pairs defined
-      in an external file suitable for defining various settings.
-
     - Application provides convenient shortcuts for accessing application
       specific configuration options, such as the name of the application.
 

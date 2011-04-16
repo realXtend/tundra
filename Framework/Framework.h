@@ -128,19 +128,6 @@ namespace Foundation
         /// limit frames
         ConsoleCommandResult ConsoleLimitFrames(const StringVector &params);
 */
-        /// Returns name of the configuration group used by the framework
-        /** The group name is used with ConfigurationManager, for framework specific
-            settings. Alternatively a class may use it's own name as the name of the
-            configuration group, if it so chooses.
-
-            For internal use only.
-        */
-        static const std::string &ConfigurationGroup()
-        {
-            static std::string group("Foundation");
-            return group;
-        }
-
         void LoadPlugins(QString pluginConfigurationFile);
 
         /// Loads all available modules. Do not call normally.

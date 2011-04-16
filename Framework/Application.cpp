@@ -5,7 +5,6 @@
 
 #include "Application.h"
 #include "Framework.h"
-#include "ConfigurationManager.h"
 #include "CoreStringUtils.h"
 
 #include <QDir>
