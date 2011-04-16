@@ -7,11 +7,11 @@ Windows Registry Editor Version 5.00
 @="Tundra_File_Type"
 
 [HKEY_CLASSES_ROOT\.txml\OpenWithList]
-[HKEY_CLASSES_ROOT\.txml\OpenWithList\Serverd.exe]
+[HKEY_CLASSES_ROOT\.txml\OpenWithList\Tundrad.exe]
 @=""
 
 [HKEY_CLASSES_ROOT\.tbin\OpenWithList]
-[HKEY_CLASSES_ROOT\.tbin\OpenWithList\Serverd.exe]
+[HKEY_CLASSES_ROOT\.tbin\OpenWithList\Tundrad.exe]
 @=""
 
 [HKEY_CLASSES_ROOT\.txml\OpenWithProgids]
@@ -20,37 +20,37 @@ Windows Registry Editor Version 5.00
 [HKEY_CLASSES_ROOT\.tbin\OpenWithProgids]
 "Tundra_File_Type"=""
 
-[HKEY_CLASSES_ROOT\Applications\Serverd.exe]
-[HKEY_CLASSES_ROOT\Applications\Serverd.exe\Shell]
-[HKEY_CLASSES_ROOT\Applications\Serverd.exe\Shell\OpenServerD]
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe]
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell]
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenServerD]
 @="Open in Tundra ServerD"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
-[HKEY_CLASSES_ROOT\Applications\Serverd.exe\Shell\OpenServerD\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\serverd.exe\" --file \"%1\""
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenServerD\Command]
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundrad.exe\" --file \"%1\""
 
-[HKEY_CLASSES_ROOT\Applications\Viewerd.exe]
-[HKEY_CLASSES_ROOT\Applications\Viewerd.exe\Shell]
-[HKEY_CLASSES_ROOT\Applications\Viewerd.exe\Shell\OpenViewerD]
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe]
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell]
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenViewerD]
 @="Open Tundra ViewerD in this directory"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
-[HKEY_CLASSES_ROOT\Applications\Viewerd.exe\Shell\OpenViewerD\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\viewerd.exe\" --storage \"%1\""
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenViewerD\Command]
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundrad.exe\" --storage \"%1\""
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type]
 @="Tundra Scene File"
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type\DefaultIcon]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon.ico\",0"
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell]
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenServerD]
 @="Open in Tundra ServerD"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenServerD\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\serverd.exe\" --file \"%1\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundrad.exe\" --file \"%1\""
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenViewerD]
 @="Open Tundra ViewerD in this directory"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenViewerD\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\viewerd.exe\" --storage \"%1\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundrad.exe\" --storage \"%1\""

@@ -7,11 +7,11 @@ Windows Registry Editor Version 5.00
 @="Tundra_File_Type"
 
 [HKEY_CLASSES_ROOT\.txml\OpenWithList]
-[HKEY_CLASSES_ROOT\.txml\OpenWithList\Server.exe]
+[HKEY_CLASSES_ROOT\.txml\OpenWithList\Tundra.exe]
 @=""
 
 [HKEY_CLASSES_ROOT\.tbin\OpenWithList]
-[HKEY_CLASSES_ROOT\.tbin\OpenWithList\Server.exe]
+[HKEY_CLASSES_ROOT\.tbin\OpenWithList\Tundra.exe]
 @=""
 
 [HKEY_CLASSES_ROOT\.txml\OpenWithProgids]
@@ -20,21 +20,21 @@ Windows Registry Editor Version 5.00
 [HKEY_CLASSES_ROOT\.tbin\OpenWithProgids]
 "Tundra_File_Type"=""
 
-[HKEY_CLASSES_ROOT\Applications\Server.exe]
-[HKEY_CLASSES_ROOT\Applications\Server.exe\Shell]
-[HKEY_CLASSES_ROOT\Applications\Server.exe\Shell\OpenServer]
+[HKEY_CLASSES_ROOT\Applications\Tundra.exe]
+[HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell]
+[HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenServer]
 @="Open in Tundra Server"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\naali_logo_32px_RC1.ico\",0"
-[HKEY_CLASSES_ROOT\Applications\Server.exe\Shell\OpenServer\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\server.exe\" --file \"%1\""
+[HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenServer\Command]
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --file \"%1\""
 
-[HKEY_CLASSES_ROOT\Applications\Viewer.exe]
-[HKEY_CLASSES_ROOT\Applications\Viewer.exe\Shell]
-[HKEY_CLASSES_ROOT\Applications\Viewer.exe\Shell\OpenViewer]
+[HKEY_CLASSES_ROOT\Applications\Tundra.exe]
+[HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell]
+[HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenViewer]
 @="Open Tundra Viewer in this directory"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\naali_logo_32px_RC1.ico\",0"
-[HKEY_CLASSES_ROOT\Applications\Viewer.exe\Shell\OpenViewer\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\viewer.exe\" --storage \"%1\""
+[HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenViewer\Command]
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --storage \"%1\""
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type]
 @="Tundra Scene File"
@@ -47,10 +47,10 @@ Windows Registry Editor Version 5.00
 @="Open in Tundra Server"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\naali_logo_32px_RC1.ico\",0"
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenServer\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\server.exe\" --file \"%1\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --file \"%1\""
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenViewer]
 @="Open Tundra Viewer in this directory"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\naali_logo_32px_RC1.ico\",0"
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenViewer\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\viewer.exe\" --storage \"%1\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --storage \"%1\""
