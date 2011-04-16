@@ -335,7 +335,10 @@ void TundraLogicModule::LoadStartupScene()
 {
     Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return;
+    {
+        scene = framework_->Scene()->CreateScene("TundraServer", true);
+        framework_->Scene()->SetDefaultScene(scene);
+    }
     
     const boost::program_options::variables_map &options = GetFramework()->ProgramOptions();
     if (options.count("file") == 0)
