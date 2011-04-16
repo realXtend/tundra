@@ -65,9 +65,7 @@
 #include "EC_SoundListener.h"
 #endif
 
-#ifdef EC_InputMapper_ENABLED
 #include "EC_InputMapper.h"
-#endif
 
 #ifdef EC_VideoSource_ENABLED
 #include "EC_VideoSource.h"
@@ -153,9 +151,7 @@ void TundraLogicModule::Load()
     DECLARE_MODULE_EC(EC_Sound);
     DECLARE_MODULE_EC(EC_SoundListener);
 #endif
-#ifdef EC_InputMapper_ENABLED    
     DECLARE_MODULE_EC(EC_InputMapper);
-#endif
 #ifdef EC_Movable_ENABLED
     DECLARE_MODULE_EC(EC_Movable);
 #endif
