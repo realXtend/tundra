@@ -553,7 +553,7 @@ class ObjectEdit(Component):
         
     def createObject(self):
         avatar = naali.getUserAvatar()
-        pos = avatar.placeable.Position
+        pos = avatar.placeable.position
 
         # TODO determine what is right in front of avatar and use that instead
         start_x = pos.x() + .7
@@ -579,7 +579,7 @@ class ObjectEdit(Component):
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         ent = self.active
         if ent is not None:
-            qpos = QVector3D(ent.placeable.Position)
+            qpos = QVector3D(ent.placeable.position)
             if i == 0:
                 qpos.setX(v)
             elif i == 1:
@@ -587,7 +587,7 @@ class ObjectEdit(Component):
             elif i == 2:
                 qpos.setZ(v)
 
-            ent.placeable.Position = qpos
+            ent.placeable.position = qpos
             #ent.network.Position = qpos
             self.manipulator.moveTo(self.sels)
 
@@ -598,7 +598,7 @@ class ObjectEdit(Component):
     def changescale(self, i, v):
         ent = self.active
         if ent is not None:
-            qscale = ent.placeable.Scale
+            qscale = ent.placeable.scale
             #oldscale = list((qscale.x(), qscale.y(), qscale.z()))
             scale = list((qscale.x(), qscale.y(), qscale.z()))
                 
@@ -612,7 +612,7 @@ class ObjectEdit(Component):
 #                        if index != i:
 #                            scale[index] += diff
                 
-                ent.placeable.Scale = QVector3D(scale[0], scale[1], scale[2])
+                ent.placeable.scale = QVector3D(scale[0], scale[1], scale[2])
                 
                 #if not self.dragging:
                 #    r.networkUpdate(ent.Id)
@@ -625,7 +625,7 @@ class ObjectEdit(Component):
         ent = self.active
         if ent is not None and not self.usingManipulator:
             ort = mu.euler_to_quat(v)
-            ent.placeable.Orientation = ort
+            ent.placeable.orientation = ort
             #ent.network.Orientation = ort
             #if not self.dragging:
             #    r.networkUpdate(ent.Id)
@@ -730,7 +730,7 @@ class ObjectEdit(Component):
                 try:
                     #sel_pos = self.selection_box.placeable.Position
                     arr_pos = self.manipulator.getManipulatorPosition()
-                    ent_pos = ent.placeable.Position
+                    ent_pos = ent.placeable.position
                     #if sel_pos != ent_pos:
                     self.time = 0 #XXX NOTE: is this logic correct?
                     #    self.selection_box.placeable.Position = ent_pos
