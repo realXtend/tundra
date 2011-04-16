@@ -8,8 +8,7 @@
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include "EC_Placeable.h"
-#include "EC_OgreCamera.h"
-#include "EC_OgreMovableTextOverlay.h"
+#include "EC_Camera.h"
 #include "RenderWindow.h"
 #include "UiGraphicsView.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
@@ -1268,11 +1267,11 @@ namespace OgreRenderer
                 return;
 
             cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic()));
-            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgreCamera::TypeNameStatic()));
+            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Camera::TypeNameStatic()));
             scene->EmitEntityCreated(cam_entity);
             
             ComponentPtr component_placable = cam_entity->GetComponent(EC_Placeable::TypeNameStatic());
-            EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
+            EC_Camera *ec_camera = cam_entity->GetComponent<EC_Camera>().get();
             if (!component_placable.get() || !ec_camera)
                 return;
             ec_camera->SetPlaceable(component_placable);
@@ -1301,7 +1300,7 @@ namespace OgreRenderer
         captured_pixmap.fill(Qt::gray);
 
         // Get the camera ec
-        EC_OgreCamera *ec_camera = texture_rendering_cam_entity_->GetComponent<EC_OgreCamera>().get();
+        EC_Camera *ec_camera = texture_rendering_cam_entity_->GetComponent<EC_Camera>().get();
         if (!ec_camera)
             return QPixmap::fromImage(captured_pixmap);
 

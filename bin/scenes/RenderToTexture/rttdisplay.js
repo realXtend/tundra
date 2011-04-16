@@ -39,10 +39,10 @@ function createRttTarget(camname) {
     //but here instead am using the pre-existing default cam
     //to make the demo simple, i.e. can just move the cam to see rtt working
 
-    //apparently EC_OgreCamera does not persist, so we have to create them here XXX \todo
+    //apparently EC_Camera does not persist, so we have to create them here XXX \todo
     //.. adding with the GUI editing was fun and worked otherwise
     var cam = scene.GetEntityByNameRaw(camname);
-    var cam_ec = cam.GetOrCreateComponentRaw("EC_OgreCamera");
+    var cam_ec = cam.GetOrCreateComponentRaw("EC_Camera");
     cam_ec.AutoSetPlaceable();
 
     cam.GetOrCreateComponentRaw("EC_RttTarget");

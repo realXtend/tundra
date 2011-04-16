@@ -8,9 +8,9 @@ var last_clicked;
 var zooming = false;
 var global_transform;
 
-if (!me.HasComponent("EC_OgreCamera"))
+if (!me.HasComponent("EC_Camera"))
 {
-    var camera = me.GetOrCreateComponentRaw("EC_OgreCamera");
+    var camera = me.GetOrCreateComponentRaw("EC_Camera");
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
     var placeable = me.GetOrCreateComponentRaw("EC_Placeable");
     var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
@@ -41,7 +41,7 @@ if (!me.HasComponent("EC_OgreCamera"))
 
 function Update(frametime)
 {
-    var camera = me.GetComponent("EC_OgreCamera");
+    var camera = me.GetComponent("EC_Camera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
@@ -62,7 +62,7 @@ function Update(frametime)
 
 function HandleMouseLookX(param)
 {
-    var camera = me.GetComponent("EC_OgreCamera");
+    var camera = me.GetComponent("EC_Camera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
@@ -85,7 +85,7 @@ function HandleMouseLookX(param)
 
 function HandleMouseLookY(param)
 {
-    var camera = me.GetComponent("EC_OgreCamera");
+    var camera = me.GetComponent("EC_Camera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
@@ -141,7 +141,7 @@ function mouseLeftPress(event)
 
 function mouseScroll(event)
 {
-    var camera = me.GetComponent("EC_OgreCamera");
+    var camera = me.GetComponent("EC_Camera");
     if (camera.IsActive() == false)
         return;
 

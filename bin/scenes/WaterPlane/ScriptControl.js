@@ -13,7 +13,7 @@ for( i in entityList)
 }
 
 //Get and Set Camera position
-var cameraId = scene.GetEntityIdsWithComponent("EC_OgreCamera");
+var cameraId = scene.GetEntityIdsWithComponent("EC_Camera");
 var camera = scene.GetEntityRaw(cameraId);
 var transform = camera.placeable.transform;
 

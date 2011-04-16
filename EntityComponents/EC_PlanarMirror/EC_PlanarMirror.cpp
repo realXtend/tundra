@@ -14,7 +14,7 @@
 #include "EC_Placeable.h"
 #include "LoggingFunctions.h"
 #include "FrameAPI.h"
-#include "EC_OgreCamera.h"
+#include "EC_Camera.h"
 #include "EC_RttTarget.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
@@ -85,11 +85,11 @@ void EC_PlanarMirror::Initialize()
     if (!entity)
         return;
 
-    EC_OgreCamera *cam = entity->GetComponent<EC_OgreCamera>().get();
+    EC_Camera *cam = entity->GetComponent<EC_Camera>().get();
     assert(cam);
     if (!cam)
     {
-        LogError("No EC_OgreCamera on this entity. EC_PlanarMirror can't function.");
+        LogError("No EC_Camera on this entity. EC_PlanarMirror can't function.");
         return;
     }
     EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();

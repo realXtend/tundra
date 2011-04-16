@@ -86,7 +86,7 @@
 //#include "../OgreRenderingModule/EC_Mesh.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
-#include "EC_OgreCamera.h"
+#include "EC_Camera.h"
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
@@ -613,8 +613,8 @@ namespace PythonScript
             return 0;
         }
 
-        foreach(Scene::EntityPtr cam, scene->GetEntitiesWithComponent(EC_OgreCamera::TypeNameStatic()))
-            if (cam->GetComponent<EC_OgreCamera>()->IsActive())
+        foreach(Scene::EntityPtr cam, scene->GetEntitiesWithComponent(EC_Camera::TypeNameStatic()))
+            if (cam->GetComponent<EC_Camera>()->IsActive())
             {
                 return cam.get();
             }
@@ -1925,7 +1925,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&UserConnection::staticMetaObject);
 
             //add placeable and friends when PyEntity goes?
-            PythonQt::self()->registerClass(&EC_OgreCamera::staticMetaObject);
+            PythonQt::self()->registerClass(&EC_Camera::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Mesh::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);

@@ -25,7 +25,7 @@
 #include "InputAPI.h"
 #include "RenderServiceInterface.h"
 #include "SceneImporter.h"
-#include "EC_OgreCamera.h"
+#include "EC_Camera.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "UiAPI.h"
@@ -552,13 +552,13 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             if (!scene)
                 return;
 
-            foreach(EntityPtr cam, scene->GetEntitiesWithComponent(EC_OgreCamera::TypeNameStatic()))
-                if (cam->GetComponent<EC_OgreCamera>()->IsActive())
+            foreach(EntityPtr cam, scene->GetEntitiesWithComponent(EC_Camera::TypeNameStatic()))
+                if (cam->GetComponent<EC_Camera>()->IsActive())
                 {
                     EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();
                     if (placeable)
                     {
-                        //Ogre::Ray ray = cam->GetComponent<EC_OgreCamera>()->GetCamera()->getCameraToViewportRay(e->pos().x(), e->pos().y());
+                        //Ogre::Ray ray = cam->GetComponent<EC_Camera>()->GetCamera()->getCameraToViewportRay(e->pos().x(), e->pos().y());
                         Quaternion q = placeable->GetOrientation();
                         Vector3df v = q * -Vector3df::UNIT_Z;
                         //Ogre::Vector3 oV = ray.getPoint(20);

@@ -304,7 +304,7 @@ function createCanvas(event) {
     // Calculationg the correct position for dropped slideshow
     if (!res.entity) {
         // no hit
-        var ids = scene.GetEntityIdsWithComponent('EC_OgreCamera');
+        var ids = scene.GetEntityIdsWithComponent('EC_Camera');
         for (i = 0; i < ids.length; i++) {
         var camentity = scene.GetEntityRaw(ids[i]);
             var placeable = camentity.GetComponent('EC_Placeable');

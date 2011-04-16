@@ -491,7 +491,7 @@ function ClientCreateAvatarCamera() {
     cameraentity.SetName("AvatarCamera");
     cameraentity.SetTemporary(true);
 
-    var camera = cameraentity.GetOrCreateComponentRaw("EC_OgreCamera");
+    var camera = cameraentity.GetOrCreateComponentRaw("EC_Camera");
     var placeable = cameraentity.GetOrCreateComponentRaw("EC_Placeable");
 
     camera.AutoSetPlaceable();

@@ -180,7 +180,7 @@ namespace OgreRenderer
 
         /// Returns active camera
         /** Note: use with care. Never set the position of the camera, but query rather the camera entity from scene,
-            and use the EC_OgreCamera entity component + its placeable
+            and use the EC_Camera entity component + its placeable
          */
         Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
@@ -211,7 +211,7 @@ namespace OgreRenderer
         void Update(f64 frametime);
 
         /// Sets current camera used for rendering the main viewport
-        /** Called by EC_OgreCamera when activating. Null will default to the default camera, so that we don't crash
+        /** Called by EC_Camera when activating. Null will default to the default camera, so that we don't crash
             when rendering.
          */
         void SetCurrentCamera(Ogre::Camera* camera);

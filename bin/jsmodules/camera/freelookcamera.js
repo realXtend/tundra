@@ -7,10 +7,10 @@ var motion_z = 0;
 var motion_y = 0;
 var motion_x = 0;
 
-if (!me.HasComponent("EC_OgreCamera"))
+if (!me.HasComponent("EC_Camera"))
 {
     // Create components & setup default position/lookat for the camera, mimicing RexLogicModule::CreateOpenSimViewerCamera()
-    var camera = me.GetOrCreateComponent("EC_OgreCamera");
+    var camera = me.GetOrCreateComponent("EC_Camera");
     var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
     var placeable = me.GetOrCreateComponent("EC_Placeable");
     var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
@@ -71,7 +71,7 @@ if (!me.HasComponent("EC_OgreCamera"))
 
 function IsCameraActive()
 {
-    var camera = me.GetComponent("EC_OgreCamera");
+    var camera = me.GetComponent("EC_Camera");
     return camera.IsActive();
 }
 

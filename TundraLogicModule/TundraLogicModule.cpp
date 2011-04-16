@@ -96,12 +96,10 @@
 #include "EC_ProximityTrigger.h"
 #endif
 
-#include "EC_OgreCamera.h"
+#include "EC_Camera.h"
 #include "EC_Placeable.h"
-#include "EC_OgreMovableTextOverlay.h"
 #include "EC_AnimationController.h"
 #include "EC_Mesh.h"
-#include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
 
 namespace TundraLogic

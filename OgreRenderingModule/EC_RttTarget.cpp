@@ -5,7 +5,7 @@
 #include "MemoryLeakCheck.h"
 #include "EC_RttTarget.h"
 #include "OgreRenderingModule.h"
-#include "EC_OgreCamera.h"
+#include "EC_Camera.h"
 #include "OgreMaterialUtils.h"
 #include "FrameAPI.h"
 #include "Entity.h"
@@ -52,7 +52,7 @@ void EC_RttTarget::PrepareRtt()
     int y = size_y.Get();
 
     // Get the camera ec
-    EC_OgreCamera *ec_camera = this->GetParentEntity()->GetComponent<EC_OgreCamera>().get();
+    EC_Camera *ec_camera = this->GetParentEntity()->GetComponent<EC_Camera>().get();
     if (!ec_camera)
     {
         LogInfo("No camera for rtt.");
