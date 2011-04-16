@@ -29,12 +29,15 @@ public:
 
 public slots:
     /// Returns the widget that is the main window of Naali.
+    /** @return Main window pointer, or null pointer if we're running in headless mode. */
     UiMainWindow *MainWindow() const;
 
     /// This widget shows all the user-added UI that has been added to the screen. It is contained as a child of UiMainWindow.
+    /** @return Graphics view pointer, or null pointer if we're running in headless mode. */
     UiGraphicsView *GraphicsView() const;
 
     /// Returns the Naali main QGraphicsScene, which hosts all the user-added widgets.
+    /** @return Graphics scene pointer, or null pointer if we're running in headless mode. */
     QGraphicsScene *GraphicsScene() const;
 
     /// Adds (embeds) widget to the main graphics scene.
