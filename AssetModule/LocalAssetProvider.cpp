@@ -198,16 +198,22 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         }
         else // Using a local relative path, like "local://asset.ref" or "asset.ref".
         {
-            QString path = GetPathForAsset(path_filename, &storage);
-            if (path.isEmpty())
+            AssetAPI::AssetRefType urlRefType = AssetAPI::ParseAssetRef(path_filename);
+            if (urlRefType == AssetAPI::AssetRefLocalPath)
+                file = QFileInfo(path_filename); // 'file://C:/path/to/asset/asset.png'.
+            else // The ref is of form 'file://relativePath/asset.png'.
             {
-                QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
-    //            AssetModule::LogWarning(reason.toStdString());
-                framework->Asset()->AssetTransferFailed(transfer.get(), reason);
-                continue;
+                QString path = GetPathForAsset(path_filename, &storage);
+                if (path.isEmpty())
+                {
+                    QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
+        //            AssetModule::LogWarning(reason.toStdString());
+                    framework->Asset()->AssetTransferFailed(transfer.get(), reason);
+                    continue;
+                }
+            
+                file = QFileInfo(GuaranteeTrailingSlash(path) + path_filename);
             }
-        
-            file = QFileInfo(GuaranteeTrailingSlash(path) + path_filename);
         }
         QString absoluteFilename = file.absoluteFilePath();
 
