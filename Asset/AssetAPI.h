@@ -24,7 +24,7 @@ bool CopyAssetFile(const char *sourceFile, const char *destFile);
 bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile);
 
 /// Returns an asset type name of the given asset file name.
-QString GetResourceTypeFromResourceFileName(const char *name);
+QString GetResourceTypeFromResourceFileName(const QString &filename);
 
 /// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
 QString GuaranteeTrailingSlash(const QString &source);

@@ -293,6 +293,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     */
 
     assetRef = assetRef.trimmed();
+    assetRef.replace("\\", "/"); // Normalize all path separators to use forward slashes.
 
     using namespace boost;
     using namespace std;
@@ -367,7 +368,6 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
         *outPath_Filename = fullPathRef;
 
     // Now the only thing that is left is to split the base filename and the path for the asset.
-    fullPathRef.replace("\\", "/"); // Normalize all path separators to use forward slashes.
     int lastPeriodIndex = fullPathRef.lastIndexOf(".");
     int directorySeparatorIndex = fullPathRef.lastIndexOf("/"); 
     if (lastPeriodIndex == -1 || lastPeriodIndex < directorySeparatorIndex)
@@ -387,7 +387,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
 QString AssetAPI::ExtractFilenameFromAssetRef(QString ref)
 {
     QString filename;
-    AssetRefType refType = ParseAssetRef(ref, 0, 0, 0, 0, 0, 0, &filename, 0);
+    ParseAssetRef(ref, 0, 0, 0, 0, 0, 0, &filename, 0);
     return filename;
 }
 
@@ -640,25 +640,18 @@ AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef)
 
 AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
+    // Turn named storage (and default storage) specifiers to absolute specifiers.
+    assetRef = ResolveAssetRef("", assetRef);
     if (assetRef.isEmpty())
         return AssetTransferPtr();
 
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
-        assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
-
-    assetRef = assetRef.trimmed();
-
-    if (assetRef.isEmpty())
     {
-        // Removed this print - seems like a bad idea to print out this warning, since there are lots of scenes with null assetrefs.
-        // Perhaps have a verbose log channel for these kinds of sanity checks.
-//        LogError("AssetAPI::RequestAsset: Request by empty url \"\" of type \"" + assetType.toStdString() + " received!");
-        return AssetTransferPtr();
+        QString assetFilename;
+        ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &assetFilename);
+        assetType = GetResourceTypeFromResourceFileName(assetFilename);
     }
-
-    // Turn named storage (and default storage) specifiers to absolute specifiers.
-    assetRef = ResolveAssetRef("", assetRef);
 
     // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
     // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since
@@ -720,7 +713,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     }
 
     // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the data in from the asset cache and don't go to any asset provider.
-    QString assetFileInCache = assetCache->GetDiskSource(assetRef);
+    QString assetFileInCache = assetCache->FindInCache(assetRef);
     AssetTransferPtr transfer;
 
     if (!assetFileInCache.isEmpty())
@@ -1341,12 +1334,11 @@ namespace
     }
 }
 
-QString GetResourceTypeFromResourceFileName(const char *name)
+QString GetResourceTypeFromResourceFileName(const QString &filename)
 {
     ///\todo This whole function is to be removed, and moved into the asset type providers for separate access. -jj.
 
-    QString file(name);
-    file = file.trimmed().toLower();
+    QString file = filename.trimmed().toLower();
     if (file.endsWith(".qml") || file.endsWith(".qmlzip"))
         return "QML";
     if (file.endsWith(".mesh"))
