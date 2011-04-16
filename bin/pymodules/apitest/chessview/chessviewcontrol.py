@@ -107,12 +107,12 @@ class ChessViewControl(circuits.BaseComponent):
     def addpiece(self, x, y, piece, mesh, scale, rot):
         ent = naali.createMeshEntity(mesh)
         p = ent.placeable
-        p.Position = worldpos(x, y)
-        p.Scale = scale
+        p.position = worldpos(x, y)
+        p.scale = scale
         if rot is not None:
-            ort = p.Orientation #is a copy(?) so much get and assign the new one
+            ort = p.orientation #is a copy(?) so much get and assign the new one
             ort *= rot
-            p.Orientation = rot
+            p.orientation = rot
 
         self.pos2piece[(x, y)] = ent
 
@@ -124,7 +124,7 @@ class ChessViewControl(circuits.BaseComponent):
         piece = self.pos2piece.pop((fx, fy))
         
         tx, ty = index2pos(tcord)
-        piece.placeable.Position = worldpos(tx, ty)
+        piece.placeable.position = worldpos(tx, ty)
         self.pos2piece[(tx, ty)] = piece
 
     def remove(self, removedata):
