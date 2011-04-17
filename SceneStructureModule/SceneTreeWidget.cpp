@@ -20,7 +20,6 @@
 #include "ComponentManager.h"
 #include "ModuleManager.h"
 #include "TundraEvents.h"
-#include "EventManager.h"
 #include "ConfigAPI.h"
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"

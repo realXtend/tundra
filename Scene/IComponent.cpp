@@ -14,7 +14,6 @@
 #include "Framework.h"
 #include "Entity.h"
 #include "SceneManager.h"
-#include "EventManager.h"
 
 #include <QDomDocument>
 
@@ -42,9 +41,6 @@ IComponent::IComponent(const IComponent &rhs) :
 
 IComponent::~IComponent()
 {
-    // Removes itself from EventManager
-    if (framework_)
-        framework_->GetEventManager()->UnregisterEventSubscriber(this);
 }
 
 void IComponent::SetName(const QString& name)

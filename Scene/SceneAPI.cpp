@@ -6,8 +6,6 @@
 #include "SceneAPI.h"
 #include "SceneManager.h"
 
-#include "EventManager.h"
-
 #include "MemoryLeakCheck.h"
 
 SceneAPI::SceneAPI(Foundation::Framework *framework) :

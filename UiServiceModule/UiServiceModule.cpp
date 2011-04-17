@@ -52,12 +52,6 @@ void UiServiceModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-// virtual
-bool UiServiceModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-{
-    return false;
-}
-
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);

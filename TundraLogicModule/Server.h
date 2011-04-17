@@ -62,10 +62,7 @@ public:
     
     /// Get all authenticated users
     UserConnectionList GetAuthenticatedUsers() const;
-    
-    /// Handle Kristalli event
-    void HandleKristalliEvent(event_id_t event_id, IEventData* data);
-    
+        
     /// Set current action sender. Called by SyncManager
     void SetActionSender(UserConnection* user);
     
@@ -124,12 +121,7 @@ private:
     
     /// Handle a login message
     void HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg);
-    
-    /// Kristalli event category
-    event_category_id_t kristalliEventCategory_;
-    /// Tundra event category
-    event_category_id_t tundraEventCategory_;
-    
+        
     /// Current action sender
     UserConnection* actionsender_;
     

@@ -36,7 +36,6 @@
 #include "PythonScriptInstance.h"
 
 #include "ModuleManager.h"
-#include "EventManager.h"
 #include "ServiceManager.h"
 #include "ConsoleCommandUtils.h"
 #include "InputAPI.h"
@@ -145,9 +144,6 @@ namespace PythonScript
     {
         pythonqt_inited = false;
         inboundCategoryID_ = 0;
-        inputeventcategoryid = 0;
-        networkstate_category_id = 0;
-        framework_category_id = 0;
     }
 
     PythonScriptModule::~PythonScriptModule()
@@ -281,7 +277,7 @@ namespace PythonScript
 
         ProcessCommandLineOptions();
     }
-
+#if 0
     bool PythonScriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {    
         PyObject* value = NULL;
@@ -485,7 +481,7 @@ namespace PythonScript
         }
         return false;
     }
-
+#endif
     ConsoleCommandResult PythonScriptModule::ConsoleRunString(const StringVector &params)
     {
         if (params.size() != 1)

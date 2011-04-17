@@ -38,9 +38,6 @@ std::string OgreAssetEditorModule::typeNameStatic = "OgreAssetEditor";
 
 OgreAssetEditorModule::OgreAssetEditorModule() :
     IModule(typeNameStatic),
-    frameworkEventCategory(0),
-    inventoryEventCategory(0),
-    networkStateEventCategory(0),
     materialWizard(0),
     editorManager(0)
 {
@@ -84,11 +81,6 @@ void OgreAssetEditorModule::Uninitialize()
 void OgreAssetEditorModule::Update(f64 frametime)
 {
     RESETPROFILER;
-}
-
-bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-{
-    return false;
 }
 
 bool OgreAssetEditorModule::IsSupportedAssetTypes(const QString &type) const

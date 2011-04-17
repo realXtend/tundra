@@ -66,9 +66,6 @@ public:
     /// This function may return null in the case the connection is not active.
     kNet::MessageConnection* GetConnection();
     
-    /// Handle Kristalli event
-    void HandleKristalliEvent(event_id_t event_id, IEventData* data);
-
 signals:
     /// This signal is emitted right before this client is starting to connect to a Tundra server.
     /** Any script or other piece of code can listen to this signal, and as at this point, fill in any internal
@@ -155,11 +152,6 @@ private:
     bool reconnect_;
     /// User ID, once known
     u8 client_id_;
-
-    /// Kristalli event category
-    event_category_id_t kristalliEventCategory_;
-    /// Tundra event category
-    event_category_id_t tundraEventCategory_;
     
     /// Owning module
     TundraLogicModule* owner_;

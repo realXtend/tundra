@@ -89,16 +89,6 @@ public:
     */
     virtual void Update(f64 frametime) {}
 
-    /// Receives an event.
-    /** Should return true if the event was handled and is not to be propagated further
-        Override in your own module if you want to receive events. Do not call.
-        See @ref EventSystem.
-        @param category_id Category id of the event
-        @param event_id Id of the event
-        @param data Event data, or 0 if no data passed.
-    */
-    virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data) { return false; }
-
     /// Declare a component the module defines. For internal use.
     void DeclareComponent(const ComponentRegistrarPtr &registrar) { component_registrars_.push_back(registrar); }
 

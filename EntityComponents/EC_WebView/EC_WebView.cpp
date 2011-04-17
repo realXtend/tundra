@@ -9,7 +9,6 @@
 #include "SceneInteract.h"
 #include "Entity.h"
 
-#include "EventManager.h"
 #include "UserConnection.h"
 
 #include "RenderServiceInterface.h"

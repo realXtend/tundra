@@ -41,7 +41,6 @@ public:
     void PostInitialize();
     void Uninitialize();
     void Update(f64 frametime);
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return type_name_static_; }
@@ -102,14 +101,7 @@ private:
     boost::shared_ptr<Client> client_;
     /// Server
     boost::shared_ptr<Server> server_;
-    
-    /// Kristalli event category
-    event_category_id_t kristalliEventCategory_;
-    /// Tundra event category
-    event_category_id_t tundraEventCategory_;
-    /// Framework event category
-    event_category_id_t frameworkEventCategory_;
-    
+        
     /// KristalliProtocolModule pointer
     boost::shared_ptr<KristalliProtocol::KristalliProtocolModule> kristalliModule_;
     

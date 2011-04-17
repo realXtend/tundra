@@ -19,7 +19,6 @@
 
 #include "SceneManager.h"
 #include "ConsoleCommandUtils.h"
-#include "EventManager.h"
 #include "ModuleManager.h"
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
@@ -190,7 +189,8 @@ void TundraLogicModule::Load()
 
 void TundraLogicModule::Initialize()
 {
-    tundraEventCategory_ = framework_->GetEventManager()->RegisterEventCategory("Tundra");
+///\todo EventManager regression. -jj.
+//    tundraEventCategory_ = framework_->GetEventManager()->RegisterEventCategory("Tundra");
     
     syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this));
     client_ = boost::shared_ptr<Client>(new Client(this));
@@ -202,7 +202,8 @@ void TundraLogicModule::Initialize()
 
 void TundraLogicModule::PostInitialize()
 {
-    kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
+///\todo EventManager regression. -jj.
+//    kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
     
     framework_->Console()->RegisterCommand(CreateConsoleCommand("startserver", 
         "Starts a server. Usage: startserver(port)",
@@ -577,6 +578,8 @@ bool TundraLogicModule::IsServer() const
 }
 
 // virtual
+///\todo EventManager regression. -jj.
+/*
 bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     if (category_id == tundraEventCategory_)
@@ -599,9 +602,9 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
         if (syncManager_)
             syncManager_->HandleKristalliEvent(event_id, data);
     }
-    
     return false;
 }
+*/    
 
 }
 

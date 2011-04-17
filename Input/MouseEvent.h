@@ -4,7 +4,6 @@
 #define incl_Input_MouseEvent_h
 
 #include "CoreTypes.h"
-#include "IEventData.h"
 
 #include <qnamespace.h>
 #include <QPoint>
@@ -13,20 +12,8 @@
 
 class QGraphicsItem;
 
-namespace QtInputEvents
-{
-    // These are the mouse-related input events provided by the Input API.
-    // For input events on keyboard, see \see KeyEvent.h.
-    static const event_id_t MousePressed = 3;
-    static const event_id_t MouseReleased = 4;
-    static const event_id_t MouseClicked = 5;
-    static const event_id_t MouseDoubleClicked = 6;
-    static const event_id_t MouseMove = 7;
-    static const event_id_t MouseScroll = 8;
-}
-
 /// MouseEvent is the event data structure passed as the parameter in all Naali mouse-related events.
-class MouseEvent : public QObject, public IEventData
+class MouseEvent : public QObject
 {
     Q_OBJECT
     Q_ENUMS(MouseButton)

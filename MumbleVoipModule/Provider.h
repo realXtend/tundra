@@ -15,7 +15,6 @@ namespace TundraLogic
 }
 
 class UiProxyWidget;
-class IEventData;
 class QSignalMapper;
 class EC_VoiceChannel;
 
@@ -69,8 +68,6 @@ namespace MumbleVoip
         Foundation::Framework* framework_;
         QString description_;
         MumbleVoip::Session* session_;  /// \todo Use shared ptr ...
-        event_category_id_t networkstate_event_category_;
-        event_category_id_t framework_event_category_;
         Settings* settings_;
         QWidget* microphone_adjustment_widget_;
         QList<EC_VoiceChannel*> ec_voice_channels_;

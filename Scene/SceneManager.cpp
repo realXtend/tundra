@@ -13,7 +13,6 @@
 
 #include "Framework.h"
 #include "ComponentManager.h"
-#include "EventManager.h"
 #include "AssetAPI.h"
 #include "Profiler.h"
 #include "LoggingFunctions.h"

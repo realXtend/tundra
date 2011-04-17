@@ -58,10 +58,7 @@ public:
     
     /// Create new replication state for user and dirty it (server operation only)
     void NewUserConnected(UserConnection* user);
-    
-    /// Handle Kristalli event
-    void HandleKristalliEvent(event_id_t event_id, IEventData* data);
-    
+        
 public slots:
     /// Set update period (seconds)
     void SetUpdatePeriod(float period);

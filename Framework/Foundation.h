@@ -19,13 +19,6 @@
       don't need to worry about it, it does most of the worrying for you!
     For creating new modules, see \ref ModuleArchitecture "Module architecture".
 
-    - EventManager helps you to communicate between modules using events.
-    See \ref EventSystem "Event system".
-
-    - ServiceManager helps you to communicate between modules when simple events
-      do not suffice.
-    For using services, see \ref ModuleServices "Services".
-
     - ComponentManager handles extending scene objects with new functionality.
       When you create a new component for an entity, ComponentManager makes sure
       the component is usable by any module in the viewer, including the ones

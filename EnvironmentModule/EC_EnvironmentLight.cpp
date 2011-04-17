@@ -10,7 +10,6 @@
 #include "IAttribute.h"
 #include "Renderer.h"
 #include "SceneManager.h"
-#include "EventManager.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 

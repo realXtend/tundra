@@ -74,9 +74,6 @@ void ScenePersistenceModule::PostInitialize()
         "Invokes action execution in entity",
         Console::Bind(this, &ScenePersistenceModule::Exec)));
 
-    frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-
-
 //#ifdef Q_WS_WIN
 // 
 //    PDH::PerformanceMonitor monitor;

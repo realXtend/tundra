@@ -54,7 +54,6 @@ public:
     void PostInitialize();
     void Uninitialize();
     void Update(f64 frametime);
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return typeNameStatic; }
@@ -76,9 +75,6 @@ private:
     Q_DISABLE_COPY(OgreAssetEditorModule);
 
     static std::string typeNameStatic; ///< Type name of this module.
-    event_category_id_t frameworkEventCategory; ///< Framework event category.
-    event_category_id_t inventoryEventCategory; ///< Inventory event category.
-    event_category_id_t networkStateEventCategory; ///< NetworkState event category.
     EditorManager *editorManager; ///< Editor manager.
     MaterialWizard *materialWizard; ///< Material wizard.
 

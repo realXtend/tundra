@@ -14,7 +14,6 @@
 #include "IAssetProvider.h"
 #include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
-#include "EventManager.h"
 #include "CoreException.h"
 #include "IAssetTypeFactory.h"
 #include "IAssetUploadTransfer.h"

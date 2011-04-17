@@ -9,7 +9,6 @@
 #include "MicrophoneAdjustmentWidget.h"
 #include "EC_VoiceChannel.h"
 
-#include "EventManager.h"
 #include "UiProxyWidget.h"
 #include "SceneManager.h"
 #include "TundraLogicModule.h"

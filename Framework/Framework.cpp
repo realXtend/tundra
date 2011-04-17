@@ -5,7 +5,6 @@
 
 #include "Framework.h"
 #include "Foundation.h"
-#include "EventManager.h"
 #include "ModuleManager.h"
 #include "ComponentManager.h"
 #include "ServiceManager.h"
@@ -85,7 +84,6 @@ namespace Foundation
             module_manager_ = ModuleManagerPtr(new ModuleManager(this));
             component_manager_ = ComponentManagerPtr(new ComponentManager(this));
             service_manager_ = ServiceManagerPtr(new ServiceManager());
-            event_manager_ = EventManagerPtr(new EventManager(this));
 
             // Create AssetAPI.
             asset = new AssetAPI(headless_);
@@ -118,7 +116,6 @@ namespace Foundation
 
     Framework::~Framework()
     {
-        event_manager_.reset();
         service_manager_.reset();
         component_manager_.reset();
         module_manager_.reset();
@@ -204,12 +201,6 @@ namespace Foundation
             {
                 PROFILE(FW_UpdateModules);
                 module_manager_->UpdateModules(frametime);
-            }
-
-            // process delayed events
-            {
-                PROFILE(FW_ProcessDelayedEvents);
-                event_manager_->ProcessDelayedEvents(frametime);
             }
 
             // Process the asset API updates.
@@ -317,7 +308,6 @@ namespace Foundation
 
     void Framework::UnloadModules()
     {
-        event_manager_->ClearDelayedEvents();
         module_manager_->UninitializeModules();
         ///\todo Horrible uninit call here now due to console refactoring
         console->Uninitialize();
@@ -340,21 +330,6 @@ namespace Foundation
         }
 
         return ConsoleResultSuccess();
-    }
-
-    ConsoleCommandResult Framework::ConsoleSendEvent(const StringVector &params)
-    {
-        if (params.size() != 2)
-            return ConsoleResultInvalidParameters();
-        
-        event_category_id_t event_category = event_manager_->QueryEventCategory(params[0], false);
-        if (event_category == IllegalEventCategory)
-            return ConsoleResultFailure("Event category not found.");
-        else
-        {
-            event_manager_->SendEvent(event_category, ParseString<event_id_t>(params[1]), 0);
-            return ConsoleResultSuccess();
-        }
     }
 */
     static std::string FormatTime(double time)
@@ -460,10 +435,6 @@ namespace Foundation
             "Lists all loaded modules.", 
             ConsoleBind(this, &Framework::ConsoleListModules)));
 
-        console->RegisterCommand(CreateConsoleCommand("SendEvent",
-            "Sends an internal event. Only for events that contain no data. Usage: SendEvent(event category name, event id)",
-            ConsoleBind(this, &Framework::ConsoleSendEvent)));
-
 #ifdef PROFILING
         console->RegisterCommand(CreateConsoleCommand("Profile", 
             "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block",
@@ -491,11 +462,6 @@ namespace Foundation
     ServiceManagerPtr Framework::GetServiceManager() const
     {
         return service_manager_;
-    }
-
-    EventManagerPtr Framework::GetEventManager() const
-    {
-        return event_manager_;
     }
 
     FrameAPI *Framework::Frame() const

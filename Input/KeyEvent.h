@@ -4,20 +4,13 @@
 #define incl_Input_KeyEvent_h
 
 #include "CoreTypes.h"
-#include "IEventData.h"
 
 #include <QObject>
 #include <QString>
 #include <QKeySequence>
 
-namespace QtInputEvents
-{
-    static const event_id_t KeyPressed = 1;
-    static const event_id_t KeyReleased = 2;
-}
-
 /// KeyEvent is the event data structure passed as the parameter in all Naali in-scene KeyPressed and KeyReleased events.
-class KeyEvent : public QObject, public IEventData
+class KeyEvent : public QObject
 {
     Q_OBJECT
     Q_ENUMS(EventType)

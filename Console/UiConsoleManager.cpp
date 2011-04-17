@@ -11,7 +11,6 @@
 
 #include "UiAPI.h"
 #include "UiProxyWidget.h"
-#include "EventManager.h"
 #include "Framework.h"
 
 #include <QGraphicsView>

@@ -296,9 +296,6 @@ namespace OgreRenderer
         /// Ogre renderable listener
         RenderableListenerPtr renderable_listener_;
 
-        /// Renderer event category
-        event_category_id_t renderercategory_id_;
-
         /// Counter for unique name creation
         uint object_id_;
 

@@ -14,7 +14,6 @@
 
 #include "Framework.h"
 #include "UiAPI.h"
-#include "EventManager.h"
 #include "ModuleManager.h"
 #include "ConsoleCommandUtils.h"
 
@@ -153,13 +152,6 @@ void DebugStatsModule::Update(f64 frametime)
     }
 
 #endif
-}
-
-bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
-{
-    PROFILE(DebugStatsModule_HandleEvent);
-
-    return false;
 }
 
 ConsoleCommandResult DebugStatsModule::Exec(const StringVector &params)

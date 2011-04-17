@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "IEventData.h"
-
 namespace kNet
 {
 class MessageConnection;
@@ -16,19 +14,19 @@ namespace KristalliProtocol
 namespace Events
 {
     // This event is posted whenever a new inbound network message is received from a Kristalli peer. KristalliNetMessageIn structure.
-    static const event_id_t NETMESSAGE_IN = 1;
+    static const int NETMESSAGE_IN = 1;
 
     // This event is posted for a new user connection to a server. KristalliUserConnected structure.
-    static const event_id_t USER_CONNECTED = 2;
+    static const int USER_CONNECTED = 2;
     
     // This event is posted for a new user connection to a server. KristalliUserDisconnected structure.
-    static const event_id_t USER_DISCONNECTED = 3;
+    static const int USER_DISCONNECTED = 3;
     
     // This event is posted when a connection attempt has failed so many times that we stop trying. No eventdata.
-    static const event_id_t CONNECTION_FAILED = 4;
+    static const int CONNECTION_FAILED = 4;
     
     // The message received from a Kristalli server is wrapped in this Naali event structure.
-    class KristalliNetMessageIn : public IEventData
+    class KristalliNetMessageIn
     {
     public:
         KristalliNetMessageIn(kNet::MessageConnection *source_, kNet::message_id_t id_, const char *data_, size_t numBytes_)
@@ -43,7 +41,7 @@ namespace Events
     };
     
     // Event structure for user connected
-    class KristalliUserConnected : public IEventData
+    class KristalliUserConnected
     {
     public:
         KristalliUserConnected(UserConnection *connection_) :
@@ -55,7 +53,7 @@ namespace Events
     };
     
     // Event structure for user connected
-    class KristalliUserDisconnected : public IEventData
+    class KristalliUserDisconnected
     {
     public:
         KristalliUserDisconnected(UserConnection *connection_) :

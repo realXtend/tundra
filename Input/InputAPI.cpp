@@ -5,7 +5,6 @@
 
 #include "ServiceManager.h"
 #include "Framework.h"
-//#include "EventManager.h"
 #include "RenderServiceInterface.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
@@ -38,7 +37,6 @@ gesturesEnabled(false),
 mouseFPSModeEnterX(0),
 mouseFPSModeEnterY(0),
 topLevelInputContext("TopLevel", 100000), // The priority value for the top level context does not really matter, just put an arbitrary big value for display.
-inputCategory(0),
 heldMouseButtons(0),
 pressedMouseButtons(0),
 releasedMouseButtons(0),
@@ -50,31 +48,8 @@ mainWindow(0),
 framework(framework_)
 {
     assert(framework_);
-//    eventManager = framework_->GetEventManager();
-//    assert(eventManager);
 
-    // We still need to register this for legacy reasons, but shouldn't have to.
-    // The 'Input' category should be removed and replaced with 'RexInput' or something
-    // similar that is world logic -centric.
-//    inputCategory = eventManager->RegisterEventCategory("Input");
-
-//    inputCategory = eventManager->RegisterEventCategory("SceneInput");
-/*
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::KeyPressed, "KeyPressed");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::KeyReleased, "KeyReleased");
-
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::MousePressed, "MousePressed");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseReleased, "MouseReleased");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseClicked, "MouseClicked");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseDoubleClicked, "MouseDoubleClicked");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseMove, "MouseMove");
-
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureStarted, "GestureStarted");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureUpdated, "GestureUpdated");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureFinished, "GestureFinished");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureCanceled, "GestureCanceled");
-*/
-    // Next, set up the global widget event filters that we will use to read our scene input from.
+    // Set up the global widget event filters that we will use to read our scene input from.
     // Note: Since we set up this object as an event filter to multiple widgets, we will receive
     //       the same events several times, so care has to be taken to ignore those duplicate events.
     // Qt oddities: 
@@ -282,8 +257,6 @@ void InputAPI::SceneReleaseMouseButtons()
             mouseEvent.globalY = 0;
 
             mouseEvent.otherButtons = 0;
-
-//            eventManager->SendEvent(inputCategory, QtInputEvents::MouseReleased, &mouseEvent);
         }
 }
 
@@ -336,8 +309,6 @@ void InputAPI::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt:
         KeyEvent keyEvent;
         keyEvent.keyCode = keyCode;
         keyEvent.eventType = KeyEvent::KeyReleased;
-
-//        eventManager->SendEvent(inputCategory, QtInputEvents::KeyReleased, &keyEvent);
     }
 }
 
@@ -366,24 +337,6 @@ void InputAPI::TriggerKeyEvent(KeyEvent &key)
 
     if (qtWidgetHasKeyboardFocus)
         return;
-/*
-    // Finally, pass the key event to the system event tree.
-    ///\todo Track which presses and releases have been passed to the event tree, and filter redundant releases.
-    switch(key.eventType)
-    {
-    case KeyEvent::KeyPressed: 
-        eventManager->SendEvent(inputCategory, QtInputEvents::KeyPressed, &key); 
-        break;
-    case KeyEvent::KeyReleased: 
-        eventManager->SendEvent(inputCategory, QtInputEvents::KeyReleased, &key); 
-        break;
-// KeyDown events are not sent through the event tree. You should favor an input context for this.
-//        case KeyEvent::KeyDown: eventManager->SendEvent(inputCategory, QtInputEvents::KeyDown, &keyEvent); break;
-    default:
-        assert(false);
-        break;
-    }
-*/
 }
 
 void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
@@ -412,33 +365,6 @@ void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
         if (context.get() && (!mouse.itemUnderMouse || context->TakesMouseEventsOverQt()))
             context->TriggerMouseEvent(mouse);
     }
-/*
-    if (!mouse.handled)
-    {
-        switch(mouse.eventType)
-        {
-        case MouseEvent::MousePressed:
-            eventManager->SendEvent(inputCategory, QtInputEvents::MousePressed, &mouse);
-            break;
-        case MouseEvent::MouseReleased:
-            eventManager->SendEvent(inputCategory, QtInputEvents::MouseReleased, &mouse);
-            break;
-        case MouseEvent::MouseMove:
-            eventManager->SendEvent(inputCategory, QtInputEvents::MouseMove, &mouse);
-            break;
-        case MouseEvent::MouseScroll:
-            eventManager->SendEvent(inputCategory, QtInputEvents::MouseScroll, &mouse);
-            break;
-        case MouseEvent::MouseDoubleClicked:
-            eventManager->SendEvent(inputCategory, QtInputEvents::MouseDoubleClicked, &mouse);
-            doubleClickDetected = false;
-            break;
-        default:
-            assert(false);
-            break;
-        }
-    }
-*/
 }
 
 void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
@@ -459,28 +385,6 @@ void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
         if (context.get())
             context->TriggerGestureEvent(gesture);
     }
-/*
-    if (!gesture.handled)
-    {
-        switch(gesture.eventType)
-        {
-        case GestureEvent::GestureStarted:
-            eventManager->SendEvent(inputCategory, QtInputEvents::GestureStarted, &gesture);
-            break;
-        case GestureEvent::GestureUpdated:
-            eventManager->SendEvent(inputCategory, QtInputEvents::GestureUpdated, &gesture);
-            break;
-        case GestureEvent::GestureFinished:
-            eventManager->SendEvent(inputCategory, QtInputEvents::GestureFinished, &gesture);
-            break;
-        case GestureEvent::GestureCanceled:
-            eventManager->SendEvent(inputCategory, QtInputEvents::GestureCanceled, &gesture);
-            break;
-        default:
-            break;
-        }
-    }
-*/
 }
 
 /// Associates the given custom action with the given key.

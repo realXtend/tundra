@@ -5,7 +5,6 @@
 
 #include "Client.h"
 #include "TundraLogicModule.h"
-#include "EventManager.h"
 #include "ModuleManager.h"
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
@@ -39,8 +38,6 @@ Client::Client(TundraLogicModule* owner) :
     reconnect_(false),
     client_id_(0)
 {
-    tundraEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
-    kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
 }
 
 Client::~Client()
@@ -142,14 +139,18 @@ void Client::Logout(bool fail)
         loginstate_ = NotConnected;
         client_id_ = 0;
         
-        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
+///\todo EventManager regression. -jj.
+//        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
         framework_->Scene()->RemoveScene("TundraClient");
         
         emit Disconnected();
     }
     
     if (fail)
-        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_LOGIN_FAILED, 0);
+    {
+///\todo EventManager regression. -jj.
+//        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_LOGIN_FAILED, 0);
+    }
     else // An user deliberately disconnected from the world, and not due to a connection error.
     {
         // Clear all the login properties we used for this session, so that the next login session will start from an
@@ -228,6 +229,8 @@ kNet::MessageConnection* Client::GetConnection()
     return owner_->GetKristalliModule()->GetMessageConnection();
 }
 
+///\todo EventManager regression. -jj.
+/*
 void Client::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 {
     if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
@@ -243,7 +246,7 @@ void Client::HandleKristalliEvent(event_id_t event_id, IEventData* data)
         Logout(true);
     }
 }
-
+*/
 void Client::HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes)
 {
     if (source != GetConnection())
@@ -296,7 +299,8 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             
             Events::TundraConnectedEventData event_data;
             event_data.user_id_ = msg.userID;
-            framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
+///\todo EventManager regression. -jj.
+//            framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
             
             emit Connected();
         }

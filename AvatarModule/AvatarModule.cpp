@@ -4,7 +4,6 @@
 #include "AvatarModule.h"
 #include "AvatarEditing/AvatarEditor.h"
 #include "ConsoleCommandUtils.h"
-#include "EventManager.h"
 #include "InputAPI.h"
 #include "SceneManager.h"
 #include "SceneAPI.h"
@@ -65,11 +64,6 @@ namespace Avatar
 
     void AvatarModule::Update(f64 frametime)
     {
-    }
-
-    bool AvatarModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-    {
-        return false;
     }
 
     void AvatarModule::KeyPressed(KeyEvent *key)

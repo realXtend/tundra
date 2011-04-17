@@ -5,7 +5,6 @@
 
 #include "Server.h"
 #include "TundraLogicModule.h"
-#include "EventManager.h"
 #include "ModuleManager.h"
 #include "SyncManager.h"
 #include "KristalliProtocolModule.h"
@@ -69,8 +68,6 @@ Server::Server(TundraLogicModule* owner) :
     current_port_(-1),
     current_protocol_("")
 {
-    tundraEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
-    kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
 }
 
 Server::~Server()
@@ -139,7 +136,8 @@ bool Server::Start(unsigned short port)
         /// \todo Hack - find better way and remove! Allow environment also on server by sending a fake connect event
         Events::TundraConnectedEventData event_data;
         event_data.user_id_ = 0;
-        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
+///\todo EventManager regression. -jj.
+//        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
         
         emit ServerStarted();
     }
@@ -237,7 +235,8 @@ UserConnection* Server::GetActionSender() const
 {
     return actionsender_;
 }
-
+///\todo EventManager regression. -jj.
+/*
 void Server::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 {
     if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
@@ -256,7 +255,7 @@ void Server::HandleKristalliEvent(event_id_t event_id, IEventData* data)
             HandleUserDisconnected(user);
     }
 }
-
+*/
 void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
     if (!owner_->IsServer())

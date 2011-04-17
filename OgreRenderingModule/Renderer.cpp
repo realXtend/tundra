@@ -15,7 +15,6 @@
 #include "CompositionHandler.h"
 #include "OgreDefaultHardwareBufferManager.h"
 #include "SceneManager.h"
-#include "EventManager.h"
 #include "CoreException.h"
 #include "Entity.h"
 #include "SceneAPI.h"

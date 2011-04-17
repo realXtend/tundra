@@ -8,7 +8,6 @@
 #include "HttpAssetProvider.h"
 #include "Framework.h"
 #include "Profiler.h"
-#include "EventManager.h"
 #include "ServiceManager.h"
 #include "CoreException.h"
 #include "AssetAPI.h"

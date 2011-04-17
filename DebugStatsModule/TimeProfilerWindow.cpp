@@ -15,7 +15,6 @@
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
-#include "EventManager.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "SceneAPI.h"
@@ -213,8 +212,6 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
 
     QObject::connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
     QObject::connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
-
-    boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
 
     // Add a context menu to Textures, Meshes and Materials widgets.
     if (tree_texture_assets_)

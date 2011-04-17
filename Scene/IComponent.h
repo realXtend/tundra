@@ -11,7 +11,6 @@
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "IAttribute.h"
-#include "IEventData.h"
 
 #include <boost/enable_shared_from_this.hpp>
 
@@ -135,16 +134,6 @@ public:
         it depends on the situation if they are needed or not
      */
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
-
-    /// Handles an event. Override in your own module if you want to receive events. Do not call.
-    /** @param category_id Category id of the event
-        @param event_id Id of the event
-        @param data Event data, or 0 if no data passed.
-        @return True if the event was handled and is not to be propagated further.
-        For more information, see @ref EventSystem.
-        @note This member is deprecated and will be removed in the future.
-    */
-    virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data) { return false; }
 
     /// Returns an Attribute of this component with the given @c name.
     /** This function iterates through the attribute vector and tries to find a member attribute with the given name.

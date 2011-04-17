@@ -12,11 +12,8 @@
 #include "Framework.h"
 #include "IModule.h"
 #include "ServiceManager.h"
-#include "EventManager.h"
 #include "ModuleManager.h"
 #include "LoggingFunctions.h"
-
-static const int DEFAULT_EVENT_PRIORITY = 100;
 
 using namespace Foundation;
 
@@ -43,9 +40,6 @@ void IModule::InitializeInternal()
     for(size_t n = 0; n < component_registrars_.size(); ++n)
         component_registrars_[n]->Register(framework_, this);
 
-    // Register to event system with default priority
-    framework_->GetEventManager()->RegisterEventSubscriber(this, DEFAULT_EVENT_PRIORITY);
-
     Initialize();
 }
 
@@ -61,9 +55,6 @@ void IModule::UninitializeInternal()
 
     for(size_t n=0 ; n<component_registrars_.size() ; ++n)
         component_registrars_[n]->Unregister(framework_);
-
-    // Unregister from event system
-    framework_->GetEventManager()->UnregisterEventSubscriber(this);
 
     Uninitialize();
 

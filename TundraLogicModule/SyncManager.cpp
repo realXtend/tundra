@@ -104,6 +104,8 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
         SLOT( OnActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)));
 }
 
+///\todo EventManager regression. -jj.
+/*
 void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 {
     if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
@@ -112,7 +114,7 @@ void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
         HandleKristalliMessage(eventData->source, eventData->id, eventData->data, eventData->numBytes);
     }
 }
-
+*/
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
     switch (id)

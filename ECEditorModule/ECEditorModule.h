@@ -41,7 +41,6 @@ public:
     void PostInitialize();
     void Uninitialize();
     void Update(f64 frametime);
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     /// Show EC editor window.
     //ConsoleCommandResult ShowWindow(const StringVector &params);

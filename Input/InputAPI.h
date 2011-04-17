@@ -225,8 +225,6 @@ private:
     int mouseFPSModeEnterX;
     int mouseFPSModeEnterY;
 
-    event_category_id_t inputCategory;
-
     /// Stores all the currently registered input contexts. The order these items are stored in the list corresponds to the
     /// priority at which each context will get the events.
     InputContextList registeredInputContexts;
@@ -272,7 +270,6 @@ private:
     unsigned long newMouseButtonsPressedQueue;
     unsigned long newMouseButtonsReleasedQueue;
 
-    EventManagerPtr eventManager;
     QGraphicsView *mainView;
     QWidget *mainWindow;
     Foundation::Framework *framework;

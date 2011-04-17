@@ -12,8 +12,6 @@
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "SceneManager.h"
-//#include "MediaPlayerService.h"
-#include "EventManager.h"
 #include "SceneManager.h"
 
 #include <QUrl>
@@ -69,14 +67,6 @@ EC_VideoSource::EC_VideoSource(IModule *module):
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
-    // Register as a event listener
-    EventManager *event_manager = framework_->GetEventManager().get();
-    if (event_manager)
-    {
-        event_manager->RegisterEventSubscriber(this, 99);
-        asset_event_category_ = event_manager->QueryEventCategory("Asset");
-    }
-
     playbackState.Set(PS_Stop, AttributeChange::LocalOnly);
 }
 
@@ -94,11 +84,11 @@ EC_VideoSource::~EC_VideoSource()
         player_->deleteLater();
     }
 }
-
+/*
 bool EC_VideoSource::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     ///\todo Regression. Reimplement using the new Asset API. -jj.
-/*
+
     if (!expecting_resources_)
         return false;
 
@@ -129,10 +119,10 @@ bool EC_VideoSource::HandleEvent(event_category_id_t category_id, event_id_t eve
             }
         }
     }
-*/
+
     return false;    
 }
-
+*/
 /*
     ///\todo Regression. Reimplement using the new Asset API. -jj.
 void EC_VideoSource::LoadVideo(Foundation::AssetInterfacePtr asset)

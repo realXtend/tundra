@@ -17,7 +17,6 @@
 #include "EC_SelectionBox.h"
 #include "Entity.h"
 #include "RendererSettings.h"
-#include "EventManager.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "OgreMeshAsset.h"
@@ -110,23 +109,12 @@ namespace OgreRenderer
 
     void OgreRenderingModule::PostInitialize()
     {
-        EventManagerPtr event_manager = framework_->GetEventManager();
-
         renderer_->PostInitialize();
 
         framework_->Console()->RegisterCommand(CreateConsoleCommand(
                 "RenderStats", "Prints out render statistics.", 
                 ConsoleBind(this, &OgreRenderingModule::ConsoleStats)));
         renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
-    }
-
-    bool OgreRenderingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-    {
-        PROFILE(OgreRenderingModule_HandleEvent);
-        if (!renderer_)
-            return false;
-
-        return false;
     }
 
     void OgreRenderingModule::Uninitialize()

@@ -50,11 +50,6 @@ namespace PhononPlayer
     {
     }
 
-    bool PhononPlayerModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-    {
-        return false;
-    }
-
 } // PhononPlayer
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

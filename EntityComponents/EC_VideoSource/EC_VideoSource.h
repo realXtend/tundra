@@ -64,8 +64,6 @@ public slots:
     /// Get each attribute value and send them over to sound service.
     void PlaybackFinished();
 
-    virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
-
 private slots:
     void InitializePhonon();
     void UpdateSignals();
@@ -106,8 +104,6 @@ private:
     QString current_video_path_;
     QTimer *ready_poller_;
     QLabel *error_label_;
-
-    event_category_id_t asset_event_category_;
 };
 
 #endif

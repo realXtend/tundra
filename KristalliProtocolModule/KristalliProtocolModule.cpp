@@ -7,7 +7,6 @@
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "Profiler.h"
-#include "EventManager.h"
 #include "CoreStringUtils.h"
 #include "ConsoleCommandUtils.h"
 #include "UiAPI.h"
@@ -119,8 +118,9 @@ void KristalliProtocolModule::PreInitialize()
 
 void KristalliProtocolModule::Initialize()
 {
-    EventManagerPtr event_manager = framework_->GetEventManager();
-    networkEventCategory = event_manager->RegisterEventCategory("Kristalli");
+ ///\todo EventManager regression. -jj.
+//   EventManagerPtr event_manager = framework_->GetEventManager();
+//    networkEventCategory = event_manager->RegisterEventCategory("Kristalli");
 
     defaultTransport = kNet::SocketOverTCP;
     const boost::program_options::variables_map &options = framework_->ProgramOptions();
@@ -184,7 +184,9 @@ void KristalliProtocolModule::Update(f64 frametime)
             else
             {
                 ::LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
-                framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, 0);
+///\todo EventManager regression. -jj.
+//                framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, 0);
+
                 reconnectTimer.Stop();
                 serverIp = "";
             }
@@ -310,7 +312,8 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     ::LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
     Events::KristalliUserConnected msg(connection);
-    framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
+///\todo EventManager regression. -jj.
+//    framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
 }
 
 void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
@@ -320,7 +323,8 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
         if ((*iter)->connection == source)
         {
             Events::KristalliUserDisconnected msg((*iter));
-            framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
+///\todo EventManager regression. -jj.
+//            framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
             
             ::LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
             delete(*iter);
@@ -340,17 +344,13 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
     {
         Events::KristalliNetMessageIn msg(source, id, data, numBytes);
 
-        framework_->GetEventManager()->SendEvent(networkEventCategory, Events::NETMESSAGE_IN, &msg);
+///\todo EventManager regression. -jj.
+//        framework_->GetEventManager()->SendEvent(networkEventCategory, Events::NETMESSAGE_IN, &msg);
     } catch(std::exception &e)
     {
         ::LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " +
             ToString(id) + " size " + ToString((int)numBytes) + " from client " + source->ToString());
     }
-}
-
-bool KristalliProtocolModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-{
-    return false;
 }
 
 u8 KristalliProtocolModule::AllocateNewConnectionID() const

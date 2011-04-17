@@ -21,13 +21,10 @@ namespace Console
 
 class ComponentManager;
 class ModuleManager;
-class IEventData;
-class EventManager;
 class ServiceManager;
 
 typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
 typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
-typedef boost::shared_ptr<EventManager> EventManagerPtr;
 typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
 
 namespace Foundation

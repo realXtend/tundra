@@ -57,10 +57,6 @@ namespace KristalliProtocol
         /// @return Module name. Needed for logging.
         static const std::string &NameStatic();
 
-        bool HandleEvent(event_category_id_t category_id,
-            event_id_t event_id, 
-            IEventData* data);
-
         void SubscribeToNetworkEvents();
 
         /// Return message connection, for use by other modules (null if no connection made)
@@ -113,11 +109,6 @@ namespace KristalliProtocol
         
         /// Users that are connected to server
         UserConnectionList connections;
-
-        event_category_id_t networkEventCategory;
-        
-        /// Event manager.
-        EventManagerPtr eventManager_ ;
     };
 }
 

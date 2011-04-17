@@ -21,11 +21,9 @@
 
 #include "SceneManager.h"
 #include "ModuleManager.h"
-#include "EventManager.h"
 #include "CompositionHandler.h"
 #include "EC_Name.h"
 #include "EC_Terrain.h"
-//#include "WorldBuildingServiceInterface.h"
 #include "../TundraLogicModule/TundraEvents.h"
 
 #include "MemoryLeakCheck.h"

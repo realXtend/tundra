@@ -88,9 +88,6 @@ namespace Foundation
         /// Returns service manager.
         ServiceManagerPtr GetServiceManager() const;
 
-        /// Returns event manager.
-        EventManagerPtr GetEventManager() const;
-
         /// Cancel a pending exit
         void CancelExit();
 
@@ -118,9 +115,6 @@ namespace Foundation
         /*
         /// List all loaded modules
         ConsoleCommandResult ConsoleListModules(const StringVector &params);
-
-        /// send event
-        ConsoleCommandResult ConsoleSendEvent(const StringVector &params);
 
         /// Output profiling data
         ConsoleCommandResult ConsoleProfile(const StringVector &params);
@@ -214,8 +208,7 @@ namespace Foundation
         ModuleManagerPtr module_manager_; ///< Module manager.
         ComponentManagerPtr component_manager_; ///< Component manager.
         ServiceManagerPtr service_manager_; ///< Service manager.
-        EventManagerPtr event_manager_; ///< Event manager.
-
+        
         bool exit_signal_; ///< If true, exit application.
 #ifdef PROFILING
         Profiler profiler_; ///< Profiler.
