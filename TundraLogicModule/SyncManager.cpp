@@ -306,7 +306,7 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
 {
     if ((change != AttributeChange::Replicate) || (entity->IsLocal()))
         return;
-    
+
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
@@ -314,7 +314,14 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
+            {
+                if (state->removed_entities_.find(entity->GetId()) != state->removed_entities_.end())
+                {
+                    TundraLogicModule::LogWarning("An entity with ID " + QString::number(entity->GetId()).toStdString() + " is queued to be deleted, but a new entity \"" + 
+                        entity->GetName().toStdString() + "\" is to be added to the scene!");
+                }
                 state->OnEntityChanged(entity->GetId());
+            }
         }
     }
     else
@@ -469,7 +476,14 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         Scene::EntityPtr entity = scene->GetEntity(*i);
         if (!entity)
             continue;
-        const Scene::Entity::ComponentVector &components = entity->Components();
+
+        if (state->removed_entities_.find(*i) != state->removed_entities_.end())
+        {
+            TundraLogicModule::LogWarning("Potentially buggy behavior! Sending entity update for ID " + QString::number(*i).toStdString() + ", name: " + entity->GetName().toStdString()
+                + " but the entity with that ID is queued for deletion later!");
+        }
+
+        const Scene::Entity::ComponentVector &components =  entity->Components();
         EntitySyncState* entitystate = state->GetEntity(*i);
         // No record in entitystate -> newly created entity, send full state
         if (!entitystate)
@@ -772,7 +786,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
         else
             TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
-    
+ 
     // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
     scene->EmitEntityCreated(entity, change);
     const Scene::Entity::ComponentVector &components = entity->Components();
@@ -787,6 +801,7 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
         return;
     
     entity_id_t entityID = msg.entityID;
+
     if (!ValidateAction(source, msg.MessageID(), entityID))
         return;
     
@@ -802,7 +817,7 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
     
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
-    
+
     scene->RemoveEntity(entityID, change);
     
     // Reflect changes back to syncstate

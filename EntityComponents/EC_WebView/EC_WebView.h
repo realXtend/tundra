@@ -24,6 +24,8 @@ class EC_3DCanvas;
 class RaycastResult;
 class UserConnection;
 
+namespace TundraLogic { class Server; }
+
 //! A web browser on who's content can be rendered into a 3D scene object.
 /**
 <table class="header"><tr><td>
@@ -78,9 +80,6 @@ Does not emit any actions.
 
 </table>
 */
-
-namespace TundraLogic { class Server; }
-
 class EC_WebView : public IComponent
 {
     DECLARE_EC(EC_WebView);

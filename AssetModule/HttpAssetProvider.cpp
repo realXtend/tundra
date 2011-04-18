@@ -38,9 +38,13 @@ QString HttpAssetProvider::Name()
 
 bool HttpAssetProvider::IsValidRef(QString assetRef, QString)
 {
-    assetRef = assetRef.trimmed();
-
-    return assetRef.startsWith("http://") || assetRef.startsWith("https://");
+    QString protocol;
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed(), &protocol);
+    if (refType == AssetAPI::AssetRefExternalUrl && 
+        (protocol == "http" || protocol == "https"))
+        return true;
+    else
+        return false;
 }
         
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
@@ -131,7 +135,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             // QAccessManagers QAbstractNetworkCache (same as our AssetAPI::AssetCache). Network replies will already call them
             // so the AssetAPI::AssetTransferCompletes doesn't have to.
             // \note GetDiskSource() will return empty string if above cache remove was performed, this is wanted behaviour.
-            transfer->SetCachingBehavior(false, cache->GetDiskSource(reply->url()));
+            transfer->SetCachingBehavior(false, cache->FindInCache(reply->url().toString()));
 
             // Copy raw data to transfer
             transfer->rawAssetData.insert(transfer->rawAssetData.end(), data.data(), data.data() + data.size());

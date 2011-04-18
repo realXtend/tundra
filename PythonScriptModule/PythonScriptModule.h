@@ -109,9 +109,9 @@ namespace PythonScript
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! callback for console command
-        Console::CommandResult ConsoleRunString(const StringVector &params);
-        Console::CommandResult ConsoleRunFile(const StringVector &params);
-        Console::CommandResult ConsoleReset(const StringVector &params);
+        ConsoleCommandResult ConsoleRunString(const StringVector &params);
+        ConsoleCommandResult ConsoleRunFile(const StringVector &params);
+        ConsoleCommandResult ConsoleReset(const StringVector &params);
 
         MODULE_LOGGING_FUNCTIONS
 

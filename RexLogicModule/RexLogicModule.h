@@ -260,16 +260,16 @@ namespace RexLogic
         void UpdateAvatarNameTags(Scene::EntityPtr users_avatar);
 
         //! login through console
-        Console::CommandResult ConsoleLogin(const StringVector &params);
+        ConsoleCommandResult ConsoleLogin(const StringVector &params);
 
         //! logout through console
-        Console::CommandResult ConsoleLogout(const StringVector &params);
+        ConsoleCommandResult ConsoleLogout(const StringVector &params);
 
         //! toggle fly mode through console
-        Console::CommandResult ConsoleToggleFlyMode(const StringVector &params);
+        ConsoleCommandResult ConsoleToggleFlyMode(const StringVector &params);
 
         //! Console command for test EC_Highlight. Adds EC_Highlight for every avatar.
-        Console::CommandResult ConsoleHighlightTest(const StringVector &params);
+        ConsoleCommandResult ConsoleHighlightTest(const StringVector &params);
 
         /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
         OgreRenderer::RendererPtr GetOgreRendererPtr() const;

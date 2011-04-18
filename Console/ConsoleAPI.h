@@ -5,10 +5,12 @@
  *  @brief  Console core API.
  */
 
-#ifndef incl_Foundation_ConsoleAPI
-#define incl_Foundation_ConsoleAPI
+#ifndef incl_Console_ConsoleAPI
+#define incl_Console_ConsoleAPI
 
 #include "CoreTypes.h"
+#include "InputFwd.h"
+#include "ConsoleApiExports.h"
 
 #include <QObject>
 #include <QMap>
@@ -17,6 +19,10 @@ namespace Foundation
 {
     class Framework;
 }
+
+class ConsoleManager;
+class UiConsoleManager;
+struct ConsoleCommandStruct;
 
 /// Convenience class for scripting languages
 /** Cannot be created directly, created by ConsoleAPI.
@@ -99,6 +105,11 @@ public slots:
     */
     void Print(const QString &message);
 
+    /// Registers console command for this module.
+    /** @param command Console command.
+    */
+    void RegisterCommand(const ConsoleCommandStruct &command);
+
 private:
     Q_DISABLE_COPY(ConsoleAPI);
 
@@ -119,6 +130,17 @@ private slots:
         @param params List of parameters, if provided.
     */
     void InvokeCommand(const QString &name, const QStringList &params) const;
+
+public:
+    ConsoleManager *consoleManager;
+    UiConsoleManager *uiConsoleManager;
+    InputContextPtr inputContext;
+
+private slots:
+    void HandleKeyEvent(KeyEvent *keyEvent);
+    void ToggleConsole();
+public:
+    void Uninitialize();
 };
 
 #endif

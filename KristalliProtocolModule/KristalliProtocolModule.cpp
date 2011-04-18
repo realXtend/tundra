@@ -9,13 +9,13 @@
 #include "Profiler.h"
 #include "EventManager.h"
 #include "CoreStringUtils.h"
-#include "ConsoleServiceInterface.h"
-#include "ConsoleCommandServiceInterface.h"
-
+#include "ConsoleCommandUtils.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
-#include "kNet.h"
-#include "kNet/qt/NetworkDialog.h"
+#include "ConsoleAPI.h"
+
+#include <kNet.h>
+#include <kNet/qt/NetworkDialog.h>
 
 #include <algorithm>
 
@@ -131,9 +131,9 @@ void KristalliProtocolModule::Initialize()
 
 void KristalliProtocolModule::PostInitialize()
 {
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "kNet", "Shows the kNet statistics window.", 
-            Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
+            ConsoleBind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
 }
 
 void KristalliProtocolModule::Uninitialize()
@@ -141,13 +141,13 @@ void KristalliProtocolModule::Uninitialize()
     Disconnect();
 }
 
-Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
+ConsoleCommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
 {
     NetworkDialog *networkDialog = new NetworkDialog(0, &network);
     networkDialog->setAttribute(Qt::WA_DeleteOnClose);
     networkDialog->show();
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 void KristalliProtocolModule::Update(f64 frametime)

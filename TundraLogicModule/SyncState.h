@@ -7,6 +7,7 @@
 #include "IAttribute.h"
 #include "UserConnection.h"
 #include "Entity.h"
+#include "TundraLogicModule.h"
 
 #include <QString>
 
@@ -164,10 +165,16 @@ struct SceneSyncState : public ISyncState
     void OnEntityChanged(entity_id_t id)
     {
         dirty_entities_.insert(id);
+        if (removed_entities_.find(id) != removed_entities_.end())
+        {
+            // This is a problem because deletions are always processed after modifications, so a deletion for an old entity can actually occur after editing a new entity.
+            TundraLogicModule::LogWarning("Invoking buggy behavior: Update for ID " + QString::number(id).toStdString() + " to be sent, but that entity is also marked for deletion!");
+        }
     }
     
     void OnEntityRemoved(entity_id_t id)
     {
+        dirty_entities_.erase(id); // No need to update this entity to the network, since it will be deleted.
         removed_entities_.insert(id);
     }
     

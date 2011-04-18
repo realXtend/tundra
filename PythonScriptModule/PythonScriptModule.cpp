@@ -38,7 +38,7 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 #include "InputAPI.h"
 #include "RenderServiceInterface.h"
 #include "PythonEngine.h"
@@ -258,20 +258,20 @@ namespace PythonScript
             LogError("Unable to create instance from class ModuleManager");
         }
 
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "PyExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
-            Console::Bind(this, &PythonScriptModule::ConsoleRunString))); 
+            ConsoleBind(this, &PythonScriptModule::ConsoleRunString))); 
         /* NOTE: called 'exec' cause is similar to py shell builtin exec() func.
          * Also in the IPython shell 'run' refers to running an external file and not the given string
          */
 
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "PyLoad", "Execute a python file. PyLoad(mypymodule)", 
-            Console::Bind(this, &PythonScriptModule::ConsoleRunFile))); 
+            ConsoleBind(this, &PythonScriptModule::ConsoleRunFile))); 
 
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
-            Console::Bind(this, &PythonScriptModule::ConsoleReset)));
+            ConsoleBind(this, &PythonScriptModule::ConsoleReset)));
 
         framework_->Console()->RegisterCommand("pythonconsole", "Shows the Python console window.", this, SLOT(ShowConsole()));
 
@@ -481,15 +481,15 @@ namespace PythonScript
         return false;
     }
 
-    Console::CommandResult PythonScriptModule::ConsoleRunString(const StringVector &params)
+    ConsoleCommandResult PythonScriptModule::ConsoleRunString(const StringVector &params)
     {
         if (params.size() != 1)
-            return Console::ResultFailure("Usage: PyExec(print 1 + 1)");
+            return ConsoleResultFailure("Usage: PyExec(print 1 + 1)");
             //how to handle input like this? PyExec(print '1 + 1 = %d' % (1 + 1))");
             //probably better have separate py shell.
         engine_->RunString(QString::fromStdString(params[0]));
 
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
     //void PythonScriptModule::x()
@@ -515,22 +515,22 @@ namespace PythonScript
     //    //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
     //}
 
-    Console::CommandResult PythonScriptModule::ConsoleRunFile(const StringVector &params)
+    ConsoleCommandResult PythonScriptModule::ConsoleRunFile(const StringVector &params)
     {
         if (params.size() != 1)
-            return Console::ResultFailure("Usage: PyLoad(mypymodule) (to run mypymodule.py by importing it)");
+            return ConsoleResultFailure("Usage: PyLoad(mypymodule) (to run mypymodule.py by importing it)");
 
         engine_->RunScript(QString::fromStdString(params[0]));
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
-    Console::CommandResult PythonScriptModule::ConsoleReset(const StringVector &params)
+    ConsoleCommandResult PythonScriptModule::ConsoleReset(const StringVector &params)
     {
         //engine_->Reset();
         Uninitialize(); //does also engine_->Uninitialize();
         Initialize();
 
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
     // virtual 

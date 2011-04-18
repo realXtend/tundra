@@ -151,16 +151,14 @@ namespace Scene
     entity_id_t SceneManager::GetNextFreeId()
     {
         // Find the largest non-local entity ID in the scene.
+        // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
         entity_id_t largestEntityId = 0;
-        for(EntityMap::const_reverse_iterator iter = entities_.rbegin(); iter != entities_.rend(); ++iter)
+        for(EntityMap::const_iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
             if ((iter->first & LocalEntity) == 0)
-            {
-                largestEntityId = iter->first;
-                break;
-            }
+                largestEntityId = std::max(largestEntityId, iter->first);
 
         // Ensure that the entity id we give out is always larger than the largest entity id currently existing in the scene.
-        gid_ = std::max(gid_, largestEntityId+1);
+        gid_ = std::max(gid_ + 1, largestEntityId+1);
 
         while(entities_.find(gid_) != entities_.end())
         {
@@ -175,16 +173,14 @@ namespace Scene
     entity_id_t SceneManager::GetNextFreeIdLocal()
     {
         // Find the largest local entity ID in the scene.
+        // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
         entity_id_t largestEntityId = 0;
-        for(EntityMap::const_reverse_iterator iter = entities_.rbegin(); iter != entities_.rend(); ++iter)
+        for(EntityMap::const_iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
             if ((iter->first & LocalEntity) != 0)
-            {
-                largestEntityId = iter->first;
-                break;
-            }
+                largestEntityId = std::max(largestEntityId, iter->first);
 
         // Ensure that the entity id we give out is always larger than the largest entity id currently existing in the scene.
-        gid_local_ = std::max(gid_local_, (largestEntityId+1) | LocalEntity);
+        gid_local_ = std::max((gid_local_ + 1) | LocalEntity, (largestEntityId+1) | LocalEntity);
 
         while(entities_.find(gid_local_) != entities_.end())
         {
@@ -385,6 +381,41 @@ namespace Scene
         EntityList entities = GetEntitiesWithComponent(type_name);
         foreach(EntityPtr e, entities)
             ret.append(e.get());
+
+        return ret;
+    }
+
+    QVariantList SceneManager::LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
+    {
+        //copied from LoadSceneXML and edited
+        ///\todo Delete this copied and edited version of the LoadSceneXML function, and replace it with one that calls that function instead. -jj.    
+        QVariantList ret;
+ 
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            LogError("Failed to open file " + filename.toStdString() + " when loading scene xml.");
+            return ret;
+        }
+
+        // Set codec to ISO 8859-1 a.k.a. Latin 1
+        QTextStream stream(&file);
+        stream.setCodec("ISO 8859-1");
+        QDomDocument scene_doc("Scene");
+        if (!scene_doc.setContent(stream.readAll()))
+        {
+            LogError("Parsing scene XML from "+ filename.toStdString() + " failed when loading scene xml.");
+            file.close();
+            return ret;
+        }
+
+        // Purge all old entities. Send events for the removal
+        if (clearScene)
+            RemoveAllEntities(true, change);
+
+        QList<Scene::Entity *> entities = CreateContentFromXml(scene_doc, useEntityIDsFromFile, change);
+        foreach(Entity * e, entities)
+            ret.append(QVariant(e->GetId()));
 
         return ret;
     }
@@ -738,10 +769,10 @@ namespace Scene
         foreach(EntityDesc e, desc.entities)
         {
             entity_id_t id;
-            if (!e.id.isEmpty() && useEntityIDsFromFile)
-                id = ParseString<entity_id_t>(e.id.toStdString());
-            else
+            if (e.id.isEmpty() || !useEntityIDsFromFile)
                 id = e.local ? GetNextFreeIdLocal() : GetNextFreeId();
+            else
+                id =  ParseString<entity_id_t>(e.id.toStdString());
 
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
             {
@@ -907,7 +938,7 @@ namespace Scene
 
                                 // Rewrite source refs for asset descs, if necessary.
                                 QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
-                                framework_->Asset()->QueryFileLocation(value, basePath, ad.source);
+                                framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
                                 ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
                                 sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
@@ -973,7 +1004,7 @@ namespace Scene
                     ad.dataInMemory = false;
 
                     QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
-                    framework_->Asset()->QueryFileLocation(scriptDependency, basePath, ad.source);
+                    framework_->Asset()->ResolveLocalAssetPath(scriptDependency, basePath, ad.source);
                     ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
                     
                     // We have to check if the asset is already added. As we do this recursively there is a danger of a infinite loop.
@@ -1093,7 +1124,7 @@ namespace Scene
 
                                             // Rewrite source refs for asset descs, if necessary.
                                             QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
-                                            framework_->Asset()->QueryFileLocation(value, basePath, ad.source);
+                                            framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
                                             ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
                                             sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;

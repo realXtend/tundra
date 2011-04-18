@@ -41,7 +41,8 @@ endif ()
 use_package (OPENJPEG)
 
 use_modules (RexLogicModule Core Foundation Interfaces Scene OgreRenderingModule AssetModule AvatarModule RexCommon
-    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Input Asset Audio)
+    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule
+    Input Asset Audio Console)
 
 if (USE_UIMODULE)
     use_modules (UiModule)
@@ -77,7 +78,8 @@ LinkEntityComponent(EntityComponents/EC_WebView EC_WebView)
 LinkEntityComponent(EntityComponents/EC_QmlApp EC_QmlApp)
 
 link_modules (Core Foundation Interfaces Scene OgreRenderingModule AssetModule AvatarModule RexCommon
-    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Asset Audio)
+    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule
+    Asset Audio Console)
 
 if (USE_UIMODULE)
     link_modules (UiModule)

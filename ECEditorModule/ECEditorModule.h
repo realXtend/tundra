@@ -43,9 +43,9 @@ public:
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     //! Show EC editor window.
-    //Console::CommandResult ShowWindow(const StringVector &params);
+    //ConsoleCommandResult ShowWindow(const StringVector &params);
 
-    Console::CommandResult ShowDocumentation(const StringVector &params);
+    ConsoleCommandResult ShowDocumentation(const StringVector &params);
 
     //! Added for testing EC_DynamicComponent.
     /*! @param params Params should be following:
@@ -56,7 +56,7 @@ public:
      *  4 = attribute type. !Only rem dont use in rem operation.
      *  5 = attribute value. !Only rem dont use in rem operation.
      */
-    Console::CommandResult EditDynamicComponent(const StringVector &params);
+    ConsoleCommandResult EditDynamicComponent(const StringVector &params);
 
     ECEditorWindow *GetActiveECEditor() const;
 

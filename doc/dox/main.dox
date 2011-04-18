@@ -139,6 +139,8 @@ Classes:
 <h3>Input</h3>
 Provides access to Qt input devices in a contextual order.
 
+InputAPI is available as 'input' in Javascript and 'naali.input' in Python.
+
 Follow these topics to learn more:
 - Reading input through an InputContext.
 - Providing reconfigurable key bindings with keyboard mappings.
@@ -155,6 +157,8 @@ Classes:
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>UI</h3>
 Exposes the Tundra main window and allows clients to create and show their own Qt-based windows.
+
+UiAPI is available as 'ui' in Javascript and 'naali.ui' in Python.
 </td>
 </tr>
 
@@ -162,6 +166,9 @@ Exposes the Tundra main window and allows clients to create and show their own Q
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Scene</h3>
 Gives access to the Tundra 3D scene structure: entities, components and attributes.
+
+SceneAPI is available as 'scene' in Javascript and 'naali.scene' in Python.
+
 Topics:
 <ul>
 <li>\ref SceneModelPage "Scenes, entities and components."
@@ -215,7 +222,7 @@ Classes:
 <h3>Console</h3>
 Allows modules to register new commands that are invokeable from a command line console.
 
-ConsoleAPI supports these also from scripting languages:
+ConsoleAPI is available as 'console' in Javascript and 'naali.console' in Python with the support for:
 - Registering new console commands.
 - Programmatically invoking console commands.
 

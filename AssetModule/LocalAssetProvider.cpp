@@ -38,19 +38,16 @@ QString LocalAssetProvider::Name()
     return name;
 }
 
-bool LocalAssetProvider::IsValidRef(QString asset_id, QString asset_type)
+bool LocalAssetProvider::IsValidRef(QString assetRef, QString)
 {
-    QString ref = asset_id.toStdString().c_str();
-    ref = ref.trimmed();
-    if (ref.length() == 0)
-        return false;
-    if (ref.startsWith("file://") || ref.startsWith("local://"))
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed());
+    if (refType == AssetAPI::AssetRefLocalPath || refType == AssetAPI::AssetRefLocalUrl)
         return true;
 
-    if (!ref.contains("://")) // If the ref doesn't contain a protocol specifier (we do this simple check for it), try to directly find the given local file.
+    if (refType == AssetAPI::AssetRefRelativePath)
     {
-        QString path = GetPathForAsset(ref, 0);
-        return path.length() > 0;
+        QString path = GetPathForAsset(assetRef, 0);
+        return !path.isEmpty();
     }
     else
         return false;
@@ -62,7 +59,7 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
         return AssetTransferPtr();
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
-        assetType = GetResourceTypeFromResourceFileName(assetRef.toStdString().c_str());
+        assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef.toStdString().c_str());
 
     AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer);
     transfer->source.ref = assetRef.trimmed();
@@ -73,12 +70,18 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
     return transfer;
 }
 
-QString LocalAssetProvider::GetPathForAsset(const QString &assetname, LocalAssetStoragePtr *storage)
+QString LocalAssetProvider::GetPathForAsset(const QString &assetRef, LocalAssetStoragePtr *storage)
 {
+    QString path;
+    QString path_filename;
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed(), 0, 0, 0, 0, &path_filename, &path);
+    if (refType == AssetAPI::AssetRefLocalPath)
+        return path; // If the asset ref has already been converted to an absolute path, simply return the assetRef as is.
+
     // Check first all subdirs without recursion, because recursion is potentially slow
     for(size_t i = 0; i < storages.size(); ++i)
     {
-        QString path = storages[i]->GetFullPathForAsset(assetname.toStdString().c_str(), false);
+        QString path = storages[i]->GetFullPathForAsset(path_filename.toStdString().c_str(), false);
         if (path != "")
         {
             if (storage)
@@ -89,7 +92,7 @@ QString LocalAssetProvider::GetPathForAsset(const QString &assetname, LocalAsset
 
     for(size_t i = 0; i < storages.size(); ++i)
     {
-        QString path = storages[i]->GetFullPathForAsset(assetname.toStdString().c_str(), true);
+        QString path = storages[i]->GetFullPathForAsset(path_filename.toStdString().c_str(), true);
         if (path != "")
         {
             if (storage)
@@ -182,29 +185,36 @@ void LocalAssetProvider::CompletePendingFileDownloads()
 
         QString ref = transfer->source.ref;
 
-//        AssetModule::LogDebug("New local asset request: " + ref.toStdString());
-
-        // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
-        if (ref.startsWith("file://"))
-            ref = ref.mid(7);
-        if (ref.startsWith("local://"))
-            ref = ref.mid(8);
-
-        int lastSlash = ref.lastIndexOf('/');
-        if (lastSlash != -1)
-            ref = ref.left(lastSlash);
+        QString path_filename;
+        AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(ref.trimmed(), 0, 0, 0, 0, &path_filename);
 
         LocalAssetStoragePtr storage;
-        QString path = GetPathForAsset(ref, &storage);
-        if (path.isEmpty())
+
+        QFileInfo file;
+
+        if (refType == AssetAPI::AssetRefLocalPath)
         {
-            QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
-//            AssetModule::LogWarning(reason.toStdString());
-            framework->Asset()->AssetTransferFailed(transfer.get(), reason);
-            continue;
+            file = QFileInfo(path_filename);
         }
-    
-        QFileInfo file(GuaranteeTrailingSlash(path) + ref);
+        else // Using a local relative path, like "local://asset.ref" or "asset.ref".
+        {
+            AssetAPI::AssetRefType urlRefType = AssetAPI::ParseAssetRef(path_filename);
+            if (urlRefType == AssetAPI::AssetRefLocalPath)
+                file = QFileInfo(path_filename); // 'file://C:/path/to/asset/asset.png'.
+            else // The ref is of form 'file://relativePath/asset.png'.
+            {
+                QString path = GetPathForAsset(path_filename, &storage);
+                if (path.isEmpty())
+                {
+                    QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
+        //            AssetModule::LogWarning(reason.toStdString());
+                    framework->Asset()->AssetTransferFailed(transfer.get(), reason);
+                    continue;
+                }
+            
+                file = QFileInfo(GuaranteeTrailingSlash(path) + path_filename);
+            }
+        }
         QString absoluteFilename = file.absoluteFilePath();
 
         bool success = LoadFileToVector(absoluteFilename.toStdString().c_str(), transfer->rawAssetData);

@@ -14,9 +14,6 @@
 #include "ServiceManager.h"
 #include "ThreadTaskManager.h"
 #include "RenderServiceInterface.h"
-#include "ConsoleServiceInterface.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "Application.h"
 #include "CoreException.h"
 #include "InputAPI.h"
 #include "FrameAPI.h"
@@ -24,10 +21,10 @@
 #include "GenericAssetFactory.h"
 #include "AudioAPI.h"
 #include "ConsoleAPI.h"
+#include "ConsoleManager.h"
 #include "DebugAPI.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
-
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 
@@ -72,7 +69,7 @@ namespace Foundation
         splitterchannel(0),
         application(0),
         frame(new FrameAPI(this)),
-        console(new ConsoleAPI(this)),
+        console(0),
         ui(0),
         input(0),
         asset(0),
@@ -162,6 +159,7 @@ namespace Foundation
             asset->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); ///< \todo This line needs to be removed.
 
             input = new InputAPI(this);
+            console = new ConsoleAPI(this);
 
             // Initialize SceneAPI.
             scene->Initialise();
@@ -411,6 +409,8 @@ namespace Foundation
                 frame->Update(frametime);
             }
 
+            console->consoleManager->Update(frametime);
+
             // if we have a renderer service, render now
             boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
             if (renderer.expired() == false)
@@ -485,6 +485,8 @@ namespace Foundation
     {
         event_manager_->ClearDelayedEvents();
         module_manager_->UninitializeModules();
+        ///\todo Horrible uninit call here now due to console refactoring
+        console->Uninitialize();
         module_manager_->UnloadModules();
     }
 
@@ -493,10 +495,10 @@ namespace Foundation
         return application;
     }
 
-    Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleLoadModule(const StringVector &params)
     {
         if (params.size() != 2 && params.size() != 1)
-            return Console::ResultInvalidParameters();
+            return ConsoleResultInvalidParameters();
 
         std::string lib = params[0];
         std::string entry = params[0];
@@ -506,52 +508,51 @@ namespace Foundation
         bool result = module_manager_->LoadModuleByName(lib, entry);
 
         if (!result)
-            return Console::ResultFailure("Library or module not found.");
+            return ConsoleResultFailure("Library or module not found.");
 
-        return Console::ResultSuccess("Module " + entry + " loaded.");
+        return ConsoleResultSuccess("Module " + entry + " loaded.");
     }
 
-    Console::CommandResult Framework::ConsoleUnloadModule(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleUnloadModule(const StringVector &params)
     {
         if (params.size() != 1)
-            return Console::ResultInvalidParameters();
+            return ConsoleResultInvalidParameters();
 
         bool result = false;
         if (module_manager_->HasModule(params[0]))
             result = module_manager_->UnloadModuleByName(params[0]);
 
         if (!result)
-            return Console::ResultFailure("Module not found.");
+            return ConsoleResultFailure("Module not found.");
 
-        return Console::ResultSuccess("Module " + params[0] + " unloaded.");
+        return ConsoleResultSuccess("Module " + params[0] + " unloaded.");
     }
 
-    Console::CommandResult Framework::ConsoleListModules(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleListModules(const StringVector &params)
     {
-        boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Service::ST_Console).lock();
         if (console)
         {
             console->Print("Loaded modules:");
             const ModuleManager::ModuleVector &modules = module_manager_->GetModuleList();
             for(size_t i = 0 ; i < modules.size() ; ++i)
-                console->Print(modules[i].module_->Name());
+                console->Print(modules[i].module_->Name().c_str());
         }
 
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
-    Console::CommandResult Framework::ConsoleSendEvent(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleSendEvent(const StringVector &params)
     {
         if (params.size() != 2)
-            return Console::ResultInvalidParameters();
+            return ConsoleResultInvalidParameters();
         
         event_category_id_t event_category = event_manager_->QueryEventCategory(params[0], false);
         if (event_category == IllegalEventCategory)
-            return Console::ResultFailure("Event category not found.");
+            return ConsoleResultFailure("Event category not found.");
         else
         {
             event_manager_->SendEvent(event_category, ParseString<event_id_t>(params[1]), 0);
-            return Console::ResultSuccess();
+            return ConsoleResultSuccess();
         }
     }
 
@@ -576,7 +577,7 @@ namespace Foundation
     /// @param node The root node where to start the printing.
     /// @param showUnused If true, even blocks that haven't been called will be included. If false, only
     ///        the blocks that were actually recently called are included. 
-    void PrintTimingsToConsole(const Console::ConsolePtr &console, const ProfilerNodeTree *node, bool showUnused)
+    void PrintTimingsToConsole(ConsoleAPI *console, ProfilerNodeTree *node, bool showUnused)
     {
         const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
 
@@ -617,7 +618,7 @@ namespace Foundation
                     timings.append("&nbsp;");
                 timings += str;
 
-                console->Print(timings);
+                console->Print(timings.c_str());
             }
         }
 
@@ -632,10 +633,9 @@ namespace Foundation
             level -= 2;
     }
 
-    Console::CommandResult Framework::ConsoleProfile(const StringVector &params)
+    ConsoleCommandResult Framework::ConsoleProfile(const StringVector &params)
     {
 #ifdef PROFILING
-        boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Service::ST_Console).lock();
         if (console)
         {
             Profiler &profiler = GetProfiler();
@@ -649,36 +649,32 @@ namespace Foundation
 //            profiler.Release();
         }
 #endif
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 
     void Framework::RegisterConsoleCommands()
     {
-        boost::shared_ptr<Console::CommandService> console = GetService<Console::CommandService>(Service::ST_ConsoleCommand).lock();
-        if (console)
-        {
-            console->RegisterCommand(Console::CreateCommand("LoadModule", 
-                "Loads a module from shared library. Usage: LoadModule(lib, entry)", 
-                Console::Bind(this, &Framework::ConsoleLoadModule)));
+        console->RegisterCommand(CreateConsoleCommand("LoadModule",
+            "Loads a module from shared library. Usage: LoadModule(lib, entry)",
+            ConsoleBind(this, &Framework::ConsoleLoadModule)));
 
-            console->RegisterCommand(Console::CreateCommand("UnloadModule", 
-                "Unloads a module. Usage: UnloadModule(name)", 
-                Console::Bind(this, &Framework::ConsoleUnloadModule)));
+        console->RegisterCommand(CreateConsoleCommand("UnloadModule",
+            "Unloads a module. Usage: UnloadModule(name)", 
+            ConsoleBind(this, &Framework::ConsoleUnloadModule)));
 
-            console->RegisterCommand(Console::CreateCommand("ListModules", 
-                "Lists all loaded modules.", 
-                Console::Bind(this, &Framework::ConsoleListModules)));
+        console->RegisterCommand(CreateConsoleCommand("ListModules",
+            "Lists all loaded modules.", 
+            ConsoleBind(this, &Framework::ConsoleListModules)));
 
-            console->RegisterCommand(Console::CreateCommand("SendEvent", 
-                "Sends an internal event. Only for events that contain no data. Usage: SendEvent(event category name, event id)", 
-                Console::Bind(this, &Framework::ConsoleSendEvent)));
+        console->RegisterCommand(CreateConsoleCommand("SendEvent",
+            "Sends an internal event. Only for events that contain no data. Usage: SendEvent(event category name, event id)",
+            ConsoleBind(this, &Framework::ConsoleSendEvent)));
 
 #ifdef PROFILING
-            console->RegisterCommand(Console::CreateCommand("Profile", 
-                "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block", 
-                Console::Bind(this, &Framework::ConsoleProfile)));
+        console->RegisterCommand(CreateConsoleCommand("Profile", 
+            "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block",
+            ConsoleBind(this, &Framework::ConsoleProfile)));
 #endif
-        }
     }
 
 #ifdef PROFILING

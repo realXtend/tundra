@@ -1108,7 +1108,7 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)
         if (materialList[i].ref == ogreMaterial->Name() ||
-            framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref) == ogreMaterial->Name()) ///<///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
+            framework_->Asset()->ResolveAssetRef("", materialList[i].ref) == ogreMaterial->Name()) ///<///\todo The design of whether the ResolveAssetRef should occur here, or internal to Asset API needs to be revisited.
         {
             SetMaterial(i, ogreMaterial->Name());
             assetUsed = true;
@@ -1132,7 +1132,7 @@ void EC_Mesh::ApplyMaterial()
         if (!materialList[i].ref.isEmpty())
         {
             // Only apply the material if it is loaded and has no dependencies
-            QString assetFullName = assetAPI->LookupAssetRefToStorage(materialList[i].ref);
+            QString assetFullName = assetAPI->ResolveAssetRef("", materialList[i].ref);
             AssetPtr asset = assetAPI->GetAsset(assetFullName);
             if ((asset) && (assetAPI->NumPendingDependencies(asset) == 0))
                 SetMaterial(i, assetFullName);

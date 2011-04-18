@@ -18,8 +18,8 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 use_package_assimp()
 
-use_modules (Core Foundation Interfaces Ui Input Scene ECEditorModule TundraLogicModule
-    OgreRenderingModule AssetModule)
+use_modules (Core Foundation Interfaces Ui Input Console Scene
+    ECEditorModule TundraLogicModule OgreRenderingModule AssetModule)
 
 if (OGREASSETEDITOR)
 use_modules(OgreAssetEditorModule RexCommon)
@@ -31,8 +31,8 @@ LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
 GetOpenAssetImport()
 GetOgreAssetEditor()
 
-link_modules (Core Foundation Interfaces Ui Input Scene ECEditorModule TundraLogicModule
-    OgreRenderingModule)
+link_modules (Core Foundation Interfaces Ui Input Scene Console
+    ECEditorModule TundraLogicModule OgreRenderingModule)
 
 if (OGREASSETEDITOR)
 link_modules(OgreAssetEditorModule)

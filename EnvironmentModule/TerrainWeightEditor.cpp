@@ -15,7 +15,7 @@
 #include "Framework.h"
 #include "SceneManager.h"
 #include "UiProxyWidget.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 
 #include <QUiLoader>
 #include <QFile>

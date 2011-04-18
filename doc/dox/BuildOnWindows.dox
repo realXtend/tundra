@@ -38,7 +38,9 @@ The dependency SVN comes with a pre-bundled version of Qt (currently 4.6.2, or 2
 <li>(Optional.) Edit <i>C:/TundraGitTrunk/CMakeModules/ConfigurePackages.cmake</i> at the point <b>macro(configure_qt4)</b> to include or exclude the components of Qt you want Tundra to use.</li>
 <li>Build the 3rd party dependencies QtPropertyBrowser, QtScriptGenerator and kNet against your custom version of Qt.</li>
 <li>If you are using PythonScriptModule, build the 3rd party dependency PythonQt against your custom version of Qt.</li>
-</ol> 
+</ol>
+
+It is recommended that you alter the Qt built-in build configurations to include debug information (add /Zi compilation flag) with the debug build, so that you can step inside Qt code when debugging. See <a href="http://developer.qt.nokia.com/faq/answer/how_to_build_pdb_for_release_version_of_qt">How to build pdb for release version of Qt</a> for instructions.   
 
   \section BuildingCustomKNet Building Using a Custom kNet Version
  
@@ -61,5 +63,44 @@ Tundra uses the <a href="https://bitbucket.org/clb/knet">kNet</a> library for ne
   \section OpeningScenes Opening a Scene
  
 The prebuilt installers come with registered context menu handlers for <b>.txml</b> and <b>.tbin</b> files. For a development build, these need to be registered manually. For information about that, see help on \ref TundraDocumentfiles "Tundra Document Files". Alternatively, use the command-line parameters to specify the scene to load. These are documented on the page \ref TundraCommandLineOptions "Command line options". 
-          
+
+  \section PreparingAnInstaller How to Generate an Installer
+
+  The Tundra repository comes with premade installer scripts for the NSIS system.
+   
+<h4>Prerequisites:</h4>
+<ul>
+<li>Have Nullsoft Scriptable Install System (NSIS) from http://nsis.sourceforge.net/ installed. </li>
+<li>Have an up-to-date MS Visual Studio 2008 Runtime Redistributable (vcredist_x86.exe) from http://www.microsoft.com/downloads/details.aspx?familyid=A5C84275-3B97-4AB7-A40D-3802B2AF5FC2&displaylang=en . </li>
+<li>Have OpenAL installer (oalinst.exe) from http://connect.creativelabs.com/openal/Downloads/Forms/AllItems.aspx (unzip oalinst.zip). </li>
+<li>Have an up-to-date dxwebsetup.exe from http://www.microsoft.com/downloads/details.aspx?FamilyID=2da43d38-db71-4c1b-bc6a-9b6652cd92a3&displaylang=en .</li>
+<li>Have up-to-date Tundra binary runtime dependencies from the dependency svn (the "runtime_deps" directory) copied to your viewer "bin" directory. </li>
+</ul>
+
+<h4>Steps:</h4>
+<ol><li>Check that the files vcredist_x86.exe, oalinst.exe and dxwebsetup.exe exist in your viewer checkout root directory. They should be versioned there, if not, download from the addresses above.</li>
+<li>Ensure that you do not have unnecessary files in your viewer "bin" directory. Own configuration files and compiled Python (.pyc) files are OK, they will be deleted by makebuild.bat.</li>
+<li>Execute the makebuild.bat from the root of Tundra source checkout. This creates a "build" directory for NSIS to work from, with everything copied.</li>
+<li>Execute the NSIS script (tundra-installer.nsi) and let it package the Tundra installer.</li>
+<li>You are now done. The generated installer should appear in the root directory. </li>
+</ol>
+
+<p>When you make builds repeatedly, only steps 3) & 4) have to be repeated, unless dependencies change.
+
+<p>If you want to change the version identifier of Tundra, you must change it in the following files:
+<ol>
+<li>server/main.cpp      
+<li>viewer/main.cpp     
+<li>Foundation/Framework.cpp  
+<li>tundra-installer.nsi
+</ol>
+	
+<p>If you want to set an icon for your installer file:
+<ol><li>Add icon resource to viewer project: right-click the viewer project, Add->Resource, Import bin\data\ui\images\tundra_icon.ico file
+<li>Rebuild viewer project
+</ol>
+
+<b>! Make sure that you do not commit any of the customized changes to the installer files back to the repository ! </b>
+</ol>
+
  */
