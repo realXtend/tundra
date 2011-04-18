@@ -734,9 +734,8 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
     float zSpacing = 1.0f;
     float minZ = 1000000000;
     float maxZ = -1000000000;
-    for(uint y = 0; y < height; ++y)
-    {
-        for(uint x = 0; x < width; ++x)
+    for(uint y = 0; y < (uint)height; ++y)
+        for(uint x = 0; x < (uint)width; ++x)
         {
             float value = terrain->GetPoint(x, y);
             if (value < minZ)
@@ -745,8 +744,7 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
                 maxZ = value;
             heightValues_[y * width + x] = value;
         }
-    }
-    
+
     Vector3df scale = terrain->nodeTransformation.Get().scale;
     Vector3df bbMin(0, 0, minZ);
     Vector3df bbMax(xySpacing * (width - 1), xySpacing * (height - 1), maxZ);

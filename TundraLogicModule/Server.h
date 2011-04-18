@@ -129,7 +129,7 @@ private:
     TundraLogicModule* owner_;
     
     /// Framework pointer
-    Foundation::Framework* framework_;
+    Framework* framework_;
 
     /// Current running servers port.
     int current_port_;

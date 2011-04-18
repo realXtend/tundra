@@ -246,7 +246,7 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeCha
 
 QVariant EC_DynamicComponent::GetAttribute(int index) const
 {
-    if (index < attributes_.size() && index >= 0)
+    if (index < (int)attributes_.size() && index >= 0)
         return attributes_[index]->ToQVariant();
     return QVariant();
 }
@@ -258,7 +258,7 @@ QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
 
 void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, AttributeChange::Type change)
 {
-    if (index < attributes_.size() && index >= 0)
+    if (index < (int)attributes_.size() && index >= 0)
         attributes_[index]->FromQVariant(value, change);
     else
         LogWarning("Cannot get attribute name, cause index is out of range.");
@@ -286,7 +286,7 @@ void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &valu
 
 QString EC_DynamicComponent::GetAttributeName(int index) const
 {
-    if(index < attributes_.size() && index >= 0)
+    if(index < (int)attributes_.size() && index >= 0)
         return attributes_[index]->GetName();
 
     LogWarning("Cannot get attribute name, cause index is out of range.");

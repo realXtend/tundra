@@ -21,7 +21,7 @@
 namespace Asset
 {
 
-LocalAssetProvider::LocalAssetProvider(Foundation::Framework* framework_)
+LocalAssetProvider::LocalAssetProvider(Framework* framework_)
 :framework(framework_)
 {
 }
@@ -271,7 +271,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
         {
             LogError(("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!").toStdString());
             transfer->EmitTransferFailed();
-            /// \todo Jukka lisää failure-notifikaatio.
+            /// \todo Jukka lisï¿½ï¿½ failure-notifikaatio.
         }
         else
         {

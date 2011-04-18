@@ -7,11 +7,7 @@
 #include <vector>
 
 class IModule;
-
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 /// Base class for all objects that register their entity-component factory services to the framework.
 /**
@@ -24,10 +20,10 @@ public:
     virtual ~IComponentRegistrar() {}
 
     /// registers component to the framework
-    virtual void Register(Foundation::Framework *framework, IModule* module) = 0;
+    virtual void Register(Framework *framework, IModule* module) = 0;
 
     /// unregisters component to framework
-    virtual void Unregister(Foundation::Framework *framework) = 0;
+    virtual void Unregister(Framework *framework) = 0;
 };
 
 typedef boost::shared_ptr<IComponentRegistrar> ComponentRegistrarPtr;

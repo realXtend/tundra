@@ -144,16 +144,16 @@ namespace Asset
     }
 }
 
-void SetProfiler(Foundation::Profiler *profiler)
+void SetProfiler(Profiler *profiler)
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace Asset;
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+__declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     IModule *module = new Asset::AssetModule();
     fw->GetModuleManager()->DeclareStaticModule(module);

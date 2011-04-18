@@ -29,7 +29,7 @@ public:
     typedef std::map<QString, ComponentFactoryPtr> ComponentFactoryMap;
 
     /// default constructor
-    ComponentManager(Foundation::Framework *framework);
+    ComponentManager(Framework *framework);
 
     /// destructor
     ~ComponentManager() { }
@@ -115,7 +115,7 @@ private:
     QStringList attributeTypes_;
 
     /// Framework
-    Foundation::Framework *framework_;
+    Framework *framework_;
 };
 
 #endif

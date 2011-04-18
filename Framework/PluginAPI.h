@@ -5,10 +5,7 @@
 #include <QObject>
 #include <Windows.h> ///\todo Cross-platform -> <dlfcn.h>
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 class PluginAPI : public QObject
 {
@@ -21,9 +18,9 @@ private:
     };
     std::list<Plugin> plugins;
 
-    Foundation::Framework *owner;
+    Framework *owner;
 public:
-    explicit PluginAPI(Foundation::Framework *owner);
+    explicit PluginAPI(Framework *owner);
 
     /// Loads and executes the given shared library plugin.
     void LoadPlugin(const QString &filename);

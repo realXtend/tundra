@@ -17,7 +17,7 @@
 
 #include "MemoryLeakCheck.h"
 
-EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityId, QObject *parent):
+EntityPlacer::EntityPlacer(Framework *framework, entity_id_t entityId, QObject *parent):
     framework_(framework),
     QObject(parent),
     finished_(false),

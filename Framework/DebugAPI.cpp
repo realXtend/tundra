@@ -53,6 +53,6 @@ void DebugAPI::Break()
 #endif
 }
 
-DebugAPI::DebugAPI(Foundation::Framework *fw) : QObject(fw)
+DebugAPI::DebugAPI(Framework *fw) : QObject(fw)
 {
 }

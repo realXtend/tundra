@@ -19,9 +19,9 @@
 
 namespace fs = boost::filesystem;
 
-typedef void (*SetProfilerFunc)(Foundation::Profiler *profiler);
+typedef void (*SetProfilerFunc)(Profiler *profiler);
 
-ModuleManager::ModuleManager(Foundation::Framework *framework) :
+ModuleManager::ModuleManager(Framework *framework) :
     framework_(framework)
 {
 }

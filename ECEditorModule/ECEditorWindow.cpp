@@ -53,7 +53,7 @@ bool CmpEntityById(EntityPtr a, EntityPtr b)
     return a->GetId() < b->GetId();
 }
 
-ECEditorWindow::ECEditorWindow(Foundation::Framework* framework) :
+ECEditorWindow::ECEditorWindow(Framework* framework) :
     framework_(framework),
     toggle_entities_button_(0),
     entity_list_(0),
@@ -128,7 +128,7 @@ void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
         return;
     }
 
-    for(uint i = 0; i < entity_list_->count(); i++)
+    for(uint i = 0; i < (uint)entity_list_->count(); i++)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entity_list_->item(i));
         if (item && item->GetEntity() && item->GetEntity().data() == entity.get())
@@ -151,7 +151,7 @@ void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
 
     entity_list_->blockSignals(true);
     foreach(entity_id_t id, ids)
-        for(uint i = 0; i < entity_list_->count(); ++i)
+        for(uint i = 0; i < (uint)entity_list_->count(); ++i)
         {
             QListWidgetItem *item = entity_list_->item(i);
             if (id == (entity_id_t)item->text().toInt())
@@ -236,7 +236,7 @@ void ECEditorWindow::DeleteEntity()
         return;
 
     QList<EntityPtr> entities = GetSelectedEntities();
-    for(uint i = 0; i < entities.size(); ++i)
+    for(uint i = 0; i < (uint)entities.size(); ++i)
         scene->RemoveEntity(entities[i]->GetId(), AttributeChange::Default);
 }
 
@@ -549,7 +549,7 @@ void ECEditorWindow::ShowXmlEditorForEntity()
 {
     QList<EntityPtr> entities = GetSelectedEntities();
     std::vector<EntityComponentSelection> selection;
-    for(uint i = 0; i < entities.size(); i++)
+    for(uint i = 0; i < (uint)entities.size(); i++)
     {
         EntityComponentSelection entityComponent;
         entityComponent.entity = entities[i];
@@ -616,7 +616,7 @@ void ECEditorWindow::ToggleEntityList()
 
 void ECEditorWindow::EntityRemoved(Scene::Entity* entity)
 {
-    for(uint i = 0; i < entity_list_->count(); i++)
+    for(uint i = 0; i < (uint)entity_list_->count(); i++)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entity_list_->item(i));
         if (item->GetEntity().data() == entity)
@@ -668,7 +668,7 @@ void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entitie
     PROFILE(BoldEntityListItems);
     QSet<entity_id_t> old_enitities;
     EntityListWidgetItem *item = 0;
-    for(uint i = 0; i < entity_list_->count(); ++i)
+    for(uint i = 0; i < (uint)entity_list_->count(); ++i)
     {
         item = dynamic_cast<EntityListWidgetItem*>(entity_list_->item(i));
         if (item)
@@ -830,7 +830,7 @@ QList<EntityPtr> ECEditorWindow::GetSelectedEntities() const
     if (!scene)
         return ret;
 
-    for(uint i = 0; i < entity_list_->count(); ++i)
+    for(uint i = 0; i < (uint)entity_list_->count(); ++i)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entity_list_->item(i));
         if (item && item->GetEntity() && item->isSelected())

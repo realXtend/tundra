@@ -911,7 +911,7 @@ template<> void Attribute<QVariant>::ToBinary(kNet::DataSerializer& dest) const
 template<> void Attribute<QVariantList>::ToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<u8>(value_.size());
-    for(uint i = 0; i < value_.size(); ++i)
+    for(uint i = 0; i < (uint)value_.size(); ++i)
         dest.AddString(value_[i].toString().toStdString());
 }
 

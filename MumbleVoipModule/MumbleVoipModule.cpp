@@ -121,14 +121,14 @@ namespace MumbleVoip
 
 } // end of namespace: MumbleVoip
 
-void SetProfiler(Foundation::Profiler *profiler)
+void SetProfiler(Profiler *profiler)
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    ProfilerSection::SetProfiler(profiler);
 }
 
 extern "C"
 {
-    __declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+    __declspec(dllexport) void TundraPluginMain(Framework *fw)
     {
         IModule *module = new MumbleVoip::MumbleVoipModule();
         fw->GetModuleManager()->DeclareStaticModule(module);

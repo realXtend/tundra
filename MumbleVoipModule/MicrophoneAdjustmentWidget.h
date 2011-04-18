@@ -9,10 +9,7 @@
 #include "AudioAPI.h"
 #include <QTimer>
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 namespace MumbleVoip
 {
@@ -25,7 +22,7 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
-        MicrophoneAdjustmentWidget(Foundation::Framework* framework, Settings* settings);
+        MicrophoneAdjustmentWidget(Framework* framework, Settings* settings);
         virtual ~MicrophoneAdjustmentWidget();
 
     private slots:
@@ -41,7 +38,7 @@ namespace MumbleVoip
 
         Settings* settings_;
         QTimer read_audio_timer_;
-        Foundation::Framework* framework_;
+        Framework* framework_;
         SoundChannelPtr sound_id_;
         double voice_activity_level_;
         double microphone_level_;

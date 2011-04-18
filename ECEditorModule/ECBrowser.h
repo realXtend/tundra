@@ -47,7 +47,7 @@ class ECBrowser : public QtTreePropertyBrowser
 {
     Q_OBJECT
 public:
-    ECBrowser(Foundation::Framework *framework, QWidget *parent = 0);
+    ECBrowser(Framework *framework, QWidget *parent = 0);
     virtual ~ECBrowser();
 
     /// Insert new entity to browser.
@@ -202,7 +202,7 @@ private:
     EntityWeakPtrList entities_;
     QMenu *menu_;
     QTreeWidget *treeWidget_;
-    Foundation::Framework *framework_;
+    Framework *framework_;
     boost::weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
 };
 

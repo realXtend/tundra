@@ -7,7 +7,7 @@
 #include <QVariant>
 #include <QString>
 
-namespace Foundation { class Framework; }
+class Framework;
 
 /// Config info. A reusable config info for conviance so you can do less typin when dealing with constantly same config file/sections. QObject for script usage.
 class ConfigData : public QObject
@@ -175,11 +175,11 @@ private slots:
 
 private:
     Q_DISABLE_COPY(ConfigAPI)
-    friend class Foundation::Framework;
+    friend class Framework;
 
     /// Constructs the Config API.
     /// \param framework Framework. Takes ownership of the object.
-    ConfigAPI(Foundation::Framework *framework);
+    ConfigAPI(Framework *framework);
 
     /// Setter the application data. Get called by friend class framework.
     /// \param applicationOrganizaion QString. Application organization.
@@ -192,7 +192,7 @@ private:
     void PrepareDataFolder(const QString &configFolderName);
     
     /// Framework ptr.
-    Foundation::Framework *framework_;
+    Framework *framework_;
 
     /// Absolute path to the folder where to store the config files.
     QString configFolder_;

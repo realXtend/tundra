@@ -296,7 +296,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     instance->RegisterService(framework_, "framework");
     instance->RegisterService(instance, "engine");
     
-    for(uint i = 0; i < properties.size(); ++i)
+    for(uint i = 0; i < (uint)properties.size(); ++i)
         instance->RegisterService(framework_->property(properties[i]).value<QObject*>(), properties[i]);
 
     if (comp)
@@ -315,14 +315,14 @@ QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
     return QScriptValue();
 }
 
-void SetProfiler(Foundation::Profiler *profiler)
+void SetProfiler(Profiler *profiler)
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    ProfilerSection::SetProfiler(profiler);
 }
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+__declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     IModule *module = new JavascriptModule();
     fw->GetModuleManager()->DeclareStaticModule(module);

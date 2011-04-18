@@ -21,7 +21,7 @@
 class QDomDocument;
 class QDomElement;
 
-namespace Foundation { class Framework; }
+class Framework;
 
 /// IComponent is the base class for all user-created components. Inherit your own components from this class.
 /** Each Component has a compile-time specified type name that identifies the class-name of the Component.
@@ -50,7 +50,7 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
 
 public:
     /// Constructor.
-    explicit IComponent(Foundation::Framework* framework);
+    explicit IComponent(Framework* framework);
 
     /// Copy-constructor.
     IComponent(const IComponent& rhs);
@@ -147,7 +147,7 @@ public:
 
 public slots:
     /// Returns a pointer to the Naali framework instance.
-    Foundation::Framework *GetFramework() const { return framework_; }
+    Framework *GetFramework() const { return framework_; }
 
     /// Enables or disables network synchronization of changes that occur in the attributes of this component.
     /** By default, this flag is set for all created components.
@@ -286,7 +286,7 @@ protected:
     AttributeChange::Type updatemode_;
 
     /// Framework pointer. Needed to be able to perform important uninitialization etc. even when not in an entity.
-    Foundation::Framework* framework_;
+    Framework* framework_;
 
     /// Temporary-flag
     bool temporary_;

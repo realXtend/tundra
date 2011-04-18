@@ -28,7 +28,7 @@
 
 #include "MemoryLeakCheck.h"
 
-InputAPI::InputAPI(Foundation::Framework *framework_)
+InputAPI::InputAPI(Framework *framework_)
 :lastMouseX(0),
 lastMouseY(0),
 mouseCursorVisible(true),

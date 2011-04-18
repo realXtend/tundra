@@ -152,7 +152,7 @@ void EC_Sky::OnTextureAssetLoaded(AssetPtr tex)
         "rex_sky_bot.dds"
     };
 
-    for(int i = 0; i < textureAssets.size() || i < cSkyBoxTextureCount; ++i)
+    for(size_t i = 0; i < textureAssets.size() || i < cSkyBoxTextureCount; ++i)
         if (i < textureAssets.size() && textureAssets[i])
         {
             AssetPtr asset = textureAssets[i]->Asset();
@@ -211,9 +211,9 @@ void EC_Sky::OnAttributeUpdated(IAttribute* attribute)
         AssetReferenceList textures = textureRefs.Get();
 
         // Reallocate the number of texture asset reflisteners.
-        while(textureAssets.size() > textures.Size())
+        while(textureAssets.size() > (size_t)textures.Size())
             textureAssets.pop_back();
-        while(textureAssets.size() < textures.Size())
+        while(textureAssets.size() < (size_t)textures.Size())
             textureAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
 
         for(int i = 0; i < textures.Size(); ++i)
@@ -245,7 +245,7 @@ void EC_Sky::SetTextures()
         materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setCubicTextureName(&texture_names[0], false);
         //skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureScale(1, -1);
     else if(!materialPtr.isNull() )
-        for(int i = 0; i < texture_names.size(); ++i)
+        for(size_t i = 0; i < texture_names.size(); ++i)
             materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setFrameTextureName(Ogre::String(texture_names[i].c_str()), i);
 
     DisableSky();

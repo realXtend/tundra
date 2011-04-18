@@ -25,7 +25,7 @@ public:
     /// Constructor.
     /// @param framework Framework.
     /// @param parent Parent widget.
-    EcXmlEditorWidget(Foundation::Framework *framework, QWidget *parent = 0);
+    EcXmlEditorWidget(Framework *framework, QWidget *parent = 0);
 
     /// Destructor.
     ~EcXmlEditorWidget();
@@ -54,7 +54,7 @@ protected:
 
 private:
     /// Framework.
-    Foundation::Framework *framework_;
+    Framework *framework_;
 
     /// XML text edit field.
     QTextEdit *xmlEdit_;

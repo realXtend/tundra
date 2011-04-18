@@ -22,12 +22,12 @@ class IModule;
         component##Registrar() {}                                                       \
         virtual ~component##Registrar() {}                                              \
                                                                                         \
-        virtual void Register(Foundation::Framework *framework,                         \
+        virtual void Register(Framework *framework,                         \
             IModule* module)                                                            \
         {                                                                               \
             component::RegisterComponent(framework, module);                            \
         }                                                                               \
-        virtual void Unregister(Foundation::Framework *framework)                       \
+        virtual void Unregister(Framework *framework)                       \
         {                                                                               \
             component::UnregisterComponent(framework);                                  \
         }                                                                               \
@@ -58,7 +58,7 @@ class IModule;
     friend class component##Factory;                                                    \
                                                                                         \
   public:                                                                               \
-    static void RegisterComponent(const Foundation::Framework *framework,               \
+    static void RegisterComponent(const Framework *framework,               \
         IModule* module)                                                                \
     {                                                                                   \
         ComponentFactoryPtr factory =                                                   \
@@ -66,7 +66,7 @@ class IModule;
         framework->GetComponentManager()->RegisterFactory(TypeNameStatic(), factory);   \
     }                                                                                   \
                                                                                         \
-    static void UnregisterComponent(const Foundation::Framework *framework)             \
+    static void UnregisterComponent(const Framework *framework)             \
     {                                                                                   \
         framework->GetComponentManager()->UnregisterFactory(TypeNameStatic());          \
     }                                                                                   \

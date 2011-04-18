@@ -21,7 +21,7 @@
 
 #include "MemoryLeakCheck.h"
 
-IComponent::IComponent(Foundation::Framework* framework) :
+IComponent::IComponent(Framework* framework) :
     parent_entity_(0),
     framework_(framework),
     network_sync_(true),

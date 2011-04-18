@@ -968,9 +968,9 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
         AssetReferenceList materials = meshMaterial.Get();
 
         // Reallocate the number of material asset reflisteners.
-        while(materialAssets.size() > materials.Size())
+        while(materialAssets.size() > (size_t)materials.Size())
             materialAssets.pop_back();
-        while(materialAssets.size() < materials.Size())
+        while(materialAssets.size() < (size_t)materials.Size())
             materialAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
 
         for(int i = 0; i < materials.Size(); ++i)
@@ -1041,7 +1041,7 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
     // Apply pending materials, these were tried to be applied before the mesh was loaded
     if (!pendingMaterialApplies.empty())
     {
-        for(int idx = 0; idx < pendingMaterialApplies.size(); ++idx)
+        for(int idx = 0; idx < (int)pendingMaterialApplies.size(); ++idx)
             SetMaterial(idx, pendingMaterialApplies[idx]);
         pendingMaterialApplies.clear();
     }
@@ -1148,7 +1148,7 @@ bool EC_Mesh::HasMaterialsChanged() const
     for(uint i = 0; i < entity_->getNumSubEntities(); i++)
     {
         // No point to continue if all materials are not set.
-        if(i >= materials.Size())
+        if(i >= (uint)materials.Size())
             break;
 
         if(entity_->getSubEntity(i)->getMaterial()->getName() != SanitateAssetIdForOgre(materials[i].ref.toStdString()))

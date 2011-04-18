@@ -28,7 +28,7 @@
 
 namespace Environment
 {
-    TerrainWeightEditor::TerrainWeightEditor(Foundation::Framework *fw) :
+    TerrainWeightEditor::TerrainWeightEditor(Framework *fw) :
         fw_(fw),
         scene_manager_(0),
         brush_size_(1),

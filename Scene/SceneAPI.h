@@ -10,7 +10,7 @@
 #include <QString>
 
 typedef std::map<QString, Scene::ScenePtr> SceneMap;
-namespace Foundation { class Framework; }
+class Framework;
 
 /**
 <table class="header"><tr><td>
@@ -19,7 +19,7 @@ namespace Foundation { class Framework; }
 Manages the scenes for the viewer and server. With this API you can create, remove, get and query scenes.
 You can also get and set the default scene. You can also receive Qt signals about scene events from this API.
 
-Owned by Foundation::Framework.
+Owned by Framework.
 
 <b>Qt signals emitted by SceneAPI object:</b>
 <ul>
@@ -43,7 +43,7 @@ class SceneAPI : public QObject
 {
     Q_OBJECT
 
-    friend class Foundation::Framework;
+    friend class Framework;
 
 public:
     /// Destructor.
@@ -127,23 +127,23 @@ public slots:
 
 private:
     /// Constructor. Framework takes ownership of this object.
-    /// \param framework Foundation::Framework ptr.
-    explicit SceneAPI(Foundation::Framework *framework);
+    /// \param framework Framework ptr.
+    explicit SceneAPI(Framework *framework);
 
     /// Frees all known scene and the scene interact object.
-    /// \note This function is called by our fried class Foundation::Framework in its UnloadModules() function.
+    /// \note This function is called by our fried class Framework in its UnloadModules() function.
     void Reset();
     
     /// Initialize the scene interact object. Needs framework->Input() to be valid.
-    /// \note This function is called by our fried class Foundation::Framework when InputAPI is ready.
+    /// \note This function is called by our fried class Framework when InputAPI is ready.
     void Initialise();
 
     /// PostInitialize the scene interact object as RenderServiceInterface is now available.
-    /// \note This function is called by our fried class Foundation::Framework when modules have loaded and RenderServiceInterface is ready.
+    /// \note This function is called by our fried class Framework when modules have loaded and RenderServiceInterface is ready.
     void PostInitialize();
 
     /// Framework ptr.
-    Foundation::Framework *framework_;
+    Framework *framework_;
 
     /// Map of scenes.
     SceneMap scenes_;

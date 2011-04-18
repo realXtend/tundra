@@ -14,7 +14,7 @@ namespace Environment
         Q_OBJECT
 
     public:
-        explicit TerrainWeightEditor(Foundation::Framework *fw);
+        explicit TerrainWeightEditor(Framework *fw);
         ~TerrainWeightEditor();
 
     public slots:
@@ -29,7 +29,7 @@ namespace Environment
         void HandleMouseEventFromCanvas(QMouseEvent *ev, QString name);
 
     private:
-        Foundation::Framework *fw_;
+        Framework *fw_;
         QWidget* editor_widget_;
         Scene::SceneManager* scene_manager_;
         Scene::SceneManager* GetSceneManager();

@@ -6,10 +6,7 @@
 #include "CommandManager.h"
 #include "LogListenerInterface.h"
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 class CommandManager;
 class ConsoleChannel;
@@ -25,7 +22,7 @@ typedef boost::shared_ptr<ConsoleChannel> PocoLogChannelPtr;
 class ConsoleManager //:  public ConsoleServiceInterface
 {
 public:
-    explicit ConsoleManager(Foundation::Framework *fw);
+    explicit ConsoleManager(Framework *fw);
 
     //! destructor
     virtual ~ConsoleManager();
@@ -56,7 +53,7 @@ public:
 private:
     Q_DISABLE_COPY(ConsoleManager);
 
-    Foundation::Framework *framework_;
+    Framework *framework_;
 
     //! command manager
     CommandManager *command_manager_;
@@ -74,15 +71,17 @@ private:
     bool ui_initialized_;
 };
 
-//! loglistener is used to listen log messages from renderer
-class LogListener : public Foundation::LogListenerInterface
+//! Used to listen log messages from renderer
+class LogListener
 {
     LogListener();
 
 public:
-    explicit LogListener(ConsoleManager *console) : Foundation::LogListenerInterface(), mngr_(console) {}
+    explicit LogListener(ConsoleManager *console) : mngr_(console) {}
     virtual ~LogListener() {}
 
+    /// A very generic log message passing, only the message itself.
+    /// Does not handle log levels or anything extra.
     virtual void LogMessage(const std::string &message){ if(mngr_) mngr_->Print(message); }
     ConsoleManager* mngr_;
 };

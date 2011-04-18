@@ -15,8 +15,6 @@
 #include "ModuleManager.h"
 #include "LoggingFunctions.h"
 
-using namespace Foundation;
-
 IModule::IModule(const std::string &name_)
 :name(name_), 
 state_(MS_Unloaded), 

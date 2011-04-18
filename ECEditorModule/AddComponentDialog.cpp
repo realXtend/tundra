@@ -17,7 +17,7 @@
 
 #include "MemoryLeakCheck.h"
 
-AddComponentDialog::AddComponentDialog(Foundation::Framework *fw, const QList<entity_id_t> &ids, QWidget *parent, Qt::WindowFlags f):
+AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &ids, QWidget *parent, Qt::WindowFlags f):
     QDialog(parent, f),
     framework_(fw),
     entities_(ids),
@@ -124,7 +124,7 @@ void AddComponentDialog::CheckComponentName(const QString &name)
     if(scene && type_combo_box_ && name_line_edit_)
     {
         EntityPtr entity;
-        for(uint i = 0; i < entities_.size(); i++)
+        for(uint i = 0; i < (uint)entities_.size(); i++)
         {
             entity = scene->GetEntity(entities_[i]);
             if(entity->HasComponent(type_combo_box_->currentText(), name_line_edit_->text()))

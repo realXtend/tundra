@@ -14,7 +14,7 @@ ServiceWeakPtr ServiceManager::GetService(service_type_t type)
     {
         //std::string what("Service type ");
         //what += boost::lexical_cast<std::string>(type) + " not registered!";
-        //Foundation::LogDebug(what);
+        //LogDebug(what);
 
         return ServiceWeakPtr();
     }

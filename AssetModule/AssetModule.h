@@ -16,8 +16,8 @@ namespace Asset
 {
     /** \defgroup AssetModuleClient AssetModule Client Interface
         This page lists the public interface of the AssetModule,
-        which consists of implementing Foundation::AssetServiceInterface and
-        Foundation::AssetInterface
+        which consists of implementing AssetServiceInterface and
+        AssetInterface
 
         For details on how to use the public interface, see \ref AssetModule "Using the asset module".
     */

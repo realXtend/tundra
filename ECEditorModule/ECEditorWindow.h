@@ -65,7 +65,7 @@ public:
     /// Constructor
     /** @param framework Framework.
     */
-    explicit ECEditorWindow(Foundation::Framework* framework);
+    explicit ECEditorWindow(Framework* framework);
 
     /// Destructor.
     ~ECEditorWindow();
@@ -223,7 +223,7 @@ private:
     void Initialize();
 
     /// Framework pointer.
-    Foundation::Framework *framework_;
+    Framework *framework_;
 
     QPushButton* toggle_entities_button_;
     QListWidget* entity_list_;

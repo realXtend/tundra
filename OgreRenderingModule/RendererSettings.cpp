@@ -26,7 +26,7 @@
 
 namespace OgreRenderer
 {
-    RendererSettings::RendererSettings(Foundation::Framework* framework) :
+    RendererSettings::RendererSettings(Framework* framework) :
         framework_(framework),
         settings_widget_(0)
     {

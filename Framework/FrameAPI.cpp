@@ -27,7 +27,7 @@ void DelayedSignal::Expire()
     emit Triggered((float)((GetCurrentClockTime() - startTime_) / GetCurrentClockFreq()));
 }
 
-FrameAPI::FrameAPI(Foundation::Framework *framework) : QObject(framework)
+FrameAPI::FrameAPI(Framework *framework) : QObject(framework)
 {
     startTime_ = GetCurrentClockTime();
 }

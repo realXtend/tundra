@@ -15,7 +15,7 @@
 
 #include "MemoryLeakCheck.h"
 
-ConsoleManager::ConsoleManager(Foundation::Framework *fw) :
+ConsoleManager::ConsoleManager(Framework *fw) :
     framework_(fw),
     ui_initialized_(false),
     console_channel_(new ConsoleChannel(this)),
@@ -24,7 +24,7 @@ ConsoleManager::ConsoleManager(Foundation::Framework *fw) :
     command_manager_ = new CommandManager(this, framework_);
 //    framework_->AddLogChannel(console_channel_.get());
 
-    Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
+    RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
     if (renderer)
         renderer->SubscribeLogListener(log_listener_);
     else
@@ -38,7 +38,7 @@ ConsoleManager::~ConsoleManager()
 
 void ConsoleManager::UnsubscribeLogListener()
 {
-    Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
+    RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
     if (renderer)
         renderer->UnsubscribeLogListener(log_listener_);
     else

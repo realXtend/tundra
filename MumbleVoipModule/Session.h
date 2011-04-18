@@ -7,10 +7,7 @@
 #include "AudioAPI.h"
 #include <QMap>
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 namespace MumbleLib
 {
@@ -35,7 +32,7 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
-        Session(Foundation::Framework* framework, Settings* settings);
+        Session(Framework* framework, Settings* settings);
         virtual ~Session();
     public slots:
 
@@ -89,7 +86,7 @@ namespace MumbleVoip
         //virtual void AddChannel(EC_VoiceChannel* channel);
         //virtual void RemoveChannel(EC_VoiceChannel* channel);
 
-        Foundation::Framework* framework_;
+        Framework* framework_;
         State state_;
         QString reason_;
         QString description_;

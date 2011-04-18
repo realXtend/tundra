@@ -15,10 +15,7 @@ class QComboBox;
 class QCheckBox;
 class QPushButton;
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 /// Dialog for adding new component to entity.
 class ECEDITOR_MODULE_API AddComponentDialog: public QDialog
@@ -32,7 +29,7 @@ public:
         \param parent Parent widget.
         \param f Window flags.
     */
-    AddComponentDialog(Foundation::Framework *fw, const QList<entity_id_t> &ids, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    AddComponentDialog(Framework *fw, const QList<entity_id_t> &ids, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
     /// Destroyes the dialog.
     ~AddComponentDialog();
@@ -76,7 +73,7 @@ private:
     QPushButton *cancel_button_;
     typedef QList<entity_id_t> EntityIdList;
     EntityIdList entities_; ///< Entities for which the new component is planned to be added.
-    Foundation::Framework *framework_;
+    Framework *framework_;
 };
 
 #endif

@@ -9,10 +9,7 @@
 #include "CoreTypes.h"
 #include "InputAPI.h"
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 namespace Ui
 {
@@ -31,7 +28,7 @@ class UiConsoleManager: public QObject
     Q_OBJECT
 
 public:
-    UiConsoleManager(Foundation::Framework *framework, QGraphicsView *ui_view);
+    UiConsoleManager(Framework *framework, QGraphicsView *ui_view);
     virtual ~UiConsoleManager();
 
 public slots:
@@ -74,7 +71,7 @@ private:
     qreal opacity_;
 
     //! Framework pointer
-    Foundation::Framework* framework_;
+    Framework* framework_;
 
     //! View to the scene
     QGraphicsView *ui_view_;

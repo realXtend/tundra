@@ -61,7 +61,7 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
             return EntityPtr();
 
     QSet<QString> material_names_set;
-    for(uint i = 0; i < material_names.size(); ++i)
+    for(uint i = 0; i < (uint)material_names.size(); ++i)
     {
         LogDebug("Material ref: " + material_names[i].toStdString());
         material_names_set.insert(material_names[i]);
@@ -643,7 +643,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                 // TODO: This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
                 //AssetAPI::ResolveLocalAssetPath();
                 ParseMeshForMaterialsAndSkeleton(path + "/" + mesh_name, material_names, skeleton_name);
-                for(uint i = 0; i < material_names.size(); ++i)
+                for(uint i = 0; i < (uint)material_names.size(); ++i)
                 {
                     usedMaterials.insert(material_names[i]);
                     material_names_.insert(material_names[i].toStdString());
@@ -974,7 +974,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::strin
                 QStringList material_names;
                 QString skeleton_name;
                 ParseMeshForMaterialsAndSkeleton(QString::fromStdString(in_asset_dir + "/" + mesh_name), material_names, skeleton_name);
-                for(uint i = 0; i < material_names.size(); ++i)
+                for(uint i = 0; i < (uint)material_names.size(); ++i)
                     material_names_.insert(material_names[i].toStdString());
                 mesh_default_materials_[mesh_name.c_str()] = material_names;
             }
@@ -1116,7 +1116,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                         // If no subentity element, use the inspected material names we stored earlier
                         const QStringList& default_materials = mesh_default_materials_[orig_mesh_name.c_str()];
                         materials.resize(default_materials.size());
-                        for(uint i = 0; i < default_materials.size(); ++i)
+                        for(uint i = 0; i < (uint)default_materials.size(); ++i)
                             materials[i] =  prefix + default_materials[i] + ".material";
                     }
                     

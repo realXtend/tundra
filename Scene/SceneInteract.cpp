@@ -23,7 +23,7 @@ SceneInteract::SceneInteract() :
 {
 }
 
-void SceneInteract::Initialize(Foundation::Framework *framework)
+void SceneInteract::Initialize(Framework *framework)
 {
     framework_ = framework;
 
@@ -40,7 +40,7 @@ void SceneInteract::Initialize(Foundation::Framework *framework)
 
 void SceneInteract::PostInitialize()
 {
-    renderer_ = framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer);
+    renderer_ = framework_->GetServiceManager()->GetService<RenderServiceInterface>(Service::ST_Renderer);
 }
 
 void SceneInteract::Update()

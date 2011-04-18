@@ -35,7 +35,7 @@ namespace
     }
 }
 
-AssetsWindow::AssetsWindow(Foundation::Framework *fw, QWidget *parent) :
+AssetsWindow::AssetsWindow(Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw),
     searchField(0),

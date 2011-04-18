@@ -18,14 +18,13 @@ class UiProxyWidget;
 class QSignalMapper;
 class EC_VoiceChannel;
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
+
 namespace Scene
 {
     class Entity;
 }
+
 class IComponent;
 
 namespace MumbleVoip
@@ -39,7 +38,7 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
-        Provider(Foundation::Framework* framework, Settings* settings);
+        Provider(Framework* framework, Settings* settings);
         virtual ~Provider();
         void PostInitialize();
 
@@ -65,7 +64,7 @@ namespace MumbleVoip
         QString GetAvatarUuid();
         void AddECVoiceChannel(EC_VoiceChannel* channel);
 
-        Foundation::Framework* framework_;
+        Framework* framework_;
         QString description_;
         MumbleVoip::Session* session_;  /// \todo Use shared ptr ...
         Settings* settings_;

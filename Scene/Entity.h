@@ -142,7 +142,7 @@ namespace Scene
         const ComponentVector &Components() const { return components_; }
 
         /// Returns framework
-        Foundation::Framework *GetFramework() const { return framework_; }
+        Framework *GetFramework() const { return framework_; }
 
         /// Returns scene
         SceneManager* GetScene() const { return scene_; }
@@ -346,14 +346,14 @@ public:
         /**
             \param framework Framework
             \param scene Scene this entity belongs to */
-        Entity(Foundation::Framework* framework, SceneManager* scene);
+        Entity(Framework* framework, SceneManager* scene);
 
         /// constructor that takes an id for the entity
         /**
             \param framework Framework
             \param id unique id for the entity.
             \param scene Scene this entity belongs to */
-        Entity(Foundation::Framework* framework, entity_id_t id, SceneManager* scene);
+        Entity(Framework* framework, entity_id_t id, SceneManager* scene);
 
         /// Set new id
         void SetNewId(entity_id_t id) { id_ = id; }
@@ -375,7 +375,7 @@ public:
         entity_id_t id_;
 
         /// Pointer to framework
-        Foundation::Framework* framework_;
+        Framework* framework_;
 
         /// Pointer to scene
         SceneManager* scene_;

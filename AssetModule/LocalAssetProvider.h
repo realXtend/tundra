@@ -18,7 +18,7 @@ namespace Asset
         Q_OBJECT;
 
     public:
-        explicit LocalAssetProvider(Foundation::Framework* framework);
+        explicit LocalAssetProvider(Framework* framework);
         
         virtual ~LocalAssetProvider();
         
@@ -56,7 +56,7 @@ namespace Asset
         QString GetPathForAsset(const QString &localFilename, LocalAssetStoragePtr *storage);
         
         /// Framework
-        Foundation::Framework *framework;
+        Framework *framework;
         
         /// Asset directories to search, may be recursive or not
         std::vector<LocalAssetStoragePtr> storages;

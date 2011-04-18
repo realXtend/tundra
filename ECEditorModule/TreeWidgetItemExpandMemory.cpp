@@ -14,7 +14,7 @@
 
 #include <QTreeWidget>
 
-TreeWidgetItemExpandMemory::TreeWidgetItemExpandMemory(const char *group, Foundation::Framework *framework) :
+TreeWidgetItemExpandMemory::TreeWidgetItemExpandMemory(const char *group, Framework *framework) :
     framework_(framework),
     groupName(group)
 {

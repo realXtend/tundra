@@ -134,7 +134,7 @@ void DebugStatsModule::Update(f64 frametime)
 #ifdef _WINDOWS
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
-    double timeSpent = Foundation::ProfilerBlock::ElapsedTimeSeconds(lastCallTime.QuadPart, now.QuadPart);
+    double timeSpent = ProfilerBlock::ElapsedTimeSeconds(lastCallTime.QuadPart, now.QuadPart);
     lastCallTime = now;
 
     frameTimes.push_back(make_pair(*(boost::uint64_t*)&now, timeSpent));
@@ -188,14 +188,14 @@ ConsoleCommandResult DebugStatsModule::Exec(const StringVector &params)
 
 }
 
-void SetProfiler(Foundation::Profiler *profiler)
+void SetProfiler(Profiler *profiler)
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    ProfilerSection::SetProfiler(profiler);
 }
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+__declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     IModule *module = new DebugStats::DebugStatsModule();
     fw->GetModuleManager()->DeclareStaticModule(module);

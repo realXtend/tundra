@@ -13,7 +13,6 @@ using namespace OgreRenderer;
 
 #include "MemoryLeakCheck.h"
 
-
 EC_SelectionBox::EC_SelectionBox(IModule* module) :
     IComponent(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),

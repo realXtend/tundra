@@ -46,12 +46,12 @@ std::string GetErrorString(int error)
 }
 
 
-PluginAPI::PluginAPI(Foundation::Framework *owner_)
+PluginAPI::PluginAPI(Framework *owner_)
 :owner(owner_)
 {
 }
 
-typedef void (*TundraPluginMainSignature)(Foundation::Framework *owner);
+typedef void (*TundraPluginMainSignature)(Framework *owner);
 
 void PluginAPI::LoadPlugin(const QString &filename)
 {

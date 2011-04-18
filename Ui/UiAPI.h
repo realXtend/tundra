@@ -22,7 +22,7 @@ public:
     /// Constructs the UI API.
     /** param owner Owner framework.
     */
-    explicit UiAPI(Foundation::Framework *owner);
+    explicit UiAPI(Framework *owner);
 
     /// Destroys main window and viewport.
     ~UiAPI();
@@ -152,7 +152,7 @@ private slots:
     void DeleteCallingWidgetOnClose();
 
 private:
-    Foundation::Framework *owner; ///< Owner framework.
+    Framework *owner; ///< Owner framework.
     QPointer<UiMainWindow> mainWindow; ///< The main window.
     UiGraphicsView *graphicsView; ///< Widget which shows contents of the graphics scene.
     QGraphicsScene *graphicsScene; ///< The graphics scene, host all the user-added widgets.

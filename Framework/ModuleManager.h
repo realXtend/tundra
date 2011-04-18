@@ -12,10 +12,7 @@
 
 namespace fs = boost::filesystem;
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 /** \defgroup Module_group Module Architecture Client Interface
     \copydoc Module
@@ -81,7 +78,7 @@ class ModuleManager
 public:
     typedef std::vector<Module::Entry> ModuleVector;
 
-    explicit ModuleManager(Foundation::Framework *framework);
+    explicit ModuleManager(Framework *framework);
     ~ModuleManager();
 
     /// Declare a module from static library
@@ -207,7 +204,7 @@ private:
     ModuleTypeSet exclude_list_;
 
     /// Framework pointer.
-    Foundation::Framework *framework_;
+    Framework *framework_;
 };
 
 #endif

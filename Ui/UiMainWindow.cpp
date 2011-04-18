@@ -18,7 +18,7 @@
 
 using namespace std;
 
-UiMainWindow::UiMainWindow(Foundation::Framework *owner_)
+UiMainWindow::UiMainWindow(Framework *owner_)
 :owner(owner_)
 {
     setAcceptDrops(true);

@@ -15,10 +15,7 @@
 #include <QObject>
 #include <QMap>
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 class ConsoleManager;
 class UiConsoleManager;
@@ -71,7 +68,7 @@ class ConsoleAPI : public QObject
 {
     Q_OBJECT
 
-    friend class Foundation::Framework;
+    friend class Framework;
 
 public:
     /// Destructor.
@@ -116,10 +113,10 @@ private:
     /// Constructs the console API.
     /** @param fw Framework.
     */
-    explicit ConsoleAPI(Foundation::Framework *fw);
+    explicit ConsoleAPI(Framework *fw);
 
     /// Framework.
-    Foundation::Framework *framework_;
+    Framework *framework_;
 
     /// List of registered console commands.
     QMap<QString, ConsoleCommand *> commands_;

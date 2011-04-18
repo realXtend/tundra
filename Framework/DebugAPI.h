@@ -10,10 +10,7 @@
 
 #include <QObject>
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 /// Debug core API.
 class DebugAPI : public QObject
@@ -49,12 +46,12 @@ public slots:
 
 private:
     Q_DISABLE_COPY(DebugAPI)
-    friend class Foundation::Framework;
+    friend class Framework;
 
     /// Constructs the Debug API.
     /** @param fw Framework. Takes ownership of the object.
     */
-    DebugAPI(Foundation::Framework *fw);
+    DebugAPI(Framework *fw);
 };
 
 #endif

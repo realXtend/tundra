@@ -182,9 +182,9 @@ int OgreParticleAsset::GetNumTemplates() const
 
 QString OgreParticleAsset::GetTemplateName(int index) const
 {
-    if (index >= templates_.size())
+    if (index < 0 || index >= (int)templates_.size())
         return "";
-        
+
     return templates_[index].c_str();
 }
 

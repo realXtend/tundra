@@ -99,11 +99,11 @@ public:
     ModuleState State() const { return state_; }
 
     /// Returns parent framework.
-    Foundation::Framework *GetFramework() const;
+    Framework *GetFramework() const;
 
 protected:
     /// Parent framework
-    Foundation::Framework *framework_;
+    Framework *framework_;
 
     /// Registers console command for this module.
     /** @param command Console command.
@@ -116,7 +116,7 @@ private:
     void operator=(const IModule &);
 
     /// Only for internal use.
-    void SetFramework(Foundation::Framework *framework) { framework_ = framework; assert (framework_); }
+    void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
 
     /// Called when module is loaded. For internal use.
     void LoadInternal() { assert(state_ == MS_Unloaded); Load(); state_ = MS_Loaded; }
@@ -151,7 +151,7 @@ private:
 #ifdef _MSC_VER
 #pragma warning( pop )
 ///\todo Try to find a way not disable C4275 warnings for good
-// Disable C4275 warnings in MSVC for good: non – DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'
+// Disable C4275 warnings in MSVC for good: non ï¿½ DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'
 #pragma warning( disable : 4275 )
 #endif
 

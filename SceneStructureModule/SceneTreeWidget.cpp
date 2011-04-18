@@ -72,7 +72,7 @@ void Menu::keyReleaseEvent(QKeyEvent *e)
 
 // SceneTreeWidget
 
-SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
+SceneTreeWidget::SceneTreeWidget(Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
     framework(fw),
     showComponents(false),

@@ -744,7 +744,7 @@ bool EC_Terrain::SaveToFile(QString filename)
 
     assert(sizeof(float) == 4);
 
-    for(int i = 0; i < xPatches*yPatches; ++i)
+    for(u32 i = 0; i < xPatches*yPatches; ++i)
     {
         if (patches[i].heightData.size() < cPatchSize*cPatchSize)
             patches[i].heightData.resize(cPatchSize*cPatchSize);
@@ -761,7 +761,7 @@ bool EC_Terrain::SaveToFile(QString filename)
 
 u32 ReadU32(const char *dataPtr, size_t numBytes, int &offset)
 {
-    if (offset + 4 > numBytes)
+    if (offset + 4 > (int)numBytes)
         throw Exception("Not enough bytes to deserialize!");
     u32 data = *(u32*)(dataPtr + offset); ///\note Requires unaligned load support from the CPU and assumes data storage endianness to be the same for loader and saver.
     offset += 4;
@@ -796,8 +796,8 @@ bool EC_Terrain::LoadFromDataInMemory(const char *data, size_t numBytes)
     std::vector<Patch> newPatches(xPatches*yPatches);
 
     // Initialize the new height data structure.
-    for(int y = 0; y < yPatches; ++y)
-        for(int x = 0; x < xPatches; ++x)
+    for(u32 y = 0; y < yPatches; ++y)
+        for(u32 x = 0; x < xPatches; ++x)
         {
             newPatches[y*xPatches+x].x = x;
             newPatches[y*xPatches+x].y = y;
@@ -860,8 +860,8 @@ void EC_Terrain::NormalizeImage(QString filename) const
 
     uchar *imagePos = &imageData[0];
 
-    for(int y = 0; y < image.getHeight(); ++y)
-        for(int x = 0; x < image.getWidth(); ++x)
+    for(size_t y = 0; y < image.getHeight(); ++y)
+        for(size_t x = 0; x < image.getWidth(); ++x)
         {
             Ogre::ColourValue color = image.getColourAt(x, y, 0);
             color.a = 0;
@@ -1291,7 +1291,7 @@ void EC_Terrain::UpdateTerrainPatchMaterial(int patchX, int patchY)
     if (!patch.entity)
         return;
 
-    for(int i = 0; i < patch.entity->getNumSubEntities(); ++i)
+    for(size_t i = 0; i < patch.entity->getNumSubEntities(); ++i)
     {
         Ogre::SubEntity *sub = patch.entity->getSubEntity(i);
         if (sub)
@@ -1571,8 +1571,8 @@ float EC_Terrain::GetTerrainMinHeight() const
 {
     float minHeight = std::numeric_limits<float>::max();
 
-    for(int i = 0; i < patches.size(); ++i)
-        for(int j = 0; j < patches[i].heightData.size(); ++j)
+    for(size_t i = 0; i < patches.size(); ++i)
+        for(size_t j = 0; j < patches[i].heightData.size(); ++j)
             minHeight = min(minHeight, patches[i].heightData[j]);
 
     return minHeight;
@@ -1582,8 +1582,8 @@ float EC_Terrain::GetTerrainMaxHeight() const
 {
     float maxHeight = -std::numeric_limits<float>::max();
 
-    for(int i = 0; i < patches.size(); ++i)
-        for(int j = 0; j < patches[i].heightData.size(); ++j)
+    for(size_t i = 0; i < patches.size(); ++i)
+        for(size_t j = 0; j < patches[i].heightData.size(); ++j)
             maxHeight = max(maxHeight, patches[i].heightData[j]);
 
     return maxHeight;

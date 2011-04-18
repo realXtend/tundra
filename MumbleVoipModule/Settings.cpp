@@ -13,7 +13,7 @@
 
 namespace MumbleVoip
 {
-    Settings::Settings(Foundation::Framework *framework) :
+    Settings::Settings(Framework *framework) :
         framework_(framework)
     {
         Load();

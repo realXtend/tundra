@@ -89,7 +89,7 @@ void LineEditPropertyFactory::connectPropertyManager(QtStringPropertyManager *ma
 QWidget *LineEditPropertyFactory::createEditor(QtStringPropertyManager *manager, QtProperty *property, QWidget *parent)
 {
     LineEditWithButtons *editor = new LineEditWithButtons(manager->value(property), parent);
-    for(uint i = 0; i < buttons_.size(); ++i)
+    for(uint i = 0; i < (uint)buttons_.size(); ++i)
     {
         QPushButton *button = editor->CreateButton(buttons_[i].objectName, buttons_[i].text);
         connect(button, SIGNAL(clicked(bool)), this, SLOT(ButtonClicked()));
@@ -114,7 +114,7 @@ void LineEditPropertyFactory::ButtonClicked()
         return;
 
     QString function;
-    for(uint i = 0; i < buttons_.size(); ++i)
+    for(uint i = 0; i < (uint)buttons_.size(); ++i)
     {
         if (buttons_[i].objectName == button->objectName())
         {

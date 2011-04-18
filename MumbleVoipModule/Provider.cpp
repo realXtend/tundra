@@ -28,7 +28,7 @@
 
 namespace MumbleVoip
 {
-    Provider::Provider(Foundation::Framework* framework, Settings* settings) :
+    Provider::Provider(Framework* framework, Settings* settings) :
         framework_(framework),
         description_("Mumble in-world voice"),
         session_(0),

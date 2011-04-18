@@ -10,8 +10,7 @@
 
 #include <queue>
 
-namespace Foundation { class Framework; }
-
+class Framework;
 class ConsoleManager;
 class NativeConsole;
 
@@ -55,7 +54,7 @@ class CommandManager : public QObject //: public ConsoleCommandServiceInterface
     Q_OBJECT
 
 public:
-    CommandManager(ConsoleManager *console, Foundation::Framework *fw);
+    CommandManager(ConsoleManager *console, Framework *fw);
     virtual ~CommandManager();
 
     //! Updates the service. Should be called in main thread context. For internal use.
@@ -136,7 +135,7 @@ private:
     typedef std::queue<std::string> StringQueue;
     typedef std::map< std::string, StringVector> CommandParamMap;
 
-    Foundation::Framework *framework_;
+    Framework *framework_;
 
     CommandMap commands_; ///< Available commands
     RecursiveMutex commands_mutex_; ///< Mutex for handling registered commands.

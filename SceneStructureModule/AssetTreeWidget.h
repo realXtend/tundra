@@ -42,7 +42,7 @@ public:
     /** @param fw Framework pointer.
         @param parent Parent widget.
     */
-    AssetTreeWidget(Foundation::Framework *fw, QWidget *parent = 0);
+    AssetTreeWidget(Framework *fw, QWidget *parent = 0);
 
 protected:
     /// QWidget override. Show context menu with asset-spesific actions.
@@ -66,7 +66,7 @@ private:
     /// Returns list of selected asset items.
     QList<AssetItem *> GetSelection() const;
 
-    Foundation::Framework *framework; ///< Framework.
+    Framework *framework; ///< Framework.
     QMenu *contextMenu; ///< Right-click context menu.
 
 private slots:

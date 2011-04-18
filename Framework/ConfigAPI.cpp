@@ -19,7 +19,7 @@ QString ConfigAPI::SECTION_CLIENT = "client";
 QString ConfigAPI::SECTION_RENDERING = "rendering";
 QString ConfigAPI::SECTION_UI = "ui";
 
-ConfigAPI::ConfigAPI(Foundation::Framework *framework) :
+ConfigAPI::ConfigAPI(Framework *framework) :
     QObject(framework),
     framework_(framework),
     configFolder_("")

@@ -27,16 +27,13 @@ typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
 typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
 typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
 
-namespace Foundation
-{
-    class Framework;
-    class KeyBindings;
-    class Profiler;
+class Framework;
+class KeyBindings;
+class Profiler;
 
-    class RenderServiceInterface;
-    typedef boost::shared_ptr<RenderServiceInterface> RendererPtr;
-    typedef boost::weak_ptr<RenderServiceInterface> RendererWeakPtr;
-}
+class RenderServiceInterface;
+typedef boost::shared_ptr<RenderServiceInterface> RendererServicePtr;
+typedef boost::weak_ptr<RenderServiceInterface> RendererServiceWeakPtr;
 
 class RaycastResult;
 

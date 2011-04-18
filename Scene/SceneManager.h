@@ -12,7 +12,7 @@
 #include <QVariant>
 #include <boost/enable_shared_from_this.hpp>
 
-namespace Foundation { class Framework; }
+class Framework;
 
 class SceneAPI;
 
@@ -141,7 +141,7 @@ public slots:
         bool IsInterpolating() const { return interpolating_; }
 
         /// Returns Framework
-        Foundation::Framework *GetFramework() const { return framework_; }
+        Framework *GetFramework() const { return framework_; }
 
         /// Inspects file and returns a scene description structure from the contents of XML file.
         /** @param filename File name.
@@ -482,12 +482,12 @@ public slots:
             \param fw Framework Parent framework.
             \param viewEnabled Whether the scene is view enabled.
         */
-        SceneManager(const QString &name, Foundation::Framework *fw, bool viewEnabled);
+        SceneManager(const QString &name, Framework *fw, bool viewEnabled);
 
         uint gid_; ///< Current global id for networked entities
         uint gid_local_; ///< Current id for local entities.
         EntityMap entities_; ///< All entities in the scene.
-        Foundation::Framework *framework_; ///< Parent framework.
+        Framework *framework_; ///< Parent framework.
         QString name_; ///< Name of the scene.
         bool viewEnabled_; ///< View enabled -flag.
         bool interpolating_; ///< Currently doing interpolation-flag.

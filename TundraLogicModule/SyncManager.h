@@ -151,7 +151,7 @@ private:
     TundraLogicModule* owner_;
     
     /// Framework pointer
-    Foundation::Framework* framework_;
+    Framework* framework_;
     
     /// Scene pointer
     Scene::SceneWeakPtr scene_;

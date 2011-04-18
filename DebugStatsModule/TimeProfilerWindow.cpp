@@ -44,7 +44,7 @@ namespace DebugStats
 
 const QString DEFAULT_LOG_DIR("logs");
 
-TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(fw)
+TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
 {
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/profiler.ui");
@@ -584,9 +584,8 @@ static QTreeWidgetItem *FindItemByName(QTreeWidget *parent, const char *name)
     return 0;
 }
 
-void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode)
+void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode)
 {
-    using namespace Foundation;
     const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
     for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
@@ -680,7 +679,7 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
         uint color = colorOdd;
 #ifdef _WINDOWS
         double age = (double)frameTimes[firstEntry + i].first / freq.QuadPart;
-        // Foundation::ProfilerBlock::ElapsedTimeSeconds(*(LARGE_INTEGER*)&frameTimes[firstEntry + i].first, now);
+        // ProfilerBlock::ElapsedTimeSeconds(*(LARGE_INTEGER*)&frameTimes[firstEntry + i].first, now);
         color = (fmod(age, 2.0) >= 1.0) ? colorOdd : colorEven;
 #endif
         if ((frameTimes[firstEntry + i].second / maxTime >= 1.0 &&
@@ -776,8 +775,6 @@ void TimeProfilerWindow::DumpNodeData()
 void TimeProfilerWindow::DoThresholdLogging()
 {
 #ifdef PROFILING
-    using namespace Foundation;
-
      QPushButton* button = findChild<QPushButton* >("loggerApply");
      if (button == 0)
          return;
@@ -870,9 +867,8 @@ void TimeProfilerWindow::DoThresholdLogging()
 #endif
 }
 
-void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode)
+void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const ProfilerNodeTree *profilerNode)
 {
-    using namespace Foundation;
     const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
     for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
@@ -1198,21 +1194,19 @@ void TimeProfilerWindow::RefreshProfilingData()
 void TimeProfilerWindow::RefreshProfilingDataTree()
 {
 #ifdef PROFILING
-    using namespace Foundation;
-
-//    Foundation::Profiler *profiler = Foundation::ProfilerSection::GetProfiler();
+//    Profiler *profiler = ProfilerSection::GetProfiler();
 
     Profiler &profiler = framework_->GetProfiler();
     profiler.Lock();
 //    ProfilerNodeTree *node = profiler.Lock().get();
-    Foundation::ProfilerNodeTree *node = profiler.GetRoot();
+    ProfilerNodeTree *node = profiler.GetRoot();
 
-    const Foundation::ProfilerNodeTree::NodeList &children = node->GetChildren();
-    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    const ProfilerNodeTree::NodeList &children = node->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
         node = iter->get();
 
-        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
         if (timings_node && timings_node->num_called_ == 0 && !show_unused_)
             continue;
 
@@ -1250,21 +1244,21 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
 #endif
 }
 
-void TimeProfilerWindow::CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst)
+void TimeProfilerWindow::CollectProfilerNodes(ProfilerNodeTree *node, std::vector<const ProfilerNode *> &dst)
 {
-    const Foundation::ProfilerNodeTree::NodeList &children = node->GetChildren();
-    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    const ProfilerNodeTree::NodeList &children = node->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
-        Foundation::ProfilerNodeTree *child = iter->get();
+        ProfilerNodeTree *child = iter->get();
 
-        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(child);
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(child);
         if (timings_node)
             dst.push_back(timings_node);
         CollectProfilerNodes(child, dst);
     }
 }
 
-bool ProfilingNodeLessThan(const Foundation::ProfilerNode *a, const Foundation::ProfilerNode *b)
+bool ProfilingNodeLessThan(const ProfilerNode *a, const ProfilerNode *b)
 {
     double aTimePerFrame = (a->num_called_custom_ == 0) ? 0 : (a->total_custom_ / a->num_called_custom_);
     double bTimePerFrame = (b->num_called_custom_ == 0) ? 0 : (b->total_custom_ / b->num_called_custom_);
@@ -1274,21 +1268,19 @@ bool ProfilingNodeLessThan(const Foundation::ProfilerNode *a, const Foundation::
 void TimeProfilerWindow::RefreshProfilingDataList()
 {
 #ifdef PROFILING
-    using namespace Foundation;
-
     Profiler &profiler = framework_->GetProfiler();
     profiler.Lock();
 
-    Foundation::ProfilerNodeTree *root = profiler.GetRoot();
-    std::vector<const Foundation::ProfilerNode *> nodes;
+    ProfilerNodeTree *root = profiler.GetRoot();
+    std::vector<const ProfilerNode *> nodes;
     CollectProfilerNodes(root, nodes);
     std::sort(nodes.begin(), nodes.end(), ProfilingNodeLessThan);
 
     tree_profiling_data_->clear();
 
-    for(std::vector<const Foundation::ProfilerNode *>::iterator iter = nodes.begin(); iter != nodes.end(); ++iter)
+    for(std::vector<const ProfilerNode *>::iterator iter = nodes.begin(); iter != nodes.end(); ++iter)
     {
-        const Foundation::ProfilerNode *timings_node = *iter;
+        const ProfilerNode *timings_node = *iter;
         assert(timings_node);
 
         if (timings_node->num_called_custom_ == 0 && !show_unused_)
@@ -1369,13 +1361,13 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     tree_asset_transfers_->clear();
 /*     /// \todo Regression. Reimplement using the Asset API. -jj.
 
-    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
-        framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
+    boost::shared_ptr<AssetServiceInterface> asset_service = 
+        framework_->GetServiceManager()->GetService<AssetServiceInterface>(Service::ST_Asset).lock();
     if (!asset_service)
         return;
         
-    Foundation::AssetCacheInfoMap cache_map = asset_service->GetAssetCacheInfo();
-    Foundation::AssetCacheInfoMap::const_iterator i = cache_map.begin();
+    AssetCacheInfoMap cache_map = asset_service->GetAssetCacheInfo();
+    AssetCacheInfoMap::const_iterator i = cache_map.begin();
     while(i != cache_map.end())
     {
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
@@ -1388,8 +1380,8 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
         ++i;
     }
 
-    Foundation::AssetTransferInfoVector transfer_vector = asset_service->GetAssetTransferInfo();
-    Foundation::AssetTransferInfoVector::const_iterator j = transfer_vector.begin();
+    AssetTransferInfoVector transfer_vector = asset_service->GetAssetTransferInfo();
+    AssetTransferInfoVector::const_iterator j = transfer_vector.begin();
     while(j != transfer_vector.end())
     {
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
@@ -1416,8 +1408,8 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     if (!scene)
         return;
     
-    boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
-        framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer).lock();
+    boost::shared_ptr<RenderServiceInterface> renderer = 
+        framework_->GetServiceManager()->GetService<RenderServiceInterface>(Service::ST_Renderer).lock();
     assert(renderer);
     if (!renderer)
         return;
@@ -1949,7 +1941,7 @@ void AddOgreSubEntity(QTreeWidgetItem *parent, Ogre::SubEntity *node, int idx)
     if (submesh && submesh->vertexData && !submesh->useSharedVertices && submesh->vertexData->vertexDeclaration)
     {
         Ogre::VertexDeclaration *vd = submesh->vertexData->vertexDeclaration;
-        for(int i = 0; i < vd->getElementCount(); ++i)
+        for(size_t i = 0; i < vd->getElementCount(); ++i)
             AddOgreVertexElement(item, vd->getElement(i), i);
     }
 }
@@ -1999,7 +1991,7 @@ void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
             AddNewItem(nodeItem, "Ogre::SkeletonInstance: (no skeleton)");
         else
             AddNewItem(nodeItem, ("Ogre::SkeletonInstance: " + e->getSkeleton()->getName()).c_str());
-        for(int i = 0; i < e->getNumSubEntities(); ++i)
+        for(size_t i = 0; i < e->getNumSubEntities(); ++i)
             AddOgreSubEntity(nodeItem, e->getSubEntity(i), i);
     }
 }

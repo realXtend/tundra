@@ -24,7 +24,7 @@ namespace OgreRenderer
     {
     }
 
-    bool CompositionHandler::Initialize(Foundation::Framework* framework, Ogre::Viewport *vp)
+    bool CompositionHandler::Initialize(Framework* framework, Ogre::Viewport *vp)
     {
         postprocess_effects_.reserve(16);
         postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Bloom"));
@@ -118,7 +118,7 @@ namespace OgreRenderer
 
         // Get position for the compositor in compositor chain, based on the priority
         int position = -1;
-        for(int i=0 ; i<priorityOrdered.size() ; ++i)
+        for(int i=0 ; i<(int)priorityOrdered.size() ; ++i)
         {
             if (compositor == priorityOrdered[i].name)
             {
@@ -188,12 +188,12 @@ namespace OgreRenderer
         if (compositor.get())
         {
             compositor->load();
-            for(int t=0 ; t<compositor->getNumTechniques () ; ++t)
+            for(uint t=0 ; t<compositor->getNumTechniques () ; ++t)
             {
                 Ogre::CompositionTechnique *ct = compositor->getTechnique(t);
                 if (ct)
                 {
-                    for(int tp=0 ; tp<ct->getNumTargetPasses () ; ++tp)
+                    for(uint tp=0 ; tp<ct->getNumTargetPasses () ; ++tp)
                     {
                         Ogre:: CompositionTargetPass *ctp = ct->getTargetPass (tp);
                         SetCompositorTargetParameters(ctp, source);
@@ -213,16 +213,12 @@ namespace OgreRenderer
     void CompositionHandler::SetCompositorTargetParameters(Ogre::CompositionTargetPass *target, const QList< std::pair<std::string, Ogre::Vector4> > &source) const
     {
         if (target)
-        {
-            for(int p=0 ; p<target->getNumPasses() ; ++p)
+            for(uint p=0 ; p<target->getNumPasses() ; ++p)
             {
                 Ogre::CompositionPass *pass = target->getPass(p);
                 if (pass)
-                {
                     SetMaterialParameters(pass->getMaterial(), source);
-                }
             }
-        }
     }
 
     void CompositionHandler::SetMaterialParameters(const Ogre::MaterialPtr &material, const QList< std::pair<std::string, Ogre::Vector4> > &source) const

@@ -57,7 +57,7 @@ namespace OgreRenderer
     /** Created by OgreRenderingModule. Implements the RenderServiceInterface.
         \ingroup OgreRenderingModuleClient
     */
-    class OGRE_MODULE_API Renderer : public QObject, public Foundation::RenderServiceInterface
+    class OGRE_MODULE_API Renderer : public QObject, public RenderServiceInterface
     {
         friend class RenderableListener;
 
@@ -129,7 +129,7 @@ namespace OgreRenderer
             \param window_title Renderer window title.
         */
         Renderer(
-            Foundation::Framework* framework,
+            Framework* framework,
             const std::string& config,
             const std::string& plugins,
             const std::string& window_title);
@@ -138,10 +138,10 @@ namespace OgreRenderer
         virtual ~Renderer();
         
         /// Subscribe a listener to renderer log. Can be used before renderer is initialized.
-        virtual void SubscribeLogListener(const Foundation::LogListenerPtr &listener);
+        virtual void SubscribeLogListener(const LogListenerPtr &listener);
 
         /// Unsubsribe a listener to renderer log. Can be used before renderer is initialized.
-        virtual void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
+        virtual void UnsubscribeLogListener(const LogListenerPtr &listener);
 
         /// set maximum view distance
         virtual void SetViewDistance(float distance);
@@ -164,7 +164,7 @@ namespace OgreRenderer
         virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
 
         /// Returns framework
-        Foundation::Framework* GetFramework() const { return framework_; }
+        Framework* GetFramework() const { return framework_; }
 
         /// Returns initialized state
         bool IsInitialized() const { return initialized_; }
@@ -288,7 +288,7 @@ namespace OgreRenderer
         RenderWindow *renderWindow;
 
         /// Framework we belong to
-        Foundation::Framework* framework_;
+        Framework* framework_;
 
         /// Ogre log listener
         OgreLogListenerPtr log_listener_;

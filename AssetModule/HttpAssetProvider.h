@@ -23,7 +23,7 @@ class ASSET_MODULE_API HttpAssetProvider : public QObject, public IAssetProvider
     Q_OBJECT;
 
 public:
-    explicit HttpAssetProvider(Foundation::Framework *framework);
+    explicit HttpAssetProvider(Framework *framework);
     
     virtual ~HttpAssetProvider();
     
@@ -50,7 +50,7 @@ private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
 
 private:
-    Foundation::Framework *framework;
+    Framework *framework;
     
     /// Specifies the currently added list of HTTP asset storages.
     std::vector<HttpAssetStoragePtr> storages;

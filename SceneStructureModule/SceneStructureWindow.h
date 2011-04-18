@@ -36,7 +36,7 @@ public:
     /** @param fw Framework.
         @parent parent Parent widget.
     */
-    explicit SceneStructureWindow(Foundation::Framework *fw, QWidget *parent = 0);
+    explicit SceneStructureWindow(Framework *fw, QWidget *parent = 0);
 
     /// Destructor.
     ~SceneStructureWindow();
@@ -97,7 +97,7 @@ private:
     */
     void DecorateComponentItem(IComponent *comp, QTreeWidgetItem *item) const;
 
-    Foundation::Framework *framework; ///< Framework.
+    Framework *framework; ///< Framework.
     Scene::SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     SceneTreeWidget *treeWidget; ///< Scene tree widget.
     bool showComponents; ///< Do we show components also in the tree view.

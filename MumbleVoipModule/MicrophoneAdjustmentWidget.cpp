@@ -13,7 +13,7 @@
 
 namespace MumbleVoip
 {
-    MicrophoneAdjustmentWidget::MicrophoneAdjustmentWidget(Foundation::Framework* framework, Settings* settings) :
+    MicrophoneAdjustmentWidget::MicrophoneAdjustmentWidget(Framework* framework, Settings* settings) :
         QWidget(),
         framework_(framework),
         settings_(settings),
@@ -74,7 +74,7 @@ namespace MumbleVoip
 
         int bytes_per_frame = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
         PCMAudioFrame frame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_per_frame );
-        while(sound_service->GetRecordedSoundSize() > bytes_per_frame)
+        while(sound_service->GetRecordedSoundSize() > (uint)bytes_per_frame)
         {
             int bytes = sound_service->GetRecordedSoundData(frame.DataPtr(), bytes_per_frame);
             if (bytes != bytes_per_frame)

@@ -18,6 +18,7 @@
 #include "CoreException.h"
 #include "Entity.h"
 #include "SceneAPI.h"
+#include "ConsoleManager.h"
 
 #include "UiAPI.h"
 #include "UiMainWindow.h"
@@ -52,8 +53,6 @@
 #endif
 
 #include "MemoryLeakCheck.h"
-
-using namespace Foundation;
 
 namespace OgreRenderer
 {
@@ -102,13 +101,13 @@ namespace OgreRenderer
         virtual ~LogListener() {}
 
         /// Subscribe new listener for ogre log messages
-        void SubscribeListener(const Foundation::LogListenerPtr &listener)
+        void SubscribeListener(const LogListenerPtr &listener)
         {
             listeners_.push_back(listener);
         }
 
         /// Unsubscribe listener for ogre log messages
-        void UnsubscribeListener(const Foundation::LogListenerPtr &listener)
+        void UnsubscribeListener(const LogListenerPtr &listener)
         {
             listeners_.remove(listener);
         }
@@ -120,7 +119,7 @@ namespace OgreRenderer
         }
 
     private:
-        typedef std::list<Foundation::LogListenerPtr> ListenerList;
+        typedef std::list<LogListenerPtr> ListenerList;
 
         /// list of subscribed listeners
         ListenerList listeners_;
@@ -550,12 +549,12 @@ namespace OgreRenderer
         return 0;
     }
 
-    void Renderer::SubscribeLogListener(const Foundation::LogListenerPtr &listener)
+    void Renderer::SubscribeLogListener(const LogListenerPtr &listener)
     {
         log_listener_->SubscribeListener(listener);
     }
 
-    void Renderer::UnsubscribeLogListener(const Foundation::LogListenerPtr &listener)
+    void Renderer::UnsubscribeLogListener(const LogListenerPtr &listener)
     {
         log_listener_->UnsubscribeListener(listener);
     }
@@ -713,8 +712,8 @@ namespace OgreRenderer
                     return;
                 }
 
-                if (dirty.right() > desc.Width) dirty.setRight(desc.Width);
-                if (dirty.bottom() > desc.Height) dirty.setBottom(desc.Height);
+                if ((uint)dirty.right() > desc.Width) dirty.setRight(desc.Width);
+                if ((uint)dirty.bottom() > desc.Height) dirty.setBottom(desc.Height);
                 if (dirty.left() > dirty.right()) dirty.setLeft(dirty.right());
                 if (dirty.top() > dirty.bottom()) dirty.setTop(dirty.bottom());
 
@@ -752,7 +751,7 @@ namespace OgreRenderer
                         }
 */
                     }
-                    assert(lock.Pitch >= desc.Width*4);
+                    assert((uint)lock.Pitch >= desc.Width*4);
                 }
                 char *surfacePtr = (char *)lock.pBits;
 

@@ -3,11 +3,7 @@
 #ifndef incl_Console_Native_h
 #define incl_Console_Native_h
 
-namespace Foundation
-{
-    class Framework;
-}
-
+class Framework;
 class CommandManager;
 
 class NativeInput
@@ -23,13 +19,13 @@ public:
     void operator()();
 
     void SetCommandManager(CommandManager *command_service) { command_service_ = command_service; assert (command_service_); }
-    void SetFramework(Foundation::Framework *framework) { framework_ = framework; assert (framework_); }
+    void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
 
 private:
     NativeInput(const NativeInput &other);
 
     CommandManager *command_service_;
-    Foundation::Framework *framework_;
+    Framework *framework_;
 };
 
 //! Native debug input console
@@ -38,7 +34,7 @@ class NativeConsole
     NativeConsole();
 public:
     //! constructor
-    NativeConsole(CommandManager *command_service, Foundation::Framework *framework);
+    NativeConsole(CommandManager *command_service, Framework *framework);
 
     //! destructor
     virtual ~NativeConsole();

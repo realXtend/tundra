@@ -245,7 +245,7 @@ QVariantList ECEditorModule::GetSelectedEntities() const
     {
         QList<EntityPtr> entities = active_editor_->GetSelectedEntities();
         QVariantList retEntities;
-        for(uint i = 0; i < entities.size(); ++i)
+        for(uint i = 0; i < (uint)entities.size(); ++i)
             retEntities.push_back(QVariant(entities[i]->GetId()));
         return retEntities;
     }
@@ -332,14 +332,14 @@ bool ECEditorModule::IsECEditorWindowVisible() const
     }
 }
 
-void SetProfiler(Foundation::Profiler *profiler)
+void SetProfiler(Profiler *profiler)
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    ProfilerSection::SetProfiler(profiler);
 }
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+__declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     IModule *module = new ECEditorModule();
     fw->GetModuleManager()->DeclareStaticModule(module);

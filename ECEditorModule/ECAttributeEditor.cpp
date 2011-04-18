@@ -1213,10 +1213,10 @@ template<> void ECAttributeEditor<Transform>::Set(QtProperty *property)
             Transform trans = attribute->Get();
 
             int foundIndex = -1;
-            for(uint i = 0; i < children.size(); ++i)
+            for(uint i = 0; i < (uint)children.size(); ++i)
             {
                 QList<QtProperty *> properties = children[i]->subProperties();
-                for(uint j = 0; j < properties.size(); ++j)
+                for(uint j = 0; j < (uint)properties.size(); ++j)
                 {
                     if(properties[j] == property)
                     {
@@ -1361,7 +1361,7 @@ template<> void ECAttributeEditor<QVariantList>::Initialize()
                 return;
             }
             QVariantList variantArray = attribute->Get();
-            for(uint i = 0; i < variantArray.size(); ++i)
+            for(uint i = 0; i < (uint)variantArray.size(); ++i)
             {
                 childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(i) + "]"));
                 rootProperty_->addSubProperty(childProperty);
@@ -1437,7 +1437,7 @@ template<> void ECAttributeEditor<QVariantList>::Update(IAttribute *attr)
         }
 
         if(value.size() <= children.size())
-            for(uint i = 0; i < value.size(); ++i)
+            for(uint i = 0; i < (uint)value.size(); ++i)
                 stringManager->setValue(children[i], value[i].toString());
     }
     else
@@ -1549,7 +1549,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr)
         }
 
         if (value.Size() <= children.size())
-            for(uint i = 0; i < value.Size(); ++i)
+            for(uint i = 0; i < (uint)value.Size(); ++i)
                 stringManager->setValue(children[i], value[i].ref);
     }
     else
@@ -1583,7 +1583,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
 
             QtProperty *childProperty = 0;
             const AssetReferenceList &refList = attribute->Get();
-            for(uint i = 0; i < refList.Size(); ++i)
+            for(uint i = 0; i < (uint)refList.Size(); ++i)
             {
                 childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(i) + "]"));
                 rootProperty_->addSubProperty(childProperty);

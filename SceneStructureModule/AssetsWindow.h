@@ -33,7 +33,7 @@ public:
     /** @param fw Framework.
         @parent parent Parent widget.
     */
-    explicit AssetsWindow(Foundation::Framework *fw, QWidget *parent = 0);
+    explicit AssetsWindow(Framework *fw, QWidget *parent = 0);
 
     /// Destructor.
     ~AssetsWindow();
@@ -51,7 +51,7 @@ private:
     */
     void AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent);
 
-    Foundation::Framework *framework; ///< Framework pointer.
+    Framework *framework; ///< Framework pointer.
     AssetTreeWidget *treeWidget; ///< Tree widget showing the assets.
     QTreeWidgetItem *noProviderItem; ///< "No provider" parent item for assets without storage.'
     std::set<AssetWeakPtr> alreadyAdded; ///< Set of already added assets.

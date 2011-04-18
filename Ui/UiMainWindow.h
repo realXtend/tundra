@@ -19,7 +19,7 @@ public:
     /// Constructs the main window.
     /** @param owner_ Framework/owner of the main window.
     */
-    explicit UiMainWindow(Foundation::Framework *owner_);
+    explicit UiMainWindow(Framework *owner_);
 
     /// Loads and applied from Naali Config window size, isMaximized, and other settings.
     void LoadWindowSettingsFromFile();
@@ -51,7 +51,7 @@ private:
     /// Overridden to trigger WindowResizeEvent signal.
     void resizeEvent(QResizeEvent *e);
 
-    Foundation::Framework *owner;
+    Framework *owner;
 };
 
 #endif

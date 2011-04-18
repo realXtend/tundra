@@ -11,7 +11,7 @@
 #include <QObject>
 #include <QSet>
 
-namespace Foundation { class Framework; }
+class Framework;
 class QTreeWidget;
 class QTreeWidgetItem;
 
@@ -36,7 +36,7 @@ public:
     /** @param group Group name identifier.
         @param mgr Config manager.
     */
-    TreeWidgetItemExpandMemory(const char *group, Foundation::Framework *framework);
+    TreeWidgetItemExpandMemory(const char *group, Framework *framework);
 
     /// Destroyes the object and saves information about currently expanded items to config file.
     ~TreeWidgetItemExpandMemory();
@@ -78,7 +78,7 @@ private:
     std::string ToString() const;
 
     QSet<QString> items; ///< Set of item identifier texts.
-    Foundation::Framework *framework_; ///< Framework.
+    Framework *framework_; ///< Framework.
     std::string groupName; ///< Setting group name.
 };
 

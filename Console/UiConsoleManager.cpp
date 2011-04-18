@@ -20,7 +20,7 @@
 
 #include "MemoryLeakCheck.h"
 
-UiConsoleManager::UiConsoleManager(Foundation::Framework *framework, QGraphicsView *ui_view) :
+UiConsoleManager::UiConsoleManager(Framework *framework, QGraphicsView *ui_view) :
     framework_(framework),
     ui_view_(ui_view),
     console_ui_(0),

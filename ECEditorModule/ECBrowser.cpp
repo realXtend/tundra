@@ -25,7 +25,7 @@
 
 #include "MemoryLeakCheck.h"
 
-ECBrowser::ECBrowser(Foundation::Framework *framework, QWidget *parent):
+ECBrowser::ECBrowser(Framework *framework, QWidget *parent):
     QtTreePropertyBrowser(parent),
     menu_(0),
     treeWidget_(0),
@@ -109,7 +109,7 @@ void ECBrowser::RemoveEntity(EntityPtr entity)
 QList<EntityPtr> ECBrowser::GetEntities() const
 {
     QList<EntityPtr> ret;
-    for(uint i = 0; i < entities_.size(); i++)
+    for(uint i = 0; i < (uint)entities_.size(); i++)
         if(!entities_[i].expired())
             ret.push_back(entities_[i].lock());
     return ret;
@@ -624,7 +624,7 @@ void ECBrowser::DynamicComponentChanged()
         return;
     }
 
-    Scene::Entity *entity = component->GetParentEntity();
+//    Scene::Entity *entity = component->GetParentEntity();
     RemoveComponentFromGroup(comp_ptr);
     AddNewComponentToGroup(comp_ptr);
 
@@ -748,7 +748,7 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
     QSet<QTreeWidgetItem*> newList;
 
     // Find a new QTreeWidgetItem from the browser and save the information to ComponentGroup object.
-    for(uint i = 0; i < treeWidget_->topLevelItemCount(); i++)
+    for(uint i = 0; i < (uint)treeWidget_->topLevelItemCount(); i++)
         oldList.insert(treeWidget_->topLevelItem(i));
 
     // Disconnect itemExpanded() and itemCollapsed() signal before we create new items to the tree widget
@@ -760,7 +760,7 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
     }
 
     ECComponentEditor *componentEditor = new ECComponentEditor(comp, this);
-    for(uint i = 0; i < treeWidget_->topLevelItemCount(); i++)
+    for(uint i = 0; i < (uint)treeWidget_->topLevelItemCount(); i++)
         newList.insert(treeWidget_->topLevelItem(i));
 
     QSet<QTreeWidgetItem*> changeList = newList - oldList;
@@ -849,11 +849,10 @@ void ECBrowser::RemoveComponentGroup(ComponentGroup *componentGroup)
 bool ECBrowser::HasEntity(EntityPtr entity) const
 {
     PROFILE(ECBrowser_HasEntity);
-    for(uint i = 0; i < entities_.size(); i++)
-    {
+    for(uint i = 0; i < (uint)entities_.size(); i++)
         if(!entities_[i].expired() && entities_[i].lock().get() == entity.get())
             return true;
-    }
+
     return false;
 }
 

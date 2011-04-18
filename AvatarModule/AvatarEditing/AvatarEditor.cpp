@@ -542,7 +542,7 @@ namespace Avatar
         // Fix small clipping issue for first tab, just put space on front
         QString name_with_space = " ";
         name_with_space.append(name.c_str());
-        for(uint i = 0; i < tabs->count(); ++i)
+        for(uint i = 0; i < (uint)tabs->count(); ++i)
         {
             if (tabs->tabText(i) == name_with_space)
             {

@@ -8,10 +8,7 @@
 
 #include "OgreModuleApi.h"
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 namespace OgreRenderer
 {

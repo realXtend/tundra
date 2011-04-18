@@ -8,7 +8,7 @@
 
 #include "MemoryLeakCheck.h"
 
-SceneAPI::SceneAPI(Foundation::Framework *framework) :
+SceneAPI::SceneAPI(Framework *framework) :
     QObject(framework),
     framework_(framework)
 {

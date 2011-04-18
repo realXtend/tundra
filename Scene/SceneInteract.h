@@ -63,8 +63,8 @@ public:
     ~SceneInteract() {}
 
     /// Initialize this object. Must be done for this object to work. Called by SceneAPI
-    /// \param Foundation::Framework Framework pointer.
-    void Initialize(Foundation::Framework *framework);
+    /// \param Framework Framework pointer.
+    void Initialize(Framework *framework);
 
     /// PostInitialize this object. Must be done after modules have been loaded. Called by SceneAPI.
     void PostInitialize();
@@ -81,9 +81,9 @@ private:
     /// \return RaycastResult Result data of the raycast.
     RaycastResult* Raycast();
 
-    Foundation::Framework *framework_; ///< Framework.
+    Framework *framework_; ///< Framework.
     InputContextPtr input_; ///< Input context.
-    Foundation::RendererWeakPtr renderer_; ///< Renderer pointer.
+    RendererServiceWeakPtr renderer_; ///< Renderer pointer.
     int lastX_; ///< Last known mouse cursor's x position.
     int lastY_; ///< Last known mouse cursor's y position.
     bool itemUnderMouse_; ///< Was there widget under mouse in last known position.

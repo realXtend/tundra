@@ -11,7 +11,7 @@
 
 #include <QObject>
 
-namespace Foundation { class Framework; }
+class Framework;
 class EC_Placeable;
 
 class EntityPlacer : public QObject
@@ -23,7 +23,7 @@ public:
     /// tell the user where hes placing his mesh (e.g. placing sound source on the scene).
     //static const std::string CustomMeshName;
 
-    EntityPlacer(Foundation::Framework *framework, entity_id_t entityId = 0, QObject *parent = 0);
+    EntityPlacer(Framework *framework, entity_id_t entityId = 0, QObject *parent = 0);
     virtual ~EntityPlacer();
 
 public slots:
@@ -43,7 +43,7 @@ private:
     Quaternion orientation_;
     InputContextPtr input_;
     EC_Placeable *placeable_;
-    Foundation::Framework *framework_;
+    Framework *framework_;
     Scene::EntityWeakPtr entity_;
     Ogre::Entity *meshEntity_;
     OgreRenderer::RendererWeakPtr renderer_;

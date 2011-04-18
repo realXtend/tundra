@@ -51,7 +51,7 @@ class InputAPI : public QObject
 
 public:
     /// Initializes the service and hooks it into the main application window.
-    explicit InputAPI(Foundation::Framework *owner);
+    explicit InputAPI(Framework *owner);
 
     /// The dtor saves the settings to QSettings.
     ~InputAPI();
@@ -272,7 +272,7 @@ private:
 
     QGraphicsView *mainView;
     QWidget *mainWindow;
-    Foundation::Framework *framework;
+    Framework *framework;
 };
 
 #endif

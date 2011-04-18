@@ -42,7 +42,7 @@ AssetPtr AssetItem::Asset() const
 
 // AssetTreeWidget
 
-AssetTreeWidget::AssetTreeWidget(Foundation::Framework *fw, QWidget *parent) :
+AssetTreeWidget::AssetTreeWidget(Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
     framework(fw),
     contextMenu(0)

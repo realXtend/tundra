@@ -22,8 +22,6 @@
 #include <QDir>
 #include <QFileSystemWatcher>
 
-using namespace Foundation;
-
 AssetAPI::AssetAPI(bool isHeadless)
 :assetCache(0),
 diskSourceChangeWatcher(0),

@@ -156,7 +156,7 @@ private:
     /// Owning module
     TundraLogicModule* owner_;
     /// Framework pointer
-    Foundation::Framework* framework_;
+    Framework* framework_;
 };
 
 }

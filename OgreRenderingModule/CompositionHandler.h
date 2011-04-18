@@ -11,10 +11,7 @@
 #include <QString>
 #include <QObject>
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 namespace OgreRenderer
 {
@@ -71,7 +68,7 @@ namespace OgreRenderer
         virtual ~CompositionHandler();
 
         /// Initialize the composition handler. This has to be called before trying to enable/disable effects
-        bool Initialize(Foundation::Framework* framework, Ogre::Viewport *vp);
+        bool Initialize(Framework* framework, Ogre::Viewport *vp);
 
         /// map number to effect name (used to interpret server request since server requests composite activation with a number)
         std::string MapNumberToEffectName(const std::string &number);
@@ -142,7 +139,7 @@ namespace OgreRenderer
         std::map<std::string, int> priorities_;
 
         /// handle to framework
-        Foundation::Framework* framework_;
+        Framework* framework_;
     };
 }
 

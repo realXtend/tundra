@@ -11,10 +11,7 @@ class QDir;
 class QGraphicsView;
 class QTranslator;
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 /// Represents the subclassed instance of the Qt's QApplication singleton.
 class Application : public QApplication
@@ -25,7 +22,7 @@ public:
     /** Qt requires its own data copy of the argc/argv parameters, so NaaliApplication
         caches them. Pass in received command-line parameters here.
         @param owner Pass in the root framework pointer here. */
-    Application(Foundation::Framework *owner, int &argc, char **argv);
+    Application(Framework *owner, int &argc, char **argv);
 
     ~Application();
 
@@ -78,7 +75,7 @@ protected:
 
 private:
     QStringList GetQmFiles(const QDir &dir);
-    Foundation::Framework *framework;
+    Framework *framework;
     QTimer frameUpdateTimer;
     bool appActivated;
     QTranslator *nativeTranslator;

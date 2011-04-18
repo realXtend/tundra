@@ -148,7 +148,7 @@ public slots:
     /// This function does not tell whether the data for the patch is actually loaded on the CPU or the GPU.
     bool PatchExists(int patchX, int patchY) const
     {
-        return patchX >= 0 && patchY >= 0 && patchX < patchWidth && patchY < patchHeight && patchY * patchWidth + patchX < patches.size();
+        return patchX >= 0 && patchY >= 0 && patchX < patchWidth && patchY < patchHeight && patchY * patchWidth + patchX < (int)patches.size();
     }
 
     /// Returns true if all the patches on the terrain are loaded on the CPU, i.e. if all the terrain height data has been streamed in from

@@ -16,7 +16,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
-HttpAssetProvider::HttpAssetProvider(Foundation::Framework *framework_)
+HttpAssetProvider::HttpAssetProvider(Framework *framework_)
 :framework(framework_)
 {
     // Http access manager

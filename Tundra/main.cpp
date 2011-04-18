@@ -23,9 +23,9 @@
 
 #include "MemoryLeakCheck.h"
 
-void setup(Foundation::Framework &fw);
+void setup(Framework &fw);
 int run(int argc, char **argv);
-void options(int argc, char **argv, Foundation::Framework &fw);
+void options(int argc, char **argv, Framework &fw);
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
@@ -116,7 +116,7 @@ int run (int argc, char **argv)
     try
 #endif
     {
-        Foundation::Framework fw(argc, argv);
+        Framework fw(argc, argv);
         if (fw.Initialized())
         {
             fw.Go();
@@ -195,7 +195,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     WCHAR szPath[MAX_PATH]; 
     WCHAR szFileName[MAX_PATH];
 
-    // Can't use Foundation::Application for application name and version,
+    // Can't use Application for application name and version,
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";

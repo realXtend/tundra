@@ -84,7 +84,7 @@ void ConsoleAPI::RegisterCommand(const ConsoleCommandStruct &command)
     consoleManager->GetCommandManager()->RegisterCommand(command);
 }
 
-ConsoleAPI::ConsoleAPI(Foundation::Framework *fw) :
+ConsoleAPI::ConsoleAPI(Framework *fw) :
     QObject(fw),
     framework_(fw),
     uiConsoleManager(0)

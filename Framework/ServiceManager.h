@@ -71,7 +71,7 @@ public:
         {
             //std::string what("Service type ");
             //what += boost::lexical_cast<std::string>(type) + " not registered!";
-            //Foundation::LogDebug(what);
+            //LogDebug(what);
 
             return boost::weak_ptr<T>();
         }
@@ -93,7 +93,7 @@ public:
         {
             //std::string what("Service type " + 
             //    boost::lexical_cast<std::string>(type) + " not registered!");
-            //Foundation::LogDebug(what);
+            //LogDebug(what);
 
             return boost::weak_ptr<T>();
         }

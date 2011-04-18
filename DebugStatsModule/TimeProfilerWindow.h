@@ -29,12 +29,9 @@ class QMenu;
 class QPushButton;
 class QTextStream;
 
-namespace Foundation
-{
-    class Framework;
-    class ProfilerNodeTree;
-    class ProfilerNode;
-}
+class Framework;
+class ProfilerNodeTree;
+class ProfilerNode;
 
 namespace DebugStats
 {
@@ -45,7 +42,7 @@ namespace DebugStats
 
     public:
         /// The ctor adds this window to scene, but does not show it.
-        explicit TimeProfilerWindow(Foundation::Framework *fw);
+        explicit TimeProfilerWindow(Framework *fw);
         void RedrawFrameTimeHistoryGraph(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
         void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
         void DoThresholdLogging();
@@ -91,12 +88,12 @@ namespace DebugStats
     private:
         bool eventFilter(QObject *obj, QEvent *event);
 
-        void FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode);
-        void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode);
+        void FillThresholdLogger(QTextStream& out, const ProfilerNodeTree *profilerNode);
+        void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode);
         int ReadProfilingRefreshInterval();
         void RefreshProfilingDataTree();
         void RefreshProfilingDataList();
-        void CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst);
+        void CollectProfilerNodes(ProfilerNodeTree *node, std::vector<const ProfilerNode *> &dst);
         void FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource);
         void RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget);
         uint GetNumResources(Ogre::ResourceManager& manager);
@@ -120,7 +117,7 @@ namespace DebugStats
         QMap<QString, NetworkLogData > mapNetOutData_;
 
 
-        Foundation::Framework *framework_;
+        Framework *framework_;
         int frame_time_update_x_pos_;
         /// If true, profiling data is shown in a tree, otherwise using a flat list.
         bool show_profiler_tree_;

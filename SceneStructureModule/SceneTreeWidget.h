@@ -59,7 +59,7 @@ public:
     /** @param fw Framework pointer.
         @param parent Parent widget.
     */
-    SceneTreeWidget(Foundation::Framework *fw, QWidget *parent = 0);
+    SceneTreeWidget(Framework *fw, QWidget *parent = 0);
 
     /// Destructor.
     virtual ~SceneTreeWidget();
@@ -119,7 +119,7 @@ private:
     /// Returns all asset references for the specified entity item.
     QSet<QString> GetAssetRefs(const EntityItem *eItem) const;
 
-    Foundation::Framework *framework; ///< Framework pointer.
+    Framework *framework; ///< Framework pointer.
     Scene::SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     QList<QPointer<ECEditorWindow> > ecEditors; ///< This EC editors owned by this widget.
     int historyMaxItemCount; ///< Maximum count of invoke history items.

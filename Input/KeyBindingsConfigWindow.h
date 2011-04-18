@@ -11,14 +11,14 @@
 class QTreeWidget;
 class QTreeWidgetItem;
 
-namespace Foundation { class Framework; }
+class Framework;
 
 class KeyBindingsConfigWindow : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit KeyBindingsConfigWindow(Foundation::Framework *framework_)
+    explicit KeyBindingsConfigWindow(Framework *framework_)
     :framework(framework_),
     configList(0)
     {
@@ -43,7 +43,7 @@ private:
 
     bool SpecialKeyPressChecker(int pressed_key);
 
-    Foundation::Framework *framework;
+    Framework *framework;
 
     QTreeWidget *configList;
 

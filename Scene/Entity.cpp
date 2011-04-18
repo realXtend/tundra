@@ -22,14 +22,14 @@
 
 namespace Scene
 {
-    Entity::Entity(Foundation::Framework* framework, SceneManager* scene) :
+    Entity::Entity(Framework* framework, SceneManager* scene) :
         framework_(framework),
         scene_(scene),
         temporary_(false)
     {
     }
     
-    Entity::Entity(Foundation::Framework* framework, uint id, SceneManager* scene) :
+    Entity::Entity(Framework* framework, uint id, SceneManager* scene) :
         framework_(framework),
         id_(id),
         scene_(scene),

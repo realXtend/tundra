@@ -30,8 +30,6 @@
 
 #include "MemoryLeakCheck.h"
 
-using namespace Foundation;
-
 Application::Application(Framework *framework_, int &argc, char **argv) :
     QApplication(argc, argv),
     framework(framework_),

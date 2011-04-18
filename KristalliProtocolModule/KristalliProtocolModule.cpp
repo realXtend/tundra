@@ -376,14 +376,14 @@ UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
 
 } // ~KristalliProtocolModule namespace
 
-void SetProfiler(Foundation::Profiler *profiler)
+void SetProfiler(Profiler *profiler)
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    ProfilerSection::SetProfiler(profiler);
 }
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+__declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     IModule *module = new KristalliProtocol::KristalliProtocolModule();
     fw->GetModuleManager()->DeclareStaticModule(module);

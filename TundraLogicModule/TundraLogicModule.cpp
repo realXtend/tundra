@@ -607,16 +607,16 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
 
 }
 
-void SetProfiler(Foundation::Profiler *profiler)
+void SetProfiler(Profiler *profiler)
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace TundraLogic;
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+__declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     IModule *module = new TundraLogic::TundraLogicModule();
     fw->GetModuleManager()->DeclareStaticModule(module);

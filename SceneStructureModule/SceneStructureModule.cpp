@@ -446,7 +446,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
             e->setAccepted(false);
             currentToolTipDestination = "<br><span style='font-weight:bold;'>Destination:</span> ";
             // Raycast to see if there is a submesh under the material drop
-            Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
+            RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
             if (renderer)
             {
                 RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -475,7 +475,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
 
     if (e->isAccepted() && currentToolTipDestination.isEmpty())
     {
-        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
+        RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
         if (renderer)
         {
             RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -539,7 +539,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         // Handle other supported file types
         QList<Scene::Entity *> importedEntities;
 
-        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
+        RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
         if (!renderer)
             return;
 
@@ -588,7 +588,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
 void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString &materialRef)
 {   
     // Raycast to see if there is a submesh under the material drop
-    Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
+    RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
     if (renderer)
     {
         RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -621,7 +621,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                             afterMaterials.Append(cleanMaterialRef);
                             materialDropData.affectedIndexes.append(i);
                         }
-                        else if (i < currentMaterials.Size())
+                        else if (i < (uint)currentMaterials.Size())
                             afterMaterials.Append(currentMaterials[i]);
                         else
                             afterMaterials.Append(AssetReference());
@@ -725,7 +725,7 @@ void SceneStructureModule::FinishMaterialDrop(bool apply, const QString &materia
             {
                 AssetReferenceList rewrittenMats;
                 AssetReferenceList mats = materialDropData.materials;
-                for(uint i=0; i<mats.Size(); ++i)
+                for(uint i=0; i<(uint)mats.Size(); ++i)
                 {
                     if (materialDropData.affectedIndexes.contains(i))
                     {
@@ -817,14 +817,14 @@ void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QStri
         urlToDropPos.remove(transfer->GetSourceUrl());
 }
 
-void SetProfiler(Foundation::Profiler *profiler)
+void SetProfiler(Profiler *profiler)
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    ProfilerSection::SetProfiler(profiler);
 }
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+__declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     IModule *module = new SceneStructureModule();
     fw->GetModuleManager()->DeclareStaticModule(module);

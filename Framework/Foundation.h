@@ -31,9 +31,6 @@
     - Framework class is the entry point for the viewer. It contains the main
     loop and is responsible for all the other parts of the foundation.
 */
-namespace Foundation {}
-
-
 
 #endif
 

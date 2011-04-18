@@ -21,7 +21,7 @@ bool nocase_compare(const std::string &lhs, const std::string &rhs)
 typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
 typedef boost::tokenizer< boost::escaped_list_separator<char> > escape_tokenizer;
 
-CommandManager::CommandManager(ConsoleManager *console, Foundation::Framework *fw) :
+CommandManager::CommandManager(ConsoleManager *console, Framework *fw) :
     framework_(fw),
     console_(console),
     nativeinput_(0)

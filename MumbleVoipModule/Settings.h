@@ -7,7 +7,7 @@
 #include <QObject>
 #include <QDebug>
 
-namespace Foundation { class Framework; }
+class Framework;
 
 namespace MumbleVoip
 {
@@ -25,7 +25,7 @@ namespace MumbleVoip
 
     public:
         enum VoiceMode { Mute, ContinuousTransmission, PushToTalk, ToggleMode };
-        Settings(Foundation::Framework *framework);
+        Settings(Framework *framework);
         virtual ~Settings();
         virtual void Load();
         virtual void Save();
@@ -50,7 +50,7 @@ namespace MumbleVoip
         void PositionalAudioEnabledChanged(bool);
 
     private:
-        Foundation::Framework *framework_;
+        Framework *framework_;
 
         double encode_quality_;
         int playback_buffer_size_ms_;

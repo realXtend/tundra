@@ -3,10 +3,7 @@
 #ifndef incl_Ui_UiFwd_h
 #define incl_Ui_UiFwd_h
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 class UiGraphicsView;
 class UiMainWindow;

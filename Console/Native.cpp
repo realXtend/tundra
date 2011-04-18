@@ -34,7 +34,7 @@ void NativeInput::operator()()
 
 // ***********************************************************
 
-NativeConsole::NativeConsole(CommandManager *command_service, Foundation::Framework *framework)
+NativeConsole::NativeConsole(CommandManager *command_service, Framework *framework)
 {
     assert (command_service);
     input_.SetCommandManager(command_service);

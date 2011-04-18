@@ -17,10 +17,7 @@
 
 #include <boost/cstdint.hpp>
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 /// Class to which scripting languages connect their slots when wanting to receive delayed signal
 /// when certain amount of application time has passed.
@@ -65,7 +62,7 @@ class FrameAPI : public QObject
 {
     Q_OBJECT
 
-    friend class Foundation::Framework;
+    friend class Framework;
 
     /// Destructor.
     ~FrameAPI();
@@ -101,7 +98,7 @@ private:
     /// Constructor. Framework takes ownership of this object.
     /** @param framework Framework
     */
-    explicit FrameAPI(Foundation::Framework *framework);
+    explicit FrameAPI(Framework *framework);
 
     /// Emits Updated() signal. Called by Framework each frame.
     /** @param frametime Time elapsed since last frame.

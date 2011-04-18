@@ -15,7 +15,7 @@
 
 #include "MemoryLeakCheck.h"
 
-ComponentManager::ComponentManager(Foundation::Framework *framework) : framework_(framework)
+ComponentManager::ComponentManager(Framework *framework) : framework_(framework)
 {
     attributeTypes_.push_back("string");
     attributeTypes_.push_back("int");

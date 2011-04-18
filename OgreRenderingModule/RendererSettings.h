@@ -2,11 +2,10 @@
 
 #include <QObject>
 #include "../Input/InputFwd.h"
-namespace Foundation
-{
-    class Framework;
-}
+
+class Framework;
 class KeyEvent;
+
 namespace OgreRenderer
 {
     /// Widget for rendering settings
@@ -15,7 +14,7 @@ namespace OgreRenderer
         Q_OBJECT
 
     public:
-        RendererSettings(Foundation::Framework* framework);
+        RendererSettings(Framework* framework);
         ~RendererSettings();
 
     public slots:
@@ -33,7 +32,7 @@ namespace OgreRenderer
         void InitWindow();
         InputContextPtr input_context_;
 
-        Foundation::Framework* framework_;
+        Framework* framework_;
 
         /// Widget for renderer settings
         QWidget *settings_widget_;

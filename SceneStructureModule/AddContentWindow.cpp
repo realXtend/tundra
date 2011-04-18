@@ -132,7 +132,7 @@ public:
     AssetDesc desc; ///< Asset description of the item.
 };
 
-AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent) :
+AddContentWindow::AddContentWindow(Framework *fw, const Scene::ScenePtr &dest, QWidget *parent) :
     QWidget(parent),
     framework(fw),
     scene(dest),

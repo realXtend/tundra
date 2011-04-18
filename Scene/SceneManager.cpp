@@ -43,7 +43,7 @@ namespace Scene
     {
     }
     
-    SceneManager::SceneManager(const QString &name, Foundation::Framework *framework, bool viewEnabled) :
+    SceneManager::SceneManager(const QString &name, Framework *framework, bool viewEnabled) :
         name_(name),
         framework_(framework),
         gid_(1),
@@ -87,7 +87,7 @@ namespace Scene
         }
 
         EntityPtr entity = EntityPtr(new Scene::Entity(framework_, newentityid, this));
-        for(size_t i=0 ; i<components.size() ; ++i)
+        for(size_t i=0 ; i<(size_t)components.size() ; ++i)
         {
             ComponentPtr newComp = framework_->GetComponentManager()->CreateComponent(components[i]);
             if (newComp)
@@ -732,7 +732,7 @@ namespace Scene
             return QList<Entity *>();
         }
 
-        for(uint i = 0; i < ret.size(); ++i)
+        for(uint i = 0; i < (size_t)ret.size(); ++i)
         {
             Entity* entity = ret[i];
             EmitEntityCreated(entity, change);

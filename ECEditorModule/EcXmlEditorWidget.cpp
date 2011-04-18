@@ -21,7 +21,7 @@
 
 #include "MemoryLeakCheck.h"
 
-EcXmlEditorWidget::EcXmlEditorWidget(Foundation::Framework *framework, QWidget *parent) :
+EcXmlEditorWidget::EcXmlEditorWidget(Framework *framework, QWidget *parent) :
     QWidget(parent), framework_(framework), xmlEdit_(0)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
