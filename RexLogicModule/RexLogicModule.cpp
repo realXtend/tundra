@@ -165,6 +165,10 @@
 #include "EC_ProximityTrigger.h"
 #endif
 
+#ifdef EC_LaserPointer_ENABLED
+#include "EC_LaserPointer.h"
+#endif
+
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreViewport.h>
@@ -275,6 +279,10 @@ void RexLogicModule::Load()
 
 #ifdef EC_ProximityTrigger_ENABLED
     DECLARE_MODULE_EC(EC_ProximityTrigger);
+#endif
+
+#ifdef EC_LaserPointer_ENABLED
+    DECLARE_MODULE_EC(EC_LaserPointer);
 #endif
 }
 
