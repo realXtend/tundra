@@ -10,6 +10,7 @@ engine.IncludeFile("jsmodules/startup/LoginScreen.js");
 
 var iconRefresh = new QIcon("./data/ui/images/browser/refresh.png");
 var iconStop = new QIcon("./data/ui/images/browser/stop.png");
+var defaultIcon = new QIcon("./data/ui/images/browser/default-tool.png");
 
 // This magic number should do the trick of keeping the top part
 // of the UI same if you are in 3D tab or web tab. Hopefully the linux
@@ -92,12 +93,16 @@ var BrowserManager = Class.extend
         this.actionHome.triggered.connect(this.onHome);
         this.actionHome.toolTip = "Go to home page " + this.settings.homepage;
         
-        // Toolbar for inworld widgets
-        // \todo change to QToolBar
-        this.toolBar = new QWidget();
+        // Toolbar for inworld actions
+        this.toolBar = new QToolBar();
         this.toolBar.setFixedHeight(26);
-        this.toolBar.setLayout(new QHBoxLayout());
-        this.toolBar.layout().setContentsMargins(0,0,0,0);
+        this.toolBar.setStyleSheet("background-color: none; border: 0px;");
+        this.toolBar.toolButtonStyle = Qt.ToolButtonIconOnly;
+        this.toolBar.orientation = Qt.Horizontal;
+        this.toolBar.iconSize = new QSize(23,23);
+        this.toolBar.floatable = false;
+        this.toolBar.movable = false;
+        this.toolBar.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed);
         
         // Toolbar for address bar and favorites
         this.favoritesToolBar = new QToolBar();
@@ -124,11 +129,13 @@ var BrowserManager = Class.extend
 
         // Splitter
         this.splitter = new QSplitter(Qt.Horizontal);
-        this.splitter.addWidget(this.addressAndFavoritesBar);
-        this.splitter.addWidget(this.toolBar);
         this.splitter.setFixedHeight(26);
         this.splitter.handleWidth = 12;
+        this.splitter.childrenCollapsible = true;
+        this.splitter.addWidget(this.addressAndFavoritesBar);
+        this.splitter.addWidget(this.toolBar);
         this.splitter.setStretchFactor(0, 2);
+        this.splitterStartState = this.splitter.saveState();
         
         // Combine ui
         controlLayout.addWidget(this.browserToolBar, 0, 0);
@@ -143,6 +150,8 @@ var BrowserManager = Class.extend
         
         client.Connected.connect(this.onConnected);
         client.Disconnected.connect(this.onDisconnected);
+        
+        ui.AddAction.connect(this.addTool);
     },
     
     start: function()
@@ -169,18 +178,29 @@ var BrowserManager = Class.extend
         return p_.tabs.widget(p_.tabs.currentIndex);
     },
     
-    addTool: function(widget, index)
+    addTool: function(action)
     {
-        if (index == null)
-            index = -1;
-        p_.toolBar.layout().insertWidget(index, widget, 0, 0);
-        widget.destroyed.connect(p_.refreshSplitter);
+        if (action.icon.isNull())
+            action.icon = defaultIcon;
+        if (action.tooltip == null || action.tooltip == "")
+            action.tooltip = action.text;
+
+        // \todo will repolicate the action. toolbar.addAction(action) does not work in js!
+        // only down side is that if the calling party changes icon or state of the QAction
+        // the toolbar wont know about it. Bug in js qt??
+        
+        var act = p_.toolBar.addAction(action.icon, action.text);
+        act.tooltip = action.tooltip;
+        act.triggered.connect(action, action.trigger);
+        
+        // \todo seems like this does not work. When a script deleteLater() 
+        // its source QAction it does not come to our action
+        action.destroyed.connect(act, act.deleteLater()
     },
     
-    refreshSplitter: function(obj)
+    refreshSplitter: function()
     {
-        p_.splitter.setStretchFactor(0, 2);
-        p_.splitter.refresh();
+        p_.splitter.restoreState(p_.splitterStartState);
     },
     
     refreshSqueezer: function()
@@ -223,6 +243,9 @@ var BrowserManager = Class.extend
             p_.tabs.setTabToolTip(0, "Login");
             p_.tabs.setTabText(0, "Login")
         }
+        
+        p_.toolBar.clear();
+        p_.refreshSplitter();
     },
     
     onFavoritePressed: function()
