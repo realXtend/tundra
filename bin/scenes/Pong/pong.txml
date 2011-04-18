@@ -33,7 +33,7 @@
    <attribute value="1 1 0" name="Linear factor"/>
    <attribute value="0 0 0" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
-   <attribute value="true" name="Draw Debug"/>
+   <attribute value="false" name="Draw Debug"/>
    <attribute value="7.4603858 14.1542454 0" name="Linear velocity"/>
    <attribute value="0 0 0" name="Angular velocity"/>
   </component>
@@ -71,7 +71,7 @@
    <attribute value="1 1 1" name="Linear factor"/>
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
-   <attribute value="true" name="Draw Debug"/>
+   <attribute value="false" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
    <attribute value="0 0 0" name="Angular velocity"/>
   </component>
@@ -109,7 +109,7 @@
    <attribute value="1 1 1" name="Linear factor"/>
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
-   <attribute value="true" name="Draw Debug"/>
+   <attribute value="false" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
    <attribute value="0 0 0" name="Angular velocity"/>
   </component>
@@ -147,7 +147,7 @@
    <attribute value="1 1 1" name="Linear factor"/>
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
-   <attribute value="true" name="Draw Debug"/>
+   <attribute value="false" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
    <attribute value="0 0 0" name="Angular velocity"/>
   </component>
@@ -185,7 +185,7 @@
    <attribute value="1 1 1" name="Linear factor"/>
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
-   <attribute value="true" name="Draw Debug"/>
+   <attribute value="false" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
    <attribute value="0 0 0" name="Angular velocity"/>
   </component>
@@ -223,7 +223,7 @@
    <attribute value="1 1 1" name="Linear factor"/>
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
-   <attribute value="true" name="Draw Debug"/>
+   <attribute value="false" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
    <attribute value="0 0 0" name="Angular velocity"/>
   </component>

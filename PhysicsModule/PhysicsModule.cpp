@@ -70,6 +70,7 @@ const std::string PhysicsModule::moduleName = std::string("Physics");
 PhysicsModule::PhysicsModule() :
     IModule(NameStatic()),
     drawDebugGeometry_(false),
+    drawDebugManuallySet_(false),
     runPhysics_(true),
     debugGeometryObject_(0),
     debugDrawMode_(0)
@@ -116,7 +117,7 @@ void PhysicsModule::Uninitialize()
 ConsoleCommandResult PhysicsModule::ConsoleToggleDebugGeometry(const StringVector& params)
 {
     SetDrawDebugGeometry(!drawDebugGeometry_);
-    
+    drawDebugManuallySet_ = true; // Disable automatic debugdraw state change
     return ConsoleResultSuccess();
 }
 
@@ -171,6 +172,16 @@ void PhysicsModule::Update(f64 frametime)
         {
             i->second->Simulate(frametime);
             ++i;
+        }
+        
+        // Automatically enable debug geometry if at least one debug-enabled rigidbody. Automatically disable if no debug-enabled rigidbodies
+        // However, do not do this if user has used the physicsdebug console command
+        if (!drawDebugManuallySet_)
+        {
+            if ((!drawDebugGeometry_) && (!debugRigidBodies_.empty()))
+                SetDrawDebugGeometry(true);
+            if ((drawDebugGeometry_) && (debugRigidBodies_.empty()))
+                SetDrawDebugGeometry(false);
         }
         
         if (drawDebugGeometry_)
@@ -242,7 +253,7 @@ void PhysicsModule::SetRunPhysics(bool enable)
 
 void PhysicsModule::SetDrawDebugGeometry(bool enable)
 {
-    if (!framework_ || !framework_->GetServiceManager())
+    if ((!framework_) || (framework_->IsHeadless()) || (!framework_->GetServiceManager()) || (drawDebugGeometry_ == enable))
         return;
 
     OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
@@ -285,7 +296,7 @@ void PhysicsModule::OnScriptEngineCreated(QScriptEngine* engine)
 
 void PhysicsModule::UpdateDebugGeometry()
 {
-    if (!drawDebugGeometry_)
+    if ((!drawDebugGeometry_) || (!debugGeometryObject_))
         return;
 
     PROFILE(PhysicsModule_UpdateDebugGeometry);
@@ -298,7 +309,7 @@ void PhysicsModule::UpdateDebugGeometry()
     // Get all lines of the physics world
     world->GetWorld()->debugDrawWorld();
     
-    // Build the debug vertex buffer
+    // Build the debug vertex buffer. Note: this is a no-op if there is no debug objects to draw
     debugGeometryObject_->draw();
 }
 

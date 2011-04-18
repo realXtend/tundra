@@ -23,6 +23,7 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
 
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
+#include <set>
 
 using namespace Physics;
 
@@ -45,7 +46,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     linearVelocity(this, "Linear velocity", Vector3df(0,0,0)),
     angularVelocity(this, "Angular velocity", Vector3df(0,0,0)),
     phantom(this, "Phantom", false),
-    drawDebug(this, "Draw Debug", true),
+    drawDebug(this, "Draw Debug", false),
     body_(0),
     world_(0),
     shape_(0),
@@ -79,6 +80,7 @@ EC_RigidBody::~EC_RigidBody()
 {
     RemoveBody();
     RemoveCollisionShape();
+    owner_->debugRigidBodies_.erase(this);
 }
 
 bool EC_RigidBody::SetShapeFromVisibleMesh()
@@ -518,9 +520,25 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
         ReaddBody();
     
     if (attribute == &drawDebug)
-        // Readd body to the world in case phantom classification changed
-        ReaddBody();
+    {
+        bool enable = drawDebug.Get();
+        if (body_)
+        {
+            int collisionFlags = body_->getCollisionFlags();
+            if (enable)
+                collisionFlags &= ~btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
+            else
+                collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
+            body_->setCollisionFlags(collisionFlags);
+        }
         
+        // Refresh PhysicsModule's knowledge of debug-enabled rigidbodies
+        if (enable)
+            owner_->debugRigidBodies_.insert(this);
+        else
+            owner_->debugRigidBodies_.erase(this);
+    }
+    
     if (attribute == &linearVelocity)
     {
         body_->setLinearVelocity(ToBtVector3(linearVelocity.Get()));
