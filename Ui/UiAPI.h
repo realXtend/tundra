@@ -132,12 +132,22 @@ public slots:
     */
     void EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 
+    /// Emits AddAction signal. This is not handled by the UiAPI but a 3rd party listening this signal, if one is present.
+    /** @param action Action to be added to the 3rd party tool bar.
+    */
+    void EmitAddAction(QAction *action);
+
 signals:
     /// Signals that context menu @c menu is about to open for specific objects.
     /** @param menu Menu to which append functionalities.
         @param List of target objects. Use to inspect that 
     */
     void ContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
+
+    /// Signals a request to add an action. This signal will be handled by 3rd party code out side of the UiAPI.
+    /** @param action Action that is being requested to be added to the 3rd party tool bar.
+    */
+    void AddAction(QAction *action);
 
 private slots:
     /// Removes proxy widget from internally maintained lists upon destruction.

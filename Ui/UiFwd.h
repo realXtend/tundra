@@ -21,5 +21,6 @@ class QPainter;
 class QRect;
 class QRectF;
 class QEvent;
+class QAction;
 
 #endif
