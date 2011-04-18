@@ -168,9 +168,6 @@ public:
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-
     virtual ~EC_Mesh();
 
 public slots:

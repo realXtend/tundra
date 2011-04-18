@@ -83,9 +83,6 @@ public:
 
     virtual ~EC_VolumeTrigger();
 
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-
 signals:
     /// Note: needs to be lowercase for QML to accept connections to it
     void entityEnter(Scene::Entity* entity/*, const Vector3df& position*/);

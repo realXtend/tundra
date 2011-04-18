@@ -114,9 +114,6 @@ public:
     /// Destructor.
     ~EC_WebView();
 
-    /// Returns if Component is serializable, always returns true.
-    virtual bool IsSerializable() const;
-
     /// Event filter for this QObject
     virtual bool eventFilter(QObject *obj, QEvent *e);
 

@@ -324,11 +324,11 @@ namespace Scene
         dst.Add<u32>(GetId());
         uint num_serializable = 0;
         foreach(const ComponentPtr &comp, Components())
-            if (comp->IsSerializable() && !comp->IsTemporary())
+            if (!comp->IsTemporary())
                 num_serializable++;
         dst.Add<u32>(num_serializable);
         foreach(const ComponentPtr &comp, Components())
-            if (comp->IsSerializable() && !comp->IsTemporary())
+            if (!comp->IsTemporary())
             {
                 dst.Add<u32>(comp->TypeNameHash());
                 dst.AddString(comp->Name().toStdString());
@@ -361,7 +361,7 @@ namespace Scene
         entity_elem.setAttribute("id", id_str);
 
         foreach(const ComponentPtr c, Components())
-            if (c->IsSerializable() && !c->IsTemporary())
+            if (!c->IsTemporary())
                 c->SerializeTo(doc, entity_elem);
 
         base_element.appendChild(entity_elem);

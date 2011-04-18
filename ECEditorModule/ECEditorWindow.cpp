@@ -255,8 +255,7 @@ void ECEditorWindow::CopyEntity()
             entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
             foreach(ComponentPtr component, entity->Components())
-                if (component->IsSerializable())
-                    component->SerializeTo(temp_doc, entity_elem);
+                component->SerializeTo(temp_doc, entity_elem);
 
             temp_doc.appendChild(entity_elem);
         }
@@ -309,17 +308,14 @@ void ECEditorWindow::PasteEntity()
                 hasPlaceable = true;
                 ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
             }
-            // Ignore all nonserializable components.
-            if(components[i]->IsSerializable())
+
+            ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
+            AttributeVector attributes = components[i]->GetAttributes();
+            for(uint j = 0; j < attributes.size(); j++)
             {
-                ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
-                AttributeVector attributes = components[i]->GetAttributes();
-                for(uint j = 0; j < attributes.size(); j++)
-                {
-                    IAttribute *attribute = component->GetAttribute(attributes[j]->GetNameString().c_str());
-                    if(attribute)
-                        attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
-                }
+                IAttribute *attribute = component->GetAttribute(attributes[j]->GetNameString().c_str());
+                if(attribute)
+                    attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
             }
         }
         if(hasPlaceable)

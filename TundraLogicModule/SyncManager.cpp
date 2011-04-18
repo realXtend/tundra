@@ -196,9 +196,6 @@ void SyncManager::NewUserConnected(UserConnection* user)
 
 void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
 {
-    if (!comp->IsSerializable())
-        return;
-    
     bool isServer = owner_->IsServer();
     
     // Client: Check for stopping interpolation, if we change a currently interpolating variable ourselves
@@ -255,8 +252,6 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
 
 void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
-    if (!comp->IsSerializable())
-        return;
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
     if (entity->IsLocal())
@@ -281,8 +276,6 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
 
 void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
-    if (!comp->IsSerializable())
-        return;
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
     if (entity->IsLocal())
@@ -498,7 +491,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             {
                 ComponentPtr component = components[j];
                 
-                if ((component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
+                if (component->GetNetworkSyncEnabled())
                 {
                     // Create componentstate so we can start tracking individual attributes
                     ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeNameHash(), component->Name());
@@ -533,7 +526,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 for(std::set<std::pair<uint, QString> >::iterator j = dirtycomps.begin(); j != dirtycomps.end(); ++j)
                 {
                     ComponentPtr component = entity->GetComponent(j->first, j->second);
-                    if ((component) && (component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
+                    if (component && component->GetNetworkSyncEnabled())
                     {
                         ComponentSyncState* componentstate = entitystate->GetComponent(component->TypeNameHash(), component->Name());
                         // New component

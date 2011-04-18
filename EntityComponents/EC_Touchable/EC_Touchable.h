@@ -94,9 +94,6 @@ public:
     /// Destructor.
     ~EC_Touchable();
 
-    /// IComponent override.
-    bool IsSerializable() const { return true; }
-
     /// Name of the material used for this EC.
 	Q_PROPERTY(QString materialName READ getmaterialName WRITE setmaterialName);
 	DEFINE_QPROPERTY_ATTRIBUTE(QString, materialName);

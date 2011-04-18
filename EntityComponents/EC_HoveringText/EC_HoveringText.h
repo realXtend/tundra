@@ -104,8 +104,6 @@ public:
     /// Destructor.
     ~EC_HoveringText();
 
-    virtual bool IsSerializable() const { return true; }
-
     Q_PROPERTY(QString textAttr READ gettextAttr WRITE settextAttr);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, textAttr);
 

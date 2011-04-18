@@ -80,9 +80,6 @@ public:
     /// Destructor.
     ~EC_InputMapper();
 
-    /// IComponent override. This component is serializable.
-    virtual bool IsSerializable() const { return true; }
-
     /// This input mapper's input context priority.
     Q_PROPERTY(QString contextName READ getcontextName WRITE setcontextName);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, contextName);

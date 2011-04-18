@@ -42,10 +42,6 @@ public:
     /// Desctructor.
     ~EC_Name() {}
 
-    /// IComponent override.
-    /// This component is serializable.
-    virtual bool IsSerializable() const { return true; }
-
     /// Name
     DEFINE_QPROPERTY_ATTRIBUTE(QString, name);
     Q_PROPERTY(QString name READ getname WRITE setname); 

@@ -68,8 +68,6 @@ class EC_EnvironmentLight : public IComponent
 public:
     virtual ~EC_EnvironmentLight();
 
-    virtual bool IsSerializable() const { return true; }
-   
     /// Defines sun color.
     DEFINE_QPROPERTY_ATTRIBUTE(Color,  sunColorAttr);
     Q_PROPERTY(Color sunColorAttr READ getsunColorAttr WRITE setsunColorAttr); 

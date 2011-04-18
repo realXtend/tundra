@@ -81,9 +81,6 @@ public:
     /// Destructor.
     ~EC_DynamicComponent();
 
-    /// IComponent override. This component is serializable.
-    virtual bool IsSerializable() const { return true; }
-
     /// IComponent override. This component has dynamic attribute structure.
     virtual bool HasDynamicStructure() const { return true; }
 

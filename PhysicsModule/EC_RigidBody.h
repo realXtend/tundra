@@ -192,9 +192,6 @@ public:
     
     virtual ~EC_RigidBody();
     
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-
     /// btMotionState override. Called when Bullet wants us to tell the body's initial transform
     virtual void getWorldTransform(btTransform &worldTrans) const;
 

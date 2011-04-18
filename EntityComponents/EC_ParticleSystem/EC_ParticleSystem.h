@@ -52,8 +52,6 @@ class EC_ParticleSystem : public IComponent
 public:
     ~EC_ParticleSystem();
 
-    virtual bool IsSerializable() const { return true; }
-
     /// Particle asset reference
     Q_PROPERTY(AssetReference particleRef READ getparticleRef WRITE setparticleRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, particleRef);

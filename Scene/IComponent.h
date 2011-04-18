@@ -152,8 +152,7 @@ public slots:
     /// Enables or disables network synchronization of changes that occur in the attributes of this component.
     /** By default, this flag is set for all created components.
         When network synchronization is disabled, changes to the attributes of this component affect
-        only locally and will not be pushed to network.
-    */
+        only locally and will not be pushed to network. */
     void SetNetworkSyncEnabled(bool enabled);
 
     /// Returns true if network synchronization of the attributes of this component is enabled.
@@ -164,9 +163,6 @@ public slots:
     
     /// Gets the default mode for attribute change operations
     AttributeChange::Type GetUpdateMode() const { return updatemode_; }
-
-    /// Returns true is this component supports XML serialization.
-    virtual bool IsSerializable() const { return false; }
 
     /// Returns true if component has dynamic attribute structure
     virtual bool HasDynamicStructure() const { return false; }

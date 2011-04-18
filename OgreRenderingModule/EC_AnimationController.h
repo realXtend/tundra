@@ -140,10 +140,7 @@ public:
      */
     Q_PROPERTY(QString animationState READ getanimationState WRITE setanimationState);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, animationState);
-    
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-    
+        
     /// Enumeration of animation phase
     enum AnimationPhase
     {

@@ -441,8 +441,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
                 entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
                 foreach(ComponentPtr component, entity->Components())
-                    if (component->IsSerializable())
-                        component->SerializeTo(scene_doc, entity_elem);
+                    component->SerializeTo(scene_doc, entity_elem);
 
                 scene_elem.appendChild(entity_elem);
             }
@@ -455,7 +454,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
         foreach(ComponentItem *cItem, selection.components)
         {
             ComponentPtr component = cItem->Component();
-            if (component && component->IsSerializable())
+            if (component)
                 component->SerializeTo(scene_doc, scene_elem);
         }
 

@@ -72,8 +72,6 @@ public:
     /// Destructor.
     ~EC_3DCanvasSource();
 
-    virtual bool IsSerializable() const { return true; }
-
     /// Source
     Q_PROPERTY(QString source READ getsource WRITE setsource);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, source);

@@ -223,9 +223,6 @@ void IComponent::EmitAttributeChanged(const QString& attributeName, AttributeCha
 
 void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
 {
-    if (!IsSerializable())
-        return;
-
     QDomElement comp_element = BeginSerialization(doc, base_element);
 
     for(uint i = 0; i < attributes_.size(); ++i)
@@ -248,9 +245,6 @@ bool HasAttribute(QDomElement &comp_element, const QString &name)
 
 void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type change)
 {
-    if (!IsSerializable())
-        return;
-
     if (!BeginDeserialization(element))
         return;
 

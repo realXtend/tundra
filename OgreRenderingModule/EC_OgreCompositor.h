@@ -71,9 +71,6 @@ public:
 
     virtual ~EC_OgreCompositor();
 
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-
 public slots:
     /// Returns list of available compositor names.
     QStringList AvailableCompositors() const;

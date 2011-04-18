@@ -105,7 +105,6 @@ void EcXmlEditorWidget::Refresh()
         while(it.hasNext())
         {
             ComponentPtr component = it.next().lock();
-            //if (component->IsSerializable())
             component->SerializeTo(temp_doc, entity_elem);
         }
     }
@@ -137,14 +136,13 @@ void EcXmlEditorWidget::Refresh()
 
         const Scene::Entity::ComponentVector &components = entity->Components();
         for(uint i = 0; i < components.size(); ++i)
-            if (components[i]->IsSerializable())
-            {
-                components[i]->SerializeTo(temp_doc, entity_elem);
-                if (multiple)
-                    entities_elem.appendChild(entity_elem);
-                else
-                    temp_doc.appendChild(entity_elem);
-            }
+        {
+            components[i]->SerializeTo(temp_doc, entity_elem);
+            if (multiple)
+                entities_elem.appendChild(entity_elem);
+            else
+                temp_doc.appendChild(entity_elem);
+        }
     }
 
     xmlEdit_->setText(temp_doc.toString());

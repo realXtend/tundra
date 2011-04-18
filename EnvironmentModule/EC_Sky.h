@@ -57,8 +57,6 @@ Currently Caelum must be disabled before these features can be used.
     public:
         virtual ~EC_Sky();
 
-        virtual bool IsSerializable() const { return true; }
-
         /// Sky material reference
         DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
         Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);

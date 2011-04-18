@@ -467,8 +467,7 @@ namespace Scene
 
                     const Scene::Entity::ComponentVector &components = entity->Components();
                     for(uint i = 0; i < components.size(); ++i)
-                        if (components[i]->IsSerializable())
-                            components[i]->SerializeTo(scene_doc, entity_elem);
+                        components[i]->SerializeTo(scene_doc, entity_elem);
 
                     scene_elem.appendChild(entity_elem);
                 }
@@ -1161,8 +1160,7 @@ namespace Scene
             
             const Scene::Entity::ComponentVector &components = entity->Components();
             for(uint i = 0; i < components.size(); ++i)
-                if (components[i]->IsSerializable())
-                    components[i]->SerializeTo(scene_doc, entity_elem);
+                components[i]->SerializeTo(scene_doc, entity_elem);
             
             scene_elem.appendChild(entity_elem);
         }

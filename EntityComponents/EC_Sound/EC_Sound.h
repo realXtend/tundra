@@ -77,7 +77,6 @@ class EC_Sound : public IComponent
 
 public:
     ~EC_Sound();
-    virtual bool IsSerializable() const { return true; }
 
     /// Sound asset reference.
     Q_PROPERTY(AssetReference soundRef READ getsoundRef WRITE setsoundRef);

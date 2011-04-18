@@ -54,8 +54,6 @@ class EC_Fog : public IComponent
 public:
     virtual ~EC_Fog() {}
 
-    virtual bool IsSerializable() const { return true; }
-
     /// Fog start distance 
     DEFINE_QPROPERTY_ATTRIBUTE(float, startDistance);
     Q_PROPERTY(float startDistance READ getstartDistance WRITE setstartDistance);

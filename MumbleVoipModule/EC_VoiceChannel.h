@@ -18,9 +18,6 @@ class EC_VoiceChannel : public IComponent
 public:
     virtual ~EC_VoiceChannel();
 
-    /// IComponent override. This component is serializable.
-    virtual bool IsSerializable() const { return true; }
-
     /// VOIP protocol used eg. 'mumble'
     Q_PROPERTY(QString protocol READ getprotocol WRITE setprotocol);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, protocol);

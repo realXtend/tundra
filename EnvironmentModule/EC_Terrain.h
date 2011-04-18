@@ -74,8 +74,6 @@ class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
 public:
     virtual ~EC_Terrain();
 
-    virtual bool IsSerializable() const { return true; }
-
     /// Each patch is a square containing this many vertices per side.
     static const int cPatchSize = 16;
 

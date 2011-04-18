@@ -59,9 +59,6 @@ public:
     /// Destructor.
     ~EC_Script();
 
-    /// IComponent override. This component is serializable.
-    virtual bool IsSerializable() const { return true; }
-
     /// Type of the script as string (js/py)
     Q_PROPERTY(QString type READ gettype WRITE settype);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, type);

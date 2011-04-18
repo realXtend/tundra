@@ -61,9 +61,6 @@ public:
 
     virtual ~EC_RttTarget();
 
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-
 public slots:
     void PrepareRtt();
     void SetAutoUpdated(bool val);

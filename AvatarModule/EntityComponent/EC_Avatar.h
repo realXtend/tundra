@@ -54,9 +54,6 @@ public:
     Q_PROPERTY(AssetReference appearanceRef READ getappearanceRef WRITE setappearanceRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, appearanceRef);
 
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-
     /// Destructor
     virtual ~EC_Avatar();
 

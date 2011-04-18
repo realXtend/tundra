@@ -86,8 +86,6 @@ class EC_WaterPlane : public IComponent
 public:
     virtual ~EC_WaterPlane();
 
-    virtual bool IsSerializable() const { return true; }
-
     /// Water plane x-size
     DEFINE_QPROPERTY_ATTRIBUTE(int, xSize);
     Q_PROPERTY(int xSize READ getxSize WRITE setxSize);

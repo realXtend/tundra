@@ -87,8 +87,6 @@ public:
     /// Destructor.
     ~EC_Light();
     
-    virtual bool IsSerializable() const { return true; }
-
     /// Gets placeable component
     ComponentPtr GetPlaceable() const { return placeable_; }
     

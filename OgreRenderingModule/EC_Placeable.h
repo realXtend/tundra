@@ -104,10 +104,7 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, visible);
 
     virtual ~EC_Placeable();
-    
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-    
+        
     /// sets parent placeable
     /** set null placeable to attach to scene root (the default)
         \param placeable new parent

@@ -120,11 +120,6 @@ EC_WebView::~EC_WebView()
     ResetWidget();
 }
 
-bool EC_WebView::IsSerializable() const
-{
-    return true;
-}
-
 bool EC_WebView::eventFilter(QObject *obj, QEvent *e)
 {
     if (webview_)
