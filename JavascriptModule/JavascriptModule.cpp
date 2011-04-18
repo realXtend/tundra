@@ -35,12 +35,11 @@
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
-std::string JavascriptModule::type_name_static_ = "Javascript";
 JavascriptModule *javascriptModuleInstance_ = 0;
 
-JavascriptModule::JavascriptModule() :
-    IModule(type_name_static_),
-    engine(new QScriptEngine(this))
+JavascriptModule::JavascriptModule()
+:IModule("Javascript"),
+engine(new QScriptEngine(this))
 {
 }
 

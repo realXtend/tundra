@@ -60,9 +60,6 @@ public:
 
     ECEditorWindow *GetActiveECEditor() const;
 
-    /// returns name of this module. Needed for logging.
-    static const std::string &NameStatic() { return name_static_; }
-
     /// Return Tree widget item expand memory pointer, which keeps track of which items in EC editor are expanded.
     /** When constructing new EC editor windows use this if you want to keep all editor windows' expanded and 
         collapsed items similar.
@@ -111,9 +108,6 @@ signals:
     void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
 
 private:
-    /// Static name of the module
-    static std::string name_static_;
-
     /// EC XML editor window
     QPointer<EcXmlEditorWidget> xmlEditor_;
 

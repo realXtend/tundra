@@ -16,12 +16,9 @@
 
 namespace Avatar
 {
-    static std::string module_name = "AvatarModule";
-    const std::string &AvatarModule::NameStatic() { return module_name; }
-
-    AvatarModule::AvatarModule() :
-        QObject(),
-        IModule(module_name)
+    AvatarModule::AvatarModule()
+    :QObject(),
+    IModule("Avatar")
     {
     }
 

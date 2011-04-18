@@ -93,7 +93,7 @@ public:
     void DeclareComponent(const ComponentRegistrarPtr &registrar) { component_registrars_.push_back(registrar); }
 
     /// Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
-    const std::string &Name() const { return name_; }
+    const std::string &Name() const { return name; }
 
     /// Returns the state of the module.
     ModuleState State() const { return state_; }
@@ -142,7 +142,7 @@ private:
     RegistrarVector component_registrars_;
 
     /// name of the module
-    const std::string name_;
+    const std::string name;
 
     /// Current state of the module
     ModuleState state_;

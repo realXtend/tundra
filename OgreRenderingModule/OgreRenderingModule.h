@@ -45,16 +45,10 @@ namespace OgreRenderer
         /// returns renderer
         RendererPtr GetRenderer() const { return renderer_; }
 
-        /// returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return type_name_static_; }
-
         /// callback for console command
         ConsoleCommandResult ConsoleStats(const StringVector &params);
 
     private:
-        /// Type name of the module.
-        static std::string type_name_static_;
-
         /// renderer
         RendererPtr renderer_;
 

@@ -37,12 +37,6 @@ namespace DebugStats
         void PostInitialize();
         void Update(f64 frametime);
 
-        /// Returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return moduleName; }
-
-        /// Name of this module.
-        static const std::string moduleName;
-
     public slots:
         /// Creates and shows the profiling window.
         ConsoleCommandResult ShowProfilingWindow(/*const StringVector &params*/);

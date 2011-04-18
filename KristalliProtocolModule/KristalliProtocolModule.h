@@ -54,9 +54,6 @@ namespace KristalliProtocol
 
         bool Connected() const { return serverConnection != 0; }
 
-        /// @return Module name. Needed for logging.
-        static const std::string &NameStatic();
-
         void SubscribeToNetworkEvents();
 
         /// Return message connection, for use by other modules (null if no connection made)

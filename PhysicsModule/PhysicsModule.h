@@ -42,12 +42,6 @@ public:
     void PostInitialize();
     void Update(f64 frametime);
     void Uninitialize();
-
-    /// Returns name of this module. Needed for logging.
-    static const std::string &NameStatic() { return moduleName; }
-
-    /// Name of this module.
-    static const std::string moduleName;
     
     /// Toggles physics debug geometry
     ConsoleCommandResult ConsoleToggleDebugGeometry(const StringVector& params);

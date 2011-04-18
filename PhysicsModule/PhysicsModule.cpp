@@ -65,14 +65,12 @@ int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &pr
 namespace Physics
 {
 
-const std::string PhysicsModule::moduleName = std::string("Physics");
-
-PhysicsModule::PhysicsModule() :
-    IModule(NameStatic()),
-    drawDebugGeometry_(false),
-    runPhysics_(true),
-    debugGeometryObject_(0),
-    debugDrawMode_(0)
+PhysicsModule::PhysicsModule()
+:IModule("Physics"),
+drawDebugGeometry_(false),
+runPhysics_(true),
+debugGeometryObject_(0),
+debugDrawMode_(0)
 {
 }
 

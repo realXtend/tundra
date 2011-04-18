@@ -32,10 +32,8 @@
 
 namespace OgreRenderer
 {
-    std::string OgreRenderingModule::type_name_static_ = "OgreRendering";
-
-    OgreRenderingModule::OgreRenderingModule() :
-        IModule(type_name_static_)
+    OgreRenderingModule::OgreRenderingModule()
+    :IModule("OgreRendering")
     {
     }
 

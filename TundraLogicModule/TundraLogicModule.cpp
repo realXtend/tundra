@@ -103,13 +103,12 @@
 namespace TundraLogic
 {
 
-std::string TundraLogicModule::type_name_static_ = "TundraLogic";
+    static const unsigned short cDefaultPort = 2345;
 
-static const unsigned short cDefaultPort = 2345;
-
-TundraLogicModule::TundraLogicModule() : IModule(type_name_static_),
-    autostartserver_(false),
-    autostartserver_port_(cDefaultPort)
+TundraLogicModule::TundraLogicModule()
+:IModule("TundraLogic"),
+autostartserver_(false),
+autostartserver_port_(cDefaultPort)
 {
 }
 

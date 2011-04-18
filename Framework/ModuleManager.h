@@ -182,35 +182,6 @@ public:
     void UnloadModule(Module::Entry &entry);
 
 private:
-    /// Stores the information contained in a single shared library XML file.
-    struct ModuleLoadDescription
-    {
-        boost::filesystem::path moduleDescFilename;
-        StringVector moduleNames; ///< The names of the modules contained in this shared library.
-        StringVector dependencies;
-
-        /// @return True if this module directly depends on the module rhs, i.e. if this module absolutely needs to be loaded before rhs.
-        bool Precedes(const ModuleLoadDescription &rhs) const;
-
-        /// @return A readable string presentation of the given module description.
-        std::string ToString() const;
-    };
-
-    /** Parses the module xml file stored in the file pointed by the parameter path.
-        Adds a new module load description structure to the end of the vector out,
-        as well as adding into relativePathDependencyAdditions any path dependencies needed by that module.
-    */
-    void ParseModuleXMLFile(const fs::path &path, std::vector<ModuleLoadDescription> &out, StringVector &relativePathDependencyAdditions);
-
-    static void SortModuleLoadOrder(std::vector<ModuleLoadDescription> &modules);
-
-    static void CheckDependencies(const std::vector<ModuleLoadDescription> &modules);
-
-    static const ModuleLoadDescription *FindModuleLoadDescriptionWithEntry(const std::vector<ModuleLoadDescription> &modules, const std::string &entryName);
-
-    /// Parses and returns all the dependencies that the given module has from its dependency .xml file.
-    StringVector LoadModuleDependencies(const std::string &name);
-
     /// loads module
     /**
         \param moduleName path to the shared lib containing the modules

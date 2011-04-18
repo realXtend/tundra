@@ -34,8 +34,6 @@ namespace MumbleVoip
         void Uninitialize();
         void Update(f64 frametime);
 
-        static const std::string &NameStatic() { return module_name_; } /// returns name of this module. Needed for logging.
-
     public slots:
         void ToggleSettingsWidget();
         Provider* GetMumbleProviver() { return in_world_voice_provider_; }
@@ -45,8 +43,6 @@ namespace MumbleVoip
 
     private:
         virtual void UpdateLinkPlugin(f64 frametime);
-
-        static std::string module_name_;     
 
         LinkPlugin* link_plugin_;
         Provider* in_world_voice_provider_;

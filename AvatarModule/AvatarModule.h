@@ -30,8 +30,6 @@ namespace Avatar
 
     Q_OBJECT
     
-    static const std::string &NameStatic();
-
     public:
         AvatarModule();
         virtual ~AvatarModule();

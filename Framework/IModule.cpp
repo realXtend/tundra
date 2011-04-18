@@ -17,8 +17,10 @@
 
 using namespace Foundation;
 
-IModule::IModule(const std::string &name) :
-    name_(name), state_(MS_Unloaded), framework_(0)
+IModule::IModule(const std::string &name_)
+:name(name_), 
+state_(MS_Unloaded), 
+framework_(0)
 {
 }
 

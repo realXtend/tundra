@@ -36,9 +36,6 @@ public:
     void Uninitialize();
     void Update(f64 frametime);
 
-    /// Returns name of this module. Needed for logging.
-    static const std::string &NameStatic() { return type_name_static_; }
-
     /// Returns the currently initialized JavascriptModule.
     static JavascriptModule *GetInstance();
 
@@ -84,9 +81,6 @@ private:
 
     /// Stop & delete startup scripts
     void UnloadStartupScripts();
-
-    /// Type name of the module.
-    static std::string type_name_static_;
 
     /// Default engine for console & commandline script execution
     QScriptEngine *engine;

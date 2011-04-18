@@ -26,7 +26,6 @@ namespace KristalliProtocol
 
 namespace
 {
-    const std::string moduleName("KristalliProtocol");
 
 /*
     const struct
@@ -90,10 +89,10 @@ static const int cInitialAttempts = 1;
 static const int cReconnectAttempts = 5;
 
 KristalliProtocolModule::KristalliProtocolModule()
-:IModule(NameStatic())
-, serverConnection(0)
-, server(0)
-, reconnectAttempts(0)
+:IModule("KristalliProtocol"),
+serverConnection(0),
+server(0),
+reconnectAttempts(0)
 {
 }
 
@@ -200,11 +199,6 @@ void KristalliProtocolModule::Update(f64 frametime)
         reconnectAttempts = cReconnectAttempts;
     
     RESETPROFILER;
-}
-
-const std::string &KristalliProtocolModule::NameStatic()
-{
-    return moduleName;
 }
 
 void KristalliProtocolModule::Connect(const char *ip, unsigned short port, SocketTransportLayer transport)

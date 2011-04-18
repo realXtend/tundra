@@ -19,9 +19,8 @@
 
 namespace Asset
 {
-    std::string AssetModule::type_name_static_ = "Asset";
-
-    AssetModule::AssetModule() : IModule(type_name_static_)
+    AssetModule::AssetModule()
+    :IModule("Asset")
     {
     }
 

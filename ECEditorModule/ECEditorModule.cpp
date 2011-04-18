@@ -23,11 +23,9 @@
 
 #include <QWebView>
 
-std::string ECEditorModule::name_static_ = "ECEditor";
-
-ECEditorModule::ECEditorModule() :
-    IModule(name_static_),
-    xmlEditor_(0)
+ECEditorModule::ECEditorModule()
+:IModule("ECEditor"),
+xmlEditor_(0)
 {
 }
 
@@ -42,7 +40,7 @@ void ECEditorModule::Load()
 void ECEditorModule::Initialize()
 {
     GetFramework()->RegisterDynamicObject("eceditor", this);
-    expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(name_static_.c_str(), framework_));
+    expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(Name().c_str(), framework_));
 }
 
 void ECEditorModule::PostInitialize()

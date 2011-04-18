@@ -39,18 +39,12 @@ namespace Asset
 
         ConsoleCommandResult AddHttpStorage(const StringVector &params);
 
-        /// returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return type_name_static_; }
-
     public slots:
         /// Loads from all the registered local storages all assets that have the given suffix.
         void LoadAllLocalAssetsWithSuffix(const QString &suffix);
 
     private:
         void ProcessCommandLineOptions();
-
-        /// Type name of the module.
-        static std::string type_name_static_;
     };
 }
 

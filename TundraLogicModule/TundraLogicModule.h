@@ -42,9 +42,6 @@ public:
     void Uninitialize();
     void Update(f64 frametime);
 
-    /// Returns name of this module. Needed for logging.
-    static const std::string &NameStatic() { return type_name_static_; }
-
     /// Starts a server (console command)
     ConsoleCommandResult ConsoleStartServer(const StringVector &params);
     
@@ -104,10 +101,7 @@ private:
         
     /// KristalliProtocolModule pointer
     boost::shared_ptr<KristalliProtocol::KristalliProtocolModule> kristalliModule_;
-    
-    /// Type name of the module.
-    static std::string type_name_static_;
-    
+        
     /// Whether to autostart the server
     bool autostartserver_;
     /// Autostart server port

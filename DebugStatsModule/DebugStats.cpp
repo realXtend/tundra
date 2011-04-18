@@ -39,11 +39,9 @@ using namespace std;
 namespace DebugStats
 {
 
-const std::string DebugStatsModule::moduleName = std::string("DebugStats");
-
-DebugStatsModule::DebugStatsModule() :
-    IModule(NameStatic()),
-    profilerWindow_(0)
+DebugStatsModule::DebugStatsModule()
+:IModule("DebugStats"),
+profilerWindow_(0)
 {
 }
 

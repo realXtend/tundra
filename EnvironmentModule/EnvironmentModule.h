@@ -40,18 +40,12 @@ namespace Environment
         void Uninitialize();
         void Update(f64 frametime);
 
-        /// @return Returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return type_name_static_; }
-
     public slots:
         /// Shows terrain texture editor.
         void ShowTerrainWeightEditor();
 
     private:
         Q_DISABLE_COPY(EnvironmentModule);
-
-        /// @return Returns type of this module. Needed for logging.
-        static std::string type_name_static_;
 
         /// Editor for terrain texture weights
         TerrainWeightEditor* terrainWeightEditor_;

@@ -30,11 +30,9 @@
 
 namespace Environment
 {
-    std::string EnvironmentModule::type_name_static_ = "Environment";
-
-    EnvironmentModule::EnvironmentModule() :
-        IModule(type_name_static_),
-        terrainWeightEditor_(0)
+    EnvironmentModule::EnvironmentModule()
+    :IModule("Environment"),
+    terrainWeightEditor_(0)
     {
     }
 

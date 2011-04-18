@@ -21,15 +21,13 @@
 
 namespace MumbleVoip
 {
-    std::string MumbleVoipModule::module_name_ = "MumbleVoip";
-
-    MumbleVoipModule::MumbleVoipModule() : 
-        IModule(module_name_),
-        link_plugin_(0),
-        in_world_voice_provider_(0),
-        time_from_last_update_ms_(0),
-        settings_widget_(0),
-        settings_(0)
+    MumbleVoipModule::MumbleVoipModule()
+    :IModule("MumbleVoip"),
+    link_plugin_(0),
+    in_world_voice_provider_(0),
+    time_from_last_update_ms_(0),
+    settings_widget_(0),
+    settings_(0)
     {
     }
 
