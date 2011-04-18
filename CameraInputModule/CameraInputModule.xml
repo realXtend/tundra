@@ -1,0 +1,5 @@
+<config>
+    <entry>CameraInputModule</entry>
+    <dependency>OgreRenderingModule</dependency>
+    <dependency>TundraLogicModule</dependency>
+</config>
