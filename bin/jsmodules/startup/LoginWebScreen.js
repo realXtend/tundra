@@ -195,7 +195,7 @@ var BrowserManager = Class.extend
         
         // \todo seems like this does not work. When a script deleteLater() 
         // its source QAction it does not come to our action
-        action.destroyed.connect(act, act.deleteLater()
+        action.destroyed.connect(act, act.deleteLater());
     },
     
     refreshSplitter: function()
