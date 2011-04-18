@@ -235,7 +235,7 @@ void TundraLogicModule::PostInitialize()
         ConsoleBind(this, &TundraLogicModule::ConsoleImportMesh)));
         
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
-    kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
+    kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>();
     if (!kristalliModule_)
     {
         throw Exception("Fatal: could not get KristalliProtocolModule");

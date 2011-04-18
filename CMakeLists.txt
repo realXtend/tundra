@@ -140,7 +140,8 @@ set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Confi
 
 # In Visual Studio, use unicode character set
 if (MSVC)
-    add_definitions (-DUNICODE -D_UNICODE)
+    add_definitions(-DUNICODE -D_UNICODE)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 # On all platforms, we enable PCH files by default.

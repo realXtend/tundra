@@ -139,7 +139,7 @@ namespace Foundation
             @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
          */
         template <class T>
-        T *GetModule() { return GetModuleManager()->GetModule<T>().lock().get(); }
+        T *GetModule() { return GetModuleManager()->GetModule<T>().get(); }
 
         /// Returns service by class T.
         /** @param T class type of the service.

@@ -40,7 +40,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
         if(entity->HasComponent("EC_Mesh") == false)
         {
             useCustomMesh_ = true;
-            OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
+            OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().get();
             if(!rendererModule)
                 return;
 

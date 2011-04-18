@@ -17,58 +17,6 @@ namespace Foundation
     class Framework;
 }
 
-/** \defgroup Module_group Module Architecture Client Interface
-    \copydoc Module
-*/
-
-/// Module specific parts of the foundation.
-/** Generally module handling is done in the background, so there
-    is little need to access many of the things provided by this
-    namespace.
-
-    For details, see \ref ModuleArchitecture "Module Architecture".
-*/
-namespace Module
-{
-    /// entry for shared library that may contain module(s)
-    struct SharedLibrary : public boost::noncopyable
-    {
-        SharedLibrary();
-        SharedLibrary(const std::string &path);
-        ~SharedLibrary();
-
-        /// path to the shared library
-        std::string path_;
-    };
-    typedef boost::shared_ptr<SharedLibrary> SharedLibraryPtr;
-
-    /// A function object that deletes a SharedLibrary object once it is not used.
-    /// Used as a Deletor object for boost::shared_ptr.
-    class ModuleDeletor
-    {
-        std::string entry_;
-        SharedLibraryPtr shared_library_;
-
-    public:
-        ModuleDeletor(const std::string &entry, SharedLibraryPtr shared_library);
-
-        void operator()(IModule *module);
-    };
-
-    /// Module entry. Contains information about a module. Useful for ModuleManager introspection.
-    /** \ingroup Foundation_group
-        \ingroup Module_group
-    */
-    struct Entry
-    {
-        /// The module. Memory owned by Poco if a shared library, by us using new/delete if static library.
-        ModuleSharedPtr module_;
-        /// entry class of the module
-        std::string entry_;
-        /// shared library this module was loaded from. Null for static library
-        SharedLibraryPtr shared_library_;
-    };
-}
 
 /// Manages run-time loadable and unloadable modules.
 /** See \ref ModuleArchitecture for details on how to use.  
@@ -79,7 +27,7 @@ namespace Module
 class ModuleManager
 {
 public:
-    typedef std::vector<Module::Entry> ModuleVector;
+    typedef std::vector<ModuleSharedPtr> ModuleVector;
 
     explicit ModuleManager(Foundation::Framework *framework);
     ~ModuleManager();
@@ -88,41 +36,19 @@ public:
     /** Use 'new' to create the module. The framework will take responsibility of the
         declared module and will delete it after unloading it.
 
-        Loads the module immediatelly.
-    */
+        Loads the module immediatelly. */
     void DeclareStaticModule(IModule *module);
-
-    /// Specify a module by name that should not be loaded or initialized under any circumstances
-    /** 
-        \note Only call during application preinit phase.
-        \param module Name of the module that should be excluded.
-    */
-    void ExcludeModule(const std::string &module)
-    {
-        assert (module.empty() == false);
-        exclude_list_.insert(module);
-
-        LogDebug("Added module " + module + " to exclude list");
-    }
-
-    /// Returns true if the specified module is excluded from being loaded
-    bool IsExcluded(const std::string &module) const
-    {
-        return (exclude_list_.find(module) != exclude_list_.end());
-    }
 
     /// unloads all available modules. Modules does not get unloaded as such, only the module's unload() function will be called
     /** Assumptions is that modules only get unloaded once the program exits.
 
-        PostCondition: HasModule(module) == false for any module
-    */
+        PostCondition: HasModule(module) == false for any module */
     void UnloadModules();
 
     /// initialize all modules
     /** All static modules should be declared before calling this.
 
-        \note should only be called once, when firing up the framework
-    */
+        \note should only be called once, when firing up the framework */
     void InitializeModules();
 
     /// uninitialize all modules
@@ -133,37 +59,28 @@ public:
 
     /// Returns module by name
     /// \note The pointer may invalidate between frames, always reacquire at begin of frame update
-    ModuleWeakPtr GetModule(const std::string &name);
-
-    /// Returns module by raw pointer
-    ModuleWeakPtr GetModule(IModule* rawptr);
+    ModuleSharedPtr GetModule(const std::string &name);
 
     /** Returns module by class T.
-     *  \param T class type of the module.
-     *  \return The module, or null if the module doesn't exist and dynamic cast fails.
-     *  \note The pointer may invalidate between frames, always reacquire at begin of frame update
-     */
-    template <class T> boost::weak_ptr<T> GetModule()
+        @param T class type of the module.
+        @return The module, or null if the module doesn't exist and dynamic cast fails.
+        @note The pointer may invalidate between frames, always reacquire at begin of frame update */
+    template <class T>
+    boost::shared_ptr<T> GetModule()
     {
-        for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
+        for(ModuleVector::iterator it = modules_.begin(); it != modules_.end(); ++it)
         {
-            boost::weak_ptr<T> module = boost::dynamic_pointer_cast<T>(it->module_);
-            if (module.lock())
+            boost::shared_ptr<T> module = boost::dynamic_pointer_cast<T>(*it);
+            if (module)
                 return module;
         }
 
-        return boost::weak_ptr<T>();
+        return boost::shared_ptr<T>();
     }
 
     /// @return A list of all modules in the system, for reflection purposes. If you need non-const access to
     ///         a module, call GetModule with the proper name or type.
     const ModuleVector &GetModuleList() const { return modules_; }
-
-    /// Returns true if module is loaded, false otherwise
-    bool HasModule(const std::string &name) const;
-
-    /// @return True if the given module library entry is present, false otherwise.
-    bool HasModuleEntry(const std::string &entry) const;
 
     /// Pre-initialize the specified module
     void PreInitializeModule(IModule *module);
@@ -179,32 +96,11 @@ public:
 
     /// Unloads and deletes the module.
     /// \note Does not remove from modules_
-    void UnloadModule(Module::Entry &entry);
+//    void UnloadModule(Module::Entry &entry);
 
 private:
-    /// loads module
-    /**
-        \param moduleName path to the shared lib containing the modules
-        \param entries name of the entry classes in the lib
-    */
-    void LoadModule(const std::string &moduleName, const StringVector &entries);
-
-    /// returns true if module is present
-    bool HasModule(IModule *module) const;
-
-    /// Returns a vector containing all xml files in the specified directory, scans recursively.
-    StringVectorPtr GetXmlFiles(const std::string &path);
-
-    /// adds needed dependency paths to process path
-    void AddDependenciesToPath(const StringVector &all_additions);
-
-    typedef std::set<std::string> ModuleTypeSet;
-
     /// list of modules managed by this manager
     ModuleVector modules_;
-
-    /// List of modules that should be excluded
-    ModuleTypeSet exclude_list_;
 
     /// Framework pointer.
     Foundation::Framework *framework_;
