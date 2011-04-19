@@ -49,10 +49,14 @@ function TrimField(txt)
 
 function LoginPressed()
 {
-    client.ClearLoginProperties();
-    //client.SetLoginProperty("Username", TrimField(user_name.text));
-    //client.SetLoginProperty("Password", TrimField(user_password.text));
-    client.Login(TrimField(server_address.text), 2345);
+    // BUG: This function gets sometimes called twice when you click the login button, so filter the second press by ignoring calls here if we are already connecting.
+    if (!client.IsConnectedOrConnecting()) 
+    {
+        client.ClearLoginProperties();
+        //client.SetLoginProperty("Username", TrimField(user_name.text));
+        //client.SetLoginProperty("Password", TrimField(user_password.text));
+        client.Login(TrimField(server_address.text), 2345);
+    }
 }
 
 function HideLoginScreen()

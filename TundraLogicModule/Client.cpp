@@ -117,6 +117,11 @@ bool Client::IsConnected() const
     return loginstate_ == LoggedIn;
 }
 
+bool Client::IsConnectedOrConnecting() const
+{
+    return loginstate_ != NotConnected;
+}
+
 void Client::SetLoginProperty(QString key, QString value)
 {
     key = key.trimmed();

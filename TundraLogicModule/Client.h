@@ -98,6 +98,9 @@ public slots:
     
     //! See if connected & authenticated
     bool IsConnected() const;
+
+    /// Returns true if the connection is being negotiated, or if we already are connected.
+    bool IsConnectedOrConnecting() const;
     
     /// Sets the given login property with the given value. Call this function prior connecting to a scene to specify
     /// data that should be carried to the server as initial login data.
