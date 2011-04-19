@@ -43,16 +43,36 @@ var AutoServerStore = Class.extend
     },
     
     readConfig: function()
-    {
-        var configureDone = config.Get(configFile, configSection, "auto_server_store_configured", false);
-        if (!configureDone)
-            this.runConfigure();
+    {       
+        // Watch out for the js boolean QVariant bug! Expect strings if bool.
         
-        // No read with the default values provided to be sure
-        this.startupLoadEnabled = config.Get(configFile, configSection, "startup_load_enabled", this.startupLoadEnabled);
-        this.shutdownSaveEnabled = config.Get(configFile, configSection, "shutdown_save_enabled", this.shutdownSaveEnabled);
+        if (!config.HasValue(configFile, configSection, "startup_load_enabled"))
+            config.Set(configFile, configSection, "startup_load_enabled", this.startupLoadEnabled);
+        this.startupLoadEnabled = config.Get(configFile, configSection, "startup_load_enabled");
+        if (this.startupLoadEnabled == "false")
+            this.startupLoadEnabled = false;
+        else
+            this.startupLoadEnabled = true
+        
+        if (!config.HasValue(configFile, configSection, "shutdown_save_enabled"))
+            config.Set(configFile, configSection, "shutdown_save_enabled", this.shutdownSaveEnabled);
+        this.shutdownSaveEnabled = config.Get(configFile, configSection, "shutdown_save_enabled");
+        if (this.shutdownSaveEnabled == "false")
+            this.shutdownSaveEnabled = false;
+        else
+            this.shutdownSaveEnabled = true
+            
+        if (!config.HasValue(configFile, configSection, "interval_save_enabled"))
+            config.Set(configFile, configSection, "interval_save_enabled", this.intervalSaveEnabled);
         this.intervalSaveEnabled = config.Get(configFile, configSection, "interval_save_enabled", this.intervalSaveEnabled);
-        this.intervalSaveMinutes = config.Get(configFile, configSection, "interval_save_minutes", this.intervalSaveMinutes);
+        if (this.intervalSaveEnabled == "false")
+            this.intervalSaveEnabled = false;
+        else
+            this.intervalSaveEnabled = true
+            
+        if (!config.HasValue(configFile, configSection, "interval_save_minutes"))
+            config.Set(configFile, configSection, "interval_save_minutes", this.intervalSaveMinutes);
+        this.intervalSaveMinutes = config.Get(configFile, configSection, "interval_save_minutes");
     },
     
     writeDefaultConfig: function()
@@ -65,6 +85,11 @@ var AutoServerStore = Class.extend
     
     runConfigure: function()
     {
+        // No ui for headless evev if this funtion will
+        // never be invoked in headless mode, double check here.
+        if (framework.IsHeadless())
+            return;
+        
         var dialogTitle = "AutoServerStore Configure Wizard";
         var messageBox = new QMessageBox(QMessageBox.Question, dialogTitle, "", QMessageBox.NoButton, 0, Qt.Tool);
         messageBox.addButton("Yes", QMessageBox.YesRole);
@@ -73,25 +98,7 @@ var AutoServerStore = Class.extend
         // Yes it's confusing...
         var yesAnswer = false;
         var noAnswer = true;
-        
-        messageBox.text = "Seems that this is the first time you are running the server,\nwould you like to run the AutoServerStore configure wizard?";
-        if (framework.IsHeadless())
-            var result = noAnswer;
-        else
-            var result = messageBox.exec();
-
-        if (result == noAnswer)
-        {
-            messageBox.text = "Would you like me to remind you on next startup?\nAnswering 'No' will never show you dialogs again on this machine.";
-            if (!framework.IsHeadless())
-                result = messageBox.exec();
-            else
-                result = noAnswer;
-            if (result == noAnswer)
-                config.Set(configFile, configSection, "auto_server_store_configured", true);            
-            this.writeDefaultConfig();
-            return;
-        }
+        var result = null;
         
         messageBox.text = "Load last stored scene on startup?";
         result = messageBox.exec();
@@ -101,35 +108,15 @@ var AutoServerStore = Class.extend
         result = messageBox.exec();
         config.Set(configFile, configSection, "shutdown_save_enabled", (result == yesAnswer));
         
-        messageBox.text = "Save scene every " + this.intervalSaveMinutes + " minutes?";
+        messageBox.text = "Save scene every " + p_.intervalSaveMinutes + " minutes?";
         result = messageBox.exec();
         config.Set(configFile, configSection, "interval_save_enabled", (result == yesAnswer));
-        config.Set(configFile, configSection, "interval_save_minutes", this.intervalSaveMinutes);
+        config.Set(configFile, configSection, "interval_save_minutes", p_.intervalSaveMinutes);
         
-        /*
-        \todo Do something about this?
-        
-        QInputDialog.getInt() says its not a function and making it with new QInputDialog()
-        is also buggy. You cant set the default value or the text that shows in the dialog on .exec()
-        
-        var inputIntervalMinutes = this.intervalSaveMinutes;
-        if (result == yesAnswer)
-        {
-            var intInputDialog = new QInputDialog();
-            intInputDialog.inputMode = QInputDialog.IntInput;
-            intInputDialog.labelText = "How ofter to store scene during run? Insert interval in minutes:";
-            intInputDialog.intValue = 60;
-            
-            intInputDialog.exec();
-            inputIntervalMinutes = intInputDialog.intValue;
-            print(inputIntervalMinutes);
-            if (inputIntervalMinutes == null || inputIntervalMinutes <= 0)
-                inputIntervalMinutes = this.intervalSaveMinutes;
-            config.Set(configFile, configSection, "interval_save_minutes", inputIntervalMinutes);
-        }
-        */
-        
-        config.Set(configFile, configSection, "auto_server_store_configured", true);
+        var dialogTitle = "AutoServerStore Configure Wizard";
+        var messageBox = new QMessageBox(QMessageBox.Question, dialogTitle, "You will have to restart the\nserver for the changes to apply.", QMessageBox.NoButton, 0, Qt.Tool);
+        messageBox.addButton("OK", QMessageBox.YesRole);
+        messageBox.exec();
     },
     
     start: function()
@@ -147,6 +134,22 @@ var AutoServerStore = Class.extend
             p_.intervalNow = 0.0;
             p_.intervalStore = p_.intervalSaveMinutes * 60.0;
             frame.Updated.connect(this.update);
+        }
+        
+        // Add delayed so other core menu stuff
+        // has time to add themselves and our menu is last.
+        var timer = new QTimer();
+        timer.singleShot = true;
+        timer.timeout.connect(this.addMenu);
+        timer.start(500);
+    },
+    
+    addMenu: function()
+    {
+        if (!framework.IsHeadless())
+        {
+            var menuAction = ui.MainWindow().AddMenuAction("Server", "Configure Auto Store");
+            menuAction.triggered.connect(p_.runConfigure);
         }
     },
     
@@ -178,13 +181,13 @@ var AutoServerStore = Class.extend
     
     loadScene: function()
     {
-        var entList = framework.Scene().GetDefaultSceneRaw().LoadSceneXML(this.sceneFilename, true, false, 0);
+        var entList = framework.Scene().GetDefaultSceneRaw().LoadSceneXML(p_.sceneFilename, true, false, 0);
         return entList.length;
     },
     
     saveScene: function()
     {
-        var successful = framework.Scene().GetDefaultSceneRaw().SaveSceneXML(this.sceneFilename);
+        var successful = framework.Scene().GetDefaultSceneRaw().SaveSceneXML(p_.sceneFilename);
         return successful;
     },
 });

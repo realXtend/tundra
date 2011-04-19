@@ -3,13 +3,14 @@ if (!framework.IsHeadless())
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
 
-    var menu = ui.MainWindow().menuBar();
-    menu.clear();
+    var mainwin = ui.MainWindow();
 
-    var fileMenu = menu.addMenu("&File");
+    var fileMenu = mainwin.AddMenu("&File");
     if (framework.GetModuleQObj("UpdateModule"))
         fileMenu.addAction(new QIcon("./data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
+    
     //fileMenu.addAction("New scene").triggered.connect(NewScene);
+    
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
     {
@@ -21,7 +22,7 @@ if (!framework.IsHeadless())
     }
     fileMenu.addAction(new QIcon("./data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
-    var viewMenu = menu.addMenu("&View");
+    var viewMenu = mainwin.AddMenu("&View");
     if (framework.GetModuleQObj("CAVEStereo"))
     {
         var caveMenu = viewMenu.addMenu("&CAVE and Stereo");
@@ -54,7 +55,7 @@ if (!framework.IsHeadless())
     if (framework.GetModuleQObj("PythonScript"))
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
         
-    var helpMenu = menu.addMenu("&Help");
+    var helpMenu = mainwin.AddMenu("&Help");
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Mailing list").triggered.connect(OpenMailingListUrl);
