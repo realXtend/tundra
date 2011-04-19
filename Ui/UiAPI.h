@@ -12,7 +12,8 @@
 class QMenu;
 
 /// UiAPI is the core API object exposed for all UI-related functionality.
-/** @todo More detailed description. Make a new .dox file with extensive code examples etc?
+/** @todo More detailed description.
+    @todo Make a new .dox file for UiAPI.
 */
 class UI_API UiAPI : public QObject
 {
@@ -61,10 +62,6 @@ public slots:
         @return Proxy widget of the added widget.
     */
     UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
-
-    /// This is an overloaded function for QtScript compatibility.
-    /** @todo Make Qt::WindowFlags work from QtScript and remove this function. */
-    UiProxyWidget *AddWidgetToSceneRaw(QWidget *widget, int flags = (int)Qt::Dialog) { return AddWidgetToScene(widget, (Qt::WindowFlags)flags); }
 
     /// Adds user-created proxy widget to the scene.
     /** @param widget Proxy widget.
@@ -128,7 +125,7 @@ public slots:
 
     /// Emits a signal that can be used to attach context menu actions for specific object types.
     /** @param menu Menu to which possible functionality can be appended.
-        @param List of targets objects for which the context menu is about to open.
+        @param targets List of target objects for which the context menu is about to open.
     */
     void EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 
@@ -141,7 +138,7 @@ public slots:
 signals:
     /// Signals that context menu @c menu is about to open for specific objects.
     /** @param menu Menu to which append functionalities.
-        @param List of target objects. Use to inspect that 
+        @param targets List of target objects for which the context menu is about to open.
     */
     void ContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 
