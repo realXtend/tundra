@@ -4,7 +4,6 @@
 #define incl_Interfaces_RenderServiceInterface_h
 
 #include "IService.h"
-#include "LogListenerInterface.h"
 #include "CoreModuleApi.h"
 #include "Vector3D.h"
 #include "Quaternion.h"

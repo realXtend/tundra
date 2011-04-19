@@ -4,7 +4,6 @@
 #define incl_Console_ConsoleManager_h
 
 #include "CommandManager.h"
-#include "LogListenerInterface.h"
 
 class Framework;
 
