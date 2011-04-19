@@ -40,12 +40,12 @@ class ComponentPropertyAdder(circuits.BaseComponent):
         r.logInfo("componentpropertyaddr exiting... done")
 
     def onComponentAdded(self, ent, comp, changetype):
-        #print "Comp added:", ent, comp, comp.TypeName, comp.Name, changetype
+        #print "Comp added:", ent, comp, comp.typeName, comp.Name, changetype
         
-        if comp.TypeName in compshorthand:
-            propname = compshorthand[comp.TypeName]
+        if comp.typeName in compshorthand:
+            propname = compshorthand[comp.typeName]
         else:
-            propname = comp.TypeName
+            propname = comp.typeName
 
         if propname not in ent.dynamicPropertyNames():
             #first come, first (actually: the only one) served
@@ -54,10 +54,10 @@ class ComponentPropertyAdder(circuits.BaseComponent):
 
     def onComponentRemoved(self, ent, comp, changetype):
         #r.logInfo("XXX onComponentRemoved called")
-        if comp.TypeName in compshorthand:
-            propname = compshorthand[comp.TypeName]
+        if comp.typeName in compshorthand:
+            propname = compshorthand[comp.typeName]
         else:
-            propname = comp.TypeName
+            propname = comp.typeName
         #r.logInfo("XXX propname " +str(propname))
         #r.logInfo("XXX dynamicpropertynames " + str(ent.dynamicPropertyNames()))
         if propname in ent.dynamicPropertyNames():

@@ -9,7 +9,7 @@ for( i in entityList)
 {
 
 	entity = scene.GetEntityRaw(entityList[i]);
-	if(entity.Name == "CollisionBox")
+	if(entity.name == "CollisionBox")
 	{
 		entity.rigidbody.mass = 2.0;
 		entity.rigidbody.friction = 1.0;

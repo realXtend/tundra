@@ -80,7 +80,7 @@ function bindButton(camname, butname) {
 }
 
 function update(frametime) {
-    var vis = renderer.IsEntityVisible(me.Id);
+    var vis = renderer.IsEntityVisible(me.id);
     if(rtt != null) {
         rtt.SetAutoUpdated(vis);
     }

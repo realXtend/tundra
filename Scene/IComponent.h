@@ -43,10 +43,10 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
     friend class ::IAttribute;
 
     Q_OBJECT
-    Q_PROPERTY(QString Name READ Name WRITE SetName)
-    Q_PROPERTY(QString TypeName READ TypeName)
-    Q_PROPERTY(bool NetworkSyncEnabled READ GetNetworkSyncEnabled WRITE SetNetworkSyncEnabled)
-    Q_PROPERTY(AttributeChange::Type UpdateMode READ GetUpdateMode WRITE SetUpdateMode)
+    Q_PROPERTY(QString name READ Name WRITE SetName)
+    Q_PROPERTY(QString typeName READ TypeName)
+    Q_PROPERTY(bool networkSyncEnabled READ GetNetworkSyncEnabled WRITE SetNetworkSyncEnabled)
+    Q_PROPERTY(AttributeChange::Type updateMode READ GetUpdateMode WRITE SetUpdateMode)
 
 public:
     /// Constructor.
