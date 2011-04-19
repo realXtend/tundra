@@ -36,6 +36,11 @@ void CameraInputModule::Initialize()
     if (cameraInput_)
         framework_->RegisterDynamicObject("camerainput", cameraInput_);
 
+    // Do not start reading camera input in headless mode. For example
+    // on a headless server this would be bad as it would take up cpu for nothing.
+    if (framework_->IsHeadless())
+        return;
+
     openCvCamera_ = cvCreateCameraCapture(0);
     if (openCvCamera_)
     {
@@ -51,24 +56,26 @@ void CameraInputModule::Uninitialize()
 {
     if (openCvCamera_)
     {
-        LogInfo("Released camera device and internal surfaces.");
+        LogInfo("Releasing camera device and internal surfaces.");
         cvReleaseCapture(&openCvCamera_);
-
-        if (tchannel0)
-            cvReleaseImage(&tchannel0);
-        if (tchannel1)
-            cvReleaseImage(&tchannel1);
-        if (tchannel2)
-            cvReleaseImage(&tchannel2);
-        if (tchannel3)
-            cvReleaseImage(&tchannel3);
-        if (destFrame)
-            cvReleaseImage(&destFrame);
     }
+
+    if (tchannel0)
+        cvReleaseImage(&tchannel0);
+    if (tchannel1)
+        cvReleaseImage(&tchannel1);
+    if (tchannel2)
+        cvReleaseImage(&tchannel2);
+    if (tchannel3)
+        cvReleaseImage(&tchannel3);
+    if (destFrame)
+        cvReleaseImage(&destFrame);
 }
 
 void CameraInputModule::Update(f64 frametime)
 {
+    if (framework_->IsHeadless())
+        return;
     if (!openCvCamera_)
         return;
 
