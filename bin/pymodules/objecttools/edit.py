@@ -91,7 +91,6 @@ class ObjectEdit(Component):
         
         self.menuToggleAction = None
         mainWindow = naali.ui.MainWindow()
-        print mainWindow
         if mainWindow:
             menuBar = mainWindow.menuBar()
             self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
