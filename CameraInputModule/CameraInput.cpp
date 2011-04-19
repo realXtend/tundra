@@ -2,39 +2,39 @@
 
 #include "StableHeaders.h"
 #include "CameraInputModule.h"
-#include "CameraAPI.h"
+#include "CameraInput.h"
 
-CameraAPI::CameraAPI(QObject *parent, Foundation::Framework *framework) :
+CameraInput::CameraInput(QObject *parent, Foundation::Framework *framework) :
     QObject(parent),
     framework_(framework),
     hasDevice_(false)
 {
 }
 
-CameraAPI::~CameraAPI()
+CameraInput::~CameraInput()
 {
 }
 
 // Public
 
-bool CameraAPI::HasDevice() 
+bool CameraInput::HasDevice() 
 { 
     return hasDevice_; 
 }
 
-const QImage &CameraAPI::CurrentFrame()
+const QImage &CameraInput::CurrentFrame()
 {
     return currentFrame_;
 }
 
 // Protected
 
-void CameraAPI::SetEnabled(bool enabled)
+void CameraInput::SetEnabled(bool enabled)
 {
     hasDevice_ = enabled;
 }
 
-void CameraAPI::SetFrame(const QImage &frame)
+void CameraInput::SetFrame(const QImage &frame)
 {
     currentFrame_ = frame;
     emit frameUpdate(currentFrame_);

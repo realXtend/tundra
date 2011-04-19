@@ -12,11 +12,10 @@
 
 #include "opencv2/core/types_c.h"
 
-class CameraAPI;
+class CameraInput;
 class CvCapture;
 
-/*! CameraInputModule reads a video camera (webcam) source from your PC and emits the image data as QImage.
-    See more about the API from CameraAPI.h
+/*! CameraInputModule reads a video camera (webcam) source from your PC and emits the image data as QImage. See more about the API from CameraInput.h
 
     C++ via CameraInputModule:
     \code
@@ -25,9 +24,9 @@ class CvCapture;
         connect(camModule, SIGNAL(frameUpdate(const QImage&)), SLOT(Handler(const QImage&)));
     \endcode
 
-    JavaScript via CameraAPI object:
+    JavaScript via CameraInput object:
     \code
-    camera.frameUpdate.connect(Handler);
+    camerainput.frameUpdate.connect(Handler);
     \endcode
 
     This module depends and uses the opencv library http://opencv.willowgarage.com/wiki/
@@ -54,15 +53,15 @@ public:
     void Update(f64 frametime);
 
 signals:
-    /// Replicates the CameraAPI signal for easy c++ access to the camera data.
+    /// Replicates the CameraInput signal for easy c++ access to the camera data.
     void frameUpdate(const QImage &frame);
 
 private slots:
     bool UpdateSurfaces(const CvSize &size);
 
 private:
-    CameraAPI *cameraAPI_;
-    CvCapture *camera_;
+    CameraInput *cameraInput_;
+    CvCapture *openCvCamera_;
 
     IplImage *tchannel0;
     IplImage *tchannel1;
