@@ -47,6 +47,12 @@ public slots:
     /// \return bool If menu with name exists.
     /// \note name is case sensitive.
     bool HasMenu(const QString &name);
+
+    /// Returns a existing menu, if name does not exist returns null ptr.
+    /// \param Name of the menu to return.
+    /// \return QMenu Valid ptr if found, otherwise null ptr.
+    /// \note name is case sensitive.
+    QMenu *GetMenu(const QString &name);
     
     /// Adds a menu with name in the main windows menu bar. If exists returns the existing one.
     /// \param Name of the menu to be added.
