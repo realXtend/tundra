@@ -224,7 +224,7 @@ namespace PythonScript
             }
         }
         else
-            LogInfo("No registered events in the input category.");
+            LogDebug("No registered events in the input category.");
 
         /*for (EventManager::EventMap::const_iterator iter = evmap[inputeventcategoryid].begin();
             iter != evmap[inputeventcategoryid].end(); ++iter)
@@ -253,7 +253,7 @@ namespace PythonScript
         //now that the event constants etc are there, can instanciate the manager which triggers the loading of components
         if (PyCallable_Check(pmmClass)) {
             pmmInstance = PyObject_CallObject(pmmClass, NULL); 
-            LogInfo("Instanciated Py ModuleManager.");
+            LogDebug("Instanciated Py ModuleManager.");
         } else {
             LogError("Unable to create instance from class ModuleManager");
         }
@@ -673,7 +673,7 @@ namespace PythonScript
         if (player_service)
             return player_service;
 
-        PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
+        PythonScriptModule::LogDebug("Cannot find PlayerServiceInterface implementation.");
         return 0;
     }
 
@@ -690,7 +690,7 @@ namespace PythonScript
         if (service)
             return service;
 
-        PythonScriptModule::LogError("Cannot find CommunicationsServiceInterface implementation.");
+        PythonScriptModule::LogDebug("Cannot find CommunicationsServiceInterface implementation.");
         return 0;
     }
 
