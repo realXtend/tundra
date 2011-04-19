@@ -89,12 +89,12 @@ def createMeshEntity(meshname, raycastprio=1, additional_comps = [], localonly =
 
 #XXX check how to do with SceneManager
 def removeEntity(entity):
-    r.removeEntity(entity.Id)
+    r.removeEntity(entity.id)
     
 # using the scene manager, note above
 def deleteEntity(entity):
     s = getDefaultScene()
-    s.DeleteEntityById(entity.Id)
+    s.DeleteEntityB.id(entity.id)
 
 def createInputContext(name, priority = 100):
     return _pythonscriptmodule.CreateInputContext(name, priority)
@@ -127,7 +127,7 @@ def getEntity(entid):
 def _getAsPyEntity(qentget, errmsg):
     qent = qentget()
     if qent is not None:
-        #print qent.Id
+        #print qent.id
         return qent
     else:
         raise ValueError, errmsg

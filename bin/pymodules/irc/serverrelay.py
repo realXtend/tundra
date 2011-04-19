@@ -70,8 +70,8 @@ class ServerRelay(circuits.Component):
 
     #a qt signal handler
     def onNewEntity(self, entity, changeType):
-        #print entity.Name
-        if entity.Name == "ChatApplication":
+        #print entity.name
+        if entity.name == "ChatApplication":
             self.chatapp = entity
             print "IRC: Found ChatApp!"
             self.scene.disconnect("EntityCreated(Scene::Entity*, AttributeChange::Type)", self.onNewEntity)

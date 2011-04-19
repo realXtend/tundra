@@ -57,7 +57,7 @@ if 0:
     
 if 0: #get entity
     #idnum = new_id
-    idnum = naali.getCamera().Id
+    idnum = naali.getCamera().id
     print "Getting entity id", idnum,
     e = naali.getEntity(idnum)
     print "got:", e
@@ -155,7 +155,7 @@ if 0: #print test
 if 0: #camera entity - it is an entity nowadays, and there is EC cam even
     try:
         cament = naali.getCamera()
-        print "CAM:", cament.Id
+        print "CAM:", cament.id
     except ValueError:
         print "no CAM"
     else:
@@ -598,7 +598,7 @@ if 0: #testing the removal of canvases
     
 if 0: #getUserAvatar 
     ent = naali.getUserAvatar()
-    print "User's avatar_id:", ent.Id
+    print "User's avatar_id:", ent.id
     #print "Avatar's mesh_name:", ent.mesh.GetMeshName(0)
     #ent.mesh = "cruncah1.mesh"
     
@@ -616,7 +616,7 @@ if 0: #test changing the mesh asset a prim is using
     print "new mesh set:", ent.mesh
     
     print "sending prim data update to server"
-    r.sendRexPrimData(ent.Id) #arkku
+    r.sendRexPrimData(ent.id) #arkku
     print "..done", ent.mesh
     
 if 0: #property editor tests
@@ -739,15 +739,15 @@ if 0: #rexlogic as service with qt mechanism
     import naali
     qent = naali.worldlogic.GetUserAvatarEntityRaw()
     if qent is not None:
-        print qent.Id
-        pyent = r.getEntity(qent.Id)
+        print qent.id
+        pyent = r.getEntity(qent.id)
         print pyent, pyent.id
         
 if 0: #using entity directly to get components, without PyEntity
     import naali
     qent = naali.worldlogic.GetUserAvatarEntityRaw()
     if qent is not None:
-        print qent.Id
+        print qent.id
         print dir(qent)
         p = qent.GetComponentRaw("EC_Placeable")
         print p, p.position
@@ -755,7 +755,7 @@ if 0: #using entity directly to get components, without PyEntity
         #ent = naali.Entity(qent)
         #print ent, ent.placeable, ent.placeable.position
         
-        ent = naali.getEntity(qent.Id)
+        ent = naali.getEntity(qent.id)
         print ent, ent.placeable, ent.placeable.position
     
 if 0: #undo tests
@@ -779,7 +779,7 @@ if 0: #updateflag checks, duplicate tests
     ws = r.getServerConnection()
     #print dir(ws)
     #x, y, z = e.placeable.position.x(), ... #didn't port this unused line to new version
-    ws.SendObjectDuplicatePacket(e.Id, e.prim.UpdateFlags, 1, 1, 1)
+    ws.SendObjectDuplicatePacket(e.id, e.prim.UpdateFlags, 1, 1, 1)
     
 if 0: #proxywidget signal connecting
     #~ from PythonQt.QtUiTools import QUiLoader
@@ -1280,7 +1280,7 @@ if 0: #create a new component, touchable
         t = e.touchable
     except AttributeError:
         print e.GetOrCreateComponentRaw("EC_Touchable")
-        print "created a new Touchable component", e.Id
+        print "created a new Touchable component", e.id
         t = e.touchable
 
     print type(t), t, t.GetParentEntity()
@@ -1372,7 +1372,7 @@ if 0: #createentity directly from the c++ scenemanager where it's a qt slot now
     #id = s.NextFreeId()
     #ent = s.CreateEntityRaw(id)
     ent = naali.createEntity()
-    print "new entity created:", ent, ent.Id
+    print "new entity created:", ent, ent.id
 
 if 0: #running localscene dotscene loader
     import localscene.loader
@@ -1458,10 +1458,10 @@ if 0: #using Scene::Entity directly. does it crash when i keep a ref and it's re
         print "Found newent", newent
 
     if 0:
-        r.removeEntity(newent.Id) #uh i'm an idiot, forgot to expose RemoveEntity in SM
+        r.removeEntity(newent.id) #uh i'm an idiot, forgot to expose RemoveEntity in SM
         print "Deleted newent"
 
-    print newent.Id
+    print newent.id
     print newent.GetComponentRaw("EC_Placeable")
 
 if 0: #Scene::Entity CreateEntity with components .. to reimplement createMeshEntity
@@ -1482,7 +1482,7 @@ if 0: #adding components as dynamic properties of Scene::Entity
 
     #print dir(qent), type(qent.EC_Placeable), qent.EC_Placeable
     print dir(ent.placeable)
-    print "Name:", ent.placeable.Name
+    print "Name:", ent.placeable.name
     print "objectName:", ent.placeable.objectName
 
     print "DynProp check:", 'myplace' in qent.dynamicPropertyNames()
