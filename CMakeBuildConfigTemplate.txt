@@ -42,9 +42,8 @@ if (MSVC)
 endif()
 
 # The UI functionality can be accessed through the UI core API object.
-# UiModule contains the original Ether login screen and UI functionality.
+# UiModule contains the original Naali Ether login screen and UI functionality.
 # Some legacy/reX features are disabled if UiModule is not used.
-# If UiModule is used, LoginScreenModule is not included to the build.
 SET(USE_UIMODULE 0)
 
 # Enables Open Asset Import Library, which can be used to import various
@@ -133,8 +132,6 @@ add_subdirectory(ProtocolModuleTaiga)   # Required with OpenSim.
 
 if (USE_UIMODULE)
     add_subdirectory(UiModule)          # Depends on OgreRenderingModule.
-else()
-#    add_subdirectory(LoginScreenModule)
 endif()
 
 # The following are optional.
