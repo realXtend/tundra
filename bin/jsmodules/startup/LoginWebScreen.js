@@ -61,6 +61,8 @@ var BrowserManager = Class.extend
         newTabButton.setStyleSheet("background-image: url(./data/ui/images/browser/tab-new.png); border: 0px;");
         newTabButton.move(3,60); // Here be dragons
 
+        
+        
         // Address and progress bar
         this.addressBar = new QComboBox();
         this.addressBar.setFixedHeight(23);
@@ -94,6 +96,9 @@ var BrowserManager = Class.extend
         this.actionHome.toolTip = "Go to home page " + this.settings.homepage;
         
         // Toolbar for inworld actions
+        this.toolBarGroups = {};
+        this.toolBarContainers = {};
+        
         this.toolBar = new QToolBar();
         this.toolBar.setFixedHeight(26);
         this.toolBar.setStyleSheet("background-color: none; border: 0px;");
@@ -178,7 +183,7 @@ var BrowserManager = Class.extend
         return p_.tabs.widget(p_.tabs.currentIndex);
     },
     
-    addTool: function(action)
+    addTool: function(action, group)
     {
         if (action.icon.isNull())
             action.icon = defaultIcon;
@@ -188,14 +193,58 @@ var BrowserManager = Class.extend
         // \todo will repolicate the action. toolbar.addAction(action) does not work in js!
         // only down side is that if the calling party changes icon or state of the QAction
         // the toolbar wont know about it. Bug in js qt??
-        
-        var act = p_.toolBar.addAction(action.icon, action.text);
-        act.tooltip = action.tooltip;
-        act.triggered.connect(action, action.trigger);
-        
-        // \todo seems like this does not work. When a script deleteLater() 
-        // its source QAction it does not come to our action
-        action.destroyed.connect(act, act.deleteLater());
+        if (group == null || group == "")
+        {
+            var act = p_.toolBar.addAction(action.icon, action.text);
+            act.tooltip = action.tooltip;
+            act.triggered.connect(action, action.trigger);
+            
+            // \todo seems like this does not work. When a script deleteLater() 
+            // its source QAction it does not come to our action
+            action.destroyed.connect(act, act.deleteLater);
+        }
+        else
+        {
+            var groupToolBar = p_.toolBarGroups[group];
+            if (groupToolBar == null)
+            {
+                var containerWidget = new QWidget();
+                containerWidget.setLayout(new QHBoxLayout());
+                containerWidget.layout().setSpacing(0);
+                containerWidget.layout().setContentsMargins(0,0,0,0);
+                
+                var nameLabel = new QLabel(group);
+                nameLabel.setStyleSheet("color: grey; font: Arial; font-size: 12px;");
+                nameLabel.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding);
+                nameLabel.alignment = Qt.AlignTop;
+                
+                containerWidget.layout().addWidget(nameLabel, 0, 0);
+                
+                groupToolBar = new QToolBar();
+                groupToolBar.setFixedHeight(26);
+                groupToolBar.setStyleSheet("background-color: none; border: 0px;");
+                groupToolBar.toolButtonStyle = Qt.ToolButtonIconOnly;
+                groupToolBar.orientation = Qt.Horizontal;
+                groupToolBar.iconSize = new QSize(23,23);
+                groupToolBar.floatable = false;
+                groupToolBar.movable = false;
+                groupToolBar.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed);
+                containerWidget.layout().addWidget(groupToolBar, 0, 0);
+                
+                p_.splitter.addWidget(containerWidget);
+                
+                p_.toolBarGroups[group] = groupToolBar;
+                p_.toolBarContainers[group] = containerWidget;
+            }
+            
+            var act = groupToolBar.addAction(action.icon, action.text);
+            act.tooltip = action.tooltip;
+            act.triggered.connect(action, action.trigger);
+            
+            // \todo seems like this does not work. When a script deleteLater() 
+            // its source QAction it does not come to our action
+            action.destroyed.connect(act, act.deleteLater);
+        }
     },
     
     refreshSplitter: function()
@@ -244,6 +293,24 @@ var BrowserManager = Class.extend
             p_.tabs.setTabText(0, "Login")
         }
         
+        // Clear toolbars
+        for (var toolbarKey in p_.toolBarGroups)
+        {
+            var aToolBar = p_.toolBarGroups[toolbarKey];
+            if (aToolBar != null)
+            {
+                aToolBar.clear();
+                aToolBar.deleteLater();
+            }
+        }
+        for (var containerKey in p_.toolBarContainers)
+        {
+            var container = p_.toolBarContainers[containerKey];
+            if (container != null)
+                container.deleteLater();
+        }
+        p_.toolBarGroups = {};
+        p_.toolBarContainers = {};
         p_.toolBar.clear();
         p_.refreshSplitter();
     },
