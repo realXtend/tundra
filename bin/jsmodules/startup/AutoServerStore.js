@@ -136,12 +136,28 @@ var AutoServerStore = Class.extend
             frame.Updated.connect(this.update);
         }
         
-        // Add delayed so other core menu stuff
-        // has time to add themselves and our menu is last.
         var timer = new QTimer();
         timer.singleShot = true;
         timer.timeout.connect(this.addMenu);
+        timer.timeout.connect(this.printReport);
         timer.start(500);
+    },
+    
+    printReport: function()
+    {
+        var usingConfigFile = config.GetConfigFolder() + configFile + ".ini";
+        // \todo Move this server info print somewhere to core.
+        debug.Log("");
+        debug.Log("Server information:");
+        debug.Log("-- Port     : " + server.GetPort());
+        debug.Log("-- Protocol : " + server.GetProtocol());
+        debug.Log("");
+        debug.Log("Auto Server Store configuration:");
+        debug.Log("-- Config file : " + usingConfigFile);
+        debug.Log("-- Scene file  : " + QDir.currentPath() + "/" + p_.sceneFilename);
+        debug.Log("-- Load last scene on startup   : " + p_.startupLoadEnabled);
+        debug.Log("-- Save scene state on shutdown : " + p_.shutdownSaveEnabled);
+        debug.Log("-- Store scene every " + p_.intervalSaveMinutes + " min     : " + p_.intervalSaveEnabled);
     },
     
     addMenu: function()
