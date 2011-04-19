@@ -57,6 +57,9 @@ signals:
     void frameUpdate(const QImage &frame);
 
 private slots:
+    void GrabDevice();
+    void ReleaseDevice();
+    void OnCapturingStateChanged(bool capturing);
     bool UpdateSurfaces(const CvSize &size);
 
 private:

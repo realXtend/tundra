@@ -25,8 +25,18 @@ public:
 
 public slots:
     /// Returns if we have a active device.
-    /// \return bool True if we have a device and frameUpdate is being emitted, otherwise false.
+    /// \return bool True if we have a device and capturing can be started.
     bool HasDevice();
+
+    /// Return if video is being captured.
+    /// \return bool True if capturing false other wise.
+    bool IsCapturing();
+
+    /// Start capturing.
+    void StartCapturing();
+
+    /// Stop capturing.
+    void StopCapturing();
 
     /// Return the current captured frame.
     /// \return QImage The current captured frame.
@@ -34,7 +44,12 @@ public slots:
 
 signals:
     /// This signal is emitted when the current captured frame is updated.
+    /// \param QImage Updated frame, this is always the current frame of CameraInput.
     void frameUpdate(const QImage &frame);
+
+    /// This signal is emitted when capturing state changes.
+    /// \param bool True if capturing false other wise.
+    void Capturing(bool capturing);
 
 protected:
     /// Protected function that gets called by the friend class CameraInputModule.
@@ -46,6 +61,7 @@ protected:
 private:
     Foundation::Framework *framework_;
     bool hasDevice_;
+    bool capturing_;
     QImage currentFrame_;
 };
 
