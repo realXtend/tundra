@@ -41,6 +41,7 @@ var BrowserManager = Class.extend
         this.browserProxy = ui.AddWidgetToScene(this.browser, Qt.Widget);
         this.browserProxy.windowFlags = Qt.Widget;
         this.browserProxy.effect = 0;
+        this.browserProxy.z = 10000;
         
         this.tabs = findChild(this.browser, "tabs");
         this.tabs.clear();
