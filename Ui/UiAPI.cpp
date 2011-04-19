@@ -322,9 +322,9 @@ void UiAPI::EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
     emit ContextMenuAboutToOpen(menu,targets);
 }
 
-void UiAPI::EmitAddAction(QAction *action)
+void UiAPI::EmitAddAction(QAction *action, const QString &group)
 {
-    emit AddAction(action);
+    emit AddAction(action, group);
 }
 
 void UiAPI::ShowWidget(QWidget *widget) const
