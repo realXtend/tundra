@@ -5,7 +5,7 @@ import mathutils as mu
 
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, Qt, QRect
-from PythonQt.QtGui import QVector3D
+from PythonQt.QtGui import QVector3D, QAction, QIcon
 from PythonQt.QtGui import QQuaternion as QQuaternion
 
 import rexviewer as r
@@ -92,8 +92,8 @@ class ObjectEdit(Component):
         self.menuToggleAction = None
         mainWindow = naali.ui.MainWindow()
         if mainWindow:
-            menuBar = mainWindow.menuBar()
-            self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
+            naali.client.connect("Connected()", self.on_connected_tundra)
+            self.menuToggleAction = QAction(QIcon("./data/ui/images/worldbuilding/transform-move.png"), "Toggle Object Manipulation", 0)
             self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
         self.toggleEditing(False)
         
@@ -115,6 +115,9 @@ class ObjectEdit(Component):
             self.on_activate_editing(self.cpp_python_handler.IsBuildingActive())
         """
         
+    def on_connected_tundra(self):
+        naali.ui.EmitAddAction(self.menuToggleAction);
+    
     def toggleEditingKeyTrigger(self):
         self.toggleEditing(not self.editing)
         
@@ -126,9 +129,9 @@ class ObjectEdit(Component):
             self.resetValues()
         if self.menuToggleAction != None:
             if self.editing:
-                self.menuToggleAction.setText("Disable Manipulation")
+                self.menuToggleAction.setToolTip("Disable Object Manipulation")
             else:
-                self.menuToggleAction.setText("Enable Manipulation")   
+                self.menuToggleAction.setToolTip("Enable Object Manipulation")   
     
     def rotateObject(self):
         self.changeManipulator(self.MANIPULATE_ROTATE)

@@ -102,6 +102,9 @@ QTabBar::close-button:hover {
       </property>
       <item>
        <layout class="QHBoxLayout" name="controlLayout">
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
         <property name="bottomMargin">
          <number>0</number>
         </property>

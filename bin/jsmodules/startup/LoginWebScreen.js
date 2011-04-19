@@ -60,8 +60,6 @@ var BrowserManager = Class.extend
         newTabButton.setFixedSize(16,16);
         newTabButton.setStyleSheet("background-image: url(./data/ui/images/browser/tab-new.png); border: 0px;");
         newTabButton.move(3,60); // Here be dragons
-
-        
         
         // Address and progress bar
         this.addressBar = new QComboBox();
