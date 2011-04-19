@@ -215,11 +215,11 @@ function getSlides(ref) {
     RequestAsset(serverurl + path + '/index.txt', "Binary");
 
     // set name
-    entity.name.name = "Slideshow: " + filename;
+    entity.name = "Slideshow: " + filename;
     entity.name.description = "Simple slideshow app from " + filename;
-    prev.name.name = 'Button prev (' + entity.name.name + ' ' + entity.Id + ')';
+    prev.name = 'Button prev (' + entity.name + ' ' + entity.id + ')';
     scene.EmitEntityCreatedRaw(prev);
-    next.name.name = 'Button next (' + entity.name.name + ' ' + entity.Id + ')';
+    next.name.name = 'Button next (' + entity.name.name + ' ' + entity.id + ')';
     scene.EmitEntityCreatedRaw(next);
 }
 
