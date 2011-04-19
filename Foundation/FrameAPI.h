@@ -91,6 +91,10 @@ public slots:
     */
     void DelayedExecute(float time, const QObject *receiver, const char *member);
 
+    /// Returns the current application frame number. Note: It is best not to tie any timing-specific animation
+    /// to this number, but instead use GetWallClockTime().
+    int FrameNumber() const;
+
 signals:
     /// Emitted after one frame is processed.
     /** @param frametime Elapsed time in seconds since the last frame.
@@ -110,6 +114,8 @@ private:
 
     boost::uint64_t startTime_; ///< Start time time of Framework/this object;
     QList<DelayedSignal *> delayedSignals_; ///< Delayed signals.
+
+    int currentFrameNumber;
 
 private slots:
     /// Deletes delayed signal object and removes it from the list when it's expired.
