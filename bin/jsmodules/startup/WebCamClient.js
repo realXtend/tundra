@@ -75,7 +75,7 @@ var WebCamClient = Class.extend
     }
 });
 
-if (!server.IsAboutToStart() && !framework.IsHeadless())
+if (!server.IsAboutToStart() && !framework.IsHeadless() && framework.GetModuleQObj("CameraInputModule") != null)
 {
     var p_ = new WebCamClient();
 }
