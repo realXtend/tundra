@@ -134,8 +134,9 @@ public slots:
 
     /// Emits AddAction signal. This is not handled by the UiAPI but a 3rd party listening this signal, if one is present.
     /** @param action Action to be added to the 3rd party tool bar.
+        @param group Additional group name for 3rd party code to do grouping logic if it desires. This parameter is optional and will default to an empty string.
     */
-    void EmitAddAction(QAction *action);
+    void EmitAddAction(QAction *action, const QString &group = QString());
 
 signals:
     /// Signals that context menu @c menu is about to open for specific objects.
@@ -146,8 +147,9 @@ signals:
 
     /// Signals a request to add an action. This signal will be handled by 3rd party code out side of the UiAPI.
     /** @param action Action that is being requested to be added to the 3rd party tool bar.
+        @param group Additional group name for 3rd party code to do grouping logic if it desires. This string my be empty.
     */
-    void AddAction(QAction *action);
+    void AddAction(QAction *action, QString group);
 
 private slots:
     /// Removes proxy widget from internally maintained lists upon destruction.
