@@ -20,7 +20,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>NetworkSyncEnabled</source>
+        <source>networkSyncEnabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

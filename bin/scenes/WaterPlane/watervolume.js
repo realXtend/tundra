@@ -20,9 +20,9 @@ if (server.IsRunning())
 //Checking if needed components are added after EC_Script to Entity
  function CheckComponent(component, type)
 {	
-	if (component.TypeName == "EC_VolumeTrigger")
+	if (component.typeName == "EC_VolumeTrigger")
 		volumetrigger = component;
-	else if (component.TypeName == "EC_RigidBody")
+	else if (component.typeName == "EC_RigidBody")
 		rigidbody = component;
 		
 	if (rigidbody && volumetrigger)

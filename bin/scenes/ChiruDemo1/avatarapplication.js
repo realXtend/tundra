@@ -79,7 +79,7 @@ function ServerHandleUserConnected(connectionID, user) {
 
 function ServerHandleUserDisconnected(connectionID, user) {
     var avatarEntityName = "Avatar" + connectionID;
-    var entityID = scene.GetEntityByNameRaw(avatarEntityName).Id;
+    var entityID = scene.GetEntityByNameRaw(avatarEntityName).id;
     scene.RemoveEntityRaw(entityID);
 
     if (user != null) {
