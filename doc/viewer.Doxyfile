@@ -639,7 +639,27 @@ RECURSIVE              = YES
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
 EXCLUDE                = ../external_libs \
-                         ../bin
+                         ../bin \
+                         ../.git \
+                         ../CMakeFiles \
+                         ../CMakeModules \
+                         ../tools \
+                         ../WorldBuildingModule \
+                         ../WorldMapModule \
+                         ../UiModule \
+                         ../TtsModule \
+                         ../ScenePersistenceModule \
+                         ../ProtocolModuleOpenSim \
+                         ../ProtocolModuleTaiga \
+                         ../ProtocolUtilities \
+                         ../InWorldChatModule \
+                         ../TelepathyIMModule \
+                         ../LegacyAvatarModule \
+                         ../InventoryModule \
+                         ../LibraryModule \
+                         ../RpcUtilities \
+                         ../HttpUtilities \
+                         ../TextureDecoderModule
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -656,7 +676,8 @@ EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = */.git* \
                          *.dir/* \
                          ui_*.h \
-                         sqlite*.*
+                         sqlite*.* \
+                         moc_*.cxx
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 
@@ -664,7 +685,11 @@ EXCLUDE_PATTERNS       = */.git* \
 # wildcard * is used, a substring. Examples: ANamespace, AClass, 
 # AClass::ANamespace, ANamespace::*Test
 
-EXCLUDE_SYMBOLS        = 
+EXCLUDE_SYMBOLS        = DEFINE_QPROPERTY_ATTRIBUTE* \
+                         poco::* \
+                         boost::* \
+                         json::* \
+                         
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 
