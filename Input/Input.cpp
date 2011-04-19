@@ -116,9 +116,6 @@ framework(framework_)
 
     LoadKeyBindingsFromFile();
 
-    lastMouseButtonReleaseTime = QTime::currentTime();
-    doubleClickDetected = false;
-
     // Accept gestures
     QList<Qt::GestureType> gestures;
     gestures << Qt::PanGesture << Qt::PinchGesture << Qt::TapAndHoldGesture;
@@ -423,7 +420,6 @@ void Input::TriggerMouseEvent(MouseEvent &mouse)
             break;
         case MouseEvent::MouseDoubleClicked:
             eventManager->SendEvent(inputCategory, QtInputEvents::MouseDoubleClicked, &mouse);
-            doubleClickDetected = false;
             break;
         default:
             assert(false);
@@ -646,6 +642,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
 
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick:
     {
         // We only take mouse button press and release events from the main QGraphicsView viewport.
         if (obj != qobject_cast<QObject*>(mainView->viewport()))
@@ -662,20 +659,15 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
 */
         // We always update the global polled input states, independent of whether any the mouse cursor is
         // on top of any Qt widget.
-        if (event->type() == QEvent::MouseButtonPress)
+        if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
         {
             heldMouseButtons |= (MouseEvent::MouseButton)e->button();
             newMouseButtonsPressedQueue |= (MouseEvent::MouseButton)e->button();
         }
         else
         {
-            if (lastMouseButtonReleaseTime.msecsTo(QTime::currentTime()) < 300)
-            {
-                doubleClickDetected = true;
-            }
             heldMouseButtons &= ~(MouseEvent::MouseButton)e->button();
             newMouseButtonsReleasedQueue |= (MouseEvent::MouseButton)e->button();
-            lastMouseButtonReleaseTime = QTime::currentTime();
         }
 
         // The mouse coordinates we receive can come from different widgets, and we are interested only in the coordinates
@@ -685,13 +677,13 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         MouseEvent mouseEvent;
         mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
-        if ( !doubleClickDetected)
+        switch(event->type())
         {
-            mouseEvent.eventType = (event->type() == QEvent::MouseButtonPress) ? MouseEvent::MousePressed : MouseEvent::MouseReleased;
-        } else 
-        {
-            mouseEvent.eventType = MouseEvent::MouseDoubleClicked;
+            case QEvent::MouseButtonPress: mouseEvent.eventType = MouseEvent::MousePressed; break;
+            case QEvent::MouseButtonDblClick: mouseEvent.eventType = MouseEvent.MouseDoubleClicked; break;
+            case QEvent::MouseButtonRelease: mouseEvent.eventType = MouseEvent.MouseReleased; break;
         }
+
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
         mouseEvent.x = mousePos.x();
         mouseEvent.y = mousePos.y();
@@ -712,7 +704,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.handled = false;
 
         // If the mouse press is going to the inworld scene, clear keyboard focus from the QGraphicsScene widget (if any had it) so key events also go to inworld scene.
-        if (event->type() == QEvent::MouseButtonPress && !mouseEvent.itemUnderMouse && mouseCursorVisible)
+        if ((event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) && !mouseEvent.itemUnderMouse && mouseCursorVisible)
             mainView->scene()->clearFocus();
 
         TriggerMouseEvent(mouseEvent);

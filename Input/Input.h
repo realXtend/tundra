@@ -190,8 +190,6 @@ private:
     // but from the previous Qt mouse input event.
     int lastMouseX;
     int lastMouseY;
-    QTime lastMouseButtonReleaseTime;
-    bool doubleClickDetected;
 
     /// If true, the mouse cursor is visible and free to move around as usual.
     /// If false, we use mouse in relative movement mode, meaning we hide the cursor and force it to stay in the middle of the application screen.
