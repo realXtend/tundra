@@ -112,8 +112,21 @@ void UiMainWindow::resizeEvent(QResizeEvent *e)
 
 bool UiMainWindow::HasMenu(const QString &name)
 {
+    if (!menuBar())
+        return false;
+
     QList<QString> menuNames = menus_.keys();
     return menuNames.contains(name);
+}
+
+QMenu *UiMainWindow::GetMenu(const QString &name)
+{
+    if (!menuBar())
+        return 0;
+
+    if (HasMenu(name))
+        return menus_[name];
+    return 0;
 }
 
 QMenu *UiMainWindow::AddMenu(const QString &name)
