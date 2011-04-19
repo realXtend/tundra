@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_CameraInputModule_CameraAPI_h
-#define incl_CameraInputModule_CameraAPI_h
+#ifndef incl_CameraInputModule_CameraInput_h
+#define incl_CameraInputModule_CameraInput_h
 
 #include <QObject>
 #include <QImage>
@@ -9,7 +9,7 @@
 class CameraInputModule;
 namespace Foundation { class Framework; }
 
-class CameraAPI : public QObject
+class CameraInput : public QObject
 {
 
 Q_OBJECT
@@ -18,10 +18,10 @@ public:
     friend class CameraInputModule;
 
     /// Default constructor.
-    CameraAPI(QObject *parent, Foundation::Framework *framework);
+    CameraInput(QObject *parent, Foundation::Framework *framework);
 
     /// Destructor.
-    virtual ~CameraAPI();
+    virtual ~CameraInput();
 
 public slots:
     /// Returns if we have a active device.

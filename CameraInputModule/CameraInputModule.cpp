@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 
 #include "CameraInputModule.h"
-#include "CameraAPI.h"
+#include "CameraInput.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("CameraInputModule")
@@ -15,7 +15,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("CameraInputModule")
 
 CameraInputModule::CameraInputModule() :
     IModule("CameraInputModule"),
-    camera_(0),
+    openCvCamera_(0),
     updateBuildup_(0.0),
     updateInterval_(25.0 / 1000.0), // 25 fps
     tchannel0(0),
@@ -32,19 +32,16 @@ CameraInputModule::~CameraInputModule()
 
 void CameraInputModule::Initialize()
 {
-    cameraAPI_ = new CameraAPI(this, framework_);
-    if (cameraAPI_)
-    {   
-        LogInfo("Registered CameraAPI to framework.");
-        framework_->RegisterDynamicObject("camera", cameraAPI_);
-    }
+    cameraInput_ = new CameraInput(this, framework_);
+    if (cameraInput_)
+        framework_->RegisterDynamicObject("camerainput", cameraInput_);
 
-    camera_ = cvCreateCameraCapture(0);
-    if (camera_)
+    openCvCamera_ = cvCreateCameraCapture(0);
+    if (openCvCamera_)
     {
         LogInfo("Found a camera device.");
-        if (cameraAPI_)
-            cameraAPI_->SetEnabled(true);
+        if (cameraInput_)
+            cameraInput_->SetEnabled(true);
     }
     else
         LogInfo("Could not find a camera device.");
@@ -52,10 +49,10 @@ void CameraInputModule::Initialize()
 
 void CameraInputModule::Uninitialize()
 {
-    if (camera_)
+    if (openCvCamera_)
     {
         LogInfo("Released camera device and internal surfaces.");
-        cvReleaseCapture(&camera_);
+        cvReleaseCapture(&openCvCamera_);
 
         if (tchannel0)
             cvReleaseImage(&tchannel0);
@@ -72,7 +69,7 @@ void CameraInputModule::Uninitialize()
 
 void CameraInputModule::Update(f64 frametime)
 {
-    if (!camera_)
+    if (!openCvCamera_)
         return;
 
     // Don't update too often, stick with 25 fps (updateInterval_)
@@ -81,7 +78,7 @@ void CameraInputModule::Update(f64 frametime)
     {
         updateBuildup_ = 0;
         
-        IplImage *currentFrame = cvQueryFrame(camera_);
+        IplImage *currentFrame = cvQueryFrame(openCvCamera_);
         if (!currentFrame)
             return;
 
@@ -110,8 +107,8 @@ void CameraInputModule::Update(f64 frametime)
         QImage image(data, size.width, size.height, QImage::Format_RGB32);
         if (!image.isNull())
         {
-            cameraAPI_->SetFrame(image);
-            emit frameUpdate(cameraAPI_->CurrentFrame());
+            cameraInput_->SetFrame(image);
+            emit frameUpdate(cameraInput_->CurrentFrame());
         }
     }
 }
