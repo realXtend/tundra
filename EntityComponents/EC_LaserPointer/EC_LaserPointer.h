@@ -57,6 +57,10 @@ private slots:
     void Update(MouseEvent *e);
     //! Handles start and end point changes
     void HandleAttributeChange(IAttribute*, AttributeChange::Type);
+    //! Enables update; used for update limiter
+    void EnableUpdate();
+    //! Disables updates for <updateInterval_> time
+    void DisableUpdate();
 
 public:
     //! Destructor
@@ -72,8 +76,6 @@ public slots:
     void Enable();
     //! Convenience function to disable laser pointer
     void Disable();
-    //! Enables update; used for update limiter
-    void EnableUpdate();
     //! Sets the start point of the laser line
     //! @param New starting position
     void SetStartPos(const Vector3df);
