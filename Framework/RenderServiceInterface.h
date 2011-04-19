@@ -24,6 +24,7 @@ namespace Scene
 }
 
 /// Result of a raycast. Other fields are valid only if entity_ is non-null
+///\todo Remove the QObject inheritance here, and expose as a struct to scripts.
 class RaycastResult : public QObject
 {
     Q_OBJECT
