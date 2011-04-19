@@ -13,7 +13,8 @@ if (!framework.IsHeadless())
     var importMenu = fileMenu.addMenu(new QIcon("./data/ui/images/folder_closed.png"), "Import Scene");
     importMenu.addAction(new QIcon("./data/ui/images/resource.png"), "From File").triggered.connect(OpenLocalScene);
     importMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "From Web").triggered.connect(OpenWebScene);
-    fileMenu.addAction(new QIcon("./data/ui/images/resource.png"), "Export Scene").triggered.connect(SaveScene);
+    var exportAction = fileMenu.addAction(new QIcon("./data/ui/images/resource.png"), "Export Scene");
+    exportAction.triggered.connect(SaveScene);
     fileMenu.addSeparator();
     
     if (framework.GetModuleQObj("UpdateModule"))
@@ -72,13 +73,6 @@ if (!framework.IsHeadless())
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Mailing list").triggered.connect(OpenMailingListUrl);
     
-    client.Connected.connect(AddInworldTools);
-    
-    function AddInworldTools() {
-        ui.EmitAddAction(sceneAction);
-        ui.EmitAddAction(assetAction);
-    }
-
     function NewScene() {
         scene.RemoveAllEntities();
     }
@@ -93,10 +87,16 @@ if (!framework.IsHeadless())
 
     function Connected() {
         disconnectAction.setEnabled(true);
+        importMenu.setEnabled(true);
+        exportAction.setEnabled(true);
+        ui.EmitAddAction(sceneAction);
+        ui.EmitAddAction(assetAction);
     }
 
     function Disconnected() {
         disconnectAction.setEnabled(false);
+        importMenu.setEnabled(false);
+        exportAction.setEnabled(false);
     }
 
     function Quit() {
