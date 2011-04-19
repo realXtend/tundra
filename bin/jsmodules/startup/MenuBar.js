@@ -3,6 +3,9 @@ if (!framework.IsHeadless())
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
 
+    var sceneAction = null;
+    var assetAction = null;
+    
     var mainwin = ui.MainWindow();
 
     var fileMenu = mainwin.AddMenu("&File");
@@ -32,8 +35,10 @@ if (!framework.IsHeadless())
 
     if (framework.GetModuleQObj("SceneStructure"))
     {
-        viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
-        viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
+        assetAction = viewMenu.addAction(new QIcon("./data/ui/images/fileIcons.png"), "Assets");
+        assetAction.triggered.connect(OpenAssetsWindow);
+        sceneAction = viewMenu.addAction(new QIcon("./data/ui/images/fileList.png"), "Scene");
+        sceneAction.triggered.connect(OpenSceneWindow);
     }
 
     if (framework.GetModuleQObj("Console"))
@@ -59,6 +64,14 @@ if (!framework.IsHeadless())
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Mailing list").triggered.connect(OpenMailingListUrl);
+    
+    client.Connected.connect(AddInworldTools);
+    
+    function AddInworldTools()
+    {
+        ui.EmitAddAction(sceneAction);
+        ui.EmitAddAction(assetAction);
+    }
 
     function NewScene() {
         scene.RemoveAllEntities();
