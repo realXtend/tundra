@@ -13,10 +13,14 @@
 #include "Declare_EC.h"
 #include "OgreModuleFwd.h"
 #include "OgreString.h"
+#include "OgreMaterialUtils.h"
 #include "MouseEvent.h"
 #include "InputContext.h"
 #include "IAttribute.h"
 #include "Vector3D.h"
+#include "Color.h"
+
+#include <QColor>
 
 class EC_LaserPointer : public IComponent
 {
@@ -29,6 +33,9 @@ class EC_LaserPointer : public IComponent
     //! Laser end point 
     Attribute<Vector3df> endPos_;
 
+    //! Laser color (default is red)
+    Attribute<Color> color_;
+
     //! Enable/Disable toggle
     Attribute<bool> enabled_;
 
@@ -38,6 +45,7 @@ private:
 
     //! Laser object (3d line)
     Ogre::ManualObject* laserObject_;
+    Ogre::MaterialPtr laserMaterial_;
     //! Laser id, same as this EC's owner id, used to differentiate laser object and node names from one another
     Ogre::String id_;
     //! Parent entity EC_Placeable pointer
@@ -61,6 +69,8 @@ private slots:
     void EnableUpdate();
     //! Disables updates for <updateInterval_> time
     void DisableUpdate();
+    //! Updates color if it is changed
+    void UpdateColor();
 
 public:
     //! Destructor
@@ -88,6 +98,21 @@ public slots:
     //! Gets the current end position
     //! @returns current end position
     Vector3df GetEndPos() const;
+    //! Sets laser color
+    //! @param new color : QColor
+    void SetQColor(const QColor &);
+    //! Sets laser color
+    //! @param red - red amount
+    //! @param green - green amount
+    //! @param blue - blue amount
+    //! @param alpha - alpha ammount
+    void SetColor(int, int, int, int);
+    //! Gets current color
+    //! @returns current color : Color
+    Color GetColor() const;
+    //! Gets current color
+    //! @returns current color : QColor
+    QColor GetQColor() const;
     //! Check function if laser is enabled
     //! @returns current enabled state
     bool IsEnabled();
