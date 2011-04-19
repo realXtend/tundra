@@ -159,7 +159,7 @@ void KristalliProtocolModule::Update(f64 frametime)
     // Note: Calling the above serverConnection->Process() may set serverConnection to null if the connection gets disconnected.
     // Therefore, in the code below, we cannot assume serverConnection is non-null, and must check it again.
 
-    // Our client->server connection is never kept partially open.
+    // Our client->server connection is never kept half-open.
     // That is, at the moment the server write-closes the connection, we also write-close the connection.
     // Check here if the server has write-closed, and also write-close our end if so.
     if (serverConnection && !serverConnection->IsReadOpen() && serverConnection->IsWriteOpen())
@@ -167,7 +167,17 @@ void KristalliProtocolModule::Update(f64 frametime)
     
     // Process server incoming connections & messages if server up
     if (server)
+    {
         server->Process();
+
+        // In Tundra, we *never* keep half-open server->client connections alive. 
+        // (the usual case would be to wait for a file transfer to complete, but Tundra messaging mechanism doesn't use that).
+        // So, bidirectionally close all half-open connections.
+        NetworkServer::ConnectionMap connections = server->GetConnections();
+        for(NetworkServer::ConnectionMap::iterator iter = connections.begin(); iter != connections.end(); ++iter)
+            if (!iter->second->IsReadOpen() && iter->second->IsWriteOpen())
+                iter->second->Disconnect(0);
+    }
     
     if ((!serverConnection || serverConnection->GetConnectionState() == ConnectionClosed ||
         serverConnection->GetConnectionState() == ConnectionPending) && serverIp.length() != 0)
