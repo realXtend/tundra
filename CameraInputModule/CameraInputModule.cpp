@@ -15,9 +15,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("CameraInputModule")
 
 CameraInputModule::CameraInputModule() :
     IModule("CameraInputModule"),
-    openCvCamera_(0),
     updateBuildup_(0.0),
-    updateInterval_(25.0 / 1000.0), // 25 fps
+    updateInterval_(1.0 / 15.0), // 15 fps
+    openCvCamera_(0),
     tchannel0(0),
     tchannel1(0),
     tchannel2(0),
@@ -34,31 +34,40 @@ void CameraInputModule::Initialize()
 {
     cameraInput_ = new CameraInput(this, framework_);
     if (cameraInput_)
+    {
         framework_->RegisterDynamicObject("camerainput", cameraInput_);
+        connect(cameraInput_, SIGNAL(Capturing(bool)), SLOT(OnCapturingStateChanged(bool)));
+    }
+}
 
-    // Do not start reading camera input in headless mode. For example
-    // on a headless server this would be bad as it would take up cpu for nothing.
+void CameraInputModule::Uninitialize()
+{
+    ReleaseDevice();
+}
+
+void CameraInputModule::GrabDevice()
+{
     if (framework_->IsHeadless())
         return;
 
     openCvCamera_ = cvCreateCameraCapture(0);
     if (openCvCamera_)
     {
-        LogInfo("Found a camera device.");
         if (cameraInput_)
             cameraInput_->SetEnabled(true);
     }
     else
+    {
         LogInfo("Could not find a camera device.");
+        if (cameraInput_)
+            cameraInput_->SetEnabled(false);
+    }
 }
 
-void CameraInputModule::Uninitialize()
+void CameraInputModule::ReleaseDevice()
 {
     if (openCvCamera_)
-    {
-        LogInfo("Releasing camera device and internal surfaces.");
         cvReleaseCapture(&openCvCamera_);
-    }
 
     if (tchannel0)
         cvReleaseImage(&tchannel0);
@@ -70,6 +79,20 @@ void CameraInputModule::Uninitialize()
         cvReleaseImage(&tchannel3);
     if (destFrame)
         cvReleaseImage(&destFrame);
+
+    openCvCamera_ = 0;
+    tchannel0 = 0;
+    tchannel1 = 0;
+    tchannel2 = 0;
+    tchannel3 = 0;
+    destFrame = 0;
+}
+
+void CameraInputModule::OnCapturingStateChanged(bool capturing)
+{
+    ReleaseDevice();
+    if (capturing)
+        GrabDevice();
 }
 
 void CameraInputModule::Update(f64 frametime)
@@ -78,8 +101,15 @@ void CameraInputModule::Update(f64 frametime)
         return;
     if (!openCvCamera_)
         return;
+    if (!cameraInput_)
+        return;
+    if (!cameraInput_->IsCapturing())
+         return;
 
-    // Don't update too often, stick with 25 fps (updateInterval_)
+
+    // Don't update too often, stick with 15 fps (updateInterval_)
+    // Going 20 or over wont leave any time for Qts/our main loop to run
+    // if one or multiple places are processing the emitted frames.
     updateBuildup_ += frametime;
     if (updateBuildup_ >= updateInterval_)
     {
