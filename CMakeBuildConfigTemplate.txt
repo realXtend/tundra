@@ -158,6 +158,9 @@ AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by
 
 if (MSVC)
     add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
+    add_subdirectory(CameraInputModule)  # Camera input module depends on opencv library.
+else()
+    # \todo Include MumbleVoip and CameraInputModule on linux. For CameraInputModule ConfigurePackages.cmake you can find todo comments in the opencv related macros.
 endif()
 
 #add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
@@ -170,5 +173,5 @@ endif()
 # Only useful for msi installer builds
 #add_subdirectory(UpdateModule)
 
-# CameraInputModule is an optional module
-#add_subdirectory(CameraInputModule)
+
+
