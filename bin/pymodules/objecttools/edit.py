@@ -92,9 +92,13 @@ class ObjectEdit(Component):
         self.menuToggleAction = None
         mainWindow = naali.ui.MainWindow()
         if mainWindow:
-            naali.client.connect("Connected()", self.on_connected_tundra)
             self.menuToggleAction = QAction(QIcon("./data/ui/images/worldbuilding/transform-move.png"), "Toggle Object Manipulation", 0)
             self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
+            if naali.server.IsAboutToStart() == False:
+                naali.client.connect("Connected()", self.on_connected_tundra)
+            else:
+                editMenu = mainWindow.AddMenu("Edit")
+                editMenu.addAction(self.menuToggleAction)
         self.toggleEditing(False)
         
         """
@@ -127,11 +131,15 @@ class ObjectEdit(Component):
             self.deselect_all()
             self.hideManipulator()
             self.resetValues()
+    """
         if self.menuToggleAction != None:
             if self.editing:
                 self.menuToggleAction.setToolTip("Disable Object Manipulation")
+                self.menuToggleAction.setText("Disable Object Manipulation")
             else:
-                self.menuToggleAction.setToolTip("Enable Object Manipulation")   
+                self.menuToggleAction.setToolTip("Enable Object Manipulation")
+                self.menuToggleAction.setText("Disable Object Manipulation")
+    """
     
     def rotateObject(self):
         self.changeManipulator(self.MANIPULATE_ROTATE)
