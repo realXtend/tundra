@@ -208,6 +208,14 @@ QString AssetCache::FindInCache(const QString &assetRef)
     return "";
 }
 
+QString AssetCache::GetDiskSourceByRef(const QString &assetRef)
+{
+    QString absolutePath = assetDataDir.absolutePath() + "/" + SanitateAssetRefForCache(assetRef);
+    if (QFile::exists(absolutePath))
+        return absolutePath;
+    return "";
+}
+
 QString AssetCache::GetDiskSourceByContentHash(const QString &contentHash)
 {
     /// \todo Implement.
