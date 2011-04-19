@@ -50,8 +50,8 @@ namespace Scene
     class Entity : public QObject, public boost::enable_shared_from_this<Entity>
     {
         Q_OBJECT
-        Q_PROPERTY (uint Id READ GetId)
-        Q_PROPERTY (QString Name READ GetName)
+        Q_PROPERTY (uint id READ GetId)
+        Q_PROPERTY (QString name READ GetName)
 
         friend class SceneManager;
 

@@ -81,7 +81,7 @@ class Manipulator:
 
     def compareIds(self, id):
         if self.usesManipulator:
-            if self.manipulator.Id == id:
+            if self.manipulator.id == id:
                 return True
         return False
         
@@ -179,7 +179,7 @@ class Manipulator:
             if ent is None:
                 return
 
-            if ent.Id == self.manipulator.Id:
+            if ent.id == self.manipulator.id:
                 submeshid = results[-3]
                 self.axisSubmesh = submeshid
                 u = results[-2]

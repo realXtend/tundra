@@ -239,7 +239,7 @@ class ObjectEdit(Component):
                 self.remove_highlight(ent)
                 self.remove_selected(ent)
                 #try:
-                #    self.worldstream.SendObjectDeselectPacket(ent.Id)
+                #    self.worldstream.SendObjectDeselectPacket(ent.id)
                 #except ValueError:
                 #    r.logInfo("objectedit.deselect_all: entity doesn't exist anymore")
             self.sels = []
@@ -260,7 +260,7 @@ class ObjectEdit(Component):
         if not h.IsVisible():
             h.Show()
         else:
-            r.logInfo("objectedit.highlight called for an already hilited entity: %d" % ent.Id)
+            r.logInfo("objectedit.highlight called for an already hilited entity: %d" % ent.id)
     
     # todo rename to something more sane, or check if this can be merged with def select() elsewhere
     def ec_selected(self, ent):
@@ -274,7 +274,7 @@ class ObjectEdit(Component):
             s = ent.selected
         except:
             try:
-                r.logInfo("objectedit.remove_selected called for a non-selected entity: %d" % ent.Id)
+                r.logInfo("objectedit.remove_selected called for a non-selected entity: %d" % ent.id)
             except ValueError:
                 r.logInfo("objectedit.remove_selected called, but entity already removed")
         else:
@@ -286,7 +286,7 @@ class ObjectEdit(Component):
             h = ent.highlight
         except AttributeError:
             try:
-                r.logInfo("objectedit.remove_highlight called for a non-hilighted entity: %d" % ent.Id)
+                r.logInfo("objectedit.remove_highlight called for a non-hilighted entity: %d" % ent.id)
             except ValueError:
                 r.logInfo("objectedit.remove_highlight called, but entity already removed")
         else:
@@ -324,7 +324,7 @@ class ObjectEdit(Component):
                 id = int(child_id)
                 if id not in ids:
                     ids.append(id)
-            ids.append(ent.Id)
+            ids.append(ent.id)
         return ids
     
     def linkObjects(self):
@@ -375,14 +375,14 @@ class ObjectEdit(Component):
         if ent is not None:
             if editable(ent):
                 r.eventhandled = self.EVENTHANDLED
-                if self.manipulator.compareIds(ent.Id): # don't start selection box when manipulator is hit
+                if self.manipulator.compareIds(ent.id): # don't start selection box when manipulator is hit
                     self.manipulator.initManipulation(ent, results, self.sels)
                     self.usingManipulator = True
                 else:
-                    if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
+                    if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
                         if not ent in self.sels:
                             self.select(ent)
-                    elif self.active.Id == ent.Id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
+                    elif self.active.id == ent.id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                         self.canmove = True
         else:
             self.hideManipulator()
@@ -460,7 +460,7 @@ class ObjectEdit(Component):
         found = False
         if ent is not None:                
             for entity in self.sels:
-                if entity.Id == ent.Id:
+                if entity.id == ent.id:
                     found = True
             if not found:
                 self.multiselect(ent)
@@ -548,7 +548,7 @@ class ObjectEdit(Component):
         #if ent is not None:
         for ent in self.sels:
             pass
-            #self.worldstream.SendObjectDuplicatePacket(ent.Id, ent.prim.UpdateFlags, 1, 1, 0) #nasty hardcoded offset
+            #self.worldstream.SendObjectDuplicatePacket(ent.id, ent.prim.UpdateFlags, 1, 1, 0) #nasty hardcoded offset
         
     def createObject(self):
         avatar = naali.getUserAvatar()
@@ -591,7 +591,7 @@ class ObjectEdit(Component):
             self.manipulator.moveTo(self.sels)
 
             #if not self.dragging:
-            #    r.networkUpdate(ent.Id)
+            #    r.networkUpdate(ent.id)
             self.modified = True
             
     def changescale(self, i, v):
@@ -614,7 +614,7 @@ class ObjectEdit(Component):
                 ent.placeable.scale = QVector3D(scale[0], scale[1], scale[2])
                 
                 #if not self.dragging:
-                #    r.networkUpdate(ent.Id)
+                #    r.networkUpdate(ent.id)
                 self.modified = True
                 
     def changerot(self, i, v):
@@ -627,7 +627,7 @@ class ObjectEdit(Component):
             ent.placeable.orientation = ort
             #ent.network.Orientation = ort
             #if not self.dragging:
-            #    r.networkUpdate(ent.Id)
+            #    r.networkUpdate(ent.id)
                 
             self.modified = True
 
@@ -720,7 +720,7 @@ class ObjectEdit(Component):
             #except ValueError:
             #that would work also, but perhaps this is nicer:
             s = naali.getDefaultScene()
-            if not s.HasEntityId(ent.Id):
+            if not s.HasEntityId(ent.id):
                 #my active entity was removed from the scene by someone else
                 self.deselect(ent, valid=False)
                 return
