@@ -1,7 +1,7 @@
 print("yo! here we go..");
 
 var ball = scene.GetEntityByNameRaw("ball");
-print(ball.Id);
+print(ball.id);
 
 var bat_a = scene.GetEntityByNameRaw("bat_a");
 var bat_b = scene.GetEntityByNameRaw("bat_b"); //$('bat_b') - how about?

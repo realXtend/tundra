@@ -26,7 +26,7 @@ function OnObjectClicked()
 
 function OnComponentAdded(entity, component)
 {
-    if (me.id != entity.id && component.TypeName != "EC_Touchable")
+    if (me.id != entity.id && component.typeName != "EC_Touchable")
         return;
         
     touchable_comp = component;

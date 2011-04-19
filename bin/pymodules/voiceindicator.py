@@ -98,7 +98,7 @@ class VoiceIndicatorManager(Component):
         self._indicators[p.AvatarUUID()] = indicator
 
     def _onComponentAdded(self, ent, comp, update):
-        if comp.TypeName == "EC_OpenSimPresence":
+        if comp.typeName == "EC_OpenSimPresence":
             uuid = comp.QGetUUIDString()
             if self._indicators.has_key(uuid):
                 self._indicators[uuid].setEntity(ent)
