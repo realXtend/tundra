@@ -1,4 +1,3 @@
-
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 
@@ -76,11 +75,18 @@ var AutoServerStore = Class.extend
         var noAnswer = true;
         
         messageBox.text = "Seems that this is the first time you are running the server,\nwould you like to run the AutoServerStore configure wizard?";
-        var result = messageBox.exec();
+        if (framework.IsHeadless())
+            var result = noAnswer;
+        else
+            var result = messageBox.exec();
+
         if (result == noAnswer)
         {
             messageBox.text = "Would you like me to remind you on next startup?\nAnswering 'No' will never show you dialogs again on this machine.";
-            result = messageBox.exec();
+            if (!framework.IsHeadless())
+                result = messageBox.exec();
+            else
+                result = noAnswer;
             if (result == noAnswer)
                 config.Set(configFile, configSection, "auto_server_store_configured", true);            
             this.writeDefaultConfig();
