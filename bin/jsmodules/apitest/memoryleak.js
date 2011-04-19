@@ -11,7 +11,7 @@ function init() {
 function no_leak(dt) {
     if (!myscene) init();
 
-    ent = myscene.GetEntityRaw(ent.Id);
+    ent = myscene.GetEntityRaw(ent.id);
     var x;
     for(var i=0; i < 1000; i++) {
 	var t = ent.placeable.transform;

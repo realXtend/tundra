@@ -80,7 +80,7 @@ class DoorHandler(circuits.BaseComponent):
             try:
                 t = ent.touchable
             except AttributeError:
-                print "no touchable in door? it doesn't persist yet? adding..", ent.Id
+                print "no touchable in door? it doesn't persist yet? adding..", ent.id
                 t = ent.GetOrCreateComponentRaw("EC_Touchable")
             else:
                 print "touchable pre-existed in door."

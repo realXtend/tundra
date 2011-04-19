@@ -81,7 +81,7 @@ def onAttributeChanged(component, attribute, changeType):
     if entity.IsLocal():
         return
 
-    ent_id = entity.Id
+    ent_id = entity.id
 
     data = component.GetAttributeQVariant('Transform')
     transform = list()
@@ -95,7 +95,7 @@ def onAttributeChanged(component, attribute, changeType):
                          'Transform': transform}])
 
 def onNewEntity(entity, changeType):
-    sendAll(['addEntity', {'id': entity.Id}])
+    sendAll(['addEntity', {'id': entity.id}])
     print entity
 
 def onComponentAdded(entity, component, changeType):
@@ -109,7 +109,7 @@ def onComponentAdded(entity, component, changeType):
 
     if component_name == "EC_Mesh":
 
-        sendAll(['addComponent', {'id': entity.Id, 'component': component_name, 'url': 'ankka.dae'}])
+        sendAll(['addComponent', {'id': entity.id, 'component': component_name, 'url': 'ankka.dae'}])
     else:
         data = component.GetAttributeQVariant('Transform')
         transform = list()
@@ -118,15 +118,15 @@ def onComponentAdded(entity, component, changeType):
         transform.extend([data.rotation().x(), data.rotation().y(), data.rotation().z()])
         transform.extend([data.scale().x(), data.scale().y(), data.scale().z()])
 
-        sendAll(['addComponent', {'id': entity.Id, 
+        sendAll(['addComponent', {'id': entity.id, 
                              'component': component_name,
                              'Transform': transform}])
 
-    print entity.Id, component
+    print entity.id, component
 
 def onEntityRemoved(entity, changeType):
     print "Removing", entity
-    sendAll(['removeEntity', {'id': entity.Id}])
+    sendAll(['removeEntity', {'id': entity.id}])
 
 @websocket.WebSocketWSGI
 def handle_clients(ws):
