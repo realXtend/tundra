@@ -9,6 +9,13 @@ if (!framework.IsHeadless())
     var mainwin = ui.MainWindow();
 
     var fileMenu = mainwin.AddMenu("&File");
+    
+    var importMenu = fileMenu.addMenu(new QIcon("./data/ui/images/folder_closed.png"), "Import Scene");
+    importMenu.addAction(new QIcon("./data/ui/images/resource.png"), "From File").triggered.connect(OpenLocalScene);
+    importMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "From Web").triggered.connect(OpenWebScene);
+    fileMenu.addAction(new QIcon("./data/ui/images/resource.png"), "Export Scene").triggered.connect(SaveScene);
+    fileMenu.addSeparator();
+    
     if (framework.GetModuleQObj("UpdateModule"))
         fileMenu.addAction(new QIcon("./data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
     
@@ -67,8 +74,7 @@ if (!framework.IsHeadless())
     
     client.Connected.connect(AddInworldTools);
     
-    function AddInworldTools()
-    {
+    function AddInworldTools() {
         ui.EmitAddAction(sceneAction);
         ui.EmitAddAction(assetAction);
     }
@@ -148,5 +154,73 @@ if (!framework.IsHeadless())
 
     function OpenCaveWindow() {
         framework.GetModuleQObj("CAVEStereo").ShowCaveWindow();
+    }
+    
+    function OpenLocalScene() {
+        var currentScene = framework.Scene().GetDefaultSceneRaw();
+        if (currentScene == null)
+            return;
+        
+        var filename = QFileDialog.getOpenFileName(ui.MainWindow(), "Import Scene", QDir.currentPath() + "/scenes", "Tundra Scene (*.txml *.tbin)");
+        if (filename == null || filename == "")
+            return;
+        if (!QFile.exists(filename))
+            return;
+            
+        var fileninfo = new QFileInfo(filename);
+        if (fileninfo.suffix() == "txml")
+            currentScene.LoadSceneXML(filename, false, false, 3);
+        else if (fileninfo.suffix() == "tbin")
+            currentScene.LoadSceneBinary(filename, false, false, 3);
+    }
+    
+    function OpenWebScene() {
+        var webRef = QInputDialog.getText(ui.MainWindow(), "Import Scene", "Insert a txml or tbin scene url", QLineEdit.Normal, "http://", Qt.Dialog);
+        if (webRef == null || webRef == "")
+            return;
+        var ext = webRef.substring(webRef.length-4);
+        var qUrl = QUrl.fromUserInput(webRef);
+        if (!qUrl.isValid())
+            return;
+        
+        if (ext != "txml" && ext != "tbin")
+            return;
+        var transfer = asset.RequestAsset(qUrl.toString()).get();
+        transfer.Loaded.connect(WebSceneLoaded);
+    }
+    
+    function WebSceneLoaded(assetptr) {
+        var currentScene = framework.Scene().GetDefaultSceneRaw();
+        if (currentScene == null)
+            return;
+                   
+        var asset = assetptr.get();
+        var diskSource = asset.DiskSource();
+        var fileninfo = new QFileInfo(diskSource);
+        if (fileninfo.suffix() == "txml")
+            currentScene.LoadSceneXML(diskSource, false, false, 3);
+        else if (fileninfo.suffix() == "tbin")
+            currentScene.LoadSceneBinary(diskSource, false, false, 3);
+    }
+    
+    function SaveScene() {
+        var currentScene = framework.Scene().GetDefaultSceneRaw();
+        if (currentScene == null)
+            return;
+            
+        var filename = QFileDialog.getSaveFileName(ui.MainWindow(), "Export Scene", QDir.currentPath() + "/scenes", "Tundra Scene (*.txml *.tbin)");
+        if (filename == null || filename == "")
+            return;
+        var ext = new QFileInfo(filename).suffix();
+        if (ext != "txml" && ext != "tbin")
+        {
+            QMessageBox.information(ui.MainWindow(), "Invalid extension", "Invalid Tundra scene file extension '" + ext + "'");
+            return;
+        }
+           
+        if (ext == "txml")
+            currentScene.SaveSceneXML(filename);
+        else if (ext == "tbin")
+            currentScene.SaveSceneBinary(filename);
     }
 }
