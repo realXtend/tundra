@@ -53,6 +53,8 @@ void EC_LaserPointer::CreateLaser()
         return;
     if (renderer_.expired())
         return;
+    if (GetFramework()->IsHeadless())
+        return;
 
     Ogre::SceneManager *scene = renderer_.lock()->GetSceneManager();
     assert(scene);
@@ -65,16 +67,20 @@ void EC_LaserPointer::CreateLaser()
         return;
 
     node_ = parentEntity->GetComponent<EC_Placeable>().get();
+
+    if (!node_)
+        return;
+
     id_ = Ogre::StringConverter::toString((int)parentEntity->GetId());
 
     laserObject_ = scene->createManualObject("laser" + id_);
     Ogre::SceneNode* laserObjectNode = scene->getRootSceneNode()->createChildSceneNode("laser" + id_ + "_node");
     Ogre::MaterialPtr laserMaterial = Ogre::MaterialManager::getSingleton().create("laser" + id_ + "Material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME); 
     laserMaterial->setReceiveShadows(false);
-    laserMaterial->getTechnique(0)->setLightingEnabled(true); 
-    laserMaterial->getTechnique(0)->getPass(0)->setDiffuse(1,0,0,1); 
-    laserMaterial->getTechnique(0)->getPass(0)->setAmbient(1,0,0); 
-    laserMaterial->getTechnique(0)->getPass(0)->setSelfIllumination(1,0,0); 
+    laserMaterial->getTechnique(0)->setLightingEnabled(true);
+    laserMaterial->getTechnique(0)->getPass(0)->setDiffuse(1,0,0,1);
+    laserMaterial->getTechnique(0)->getPass(0)->setAmbient(1,0,0);
+    laserMaterial->getTechnique(0)->getPass(0)->setSelfIllumination(1,0,0);
     laserObjectNode->attachObject(laserObject_);
 
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(HandleAttributeChange(IAttribute*, AttributeChange::Type)));
@@ -90,6 +96,10 @@ void EC_LaserPointer::CreateLaser()
 void EC_LaserPointer::DestroyLaser()
 {
     if (!ViewEnabled())
+        return;
+    if (renderer_.expired())
+        return;
+    if (GetFramework()->IsHeadless())
         return;
 
     OgreRenderer::RendererPtr renderer = renderer_.lock();
@@ -123,7 +133,7 @@ void EC_LaserPointer::DestroyLaser()
 
 void EC_LaserPointer::Update(MouseEvent *e)
 {
-    if (IsEnabled())
+    if (IsEnabled() && !GetFramework()->IsHeadless())
     {
         if (canUpdate_)
         {
@@ -133,8 +143,7 @@ void EC_LaserPointer::Update(MouseEvent *e)
             {
                 SetStartPos(node_->GetPosition());
                 SetEndPos(result->getpos());
-                canUpdate_ = false;
-                QTimer::singleShot(updateInterval_, this, SLOT(EnableUpdate()));
+                DisableUpdate();
             }
             else
                 laserObject_->clear();
@@ -144,6 +153,13 @@ void EC_LaserPointer::Update(MouseEvent *e)
 
 void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChange::Type change)
 {
+    if (!ViewEnabled())
+        return;
+    if (renderer_.expired())
+        return;
+    if (GetFramework()->IsHeadless())
+        return;
+
     if (IsEnabled())
     {
         laserObject_->clear();
@@ -177,6 +193,12 @@ void EC_LaserPointer::Disable()
 {
     laserObject_->clear();
     enabled_.Set(false, AttributeChange::Default);
+}
+
+void EC_LaserPointer::DisableUpdate()
+{
+    canUpdate_ = false;
+    QTimer::singleShot(updateInterval_, this, SLOT(EnableUpdate()));
 }
 
 void EC_LaserPointer::SetStartPos(const Vector3df pos)
