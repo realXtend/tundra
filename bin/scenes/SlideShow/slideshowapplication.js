@@ -169,7 +169,7 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
 
     var dyn = entity.dynamiccomponent;
 
-    dyn.Name = "Slidelist";
+    dyn.name = "Slidelist";
 
     for (s = 0; s < slides.length; s++) {
     var slidename = s;
