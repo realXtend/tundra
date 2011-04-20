@@ -327,6 +327,11 @@ void UiAPI::EmitAddAction(QAction *action, const QString &group)
     emit AddAction(action, group);
 }
 
+void UiAPI::EmitOpenUrl(const QUrl &url)
+{
+    emit OpenUrl(url);
+}
+
 void UiAPI::ShowWidget(QWidget *widget) const
 {
     if (!widget)

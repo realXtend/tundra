@@ -156,6 +156,7 @@ var BrowserManager = Class.extend
         client.Disconnected.connect(this.onDisconnected);
         
         ui.AddAction.connect(this.addTool);
+        ui.OpenUrl.connect(this.openUrl);
     },
     
     start: function()

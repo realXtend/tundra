@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QUrl>
 
 #include "UiFwd.h"
 #include "UiApiExport.h"
@@ -130,10 +131,15 @@ public slots:
     void EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 
     /// Emits AddAction signal. This is not handled by the UiAPI but a 3rd party listening this signal, if one is present.
-    /** @param action Action to be added to the 3rd party tool bar.
+    /** @param action Action to be added to the 3rd party action area.
         @param group Additional group name for 3rd party code to do grouping logic if it desires. This parameter is optional and will default to an empty string.
     */
     void EmitAddAction(QAction *action, const QString &group = QString());
+
+    /// Emits OpenUrl signal to make a url open request. This is not handled by the UiAPI but a 3rd party listening this signal, if one is present.
+    /** @param url Url that is being requested to be opened by the 3rd party browser.
+    */
+    void EmitOpenUrl(const QUrl &url);
 
 signals:
     /// Signals that context menu @c menu is about to open for specific objects.
@@ -143,10 +149,15 @@ signals:
     void ContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 
     /// Signals a request to add an action. This signal will be handled by 3rd party code out side of the UiAPI.
-    /** @param action Action that is being requested to be added to the 3rd party tool bar.
+    /** @param action Action that is being requested to be added to the 3rd party action area.
         @param group Additional group name for 3rd party code to do grouping logic if it desires. This string my be empty.
     */
     void AddAction(QAction *action, QString group);
+
+    /// Signals a request to open a url. This signal will be handled by 3rd party code out side of the UiAPI.
+    /** @param url Url that is being requested to be opened by the 3rd party browser.
+    */
+    void OpenUrl(const QUrl &url);
 
 private slots:
     /// Removes proxy widget from internally maintained lists upon destruction.
