@@ -7,19 +7,10 @@ import PythonQt
 #the ones not listed here are added using the c++ name, e.g. ent.EC_NetworkPosition
 compshorthand = {
     'EC_OpenSimPrim': 'prim',
-    'EC_Placeable': 'placeable',
     'EC_NetworkPosition': 'network',
-    'EC_Mesh':'mesh',
     'EC_OgreCamera': 'camera',
-    'EC_AnimationController': 'animationcontroller',
-    'EC_Highlight': 'highlight',
-    'EC_Touchable': 'touchable',
     'EC_AttachedSound': 'sound',
     'EC_OpenSimPresence': 'opensimpresence',
-    'EC_SoundRuler': 'soundruler',
-    'EC_Name': 'ecname',
-    'EC_Ruler': 'ruler',
-    'EC_Gizmo': 'gizmo',
     }   
 
 class ComponentPropertyAdder(circuits.BaseComponent):
