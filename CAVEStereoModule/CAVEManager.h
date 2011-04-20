@@ -6,6 +6,7 @@
 #include "OgreModuleFwd.h"
 
 #include <QObject>
+#include <QPointer>
 #include <QMap>
 
 namespace Ogre
@@ -73,7 +74,7 @@ namespace CAVEStereo
         //! renderer pointer
         OgreRenderer::RendererWeakPtr renderer_;
         //! views
-        QMap<QString, CAVEView*> view_map_;
+        QMap<QString, QPointer<CAVEView> > view_map_;
         //! settings widget
         CAVESettingsWidget* settings_widget_;
     };

@@ -39,7 +39,7 @@ namespace CAVEStereo
             if (renderer)
             {
                 stereo_ = new StereoController(renderer.get(),this);
-                cave_ = new CAVEManager(renderer);
+                cave_ = new CAVEManager(renderer); 
                 stereo_->InitializeUi();
                 cave_->InitializeUi();
             }
