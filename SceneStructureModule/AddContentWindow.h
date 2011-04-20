@@ -43,12 +43,12 @@ public:
     /// Destructor.
     ~AddContentWindow();
 
-    /// Adds scene descrition to be shown in the window.
+    /// Adds scene description to be shown in the window.
     /** @param desc Scene description.
     */
     void AddDescription(const SceneDesc &desc);
 
-    /// Adds multiple scene descritions to be shown in the window.
+    /// Adds multiple scene descriptions to be shown in the window.
     /** @param desc Scene description.
     */
 //    void AddDescriptions(const QList<SceneDesc> &descs);
@@ -62,6 +62,9 @@ public:
     /** @param pos Position.
     */
     void AddPosition(const Vector3df &pos) { position = pos; }
+
+signals:
+    void Completed(bool contentAdded, const QString &uploadBaseUrl);
 
 protected:
     void showEvent(QShowEvent *e);
@@ -86,6 +89,12 @@ private:
     */
     void RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage);
 
+    /// Returns name of the currently selected asset storage.
+    QString GetCurrentStorageName() const;
+
+    /// Generates contents of asset storage combo box. Sets default storage selected as default.
+    void GenerateStorageComboBoxContents();
+
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
     Framework *framework; ///< Framework.
@@ -95,7 +104,7 @@ private:
     QPushButton *cancelButton; ///< Cancel/close button.
     QComboBox *storageComboBox; ///< Asset storage combo box.
     Vector3df position; ///< Centralization position for instantiated context (if used).
-    
+
     // Uploading
     QLabel *uploadStatus_;
     QProgressBar *uploadProgress_;
@@ -107,9 +116,6 @@ private:
     // Entities add
     QLabel *entitiesStatus_;
     QProgressBar *entitiesProgress_;
-
-    QString currentStorage_;
-    QString currentStorageBaseUrl_;
 
     // Parent widget
     QWidget *parentEntities_;
@@ -137,13 +143,13 @@ private slots:
     /// Start content creation and asset uploading.
     void AddContent();
 
-    /// Create new scene desctiption with ui checkbox selections
+    /// Create new scene description with ui check box selections
     bool CreateNewDesctiption();
 
     /// Start uploading
     bool UploadAssets();
 
-    /// Add entities to scene (autocalled when all transfers finish)
+    /// Add entities to scene (automatically called when all transfers finish)
     void AddEntities();
 
     /// Centers this window to the app main window
@@ -180,9 +186,6 @@ private slots:
     void UpdateUploadStatus(bool succesfull, const QString &assetRef);
 
     void CheckUploadTotals();
-
-signals:
-    void Completed(bool contentAdded, const QString &uploadBaseUrl);
 };
 
 #endif
