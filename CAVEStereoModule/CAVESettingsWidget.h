@@ -9,18 +9,17 @@
 #include "CAVEViewSettingsAdvanced.h"
 #include <QSignalMapper>
 
-namespace Foundation
-{
-    class Framework;
-}
+namespace Foundation { class Framework; }
+
 namespace CAVEStereo
 {
-    
     class CAVESettingsWidget: public QWidget, private Ui::CAVESettings 
     {
-        Q_OBJECT
+    
+    Q_OBJECT
+    
     public:
-        CAVESettingsWidget( Foundation::Framework* framework, QWidget* parent=0 );
+        CAVESettingsWidget(Foundation::Framework* framework, QWidget* parent = 0);
 
     signals:
         void ToggleCAVE(bool);
@@ -52,8 +51,7 @@ namespace CAVEStereo
         QString view_prefix_;
         QSignalMapper modmapper_;
         QSignalMapper remmapper_;
-
     };
-
 }
+
 #endif
