@@ -28,8 +28,8 @@ register(animsync.COMPNAME, animsync.AnimationSync)
 import rotate
 register(rotate.COMPNAME, rotate.RotationHandler)
 
-import webmoduleloader
-register("pythonmodule", webmoduleloader.WebPythonmoduleLoader)
+#import webmoduleloader
+#register("pythonmodule", webmoduleloader.WebPythonmoduleLoader)
 
 class ComponenthandlerRegistry(circuits.BaseComponent):
     def __init__(self):
@@ -62,49 +62,49 @@ class ComponenthandlerRegistry(circuits.BaseComponent):
             #print "JS SRC:", jssrc
             #if jssrc is not None:
             #    self.apply_js(jssrc)
-            jscheck = make_jssrc_handler(entity, comp, changetype)
+            # jscheck = make_jssrc_handler(entity, comp, changetype)
             #todo: OnChanged() is deprecated
-            comp.connect("OnChanged()", jscheck)
+            # comp.connect("OnChanged()", jscheck)
 
-def make_jssrc_handler(entity, comp, changetype):
-    #def handle_js():
-    class JsHandler(): #need a functor so that can disconnect itself
-        def __call__(self):
-            jssrc = comp.GetAttribute("js_src")
-            #print "JS SRC:", jssrc
-            if jssrc is not None:
-                apply_js(jssrc, comp)
-            comp.disconnect("OnChanged()", self)
-    return JsHandler()
+# def make_jssrc_handler(entity, comp, changetype):
+#     #def handle_js():
+#     class JsHandler(): #need a functor so that can disconnect itself
+#         def __call__(self):
+#             jssrc = comp.GetAttribute("js_src")
+#             #print "JS SRC:", jssrc
+#             if jssrc is not None:
+#                 apply_js(jssrc, comp)
+#             comp.disconnect("OnChanged()", self)
+#     return JsHandler()
 
-def apply_js(jssrc, comp):
-    jscode = loadjs(jssrc)
+# def apply_js(jssrc, comp):
+#     jscode = loadjs(jssrc)
 
-    #print jscode
+#     #print jscode
 
-    ctx = {
-        #'entity'/'this': self.entity
-        'component': comp
-    }
+#     ctx = {
+#         #'entity'/'this': self.entity
+#         'component': comp
+#     }
 
-    ent = comp.GetParentEntity()
-    try:
-        ent.touchable
-    except AttributeError:
-        pass
-    else:
-        ctx['touchable'] = ent.touchable
-    try:
-        ent.placeable
-    except:
-        pass
-    else:
-        ctx['placeable'] = ent.placeable
+#     ent = comp.GetParentEntity()
+#     try:
+#         ent.touchable
+#     except AttributeError:
+#         pass
+#     else:
+#         ctx['touchable'] = ent.touchable
+#     try:
+#         ent.placeable
+#     except:
+#         pass
+#     else:
+#         ctx['placeable'] = ent.placeable
             
-    naali.runjs(jscode, ctx)
-    #print "-- done with js"
+#     naali.runjs(jscode, ctx)
+#     #print "-- done with js"
 
-def loadjs(srcurl):
-    #print "js source url:", srcurl
-    f = urllib2.urlopen(srcurl)
-    return f.read()
+# def loadjs(srcurl):
+#     #print "js source url:", srcurl
+#     f = urllib2.urlopen(srcurl)
+#     return f.read()
