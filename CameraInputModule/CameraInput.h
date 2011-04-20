@@ -3,13 +3,15 @@
 #ifndef incl_CameraInputModule_CameraInput_h
 #define incl_CameraInputModule_CameraInput_h
 
+#include "CameraInputModuleApi.h"
+
 #include <QObject>
 #include <QImage>
 
 class CameraInputModule;
 namespace Foundation { class Framework; }
 
-class CameraInput : public QObject
+class CAMERAINPUT_MODULE_API CameraInput : public QObject
 {
 
 Q_OBJECT
