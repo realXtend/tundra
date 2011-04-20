@@ -63,7 +63,7 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
     else if(type == "qpointf")
         attributeEditor = new ECAttributeEditor<QPointF>(browser, component, name, type, editor);
     else
-        LogError("Unknown attribute type " + type.toStdString() + " for ECAttributeEditorBase creation.");
+        LogWarning("Unknown attribute type " + type + " for ECAttributeEditorBase creation.");
 
     return attributeEditor;
 }
