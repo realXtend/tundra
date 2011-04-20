@@ -94,7 +94,7 @@ def removeEntity(entity):
 # using the scene manager, note above
 def deleteEntity(entity):
     s = getDefaultScene()
-    s.DeleteEntityB.id(entity.id)
+    s.DeleteEntityById(entity.id)
 
 def createInputContext(name, priority = 100):
     return _pythonscriptmodule.CreateInputContext(name, priority)
