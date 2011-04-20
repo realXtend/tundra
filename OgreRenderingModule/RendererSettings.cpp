@@ -93,13 +93,16 @@ namespace OgreRenderer
         Renderer *renderer = framework_->GetService<Renderer>();
         if (!renderer)
             return;
-        if(e->HasCtrlModifier() && e->KeyCode() == Qt::Key_F)
+        //SandBox: disable full screen mode for stability reasons.
+/*
+        if (e->HasCtrlModifier() && e->KeyCode() == Qt::Key_F)
         {
             renderer->SetFullScreen(!renderer->IsFullScreen());
             QCheckBox* cbox = settings_widget_->findChild<QCheckBox*>("fullscreen_toggle");
             if(cbox)
                 cbox->setChecked(!cbox->isChecked());
         }
+*/
     }
 
     void RendererSettings::ViewDistanceChanged(double value)
