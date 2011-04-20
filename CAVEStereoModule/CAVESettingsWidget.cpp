@@ -15,16 +15,15 @@
 namespace CAVEStereo
 {
 
-    CAVESettingsWidget::CAVESettingsWidget(Foundation::Framework* framework, QWidget* parent)
-        :QWidget(parent),
+    CAVESettingsWidget::CAVESettingsWidget(Foundation::Framework* framework, QWidget* parent) :
+        QWidget(parent),
+        framework_(framework),
         settings_dialog_(this),
         next_view_num_(0),
         view_prefix_("View")
     {
         setupUi(this);
 
-
-        framework_ = framework;
         QObject::connect(this, SIGNAL(NewCAVEViewRequested(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&)), this, SLOT(AddViewToUi(const QString&)));
         QObject::connect(this, SIGNAL(NewCAVEPanoramaViewRequested(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, int)), this, SLOT(AddViewToUi(const QString&)));
         QObject::connect(toggle_CAVE, SIGNAL(toggled(bool)),this, SLOT(CAVEButtonToggled(bool)));
@@ -42,6 +41,7 @@ namespace CAVEStereo
     {
         show();
     }
+
     void CAVESettingsWidget::AddNewCAVEViewAdvanced()
     {
         if(settings_dialog_.exec() == QDialog::Accepted)
@@ -55,13 +55,10 @@ namespace CAVEStereo
                 emit NewCAVEViewRequested(GetNextName(), tl ,bl, br, eye); 
             }
         }
-
     }
-
 
     void CAVESettingsWidget::AddViewToUi(const QString& name)
     {
-
         QLabel* label = new QLabel(name);
         label->setObjectName(name);
         QHBoxLayout* layout = new QHBoxLayout();
@@ -80,9 +77,7 @@ namespace CAVEStereo
         layout->addWidget(modb);
         layout->addWidget(remb);
         viewslayout->addLayout(layout);
-
     }
-
 
     void CAVESettingsWidget::ModifyViewPressed(QString name)
     {

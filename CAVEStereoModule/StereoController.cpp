@@ -12,8 +12,8 @@
 
 namespace CAVEStereo
 {
-    StereoController::StereoController(OgreRenderer::Renderer* r, CAVEStereoModule* mod)
-        :renderer_(r),
+    StereoController::StereoController(OgreRenderer::Renderer* r, CAVEStereoModule* mod) :
+        renderer_(r),
         module_(mod),
         settings_widget_(0),
         number_of_views_(0),
@@ -23,6 +23,8 @@ namespace CAVEStereo
 
     StereoController::~StereoController()
     {
+        if (settings_widget_)
+            settings_widget_->deleteLater();
     }
 
     QVector<Ogre::RenderWindow*> StereoController::getRenderWindows()
@@ -42,7 +44,8 @@ namespace CAVEStereo
             Ogre::GpuProgramParametersSharedPtr param = pass->getFragmentProgramParameters();
             Ogre::ColourValue colour(r,g,b,1);
             param->setNamedConstant(name, colour);
-        }catch (Ogre::Exception &e)
+        }
+        catch (Ogre::Exception &e)
         {
             CAVEStereoModule::LogWarning(e.what());
             CAVEStereoModule::LogWarning("Failed to set Anaglyph shader constant.");
@@ -73,7 +76,7 @@ namespace CAVEStereo
     void StereoController::EnableStereo(QString& tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width)
     {
         DisableStereo();
-        if(tech_type == "anaglyph")
+        if (tech_type == "anaglyph")
         {
             QVector<Ogre::RenderWindow*> windows = getRenderWindows();
             for(int i=0; i< windows.size();i++)
@@ -94,12 +97,9 @@ namespace CAVEStereo
                 name += QString::number(number_of_views_);
                 stereo_views_[name] = mngr;
                 number_of_views_++;
-
             }
-
         }
-
-        if(tech_type == "passive")
+        else if (tech_type == "passive")
         {
             QVector<Ogre::RenderWindow*> windows = getRenderWindows();
             for(int i=0; i< windows.size();i++)
@@ -119,17 +119,16 @@ namespace CAVEStereo
                 mngr->setEyesSpacing(eye_dist);
                 mngr->setFocalLength(focal_l);
                 mngr->setPixelOffset(offset);
+                
                 if(scrn_width > 0)
-                {
                     mngr->setScreenWidth(scrn_width);
-                }
                 
                 stereo_views_[name] = mngr;
                 number_of_views_++;
                 window->show();
             }
         }
-        if(tech_type == "active")
+        else if (tech_type == "active")
         {
             QVector<Ogre::RenderWindow*> windows = getRenderWindows();
             for(int i=0; i< windows.size();i++)
@@ -146,9 +145,7 @@ namespace CAVEStereo
                 mngr->setFocalLength(focal_l);
                 mngr->setPixelOffset(offset);
                 if(scrn_width > 0)
-                {
                     mngr->setScreenWidth(scrn_width);
-                }
 
                 stereo_views_[name] = mngr;
                 number_of_views_++;
@@ -180,5 +177,4 @@ namespace CAVEStereo
     {
 	    return settings_widget_;
     }
-
 }
