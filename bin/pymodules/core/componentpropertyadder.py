@@ -40,7 +40,7 @@ class ComponentPropertyAdder(circuits.BaseComponent):
         r.logInfo("componentpropertyaddr exiting... done")
 
     def onComponentAdded(self, ent, comp, changetype):
-        #print "Comp added:", ent, comp, comp.typeName, comp.Name, changetype
+        #print "Comp added:", ent, comp, comp.typeName, comp.name, changetype
         
         if comp.typeName in compshorthand:
             propname = compshorthand[comp.typeName]
