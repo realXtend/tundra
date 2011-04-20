@@ -55,6 +55,8 @@ public:
     void Update(f64 frametime);
 
 public slots:
+    /// Get CameraInput that has all the relevant slots and signals for camera data interaction.
+    /// \return CameraInput* The CameraInput object ptr.
     CameraInput *GetCameraInput() const;
 
 private slots:

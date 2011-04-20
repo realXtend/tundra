@@ -180,6 +180,11 @@ configure_curl()
 configure_openjpeg()
 configure_qtpropertybrowser()
 
+# \todo remove the windows check when configure_package_opencv() macro has been tested on linux.
+if (WIN32)
+    configure_package_opencv()
+endif()
+
 use_package(BOOST)
 use_package(POCO)
 use_package(OGRE)
