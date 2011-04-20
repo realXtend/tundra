@@ -31,8 +31,17 @@ Example:
 Use <b>forward declarations</b> to minimize use of \#include declarations in header files.
 
 In all files, try to order your \#include statements in the following order:
-StableHeaders.h (optional), DebugOperatorNew.h (optional), file's .h (in cpp file), same project's .h, other Tundra project's .h, C library, C++ library, other libraries' .h
+\verbatim
+StableHeaders.h (optional)
+DebugOperatorNew.h (optional)
+file's .h (in cpp file)
+same project's .h
+other Tundra project's .h
+C library
+C++ library
+other libraries' .h
 MemoryLeakCheck.h (optional)
+\endverbatim
 
 \subsection nameconvfuncparam Function Parameters
 In functions that pass output variables as parameters to the function, prefer the order <b>Inputs first, outputs last</b>.
@@ -62,7 +71,8 @@ Local variables and public/protected member variables are written in camel case:
 \verbatim
 int localVar;
 AvatarPtr userAgent = manager->GetUserAgent();
-int AvatarNode::numFriends;
+int AvatarNode::numOfFriends;
+Q_PROPERTY(QString name ...)
 \endverbatim
 
 \subsection signals_and_slots Signals and Slots
