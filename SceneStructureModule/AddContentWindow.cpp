@@ -134,6 +134,11 @@ public:
     AssetDesc desc; ///< Asset description of the item.
 };
 
+/// A special case identifier for using the default storage.
+const QString cDefaultStorage("DefaultStorage");
+/// A special case identifier for not altering asset refs when uploading assets.
+const QString cDoNotAlterAssetReferences("DoNotAlterAssetReferences");
+
 AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent) :
     QWidget(parent),
     framework(fw),
@@ -164,7 +169,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
         "QProgressBar::chunk { background-color: qlineargradient(spread:pad, x1:0.028, y1:1, x2:0.972, y2:1, stop:0 rgba(194, 194, 194, 100), stop:1 rgba(115, 115, 115, 100)); }";
     setStyleSheet(widgetStyle);
 
-    QFont titleFont("Arial", 16);
+    QFont titleFont("Arial", 11);
     titleFont.setBold(true);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -241,22 +246,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     uploadProgress_ = new QProgressBar();
     uploadProgress_->setFixedHeight(20);
 
-    // Get available asset storages. Set default storage selected as default.
-    //storageComboBox->addItem(tr("Don't adjust"), "DoNotAdjust");
-    storageComboBox->addItem(tr("Default storage"), "DefaultStorage");
-    AssetStoragePtr def = framework->Asset()->GetDefaultAssetStorage();
-    std::vector<AssetStoragePtr> storages = framework->Asset()->GetAssetStorages();
-    for(size_t i = 0; i < storages.size(); ++i)
-    {
-        storageComboBox->addItem(storages[i]->ToString(), storages[i]->Name());
-        if (def && storages[i] == def)
-        {
-            QFont font = QApplication::font();
-            font.setBold(true);
-            storageComboBox->setItemData(i+1, font, Qt::FontRole); // i+1 as we already have the default storage item
-            storageComboBox->setCurrentIndex(i+1);
-        }
-    }
+    GenerateStorageComboBoxContents();
 
     uploadLayout->addWidget(uploadStatus_);
     uploadLayout->addWidget(uploadProgress_);
@@ -303,12 +293,6 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     failedUploads_ = 0;
     successfullUploads_ = 0;
     totalUploads_ = 0;
-/*
-    QPrinter printer;
-    QPainter painter;
-    painter.begin(&printer);
-    painter.drawImage()
-*/
 }
 
 AddContentWindow::~AddContentWindow()
@@ -316,7 +300,9 @@ AddContentWindow::~AddContentWindow()
     // Disable ResizeToContents, Qt goes sometimes into eternal loop after
     // ~AddContentWindow() if we have lots (hudreds or thousands) of items.
     entityTreeWidget->header()->setResizeMode(QHeaderView::Interactive);
+    entityTreeWidget->setSortingEnabled(false);
     assetTreeWidget->header()->setResizeMode(QHeaderView::Interactive);
+    assetTreeWidget->setSortingEnabled(false);
 
     QTreeWidgetItemIterator it(entityTreeWidget);
     while(*it)
@@ -417,13 +403,9 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     fullHeight += (entityTreeWidget->sizeHintForRow(0)+5) * entityTreeWidget->model()->rowCount();
     int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
     if (fullHeight < halfDeskHeight-300)
-    {
         entityTreeWidget->setMinimumHeight(fullHeight);
-    }
     else
-    {
         entityTreeWidget->setMinimumHeight(halfDeskHeight - 300);
-    }
 }
 
 void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
@@ -480,23 +462,18 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
     // Set a minimum height for our treeview
     int fullHeight = assetTreeWidget->header()->height();
     fullHeight += (assetTreeWidget->sizeHintForRow(0)+5) * assetTreeWidget->model()->rowCount();
-    
+
     int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
-    if(fullHeight<(halfDeskHeight-50))
-    {
+    if (fullHeight<(halfDeskHeight-50))
         assetTreeWidget->setMinimumHeight(fullHeight);
-    }
     else
-    {
         assetTreeWidget->setMinimumHeight(halfDeskHeight - 100);
-    }    
 
     // Set the windows minumum width from assets tree view
     int minWidth = 10;
     for (int i=0; i<assetTreeWidget->columnCount(); i++)
         minWidth += assetTreeWidget->columnWidth(i);
     setMinimumWidth(minWidth);
-
 
     // Sort asset items initially so that erroneous are first
     assetTreeWidget->sortItems(cColumnAssetUpload, Qt::AscendingOrder);
@@ -571,6 +548,11 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
     }
 }
 
+QString AddContentWindow::GetCurrentStorageName() const
+{
+    return storageComboBox->itemData(storageComboBox->currentIndex()).toString();
+}
+
 void AddContentWindow::SelectAllEntities()
 {
     TreeWidgetSetCheckStateForAllItems(entityTreeWidget, cColumnEntityCreate, Qt::Checked);
@@ -595,7 +577,7 @@ void AddContentWindow::AddContent()
 {
     uploadStatus_->setText("");
     uploadProgress_->setValue(0);
-    entitiesStatus_->setText("Waiting for asset uploads to finish...");
+    entitiesStatus_->setText(tr("Waiting for asset uploads to finish..."));
     entitiesProgress_->setValue(0);
 
     if (CreateNewDesctiption())
@@ -618,34 +600,26 @@ void AddContentWindow::AddContent()
             storageComboBox->setEnabled(false);
         }
         else
-            QMessageBox::critical(this, "Uploading", "Starting uploads failed");
+            QMessageBox::critical(this, tr("Uploading"), tr("Starting uploads failed"));
     }
     else
-        QMessageBox::critical(this, "Uploading", "Starting uploads failed");
-
+        QMessageBox::critical(this, tr("Uploading"), tr("Starting uploads failed"));
 }
 
 bool AddContentWindow::CreateNewDesctiption()
 {
-    QString storageName = storageComboBox->itemData(storageComboBox->currentIndex()).toString();
+    QString storageName = GetCurrentStorageName();
     AssetStoragePtr dest;
-    if (storageName == "DefaultStorage")
-        dest = framework->Asset()->GetDefaultAssetStorage();
-    else
-        dest = framework->Asset()->GetAssetStorage(storageName);
-    if (!dest)
+    if (storageName != cDoNotAlterAssetReferences)
     {
-        LogError("Could not retrieve asset storage " + storageName.toStdString() + ".");
-
-        // Regenerate storage combo box items to make sure that we're up-to-date.
-        storageComboBox->clear();
-        foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
-            storageComboBox->addItem(storage->ToString(), storage->Name());
-
-        return false;
+        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : framework->Asset()->GetAssetStorage(storageName);
+        if (!dest)
+        {
+            LogError("AddContentWindow::CreateNewDesctiption: Could not retrieve asset storage " + storageName + ".");
+            GenerateStorageComboBoxContents(); // Regenerate storage combo box items to make sure that we're up-to-date.
+            return false;
+        }
     }
-    currentStorage_ = storageName;
-    currentStorageBaseUrl_ = dest->BaseURL();
 
     // Filter which entities will be created and which assets will be uploaded.
     newDesc_ = sceneDesc;
@@ -663,9 +637,13 @@ bool AddContentWindow::CreateNewDesctiption()
         ++eit;
     }
 
-    // Rewrite components' asset refs
-    bool useDefault = storageName == "DefaultStorage";
-    RewriteAssetReferences(newDesc_, dest, useDefault);
+    // Rewrite components' asset refs, if storage selected.
+    bool rewrite = storageName != cDoNotAlterAssetReferences;
+    if (rewrite)
+    {
+        bool useDefault = storageName == cDefaultStorage;
+        RewriteAssetReferences(newDesc_, dest, useDefault);
+    }
 
     RefMap refs;
     QTreeWidgetItemIterator ait(assetTreeWidget);
@@ -675,11 +653,11 @@ bool AddContentWindow::CreateNewDesctiption()
         assert(aitem);
         if (aitem)
         {
-            if (aitem->checkState(cColumnAssetUpload) == Qt::Unchecked)
+            if (aitem->checkState(cColumnAssetUpload) == Qt::Unchecked || aitem->isDisabled())
             {
                 bool removed = newDesc_.assets.remove(qMakePair(aitem->desc.source, aitem->desc.subname));
                 if (!removed)
-                    LogDebug("Couldn't find and remove " + aitem->desc.source.toStdString() + "from asset map.");
+                    LogDebug("Couldn't find and remove " + aitem->desc.source + "from asset map.");
             }
             else
             {
@@ -712,18 +690,18 @@ bool AddContentWindow::CreateNewDesctiption()
 bool AddContentWindow::UploadAssets()
 {
     AssetStoragePtr dest;
-    if (currentStorage_ == "DefaultStorage")
-        dest = framework->Asset()->GetDefaultAssetStorage();
-    else
-        dest = framework->Asset()->GetAssetStorage(currentStorage_);
-    if (!dest)
+    QString storageName = GetCurrentStorageName();
+    bool doNotAlter = storageName == cDoNotAlterAssetReferences;
+    // No upload if we don't touch asset refs
+    if (!doNotAlter)
     {
-        LogError("Could not retrieve asset storage " + currentStorage_.toStdString() + ".");
-        // Regenerate storage combo box items to make sure that we're up-to-date.
-        storageComboBox->clear();
-        foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
-            storageComboBox->addItem(storage->ToString(), storage->Name());
-        return false;
+        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : dest = framework->Asset()->GetAssetStorage(storageName);
+        if (!dest)
+        {
+            LogError("AddContentWindow::UploadAssets: Could not retrieve asset storage " + storageName + ".");
+            GenerateStorageComboBoxContents(); // Regenerate storage combo box items to make sure that we're up-to-date.
+            return false;
+        }
     }
 
     Scene::ScenePtr destScene = scene.lock();
@@ -733,7 +711,8 @@ bool AddContentWindow::UploadAssets()
     // Upload
     if (!newDesc_.assets.empty())
     {
-        LogDebug("Starting uploading of " + ToString(newDesc_.assets.size()) + " asset" + "(s).");
+        std::string ending = newDesc_.assets.size() == 1 ? "." : "s.";
+        LogDebug("Starting uploading of " + ToString(newDesc_.assets.size()) + " asset" + ending);
 
         totalUploads_ = 0;
         progressStep_ = 0;
@@ -756,11 +735,10 @@ bool AddContentWindow::UploadAssets()
                         dest, ad.destinationName.toStdString().c_str());
                 }
 
-                if (transfer)
+                if (transfer && connect(transfer.get(), SIGNAL(Completed(IAssetUploadTransfer *)), SLOT(HandleUploadCompleted(IAssetUploadTransfer *)), Qt::UniqueConnection) &&
+                    connect(transfer.get(), SIGNAL(Failed(IAssetUploadTransfer *)), SLOT(HandleUploadFailed(IAssetUploadTransfer *)), Qt::UniqueConnection))
                 {
-                    if (connect(transfer.get(), SIGNAL(Completed(IAssetUploadTransfer *)), SLOT(HandleUploadCompleted(IAssetUploadTransfer *)), Qt::UniqueConnection) &&
-                        connect(transfer.get(), SIGNAL(Failed(IAssetUploadTransfer *)), SLOT(HandleUploadFailed(IAssetUploadTransfer *)), Qt::UniqueConnection))
-                        totalUploads_++;
+                    totalUploads_++;
                 }
             }
             catch(const Exception &e)
@@ -781,18 +759,18 @@ bool AddContentWindow::UploadAssets()
 void AddContentWindow::AddEntities()
 {
     AssetStoragePtr dest;
-    if (currentStorage_ == "DefaultStorage")
-        dest = framework->Asset()->GetDefaultAssetStorage();
-    else
-        dest = framework->Asset()->GetAssetStorage(currentStorage_);
-    if (!dest)
+    QString storageName = GetCurrentStorageName();
+    bool doNotAlter = storageName == cDoNotAlterAssetReferences;
+    // No upload if we don't touch asset refs
+    if (!doNotAlter)
     {
-        LogError("Could not retrieve asset storage " + currentStorage_.toStdString() + ".");
-        // Regenerate storage combo box items to make sure that we're up-to-date.
-        storageComboBox->clear();
-        foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
-            storageComboBox->addItem(storage->ToString(), storage->Name());
-        return;
+        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : dest = framework->Asset()->GetAssetStorage(storageName);
+        if (!dest)
+        {
+            LogError("AddContentWindow::AddEntities: Could not retrieve asset storage " + storageName + ".");
+            GenerateStorageComboBoxContents(); // Regenerate storage combo box items to make sure that we're up-to-date.
+            return;
+        }
     }
 
     Scene::ScenePtr destScene = scene.lock();
@@ -828,6 +806,12 @@ void AddContentWindow::AddEntities()
         */
         case SceneDesc::OgreScene:
         {
+            if (!dest)
+            {
+                LogError("Ogre .scene cannot be upload without destination asset storage.");
+                return;
+            }
+
             fs::path path(newDesc_.filename.toStdString());
             std::string dirname = path.branch_path().string();
 
@@ -845,23 +829,23 @@ void AddContentWindow::AddEntities()
 
         if (!entities.empty())
         {
-            entitiesStatus_->setText(QString("Added %1 entities to scene successfully").arg(entities.count()));
-            entitiesStatus_->setText(QString("%1/%2 entities created succesfully").arg(QString::number(entities.count()), QString::number(newDesc_.entities.count())));
+            entitiesStatus_->setText(QString(tr("Added %1 entities to scene successfully")).arg(entities.count()));
+            entitiesStatus_->setText(QString(tr("%1/%2 entities created successfully")).arg(QString::number(entities.count()), QString::number(newDesc_.entities.count())));
             if (position != Vector3df())
                 SceneStructureModule::CentralizeEntitiesTo(position, entities);
         }
         else
         {
-            entitiesStatus_->setText("No entities were created, even if the intent was to create " + QString::number(newDesc_.entities.count()));
-            QMessageBox::warning(this, "Entity Creation", "No entities were created, even if input had entities!");
+            entitiesStatus_->setText(tr("No entities were created, even if the intent was to create ") + QString::number(newDesc_.entities.count()));
+            QMessageBox::warning(this, tr("Entity Creation"), tr("No entities were created, even if input had entities!"));
             return;
         }
 
         entitiesProgress_->setValue(100);
     }
     else
-        entitiesStatus_->setText("No entities were selected for add");
-    
+        entitiesStatus_->setText(tr("No entities were selected for add"));
+
     contentAdded_ = true; // this will be emitted on Close() for those who are interested
     cancelButton->setText(tr("Close"));
     addContentButton->setEnabled(true);
@@ -876,14 +860,10 @@ void AddContentWindow::CenterToMainWindow()
         QRect mainRect = framework->Ui()->MainWindow()->rect();
         QPoint mainPos = framework->Ui()->MainWindow()->pos();
         QPoint mainCenter = mainPos + mainRect.center();
-        if((mainCenter.y() - height()/2)>=0)
-        {
+        if ((mainCenter.y() - height()/2)>=0)
             move(mainCenter.x() - width()/2, mainCenter.y() - height()/2);
-        }
         else
-        {
             move(mainCenter.x() - width()/2, 0);
-        }
     }
 }
 
@@ -909,7 +889,9 @@ void AddContentWindow::SetAssetsVisible(bool visible)
 
 void AddContentWindow::Close()
 {
-    emit Completed(contentAdded_, currentStorageBaseUrl_);
+    AssetStoragePtr storage = framework->Asset()->GetAssetStorage(GetCurrentStorageName());
+    QString currentStorageBaseUrl = storage ? storage->BaseURL() : "";
+    emit Completed(contentAdded_, currentStorageBaseUrl);
     close();
 }
 
@@ -921,29 +903,41 @@ void AddContentWindow::CheckIfColumnIsEditable(QTreeWidgetItem *item, int column
         item->setFlags(item->flags() & ~Qt::ItemIsEditable);
 }
 
+void AddContentWindow::GenerateStorageComboBoxContents()
+{
+    storageComboBox->clear();
+    storageComboBox->addItem(tr("Default storage"), cDefaultStorage);
+    storageComboBox->addItem(tr("Do not alter asset references"), cDoNotAlterAssetReferences);
+    AssetStoragePtr def = framework->Asset()->GetDefaultAssetStorage();
+    std::vector<AssetStoragePtr> storages = framework->Asset()->GetAssetStorages();
+    for(size_t i = 0; i < storages.size(); ++i)
+    {
+        storageComboBox->addItem(storages[i]->ToString(), storages[i]->Name());
+        if (def && storages[i] == def)
+        {
+            QFont font = QApplication::font();
+            font.setBold(true);
+            storageComboBox->setItemData(i+2, font, Qt::FontRole); // i+2 as we already have the DefaultStorage and DoNotAlterAssetReferences
+            storageComboBox->setCurrentIndex(i+2);
+        }
+    }
+}
+
 void AddContentWindow::RewriteDestinationNames()
 {
-    QString storageName = storageComboBox->itemData(storageComboBox->currentIndex()).toString();
+    QString storageName = GetCurrentStorageName();
     AssetStoragePtr dest;
-    bool useDefault = false;
-    if (storageName == "DefaultStorage")
+    bool doNotAlter = storageName == cDoNotAlterAssetReferences;
+    bool useDefault = storageName == cDefaultStorage;
+    if (!doNotAlter)
     {
-        dest = framework->Asset()->GetDefaultAssetStorage();
-        useDefault = true;
-    }
-    else
-        dest = framework->Asset()->GetAssetStorage(storageName);
-
-    if (!dest)
-    {
-        LogError("Could not retrieve asset storage " + storageName.toStdString() + ".");
-
-        // Regenerate storage combo box items to make sure that we're up-to-date.
-        storageComboBox->clear();
-        foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
-            storageComboBox->addItem(storage->ToString(), storage->Name());
-
-        return;
+        dest = useDefault ? framework->Asset()->GetDefaultAssetStorage() : framework->Asset()->GetAssetStorage(storageName);
+        if (!dest)
+        {
+            LogError("AddContentWindow::RewriteDestinationNames: Could not retrieve asset storage " + storageName + ".");
+            GenerateStorageComboBoxContents(); // Regenerate storage combo box items to make sure that we're up-to-date.
+            return;
+        }
     }
 
     assetTreeWidget->setSortingEnabled(false);
@@ -953,14 +947,19 @@ void AddContentWindow::RewriteDestinationNames()
     {
         AssetWidgetItem *aitem = dynamic_cast<AssetWidgetItem *>(*it);
         assert(aitem);
-        if (aitem && !aitem->isDisabled())
+        if (aitem /*&& !aitem->isDisabled()*/)
         {
             if (useDefault)
                 aitem->desc.destinationName = AssetAPI::ExtractFilenameFromAssetRef(aitem->text(cColumnAssetDestName).trimmed());
-            else
+            else if (dest)
                 aitem->desc.destinationName = dest->GetFullAssetURL(aitem->text(cColumnAssetDestName).trimmed());
             aitem->setText(cColumnAssetDestName, aitem->desc.destinationName);
         }
+
+        aitem->setDisabled(doNotAlter ? true : false);
+        // Deselect possible disabled items
+        if (aitem->isDisabled() && aitem->isSelected())
+            aitem->setSelected(false);
         ++it;
     }
 
@@ -1018,7 +1017,7 @@ void AddContentWindow::CheckUploadTotals()
     int totalNow = successfullUploads_ + failedUploads_;
     if (totalNow == totalUploads_)
     {
-        uploadStatus_->setText(QString("%1/%2 uploads completed succesfully").arg(QString::number(successfullUploads_), QString::number(totalUploads_)));
+        uploadStatus_->setText(QString(tr("%1/%2 uploads completed successfully")).arg(QString::number(successfullUploads_), QString::number(totalUploads_)));
         AddEntities();
     }
 }
