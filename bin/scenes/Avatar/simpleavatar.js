@@ -8,14 +8,13 @@ if (!server.IsRunning() && !framework.IsHeadless())
     engine.IncludeFile("local://crosshair.js");    
 }
 
-// A simple walking avatar with physics & third person camera
+// A simple walking avatar with physics & 1st/3rd person camera
 var rotate_speed = 150.0;
 var mouse_rotate_sensitivity = 0.3;
 var move_force = 15.0;
 var fly_speed_factor = 0.25;
 var damping_force = 3.0;
 var walk_anim_speed = 0.5;
-var avatar_camera_distance = 7.0;
 var avatar_camera_height = 1.0;
 var avatar_mass = 10;
 
@@ -31,7 +30,6 @@ var own_avatar = false;
 var flying = false;
 var falling = false;
 var fish_created = false;
-var first_person = false;
 var crosshair = null;
 
 // Animation detection
@@ -39,8 +37,8 @@ var standAnimName = "Stand";
 var walkAnimName = "Walk";
 var flyAnimName = "Fly";
 var hoverAnimName = "Hover";
-var sitAnimName = "SitOnGround";
-var waveAnimName = "Wave";
+var animList = [standAnimName, walkAnimName, flyAnimName, hoverAnimName];
+
 var animsDetected = false;
 var listenGesture = false;
 
@@ -52,19 +50,15 @@ if (isserver) {
 }
 
 function ServerInitialize() {
+
+    // Create the avatar component & set the avatar appearance. The avatar component will create the mesh & animationcontroller, once the avatar asset has loaded
     var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
-    var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
-
-    // Create an inactive proximitytrigger, so that other proximitytriggers can detect the avatar
-    var proxtrigger = me.GetOrCreateComponentRaw("EC_ProximityTrigger");
-    proxtrigger.active = false;
-
-    // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
     var r = avatar.appearanceRef;
     r.ref = "local://default_avatar.xml";
     avatar.appearanceRef = r;
 
-    // Set physics properties
+    // Create rigid body component and set physics properties
+    var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
     var sizeVec = new Vector3df();
     sizeVec.z = 2.4;
     sizeVec.x = 0.5;
@@ -72,9 +66,29 @@ function ServerInitialize() {
     rigidbody.mass = avatar_mass;
     rigidbody.shapeType = 3; // Capsule
     rigidbody.size = sizeVec;
-
     var zeroVec = new Vector3df();
     rigidbody.angularFactor = zeroVec; // Set zero angular factor so that body stays upright
+
+    // Create dynamic component for holding the enabled functionality attributes, and camera distance / 1st/3rd mode
+    var attrs = me.GetOrCreateComponentRaw("EC_DynamicComponent");
+    attrs.CreateAttribute("bool", "enableWalk");
+    attrs.CreateAttribute("bool", "enableJump");
+    attrs.CreateAttribute("bool", "enableFly");
+    attrs.CreateAttribute("bool", "enableRotate");
+    attrs.CreateAttribute("bool", "enableAnimation");
+    attrs.CreateAttribute("bool", "enableZoom");
+    attrs.CreateAttribute("real", "cameraDistance");
+    attrs.SetAttribute("enableWalk", true);
+    attrs.SetAttribute("enableJump", true);
+    attrs.SetAttribute("enableFly", true);
+    attrs.SetAttribute("enableRotate", true);
+    attrs.SetAttribute("enableAnimation", true);
+    attrs.SetAttribute("enableZoom", true);
+    attrs.SetAttribute("cameraDistance", 7.0);
+
+    // Create an inactive proximitytrigger, so that other proximitytriggers can detect the avatar
+    var proxtrigger = me.GetOrCreateComponentRaw("EC_ProximityTrigger");
+    proxtrigger.active = false;
 
     // Hook to physics update
     rigidbody.GetPhysicsWorld().Updated.connect(ServerUpdatePhysics);
@@ -89,21 +103,35 @@ function ServerInitialize() {
     me.Action("Rotate").Triggered.connect(ServerHandleRotate);
     me.Action("StopRotate").Triggered.connect(ServerHandleStopRotate);
     me.Action("MouseLookX").Triggered.connect(ServerHandleMouseLookX);
-    me.Action("Gesture").Triggered.connect(ServerHandleGesture);
 
     rigidbody.PhysicsCollision.connect(ServerHandleCollision);
 }
 
 function ServerUpdate(frametime) {
+    var attrs = me.dynamiccomponent;
+
     if (!animsDetected) {
         CommonFindAnimations();
     }
 
     if (rotate != 0) {
-        var rotateVec = new Vector3df();
-        rotateVec.z = -rotate_speed * rotate * frametime;
-        me.rigidbody.Rotate(rotateVec);
+        if (attrs.GetAttribute("enableRotate")) {
+            var rotateVec = new Vector3df();
+            rotateVec.z = -rotate_speed * rotate * frametime;
+            me.rigidbody.Rotate(rotateVec);
+        }
     }
+
+    // If walk enable was toggled off, make sure the motion state is cleared
+    if (!attrs.GetAttribute("enableWalk"))
+    {
+        motion_x = 0;
+        motion_y = 0;
+    }
+    
+    // If flying enable was toggled off, but we are still flying, disable now
+    if ((flying) && (!attrs.GetAttribute("enableFly")))
+        ServerSetFlying(false);
 
     CommonUpdateAnimation(frametime);
 }
@@ -116,8 +144,9 @@ function ServerHandleCollision(ent, pos, normal, distance, impulse, newCollision
 }
 
 function ServerUpdatePhysics(frametime) {
-     var placeable = me.placeable;
+    var placeable = me.placeable;
     var rigidbody = me.rigidbody;
+    var attrs = me.dynamiccomponent;
 
     if (!flying) {
         // Apply motion force
@@ -131,6 +160,17 @@ function ServerUpdatePhysics(frametime) {
             rigidbody.ApplyImpulse(impulseVec);
         }
 
+        // Apply jump
+        if (motion_z == 1 && !falling) {
+            if (attrs.GetAttribute("enableJump")) {
+                var jumpVec = new Vector3df();
+                jumpVec.z = 75;
+                motion_z = 0;
+                falling = true;
+                rigidbody.ApplyImpulse(jumpVec);
+            }
+        }
+
         // Apply damping. Only do this if the body is active, because otherwise applying forces
         // to a resting object wakes it up
         if (rigidbody.IsActive()) {
@@ -138,21 +178,13 @@ function ServerUpdatePhysics(frametime) {
             dampingVec.x = -damping_force * dampingVec.x;
             dampingVec.y = -damping_force * dampingVec.y;
             dampingVec.z = 0;
-            // Jump and wait for us to
-            // come down before allowing new jump
-            if (motion_z == 1 && !falling) {
-                dampingVec.z = 75;
-                motion_z = 0;
-                falling = true;
-            }
             rigidbody.ApplyImpulse(dampingVec);
         }
     } else {
         // Manually move the avatar placeable when flying
         // this has the downside of no collisions.
         // Feel free to reimplement properly with mass enabled.
-        var av_placeable = me.placeable;
-        var av_transform = av_placeable.transform;
+        var av_transform = placeable.transform;
 
         // Make a vector where we have moved
         var moveVec = new Vector3df();
@@ -161,7 +193,7 @@ function ServerUpdatePhysics(frametime) {
         moveVec.z = motion_z * fly_speed_factor;
 
         // Apply that with av looking direction to the current position
-        var offsetVec = av_placeable.GetRelativeVector(moveVec);
+        var offsetVec = placeable.GetRelativeVector(moveVec);
         av_transform.pos.x = av_transform.pos.x + offsetVec.x;
         av_transform.pos.y = av_transform.pos.y + offsetVec.y;
         av_transform.pos.z = av_transform.pos.z + offsetVec.z;
@@ -172,46 +204,46 @@ function ServerUpdatePhysics(frametime) {
         if (motion_x != 0) {
             if (motion_y > 0 && av_transform.rot.x <= 5) {
                 av_transform.rot.x = av_transform.rot.x + motion_y/2;
-        }
+            }
             if (motion_y < 0 && av_transform.rot.x >= -5) {
                 av_transform.rot.x = av_transform.rot.x + motion_y/2;
-        }
+            }
             if (motion_y != 0 && av_transform.rot.x > 0) {
                 av_transform.pos.z = av_transform.pos.z + (av_transform.rot.x * 0.0045); // magic number
-        }
-        if (motion_y != 0 && av_transform.rot.x < 0) {
+            }
+            if (motion_y != 0 && av_transform.rot.x < 0) {
                 av_transform.pos.z = av_transform.pos.z + (-av_transform.rot.x * 0.0045); // magic number
-        }
+            }
         }
         if (motion_y == 0 && av_transform.rot.x > 0) {
             av_transform.rot.x = av_transform.rot.x - 0.5;
-    }
-    if (motion_y == 0 && av_transform.rot.x < 0) {
+        }
+        if (motion_y == 0 && av_transform.rot.x < 0) {
             av_transform.rot.x = av_transform.rot.x + 0.5;
-    }
+        }
 
-        av_placeable.transform = av_transform;
+        placeable.transform = av_transform;
     }
 }
 
 function ServerHandleMove(param) {
-    // It is possible to query from whom the action did come from
-    //var sender = server.GetActionSender();
-    //if (sender)
-    //    print("Move action from " + sender.GetName());
+    var attrs = me.dynamiccomponent;
 
-    if (param == "forward") {
-        motion_x = 1;
+    if (attrs.GetAttribute("enableWalk")) {
+        if (param == "forward") {
+            motion_x = 1;
+        }
+        if (param == "back") {
+            motion_x = -1;
+        }
+        if (param == "right") {
+            motion_y = 1;
+        }
+        if (param == "left") {
+            motion_y = -1;
+        }
     }
-    if (param == "back") {
-        motion_x = -1;
-    }
-    if (param == "right") {
-        motion_y = 1;
-    }
-    if (param == "left") {
-        motion_y = -1;
-    }
+
     if (param == "up") {
         motion_z = 1;
     }
@@ -246,18 +278,28 @@ function ServerHandleStop(param) {
 }
 
 function ServerHandleToggleFly() {
-    var rigidbody = me.rigidbody;
+    ServerSetFlying(!flying);
+}
 
-    flying = !flying;
+function ServerSetFlying(newFlying) {
+    var attrs = me.dynamiccomponent;
+    if (!attrs.GetAttribute("enableFly"))
+        newFlying = false;
+
+    if (flying == newFlying)
+        return;
+
+    var rigidbody = me.rigidbody;
+    flying = newFlying;
     if (flying) {
         rigidbody.mass = 0;
     } else {
         // Reset the x rot if left
-        var av_placeable = me.placeable;
-        var av_transform = av_placeable.transform;
+        var placeable = me.placeable;
+        var av_transform = placeable.transform;
         if (av_transform.rot.x != 0) {
             av_transform.rot.x = 0;
-            av_placeable.transform = av_transform;
+            placeable.transform = av_transform;
         }
 
         // Set mass back for collisions
@@ -268,18 +310,21 @@ function ServerHandleToggleFly() {
         moveVec.x = motion_x * 120;
         moveVec.y = -motion_y * 120;
         moveVec.z = motion_z * 120;
-        var pushVec = av_placeable.GetRelativeVector(moveVec);
+        var pushVec = placeable.GetRelativeVector(moveVec);
         rigidbody.ApplyImpulse(pushVec);
     }
     ServerSetAnimationState();
 }
 
 function ServerHandleRotate(param) {
-    if (param == "left") {
-        rotate = -1;
-    }
-    if (param == "right") {
-        rotate = 1;
+    var attrs = me.dynamiccomponent;
+    if (attrs.GetAttribute("enableRotate")) {
+        if (param == "left") {
+            rotate = -1;
+        }
+        if (param == "right") {
+            rotate = 1;
+        }
     }
 }
 
@@ -293,27 +338,12 @@ function ServerHandleStopRotate(param) {
 }
 
 function ServerHandleMouseLookX(param) {
-    var move = parseInt(param);
-    var rotateVec = new Vector3df();
-    rotateVec.z = -mouse_rotate_sensitivity * move;
-    me.rigidbody.Rotate(rotateVec);
-}
-
-function ServerHandleGesture(gestureName) {
-    var animName = "";
-    if (gestureName == "wave") {
-        animName = waveAnimName;
-    }
-    if (animName == "") {
-        return;
-    }
-
-    // Update the variable to sync to client if changed
-    var animcontroller = me.animationcontroller;
-    if (animcontroller != null) {
-        if (animcontroller.animationState != animName) {
-            animcontroller.animationState = animName;
-        }
+    var attrs = me.dynamiccomponent;
+    if (attrs.GetAttribute("enableRotate")) {
+        var move = parseInt(param);
+        var rotateVec = new Vector3df();
+        rotateVec.z = -mouse_rotate_sensitivity * move;
+        me.rigidbody.Rotate(rotateVec);
     }
 }
 
@@ -322,8 +352,6 @@ function ServerSetAnimationState() {
     var animName = standAnimName;
     if ((motion_x != 0) || (motion_y != 0)) {
         animName = walkAnimName;
-    } else if (motion_z == -1 && !falling) {
-        animName = sitAnimName;
     }
 
     // Flying: Fly if moving in x-axis, otherwise hover
@@ -360,8 +388,7 @@ function ClientInitialize() {
 
         me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
         me.Action("Zoom").Triggered.connect(ClientHandleKeyboardZoom);
-        me.Action("CheckState").Triggered.connect(ClientCheckState);
-        
+
         // Inspect the login avatar url property
         var avatarurl = client.GetLoginProperty("avatarurl");
         if (avatarurl && avatarurl.length > 0)
@@ -451,7 +478,6 @@ function ClientCreateInputMapper() {
     inputmapper.RegisterMapping("Left", "Rotate(left)", 1);
     inputmapper.RegisterMapping("Right", "Rotate(right))", 1);
     inputmapper.RegisterMapping("F", "ToggleFly()", 1);
-    inputmapper.RegisterMapping("Q", "Gesture(wave)", 1);
     inputmapper.RegisterMapping("Space", "Move(up)", 1);
     inputmapper.RegisterMapping("C", "Move(down)", 1);
     inputmapper.RegisterMapping("W", "Stop(forward)", 3);
@@ -465,13 +491,13 @@ function ClientCreateInputMapper() {
     inputmapper.RegisterMapping("Space", "Stop(up)", 3);
     inputmapper.RegisterMapping("C", "Stop(down)", 3);
 
-    // Connect gestures
+    // Connect mouse gestures
     var inputContext = inputmapper.GetInputContext();
     inputContext.GestureStarted.connect(GestureStarted);
     inputContext.GestureUpdated.connect(GestureUpdated);
     inputContext.MouseMove.connect(ClientHandleMouseMove);
 
-    // Local camera matter for mouse scroll
+    // Local camera mapper for mouse scroll
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", "CameraMapper", 2, false);
     inputmapper.SetNetworkSyncEnabled(false);
     inputmapper.contextPriority = 100;
@@ -572,6 +598,13 @@ function ClientHandleKeyboardZoom(direction) {
 
 function ClientHandleMouseScroll(relativeScroll)
 {
+    var attrs = me.dynamiccomponent;
+    // Check that zoom is allowed
+    if (!attrs.GetAttribute("enableZoom"))
+        return;
+
+    var avatar_camera_distance = attrs.GetAttribute("cameraDistance");
+
     if (!IsCameraActive())
         return;
 
@@ -591,55 +624,59 @@ function ClientHandleMouseScroll(relativeScroll)
     {
         // Add movement
         avatar_camera_distance = avatar_camera_distance + moveAmount;
-        // Clamp distance  to be between 1 and 500
+        // Clamp distance to be between -0.5 and 500
         if (avatar_camera_distance < -0.5)
             avatar_camera_distance = -0.5;
         else if (avatar_camera_distance > 500)
             avatar_camera_distance = 500;
-            
-        if (avatar_camera_distance <= 0)
-        {
-            first_person = true;
-            crosshair.show();
-        }
-        else
-        {
-            first_person = false;
-            crosshair.hide();
-        }
-        
-        ClientCheckState();
+
+        attrs.SetAttribute("cameraDistance", avatar_camera_distance);
     }
 }
 
 function ClientUpdateAvatarCamera() {
+
+    ClientCheckState();
+
+    var attrs = me.dynamiccomponent;
+    var avatar_camera_distance = attrs.GetAttribute("cameraDistance");
+    var first_person = avatar_camera_distance < 0;
+
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if (cameraentity == null)
         return;
     var cameraplaceable = cameraentity.placeable;
     var avatarplaceable = me.placeable;
 
-        var cameratransform = cameraplaceable.transform;
-        var avatartransform = avatarplaceable.transform;
-        var offsetVec = new Vector3df();
-        offsetVec.x = -avatar_camera_distance;
-        offsetVec.z = avatar_camera_height;
-        offsetVec = avatarplaceable.GetRelativeVector(offsetVec);
-        cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
-        cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
-        cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
-        // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
-        if(!first_person)
-            cameratransform.rot.x = 90;
-        cameratransform.rot.z = avatartransform.rot.z - 90;
+    var cameratransform = cameraplaceable.transform;
+    var avatartransform = avatarplaceable.transform;
+    var offsetVec = new Vector3df();
+    offsetVec.x = -avatar_camera_distance;
+    offsetVec.z = avatar_camera_height;
+    offsetVec = avatarplaceable.GetRelativeVector(offsetVec);
+    cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
+    cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
+    cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
+    // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
+    if(!first_person)
+        cameratransform.rot.x = 90;
+    cameratransform.rot.z = avatartransform.rot.z - 90;
     cameraplaceable.transform = cameratransform;
 }
 
 function ClientCheckState()
-{    
+{
+    var attrs = me.dynamiccomponent;
+    if (attrs == null)
+        return;
+
+    var first_person = attrs.GetAttribute("cameraDistance") < 0;
+
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     var avatar_placeable = me.GetComponentRaw("EC_Placeable");
-    
+
+    if (crosshair == null)
+        return;
     // If ent got destroyed or something fatal, return cursor
     if (cameraentity == null || avatar_placeable == null)
     {
@@ -647,24 +684,12 @@ function ClientCheckState()
             crosshair.hide();
         return;
     }
-        
+
     if (!first_person)
     {
         if (crosshair.isActive())
             crosshair.hide();
-        
-        /* 
-        This wont work, would be nice to hide the mesh
-        but it sync to other clients. Seems not doable to make
-        this kind of local change in js?!
-        
-        if (!avatar_placeable.visible)
-        {
-            avatar_placeable.SetUpdateMode(2);
-            avatar_placeable.visible = true;
-            avatar_placeable.SetUpdateMode(0);
-        }
-        */
+
         return;
     }
     else
@@ -675,54 +700,32 @@ function ClientCheckState()
         {
             if (crosshair.isActive())
                 crosshair.hide();
-                
-            /* 
-            This wont work, would be nice to hide/show the mesh
-            but it sync to other clients. Seems not doable to make
-            this kind of local change in js?!
-            
-            if (!avatar_placeable.visible)
-            {
-                avatar_placeable.SetUpdateMode(2);
-                avatar_placeable.visible = true;
-                avatar_placeable.SetUpdateMode(0);
-            }
-            */
+
         }
         else
         {
             // 1st person mode and camera is active
             // show curson and av
-            if (!crosshair.isActive())
+            if (!crosshair.isActive()) {
                 crosshair.show();
-            
-            /* 
-            This wont work, would be nice to hide/show the mesh
-            but it sync to other clients. Seems not doable to make
-            this kind of local change in js?!
-            
-            if (avatar_placeable.visible)
-            {
-                avatar_placeable.SetUpdateMode(2);
-                avatar_placeable.visible = false;
-                avatar_placeable.SetUpdateMode(0);
+                ClientCenterMouseCursor();
             }
-            */
         }
     }
 }
 
 function ClientHandleMouseMove(mouseevent)
 {
-    ClientCheckState();
-    
+    var attrs = me.dynamiccomponent;
+    var first_person = attrs.GetAttribute("cameraDistance") < 0;
+
     if (mouseevent.IsItemUnderMouse())
     {
         // If there is a graphics widget here disable first person mode
+        // Note: if zoom has been disabled, this won't work
         if (first_person)
         {
-            ClientHandleMouseScroll(-1); 
-            ClientCheckState();
+            ClientHandleMouseScroll(-1);
             return;
         }
     }
@@ -733,7 +736,7 @@ function ClientHandleMouseMove(mouseevent)
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if (cameraentity == null)
         return;
-        
+
     // Dont move av rotation if we are not the active cam
     if (!cameraentity.ogrecamera.IsActive())
         return;
@@ -759,13 +762,20 @@ function ClientHandleMouseMove(mouseevent)
     if (mouseevent.relativeX != 0)
         me.Exec(2, "MouseLookX", String(mouse_rotate_sensitivity * parseInt(mouseevent.relativeX)));
     if (mouseevent.relativeY != 0)
-        cameratransform.rot.x -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeY);
-        
-    // Dont let the 1st person flip vertically, 180 deg view angle
-    if (cameratransform.rot.x < 0)
-        cameratransform.rot.x = 0;
-    if (cameratransform.rot.x > 180)
-        cameratransform.rot.x = 180;
+    {
+        // Look up/down. This is clientside only, as it affects only the first person camera
+        // Nevertheless, check if rotation is allowed
+        var attrs = me.dynamiccomponent;
+        if (attrs.GetAttribute("enableRotate")) {
+            cameratransform.rot.x -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeY);
+
+            // Dont let the 1st person flip vertically, 180 deg view angle
+            if (cameratransform.rot.x < 0)
+                cameratransform.rot.x = 0;
+            if (cameratransform.rot.x > 180)
+                cameratransform.rot.x = 180;
+        }
+    }
 
     QCursor.setPos(centeredCursorPosGlobal);
     var mousePos = view.mapFromGlobal(QCursor.pos());
@@ -774,34 +784,52 @@ function ClientHandleMouseMove(mouseevent)
     cameraplaceable.transform = cameratransform;
 }
 
+function ClientCenterMouseCursor() {
+    var view = ui.GraphicsView();
+    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2);
+
+    var centeredCursorPosGlobal = new QPoint()
+    centeredCursorPosGlobal = view.mapToGlobal(centeredCursorPosLocal);
+
+    QCursor.setPos(centeredCursorPosGlobal);
+    var mousePos = view.mapFromGlobal(QCursor.pos());
+    input.lastMouseX = mousePos.x;
+    input.lastMouseY = mousePos.y;
+}
+
 function CommonFindAnimations() {
     var animcontrol = me.animationcontroller;
     var availableAnimations = animcontrol.GetAvailableAnimations();
     if (availableAnimations.length > 0) {
         // Detect animation names
-        var searchAnims = [standAnimName, walkAnimName, flyAnimName, hoverAnimName, sitAnimName, waveAnimName];
-        for(var i=0; i<searchAnims.length; i++) {
-            var animName = searchAnims[i];
+        for(var i=0; i<animList.length; i++) {
+            var animName = animList[i];
             if (availableAnimations.indexOf(animName) == -1) {
                 // Disable this animation by setting it to a empty string
                 print("Could not find animation for:", animName, " - disabling animation");
-                searchAnims[i] = "";
+                animList[i] = "";
             }
         }
 
         // Assign the possible empty strings for
         // not found anims back to the variables
-        standAnimName = searchAnims[0];
-        walkAnimName = searchAnims[1];
-        flyAnimName = searchAnims[2];
-        hoverAnimName = searchAnims[3];
-        sitAnimName = searchAnims[4];
+        standAnimName = animList[0];
+        walkAnimName = animList[1];
+        flyAnimName = animList[2];
+        hoverAnimName = animList[3];
 
         animsDetected = true;
     }
 }
 
 function CommonUpdateAnimation(frametime) {
+    // This function controls the known move animations, such as walk, fly, hover and stand,
+    // which are replicated through the animationState attribute of the AnimationController.
+    // Only one such move animation can be active at a time.
+    // Other animations, such as for gestures, can be freely enabled/disabled by other scripts.
+
+    var attrs = me.dynamiccomponent;
+
     if (!animsDetected) {
         return;
     }
@@ -812,6 +840,17 @@ function CommonUpdateAnimation(frametime) {
         return;
     }
 
+    if (!attrs.GetAttribute("enableAnimation"))
+    {
+        // When animations disabled, forcibly disable all running move animations
+        // Todo: what if custom scripts want to run the move anims as well?
+        for (var i = 0; i < animList.length; ++i) {
+            if (animList[i] != "")
+                animcontroller.DisableAnimation(animList[i], 0.25);
+        }
+        return;
+    }
+
     var animName = animcontroller.animationState;
 
     // Enable animation, skip with headless server
@@ -819,28 +858,20 @@ function CommonUpdateAnimation(frametime) {
         // Do custom speeds for certain anims
         if (animName == hoverAnimName) {
             animcontroller.SetAnimationSpeed(animName, 0.25);
-    }
-        if (animName == sitAnimName) { // Does not affect the anim speed on jack at least?!
-            animcontroller.SetAnimationSpeed(animName, 0.5);
-    }
-        if (animName == waveAnimName) {
-            animcontroller.SetAnimationSpeed(animName, 0.75);
-    }
+        }
         // Enable animation
         if (!animcontroller.IsAnimationActive(animName)) {
-            // Gestures with non exclusive
-            if (animName == waveAnimName) {
-                animcontroller.EnableAnimation(animName, false, 0.25, 0.25, false);
-            // Normal anims exclude others
-        } else {
-                animcontroller.EnableExclusiveAnimation(animName, true, 0.25, 0.25, false);
+            animcontroller.EnableAnimation(animName, true, 0.25, false);
         }
+        // Disable other move animations
+        for (var i = 0; i < animList.length; ++i) {
+            if ((animList[i] != animName) && (animList[i] != "") && (animcontroller.IsAnimationActive(animList[i])))
+                animcontroller.DisableAnimation(animList[i], 0.25);
         }
     }
 
     // If walk animation is playing, adjust its speed according to the avatar rigidbody velocity
     if (animName != ""  && animcontroller.IsAnimationActive(walkAnimName)) {
-        // Note: on client the rigidbody does not exist, so the velocity is only a replicated attribute
         var velocity = rigidbody.linearVelocity;
         var walkspeed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * walk_anim_speed;
         animcontroller.SetAnimationSpeed(walkAnimName, walkspeed);
