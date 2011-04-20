@@ -30,7 +30,7 @@ var WebCamClient = Class.extend
         this.visibToggleAction = ui.MainWindow().AddMenuAction("&View", "Web Camera", new QIcon("./data/ui/images/communications_iconVideo.png"));
         this.visibToggleAction.triggered.connect(this.toggleWidgetVisibility);
         
-        camerainput.frameUpdate.connect(this.frameUpdated);
+        camerainput.FrameUpdate.connect(this.frameUpdated);
         camerainput.Capturing.connect(this.captureStateChanged);
     },
     

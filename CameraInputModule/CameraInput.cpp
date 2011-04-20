@@ -68,5 +68,5 @@ void CameraInput::SetEnabled(bool enabled)
 void CameraInput::SetFrame(const QImage &frame)
 {
     currentFrame_ = frame;
-    emit frameUpdate(currentFrame_);
+    emit FrameUpdate(currentFrame_);
 }
