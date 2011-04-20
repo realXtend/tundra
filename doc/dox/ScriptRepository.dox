@@ -24,7 +24,7 @@ Several bundled features of Tundra releases are implemented with this system, in
 
 JavaScriptModule manages the execution of <b>application-level scripts</b>, which are scripts that are not attached to any scene, server or an entity. These scripts are executed once during startup from the folder /bin/jsmodules/startup at the module PostInitialize time, and their contexts stay alive until application shutdown. Each application script file is executed in a separate context.  
 
-\section ECScriptScripts Embedding scripts to a scene using EC_Script
+\section ECScriptScripts Embedding Scripts to a Scene Using EC_Script
 
 The EC_Script component holds a reference to a script file. Script files are assets like meshes and materials, and are loaded using the built-in asset system. To add a script into an entity, add the EC_Script component into it using the Scene Structure window or the EC Editor window.
 
@@ -107,11 +107,11 @@ Asset dependencies can be also explicitly speficied. This specification is store
 
 The whole \ref CoreAPIList "Tundra Core API" is exposed to QtScript through the following variable names:
  - The UI API: \ref TundraUi "ui".
- - The UI service: \ref UiServiceInterface "uiservice". 
  - The Frame API: \ref Frame "frame".
  - The Input API: \ref Input "input".
  - The Console API: \ref ScriptConsole "console".
  - The Asset API: \ref AssetAPI "asset".
+ - The Audio API: \ref AudioAPI "audio".
  - The Renderer service of OgreRenderingModule: \ref Renderer "renderer".
  - The Physics subsystem: \ref PhysicsModule "physics".
  - The SceneInteract object: \ref SceneInteract "sceneinteract".
