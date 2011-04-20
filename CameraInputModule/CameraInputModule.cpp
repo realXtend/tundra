@@ -45,6 +45,11 @@ void CameraInputModule::Uninitialize()
     ReleaseDevice();
 }
 
+CameraInput *CameraInputModule::GetCameraInput() const
+{
+    return cameraInput_;
+}
+
 void CameraInputModule::GrabDevice()
 {
     if (framework_->IsHeadless())
@@ -119,7 +124,7 @@ void CameraInputModule::Update(f64 frametime)
         if (!currentFrame)
             return;
 
-        // read other parameters in local variables
+        // Read current frames size
         CvSize size = cvSize(currentFrame->width, currentFrame->height);
 
         // Check that surfaces are up to date
@@ -132,21 +137,18 @@ void CameraInputModule::Update(f64 frametime)
         cvSet(tchannel2, cvScalarAll(0), 0);
         cvSet(tchannel3, cvScalarAll(0), 0);
 
-        // with cframe being the captured frame (3 channel RGB)
-        // and dframe the frame to be displayed
+        // With currentFrame being the captured frame (3 channel RGB)
+        // and destFrame the frame to be displayed
         cvSplit(currentFrame, tchannel1, tchannel2, tchannel3, NULL);
         cvMerge(tchannel1, tchannel2, tchannel3, tchannel0, destFrame);
 
-        // point to the image data stored in the IplImage*
+        // Point to the image data stored in the IplImage*
         const unsigned char *data = (unsigned char *)(destFrame->imageData);
 
-        // imageframe is my QLabel object
+        // Create the QImage and feed it to CameraInput, it will them emit its signals accordingly.
         QImage image(data, size.width, size.height, QImage::Format_RGB32);
-        if (!image.isNull())
-        {
+        if (!image.isNull() && image.width() > 0 && image.height() > 0)
             cameraInput_->SetFrame(image);
-            emit frameUpdate(cameraInput_->CurrentFrame());
-        }
     }
 }
 

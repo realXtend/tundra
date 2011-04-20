@@ -19,13 +19,15 @@ class CvCapture;
 
     C++ via CameraInputModule:
     \code
-    QObject *camModule = fw->GetModuleQObj("CameraInputModule");
+    CameraInputModule *camModule = fw->GetModule<CameraInputModule>();
     if (camModule)
-        connect(camModule, SIGNAL(frameUpdate(const QImage&)), SLOT(Handler(const QImage&)));
+        connect(camModule->GetCameraInput(), SIGNAL(frameUpdate(const QImage&)), SLOT(Handler(const QImage&)));
     \endcode
 
     JavaScript via CameraInput object:
     \code
+    // Note that frameUpdate will emit you a QImage. If you want to use it directly in eg. a QLabel
+    // you can make it a QPixmap with QPixmap.fromImage(frame)
     camerainput.frameUpdate.connect(Handler);
     \endcode
 
@@ -52,9 +54,8 @@ public:
     /// IModule override.
     void Update(f64 frametime);
 
-signals:
-    /// Replicates the CameraInput signal for easy c++ access to the camera data.
-    void frameUpdate(const QImage &frame);
+public slots:
+    CameraInput *GetCameraInput() const;
 
 private slots:
     void GrabDevice();
