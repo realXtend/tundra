@@ -137,13 +137,13 @@ const QString cDefaultStorage("DefaultStorage");
 /// A special case identifier for not altering asset refs when uploading assets.
 const QString cDoNotAlterAssetReferences("DoNotAlterAssetReferences");
 
-AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent) :
-    QWidget(parent),
-    framework(fw),
-    scene(dest),
-    parentEntities_(0),
-    parentAssets_(0),
-    contentAdded_(false)
+AddContentWindow::AddContentWindow(Framework *fw, const Scene::ScenePtr &dest, QWidget *parent)
+:QWidget(parent),
+framework(fw),
+scene(dest),
+parentEntities_(0),
+parentAssets_(0),
+contentAdded_(false)
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
     setAttribute(Qt::WA_DeleteOnClose);

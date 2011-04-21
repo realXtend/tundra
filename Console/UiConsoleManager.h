@@ -32,60 +32,60 @@ public:
     virtual ~UiConsoleManager();
 
 public slots:
-    //! Toggle console show/hide
+    /// Toggle console show/hide
     void ToggleConsole();
 
-    //! Queues the print requests
+    /// Queues the print requests
     void QueuePrintRequest(const QString &text);
 
-    //! Prints to console
+    /// Prints to console
     void PrintToConsole(const QString &text);
 
-    //! Handle input to the console(called after return pushed)
+    /// Handle input to the console(called after return pushed)
     void HandleInput();
 
     void KeyPressed(KeyEvent *key_event);
 
 signals:
-    //! This emit is Qt::QueuedConnection type to avoid issues when printing from threads
+    /// This emit is Qt::QueuedConnection type to avoid issues when printing from threads
     void PrintOrderReceived(const QString &text);
 
-    //! TODO: comment
+    /// TODO: comment
     void CommandIssued(const QString &string);
 
 private slots:
-    //! Resize the console to fit scene
+    /// Resize the console to fit scene
     void AdjustToSceneRect(const QRectF &);
 
 private:
-    //! is console visible or hidden?
+    /// is console visible or hidden?
     bool visible_;
 
-    //! if we have already hooked to all scenes for resize events
+    /// if we have already hooked to all scenes for resize events
     bool hooked_to_scenes_;
 
-    //! Method for coloring/styling the string for the console
+    /// Method for coloring/styling the string for the console
     void StyleString(QString &str);
 
-    //! Console opacity
+    /// Console opacity
     qreal opacity_;
 
-    //! Framework pointer
+    /// Framework pointer
     Framework* framework_;
 
-    //! View to the scene
+    /// View to the scene
     QGraphicsView *ui_view_;
 
-    //! UI
+    /// UI
     Ui::ConsoleWidget* console_ui_;
 
-    //! Widget in UI
+    /// Widget in UI
     QWidget * console_widget_;
 
     // Proxy for our UI
     UiProxyWidget *proxy_widget_;
 
-    //! Animation used for sliding effect
+    /// Animation used for sliding effect
     QPropertyAnimation animation_;
 };
 

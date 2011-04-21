@@ -14,8 +14,8 @@ class Framework;
 class ConsoleManager;
 class NativeConsole;
 
-//! Handles console commands
-/*! One can register and execute registered console commands by using this service.
+/// Handles console commands
+/** One can register and execute registered console commands by using this service.
     Commands can be parsed and executed from a commandline string, or executed directly.
 
     One can register new commands with RegisterCommand() - functions.
@@ -57,11 +57,11 @@ public:
     CommandManager(ConsoleManager *console, Framework *fw);
     virtual ~CommandManager();
 
-    //! Updates the service. Should be called in main thread context. For internal use.
+    /// Updates the service. Should be called in main thread context. For internal use.
     virtual void Update();
 
-    //! Register a command to the debug console
-    /*!
+    /// Register a command to the debug console
+    /**
         Shortcut functions are present to make registering easier, see
             ConsoleCommandStruct CreateCommand(const std::string &name, const std::string &description, const ConsoleCallbackPtr &callback, bool delayed)
             ConsoleCommandStruct CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed)
@@ -71,15 +71,15 @@ public:
 
     virtual void RegisterCommand(const ConsoleCommandStruct &command);
 
-    //! Unregister console command
-    /*! See RegisterCommand()
+    /// Unregister console command
+    /** See RegisterCommand()
 
         \param name Name of the command to unregister
     */
     virtual void UnregisterCommand(const std::string &name);
 
     /// Queue console command. The command will be called in the console's thread
-    /*! @note if a commandline containing the same command gets queued multiple times,
+    /** @note if a commandline containing the same command gets queued multiple times,
               the most recent command's parameters take precedence and the command
               is only queued once.
 
@@ -87,8 +87,8 @@ public:
     */
     virtual void QueueCommand(const std::string &commandline);
 
-    //! Poll to see if command has been queued and executes it immediately, in the caller's thread context.
-    /*! For each possible command, this needs to be called exactly once.
+    /// Poll to see if command has been queued and executes it immediately, in the caller's thread context.
+    /** For each possible command, this needs to be called exactly once.
         The command must have been created as 'delayed'.
 
         \param command name of the command to poll for.
@@ -98,7 +98,7 @@ public:
     virtual boost::optional<ConsoleCommandResult> Poll(const std::string &command);
 
 
-    //! Parse and execute command line. The command is called in the caller's thread. For internal use.
+    /// Parse and execute command line. The command is called in the caller's thread. For internal use.
     virtual ConsoleCommandResult ExecuteCommand(const std::string &commandline);
 
     /// Execute command

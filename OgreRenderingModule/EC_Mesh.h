@@ -369,7 +369,7 @@ public slots:
     /// Detach from the bone and reattach to placeable if was attached
     void DetachMeshFromBone();
 
-    //! Helper for setting asset ref from js with less code (and at all from py, due to some trouble with assetref decorator setting)
+    /// Helper for setting asset ref from js with less code (and at all from py, due to some trouble with assetref decorator setting)
     void SetMeshRef(const AssetReference& newref) { setmeshRef(newref); }
     void SetMeshRef(const QString& newref) { setmeshRef(AssetReference(newref)); }
     

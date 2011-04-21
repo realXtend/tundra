@@ -121,7 +121,7 @@ private:
     */
     explicit ConsoleAPI(Framework *fw);
 
-    Foundation::Framework *framework_; ///< Framework.
+    Framework *framework_; ///< Framework.
     QMap<QString, ConsoleCommand *> commands_; ///< List of registered console commands.
     InputContextPtr inputContext;
 

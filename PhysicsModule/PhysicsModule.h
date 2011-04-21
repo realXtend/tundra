@@ -154,7 +154,7 @@ private:
     /// Bullet debug draw / debug behaviour flags
     int debugDrawMode_;
     
-    //! Debug draw-enabled rigidbodies. Note: these pointers are never dereferenced, it is just used for counting
+    /// Debug draw-enabled rigidbodies. Note: these pointers are never dereferenced, it is just used for counting
     std::set<EC_RigidBody*> debugRigidBodies_;
 };
 

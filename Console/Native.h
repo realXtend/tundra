@@ -9,13 +9,13 @@ class CommandManager;
 class NativeInput
 {
 public:
-    //! constructor
+    /// constructor
     NativeInput() : command_service_(0) { }
 
-    //! destructor
+    /// destructor
     ~NativeInput() {}
 
-    //! (thread) entry point
+    /// (thread) entry point
     void operator()();
 
     void SetCommandManager(CommandManager *command_service) { command_service_ = command_service; assert (command_service_); }
@@ -28,20 +28,20 @@ private:
     Framework *framework_;
 };
 
-//! Native debug input console
+/// Native debug input console
 class NativeConsole
 {
     NativeConsole();
 public:
-    //! constructor
+    /// constructor
     NativeConsole(CommandManager *command_service, Framework *framework);
 
-    //! destructor
+    /// destructor
     virtual ~NativeConsole();
 
 private:
-    Thread thread_; //!< input thread
-    NativeInput input_; //!< Handles input from native console
+    Thread thread_; ///< input thread
+    NativeInput input_; ///< Handles input from native console
 };
 
 #endif
