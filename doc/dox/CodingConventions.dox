@@ -52,19 +52,13 @@ typedef boost::shared_ptr<AvatarNode> AvatarNodePtr;
 void AvatarNode::WalkForward();
 \endverbatim
 
-Prefer "XmlRpcConnection" naming over "XMLRPCConnection" when class names contain acronyms.
 Interfaces should be prefixed with 'I'. ex: IMyNewClass.
 
-Local variables and public/protected member variables are written in lower case with an underscore:
+Local variables and public/protected member variables are written in camel case:
 \verbatim
-int local_var;
-AvatarPtr user_agent = manager->GetUserAgent();
-int AvatarNode::num_friends;
-\endverbatim
-
-Private member variables should be lower case as well, but with an underscore appended:
-\verbatim
-int AvatarNode::private_member_var_;
+int localVar;
+AvatarPtr userAgent = manager->GetUserAgent();
+int AvatarNode::numFriends;
 \endverbatim
 
 \subsection signals_and_slots Signals and Slots
@@ -105,7 +99,7 @@ before this document was written. Still, when in doubt, observe the existing cod
 if and when necessary.
 
 \section cppstandard Programming Guidelines
-The RealXtend architecture uses <b>Qt</b>, <b>STL</b>, <b>Boost</b> and <b>PoCo</b> as the major frameworks. Please prefer using the containers
+The RealXtend architecture uses <b>Qt</b>, <b>STL</b> and <b>Boost</b> as the major frameworks. Please prefer using the containers
 and algorithms found in those wherever it is sensible. <b>The aim is to steer the architecture more towards being a pure Qt application so prefer 
 Qt over the other major frameworks.</b> Avoid being too smart, there is no need to spend time figuring out how to achieve something
 using a stl back_inserter_iterator combined with a mem_fun_ref and a bind2nd if writing it using a simple loop would only take you
