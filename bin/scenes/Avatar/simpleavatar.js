@@ -5,7 +5,7 @@ if (!server.IsRunning() && !framework.IsHeadless())
 {
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
-    engine.IncludeFile("local://crosshair.js");    
+    engine.IncludeFile("local://crosshair.js");
 }
 
 // A simple walking avatar with physics & 1st/3rd person camera
@@ -69,8 +69,8 @@ function ServerInitialize() {
     var zeroVec = new Vector3df();
     rigidbody.angularFactor = zeroVec; // Set zero angular factor so that body stays upright
 
-    // Create dynamic component for holding the enabled functionality attributes, and camera distance / 1st/3rd mode
-    var attrs = me.GetOrCreateComponentRaw("EC_DynamicComponent");
+    // Create dynamic component attributes for disabling/enabling functionality, and for camera distance / 1st/3rd mode
+    var attrs = me.dynamiccomponent;
     attrs.CreateAttribute("bool", "enableWalk");
     attrs.CreateAttribute("bool", "enableJump");
     attrs.CreateAttribute("bool", "enableFly");
@@ -96,7 +96,7 @@ function ServerInitialize() {
     // Hook to tick update for continuous rotation update
     frame.Updated.connect(ServerUpdate);
 
-    // Connect actions
+    // Connect actions. These come from the client side inputmapper
     me.Action("Move").Triggered.connect(ServerHandleMove);
     me.Action("Stop").Triggered.connect(ServerHandleStop);
     me.Action("ToggleFly").Triggered.connect(ServerHandleToggleFly);
@@ -469,7 +469,9 @@ function ClientCreateInputMapper() {
     inputmapper.modifiersEnabled = false;
     inputmapper.keyrepeatTrigger = false; // Disable repeat keyevent sending over network, not needed and will flood network
     inputmapper.executionType = 2; // Execute actions on server
-    inputmapper.RegisterMapping("W", "Move(forward)", 1);
+
+    // Key pressed -actions
+    inputmapper.RegisterMapping("W", "Move(forward)", 1); // 1 = keypress
     inputmapper.RegisterMapping("S", "Move(back)", 1);
     inputmapper.RegisterMapping("A", "Move(left)", 1);
     inputmapper.RegisterMapping("D", "Move(right))", 1);
@@ -480,7 +482,9 @@ function ClientCreateInputMapper() {
     inputmapper.RegisterMapping("F", "ToggleFly()", 1);
     inputmapper.RegisterMapping("Space", "Move(up)", 1);
     inputmapper.RegisterMapping("C", "Move(down)", 1);
-    inputmapper.RegisterMapping("W", "Stop(forward)", 3);
+
+    // Key released -actions
+    inputmapper.RegisterMapping("W", "Stop(forward)", 3); // 3 = keyrelease
     inputmapper.RegisterMapping("S", "Stop(back)", 3);
     inputmapper.RegisterMapping("A", "Stop(left)", 3);
     inputmapper.RegisterMapping("D", "Stop(right)", 3);
@@ -636,10 +640,11 @@ function ClientHandleMouseScroll(relativeScroll)
 
 function ClientUpdateAvatarCamera() {
 
+    // Check 1st/3rd person mode toggle
     ClientCheckState();
 
     var attrs = me.dynamiccomponent;
-    var avatar_camera_distance = attrs.GetAttribute("cameraDistance");
+    avatar_camera_distance = attrs.GetAttribute("cameraDistance");
     var first_person = avatar_camera_distance < 0;
 
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
@@ -667,9 +672,6 @@ function ClientUpdateAvatarCamera() {
 function ClientCheckState()
 {
     var attrs = me.dynamiccomponent;
-    if (attrs == null)
-        return;
-
     var first_person = attrs.GetAttribute("cameraDistance") < 0;
 
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
@@ -678,37 +680,38 @@ function ClientCheckState()
     if (crosshair == null)
         return;
     // If ent got destroyed or something fatal, return cursor
-    if (cameraentity == null || avatar_placeable == null)
-    {
-        if (crosshair.isActive())
+    if (cameraentity == null || avatar_placeable == null) {
+        if (crosshair.isActive()) {
+            me.inputmapper.takeMouseEventsOverQt = false;
             crosshair.hide();
+        }
         return;
     }
 
-    if (!first_person)
-    {
-        if (crosshair.isActive())
+    if (!first_person) {
+        if (crosshair.isActive()) {
+            me.inputmapper.takeMouseEventsOverQt = false;
             crosshair.hide();
-
+        }
         return;
     }
     else
     {
         // We might be in 1st person mode but camera might not be active
         // hide curson and show av
-        if (!cameraentity.ogrecamera.IsActive())
-        {
-            if (crosshair.isActive())
+        if (!cameraentity.ogrecamera.IsActive()) {
+            if (crosshair.isActive()) {
+                me.inputmapper.takeMouseEventsOverQt = false;
                 crosshair.hide();
-
+            }
         }
-        else
-        {
+        else {
             // 1st person mode and camera is active
             // show curson and av
             if (!crosshair.isActive()) {
+                // In 1st person mode, take mouse events over Qt so that the crosshair label does not disturb
+                me.inputmapper.takeMouseEventsOverQt = true;
                 crosshair.show();
-                ClientCenterMouseCursor();
             }
         }
     }
@@ -719,19 +722,15 @@ function ClientHandleMouseMove(mouseevent)
     var attrs = me.dynamiccomponent;
     var first_person = attrs.GetAttribute("cameraDistance") < 0;
 
-    if (mouseevent.IsItemUnderMouse())
-    {
-        // If there is a graphics widget here disable first person mode
-        // Note: if zoom has been disabled, this won't work
-        if (first_person)
-        {
-            ClientHandleMouseScroll(-1);
-            return;
-        }
-    }
-
     if (!first_person)
         return;
+
+    if (input.IsMouseCursorVisible())
+    {
+        input.SetMouseCursorVisible(false);
+        if (!crosshair.isUsingLabel)
+            QApplication.setOverrideCursor(crosshair.cursor);
+    }
 
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if (cameraentity == null)
@@ -743,21 +742,6 @@ function ClientHandleMouseMove(mouseevent)
 
     var cameraplaceable = cameraentity.placeable;
     var cameratransform = cameraplaceable.transform;
-
-    var cursorOffset = 0;
-    if (crosshair.isUsingLabel)
-    //\note: An arbitrary value to move the cursor a little bit up when using label for a crosshair,
-    //\      so that we get clicks on scene and not on the label
-        cursorOffset = 9;
-    var view = ui.GraphicsView();
-    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2 + cursorOffset);
-    input.lastMouseX = centeredCursorPosLocal.x;
-    input.lastMouseY = centeredCursorPosLocal.y;
-
-    var centeredCursorPosGlobal = new QPoint()
-    centeredCursorPosGlobal = view.mapToGlobal(centeredCursorPosLocal);
-    if (centeredCursorPosGlobal.x() == QCursor.pos().x() && centeredCursorPosGlobal.y() == QCursor.pos().y())
-        return;
 
     if (mouseevent.relativeX != 0)
         me.Exec(2, "MouseLookX", String(mouse_rotate_sensitivity * parseInt(mouseevent.relativeX)));
@@ -777,24 +761,7 @@ function ClientHandleMouseMove(mouseevent)
         }
     }
 
-    QCursor.setPos(centeredCursorPosGlobal);
-    var mousePos = view.mapFromGlobal(QCursor.pos());
-    input.lastMouseX = mousePos.x;
-    input.lastMouseY = mousePos.y;
     cameraplaceable.transform = cameratransform;
-}
-
-function ClientCenterMouseCursor() {
-    var view = ui.GraphicsView();
-    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2);
-
-    var centeredCursorPosGlobal = new QPoint()
-    centeredCursorPosGlobal = view.mapToGlobal(centeredCursorPosLocal);
-
-    QCursor.setPos(centeredCursorPosGlobal);
-    var mousePos = view.mapFromGlobal(QCursor.pos());
-    input.lastMouseX = mousePos.x;
-    input.lastMouseY = mousePos.y;
 }
 
 function CommonFindAnimations() {

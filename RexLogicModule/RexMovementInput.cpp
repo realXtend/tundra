@@ -165,10 +165,7 @@ void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
             framework->Input()->SetMouseCursorVisible(true);
         break;
     case MouseEvent::MouseMove:
-        if (!mouse->IsRightButtonDown() && !framework->Input()->IsMouseCursorVisible())
-            framework->Input()->SetMouseCursorVisible(true); // Occasionally we can miss the mouse release event, in which case it's best to ensure here that we can't 
-                                                             // get stuck in 1st person mode even if RMB has been released.
-        else if (mouse->IsRightButtonDown() && !framework->Input()->IsMouseCursorVisible()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
+        if (mouse->IsRightButtonDown() && !framework->Input()->IsMouseCursorVisible()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
         {
            eventMgr->SendEvent("Input", InputEvents::MOUSELOOK, &movement);
            mouse->handled = true; // Mouse is in RMB mouselook mode, suppress others from getting the move event.
