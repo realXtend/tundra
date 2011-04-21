@@ -138,8 +138,8 @@ private slots:
     //! Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();
 
-    //! Update the EC_Sound position to match placeable position.
-    void PositionChange(const QVector3D &pos);
+    //! Update the EC_Sound position to match placeable transform, when it has changed.
+    void PlaceableUpdated(IAttribute* attribute);
 
 private:
     explicit EC_Sound(IModule *module);

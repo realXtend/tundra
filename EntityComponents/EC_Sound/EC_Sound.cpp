@@ -128,15 +128,6 @@ void EC_Sound::RegisterActions()
     }
 }
 
-void EC_Sound::PositionChange(const QVector3D &pos)
-{
-    if (framework_->IsHeadless())
-        return;
-
-    if (soundChannel)
-        soundChannel->SetPosition(Vector3df(pos.x(), pos.y(), pos.z()));
-}
-
 void EC_Sound::View(const QString &attributeName)
 {
     LogWarning("View(const QString &attributeName) not implemented yet!");
@@ -174,7 +165,7 @@ void EC_Sound::PlaySound()
 
     if (placeable && spatial.Get() && soundListenerExists)
     {
-        soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->GetPosition(), audioAsset, SoundChannel::Triggered);
+        soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->transform.Get().position, audioAsset, SoundChannel::Triggered);
         if (soundChannel)
             soundChannel->SetRange(soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
     }
@@ -263,7 +254,22 @@ ComponentPtr EC_Sound::FindPlaceable() const
     }
     comp = GetParentEntity()->GetComponent<EC_Placeable>();
     //We need to update sound source position when placeable component has changed it's transformation.
-    connect(comp.get(), SIGNAL(PositionChanged(const QVector3D &)),
-            SLOT(PositionChange(const QVector3D &)), Qt::UniqueConnection);
+    if (comp)
+    {
+        connect(comp.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)));
+    }
     return comp;
+}
+
+void EC_Sound::PlaceableUpdated(IAttribute* attribute)
+{
+    if (framework_->IsHeadless())
+        return;
+    
+    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(sender());
+    if ((attribute == &placeable->transform) && (soundChannel))
+    {
+        const Transform& trans = placeable->transform.Get();
+        soundChannel->SetPosition(trans.position);
+    }
 }
