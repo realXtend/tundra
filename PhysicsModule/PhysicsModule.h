@@ -11,6 +11,7 @@
 
 #include <LinearMath/btIDebugDraw.h>
 
+#include <set>
 #include <QObject>
 
 namespace Ogre
@@ -21,6 +22,7 @@ namespace Ogre
 class btVector3;
 class btTriangleMesh;
 class QScriptEngine;
+class EC_RigidBody;
 
 namespace Physics
 {
@@ -33,6 +35,8 @@ class PHYSICS_MODULE_API PhysicsModule : public QObject, public IModule, public 
 {
     Q_OBJECT
 
+    friend class EC_RigidBody;
+    
 public:
     PhysicsModule();
     virtual ~PhysicsModule();
@@ -138,6 +142,9 @@ private:
     /// Debug geometry enabled flag
     bool drawDebugGeometry_;
     
+    /// Debug geometry manually enabled/disabled (with physicsdebug console command). If true, do not automatically enable/disable debug geometry anymore
+    bool drawDebugManuallySet_;
+    
     /// Lines object for the debug geometry
     DebugLines* debugGeometryObject_;
     
@@ -146,6 +153,9 @@ private:
     
     /// Bullet debug draw / debug behaviour flags
     int debugDrawMode_;
+    
+    //! Debug draw-enabled rigidbodies. Note: these pointers are never dereferenced, it is just used for counting
+    std::set<EC_RigidBody*> debugRigidBodies_;
 };
 
 }

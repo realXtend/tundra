@@ -35,7 +35,7 @@ public:
     /// Stops and deallocates the directory change listener.
     void RemoveWatcher();
 
-    void LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix);
+    void LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType);
 
 public slots:
     bool Writable() const { return true; }

@@ -72,7 +72,13 @@ function ServerHandleUserAboutToConnect(connectionID, user) {
 
 function ServerHandleUserConnected(connectionID, user) {
     var avatarEntityName = "Avatar" + connectionID;
-    var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController"]);
+
+    // Create necessary components to the avatar entity:
+    // - Script for the main avatar script simpleavatar.js
+    // - Placeable for position
+    // - AnimationController for skeletal animation control
+    // - DynamicComponent for holding disabled/enabled avatar features
+    var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController", "EC_DynamicComponent"]);
     avatarEntity.SetTemporary(true); // We never want to save the avatar entities to disk.
     avatarEntity.SetName(avatarEntityName);
     
@@ -86,6 +92,15 @@ function ServerHandleUserConnected(connectionID, user) {
     var r = script.scriptRef;
     r.ref = "local://simpleavatar.js";
     script.scriptRef = r;
+    
+    // Simpleavatar.js implements the basic avatar movement and animation.
+    // Also load an additional script file to the same entity to demonstrate adding features to the avatar.
+    var script2 = avatarEntity.GetOrCreateComponentRaw("EC_Script", "Addon", 0, true);
+    script2.type = "js"
+    script2.runOnLoad = true;
+    r = script2.scriptRef;
+    r.ref = "local://exampleavataraddon.js";
+    script2.scriptRef = r;
 
     // Set random starting position for avatar
     var placeable = avatarEntity.placeable;

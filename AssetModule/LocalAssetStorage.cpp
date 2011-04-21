@@ -24,7 +24,7 @@ LocalAssetStorage::~LocalAssetStorage()
     RemoveWatcher();
 }
 
-void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix)
+void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType)
 {
     try
     {
@@ -41,7 +41,7 @@ void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &s
                     int lastSlash = str.lastIndexOf('/');
                     if (lastSlash != -1)
                         str = str.right(str.length() - lastSlash - 1);
-                    assetAPI->RequestAsset("local://" + str, "");
+                    assetAPI->RequestAsset("local://" + str, assetType);
                 }
             }
         }

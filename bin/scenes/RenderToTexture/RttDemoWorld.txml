@@ -33,7 +33,7 @@
    <attribute value="0 0 0" name="Linear factor"/>
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
-   <attribute value="true" name="Draw Debug"/>
+   <attribute value="false" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
    <attribute value="513.056274 -413.532928 484.401703" name="Angular velocity"/>
   </component>
@@ -83,7 +83,7 @@
    <attribute value="0 0 0" name="Linear factor"/>
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
-   <attribute value="true" name="Draw Debug"/>
+   <attribute value="false" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
    <attribute value="1662.36987 -585.137329 -480.316101" name="Angular velocity"/>
   </component>
@@ -121,7 +121,7 @@
    <attribute value="0 0 0" name="Linear factor"/>
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
-   <attribute value="true" name="Draw Debug"/>
+   <attribute value="false" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
    <attribute value="-1930.979 898.471741 746.306396" name="Angular velocity"/>
   </component>

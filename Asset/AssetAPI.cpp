@@ -976,6 +976,10 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0)
         assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref, ""); ///\todo Specify the content hash.
 
+    // If disksource is still empty, forcibly look up from cache
+    if (!assetDiskSource.length())
+        assetDiskSource = assetCache->GetDiskSourceByRef(transfer->source.ref);
+    
     // Save for the asset the storage and provider it came from.
     transfer->asset->SetDiskSource(assetDiskSource.trimmed());
     transfer->asset->SetAssetStorage(transfer->storage.lock());

@@ -104,7 +104,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <ul>
 <li>"PlayAnim": Plays an animation. Usage: PlayAnim <name> [fadein] [exclusive]
 <li>"PlayLoopedAnim": Plays an animation in looped mode. Usage: PlayLoopedAnim <name> [fadein] [exclusive]
-<li>"PlayReverseAnim": Plays an animation reversed. Usage: PlayLoopedAnim <name> [fadein] [exclusive]
+<li>"PlayReverseAnim": Plays an animation reversed. Usage: PlayReverseAnim <name> [fadein] [exclusive]
 <li>"PlayAnimAutoStop": Plays an animation and autostops (fades out) when finished. Usage: PlayAnimAutoStop <name> [fadein] [exclusive]
 <li>"StopAnim": Stops an animation. Usage: StopAnim <name> [fadeout]
 <li>"StopAllAnims": Stops all animations. Usage: StopAllAnims [fadeout]

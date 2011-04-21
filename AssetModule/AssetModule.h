@@ -41,7 +41,8 @@ namespace Asset
 
     public slots:
         /// Loads from all the registered local storages all assets that have the given suffix.
-        void LoadAllLocalAssetsWithSuffix(const QString &suffix);
+        /// Type can also be optionally specified
+        void LoadAllLocalAssetsWithSuffix(const QString &suffix, const QString &assetType = "");
 
     private:
         void ProcessCommandLineOptions();

@@ -132,14 +132,14 @@ namespace Asset
         return ConsoleResultSuccess();
     }
 
-    void AssetModule::LoadAllLocalAssetsWithSuffix(const QString &suffix)
+    void AssetModule::LoadAllLocalAssetsWithSuffix(const QString &suffix, const QString &assetType)
     {
         std::vector<AssetStoragePtr> storages = framework_->Asset()->GetAssetStorages();
         for(size_t i = 0; i < storages.size(); ++i)
         {
             LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(storages[i].get());
             if (storage)
-                storage->LoadAllAssetsOfType(framework_->Asset(), suffix);
+                storage->LoadAllAssetsOfType(framework_->Asset(), suffix, assetType);
         }
     }
 }

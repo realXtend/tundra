@@ -72,6 +72,10 @@ public slots:
     /// @note Currently this will always return an empty string for http/https assets. This will force the AssetAPI to check that it has the latest asset from the source.
     QString FindInCache(const QString &assetRef);
 
+    /// Gets disk source for asset ref, disregarding the http protocol check in FindInCache()
+    /// This is only used by AssetAPI as an emergency mechanism for querying http asset disk source after loading
+    QString GetDiskSourceByRef(const QString &assetRef);
+    
     /// Checks whether the asset cache contains an asset with the given content hash, and returns the absolute path name to it, if so.
     /// Otherwise returns an empty string.
     /// @todo Implement.
