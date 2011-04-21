@@ -80,44 +80,6 @@ std::vector<s8> StringToBuffer(const std::string& str)
     return ret;
 }
 
-/// Get the current time as a string.
-std::string GetLocalTimeString()
-{
-    return "";
-/*
-    Poco::LocalDateTime *time = new Poco::LocalDateTime();
-    std::stringstream ss;
-    
-    ss << std::setw(2) << time->hour() << std::setfill('0') << ":" <<
-        std::setw(2) << time->minute() << std::setfill('0') << ":" <<
-        std::setw(2) << time->second() << std::setfill('0');
-        
-    SAFE_DELETE(time);
-    
-    return ss.str();
-    */
-}
-
-/// Get the current date and time as a string.
-std::string GetLocalDateTimeString()
-{
-    return "";
-/*
-    Poco::LocalDateTime *time = new Poco::LocalDateTime();
-    std::stringstream ss;
-    
-    ss << std::setw(2) << time->day() << std::setfill('0') << "/" <<
-        std::setw(2) << time->month() << std::setfill('0') << "/" <<
-        std::setw(4) << time->year() << std::setfill('0') << " " <<
-        std::setw(2) << time->hour() << std::setfill('0') << ":" <<
-        std::setw(2) << time->minute() << std::setfill('0') << ":" <<
-        std::setw(2) << time->second() << std::setfill('0');
-    
-    SAFE_DELETE(time);
-    
-    return ss.str();*/
-}
-
 StringVector SplitString(const std::string& str, char separator)
 {
     std::vector<std::string> vec;

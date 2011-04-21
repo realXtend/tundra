@@ -4,6 +4,7 @@ namespace Foundation
 
 \page ModuleArchitecture Viewer module architecture
 
+		<b>This documentation page is deprecated and due to be rewritten.</b>
 		Below is a short description of current module architecture
 		and how to use existing modules and create new ones.
 	
@@ -19,6 +20,8 @@ namespace Foundation
 
 \section communication_sec Accessing modules in the system
 
+		<b>This documentation page is deprecated and due to be rewritten.</b>
+
 todo: add here instructions how to use the ModuleManager in C++ to access a module. (using ModuleManager)
 How to configure cmake inter-module dependencies.
 
@@ -28,6 +31,8 @@ Accessing modules directly using ModuleManager:
 
 
 	\section creating_sec Creating a new C++ module.
+
+		<b>This documentation page is deprecated and due to be rewritten.</b>
 	
         To create a new (static) module:
             - Create a class that inherits from Foundation::IModule
@@ -80,6 +85,7 @@ todo.
 todo.
 
 	\section module_def_sec Module definition file
+		<b>This documentation page is deprecated and due to be rewritten.</b>
 		Each module library should be accompanied by a module definition file. Name of
 		the file should match the name of the module library file, f.ex. module
 		MyModule.dll should have a module definition file MyModule.xml. The file is used
@@ -103,6 +109,7 @@ todo.
         \endverbatim		            
         
     \section depencency_sec Module dependencies
+		<b>This documentation page is deprecated and due to be rewritten.</b>
 		Modules may depend on each other. In practical terms, when one module depends on other module(s),
 		it means the dependencies gets loaded and initialized before the dependant module. The
 		dependant module can use the dependencies when it is being initialized itself, and can

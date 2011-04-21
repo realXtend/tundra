@@ -51,12 +51,6 @@ T ParseString(const std::string &val, T default_value)
     }
 }
 
-/// Get the current time as a string.
-std::string GetLocalTimeString();
-
-/// Get the current date and time as a string.
-std::string GetLocalDateTimeString();
-
 /// Split a string by separator char
 StringVector SplitString(const std::string& str, char separator);
 

@@ -333,12 +333,12 @@ void TimeProfilerWindow::SetNetworkLogging(int value)
 
     QTextStream log(&file);
     if (value)
-        log << "========== Logging started " << GetLocalTimeString().c_str() << " ==========\n";
+        log << "========== Logging started " /*<< GetLocalTimeString().c_str()*/ << " ==========\n";
     else if (!value)
     {
      // Dump packages 
      DumpNetworkSummary(&log);
-     log << "========== Logging ended " << GetLocalTimeString().c_str() << "==========\n";
+     log << "========== Logging ended " /*<< GetLocalTimeString().c_str()*/ << "==========\n";
     }
 }
 

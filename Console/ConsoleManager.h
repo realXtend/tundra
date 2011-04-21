@@ -8,17 +8,13 @@
 class Framework;
 
 class CommandManager;
-class ConsoleChannel;
 class LogListener;
 
 typedef boost::shared_ptr<LogListener> LogListenerPtr;
-typedef boost::shared_ptr<ConsoleChannel> PocoLogChannelPtr;
 
 /// Generic debug console manager, directs input and output to available consoles.
-/**
-    See \ref DebugConsole "Using the debug console".
-*/
-class ConsoleManager //:  public ConsoleServiceInterface
+/** See \ref DebugConsole "Using the debug console". */
+class ConsoleManager
 {
 public:
     explicit ConsoleManager(Framework *fw);
@@ -57,9 +53,6 @@ private:
     /// command manager
     CommandManager *command_manager_;
 
-    /// Custom logger to get logmessages from Pogo
-    PocoLogChannelPtr console_channel_;
-
     /// Listener to get logs from renderer 
     LogListenerPtr log_listener_;
 
@@ -82,16 +75,6 @@ public:
     /// A very generic log message passing, only the message itself.
     /// Does not handle log levels or anything extra.
     virtual void LogMessage(const std::string &message){ if(mngr_) mngr_->Print(message); }
-    ConsoleManager* mngr_;
-};
-
-/// Class to get messages from poco logger
-class ConsoleChannel//: public Poco::Channel
-{
-public:
-    explicit ConsoleChannel(ConsoleManager* mngr){ mngr_ = mngr; }
-//    void log(const Poco::Message & msg){ if (mngr_) mngr_->Print(msg.getText()); }
-private:
     ConsoleManager* mngr_;
 };
 

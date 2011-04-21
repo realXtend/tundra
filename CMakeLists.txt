@@ -155,7 +155,6 @@ file(TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 
 # Find needed external libraries, abort on error
 configure_boost()
-#configure_poco()
 configure_qt4()
 configure_python()
 #configure_python_qt()

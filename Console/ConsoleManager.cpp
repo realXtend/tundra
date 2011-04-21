@@ -18,11 +18,9 @@
 ConsoleManager::ConsoleManager(Framework *fw) :
     framework_(fw),
     ui_initialized_(false),
-    console_channel_(new ConsoleChannel(this)),
     log_listener_(new LogListener(this))
 {
     command_manager_ = new CommandManager(this, framework_);
-//    framework_->AddLogChannel(console_channel_.get());
 
     RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
     if (renderer)
@@ -43,8 +41,6 @@ void ConsoleManager::UnsubscribeLogListener()
         renderer->UnsubscribeLogListener(log_listener_);
     else
         LogWarning("ConsoleManager couldn't acquire renderer service: can't unsubscribe renderer log listener.");
-
-//    framework_->RemoveLogChannel(console_channel_.get());
 }
 
 __inline void ConsoleManager::Update(f64 frametime)
