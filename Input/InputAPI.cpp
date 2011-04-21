@@ -682,8 +682,8 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         switch(event->type())
         {
             case QEvent::MouseButtonPress: mouseEvent.eventType = MouseEvent::MousePressed; break;
-            case QEvent::MouseButtonDblClick: mouseEvent.eventType = MouseEvent.MouseDoubleClicked; break;
-            case QEvent::MouseButtonRelease: mouseEvent.eventType = MouseEvent.MouseReleased; break;
+            case QEvent::MouseButtonDblClick: mouseEvent.eventType = MouseEvent::MouseDoubleClicked; break;
+            case QEvent::MouseButtonRelease: mouseEvent.eventType = MouseEvent::MouseReleased; break;
         }
 
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
