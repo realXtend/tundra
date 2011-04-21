@@ -75,7 +75,9 @@ signals:
     /// \param Qt::MouseButton Qt enum of the clicked mouse button
     /// \param RaycastResult Raycast result data object.
     void EntityClicked(Scene::Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
+    void EntityMouseMove(Scene::Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
 
+    void EntityClickReleased(Scene::Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
 private:
     //! Performs raycast to last known mouse cursor position.
     /// \return RaycastResult Result data of the raycast.

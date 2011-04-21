@@ -93,21 +93,22 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
 
     RaycastResult *raycastResult = Raycast();
 
+    Scene::Entity *hitEntity = lastHitEntity_.lock().get();
+    if (!hitEntity || !raycastResult)
+        return;
+
     if (lastHitEntity_.lock())
     {
         /// @todo handle all mouse events properly
         switch(e->eventType)
         {
-        case  MouseEvent::MouseMove:
+        case MouseEvent::MouseMove:
+            emit EntityMouseMove(hitEntity, (Qt::MouseButton)e->button, raycastResult);
             break;
-        case  MouseEvent::MouseScroll:
+        case MouseEvent::MouseScroll:
             break;
-        case  MouseEvent::MousePressed:
-        {
-            Scene::Entity *hitEntity = lastHitEntity_.lock().get();
-            if (!hitEntity || !raycastResult)
-                return;
-            
+        case MouseEvent::MousePressed:
+        case MouseEvent::MouseDoubleClicked: // For now, double-clicks are just treated as normal clicks.
             // Execute local "MousePress" entity action with signature:
             // Action name: "MousePress"  
             // String parameters: (int)"Qt::MouseButton", (float,float,float)"x,y,z", (int)"submesh index"
@@ -119,10 +120,16 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
             // Signal signature: EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)
             emit EntityClicked(hitEntity, (Qt::MouseButton)e->button, raycastResult);
             break;
-        }
-        case  MouseEvent::MouseReleased:
-            break;
-        case  MouseEvent::MouseDoubleClicked:
+        case MouseEvent::MouseReleased:
+            // Execute local "MouseRelease" entity action with signature:
+            // Action name: "MouseRelease"  
+            // String parameters: (int)"Qt::MouseButton", (float,float,float)"x,y,z", (int)"submesh index"
+            hitEntity->Exec(EntityAction::Local, "MouseRelease", 
+                            QString::number(static_cast<uint>(e->button)),
+                            QString("%1,%2,%3").arg(QString::number(raycastResult->pos_.x), QString::number(raycastResult->pos_.y), QString::number(raycastResult->pos_.z)),
+                            QString::number(static_cast<int>(raycastResult->submesh_)));
+
+            emit EntityClickReleased(hitEntity, (Qt::MouseButton)e->button, raycastResult);
             break;
         default:
             break;
