@@ -28,7 +28,7 @@ THE SOFTWARE.
 -----------------------------------------------------------------------------
 */
 
-// Modified for use with realXtend Naali
+// Modified for use with realXtend Tundra.
 
 #ifndef _OgreBulletCollisions_DEBUGLines_H_
 #define _OgreBulletCollisions_DEBUGLines_H_

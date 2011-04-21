@@ -110,12 +110,12 @@ void Application::Go()
     }
     catch(const std::exception &e)
     {
-        LogCritical(std::string("NaaliApplication::Go caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        LogCritical(std::string("Application::Go caught an exception: ") + (e.what() ? e.what() : "(null)"));
         throw;
     }
     catch(...)
     {
-        LogCritical(std::string("NaaliApplication::Go caught an unknown exception!"));
+        LogCritical(std::string("Application::Go caught an unknown exception!"));
         throw;
     }
 }

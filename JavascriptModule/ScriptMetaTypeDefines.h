@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   ScriptMetaTypeDefines.h
- *  @brief  Registration of Naali Core API to Javascript.
+ *  @brief  Registration of the Core API objects to Javascript.
  */
 
 #ifndef incl_JavascriptModule_ScriptMetaTypeDefines_h
@@ -94,7 +94,7 @@ void fromScriptUInt(const QScriptValue &obj, T &s)
 /// @todo repalce this with qscriptgenerator.
 void ExposeQtMetaTypes(QScriptEngine *engine);
 
-/// Will register all meta data types that are needed to use Naali Core API objects.
+/// Will register all meta data types that are needed to use the Core API objects.
 void ExposeCoreApiMetaTypes(QScriptEngine *engine);
 
 #endif

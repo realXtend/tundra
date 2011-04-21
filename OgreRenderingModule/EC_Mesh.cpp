@@ -767,12 +767,14 @@ QVector3D EC_Mesh::GetWorldSize() const
     // Get mesh bounds and scale it to the scene node
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
     Ogre::AxisAlignedBox bbox = entity_->getMesh()->getBounds();
+    ///\bug Rewrite this code to properly take the world transform into account. -jj.
     bbox.scale(adjustment_node_->getScale());
 
-    // Get size and take placeable scale into consideration to get real naali inworld size
+    ///\bug Remove the following hardcoded axis swaps, it doesn't take the proper hierarchy into account. -jj.
+    // Get size and take placeable scale into consideration to get real in-world size
     const Ogre::Vector3& bbsize = bbox.getSize();
     const Vector3df &placeable_scale = placeable->GetScale();
-    // Swap y and z to make it align with other naali vectors
+    // Swap y and z to make it align with other vectors
     size = QVector3D(bbsize.x*placeable_scale.x, bbsize.z*placeable_scale.z, bbsize.y*placeable_scale.y);
     return size;
 }

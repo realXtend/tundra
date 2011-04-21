@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   ScriptMetaTypeDefines.cpp
- *  @brief  Registration of Naali Core API to Javascript.
+ *  @brief  Registration of the Core API objects to Javascript.
  */
 
 #include "StableHeaders.h"
@@ -42,8 +42,7 @@ Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QTimer, QObject*);
 
-///\todo Remove these two and move to Input API once NaaliCore is merged.
-/// Naali input defines
+/// Input API defines
 Q_DECLARE_METATYPE(MouseEvent*)
 Q_DECLARE_METATYPE(KeyEvent*)
 Q_DECLARE_METATYPE(GestureEvent*)
@@ -59,6 +58,40 @@ Q_DECLARE_METATYPE(AssetStoragePtr);
 Q_DECLARE_METATYPE(IAssetStorage*);
 Q_DECLARE_METATYPE(AssetCache*);
 Q_DECLARE_METATYPE(AssetMap);
+
+/// Ui API defines.
+Q_DECLARE_METATYPE(UiProxyWidget*);
+Q_DECLARE_METATYPE(UiMainWindow*);
+Q_DECLARE_METATYPE(UiGraphicsView*);
+Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
+
+/// Scene API defines.
+Q_DECLARE_METATYPE(SceneAPI*);
+Q_DECLARE_METATYPE(Scene::SceneManager*);
+Q_DECLARE_METATYPE(Scene::Entity*);
+Q_DECLARE_METATYPE(EntityAction*);
+Q_DECLARE_METATYPE(EntityAction::ExecutionType);
+Q_DECLARE_METATYPE(AttributeChange*);
+Q_DECLARE_METATYPE(IComponent*);
+Q_DECLARE_METATYPE(AttributeChange::Type);
+
+/// Frame, Console and Debug API object defines.
+Q_DECLARE_METATYPE(Framework*);
+Q_DECLARE_METATYPE(FrameAPI*);
+Q_DECLARE_METATYPE(ConsoleAPI*);
+Q_DECLARE_METATYPE(ConsoleCommand*);
+Q_DECLARE_METATYPE(DelayedSignal*);
+Q_DECLARE_METATYPE(DebugAPI*);
+
+/// Audio API defines.
+Q_DECLARE_METATYPE(AudioAPI*);
+Q_DECLARE_METATYPE(SoundChannel*);
+
+/// Config API defines.
+Q_DECLARE_METATYPE(ConfigAPI*);
+
+/// Renderer defines.
+Q_DECLARE_METATYPE(RaycastResult*);
 
 QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &assetMap)
 {
@@ -77,44 +110,6 @@ QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &ass
 void qScriptValueToAssetMap(const QScriptValue &value, AssetMap &assetMap)
 {
 }
-
-/// Naali Ui defines
-Q_DECLARE_METATYPE(UiProxyWidget*);
-Q_DECLARE_METATYPE(UiMainWindow*);
-Q_DECLARE_METATYPE(UiGraphicsView*);
-Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
-
-/// Naali Scene defines.
-Q_DECLARE_METATYPE(SceneAPI*);
-Q_DECLARE_METATYPE(Scene::SceneManager*);
-Q_DECLARE_METATYPE(Scene::Entity*);
-Q_DECLARE_METATYPE(EntityAction*);
-Q_DECLARE_METATYPE(EntityAction::ExecutionType);
-Q_DECLARE_METATYPE(AttributeChange*);
-Q_DECLARE_METATYPE(IComponent*);
-Q_DECLARE_METATYPE(AttributeChange::Type);
-
-/// Naali core API object defines.
-Q_DECLARE_METATYPE(Framework*);
-Q_DECLARE_METATYPE(FrameAPI*);
-Q_DECLARE_METATYPE(ConsoleAPI*);
-Q_DECLARE_METATYPE(ConsoleCommand*);
-Q_DECLARE_METATYPE(DelayedSignal*);
-Q_DECLARE_METATYPE(DebugAPI*);
-
-/// Naali Audio API object.
-Q_DECLARE_METATYPE(AudioAPI*);
-Q_DECLARE_METATYPE(SoundChannel*);
-
-/// Naali Config API object.
-Q_DECLARE_METATYPE(ConfigAPI*);
-
-/// Naali renderer defines
-Q_DECLARE_METATYPE(RaycastResult*);
-
-/// Communications metatype
-//Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
-//Q_DECLARE_METATYPE(Communications::InWorldVoice::ParticipantInterface*);
 
 QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
 {

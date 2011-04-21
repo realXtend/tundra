@@ -35,7 +35,7 @@ class ProfilerNode;
 
 namespace DebugStats
 {
-    /// Provides various profiling data, performance statistics and tools for Naali.
+    /// Provides various profiling data, performance statistics and tools.
     class TimeProfilerWindow : public QWidget
     {
         Q_OBJECT

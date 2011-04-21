@@ -3,7 +3,7 @@
  *
  *  @file   MaterialWizard.h
  *  @brief  Utitility tool for choosing right material script for your purpose from
- *          the Naali material script template library.
+ *          the material script template library.
  */
 
 #ifndef incl_OgreAssetEditorModule_MaterialWizard_h

@@ -21,13 +21,8 @@ namespace Environment
 <td>
 <h2>Environment fog</h2>
 
-Registered by Enviroment::EnvironmentModule. EC_Fog is a component which defines scene overall fog.
-Its values are used when camera is above of any water cube.
-
-If user wants to syncronize old world enviroment changes with other clients this component can be used.
-In those cases user needs to create to scene primitive which has EC_Name-component for that component
-attribute name must be se as "FogEnvironment" after that Naali's enviroment module will add EC_Fog for
-that primitive and it is then syncronizable with other clients. 
+Registered by Enviroment::EnvironmentModule. The EC_Fog component defines the overall fog settings for the
+whole scene. This component applies whenever the camera is outside of any water cube.
 
 <b>Attributes</b>:
 <ul>

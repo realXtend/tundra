@@ -24,7 +24,7 @@
 
 #include "MemoryLeakCheck.h"
 
-/// The SuppressedPaintWidget is used as a viewport for the main Naali QGraphicsView.
+/// The SuppressedPaintWidget is used as a viewport for the main QGraphicsView.
 /** Its purpose is to disable all automatic drawing of the QGraphicsView to screen so that
     we can composite an Ogre 3D render with the Qt widgets added to a QGraphicsScene. */
 class SuppressedPaintWidget : public QWidget {

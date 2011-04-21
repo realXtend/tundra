@@ -5,7 +5,6 @@
 #include "CoreStringUtils.h"
 #include "DebugOperatorNew.h"
 #include "KristalliProtocolModule.h"
-#include "KristalliProtocolModuleEvents.h"
 #include "SyncManager.h"
 #include "SceneManager.h"
 #include "Entity.h"

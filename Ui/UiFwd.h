@@ -8,7 +8,6 @@ class Framework;
 class UiGraphicsView;
 class UiMainWindow;
 class UiAPI;
-class NaaliUiImpl;
 class UiProxyWidget;
 
 class QGraphicsProxyWidget;

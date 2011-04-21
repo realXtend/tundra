@@ -185,7 +185,7 @@ private slots:
     /// Exports the entire scene, entities as either XML or binary, assets in their default (import) format.
     void ExportAll();
 
-    /// Imports OGRE or Naali scene file.
+    /// Imports OGRE .scene or Tundra .txml / .tbin scene file.
     void Import();
 
     /// Loads new scene.

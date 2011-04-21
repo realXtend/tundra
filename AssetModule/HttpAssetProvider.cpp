@@ -55,7 +55,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     }
     QNetworkRequest request;
     request.setUrl(QUrl(assetRef));
-    request.setRawHeader("User-Agent", "realXtend Naali");
+    request.setRawHeader("User-Agent", "realXtend");
 
     QNetworkReply *reply = networkAccessManager->get(request);
 
@@ -71,7 +71,7 @@ AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *
     QString dstUrl = destination->GetFullAssetURL(assetName);
     QNetworkRequest request;
     request.setUrl(QUrl(dstUrl));
-    request.setRawHeader("User-Agent", "realXtend Naali");
+    request.setRawHeader("User-Agent", "realXtend");
 
     QByteArray dataArray((const char*)data, numBytes);
     QNetworkReply *reply = networkAccessManager->put(request, dataArray);
@@ -97,7 +97,7 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
     QUrl assetUrl(assetRef);
     QNetworkRequest request;
     request.setUrl(QUrl(assetRef));
-    request.setRawHeader("User-Agent", "realXtend Naali");
+    request.setRawHeader("User-Agent", "realXtend");
 
     networkAccessManager->deleteResource(request);
 }

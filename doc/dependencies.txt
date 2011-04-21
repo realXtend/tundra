@@ -1,7 +1,7 @@
 DEPENDENCIES
 ============
 
-Naali has the following dependencies:
+Tundra has the following required dependencies:
 
 - Boost 1.40.0 or newer, http://www.boost.org/
 
@@ -9,45 +9,16 @@ Naali has the following dependencies:
 
 - Qt 4.6.2 (2010.02.1) or newer, http://www.qtsoftware.com/ 
 
-- Python 2.6 or newer (but not 3.* currently): http://www.python.org/
-
-- XMLRPC-EPI 2008-04-16, http://xmlrpc-epi.sourceforge.net/main.php?t=summary is used as a dynamic library.  XMLRPC-EPI depends on LibIconv and eXpat. To build this, first build the expat project.
-
-- eXpat 2.0.1: http://expat.sourceforge.net/ . This is used as a dynamic library, and is located in the directory Expat 2.0.1/ in SVN. 
-
-- libcURL 7.19.4.0 or newer, http://curl.haxx.se/ . libcURL is a multiprotocol file transfer library which is used e.g. for the HTTP file transfers and the XML-RPC via HTTP login procedure.
-
-- LibIconv 1.9.2 for Windows: http://gnuwin32.sourceforge.net/packages/libiconv.htm (also see http://gnuwin32.sourceforge.net/packages.html) LibIconv is located in the GnuWin32\ directory, and is used as a dynamic library.
-
-- OpenJpeg 1.3: http://www.openjpeg.org/
-
 - OpenAL 1.1: http://connect.creativelabs.com/openal/
 
-- Caelum OGRE Add-on 0.5: http://www.ogre3d.org/wiki/index.php/Caelum. Used for the dynamic environmental lightning.
-
-- Telepathy-farsight 0.0.12.1 or newer,  http://telepathy.freedesktop.org/releases/telepathy-farsight/
-
-- Telepathy-glib 0.7.37 or newer , http://telepathy.freedesktop.org/wiki/Telepathy%20GLib
-
-- Telepathy-Qt4 0.1.11 or newer , http://telepathy.freedesktop.org/wiki/Telepathy-Qt4
-
-- GStreamer 0.10.24 or newer, http://gstreamer.freedesktop.org/
-
-- Farsight2 0.0.14 or newer , http://farsight.freedesktop.org/wiki/Farsight2Design
-
-- dbus-glib 0.78 or newer , http://www.freedesktop.org/wiki/Software/DBusBindingse 
-
-- glib 2.0 or newer , http://en.wikipedia.org/wiki/GLib
-
-- dbus , http://www.freedesktop.org/wiki/Software/dbus
-
 - QtPropertyBrowser 2.5_1 , http://qt.nokia.com/products/appdev/add-on-products/catalog/4/Widgets/qtpropertybrowser
+  (not strictly necessary, but it is difficult to edit scenes otherwise)
 
-- Celt 0.7.1 , http://www.celt-codec.org/
+And the following optional dependencies:
 
-- OpenSSL, http://www.openssl.org/
+- Python 2.6 or newer (but not 3.* currently): http://www.python.org/
 
-- Google Protocol Buffers 2.3.0 , http://code.google.com/apis/protocolbuffers/
+- Caelum OGRE Add-on 0.5: http://www.ogre3d.org/wiki/index.php/Caelum. Used for the dynamic environmental lightning.
 
 - PythonQt, 2.0.1, http://pythonqt.sourceforge.net/
 

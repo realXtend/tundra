@@ -12,7 +12,7 @@ namespace Asset
 {
     class LocalAssetStorage;
 
-    /// LocalAssetProvider provides Naali scene to use assets from the local file system with 'local://' reference.
+    /// LocalAssetProvider provides the scene to use assets from the local file system with 'local://' reference.
     class ASSET_MODULE_API LocalAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<LocalAssetProvider>
     {
         Q_OBJECT;

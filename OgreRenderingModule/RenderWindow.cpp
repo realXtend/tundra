@@ -156,7 +156,7 @@ std::string RenderWindow::OverlayTextureName() const
 
 void RenderWindow::UpdateOverlayImage(const QImage &src)
 {
-    PROFILE(NaaliRenderWindow_UpdateOverlayImage);
+    PROFILE(RenderWindow_UpdateOverlayImage);
 
     Ogre::Box bounds(0, 0, src.width(), src.height());
     Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)src.bits());
@@ -183,7 +183,7 @@ void RenderWindow::Resize(int width, int height)
 
     if (Ogre::TextureManager::getSingletonPtr() && Ogre::OverlayManager::getSingletonPtr())
     {
-        PROFILE(NaaliRenderWindow_Resize);
+        PROFILE(RenderWindow_Resize);
 
         // recenter the overlay
 //        int left = (renderWindow->getWidth() - width) / 2;

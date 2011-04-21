@@ -5,7 +5,6 @@
 #include "DebugOperatorNew.h"
 
 #include "KristalliProtocolModule.h"
-#include "KristalliProtocolModuleEvents.h"
 #include "Profiler.h"
 #include "CoreStringUtils.h"
 #include "ConsoleCommandUtils.h"
@@ -260,8 +259,6 @@ void KristalliProtocolModule::Disconnect()
         ///\todo Wait? This closes the connection.
         serverConnection = 0;
     }
-
-
 }
 
 bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLayer transport)
@@ -315,8 +312,8 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
 
     ::LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
-    Events::KristalliUserConnected msg(connection);
 ///\todo EventManager regression. -jj.
+//    Events::KristalliUserConnected msg(connection);
 //    framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
 }
 
@@ -326,8 +323,8 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->connection == source)
         {
-            Events::KristalliUserDisconnected msg((*iter));
 ///\todo EventManager regression. -jj.
+//            Events::KristalliUserDisconnected msg((*iter));
 //            framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
             
             ::LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
@@ -346,9 +343,9 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
 
     try
     {
-        Events::KristalliNetMessageIn msg(source, id, data, numBytes);
 
 ///\todo EventManager regression. -jj.
+//        Events::KristalliNetMessageIn msg(source, id, data, numBytes);
 //        framework_->GetEventManager()->SendEvent(networkEventCategory, Events::NETMESSAGE_IN, &msg);
     } catch(std::exception &e)
     {

@@ -194,7 +194,7 @@ QGraphicsItem *UiGraphicsView::GetVisibleItemAtCoords(int x, int y) const
         return 0;
 
     if (!backBuffer)
-        throw Exception("NaaliGraphicsView::backBuffer not initialized properly!");
+        throw Exception("UiGraphicsView::backBuffer not initialized properly!");
 
     // Do alpha keying: If we have clicked on a transparent part of a widget, act as if we didn't click on a widget at all.
     // This allows clicks to go through to the 3D scene from transparent parts of a widget.

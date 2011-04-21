@@ -126,9 +126,9 @@ Framework::~Framework()
     delete audio;
     delete plugin;
 
-    // This delete must be the last one in Framework since naaliApplication derives QApplication.
+    // This delete must be the last one in Framework since application derives QApplication.
     // When we delete QApplication, we must have ensured that all QObjects have been deleted.
-    ///\bug Framework is itself a QObject and we should delete naaliApplication only after Framework has been deleted. A refactor is required.
+    ///\bug Framework is itself a QObject and we should delete application only after Framework has been deleted. A refactor is required.
     delete application;
 }
 
@@ -249,7 +249,7 @@ void Framework::Go()
         PostInitialize();
     }
     
-    // Run our QApplication subclass NaaliApplication.
+    // Run our QApplication subclass.
     application->Go();
 
     // Qt main loop execution has ended, we are existing.

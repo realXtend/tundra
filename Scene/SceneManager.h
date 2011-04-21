@@ -445,13 +445,9 @@ public slots:
          void ComponentInitialized(IComponent* comp);*/
 
         /// Signal when an entity created
-        /** Note: currently there is also Naali scene event that duplicates this notification
-         */
         void EntityCreated(Scene::Entity* entity, AttributeChange::Type change);
 
         /// Signal when an entity deleted
-        /** Note: currently there is also Naali scene event that duplicates this notification
-         */
         void EntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
 
         /// Emitted when entity action is triggered.

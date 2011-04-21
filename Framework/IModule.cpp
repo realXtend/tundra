@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   IModule.cpp
- *  @brief  Interface for Naali modules.
+ *  @brief  Interface for module objects.
  *          See @ref ModuleArchitecture for details.
  */
  

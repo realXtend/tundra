@@ -261,12 +261,12 @@ public slots:
     /// Returns the number of vertices in the whole terrain in the local Y-direction.
     int VerticesHeight() const { return PatchHeight() * cPatchSize; }
 
-    /// Saves the height map data and the associated per-vertex attributes to a Naali Terrain File. This is a binary
+    /// Saves the height map data and the associated per-vertex attributes to a file. This is a binary
     /// dump file, and as a convention, use the file suffix ".ntf" for these.
     /// @return True if the save succeeded.
     bool SaveToFile(QString filename);
 
-    /// Loads the terrain height map data from the given Naali Terrain File. You should prefer using
+    /// Loads the terrain height map data from the given binary dump file (.ntf). You should prefer using
     /// the Attribute heightMap to recreate the terrain from a terrain file instead of calling this function directly,
     /// since this function only performs a local (hidden) change, whereas the heightMap attribute change is visible both
     /// locally and on the network.

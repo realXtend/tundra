@@ -17,7 +17,7 @@ namespace QtInputEvents
     static const int GestureCanceled = 11;
 }
 
-/// GestureEvent is the event data structure passed as the parameter in all Naali in-scene Gesture events.
+/// GestureEvent is the event data structure passed as the parameter in all in-scene Gesture events.
 class GestureEvent : public QObject
 {
     Q_OBJECT

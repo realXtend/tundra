@@ -19,7 +19,7 @@ class Application : public QApplication
     Q_OBJECT
 
 public:
-    /** Qt requires its own data copy of the argc/argv parameters, so NaaliApplication
+    /** Qt requires its own data copy of the argc/argv parameters, so this object
         caches them. Pass in received command-line parameters here.
         @param owner Pass in the root framework pointer here. */
     Application(Framework *owner, int &argc, char **argv);

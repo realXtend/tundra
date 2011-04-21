@@ -75,7 +75,7 @@ private:
     QRectF dirtyRectangle;
 
     /// This virtual function is overridden from the QGraphicsView original to disable any background drawing functionality.
-    /// The NaaliGraphicsView background displays the 3D scene rendered using Ogre.
+    /// The main QGraphicsView background displays the 3D scene rendered using Ogre.
     void drawBackground(QPainter *, const QRectF &);
 
     /// Overridden to disable QEvent::UpdateRequest, QEvent::Paint and QEvent::Wheel events from being processed in the base class,
@@ -85,7 +85,7 @@ private:
     void resizeEvent(QResizeEvent *e);
 
     // We override the Qt widget drag-n-drop events to be able to expose them as Qt signals (DragEnterEvent, DragMoveEvent and DropEvent)
-    // to all Naali client applications. The individual modules can listen to those signals to be able to perform drag-n-drop
+    // to all client applications. The individual modules can listen to those signals to be able to perform drag-n-drop
     // handling of custom mime types.
     void dragEnterEvent(QDragEnterEvent *e);
     void dragLeaveEvent(QDragLeaveEvent *e);

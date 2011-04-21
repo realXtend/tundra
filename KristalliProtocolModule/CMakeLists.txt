@@ -15,7 +15,6 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 add_definitions (-DKRISTALLIPROTOCOL_MODULE_EXPORTS)
 add_definitions (-D_WINSOCKAPI_)
-add_definitions (-DNAALI_CLIENT)
 
 use_modules (Framework Scene Console)
 

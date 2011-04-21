@@ -23,14 +23,14 @@ if (MSVC)
 #  configure_hydrax ()
 endif()
 
-# If WINDOWS_APP == 0, the console (output log) window is created and shown when Naali starts on Windows.
+# If WINDOWS_APP == 0, the console (output log) window is created and shown when the application starts on Windows.
 # If WINDOWS_APP == 1, this window is not shown. This flag only affects when building on Windows.
 SET(WINDOWS_APP 0)
 
 # Set login scene type: 1 = dynamic switchable ether + normal login, 0 = static classical login
 SET(DYNAMIC_LOGIN_SCENE 1)
 
-# If the following flag is defined, Naali will be compiled with the built-in execution time profiler enabled.
+# Enable the following flag to add compile with support for a built-in execution time profiler.
 #add_definitions(-DPROFILING)
 
 # Enable js profiling?
@@ -101,7 +101,7 @@ add_subdirectory(EnvironmentModule)     # Depends on OgreRenderingModule and Tai
 add_subdirectory(PhysicsModule)         # Depends on OgreRenderingModule.
 
 # The following are optional.
-add_subdirectory(ECEditorModule)        # Tool for editing Naali scene data. Requires EC_DynamicComponent. Depends on OgreRenderingModule.
+add_subdirectory(ECEditorModule)        # Tool for editing world scene data. Requires EC_DynamicComponent. Depends on OgreRenderingModule.
 if (OGREASSETEDITOR)
     add_subdirectory(OgreAssetEditorModule) # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
 endif()

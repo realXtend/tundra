@@ -3,7 +3,7 @@
  *
  *  @file   MaterialWizard.cpp
  *  @brief  Utitility tool for choosing right material script for your purpose from
- *          the Naali material script template library.
+ *          the material script template library.
  */
 
 #include "StableHeaders.h"

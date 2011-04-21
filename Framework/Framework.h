@@ -58,7 +58,7 @@ public:
     */
     void ParseProgramOptions();
 
-    /// Returns the command line options specified as command-line options when starting up Naali.
+    /// Returns the command line options specified as command-line options when starting up.
     boost::program_options::variables_map &ProgramOptions() { return commandLineVariables; }
 
     /// Do post-initialization steps. No need to call if using Framework::Go().
@@ -224,7 +224,7 @@ private:
     bool initialized_; ///< Is the framework is properly initialized.
     bool headless_; ///< Are we running in the headless mode.
     
-    Application *application; ///< Naali implementation of the main QApplication object.
+    Application *application; ///< The main QApplication object.
     FrameAPI *frame; ///< The Frame API.
     ConsoleAPI *console; ///< The console API.
     UiAPI *ui; ///< The UI API.

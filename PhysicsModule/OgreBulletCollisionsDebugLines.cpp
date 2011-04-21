@@ -28,7 +28,7 @@ THE SOFTWARE.
 -----------------------------------------------------------------------------
 */
 
-// Modified for use with realXtend Naali
+// Modified for use with realXtend Tundra.
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"

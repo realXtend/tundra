@@ -81,7 +81,7 @@ void KeyBindingsConfigWindow::ApplyKeyConfig()
 
     if (conflictingSequences.size() > 0)
     {
-        if(!QMessageBox::question(this, tr("Bindings Warning? -- Naali"), 
+        if(!QMessageBox::question(this, tr("Bindings Warning?"), 
             tr("Same shortcut '%1' has been set on multiple actions! Do you wish to continue?").arg(conflictingSequences.join(",")), 
             tr("&Yes"), tr("&No"),
             QString::null, 0, 1))

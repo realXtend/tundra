@@ -7,7 +7,6 @@
 #include "TundraLogicModule.h"
 #include "ModuleManager.h"
 #include "KristalliProtocolModule.h"
-#include "KristalliProtocolModuleEvents.h"
 #include "CoreStringUtils.h"
 #include "SyncManager.h"
 #include "TundraMessages.h"

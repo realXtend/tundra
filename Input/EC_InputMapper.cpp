@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   InputMapper.h
- *  @brief  Registers an InputContext from the Naali Input subsystem and uses it to translate
+ *  @brief  Registers an InputContext from the Input API and uses it to translate
  *          given set of keys to Entity Actions on the entity the component is part of.
  */
 

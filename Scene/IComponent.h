@@ -146,7 +146,7 @@ public:
     IAttribute* GetAttribute(const QString &name) const;
 
 public slots:
-    /// Returns a pointer to the Naali framework instance.
+    /// Returns a pointer to the Framework instance.
     Framework *GetFramework() const { return framework_; }
 
     /// Enables or disables network synchronization of changes that occur in the attributes of this component.

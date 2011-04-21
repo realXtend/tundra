@@ -21,7 +21,7 @@ public:
     */
     explicit UiMainWindow(Framework *owner_);
 
-    /// Loads and applied from Naali Config window size, isMaximized, and other settings.
+    /// Loads and applied from config window size, isMaximized, and other settings.
     void LoadWindowSettingsFromFile();
 
     /// Saves the currently applied window settings to file.
