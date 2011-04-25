@@ -212,6 +212,10 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
      a2) http://server.com/asset.sfx                            AssetRefType = AssetRefExternalUrl.
          someotherprotocol://some/path/specifier/asset.sfx
 
+     b0) special case: www.server.com/asset.png                 AssetRefType = AssetRefExternalUrl with 'http' hardcoded as protocol.
+         As customary with web browsers, people expect to be able to write just www.server.com/asset.png when they mean a network URL.
+         We detect this case as a string that starts with 'www.'.
+
      b1) /unix/absolute/path/asset.sfx                          AssetRefType = AssetRefLocalPath.
 
      b2) X:/windows/forwardslash/path/asset.sfx                 AssetRefType = AssetRefLocalPath.
@@ -247,7 +251,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     wregex expression2(L"([A-Za-z]:[/\\\\].*?)"); // b2): X:\windowsPathToAsset or X:/windowsPathToAsset
     wregex expression3(L"(.*?):(.*)"); // b3): X:\windowsPathToAsset or X:/windowsPathToAsset
     wsmatch what;
-    wstring fullPath;
+    wstring fullPath; // Contains the url without the "protocolPart://" prefix.
     AssetRefType refType = AssetRefInvalid;
     if (regex_match(ref, what, expression1)) // Is ref of type 'a)' above?
     {
@@ -260,8 +264,18 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
             *outProtocolPart = protocol;
 
         fullPath = what[2].str();
-        if (outProtocol_Path)
+        if (outProtocol_Path) // Partially save the beginning of the protocol & path part. This will be completed below with the full path.
             *outProtocol_Path = protocol + "://";
+    }
+    else if (assetRef.startsWith("www.", Qt::CaseInsensitive)) // Ref is of type 'b0)'?
+    {
+        refType = AssetRefExternalUrl;
+        if (outProtocolPart)
+            *outProtocolPart = "http";
+        fullPath = ref;
+
+        if (outProtocol_Path) // Partially save the beginning of the protocol & path part. This will be completed below with the full path.
+            *outProtocol_Path = "http://";
     }
     else if (assetRef.startsWith("/")) // Is ref of type 'b1)'?
     {
