@@ -8,12 +8,17 @@
 
 class ScriptAssetFactory : public IAssetTypeFactory
 {
-    Q_OBJECT;
+
+Q_OBJECT;
+
 public:
+    explicit ScriptAssetFactory()
+    {
+        assetType_ = "Script";
+        supportedFileFormats_ << "js" << "py";
+    }
 
-    virtual QString Type() const { return "Script"; }
-
-    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const char *name) { return AssetPtr(new ScriptAsset(owner, Type(), name)); }
+    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const char *name) { return AssetPtr(new ScriptAsset(owner, GetType(), name)); }
 };
 
 #endif

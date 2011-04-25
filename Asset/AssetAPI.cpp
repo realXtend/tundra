@@ -20,20 +20,22 @@
 #include "GenericAssetFactory.h"
 #include "AssetCache.h"
 #include "Platform.h"
+
+#include <QFileInfo>
 #include <QDir>
 #include <QFileSystemWatcher>
 
 using namespace Foundation;
 
-AssetAPI::AssetAPI(bool isHeadless)
-:assetCache(0),
-diskSourceChangeWatcher(0),
-isHeadless_(isHeadless)
+AssetAPI::AssetAPI(bool isHeadless) :
+    assetCache(0),
+    diskSourceChangeWatcher(0),
+    isHeadless_(isHeadless)
 {
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
-    RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary")));
+    RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary", "")));
     isHeadless_ = isHeadless;
 }
 
@@ -499,7 +501,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
-        assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
+        assetType = ResolveAssetType(assetRef);
 
     assetRef = assetRef.trimmed();
 
@@ -625,8 +627,8 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     assetType = assetType.trimmed();
     assetRef = assetRef.trimmed();
 
-    if (assetType.length() == 0)
-        assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
+    if (assetType.isEmpty())
+        assetType = ResolveAssetType(assetRef);
 
     // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
     AssetRefType assetRefType = ParseAssetRefType(assetRef);
@@ -686,10 +688,10 @@ QString AssetAPI::LookupAssetRefToStorage(QString assetRef)
 
 void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
 {
-    AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(factory->Type());
+    AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(factory->GetType());
     if (existingFactory)
     {
-        LogWarning("AssetAPI::RegisterAssetTypeFactory: Factory with type '" + factory->Type() + "' already registered.");
+        LogWarning("AssetAPI::RegisterAssetTypeFactory: Factory with type '" + factory->GetType() + "' already registered.");
         return;
     }
 
@@ -767,17 +769,33 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
     return asset;
 }
 
-QString AssetAPI::GetAssetTypeFromFileName(QString filename) const
+QString AssetAPI::ResolveAssetType(QString assetRef)
 {
-    return GetResourceTypeFromResourceFileName(filename.toStdString().c_str());
+    if (assetRef.isEmpty())
+        return "";
+
+    QString assetRefSuffix = QFileInfo(assetRef).suffix().toLower();
+    if (assetRefSuffix.isEmpty())
+        return "";
+
+    // Ask the factories which one support this file extension.
+    // If there are multiple the first one is chosen.
+    for(size_t i = 0; i < assetTypeFactories.size(); ++i)
+    {
+        QStringList supportedFormats = assetTypeFactories[i]->GetSupportedFormats();
+        if (supportedFormats.contains(assetRefSuffix))
+            return assetTypeFactories[i]->GetType();
+    }
+
+    // Default to "Binary" asset factory if nothing else was found.
+    return "Binary";
 }
 
 AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
 {
     for(size_t i = 0; i < assetTypeFactories.size(); ++i)
-        if (assetTypeFactories[i]->Type().toLower() == typeName.toLower())
+        if (assetTypeFactories[i]->GetType().toLower() == typeName.toLower())
             return assetTypeFactories[i];
-
     return AssetTypeFactoryPtr();
 }
 
@@ -1164,57 +1182,6 @@ namespace
 
         return false;
     }
-}
-
-QString GetResourceTypeFromResourceFileName(const char *name)
-{
-    ///\todo This whole function is to be removed, and moved into the asset type providers for separate access. -jj.
-
-    QString file(name);
-    file = file.trimmed().toLower();
-    if (file.endsWith(".mesh"))
-        return "OgreMesh";
-    if (file.endsWith(".skeleton"))
-        return "OgreSkeleton";
-    if (file.endsWith(".material"))
-        return "OgreMaterial";
-    if (file.endsWith(".particle"))
-        return "OgreParticle";
-
-    const char *textureFileTypes[] = { ".jpg", ".jpeg", ".png", ".tga", ".bmp", ".dds", ".gif" };
-    if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
-        return "Texture";
-
-    const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf", 
-        ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
-        ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
-        ".ply", ".cob", ".scn" };
-
-    if (IsFileOfType(file, openAssImpFileTypes, NUMELEMS(openAssImpFileTypes)))
-        return "OgreMesh"; // We use the OgreMeshResource type for mesh files opened using the Open Asset Import Library.
-
-    if (file.endsWith(".js") || file.endsWith(".py"))
-        return "Script";
-
-    if (file.endsWith(".ntf"))
-        return "Terrain";
-
-    if (file.endsWith(".wav") || file.endsWith(".ogg") || file.endsWith(".mp3"))
-        return "Audio";
-
-    if (file.endsWith(".ui"))
-        return "QtUiFile";
-
-    // \todo Dont hadcode these if the extension some day change!
-    // cTundraBinFileExtension and cTundraXmlFileExtension are defined 
-    // in SceneStructureModules .h files, move to core?
-    if (file.endsWith(".xml") || file.endsWith(".txml") || file.endsWith(".tbin")) 
-        return "Binary";
-
-    // Unknown type, return Binray type.
-    return "Binary";
-
-    // Note: There's a separate OgreImageTextureResource which isn't handled above.
 }
 
 bool CopyAssetFile(const char *sourceFile, const char *destFile)

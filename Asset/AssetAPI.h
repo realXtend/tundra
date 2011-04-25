@@ -23,9 +23,6 @@ bool CopyAssetFile(const char *sourceFile, const char *destFile);
 /// Saves the given raw data buffer to destFile. Returns true on success.
 bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile);
 
-/// Returns an asset type name of the given asset file name.
-QString GetResourceTypeFromResourceFileName(const char *name);
-
 /// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
 QString GuaranteeTrailingSlash(const QString &source);
 
@@ -164,8 +161,10 @@ public slots:
     /// from memory and need to access a file.
     QString GenerateTemporaryNonexistingAssetFilename(QString filename);
 
-    /// Resolve the asset type from filename
-    QString GetAssetTypeFromFileName(QString filename) const;
+    /// Resolve the asset type from filename. Will query the type from factories. If many factories accept the same file extension, first one found is returned.
+    /// @param QString asset reference of which type is being resolved.
+    /// @return QString asset type.
+    QString ResolveAssetType(QString assetRef);
 
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
     AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);

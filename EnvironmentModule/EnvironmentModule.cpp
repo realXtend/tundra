@@ -61,7 +61,7 @@ namespace Environment
         DECLARE_MODULE_EC(EC_EnvironmentLight);
 
         /// Create an asset type factory for Terrain assets. The terrain assets are handled as binary blobs - the EC_Terrain parses it when showing the asset.
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Terrain")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Terrain", "ntf")));
     }
 
     void EnvironmentModule::Initialize()

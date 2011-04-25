@@ -126,7 +126,8 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     /// Do a full repaint of the view now that we've shown it.
     graphicsView->MarkViewUndirty();
 
-    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
+    /// Register ui asset factory that support file format ".ui".
+    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile", "ui")));
 }
 
 UiAPI::~UiAPI()

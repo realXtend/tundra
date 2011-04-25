@@ -63,12 +63,29 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_SelectionBox);
 
         // Create asset type factories for each asset OgreRenderingModule provides to the system.
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("Texture")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("OgreTexture"))); // deprecated/old style.
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreParticleAsset>("OgreParticle")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreSkeletonAsset>("OgreSkeleton")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMaterialAsset>("OgreMaterial")));
+        // Provide supported file extensions for each factory.
+        /// \todo Ask ogre what file formats Ogre::Image supports during run time, if at all possible.
+        QStringList supportedFileFormats;
+        supportedFileFormats << "jpg" << "jpeg" << "png" << "tga" << "bmp" << "dds" << "gif" << "tiff";
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("Texture", supportedFileFormats)));
+        
+        supportedFileFormats.clear();
+        supportedFileFormats << "mesh";
+
+        /*! \todo Ask assimp somehow the supported mesh list if it can be different that the below list.
+                  It should also be noted that all of the below types have not been tested to work, but are expexted
+                  to work in theory via assimp.
+        */
+#ifdef ASSIMP_ENABLED
+        supportedFileFormats << "3d" << ".b3d" << "dae" << "bvh" << "3ds" << "ase" << "obj" << "ply" << "dxf" 
+                             << "nff" << "smd" << "vta" << "mdl" << "md2" << "md3" << "mdc" << "md5mesh" << "x"
+                             << "q3o" << "q3s" << "raw" << "ac" << "stl" << "irrmesh" << "irr" << "off" << "ter"
+                             << "mdl" << "hmp" << "ms3d" << "lwo" << "lws" << "lxo" << "csm" << "ply" << "cob" << "scn";
+#endif
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh", supportedFileFormats)));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreParticleAsset>("OgreParticle", "particle")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreSkeletonAsset>("OgreSkeleton", "skeleton")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMaterialAsset>("OgreMaterial", "material")));
     }
 
     void OgreRenderingModule::PreInitialize()

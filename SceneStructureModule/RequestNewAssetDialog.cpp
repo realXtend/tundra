@@ -35,7 +35,7 @@ RequestNewAssetDialog::RequestNewAssetDialog(AssetAPI *assetApi, QWidget *parent
     typeComboBox->setEditable(true);
     typeComboBox->addItem("");
     foreach(AssetTypeFactoryPtr factory, assetApi->GetAssetTypeFactories())
-        typeComboBox->addItem(factory->Type());
+        typeComboBox->addItem(factory->GetType());
 
     QHBoxLayout *buttonLayout = new QHBoxLayout(this);
     QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);

@@ -83,7 +83,10 @@ assetAPI(assetAPI_)
     soundMasterGain[SoundChannel::Voice] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "voice_sound_gain", 1.0f);
     */
 
-    assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); 
+    /// \todo Is mp3 really supported? Copied over from AssetAPI where file extensions were resolved to a type.
+    QStringList supportedAudioFormats;
+    supportedAudioFormats << "wav" << "ogg" << "mp3";
+    assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio", supportedAudioFormats))); 
 }
 
 AudioAPI::~AudioAPI()

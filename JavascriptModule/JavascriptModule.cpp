@@ -51,7 +51,7 @@ void JavascriptModule::Load()
 {
     DECLARE_MODULE_EC(EC_Script);
     DECLARE_MODULE_EC(EC_DynamicComponent);
-    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory));
+    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory()));
 }
 
 void JavascriptModule::Initialize()

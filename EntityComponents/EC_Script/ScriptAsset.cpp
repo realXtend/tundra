@@ -56,7 +56,7 @@ void ScriptAsset::ParseReferences()
         ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
         ref.ref = assetAPI->LookupAssetRefToStorage((*iter)[1].str().c_str());
         
-        if (ignoredAssetTypes.contains(assetAPI->GetAssetTypeFromFileName(ref.ref)))
+        if (ignoredAssetTypes.contains(assetAPI->ResolveAssetType(ref.ref)))
             continue;
         if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
         {

@@ -580,18 +580,18 @@ void SceneTreeWidget::Edit()
         /*ui->AddWidgetToScene(ecEditor);
         ui->ShowWidget(ecEditor);
         ui->BringWidgetToFront(ecEditor);*/ 
-    } else
+    } 
+    else
     {
 #ifdef OGREASSETEDITOR_ENABLED
         foreach(AssetRefItem *aItem, selection.assets)
         {
-            QString type = GetResourceTypeFromResourceFileName(aItem->id.toLatin1());
-
+            QString type = framework->Asset()->ResolveAssetType(aItem->id.toLatin1());
             if (type == "OgreMesh")
             {
                 MeshPreviewEditor::OpenMeshPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), aItem->type);
             }
-            else if (type ==  "OgreTexture")
+            else if (type ==  "Texture")
             {
                 TexturePreviewEditor::OpenPreviewEditor(QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), 0);
             }
