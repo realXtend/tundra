@@ -7,10 +7,12 @@
 #include "MouseEvent.h"
 #include "GestureEvent.h"
 #include "KeyEventSignal.h"
+#include "InputFwd.h"
 
 #include <map>
 #include <set>
 #include <boost/enable_shared_from_this.hpp>
+#include <QCursor>
 
 struct KeyPressInformation
 {
@@ -33,7 +35,7 @@ class InputContext : public QObject, public boost::enable_shared_from_this<Input
     Q_OBJECT
 
 public:
-    InputContext(const char *name, int priority);
+    InputContext(InputAPI *owner, const char *name, int priority);
 
     ~InputContext();
 
@@ -173,6 +175,15 @@ public slots:
     /// disconnecting of all signals from Python
     void disconnectAll() { this->disconnect(); }
 
+    /// Specifies the mouse cursor to use in with this input context.
+    void SetMouseCursorOverride(QCursor cursor);
+
+    /// Returns the override cursor this context has, or 0 if this context doesn't specify one.
+    QCursor *MouseCursorOverride() const;
+
+    /// Removes mouse cursor from being set in this input context.
+    void ClearMouseCursorOverride();
+
 private:
     typedef std::map<QKeySequence, KeyEventSignal*> KeyEventSignalMap;
     /// Stores a signal object for each keyboard key code that the user
@@ -207,6 +218,10 @@ private:
     /// The priority value this context has with respect to the other input contexts. Higher = more urgent. Used
     /// to determine the order in which input is received by the input contexts.
     int priority;
+
+    boost::shared_ptr<QCursor> mouseCursorOverride;
+   
+    InputAPI *inputApi;
 
     // InputContexts are noncopyable.
     InputContext(const InputContext &);

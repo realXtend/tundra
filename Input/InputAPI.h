@@ -157,6 +157,9 @@ public slots:
     /// but in this form, if the action does not exist, the default key sequence is registered for it and returned.
     QKeySequence KeyBinding(const QString &actionName, QKeySequence defaultKey);
 
+    /// Finds the InputContext that has the highest mouse priority, and applies the mouse cursor in it as the currently shown mouse cursor.
+    void ApplyMouseCursorOverride();
+
     void LoadKeyBindingsFromFile();
 
     void SaveKeyBindingsToFile();
@@ -172,7 +175,6 @@ private:
     std::list<InputContextPtr> untrackedInputContexts;
 
     bool eventFilter(QObject *obj, QEvent *event);
-
     /// Sends key release messages for each currently tracked pressed key and clears the record of all pressed keys.
     void SceneReleaseAllKeys();
     /// Sends mouse button release messages for each mouse button that was held down.
@@ -224,7 +226,7 @@ private:
     int mouseFPSModeEnterY;
 
     /// Stores all the currently registered input contexts. The order these items are stored in the list corresponds to the
-    /// priority at which each context will get the events.
+    /// priority at which each context will get the events. Highest priority context is in front of the list, lowest priority is at the back.
     InputContextList registeredInputContexts;
 
     /// This input context is processed immediately as the first thing in the system. I.e. before even checking whether the
