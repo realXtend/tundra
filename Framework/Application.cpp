@@ -125,7 +125,7 @@ void Application::Message(const std::string &title, const std::string &text)
     MessageBoxA(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
 }
 
-void Message(const std::wstring &title, const std::wstring &text)
+void Application::Message(const std::wstring &title, const std::wstring &text)
 {
     MessageBoxW(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
 }

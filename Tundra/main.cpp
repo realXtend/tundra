@@ -3,6 +3,7 @@
 #include "Foundation.h"
 #include "LoggingFunctions.h"
 #include "DebugOperatorNew.h"
+#include "Application.h"
 #include <QDir>
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
