@@ -1,11 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 #include "DebugOperatorNew.h"
+#include "InputAPI.h"
 #include <QList>
+#include <QCursor>
+#include <boost/make_shared.hpp>
 #include "MemoryLeakCheck.h"
 #include "InputContext.h"
 
-InputContext::InputContext(const char *name_, int priority_)
-:name(name_), priority(priority_), takeMouseEventsOverQt(false), takeKeyboardEventsOverQt(false)
+InputContext::InputContext(InputAPI *owner, const char *name_, int priority_)
+:inputApi(owner), name(name_), priority(priority_), takeMouseEventsOverQt(false), takeKeyboardEventsOverQt(false)
 {
 }
 
@@ -236,6 +239,30 @@ void InputContext::ReleaseAllKeys()
 
     for(std::vector<Qt::Key>::iterator iter = keysToRelease.begin(); iter != keysToRelease.end(); ++iter)
         TriggerKeyReleaseEvent(*iter);
+}
+
+void InputContext::SetMouseCursorOverride(QCursor cursor)
+{
+    if (!mouseCursorOverride)
+        mouseCursorOverride = boost::make_shared<QCursor>(cursor);
+    else
+        *mouseCursorOverride = cursor;
+
+    inputApi->ApplyMouseCursorOverride();
+}
+
+QCursor *InputContext::MouseCursorOverride() const
+{
+    return mouseCursorOverride.get();
+}
+
+void InputContext::ClearMouseCursorOverride()
+{
+    if (mouseCursorOverride)
+    {
+        mouseCursorOverride.reset();
+        inputApi->ApplyMouseCursorOverride();
+    }
 }
 
 bool InputContext::IsKeyDownImmediate(Qt::Key keyCode) const
