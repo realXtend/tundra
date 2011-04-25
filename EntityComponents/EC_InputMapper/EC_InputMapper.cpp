@@ -178,7 +178,7 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
         return;
     
     /// \todo this hard coding of look button logic is not nice!
-    if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->Input()->IsMouseCursorVisible()))
+    if (e->IsButtonDown(MouseEvent::RightButton))
     {
         if (e->relativeX != 0)
             GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
