@@ -127,8 +127,10 @@ public:
     /// @param outPath [out] Returns the path part of the ref, e.g. "local://path/folder/asset.png, subAsset" -> "path/folder/". Has a trailing slash when necessary.
     /// @param outFilename [out] Returns the base filename of the asset. e.g. "local://path/folder/asset.png, subAsset" -> "asset.png".
     /// @param outSubAssetName [out] Returns the subasset name in the ref. e.g. "local://path/folder/asset.png, subAsset" -> "subAsset".
+    /// @param outFullRef [out] Returns a cleaned or "canonicalized" version of the asset ref in full.
     static AssetRefType ParseAssetRef(QString assetRef, QString *outProtocolPart = 0, QString *outNamedStorage = 0, QString *outProtocol_Path = 0, 
-        QString *outPath_Filename_SubAssetName = 0, QString *outPath_Filename = 0, QString *outPath = 0, QString *outFilename = 0, QString *outSubAssetName = 0);
+        QString *outPath_Filename_SubAssetName = 0, QString *outPath_Filename = 0, QString *outPath = 0, QString *outFilename = 0, QString *outSubAssetName = 0,
+        QString *outFullRef = 0);
 
 public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.

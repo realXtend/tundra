@@ -249,7 +249,7 @@ QString WStringToQString(const std::wstring &str)
 
 AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outProtocolPart, QString *outNamedStorage, QString *outProtocol_Path, 
                                                QString *outPath_Filename_SubAssetName, QString *outPath_Filename, QString *outPath, 
-                                               QString *outFilename, QString *outSubAssetName)
+                                               QString *outFilename, QString *outSubAssetName, QString *outFullRef)
 {
     if (outProtocolPart) *outProtocolPart = "";
     if (outNamedStorage) *outNamedStorage = "";
@@ -259,6 +259,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     if (outPath) *outPath = "";
     if (outFilename) *outFilename = "";
     if (outSubAssetName) *outSubAssetName = "";
+    if (outFullRef) *outFullRef = "";
 
     /* Examples of asset refs:
 
@@ -323,6 +324,9 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
         fullPath = what[2].str();
         if (outProtocol_Path) // Partially save the beginning of the protocol & path part. This will be completed below with the full path.
             *outProtocol_Path = protocol + "://";
+
+        if (outFullRef)
+            *outFullRef = protocol.toLower() + "://";
     }
     else if (assetRef.startsWith("www.", Qt::CaseInsensitive)) // Ref is of type 'b0)'?
     {
@@ -333,6 +337,8 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
 
         if (outProtocol_Path) // Partially save the beginning of the protocol & path part. This will be completed below with the full path.
             *outProtocol_Path = "http://";
+        if (outFullRef)
+            *outFullRef = "http://";
     }
     else if (assetRef.startsWith("/")) // Is ref of type 'b1)'?
     {
@@ -347,13 +353,15 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     else if (regex_match(ref, what, expression3)) // b3)
     {
         refType = AssetRefNamedStorage;
-        QString storage = WStringToQString(what[1].str());
+        QString storage = WStringToQString(what[1].str()).trimmed();
         if (outNamedStorage)
             *outNamedStorage = storage;
         fullPath = what[2].str();
 
         if (outProtocol_Path)
             *outProtocol_Path = storage + ":";
+        if (outFullRef)
+            *outFullRef = storage + ":";
     }
     else // We assume it must be of type b4).
     {
@@ -367,11 +375,12 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
         *outPath_Filename_SubAssetName = WStringToQString(fullPath).trimmed();
 
     // Parse subAssetName if it exists.
+    QString subAssetName = "";
     wregex expression4(L"(.*?)\\s*,\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
     if (regex_match(fullPath, what, expression4))
     {
         wstring assetRef = what[1].str();
-        QString subAssetName = WStringToQString(what[2].str()).trimmed();
+        subAssetName = WStringToQString(what[2].str()).trimmed();
         if (outSubAssetName)
             *outSubAssetName = subAssetName;
         fullPath = assetRef; // Remove the subAssetName from the asset ref so that the parsing can continue without the subAssetName in it.
@@ -394,6 +403,15 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
         *outProtocol_Path += path;
     if (outFilename)
         *outFilename = fullPathRef.mid(directorySeparatorIndex+1);
+    if (outFullRef)
+    {
+        *outFullRef += fullPathRef;
+        if (!subAssetName.isEmpty())
+            if (subAssetName.contains(' '))
+                *outFullRef += ", \"" + subAssetName + "\"";
+            else
+                *outFullRef += ", " + subAssetName;
+    }
 
     return refType;
 }
