@@ -29,9 +29,10 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "CompositionHandler.h"
+
 #include "EC_Name.h"
 #include "EC_Terrain.h"
-//#include "WorldBuildingServiceInterface.h"
+
 #include "../TundraLogicModule/TundraEvents.h"
 
 #include "MemoryLeakCheck.h"
@@ -87,6 +88,9 @@ namespace Environment
 
     void EnvironmentModule::Update(f64 frametime)
     {
+        /// \todo delete Update(). The components can update on theirs own. Though some single place might need to update caelum? -jn
+
+        /*
         RESETPROFILER;
         PROFILE(EnvironmentModule_Update);
 
@@ -99,8 +103,10 @@ namespace Environment
             //if  (sky_.get() != 0)
             //    sky_->Update();
         }
+        */
     }
 
+/// \todo Delete this code. -jn
 #ifdef CAELUM
     Caelum::CaelumSystem* EnvironmentModule::GetCaelum()
     {   
@@ -133,7 +139,11 @@ namespace Environment
 
     bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
-            if (category_id == tundra_event_category_)
+        /*
+
+        \todo Delete this. A startup javascript must be able to do this, should not be hardcoded to c++. -jn
+
+        if (category_id == tundra_event_category_)
         {
             if (event_id == TundraLogic::Events::EVENT_TUNDRA_CONNECTED)
             {
@@ -156,14 +166,18 @@ namespace Environment
                 ReleaseEnvironment();
             }
         }
+        */
 
         return false;
     }
 
-    ///\todo Delete this. -jj. 
+    
     EntityPtr EnvironmentModule::CreateEnvironmentEntity(const QString& entity_name, const QString& component_name) 
     {
-        
+        /*
+
+        \todo Delete this. -jj
+
         Scene::ScenePtr active_scene = GetFramework()->Scene()->GetDefaultScene();
         // Search first that does there exist environment entity
         EntityPtr entity = active_scene->GetEntityByName(entity_name);
@@ -198,13 +212,18 @@ namespace Environment
             // Create param component.
             entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name), AttributeChange::LocalOnly);
         }
+        */
 
-        return entity;
+        return EntityPtr();
     }
 
-    ///\todo Delete this. -jj.
+    
     void EnvironmentModule::RemoveLocalEnvironment()
     {
+        /*
+
+        \todo Delete this. -jj
+
         Scene::ScenePtr active_scene = GetFramework()->Scene()->GetDefaultScene();
         Scene::Entity* entity = active_scene->GetEntityByName("LocalEnvironment").get();
     
@@ -235,6 +254,7 @@ namespace Environment
         {
             active_scene->RemoveEntity(entity->GetId());
         }
+        */
     }
 
     void EnvironmentModule::CreateEnvironment()
