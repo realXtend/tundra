@@ -1766,6 +1766,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&GestureEvent::staticMetaObject);
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Ruler::staticMetaObject);
+            PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             
             PythonQt::self()->addDecorators(new Vector3dfDecorator());
             PythonQt::self()->registerCPPClass("Vector3df");
