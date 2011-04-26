@@ -102,6 +102,12 @@ namespace Foundation
 
             platform_->PrepareApplicationDataDirectory(); // depends on config
 
+            // Instantiate our QApplication here, the install directory can only be trusted
+            // to be reported right from the QApplication that knows its executable.
+            // This will make us load modules etc. correctly even if the working dir is something else
+            // than our actual install dir.
+            application = new Application(this, argc_, argv_);
+
             // Force install directory as the current working directory.
             /** \Todo: we may not want to do this in all cases, but there is a huge load of places
                 that depend on being able to refer to the install dir with .*/
@@ -142,7 +148,6 @@ namespace Foundation
             Task::Events::RegisterTaskEvents(event_manager_);
             scene->RegisterSceneEvents();
 
-            application = new Application(this, argc_, argv_);
             initialized_ = true;
 
             asset = new AssetAPI(headless_);
