@@ -13,10 +13,9 @@
 #include "SceneManager.h"
 #include "Framework.h"
 #include "EC_DynamicComponent.h"
-#include "CoreTypes.h"
 #include "LoggingFunctions.h"
-
 DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
+
 #include <QtBrowserItem>
 #include <QLayout>
 #include <QShortcut>
@@ -31,24 +30,25 @@ ECBrowser::ECBrowser(Foundation::Framework *framework, QWidget *parent):
     menu_(0),
     treeWidget_(0),
     framework_(framework)
-{ 
+{
     setMouseTracking(true);
     setAcceptDrops(true);
     setResizeMode(QtTreePropertyBrowser::Interactive);
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(ShowComponentContextMenu(const QPoint &)));
     treeWidget_ = findChild<QTreeWidget *>();
-    if(treeWidget_)
-    {
-        treeWidget_->setSortingEnabled(true);
-        treeWidget_->setFocusPolicy(Qt::StrongFocus);
-        treeWidget_->setAcceptDrops(true);
-        treeWidget_->setDragDropMode(QAbstractItemView::DropOnly);
-        QHeaderView *header = treeWidget_->header();
-        if (header)
-            header->setSortIndicator(0, Qt::AscendingOrder); 
-        connect(treeWidget_, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), SLOT(SelectionChanged(QTreeWidgetItem*, QTreeWidgetItem*)), Qt::UniqueConnection);
-    }
+    assert(treeWidget_);
+    treeWidget_->setSortingEnabled(true);
+    treeWidget_->setFocusPolicy(Qt::StrongFocus);
+    treeWidget_->setAcceptDrops(true);
+    treeWidget_->setDragDropMode(QAbstractItemView::DropOnly);
+    treeWidget_->header()->setSortIndicator(0, Qt::AscendingOrder);
+
+    connect(treeWidget_, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
+        SLOT(SelectionChanged(QTreeWidgetItem*, QTreeWidgetItem*)), Qt::UniqueConnection);
+
+    connect(treeWidget_, SIGNAL(itemExpanded(QTreeWidgetItem *)), SLOT(ResizeHeaderToContents()));
+    connect(treeWidget_, SIGNAL(itemCollapsed(QTreeWidgetItem *)), SLOT(ResizeHeaderToContents()));
 
     QShortcut *delete_shortcut = new QShortcut(QKeySequence::Delete, this);
     QShortcut *copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
@@ -65,7 +65,7 @@ ECBrowser::~ECBrowser()
 }
 
 void ECBrowser::AddEntity(Scene::EntityPtr entity)
-{
+{ 
     PROFILE(ECBrowser_AddNewEntity);
 
     assert(entity);
@@ -157,10 +157,10 @@ void ECBrowser::clear()
 void ECBrowser::UpdateBrowser()
 {
     PROFILE(ECBrowser_UpdateBrowser);
+    assert(treeWidget_ != 0);
 
     // Sorting tends to be a heavy operation so we disable it until we have made all changes to a tree structure.
-    if(treeWidget_)
-        treeWidget_->setSortingEnabled(false);
+    treeWidget_->setSortingEnabled(false);
 
     for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); iter++)
     {
@@ -171,8 +171,8 @@ void ECBrowser::UpdateBrowser()
         for(uint i = 0; i < components.size(); i++)
             AddNewComponentToGroup(components[i]);
     }
-    if(treeWidget_)
-        treeWidget_->setSortingEnabled(true);
+
+    treeWidget_->setSortingEnabled(true);
 
     for(TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.begin();
         iter != itemToComponentGroups_.end();
@@ -180,7 +180,6 @@ void ECBrowser::UpdateBrowser()
     {
         (*iter)->editor_->UpdateUi();
     }
-
 }
 
 void ECBrowser::dragEnterEvent(QDragEnterEvent *event)
@@ -489,6 +488,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
             LogWarning("Fail to add new component to a component group, because component was already added.");
             return;
         }
+
     AddNewComponentToGroup(comp_ptr);
 
     ComponentGroup *group = FindSuitableGroup(comp_ptr);
@@ -671,7 +671,7 @@ void ECBrowser::CreateAttribute()
     if (!(*iter)->IsDynamic())
         return;
 
-    //! @todo Should this dialog be converted to modless?
+    //! @todo Should this dialog be converted to modeless?
     bool ok = false;
     QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"),
         framework_->GetComponentManager()->GetAttributeTypes(), 0, false, &ok);
@@ -706,6 +706,12 @@ void ECBrowser::OnDeleteAction()
         DeleteAttribute(item);
     else
         DeleteComponent(item);
+}
+
+void ECBrowser::ResizeHeaderToContents()
+{
+    treeWidget_->resizeColumnToContents(0);
+    treeWidget_->resizeColumnToContents(1);
 }
 
 ComponentGroup *ECBrowser::FindSuitableGroup(ComponentPtr comp)
@@ -852,10 +858,9 @@ bool ECBrowser::HasEntity(Scene::EntityPtr entity) const
 {
     PROFILE(ECBrowser_HasEntity);
     for(uint i = 0; i < entities_.size(); i++)
-    {
         if(!entities_[i].expired() && entities_[i].lock().get() == entity.get())
             return true;
-    }
+
     return false;
 }
 
