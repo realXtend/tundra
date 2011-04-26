@@ -139,6 +139,9 @@ void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
     movement.y_.rel_ = mouse->relativeY;
     movement.z_.rel_ = mouse->relativeZ;
 
+    // This bool remembers whether RexMovementInput hid the mouse cursor - in that case RexMovementInput is responsible for restoring it.    
+    static bool weControlMouseCursor = false;
+
     switch(mouse->eventType)
     {
     case MouseEvent::MousePressed:
@@ -156,13 +159,22 @@ void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
             // When we start a right mouse button drag, hide the mouse cursor to enter relative mode
             // mouse input.
             if (mouse->button == MouseEvent::RightButton)
-                framework->Input()->SetMouseCursorVisible(false);
+                if (framework->Input()->IsMouseCursorVisible())
+                {
+                    framework->Input()->SetMouseCursorVisible(false);
+                    weControlMouseCursor = true;
+                }
+                else
+                    weControlMouseCursor = false;
         }
         break;
     case MouseEvent::MouseReleased:
         // Coming out of a right mouse button drag, restore the mouse cursor to visible state.
-        if (mouse->button == MouseEvent::RightButton)
+        if (mouse->button == MouseEvent::RightButton && weControlMouseCursor)
+        {
             framework->Input()->SetMouseCursorVisible(true);
+            weControlMouseCursor = false;
+        }
         break;
     case MouseEvent::MouseMove:
         if (mouse->IsRightButtonDown() && !framework->Input()->IsMouseCursorVisible()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
