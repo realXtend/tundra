@@ -374,11 +374,14 @@ void InputAPI::TriggerKeyEvent(KeyEvent &key)
     // If a widget in the QGraphicsScene has keyboard focus, don't send the keyboard message to the inworld scene (the lower contexts).
     const bool qtWidgetHasKeyboardFocus = (mainView->scene()->focusItem() && key.eventType == KeyEvent::KeyPressed);
 
+    // If the mouse cursor is hidden, we treat each InputContext as if it had TakesKeyboardEventsOverQt true.
+    // This is because when the mouse cursor is hidden, no key input should go to the main 2D UI window.
+
     // Pass the event to all input contexts in the priority order.
     for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
     {
         boost::shared_ptr<InputContext> context = iter->lock();
-        if (context.get() && (!qtWidgetHasKeyboardFocus || context->TakesKeyboardEventsOverQt()))
+        if (context.get() && (!qtWidgetHasKeyboardFocus || context->TakesKeyboardEventsOverQt() || !IsMouseCursorVisible()))
             context->TriggerKeyEvent(key);
         if (key.handled)
             key.eventType = KeyEvent::KeyReleased;
@@ -403,6 +406,10 @@ void InputAPI::TriggerKeyEvent(KeyEvent &key)
         assert(false);
         break;
     }
+
+    // If the mouse cursor is hidden, all key events should go to the 'scene' - In that case, suppress all key events from going to the main 2D Qt window.
+    if (!IsMouseCursorVisible())
+        key.Suppress();
 }
 
 void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
@@ -422,13 +429,16 @@ void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
     if (mouse.handled)
         return;
 
+    // If the mouse cursor is hidden, we treat each InputContext as if it had TakesMouseEventsOverQt true.
+    // This is because when the mouse cursor is hidden, no mouse input should go to the main 2D UI window.
+
     // Pass the event to all input contexts in the priority order.
     for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
     {
         if (mouse.handled)
             break;
         boost::shared_ptr<InputContext> context = iter->lock();
-        if (context.get() && (!mouse.itemUnderMouse || context->TakesMouseEventsOverQt()))
+        if (context.get() && (!mouse.itemUnderMouse || context->TakesMouseEventsOverQt() || !IsMouseCursorVisible()))
             context->TriggerMouseEvent(mouse);
     }
 
@@ -456,6 +466,10 @@ void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
             break;
         }
     }
+
+    // If the mouse cursor is hidden, all mouse events should go to the 'scene' - In that case, suppress all mouse events from going to the main 2D Qt window.
+    if (!IsMouseCursorVisible())
+        mouse.Suppress();
 }
 
 void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
