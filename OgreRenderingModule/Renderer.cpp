@@ -1319,10 +1319,10 @@ namespace OgreRenderer
     {
         Ogre::SceneManager* sceneManager = scenemanager_;
         // Debug mode Ogre might assert due to illegal shadow camera AABB, with empty scene. Disable shadows in debug mode.
-#ifdef _DEBUG
+/*#ifdef _DEBUG
             sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
             return;
-#else
+#else*/
         bool using_pssm = (shadowquality_ == Shadows_High);
         bool soft_shadow = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "soft shadow").toBool();
         
@@ -1437,6 +1437,6 @@ namespace OgreRenderer
                 gaussianListeners_.push_back(gaussianListener);
             }
         }
-#endif
+//#endif
     }
 }

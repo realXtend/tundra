@@ -7,7 +7,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "ScriptMetaTypeDefines.h"
 
 #include "SceneAPI.h"
@@ -161,6 +161,22 @@ QScriptValue setPixmapToLabel(QScriptContext *ctx, QScriptEngine *eng)
     return QScriptValue();
 }
 
+QPrintDialog *printDialog = 0;
+
+// SandBox
+QScriptValue getPrintDialog(QScriptContext *ctx, QScriptEngine *eng)
+{
+    printDialog = new QPrintDialog();
+    return eng->newQObject(printDialog);
+}
+
+// SandBox
+QScriptValue closePrintDialog(QScriptContext *ctx, QScriptEngine *eng)
+{
+    SAFE_DELETE_LATER(printDialog);
+    return QScriptValue();
+}
+
 void ExposeQtMetaTypes(QScriptEngine *engine)
 {
     assert(engine);
@@ -174,8 +190,9 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     object = engine->scriptValueFromQMetaObject<QTimer>();
     engine->globalObject().setProperty("QTimer", object);
     engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
-    engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));   
-/*
+    engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));
+    engine->globalObject().setProperty("getPrintDialog", engine->newFunction(getPrintDialog));
+    engine->globalObject().setProperty("closePrintDialog", engine->newFunction(closePrintDialog));
     engine->importExtension("qt.core");
     engine->importExtension("qt.gui");
     engine->importExtension("qt.network");
@@ -187,7 +204,6 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
 //    engine->importExtension("qt.opengl");
 //    engine->importExtension("qt.phonon");
 //    engine->importExtension("qt.webkit"); //cvetan hacked this to build with msvc, patch is somewhere
-
 }
 
 Q_DECLARE_METATYPE(SoundChannelPtr);
