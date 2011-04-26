@@ -48,7 +48,7 @@ public:
     /// Constructs the importer.
     /** \param scene Destination scene
     */
-    explicit SceneImporter(const Scene::ScenePtr &scene);
+    explicit SceneImporter(const ScenePtr &scene);
 
     /// Destroys the importer.
     ~SceneImporter();
@@ -81,7 +81,7 @@ public:
                Default true. If this is false, all entities will be created as new
         \return List of created entities, or an empty list if import failed.
      */
-    QList<Scene::Entity *> Import(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
+    QList<Entity *> Import(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
         const QString &prefix, AttributeChange::Type change, bool clearscene = false, bool replace = true);
 
     /// Parse a mesh for materials & skeleton ref
@@ -157,7 +157,7 @@ private:
         \param prefix 
         \param replace Whether to replace contents of entities by name. If false, all entities will be created as new
      */
-    void ProcessNodeForCreation(QList<Scene::Entity *> &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+    void ProcessNodeForCreation(QList<Entity *> &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace);
 
     /// Process node and its child nodes for creation of scene description.
@@ -192,7 +192,7 @@ private:
     QMap<QString, QStringList> mesh_default_materials_; ///< Materials read from meshes, in case of no subentity elements
     std::set<std::string> material_names_; /// Materials encountered in scene
     std::set<std::string> node_names_; ///< Nodes already created into the scene. Used for name-based "update import" logic
-    Scene::ScenePtr scene_; ///< Destination scene.
+    ScenePtr scene_; ///< Destination scene.
 
     /// Meshes encountered in scene
     /** For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored.

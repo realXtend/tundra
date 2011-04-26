@@ -67,7 +67,7 @@ public:
     /// Sets new scene to be shown in the tree view.
     /** @param scene Scene which contents we want to modify.
     */
-    void SetScene(const Scene::ScenePtr &scene);
+    void SetScene(const ScenePtr &scene);
 
     /// Do we show components in the tree widget or not.
     bool showComponents;
@@ -120,7 +120,7 @@ private:
     QSet<QString> GetAssetRefs(const EntityItem *eItem) const;
 
     Framework *framework; ///< Framework pointer.
-    Scene::SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
+    SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     QList<QPointer<ECEditorWindow> > ecEditors; ///< This EC editors owned by this widget.
     int historyMaxItemCount; ///< Maximum count of invoke history items.
     int numberOfInvokeItemsVisible; ///< Number of visible invoke items in the context-menu.

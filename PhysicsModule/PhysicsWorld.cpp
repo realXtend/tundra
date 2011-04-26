@@ -122,8 +122,8 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             if ((!bodyA) || (!bodyB))
                 continue;
             // Also, both bodies should have valid parent entities
-            Scene::Entity* entityA = bodyA->GetParentEntity();
-            Scene::Entity* entityB = bodyB->GetParentEntity();
+            Entity* entityA = bodyA->GetParentEntity();
+            Entity* entityB = bodyB->GetParentEntity();
             if ((!entityA) || (!entityB))
                 continue;
             // Check that at least one of the bodies is active

@@ -417,7 +417,7 @@ namespace Environment
         }
     }
 
-    Scene::SceneManager* TerrainWeightEditor::GetSceneManager()
+    SceneManager* TerrainWeightEditor::GetSceneManager()
     {
         if (!scene_manager_)
             scene_manager_ = fw_->Scene()->GetDefaultScene().get();

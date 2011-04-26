@@ -30,7 +30,7 @@ EC_VolumeTrigger::~EC_VolumeTrigger()
 {
 }
 
-QList<Scene::EntityWeakPtr> EC_VolumeTrigger::GetEntitiesInside() const
+QList<EntityWeakPtr> EC_VolumeTrigger::GetEntitiesInside() const
 {
     return entities_.keys();
 }
@@ -40,9 +40,9 @@ int EC_VolumeTrigger::GetNumEntitiesInside() const
     return entities_.size();
 }
 
-Scene::Entity* EC_VolumeTrigger::GetEntityInside(int idx) const
+Entity* EC_VolumeTrigger::GetEntityInside(int idx) const
 {
-    QList<Scene::EntityWeakPtr> entities = entities_.keys();
+    QList<EntityWeakPtr> entities = entities_.keys();
     if (idx >=0 && idx < entities.size())
     {
         EntityPtr entity = entities.at(idx).lock();
@@ -55,8 +55,8 @@ Scene::Entity* EC_VolumeTrigger::GetEntityInside(int idx) const
 QStringList EC_VolumeTrigger::GetEntityNamesInside() const
 {
     QStringList entitynames;
-    QList<Scene::EntityWeakPtr> entities = entities_.keys();
-    foreach (Scene::EntityWeakPtr entityw, entities)
+    QList<EntityWeakPtr> entities = entities_.keys();
+    foreach (EntityWeakPtr entityw, entities)
     {
         EntityPtr entity = entityw.lock();
         if (entity)
@@ -66,7 +66,7 @@ QStringList EC_VolumeTrigger::GetEntityNamesInside() const
     return entitynames;
 }
 
-float EC_VolumeTrigger::GetEntityInsidePercent(const Scene::Entity *entity) const
+float EC_VolumeTrigger::GetEntityInsidePercent(const Entity *entity) const
 {
     if (entity)
     {
@@ -94,8 +94,8 @@ float EC_VolumeTrigger::GetEntityInsidePercent(const Scene::Entity *entity) cons
 
 float EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
 {
-    QList<Scene::EntityWeakPtr> entities = entities_.keys();
-    foreach(Scene::EntityWeakPtr wentity, entities)
+    QList<EntityWeakPtr> entities = entities_.keys();
+    foreach(EntityWeakPtr wentity, entities)
     {
         EntityPtr entity = wentity.lock();
         if (entity && entity->GetName().compare(name) == 0)
@@ -120,7 +120,7 @@ bool EC_VolumeTrigger::IsInterestingEntity(const QString &name) const
     return false;
 }
 
-bool EC_VolumeTrigger::IsPivotInside(Scene::Entity *entity) const
+bool EC_VolumeTrigger::IsPivotInside(Entity *entity) const
 {
     boost::shared_ptr<EC_Placeable> placeable = entity->GetComponent<EC_Placeable>();
     boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
@@ -159,13 +159,13 @@ void EC_VolumeTrigger::OnAttributeUpdated(IAttribute* attribute)
 
 void EC_VolumeTrigger::UpdateSignals()
 {
-    Scene::Entity* parent = GetParentEntity();
+    Entity* parent = GetParentEntity();
     if (!parent)
         return;
     
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForRigidBody()));
 
-    Scene::SceneManager* scene = parent->GetScene();
+    SceneManager* scene = parent->GetScene();
     Physics::PhysicsWorld* world = owner_->GetPhysicsWorldForScene(scene);
     if (world)
         connect(world, SIGNAL(Updated(float)), this, SLOT(OnPhysicsUpdate()));
@@ -173,7 +173,7 @@ void EC_VolumeTrigger::UpdateSignals()
 
 void EC_VolumeTrigger::CheckForRigidBody()
 {
-    Scene::Entity* parent = GetParentEntity();
+    Entity* parent = GetParentEntity();
     if (!parent)
         return;
     
@@ -183,15 +183,15 @@ void EC_VolumeTrigger::CheckForRigidBody()
         if (rigidbody)
         {
             rigidbody_ = rigidbody;
-            connect(rigidbody.get(), SIGNAL(PhysicsCollision(Scene::Entity*, const Vector3df&, const Vector3df&, float, float, bool)),
-                this, SLOT(OnPhysicsCollision(Scene::Entity*, const Vector3df&, const Vector3df&, float, float, bool)));
+            connect(rigidbody.get(), SIGNAL(PhysicsCollision(Entity*, const Vector3df&, const Vector3df&, float, float, bool)),
+                this, SLOT(OnPhysicsCollision(Entity*, const Vector3df&, const Vector3df&, float, float, bool)));
         }
     }
 }
 
 void EC_VolumeTrigger::OnPhysicsUpdate()
 {
-    QMap<Scene::EntityWeakPtr, bool>::iterator i = entities_.begin();
+    QMap<EntityWeakPtr, bool>::iterator i = entities_.begin();
     while(i != entities_.end())
     {
         if (!i.value())
@@ -214,7 +214,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 if (entity)
                 {
                     emit entityLeave(entity.get());
-                    disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+                    disconnect(entity.get(), SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)));
                 }
                 continue;
             }
@@ -226,7 +226,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
     }
 }
 
-void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)
+void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)
 {
     assert (otherEntity && "Physics collision with no entity.");
 
@@ -242,7 +242,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
             if (entities_.find(entity) == entities_.end())
             {
                 emit entityEnter(otherEntity);
-                connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+                connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)));
             }
 
             entities_.insert(entity, true);
@@ -255,17 +255,17 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
             if (entities_.find(entity) == entities_.end())
             {
                 emit entityEnter(otherEntity);
-                connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+                connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)));
             }
         }
         entities_.insert(entity, true);
     }
 }
 
-void EC_VolumeTrigger::OnEntityRemoved(Scene::Entity *entity)
+void EC_VolumeTrigger::OnEntityRemoved(Entity *entity)
 {
-    Scene::EntityWeakPtr ptr = entity->shared_from_this();
-    QMap<Scene::EntityWeakPtr, bool>::iterator i = entities_.find(ptr);
+    EntityWeakPtr ptr = entity->shared_from_this();
+    QMap<EntityWeakPtr, bool>::iterator i = entities_.find(ptr);
     if (i != entities_.end())
     {
         entities_.erase(i);

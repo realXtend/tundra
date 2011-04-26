@@ -31,7 +31,7 @@ EntityPlacer::EntityPlacer(Framework *framework, entity_id_t entityId, QObject *
     entity_ = framework_->Scene()->GetDefaultScene()->GetEntity(entityId);
     if(!entity_.expired())
     {
-        Scene::Entity *entity = entity_.lock().get();
+        Entity *entity = entity_.lock().get();
         placeable_ = entity->GetComponent<EC_Placeable>().get();
         if(!placeable_)
             return;
@@ -112,7 +112,7 @@ bool EntityPlacer::DoRayCast(int x, int y, Vector3df &result)
         return false;
 
     RaycastResult* cast_result = renderer->Raycast(x, y);
-    Scene::Entity *entity = cast_result->entity_;
+    Entity *entity = cast_result->entity_;
     if (!entity) // User didn't click on terrain or other entities.
         return false;
 

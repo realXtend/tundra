@@ -44,7 +44,7 @@ private:
     InputContextPtr input_;
     EC_Placeable *placeable_;
     Framework *framework_;
-    Scene::EntityWeakPtr entity_;
+    EntityWeakPtr entity_;
     Ogre::Entity *meshEntity_;
     OgreRenderer::RendererWeakPtr renderer_;
     int previousScrollValue_;

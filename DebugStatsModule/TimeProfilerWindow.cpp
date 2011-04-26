@@ -1404,7 +1404,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 6)
         return;
     
-    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -1473,9 +1473,9 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     uint mesh_instances = 0;
     
     // Loop through entities to see mesh usage
-    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    for(SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::Entity &entity = *iter->second;
+        Entity &entity = *iter->second;
         entities++;
 
         Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();

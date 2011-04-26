@@ -60,7 +60,7 @@ private:
     QTextEdit *xmlEdit_;
 
     /// Entities whose EC's we're editing.
-    QList<Scene::EntityWeakPtr> entities_;
+    QList<EntityWeakPtr> entities_;
 
     /// Components which we're editing.
     QList<ComponentWeakPtr > components_;

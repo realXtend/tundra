@@ -135,11 +135,11 @@ ConsoleCommandResult PhysicsModule::ConsoleStartPhysics(const StringVector& para
 
 ConsoleCommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVector& params)
 {
-    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return ConsoleResultFailure("No active scene");
     
-    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    for(SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         EntityPtr entity = iter->second;
         // Only assign to entities that don't have a rigidbody yet, but have a mesh and a placeable
@@ -189,7 +189,7 @@ void PhysicsModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene, bool isClient)
+Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(ScenePtr scene, bool isClient)
 {
     if (!scene)
         return 0;
@@ -201,19 +201,19 @@ Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr
         return old;
     }
     
-    Scene::SceneManager* ptr = scene.get();
+    SceneManager* ptr = scene.get();
     boost::shared_ptr<PhysicsWorld> new_world(new PhysicsWorld(this, isClient));
     new_world->SetGravity(Vector3df(0.0f,0.0f,-9.81f));
     
     physicsWorlds_[ptr] = new_world;
-    QObject::connect(ptr, SIGNAL(Removed(Scene::SceneManager*)), this, SLOT(OnSceneRemoved(Scene::SceneManager*)));
+    QObject::connect(ptr, SIGNAL(Removed(SceneManager*)), this, SLOT(OnSceneRemoved(SceneManager*)));
     
     LogDebug("Created new physics world");
     
     return new_world.get();
 }
 
-Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::SceneManager* sceneraw)
+Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(SceneManager* sceneraw)
 {
     if (!sceneraw)
         return 0;
@@ -224,17 +224,17 @@ Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::SceneManage
     return i->second.get();
 }
 
-Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::ScenePtr scene)
+Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(ScenePtr scene)
 {
     return GetPhysicsWorldForScene(scene.get());
 }
 
 Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorld(QObject* scene)
 {
-    return GetPhysicsWorldForScene(dynamic_cast<Scene::SceneManager*>(scene));
+    return GetPhysicsWorldForScene(dynamic_cast<SceneManager*>(scene));
 }
 
-void PhysicsModule::OnSceneRemoved(Scene::SceneManager* scene)
+void PhysicsModule::OnSceneRemoved(SceneManager* scene)
 {
     PhysicsWorldMap::iterator i = physicsWorlds_.find(scene);
     if (i != physicsWorlds_.end())

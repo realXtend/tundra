@@ -209,7 +209,7 @@ signals:
         \param newCollision True if same collision did not happen on the previous frame.
         If collision has multiple contact points, newCollision can only be true for the first of them.
      */
-    void PhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+    void PhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
     
 public slots:
     /// Set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
@@ -355,7 +355,7 @@ private:
     void GetProperties(btVector3& localInertia, float& m, int& collisionFlags);
     
     /// Emit a physics collision. Called from PhysicsWorld
-    void EmitPhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+    void EmitPhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
     
     /// Placeable pointer
     boost::weak_ptr<EC_Placeable> placeable_;

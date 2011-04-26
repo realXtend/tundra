@@ -83,7 +83,7 @@ EC_RigidBody::~EC_RigidBody()
 
 bool EC_RigidBody::SetShapeFromVisibleMesh()
 {
-    Scene::Entity* parent = GetParentEntity();
+    Entity* parent = GetParentEntity();
     if (!parent)
         return false;
     EC_Mesh* mesh = parent->GetComponent<EC_Mesh>().get();
@@ -229,19 +229,19 @@ void EC_RigidBody::ResetForces()
 
 void EC_RigidBody::UpdateSignals()
 {
-    Scene::Entity* parent = GetParentEntity();
+    Entity* parent = GetParentEntity();
     if (!parent)
         return;
     
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceableAndTerrain()));
     
-    Scene::SceneManager* scene = parent->GetScene();
+    SceneManager* scene = parent->GetScene();
     world_ = owner_->GetPhysicsWorldForScene(scene);
 }
 
 void EC_RigidBody::CheckForPlaceableAndTerrain()
 {
-    Scene::Entity* parent = GetParentEntity();
+    Entity* parent = GetParentEntity();
     if (!parent)
         return;
     
@@ -684,7 +684,7 @@ void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
 
 void EC_RigidBody::RequestMesh()
 {    
-    Scene::Entity *parent = GetParentEntity();
+    Entity *parent = GetParentEntity();
 
     QString collisionMesh = collisionMeshRef.Get().ref.trimmed();
     if (collisionMesh.isEmpty() && parent) // We use the mesh ref in EC_Mesh as the collision mesh ref if no collision mesh is set in EC_RigidBody.
@@ -822,7 +822,7 @@ void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisi
         collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
 }
 
-void EC_RigidBody::EmitPhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)
+void EC_RigidBody::EmitPhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)
 {
     emit PhysicsCollision(otherEntity, position, normal, distance, impulse, newCollision);
 }

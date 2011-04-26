@@ -116,7 +116,7 @@ void EC_Sound::RegisterActions()
     if (framework_->IsHeadless())
         return;
 
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = GetParentEntity();
     if (entity)
     {
         entity->ConnectAction("PlaySound", this, SLOT(PlaySound()));
@@ -229,7 +229,7 @@ void EC_Sound::UpdateSignals()
         LogError("Couldn't update signals cause component dont have parent entity set.");
         return;
     }
-    Scene::SceneManager *scene = GetParentEntity()->GetScene();
+    SceneManager *scene = GetParentEntity()->GetScene();
     if(!scene)
     {
         LogError("Fail to update signals cause parent entity's scene is null.");

@@ -23,11 +23,11 @@
 #include "MemoryLeakCheck.h"
 
 Q_DECLARE_METATYPE(IAttribute*);
-Q_DECLARE_METATYPE(Scene::ScenePtr);
+Q_DECLARE_METATYPE(ScenePtr);
 Q_DECLARE_METATYPE(EntityPtr);
 Q_DECLARE_METATYPE(ComponentPtr);
-Q_DECLARE_METATYPE(QList<Scene::Entity*>);
-Q_DECLARE_METATYPE(Scene::Entity*);
+Q_DECLARE_METATYPE(QList<Entity*>);
+Q_DECLARE_METATYPE(Entity*);
 Q_DECLARE_METATYPE(std::string);
 Q_DECLARE_METATYPE(EntityList);
 
@@ -190,7 +190,7 @@ QScriptValue toScriptValueAssetReferenceList(QScriptEngine *engine, const AssetR
     return obj;
 }
 
-void fromScriptValueEntityList(const QScriptValue &obj, QList<Scene::Entity*> &ents)
+void fromScriptValueEntityList(const QScriptValue &obj, QList<Entity*> &ents)
 {
     ents.clear();
     QScriptValueIterator it(obj);
@@ -200,19 +200,19 @@ void fromScriptValueEntityList(const QScriptValue &obj, QList<Scene::Entity*> &e
         QObject *qent = it.value().toQObject();
         if (qent)
         {
-            Scene::Entity *ent = qobject_cast<Scene::Entity*>(qent);
+            Entity *ent = qobject_cast<Entity*>(qent);
             if (ent)
                 ents.append(ent);
         }
     }
 }
 
-QScriptValue toScriptValueEntityList(QScriptEngine *engine, const QList<Scene::Entity*> &ents)
+QScriptValue toScriptValueEntityList(QScriptEngine *engine, const QList<Entity*> &ents)
 {
     QScriptValue obj = engine->newArray(ents.size());
     for(int i=0; i<ents.size(); ++i)
     {
-        Scene::Entity *ent = ents.at(i);
+        Entity *ent = ents.at(i);
         if (ent)
             obj.setProperty(i, engine->newQObject(ent));
     }
@@ -229,7 +229,7 @@ void fromScriptValueEntitStdyList(const QScriptValue &obj, EntityList &ents)
         QObject *qent = it.value().toQObject();
         if (qent)
         {
-            Scene::Entity *ent = qobject_cast<Scene::Entity*>(qent);
+            Entity *ent = qobject_cast<Entity*>(qent);
             if (ent)
                 ents.push_back(ent->shared_from_this());
         }
@@ -311,8 +311,8 @@ void RegisterCoreMetaTypes()
 {
 //    qRegisterMetaType<EntityPtr>("EntityPtr");
 //    qRegisterMetaType<EntityPtr>("EntityPtr");
-    qRegisterMetaType<Scene::ScenePtr>("ScenePtr");
-    qRegisterMetaType<Scene::ScenePtr>("Scene::ScenePtr");
+    qRegisterMetaType<ScenePtr>("ScenePtr");
+    qRegisterMetaType<ScenePtr>("ScenePtr");
     qRegisterMetaType<ComponentPtr>("ComponentPtr");
     qRegisterMetaType<Color>("Color");
     qRegisterMetaType<Vector3df>("Vector3df");
@@ -321,7 +321,7 @@ void RegisterCoreMetaTypes()
     qRegisterMetaType<AssetReference>("AssetReference");
     qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
     qRegisterMetaType<IAttribute*>("IAttribute*");
-    qRegisterMetaType< QList<Scene::Entity*> >("QList<Scene::Entity*>");
+    qRegisterMetaType< QList<Entity*> >("QList<Entity*>");
     qRegisterMetaType< EntityList >("EntityList");
     qRegisterMetaType<std::string>("std::string");
 }
@@ -335,25 +335,25 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
     qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
 
-    int id = qRegisterMetaType<Scene::ScenePtr>("ScenePtr");
+    int id = qRegisterMetaType<ScenePtr>("ScenePtr");
     qScriptRegisterMetaType_helper(
-        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(qScriptValueFromBoostSharedPtr<Scene::SceneManager>),
-        reinterpret_cast<QScriptEngine::DemarshalFunction>(qScriptValueToBoostSharedPtr<Scene::SceneManager>),
+        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(qScriptValueFromBoostSharedPtr<SceneManager>),
+        reinterpret_cast<QScriptEngine::DemarshalFunction>(qScriptValueToBoostSharedPtr<SceneManager>),
         QScriptValue());
 
-    id = qRegisterMetaType<Scene::ScenePtr>("Scene::ScenePtr");
+    id = qRegisterMetaType<ScenePtr>("ScenePtr");
     qScriptRegisterMetaType_helper(
-        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(qScriptValueFromBoostSharedPtr<Scene::SceneManager>),
-        reinterpret_cast<QScriptEngine::DemarshalFunction>(qScriptValueToBoostSharedPtr<Scene::SceneManager>),
+        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(qScriptValueFromBoostSharedPtr<SceneManager>),
+        reinterpret_cast<QScriptEngine::DemarshalFunction>(qScriptValueToBoostSharedPtr<SceneManager>),
         QScriptValue());
 
     qScriptRegisterMetaType<ComponentPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
 
     qScriptRegisterMetaType<IAttribute*>(engine, toScriptValueIAttribute, fromScriptValueIAttribute);
-    qScriptRegisterMetaType<Scene::ScenePtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+    qScriptRegisterMetaType<ScenePtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<EntityPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<ComponentPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
-    qScriptRegisterMetaType<QList<Scene::Entity*> >(engine, toScriptValueEntityList, fromScriptValueEntityList);
+    qScriptRegisterMetaType<QList<Entity*> >(engine, toScriptValueEntityList, fromScriptValueEntityList);
     qScriptRegisterMetaType< EntityList >(engine, toScriptValueEntityStdList, fromScriptValueEntitStdyList);
     qScriptRegisterMetaType<std::string >(engine, toScriptValueStdString, fromScriptValueStdString);
     

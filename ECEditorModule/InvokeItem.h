@@ -60,7 +60,7 @@ struct ECEDITOR_MODULE_API InvokeItem
     };
 
     Type type; ///< Type of the item.
-    QString objectName; ///< Class name of the object. Always Scene::Entity for entity actions.
+    QString objectName; ///< Class name of the object. Always Entity for entity actions.
     QString name; ///< Name of the function or entity action.
     QString returnType; ///< Return type (functions only)
     EntityAction::ExecutionTypeField execTypes; ///< Execution type (entity actions only).

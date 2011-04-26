@@ -70,7 +70,7 @@ namespace Avatar
 
     void AvatarEditor::RebuildEditView()
     {
-        Scene::Entity* entity;
+        Entity* entity;
         EC_Avatar* avatar;
         AvatarDescAsset* desc;
         if (!GetAvatarDesc(entity, avatar, desc))
@@ -356,7 +356,7 @@ namespace Avatar
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::Entity* entity;
+        Entity* entity;
         EC_Avatar* avatar;
         AvatarDescAsset* desc;
         if (!GetAvatarDesc(entity, avatar, desc))
@@ -374,7 +374,7 @@ namespace Avatar
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::Entity* entity;
+        Entity* entity;
         EC_Avatar* avatar;
         AvatarDescAsset* desc;
         if (!GetAvatarDesc(entity, avatar, desc))
@@ -392,7 +392,7 @@ namespace Avatar
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::Entity* entity;
+        Entity* entity;
         EC_Avatar* avatar;
         AvatarDescAsset* desc;
         if (!GetAvatarDesc(entity, avatar, desc))
@@ -456,7 +456,7 @@ namespace Avatar
     void AvatarEditor::RevertAvatar()
     {
         // Get users avatar appearance
-        Scene::Entity* entity;
+        Entity* entity;
         EC_Avatar* avatar;
         AvatarDescAsset* desc;
         if (!GetAvatarDesc(entity, avatar, desc))
@@ -467,7 +467,7 @@ namespace Avatar
 
     void AvatarEditor::SaveAvatar()
     {
-        Scene::Entity* entity;
+        Entity* entity;
         EC_Avatar* avatar;
         AvatarDescAsset* desc;
         if (!GetAvatarDesc(entity, avatar, desc))
@@ -486,7 +486,7 @@ namespace Avatar
         std::string index_str = lineEdit->objectName().toStdString();
         uint index = ParseString<uint>(index_str);
         
-        Scene::Entity* entity;
+        Entity* entity;
         EC_Avatar* avatar;
         AvatarDescAsset* desc;
         if (!GetAvatarDesc(entity, avatar, desc))
@@ -588,7 +588,7 @@ namespace Avatar
         return filename; 
     }
     
-    bool AvatarEditor::GetAvatarDesc(Scene::Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc)
+    bool AvatarEditor::GetAvatarDesc(Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc)
     {
         entity = avatarEntity_.lock().get();
         if (!entity)

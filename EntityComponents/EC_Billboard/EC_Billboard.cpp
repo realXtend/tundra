@@ -63,7 +63,7 @@ void EC_Billboard::Show(const std::string &imageName, int timeToShow)
     if (!scene)
         return;
 
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = GetParentEntity();
     assert(entity);
     if (!entity)
         return;

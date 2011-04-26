@@ -126,7 +126,7 @@ SceneTreeWidget::~SceneTreeWidget()
     SaveInvokeHistory();
 }
 
-void SceneTreeWidget::SetScene(const Scene::ScenePtr &s)
+void SceneTreeWidget::SetScene(const ScenePtr &s)
 {
     scene = s;
 }
@@ -973,7 +973,7 @@ void SceneTreeWidget::OpenEntityActionDialog()
     if (scene.expired())
         return;
 
-    QList<Scene::EntityWeakPtr> entities;
+    QList<EntityWeakPtr> entities;
     foreach(entity_id_t id, sel.EntityIds())
     {
         EntityPtr e = scene.lock()->GetEntity(id);
@@ -999,14 +999,14 @@ void SceneTreeWidget::EntityActionDialogFinished(int result)
     QString action = dialog->Action();
     QStringList params = dialog->Parameters();
 
-    foreach(Scene::EntityWeakPtr e, dialog->Entities())
+    foreach(EntityWeakPtr e, dialog->Entities())
         if (e.lock())
             e.lock()->Exec(execTypes, action, params);
 
     // Save invoke item
     InvokeItem ii;
     ii.type = InvokeItem::Action;
-    ii.objectName = QString(Scene::Entity::staticMetaObject.className());
+    ii.objectName = QString(Entity::staticMetaObject.className());
     ii.name = action;
     ii.execTypes = execTypes;
     InvokeItem *mruItem = FindMruItem();
@@ -1088,7 +1088,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             QString objName = obj->metaObject()->className();
             QString objNameWithId = objName;
             {
-                Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
+                Entity *e = dynamic_cast<Entity *>(obj);
                 IComponent *c = dynamic_cast<IComponent *>(obj);
                 if (e)
                     objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
@@ -1407,7 +1407,7 @@ void SceneTreeWidget::InvokeActionTriggered()
     invokedItem->mruOrder = mruItem->mruOrder + 1;
 
     // Gather target objects.
-    QList<Scene::EntityWeakPtr> entities;
+    QList<EntityWeakPtr> entities;
     QObjectList objects;
     QObjectWeakPtrList objectPtrs;
 
@@ -1438,7 +1438,7 @@ void SceneTreeWidget::InvokeActionTriggered()
         }
         else
         {
-            foreach(Scene::EntityWeakPtr e, entities)
+            foreach(EntityWeakPtr e, entities)
                 e.lock()->Exec(invokedItem->execTypes, invokedItem->name, invokedItem->parameters);
         }
     }

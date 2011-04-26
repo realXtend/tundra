@@ -24,8 +24,8 @@ class PhysicsRaycastResult : public QObject
     Q_OBJECT
     
 public:
-    Q_PROPERTY(Scene::Entity* entity READ getentity);
-    Scene::Entity* getentity() const { return entity_; }
+    Q_PROPERTY(Entity* entity READ getentity);
+    Entity* getentity() const { return entity_; }
     Q_PROPERTY(Vector3df pos READ getpos);
     Vector3df getpos() const { return pos_; }
     Q_PROPERTY(Vector3df normal READ getnormal);
@@ -33,7 +33,7 @@ public:
     Q_PROPERTY(float distance READ getdistance);
     float getdistance() const { return distance_; }
     
-    Scene::Entity* entity_;
+    Entity* entity_;
     Vector3df pos_;
     Vector3df normal_;
     float distance_;
@@ -104,7 +104,7 @@ signals:
         \param impulse Impulse applied to the objects to separate them
         \param newCollision True if same collision did not happen on the previous frame. If collision has multiple contact points, newCollision can only be true for the first of them.
      */
-    void PhysicsCollision(Scene::Entity* entityA, Scene::Entity* entityB, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+    void PhysicsCollision(Entity* entityA, Entity* entityB, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
      
      /// Emitted after each simulation step
      /** \param frametime Length of simulation step

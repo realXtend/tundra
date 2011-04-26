@@ -16,14 +16,14 @@
 #include "MemoryLeakCheck.h"
 
 
-EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, QWidget *p) :
+EntityActionDialog::EntityActionDialog(const QList<EntityWeakPtr> &entities, QWidget *p) :
     QDialog(p, 0)
 {
     this->entities = entities;
     Initialize();
 }
 
-EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *p) :
+EntityActionDialog::EntityActionDialog(const QList<EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *p) :
     QDialog(p, 0)
 {
     this->entities = entities;
@@ -51,7 +51,7 @@ EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entiti
     parametersLineEdit->setText(parameterText);
 }
 
-QList<Scene::EntityWeakPtr> EntityActionDialog::Entities() const
+QList<EntityWeakPtr> EntityActionDialog::Entities() const
 {
     return entities;
 }

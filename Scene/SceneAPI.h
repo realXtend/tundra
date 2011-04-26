@@ -9,9 +9,10 @@
 #include <QObject>
 #include <QString>
 
-typedef std::map<QString, Scene::ScenePtr> SceneMap;
+typedef std::map<QString, ScenePtr> SceneMap;
 class Framework;
 
+/// Scene core API.
 /**
 <table class="header"><tr><td>
 <h2>SceneAPI</h2>
@@ -27,18 +28,15 @@ Owned by Framework.
 <div>Parameters: Added scenes name.</div>
 <li>SceneRemoved(const QString&); - Emitted when a scene is removed.
 <div>Parameters: Removed scenes name.</div>
-<li>DefaultWorldSceneChanged(Scene::SceneManager*); - Emitted when a new default world scene is set.
-<div>Parameters: The new default Scene::SceneManager ptr.</div>
+<li>DefaultWorldSceneChanged(SceneManager*); - Emitted when a new default world scene is set.
+<div>Parameters: The new default SceneManager ptr.</div>
 </ul>
 
 </td></tr></table>
-*/
 
-/** 
-    \todo Change typedef Scene::ScenePtr from boost::shared_ptr<Scene::SceneManager> to 
-    QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> to get rid of *Raw() functions for scripts.
+\todo Change typedef ScenePtr from boost::shared_ptr<SceneManager> to 
+QPointer/QSharedPointer/QWeakPointer<SceneManager> to get rid of *Raw() functions for scripts.
 */
-
 class SceneAPI : public QObject
 {
     Q_OBJECT
@@ -61,7 +59,7 @@ signals:
     /// Emitted when default world scene changes.
     /// \param scene new default world scene object.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    void DefaultWorldSceneChanged(Scene::SceneManager *scene);
+    void DefaultWorldSceneChanged(SceneManager *scene);
 
 public slots:
     /// Get Scene Interact weak pointer.
@@ -79,37 +77,37 @@ public slots:
     /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    void SetDefaultScene(const Scene::ScenePtr &scene);
+    void SetDefaultScene(const ScenePtr &scene);
     
     /// Returns the default scene shared ptr.
-    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> rename GetDefaultSceneRaw() to GetDefaultScene().
+    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<SceneManager> rename GetDefaultSceneRaw() to GetDefaultScene().
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    const Scene::ScenePtr &GetDefaultScene() const;
+    const ScenePtr &GetDefaultScene() const;
 
     /// Returns the default scene ptr.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    Scene::SceneManager* GetDefaultSceneRaw() const;
+    SceneManager* GetDefaultSceneRaw() const;
 
     /// Returns a pointer to a scene
     /** Manage the pointer carefully, as scenes may not get deleted properly if
         references to the pointer are left alive.
 
-        \note Returns a shared pointer, but it is preferable to use a weak pointer, Scene::SceneWeakPtr,
+        \note Returns a shared pointer, but it is preferable to use a weak pointer, SceneWeakPtr,
               to avoid dangling references that prevent scenes from being properly destroyed.
 
         \param name Name of the scene to return
         \return The scene, or empty pointer if the scene with the specified name could not be found 
     */
-    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> rename GetSceneRaw() to GetScene().
-    Scene::ScenePtr GetScene(const QString &name) const;
+    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<SceneManager> rename GetSceneRaw() to GetScene().
+    ScenePtr GetScene(const QString &name) const;
 
     /// Creates new empty scene.
     /** \param name name of the new scene
         \param viewenabled Whether the scene is view enabled
         \return The new scene, or empty pointer if scene with the specified name already exists.
     */
-    Scene::ScenePtr CreateScene(const QString &name, bool viewenabled);
+    ScenePtr CreateScene(const QString &name, bool viewenabled);
 
     /// Removes a scene with the specified name.
     /** The scene may not get deleted since there may be dangling references to it.
@@ -150,7 +148,7 @@ private:
 
     /// Current 'default' scene.
     /// \todo Delete this.
-    Scene::ScenePtr defaultScene_;
+    ScenePtr defaultScene_;
 
     /// Scene interact shared ptr.
     ///\todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.

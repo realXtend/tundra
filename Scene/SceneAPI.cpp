@@ -52,7 +52,7 @@ bool SceneAPI::HasScene(const QString &name) const
 
 void SceneAPI::SetDefaultScene(const QString &name)
 {
-    Scene::ScenePtr scene = GetScene(name);
+    ScenePtr scene = GetScene(name);
     if(scene != defaultScene_)
     {
         defaultScene_ = scene;
@@ -60,7 +60,7 @@ void SceneAPI::SetDefaultScene(const QString &name)
     }
 }
 
-void SceneAPI::SetDefaultScene(const Scene::ScenePtr &scene)
+void SceneAPI::SetDefaultScene(const ScenePtr &scene)
 {
     if (scene != defaultScene_)
     {
@@ -69,30 +69,30 @@ void SceneAPI::SetDefaultScene(const Scene::ScenePtr &scene)
     }
 }
 
-const Scene::ScenePtr &SceneAPI::GetDefaultScene() const
+const ScenePtr &SceneAPI::GetDefaultScene() const
 {
     return defaultScene_;
 }
 
-Scene::SceneManager* SceneAPI::GetDefaultSceneRaw() const
+SceneManager* SceneAPI::GetDefaultSceneRaw() const
 {
     return defaultScene_.get();
 }
 
-Scene::ScenePtr SceneAPI::GetScene(const QString &name) const
+ScenePtr SceneAPI::GetScene(const QString &name) const
 {
     SceneMap::const_iterator scene = scenes_.find(name);
     if (scene != scenes_.end())
         return scene->second;
-    return Scene::ScenePtr();  
+    return ScenePtr();  
 }
 
-Scene::ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled)
+ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled)
 {
     if (HasScene(name))
-        return Scene::ScenePtr();
+        return ScenePtr();
 
-    Scene::ScenePtr newScene = Scene::ScenePtr(new Scene::SceneManager(name, framework_, viewenabled));
+    ScenePtr newScene = ScenePtr(new SceneManager(name, framework_, viewenabled));
     if (newScene.get())
     {
         scenes_[name] = newScene;

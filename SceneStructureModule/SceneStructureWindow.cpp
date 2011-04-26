@@ -29,8 +29,6 @@
 
 #include "MemoryLeakCheck.h"
 
-using namespace Scene;
-
 SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw),
@@ -100,7 +98,7 @@ SceneStructureWindow::~SceneStructureWindow()
     SetScene(ScenePtr());
 }
 
-void SceneStructureWindow::SetScene(const Scene::ScenePtr &s)
+void SceneStructureWindow::SetScene(const ScenePtr &s)
 {
     if (!scene.expired() && (s == scene.lock()))
         return;
@@ -116,12 +114,12 @@ void SceneStructureWindow::SetScene(const Scene::ScenePtr &s)
     treeWidget->SetScene(s);
 
     SceneManager *scenePtr = scene.lock().get();
-    connect(scenePtr, SIGNAL(EntityCreated(Scene::Entity *, AttributeChange::Type)), SLOT(AddEntity(Scene::Entity *)));
-    connect(scenePtr, SIGNAL(EntityRemoved(Scene::Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Scene::Entity *)));
-    connect(scenePtr, SIGNAL(ComponentAdded(Scene::Entity *, IComponent *, AttributeChange::Type)),
-        SLOT(AddComponent(Scene::Entity *, IComponent *)));
-    connect(scenePtr, SIGNAL(ComponentRemoved(Scene::Entity *, IComponent *, AttributeChange::Type)),
-        SLOT(RemoveComponent(Scene::Entity *, IComponent *)));
+    connect(scenePtr, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
+    connect(scenePtr, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
+    connect(scenePtr, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)),
+        SLOT(AddComponent(Entity *, IComponent *)));
+    connect(scenePtr, SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)),
+        SLOT(RemoveComponent(Entity *, IComponent *)));
 
     Populate();
 }
@@ -277,7 +275,7 @@ void SceneStructureWindow::ClearAssetReferences()
     }
 }
 
-void SceneStructureWindow::AddEntity(Scene::Entity* entity)
+void SceneStructureWindow::AddEntity(Entity* entity)
 {
     EntityItem *item = new EntityItem(entity->shared_from_this());
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
@@ -290,7 +288,7 @@ void SceneStructureWindow::AddEntity(Scene::Entity* entity)
         AddComponent(entity, c.get());
 }
 
-void SceneStructureWindow::RemoveEntity(Scene::Entity* entity)
+void SceneStructureWindow::RemoveEntity(Entity* entity)
 {
     for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
@@ -303,7 +301,7 @@ void SceneStructureWindow::RemoveEntity(Scene::Entity* entity)
     }
 }
 
-void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
+void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
 {
     for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
@@ -348,7 +346,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
     }
 }
 
-void SceneStructureWindow::RemoveComponent(Scene::Entity* entity, IComponent* comp)
+void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
 {
     for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
@@ -397,7 +395,7 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
     }
 }
 
-void SceneStructureWindow::DecorateEntityItem(Scene::Entity *entity, QTreeWidgetItem *item) const
+void SceneStructureWindow::DecorateEntityItem(Entity *entity, QTreeWidgetItem *item) const
 {
     bool local = entity->IsLocal();
     bool temp = entity->IsTemporary();
@@ -507,7 +505,7 @@ void SceneStructureWindow::AddAssetReference(IAttribute *attr)
     else
     {
         // Find parent entity item.
-        Scene::Entity *entity = dc->GetParentEntity();
+        Entity *entity = dc->GetParentEntity();
         assert(entity);
         if (!entity)
             return;
@@ -577,7 +575,7 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
     // Find parent item for the asset reference item.
     IComponent *ownerComp = assetRef->GetOwner();
     assert(ownerComp);
-    Scene::Entity *parentEntity = assetRef->GetOwner()->GetParentEntity();
+    Entity *parentEntity = assetRef->GetOwner()->GetParentEntity();
     assert(parentEntity);
 
     QTreeWidgetItem *parentItem = 0;

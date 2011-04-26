@@ -38,7 +38,7 @@ public:
         @param dest Destination scene.
         @param parent Parent widget.
     */
-    explicit AddContentWindow(Framework *fw, const Scene::ScenePtr &dest, QWidget *parent = 0);
+    explicit AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget *parent = 0);
 
     /// Destructor.
     ~AddContentWindow();
@@ -98,7 +98,7 @@ private:
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
     Framework *framework; ///< Framework.
-    Scene::SceneWeakPtr scene; ///< Destination scene.
+    SceneWeakPtr scene; ///< Destination scene.
     SceneDesc sceneDesc; ///< Current scene description shown on the window.
     QPushButton *addContentButton; ///< Add content button.
     QPushButton *cancelButton; ///< Cancel/close button.

@@ -288,7 +288,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)
         {
-            Scene::ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true);
+            ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true);
             // Create physics world in client (non-authoritative) mode
             Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
             physics->CreatePhysicsWorldForScene(scene, true);
@@ -309,7 +309,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             // Note: when we move to unordered communication, we must guarantee that the server does not send
             // any scene data before the login reply
 
-            Scene::ScenePtr scene = framework_->Scene()->GetScene("TundraClient");
+            ScenePtr scene = framework_->Scene()->GetScene("TundraClient");
             if (scene)
                 scene->RemoveAllEntities(true, AttributeChange::LocalOnly);
         }

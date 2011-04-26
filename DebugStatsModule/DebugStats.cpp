@@ -161,7 +161,7 @@ ConsoleCommandResult DebugStatsModule::Exec(const StringVector &params)
     if (id == 0)
         return ConsoleResultFailure("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
 
-    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return ConsoleResultFailure("No active scene.");
 

@@ -160,11 +160,11 @@ void JavascriptModule::RunScript(const QString &scriptFileName)
 
 void JavascriptModule::SceneAdded(const QString &name)
 {
-    Scene::ScenePtr scene = GetFramework()->Scene()->GetScene(name);
-    connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
-            SLOT(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
-    connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
-            SLOT(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)));
+    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
+    connect(scene.get(), SIGNAL(ComponentAdded(Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(ComponentAdded(Entity*, IComponent*, AttributeChange::Type)));
+    connect(scene.get(), SIGNAL(ComponentRemoved(Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(ComponentRemoved(Entity*, IComponent*, AttributeChange::Type)));
 }
 
 void JavascriptModule::ScriptAssetChanged(ScriptAssetPtr newScript)
@@ -211,13 +211,13 @@ void JavascriptModule::ScriptAssetChanged(ScriptAssetPtr newScript)
     }
 }
 
-void JavascriptModule::ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
+void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
         connect(comp, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(ScriptAssetChanged(ScriptAssetPtr)), Qt::UniqueConnection);
 }
 
-void JavascriptModule::ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
+void JavascriptModule::ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
         disconnect(comp, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(ScriptAssetChanged(ScriptAssetPtr)));

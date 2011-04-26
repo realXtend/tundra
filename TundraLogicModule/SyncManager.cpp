@@ -64,10 +64,10 @@ void SyncManager::SetUpdatePeriod(float period)
     update_period_ = period;
 }
 
-void SyncManager::RegisterToScene(Scene::ScenePtr scene)
+void SyncManager::RegisterToScene(ScenePtr scene)
 {
     // Disconnect from previous scene if not expired
-    Scene::ScenePtr previous = scene_.lock();
+    ScenePtr previous = scene_.lock();
     if (previous)
     {
         disconnect(this);
@@ -83,7 +83,7 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     }
     
     scene_ = scene;
-    Scene::SceneManager* sceneptr = scene.get();
+    SceneManager* sceneptr = scene.get();
     
     connect(sceneptr, SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
         SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
@@ -91,16 +91,16 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
         SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( AttributeRemoved(IComponent*, IAttribute*, AttributeChange::Type) ),
         SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
-    connect(sceneptr, SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
-        SLOT( OnComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ));
-    connect(sceneptr, SIGNAL( ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ),
-        SLOT( OnComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ));
-    connect(sceneptr, SIGNAL( EntityCreated(Scene::Entity*, AttributeChange::Type) ),
-        SLOT( OnEntityCreated(Scene::Entity*, AttributeChange::Type) ));
-    connect(sceneptr, SIGNAL( EntityRemoved(Scene::Entity*, AttributeChange::Type) ),
-        SLOT( OnEntityRemoved(Scene::Entity*, AttributeChange::Type) ));
-    connect(sceneptr, SIGNAL( ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType) ),
-        SLOT( OnActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)));
+    connect(sceneptr, SIGNAL( ComponentAdded(Entity*, IComponent*, AttributeChange::Type) ),
+        SLOT( OnComponentAdded(Entity*, IComponent*, AttributeChange::Type) ));
+    connect(sceneptr, SIGNAL( ComponentRemoved(Entity*, IComponent*, AttributeChange::Type) ),
+        SLOT( OnComponentRemoved(Entity*, IComponent*, AttributeChange::Type) ));
+    connect(sceneptr, SIGNAL( EntityCreated(Entity*, AttributeChange::Type) ),
+        SLOT( OnEntityCreated(Entity*, AttributeChange::Type) ));
+    connect(sceneptr, SIGNAL( EntityRemoved(Entity*, AttributeChange::Type) ),
+        SLOT( OnEntityRemoved(Entity*, AttributeChange::Type) ));
+    connect(sceneptr, SIGNAL( ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType) ),
+        SLOT( OnActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)));
 }
 
 ///\todo EventManager regression. -jj.
@@ -168,12 +168,12 @@ void SyncManager::NewUserConnected(UserConnection* user)
 {
     PROFILE(SyncManager_NewUserConnected);
 
-    Scene::ScenePtr scene = scene_.lock();
+    ScenePtr scene = scene_.lock();
     if (!scene)
         return;
     
     // Connect to actions sent to specifically to this user
-    connect(user, SIGNAL(ActionTriggered(UserConnection*, Scene::Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Scene::Entity*, const QString&, const QStringList&)));
+    connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
     // If user does not have replication state, create it, then mark all non-local entities dirty
     // so we will send them during the coming updates
@@ -182,12 +182,12 @@ void SyncManager::NewUserConnected(UserConnection* user)
     
     SceneSyncState* state = checked_static_cast<SceneSyncState*>(user->syncState.get());
     
-    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    for(SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         EntityPtr entity = iter->second;
         entity_id_t id = entity->GetId();
         // If we cross over to local entities (ID range 0x80000000 - 0xffffffff), break
-        if (id & Scene::LocalEntity)
+        if (id & LocalEntity)
             break;
         state->OnEntityChanged(id);
     }
@@ -200,7 +200,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     // Client: Check for stopping interpolation, if we change a currently interpolating variable ourselves
     if (!isServer)
     {
-        Scene::ScenePtr scene = scene_.lock();
+        ScenePtr scene = scene_.lock();
         if ((scene) && (!scene->IsInterpolating()) && (!currentSender))
         {
             if ((attr->HasMetadata()) && (attr->GetMetadata()->interpolation == AttributeMetadata::Interpolate))
@@ -211,7 +211,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
-    Scene::Entity* entity = comp->GetParentEntity();
+    Entity* entity = comp->GetParentEntity();
     if ((!entity) || (entity->IsLocal()))
         return;
     bool dynamic = comp->HasDynamicStructure();
@@ -249,7 +249,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     currentSender = 0;
 }
 
-void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
+void SyncManager::OnComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
@@ -273,7 +273,7 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
     }
 }
 
-void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
+void SyncManager::OnComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
@@ -297,7 +297,7 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
     }
 }
 
-void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type change)
+void SyncManager::OnEntityCreated(Entity* entity, AttributeChange::Type change)
 {
     if ((change != AttributeChange::Replicate) || (entity->IsLocal()))
         return;
@@ -326,7 +326,7 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
     }
 }
 
-void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type change)
+void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
 {
     if (change != AttributeChange::Replicate)
         return;
@@ -349,9 +349,9 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
     }
 }
 
-void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type)
+void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type)
 {
-    //Scene::SceneManager* scene = scene_.lock().get();
+    //SceneManager* scene = scene_.lock().get();
     //assert(scene);
 
     // If we are the server and the local script on this machine has requested a script to be executed on the server, it
@@ -396,7 +396,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
     }
 }
 
-void SyncManager::OnUserActionTriggered(UserConnection* user, Scene::Entity *entity, const QString &action, const QStringList &params)
+void SyncManager::OnUserActionTriggered(UserConnection* user, Entity *entity, const QString &action, const QStringList &params)
 {
     bool isServer = owner_->IsServer();
     if (!isServer)
@@ -430,7 +430,7 @@ void SyncManager::Update(f64 frametime)
     while(update_acc_ >= update_period_)
         update_acc_ -= update_period_;
     
-    Scene::ScenePtr scene = scene_.lock();
+    ScenePtr scene = scene_.lock();
     if (!scene)
         return;
     
@@ -458,7 +458,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
 {
     PROFILE(SyncManager_ProcessSyncState);
     
-    Scene::ScenePtr scene = scene_.lock();
+    ScenePtr scene = scene_.lock();
     
     int num_messages_sent = 0;
     
@@ -478,7 +478,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 + " but the entity with that ID is queued for deletion later!");
         }
 
-        const Scene::Entity::ComponentVector &components =  entity->Components();
+        const Entity::ComponentVector &components =  entity->Components();
         EntitySyncState* entitystate = state->GetEntity(*i);
         // No record in entitystate -> newly created entity, send full state
         if (!entitystate)
@@ -676,7 +676,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
 {
-    if (entityID & Scene::LocalEntity)
+    if (entityID & LocalEntity)
     {
         LogWarning("Received an entity sync message for a local entity. Disregarding.");
         return false;
@@ -696,7 +696,7 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg)
 {
-    Scene::ScenePtr scene = GetRegisteredScene();
+    ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -784,14 +784,14 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
  
     // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
     scene->EmitEntityCreated(entity, change);
-    const Scene::Entity::ComponentVector &components = entity->Components();
+    const Entity::ComponentVector &components = entity->Components();
     for(uint i = 0; i < components.size(); ++i)
         components[i]->ComponentChanged(change);
 }
 
 void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgRemoveEntity& msg)
 {
-    Scene::ScenePtr scene = GetRegisteredScene();
+    ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -822,7 +822,7 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
 
 void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const MsgCreateComponents& msg)
 {
-    Scene::ScenePtr scene = GetRegisteredScene();
+    ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -904,7 +904,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg)
 {
-    Scene::ScenePtr scene = GetRegisteredScene();
+    ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -1108,7 +1108,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const MsgRemoveComponents& msg)
 {
-    Scene::ScenePtr scene = GetRegisteredScene();
+    ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -1154,7 +1154,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg)
 {
-    Scene::ScenePtr scene = GetRegisteredScene();
+    ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     
@@ -1180,7 +1180,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
 {
     bool isServer = owner_->IsServer();
     
-    Scene::ScenePtr scene = GetRegisteredScene();
+    ScenePtr scene = GetRegisteredScene();
     if (!scene)
         return;
     

@@ -20,10 +20,7 @@ class EC_VoiceChannel;
 
 class Framework;
 
-namespace Scene
-{
-    class Entity;
-}
+class Entity;
 
 class IComponent;
 
@@ -52,7 +49,7 @@ namespace MumbleVoip
         virtual void ShowMicrophoneAdjustmentDialog();
 
     private slots:
-        void OnECAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+        void OnECAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
         void OnECVoiceChannelDestroyed(QObject* obj);
         void OnSceneAdded(const QString &name);
 

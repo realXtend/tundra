@@ -51,7 +51,7 @@ public:
     ~SyncManager();
     
     /// Register to entity/component change signals from a specific scene and start syncing them
-    void RegisterToScene(Scene::ScenePtr scene);
+    void RegisterToScene(ScenePtr scene);
     
     /// Accumulate time & send pending sync messages if enough time passed from last update
     void Update(f64 frametime);
@@ -71,22 +71,22 @@ private slots:
     void OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change);
     
     /// Trigger EC sync because of component added to entity
-    void OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+    void OnComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
     
     /// Trigger EC sync because of component removed from entity
-    void OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+    void OnComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
     
     /// Trigger sync of entity creation
-    void OnEntityCreated(Scene::Entity* entity, AttributeChange::Type change);
+    void OnEntityCreated(Entity* entity, AttributeChange::Type change);
     
     /// Trigger sync of entity removal
-    void OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
+    void OnEntityRemoved(Entity* entity, AttributeChange::Type change);
 
     /// Trigger sync of entity action.
-    void OnActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
+    void OnActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
 
     /// Trigger sync of entity action to specific user
-    void OnUserActionTriggered(UserConnection* user, Scene::Entity *entity, const QString &action, const QStringList &params);
+    void OnUserActionTriggered(UserConnection* user, Entity *entity, const QString &action, const QStringList &params);
 
 private:
     /// Handle a Kristalli protocol message
@@ -141,7 +141,7 @@ private:
      */
     SceneSyncState* GetSceneSyncState(kNet::MessageConnection* connection);
 
-    Scene::ScenePtr GetRegisteredScene()
+    ScenePtr GetRegisteredScene()
     {
         return scene_.lock();
     }
@@ -154,7 +154,7 @@ private:
     Framework* framework_;
     
     /// Scene pointer
-    Scene::SceneWeakPtr scene_;
+    SceneWeakPtr scene_;
     
     /// Time period for update, default 1/30th of a second
     float update_period_;

@@ -34,7 +34,7 @@
 
 #include "MemoryLeakCheck.h"
 
-uint AddUniqueListItem(Scene::Entity *entity, QListWidget* list, const QString& name)
+uint AddUniqueListItem(Entity *entity, QListWidget* list, const QString& name)
 {
     for(int i = 0; i < list->count(); ++i)
     {
@@ -217,7 +217,7 @@ void ECEditorWindow::CreateComponent()
     }
 }
 
-void ECEditorWindow::ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params)
+void ECEditorWindow::ActionTriggered(Entity *entity, const QString &action, const QStringList &params)
 {
     if (params.size() && action == "MousePress")
     {
@@ -231,7 +231,7 @@ void ECEditorWindow::ActionTriggered(Scene::Entity *entity, const QString &actio
 
 void ECEditorWindow::DeleteEntity()
 {
-    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -248,7 +248,7 @@ void ECEditorWindow::CopyEntity()
 
     foreach(EntityPtr entity, GetSelectedEntities())
     {
-        Scene::Entity *e = entity.get();
+        Entity *e = entity.get();
         if (e)
         {
             QDomElement entity_elem = temp_doc.createElement("entity");
@@ -271,7 +271,7 @@ void ECEditorWindow::PasteEntity()
         return;
     // First we need to check if component is holding EC_OgrePlacable component to tell where entity should be located at.
     /// \todo local only server wont save those objects.
-    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    ScenePtr scene = framework_->Scene()->GetDefaultScene();
     assert(scene);
     if(!scene)
         return;
@@ -299,7 +299,7 @@ void ECEditorWindow::PasteEntity()
             return;
 
         bool hasPlaceable = false;
-        Scene::Entity::ComponentVector components = originalEntity->Components();
+        Entity::ComponentVector components = originalEntity->Components();
         for(uint i = 0; i < components.size(); i++)
         {
             // If the entity is holding placeable component we can place it into the scene.
@@ -334,7 +334,7 @@ void ECEditorWindow::OpenEntityActionDialog()
     if (!action)
         return;
 
-    QList<Scene::EntityWeakPtr> entities;
+    QList<EntityWeakPtr> entities;
     foreach(EntityPtr entity, GetSelectedEntities())
         entities.append(entity);
 
@@ -355,7 +355,7 @@ void ECEditorWindow::EntityActionDialogFinished(int result)
     if (result == QDialog::Rejected)
         return;
 
-    foreach(Scene::EntityWeakPtr e, dialog->Entities())
+    foreach(EntityWeakPtr e, dialog->Entities())
         if (e.lock())
             e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
 }
@@ -408,7 +408,7 @@ void ECEditorWindow::FunctionDialogFinished(int result)
             QString objName = obj->metaObject()->className();
             QString objNameWithId = objName;
             {
-                Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
+                Entity *e = dynamic_cast<Entity *>(obj);
                 IComponent *c = dynamic_cast<IComponent *>(obj);
                 if (e)
                     objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
@@ -443,7 +443,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     if (!browser_)
         return;
 
-    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
     {
         browser_->clear();
@@ -614,7 +614,7 @@ void ECEditorWindow::ToggleEntityList()
     }
 }
 
-void ECEditorWindow::EntityRemoved(Scene::Entity* entity)
+void ECEditorWindow::EntityRemoved(Entity* entity)
 {
     for(uint i = 0; i < (uint)entity_list_->count(); i++)
     {
@@ -673,7 +673,7 @@ void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entitie
         item = dynamic_cast<EntityListWidgetItem*>(entity_list_->item(i));
         if (item)
         {
-            QPointer<Scene::Entity> ent = item->GetEntity();
+            QPointer<Entity> ent = item->GetEntity();
             QFont font = item->font();
             if (!ent.isNull() && bolded_entities.contains(ent.data()->GetId()))
             {
@@ -749,30 +749,30 @@ void ECEditorWindow::Initialize()
         connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
 
     // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
-    connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)), SLOT(DefaultSceneChanged(Scene::SceneManager *)));
+    connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(SceneManager *)), SLOT(DefaultSceneChanged(SceneManager *)));
 
     ECEditorModule *module = framework_->GetModule<ECEditorModule>();
     if (module)
         connect(this, SIGNAL(OnFocusChanged(ECEditorWindow *)), module, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
 
-    Scene::SceneManager *scene = framework_->Scene()->GetDefaultScene().get();
+    SceneManager *scene = framework_->Scene()->GetDefaultScene().get();
     if (scene)
     {
-        connect(scene, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
-            SLOT(EntityRemoved(Scene::Entity*)), Qt::UniqueConnection);
-        connect(scene, SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
-                SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
+        connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), 
+            SLOT(EntityRemoved(Entity*)), Qt::UniqueConnection);
+        connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
+                SLOT(ActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
     }
 }
 
-void ECEditorWindow::DefaultSceneChanged(Scene::SceneManager *scene)
+void ECEditorWindow::DefaultSceneChanged(SceneManager *scene)
 {
     assert(scene);
     /// todo disconnect previous scene connection.
-    connect(scene, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
-            SLOT(EntityRemoved(Scene::Entity*)), Qt::UniqueConnection);
-    connect(scene, SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
-            SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
+    connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), 
+            SLOT(EntityRemoved(Entity*)), Qt::UniqueConnection);
+    connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
+            SLOT(ActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
 }
 
 void ECEditorWindow::ComponentDialogFinished(int result)
@@ -784,7 +784,7 @@ void ECEditorWindow::ComponentDialogFinished(int result)
     if (result != QDialog::Accepted)
         return;
 
-    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogWarning("Fail to add new component to entity, since default world scene was null");
@@ -826,7 +826,7 @@ QList<EntityPtr> ECEditorWindow::GetSelectedEntities() const
     if (!entity_list_)
         return ret;
 
-    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return ret;
 

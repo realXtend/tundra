@@ -60,10 +60,10 @@ public slots:
     void ScriptAssetChanged(ScriptAssetPtr newScript);
 
     /// New component has been added to scene.
-    void ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+    void ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Component has been removed from scene.
-    void ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+    void ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
 signals:
     /// A script engine has been created

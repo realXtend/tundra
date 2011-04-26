@@ -21,7 +21,7 @@ EntityItem::EntityItem(const EntityPtr &entity) :
     SetText(entity.get());
 }
 
-void EntityItem::SetText(Scene::Entity *entity)
+void EntityItem::SetText(::Entity *entity)
 {
     setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
 }

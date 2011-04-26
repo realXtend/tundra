@@ -379,7 +379,7 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
         targetText.append(mo->className());
 
         {
-            Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
+            Entity *e = dynamic_cast<Entity *>(obj);
             IComponent *c = dynamic_cast<IComponent *>(obj);
             if (e)
                 targetText.append('(' + QString::number((uint)e->GetId()) + ')');

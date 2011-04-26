@@ -19,9 +19,9 @@
 
 #include "MemoryLeakCheck.h"
 
-void ApplyBoneModifier(Scene::Entity* entity, const BoneModifier& modifier, float value);
-void ResetBones(Scene::Entity* entity);
-Ogre::Bone* GetAvatarBone(Scene::Entity* entity, const std::string& bone_name);
+void ApplyBoneModifier(Entity* entity, const BoneModifier& modifier, float value);
+void ResetBones(Entity* entity);
+Ogre::Bone* GetAvatarBone(Entity* entity, const std::string& bone_name);
 void HideVertices(Ogre::Entity*, std::set<uint> vertices_to_hide);
 void GetInitialDerivedBonePosition(Ogre::Node* bone, Ogre::Vector3& position);
 
@@ -48,7 +48,7 @@ void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
     if (!asset)
         return;
 
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     if (!entity)
         return;
 
@@ -99,7 +99,7 @@ void EC_Avatar::SetupAppearance()
 {
     PROFILE(Avatar_SetupAppearance);
     
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -120,7 +120,7 @@ void EC_Avatar::SetupAppearance()
 
 void EC_Avatar::SetupDynamicAppearance()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -151,7 +151,7 @@ QString EC_Avatar::GetAvatarProperty(const QString& name)
 
 void EC_Avatar::AdjustHeightOffset()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -202,7 +202,7 @@ void EC_Avatar::AdjustHeightOffset()
 
 void EC_Avatar::SetupMeshAndMaterials()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -252,7 +252,7 @@ void EC_Avatar::SetupMeshAndMaterials()
 
 void EC_Avatar::SetupAttachments()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -279,7 +279,7 @@ void EC_Avatar::SetupAttachments()
 
 void EC_Avatar::SetupMorphs()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -332,7 +332,7 @@ void EC_Avatar::SetupMorphs()
 
 void EC_Avatar::SetupBoneModifiers()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -351,7 +351,7 @@ QString EC_Avatar::LookupAsset(const QString& ref)
     return framework_->Asset()->ResolveAssetRef("", ref);
 }
 
-void ResetBones(Scene::Entity* entity)
+void ResetBones(Entity* entity)
 {
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
@@ -381,7 +381,7 @@ void ResetBones(Scene::Entity* entity)
     }
 }
 
-void ApplyBoneModifier(Scene::Entity* entity, const BoneModifier& modifier, float value)
+void ApplyBoneModifier(Entity* entity, const BoneModifier& modifier, float value)
 {
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
@@ -534,7 +534,7 @@ void GetInitialDerivedBonePosition(Ogre::Node* bone, Ogre::Vector3& position)
     }
 }
 
-Ogre::Bone* GetAvatarBone(Scene::Entity* entity, const std::string& bone_name)
+Ogre::Bone* GetAvatarBone(Entity* entity, const std::string& bone_name)
 {
     if (!entity)
         return 0;

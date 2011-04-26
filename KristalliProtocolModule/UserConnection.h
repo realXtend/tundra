@@ -11,13 +11,10 @@
 
 namespace kNet
 {
-class MessageConnection;
+    class MessageConnection;
 }
 
-namespace Scene
-{
 class Entity;
-}
 
 /// Interface class for user's currently replicated scene state
 struct ISyncState
@@ -70,7 +67,7 @@ public slots:
     void DenyConnection();
     
 signals:
-    void ActionTriggered(UserConnection* connection, Scene::Entity* entity, const QString& action, const QStringList& params);
+    void ActionTriggered(UserConnection* connection, Entity* entity, const QString& action, const QStringList& params);
 };
 
 typedef std::list<UserConnection*> UserConnectionList;

@@ -61,7 +61,7 @@ void IComponent::SetUpdateMode(AttributeChange::Type defaultmode)
         updatemode_ = defaultmode;
 }
 
-void IComponent::SetParentEntity(Scene::Entity* entity)
+void IComponent::SetParentEntity(Entity* entity)
 {
     parent_entity_ = entity;
     if (parent_entity_)
@@ -70,12 +70,12 @@ void IComponent::SetParentEntity(Scene::Entity* entity)
         emit ParentEntityDetached();
 }
 
-Scene::Entity* IComponent::GetParentEntity() const
+Entity* IComponent::GetParentEntity() const
 {
     return parent_entity_;
 }
 
-Scene::SceneManager* IComponent::GetParentScene() const
+SceneManager* IComponent::GetParentScene() const
 {
     if (!parent_entity_)
         return 0;
@@ -199,7 +199,7 @@ void IComponent::EmitAttributeChanged(IAttribute* attribute, AttributeChange::Ty
         return; // No signals
     
     // Trigger scenemanager signal
-    Scene::SceneManager* scene = GetParentScene();
+    SceneManager* scene = GetParentScene();
     if (scene)
         scene->EmitAttributeChanged(this, attribute, change);
     
@@ -304,7 +304,7 @@ bool IComponent::ViewEnabled() const
 {
     if (!parent_entity_)
         return true;
-    Scene::SceneManager* scene = parent_entity_->GetScene();
+    SceneManager* scene = parent_entity_->GetScene();
     if (scene)
         return scene->ViewEnabled();
     else

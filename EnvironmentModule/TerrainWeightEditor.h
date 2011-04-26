@@ -5,7 +5,7 @@
 
 #include <QWidget>
 
-namespace Scene { class SceneManager; }
+class SceneManager;
 
 namespace Environment
 {
@@ -31,8 +31,8 @@ namespace Environment
     private:
         Framework *fw_;
         QWidget* editor_widget_;
-        Scene::SceneManager* scene_manager_;
-        Scene::SceneManager* GetSceneManager();
+        SceneManager* scene_manager_;
+        SceneManager* GetSceneManager();
         int brush_size_;
         int brush_modifier_;
         f32 falloff_percentage_;

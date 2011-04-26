@@ -43,7 +43,7 @@ EC_Camera::~EC_Camera()
 
 void EC_Camera::AutoSetPlaceable()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     if (entity)
     {
         ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
@@ -165,7 +165,7 @@ void EC_Camera::AttachCamera()
 
 void EC_Camera::UpdateSignals()
 {
-    Scene::Entity* parent = GetParentEntity();
+    Entity* parent = GetParentEntity();
     if (parent)
     {
         // Connect to ComponentRemoved signal of the parent entity, so we can check if the mesh gets removed

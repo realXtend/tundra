@@ -33,18 +33,18 @@ public:
     /** @param entities Entities for which action is performed.
         @param parent Parent widget.
     */
-    EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, QWidget *parent = 0);
+    EntityActionDialog(const QList<EntityWeakPtr> &entities, QWidget *parent = 0);
 
     /// Constructs the dialog and uses information of @c invokeItem to fill the currently active function and parameter editors.
     /** @param entities Entities for which action is performed.
         @param invokeItem Invoke history item 
         @param parent Parent widget.
     */
-    EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *parent = 0);
+    EntityActionDialog(const QList<EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *parent = 0);
 
 public slots:
     /// Returns list of entities for which the action is triggered.
-    QList<Scene::EntityWeakPtr> Entities() const;
+    QList<EntityWeakPtr> Entities() const;
 
     /// Returns execution type(s) of the action.
     EntityAction::ExecutionTypeField ExecutionType() const;
@@ -85,7 +85,7 @@ private:
     QPushButton *execAndCloseButton;
 
     /// List of entities for 
-    QList<Scene::EntityWeakPtr> entities;
+    QList<EntityWeakPtr> entities;
 
 private slots:
     /// Checks that we have some execution type checked. If not, "Execute" and "Execute and Close" buttons are disabled.

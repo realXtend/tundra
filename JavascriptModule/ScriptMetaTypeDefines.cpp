@@ -67,8 +67,8 @@ Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 /// Scene API defines.
 Q_DECLARE_METATYPE(SceneAPI*);
-Q_DECLARE_METATYPE(Scene::SceneManager*);
-Q_DECLARE_METATYPE(Scene::Entity*);
+Q_DECLARE_METATYPE(SceneManager*);
+Q_DECLARE_METATYPE(Entity*);
 Q_DECLARE_METATYPE(EntityAction*);
 Q_DECLARE_METATYPE(EntityAction::ExecutionType);
 Q_DECLARE_METATYPE(AttributeChange*);
@@ -191,8 +191,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     // Scene metatypes.
     qScriptRegisterQObjectMetaType<SceneAPI*>(engine);
-    qScriptRegisterQObjectMetaType<Scene::SceneManager*>(engine);
-//    qScriptRegisterQObjectMetaType<Scene::Entity*>(engine);
+    qScriptRegisterQObjectMetaType<SceneManager*>(engine);
+//    qScriptRegisterQObjectMetaType<Entity*>(engine);
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);
     qScriptRegisterQObjectMetaType<IComponent*>(engine);

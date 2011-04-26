@@ -17,10 +17,7 @@ class QRect;
 class LogListener;
 typedef boost::shared_ptr<LogListener> LogListenerPtr;
 
-namespace Scene
-{
-    class Entity;
-}
+class Entity;
 
 /// Result of a raycast. Other fields are valid only if entity_ is non-null
 ///\todo Remove the QObject inheritance here, and expose as a struct to scripts.
@@ -29,8 +26,8 @@ class RaycastResult : public QObject
     Q_OBJECT
     
 public:
-    Q_PROPERTY(Scene::Entity* entity READ getentity);
-    Scene::Entity* getentity() const { return entity_; }
+    Q_PROPERTY(Entity* entity READ getentity);
+    Entity* getentity() const { return entity_; }
     Q_PROPERTY(Vector3df pos READ getpos);
     Vector3df getpos() const { return pos_; }
     Q_PROPERTY(unsigned submesh READ getsubmesh);
@@ -41,7 +38,7 @@ public:
     float getv() const { return v_; }
     
     /// Entity that was hit, null if none
-    Scene::Entity* entity_;
+    Entity* entity_;
     /// World coordinates of hit position
     Vector3df pos_;
     /// Submesh index in entity, starting from 0
@@ -83,7 +80,7 @@ public:
         Python and Javascript can get the result directly from here.
         \param viewrect The query rectangle in 2d window coords.
     */
-    virtual QList<Scene::Entity*> FrustumQuery(QRect &viewrect) = 0;
+    virtual QList<Entity*> FrustumQuery(QRect &viewrect) = 0;
 
     /// Returns the backbuffer image that contains the UI layer of the application screen.
     /// Used to perform alpha-keying based input.

@@ -74,7 +74,7 @@ namespace OgreRenderer
         bool IsEntityVisible(uint ent_id);
 
         /// Do a frustum query to the world from viewport coordinates.
-        virtual QList<Scene::Entity*> FrustumQuery(QRect &viewrect);
+        virtual QList<Entity*> FrustumQuery(QRect &viewrect);
 
         /// Do raycast into the world from viewport coordinates.
         /** The coordinates are a position in the render window, not scaled to [0,1].

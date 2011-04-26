@@ -93,7 +93,7 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
 
     RaycastResult *raycastResult = Raycast();
 
-    Scene::Entity *hitEntity = lastHitEntity_.lock().get();
+    Entity *hitEntity = lastHitEntity_.lock().get();
     if (!hitEntity || !raycastResult)
         return;
 
@@ -117,7 +117,7 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
                             QString("%1,%2,%3").arg(QString::number(raycastResult->pos_.x), QString::number(raycastResult->pos_.y), QString::number(raycastResult->pos_.z)),
                             QString::number(static_cast<int>(raycastResult->submesh_)));
 
-            // Signal signature: EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)
+            // Signal signature: EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)
             emit EntityClicked(hitEntity, (Qt::MouseButton)e->button, raycastResult);
             break;
         case MouseEvent::MouseReleased:

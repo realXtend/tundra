@@ -137,7 +137,7 @@ const QString cDefaultStorage("DefaultStorage");
 /// A special case identifier for not altering asset refs when uploading assets.
 const QString cDoNotAlterAssetReferences("DoNotAlterAssetReferences");
 
-AddContentWindow::AddContentWindow(Framework *fw, const Scene::ScenePtr &dest, QWidget *parent)
+AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget *parent)
 :QWidget(parent),
 framework(fw),
 scene(dest),
@@ -702,7 +702,7 @@ bool AddContentWindow::UploadAssets()
         }
     }
 
-    Scene::ScenePtr destScene = scene.lock();
+    ScenePtr destScene = scene.lock();
     if (!destScene)
         return false;
 
@@ -771,7 +771,7 @@ void AddContentWindow::AddEntities()
         }
     }
 
-    Scene::ScenePtr destScene = scene.lock();
+    ScenePtr destScene = scene.lock();
     if (!destScene)
     {
         LogError("Could not add entities to scene, no scene ptr!");
@@ -781,7 +781,7 @@ void AddContentWindow::AddEntities()
     if (!newDesc_.entities.empty())
     {
         // Create entities.
-        QList<Scene::Entity *> entities;
+        QList<Entity *> entities;
         switch(newDesc_.type)
         {
         case SceneDesc::Naali:

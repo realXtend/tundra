@@ -31,7 +31,7 @@ class EntityAction : public QObject
     Q_OBJECT
     Q_ENUMS(ExecutionType)
 
-    friend class Scene::Entity;
+    friend class Entity;
 
 public:
     /// Destructor.

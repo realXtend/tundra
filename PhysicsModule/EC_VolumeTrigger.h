@@ -9,7 +9,7 @@
 
 // forward declares
 namespace Physics { class PhysicsModule; class PhysicsWorld; }
-namespace Scene { class Entity; }
+class Entity;
 class EC_RigidBody;
 
 /// Physics volume trigger component
@@ -85,16 +85,16 @@ public:
 
 signals:
     /// Note: needs to be lowercase for QML to accept connections to it
-    void entityEnter(Scene::Entity* entity/*, const Vector3df& position*/);
+    void entityEnter(Entity* entity/*, const Vector3df& position*/);
     /// Note: needs to be lowercase for QML to accept connections to it
-    void entityLeave(Scene::Entity* entity/*, const Vector3df& position*/);
+    void entityLeave(Entity* entity/*, const Vector3df& position*/);
 
 public slots:
     /// Get a list of entities currently residing inside the volume.
     /** \note Return value is invalidated by physics update.
         \return list of entities
      */
-    QList<Scene::EntityWeakPtr> GetEntitiesInside() const;
+    QList<EntityWeakPtr> GetEntitiesInside() const;
 
     /// Returns number of entities inside this volume trigger. 
     /** Use with GetEntityInside() to get all entities inside this volume.
@@ -109,7 +109,7 @@ public slots:
               update frame, because physics update may change the number of 
               entities inside the volume.
     */
-    Scene::Entity* GetEntityInside(int idx) const;
+    Entity* GetEntityInside(int idx) const;
 
     /// Returns a list of entities by name which currently reside inside the volume.
     /** \note Return value is invalidated by physics update.
@@ -125,7 +125,7 @@ public slots:
         \param entity entity
         \return approximated percent of how much of the entity is inside this volume
     */
-    float GetEntityInsidePercent(const Scene::Entity* entity) const;
+    float GetEntityInsidePercent(const Entity* entity) const;
 
 
     /// Returns an approximate percent of how much of the entity is inside this volume, [0,1]
@@ -151,7 +151,7 @@ public slots:
         
         \return true if the pivot point of the specified entity is inside the volume, false otherwise
     */
-    bool IsPivotInside(Scene::Entity *entity) const;
+    bool IsPivotInside(Entity *entity) const;
 
     /// Returns true if given world coordinate point is inside volume. 
     bool IsInsideVolume(const Vector3df& point) const;
@@ -169,10 +169,10 @@ private slots:
     void OnPhysicsUpdate();
 
     /// Called when physics collisions occurs.
-    void OnPhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+    void OnPhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
 
     /// Called when entity inside this volume is removed from the scene
-    void OnEntityRemoved(Scene::Entity* entity);
+    void OnEntityRemoved(Entity* entity);
 
 private:
     /// constructor
@@ -187,7 +187,7 @@ private:
     /** The value is used in physics update to see if the entity is still inside
         this volume or if it left the volume during last physics update.
     */
-    QMap<Scene::EntityWeakPtr, bool> entities_;
+    QMap<EntityWeakPtr, bool> entities_;
 
     /// Owner module of this component
     Physics::PhysicsModule *owner_;

@@ -181,7 +181,7 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     }
 
     // Trigger scenemanager signal
-    Scene::SceneManager* scene = GetParentScene();
+    SceneManager* scene = GetParentScene();
     if (scene)
         scene->EmitAttributeAdded(this, attribute, change);
     
@@ -198,7 +198,7 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
         if((*iter)->GetNameString() == name.toStdString())
         {
             // Trigger scenemanager signal
-            Scene::SceneManager* scene = GetParentScene();
+            SceneManager* scene = GetParentScene();
             if (scene)
                 scene->EmitAttributeRemoved(this, *iter, change);
             
@@ -217,7 +217,7 @@ void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
     for(unsigned i = attributes_.size() - 1; i < attributes_.size(); --i)
     {
         // Trigger scenemanager signal
-        Scene::SceneManager* scene = GetParentScene();
+        SceneManager* scene = GetParentScene();
         if (scene)
             scene->EmitAttributeRemoved(this, attributes_[i], change);
         

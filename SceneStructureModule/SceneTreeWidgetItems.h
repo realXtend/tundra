@@ -22,7 +22,7 @@ public:
     /// Sets the item text accordingly to the entity information.
     /** @param entity Entity which the item represents.
     */
-    void SetText(Scene::Entity *entity);
+    void SetText(::Entity *entity);
 
     /// Returns pointer to the entity this item represents.
     EntityPtr Entity() const;
@@ -38,7 +38,7 @@ public:
 
 private:
     entity_id_t id; ///< Entity ID associated with this tree widget item.
-    Scene::EntityWeakPtr ptr; ///< Weak pointer to the component this item represents.
+    EntityWeakPtr ptr; ///< Weak pointer to the component this item represents.
 };
 
 /// Tree widget item representing a component.

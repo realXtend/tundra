@@ -108,7 +108,7 @@ void EC_Mesh::View(const QString &attributeName)
 
 void EC_Mesh::AutoSetPlaceable()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     if (entity)
     {
         ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
@@ -233,7 +233,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
     // If placeable is not set yet, set it manually by searching it from the parent entity
     if (!placeable_)
     {
-        Scene::Entity* entity = GetParentEntity();
+        Entity* entity = GetParentEntity();
         if (entity)
         {
             ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
@@ -876,7 +876,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
 
 void EC_Mesh::UpdateSignals()
 {
-    Scene::Entity* parent = GetParentEntity();
+    Entity* parent = GetParentEntity();
     if (parent)
     {
         // Connect to ComponentRemoved signal of the parent entity, so we can check if the mesh gets removed

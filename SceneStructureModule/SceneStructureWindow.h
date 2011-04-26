@@ -46,7 +46,7 @@ public:
         If scene is set to 0, the tree view is cleared and signal connections are disconnected.
         @param s Scene.
     */
-    void SetScene(const Scene::ScenePtr &s);
+    void SetScene(const ScenePtr &s);
 
     /// Event filter to catch and react to child widget events
     virtual bool eventFilter(QObject *obj, QEvent *e);
@@ -89,7 +89,7 @@ private:
     /** @param entity Entity Entity for which the item is created for.
         @param item Entity item to be decorated.
     */
-    void DecorateEntityItem(Scene::Entity *entity, QTreeWidgetItem *item) const;
+    void DecorateEntityItem(Entity *entity, QTreeWidgetItem *item) const;
 
     /// Decorates a component item: changes its color and appends the text with extra information.
     /** @param comp comp Component for which the item is created for.
@@ -98,7 +98,7 @@ private:
     void DecorateComponentItem(IComponent *comp, QTreeWidgetItem *item) const;
 
     Framework *framework; ///< Framework.
-    Scene::SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
+    SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     SceneTreeWidget *treeWidget; ///< Scene tree widget.
     bool showComponents; ///< Do we show components also in the tree view.
     bool showAssets; ///< Do we show asset references also in the tree view.
@@ -109,24 +109,24 @@ private slots:
     /// Adds the entity to the tree widget.
     /** @param entity Entity to be added.
     */
-    void AddEntity(Scene::Entity *entity);
+    void AddEntity(Entity *entity);
 
     /// Removes entity from the tree widget.
     /** @param entity Entity to be removed.
     */
-    void RemoveEntity(Scene::Entity *entity);
+    void RemoveEntity(Entity *entity);
 
     /// Adds the entity to the tree widget.
     /** @param entity Altered entity.
         @param comp Component which was added.
     */
-    void AddComponent(Scene::Entity *entity, IComponent *comp);
+    void AddComponent(Entity *entity, IComponent *comp);
 
     /// Removes entity from the tree widget.
     /** @param entity Altered entity.
         @param comp Component which was removed.
     */
-    void RemoveComponent(Scene::Entity *entity, IComponent *comp);
+    void RemoveComponent(Entity *entity, IComponent *comp);
 
     /// This is an overloaded function.
     /** This is called only by EC_DynamicComponent when asset ref attribute is added to it.

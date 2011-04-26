@@ -148,7 +148,7 @@ void EC_Terrain::UpdateSignals()
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         this, SLOT(OnAttributeUpdated(IAttribute*)), Qt::UniqueConnection);
 
-    Scene::Entity *parent = GetParentEntity();
+    Entity *parent = GetParentEntity();
     CreateRootNode();
     if (parent)
     {    
@@ -1110,15 +1110,15 @@ void ComputeAABB(const std::vector<Ogre::Vector3> &vertices, Ogre::Vector3 &minE
 
 void EC_Terrain::GenerateFromSceneEntity(QString entityName)
 {
-    Scene::Entity *parentEntity = GetParentEntity();
+    Entity *parentEntity = GetParentEntity();
     if (!parentEntity)
         return;
 
-    Scene::SceneManager *scene = parentEntity->GetScene();
+    SceneManager *scene = parentEntity->GetScene();
     if (!scene)
         return;
 
-    Scene::Entity *entity = scene->GetEntityByName(entityName).get();
+    Entity *entity = scene->GetEntityByName(entityName).get();
     if (!entity)
         return;
 

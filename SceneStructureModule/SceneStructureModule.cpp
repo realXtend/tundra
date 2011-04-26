@@ -92,21 +92,21 @@ void SceneStructureModule::PostInitialize()
     }
 }
 
-QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene)
+QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene)
 {
     return InstantiateContent(filename, worldPos, SceneDesc(), clearScene);
 }
 
-QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, const SceneDesc &desc, bool clearScene)
+QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, const SceneDesc &desc, bool clearScene)
 {
     return InstantiateContent(QStringList(QStringList() << filename), worldPos, desc, clearScene);
 }
 
-QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringList &filenames, Vector3df worldPos, const SceneDesc &desc, bool clearScene)
+QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &filenames, Vector3df worldPos, const SceneDesc &desc, bool clearScene)
 {
-    QList<Scene::Entity *> ret;
+    QList<Entity *> ret;
 
-    const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
+    const ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogError("Could not retrieve default world scene.");
@@ -214,12 +214,12 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
     return ret; 
 }
 
-void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QList<Scene::Entity *> &entities)
+void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QList<Entity *> &entities)
 {
     Vector3df minPos(1e9f, 1e9f, 1e9f);
     Vector3df maxPos(-1e9f, -1e9f, -1e9f);
 
-    foreach(Scene::Entity *e, entities)
+    foreach(Entity *e, entities)
     {
         EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
         if (p)
@@ -238,7 +238,7 @@ void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QLis
     Vector3df importPivotPos = Vector3df((minPos.x + maxPos.x) / 2, (minPos.y + maxPos.y) / 2, minPos.z);
     Vector3df offset = pos - importPivotPos;
 
-    foreach(Scene::Entity *e, entities)
+    foreach(Entity *e, entities)
     {
         EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
         if (p)
@@ -535,7 +535,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         }
 
         // Handle other supported file types
-        QList<Scene::Entity *> importedEntities;
+        QList<Entity *> importedEntities;
 
         RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
         if (!renderer)
@@ -546,7 +546,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         if (!res->entity_)
         {
             // No entity hit, use camera's position with hard-coded offset.
-            const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
+            const ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
             if (!scene)
                 return;
 
@@ -646,7 +646,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                     }
                     else
                     {
-                        const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
+                        const ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
                         if (!scene)
                         {
                             LogError("Could not retrieve default world scene.");
@@ -750,7 +750,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
 {
     QApplication::restoreOverrideCursor();
 
-    const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
+    const ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogError("Could not retrieve default world scene.");

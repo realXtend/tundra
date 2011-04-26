@@ -76,10 +76,10 @@ namespace OgreRenderer
             if (any.isEmpty())
                 return true;
             
-            Scene::Entity *entity = 0;
+            Entity *entity = 0;
             try
             {
-                entity = Ogre::any_cast<Scene::Entity*>(any);
+                entity = Ogre::any_cast<Entity*>(any);
                 if (entity)
                     renderer_->visible_entities_.insert(entity->GetId());
             }
@@ -1041,10 +1041,10 @@ namespace OgreRenderer
             if (any.isEmpty())
                 continue;
             
-            Scene::Entity *entity = 0;
+            Entity *entity = 0;
             try
             {
-                entity = Ogre::any_cast<Scene::Entity*>(any);
+                entity = Ogre::any_cast<Entity*>(any);
             }
             catch(Ogre::InvalidParametersException &/*e*/)
             {
@@ -1093,10 +1093,10 @@ namespace OgreRenderer
             if (any.isEmpty())
                 continue;
 
-            Scene::Entity *entity = 0;
+            Entity *entity = 0;
             try
             {
-                entity = Ogre::any_cast<Scene::Entity*>(any);
+                entity = Ogre::any_cast<Entity*>(any);
             }
             catch(Ogre::InvalidParametersException &/*e*/)
             {
@@ -1182,9 +1182,9 @@ namespace OgreRenderer
     }
     
     //qt wrapper / upcoming replacement for the one above
-    QList<Scene::Entity*> Renderer::FrustumQuery(QRect &viewrect)
+    QList<Entity*> Renderer::FrustumQuery(QRect &viewrect)
     {
-        QList<Scene::Entity*>l;
+        QList<Entity*>l;
         float w= (float)renderWindow->OgreRenderWindow()->getWidth();
         float h= (float)renderWindow->OgreRenderWindow()->getHeight();
         float left = (float)(viewrect.left()) / w, right = (float)(viewrect.right()) / w;
@@ -1206,10 +1206,10 @@ namespace OgreRenderer
         for(Ogre::SceneQueryResultMovableList::iterator iter = results.movables.begin(); iter != results.movables.end(); ++iter)
         {
             Ogre::MovableObject *m = *iter;
-            Scene::Entity *entity = 0;
+            Entity *entity = 0;
             try
             {
-                entity = Ogre::any_cast<Scene::Entity*>(m->getUserAny());
+                entity = Ogre::any_cast<Entity*>(m->getUserAny());
             }
             catch(Ogre::InvalidParametersException &/*e*/)
             {
@@ -1251,7 +1251,7 @@ namespace OgreRenderer
     void Renderer::PrepareImageRendering(int width, int height)
     {
         // Only do this once per connect as we create entitys here
-        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+        ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
         if (scene && image_rendering_texture_name_.empty())
         {
             image_rendering_texture_name_ = "ImageRenderingTexture-" + QUuid::createUuid().toString().toStdString();

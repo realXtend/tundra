@@ -13,7 +13,7 @@ int UserConnection::GetConnectionID() const
 
 void UserConnection::Exec(QObject* entity, const QString &action, const QString &p1, const QString &p2, const QString &p3)
 {
-    Scene::Entity* entityptr = dynamic_cast<Scene::Entity*>(entity);
+    Entity* entityptr = dynamic_cast<Entity*>(entity);
     
     if (entityptr)
         emit ActionTriggered(this, entityptr, action, QStringList(QStringList() << p1 << p2 << p3));
@@ -21,7 +21,7 @@ void UserConnection::Exec(QObject* entity, const QString &action, const QString 
 
 void UserConnection::Exec(QObject* entity, const QString &action, const QStringList &params)
 {
-    Scene::Entity* entityptr = dynamic_cast<Scene::Entity*>(entity);
+    Entity* entityptr = dynamic_cast<Entity*>(entity);
     
     if (entityptr)
         emit ActionTriggered(this, entityptr, action, params);

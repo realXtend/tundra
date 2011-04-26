@@ -97,7 +97,7 @@ void ECBrowser::RemoveEntity(EntityPtr entity)
             disconnect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this,
                 SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
 
-            Scene::Entity::ComponentVector components = ent_ptr->Components();
+            Entity::ComponentVector components = ent_ptr->Components();
             for(uint i = 0; i < components.size(); i++)
                 RemoveComponentFromGroup(components[i]);
 
@@ -166,7 +166,7 @@ void ECBrowser::UpdateBrowser()
         if((*iter).expired())
             continue;
 
-        const Scene::Entity::ComponentVector components = (*iter).lock()->Components();
+        const Entity::ComponentVector components = (*iter).lock()->Components();
         for(uint i = 0; i < components.size(); i++)
             AddNewComponentToGroup(components[i]);
     }
@@ -624,7 +624,7 @@ void ECBrowser::DynamicComponentChanged()
         return;
     }
 
-//    Scene::Entity *entity = component->GetParentEntity();
+//    Entity *entity = component->GetParentEntity();
     RemoveComponentFromGroup(comp_ptr);
     AddNewComponentToGroup(comp_ptr);
 
@@ -904,7 +904,7 @@ void ECBrowser::DeleteComponent(QTreeWidgetItem *item)
         ComponentPtr comp = iter->lock();
         if (comp)
         {
-            Scene::Entity *entity = comp->GetParentEntity();
+            Entity *entity = comp->GetParentEntity();
             if (entity)
                 entity->RemoveComponent(comp, AttributeChange::Default);
         }

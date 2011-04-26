@@ -122,7 +122,7 @@ void EC_Script::ScriptAssetLoaded(AssetPtr asset_)
 
 void EC_Script::RegisterActions()
 {
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = GetParentEntity();
     assert(entity);
     if (entity)
     {

@@ -120,7 +120,7 @@ void EcXmlEditorWidget::Refresh()
     }
 
     // Iterate through individually selected entities.
-    QListIterator<Scene::EntityWeakPtr> it(entities_);
+    QListIterator<EntityWeakPtr> it(entities_);
     while(it.hasNext())
     {
         EntityPtr entity = it.next().lock();
@@ -134,7 +134,7 @@ void EcXmlEditorWidget::Refresh()
             temp_doc.appendChild(entity_elem);
         entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
-        const Scene::Entity::ComponentVector &components = entity->Components();
+        const Entity::ComponentVector &components = entity->Components();
         for(uint i = 0; i < components.size(); ++i)
         {
             components[i]->SerializeTo(temp_doc, entity_elem);
@@ -152,7 +152,7 @@ void EcXmlEditorWidget::Revert()
 {
     ///\todo Check for expired entities & components and drop them.
 /*
-    foreach(Scene::EntityWeakPtr entity, entities_)
+    foreach(EntityWeakPtr entity, entities_)
         if (entity.expired())
             xmlEdit_->clear();
 */
@@ -163,7 +163,7 @@ void EcXmlEditorWidget::Save()
 {
     ///\todo Check for expired entities & components and drop them.
 /*
-    foreach(Scene::EntityWeakPtr entity, entities_)
+    foreach(EntityWeakPtr entity, entities_)
         if (entity.expired())
         {
             xmlEdit_->clear();
@@ -182,7 +182,7 @@ void EcXmlEditorWidget::Save()
     QDomDocument edited_doc;
     if (edited_doc.setContent(text, false, &errorMsg))
     {
-        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+        ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return;
 

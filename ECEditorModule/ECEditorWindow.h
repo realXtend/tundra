@@ -40,18 +40,18 @@ class AddComponentDialog;
 class EntityListWidgetItem: public QListWidgetItem
 {
 public:
-    EntityListWidgetItem(const QString &name, QListWidget *list, Scene::Entity *entity):
+    EntityListWidgetItem(const QString &name, QListWidget *list, Entity *entity):
         QListWidgetItem(name, list),
         entity_ptr_(entity)
     {
     }
     
     // Returns QPointer of entity that this item is presenting.
-    QPointer<Scene::Entity> GetEntity() const { return entity_ptr_; }
+    QPointer<Entity> GetEntity() const { return entity_ptr_; }
 
 private:
     //Weak pointer to entity switch will get released and set to null when QObject's destructor is called.
-    QPointer<Scene::Entity> entity_ptr_;
+    QPointer<Entity> entity_ptr_;
 };
 
 /// Entity-component editor window.
@@ -151,7 +151,7 @@ public slots:
     void ToggleEntityList();
 
     /// Checks if deleted entity is located in editor's list and if so remove it from the editor.
-    void EntityRemoved(Scene::Entity* entity);
+    void EntityRemoved(Entity* entity);
 
     /// Set focus to this editor window. When window have
     /// focus it should accept entity select actions and add clicked entities from the scene.
@@ -193,7 +193,7 @@ protected:
 private slots:
     /// Listens SceneManager's ActionTriggered signal and if action was "MousePress"
     /// add entity to editor window (assuming that editor has a focus).
-    void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params);
+    void ActionTriggered(Entity *entity, const QString &action, const QStringList &params);
 
     /// Deletes entity.
     void DeleteEntity();
@@ -209,7 +209,7 @@ private slots:
 
     /// Listenes when default world scene has changed and clear the editor window.
     /// @param scene new default world scene.
-    void DefaultSceneChanged(Scene::SceneManager *scene);
+    void DefaultSceneChanged(SceneManager *scene);
 
     //When user have pressed ok or cancel button in component dialog this mehtod is called.
     void ComponentDialogFinished(int result);

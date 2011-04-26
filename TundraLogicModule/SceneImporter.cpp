@@ -32,7 +32,7 @@ namespace fs = boost::filesystem;
 namespace TundraLogic
 {
 
-SceneImporter::SceneImporter(const Scene::ScenePtr &scene) :
+SceneImporter::SceneImporter(const ScenePtr &scene) :
     scene_(scene)
 {
 }
@@ -151,10 +151,10 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
     return newentity;
 }
 
-QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
+QList<Entity *> SceneImporter::Import(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
     const QString &prefix, AttributeChange::Type change, bool clearscene, bool replace)
 {
-    QList<Scene::Entity *> ret;
+    QList<Entity *> ret;
     if (!scene_)
     {
         LogError("Null scene for import");
@@ -173,7 +173,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
         {
             file.close();
             LogError("Failed to open file");
-            return QList<Scene::Entity *>();
+            return QList<Entity *>();
         }
         
         QDomDocument dotscene;
@@ -249,7 +249,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
     catch(Exception& e)
     {
         LogError(std::string("Exception while scene importing: ") + e.what());
-        return QList<Scene::Entity *>();
+        return QList<Entity *>();
     }
     
     LogInfo("Finished");
@@ -990,7 +990,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::strin
     }
 }
 
-void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
     AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace)
 {
     while(!node_elem.isNull())

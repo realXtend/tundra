@@ -198,7 +198,7 @@ private:
 
     typedef QMap<QTreeWidgetItem*, ComponentGroup*> TreeItemToComponentGroup;
     TreeItemToComponentGroup itemToComponentGroups_;
-    typedef QList<Scene::EntityWeakPtr> EntityWeakPtrList;
+    typedef QList<EntityWeakPtr> EntityWeakPtrList;
     EntityWeakPtrList entities_;
     QMenu *menu_;
     QTreeWidget *treeWidget_;

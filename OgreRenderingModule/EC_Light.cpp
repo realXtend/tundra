@@ -123,7 +123,7 @@ void EC_Light::UpdateOgreLight()
     // If placeable is not set yet, set it manually by searching it from the parent entity
     if (!placeable_)
     {
-        Scene::Entity* entity = GetParentEntity();
+        Entity* entity = GetParentEntity();
         if (entity)
         {
             ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());

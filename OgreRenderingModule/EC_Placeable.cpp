@@ -494,7 +494,7 @@ void EC_Placeable::ToggleVisibility()
 
 void EC_Placeable::RegisterActions()
 {
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = GetParentEntity();
     assert(entity);
     if (entity)
     {

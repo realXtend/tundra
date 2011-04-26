@@ -91,19 +91,19 @@ public:
     /** \param scene Scene into which to create
         \param isClient If true, physics will be only simulated for local entities
      */
-    Physics::PhysicsWorld* CreatePhysicsWorldForScene(Scene::ScenePtr scene, bool isClient);
+    Physics::PhysicsWorld* CreatePhysicsWorldForScene(ScenePtr scene, bool isClient);
     
     /// Return the physics world for a scene if it exists
-    Physics::PhysicsWorld* GetPhysicsWorldForScene(Scene::ScenePtr scene);
+    Physics::PhysicsWorld* GetPhysicsWorldForScene(ScenePtr scene);
     
     /// Return the physics world for a scene if it exists
-    Physics::PhysicsWorld* GetPhysicsWorldForScene(Scene::SceneManager* sceneraw);
+    Physics::PhysicsWorld* GetPhysicsWorldForScene(SceneManager* sceneraw);
     
 public slots:
     /// Get a physics world for a scene. This version meant for scripts
     /** Note: the parameter is a QObject*, because typically the scriptengine's dynamic property scene is used to query for physicsobject.
-        But it seems to lose its knowledge of actually being a Scene::SceneManager*, and returns null. This version will dynamic cast
-        to Scene::SceneManager*
+        But it seems to lose its knowledge of actually being a SceneManager*, and returns null. This version will dynamic cast
+        to SceneManager*
      */ 
     Physics::PhysicsWorld* GetPhysicsWorld(QObject* scene);
     
@@ -121,13 +121,13 @@ public slots:
     
 private slots:
     /// Scene has been removed, so delete also the physics world (if exists)
-    void OnSceneRemoved(Scene::SceneManager* scene);
+    void OnSceneRemoved(SceneManager* scene);
     
 private:
     /// Update debug geometry manual object, if physics debug drawing is on
     void UpdateDebugGeometry();
     
-    typedef std::map<Scene::SceneManager*, boost::shared_ptr<Physics::PhysicsWorld> > PhysicsWorldMap;
+    typedef std::map<SceneManager*, boost::shared_ptr<Physics::PhysicsWorld> > PhysicsWorldMap;
     /// Map of physics worlds assigned to scenes
     PhysicsWorldMap physicsWorlds_;
     

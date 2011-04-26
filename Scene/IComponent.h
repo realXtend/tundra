@@ -87,7 +87,7 @@ public:
     /** This function is called at component initialization time to attach this component to its owning Entity.
         Although public, it is not intended to be called by users of IComponent.
     */
-    void SetParentEntity(Scene::Entity* entity);
+    void SetParentEntity(Entity* entity);
 
     /// Returns the list of all Attributes in this component for reflection purposes.
     const AttributeVector& GetAttributes() const { return attributes_; }
@@ -177,7 +177,7 @@ public slots:
         @param attribute The attribute that was changed. The attribute passed here must be an Attribute member of this component.
         @param change Informs to the component the type of change that occurred.
 
-        This function calls Scene::EmitAttributeChanged and triggers the 
+        This function calls EmitAttributeChanged and triggers the 
         OnAttributeChanged signal of this component.
 
         This function is called by IAttribute::Changed whenever the value in that
@@ -201,11 +201,11 @@ public slots:
     /** \note Calling this function will return null if it is called in the ctor of this Component. This is
               because the parent entity has not yet been set with a call to SetParentEntity at that point.
     */
-    Scene::Entity* GetParentEntity() const;
+    Entity* GetParentEntity() const;
 
     /// Returns the scene this Component is part of.
     /// May return null if component is not in an entity or entity is not in a scene
-    Scene::SceneManager* GetParentScene() const;
+    SceneManager* GetParentScene() const;
 
     /// Sets whether component is temporary. Temporary components won't be saved when the scene is saved.
     void SetTemporary(bool enable);
@@ -271,7 +271,7 @@ protected:
     QString ReadAttributeType(QDomElement& comp_element, const QString &name) const;
 
     /// Points to the Entity this Component is part of, or null if this Component is not attached to any Entity.
-    Scene::Entity* parent_entity_;
+    Entity* parent_entity_;
 
     /// The name of this component. By default the name of a component is an empty string.
     QString name_;

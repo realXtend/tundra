@@ -181,14 +181,14 @@ ConsoleCommandResult ECEditorModule::ShowDocumentation(const StringVector &param
  */
 ConsoleCommandResult ECEditorModule::EditDynamicComponent(const StringVector &params)
 {
-    Scene::SceneManager *sceneMgr = GetFramework()->Scene()->GetDefaultScene().get();
+    SceneManager *sceneMgr = GetFramework()->Scene()->GetDefaultScene().get();
     if(!sceneMgr)
         return ConsoleResultFailure("Failed to find main scene.");
 
     if(params.size() == 6)
     {
         entity_id_t id = ParseString<entity_id_t>(params[0]);
-        Scene::Entity *ent = sceneMgr->GetEntity(id).get();
+        Entity *ent = sceneMgr->GetEntity(id).get();
         if(!ent)
             return ConsoleResultFailure("Cannot find entity by name of " + params[0]);
 
@@ -208,7 +208,7 @@ ConsoleCommandResult ECEditorModule::EditDynamicComponent(const StringVector &pa
     if(params.size() == 4)
     {
         entity_id_t id = ParseString<entity_id_t>(params[0]);
-        Scene::Entity *ent = sceneMgr->GetEntity(id).get();
+        Entity *ent = sceneMgr->GetEntity(id).get();
         if(!ent)
             return ConsoleResultFailure("Cannot find entity by name of " + params[0]);
 

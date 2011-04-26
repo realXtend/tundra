@@ -78,7 +78,7 @@ namespace Avatar
             return ConsoleResultFailure("No entity name given");
         
         QString name = QString::fromStdString(params[0]);
-        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+        ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return ConsoleResultFailure("No scene");
         EntityPtr entity = scene->GetEntityByName(name);

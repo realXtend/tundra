@@ -140,7 +140,7 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
     if (it == mappings_.end())
         return;
 
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = GetParentEntity();
     if (!entity)
     {
         LogWarning("Parent entity not set. Cannot execute action.");
