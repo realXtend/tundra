@@ -93,7 +93,7 @@ bool EC_RigidBody::SetShapeFromVisibleMesh()
         return false;
     mass.Set(0.0f, AttributeChange::Default);
     shapeType.Set(Shape_TriMesh, AttributeChange::Default);
-    collisionMeshRef.Set(mesh->meshRef.Get().ref, AttributeChange::Default);
+    collisionMeshRef.Set(mesh->meshRef.Get(), AttributeChange::Default);
     return true;
 }
 

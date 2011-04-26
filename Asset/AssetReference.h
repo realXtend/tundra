@@ -18,9 +18,15 @@ public:
 
     /// Constructs an asset reference pointing to the given asset.
     /// @param reference The URL of the asset to point to, e.g. "local://myasset.mesh", or "http://www.website.com/texture.png".
-    AssetReference(const QString &reference) : ref(reference) {}
-    AssetReference(const std::string &reference) : ref(QString::fromStdString(reference)) {}
-    AssetReference(const char *reference) : ref(reference) {}
+    explicit AssetReference(const QString &reference) : ref(reference) {}
+
+    /// @note This form of a ctor should not be used, since asset references can contain unicode characters, which a std::string cannot represent.
+    explicit AssetReference(const std::string &reference) : ref(QString::fromStdString(reference)) {}
+
+    /// @note This form of a ctor should not be used, since asset references can contain unicode characters, which a std::string cannot represent.
+    explicit AssetReference(const char *reference) : ref(reference) {}
+
+    AssetReference(const QString &reference, const QString &type_) : ref(reference), type(type_) {}
 
     bool operator ==(const AssetReference &rhs) const { return this->ref == rhs.ref; }
 

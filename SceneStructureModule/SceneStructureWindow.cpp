@@ -545,7 +545,7 @@ void SceneStructureWindow::RemoveAssetReference(IAttribute *attr)
 
     AssetReferenceList assetRefs;
     if (dynamic_cast<Attribute<AssetReference> *>(attr))
-        assetRefs.Append(dynamic_cast<Attribute<AssetReference> *>(attr)->Get().ref);
+        assetRefs.Append(dynamic_cast<Attribute<AssetReference> *>(attr)->Get());
     else if (dynamic_cast<Attribute<AssetReferenceList> *>(attr))
         assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr)->Get();
     else
