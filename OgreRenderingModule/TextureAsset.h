@@ -8,8 +8,9 @@
 #include "AssetAPI.h"
 #include <OgreTexture.h>
 #include <QImage>
+#include "OgreModuleApi.h"
 
-class TextureAsset : public IAsset
+class OGRE_MODULE_API TextureAsset : public IAsset
 {
     Q_OBJECT;
 public:

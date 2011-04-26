@@ -6,8 +6,9 @@
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 #include <OgreMaterial.h>
+#include "OgreModuleApi.h"
 
-class OgreMaterialAsset : public IAsset
+class OGRE_MODULE_API OgreMaterialAsset : public IAsset
 {
 
 Q_OBJECT
