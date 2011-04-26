@@ -7,6 +7,7 @@
 #include "IAsset.h"
 #include "AssetAPI.h"
 #include <OgreTexture.h>
+#include <QImage>
 
 class TextureAsset : public IAsset
 {
@@ -26,6 +27,8 @@ public:
 
     /// Unload texture from ogre
     virtual void DoUnload();   
+
+    QImage ToQImage(size_t faceIndex = 0, size_t mipmapLevel = 0) const;
 
     bool IsLoaded() const;
 
