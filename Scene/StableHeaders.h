@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_SceneManager_StableHeaders_h
-#define incl_SceneManager_StableHeaders_h
+#ifndef incl_Scene_StableHeaders_h
+#define incl_Scene_StableHeaders_h
 
 #include "CoreStdIncludes.h"
 
@@ -11,8 +11,9 @@
 
 #include "Core.h"
 #include "Foundation.h"
-
 #include "Framework.h"
+
+#include <QtCore>
 
 #endif
 

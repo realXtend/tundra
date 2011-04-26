@@ -9,8 +9,8 @@
  *          Actions cannot be created directly, they're created by Entity::RegisterAction().
  */
 
-#ifndef incl_SceneManager_EntityAction_h
-#define incl_SceneManager_EntityAction_h
+#ifndef incl_Scene_EntityAction_h
+#define incl_Scene_EntityAction_h
 
 #include "CoreTypes.h"
 

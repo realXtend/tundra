@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_SceneManager_SceneManager_h
-#define incl_SceneManager_SceneManager_h
+#ifndef incl_Scene_SceneManager_h
+#define incl_Scene_SceneManager_h
 
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
@@ -37,7 +37,7 @@ struct AttributeInterpolation
 /** Contains all entities in the world.
     Acts as a factory for all entities.
 
-    To create, access and remove scenes, see Framework.
+    To create, access and remove scenes, see SceneAPI.
 
     \ingroup Scene_group
 */
@@ -67,7 +67,7 @@ public:
     const_iterator end() const { return const_iterator(entities_.end()); }
 
     /// Returns entity map for introspection purposes
-    const EntityMap &GetEntityMap() const { return entities_; }
+    const EntityMap &Entities() const { return entities_; }
 
     /// Returns true if the two scenes have the same name
     bool operator == (const SceneManager &other) const { return Name() == other.Name(); }
@@ -109,7 +109,7 @@ public slots:
         and this change in itself will not be replicated
         @param old_id Old id of the existing entity
         @param new_id New id to set
-     */
+    */
     void ChangeEntityId(entity_id_t old_id, entity_id_t new_id);
 
     /// Starts an attribute interpolation
@@ -119,13 +119,13 @@ public slots:
         @param length Time length
         @return true if successful (attribute must be in interpolated mode (set in metadata), must be in component, component 
                 must be static-structured, component must be in an entity which is in a scene, scene must be us)
-     */
+    */
     bool StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, float length);
 
     /// Ends an attribute interpolation. The last set value will remain.
     /** @param attr Attribute inside a static-structured component.
         @return true if an interpolation existed
-     */
+    */
     bool EndAttributeInterpolation(IAttribute* attr);
 
     /// Ends all attribute interpolations
@@ -133,10 +133,10 @@ public slots:
 
     /// Processes all running attribute interpolations. LocalOnly change will be used.
     /** @param frametime Time step
-     */ 
+    */
     void UpdateAttributeInterpolations(float frametime);
 
-    /// See if scene is currently performing interpolations, to differentiate between interpolative & non-interpolative attributechanges
+    /// See if scene is currently performing interpolations, to differentiate between interpolative & non-interpolative attribute changes.
     bool IsInterpolating() const { return interpolating_; }
 
     /// Returns Framework
@@ -149,8 +149,8 @@ public slots:
 
     /// Inspects xml data and returns a scene description structure from the contents of XML data.
     /** @param data Data to be processed.
-     *  @param sceneDesc Initialized SceneDesc with filename and enum type prepared.
-     */
+        @param sceneDesc Initialized SceneDesc with filename and enum type prepared.
+    */
     SceneDesc GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const;
 
     /// Inspects file and returns a scene description structure from the contents of binary file.
@@ -218,12 +218,11 @@ public slots:
 
     /// Returns entity with the specified name
     /** If found, returns the first one; there may be many with same name and uniqueness is not guaranteed
-     */
+    */
     EntityPtr GetEntity(const QString& name) const;
     
     /// Returns entity with the specified name, searches through only those entities which has EC_Name-component.
-    /**
-        @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
+    /** @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
               to avoid dangling references that prevent entities from being properly destroyed.
     */
     EntityPtr GetEntityByName(const QString& name) const;
@@ -243,15 +242,15 @@ public slots:
         @param send_events whether to send events & signals of each delete
      */
     void RemoveAllEntities(bool send_events = true, AttributeChange::Type change = AttributeChange::Default);
-    
+
     /// Get the next free entity id. Can be used with CreateEntity(). 
     /* These will be for networked entities, and should be assigned only by a point of authority (server)
-     */
+    */
     entity_id_t GetNextFreeId();
 
     /// Get the next free local entity id. Can be used with CreateEntity().
     /* As local entities will not be network synced, there should be no conflicts in assignment
-     */
+    */
     entity_id_t GetNextFreeIdLocal();
 
     /// Return list of entities with a specific component present.
@@ -262,14 +261,14 @@ public slots:
     /** @param comp Component pointer
         @param attribute Attribute pointer
         @param change Network replication mode
-     */
+    */
     void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emit notification of an attribute having been created. Called by IComponent's with dynamic structure
     /** @param comp Component pointer
         @param attribute Attribute pointer
         @param change Network replication mode
-     */
+    */
     void EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emit notification of an attribute about to be deleted. Called by IComponent's with dynamic structure
@@ -283,38 +282,36 @@ public slots:
     /** @param entity Entity pointer
         @param comp Component pointer
         @param change Network replication mode
-     */
+    */
     void EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
-    //void EmitComponentInitialized(IComponent* comp); //, AttributeChange::Type change);
-    
     /// Emit a notification of a component being removed from entity. Called by the entity
     /** @param entity Entity pointer
         @param comp Component pointer
         @param change Network replication mode
         @note This is emitted before just before the component is removed.
-     */
+    */
     void EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Emit a notification of an entity having been created
     /** @param entity Entity pointer
         @param change Network replication mode
-     */
+    */
     void EmitEntityCreated(EntityPtr entity, AttributeChange::Type change = AttributeChange::Default);
 
     /// Emit a notification of an entity being removed. 
     /** Note: the entity pointer will be invalid shortly after!
         @param entity Entity pointer
         @param change Network replication mode
-     */
+    */
     void EmitEntityRemoved(Entity* entity, AttributeChange::Type change);
 
     /// Emits a notification of an entity action being triggered.
     /** @param entity Entity pointer
         @param action Name of the action
         @param params Parameters
-        \type Execution type.
-     */
+        @param type Execution type.
+    */
     void EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
 
     /// Loads the scene from XML.
@@ -325,7 +322,7 @@ public slots:
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities.
-     */
+    */
     QList<Entity *> LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Returns scene content as an XML string.
@@ -338,7 +335,7 @@ public slots:
     /// Saves the scene to XML.
     /** @param filename File name
         @return true if successful
-     */
+    */
     bool SaveSceneXML(const QString& filename);
 
     /// Loads the scene from a binary file.
@@ -350,13 +347,13 @@ public slots:
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities.
-     */
+    */
     QList<Entity *> LoadSceneBinary(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Save the scene to binary
     /** @param filename File name
         @return true if successful
-     */
+    */
     bool SaveSceneBinary(const QString& filename);
 
     /// Creates scene content from XML.
@@ -366,7 +363,7 @@ public slots:
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities.
-     */
+    */
     QList<Entity *> CreateContentFromXml(const QString &xml, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// This is an overloaded function.
@@ -376,7 +373,7 @@ public slots:
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities.
-     */
+    */
     QList<Entity *> CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Creates scene content from binary file.
@@ -386,7 +383,7 @@ public slots:
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities.
-     */
+    */
     QList<Entity *> CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change);
 
 public:
@@ -398,7 +395,7 @@ public:
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities.
-     */
+    */
     QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Creates scene content from scene description.
@@ -408,39 +405,34 @@ public:
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
         @return List of created entities.
-     */
+    */
     QList<Entity *> CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change);
 
 signals:
     /// Signal when an attribute of a component has changed
     /** Network synchronization managers should connect to this
-     */
+    */
     void AttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Signal when an attribute of a component has been added (dynamic structure components only)
     /** Network synchronization managers should connect to this
-     */
+    */
     void AttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Signal when an attribute of a component has been added (dynamic structure components only)
     /** Network synchronization managers should connect to this
-     */
+    */
     void AttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
     /** Network synchronization managers should connect to this
-     */
+    */
     void ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Signal when a component is removed from an entity and should possibly be replicated (if the change originates from local)
     /** Network synchronization managers should connect to this
-     */
+    */
     void ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
-
-    /// Signal when a component is initialized.
-    /** Python and Javascript handlers use this instead of subclassing and overriding the component constructor
-     *! -- not used now 'cause ComponentAdded is also emitted upon initialization (loading from server ) 
-     void ComponentInitialized(IComponent* comp);*/
 
     /// Signal when an entity created
     void EntityCreated(Entity* entity, AttributeChange::Type change);

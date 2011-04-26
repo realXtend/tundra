@@ -5,8 +5,8 @@
  *  @brief  Utility structures for describing scene and its contents.
  */
 
-#ifndef incl_SceneManager_SceneDesc_h
-#define incl_SceneManager_SceneDesc_h
+#ifndef incl_Scene_SceneDesc_h
+#define incl_Scene_SceneDesc_h
 
 #include <QMap>
 #include <QPair>
