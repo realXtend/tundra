@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_CoreStdIncludes_h
-#define incl_Core_CoreStdIncludes_h
+#ifndef incl_Framework_CoreStdIncludes_h
+#define incl_Framework_CoreStdIncludes_h
 
 #if defined(WIN32) || defined(WIN64)
 #undef _WINDOWS

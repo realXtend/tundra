@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Foundation_ConfigAPI_h
-#define incl_Foundation_ConfigAPI_h
+#ifndef incl_Framework_ConfigAPI_h
+#define incl_Framework_ConfigAPI_h
 
 #include <QObject>
 #include <QVariant>

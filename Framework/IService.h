@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_ServiceInterface_h
-#define incl_Interfaces_ServiceInterface_h
+#ifndef incl_Framework_IService_h
+#define incl_Framework_IService_h
 
 #include "CoreModuleApi.h"
 #include "boost/shared_ptr.hpp"

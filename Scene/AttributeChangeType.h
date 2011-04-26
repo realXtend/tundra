@@ -7,8 +7,8 @@
  *          between IAttribute and IComponent.
  */
 
-#ifndef incl_Interfaces_AttributeChangeType_h
-#define incl_Interfaces_AttributeChangeType_h
+#ifndef incl_Scene_AttributeChangeType_h
+#define incl_Scene_AttributeChangeType_h
 
 #include <QObject>
 

@@ -5,8 +5,8 @@
  *  @brief  Abstract base class, template class and metadata class for entity-component attributes.
  */
 
-#ifndef incl_Interfaces_AttributeInterface_h
-#define incl_Interfaces_AttributeInterface_h
+#ifndef incl_Scene_IAttribute_h
+#define incl_Scene_IAttribute_h
 
 #include "CoreDefines.h"
 #include "CoreStringUtils.h"

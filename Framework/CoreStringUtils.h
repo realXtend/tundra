@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_StringUtil_h
-#define incl_Core_StringUtil_h
+#ifndef incl_Framework_StringUtil_h
+#define incl_Framework_StringUtil_h
 
 #include <iomanip>
 

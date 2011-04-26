@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_CommunicationsService_h
-#define incl_Interfaces_CommunicationsService_h
+#ifndef incl_MumbleVoipModule_CommunicationsService_h
+#define incl_MumbleVoipModule_CommunicationsService_h
 
 #include "IService.h"
 #include "Vector3D.h"
@@ -354,4 +354,4 @@ namespace Communications
 
 } // Communications
 
-#endif // incl_Interfaces_CommunicationsService_h
+#endif // incl_MumbleVoipModule_CommunicationsService_h

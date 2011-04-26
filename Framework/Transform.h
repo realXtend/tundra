@@ -1,5 +1,5 @@
-#ifndef incl_Core_CTransform_h
-#define incl_Core_CTransform_h
+#ifndef incl_Framework_CTransform_h
+#define incl_Framework_CTransform_h
 
 #include "CoreMath.h"
 #include "Vector3D.h"

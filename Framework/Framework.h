@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Foundation_Framework_h
-#define incl_Foundation_Framework_h
+#ifndef incl_Framework_Framework_h
+#define incl_Framework_Framework_h
 
 #include "Profiler.h"
 #include "ModuleManager.h"

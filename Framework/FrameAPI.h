@@ -10,8 +10,8 @@
  *  -trigger delayed signals when spesified amount of time has elapsed.
  */
 
-#ifndef incl_Foundation_FrameAPI
-#define incl_Foundation_FrameAPI
+#ifndef incl_Framework_FrameAPI
+#define incl_Framework_FrameAPI
 
 #include <QObject>
 

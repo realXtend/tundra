@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Foundation_ModuleManager_h
-#define incl_Foundation_ModuleManager_h
+#ifndef incl_Framework_ModuleManager_h
+#define incl_Framework_ModuleManager_h
 
 #include <set>
 #include <boost/filesystem.hpp>

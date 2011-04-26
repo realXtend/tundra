@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_AssetProviderInterface_h
-#define incl_Interfaces_AssetProviderInterface_h
+#ifndef incl_Asset_IAssetProvider_h
+#define incl_Asset_IAssetProvider_h
 
 #include "AssetFwd.h"
 #include "CoreTypes.h"

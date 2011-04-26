@@ -5,8 +5,8 @@
  *  @brief  Forward declarations and type defines for commonly used Foundation classes.
  */
 
-#ifndef incl_Foundation_ForwardDefines_h
-#define incl_Foundation_ForwardDefines_h
+#ifndef incl_Framework_ForwardDefines_h
+#define incl_Framework_ForwardDefines_h
 
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr.hpp>

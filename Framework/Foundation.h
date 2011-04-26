@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Foundation_h
-#define incl_Foundation_h
+#ifndef incl_Framework_Foundation_h
+#define incl_Framework_Foundation_h
 
 #include "ForwardDefines.h"
 #include "Framework.h"

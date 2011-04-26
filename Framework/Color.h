@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_Color_h
-#define incl_Core_Color_h
+#ifndef incl_Framework_Color_h
+#define incl_Framework_Color_h
 
 #include "CoreTypes.h"
 

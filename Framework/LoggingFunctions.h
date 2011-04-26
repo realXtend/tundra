@@ -2,8 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  */
 
-#ifndef incl_Interfaces_LoggingFunctions_h
-#define incl_Interfaces_LoggingFunctions_h
+#ifndef incl_Framework_LoggingFunctions_h
+#define incl_Framework_LoggingFunctions_h
 
 #include <QString>
 
@@ -43,4 +43,4 @@ static void LogDebug(const char *msg) {}
 static void LogDebug(const QString &msg) {}
 #endif
 
-#endif // incl_Interfaces_LoggingFunctions_h
+#endif // incl_Framework_LoggingFunctions_h

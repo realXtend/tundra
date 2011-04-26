@@ -5,8 +5,8 @@
  *  @brief This file defines types that are used when directly accessing modules using the ModuleManager query interface.
  */
 
-#ifndef incl_Foundation_ModuleReference_h
-#define incl_Foundation_ModuleReference_h
+#ifndef incl_Framework_ModuleReference_h
+#define incl_Framework_ModuleReference_h
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>

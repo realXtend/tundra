@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Foundation_Profiler_h
-#define incl_Foundation_Profiler_h
+#ifndef incl_Framework_Profiler_h
+#define incl_Framework_Profiler_h
 
 #ifdef _WINDOWS
 #include <Winsock2.h>

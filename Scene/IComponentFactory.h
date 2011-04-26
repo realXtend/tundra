@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_IComponentFactory_h
-#define incl_Interfaces_IComponentFactory_h
+#ifndef incl_Scene_IComponentFactory_h
+#define incl_Scene_IComponentFactory_h
 
 #include <boost/shared_ptr.hpp>
 

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_Exception_h
-#define incl_Core_Exception_h
+#ifndef incl_Framework_Exception_h
+#define incl_Framework_Exception_h
 
 #include <exception>
 #include <cstring>

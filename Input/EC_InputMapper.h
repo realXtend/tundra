@@ -6,8 +6,8 @@
  *          given set of key and mouse sequences to Entity Actions on the entity the component is part of.
  */
 
-#ifndef incl_EC_InputMapper_EC_InputMapper_h
-#define incl_EC_InputMapper_EC_InputMapper_h
+#ifndef incl_Input_EC_InputMapper_h
+#define incl_Input_EC_InputMapper_h
 
 #include "IComponent.h"
 #include "Declare_EC.h"

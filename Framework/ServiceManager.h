@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Foundation_ServiceManager_h
-#define incl_Foundation_ServiceManager_h
+#ifndef incl_Framework_ServiceManager_h
+#define incl_Framework_ServiceManager_h
 
 #include "IService.h"
 #include "CoreTypes.h"

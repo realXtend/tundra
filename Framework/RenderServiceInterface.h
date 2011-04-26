@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_RenderServiceInterface_h
-#define incl_Interfaces_RenderServiceInterface_h
+#ifndef incl_Framework_RenderServiceInterface_h
+#define incl_Framework_RenderServiceInterface_h
 
 #include "IService.h"
 #include "CoreModuleApi.h"

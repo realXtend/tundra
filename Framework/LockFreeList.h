@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Foundation_LockFreeList_h
-#define incl_Foundation_LockFreeList_h
+#ifndef incl_Framework_LockFreeList_h
+#define incl_Framework_LockFreeList_h
 
 template<typename T>
 struct LockFreeListNode

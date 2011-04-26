@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_CoreTypes_h
-#define incl_Core_CoreTypes_h
+#ifndef incl_Framework_CoreTypes_h
+#define incl_Framework_CoreTypes_h
 
 // types
 

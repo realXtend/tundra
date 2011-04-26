@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_Input_h
-#define incl_Core_Input_h
+#ifndef incl_Input_InputAPI_h
+#define incl_Input_InputAPI_h
 
 #include "ForwardDefines.h"
 #include "InputFwd.h"

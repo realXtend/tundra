@@ -13,8 +13,8 @@
     After getting the list of leaks when you close the application, look for entries saying 
     "client block"
 */
-#ifndef incl_Core_MemoryLeakCheck_h
-#define incl_Core_MemoryLeakCheck_h
+#ifndef incl_Framework_MemoryLeakCheck_h
+#define incl_Framework_MemoryLeakCheck_h
 
 #if defined(_MSC_VER) && defined(_DEBUG) && defined(MEMORY_LEAK_CHECK)
 
@@ -54,4 +54,4 @@ __forceinline void operator delete[](void *ptr, const char *, int)
 
 #endif // ~_MSC_VER
 
-#endif // ~incl_Core_MemoryLeakCheck_h
+#endif // ~incl_Framework_MemoryLeakCheck_h

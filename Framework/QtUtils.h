@@ -5,8 +5,8 @@
  *  @brief  Cross-platform utility functions using Qt.
  */
 
-#ifndef incl_Foundation_QtUtils_h
-#define incl_Foundation_QtUtils_h
+#ifndef incl_Framework_QtUtils_h
+#define incl_Framework_QtUtils_h
 
 #include "CoreTypes.h"
 #include <QStringList>

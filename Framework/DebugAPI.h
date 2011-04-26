@@ -5,8 +5,8 @@
  *  @brief  Debug core API.
  */
 
-#ifndef incl_Foundation_DebugAPI_h
-#define incl_Foundation_DebugAPI_h
+#ifndef incl_Framework_DebugAPI_h
+#define incl_Framework_DebugAPI_h
 
 #include <QObject>
 

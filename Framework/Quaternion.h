@@ -13,8 +13,8 @@
 // Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 // This notice may not be removed or altered from any source distribution.
 
-#ifndef incl_Core_Quaternion_h
-#define incl_Core_Quaternion_h
+#ifndef incl_Framework_Quaternion_h
+#define incl_Framework_Quaternion_h
 
 #include "CoreMath.h"
 #include "Vector3D.h"

@@ -19,8 +19,8 @@
     For more information see CoreTypes.h
 */
 
-#ifndef incl_Core_h
-#define incl_Core_h
+#ifndef incl_Framework_h
+#define incl_Framework_h
 
 // Add all includes here that contain interfaces for the Core
 #include "CoreCompileConfig.h"
