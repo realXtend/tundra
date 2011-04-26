@@ -45,11 +45,15 @@ class ObjectEdit(Component):
     MANIPULATE_SELECT = 4
   
     def __init__(self):
-        if naali.framework.IsEditionless() or naali.framework.IsHeadless():
-            return
         self.sels = []  
         self.selmasses = {}
         Component.__init__(self)
+        
+        if naali.framework.IsEditionless() or naali.framework.IsHeadless():
+            self.is_module_inactive = True
+            return
+        
+        self.is_module_inactive = False   
         self.resetValues()
         self.worldstream = r.getServerConnection()
         self.usingManipulator = False
@@ -161,6 +165,8 @@ class ObjectEdit(Component):
         self.changeManipulator(self.MANIPULATE_SELECT)
 
     def on_keypressed(self, k):
+        if self.is_module_inactive:
+            return
         #print "on_keypressed",k,k.keyCode,k.modifiers
         trigger = (k.keyCodeInt(), k.modifiers)
         # if not in editing mode ignore other key combinations than to enable editing
@@ -174,6 +180,8 @@ class ObjectEdit(Component):
             self.shortcuts[trigger]()
 
     def on_mousescroll(self, m):
+        if self.is_module_inactive:
+            return
         if not self.editing:
             return
         #self.manipulator.showManipulator(self.sels) # what is this supposed to do?
@@ -377,6 +385,8 @@ class ObjectEdit(Component):
         self.selection_box_inited = True
 
     def on_mouseleftpressed(self, mouseinfo):
+        if self.is_module_inactive:
+            return
         if not self.editing:
             return       
         if mouseinfo.IsItemUnderMouse():
@@ -432,6 +442,8 @@ class ObjectEdit(Component):
         self.prev_mouse_abs_y = mouse_abs_y
 
     def on_mouseleftreleased(self, mouseinfo):
+        if self.is_module_inactive:
+            return
         if not self.editing:
             return
         self.left_button_down = False
@@ -478,6 +490,8 @@ class ObjectEdit(Component):
         return rectx, recty, rectwidth, rectheight
 
     def on_multiselect(self, mouseinfo):
+        if self.is_module_inactive:
+            return
         if not self.editing:
             return
         results = []
@@ -499,6 +513,8 @@ class ObjectEdit(Component):
             self.canmove = True
             
     def on_mousemove(self, mouseinfo):
+        if self.is_module_inactive:
+            return
         if not self.editing:
             return
         """Handle mouse move events. When no button is pressed, just check
@@ -519,6 +535,8 @@ class ObjectEdit(Component):
                 self.manipulator.resethighlight()
 
     def on_mousedrag(self, mouseinfo):
+        if self.is_module_inactive:
+            return
         if not self.editing:
             return
         """dragging objects around - now free movement based on view,
@@ -700,6 +718,8 @@ class ObjectEdit(Component):
     active = property(getActive)
     
     def on_exit(self):
+        if self.is_module_inactive:
+            return
         r.logInfo("Object Edit exiting..")
         # remove selection box component and entity
         # - no need its a temporary item
@@ -728,6 +748,8 @@ class ObjectEdit(Component):
         r.logInfo(".. done")
 
     def on_hide(self, shown):
+        if self.is_module_inactive:
+            return
         #print "on_hide", shown
         self.sels = []
         try:
@@ -739,6 +761,8 @@ class ObjectEdit(Component):
         self.toggleEditing(False)
  
     def on_activate_editing(self, activate):
+        if self.is_module_inactive:
+            return
         r.logDebug("on_active_editing")
         # Restore stored state when exiting build mode
         if activate == False and self.windowActiveStoredState != None:
@@ -755,9 +779,13 @@ class ObjectEdit(Component):
             self.windowActive = True
         
     def on_manupulation_mode_change(self, mode):
+        if self.is_module_inactive:
+            return
         self.changeManipulator(mode)
             
     def update(self, time):
+        if self.is_module_inactive:
+            return
         #print "here", time
         self.time += time
         if self.sels:
@@ -786,6 +814,8 @@ class ObjectEdit(Component):
                     r.logDebug("update: scene not found")
    
     def on_logout(self, id):
+        if self.is_module_inactive:
+            return
         r.logInfo("Object Edit resetting due to logout")
         self.deselect_all()
         self.sels = []
@@ -794,6 +824,8 @@ class ObjectEdit(Component):
         self.resetManipulators()
 
     def on_worldstreamready(self, id):
+        if self.is_module_inactive:
+            return
         r.logInfo("Worldstream ready")
         self.worldstream = r.getServerConnection()
         return False # return False, we don't want to consume the event and not have it for others available
