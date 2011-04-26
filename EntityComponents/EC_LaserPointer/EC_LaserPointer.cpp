@@ -29,7 +29,7 @@ EC_LaserPointer::EC_LaserPointer(IModule *module) :
     startPos_(this, "startPosition"),
     endPos_(this, "endPosition"),
     color_(this, "color", Color(1.0f,0.0f,0.0f,1.0f)),
-    enabled_(this, "enabled", true),
+    enabled_(this, "enabled", false),
     laserObject_(0),
     id_(),
     node_(0),
