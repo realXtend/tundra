@@ -14,6 +14,10 @@
 #include <QDebug>
 #include <QApplication>
 
+#include "Framework.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace CAVEStereo

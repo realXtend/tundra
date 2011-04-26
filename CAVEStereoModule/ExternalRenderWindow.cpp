@@ -15,19 +15,19 @@
 namespace CAVEStereo
 {
 
-    ExternalRenderWindow::ExternalRenderWindow()
+    ExternalRenderWindow::ExternalRenderWindow() :
+        QWidget(0)
     {
     }
+
     ExternalRenderWindow::~ExternalRenderWindow()
     {
     }
+
     Ogre::RenderWindow* ExternalRenderWindow::CreateRenderWindow(const std::string &name,  int width, int height, int left, int top, bool fullscreen)
     {
-        bool stealparent 
-            ((parentWidget())? true : false);
-
-        QWidget *nativewin 
-            ((stealparent)? parentWidget() : this);
+        bool stealparent ((parentWidget()) ? true : false);
+        QWidget *nativewin ((stealparent) ? parentWidget() : this);
 
         Ogre::NameValuePairList params;
         Ogre::String winhandle;
@@ -35,9 +35,7 @@ namespace CAVEStereo
 #ifdef Q_WS_WIN
         // According to Ogre Docs
         // positive integer for W32 (HWND handle)
-        winhandle = Ogre::StringConverter::toString 
-            ((unsigned int) 
-             (nativewin-> winId ()));
+        winhandle = Ogre::StringConverter::toString((unsigned int)(nativewin-> winId()));
 
         //Add the external window handle parameters to the existing params set.
         params["externalWindowHandle"] = winhandle;
@@ -93,9 +91,7 @@ namespace CAVEStereo
             params["top"] = ToString(top);
 
         render_window_ = Ogre::Root::getSingletonPtr()-> createRenderWindow(name, width, height, fullscreen, &params);
-
         return render_window_;
-
     }
 
     void ExternalRenderWindow::ResizeWindow(int width, int height)
@@ -114,17 +110,12 @@ namespace CAVEStereo
 
     void ExternalRenderWindow::keyPressEvent(QKeyEvent *e)
     {
-        if(e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_F)
+        if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_F)
         {
-            if(!isFullScreen())
-            {
+            if (!isFullScreen())
                 showFullScreen();
-            }
             else
-            {
                 showNormal();
-            }
         }
-
     }
 }
