@@ -6,6 +6,15 @@
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
 
+class QNetworkReply;
+class QBuffer;
+class QNetworkAccessManager;
+
+struct SearchRequest
+{
+    QNetworkReply* reply;
+};
+
 class HttpAssetStorage : public IAssetStorage
 {
 Q_OBJECT
@@ -13,6 +22,7 @@ Q_OBJECT
 public:
     QString baseAddress;
     QString storageName;
+    QStringList assetRefs;
 
 public slots:
     virtual std::vector<IAsset*> GetAllAssets() const { return std::vector<IAsset*>(); }
@@ -28,6 +38,30 @@ public slots:
 
     /// Returns the address of this storage.
     virtual QString BaseURL() const { return baseAddress; }
+    
+    /// Returns all assetrefs contained in this asset storage. Does not load the assets
+    /// Note: these refs must be pre-refreshed by issuing webdav requests (RefreshRefs() function)
+    virtual QStringList GetAllAssetRefs() { return assetRefs; }
+    
+    /// Refresh http asset refs, issues webdav PROPFIND requests. AssetRefsReady() will be emitted when complete.
+    void RefreshAssetRefs();
+    
+signals:
+    /// Asset ref query is complete
+    void AssetRefsReady();
+
+private slots:
+    void OnHttpTransferFinished(QNetworkReply *reply);
+
+private:
+    /// Perform a PROPFIND search on a path in the http storage
+    void HttpAssetStorage::PerformSearch(QString path);
+
+    /// Get QNetworkAccessManager from the parent provider
+    QNetworkAccessManager* GetNetworkAccessManager();
+
+    /// Ongoing network requests for querying asset refs
+    std::vector<SearchRequest> searches;
 };
 
 #endif

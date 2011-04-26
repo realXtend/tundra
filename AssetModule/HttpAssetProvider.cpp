@@ -181,9 +181,11 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         else
             LogError("Http DELETE to address \"" + reply->url().toString().toStdString() + "\" failed with an error: \"" + reply->errorString().toStdString() + "\"");
         break;
+        /*
     default:
         LogInfo("Unknown operation for address \"" + reply->url().toString().toStdString() + "\" finished with result: \"" + reply->errorString().toStdString() + "\"");
         break;
+        */
     }
 }
 
@@ -206,6 +208,8 @@ AssetStoragePtr HttpAssetProvider::AddStorage(const QString &location, const QSt
     storage->baseAddress = locationCleaned;
     storage->storageName = name;
     storage->provider = this->shared_from_this();
+    // Query for assets immediately when added
+    storage->RefreshAssetRefs();
 
     storages.push_back(storage);
     return storage;
