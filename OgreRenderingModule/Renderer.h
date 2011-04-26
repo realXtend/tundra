@@ -233,12 +233,6 @@ namespace OgreRenderer
 
         RenderWindow *GetRenderWindow() const { return renderWindow; }
 
-        /// Specifies a new fps limit to use for the main loop. Pass in a value of 0 to remove fps limiting altogether.
-        void SetTargetFPSLimit(float fpsLimit) { targetFpsLimit = fpsLimit; if (targetFpsLimit <= 1.f) targetFpsLimit = 0.f; }
-
-        /// Returns the current fps limit.
-        float TargetFPSLimit() const { return targetFpsLimit; }
-
     private:
         
         //! Sleeps the main thread to throttle the main loop execution speed.
@@ -359,8 +353,6 @@ namespace OgreRenderer
         tick_t lastPresentTime;
         /// Caches the system clock frequency.
         tick_t timerFrequency;
-        /// Specifies the target fps to run the system at. By default 60. Setting this to zero means no limit.
-        float targetFpsLimit;
     };
 }
 
