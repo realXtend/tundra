@@ -4,6 +4,7 @@
 
 #include <map>
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 class AudioAPI;
 struct AudioApiImpl;
