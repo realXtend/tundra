@@ -1,7 +1,9 @@
 from circuits import Component
-from PythonQt.QtCore import QFile, Qt, QSettings
+from PythonQt.QtCore import QFile, Qt #, QSettings
 from time import strftime
 
+
+import rexviewer as r
 import naali
 import os, glob
     
@@ -15,18 +17,24 @@ class AutoSave(Component):
         self.deleting_files = False
         
         #initial values
-        self.settings = QSettings(1, 0, 'realXtend', "configuration/AutoSaveSettings")
-        self.time_update = int(self.settings.value("time_update", 120))
+        self.time_update = naali.config.Get("AutoSaveSettings", "time_for_update")
+        if self.time_update is None:
+            self.time_update = 120
+        else:
+            self.time_update = int(self.time_update)            
         self.save = True
         self.exiting = False
+        
         #path values
-        self.path_sys = naali.config.GetConfigFolder()
-        self.path_rel = self.settings.value("path", str('TestRecovery/'))       
+        self.path_sys = r.getApplicationDataDirectory() + "/" 
+        self.path_rel = naali.config.Get("AutoSaveSettings", "path")
+        if self.path_rel is None:
+            self.path_rel = str("autoRecovery/")
+        else:
+            self.path_rel = str(self.path_rel)
         self.path_world = 'Default/'
-        self.path_temp = str(strftime("%Y%m%d%H%M%S")) + "/"
-        
-        self.path = self.path_sys + self.path_rel + self.path_world + self.path_temp
-        
+        self.path_temp = str(strftime("%Y%m%d%H%M%S")) + "/"        
+        self.path = self.path_sys + self.path_rel + self.path_world + self.path_temp        
         d = os.path.dirname(self.path)
         if not os.path.exists(d):
             os.makedirs(d)             
@@ -38,7 +46,7 @@ class AutoSave(Component):
         #connect with scene to know 
         self.scene = naali.getScene(name)
         if self.scene is None:
-            print "No sceneManager available to connect"
+            r.logError("No sceneManager available to connect")
         else:         
             self.scene.connect('EntityCreated(Scene::Entity*, AttributeChange::Type)', self.on_entityCreated)
             self.scene.connect('EntityRemoved(Scene::Entity*, AttributeChange::Type)', self.on_entityRemoved)
@@ -54,7 +62,7 @@ class AutoSave(Component):
             self.scene.connect('SceneCleared(Scene::SceneManager*)', self.createSaveEntity)
             naali.framework.application.connect('ExitRequested()', self.on_sceneRemoved)              
             
-        print "autoSave initialized properly"
+        r.logInfo("autoSave initialized properly")
 
         if(self.save):
             #Connect timing
@@ -62,7 +70,7 @@ class AutoSave(Component):
             
     def createSaveEntity(self):
         #initialize entity_saver
-        print "entity saver removed!!"
+        r.logDebug("entity saver removed, let's create a new one")
         self.entity_saver_conf = self.scene.CreateEntityRaw(self.scene.NextFreeId(), '', 3, True)            
         self.entity_saver_conf.SetName("Auto_Saver_Entity")
         self.component_saver_conf = self.entity_saver_conf.GetOrCreateComponentRaw("EC_DynamicComponent", 3, True)         
@@ -74,12 +82,13 @@ class AutoSave(Component):
         self.component_saver_conf.CreateAttribute('int', 'time_for_update');
         self.component_saver_conf.SetAttribute('time_for_update', self.time_update);
         
+        self.scene.EmitEntityCreated(self.scene.GetEntity("Auto_Saver_Entity"))
         self.component_saver_conf.connect('OnAttributeChanged(IAttribute* , AttributeChange::Type )', self.on_entitySaverModified)
     
     def on_changelocation(self):
         self.deleting_files = True       
         aux = self.path
-        for infile in glob.glob(os.path.join(aux, '*.stxml')):
+        for infile in glob.glob(os.path.join(aux, '*.txml')):
                 os.remove(infile)
         os.rmdir(aux)
         self.deleting_files = False
@@ -96,10 +105,11 @@ class AutoSave(Component):
             #not needed because it has been already updated
             if self.restore: 
                 return  
-            print "Name of world founded!"                   
+            r.logDebug("Name of world founded!")                   
             self.on_changelocation()
             self.path_world = str(entity.GetDescription()) + "/"
             self.path = self.path_sys + self.path_rel + self.path_world + self.path_temp
+            r.logInfo("Changing new location of files to: " + self.path)
             d = os.path.dirname(self.path)
             if not os.path.exists(d):
                 os.makedirs(d)                          
@@ -108,7 +118,6 @@ class AutoSave(Component):
         
         if entity.GetName() == "unique_restore_world":
             #Get component
-            print "restore previous world"
             self.restore = True
             del self.entities[:]
             del self.dirtyEntities[:]
@@ -127,7 +136,7 @@ class AutoSave(Component):
                 d = os.path.dirname(self.path)
                 if not os.path.exists(d):
                     os.makedirs(d)
-                print "going to restore files from " + str(self.path_restore)
+                r.logInfo("Restore World: going to restore files from %s"  % str(self.path_restore))
                 self.restoreScene()
                 return
             
@@ -171,46 +180,46 @@ class AutoSave(Component):
     def on_sceneRemoved(self):
         if self.exiting:
             return
-        print "Scene going to be removed"
+        r.logWarning("Scene going to be removed, save last changes")
         self.on_timeout()
         self.exiting = True 
     
     def on_exit(self):
-        print "AutoSave exiting"
+        r.logInfo("AutoSave exiting")
              
         
     def restoreScene(self):
-        #Read all the .stxml files in directory and create them
-        for infile in glob.glob(os.path.join(self.path_restore, '*.stxml')):
+        #Read all the .txml files in directory and create them
+        for infile in glob.glob(os.path.join(self.path_restore, '*.txml')):
             infile = str(infile).replace('/', '\\')
             self.scene.LoadSceneXMLRaw(infile, False, True, 0)
         self.restore = False
                 
     def on_timeout(self):
-        print "Timeout reached, lets write files in " + str(self.path)
+        r.logDebug("Timeout reached, lets write files in " + str(self.path))
         if not self.exiting:
             naali.frame.DelayedExecute(self.time_update).connect('Triggered(float)', self.on_timeout)
         
         if not self.save:
-            print "save canceled (save to false)"
+            r.logWarning("save canceled (save to false)")
             return
         if self.restore:
-            print "save cancelled (waiting for restore)"
+            r.logWarning("save cancelled (waiting for restore)")
             return
         if self.deleting_files:
-            print "save canceled (waiting for the change of directory)"
+            r.logWarning("save canceled (waiting for the change of directory)")
             return            
                 
         for ent_save in self.dirtyEntities:
             if ent_save.Id < 0:
-                f = open(self.path + str(ent_save.Id * (-1)) + ".stxml", 'w')
+                f = open(self.path + str(ent_save.Id * (-1)) + ".txml", 'w')
             else:
-                f = open(self.path + str(ent_save.Id) + ".stxml", 'w')            
+                f = open(self.path + str(ent_save.Id) + ".txml", 'w')            
             f.write(str(self.scene.GetEntityXml(ent_save)))
             f.close()
             
         for ent_del in self.removedEntities:
-            os.remove(self.path + str(ent_del) + ".stxml")       
+            os.remove(self.path + str(ent_del) + ".txml")       
         
         #clean array
         del self.dirtyEntities[:]
@@ -221,13 +230,16 @@ class AutoSave(Component):
             self.on_changelocation()
             self.path_rel = str(self.component_saver_conf.GetAttribute('path'))
             self.path = self.path_sys + self.path_rel + self.path_world + self.path_temp
+            r.logInfo("Changing new location of files to: " + self.path)
             d = os.path.dirname(self.path)
             if not os.path.exists(d):
                 os.makedirs(d)
-            self.settings.setValue("path", self.path_rel)
+            #self.settings.setValue("path", self.path_rel)
+            naali.config.Set("AutoSaveSettings","path", self.path_rel)
             self.dirtyEntities = self.entities[:]
             
         self.save = self.component_saver_conf.GetAttribute('save');     
         self.time_update = self.component_saver_conf.GetAttribute('time_for_update');
-        self.settings.setValue("time_update", int(self.time_update))
+        #self.settings.setValue("time_update", int(self.time_update))
+        naali.config.Set("AutoSaveSettings","time_for_update", int(self.time_update))
         
