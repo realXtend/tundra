@@ -15,13 +15,19 @@ namespace Foundation
 {
     std::string PlatformNix::GetApplicationDataDirectory()
     {
-        char *ppath = 0;
-        ppath = getenv("HOME");
-        if (ppath == 0)
-            throw Exception("Failed to get HOME environment variable.");
+        char *ppath = 0;        
 
-        std::string path(ppath);
-        return path + "/." + std::string(APPLICATION_NAME);
+        if ((ppath = getenv("REXAPPDATA")))
+            return std::string(ppath);
+        else
+        {
+            ppath = getenv("HOME");
+            if (ppath == 0)
+                throw Exception("Failed to get HOME environment variable.");
+
+            std::string path(ppath);
+            return path + "/." + std::string(APPLICATION_NAME);
+        }
     }
 
     std::wstring PlatformNix::GetApplicationDataDirectoryW()
