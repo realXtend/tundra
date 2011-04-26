@@ -487,3 +487,13 @@ Vector3df EC_Placeable::GetRelativeVector(const Vector3df& vec)
     return GetOrientation() * vec;
 }
 
+Vector3df EC_Placeable::GetAbsoluteVector(const Vector3df& vec)
+{
+	const Transform& trans = transform.Get();
+	Quaternion orientation(DEGTORAD * trans.rotation.x,
+                           DEGTORAD * trans.rotation.y,
+                           DEGTORAD * trans.rotation.z);
+	orientation.makeInverse();
+    return orientation * vec;
+}
+

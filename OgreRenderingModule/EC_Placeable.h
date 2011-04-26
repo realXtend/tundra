@@ -222,6 +222,9 @@ public slots:
     
     //! Transforms a vector by the placeable's orientation
     Vector3df GetRelativeVector(const Vector3df& vec);
+
+	//! Transforms a vector by the inverse placeable's orientation
+    Vector3df GetAbsoluteVector(const Vector3df& vec);
     
     //! Calculates rotation
     Vector3df GetRotationFromTo(const Vector3df& from, const Vector3df& to);
