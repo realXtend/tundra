@@ -39,11 +39,14 @@ namespace Asset
         /// Deletes this asset from file.
         virtual void DeleteAssetFromStorage(QString assetRef);
 
+	/// Implements this common method from IAssetProvider, so that assetapi->AddAssetStorage works for file:// URLs too
+	virtual AssetStoragePtr AddStorage(const QString &location, const QString &name);
+
         /// Adds the given directory as an asset storage.
         /*! \param directory The paht name for the directory to add.
             \param storageName A human-readable name for the storage. This is used in the UI to the user, but is not an ID of any kind.
             \param recursive If true, all the subfolders of the given folder are added as well. */
-        void AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive);
+        AssetStoragePtr AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive);
 
         virtual std::vector<AssetStoragePtr> GetStorages() const;
 
