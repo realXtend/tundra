@@ -45,6 +45,10 @@ public slots:
 
     /// Returns a human-readable description of this asset storage.
     virtual QString ToString() const { return Name() + " (" + BaseURL() + ")"; }
+
+    /// Serializes this storage to a string for machine transfer.
+    virtual QString SerializeToString() const = 0;
+
 };
 
 #endif

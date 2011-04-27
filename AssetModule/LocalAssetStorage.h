@@ -60,7 +60,11 @@ public slots:
 
     QString BaseURL() const { return "local://"; }
 
+    /// Returns a convenient human-readable representation of this storage.
     QString ToString() const { return Name() + " (" + directory + ")"; }
+
+    /// Serializes this storage to a string for machine transfer.
+    virtual QString SerializeToString() const;
 
 private:
     void operator=(const LocalAssetStorage &);

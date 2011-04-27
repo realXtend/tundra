@@ -38,16 +38,16 @@ namespace Asset
         framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(local));
 
         QString systemAssetDir = Application::InstallationDirectory() + "data/assets";
-        local->AddStorageDirectory(systemAssetDir.toStdString(), "System", true);
+        local->AddStorageDirectory(systemAssetDir, "System", true);
         // Set asset dir as also as AssetAPI property
         framework_->Asset()->setProperty("assetdir", systemAssetDir);
         framework_->Asset()->setProperty("inbuiltassetdir", systemAssetDir);
         
         QString jsAssetDir = Application::InstallationDirectory() + "jsmodules";
-        local->AddStorageDirectory(jsAssetDir.toStdString(), "Javascript", true);
+        local->AddStorageDirectory(jsAssetDir, "Javascript", true);
 
         QString ogreAssetDir = Application::InstallationDirectory() + "media";
-        local->AddStorageDirectory(ogreAssetDir.toStdString(), "Ogre Media", true);
+        local->AddStorageDirectory(ogreAssetDir, "Ogre Media", true);
 
         framework_->RegisterDynamicObject("assetModule", this);
     }
@@ -85,7 +85,7 @@ namespace Asset
                 std::string dirname = scenepath.branch_path().string();
                 if (!dirname.empty())
                 {
-                    framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname, "Scene", true);
+                    framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname.c_str(), "Scene", true);
                     framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorage("Scene"));
                     
                     // Set asset dir as also as AssetAPI property
@@ -104,7 +104,7 @@ namespace Asset
                 std::string dirname = scenepath.branch_path().string();
                 if (!dirname.empty())
                 {
-                    framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname, "Scene", true);
+                    framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname.c_str(), "Scene", true);
                     framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorage("Scene"));
                     
                     // Set asset dir as also as AssetAPI property
@@ -139,7 +139,9 @@ namespace Asset
 
         if (!framework_->Asset()->GetAssetProvider<HttpAssetProvider>())
             return ConsoleResultFailure();
-        framework_->Asset()->AddAssetStorage(params[0].c_str(), params[1].c_str(), true);
+
+        HttpAssetStoragePtr storage = framework_->Asset()->GetAssetProvider<HttpAssetProvider>()->AddStorageAddress(params[0].c_str(), params[1].c_str());
+        framework_->Asset()->SetDefaultAssetStorage(storage);
         return ConsoleResultSuccess();
     }
 

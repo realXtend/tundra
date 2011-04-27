@@ -112,6 +112,11 @@ QString LocalAssetStorage::GetFullAssetURL(const QString &localName)
     return BaseURL() + AssetAPI::ExtractFilenameFromAssetRef(localName);
 }
 
+QString LocalAssetStorage::SerializeToString() const
+{
+    return "LocalAssetStorage;" + name + ";" + directory + ";" + (recursive ? "true" : "false");
+}
+
 void LocalAssetStorage::SetupWatcher()
 {
     /* This watcher is not used for now. -jj. will be removed.

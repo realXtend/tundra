@@ -45,7 +45,10 @@ public slots:
     
     /// Refresh http asset refs, issues webdav PROPFIND requests. AssetRefsReady() will be emitted when complete.
     void RefreshAssetRefs();
-    
+
+    /// Serializes this storage to a string for machine transfer.
+    virtual QString SerializeToString() const;
+
 signals:
     /// Asset ref query is complete
     void AssetRefsReady();
