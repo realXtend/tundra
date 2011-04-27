@@ -14,6 +14,7 @@
 #include "IAssetUploadTransfer.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
+#include "CoreStringUtils.h"
 #include <QByteArray>
 #include <QFile>
 #include <QFileInfo>
@@ -127,13 +128,13 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
     framework->Asset()->EmitAssetDeleted(assetRef);
 }
 
-void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
+LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &directory, const QString &storageName, bool recursive)
 {
     ///\todo Check first if the given directory exists as a storage, and don't add it as a duplicate if so.
 
     LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage());
-    storage->directory = directory.c_str();
-    storage->name = storageName.c_str();
+    storage->directory = directory;
+    storage->name = storageName;
     storage->recursive = recursive;
     storage->provider = shared_from_this();
     storage->SetupWatcher(); // Start listening on file change notifications.
@@ -141,6 +142,8 @@ void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const
 //    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
 
     storages.push_back(storage);
+
+    return storage;
 }
 
 std::vector<AssetStoragePtr> LocalAssetProvider::GetStorages() const
@@ -240,6 +243,25 @@ void LocalAssetProvider::CompletePendingFileDownloads()
     }
 }
 
+AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QString &storage)
+{
+    QStringList tokens = storage.split(";");
+    if (tokens.size() != 4 || tokens.first() != "LocalAssetStorage")
+        return AssetStoragePtr(); // Not of our type?
+
+    QString name = tokens[1].trimmed();
+    QString directory = tokens[2].trimmed();
+    bool recursive = ParseBool(tokens[3].trimmed());
+
+    if (name.isEmpty() || directory.isEmpty() || tokens[3].isEmpty())
+    {
+        LogError("Invalid LocalAssetStorage format \"" + storage + "\"!");
+        return AssetStoragePtr();
+    }
+
+    return AddStorageDirectory(directory, name, recursive);
+}
+
 void LocalAssetProvider::CompletePendingFileUploads()
 {
     while(pendingUploads.size() > 0)
@@ -274,7 +296,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
         {
             AssetModule::LogError(("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!").toStdString());
             transfer->EmitTransferFailed();
-            /// \todo Jukka lis‰‰ failure-notifikaatio.
+            /// \todo Jukka lis√§√§ failure-notifikaatio.
         }
         else
         {

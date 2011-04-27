@@ -42,7 +42,10 @@ public slots:
     
     /// Refresh http asset refs, issues webdav PROPFIND requests. AssetRefsChanged() will be emitted when complete.
     virtual void RefreshAssetRefs();
-    
+
+    /// Serializes this storage to a string for machine transfer.
+    virtual QString SerializeToString() const;
+
     /// Add an assetref. Emit AssetRefsChanged() if did not exist already. Called by HttpAssetProvider
     void AddAssetRef(const QString& ref);
     

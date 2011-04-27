@@ -13,7 +13,9 @@ namespace Asset
 {
     class LocalAssetStorage;
 
-    /// LocalAssetProvider provides Naali scene to use assets from the local file system with 'local://' reference.
+    typedef boost::shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
+
+    /// LocalAssetProvider provides the scene to use assets from the local file system with 'local://' reference.
     class ASSET_MODULE_API LocalAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<LocalAssetProvider>
     {
         Q_OBJECT;
@@ -43,14 +45,15 @@ namespace Asset
         /*! \param directory The paht name for the directory to add.
             \param storageName A human-readable name for the storage. This is used in the UI to the user, but is not an ID of any kind.
             \param recursive If true, all the subfolders of the given folder are added as well. */
-        void AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive);
+        LocalAssetStoragePtr AddStorageDirectory(const QString &directory, const QString &storageName, bool recursive);
 
         virtual std::vector<AssetStoragePtr> GetStorages() const;
 
         virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
+        virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage);
+
     private:
-        typedef boost::shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
 
         /// Finds a path where the file localFilename can be found. Searches through all local storages.
         /// @param storage [out] Receives the local storage that contains the asset.

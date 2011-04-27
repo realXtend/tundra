@@ -108,6 +108,24 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
     networkAccessManager->deleteResource(request);
 }
 
+AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString &storage)
+{
+    QStringList tokens = storage.split(";");
+    if (tokens.size() != 3 || tokens.first() != "HttpAssetStorage")
+        return AssetStoragePtr(); // Not of our type?
+
+    QString name = tokens[1].trimmed();
+    QString url = tokens[2].trimmed();
+
+    if (name.isEmpty() || url.isEmpty())
+    {
+        LogError("Invalid HttpAssetStorage format \"" + storage + "\"!");
+        return AssetStoragePtr();
+    }
+
+    return AddStorageAddress(url, name);
+}
+
 void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
 {
     // QNetworkAccessManager requires us to delete the QNetworkReply, or it will leak.
@@ -208,27 +226,27 @@ void HttpAssetProvider::OnAssetDeleted(const QString& ref)
     DeleteAssetRefFromStorages(ref);
 }
 
+HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address, const QString &storageName)
+{    QString locationCleaned = GuaranteeTrailingSlash(address.trimmed());
 
-AssetStoragePtr HttpAssetProvider::AddStorage(const QString &location, const QString &name)
-{
-    QString locationCleaned = GuaranteeTrailingSlash(location.trimmed());
-
-    // Check if same location and name combination already exists
-    for(size_t i=0; i<storages.size(); ++i)
-    {
-        HttpAssetStoragePtr checkStorage = storages[i];
-        if (!checkStorage.get())
-            continue;
-        if (checkStorage->baseAddress == locationCleaned && checkStorage->storageName == name)
-            return checkStorage;
-    }
+    // Check if a storage with this name already exists.
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->storageName == storageName)
+        {
+            if (storages[i]->baseAddress == locationCleaned)
+                return storages[i];
+            else
+            {
+                LogError("HttpAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName + "\" already exists, but points to address \"" + storages[i]->baseAddress + "\" instead of \"" + address + "\"!");
+                return HttpAssetStoragePtr();
+            }
+        }
 
     // Add new if not found
     HttpAssetStoragePtr storage = HttpAssetStoragePtr(new HttpAssetStorage());
     storage->baseAddress = locationCleaned;
-    storage->storageName = name;
+    storage->storageName = storageName;
     storage->provider = this->shared_from_this();
-
     storages.push_back(storage);
     return storage;
 }
@@ -237,11 +255,8 @@ std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
 {
     std::vector<AssetStoragePtr> s;
     for(size_t i = 0; i < storages.size(); ++i)
-    {
-        if (!storages[i].get())
-            continue;
         s.push_back(storages[i]);
-    }
+
     return s;
 }
 

@@ -160,7 +160,7 @@ public slots:
         @param assetRef The asset reference name to query a provider for.
         @param assetType An optionally specified asset type. Some providers can only handle certain asset types. This parameter can be 
                         used to more completely specify the type. */
-    AssetProviderPtr GetProviderForAssetRef(QString location, QString assetType = "");
+    AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
 
     /// Creates a new empty unloaded asset of the given type and name.
     /** This function uses the Asset type factories to create an instance of the proper asset class.
@@ -201,16 +201,9 @@ public slots:
     /// Returns the asset storage of the given name.
     AssetStoragePtr GetAssetStorage(const QString &name) const;
 
-    /// \todo Add authentication possiblity for storages with AUTHORIZATION header, and for upload commands to get user/pass as input.
-    /// Creates a new storage for the the provider that is assosiated with 'url' param if one is found. 
-    /// The 'url' param server must accept GET and POST and optionally DELETE request for this path for it to work properly as a http storage.
-    /// @note This will create duplicates for same url if the name is different. It's just kind of giving the storage a new alias.
-    /// @param url Url of the http asset storage
-    /// @param name Name of the asset storage, can be used to identify storage in upload functions.
-    /// @param setAsDefault Optional parameter if this storage should be set a default. Default value is true.
-    /// @return AssetStoragePtr of created or found asset storage.
-    /// \todo Delete this function and replace with a proper deserialization from string. -jj.
-    AssetStoragePtr AddAssetStorage(const QString &url, const QString &name, bool setAsDefault = true);
+    /// Creates an asset storage from the given serialized string form.
+    /// Returns a null pointer if the given storage could not be added.
+    AssetStoragePtr DeserializeAssetStorageFromString(const QString &storage);
 
     /// Returns the AssetStorage that should be used by default when assets are requested by their local name only, e.g. when an assetRef only contains
     /// a string "texture.png" and nothing else.

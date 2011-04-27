@@ -82,48 +82,19 @@ AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
     return AssetStoragePtr();
 }
 
-/// \todo Delete this function and replace with a proper deserialization from string. -jj.
-AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &name, bool setAsDefault)
+AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &storage)
 {
-    AssetStoragePtr newStorage;
-    IAssetProvider *provider = GetProviderForAssetRef(url, "Binary").get();
-    if (!provider)
+    for(size_t i = 0; i < providers.size(); ++i)
     {
-        LogError("AssetAPI::AddAssetStorage: Could not find a provider for the new storage location " + url);
-        return newStorage; 
-    }
-
-    // Inspect if a storage already exists for this url and name combination
-    std::vector<AssetStoragePtr> currentStorages = provider->GetStorages();
-    for(size_t i = 0; i < currentStorages.size(); ++i)
-    {
-        newStorage = currentStorages.at(i);
-        if (!newStorage)
-            continue;
-        if (newStorage->BaseURL() == url && newStorage->Name() == name)
+        AssetStoragePtr assetStorage = providers[i]->TryDeserializeStorageFromString(storage);
+        if (assetStorage)
         {
-            LogDebug("AssetAPI::AddAssetStorage: Found existing storage with same url and name, returning the existing storage.");
-            break;
+            return assetStorage;
+            emit AssetStorageAdded(assetStorage);
         }
-        // Reset so the last valid provider wont be used! 
-        newStorage = AssetStoragePtr();
     }
-
-    // If the url name combination was not found, ask the provider to create a new one
-    if (!newStorage.get())
-    {
-        newStorage = provider->AddStorage(url, name);
-        // Only emit AssetStorageAdded if it is an actual new successfully added storage
-        if (newStorage.get())
-            emit AssetStorageAdded(newStorage);
-    }
-    
-    if (newStorage.get() && setAsDefault)
-        SetDefaultAssetStorage(newStorage);
-    if (!newStorage.get())
-        LogError("AssetAPI::AddAssetStorage: Could not create new storage for " + url);
-    
-    return newStorage;
+    LogError("Failed to deserialize asset storage from string \"" + storage + "\"!");
+    return AssetStoragePtr();
 }
 
 AssetStoragePtr AssetAPI::GetDefaultAssetStorage() const
@@ -547,7 +518,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     AssetStoragePtr storage = GetAssetStorage(storageName);
     if (!storage.get())
     {
-        LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName + "! Use AssetAPI::AddAssetStorage to add one with this name.");
+        LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName + "! Please add a storage with this name.");
         return AssetUploadTransferPtr();
     }
 
@@ -603,7 +574,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &d
     AssetStoragePtr storage = GetAssetStorage(storageName);
     if (!storage.get())
     {
-        LogError("AssetAPI::UploadAssetFromFileInMemory failed! No storage found with name " + storageName + "! Use AssetAPI::AddAssetStorage to add one with this name.");
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed! No storage found with name " + storageName + "! Please add a storage with this name.");
         return AssetUploadTransferPtr();
     }
 

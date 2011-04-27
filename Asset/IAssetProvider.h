@@ -61,14 +61,10 @@ public:
 
     /// Issues an asset deletion request to the asset storage and provider this asset resides in.
     /// If the asset provider supports this feature, it will delete the asset from the source.
-    virtual void DeleteAssetFromStorage(QString assetRef) {}
-
-    /// Add a storage for this provider, returns the created storage
-    /// @param location Location of the new storage
-    /// @param name of the new storage
-    /// @return AssetStoragePtr The created provider
-    /// \todo Delete this function and replace with a proper deserialization from string. -jj.
-    virtual AssetStoragePtr AddStorage(const QString &location, const QString &name) { return AssetStoragePtr(); }
+    virtual void DeleteAssetFromStorage(QString assetRef)
+    { 
+        ///\todo Log error unimplemented!
+    }
 
     /// Returns the list of all asset storages registered into this asset provider.
     virtual std::vector<AssetStoragePtr> GetStorages() const = 0;
@@ -76,6 +72,10 @@ public:
     /// Starts an asset upload from the given file in memory to the given storage.
     /// The default implementation fails all upload attempts and returns 0 immediately.
     virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName) { return AssetUploadTransferPtr(); }
+
+    /// Reads the given storage string and tries to deserialize it to an asset storage in this provider.
+    /// Returns a pointer to the newly created storage, or 0 if the storage string is not of the type of this asset provider.
+    virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage) = 0;
 };
 
 
