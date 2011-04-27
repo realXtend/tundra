@@ -1,5 +1,9 @@
-//!ref: road_a.material
-//!ref: road_b.material
+// !ref: road_a.material
+// !ref: road_b.material
+// !ref: sassafras.mesh
+// !ref: rect_plane.mesh
+// !ref: asimina_triloba_bark.png
+// !ref: sassafras_branch.png
 
 print("<-");
 
@@ -20,7 +24,7 @@ function addpiece(y) {
     //var ref = roadpiece.mesh.meshRef;
     //ref.ref = "rect_plane.mesh";
     //roadpiece.mesh.meshRef = ref;
-    roadpiece.mesh.SetMeshRef("rect_plane.mesh");
+    roadpiece.mesh.SetMeshRef("local://rect_plane.mesh");
 
     var mat = materials[Math.floor(Math.random() * materials.length)]; //random.choice
     print(mat);
@@ -37,7 +41,7 @@ function addpiece(y) {
     //copy paste from above, didn't make addmesh() yet 'cause seemed that would need many params
     var tree = scene.CreateEntityRaw(scene.NextFreeId(),
                                      ["EC_Placeable", "EC_Mesh"]);
-    tree.mesh.SetMeshRef("sassafras.mesh");
+    tree.mesh.SetMeshRef("local://sassafras.mesh");
 
     var t = tree.placeable.transform;
     t.pos.y = y + 30;
