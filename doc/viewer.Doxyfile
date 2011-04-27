@@ -659,7 +659,8 @@ EXCLUDE                = ../external_libs \
                          ../LibraryModule \
                          ../RpcUtilities \
                          ../HttpUtilities \
-                         ../TextureDecoderModule
+                         ../TextureDecoderModule \
+                         ../UnitTests
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
