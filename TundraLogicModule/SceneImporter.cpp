@@ -118,7 +118,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     // Fill the mesh attributes
     AssetReferenceList materials;
     foreach(QString matName, material_names)
-        materials.Append(prefix + matName + ".material");
+        materials.Append(AssetReference(prefix + matName + ".material"));
 
     EC_Mesh* meshPtr = checked_static_cast<EC_Mesh*>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
     if (meshPtr)

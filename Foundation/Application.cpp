@@ -235,18 +235,38 @@ void Application::UpdateFrame()
 
     try
     {
+        const tick_t frameStartTime = GetCurrentClockTime();
+
         QApplication::processEvents(QEventLoop::AllEvents, 1);
         QApplication::sendPostedEvents();
 
         framework->ProcessOneFrame();
 
+        const boost::program_options::variables_map &options = framework->ProgramOptions();
+        double targetFpsLimit = 60.0;
+        if (options.count("fpslimit") > 0)
+        {
+            targetFpsLimit = options["fpslimit"].as<float>();
+            if (targetFpsLimit < 1.f)
+                targetFpsLimit = 0.f;
+        }
+
+        tick_t timeNow = GetCurrentClockTime();
+
+        static tick_t timerFrequency = GetCurrentClockFreq();
+
+        double msecsSpentInFrame = (double)(timeNow - frameStartTime) * 1000.0 / timerFrequency;
+        const double msecsPerFrame = 1000.0 / targetFpsLimit;
+
+        double msecsToSleep = std::min(std::max(0.0, msecsPerFrame - msecsSpentInFrame), msecsPerFrame);
+
         // Reduce frame rate when unfocused
         if (!frameUpdateTimer.isActive())
         {
-            if (appActivated)
-                frameUpdateTimer.start(0); 
+            if (appActivated || framework->IsHeadless())
+                frameUpdateTimer.start(msecsToSleep); 
             else 
-                frameUpdateTimer.start(5);
+                frameUpdateTimer.start(msecsToSleep + msecsPerFrame); // Proceed at half FPS speed when unfocused (but never at half FPS when running a headless server).
         }
     }
     catch(const std::exception &e)

@@ -256,7 +256,7 @@ QString WStringToQString(const std::wstring &str)
 
 AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outProtocolPart, QString *outNamedStorage, QString *outProtocol_Path, 
                                                QString *outPath_Filename_SubAssetName, QString *outPath_Filename, QString *outPath, 
-                                               QString *outFilename, QString *outSubAssetName)
+                                               QString *outFilename, QString *outSubAssetName, QString *outFullRef)
 {
     if (outProtocolPart) *outProtocolPart = "";
     if (outNamedStorage) *outNamedStorage = "";
@@ -266,6 +266,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     if (outPath) *outPath = "";
     if (outFilename) *outFilename = "";
     if (outSubAssetName) *outSubAssetName = "";
+    if (outFullRef) *outFullRef = "";
 
     /* Examples of asset refs:
 
@@ -275,6 +276,10 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
 
      a2) http://server.com/asset.sfx                            AssetRefType = AssetRefExternalUrl.
          someotherprotocol://some/path/specifier/asset.sfx
+
+     b0) special case: www.server.com/asset.png                 AssetRefType = AssetRefExternalUrl with 'http' hardcoded as protocol.
+         As customary with web browsers, people expect to be able to write just www.server.com/asset.png when they mean a network URL.
+         We detect this case as a string that starts with 'www.'.
 
      b1) /unix/absolute/path/asset.sfx                          AssetRefType = AssetRefLocalPath.
 
@@ -311,7 +316,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     wregex expression2(L"([A-Za-z]:[/\\\\].*?)"); // b2): X:\windowsPathToAsset or X:/windowsPathToAsset
     wregex expression3(L"(.*?):(.*)"); // b3): X:\windowsPathToAsset or X:/windowsPathToAsset
     wsmatch what;
-    wstring fullPath;
+    wstring fullPath; // Contains the url without the "protocolPart://" prefix.
     AssetRefType refType = AssetRefInvalid;
     if (regex_match(ref, what, expression1)) // Is ref of type 'a)' above?
     {
@@ -324,8 +329,23 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
             *outProtocolPart = protocol;
 
         fullPath = what[2].str();
-        if (outProtocol_Path)
+        if (outProtocol_Path) // Partially save the beginning of the protocol & path part. This will be completed below with the full path.
             *outProtocol_Path = protocol + "://";
+
+        if (outFullRef)
+            *outFullRef = protocol.toLower() + "://";
+    }
+    else if (assetRef.startsWith("www.", Qt::CaseInsensitive)) // Ref is of type 'b0)'?
+    {
+        refType = AssetRefExternalUrl;
+        if (outProtocolPart)
+            *outProtocolPart = "http";
+        fullPath = ref;
+
+        if (outProtocol_Path) // Partially save the beginning of the protocol & path part. This will be completed below with the full path.
+            *outProtocol_Path = "http://";
+        if (outFullRef)
+            *outFullRef = "http://";
     }
     else if (assetRef.startsWith("/")) // Is ref of type 'b1)'?
     {
@@ -340,13 +360,15 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     else if (regex_match(ref, what, expression3)) // b3)
     {
         refType = AssetRefNamedStorage;
-        QString storage = WStringToQString(what[1].str());
+        QString storage = WStringToQString(what[1].str()).trimmed();
         if (outNamedStorage)
             *outNamedStorage = storage;
         fullPath = what[2].str();
 
         if (outProtocol_Path)
             *outProtocol_Path = storage + ":";
+        if (outFullRef)
+            *outFullRef = storage + ":";
     }
     else // We assume it must be of type b4).
     {
@@ -360,11 +382,12 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
         *outPath_Filename_SubAssetName = WStringToQString(fullPath).trimmed();
 
     // Parse subAssetName if it exists.
+    QString subAssetName = "";
     wregex expression4(L"(.*?)\\s*,\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
     if (regex_match(fullPath, what, expression4))
     {
         wstring assetRef = what[1].str();
-        QString subAssetName = WStringToQString(what[2].str()).trimmed();
+        subAssetName = WStringToQString(what[2].str()).trimmed();
         if (outSubAssetName)
             *outSubAssetName = subAssetName;
         fullPath = assetRef; // Remove the subAssetName from the asset ref so that the parsing can continue without the subAssetName in it.
@@ -387,6 +410,15 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
         *outProtocol_Path += path;
     if (outFilename)
         *outFilename = fullPathRef.mid(directorySeparatorIndex+1);
+    if (outFullRef)
+    {
+        *outFullRef += fullPathRef;
+        if (!subAssetName.isEmpty())
+            if (subAssetName.contains(' '))
+                *outFullRef += ", \"" + subAssetName + "\"";
+            else
+                *outFullRef += ", " + subAssetName;
+    }
 
     return refType;
 }

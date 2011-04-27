@@ -170,3 +170,32 @@ bool TextureAsset::IsLoaded() const
 {
     return ogreTexture.get() != 0;
 }
+
+QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
+{
+    if (!ogreTexture.get())
+        return QImage();
+
+    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = ogreTexture->getBuffer(faceIndex, mipmapLevel);
+    QImage::Format fmt;
+    switch(pixelBuffer->getFormat())
+    {
+    case Ogre::PF_X8R8G8B8: fmt = QImage::Format_RGB32; break;
+    case Ogre::PF_A8R8G8B8: fmt = QImage::Format_ARGB32; break;
+    case Ogre::PF_R5G6B5: fmt = QImage::Format_RGB16; break;
+    case Ogre::PF_R8G8B8: fmt = QImage::Format_RGB888; break;
+    default:
+        LogError("TextureAsset::ToQImage: Cannot convert Ogre TextureAsset \"" + Name() + "\" to QImage: Unsupported Ogre format of type " + (int)pixelBuffer->getFormat());
+        return QImage();
+    }
+
+    void *data = pixelBuffer->lock(Ogre::HardwareBuffer::HBL_READ_ONLY);
+    if (!data)
+    {
+        LogError("TextureAsset::ToQImage: Failed to lock Ogre TextureAsset \"" + Name() + "\" for reading!");
+        return QImage();
+    }
+    QImage img((uchar*)data, pixelBuffer->getWidth(), pixelBuffer->getHeight(), fmt);
+    pixelBuffer->unlock();
+    return img;
+}

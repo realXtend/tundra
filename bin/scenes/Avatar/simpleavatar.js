@@ -743,8 +743,10 @@ function ClientHandleMouseMove(mouseevent)
     var cameraplaceable = cameraentity.placeable;
     var cameratransform = cameraplaceable.transform;
 
+    // Note: This causes MouseLookX message to be sent *twice* to server. Once here, and once directly by inputmapper, if the user is holding RMB down.
     if (mouseevent.relativeX != 0)
-        me.Exec(2, "MouseLookX", String(mouse_rotate_sensitivity * parseInt(mouseevent.relativeX)));
+        me.Exec(2, "MouseLookX", String(mouse_rotate_sensitivity * parseInt(mouseevent.relativeX))); 
+        
     if (mouseevent.relativeY != 0)
     {
         // Look up/down. This is clientside only, as it affects only the first person camera
