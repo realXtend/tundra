@@ -1,7 +1,9 @@
+var avatarMenu = null;
+
 function MenuActionHandler(assetRef, index)
 {
     this.assetName = assetRef;
-} 
+}
 
 MenuActionHandler.prototype.triggered = function()
 {
@@ -18,27 +20,45 @@ if (!framework.IsHeadless())
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
 
-    // Todo: for now scans the default storage only
-    var assetList = asset.GetDefaultAssetStorage().GetAllAssetRefs();
-    PopulateAvatarUiMenu(assetList);
+    // Connect to asset refs ready signal of existing storages (+ refresh them now)
+    var assetStorages = asset.GetAssetStorages();
+    for (var i = 0; i < assetStorages.length; ++i)
+    {
+        assetStorages[i].AssetRefsChanged.connect(PopulateAvatarUiMenu);
+        assetStorages[i].RefreshAssetRefs();
+    }
+    // Connect to adding new storages
+    asset.AssetStorageAdded.connect(OnAssetStorageAdded);
 }
 
-function PopulateAvatarUiMenu(assetList)
+function OnAssetStorageAdded(storage)
+{
+    storage.AssetRefsChanged.connect(PopulateAvatarUiMenu);
+    storage.RefreshAssetRefs();
+}
+
+function PopulateAvatarUiMenu()
 {
     var menu = ui.MainWindow().menuBar();
-    var avatarMenu = menu.addMenu("&Avatar");
+    if (avatarMenu == null)
+        avatarMenu = menu.addMenu("&Avatar");
 
-    for (var i = 0; i < assetList.length; ++i)
+    avatarMenu.clear();
+
+    var assetStorages = asset.GetAssetStorages();
+    for (var i = 0; i < assetStorages.length; ++i)
     {
-        var assetNameLower = assetList[i].toLowerCase();
-        // Can not check the actual asset type from the ref only. But for now assume xml = avatar xml
-        if (assetNameLower.indexOf(".xml") != -1)
+        var assetList = assetStorages[i].GetAllAssetRefs();
+        for (var j = 0; j < assetList.length; ++j)
         {
-            var assetName = assetList[i];
-            // Tidy up the displayed name a bit
-            var menuName = assetName.replace("local://", "").replace(".xml", "");
-            var handler = new MenuActionHandler(assetName);
-            avatarMenu.addAction(menuName).triggered.connect(handler, handler.triggered);
+            var assetNameLower = assetList[j].toLowerCase();
+            // Can not check the actual asset type from the ref only. But for now assume xml = avatar xml
+            if ((assetNameLower.indexOf(".xml") != -1) || (assetNameLower.indexOf(".avatar") != -1))
+            {
+                var assetName = assetList[j];
+                var handler = new MenuActionHandler(assetName);
+                avatarMenu.addAction(assetName).triggered.connect(handler, handler.triggered);
+            }
         }
     }
 }

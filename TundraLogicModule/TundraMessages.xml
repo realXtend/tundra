@@ -95,4 +95,11 @@
             <s8 name="parameter" dynamicCount="8" />
         </struct>
     </message>
+    
+    <!-- ASSET DISCOVERY -->
+    
+    <message id="120" name="AssetDiscovery" reliable="true" inOrder="true" priority="100">
+        <s8 name="assetRef" dynamicCount="8"/>
+        <s8 name="assetType" dynamicCount="8"/>
+    </message>
 </xml>

@@ -111,11 +111,18 @@ AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &nam
 
     // If the url name combination was not found, ask the provider to create a new one
     if (!newStorage.get())
+    {
         newStorage = provider->AddStorage(url, name);
+        // Only emit AssetStorageAdded if it is an actual new successfully added storage
+        if (newStorage.get())
+            emit AssetStorageAdded(newStorage);
+    }
+    
     if (newStorage.get() && setAsDefault)
         SetDefaultAssetStorage(newStorage);
     if (!newStorage.get())
         LogError("AssetAPI::AddAssetStorage: Could not create new storage for " + url);
+    
     return newStorage;
 }
 
@@ -1114,6 +1121,9 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
     uploadTransfer->EmitTransferCompleted();
 
     QString assetRef = uploadTransfer->AssetRef();
+    
+    emit AssetUploaded(assetRef);
+    
     // We've completed an asset upload transfer. See if there is an asset download transfer that is waiting
     // for this upload to complete. 
     
@@ -1257,6 +1267,11 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
     return numDependencies;
 }
 
+void AssetAPI::EmitAssetDiscovered(const QString& assetRef, const QString& assetType)
+{
+    emit AssetDiscovered(assetRef, assetType);
+}
+
 void AssetAPI::OnAssetLoaded(AssetPtr asset)
 {
     std::vector<AssetPtr> dependents = FindDependents(asset->Name());
@@ -1379,13 +1394,19 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
     if (file.endsWith(".ui"))
         return "QtUiFile";
 
+    if (file.endsWith(".ui"))
+        return "QtUiFile";
+        
+    if (file.endsWith(".avatar"))
+        return "Avatar";
+
     // \todo Dont hadcode these if the extension some day change!
     // cTundraBinFileExtension and cTundraXmlFileExtension are defined 
     // in SceneStructureModules .h files, move to core?
     if (file.endsWith(".xml") || file.endsWith(".txml") || file.endsWith(".tbin")) 
         return "Binary";
 
-    // Unknown type, return Binray type.
+    // Unknown type, return Binary type.
     return "Binary";
 
     // Note: There's a separate OgreImageTextureResource which isn't handled above.

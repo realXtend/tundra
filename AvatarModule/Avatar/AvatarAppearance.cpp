@@ -109,7 +109,7 @@ namespace Avatar
                 AvatarModule::LogError("Could not get asset service");
                 return;
             }      
-            request_tag_t tag = asset_service->RequestAsset(appearance_address, ASSETTYPENAME_GENERIC_AVATAR_XML);
+            request_tag_t tag = asset_service->RequestAsset(appearance_address, ASSETTYPENAME_AVATAR);
             // Remember the request
             if (tag)
                 avatar_appearance_tags_[tag] = entity->GetId();            
@@ -125,7 +125,7 @@ namespace Avatar
             if (asset_service)
             {
                 asset_service->RemoveAssetFromCache(appearance_address);
-                request_tag_t tag = asset_service->RequestAsset(appearance_address, ASSETTYPENAME_GENERIC_AVATAR_XML);
+                request_tag_t tag = asset_service->RequestAsset(appearance_address, ASSETTYPENAME_AVATAR);
                 if (tag)
                     avatar_appearance_tags_[tag] = entity->GetId();
             }
@@ -1048,7 +1048,7 @@ namespace Avatar
             Inventory::InventoryItemEventData* event_data = dynamic_cast<Inventory::InventoryItemEventData*>(data);
             if (event_data)
             {
-                if (event_data->assetType == RexTypes::RexAT_GenericAvatarXml && inv_export_state_ == Avatar)
+                if (event_data->assetType == RexTypes::RexAT_Avatar && inv_export_state_ == Avatar)
                 {
                     // See that the asset is actually an avatar description we uploaded
                     if (event_data->name.find("Avatar") != std::string::npos)

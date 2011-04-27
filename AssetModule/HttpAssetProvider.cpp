@@ -25,6 +25,9 @@ HttpAssetProvider::HttpAssetProvider(Foundation::Framework *framework_)
     networkAccessManager = new QNetworkAccessManager(this);
     networkAccessManager->setCache(framework_->Asset()->GetAssetCache());
     connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(OnHttpTransferFinished(QNetworkReply*)));
+    
+    // Connect to asset discovery signals, to refresh assetrefs of storages without having to do a full PROPFIND refresh
+    connect(framework_->Asset(), SIGNAL(AssetDiscovered(const QString &, const QString &)), this, SLOT(OnAssetDiscovered(const QString &, const QString &)));
 }
 
 HttpAssetProvider::~HttpAssetProvider()
@@ -164,6 +167,8 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         {
             LogDebug("Http upload to address \"" + reply->url().toString().toStdString() + "\" returned successfully.");
             framework->Asset()->AssetUploadTransferCompleted(transfer.get());
+            // Add the assetref to matching storage(s)
+            AddAssetRefToStorages(reply->url().toString());
         }
         else
         {
@@ -171,13 +176,15 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             ///\todo Call the following when implemented:
 //            framework->Asset()->AssetUploadTransferFailed(transfer);
         }
-
         uploadTransfers.erase(iter);
         break;
     }
     case QNetworkAccessManager::DeleteOperation:
         if (reply->error() == QNetworkReply::NoError)
+        {
             LogInfo("Http DELETE to address \"" + reply->url().toString().toStdString() + "\" returned successfully.");
+            DeleteAssetRefFromStorages(reply->url().toString());
+        }
         else
             LogError("Http DELETE to address \"" + reply->url().toString().toStdString() + "\" failed with an error: \"" + reply->errorString().toStdString() + "\"");
         break;
@@ -187,6 +194,12 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         break;
         */
     }
+}
+
+void HttpAssetProvider::OnAssetDiscovered(const QString& ref, const QString& assetType)
+{
+    // Add to our storages if the base matches
+    AddAssetRefToStorages(ref);
 }
 
 AssetStoragePtr HttpAssetProvider::AddStorage(const QString &location, const QString &name)
@@ -208,8 +221,6 @@ AssetStoragePtr HttpAssetProvider::AddStorage(const QString &location, const QSt
     storage->baseAddress = locationCleaned;
     storage->storageName = name;
     storage->provider = this->shared_from_this();
-    // Query for assets immediately when added
-    storage->RefreshAssetRefs();
 
     storages.push_back(storage);
     return storage;
@@ -225,4 +236,25 @@ std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
         s.push_back(storages[i]);
     }
     return s;
+}
+
+void HttpAssetProvider::AddAssetRefToStorages(const QString& ref)
+{
+    for (size_t i = 0; i < storages.size(); ++i)
+    {
+        if (storages[i].get())
+        {
+            if (ref.indexOf(storages[i]->baseAddress) == 0)
+                storages[i]->AddAssetRef(ref);
+        }
+    }
+}
+
+void HttpAssetProvider::DeleteAssetRefFromStorages(const QString& ref)
+{
+    for (size_t i = 0; i < storages.size(); ++i)
+    {
+        if (storages[i].get())
+            storages[i]->DeleteAssetRef(ref);
+    }
 }

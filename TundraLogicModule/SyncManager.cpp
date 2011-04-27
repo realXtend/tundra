@@ -20,8 +20,9 @@
 #include "MsgRemoveEntity.h"
 #include "MsgEntityIDCollision.h"
 #include "MsgEntityAction.h"
+#include "MsgAssetDiscovery.h"
 #include "EC_DynamicComponent.h"
-
+#include "AssetAPI.h"
 #include "SceneAPI.h"
 
 #include <kNet.h>
@@ -50,6 +51,8 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     update_period_(1.0f / 30.0f),
     update_acc_(0.0)
 {
+    // Connect to asset uploads to be able to post discovery messages
+    connect(framework_->Asset(), SIGNAL(AssetUploaded(const QString &)), this, SLOT(OnAssetUploaded(const QString &)));
 }
 
 SyncManager::~SyncManager()
@@ -157,6 +160,13 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
             MsgEntityAction msg(data, numBytes);
             HandleEntityAction(source, msg);
         }
+        break;
+    case cAssetDiscoveryMessage:
+        {
+            MsgAssetDiscovery msg(data, numBytes);
+            HandleAssetDiscovery(source, msg);
+        }
+        break;
     }
     
     currentSender = 0;
@@ -1236,6 +1246,26 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     }
 }
 
+void SyncManager::HandleAssetDiscovery(kNet::MessageConnection* source, MsgAssetDiscovery& msg)
+{
+    // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
+    bool isServer = owner_->IsServer();
+    if (isServer)
+    {
+        foreach(UserConnection* userConn, owner_->GetKristalliModule()->GetUserConnections())
+        {
+            if (userConn->connection != source)
+                userConn->connection->Send(msg);
+        }
+    }
+    
+    // Then do an asset request of the ref, and post a discovery notification
+    QString assetRef = QString::fromStdString(BufferToString(msg.assetRef));
+    QString assetType = QString::fromStdString(BufferToString(msg.assetType));
+    framework_->Asset()->RequestAsset(assetRef, assetType);
+    framework_->Asset()->EmitAssetDiscovered(assetRef, assetType);
+}
+
 SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connection)
 {
     if (!owner_->IsServer())
@@ -1248,6 +1278,34 @@ SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connecti
             return checked_static_cast<SceneSyncState*>((*i)->syncState.get());
     }
     return 0;
+}
+
+void SyncManager::OnAssetUploaded(const QString& assetRef)
+{
+    // Check whether the asset upload needs to be replicated
+    AssetAPI::AssetRefType type = framework_->Asset()->ParseAssetRef(assetRef);
+    if ((type == AssetAPI::AssetRefInvalid) || (type == AssetAPI::AssetRefLocalPath) || (type == AssetAPI::AssetRefLocalUrl))
+        return;
+    
+    bool isServer = owner_->IsServer();
+    
+    MsgAssetDiscovery msg;
+    msg.assetRef = StringToBuffer(assetRef.toStdString());
+    /// \todo Would need the assettype as well
+    
+    // If we are server, send to everyone.
+    if (isServer)
+    {
+        foreach(UserConnection* userConn, owner_->GetKristalliModule()->GetUserConnections())
+            userConn->connection->Send(msg);
+    }
+    // If we are client, send to server
+    else
+    {
+        kNet::MessageConnection* connection = owner_->GetClient()->GetConnection();
+        if (connection)
+            connection->Send(msg);
+    }
 }
 
 }

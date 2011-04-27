@@ -52,9 +52,16 @@ public:
     
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
+    
+    void OnAssetDiscovered(const QString& ref, const QString& assetType);
 
 private:
     Foundation::Framework *framework;
+    
+    /// Add assetref to http storage(s) after successful upload or discovery
+    void AddAssetRefToStorages(const QString& ref);
+    /// Delete assetref from http storages after successful delete
+    void DeleteAssetRefFromStorages(const QString& ref);
     
     /// Specifies the currently added list of HTTP asset storages.
     std::vector<HttpAssetStoragePtr> storages;

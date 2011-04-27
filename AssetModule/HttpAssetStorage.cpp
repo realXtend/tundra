@@ -12,9 +12,11 @@ DEFINE_POCO_LOGGING_FUNCTIONS("HttpAssetStorage")
 
 void HttpAssetStorage::RefreshAssetRefs()
 {
-    // If searches ongoing, do not remove the old assetrefs
-    if (searches.empty())
-        assetRefs.clear();
+    // If searches already ongoing, let them finish and don't start a new refresh
+    if (!searches.empty())
+        return;
+    
+    assetRefs.clear();
     
     QNetworkAccessManager* mgr = GetNetworkAccessManager();
     if (!mgr)
@@ -113,11 +115,9 @@ void HttpAssetStorage::OnHttpTransferFinished(QNetworkReply *reply)
                         {
                             QUrl baseUrl(baseAddress);
                             QString newAssetRef = baseUrl.scheme() + "://" + baseUrl.authority() + refUrl;
-                            // In case new refresh was started before previous ended, the original refs were not cleared. Therefore
-                            // check for duplicate now
                             if (!assetRefs.contains(newAssetRef))
                                 assetRefs.push_back(newAssetRef);
-                            LogDebug("Discovered assetref " + newAssetRef);
+                            LogDebug("PROPFIND found assetref " + newAssetRef);
                         }
                     }
                     
@@ -130,5 +130,23 @@ void HttpAssetStorage::OnHttpTransferFinished(QNetworkReply *reply)
     
     // If no outstanding searches, asset discovery is done
     if (searches.empty())
-        emit AssetRefsReady();
+        emit AssetRefsChanged();
+}
+
+void HttpAssetStorage::AddAssetRef(const QString& ref)
+{
+    if (!assetRefs.contains(ref))
+    {
+        assetRefs.push_back(ref);
+        emit AssetRefsChanged();
+    }
+}
+
+void HttpAssetStorage::DeleteAssetRef(const QString& ref)
+{
+    if (assetRefs.contains(ref))
+    {
+        assetRefs.removeAll(ref);
+        emit AssetRefsChanged();
+    }
 }

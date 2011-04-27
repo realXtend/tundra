@@ -20,11 +20,11 @@ public:
     AssetProviderWeakPtr provider;
 
 public slots:
-    /// Returns all assets saved in this asset storage.
-    virtual std::vector<IAsset*> GetAllAssets() const { return std::vector<IAsset*>(); }
-
-    /// Returns all assetrefs contained in this asset storage. Does not load the assets
+    /// Returns all assetrefs currently known to exist in this asset storage. Does not load the assets, and does not refresh the list automatically
     virtual QStringList GetAllAssetRefs() { return QStringList(); }
+
+    /// Refresh assetrefs. Depending on storage type, may either finish immediately or take some time. AssetRefsChanged will be emitted when done
+    virtual void RefreshAssetRefs() {}
 
     /// Starts a new asset upload to this storage. If the given asset exists already in the storage, it is replaced.
     /// @param url The desired name for the asset.
@@ -45,6 +45,10 @@ public slots:
 
     /// Returns a human-readable description of this asset storage.
     virtual QString ToString() const { return Name() + " (" + BaseURL() + ")"; }
+
+signals:
+    /// Asset refs have changed, either as a result of refresh, or upload / delete
+    void AssetRefsChanged();
 };
 
 #endif

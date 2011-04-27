@@ -19,6 +19,7 @@ struct MsgUpdateComponents;
 struct MsgRemoveComponents;
 struct MsgEntityIDCollision;
 struct MsgEntityAction;
+struct MsgAssetDiscovery;
 
 namespace kNet
 {
@@ -91,6 +92,9 @@ private slots:
     //! Trigger sync of entity action to specific user
     void OnUserActionTriggered(UserConnection* user, Scene::Entity *entity, const QString &action, const QStringList &params);
 
+    //! Asset uploaded. Send discovery message
+    void OnAssetUploaded(const QString& assetRef);
+    
 private:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
@@ -116,6 +120,9 @@ private:
     //! Handle entity action message.
     void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);
 
+    //! Handle asset discovery message.
+    void HandleAssetDiscovery(kNet::MessageConnection* source, MsgAssetDiscovery& msg);
+    
     //! Process one sync state for changes in the scene
     /*! \todo For now, sends all changed entities/components. In the future, this shall be subject to interest management
         \param destination MessageConnection where to send the messages

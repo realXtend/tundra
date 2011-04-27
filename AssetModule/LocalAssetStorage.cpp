@@ -28,20 +28,43 @@ void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &s
 {
     try
     {
-        boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
-        boost::filesystem::recursive_directory_iterator end_iter;
-        // Check the subdir
-        for(; iter != end_iter; ++iter)
+        if (recursive)
         {
-            if (fs::is_regular_file(iter->status()))
+            boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
+            boost::filesystem::recursive_directory_iterator end_iter;
+            // Check the subdir
+            for(; iter != end_iter; ++iter)
             {
-                QString str = iter->path().string().c_str();
-                if (suffix == "" || str.endsWith(suffix))
+                if (fs::is_regular_file(iter->status()))
                 {
-                    int lastSlash = str.lastIndexOf('/');
-                    if (lastSlash != -1)
-                        str = str.right(str.length() - lastSlash - 1);
-                    assetAPI->RequestAsset("local://" + str, assetType);
+                    QString str = iter->path().string().c_str();
+                    if (suffix == "" || str.endsWith(suffix))
+                    {
+                        int lastSlash = str.lastIndexOf('/');
+                        if (lastSlash != -1)
+                            str = str.right(str.length() - lastSlash - 1);
+                        assetAPI->RequestAsset("local://" + str, assetType);
+                    }
+                }
+            }
+        }
+        else
+        {
+            boost::filesystem::directory_iterator iter(directory.toStdString());
+            boost::filesystem::directory_iterator end_iter;
+            // Check the subdir
+            for(; iter != end_iter; ++iter)
+            {
+                if (fs::is_regular_file(iter->status()))
+                {
+                    QString str = iter->path().string().c_str();
+                    if (suffix == "" || str.endsWith(suffix))
+                    {
+                        int lastSlash = str.lastIndexOf('/');
+                        if (lastSlash != -1)
+                            str = str.right(str.length() - lastSlash - 1);
+                        assetAPI->RequestAsset("local://" + str, assetType);
+                    }
                 }
             }
         }
@@ -51,24 +74,44 @@ void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &s
     }
 }
 
-QStringList LocalAssetStorage::GetAllAssetRefs()
+void LocalAssetStorage::RefreshAssetRefs()
 {
-    QStringList ret;
+    assetRefs.clear();
     
     try
     {
-        boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
-        boost::filesystem::recursive_directory_iterator end_iter;
-        // Check the subdir
-        for(; iter != end_iter; ++iter)
+        if (recursive)
         {
-            if (fs::is_regular_file(iter->status()))
+            boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
+            boost::filesystem::recursive_directory_iterator end_iter;
+            // Check the subdir
+            for(; iter != end_iter; ++iter)
             {
-                QString str = iter->path().string().c_str();
-                int lastSlash = str.lastIndexOf('/');
-                if (lastSlash != -1)
-                    str = str.right(str.length() - lastSlash - 1);
-                ret.append("local://" + str);
+                if (fs::is_regular_file(iter->status()))
+                {
+                    QString str = iter->path().string().c_str();
+                    int lastSlash = str.lastIndexOf('/');
+                    if (lastSlash != -1)
+                        str = str.right(str.length() - lastSlash - 1);
+                    assetRefs.append("local://" + str);
+                }
+            }
+        }
+        else
+        {
+            boost::filesystem::directory_iterator iter(directory.toStdString());
+            boost::filesystem::directory_iterator end_iter;
+            // Check the subdir
+            for(; iter != end_iter; ++iter)
+            {
+                if (fs::is_regular_file(iter->status()))
+                {
+                    QString str = iter->path().string().c_str();
+                    int lastSlash = str.lastIndexOf('/');
+                    if (lastSlash != -1)
+                        str = str.right(str.length() - lastSlash - 1);
+                    assetRefs.append("local://" + str);
+                }
             }
         }
     }
@@ -76,7 +119,7 @@ QStringList LocalAssetStorage::GetAllAssetRefs()
     {
     }
     
-    return ret;
+    emit AssetRefsChanged();
 }
 
 QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)

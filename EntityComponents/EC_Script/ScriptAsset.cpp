@@ -50,7 +50,7 @@ void ScriptAsset::ParseReferences()
         ignoredAssetTypes << "QtUiFile" << "Texture" << "OgreParticle" << "OgreMaterial" << "Audio";
 
     // Script asset dependencies are expressed in code comments using lines like "// !ref: http://myserver.com/myasset.png".
-    // The asset type can be specified using a comma: "// !ref: http://myserver.com/avatarasset.xml, GenericAvatarXml".
+    // The asset type can be specified using a comma: "// !ref: http://myserver.com/avatarasset.xml, Avatar".
     boost::regex expression("!ref:\\s*(.*?)(\\s*,\\s*(.*?))?\\s*(\\n|$)");
     for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {

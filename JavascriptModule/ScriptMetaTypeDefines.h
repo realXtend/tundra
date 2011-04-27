@@ -78,7 +78,7 @@ template<typename T> void fromScriptValueEnum(const QScriptValue &obj, T &s)
 }
 
 //! Register Qt related stuff to QScriptEngine.
-//! @todo repalce this with qscriptgenerator.
+//! @todo replace this with qscriptgenerator.
 void ExposeQtMetaTypes(QScriptEngine *engine);
 
 //! Will register all meta data types that are needed to use Naali Core API objects.

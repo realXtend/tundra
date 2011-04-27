@@ -35,8 +35,8 @@ asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
         return RexAT_MaterialScript;
     if (asset_type == ASSETTYPENAME_FLASH_ANIMATION)
         return RexAT_FlashAnimation;
-    if (asset_type == ASSETTYPENAME_GENERIC_AVATAR_XML)
-        return RexAT_GenericAvatarXml;
+    if (asset_type == ASSETTYPENAME_AVATAR)
+        return RexAT_Avatar;
     if (asset_type == ASSETTYPENAME_VIDEO)
         return RexAT_Video;
 
@@ -59,8 +59,8 @@ const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
         return ASSETTYPENAME_PARTICLE_SCRIPT;
     if (asset_type == RexAT_MaterialScript)
         return ASSETTYPENAME_MATERIAL_SCRIPT;
-    if (asset_type == RexAT_GenericAvatarXml)
-        return ASSETTYPENAME_GENERIC_AVATAR_XML;
+    if (asset_type == RexAT_Avatar)
+        return ASSETTYPENAME_AVATAR;
     if (asset_type == RexAT_Image)
         return ASSETTYPENAME_IMAGE;
     if (asset_type == RexAT_Video)
@@ -86,7 +86,7 @@ const std::string& GetInventoryTypeString(asset_type_t asset_type)
         return IT_PARTICLE_SCRIPT;
     if (asset_type == RexAT_FlashAnimation)
         return IT_FLASH_ANIMATION;
-    if (asset_type == RexAT_GenericAvatarXml)
+    if (asset_type == RexAT_Avatar)
         return IT_WEARABLE;
 
     return IT_UNKNOWN;
@@ -108,7 +108,7 @@ const inventory_type_t &GetInventoryTypeFromAssetType(asset_type_t asset_type)
         return RexIT_OgreScript;
     if (asset_type == RexAT_FlashAnimation)
         return RexIT_FlashAnimation;
-    if (asset_type == RexAT_GenericAvatarXml)
+    if (asset_type == RexAT_Avatar)
         return RexIT_Wearable;
 
     return RexIT_None;
@@ -132,8 +132,8 @@ const std::string& GetAssetTypeString(asset_type_t asset_type)
         return AT_PARTICLE_SCRIPT;
     if (asset_type == RexAT_FlashAnimation)
         return AT_FLASH_ANIMATION;
-    if (asset_type == RexAT_GenericAvatarXml)
-        return AT_GENERIC_AVATAR_XML;
+    if (asset_type == RexAT_Avatar)
+        return AT_AVATAR;
 
     return AT_UNKNOWN;
 }
@@ -155,7 +155,7 @@ const std::string& GetCategoryNameForAssetType(asset_type_t asset_type)
         return CATEGORY_PARTICLE_SCRIPT;
     if (asset_type == RexAT_FlashAnimation)
         return CATEGORY_FLASH_ANIMATION;
-    if (asset_type == RexAT_GenericAvatarXml)
+    if (asset_type == RexAT_Avatar)
         return CATEGORY_AVATAR;
 
     return CATEGORY_UNKNOWN;
@@ -209,7 +209,7 @@ asset_type_t GetAssetTypeFromFilename(const std::string &filename)
     if (file_ext == "swf")
         return RexAT_FlashAnimation;
     if (file_ext == "xml")
-        return RexAT_GenericAvatarXml;
+        return RexAT_Avatar;
 
     return RexAT_None;
 }
@@ -236,7 +236,7 @@ std::string GetFileExtensionFromAssetType(const asset_type_t &asset_type)
         return ".material";
     case RexAT_FlashAnimation:
         return ".swf";
-    case RexAT_GenericAvatarXml:
+    case RexAT_Avatar:
         return ".xml";
     case RexAT_None:
     default:

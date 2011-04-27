@@ -168,7 +168,7 @@ namespace RexTypes
     const asset_type_t RexAT_Mesh = 43;
     const asset_type_t RexAT_Skeleton = 44;
     const asset_type_t RexAT_MaterialScript = 45;
-    const asset_type_t RexAT_GenericAvatarXml = 46;
+    const asset_type_t RexAT_Avatar = 46;
     
     const asset_type_t RexAT_ParticleScript = 47;
     const asset_type_t RexAT_FlashAnimation = 49;
@@ -194,7 +194,7 @@ namespace RexTypes
     const std::string ASSETTYPENAME_MATERIAL_SCRIPT("MaterialScript");
     const std::string ASSETTYPENAME_PARTICLE_SCRIPT("ParticleScript");
     const std::string ASSETTYPENAME_FLASH_ANIMATION("FlashAnimation");
-    const std::string ASSETTYPENAME_GENERIC_AVATAR_XML("GenericAvatarXml");
+    const std::string ASSETTYPENAME_AVATAR("Avatar");
     const std::string ASSETTYPENAME_IMAGE("Image"); // Avatar asset. No UDP equivalent
     const std::string ASSETTYPENAME_SOUNDVORBIS("SoundVorbis");
     const std::string ASSETTYPENAME_SOUNDWAV("SoundWav");
@@ -222,7 +222,7 @@ namespace RexTypes
     const std::string AT_PARTICLE_SCRIPT("ogrepart");
     const std::string AT_FLASH_ANIMATION("flashani");
     const std::string AT_UNKNOWN("unknown");
-    const std::string AT_GENERIC_AVATAR_XML("g.avatar"); 
+    const std::string AT_AVATAR("g.avatar");
 
     // Text inventory types used for uploading assets.
     const std::string IT_TEXTURE("texture");
