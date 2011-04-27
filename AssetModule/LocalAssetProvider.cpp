@@ -119,7 +119,24 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
     AssetModule::LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
 }
 
-void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
+AssetStoragePtr LocalAssetProvider::AddStorage(const QString &location, const QString &name)
+{
+    QString ref = location;
+
+    // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
+    if (ref.startsWith("file://"))
+        ref = ref.mid(7);
+    if (ref.startsWith("local://"))
+        ref = ref.mid(8);
+
+    int lastSlash = ref.lastIndexOf('/');
+    if (lastSlash != -1)
+        ref = ref.left(lastSlash);
+
+    return AddStorageDirectory(ref.toStdString(), name.toStdString(), false);
+}
+
+AssetStoragePtr LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
 {
     ///\todo Check first if the given directory exists as a storage, and don't add it as a duplicate if so.
 
@@ -133,6 +150,7 @@ void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const
 //    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
 
     storages.push_back(storage);
+    return storage;
 }
 
 std::vector<AssetStoragePtr> LocalAssetProvider::GetStorages() const
