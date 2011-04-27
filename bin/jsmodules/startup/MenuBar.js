@@ -10,10 +10,10 @@ if (!framework.IsHeadless())
 
     var fileMenu = mainwin.AddMenu("&File");
     
-    var importMenu = fileMenu.addMenu(new QIcon("./data/ui/images/folder_closed.png"), "Import Scene");
-    importMenu.addAction(new QIcon("./data/ui/images/resource.png"), "From File").triggered.connect(OpenLocalScene);
-    importMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "From Web").triggered.connect(OpenWebScene);
-    var exportAction = fileMenu.addAction(new QIcon("./data/ui/images/resource.png"), "Export Scene");
+    //var importMenu = fileMenu.addMenu(new QIcon("./data/ui/images/folder_closed.png"), "Import Scene");
+    //importMenu.addAction(new QIcon("./data/ui/images/resource.png"), "From File").triggered.connect(OpenLocalScene);
+    //importMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "From Web").triggered.connect(OpenWebScene);
+    var exportAction = fileMenu.addAction(new QIcon("./data/ui/images/resource.png"), "Save as...");
     exportAction.triggered.connect(SaveScene);
     fileMenu.addSeparator();
     
