@@ -790,11 +790,11 @@ var BrowserSettings = Class.extend
     readConfig: function()
     {
         if (!config.HasValue(this.configFile, this.urlSection, "homepage"))
-            config.Set(this.configFile, this.urlSection, "homepage", QUrl.fromUserInput("http://www.realxtend.org/").toString());
+            config.Set(this.configFile, this.urlSection, "homepage", QUrl.fromUserInput("http://login.realxtend.org/").toString());
         this.homepage = config.Get(this.configFile, this.urlSection, "homepage");
         
         if (!config.HasValue(this.configFile, this.urlSection, "newtab"))
-            config.Set(this.configFile, this.urlSection, "newtab", QUrl.fromUserInput("http://www.realxtend.org/").toString());
+            config.Set(this.configFile, this.urlSection, "newtab", QUrl.fromUserInput("http://login.realxtend.org/").toString());
         this.newTabUrl = config.Get(this.configFile, this.urlSection, "newtab");
         
         // Note: QSettings/QVariant and js booleans dont mix up too well. It will give you a string back of the config value.
