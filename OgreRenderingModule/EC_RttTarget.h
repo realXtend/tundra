@@ -7,7 +7,7 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 #include "Core.h"
-
+#include "OgreModuleApi.h"
 
 namespace OgreRenderer { class OgreRenderingModule; };
 
@@ -43,7 +43,7 @@ Does not emit any actions.
 <b>Depends on a camera component.</b>.
 </table>
 */
-class EC_RttTarget : public IComponent
+class OGRE_MODULE_API EC_RttTarget : public IComponent
 {
     Q_OBJECT
     

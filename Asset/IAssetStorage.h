@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <vector>
 #include "AssetFwd.h"
 #include <boost/enable_shared_from_this.hpp>
@@ -21,6 +22,9 @@ public:
 public slots:
     /// Returns all assets saved in this asset storage.
     virtual std::vector<IAsset*> GetAllAssets() const { return std::vector<IAsset*>(); }
+
+    /// Returns all assetrefs contained in this asset storage. Does not load the assets
+    virtual QStringList GetAllAssetRefs() { return QStringList(); }
 
     /// Starts a new asset upload to this storage. If the given asset exists already in the storage, it is replaced.
     /// @param url The desired name for the asset.

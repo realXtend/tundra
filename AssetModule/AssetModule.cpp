@@ -6,6 +6,7 @@
 #include "AssetModule.h"
 #include "LocalAssetProvider.h"
 #include "HttpAssetProvider.h"
+#include "HttpAssetStorage.h"
 #include "Framework.h"
 #include "Profiler.h"
 #include "ServiceManager.h"
@@ -61,6 +62,10 @@ namespace Asset
             "AddHttpStorage", "Adds a new Http asset storage to the known storages. Usage: AddHttpStorage(url, name)", 
             ConsoleBind(this, &AssetModule::AddHttpStorage)));
 
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
+            "RefreshHttpStorages", "Refreshes known assetrefs for all http asset storages", 
+            ConsoleBind(this, &AssetModule::ConsoleRefreshHttpStorages)));
+            
         ProcessCommandLineOptions();
     }
 
@@ -109,6 +114,12 @@ namespace Asset
         }
     }
 
+    ConsoleCommandResult AssetModule::ConsoleRefreshHttpStorages(const StringVector &params)
+    {
+        RefreshHttpStorages();
+        return ConsoleResultSuccess();
+    }
+    
     ConsoleCommandResult AssetModule::ConsoleRequestAsset(const StringVector &params)
     {
         if (params.size() != 2)
@@ -128,7 +139,7 @@ namespace Asset
 
         if (!framework_->Asset()->GetAssetProvider<HttpAssetProvider>())
             return ConsoleResultFailure();
-        framework_->Asset()->AddAssetStorage(params[0].c_str(), params[1].c_str(), true);       
+        framework_->Asset()->AddAssetStorage(params[0].c_str(), params[1].c_str(), true);
         return ConsoleResultSuccess();
     }
 
@@ -140,6 +151,17 @@ namespace Asset
             LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(storages[i].get());
             if (storage)
                 storage->LoadAllAssetsOfType(framework_->Asset(), suffix, assetType);
+        }
+    }
+    
+    void AssetModule::RefreshHttpStorages()
+    {
+        std::vector<AssetStoragePtr> storages = framework_->Asset()->GetAssetStorages();
+        for(size_t i = 0; i < storages.size(); ++i)
+        {
+            HttpAssetStorage *storage = dynamic_cast<HttpAssetStorage*>(storages[i].get());
+            if (storage)
+                storage->RefreshAssetRefs();
         }
     }
 }

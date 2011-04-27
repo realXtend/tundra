@@ -51,6 +51,34 @@ void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &s
     }
 }
 
+QStringList LocalAssetStorage::GetAllAssetRefs()
+{
+    QStringList ret;
+    
+    try
+    {
+        boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
+        boost::filesystem::recursive_directory_iterator end_iter;
+        // Check the subdir
+        for(; iter != end_iter; ++iter)
+        {
+            if (fs::is_regular_file(iter->status()))
+            {
+                QString str = iter->path().string().c_str();
+                int lastSlash = str.lastIndexOf('/');
+                if (lastSlash != -1)
+                    str = str.right(str.length() - lastSlash - 1);
+                ret.append("local://" + str);
+            }
+        }
+    }
+    catch (...)
+    {
+    }
+    
+    return ret;
+}
+
 QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)
 {
     QDir dir(GuaranteeTrailingSlash(directory) + assetname);

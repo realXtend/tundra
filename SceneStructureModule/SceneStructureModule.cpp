@@ -616,7 +616,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                     {
                         if (i == subMeshIndex)
                         {
-                            afterMaterials.Append(cleanMaterialRef);
+                            afterMaterials.Append(AssetReference(cleanMaterialRef));
                             materialDropData.affectedIndexes.append(i);
                         }
                         else if (i < (uint)currentMaterials.Size())
@@ -731,10 +731,10 @@ void SceneStructureModule::FinishMaterialDrop(bool apply, const QString &materia
                         if (!newRef.endsWith("/")) // just to be sure
                             newRef.append("/");
                         newRef.append(mats[i].ref);
-                        rewrittenMats.Append(newRef);
+                        rewrittenMats.Append(AssetReference(newRef));
                     }
                     else
-                        rewrittenMats.Append(mats[i].ref);
+                        rewrittenMats.Append(mats[i]);
 
                 }
                 mesh->setmeshMaterial(rewrittenMats);

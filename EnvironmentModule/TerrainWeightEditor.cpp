@@ -454,7 +454,7 @@ namespace Environment
                 if(!new_mat.get())
                     new_mat =  mat->clone(mat_name);
                 if(new_mat.get())
-                    ptr->material.Set(QString(new_mat->getName().c_str()),AttributeChange::Default);
+                    ptr->material.Set(AssetReference(QString(new_mat->getName().c_str())),AttributeChange::Default);
             }
             it++;
             i++;

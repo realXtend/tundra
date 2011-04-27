@@ -46,6 +46,9 @@ public:
     /// Issues a http DELETE request for the given asset.
     virtual void DeleteAssetFromStorage(QString assetRef);
     
+    /// Return the network access manager
+    QNetworkAccessManager* GetNetworkAccessManager() { return networkAccessManager; }
+    
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
 

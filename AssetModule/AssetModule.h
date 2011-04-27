@@ -39,11 +39,17 @@ namespace Asset
 
         ConsoleCommandResult AddHttpStorage(const StringVector &params);
 
+        ConsoleCommandResult ConsoleRefreshHttpStorages(const StringVector &params);
+
     public slots:
         /// Loads from all the registered local storages all assets that have the given suffix.
         /// Type can also be optionally specified
+        /// \todo Will be replaced with AssetStorage's GetAllAssetsRefs / GetAllAssets functionality
         void LoadAllLocalAssetsWithSuffix(const QString &suffix, const QString &assetType = "");
-
+        
+        /// Refreshes asset refs of all http storages
+        void RefreshHttpStorages();
+        
     private:
         void ProcessCommandLineOptions();
     };

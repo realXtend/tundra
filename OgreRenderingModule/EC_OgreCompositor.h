@@ -6,7 +6,7 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 #include "Core.h"
-
+#include "OgreModuleApi.h"
 
 namespace OgreRenderer { class OgreRenderingModule; class CompositionHandler; };
 
@@ -51,7 +51,7 @@ Does not emit any actions.
 <b>Doesn't depend on any components</b>.
 </table>
 */
-class EC_OgreCompositor : public IComponent
+class OGRE_MODULE_API EC_OgreCompositor : public IComponent
 {
     Q_OBJECT
     

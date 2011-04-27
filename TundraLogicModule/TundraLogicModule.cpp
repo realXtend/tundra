@@ -349,7 +349,7 @@ void TundraLogicModule::LoadStartupScene()
     AssetAPI::AssetRefType sceneRefType = AssetAPI::ParseAssetRef(QString::fromStdString(startupScene));
     if (sceneRefType != AssetAPI::AssetRefLocalPath && sceneRefType != AssetAPI::AssetRefRelativePath)
     {
-        AssetTransferPtr sceneTransfer = framework_->Asset()->RequestAsset(startupScene);
+        AssetTransferPtr sceneTransfer = framework_->Asset()->RequestAsset(startupScene.c_str());
         if (!sceneTransfer.get())
         {
             LogError("Asset transfer initialization failed for scene file " + startupScene + " failed");

@@ -30,7 +30,7 @@ static const float FIXED_HEIGHT_OFFSET = -0.87f;
 
 EC_Avatar::EC_Avatar(IModule* module) :
     IComponent(module->GetFramework()),
-    appearanceRef(this, "Appearance ref", "")
+    appearanceRef(this, "Appearance ref", AssetReference(""))
 {
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         this, SLOT(OnAttributeUpdated(IAttribute*)));
