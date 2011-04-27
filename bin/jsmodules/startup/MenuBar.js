@@ -8,6 +8,7 @@ if (!framework.IsHeadless())
     
     var mainwin = ui.MainWindow();
 
+    // File
     var fileMenu = mainwin.AddMenu("&File");
     
     // Load and save scene
@@ -31,14 +32,8 @@ if (!framework.IsHeadless())
     }
     fileMenu.addAction(new QIcon("./data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
+    // View
     var viewMenu = mainwin.AddMenu("&View");
-    if (framework.GetModuleQObj("CAVEStereo"))
-    {
-        var caveMenu = viewMenu.addMenu("&CAVE and Stereo");
-        caveMenu.addAction("CAVE").triggered.connect(OpenCaveWindow);
-        caveMenu.addAction("Stereoscopy").triggered.connect(OpenStereoscopyWindow);
-    }
-
     if (framework.GetModuleQObj("SceneStructure"))
     {
         assetAction = viewMenu.addAction(new QIcon("./data/ui/images/fileIcons.png"), "Assets");
@@ -48,11 +43,7 @@ if (!framework.IsHeadless())
     }
 
     if (framework.GetModuleQObj("Console"))
-    {
         viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
-    }
-
-    //var eceditorAction = viewMenu.addAction("EC Editor");
 
     if (framework.GetModuleQObj("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
@@ -66,6 +57,16 @@ if (!framework.IsHeadless())
     if (framework.GetModuleQObj("PythonScript"))
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
         
+    // Settings
+    if (framework.GetModuleQObj("CAVEStereo"))
+    {
+        var caveSettings = mainwin.AddMenuAction("&Settings", "Cave");
+        caveSettings.triggered.connect(OpenCaveWindow);
+        var stereoSettings = mainwin.AddMenuAction("&Settings", "Stereoscopy");
+        stereoSettings.triggered.connect(OpenStereoscopyWindow);
+    }
+    
+    // Help
     var helpMenu = mainwin.AddMenu("&Help");
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
