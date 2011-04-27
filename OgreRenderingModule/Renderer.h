@@ -9,7 +9,6 @@
 #include "SceneFwd.h"
 #include "RenderServiceInterface.h"
 #include "HighPerfClock.h"
-#include "ForwardDefines.h"
 
 #include <QObject>
 #include <QVariant>
@@ -20,6 +19,8 @@
 #include <OgrePrerequisites.h>
 
 class RenderWindow;
+
+class Framework;
 
 namespace OgreRenderer
 {

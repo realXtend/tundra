@@ -10,10 +10,10 @@
 
 #include <QTreeWidget>
 
-#include "ForwardDefines.h"
 #include "AssetFwd.h"
 
 class QMenu;
+class Framework;
 
 /// Item representing asset in the tree widget.
 class AssetItem : public QTreeWidgetItem

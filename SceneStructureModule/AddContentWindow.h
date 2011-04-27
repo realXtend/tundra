@@ -10,7 +10,6 @@
 
 #include <QWidget>
 
-#include "ForwardDefines.h"
 #include "SceneFwd.h"
 #include "AssetFwd.h"
 #include "SceneDesc.h"
@@ -24,6 +23,7 @@ class QProgressBar;
 class QLabel;
 
 class IAssetUploadTransfer;
+class Framework;
 
 /// Window for adding new content and assets.
 /** The window is modal and is deleted when it's closed.

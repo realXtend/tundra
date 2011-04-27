@@ -11,7 +11,6 @@
 #ifndef incl_SceneStructureModule_SceneStructureWindow_h
 #define incl_SceneStructureModule_SceneStructureWindow_h
 
-#include "ForwardDefines.h"
 #include "SceneFwd.h"
 
 #include <QWidget>
@@ -20,8 +19,8 @@
 #include <QMap>
 
 class QTreeWidgetItem;
-
 class SceneTreeWidget;
+class Framework;
 
 /// Window with tree view showing every entity in a scene.
 /** This class will only handle adding and removing of entities and components and updating

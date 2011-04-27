@@ -4,7 +4,6 @@
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 #include "ServiceManager.h"
-#include "ForwardDefines.h"
 #include "CoreStringUtils.h"
 
 ServiceWeakPtr ServiceManager::GetService(service_type_t type)

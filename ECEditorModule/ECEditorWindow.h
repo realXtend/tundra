@@ -9,7 +9,6 @@
 #define incl_ECEditorModule_ECEditorWindow_h
 
 #include "ECEditorModuleApi.h"
-#include "ForwardDefines.h"
 #include "CoreTypes.h"
 #include "Entity.h"
 

@@ -3,10 +3,11 @@
 #ifndef incl_Framework_ComponentManager_h
 #define incl_Framework_ComponentManager_h
 
-#include "ForwardDefines.h"
 #include "SceneFwd.h"
 
 #include <map>
+
+class Framework;
 
 /// Scenegraph, entity and component model that together form a generic, extendable, lightweight scene model.
 /** See \ref SceneModelPage "Scenes, entities and components" for details about the viewer's scene model.

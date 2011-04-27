@@ -5,7 +5,6 @@
 
 #define QT_QTPROPERTYBROWSER_IMPORT
 
-#include "ForwardDefines.h"
 #include "SceneFwd.h"
 #include "CoreTypes.h"
 #include "ComponentGroup.h"
@@ -23,11 +22,12 @@ class QMenu;
 class QMimeData;
 
 class TreeWidgetItemExpandMemory;
-
 class ECEditorWindow;
 class ECComponentEditor;
 typedef std::vector<ComponentWeakPtr> ComponentWeakPtrVector;
 //typedef std::list<ComponentGroup*> ComponentGroupList;
+
+class Framework;
 
 /// Widget that will display all selected entity components and their attributes.
 /** The ECBrowser will iterate all entity's components and pass them to an ECComponentEditor,

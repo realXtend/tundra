@@ -5,7 +5,6 @@
 
 #include "Core.h"
 #include "TundraLogicModuleApi.h"
-#include "ForwardDefines.h"
 
 #include <kNet/Socket.h>
 
@@ -29,6 +28,8 @@ namespace KristalliProtocol
 
 class UserConnection;
 typedef std::list<UserConnection*> UserConnectionList;
+
+class Framework;
 
 namespace TundraLogic
 {

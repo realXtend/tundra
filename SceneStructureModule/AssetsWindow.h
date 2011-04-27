@@ -8,7 +8,6 @@
 #ifndef incl_SceneStructureModule_AssetsWindow_h
 #define incl_SceneStructureModule_AssetsWindow_h
 
-#include "ForwardDefines.h"
 #include "AssetFwd.h"
 
 #include <QWidget>
@@ -18,7 +17,7 @@
 #include <set>
 
 class QTreeWidgetItem;
-
+class Framework;
 class AssetTreeWidget;
 
 /// The main UI for managing asset storages and assets.
