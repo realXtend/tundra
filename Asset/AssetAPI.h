@@ -324,6 +324,9 @@ public slots:
     /// Emit AssetDiscovered signal
     void EmitAssetDiscovered(const QString &assetRef, const QString &assetType);
     
+    /// Emit AssetDeleted signal
+    void EmitAssetDeleted(const QString &assetRef);
+    
 signals:
     /// Emitted for each new asset that was created and added to the system. When this signal is triggered, the dependencies of an asset
     /// may not yet have been loaded.
@@ -344,6 +347,9 @@ signals:
     /// Emitted when a new assetref has been discovered through the AssetDiscovery network message
     void AssetDiscovered(const QString &assetRef, const QString &assetType);
 
+    /// Emitted when an asset is successfully deleted from storage. It is the providers' responsibility to make the AssetAPI emit this signal
+    void AssetDeleted(const QString &assetRef);
+    
     /// Emitted when the contents of an asset disk source has changed. ///\todo Implement.
  //   void AssetDiskSourceChanged(AssetPtr asset);
 

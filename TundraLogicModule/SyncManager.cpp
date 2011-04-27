@@ -20,9 +20,11 @@
 #include "MsgRemoveEntity.h"
 #include "MsgEntityIDCollision.h"
 #include "MsgEntityAction.h"
+#include "MsgAssetDeleted.h"
 #include "MsgAssetDiscovery.h"
 #include "EC_DynamicComponent.h"
 #include "AssetAPI.h"
+#include "IAssetStorage.h"
 #include "SceneAPI.h"
 
 #include <kNet.h>
@@ -53,6 +55,8 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
 {
     // Connect to asset uploads to be able to post discovery messages
     connect(framework_->Asset(), SIGNAL(AssetUploaded(const QString &)), this, SLOT(OnAssetUploaded(const QString &)));
+    // Connect to asset deletes to be able to post delete messages
+    connect(framework_->Asset(), SIGNAL(AssetDeleted(const QString &)), this, SLOT(OnAssetDeleted(const QString &)));
 }
 
 SyncManager::~SyncManager()
@@ -165,6 +169,12 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
         {
             MsgAssetDiscovery msg(data, numBytes);
             HandleAssetDiscovery(source, msg);
+        }
+        break;
+    case cAssetDeletedMessage:
+        {
+            MsgAssetDeleted msg(data, numBytes);
+            HandleAssetDeleted(source, msg);
         }
         break;
     }
@@ -1266,6 +1276,24 @@ void SyncManager::HandleAssetDiscovery(kNet::MessageConnection* source, MsgAsset
     framework_->Asset()->EmitAssetDiscovered(assetRef, assetType);
 }
 
+void SyncManager::HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDeleted& msg)
+{
+    // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
+    bool isServer = owner_->IsServer();
+    if (isServer)
+    {
+        foreach(UserConnection* userConn, owner_->GetKristalliModule()->GetUserConnections())
+        {
+            if (userConn->connection != source)
+                userConn->connection->Send(msg);
+        }
+    }
+    
+    // Do not actually unload the asset, but make sure the asset storage(s) update their refs in case they had it
+    QString assetRef = QString::fromStdString(BufferToString(msg.assetRef));
+    framework_->Asset()->EmitAssetDeleted(assetRef);
+}
+
 SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connection)
 {
     if (!owner_->IsServer())
@@ -1293,7 +1321,7 @@ void SyncManager::OnAssetUploaded(const QString& assetRef)
     msg.assetRef = StringToBuffer(assetRef.toStdString());
     /// \todo Would need the assettype as well
     
-    // If we are server, send to everyone.
+    // If we are server, send to everyone
     if (isServer)
     {
         foreach(UserConnection* userConn, owner_->GetKristalliModule()->GetUserConnections())
@@ -1307,5 +1335,33 @@ void SyncManager::OnAssetUploaded(const QString& assetRef)
             connection->Send(msg);
     }
 }
+
+void SyncManager::OnAssetDeleted(const QString& assetRef)
+{
+    // Check whether the asset delete needs to be replicated
+    AssetAPI::AssetRefType type = framework_->Asset()->ParseAssetRef(assetRef);
+    if ((type == AssetAPI::AssetRefInvalid) || (type == AssetAPI::AssetRefLocalPath) || (type == AssetAPI::AssetRefLocalUrl))
+        return;
+    
+    bool isServer = owner_->IsServer();
+    
+    MsgAssetDeleted msg;
+    msg.assetRef = StringToBuffer(assetRef.toStdString());
+    
+    // If we are server, send to everyone
+    if (isServer)
+    {
+        foreach(UserConnection* userConn, owner_->GetKristalliModule()->GetUserConnections())
+            userConn->connection->Send(msg);
+    }
+    // If we are client, send to server
+    else
+    {
+        kNet::MessageConnection* connection = owner_->GetClient()->GetConnection();
+        if (connection)
+            connection->Send(msg);
+    }
+}
+
 
 }

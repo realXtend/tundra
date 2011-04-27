@@ -1304,6 +1304,11 @@ void AssetAPI::EmitAssetDiscovered(const QString& assetRef, const QString& asset
     emit AssetDiscovered(assetRef, assetType);
 }
 
+void AssetAPI::EmitAssetDeleted(const QString& assetRef)
+{
+    emit AssetDeleted(assetRef);
+}
+
 void AssetAPI::OnAssetLoaded(AssetPtr asset)
 {
     std::vector<AssetPtr> dependents = FindDependents(asset->Name());

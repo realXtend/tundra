@@ -55,6 +55,8 @@ private slots:
     
     void OnAssetDiscovered(const QString& ref, const QString& assetType);
 
+    void OnAssetDeleted(const QString& ref);
+
 private:
     Foundation::Framework *framework;
     

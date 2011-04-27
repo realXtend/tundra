@@ -17,4 +17,4 @@ const unsigned long cEntityActionMessage = 116;
 
 // Assets
 const unsigned long cAssetDiscoveryMessage = 120;
-
+const unsigned long cAssetDeletedMessage = 121;

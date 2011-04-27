@@ -43,10 +43,10 @@ public slots:
     /// Refresh http asset refs, issues webdav PROPFIND requests. AssetRefsChanged() will be emitted when complete.
     virtual void RefreshAssetRefs();
     
-    /// Add an assetref. Emit AssetRefsChanged() if did not exist already
+    /// Add an assetref. Emit AssetRefsChanged() if did not exist already. Called by HttpAssetProvider
     void AddAssetRef(const QString& ref);
     
-    /// Delete an assetref. Emit AssetRefsChanged() if found
+    /// Delete an assetref. Emit AssetRefsChanged() if found. Called by HttpAssetProvider
     void DeleteAssetRef(const QString& ref);
     
 private slots:

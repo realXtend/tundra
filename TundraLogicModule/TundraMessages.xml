@@ -96,10 +96,17 @@
         </struct>
     </message>
     
-    <!-- ASSET DISCOVERY -->
-    
+    <!-- ASSET DISCOVERY and DELETION -->
+
+    <!-- Replicates asset upload. Client<->Server -->
     <message id="120" name="AssetDiscovery" reliable="true" inOrder="true" priority="100">
         <s8 name="assetRef" dynamicCount="8"/>
         <s8 name="assetType" dynamicCount="8"/>
     </message>
+    
+    <!-- Replicates asset delete. Client<->Server -->
+    <message id="121" name="AssetDeleted" reliable="true" inOrder="true" priority="100">
+        <s8 name="assetRef" dynamicCount="8"/>
+    </message>
+    
 </xml>

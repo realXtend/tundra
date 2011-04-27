@@ -26,8 +26,9 @@ HttpAssetProvider::HttpAssetProvider(Foundation::Framework *framework_)
     networkAccessManager->setCache(framework_->Asset()->GetAssetCache());
     connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(OnHttpTransferFinished(QNetworkReply*)));
     
-    // Connect to asset discovery signals, to refresh assetrefs of storages without having to do a full PROPFIND refresh
+    // Connect to asset discovery & deletion signals, to refresh assetrefs of storages without having to do a full PROPFIND refresh
     connect(framework_->Asset(), SIGNAL(AssetDiscovered(const QString &, const QString &)), this, SLOT(OnAssetDiscovered(const QString &, const QString &)));
+    connect(framework_->Asset(), SIGNAL(AssetDeleted(const QString &)), this, SLOT(OnAssetDeleted(const QString &)));
 }
 
 HttpAssetProvider::~HttpAssetProvider()
@@ -183,7 +184,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         if (reply->error() == QNetworkReply::NoError)
         {
             LogInfo("Http DELETE to address \"" + reply->url().toString().toStdString() + "\" returned successfully.");
-            DeleteAssetRefFromStorages(reply->url().toString());
+            framework->Asset()->EmitAssetDeleted(reply->url().toString());
         }
         else
             LogError("Http DELETE to address \"" + reply->url().toString().toStdString() + "\" failed with an error: \"" + reply->errorString().toStdString() + "\"");
@@ -201,6 +202,12 @@ void HttpAssetProvider::OnAssetDiscovered(const QString& ref, const QString& ass
     // Add to our storages if the base matches
     AddAssetRefToStorages(ref);
 }
+
+void HttpAssetProvider::OnAssetDeleted(const QString& ref)
+{
+    DeleteAssetRefFromStorages(ref);
+}
+
 
 AssetStoragePtr HttpAssetProvider::AddStorage(const QString &location, const QString &name)
 {
