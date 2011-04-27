@@ -19,17 +19,15 @@ function initgui() {
     saveact = mainwin.AddMenuAction("&File", "Save");
     saveact.triggered.connect(saveCurrent);
     saveact.enabled = false;
-
-    debug.Log("ADD NEW PROJECT added to menu");
 }
 
 function showNewSceneDialog() {
     curfile = QFileDialog.getSaveFileName(mainwin, "Scene file", "", "Tundra Scene (*.txml *.tbin)");
     saveact.enabled = true;
-    mainwin.windowTitle = curfile + " - " orgtitle;
+    mainwin.windowTitle = curfile + " - " + orgtitle;
 
     var newstorage = asset.AddAssetStorage("file://" + curfile, "New Scene"); //LocalAssetProvider strips the trailing filename away, uses the dir only
-    print("New storage added: " + newstorage + "-- from filepath: " + curfile); 
+    //print("New storage added: " + newstorage + "-- from filepath: " + curfile); 
     asset.SetDefaultAssetStorage(newstorage);
 }
 
