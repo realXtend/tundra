@@ -37,6 +37,11 @@ function OnAssetStorageAdded(storage)
     storage.RefreshAssetRefs();
 }
 
+function EndsWith(str, suffix)
+{
+    return str.indexOf(suffix) == (str.length - suffix.length);
+}
+
 function PopulateAvatarUiMenu()
 {
     var menu = ui.MainWindow().menuBar();
@@ -53,7 +58,7 @@ function PopulateAvatarUiMenu()
         {
             var assetNameLower = assetList[j].toLowerCase();
             // Can not check the actual asset type from the ref only. But for now assume xml = avatar xml
-            if ((assetNameLower.indexOf(".xml") != -1) || (assetNameLower.indexOf(".avatar") != -1))
+            if ((EndsWith(assetNameLower, ".xml")) || (EndsWith(assetNameLower, ".avatar")))
             {
                 var assetName = assetList[j];
                 var handler = new MenuActionHandler(assetName);
