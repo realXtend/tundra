@@ -28,30 +28,16 @@ UiConsoleManager::UiConsoleManager(Foundation::Framework *framework, QGraphicsVi
     console_widget_(0),
     proxy_widget_(0),
     visible_(false),
-    opacity_(0.8),
-    hooked_to_scenes_(false)
+    opacity_(0.8)
 {
-    if (!ui_view_)
-        return; // Headless
+    if (framework_->IsHeadless())
+        return;
 
     console_ui_ = new Ui::ConsoleWidget();
     console_widget_ = new QWidget();
 
     // Init internals
     console_ui_->setupUi(console_widget_);
-    ///\todo UiService deprecated.
-    /*
-    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    if (ui)
-    {
-        proxy_widget_ = ui->AddWidgetToScene(console_widget_);
-        proxy_widget_->setMinimumHeight(0);
-        proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
-        proxy_widget_->setOpacity(opacity_);
-        proxy_widget_->setZValue(100);
-        ui->RegisterUniversalWidget("Console", proxy_widget_);
-    }
-    */
 
     if (framework_->Ui())
     {
@@ -59,7 +45,11 @@ UiConsoleManager::UiConsoleManager(Foundation::Framework *framework, QGraphicsVi
         proxy_widget_->setMinimumHeight(0);
         proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
         proxy_widget_->setOpacity(opacity_);
-        proxy_widget_->setZValue(100);
+        proxy_widget_->setZValue(20000);
+        
+        QGraphicsScene *scene = framework_->Ui()->GraphicsScene();
+        if (scene)
+            connect(scene, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
     }
 
     // Init animation
@@ -76,13 +66,14 @@ UiConsoleManager::UiConsoleManager(Foundation::Framework *framework, QGraphicsVi
 UiConsoleManager::~UiConsoleManager()
 {
     // console_widget_ gets deleted by the scene it is in currently
-    SAFE_DELETE(console_ui_);
+    if (console_ui_)
+        SAFE_DELETE(console_ui_);
 }
 
 void UiConsoleManager::HandleInput()
 {
-    if (!console_ui_)
-        return; // Headless
+    if (framework_->IsHeadless())
+        return;
 
     QString text = console_ui_->ConsoleInputArea->text();
     framework_->Console()->consoleManager->ExecuteCommand(text.toStdString());
@@ -91,15 +82,15 @@ void UiConsoleManager::HandleInput()
 
 void UiConsoleManager::QueuePrintRequest(const QString &text)
 {
-    if (!console_ui_)
-        return; // Headless
+    if (framework_->IsHeadless())
+        return;
     emit PrintOrderReceived(text);
 }
 
 void UiConsoleManager::PrintToConsole(const QString &text)
 {
-    if (!console_ui_)
-        return; // Headless
+    if (framework_->IsHeadless())
+        return;
     QString html = Qt::escape(text);
     StyleString(html);
     console_ui_->ConsoleTextArea->appendHtml(html);
@@ -119,44 +110,12 @@ void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
     }
 }
 
-void UiConsoleManager::KeyPressed(KeyEvent *key_event)
-{
-    if (key_event->keyCode == Qt::Key_F1)
-        ToggleConsole();
-}
-
 void UiConsoleManager::ToggleConsole()
 {
+    if (framework_->IsHeadless())
+        return;
     if (!ui_view_)
         return;
-
-    if (!hooked_to_scenes_)
-    {
-        QGraphicsScene *scene = framework_->Ui()->GraphicsScene();
-        if (scene)
-            connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-        hooked_to_scenes_ = true;
-        ///\todo UiService is deprecated.
-        /*
-        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-        if (ui)
-        {
-            QGraphicsScene *scene = ui->GetScene("Inworld");
-            if (scene)
-                connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-            scene = ui->GetScene("WorldBuilding");
-            if (scene)
-                connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-            scene = ui->GetScene("Ether");
-            if (scene)
-                connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-            scene = ui->GetScene("Avatar");
-            if (scene)
-                connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-            hooked_to_scenes_ = true;
-        }
-        */
-    }
 
     QGraphicsScene *current_scene = proxy_widget_->scene();
     if (!current_scene)

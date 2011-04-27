@@ -47,8 +47,6 @@ public slots:
     //! Handle input to the console(called after return pushed)
     void HandleInput();
 
-    void KeyPressed(KeyEvent *key_event);
-
 signals:
     //! This emit is Qt::QueuedConnection type to avoid issues when printing from threads
     void PrintOrderReceived(const QString &text);
@@ -63,9 +61,6 @@ private slots:
 private:
     //! is console visible or hidden?
     bool visible_;
-
-    //! if we have already hooked to all scenes for resize events
-    bool hooked_to_scenes_;
 
     //! Method for coloring/styling the string for the console
     void StyleString(QString &str);
