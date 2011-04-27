@@ -140,7 +140,7 @@ var AutoServerStore = Class.extend
         timer.singleShot = true;
         timer.timeout.connect(this.addMenu);
         timer.timeout.connect(this.printReport);
-        timer.start(500);
+        timer.start(1000);
     },
     
     printReport: function()
