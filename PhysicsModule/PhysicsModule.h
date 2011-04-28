@@ -6,7 +6,6 @@
 #include "PhysicsModuleApi.h"
 #include "IModule.h"
 #include "ConsoleCommand.h"
-#include "ForwardDefines.h"
 #include "SceneFwd.h"
 
 #include <LinearMath/btIDebugDraw.h>

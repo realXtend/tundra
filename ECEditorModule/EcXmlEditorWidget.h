@@ -8,12 +8,13 @@
 #ifndef incl_ECEditorModule_EcXmlEditorWidget_h
 #define incl_ECEditorModule_EcXmlEditorWidget_h
 
-#include "ForwardDefines.h"
 #include "SceneFwd.h"
 
 #include <QWidget>
 
 class QTextEdit;
+
+class Framework;
 
 /// Entity-component XML editor widget used for editing EC attributes in XML format.
 /// \ingroup ECEditorModuleClient.

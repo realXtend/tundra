@@ -3,9 +3,7 @@
 #ifndef incl_TundraLogicModule_SyncManager_h
 #define incl_TundraLogicModule_SyncManager_h
 
-#include "Foundation.h"
 #include "IComponent.h"
-#include "ForwardDefines.h"
 #include "SyncState.h"
 
 #include <QObject>
@@ -27,6 +25,7 @@ namespace kNet
 }
 
 class UserConnection;
+class Framework;
 
 namespace TundraLogic
 {
@@ -141,12 +140,8 @@ private:
      */
     SceneSyncState* GetSceneSyncState(kNet::MessageConnection* connection);
 
-    ScenePtr GetRegisteredScene()
-    {
-        return scene_.lock();
-    }
+    ScenePtr GetRegisteredScene() const { return scene_.lock(); }
 
-    
     /// Owning module
     TundraLogicModule* owner_;
     

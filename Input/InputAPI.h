@@ -3,7 +3,6 @@
 #ifndef incl_Input_InputAPI_h
 #define incl_Input_InputAPI_h
 
-#include "ForwardDefines.h"
 #include "InputFwd.h"
 #include "KeyEvent.h"
 #include "MouseEvent.h"
@@ -18,6 +17,8 @@
 
 class QGraphicsItem;
 class QGraphicsView;
+
+class Framework;
 
 /// The Input API provides other modules with different methods of acquiring keyboard and mouse input.
 /** The input service works with the notion of 'input contexts', which are objects that modules acquire

@@ -9,7 +9,7 @@
 #ifndef incl_Scene_sceneInteracth
 #define incl_Scene_sceneInteracth
 
-#include "ForwardDefines.h"
+#include "FrameworkFwd.h"
 #include "SceneFwd.h"
 #include "InputFwd.h"
 

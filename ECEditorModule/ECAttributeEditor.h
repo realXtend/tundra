@@ -3,7 +3,6 @@
 #ifndef incl_ECEditorModule_ECAttributeEditor_h
 #define incl_ECEditorModule_ECAttributeEditor_h
 
-#include "ForwardDefines.h"
 #include "Vector3D.h"
 #include "IComponent.h"
 #include "Transform.h"
@@ -25,6 +24,7 @@ class QtAbstractPropertyManager;
 class QtAbstractEditorFactoryBase;
 class QtAbstractPropertyBrowser;
 
+class Framework;
 class Color;
 
 typedef unsigned char MetaDataFlag;

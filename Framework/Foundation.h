@@ -3,7 +3,6 @@
 #ifndef incl_Framework_Foundation_h
 #define incl_Framework_Foundation_h
 
-#include "ForwardDefines.h"
 #include "Framework.h"
 #include "Profiler.h"
 

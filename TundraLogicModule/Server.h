@@ -5,9 +5,8 @@
 
 #include "Core.h"
 #include "TundraLogicModuleApi.h"
-#include "ForwardDefines.h"
 
-#include "kNet.h"
+#include <kNet.h>
 
 #include <QObject>
 #include <QVariant>
@@ -27,9 +26,10 @@ typedef std::list<UserConnection*> UserConnectionList;
 
 class QScriptEngine;
 
+class Framework;
+
 namespace TundraLogic
 {
-
 class TundraLogicModule;
 
 class TUNDRALOGIC_MODULE_API Server : public QObject

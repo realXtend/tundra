@@ -17,7 +17,7 @@
 
 #include "IComponentRegistrar.h"
 #include "CoreTypes.h"
-#include "ForwardDefines.h"
+#include "FrameworkFwd.h"
 #include "CoreModuleApi.h"
 
 /// this define can be used to make component declaration automatic when the parent module gets loaded / unloaded.

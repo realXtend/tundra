@@ -1481,7 +1481,7 @@ namespace OgreRenderer
 
         if(soft_shadow)
         {
-            for(int i=0;i<shadowTextureCount;i++)
+            for(size_t i=0;i<shadowTextureCount;i++)
             {
                 GaussianListener* gaussianListener = new GaussianListener(); 
                 Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);

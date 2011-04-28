@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "ForwardDefines.h"
 #include "CoreTypes.h"
 
 #include <QWidget>
 
+class Framework;
 class SceneManager;
 
 namespace Environment

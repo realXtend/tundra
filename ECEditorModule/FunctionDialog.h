@@ -9,7 +9,6 @@
 #define incl_ECEditorModule_FunctionDialog_h
 
 #include "ECEditorModuleApi.h"
-#include "ForwardDefines.h"
 #include "EntityAction.h"
 
 #include <QDialog>
@@ -108,7 +107,7 @@ public:
     /// Returns list of entities for which the action is triggered.
     QObjectWeakPtrList Objects() const;
 
-    /// Returns name of the funtion in the most simplest form, f.ex. "setValue".
+    /// Returns name of the function in the most simplest form, f.ex. "setValue".
     QString Function() const;
 
     /// Returns list of arguments for the current function.
