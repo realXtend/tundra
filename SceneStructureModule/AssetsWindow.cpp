@@ -68,10 +68,6 @@ AssetsWindow::AssetsWindow(Foundation::Framework *fw, QWidget *parent) :
     layout->addLayout(hlayout);
     layout->addWidget(treeWidget);
 
-    // Create "No provider" for assets without storage.
-    noProviderItem = new QTreeWidgetItem;
-    noProviderItem->setText(0, tr("No provider"));
-
     PopulateTreeWidget();
 
     connect(searchField, SIGNAL(textEdited(const QString &)), SLOT(Search(const QString &)));
@@ -122,6 +118,10 @@ void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
 void AssetsWindow::PopulateTreeWidget()
 {
     treeWidget->clear();
+	alreadyAdded.clear();
+    // Create "No provider" for assets without storage.
+    noProviderItem = new QTreeWidgetItem;
+    noProviderItem->setText(0, tr("No provider"));
 
     AssetStoragePtr defaultStorage = framework->Asset()->GetDefaultAssetStorage();
 
