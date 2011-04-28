@@ -24,8 +24,8 @@ struct MsgAssetDiscovery
 		priority = defaultPriority;
 	}
 
-	static inline u32 MessageID() { return 120; }
-	static inline const char *Name() { return "AssetDiscovery"; }
+	enum { messageID = 120 };
+	static inline const char * const Name() { return "AssetDiscovery"; }
 
 	static const bool defaultReliable = true;
 	static const bool defaultInOrder = true;
