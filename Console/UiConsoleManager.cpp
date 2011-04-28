@@ -6,7 +6,6 @@
 #include "UiConsoleManager.h"
 #include "ui_ConsoleWidget.h"
 #include "ConsoleProxyWidget.h"
-#include "ConsoleManager.h"
 #include "ConsoleAPI.h"
 
 #include "UiAPI.h"
@@ -39,18 +38,15 @@ UiConsoleManager::UiConsoleManager(Foundation::Framework *framework, QGraphicsVi
     // Init internals
     console_ui_->setupUi(console_widget_);
 
-    if (framework_->Ui())
-    {
-        proxy_widget_ = framework_->Ui()->AddWidgetToScene(console_widget_);
-        proxy_widget_->setMinimumHeight(0);
-        proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
-        proxy_widget_->setOpacity(opacity_);
-        proxy_widget_->setZValue(20000);
-        
-        QGraphicsScene *scene = framework_->Ui()->GraphicsScene();
-        if (scene)
-            connect(scene, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
-    }
+    proxy_widget_ = framework_->Ui()->AddWidgetToScene(console_widget_);
+    proxy_widget_->setMinimumHeight(0);
+    proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
+    proxy_widget_->setOpacity(opacity_);
+    proxy_widget_->setZValue(20000);
+    
+    QGraphicsScene *scene = framework_->Ui()->GraphicsScene();
+    if (scene)
+        connect(scene, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
 
     // Init animation
     animation_.setTargetObject(proxy_widget_);
@@ -76,7 +72,7 @@ void UiConsoleManager::HandleInput()
         return;
 
     QString text = console_ui_->ConsoleInputArea->text();
-    framework_->Console()->consoleManager->ExecuteCommand(text.toStdString());
+    framework_->Console()->ExecuteCommand(text);
     console_ui_->ConsoleInputArea->clear();
 }
 
