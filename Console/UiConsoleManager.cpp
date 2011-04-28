@@ -6,7 +6,6 @@
 #include "UiConsoleManager.h"
 #include "ui_ConsoleWidget.h"
 #include "ConsoleProxyWidget.h"
-#include "ConsoleManager.h"
 #include "ConsoleAPI.h"
 
 #include "UiAPI.h"
@@ -85,7 +84,7 @@ void UiConsoleManager::HandleInput()
         return; // Headless
 
     QString text = console_ui_->ConsoleInputArea->text();
-    framework_->Console()->consoleManager->ExecuteCommand(text.toStdString());
+    framework_->Console()->ExecuteCommand(text);
     console_ui_->ConsoleInputArea->clear();
 }
 

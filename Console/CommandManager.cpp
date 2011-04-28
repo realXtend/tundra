@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "CommandManager.h"
-#include "ConsoleManager.h"
+#include "ConsoleAPI.h"
 #include "Native.h"
 
 #include "Framework.h"
@@ -21,24 +21,20 @@ bool nocase_compare(const std::string &lhs, const std::string &rhs)
 typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
 typedef boost::tokenizer< boost::escaped_list_separator<char> > escape_tokenizer;
 
-CommandManager::CommandManager(ConsoleManager *console, Foundation::Framework *fw) :
+CommandManager::CommandManager(ConsoleAPI *console, Foundation::Framework *fw) :
     framework_(fw),
     console_(console),
     nativeinput_(0)
 {
     RegisterCommand(CreateConsoleCommand("Help", "Display available commands", ConsoleBind(this, &CommandManager::ConsoleHelp)));
     RegisterCommand(CreateConsoleCommand("Exit", "Exit application", ConsoleBind(this, &CommandManager::ConsoleExit)));
-#ifdef _DEBUG
-    RegisterCommand(CreateConsoleCommand("Test", "Echoes parameters supplied with this command", ConsoleBind(this, &CommandManager::ConsoleTest)));
-#endif
     if (framework_->IsHeadless())
-        nativeinput_ = new NativeConsole(this, framework_);
+        nativeinput_ = new NativeConsole(this);
 }
 
 CommandManager::~CommandManager()
 {
-    delete nativeinput_;
-    nativeinput_ = 0;
+    SAFE_DELETE(nativeinput_);
 }
 
 void CommandManager::Update()
@@ -92,24 +88,6 @@ void CommandManager::UnregisterCommand(const std::string &name)
     commands_.erase(it);
 }
 
-boost::optional<ConsoleCommandResult> CommandManager::Poll(const std::string &command)
-{
-    std::string command_l = command;
-    boost::to_lower(command_l);
-
-    RecursiveMutexLock lock(commands_mutex_);
-    
-    CommandParamMap::iterator it = delayed_commands_.find(command_l);
-    if (it != delayed_commands_.end())
-    {
-        ConsoleCommandResult result = ExecuteCommandAlways(it->first, it->second, true); // MutexLock recursive, no deadlock
-        delayed_commands_.erase(it);
-
-        return boost::optional<ConsoleCommandResult>(result);
-    }
-    return boost::optional<ConsoleCommandResult>();
-}
-
 ConsoleCommandResult CommandManager::ExecuteCommand(const std::string &commandline)
 {
     if (commandline.empty())
@@ -128,7 +106,7 @@ ConsoleCommandResult CommandManager::ExecuteCommand(const std::string &commandli
     tokenizer::iterator it = commandline_tok.begin();
     if (it == commandline_tok.end())
     {
-        console_->Print("Failed to parse malformed command line: " + commandline);
+        console_->Print_("Failed to parse malformed command line: " + commandline);
         ConsoleCommandResult result = { false, "", false };
         return result;
     }
@@ -154,7 +132,7 @@ ConsoleCommandResult CommandManager::ExecuteCommand(const std::string &commandli
         }
         catch (boost::escaped_list_error &/*e*/)
         {
-            console_->Print("Invalid use of escaping.");
+            console_->Print_("Invalid use of escaping.");
             ConsoleCommandResult result = { false, "", false };
             return result;
         }
@@ -187,7 +165,7 @@ ConsoleCommandResult CommandManager::ExecuteCommandAlways(const std::string &nam
         CommandMap::const_iterator iter = commands_.find(low_name);
         if (iter == commands_.end())
         {
-            console_->Print("Command: " + name + " not found. Type 'help' for list of available commands.");
+            console_->Print_("Command: " + name + " not found. Type 'help' for list of available commands.");
             ConsoleCommandResult result = { false, "", false };
             return result;
         }
@@ -214,9 +192,9 @@ ConsoleCommandResult CommandManager::ExecuteCommandAlways(const std::string &nam
     if (result.why_.empty() == false)
     {
         if (result.success_ == false)
-            console_->Print("Error: " + result.why_);
+            console_->Print_("Error: " + result.why_);
         else
-            console_->Print(result.why_);
+            console_->Print_(result.why_);
     }
     return result;
 }
@@ -225,7 +203,7 @@ ConsoleCommandResult CommandManager::ConsoleHelp(const StringVector &params)
 {
     if (params.empty())
     {
-        console_->Print("Available commands with descriptions:");
+        console_->Print_("Available commands with descriptions:");
     }
     bool success = false;
 
@@ -236,7 +214,7 @@ ConsoleCommandResult CommandManager::ConsoleHelp(const StringVector &params)
         {
             if (params.empty() || std::find_if(params.begin(), params.end(), boost::bind( &nocase_compare, _1, it->second.name_ )) != params.end())
             {
-                console_->Print(it->second.name_ + " - " + it->second.description_);
+                console_->Print_(it->second.name_ + " - " + it->second.description_);
                 success = true;
             }
         }
@@ -250,8 +228,8 @@ ConsoleCommandResult CommandManager::ConsoleHelp(const StringVector &params)
 
     if (params.empty())
     {
-        console_->Print("");
-        console_->Print("For help with specific command, type help(command).");
+        console_->Print_("");
+        console_->Print_("For help with specific command, type help(command).");
     }
 
     return ConsoleResultSuccess();
@@ -259,23 +237,8 @@ ConsoleCommandResult CommandManager::ConsoleHelp(const StringVector &params)
 
 ConsoleCommandResult CommandManager::ConsoleExit(const StringVector &params)
 {
-    console_->Print("Exiting");
+    console_->Print_("Exiting");
     framework_->Exit();
-
-    return ConsoleResultSuccess();
-}
-
-ConsoleCommandResult CommandManager::ConsoleTest(const StringVector &params)
-{
-    std::string all_params;
-    for (size_t i = 0 ; i < params.size() ; ++i)
-    {
-        all_params += params[i];
-        if (i < params.size() - 1)
-            all_params += ", ";
-    }
-
-    console_->Print(all_params);
 
     return ConsoleResultSuccess();
 }
