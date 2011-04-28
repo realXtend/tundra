@@ -42,7 +42,9 @@ namespace Asset
         //! callback for console command
         ConsoleCommandResult ConsoleRequestAsset(const StringVector &params);
 
-        ConsoleCommandResult AddHttpStorage(const StringVector &params);
+        ConsoleCommandResult AddAssetStorage(const StringVector &params);
+
+        ConsoleCommandResult ListAssetStorages(const StringVector &params);
 
         ConsoleCommandResult ConsoleRefreshHttpStorages(const StringVector &params);
 

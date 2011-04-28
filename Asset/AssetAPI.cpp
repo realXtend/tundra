@@ -100,6 +100,11 @@ AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &stora
         AssetStoragePtr assetStorage = providers[i]->TryDeserializeStorageFromString(storage);
         if (assetStorage)
         {
+            // Make this storage the default storage if it was requested so.
+            QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
+            if (s.contains("default") && ParseBool(s["default"]))
+                SetDefaultAssetStorage(assetStorage);
+
             emit AssetStorageAdded(assetStorage);
             return assetStorage;
         }
