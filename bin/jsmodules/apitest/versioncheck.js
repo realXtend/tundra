@@ -1,12 +1,12 @@
 if (!apiversion) {
-    print("API version < 1.0.6 - before api had version info.");
+    print("API version < 1.0. - before api had version info.");
 }
 
 else {
     print("API version:" + apiversion.toString());
     
     if (apiversion.major < 1 && apiversion.minor > 5) {
-        print("api version > 0.5 - at least release 1.0.6")
+        print("api version > 0.5 - at least release 1.0.7")
     }
     
     if (apiversion.major >= 1) {
