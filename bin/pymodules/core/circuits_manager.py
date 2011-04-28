@@ -84,6 +84,7 @@ class ComponentRunner:
         #XXX should this be using the __tick__ mechanism of circuits, and how?
         m = self.m
         m.tick()
+        m.flush()
 
     def send_event(self, event, channel):
         """simulate sync sending of events using the async lib.
@@ -91,7 +92,7 @@ class ComponentRunner:
         send to more handlers on the c++ side in the Naali event system"""
         m = self.m
         ret = m.push(event, channel)
-        while m: m.flush() #circuits components evaluate to false when have no pending events left
+        #while m: m.flush() #circuits components evaluate to false when have no pending events left
         if not ret.errors:
             #print "EVENT:", event, ret.value
             return True in ret #circuits return values implement __contains__ for this use case
