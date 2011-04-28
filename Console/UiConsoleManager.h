@@ -7,84 +7,54 @@
 #include <QPropertyAnimation>
 
 #include "CoreTypes.h"
-#include "InputAPI.h"
 
-namespace Foundation
-{
-    class Framework;
-}
+namespace Foundation { class Framework; }
+namespace Ui { class ConsoleWidget; }
 
-namespace Ui
-{
-    class ConsoleWidget;
-}
-
-class QString;
 class QRectF;
 class QGraphicsView;
 class UiProxyWidget;
-
-class ConsoleProxyWidget;
 
 class UiConsoleManager: public QObject
 {
     Q_OBJECT
 
 public:
-    UiConsoleManager(Foundation::Framework *framework, QGraphicsView *ui_view);
+    explicit UiConsoleManager(Foundation::Framework *fw);
     virtual ~UiConsoleManager();
 
 public slots:
-    //! Toggle console show/hide
-    void ToggleConsole();
-
-    //! Queues the print requests
-    void QueuePrintRequest(const QString &text);
-
-    //! Prints to console
+    /// Prints to text to the console UI.
+    /** @param text Text to be shown. */
     void PrintToConsole(const QString &text);
 
-    //! Handle input to the console(called after return pushed)
-    void HandleInput();
-
-signals:
-    //! This emit is Qt::QueuedConnection type to avoid issues when printing from threads
-    void PrintOrderReceived(const QString &text);
-
-    //! TODO: comment
-    void CommandIssued(const QString &string);
+    /// Toggles visibility of the console UI.
+    void ToggleConsole();
 
 private slots:
-    //! Resize the console to fit scene
+    /// Handles input to the console (called after return is pressed).
+    void HandleInput();
+
+    /// Resize the console to fit scene
     void AdjustToSceneRect(const QRectF &);
 
 private:
-    //! is console visible or hidden?
-    bool visible_;
+    /// QObject override.
+    /** Used to filter console line edit keypresses in order to browse command history. */
+    bool eventFilter(QObject *obj, QEvent *e);
 
-    //! Method for coloring/styling the string for the console
-    void StyleString(QString &str);
+    /// Decorates string for the console
+    void DecorateString(QString &str);
 
-    //! Console opacity
-    qreal opacity_;
-
-    //! Framework pointer
-    Foundation::Framework* framework_;
-
-    //! View to the scene
-    QGraphicsView *ui_view_;
-
-    //! UI
-    Ui::ConsoleWidget* console_ui_;
-
-    //! Widget in UI
-    QWidget * console_widget_;
-
-    // Proxy for our UI
-    UiProxyWidget *proxy_widget_;
-
-    //! Animation used for sliding effect
-    QPropertyAnimation animation_;
+    bool visible; ///< Is the console UI visible.
+    Foundation::Framework* framework; ///< Framework pointer
+    QGraphicsView *graphicsView; ///< View to the scene
+    Ui::ConsoleWidget* consoleUi; ///< UI
+    QWidget * consoleWidget; ///< Widget in UI
+    UiProxyWidget *proxyWidget; ///< Proxy for our UI
+    QPropertyAnimation slideAnimation; ///< Animation used for sliding effect
+    QList<QString> commandHistory; ///< Command history stack.
+    int commandHistoryIndex; ///< Current command history index.
 };
 
 #endif
