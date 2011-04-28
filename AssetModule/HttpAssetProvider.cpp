@@ -123,7 +123,7 @@ bool HttpAssetProvider::RemoveAssetStorage(QString storageName)
 AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString &storage)
 {
     QStringList tokens = storage.split(";");
-    if (tokens.size() != 3 || tokens.first() != "HttpAssetStorage")
+    if (tokens.size() != 3 || tokens.first().compare("HttpAssetStorage", Qt::CaseInsensitive))
         return AssetStoragePtr(); // Not of our type?
 
     QString name = tokens[1].trimmed();

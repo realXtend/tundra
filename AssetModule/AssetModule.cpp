@@ -88,32 +88,46 @@ namespace Asset
 
     void AssetModule::AddStorageDirectory(const QString &storageDir)
     {
-        QString path;
-        QString protocolPath;
-        AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(storageDir, 0, 0, &protocolPath, 0, 0, &path);
-
-        if (refType == AssetAPI::AssetRefRelativePath)
+        // Check if storage dir is directly a serialized form of assetstorage
+        QStringList tokens = storageDir.split(";");
+        if ((tokens.size() > 1) && ((!tokens[0].compare("LocalAssetStorage", Qt::CaseInsensitive)) || (!tokens[0].compare("HttpAssetStorage", Qt::CaseInsensitive))))
         {
-            path = GuaranteeTrailingSlash(QDir::currentPath()) + path;
-            refType = AssetAPI::AssetRefLocalPath;
-        }
-
-        AssetStoragePtr storage;
-
-        if (refType == AssetAPI::AssetRefLocalPath)
-            storage = framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(path, "Scene", true);
-        else if (refType == AssetAPI::AssetRefExternalUrl)
-        {
-            storage = framework_->Asset()->GetAssetProvider<HttpAssetProvider>()->AddStorageAddress(protocolPath, "Scene");
-            path = protocolPath;
+            AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(storageDir);
+            if (storage)
+                framework_->Asset()->SetDefaultAssetStorage(storage);
         }
         else
-            return; ///\todo Log error.
+        {
+            // Otherwise add storage manually
+            QString path;
+            QString protocolPath;
 
-        framework_->Asset()->SetDefaultAssetStorage(storage);
+            AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(storageDir, 0, 0, &protocolPath, 0, 0, &path);
 
-        // Set asset dir as also as AssetAPI property
-        framework_->Asset()->setProperty("assetdir", QVariant(path));
+            if (refType == AssetAPI::AssetRefRelativePath)
+            {
+                path = GuaranteeTrailingSlash(QDir::currentPath()) + path;
+                refType = AssetAPI::AssetRefLocalPath;
+            }
+
+            AssetStoragePtr storage;
+
+            if (refType == AssetAPI::AssetRefLocalPath)
+                storage = framework_->Asset()->DeserializeAssetStorageFromString("LocalAssetStorage;Scene;" + path + ";true");
+            else if (refType == AssetAPI::AssetRefExternalUrl)
+            {
+                storage = framework_->Asset()->DeserializeAssetStorageFromString("HttpAssetStorage;Web;" + protocolPath);
+                path = protocolPath;
+            }
+            else
+                return; ///\todo Log error.
+            
+            if (storage)
+                framework_->Asset()->SetDefaultAssetStorage(storage);
+
+            // Set asset dir as also as AssetAPI property
+            framework_->Asset()->setProperty("assetdir", QVariant(path));
+        }
     }
 
     void AssetModule::ProcessCommandLineOptions()

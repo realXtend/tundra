@@ -264,7 +264,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
 AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QString &storage)
 {
     QStringList tokens = storage.split(";");
-    if (tokens.size() != 4 || tokens.first() != "LocalAssetStorage")
+    if (tokens.size() != 4 || tokens.first().compare("LocalAssetStorage", Qt::CaseInsensitive))
         return AssetStoragePtr(); // Not of our type?
 
     QString name = tokens[1].trimmed();
