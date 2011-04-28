@@ -1264,8 +1264,8 @@ namespace OgreRenderer
 
     QPixmap Renderer::RenderImage(bool use_main_camera)
     {
-        int window_width = renderWindow->OgreRenderWindow()->getWidth();
-        int window_height = renderWindow->OgreRenderWindow()->getHeight();
+        int window_width = 1440;//renderWindow->OgreRenderWindow()->getWidth();
+        int window_height = 768;//renderWindow->OgreRenderWindow()->getHeight();
         PrepareImageRendering(window_width, window_height);
         if (!texture_rendering_cam_entity_)
             return QPixmap();
@@ -1325,8 +1325,8 @@ namespace OgreRenderer
 
     QPixmap Renderer::RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation)
     {
-        int window_width = renderWindow->OgreRenderWindow()->getWidth();
-        int window_height = renderWindow->OgreRenderWindow()->getHeight();
+        int window_width = 1440;//renderWindow->OgreRenderWindow()->getWidth();
+        int window_height = 768;//renderWindow->OgreRenderWindow()->getHeight();
         PrepareImageRendering(window_width, window_height);
         if (!texture_rendering_cam_entity_)
             return QPixmap();
