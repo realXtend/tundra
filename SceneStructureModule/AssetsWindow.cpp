@@ -121,11 +121,25 @@ void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
 
 void AssetsWindow::PopulateTreeWidget()
 {
+    treeWidget->clear();
+
+    AssetStoragePtr defaultStorage = framework->Asset()->GetDefaultAssetStorage();
+
     foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
     {
         QTreeWidgetItem *item = new QTreeWidgetItem;
         item->setText(0, storage->ToString());
         treeWidget->addTopLevelItem(item);
+
+        item->setData(0, Qt::UserRole, QVariant(storage->Name()));
+
+        // The current default storage is bolded.
+        if (storage == defaultStorage)
+        {
+            QFont font = item->font(0);
+            font.setBold(true);
+            item->setFont(0, font);
+        }
     }
 
     std::pair<QString, AssetPtr> pair;

@@ -41,9 +41,10 @@ public:
     /// Event filter to catch and react to child widget events
     virtual bool eventFilter(QObject *obj, QEvent *e);
 
-private:
     /// Populates the tree widget with all assets from all asset storages.
     void PopulateTreeWidget();
+
+private:
 
     /// If @c asset has asset references, adds the asset references as children to the @c parent.
     /** @param asset Asset to be added to the tree widget.
