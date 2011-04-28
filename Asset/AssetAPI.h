@@ -199,13 +199,13 @@ public slots:
     AssetCache *GetAssetCache() { return assetCache; }
 
     /// Returns the asset storage of the given name.
-	/// @param name The name of the storage to get. Remember that Asset Storage names are case-insensitive.
+    /// @param name The name of the storage to get. Remember that Asset Storage names are case-insensitive.
     AssetStoragePtr GetAssetStorage(const QString &name) const;
 
     /// Removes the given asset storage from the list of all asset storages.
     /// The scene can still refer to assets in this storage, and download requests can be performed to it, but it will not show up in the Assets dialog,
     /// and asset upload operations cannot be performed to it. Also, it will not be used as a default storage.
-	/// @param name The name of the storage to get. Remember that Asset Storage names are case-insensitive.
+    /// @param name The name of the storage to get. Remember that Asset Storage names are case-insensitive.
     bool RemoveAssetStorage(const QString &name);
 
     /// Creates an asset storage from the given serialized string form.

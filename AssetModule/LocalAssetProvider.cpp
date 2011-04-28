@@ -131,7 +131,7 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
 bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
 {
     for(size_t i = 0; i < storages.size(); ++i)
-		if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
+        if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             storages.erase(storages.begin() + i);
             return true;
@@ -142,12 +142,12 @@ bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
 
 LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &directory, QString storageName, bool recursive)
 {
-	storageName = storageName.trimmed();
-	if (storageName.isEmpty())
-		return LocalAssetStoragePtr();
+    storageName = storageName.trimmed();
+    if (storageName.isEmpty())
+        return LocalAssetStoragePtr();
 
     for(size_t i = 0; i < storages.size(); ++i)
-		if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
+        if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             if (storages[i]->directory != directory)
                 AssetModule::LogError("LocalAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName.toStdString() + "\" already exists, but points to directory \"" + storages[i]->directory.toStdString() + "\" instead of \"" + directory.toStdString() + "\"!");
