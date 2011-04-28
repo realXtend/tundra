@@ -62,7 +62,7 @@ std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
 
 void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
 {
-    for(uint i=0; i<providers.size(); ++i)
+    for(size_t i = 0; i < providers.size(); ++i)
     {
         if (providers[i]->Name() == provider->Name())
         {
@@ -77,7 +77,7 @@ AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
 {
     foreach(AssetProviderPtr provider, GetAssetProviders())
         foreach(AssetStoragePtr storage, provider->GetStorages())
-            if (storage->Name() == name)
+			if (storage->Name().compare(name, Qt::CaseInsensitive) == 0)
                 return storage;
     return AssetStoragePtr();
 }

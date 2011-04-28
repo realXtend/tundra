@@ -111,7 +111,7 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
 bool HttpAssetProvider::RemoveAssetStorage(QString storageName)
 {
     for(size_t i = 0; i < storages.size(); ++i)
-        if (storages[i]->storageName == storageName)
+		if (storages[i]->storageName.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             storages.erase(storages.begin() + i);
             return true;
@@ -243,7 +243,7 @@ HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address,
 
     // Check if a storage with this name already exists.
     for(size_t i = 0; i < storages.size(); ++i)
-        if (storages[i]->storageName == storageName)
+		if (storages[i]->storageName.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             if (storages[i]->baseAddress != address)
                 LogError("HttpAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName + "\" already exists, but points to address \"" + storages[i]->baseAddress + "\" instead of \"" + address + "\"!");

@@ -41,13 +41,15 @@ namespace Asset
         /// Deletes this asset from file.
         virtual void DeleteAssetFromStorage(QString assetRef);
 
+        /// \param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
         virtual bool RemoveAssetStorage(QString storageName);
+
         /// Adds the given directory as an asset storage.
         /*! \param directory The paht name for the directory to add.
-            \param storageName A human-readable name for the storage. This is used in the UI to the user, but is not an ID of any kind.
+            \param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
             \param recursive If true, all the subfolders of the given folder are added as well.
             Returns the newly created storage, or 0 if a storage with the given name already existed, or if some other error occurred. */
-        LocalAssetStoragePtr AddStorageDirectory(const QString &directory, const QString &storageName, bool recursive);
+        LocalAssetStoragePtr AddStorageDirectory(const QString &directory, QString storageName, bool recursive);
 
         virtual std::vector<AssetStoragePtr> GetStorages() const;
 
