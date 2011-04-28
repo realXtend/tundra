@@ -150,13 +150,16 @@ namespace Asset
     {
         if (params.size() != 2)
             return ConsoleResultFailure("Usage: AddHttpStorage(url, name). For example: AddHttpStorage(http://www.google.com/, google)");
-
-        if (!framework_->Asset()->GetAssetProvider<HttpAssetProvider>())
+        
+        // Add http storage using the serialization format: storage type ; name ; url
+        AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString("HttpAssetStorage;" + QString::fromStdString(params[1]) + ";" + QString::fromStdString(params[0]));
+        if (storage)
+        {
+            framework_->Asset()->SetDefaultAssetStorage(storage);
+            return ConsoleResultSuccess();
+        }
+        else
             return ConsoleResultFailure();
-
-        HttpAssetStoragePtr storage = framework_->Asset()->GetAssetProvider<HttpAssetProvider>()->AddStorageAddress(params[0].c_str(), params[1].c_str());
-        framework_->Asset()->SetDefaultAssetStorage(storage);
-        return ConsoleResultSuccess();
     }
 
     void AssetModule::LoadAllLocalAssetsWithSuffix(const QString &suffix, const QString &assetType)

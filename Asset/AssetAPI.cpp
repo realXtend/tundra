@@ -100,8 +100,8 @@ AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &stora
         AssetStoragePtr assetStorage = providers[i]->TryDeserializeStorageFromString(storage);
         if (assetStorage)
         {
-            return assetStorage;
             emit AssetStorageAdded(assetStorage);
+            return assetStorage;
         }
     }
     LogError("Failed to deserialize asset storage from string \"" + storage + "\"!");
