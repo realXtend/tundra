@@ -23,7 +23,7 @@ class DebugAPI;
 class SceneAPI;
 class ConfigAPI;
 class Application;
-#include "VersionInfo.h" //couldn't get to compile with a fwd decl in namespace Foundation below
+class VersionInfo;
 
 namespace Poco
 {
@@ -34,7 +34,6 @@ namespace Poco
 
 namespace Foundation
 {
-    //class VersionInfo;
 
     /// Contains entry point for the framework.
     /*! Allows access to the core API objects, various managers and services. The standard way of using
@@ -293,7 +292,7 @@ namespace Foundation
         SceneAPI *scene; ///< The Scene API.
         ConfigAPI *config; ///< The Config API.
 
-        VersionInfo api_versioninfo_; //The API version of this build. May differ from the end user application version of the default distribution, i.e. app may change when api stays same.
+        VersionInfo *api_versioninfo_; //The API version of this build. May differ from the end user application version of the default distribution, i.e. app may change when api stays same.
 
         int argc_; ///< Command line argument count as supplied by the operating system.
         char **argv_; ///< Command line arguments as supplied by the operating system.

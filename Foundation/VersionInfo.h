@@ -4,11 +4,11 @@
 #define incl_Foundation_VersionInfo_h
 
 #include "StableHeaders.h"
-#include<QObject>
+#include <QObject>
 
-class VersionInfo : QObject
+class VersionInfo : public QObject
 {
-    Q_OBJECT
+    Q_OBJECT;
     Q_PROPERTY(uint major READ GetMajor);
     Q_PROPERTY(uint minor READ GetMinor);
     Q_PROPERTY(uint majorpatch READ GetMajorPatch);
@@ -20,8 +20,7 @@ public slots:
     //todo: add comparison support
 
 public:
-    //! constructor that takes a framework
-    VersionInfo(uint major, uint minor, uint majorpatch, uint minorpatch);
+    explicit VersionInfo(uint major, uint minor, uint majorpatch, uint minorpatch);
 
     //! destructor
     ~VersionInfo();
