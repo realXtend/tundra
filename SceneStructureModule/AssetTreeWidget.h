@@ -102,6 +102,9 @@ private slots:
     /// Makes the currently selected asset storage the default system storage.
     void MakeDefaultStorage();
 
+    /// Removes the currently selected asset storages from the system.
+    void RemoveStorage();
+
     /// Called by Request New Asset dialog when it's closed.
     /** @param result Result of dialog closure. Save is 1, Cancel is 0.
     */

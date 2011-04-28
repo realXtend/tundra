@@ -56,7 +56,7 @@ std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
 
 void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
 {
-    for(uint i=0; i<providers.size(); ++i)
+    for(size_t i = 0; i < providers.size(); ++i)
     {
         if (providers[i]->Name() == provider->Name())
         {
@@ -71,7 +71,7 @@ AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
 {
     foreach(AssetProviderPtr provider, GetAssetProviders())
         foreach(AssetStoragePtr storage, provider->GetStorages())
-            if (storage->Name() == name)
+			if (storage->Name().compare(name, Qt::CaseInsensitive) == 0)
                 return storage;
     return AssetStoragePtr();
 }
@@ -94,8 +94,13 @@ AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &stora
         AssetStoragePtr assetStorage = providers[i]->TryDeserializeStorageFromString(storage);
         if (assetStorage)
         {
-            return assetStorage;
+            // Make this storage the default storage if it was requested so.
+            QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
+            if (s.contains("default") && ParseBool(s["default"]))
+                SetDefaultAssetStorage(assetStorage);
+
             emit AssetStorageAdded(assetStorage);
+            return assetStorage;
         }
     }
     LogError("Failed to deserialize asset storage from string \"" + storage + "\"!");
@@ -1232,6 +1237,29 @@ void AssetAPI::EmitAssetDiscovered(const QString& assetRef, const QString& asset
 void AssetAPI::EmitAssetDeleted(const QString& assetRef)
 {
     emit AssetDeleted(assetRef);
+}
+
+QMap<QString, QString> AssetAPI::ParseAssetStorageString(QString storageString)
+{
+    // Treat simple strings of form "http://myserver.com/" as "src=http://myserver.com/".
+    if (storageString.indexOf(';') == -1 && storageString.indexOf('=') == -1)
+        storageString = "src=" + storageString;
+
+    QMap<QString, QString> m;
+    QStringList items = storageString.split(";", QString::SkipEmptyParts);
+    foreach(QString str, items)
+    {
+        QStringList keyValue = str.split("=");
+        if (keyValue.count() > 2 || keyValue.count() == 0)
+        {
+            LogError("Failed to parse asset storage string \"" + str + "\"!");
+            return QMap<QString, QString>();
+        }
+        if (keyValue.count() == 1)
+            keyValue.push_back("1");
+        m[keyValue[0]] = keyValue[1];
+    }
+    return m;
 }
 
 void AssetAPI::OnAssetLoaded(AssetPtr asset)

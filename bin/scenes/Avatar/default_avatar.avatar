@@ -3,10 +3,10 @@
 <avatar>
     <!-- version string for this file -->
     <version>0.2</version>
-    <base name="default_female" mesh="Jack.mesh" />
-    <skeleton name="Jack.skeleton" />
-    <material name="Jack_Body.material" />
-    <material name="Jack_Face.material" />
+    <base name="default_female" mesh="local://Jack.mesh" />
+    <skeleton name="local://Jack.skeleton" />
+    <material name="local://Jack_Body.material" />
+    <material name="local://Jack_Face.material" />
     <texture_face name="" />
     <texture_body name="" />
     <appearance height="1.800000" weight="1" />

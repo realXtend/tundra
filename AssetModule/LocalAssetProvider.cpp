@@ -14,6 +14,7 @@
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
+#include <QDir>
 #include <QByteArray>
 #include <QFile>
 #include <QFileInfo>
@@ -130,7 +131,7 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
 bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
 {
     for(size_t i = 0; i < storages.size(); ++i)
-        if (storages[i]->name == storageName)
+        if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             storages.erase(storages.begin() + i);
             return true;
@@ -139,10 +140,14 @@ bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
     return false;
 }
 
-LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &directory, const QString &storageName, bool recursive)
+LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &directory, QString storageName, bool recursive)
 {
+    storageName = storageName.trimmed();
+    if (storageName.isEmpty())
+        return LocalAssetStoragePtr();
+
     for(size_t i = 0; i < storages.size(); ++i)
-        if (storages[i]->name == storageName)
+        if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             if (storages[i]->directory != directory)
                 LogError("LocalAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName.toStdString() + "\" already exists, but points to directory \"" + storages[i]->directory.toStdString() + "\" instead of \"" + directory.toStdString() + "\"!");
@@ -262,21 +267,49 @@ void LocalAssetProvider::CompletePendingFileDownloads()
 
 AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QString &storage)
 {
-    QStringList tokens = storage.split(";");
-    if (tokens.size() != 4 || tokens.first() != "LocalAssetStorage")
-        return AssetStoragePtr(); // Not of our type?
-
-    QString name = tokens[1].trimmed();
-    QString directory = tokens[2].trimmed();
-    bool recursive = ParseBool(tokens[3].trimmed());
-
-    if (name.isEmpty() || directory.isEmpty() || tokens[3].isEmpty())
-    {
-        LogError("Invalid LocalAssetStorage format \"" + storage.toStdString() + "\"!");
+    QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
+    if (s.contains("type") && s["type"].compare("LocalAssetStorage", Qt::CaseInsensitive) != 0)
         return AssetStoragePtr();
-    }
+    if (!s.contains("src"))
+        return AssetStoragePtr();
 
-    return AddStorageDirectory(directory, name, recursive);
+    QString path;
+    QString protocolPath;
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(s["src"], 0, 0, &protocolPath, 0, 0, &path);
+
+    if (refType == AssetAPI::AssetRefRelativePath)
+    {
+        path = GuaranteeTrailingSlash(QDir::currentPath()) + path;
+        refType = AssetAPI::AssetRefLocalPath;
+    }
+    if (refType != AssetAPI::AssetRefLocalPath)
+        return AssetStoragePtr();
+
+    QString name = (s.contains("name") ? s["name"] : GenerateUniqueStorageName());
+
+    bool recursive = true;
+    if (s.contains("recursive"))
+        recursive = ParseBool(s["recursive"]);
+
+    return AddStorageDirectory(path, name, recursive);
+}
+
+QString LocalAssetProvider::GenerateUniqueStorageName() const
+{
+    QString name = "Scene";
+    int counter = 2;
+    while(GetStorageByName(name) != 0)
+        name = "Scene" + counter++;
+    return name;
+}
+
+AssetStoragePtr LocalAssetProvider::GetStorageByName(const QString &name) const
+{
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->name.compare(name, Qt::CaseInsensitive) == 0)
+            return storages[i];
+
+    return AssetStoragePtr();
 }
 
 void LocalAssetProvider::CompletePendingFileUploads()

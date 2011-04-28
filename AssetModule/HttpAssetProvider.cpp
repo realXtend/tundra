@@ -66,6 +66,8 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     HttpAssetTransferPtr transfer = HttpAssetTransferPtr(new HttpAssetTransfer);
     transfer->source.ref = assetRef;
     transfer->assetType = assetType;
+    transfer->provider = shared_from_this();
+    transfer->storage = GetStorageForAssetRef(assetRef);
     transfers[reply] = transfer;
     return transfer;
 }
@@ -109,7 +111,7 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
 bool HttpAssetProvider::RemoveAssetStorage(QString storageName)
 {
     for(size_t i = 0; i < storages.size(); ++i)
-        if (storages[i]->storageName == storageName)
+        if (storages[i]->storageName.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             storages.erase(storages.begin() + i);
             return true;
@@ -120,20 +122,31 @@ bool HttpAssetProvider::RemoveAssetStorage(QString storageName)
 
 AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString &storage)
 {
-    QStringList tokens = storage.split(";");
-    if (tokens.size() != 3 || tokens.first() != "HttpAssetStorage")
-        return AssetStoragePtr(); // Not of our type?
-
-    QString name = tokens[1].trimmed();
-    QString url = tokens[2].trimmed();
-
-    if (name.isEmpty() || url.isEmpty())
-    {
-        LogError("Invalid HttpAssetStorage format \"" + storage + "\"!");
+    QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
+    if (s.contains("type") && s["type"].compare("HttpAssetStorage", Qt::CaseInsensitive) != 0)
         return AssetStoragePtr();
-    }
+    if (!s.contains("src"))
+        return AssetStoragePtr();
 
-    return AddStorageAddress(url, name);
+    QString path;
+    QString protocolPath;
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(s["src"], 0, 0, &protocolPath, 0, 0, &path);
+
+    if (refType != AssetAPI::AssetRefExternalUrl)
+        return AssetStoragePtr();
+
+    QString name = (s.contains("name") ? s["name"] : GenerateUniqueStorageName());
+
+    return AddStorageAddress(protocolPath, name);
+}
+
+QString HttpAssetProvider::GenerateUniqueStorageName() const
+{
+    QString name = "Web";
+    int counter = 2;
+    while(GetStorageByName(name) != 0)
+        name = "Web" + counter++;
+    return name;
 }
 
 void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
@@ -241,7 +254,7 @@ HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address,
 
     // Check if a storage with this name already exists.
     for(size_t i = 0; i < storages.size(); ++i)
-        if (storages[i]->storageName == storageName)
+        if (storages[i]->storageName.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             if (storages[i]->baseAddress != address)
                 LogError("HttpAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName + "\" already exists, but points to address \"" + storages[i]->baseAddress + "\" instead of \"" + address + "\"!");
@@ -266,23 +279,38 @@ std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
     return s;
 }
 
+AssetStoragePtr HttpAssetProvider::GetStorageByName(const QString &name) const
+{
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->storageName.compare(name, Qt::CaseInsensitive) == 0)
+            return storages[i];
+
+    return AssetStoragePtr();
+}
+
+HttpAssetStoragePtr HttpAssetProvider::GetStorageForAssetRef(QString assetRef) const
+{
+    QString namedStorage;
+    QString protocolPath;
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef, 0, &namedStorage, &protocolPath);
+    for (size_t i = 0; i < storages.size(); ++i)
+        if (refType == AssetAPI::AssetRefNamedStorage && storages[i]->Name() == namedStorage)
+    return storages[i];
+        else if (refType == AssetAPI::AssetRefExternalUrl && assetRef.startsWith(storages[i]->baseAddress, Qt::CaseInsensitive))
+    return storages[i];
+
+    return HttpAssetStoragePtr();
+}
+
 void HttpAssetProvider::AddAssetRefToStorages(const QString& ref)
 {
     for (size_t i = 0; i < storages.size(); ++i)
-    {
-        if (storages[i].get())
-        {
-            if (ref.indexOf(storages[i]->baseAddress) == 0)
-                storages[i]->AddAssetRef(ref);
-        }
-    }
+        if (ref.indexOf(storages[i]->baseAddress) == 0)
+            storages[i]->AddAssetRef(ref);
 }
 
 void HttpAssetProvider::DeleteAssetRefFromStorages(const QString& ref)
 {
     for (size_t i = 0; i < storages.size(); ++i)
-    {
-        if (storages[i].get())
-            storages[i]->DeleteAssetRef(ref);
-    }
+        storages[i]->DeleteAssetRef(ref);
 }
