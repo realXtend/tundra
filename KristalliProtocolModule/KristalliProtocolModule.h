@@ -78,6 +78,9 @@ namespace KristalliProtocol
         /// What trasport layer to use. Read on startup from --protocol udp/tcp. Defaults to TCP if no start param was given.
         kNet::SocketTransportLayer defaultTransport;
 
+        kNet::Network *GetNetwork() { return &network; }
+
+
 #ifdef KNET_USE_QT
 public slots:
         void OpenKNetLogWindow();
