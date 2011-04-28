@@ -8,6 +8,8 @@
 #include <QBuffer>
 #include <QDomDocument>
 
+DEFINE_POCO_LOGGING_FUNCTIONS("HttpAssetStorage")
+
 void HttpAssetStorage::RefreshAssetRefs()
 {
     // If searches already ongoing, let them finish and don't start a new refresh
