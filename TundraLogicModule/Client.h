@@ -5,6 +5,7 @@
 
 #include "Core.h"
 #include "TundraLogicModuleApi.h"
+#include "UserConnectedResponseData.h"
 
 #include <kNet/Socket.h>
 
@@ -77,7 +78,8 @@ signals:
     void AboutToConnect();
 
     /// This signal is emitted immediately after this client has successfully connected to a server.
-    void Connected();
+    /// @param responseData This is the data that the server sent back to the client related to the connection.
+    void Connected(UserConnectedResponseData *responseData);
 
     /// This signal is emitted when the client has disconnected from the server.
     void Disconnected();

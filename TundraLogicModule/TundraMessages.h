@@ -15,3 +15,6 @@ const unsigned long cRemoveComponentsMessage = 114;
 const unsigned long cEntityIDCollisionMessage = 115;
 const unsigned long cEntityActionMessage = 116;
 
+// Assets
+const unsigned long cAssetDiscoveryMessage = 120;
+const unsigned long cAssetDeletedMessage = 121;

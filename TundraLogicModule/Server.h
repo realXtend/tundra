@@ -5,6 +5,7 @@
 
 #include "Core.h"
 #include "TundraLogicModuleApi.h"
+#include "UserConnectedResponseData.h"
 
 #include <kNet.h>
 
@@ -73,7 +74,9 @@ signals:
     void UserAboutToConnect(int connectionID, UserConnection* connection);
      
     /// A user has connected (and authenticated)
-    void UserConnected(int connectionID, UserConnection* connection);
+    /** @param responseData The handler of this signal can add his own application-specific data to this structure. This data is sent to the
+        client and the applications on the client computer can read them as needed. */
+    void UserConnected(int connectionID, UserConnection* connection, UserConnectedResponseData *responseData);
     
     /// A user has disconnected
     void UserDisconnected(int connectionID, UserConnection* connection);

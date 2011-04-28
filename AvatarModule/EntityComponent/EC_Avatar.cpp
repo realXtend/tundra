@@ -91,7 +91,7 @@ void EC_Avatar::OnAttributeUpdated(IAttribute *attribute)
         if (ref.isEmpty())
             return;
         
-        avatarAssetListener_->HandleAssetRefChange(&appearanceRef, "GenericAvatarXml");
+        avatarAssetListener_->HandleAssetRefChange(&appearanceRef, "Avatar");
     }
 }
 

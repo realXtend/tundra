@@ -16,6 +16,14 @@
 #include "ConsoleAPI.h"
 #include "Application.h"
 
+#include "TundraLogicModule.h"
+#include "Client.h"
+#include "Server.h"
+#include "UserConnectedResponseData.h"
+#include "UserConnection.h"
+
+#include "kNet/MessageConnection.h"
+
 #include <QDir>
 
 namespace Asset
@@ -67,6 +75,44 @@ namespace Asset
             ConsoleBind(this, &AssetModule::ConsoleRefreshHttpStorages)));
             
         ProcessCommandLineOptions();
+
+        TundraLogic::Server *server = framework_->GetModule<TundraLogic::TundraLogicModule>()->GetServer().get();
+        QObject::connect(server, SIGNAL(UserConnected(int, UserConnection *, UserConnectedResponseData *)), this, 
+            SLOT(ServerNewUserConnected(int, UserConnection *, UserConnectedResponseData *)));
+
+        TundraLogic::Client *client = framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient().get();
+        QObject::connect(client, SIGNAL(Connected(UserConnectedResponseData *)), this, SLOT(ClientConnectedToServer(UserConnectedResponseData *)));
+        QObject::connect(client, SIGNAL(Disconnected()), this, SLOT(ClientDisconnectedFromServer()));
+    }
+
+    void AssetModule::AddStorageDirectory(const QString &storageDir)
+    {
+        QString path;
+        QString protocolPath;
+        AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(storageDir, 0, 0, &protocolPath, 0, 0, &path);
+
+        if (refType == AssetAPI::AssetRefRelativePath)
+        {
+            path = GuaranteeTrailingSlash(QDir::currentPath()) + path;
+            refType = AssetAPI::AssetRefLocalPath;
+        }
+
+        AssetStoragePtr storage;
+
+        if (refType == AssetAPI::AssetRefLocalPath)
+            storage = framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(path, "Scene", true);
+        else if (refType == AssetAPI::AssetRefExternalUrl)
+        {
+            storage = framework_->Asset()->GetAssetProvider<HttpAssetProvider>()->AddStorageAddress(protocolPath, "Scene");
+            path = protocolPath;
+        }
+        else
+            return; ///\todo Log error.
+
+        framework_->Asset()->SetDefaultAssetStorage(storage);
+
+        // Set asset dir as also as AssetAPI property
+        framework_->Asset()->setProperty("assetdir", QVariant(path));
     }
 
     void AssetModule::ProcessCommandLineOptions()
@@ -76,42 +122,9 @@ namespace Asset
         const boost::program_options::variables_map &options = framework_->ProgramOptions();
 
         if (options.count("file") > 0)
-        {
-            std::string startup_scene_ = QString(options["file"].as<std::string>().c_str()).trimmed().toStdString();
-            if (!startup_scene_.empty())
-            {
-                // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
-                boost::filesystem::path scenepath(startup_scene_);
-                std::string dirname = scenepath.branch_path().string();
-                if (!dirname.empty())
-                {
-                    framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname.c_str(), "Scene", true);
-                    framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorage("Scene"));
-                    
-                    // Set asset dir as also as AssetAPI property
-                    framework_->Asset()->setProperty("assetdir", QVariant(GuaranteeTrailingSlash(QString::fromStdString(dirname))));
-                }
-            }
-        }
-
+            AddStorageDirectory(QString(options["file"].as<std::string>().c_str()).trimmed());
         if (options.count("storage") > 0)
-        {
-            std::string startup_scene_ = QString(options["storage"].as<std::string>().c_str()).trimmed().toStdString();
-            if (!startup_scene_.empty())
-            {
-                // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
-                boost::filesystem::path scenepath(startup_scene_);  
-                std::string dirname = scenepath.branch_path().string();
-                if (!dirname.empty())
-                {
-                    framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname.c_str(), "Scene", true);
-                    framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorage("Scene"));
-                    
-                    // Set asset dir as also as AssetAPI property
-                    framework_->Asset()->setProperty("assetdir", QVariant(GuaranteeTrailingSlash(QString::fromStdString(dirname))));
-                }
-            }
-        }
+            AddStorageDirectory(QString(options["storage"].as<std::string>().c_str()).trimmed());
     }
 
     ConsoleCommandResult AssetModule::ConsoleRefreshHttpStorages(const StringVector &params)
@@ -165,6 +178,77 @@ namespace Asset
             if (storage)
                 storage->RefreshAssetRefs();
         }
+    }
+
+    /// If we are the server, this function gets called whenever a new connection is received. Populates the response data with the known asset storages in this server.
+    void AssetModule::ServerNewUserConnected(int connectionID, UserConnection *connection, UserConnectedResponseData *responseData)
+    {
+        QDomDocument &doc = responseData->responseData;
+        QDomElement assetRoot = doc.createElement("asset");
+        doc.appendChild(assetRoot);
+        
+        bool isLocalhostConnection = (connection->connection->RemoteEndPoint().IPToString() == "127.0.0.1" || 
+            connection->connection->LocalEndPoint().IPToString() == connection->connection->RemoteEndPoint().IPToString());
+
+        std::vector<AssetStoragePtr> storages = framework_->Asset()->GetAssetStorages();
+        for(size_t i = 0; i < storages.size(); ++i)
+        {
+            bool isLocalStorage = (dynamic_cast<LocalAssetStorage*>(storages[i].get()) != 0);
+            if (!isLocalStorage || isLocalhostConnection)
+            {
+                QDomElement storage = doc.createElement("storage");
+                storage.setAttribute("data", storages[i]->SerializeToString());
+                assetRoot.appendChild(storage);
+            }
+        }
+        AssetStoragePtr defaultStorage = framework_->Asset()->GetDefaultAssetStorage();
+        bool defaultStorageIsLocal = (dynamic_cast<LocalAssetStorage*>(defaultStorage.get()) != 0);
+        if (defaultStorage && (!defaultStorageIsLocal || isLocalhostConnection))
+        {
+            QDomElement storage = doc.createElement("defaultStorage");
+            storage.setAttribute("name", defaultStorage->Name());
+            assetRoot.appendChild(storage);
+        }
+    }
+
+    /// If we are the client, this function gets called when we connect to a server.
+    void AssetModule::ClientConnectedToServer(UserConnectedResponseData *responseData)
+    {
+        QDomDocument &doc = responseData->responseData;
+        QDomElement assetRoot = doc.firstChildElement("asset");
+        if (!assetRoot.isNull())
+        {
+            for (QDomElement storage = assetRoot.firstChildElement("storage"); !storage.isNull(); 
+                storage = storage.nextSiblingElement("storage"))
+            {
+                QString storageData = storage.attribute("data");
+                AssetStoragePtr assetStorage = framework_->Asset()->DeserializeAssetStorageFromString(storageData);
+
+                // Remember that this storage was received from the server, so we can later stop using it when we disconnect (and possibly reconnect to another server).
+                if (assetStorage)
+                    storagesReceivedFromServer.push_back(assetStorage);
+            }
+
+            QDomElement defaultStorage = assetRoot.firstChildElement("defaultStorage");
+            if (!defaultStorage.isNull())
+            {
+                QString defaultStorageName = defaultStorage.attribute("name");
+                AssetStoragePtr defaultStoragePtr = framework_->Asset()->GetAssetStorage(defaultStorageName);
+                if (defaultStoragePtr)
+                    framework_->Asset()->SetDefaultAssetStorage(defaultStoragePtr);
+            }
+        }
+    }
+
+    void AssetModule::ClientDisconnectedFromServer()
+    {
+        for(size_t i = 0; i < storagesReceivedFromServer.size(); ++i)
+        {
+            AssetStoragePtr storage = storagesReceivedFromServer[i].lock();
+            if (storage)
+                framework_->Asset()->RemoveAssetStorage(storage->Name());
+        }
+        storagesReceivedFromServer.clear();
     }
 }
 

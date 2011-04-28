@@ -58,8 +58,45 @@ Q_DECLARE_METATYPE(AssetStoragePtr);
 Q_DECLARE_METATYPE(IAssetStorage*);
 Q_DECLARE_METATYPE(AssetCache*);
 Q_DECLARE_METATYPE(AssetMap);
+Q_DECLARE_METATYPE(AssetStorageVector);
 
-/// Ui API defines.
+QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &assetMap)
+{
+    QScriptValue v = engine->newArray(assetMap.size());
+    int idx = 0;
+    for(AssetMap::const_iterator iter = assetMap.begin(); iter != assetMap.end(); ++iter)
+    {
+        QScriptValue elem = qScriptValueFromBoostSharedPtr(engine, iter->second);
+        v.setProperty(idx++, elem);
+    }
+
+    return v;
+}
+
+/// Deliberately a null function. Currently we don't need setting asset maps from the script side.
+void qScriptValueToAssetMap(const QScriptValue &value, AssetMap &assetMap)
+{
+}
+
+QScriptValue qScriptValueFromAssetStoragePtrVector(QScriptEngine *engine, const AssetStorageVector& vec)
+{
+    QScriptValue v = engine->newArray(vec.size());
+    int idx = 0;
+    for(std::vector<AssetStoragePtr>::const_iterator iter = vec.begin(); iter != vec.end(); ++iter)
+    {
+        QScriptValue elem = qScriptValueFromBoostSharedPtr(engine, *iter);
+        v.setProperty(idx++, elem);
+    }
+
+    return v;
+}
+
+/// Deliberately a null function. Currently we don't need setting asset storage vectors from the script side.
+void qScriptValueToAssetStoragePtrVector(const QScriptValue &value, AssetStorageVector& vec)
+{
+}
+
+/// Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
 Q_DECLARE_METATYPE(UiMainWindow*);
 Q_DECLARE_METATYPE(UiGraphicsView*);
@@ -92,24 +129,6 @@ Q_DECLARE_METATYPE(ConfigAPI*);
 
 /// Renderer defines.
 Q_DECLARE_METATYPE(RaycastResult*);
-
-QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &assetMap)
-{
-    QScriptValue v = engine->newArray(assetMap.size());
-    int idx = 0;
-    for(AssetMap::const_iterator iter = assetMap.begin(); iter != assetMap.end(); ++iter)
-    {
-        QScriptValue elem = qScriptValueFromBoostSharedPtr(engine, iter->second);
-        v.setProperty(idx++, elem);
-    }
-
-    return v;
-}
-
-/// Deliberately a null function. Currently we don't need setting asset maps from the script side.
-void qScriptValueToAssetMap(const QScriptValue &value, AssetMap &assetMap)
-{
-}
 
 QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
 {
@@ -239,6 +258,9 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<AssetMap>("AssetMap");
     qScriptRegisterMetaType<AssetMap>(engine, qScriptValueFromAssetMap, qScriptValueToAssetMap);
 
+    qRegisterMetaType<AssetStorageVector>("AssetStorageVector");
+    qScriptRegisterMetaType<AssetStorageVector>(engine, qScriptValueFromAssetStoragePtrVector, qScriptValueToAssetStoragePtrVector);
+    
     // Ui metatypes.
     qScriptRegisterQObjectMetaType<UiMainWindow*>(engine);
     qScriptRegisterQObjectMetaType<UiGraphicsView*>(engine);

@@ -25,8 +25,6 @@ public:
     QStringList assetRefs;
 
 public slots:
-    virtual std::vector<IAsset*> GetAllAssets() const { return std::vector<IAsset*>(); }
-
     /// Specifies whether data can be uploaded to this asset storage.
     virtual bool Writable() const { return false; }
 
@@ -39,20 +37,21 @@ public slots:
     /// Returns the address of this storage.
     virtual QString BaseURL() const { return baseAddress; }
     
-    /// Returns all assetrefs contained in this asset storage. Does not load the assets
-    /// Note: these refs must be pre-refreshed by issuing webdav requests (RefreshRefs() function)
+    /// Returns all assetrefs currently known in this asset storage. Does not load the assets
     virtual QStringList GetAllAssetRefs() { return assetRefs; }
     
-    /// Refresh http asset refs, issues webdav PROPFIND requests. AssetRefsReady() will be emitted when complete.
-    void RefreshAssetRefs();
+    /// Refresh http asset refs, issues webdav PROPFIND requests. AssetRefsChanged() will be emitted when complete.
+    virtual void RefreshAssetRefs();
 
     /// Serializes this storage to a string for machine transfer.
     virtual QString SerializeToString() const;
 
-signals:
-    /// Asset ref query is complete
-    void AssetRefsReady();
+    /// Add an assetref. Emit AssetRefsChanged() if did not exist already. Called by HttpAssetProvider
+    void AddAssetRef(const QString& ref);
 
+    /// Delete an assetref. Emit AssetRefsChanged() if found. Called by HttpAssetProvider
+    void DeleteAssetRef(const QString& ref);
+    
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
 

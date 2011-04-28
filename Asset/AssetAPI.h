@@ -28,6 +28,8 @@ QString GuaranteeTrailingSlash(const QString &source);
 
 typedef std::map<QString, AssetPtr> AssetMap;
 
+typedef std::vector<AssetStoragePtr> AssetStorageVector;
+
 class AssetAPI : public QObject
 {
     Q_OBJECT
@@ -54,9 +56,6 @@ public:
 
     /// Returns all the asset providers that are registered to the Asset API.
     std::vector<AssetProviderPtr> GetAssetProviders() const;
-
-    /// Returns the known asset storage instances in the system.
-    std::vector<AssetStoragePtr> GetAssetStorages() const;
 
     /// Returns all the currently ongoing or waiting asset transfers.
     std::vector<AssetTransferPtr> PendingTransfers();
@@ -136,6 +135,9 @@ public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap GetAllAssets() { return assets; }
 
+    /// Returns the known asset storage instances in the system.
+    AssetStorageVector GetAssetStorages() const;
+
     /// Opens the internal Asset API asset cache to the given directory. When the Asset API starts up, the asset cache is not created. This allows
     /// the Asset API to be operated in a mode that does not perform writes to the disk when assets are fetched. This will cause assets fetched from
     /// remote hosts to have a null disk source.
@@ -198,6 +200,11 @@ public slots:
 
     /// Returns the asset storage of the given name.
     AssetStoragePtr GetAssetStorage(const QString &name) const;
+
+    /// Removes the given asset storage from the list of all asset storages.
+    /// The scene can still refer to assets in this storage, and download requests can be performed to it, but it will not show up in the Assets dialog,
+    /// and asset upload operations cannot be performed to it. Also, it will not be used as a default storage.
+    bool RemoveAssetStorage(const QString &name);
 
     /// Creates an asset storage from the given serialized string form.
     /// Returns a null pointer if the given storage could not be added.
@@ -312,6 +319,12 @@ public slots:
     /// An utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
     int NumPendingDependencies(AssetPtr asset);
 
+    /// Emit AssetDiscovered signal
+    void EmitAssetDiscovered(const QString &assetRef, const QString &assetType);
+    
+    /// Emit AssetDeleted signal
+    void EmitAssetDeleted(const QString &assetRef);
+    
 signals:
     /// Emitted for each new asset that was created and added to the system. When this signal is triggered, the dependencies of an asset
     /// may not yet have been loaded.
@@ -323,6 +336,18 @@ signals:
     /// Emitted before an assets disk source will be removed.
     void DiskSourceAboutToBeRemoved(AssetPtr asset);
 
+    /// Emitted when an asset has been uploaded
+    void AssetUploaded(const QString &assetRef);
+
+    /// Emitted when an asset storage has been added
+    void AssetStorageAdded(AssetStoragePtr storage);
+
+    /// Emitted when a new assetref has been discovered through the AssetDiscovery network message
+    void AssetDiscovered(const QString &assetRef, const QString &assetType);
+
+    /// Emitted when an asset is successfully deleted from storage. It is the providers' responsibility to make the AssetAPI emit this signal
+    void AssetDeleted(const QString &assetRef);
+    
     /// Emitted when the contents of an asset disk source has changed. ///\todo Implement.
  //   void AssetDiskSourceChanged(AssetPtr asset);
 

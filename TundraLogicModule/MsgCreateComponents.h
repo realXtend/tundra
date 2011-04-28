@@ -1,6 +1,7 @@
 #pragma once
 
-#include "kNet.h"
+#include "kNet/DataDeserializer.h"
+#include "kNet/DataSerializer.h"
 
 struct MsgCreateComponents
 {
@@ -18,13 +19,17 @@ struct MsgCreateComponents
 
 	void InitToDefault()
 	{
-		reliable = true;
-		inOrder = true;
-		priority = 100;
+		reliable = defaultReliable;
+		inOrder = defaultInOrder;
+		priority = defaultPriority;
 	}
 
-	static inline u32 MessageID() { return 112; }
-	static inline const char *Name() { return "CreateComponents"; }
+	enum { messageID = 112 };
+	static inline const char * const Name() { return "CreateComponents"; }
+
+	static const bool defaultReliable = true;
+	static const bool defaultInOrder = true;
+	static const u32 defaultPriority = 100;
 
 	bool reliable;
 	bool inOrder;

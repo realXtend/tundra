@@ -25,6 +25,7 @@ namespace Asset
 LocalAssetProvider::LocalAssetProvider(Framework* framework_)
 :framework(framework_)
 {
+    /// \Todo: react to AssetDiscovered & AssetDeleted like HttpAssetProvider does
 }
 
 LocalAssetProvider::~LocalAssetProvider()
@@ -121,13 +122,32 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
 {
     if (!assetRef.isEmpty())
         QFile::remove(assetRef); ///\todo Check here that the assetRef points to one of the accepted storage directories, and don't allow deleting anything else.
-
+    
     LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
+    framework->Asset()->EmitAssetDeleted(assetRef);
+}
+
+bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
+{
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->name == storageName)
+        {
+            storages.erase(storages.begin() + i);
+            return true;
+        }
+
+    return false;
 }
 
 LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &directory, const QString &storageName, bool recursive)
 {
-    ///\todo Check first if the given directory exists as a storage, and don't add it as a duplicate if so.
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->name == storageName)
+        {
+            if (storages[i]->directory != directory)
+                LogError("LocalAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName.toStdString() + "\" already exists, but points to directory \"" + storages[i]->directory.toStdString() + "\" instead of \"" + directory.toStdString() + "\"!");
+            return LocalAssetStoragePtr();
+        }
 
     LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage());
     storage->directory = directory;
@@ -252,7 +272,7 @@ AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QStrin
 
     if (name.isEmpty() || directory.isEmpty() || tokens[3].isEmpty())
     {
-        LogError("Invalid LocalAssetStorage format \"" + storage + "\"!");
+        LogError("Invalid LocalAssetStorage format \"" + storage.toStdString() + "\"!");
         return AssetStoragePtr();
     }
 
@@ -293,7 +313,6 @@ void LocalAssetProvider::CompletePendingFileUploads()
         {
             LogError(("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!").toStdString());
             transfer->EmitTransferFailed();
-            /// \todo Jukka lis�� failure-notifikaatio.
         }
         else
         {

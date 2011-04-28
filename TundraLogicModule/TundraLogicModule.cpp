@@ -22,7 +22,6 @@
 #include "ModuleManager.h"
 #include "KristalliProtocolModule.h"
 #include "CoreStringUtils.h"
-#include "LocalAssetProvider.h"
 #include "AssetAPI.h"
 #include "ConsoleAPI.h"
 #include "AssetAPI.h"

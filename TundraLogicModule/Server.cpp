@@ -30,6 +30,7 @@
 #include <boost/program_options.hpp>
 
 Q_DECLARE_METATYPE(UserConnection*);
+Q_DECLARE_METATYPE(UserConnectedResponseData*);
 
 // The following functions help register a custom QObject-derived class to a QScriptEngine.
 // See http://lists.trolltech.com/qt-interest/2007-12/thread00158-0.html .
@@ -328,7 +329,6 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     MsgLoginReply reply;
     reply.success = 1;
     reply.userID = user->userID;
-    user->connection->Send(reply);
     
     // Tell everyone of the client joining (also the user who joined)
     UserConnectionList users = GetAuthenticatedUsers();
@@ -351,7 +351,15 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     // Tell syncmanager of the new user
     owner_->GetSyncManager()->NewUserConnected(user);
     
-    emit UserConnected(user->userID, user);
+    // Tell all server-side application code that a new user has successfully connected.
+    // Ask them to fill the contents of a UserConnectedResponseData structure. This will
+    // be sent to the client so that the scripts and applications on the client system can configure themselves.
+    UserConnectedResponseData responseData;
+    emit UserConnected(user->userID, user, &responseData);
+
+    QByteArray responseByteData = responseData.responseData.toByteArray(-1);
+    reply.loginReplyData.insert(reply.loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());
+    user->connection->Send(reply);
 }
 
 void Server::HandleUserDisconnected(UserConnection* user)
@@ -369,9 +377,22 @@ void Server::HandleUserDisconnected(UserConnection* user)
     emit UserDisconnected(user->userID, user);
 }
 
+template<typename T>
+QScriptValue qScriptValueFromNull(QScriptEngine *engine, const T &v)
+{
+    return QScriptValue();
+}
+
+template<typename T>
+void qScriptValueToNull(const QScriptValue &value, T &v)
+{
+}
+
 void Server::OnScriptEngineCreated(QScriptEngine* engine)
 {
     qScriptRegisterQObjectMetaType<UserConnection*>(engine);
+    ///\todo Write proper serialization and deserialization.
+    qScriptRegisterMetaType<UserConnectedResponseData*>(engine, qScriptValueFromNull<UserConnectedResponseData*>, qScriptValueToNull<UserConnectedResponseData*>);
 }
 
 }

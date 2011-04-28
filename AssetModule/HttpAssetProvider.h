@@ -37,6 +37,7 @@ public:
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
 
     /// Adds the given http URL to the list of current asset storages.
+    /// Returns the newly created storage, or 0 if a storage with the given name already existed, or if some other error occurred.
     HttpAssetStoragePtr AddStorageAddress(const QString &address, const QString &storageName);
 
     virtual std::vector<AssetStoragePtr> GetStorages() const;
@@ -47,6 +48,8 @@ public:
     /// Issues a http DELETE request for the given asset.
     virtual void DeleteAssetFromStorage(QString assetRef);
     
+    virtual bool RemoveAssetStorage(QString storageName);
+
     virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage);
 
     /// Return the network access manager
@@ -54,9 +57,18 @@ public:
     
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
+    
+    void OnAssetDiscovered(const QString& ref, const QString& assetType);
+
+    void OnAssetDeleted(const QString& ref);
 
 private:
     Framework *framework;
+    
+    /// Add assetref to http storage(s) after successful upload or discovery
+    void AddAssetRefToStorages(const QString& ref);
+    /// Delete assetref from http storages after successful delete
+    void DeleteAssetRefFromStorages(const QString& ref);
     
     /// Specifies the currently added list of HTTP asset storages.
     std::vector<HttpAssetStoragePtr> storages;

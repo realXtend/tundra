@@ -76,13 +76,27 @@ AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
     return AssetStoragePtr();
 }
 
+bool AssetAPI::RemoveAssetStorage(const QString &name)
+{
+    ///\bug Currently it is possible to have e.g. a local storage with name "Foo" and a http storage with name "Foo", and it will
+    /// not be possible to specify which storage to delete.
+    foreach(AssetProviderPtr provider, GetAssetProviders())
+        if (provider->RemoveAssetStorage(name))
+            return true;
+
+    return false;
+}
+
 AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &storage)
 {
     for(size_t i = 0; i < providers.size(); ++i)
     {
         AssetStoragePtr assetStorage = providers[i]->TryDeserializeStorageFromString(storage);
         if (assetStorage)
+        {
             return assetStorage;
+            emit AssetStorageAdded(assetStorage);
+        }
     }
     LogError("Failed to deserialize asset storage from string \"" + storage + "\"!");
     return AssetStoragePtr();
@@ -1064,6 +1078,9 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
     uploadTransfer->EmitTransferCompleted();
 
     QString assetRef = uploadTransfer->AssetRef();
+    
+    emit AssetUploaded(assetRef);
+    
     // We've completed an asset upload transfer. See if there is an asset download transfer that is waiting
     // for this upload to complete. 
     
@@ -1207,6 +1224,16 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
     return numDependencies;
 }
 
+void AssetAPI::EmitAssetDiscovered(const QString& assetRef, const QString& assetType)
+{
+    emit AssetDiscovered(assetRef, assetType);
+}
+
+void AssetAPI::EmitAssetDeleted(const QString& assetRef)
+{
+    emit AssetDeleted(assetRef);
+}
+
 void AssetAPI::OnAssetLoaded(AssetPtr asset)
 {
     std::vector<AssetPtr> dependents = FindDependents(asset->Name());
@@ -1329,13 +1356,19 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
     if (file.endsWith(".ui"))
         return "QtUiFile";
 
+    if (file.endsWith(".ui"))
+        return "QtUiFile";
+        
+    if (file.endsWith(".avatar"))
+        return "Avatar";
+
     // \todo Dont hadcode these if the extension some day change!
     // cTundraBinFileExtension and cTundraXmlFileExtension are defined 
     // in SceneStructureModules .h files, move to core?
     if (file.endsWith(".xml") || file.endsWith(".txml") || file.endsWith(".tbin")) 
         return "Binary";
 
-    // Unknown type, return Binray type.
+    // Unknown type, return Binary type.
     return "Binary";
 
     // Note: There's a separate OgreImageTextureResource which isn't handled above.

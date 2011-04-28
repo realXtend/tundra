@@ -301,7 +301,11 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
 ///\todo EventManager regression. -jj.
 //            framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
             
-            emit Connected();
+            UserConnectedResponseData responseData;
+            if (msg.loginReplyData.size() > 0)
+                responseData.responseData.setContent(QByteArray((const char *)&msg.loginReplyData[0], (int)msg.loginReplyData.size()));
+
+            emit Connected(&responseData);
         }
         else
         {

@@ -20,7 +20,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 add_definitions (-DTUNDRALOGIC_MODULE_EXPORTS)
 
 use_package_bullet()
-use_modules (Framework Asset Scene AssetModule KristalliProtocolModule Console
+use_modules (Framework Asset Scene KristalliProtocolModule Console
     OgreRenderingModule PhysicsModule)
 
 # This is only needed because this module bootstraps EC_Sound. If EC_Sound is removed to someplace else, this can be removed.
@@ -49,7 +49,7 @@ LinkEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
 LinkEntityComponent(EntityComponents/EC_ProximityTrigger EC_ProximityTrigger)
 LinkEntityComponent(EntityComponents/EC_QmlApp EC_QmlApp)
 
-link_modules (Framework Asset Scene AssetModule KristalliProtocolModule
+link_modules (Framework Asset Scene KristalliProtocolModule
     OgreRenderingModule PhysicsModule Console)
 
 # This is only needed because this module bootstraps EC_Sound. If EC_Sound is removed to someplace else, this can be removed.
@@ -59,7 +59,6 @@ link_modules(Audio)
 link_modules(Input)
 
 link_ogre()
-
 
 SetupCompileFlagsWithPCH()
 

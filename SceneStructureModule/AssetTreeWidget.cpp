@@ -13,6 +13,7 @@
 #include "SupportedFileTypes.h"
 #include "RequestNewAssetDialog.h"
 
+#include "AssetsWindow.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
@@ -189,6 +190,10 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     connect(requestNewAssetAction, SIGNAL(triggered()), SLOT(RequestNewAsset()));
     menu->addAction(requestNewAssetAction);
 
+    QAction *makeDefaultStorageAction = new QAction(tr("Make default storage"), menu);
+    connect(makeDefaultStorageAction, SIGNAL(triggered()), SLOT(MakeDefaultStorage()));
+    menu->addAction(makeDefaultStorageAction);
+
     // Let other instances add their possible functionality.
     QList<QObject *> targets;
     foreach(AssetItem *item, items)
@@ -305,6 +310,20 @@ void AssetTreeWidget::RequestNewAsset()
     RequestNewAssetDialog *dialog = new RequestNewAssetDialog(framework->Asset(), this);
     connect(dialog, SIGNAL(finished(int)), SLOT(RequestNewAssetDialogClosed(int)));
     dialog->show();
+}
+
+void AssetTreeWidget::MakeDefaultStorage()
+{
+    QList<QTreeWidgetItem*> selected = selectedItems();
+    if (selected.size() == 1)
+    {
+        QString storageName = selected.first()->data(0, Qt::UserRole).toString();
+        framework->Asset()->SetDefaultAssetStorage(framework->Asset()->GetAssetStorage(storageName));
+    }
+
+    AssetsWindow *parent = dynamic_cast<AssetsWindow*>(parentWidget());
+    if (parent)
+        parent->PopulateTreeWidget();
 }
 
 void AssetTreeWidget::RequestNewAssetDialogClosed(int result)

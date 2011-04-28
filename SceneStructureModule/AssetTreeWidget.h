@@ -99,6 +99,9 @@ private slots:
     /// Opens Request New Asset dialog.
     void RequestNewAsset();
 
+    /// Makes the currently selected asset storage the default system storage.
+    void MakeDefaultStorage();
+
     /// Called by Request New Asset dialog when it's closed.
     /** @param result Result of dialog closure. Save is 1, Cancel is 0.
     */

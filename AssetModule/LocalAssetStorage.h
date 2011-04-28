@@ -35,9 +35,11 @@ public:
     /// Stops and deallocates the directory change listener.
     void RemoveWatcher();
 
-    /// \todo Will be replaced with AssetStorage's GetAllAssetsRefs / GetAllAssets functionality
+    /// Load all assets of specific suffix
     void LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType);
 
+    QStringList assetRefs;
+    
 public slots:
     bool Writable() const { return true; }
 
@@ -51,8 +53,11 @@ public slots:
     /// \note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "local://my.mesh".
     QString GetFullAssetURL(const QString &localName);
 
-    /// Returns all assetrefs contained in this asset storage. Does not load the assets
-    virtual QStringList GetAllAssetRefs();
+    /// Returns all assetrefs currently known in this asset storage. Does not load the assets
+    virtual QStringList GetAllAssetRefs() { return assetRefs; }
+    
+    /// Refresh asset refs. Issues a directory query and emits AssetRefsChanged immediately
+    virtual void RefreshAssetRefs();
     
 //    QFileSystemWatcher *changeWatcher;
 

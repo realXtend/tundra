@@ -1,4 +1,4 @@
-// !ref: local://default_avatar.xml, GenericAvatarXml
+// !ref: local://default_avatar.avatar
 // !ref: local://crosshair.js
 
 if (!server.IsRunning() && !framework.IsHeadless())
@@ -54,7 +54,7 @@ function ServerInitialize() {
     // Create the avatar component & set the avatar appearance. The avatar component will create the mesh & animationcontroller, once the avatar asset has loaded
     var avatar = me.GetOrCreateComponent("EC_Avatar");
     var r = avatar.appearanceRef;
-    r.ref = "local://default_avatar.xml";
+    r.ref = "local://default_avatar.avatar";
     avatar.appearanceRef = r;
 
     // Create rigid body component and set physics properties
