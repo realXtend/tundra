@@ -726,7 +726,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
         return;
     
     entity_id_t entityID = msg.entityID;
-    if (!ValidateAction(source, msg.MessageID(), entityID))
+    if (!ValidateAction(source, msg.messageID, entityID))
         return;
     
     // Get matching syncstate for reflecting the changes
@@ -822,7 +822,7 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
     
     entity_id_t entityID = msg.entityID;
 
-    if (!ValidateAction(source, msg.MessageID(), entityID))
+    if (!ValidateAction(source, msg.messageID, entityID))
         return;
     
     // Get matching syncstate for reflecting the changes
@@ -852,7 +852,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
         return;
     
     entity_id_t entityID = msg.entityID;
-    if (!ValidateAction(source, msg.MessageID(), entityID))
+    if (!ValidateAction(source, msg.messageID, entityID))
         return;
     
     // Get matching syncstate for reflecting the changes
@@ -934,7 +934,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
         return;
     
     entity_id_t entityID = msg.entityID;
-    if (!ValidateAction(source, msg.MessageID(), entityID))
+    if (!ValidateAction(source, msg.messageID, entityID))
         return;
     
     // Get matching syncstate for reflecting the changes
@@ -1138,7 +1138,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
         return;
     
     entity_id_t entityID = msg.entityID;
-    if (!ValidateAction(source, msg.MessageID(), entityID))
+    if (!ValidateAction(source, msg.messageID, entityID))
         return;
     
     // Get matching syncstate for reflecting the changes

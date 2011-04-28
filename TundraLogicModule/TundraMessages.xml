@@ -11,6 +11,8 @@
         <u8 name="success" />
         <!-- Note: in case of failure, userID is undefined -->
         <u8 name="userID" />
+        <!-- Stores custom data the server tells back to the client immediately on connect. -->
+        <s8 name="loginReplyData" dynamicCount="16" />
     </message>
     <!-- Server to other clients when a client joins -->
     <message id="102" name="ClientJoined" reliable="true" inOrder="true" priority="100">

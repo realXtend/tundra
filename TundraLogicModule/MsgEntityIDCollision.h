@@ -1,6 +1,7 @@
 #pragma once
 
-#include "kNet.h"
+#include "kNet/DataDeserializer.h"
+#include "kNet/DataSerializer.h"
 
 struct MsgEntityIDCollision
 {
@@ -18,13 +19,17 @@ struct MsgEntityIDCollision
 
 	void InitToDefault()
 	{
-		reliable = true;
-		inOrder = true;
-		priority = 100;
+		reliable = defaultReliable;
+		inOrder = defaultInOrder;
+		priority = defaultPriority;
 	}
 
-	static inline u32 MessageID() { return 115; }
-	static inline const char *Name() { return "EntityIDCollision"; }
+	enum { messageID = 115 };
+	static inline const char * const Name() { return "EntityIDCollision"; }
+
+	static const bool defaultReliable = true;
+	static const bool defaultInOrder = true;
+	static const u32 defaultPriority = 100;
 
 	bool reliable;
 	bool inOrder;

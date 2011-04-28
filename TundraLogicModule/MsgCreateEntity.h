@@ -1,6 +1,7 @@
 #pragma once
 
-#include "kNet.h"
+#include "kNet/DataDeserializer.h"
+#include "kNet/DataSerializer.h"
 
 struct MsgCreateEntity
 {
@@ -12,19 +13,23 @@ struct MsgCreateEntity
 	MsgCreateEntity(const char *data, size_t numBytes)
 	{
 		InitToDefault();
-        kNet::DataDeserializer dd(data, numBytes);
+		kNet::DataDeserializer dd(data, numBytes);
 		DeserializeFrom(dd);
 	}
 
 	void InitToDefault()
 	{
-		reliable = true;
-		inOrder = true;
-		priority = 100;
+		reliable = defaultReliable;
+		inOrder = defaultInOrder;
+		priority = defaultPriority;
 	}
 
-	static inline u32 MessageID() { return 110; }
-	static inline const char *Name() { return "CreateEntity"; }
+	enum { messageID = 110 };
+	static inline const char * const Name() { return "CreateEntity"; }
+
+	static const bool defaultReliable = true;
+	static const bool defaultInOrder = true;
+	static const u32 defaultPriority = 100;
 
 	bool reliable;
 	bool inOrder;
