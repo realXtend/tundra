@@ -82,6 +82,17 @@ AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
     return AssetStoragePtr();
 }
 
+bool AssetAPI::RemoveAssetStorage(const QString &name)
+{
+    ///\bug Currently it is possible to have e.g. a local storage with name "Foo" and a http storage with name "Foo", and it will
+    /// not be possible to specify which storage to delete.
+    foreach(AssetProviderPtr provider, GetAssetProviders())
+        if (provider->RemoveAssetStorage(name))
+            return true;
+
+    return false;
+}
+
 AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &storage)
 {
     for(size_t i = 0; i < providers.size(); ++i)

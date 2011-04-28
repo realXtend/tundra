@@ -201,6 +201,11 @@ public slots:
     /// Returns the asset storage of the given name.
     AssetStoragePtr GetAssetStorage(const QString &name) const;
 
+    /// Removes the given asset storage from the list of all asset storages.
+    /// The scene can still refer to assets in this storage, and download requests can be performed to it, but it will not show up in the Assets dialog,
+    /// and asset upload operations cannot be performed to it. Also, it will not be used as a default storage.
+    bool RemoveAssetStorage(const QString &name);
+
     /// Creates an asset storage from the given serialized string form.
     /// Returns a null pointer if the given storage could not be added.
     AssetStoragePtr DeserializeAssetStorageFromString(const QString &storage);

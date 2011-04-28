@@ -108,6 +108,18 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
     networkAccessManager->deleteResource(request);
 }
 
+bool HttpAssetProvider::RemoveAssetStorage(QString storageName)
+{
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->storageName == storageName)
+        {
+            storages.erase(storages.begin() + i);
+            return true;
+        }
+
+    return false;
+}
+
 AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString &storage)
 {
     QStringList tokens = storage.split(";");
@@ -233,13 +245,9 @@ HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address,
     for(size_t i = 0; i < storages.size(); ++i)
         if (storages[i]->storageName == storageName)
         {
-            if (storages[i]->baseAddress == locationCleaned)
-                return storages[i];
-            else
-            {
+            if (storages[i]->baseAddress != address)
                 LogError("HttpAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName + "\" already exists, but points to address \"" + storages[i]->baseAddress + "\" instead of \"" + address + "\"!");
-                return HttpAssetStoragePtr();
-            }
+            return HttpAssetStoragePtr();
         }
 
     // Add new if not found

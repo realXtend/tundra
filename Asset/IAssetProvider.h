@@ -66,6 +66,9 @@ public:
         ///\todo Log error unimplemented!
     }
 
+    /// Removes the storage with the given name from this provider, or returns false if it doesn't exist.
+    virtual bool RemoveAssetStorage(QString storageName) { return false; }
+
     /// Returns the list of all asset storages registered into this asset provider.
     virtual std::vector<AssetStoragePtr> GetStorages() const = 0;
 

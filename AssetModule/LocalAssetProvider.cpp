@@ -128,9 +128,27 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
     framework->Asset()->EmitAssetDeleted(assetRef);
 }
 
+bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
+{
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->name == storageName)
+        {
+            storages.erase(storages.begin() + i);
+            return true;
+        }
+
+    return false;
+}
+
 LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &directory, const QString &storageName, bool recursive)
 {
-    ///\todo Check first if the given directory exists as a storage, and don't add it as a duplicate if so.
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->name == storageName)
+        {
+            if (storages[i]->directory != directory)
+                AssetModule::LogError("LocalAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName.toStdString() + "\" already exists, but points to directory \"" + storages[i]->directory.toStdString() + "\" instead of \"" + directory.toStdString() + "\"!");
+            return LocalAssetStoragePtr();
+        }
 
     LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage());
     storage->directory = directory;
@@ -255,7 +273,7 @@ AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QStrin
 
     if (name.isEmpty() || directory.isEmpty() || tokens[3].isEmpty())
     {
-        LogError("Invalid LocalAssetStorage format \"" + storage + "\"!");
+        AssetModule::LogError("Invalid LocalAssetStorage format \"" + storage.toStdString() + "\"!");
         return AssetStoragePtr();
     }
 
