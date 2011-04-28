@@ -92,7 +92,7 @@ class ComponentRunner:
         send to more handlers on the c++ side in the Naali event system"""
         m = self.m
         ret = m.push(event, channel)
-        #while m: m.flush() #circuits components evaluate to false when have no pending events left
+        while m: m.flush() #circuits components evaluate to false when have no pending events left
         if not ret.errors:
             #print "EVENT:", event, ret.value
             return True in ret #circuits return values implement __contains__ for this use case
