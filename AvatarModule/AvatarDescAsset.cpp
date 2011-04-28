@@ -588,7 +588,7 @@ void AvatarDescAsset::AddReference(std::vector<AssetReference>& refs, const QStr
 {
     if (ref.length())
     {
-        AssetReference newRef(assetAPI->ResolveAssetRef("", ref));
+        AssetReference newRef(assetAPI->ResolveAssetRef(Name(), ref));
         refs.push_back(newRef);
     }
 }
