@@ -38,6 +38,9 @@ public:
     ~AddComponentDialog();
 
     //! Sets available component types.
+    /** In order to improve readibility and usability, the "EC_" prefix is stripped from the type name.
+        GetTypeName() however returns the full type name.
+    */
     void SetComponentList(const QStringList &component_types);
 
     //! Sets default name.
@@ -74,8 +77,7 @@ private:
     QCheckBox *temp_check_box_;
     QPushButton *ok_button_;
     QPushButton *cancel_button_;
-    typedef QList<entity_id_t> EntityIdList;
-    EntityIdList entities_; //!< Entities for which the new component is planned to be added.
+    QList<entity_id_t> entities_; //!< Entities for which the new component is planned to be added.
     Foundation::Framework *framework_;
 };
 
