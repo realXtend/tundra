@@ -165,5 +165,6 @@ if (NOT UISERVICE_TEST)
     add_subdirectory(WorldMapModule)        # Implements OpenSim grid world map. Depends on OgreRenderingModule and UiModule.
 endif()
 
+add_subdirectory(SpeexVoipModule)
 # Only useful for msi installer builds
 #add_subdirectory(UpdateModule);
