@@ -76,14 +76,55 @@ public:
 
     virtual bool IsSerializable() const { return true; }
 
+    Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
+    DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
+
+    Q_PROPERTY(int xPatches READ getxPatches WRITE setxPatches);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, xPatches);
+
+    Q_PROPERTY(int yPatches READ getyPatches WRITE setyPatches);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, yPatches);
+
+    Q_PROPERTY(float uScale READ getuScale WRITE setuScale);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, uScale);
+
+    Q_PROPERTY(float vScale READ getvScale WRITE setvScale);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, vScale);
+
+    Q_PROPERTY(AssetReference material READ getmaterial WRITE setmaterial);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, material);
+
+    Q_PROPERTY(AssetReference texture0 READ gettexture0 WRITE settexture0);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture0);
+
+    Q_PROPERTY(AssetReference texture1 READ gettexture1 WRITE settexture1);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture1);
+
+    Q_PROPERTY(AssetReference texture2 READ gettexture2 WRITE settexture2);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture2);
+
+    Q_PROPERTY(AssetReference texture3 READ gettexture3 WRITE settexture3);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture3);
+
+    Q_PROPERTY(AssetReference texture4 READ gettexture4 WRITE settexture4);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture4);
+
+    Q_PROPERTY(AssetReference heightMap READ getheightMap WRITE setheightMap);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, heightMap);
+
+    /// Returns the minimum and maximum extents of terrain heights.
+    void GetTerrainHeightRange(float &minHeight, float &maxHeight) const;
+
     /// Each patch is a square containing this many vertices per side.
     static const int cPatchSize = 16;
 
-    /// Describes a single patch that is present in the scene. A patch can be in one of the following three states:
-    /// - not loaded. The height data nor the GPU data is present, but the Patch struct itself is initialized. heightData.size() == 0, node == entity == 0. meshGeometryName == "".
-    /// - heightmap data loaded. The heightData vector contains the heightmap data, but the visible GPU vertex data itself has not been generated yet, due to the neighbors
-    ///   of this patch not being present yet. node == entity == 0, meshGeometryName == "". patch_geometry_dirty == true.
-    /// - fully loaded. The GPU data is also loaded and the node, entity and meshGeometryName fields specify the used GPU resources.
+    /// Describes a single patch that is present in the scene.
+    /** A patch can be in one of the following three states:
+        - not loaded. The height data nor the GPU data is present, but the Patch struct itself is initialized. heightData.size() == 0, node == entity == 0. meshGeometryName == "".
+        - heightmap data loaded. The heightData vector contains the heightmap data, but the visible GPU vertex data itself has not been generated yet, due to the neighbors
+          of this patch not being present yet. node == entity == 0, meshGeometryName == "". patch_geometry_dirty == true.
+        - fully loaded. The GPU data is also loaded and the node, entity and meshGeometryName fields specify the used GPU resources.
+    */
     struct Patch
     {
         Patch():x(0),y(0), node(0), entity(0), patch_geometry_dirty(true) {}
@@ -170,28 +211,28 @@ public slots:
     /// @param y In the range [0, EC_Terrain::PatchHeight * EC_Terrain::cPatchSize [.
     float GetPoint(int x, int y) const;
 
-    /// Sets a new height value to the given terrain map vertex. Marks the patch that vertex is part of dirty,   
-    /// but does not immediately recreate the GPU surfaces. Use the RegenerateDirtyTerrainPatches() function    
-    /// to regenerate the visible Ogre mesh geometry.    
-    void SetPointHeight(int x, int y, float height);   
+    /// Sets a new height value to the given terrain map vertex. Marks the patch that vertex is part of dirty,
+    /// but does not immediately recreate the GPU surfaces. Use the RegenerateDirtyTerrainPatches() function
+    /// to regenerate the visible Ogre mesh geometry.
+    void SetPointHeight(int x, int y, float height);
     
     /// Returns the point on the terrain in world space that lies on top of the given world space coordinate.
     /// @param point The point in world space to get the corresponding map point (in world space) for.
-    Vector3df GetPointOnMap(const Vector3df &point) const;    
+    Vector3df GetPointOnMap(const Vector3df &point) const;
 
     /// Returns the point on the terrain in local space that lies on top of the given world space coordinate.
     /// @param point The point in world space to get the corresponding map point (in local space) for.
-    Vector3df GetPointOnMapLocal(const Vector3df &point) const;    
+    Vector3df GetPointOnMapLocal(const Vector3df &point) const;
 
     /// Returns the signed distance (in world space) of the given point to the corresponding map point on the terrain.
     /// @param point The point in world space to test.
     /// @return The signed distance to the terrain. If the given point is above the terrain, the distance test returns a positive number.
     /// If the point is below the terrain, a negative number is returned. The above/below concept is measured along the
     /// local up axis of the terrain (not the global world space up axis).
-    float GetDistanceToTerrain(const Vector3df &point) const;    
+    float GetDistanceToTerrain(const Vector3df &point) const;
     
     /// Returns true if given point in world space is on top (in terms of the local terrain up axis) of, or lying on, the terrain.
-    bool IsOnTopOfMap(const Vector3df &point) const;    
+    bool IsOnTopOfMap(const Vector3df &point) const;
 
     /// Returns the interpolated height value of the terrain at the given fractional coordinate.
     /// @param x In the range [0, EC_Terrain::PatchWidth * EC_Terrain::cPatchSize-1.0f ].
@@ -263,18 +304,20 @@ public slots:
     /// Returns the number of vertices in the whole terrain in the local Y-direction.
     int VerticesHeight() const { return PatchHeight() * cPatchSize; }
 
-    /// Saves the height map data and the associated per-vertex attributes to a Naali Terrain File. This is a binary
-    /// dump file, and as a convention, use the file suffix ".ntf" for these.
-    /// @return True if the save succeeded.
+    /// Saves the height map data and the associated per-vertex attributes to a Naali Terrain File.
+    /** This is a binary dump file, and as a convention, use the file suffix ".ntf" for these.
+        @return True if the save succeeded.
+    */
     bool SaveToFile(QString filename);
 
-    /// Loads the terrain height map data from the given Naali Terrain File. You should prefer using
-    /// the Attribute heightMap to recreate the terrain from a terrain file instead of calling this function directly,
-    /// since this function only performs a local (hidden) change, whereas the heightMap attribute change is visible both
-    /// locally and on the network.
-    /// Note: Calling this function will not update the 'heightMap' attribute. If you want to load the terrain from a file
-    /// in such a way that is synchronized to the network, just set the 'heightMap' source attribute in a replicated way.
-    /// @return True if loading succeeded.
+    /// Loads the terrain height map data from the given Naali Terrain File (.ntf).
+    /** You should prefer using the Attribute heightMap to recreate the terrain from a terrain file instead of calling this
+        function directly, since this function only performs a local (hidden) change, whereas the heightMap attribute change
+        is visible both locally and on the network.
+        @note Calling this function will not update the 'heightMap' attribute. If you want to load the terrain from a file
+        in such a way that is synchronized to the network, just set the 'heightMap' source attribute in a replicated way.
+        @return True if loading succeeded.
+    */
     bool LoadFromFile(QString filename);
 
     /// Loads the terrain height map data from the given in-memory .ntf file buffer.
@@ -282,26 +325,43 @@ public slots:
 
     void NormalizeImage(QString filename) const;
 
-    /// Loads the terrain from the given image file. Adjusts the xPatches and yPatches properties to that of the image file, 
-    /// and clears the heightMap source attribute. This function is intended to be used as a processing tool. Calling this  
-    /// function will get the terrain contents desynchronized between the local system and network. The file is loaded using Ogre, so
-    /// this supports all the file formats Ogre has codecs loaded for (you can see a list of those in the console at startup).
-    /// Calling this function will regenerate all terrain patches on the GPU.
+    /// Loads the terrain from the given image file.
+    /** Adjusts the xPatches and yPatches properties to that of the image file, and clears the heightMap source attribute.
+        This function is intended to be used as a processing tool. Calling this function will get the terrain contents desynchronized
+        between the local system and network. The file is loaded using Ogre, so this supports all the file formats Ogre has codecs 
+        loaded for (you can see a list of those in the console at startup).
+        Calling this function will regenerate all terrain patches on the GPU.
+    */
     bool LoadFromImageFile(QString filename, float offset, float scale);
 
-    /// Saves the terrain to an image file. The file format is determined from the suffix. The file is saved using Ogre, so
-    /// this supports all the file formats Ogre has codecs loaded for (you can see a list of those in the console at startup).
-    /// By default, the height range of the terrain is fitted into the [0.0, 1.0] range, i.e. the smallest position of the terrain
-    /// gets the 0.0 grayscale pixel value in the image, and the largest position gets the 1.0 value.
-    /// The file that is saved will be a three-channel color image, but will only contain grayscale values.
+    /// Saves the terrain to an image file. The file format is determined from the suffix.
+    /** The file is saved using Ogre, so
+        this supports all the file formats Ogre has codecs loaded for (you can see a list of those in the console at startup).
+        By default, the height range of the terrain is fitted into the [0.0, 1.0] range, i.e. the smallest position of the terrain
+        gets the 0.0 grayscale pixel value in the image, and the largest position gets the 1.0 value.
+        The file that is saved will be a three-channel color image, but will only contain grayscale values.
+    */
     bool SaveToImageFile(QString filename, float minHeight = -1e9f, float maxHeight = 1e9f);
 
-    /// Converts the given Ogre Mesh to a terrain grid. This function will raycast the contours of the mesh to generate the height map data points.
-    /// The Mesh resource must be previously loaded into the Ogre Mesh resource pool.
+    /// Converts the given Ogre Mesh to a terrain grid.
+    /** This function will raycast the contours of the mesh to generate the height map data points.
+        Uses the default identity matrix for the transform.
+        @note The Mesh resource must be previously loaded into the Ogre Mesh resource pool.
+        Use SanitateAssetIdForOgre() for the asset's name in order to generate the proper resource name.
+        @param ogreMeshResourceName Internal Ogre resource name. 
+    */
     void GenerateFromOgreMesh(QString ogreMeshResourceName);
 
+    /// This is an overloaded function.
+    /** @param ogreMeshResourceName Internal Ogre resource name.
+        @param transform Desired tranform for the generated terrain.
+    */
     void GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::Matrix4 &transform);
 
+    /// Converts entity's mesh to a terrain grid.
+    /** @note Then entity has to have EC_Name, EC_Mesh and EC_Placeable present.
+        @param entityName Name of the entity.
+    */
     void GenerateFromSceneEntity(QString entityName);
 
     /// Marks all terrain patches dirty.
@@ -309,57 +369,18 @@ public slots:
 
     void RegenerateDirtyTerrainPatches();
 
-    /// Returns the minimum height value in the whole terrain. This function blindly iterates through the whole terrain, so avoid
-    /// calling it in performance-critical code.
+    /// Returns the minimum height value in the whole terrain.
+    /** This function blindly iterates through the whole terrain, so avoid calling it in performance-critical code. */
     float GetTerrainMinHeight() const;
 
-    /// Returns the maximum height value in the whole terrain. This function blindly iterates through the whole terrain, so avoid
-    /// calling it in performance-critical code.
+    /// Returns the maximum height value in the whole terrain.
+    /** This function blindly iterates through the whole terrain, so avoid calling it in performance-critical code. */
     float GetTerrainMaxHeight() const;
 
-public:
-    Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
-    DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
-
-    Q_PROPERTY(int xPatches READ getxPatches WRITE setxPatches);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, xPatches);
-
-    Q_PROPERTY(int yPatches READ getyPatches WRITE setyPatches);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, yPatches);
-
-    Q_PROPERTY(float uScale READ getuScale WRITE setuScale);
-    DEFINE_QPROPERTY_ATTRIBUTE(float, uScale);
-
-    Q_PROPERTY(float vScale READ getvScale WRITE setvScale);
-    DEFINE_QPROPERTY_ATTRIBUTE(float, vScale);
-
-    Q_PROPERTY(AssetReference material READ getmaterial WRITE setmaterial);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, material);
-
-    Q_PROPERTY(AssetReference texture0 READ gettexture0 WRITE settexture0);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture0);
-
-    Q_PROPERTY(AssetReference texture1 READ gettexture1 WRITE settexture1);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture1);
-
-    Q_PROPERTY(AssetReference texture2 READ gettexture2 WRITE settexture2);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture2);
-
-    Q_PROPERTY(AssetReference texture3 READ gettexture3 WRITE settexture3);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture3);
-
-    Q_PROPERTY(AssetReference texture4 READ gettexture4 WRITE settexture4);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture4);
-
-    Q_PROPERTY(AssetReference heightMap READ getheightMap WRITE setheightMap);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, heightMap);
-
-    /// Returns the minimum and maximum extents of terrain heights.
-    void GetTerrainHeightRange(float &minHeight, float &maxHeight) const;
-
 signals:
+    /// Emitted when the terrain data is regenerated.
     void TerrainRegenerated();
-    
+
 private slots:
     //! Open asset editor for given asset attribute.
     void View(const QString &attributeName);
@@ -381,11 +402,32 @@ private slots:
 private:
     explicit EC_Terrain(IModule* module);
 
-    boost::shared_ptr<AssetRefListener> heightMapAsset;
-
-    /// Creates the patch parent/root node if it does not exist. After this function returns, the 'root' member node will exist, unless
-    /// Ogre rendering subsystem fails.
+    /// Creates the patch parent/root node if it does not exist.
+    /** After this function returns, the 'root' member node will exist, unless Ogre rendering subsystem fails. */
     void CreateRootNode();
+
+    void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
+
+    /// Sets the given patch to use the currently set material and textures.
+    void UpdateTerrainPatchMaterial(int patchX, int patchY);
+
+    /// Updates the root node transform from the current attribute values, if the root node exists.
+    void UpdateRootNodeTransform();
+
+    /// Readjusts the terrain to contain the given number of patches in the horizontal and vertical directions.
+    /** Preserves as much of the terrain height data as possible. Dirties the patches, but does not regenerate them.
+        @note This function does not adjust the xPatches or yPatches attributes.
+    */
+    void ResizeTerrain(int newPatchWidth, int newPatchHeight);
+
+    /// Updates the terrain material with the new texture on the given texture unit index.
+    /// @param index The texture unit index to set the new texture to.
+    /// @param textureName The Ogre texture resource name to set.
+    void SetTerrainMaterialTexture(int index, const char *textureName);
+
+    void GenerateTerrainGeometryForOnePatch(int patchX, int patchY);
+
+    boost::shared_ptr<AssetRefListener> heightMapAsset;
 
     /// For all terrain patches, we maintain a global parent/root node to be able to transform the whole terrain at one go.
     ///\todo Perhaps this should be unified with the ECPlaceable.
@@ -403,26 +445,6 @@ private:
 
     /// Stores the actual height patches.
     std::vector<Patch> patches;
-
-    void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
-
-    /// Sets the given patch to use the currently set material and textures.
-    void UpdateTerrainPatchMaterial(int patchX, int patchY);
-
-    /// Updates the root node transform from the current attribute values, if the root node exists.
-    void UpdateRootNodeTransform();
-
-    /// Readjusts the terrain to contain the given number of patches in the horizontal and vertical directions. Preserves
-    /// as much of the terrain height data as possible. Dirties the patches, but does not regenerate them.
-    /// Note: This function does not adjust the xPatches or yPatches attributes.
-    void ResizeTerrain(int newPatchWidth, int newPatchHeight);
-
-    /// Updates the terrain material with the new texture on the given texture unit index.
-    /// @param index The texture unit index to set the new texture to.
-    /// @param textureName The Ogre texture resource name to set.
-    void SetTerrainMaterialTexture(int index, const char *textureName);
-
-    void GenerateTerrainGeometryForOnePatch(int patchX, int patchY);
 };
 }
 
