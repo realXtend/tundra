@@ -14,6 +14,7 @@
 #include "ConsoleCommandUtils.h"
 
 #include "Framework.h"
+#include "InputAPI.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
 #include "RenderServiceInterface.h"
@@ -96,7 +97,7 @@ ConsoleAPI::ConsoleAPI(Foundation::Framework *fw) :
 {
     if (!fw->IsHeadless())
     {
-        uiConsoleManager = new UiConsoleManager(framework_, framework_->Ui()->GraphicsView());
+        uiConsoleManager = new UiConsoleManager(framework_);
         for(unsigned i=0; i<earlyMessages.size();i++)
             Print(earlyMessages.at(i).c_str());
         earlyMessages.clear();
@@ -127,7 +128,7 @@ void ConsoleAPI::Update(f64 frametime)
 void ConsoleAPI::Print_(const std::string &text)
 {
     if (uiConsoleManager)
-        uiConsoleManager->QueuePrintRequest(text.c_str());
+        uiConsoleManager->PrintToConsole(text.c_str());
     else
         earlyMessages.push_back(text);
 }

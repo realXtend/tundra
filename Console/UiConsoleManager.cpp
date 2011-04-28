@@ -10,6 +10,7 @@
 
 #include "UiAPI.h"
 #include "UiProxyWidget.h"
+#include "UiGraphicsView.h"
 #include "EventManager.h"
 #include "Framework.h"
 
@@ -20,169 +21,159 @@
 
 #include "MemoryLeakCheck.h"
 
-UiConsoleManager::UiConsoleManager(Foundation::Framework *framework, QGraphicsView *ui_view) :
-    framework_(framework),
-    ui_view_(ui_view),
-    console_ui_(0),
-    console_widget_(0),
-    proxy_widget_(0),
-    visible_(false),
-    opacity_(0.8),
-    hooked_to_scenes_(false)
+UiConsoleManager::UiConsoleManager(Foundation::Framework *fw) :
+    framework(fw),
+    graphicsView(fw->Ui()->GraphicsView()),
+    consoleUi(0),
+    consoleWidget(0),
+    proxyWidget(0),
+    visible(false),
+    commandHistoryIndex(-1)
 {
-    if (!ui_view_)
-        return; // Headless
+    if (framework->IsHeadless())
+        return;
 
-    console_ui_ = new Ui::ConsoleWidget();
-    console_widget_ = new QWidget();
+    consoleUi = new Ui::ConsoleWidget();
+    consoleWidget = new QWidget();
 
     // Init internals
-    console_ui_->setupUi(console_widget_);
-    ///\todo UiService deprecated.
-    /*
-    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    if (ui)
-    {
-        proxy_widget_ = ui->AddWidgetToScene(console_widget_);
-        proxy_widget_->setMinimumHeight(0);
-        proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
-        proxy_widget_->setOpacity(opacity_);
-        proxy_widget_->setZValue(100);
-        ui->RegisterUniversalWidget("Console", proxy_widget_);
-    }
-    */
+    consoleUi->setupUi(consoleWidget);
 
-    if (framework_->Ui())
-    {
-        proxy_widget_ = framework_->Ui()->AddWidgetToScene(console_widget_);
-        proxy_widget_->setMinimumHeight(0);
-        proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
-        proxy_widget_->setOpacity(opacity_);
-        proxy_widget_->setZValue(100);
-    }
+    proxyWidget = framework->Ui()->AddWidgetToScene(consoleWidget);
+    proxyWidget->setMinimumHeight(0);
+    proxyWidget->setGeometry(QRect(0, 0, graphicsView->width(), 0));
+    proxyWidget->setOpacity(0.8); ///<\todo Read opacity from config?
+    proxyWidget->setZValue(20000);
+
+    connect(framework->Ui()->GraphicsView(), SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
 
     // Init animation
-    animation_.setTargetObject(proxy_widget_);
-    animation_.setPropertyName("geometry");
-    animation_.setDuration(300);
+    slideAnimation.setTargetObject(proxyWidget);
+    slideAnimation.setPropertyName("geometry");
+    slideAnimation.setDuration(300);  ///<\todo Read animation speed from config?
 
-    // Handle line edit input
-    connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
-    // Print queuing with Qt::QueuedConnection to avoid problems when printing from threads
-    connect(this, SIGNAL(PrintOrderReceived(const QString &)), SLOT(PrintToConsole(const QString &)), Qt::QueuedConnection);
+    connect(consoleUi->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
+
+    consoleUi->ConsoleInputArea->installEventFilter(this);
 }
 
 UiConsoleManager::~UiConsoleManager()
 {
-    // console_widget_ gets deleted by the scene it is in currently
-    SAFE_DELETE(console_ui_);
-}
-
-void UiConsoleManager::HandleInput()
-{
-    if (!console_ui_)
-        return; // Headless
-
-    QString text = console_ui_->ConsoleInputArea->text();
-    framework_->Console()->ExecuteCommand(text);
-    console_ui_->ConsoleInputArea->clear();
-}
-
-void UiConsoleManager::QueuePrintRequest(const QString &text)
-{
-    if (!console_ui_)
-        return; // Headless
-    emit PrintOrderReceived(text);
+    // consoleWidget gets deleted by the scene it is in currently
+    if (consoleUi)
+        SAFE_DELETE(consoleUi);
 }
 
 void UiConsoleManager::PrintToConsole(const QString &text)
 {
-    if (!console_ui_)
-        return; // Headless
+    if (framework->IsHeadless())
+        return;
     QString html = Qt::escape(text);
-    StyleString(html);
-    console_ui_->ConsoleTextArea->appendHtml(html);
-}
-
-void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
-{
-    if (visible_)
-    {
-        QRectF new_size = rect;
-        new_size.setHeight(rect.height() * 0.5);
-        proxy_widget_->setGeometry(new_size);
-    }
-    else
-    {
-        proxy_widget_->hide();
-    }
-}
-
-void UiConsoleManager::KeyPressed(KeyEvent *key_event)
-{
-    if (key_event->keyCode == Qt::Key_F1)
-        ToggleConsole();
+    DecorateString(html);
+    consoleUi->ConsoleTextArea->appendHtml(html);
 }
 
 void UiConsoleManager::ToggleConsole()
 {
-    if (!ui_view_)
+    if (framework->IsHeadless())
+        return;
+    if (!graphicsView)
         return;
 
-    if (!hooked_to_scenes_)
-    {
-        QGraphicsScene *scene = framework_->Ui()->GraphicsScene();
-        if (scene)
-            connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-        hooked_to_scenes_ = true;
-        ///\todo UiService is deprecated.
-        /*
-        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-        if (ui)
-        {
-            QGraphicsScene *scene = ui->GetScene("Inworld");
-            if (scene)
-                connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-            scene = ui->GetScene("WorldBuilding");
-            if (scene)
-                connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-            scene = ui->GetScene("Ether");
-            if (scene)
-                connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-            scene = ui->GetScene("Avatar");
-            if (scene)
-                connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-            hooked_to_scenes_ = true;
-        }
-        */
-    }
-
-    QGraphicsScene *current_scene = proxy_widget_->scene();
+    QGraphicsScene *current_scene = proxyWidget->scene();
     if (!current_scene)
         return;
 
-    visible_ = !visible_;
-    int current_height = ui_view_->height()*0.5;
-    if (visible_)
+    visible = !visible;
+    int current_height = graphicsView->height()*0.5;
+    if (visible)
     {
-        animation_.setStartValue(QRect(0, 0, ui_view_->width(), 0));
-        animation_.setEndValue(QRect(0, 0, ui_view_->width(), current_height));
+        slideAnimation.setStartValue(QRect(0, 0, graphicsView->width(), 0));
+        slideAnimation.setEndValue(QRect(0, 0, graphicsView->width(), current_height));
         // Not bringing to front, works in UiProxyWidgets, hmm...
-        current_scene->setActiveWindow(proxy_widget_);
-        current_scene->setFocusItem(proxy_widget_, Qt::ActiveWindowFocusReason);
-        console_ui_->ConsoleInputArea->setFocus(Qt::MouseFocusReason);
-        proxy_widget_->show();
+        current_scene->setActiveWindow(proxyWidget);
+        current_scene->setFocusItem(proxyWidget, Qt::ActiveWindowFocusReason);
+        consoleUi->ConsoleInputArea->setFocus(Qt::MouseFocusReason);
+        proxyWidget->show();
     }
     else
     {
-        animation_.setStartValue(QRect(0, 0, ui_view_->width(), current_height));
-        animation_.setEndValue(QRect(0, 0, ui_view_->width(), 0));
-        proxy_widget_->hide();
+        slideAnimation.setStartValue(QRect(0, 0, graphicsView->width(), current_height));
+        slideAnimation.setEndValue(QRect(0, 0, graphicsView->width(), 0));
+        proxyWidget->hide();
     }
-    animation_.start();
+
+    slideAnimation.start();
 }
 
-void UiConsoleManager::StyleString(QString &str)
+void UiConsoleManager::HandleInput()
+{
+    if (framework->IsHeadless())
+        return;
+
+    QString cmd = consoleUi->ConsoleInputArea->text();
+    framework->Console()->ExecuteCommand(cmd);
+    consoleUi->ConsoleInputArea->clear();
+
+    commandHistory.push_front(cmd);
+}
+
+void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
+{
+    if (visible)
+    {
+        QRectF new_size = rect;
+        new_size.setHeight(rect.height() * 0.5); ///<\todo Read height from config?
+        proxyWidget->setGeometry(new_size);
+    }
+    else
+    {
+        proxyWidget->hide();
+    }
+}
+
+bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
+{
+    if (e->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *keyEvent = dynamic_cast<QKeyEvent*>(e);
+        if (keyEvent)
+        {
+//            if (keyEvent->isAutoRepeat())
+//                return true;
+
+            switch(keyEvent->key())
+            {
+            case Qt::Key_Up:
+            {
+                if (commandHistoryIndex+1 < commandHistory.size())
+                    consoleUi->ConsoleInputArea->setText(commandHistory[++commandHistoryIndex]);
+                return true;
+            }
+            case Qt::Key_Down:
+            {
+                --commandHistoryIndex;
+                if (commandHistoryIndex < 0)
+                    commandHistoryIndex = -1;
+
+                if (commandHistoryIndex == -1)
+                    consoleUi->ConsoleInputArea->clear(); // Putty-like behavior: clear line edit.
+                else if (commandHistoryIndex > -1 && commandHistoryIndex < commandHistory.size()-1)
+                        consoleUi->ConsoleInputArea->setText(commandHistory[commandHistoryIndex]);
+                return true;
+            }
+            ///\todo Autocompletion/suggestion
+            //case Qt::Key_Tab:
+            default:
+                return QObject::eventFilter(obj, e);
+            }
+        }
+    }
+
+    return QObject::eventFilter(obj, e);
+}
+
+void UiConsoleManager::DecorateString(QString &str)
 {
     // Make all timestamp + module name blocks white
     int block_end_index = str.indexOf("]");
