@@ -74,10 +74,21 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
         TundraLogicModule::LogError("Already running a server, cannot login to a world as a client");
         return;
     }
-    
+
     reconnect_ = false;
     if (protocol == kNet::InvalidTransportLayer)
         protocol = owner_->GetKristalliModule()->defaultTransport;
+
+    SetLoginProperty("address", address);
+    QString p = "";
+    if (protocol == kNet::SocketOverTCP)
+        p = "tcp";
+    else if (protocol == kNet::SocketOverUDP)
+        p = "udp";
+
+    SetLoginProperty("protocol", p);
+    SetLoginProperty("port", QString::number(port));
+
     owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, protocol);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
@@ -124,6 +135,7 @@ bool Client::IsConnectedOrConnecting() const
 
 void Client::SetLoginProperty(QString key, QString value)
 {
+    KristalliProtocol::KristalliProtocolModule::LogInfo(key.toStdString() + ":" + value.toStdString());
     key = key.trimmed();
     value = value.trimmed();
     if (value.isEmpty())

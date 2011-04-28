@@ -84,7 +84,9 @@ namespace KristalliProtocol
 
         /// What trasport layer to use. Read on startup from --protocol udp/tcp. Defaults to TCP if no start param was given.
         kNet::SocketTransportLayer defaultTransport;
-        
+
+        kNet::Network *GetNetwork() { return &network; }
+
     private:
         /// This timer tracks when we perform the next reconnection attempt when the connection is lost.
         kNet::PolledTimer reconnectTimer;
