@@ -21,7 +21,6 @@
 #include "GenericAssetFactory.h"
 #include "AudioAPI.h"
 #include "ConsoleAPI.h"
-#include "ConsoleManager.h"
 #include "DebugAPI.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
@@ -414,7 +413,7 @@ namespace Foundation
                 frame->Update(frametime);
             }
 
-            console->consoleManager->Update(frametime);
+            console->Update(frametime);
 
             // if we have a renderer service, render now
             boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();

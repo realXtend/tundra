@@ -15,6 +15,21 @@
 #include <QObject>
 #include <QMap>
 
+// START FROM CONSOLEMANAGER
+#include <Poco/Channel.h>
+#include <Poco/Message.h>
+
+#include "CommandManager.h"
+#include "LogListenerInterface.h"
+
+class CommandManager;
+class ConsoleChannel;
+class LogListener;
+
+typedef boost::shared_ptr<LogListener> LogListenerPtr;
+typedef boost::shared_ptr<ConsoleChannel> PocoLogChannelPtr;
+// END FROM CONSOLEMANAGER
+
 namespace Foundation
 {
     class Framework;
@@ -75,11 +90,7 @@ public:
     /// Destructor.
     ~ConsoleAPI();
 
-    // Note: these are public temporarily due to ongoing console refactoring.
-    ConsoleManager *consoleManager;
-    UiConsoleManager *uiConsoleManager;
-
-    ///\todo Temporary function. Remove.
+    ///\todo Temporary function due to ongoing refactoring. Remove.
     void Uninitialize();
 
 public slots:
@@ -127,6 +138,19 @@ private:
     Foundation::Framework *framework_; ///< Framework.
     QMap<QString, ConsoleCommand *> commands_; ///< List of registered console commands.
     InputContextPtr inputContext;
+    UiConsoleManager *uiConsoleManager;
+
+// START FROM CONSOLEMANAGER
+public:
+    void Update(f64 frametime);
+    void Print_(const std::string &text);
+private:
+    void UnsubscribeLogListener();
+    CommandManager *commandManager; ///< Command manager.
+    PocoLogChannelPtr consoleChannel; ///< Custom logger to get logmessages from Poco
+    LogListenerPtr logListener; ///< Listener to get logs from renderer 
+    std::vector<std::string> earlyMessages; ///< This is a buffer for messages generated before actual console UI
+// END FROM CONSOLEMANAGER
 
 private slots:
     /// Checks if we have executed console command object stored. If we have, we invoke it.
@@ -139,4 +163,28 @@ private slots:
     void ToggleConsole();
 };
 
+// START FROM CONSOLEMANAGER
+/// loglistener is used to listen log messages from renderer
+class LogListener : public Foundation::LogListenerInterface
+{
+    LogListener();
+
+public:
+    explicit LogListener(ConsoleAPI *c) : Foundation::LogListenerInterface(), console(c) {}
+    virtual ~LogListener() {}
+
+    virtual void LogMessage(const std::string &message){ console->Print(message.c_str()); }
+    ConsoleAPI *console;
+};
+
+/// Class to get messages from poco logger
+class ConsoleChannel: public Poco::Channel
+{
+public:
+    explicit ConsoleChannel(ConsoleAPI *c) : console(c) { }
+    void log(const Poco::Message & msg){ console->Print(msg.getText().c_str()); }
+private:
+    ConsoleAPI* console;
+};
+// END FROM CONSOLEMANAGER
 #endif
