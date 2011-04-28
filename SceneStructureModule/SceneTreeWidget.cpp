@@ -1483,8 +1483,15 @@ void SceneTreeWidget::InvokeActionTriggered()
         }
         else
         {
+// $ BEGIN_MOD $
+			//convert QVariantList to QStringList
+            QStringList parameters;
+            foreach(QVariant p, invokedItem->parameters)
+                parameters.append(p.toString());
+// $ END_MOD $
+
             foreach(Scene::EntityWeakPtr e, entities)
-                e.lock()->Exec(invokedItem->execTypes, invokedItem->name, invokedItem->parameters);
+                e.lock()->Exec(invokedItem->execTypes, invokedItem->name, parameters);
         }
     }
     else if (invokedItem->type == InvokeItem::Function)

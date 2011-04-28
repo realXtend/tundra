@@ -387,7 +387,10 @@ namespace Scene
             @param action Name of the action.
             @param params List of parameters for the action.
         */
-        void Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QVariantList &params);
+// $ BEGIN_MOD $
+// commented out, becouse this method cause ambiguous call from javascript
+        //void Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QVariantList &params);
+// $ END_MOD $
 
         //! Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
         /*! By definition, all components of a temporary entity are temporary as well.

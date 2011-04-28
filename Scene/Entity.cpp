@@ -487,15 +487,16 @@ namespace Scene
         if (GetScene())
             GetScene()->EmitActionTriggered(this, action, params, t);
     }
-
-    void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QVariantList &params)
-    {
+// $ BEGIN_MOD $
+// commented out, becouse this method cause ambiguous call from javascript
+    //void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QVariantList &params)
+    /*{
         QStringList stringParams;
         foreach(QVariant var, params)
             stringParams << var.toString();
         Exec(type, action, stringParams);
-    }
-
+    }*/
+// $ END_MOD $
     bool Entity::HasReceivers(EntityAction *action)
     {
         int receivers = action->receivers(SIGNAL(Triggered(QString, QString, QString, QStringList)));
