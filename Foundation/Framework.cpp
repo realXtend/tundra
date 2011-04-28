@@ -135,7 +135,7 @@ namespace Foundation
             //
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.4.1"));
-            api_versioninfo_ = VersionInfo(0, 6, 0, 0); //the API version in Tundra 1.0.6 release. Major becomes 1 when we stop breaking the API, which is still planned after 1.0.6 which is kind of an alpha of 1.0 still.
+            api_versioninfo_ = new VersionInfo(0, 6, 0, 0); //the API version in Tundra 1.0.6 release. Major becomes 1 when we stop breaking the API, which is still planned after 1.0.6 which is kind of an alpha of 1.0 still.
 
             CreateLoggingSystem(); // depends on config and platform
 
