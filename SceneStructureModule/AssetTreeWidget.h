@@ -28,6 +28,11 @@ public:
     /// Returns shared pointer to the asset. Always remember to check that the pointer is not null.
     AssetPtr Asset() const;
 
+    /// Appends information text to the item that the asset is unloaded.
+    /** @param value. If true "(Unloaded)" is appended to the item text. If false the text is removed.
+    */
+    void MarkUnloaded(bool value);
+
 private:
     AssetWeakPtr assetPtr; ///< Weak pointer to the asset.
 };
