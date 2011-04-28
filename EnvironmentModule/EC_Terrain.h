@@ -334,12 +334,15 @@ public slots:
     */
     bool LoadFromImageFile(QString filename, float offset, float scale);
 
-    /// Saves the terrain to an image file. The file format is determined from the suffix.
-    /** The file is saved using Ogre, so
-        this supports all the file formats Ogre has codecs loaded for (you can see a list of those in the console at startup).
-        By default, the height range of the terrain is fitted into the [0.0, 1.0] range, i.e. the smallest position of the terrain
-        gets the 0.0 grayscale pixel value in the image, and the largest position gets the 1.0 value.
+    /// Saves the terrain to an image file.
+    /** The file format is determined from the suffix. The file is saved using Ogre, so this supports all the file formats Ogre has
+        codecs loaded for (you can see a list of those in the console at startup). By default, the height range of the terrain is fitted
+        into the [0.0, 1.0] range, i.e. the smallest position of the terrain gets the 0.0 grayscale pixel value in the image, and the
+        largest position gets the 1.0 value.
         The file that is saved will be a three-channel color image, but will only contain grayscale values.
+        @param filename Destination filename.
+        @param minHeight Minimum height in range [0.0, 1.0].
+        @param maxHeight Maximum in range [0.0, 1.0].
     */
     bool SaveToImageFile(QString filename, float minHeight = -1e9f, float maxHeight = 1e9f);
 
