@@ -26,6 +26,7 @@
 #include "ConfigAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
+#include "VersionInfo.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
@@ -131,8 +132,10 @@ namespace Foundation
             config_manager_->Load();
 
             // Set config values we explicitly always want to override
+            //
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.4.1"));
+            api_versioninfo_ = VersionInfo(0, 6, 0, 0); //the API version in Tundra 1.0.6 release. Major becomes 1 when we stop breaking the API, which is still planned after 1.0.6 which is kind of an alpha of 1.0 still.
 
             CreateLoggingSystem(); // depends on config and platform
 
@@ -180,6 +183,8 @@ namespace Foundation
             /*! \todo JS now registers 'scene' manually to the default scene. Add this maybe later
                 or register additiona 'sceneapi' */
             //RegisterDynamicObject("sceneapi", scene);
+
+            RegisterDynamicObject("apiversion", api_versioninfo_);
         }
     }
 
