@@ -326,7 +326,11 @@ public slots:
     
     /// Emit AssetDeleted signal
     void EmitAssetDeleted(const QString &assetRef);
-    
+
+public:
+    /// Explodes the given asset storage description string to key-value pairs.
+    static QMap<QString, QString> ParseAssetStorageString(QString storageString);
+
 signals:
     /// Emitted for each new asset that was created and added to the system. When this signal is triggered, the dependencies of an asset
     /// may not yet have been loaded.

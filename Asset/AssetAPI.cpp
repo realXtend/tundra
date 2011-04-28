@@ -1291,6 +1291,29 @@ void AssetAPI::EmitAssetDeleted(const QString& assetRef)
     emit AssetDeleted(assetRef);
 }
 
+QMap<QString, QString> AssetAPI::ParseAssetStorageString(QString storageString)
+{
+    // Treat simple strings of form "http://myserver.com/" as "src=http://myserver.com/".
+    if (storageString.indexOf(';') == -1 && storageString.indexOf('=') == -1)
+        storageString = "src=" + storageString;
+
+    QMap<QString, QString> m;
+    QStringList items = storageString.split(";", QString::SkipEmptyParts);
+    foreach(QString str, items)
+    {
+        QStringList keyValue = str.split("=");
+        if (keyValue.count() > 2 || keyValue.count() == 0)
+        {
+            LogError("Failed to parse asset storage string \"" + str + "\"!");
+            return QMap<QString, QString>();
+        }
+        if (keyValue.count() == 1)
+            keyValue.push_back("1");
+        m[keyValue[0]] = keyValue[1];
+    }
+    return m;
+}
+
 void AssetAPI::OnAssetLoaded(AssetPtr asset)
 {
     std::vector<AssetPtr> dependents = FindDependents(asset->Name());

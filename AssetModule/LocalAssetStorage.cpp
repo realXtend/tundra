@@ -157,7 +157,7 @@ QString LocalAssetStorage::GetFullAssetURL(const QString &localName)
 
 QString LocalAssetStorage::SerializeToString() const
 {
-    return "LocalAssetStorage;" + name + ";" + directory + ";" + (recursive ? "true" : "false");
+    return "type=LocalAssetStorage;name=" + name + ";src=" + directory + ";recursive=" + (recursive ? "true" : "false");
 }
 
 void LocalAssetStorage::SetupWatcher()

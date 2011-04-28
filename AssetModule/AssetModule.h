@@ -49,8 +49,6 @@ namespace Asset
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
-        void AddStorageDirectory(const QString &path);
-
     public slots:
         /// Loads from all the registered local storages all assets that have the given suffix.
         /// Type can also be optionally specified

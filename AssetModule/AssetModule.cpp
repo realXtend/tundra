@@ -86,50 +86,6 @@ namespace Asset
         QObject::connect(client, SIGNAL(Disconnected()), this, SLOT(ClientDisconnectedFromServer()));
     }
 
-    void AssetModule::AddStorageDirectory(const QString &storageDir)
-    {
-        // Check if storage dir is directly a serialized form of assetstorage
-        QStringList tokens = storageDir.split(";");
-        if ((tokens.size() > 1) && ((!tokens[0].compare("LocalAssetStorage", Qt::CaseInsensitive)) || (!tokens[0].compare("HttpAssetStorage", Qt::CaseInsensitive))))
-        {
-            AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(storageDir);
-            if (storage)
-                framework_->Asset()->SetDefaultAssetStorage(storage);
-        }
-        else
-        {
-            // Otherwise add storage manually
-            QString path;
-            QString protocolPath;
-
-            AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(storageDir, 0, 0, &protocolPath, 0, 0, &path);
-
-            if (refType == AssetAPI::AssetRefRelativePath)
-            {
-                path = GuaranteeTrailingSlash(QDir::currentPath()) + path;
-                refType = AssetAPI::AssetRefLocalPath;
-            }
-
-            AssetStoragePtr storage;
-
-            if (refType == AssetAPI::AssetRefLocalPath)
-                storage = framework_->Asset()->DeserializeAssetStorageFromString("LocalAssetStorage;Scene;" + path + ";true");
-            else if (refType == AssetAPI::AssetRefExternalUrl)
-            {
-                storage = framework_->Asset()->DeserializeAssetStorageFromString("HttpAssetStorage;Web;" + protocolPath);
-                path = protocolPath;
-            }
-            else
-                return; ///\todo Log error.
-            
-            if (storage)
-                framework_->Asset()->SetDefaultAssetStorage(storage);
-
-            // Set asset dir as also as AssetAPI property
-            framework_->Asset()->setProperty("assetdir", QVariant(path));
-        }
-    }
-
     void AssetModule::ProcessCommandLineOptions()
     {
         assert(framework_);
@@ -137,9 +93,9 @@ namespace Asset
         const boost::program_options::variables_map &options = framework_->ProgramOptions();
 
         if (options.count("file") > 0)
-            AddStorageDirectory(QString(options["file"].as<std::string>().c_str()).trimmed());
+            framework_->Asset()->DeserializeAssetStorageFromString(QString(options["file"].as<std::string>().c_str()).trimmed());
         if (options.count("storage") > 0)
-            AddStorageDirectory(QString(options["storage"].as<std::string>().c_str()).trimmed());
+            framework_->Asset()->DeserializeAssetStorageFromString(QString(options["storage"].as<std::string>().c_str()).trimmed());
     }
 
     ConsoleCommandResult AssetModule::ConsoleRefreshHttpStorages(const StringVector &params)

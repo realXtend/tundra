@@ -44,6 +44,8 @@ public:
 
     virtual std::vector<AssetStoragePtr> GetStorages() const;
 
+    virtual AssetStoragePtr GetStorageByName(const QString &name) const;
+
     HttpAssetStoragePtr GetStorageForAssetRef(QString assetRef) const;
 
     /// Starts an asset upload from the given file in memory to the given storage.
@@ -56,6 +58,8 @@ public:
     virtual bool RemoveAssetStorage(QString storageName);
 
     virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage);
+
+    QString GenerateUniqueStorageName() const;
 
     /// Return the network access manager
     QNetworkAccessManager* GetNetworkAccessManager() { return networkAccessManager; }

@@ -32,7 +32,7 @@ void HttpAssetStorage::RefreshAssetRefs()
 
 QString HttpAssetStorage::SerializeToString() const
 {
-    return "HttpAssetStorage;" + storageName + ";" + baseAddress;
+    return "type=HttpAssetStorage;name=" + storageName + ";src=" + baseAddress;
 }
 
 void HttpAssetStorage::PerformSearch(QString path)

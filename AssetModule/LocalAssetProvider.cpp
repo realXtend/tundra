@@ -15,6 +15,7 @@
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
 #include "CoreStringUtils.h"
+#include <QDir>
 #include <QByteArray>
 #include <QFile>
 #include <QFileInfo>
@@ -267,21 +268,49 @@ void LocalAssetProvider::CompletePendingFileDownloads()
 
 AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QString &storage)
 {
-    QStringList tokens = storage.split(";");
-    if (tokens.size() != 4 || tokens.first().compare("LocalAssetStorage", Qt::CaseInsensitive))
-        return AssetStoragePtr(); // Not of our type?
-
-    QString name = tokens[1].trimmed();
-    QString directory = tokens[2].trimmed();
-    bool recursive = ParseBool(tokens[3].trimmed());
-
-    if (name.isEmpty() || directory.isEmpty() || tokens[3].isEmpty())
-    {
-        AssetModule::LogError("Invalid LocalAssetStorage format \"" + storage.toStdString() + "\"!");
+    QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
+    if (s.contains("type") && s["type"].compare("LocalAssetStorage", Qt::CaseInsensitive) != 0)
         return AssetStoragePtr();
-    }
+    if (!s.contains("src"))
+        return AssetStoragePtr();
 
-    return AddStorageDirectory(directory, name, recursive);
+    QString path;
+    QString protocolPath;
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(s["src"], 0, 0, &protocolPath, 0, 0, &path);
+
+    if (refType == AssetAPI::AssetRefRelativePath)
+    {
+        path = GuaranteeTrailingSlash(QDir::currentPath()) + path;
+        refType = AssetAPI::AssetRefLocalPath;
+    }
+    if (refType != AssetAPI::AssetRefLocalPath)
+        return AssetStoragePtr();
+
+    QString name = (s.contains("name") ? s["name"] : GenerateUniqueStorageName());
+
+    bool recursive = true;
+    if (s.contains("recursive"))
+        recursive = ParseBool(s["recursive"]);
+
+    return AddStorageDirectory(path, name, recursive);
+}
+
+QString LocalAssetProvider::GenerateUniqueStorageName() const
+{
+    QString name = "Scene";
+    int counter = 2;
+    while(GetStorageByName(name) != 0)
+        name = "Scene" + counter++;
+    return name;
+}
+
+AssetStoragePtr LocalAssetProvider::GetStorageByName(const QString &name) const
+{
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->name.compare(name, Qt::CaseInsensitive) == 0)
+            return storages[i];
+
+    return AssetStoragePtr();
 }
 
 void LocalAssetProvider::CompletePendingFileUploads()

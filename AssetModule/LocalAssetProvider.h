@@ -53,9 +53,13 @@ namespace Asset
 
         virtual std::vector<AssetStoragePtr> GetStorages() const;
 
+        virtual AssetStoragePtr GetStorageByName(const QString &name) const;
+
         virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
         virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage);
+
+        QString GenerateUniqueStorageName() const;
 
     private:
 

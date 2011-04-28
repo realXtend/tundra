@@ -124,20 +124,31 @@ bool HttpAssetProvider::RemoveAssetStorage(QString storageName)
 
 AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString &storage)
 {
-    QStringList tokens = storage.split(";");
-    if (tokens.size() != 3 || tokens.first().compare("HttpAssetStorage", Qt::CaseInsensitive))
-        return AssetStoragePtr(); // Not of our type?
-
-    QString name = tokens[1].trimmed();
-    QString url = tokens[2].trimmed();
-
-    if (name.isEmpty() || url.isEmpty())
-    {
-        LogError("Invalid HttpAssetStorage format \"" + storage + "\"!");
+    QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
+    if (s.contains("type") && s["type"].compare("HttpAssetStorage", Qt::CaseInsensitive) != 0)
         return AssetStoragePtr();
-    }
+    if (!s.contains("src"))
+        return AssetStoragePtr();
 
-    return AddStorageAddress(url, name);
+    QString path;
+    QString protocolPath;
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(s["src"], 0, 0, &protocolPath, 0, 0, &path);
+
+    if (refType != AssetAPI::AssetRefExternalUrl)
+        return AssetStoragePtr();
+
+    QString name = (s.contains("name") ? s["name"] : GenerateUniqueStorageName());
+
+    return AddStorageAddress(protocolPath, name);
+}
+
+QString HttpAssetProvider::GenerateUniqueStorageName() const
+{
+    QString name = "Web";
+    int counter = 2;
+    while(GetStorageByName(name) != 0)
+        name = "Web" + counter++;
+    return name;
 }
 
 void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
@@ -268,6 +279,15 @@ std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
         s.push_back(storages[i]);
 
     return s;
+}
+
+AssetStoragePtr HttpAssetProvider::GetStorageByName(const QString &name) const
+{
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->storageName.compare(name, Qt::CaseInsensitive) == 0)
+            return storages[i];
+
+    return AssetStoragePtr();
 }
 
 HttpAssetStoragePtr HttpAssetProvider::GetStorageForAssetRef(QString assetRef) const
