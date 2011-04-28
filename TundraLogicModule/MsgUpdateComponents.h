@@ -23,6 +23,7 @@ struct MsgUpdateComponents
 		priority = 100;
 	}
 
+    enum { messageID = 113 };
 	static inline u32 MessageID() { return 113; }
 	static inline const char *Name() { return "UpdateComponents"; }
 
