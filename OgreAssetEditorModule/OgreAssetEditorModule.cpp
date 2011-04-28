@@ -391,7 +391,6 @@ bool OgreAssetEditorModule::IsSupportedAssetTypes(const QString &type) const
 
 void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
 {
-/*
     if (targets.size())
     {
         foreach(QObject *target, targets)
@@ -407,7 +406,6 @@ void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject 
             menu->addAction(openAction);
         }
     }
-*/
 }
 
 void OgreAssetEditorModule::OpenAssetInEditor()
@@ -420,7 +418,7 @@ void OgreAssetEditorModule::OpenAssetInEditor()
 
     AssetPtr asset = action->asset.lock();
     QWidget *editor = 0;
-    QString assetName = ""; // OgreRenderer::SanitateAssetIdForOgre(asset->Name());
+    QString assetName = OgreRenderer::SanitateAssetIdForOgre(asset->Name()).c_str();
 
     if (asset->Type() == "OgreMesh")
     {
@@ -440,10 +438,10 @@ void OgreAssetEditorModule::OpenAssetInEditor()
         editor = scriptEditor;
 
     }
-    else if (asset->Type() == "Audio")
+    /*else if (asset->Type() == "Audio")
     {
         //AudioPreviewEditor *editor = new AudioPreviewEditor(framework_, id, at, name);
-    }
+    }*/
     else if (asset->Type() == "Texture")
     {
         TexturePreviewEditor *texEditor = new TexturePreviewEditor(0);
