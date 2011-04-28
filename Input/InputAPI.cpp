@@ -176,6 +176,11 @@ QPoint InputAPI::MousePressedPos(int mouseButton) const
     return mousePressPositions.Pos(mouseButton);
 }
 
+QPoint InputAPI::MousePos() const
+{
+    return QPoint(lastMouseX, lastMouseY);
+}
+
 void InputAPI::DumpInputContexts()
 {
     int idx = 0;

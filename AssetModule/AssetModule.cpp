@@ -60,6 +60,8 @@ namespace Asset
         framework_->RegisterDynamicObject("assetModule", this);
     }
 
+    static const std::string addAssetStorageHelp = "Usage: AddAssetStorage(storage string). For example: AddAssetStorage(name=MyAssets;type=HttpAssetStorage;src=http://www.myserver.com/;default;)";
+
     void AssetModule::PostInitialize()
     {
         framework_->Console()->RegisterCommand(CreateConsoleCommand(
@@ -67,8 +69,12 @@ namespace Asset
             ConsoleBind(this, &AssetModule::ConsoleRequestAsset)));
 
         framework_->Console()->RegisterCommand(CreateConsoleCommand(
-            "AddHttpStorage", "Adds a new Http asset storage to the known storages. Usage: AddHttpStorage(url, name)", 
-            ConsoleBind(this, &AssetModule::AddHttpStorage)));
+            "AddAssetStorage", addAssetStorageHelp, 
+            ConsoleBind(this, &AssetModule::AddAssetStorage)));
+
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
+            "ListAssetStorages", "Serializes all currently registered asset storages to the console output log.", 
+            ConsoleBind(this, &AssetModule::ListAssetStorages)));
 
         framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "RefreshHttpStorages", "Refreshes known assetrefs for all http asset storages", 
@@ -85,36 +91,6 @@ namespace Asset
         QObject::connect(client, SIGNAL(Disconnected()), this, SLOT(ClientDisconnectedFromServer()));
     }
 
-    void AssetModule::AddStorageDirectory(const QString &storageDir)
-    {
-        QString path;
-        QString protocolPath;
-        AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(storageDir, 0, 0, &protocolPath, 0, 0, &path);
-
-        if (refType == AssetAPI::AssetRefRelativePath)
-        {
-            path = GuaranteeTrailingSlash(QDir::currentPath()) + path;
-            refType = AssetAPI::AssetRefLocalPath;
-        }
-
-        AssetStoragePtr storage;
-
-        if (refType == AssetAPI::AssetRefLocalPath)
-            storage = framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(path, "Scene", true);
-        else if (refType == AssetAPI::AssetRefExternalUrl)
-        {
-            storage = framework_->Asset()->GetAssetProvider<HttpAssetProvider>()->AddStorageAddress(protocolPath, "Scene");
-            path = protocolPath;
-        }
-        else
-            return; ///\todo Log error.
-
-        framework_->Asset()->SetDefaultAssetStorage(storage);
-
-        // Set asset dir as also as AssetAPI property
-        framework_->Asset()->setProperty("assetdir", QVariant(path));
-    }
-
     void AssetModule::ProcessCommandLineOptions()
     {
         assert(framework_);
@@ -122,9 +98,16 @@ namespace Asset
         const boost::program_options::variables_map &options = framework_->ProgramOptions();
 
         if (options.count("file") > 0)
-            AddStorageDirectory(QString(options["file"].as<std::string>().c_str()).trimmed());
+        {
+            AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(QString(options["file"].as<std::string>().c_str()).trimmed());
+            framework_->Asset()->SetDefaultAssetStorage(storage);
+        }
         if (options.count("storage") > 0)
-            AddStorageDirectory(QString(options["storage"].as<std::string>().c_str()).trimmed());
+        {
+            AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(QString(options["storage"].as<std::string>().c_str()).trimmed());
+            if (options.count("file") == 0) // If "--file" was not specified, then use "--storage" as the default. (If both are specified, "--file" takes precedence over "--storage").
+                framework_->Asset()->SetDefaultAssetStorage(storage);
+        }
     }
 
     ConsoleCommandResult AssetModule::ConsoleRefreshHttpStorages(const StringVector &params)
@@ -145,16 +128,30 @@ namespace Asset
             return ConsoleResultFailure();
     }
 
-    ConsoleCommandResult AssetModule::AddHttpStorage(const StringVector &params)
+    ConsoleCommandResult AssetModule::AddAssetStorage(const StringVector &params)
     {
-        if (params.size() != 2)
-            return ConsoleResultFailure("Usage: AddHttpStorage(url, name). For example: AddHttpStorage(http://www.google.com/, google)");
-
-        if (!framework_->Asset()->GetAssetProvider<HttpAssetProvider>())
+        if (params.size() != 1)
+            return ConsoleResultFailure("Invalid number of parameters! " + addAssetStorageHelp);
+        
+        AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(params[0].c_str());
+        if (storage)
+            return ConsoleResultSuccess();
+        else
             return ConsoleResultFailure();
+    }
 
-        HttpAssetStoragePtr storage = framework_->Asset()->GetAssetProvider<HttpAssetProvider>()->AddStorageAddress(params[0].c_str(), params[1].c_str());
-        framework_->Asset()->SetDefaultAssetStorage(storage);
+    ConsoleCommandResult AssetModule::ListAssetStorages(const StringVector &params)
+    {
+        AssetStorageVector storages = framework_->Asset()->GetAssetStorages();
+        LogInfo("Registered storages: ");
+        foreach(AssetStoragePtr storage, storages)
+        {
+            QString storageString = storage->SerializeToString();
+            if (framework_->Asset()->GetDefaultAssetStorage() == storage)
+                storageString += ";default";
+            LogInfo(storageString.toStdString());
+        }
+
         return ConsoleResultSuccess();
     }
 

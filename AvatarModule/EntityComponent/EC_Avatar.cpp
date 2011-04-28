@@ -348,7 +348,12 @@ void EC_Avatar::SetupBoneModifiers()
 
 QString EC_Avatar::LookupAsset(const QString& ref)
 {
-    return framework_->Asset()->ResolveAssetRef("", ref);
+    QString descName;
+    AvatarDescAssetPtr desc = GetAvatarDesc();
+    if (desc)
+        descName = desc->Name();
+    
+    return framework_->Asset()->ResolveAssetRef(descName, ref);
 }
 
 void ResetBones(Entity* entity)

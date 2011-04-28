@@ -190,9 +190,19 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     connect(requestNewAssetAction, SIGNAL(triggered()), SLOT(RequestNewAsset()));
     menu->addAction(requestNewAssetAction);
 
-    QAction *makeDefaultStorageAction = new QAction(tr("Make default storage"), menu);
-    connect(makeDefaultStorageAction, SIGNAL(triggered()), SLOT(MakeDefaultStorage()));
-    menu->addAction(makeDefaultStorageAction);
+    if (selectedItems().count() == 1)
+    {
+        QAction *makeDefaultStorageAction = new QAction(tr("Make default storage"), menu);
+        connect(makeDefaultStorageAction, SIGNAL(triggered()), SLOT(MakeDefaultStorage()));
+        menu->addAction(makeDefaultStorageAction);
+    }
+
+    if (selectedItems().count() > 0)
+    {
+        QAction *removeStorageAction = new QAction(tr("Remove storage"), menu);
+        connect(removeStorageAction, SIGNAL(triggered()), SLOT(RemoveStorage()));
+        menu->addAction(removeStorageAction);
+    }
 
     // Let other instances add their possible functionality.
     QList<QObject *> targets;
@@ -319,6 +329,19 @@ void AssetTreeWidget::MakeDefaultStorage()
     {
         QString storageName = selected.first()->data(0, Qt::UserRole).toString();
         framework->Asset()->SetDefaultAssetStorage(framework->Asset()->GetAssetStorage(storageName));
+    }
+
+    AssetsWindow *parent = dynamic_cast<AssetsWindow*>(parentWidget());
+    if (parent)
+        parent->PopulateTreeWidget();
+}
+
+void AssetTreeWidget::RemoveStorage()
+{
+    foreach(QTreeWidgetItem *item, selectedItems())
+    {
+        QString storageName = item->data(0, Qt::UserRole).toString();
+        framework->Asset()->RemoveAssetStorage(storageName);
     }
 
     AssetsWindow *parent = dynamic_cast<AssetsWindow*>(parentWidget());
