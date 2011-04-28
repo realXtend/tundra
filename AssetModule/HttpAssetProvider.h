@@ -39,10 +39,12 @@ public:
 
     /// Adds the given http URL to the list of current asset storages.
     /// Returns the newly created storage, or 0 if a storage with the given name already existed, or if some other error occurred.
-	/// \param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
+    /// \param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
     HttpAssetStoragePtr AddStorageAddress(const QString &address, const QString &storageName);
 
     virtual std::vector<AssetStoragePtr> GetStorages() const;
+
+    HttpAssetStoragePtr GetStorageForAssetRef(QString assetRef) const;
 
     /// Starts an asset upload from the given file in memory to the given storage.
     virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
@@ -50,7 +52,7 @@ public:
     /// Issues a http DELETE request for the given asset.
     virtual void DeleteAssetFromStorage(QString assetRef);
     
-	/// \param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
+    /// \param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
     virtual bool RemoveAssetStorage(QString storageName);
 
     virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage);
@@ -74,6 +76,7 @@ private:
     void DeleteAssetRefFromStorages(const QString& ref);
     
     /// Specifies the currently added list of HTTP asset storages.
+    /// This array will never store null pointers.
     std::vector<HttpAssetStoragePtr> storages;
 
     /// The top-level Qt object that manages all network gets.

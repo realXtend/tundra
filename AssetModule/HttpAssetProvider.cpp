@@ -68,6 +68,8 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     HttpAssetTransferPtr transfer = HttpAssetTransferPtr(new HttpAssetTransfer);
     transfer->source.ref = assetRef;
     transfer->assetType = assetType;
+    transfer->provider = shared_from_this();
+    transfer->storage = GetStorageForAssetRef(assetRef);
     transfers[reply] = transfer;
     return transfer;
 }
@@ -111,7 +113,7 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
 bool HttpAssetProvider::RemoveAssetStorage(QString storageName)
 {
     for(size_t i = 0; i < storages.size(); ++i)
-		if (storages[i]->storageName.compare(storageName, Qt::CaseInsensitive) == 0)
+        if (storages[i]->storageName.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             storages.erase(storages.begin() + i);
             return true;
@@ -243,7 +245,7 @@ HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address,
 
     // Check if a storage with this name already exists.
     for(size_t i = 0; i < storages.size(); ++i)
-		if (storages[i]->storageName.compare(storageName, Qt::CaseInsensitive) == 0)
+        if (storages[i]->storageName.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             if (storages[i]->baseAddress != address)
                 LogError("HttpAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName + "\" already exists, but points to address \"" + storages[i]->baseAddress + "\" instead of \"" + address + "\"!");
@@ -268,23 +270,29 @@ std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
     return s;
 }
 
+HttpAssetStoragePtr HttpAssetProvider::GetStorageForAssetRef(QString assetRef) const
+{
+    QString namedStorage;
+    QString protocolPath;
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef, 0, &namedStorage, &protocolPath);
+    for (size_t i = 0; i < storages.size(); ++i)
+        if (refType == AssetAPI::AssetRefNamedStorage && storages[i]->Name() == namedStorage)
+    return storages[i];
+        else if (refType == AssetAPI::AssetRefExternalUrl && assetRef.startsWith(storages[i]->baseAddress, Qt::CaseInsensitive))
+    return storages[i];
+
+    return HttpAssetStoragePtr();
+}
+
 void HttpAssetProvider::AddAssetRefToStorages(const QString& ref)
 {
     for (size_t i = 0; i < storages.size(); ++i)
-    {
-        if (storages[i].get())
-        {
-            if (ref.indexOf(storages[i]->baseAddress) == 0)
-                storages[i]->AddAssetRef(ref);
-        }
-    }
+        if (ref.indexOf(storages[i]->baseAddress) == 0)
+            storages[i]->AddAssetRef(ref);
 }
 
 void HttpAssetProvider::DeleteAssetRefFromStorages(const QString& ref)
 {
     for (size_t i = 0; i < storages.size(); ++i)
-    {
-        if (storages[i].get())
-            storages[i]->DeleteAssetRef(ref);
-    }
+        storages[i]->DeleteAssetRef(ref);
 }
