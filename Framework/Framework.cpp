@@ -148,6 +148,7 @@ void Framework::ParseProgramOptions()
         ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
         ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
         ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
+        ("config", po::value<std::string>(), "Specifies the startup configration file to use") // Framework
         ("login", po::value<std::string>(), "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username");
 
     try
@@ -167,7 +168,11 @@ void Framework::PostInitialize()
 
     srand(time(0));
 
-    LoadPlugins("plugins.xml");
+    QString configFilename = "plugins.xml";
+    if (commandLineVariables.count("config") > 0)
+        configFilename = commandLineVariables["config"].as<std::string>().c_str();
+
+    LoadPlugins(configFilename);
     LoadModules();
 
     // PostInitialize SceneAPI.
