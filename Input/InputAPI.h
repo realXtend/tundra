@@ -126,6 +126,9 @@ public slots:
     /// down. Note that this does not tell whether the mouse button is currently held down or not.
     QPoint MousePressedPos(int mouseButton) const;
 
+    /// Returns the current mouse position in the main window coordinate space.
+    QPoint MousePos() const;
+
     /// Called by QtInputService internally for each generate KeyEvent. This function passes the event forward to all registered
     /// input contexts. You may generate KeyEvent objects yourself and call this function directly to inject a custom KeyEvent
     /// to the system.
