@@ -767,7 +767,9 @@ void ECEditorWindow::Initialize()
 
 void ECEditorWindow::DefaultSceneChanged(SceneManager *scene)
 {
-    assert(scene);
+    if (!scene)
+        return;
+
     /// todo disconnect previous scene connection.
     connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), 
             SLOT(EntityRemoved(Entity*)), Qt::UniqueConnection);
