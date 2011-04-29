@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include <QMap>
 #include "MemoryLeakCheck.h"
 #include "AssetModule.h"
 #include "CoreTypes.h"

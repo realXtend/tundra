@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include <QMap>
 #include "MemoryLeakCheck.h"
 #include "HttpAssetProvider.h"
 #include "HttpAssetTransfer.h"

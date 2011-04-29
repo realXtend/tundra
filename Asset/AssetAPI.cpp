@@ -5,6 +5,7 @@
 #include <boost/algorithm/string.hpp>
 #include <QList>
 #include <boost/regex.hpp>
+#include <QMap>
 #include "MemoryLeakCheck.h"
 #include "AssetAPI.h"
 #include "Framework.h"
