@@ -122,8 +122,6 @@ public:
     /// limit frames
     ConsoleCommandResult ConsoleLimitFrames(const StringVector &params);
 */
-    void LoadPlugins(QString pluginConfigurationFile);
-
     /// Loads all available modules. Do not call normally.
     void LoadModules();
 
@@ -183,6 +181,8 @@ public slots:
 
     /// Returns core API Server object if we're acting as a network server.
     ServerAPI *Server() const;
+
+    PluginAPI *Plugins() const;
 
     /// Returns if we're running the application in headless or not.
     bool IsHeadless() const { return headless_; }

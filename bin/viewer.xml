@@ -19,5 +19,6 @@
   <!-- Important: The file names specified here are case sensitive even on Windows! -->
   <jsplugin path="cameraapplication.js" />
   <jsplugin path="FirstPersonMouseLook.js" />
+  <jsplugin path="LoginScreen.js" />
   <jsplugin path="MenuBar.js" />
 </Tundra>

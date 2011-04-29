@@ -85,18 +85,45 @@ void PluginAPI::LoadPlugin(const QString &filename)
     mainEntryPoint(owner);
 }
 
-void PluginAPI::LoadPluginsFromXML(const QString &pluginListFilename)
+QString LookupRelativePath(QString path)
 {
+    // If a relative path was specified, lookup from cwd first, then from application installation directory.
+    if (QDir::isRelativePath(path))
+    {
+        QString cwdPath = Application::CurrentWorkingDirectory() + path;
+        if (QFile::exists(cwdPath))
+            return cwdPath;
+        else
+            return Application::InstallationDirectory() + path;
+    }
+    else
+        return path;
+}
+
+QString PluginAPI::ConfigurationFile() const
+{
+    boost::program_options::variables_map &commandLineVariables = owner->ProgramOptions();
+    QString configFilename = "plugins.xml";
+    if (commandLineVariables.count("config") > 0)
+        configFilename = commandLineVariables["config"].as<std::string>().c_str();
+    
+    return LookupRelativePath(configFilename);
+}
+
+void PluginAPI::LoadPluginsFromXML(QString pluginConfigurationFile)
+{
+    pluginConfigurationFile = LookupRelativePath(pluginConfigurationFile);
+
     QDomDocument doc("plugins");
-    QFile file(pluginListFilename);
+    QFile file(pluginConfigurationFile);
     if (!file.open(QIODevice::ReadOnly))
     {
-        LogError("PluginAPI::LoadPluginsFromXML: Failed to open file \"" + pluginListFilename + "\"!");
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to open file \"" + pluginConfigurationFile + "\"!");
         return;
     }
     if (!doc.setContent(&file))
     {
-        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + pluginListFilename + "\"!");
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + pluginConfigurationFile + "\"!");
         file.close();
         return;
     }

@@ -29,7 +29,7 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 add_definitions (-DAVATAR_MODULE_EXPORTS)
 
 # Includes
-use_modules(Framework Scene AssetModule OgreRenderingModule Input Asset Console)
+use_modules(Framework Scene AvatarModule AssetModule OgreRenderingModule Input Asset Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 

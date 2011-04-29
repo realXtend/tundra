@@ -168,11 +168,8 @@ void Framework::PostInitialize()
 
     srand(time(0));
 
-    QString configFilename = "plugins.xml";
-    if (commandLineVariables.count("config") > 0)
-        configFilename = commandLineVariables["config"].as<std::string>().c_str();
+    plugin->LoadPluginsFromXML(plugin->ConfigurationFile());
 
-    LoadPlugins(configFilename);
     LoadModules();
 
     // PostInitialize SceneAPI.
@@ -289,21 +286,6 @@ void Framework::CancelExit()
     // we need to start it back up again if something canceled the exit.
     if (application)
         application->UpdateFrame();
-}
-
-void Framework::LoadPlugins(QString pluginConfigurationFile)
-{
-    // If a relative path was specified, lookup from cwd first, then from application installation directory.
-    if (QDir::isRelativePath(pluginConfigurationFile))
-    {
-        QString cwdPath = Application::CurrentWorkingDirectory() + pluginConfigurationFile;
-        if (QFile::exists(cwdPath))
-            pluginConfigurationFile = cwdPath;
-        else
-            pluginConfigurationFile = Application::InstallationDirectory() + pluginConfigurationFile;
-    }
-
-    plugin->LoadPluginsFromXML(pluginConfigurationFile);
 }
 
 void Framework::LoadModules()
@@ -522,6 +504,11 @@ ConnectionAPI *Framework::Connection() const
 ServerAPI *Framework::Server() const
 {
     return server;
+}
+
+PluginAPI *Framework::Plugins() const
+{
+    return plugin;
 }
 
 QObject *Framework::GetModuleQObj(const QString &name)

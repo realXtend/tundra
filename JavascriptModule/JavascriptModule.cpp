@@ -25,12 +25,14 @@
 #include "UiServiceInterface.h"
 #include "AudioAPI.h"
 #include "FrameAPI.h"
+#include "PluginAPI.h"
 #include "ConsoleAPI.h"
 #include "ConsoleCommandUtils.h"
 
 #include "ScriptAsset.h"
 
 #include <QtScript>
+#include <QDomElement>
 
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
@@ -223,6 +225,40 @@ void JavascriptModule::ComponentRemoved(Entity* entity, IComponent* comp, Attrib
         disconnect(comp, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(ScriptAssetChanged(ScriptAssetPtr)));
 }
 
+QStringList JavascriptModule::ParseStartupScriptConfig()
+{
+    QStringList pluginsToLoad;
+    QString configFile = framework_->Plugins()->ConfigurationFile();
+
+    QDomDocument doc("plugins");
+    QFile file(configFile);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to open file \"" + configFile + "\"!");
+        return QStringList();
+    }
+    if (!doc.setContent(&file))
+    {
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + configFile + "\"!");
+        file.close();
+        return QStringList();
+    }
+    file.close();
+
+    QDomElement docElem = doc.documentElement();
+
+    QDomNode n = docElem.firstChild();
+    while(!n.isNull())
+    {
+        QDomElement e = n.toElement(); // try to convert the node to an element.
+        if (!e.isNull() && e.tagName() == "jsplugin" && e.hasAttribute("path"))
+            pluginsToLoad.push_back(e.attribute("path"));
+
+        n = n.nextSibling();
+    }
+    return pluginsToLoad;
+}
+
 void JavascriptModule::LoadStartupScripts()
 {
     UnloadStartupScripts();
@@ -250,13 +286,22 @@ void JavascriptModule::LoadStartupScripts()
     {
     }
     
+    QStringList startupScriptsToLoad = ParseStartupScriptConfig();
+
     // Create a script instance for each of the files, register services for it and try to run.
     for(uint i = 0; i < scripts.size(); ++i)
     {
-        JavascriptInstance* jsInstance = new JavascriptInstance(QString::fromStdString(scripts[i]), this);
-        PrepareScriptInstance(jsInstance);
-        startupScripts_.push_back(jsInstance);
-        jsInstance->Run();
+        QString startupScript = scripts[i].c_str();
+        startupScript = startupScript.replace("\\", "/");
+        QString baseName = startupScript.mid(startupScript.lastIndexOf("/")+1);
+        if (startupScriptsToLoad.contains(startupScript) || startupScriptsToLoad.contains(baseName))
+        {
+            LogInfo("Loading .js startup script \"" + baseName + "\".");
+            JavascriptInstance* jsInstance = new JavascriptInstance(startupScript, this);
+            PrepareScriptInstance(jsInstance);
+            startupScripts_.push_back(jsInstance);
+            jsInstance->Run();
+        }
     }
 }
 

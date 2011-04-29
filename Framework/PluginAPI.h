@@ -22,9 +22,12 @@ private:
 public:
     explicit PluginAPI(Framework *owner);
 
+    /// Returns the plugin configuration file that was used to load the plugins at startup.
+    QString ConfigurationFile() const;
+
     /// Loads and executes the given shared library plugin.
     void LoadPlugin(const QString &filename);
 
     /// Parses the specified .xml file and loads and executes all plugins specified in that file.
-    void LoadPluginsFromXML(const QString &pluginListFilename);
+    void LoadPluginsFromXML(QString pluginListFilename);
 };

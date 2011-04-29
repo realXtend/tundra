@@ -74,9 +74,11 @@ signals:
     void ScriptEngineCreated(QScriptEngine* engine);
 
 private:
+    /// Parses the plugin startup configuration file to detect which startup scripts should be run.
+    QStringList ParseStartupScriptConfig();
+
     /// Load & execute startup scripts
-    /** Destroys old scripts if they exist
-     */
+    /** Destroys old scripts if they exist */
     void LoadStartupScripts();
 
     /// Stop & delete startup scripts
