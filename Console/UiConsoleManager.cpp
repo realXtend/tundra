@@ -42,10 +42,11 @@ UiConsoleManager::UiConsoleManager(Foundation::Framework *fw) :
     proxyWidget = framework->Ui()->AddWidgetToScene(consoleWidget);
     proxyWidget->setMinimumHeight(0);
     proxyWidget->setGeometry(QRect(0, 0, graphicsView->width(), 0));
+    /// \todo Opacity has no effect atm.
     proxyWidget->setOpacity(0.8); ///<\todo Read opacity from config?
     proxyWidget->setZValue(20000);
 
-    connect(framework->Ui()->GraphicsView(), SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
+    connect(framework->Ui()->GraphicsScene(), SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
 
     // Init animation
     slideAnimation.setTargetObject(proxyWidget);
