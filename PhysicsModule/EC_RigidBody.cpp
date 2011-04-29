@@ -718,19 +718,15 @@ void EC_RigidBody::UpdateScale()
         sizeVec.z = 0;
     
     // If placeable exists, set local scaling from its scale
-    /** \todo Evil hack: we currently have an adjustment node for Ogre->OpenSim coordinate space conversion,
-        but Ogre scaling of child nodes disregards the rotation,
-        so have to swap y/z axes here to have meaningful controls. Hopefully removed in the future.
-    */
     EC_Placeable* placeable = placeable_.lock().get();
     if ((placeable) && (shape_))
     {
         const Transform& trans = placeable->transform.Get();
         // Trianglemesh does not have scaling of its own, so use the size
         if ((!triangleMesh_) || (shapeType.Get() != Shape_TriMesh))
-            shape_->setLocalScaling(btVector3(trans.scale.x, trans.scale.z, trans.scale.y));
+            shape_->setLocalScaling(btVector3(trans.scale.x, trans.scale.y, trans.scale.z));
         else
-            shape_->setLocalScaling(btVector3(sizeVec.x * trans.scale.x, sizeVec.y * trans.scale.z, sizeVec.z * trans.scale.y));
+            shape_->setLocalScaling(btVector3(sizeVec.x * trans.scale.x, sizeVec.y * trans.scale.y, sizeVec.z * trans.scale.z));
     }
 }
 
@@ -750,27 +746,27 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
     
     heightValues_.resize(width * height);
     
-    float xySpacing = 1.0f;
-    float zSpacing = 1.0f;
-    float minZ = 1000000000;
-    float maxZ = -1000000000;
-    for(uint y = 0; y < (uint)height; ++y)
+    float xzSpacing = 1.0f;
+    float ySpacing = 1.0f;
+    float minY = 1000000000;
+    float maxY = -1000000000;
+    for(uint z = 0; z < (uint)height; ++z)
         for(uint x = 0; x < (uint)width; ++x)
         {
-            float value = terrain->GetPoint(x, y);
-            if (value < minZ)
-                minZ = value;
-            if (value > maxZ)
-                maxZ = value;
-            heightValues_[y * width + x] = value;
+            float value = terrain->GetPoint(x, z);
+            if (value < minY)
+                minY = value;
+            if (value > maxY)
+                maxY = value;
+            heightValues_[z * width + x] = value;
         }
 
     Vector3df scale = terrain->nodeTransformation.Get().scale;
-    Vector3df bbMin(0, 0, minZ);
-    Vector3df bbMax(xySpacing * (width - 1), xySpacing * (height - 1), maxZ);
+    Vector3df bbMin(0, minY, 0);
+    Vector3df bbMax(xzSpacing * (width - 1), maxY, xzSpacing * (height - 1));
     Vector3df bbCenter = scale * (bbMin + bbMax) * 0.5f;
     
-    heightField_ = new btHeightfieldTerrainShape(width, height, &heightValues_[0], zSpacing, minZ, maxZ, 2, PHY_FLOAT, false);
+    heightField_ = new btHeightfieldTerrainShape(width, height, &heightValues_[0], ySpacing, minY, maxY, 1, PHY_FLOAT, false);
     
     /** \todo EC_Terrain uses its own transform that is independent of the placeable. It is not nice to support, since rest of EC_RigidBody assumes
         the transform is in the placeable. Right now, we only support position & scaling. Here, we also counteract Bullet's nasty habit to center 

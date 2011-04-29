@@ -38,7 +38,7 @@ material Ocean
 				param_named bumpSpeed float2 0.0005 0.00014
 				param_named_auto time time_0_x 100.0
 				param_named waveFreq float 0.0028
-				param_named waveAmp float 0.8
+				param_named waveAmp float 0.2
 			}
 
 			fragment_program_ref OceanPS

@@ -56,7 +56,7 @@ if (isserver) {
 function ServerInitialize() {
 
     // Create the avatar component & set the avatar appearance. The avatar component will create the mesh & animationcontroller, once the avatar asset has loaded
-    var avatar = me.GetOrCreateComponent("EC_Avatar");
+    var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
     var r = avatar.appearanceRef;
     r.ref = "local://default_avatar.avatar";
     avatar.appearanceRef = r;
@@ -120,7 +120,7 @@ function ServerUpdate(frametime) {
     if (!attrs.GetAttribute("enableWalk"))
     {
         motion_x = 0;
-        motion_y = 0;
+        motion_z = 0;
     }
     
     // If flying enable was toggled off, but we are still flying, disable now
@@ -145,21 +145,21 @@ function ServerUpdatePhysics(frametime) {
     if (!flying) {
         // Apply motion force
         // If diagonal motion, normalize
-        if ((motion_x != 0) || (motion_y != 0)) {
-            var mag = 1.0 / Math.sqrt(motion_x * motion_x + motion_y * motion_y);
+        if ((motion_x != 0) || (motion_z != 0)) {
+            var mag = 1.0 / Math.sqrt(motion_x * motion_x + motion_z * motion_z);
             var impulseVec = new Vector3df();
             impulseVec.x = mag * move_force * motion_x;
-            impulseVec.y = -mag * move_force * motion_y;
+            impulseVec.z = -mag * move_force * motion_y;
             impulseVec = placeable.GetRelativeVector(impulseVec);
             rigidbody.ApplyImpulse(impulseVec);
         }
 
         // Apply jump
-        if (motion_z == 1 && !falling) {
+        if (motion_y == 1 && !falling) {
             if (attrs.GetAttribute("enableJump")) {
                 var jumpVec = new Vector3df();
-                jumpVec.z = 75;
-                motion_z = 0;
+                jumpVec.y = 75;
+                motion_y = 0;
                 falling = true;
                 rigidbody.ApplyImpulse(jumpVec);
             }
@@ -170,8 +170,8 @@ function ServerUpdatePhysics(frametime) {
         if (rigidbody.IsActive()) {
             var dampingVec = rigidbody.GetLinearVelocity();
             dampingVec.x = -damping_force * dampingVec.x;
-            dampingVec.y = -damping_force * dampingVec.y;
-            dampingVec.z = 0;
+            dampingVec.y = 0;
+            dampingVec.z = -damping_force * dampingVec.z;
             rigidbody.ApplyImpulse(dampingVec);
         }
     } else {
@@ -183,38 +183,14 @@ function ServerUpdatePhysics(frametime) {
         // Make a vector where we have moved
         var moveVec = new Vector3df();
         moveVec.x = motion_x * fly_speed_factor;
-        moveVec.y = -motion_y * fly_speed_factor;
-        moveVec.z = motion_z * fly_speed_factor;
+        moveVec.y = motion_y * fly_speed_factor;
+        moveVec.z = -motion_z * fly_speed_factor;
 
         // Apply that with av looking direction to the current position
         var offsetVec = placeable.GetRelativeVector(moveVec);
         av_transform.pos.x = av_transform.pos.x + offsetVec.x;
         av_transform.pos.y = av_transform.pos.y + offsetVec.y;
         av_transform.pos.z = av_transform.pos.z + offsetVec.z;
-
-        // This may look confusing. Its kind of a hack to tilt the avatar
-        // when flying to the sides when you turn with A and D.
-        // At the same time we need to lift up the Z of the av accorting to the angle of tilt
-        if (motion_x != 0) {
-            if (motion_y > 0 && av_transform.rot.x <= 5) {
-                av_transform.rot.x = av_transform.rot.x + motion_y/2;
-            }
-            if (motion_y < 0 && av_transform.rot.x >= -5) {
-                av_transform.rot.x = av_transform.rot.x + motion_y/2;
-            }
-            if (motion_y != 0 && av_transform.rot.x > 0) {
-                av_transform.pos.z = av_transform.pos.z + (av_transform.rot.x * 0.0045); // magic number
-            }
-            if (motion_y != 0 && av_transform.rot.x < 0) {
-                av_transform.pos.z = av_transform.pos.z + (-av_transform.rot.x * 0.0045); // magic number
-            }
-        }
-        if (motion_y == 0 && av_transform.rot.x > 0) {
-            av_transform.rot.x = av_transform.rot.x - 0.5;
-        }
-        if (motion_y == 0 && av_transform.rot.x < 0) {
-            av_transform.rot.x = av_transform.rot.x + 0.5;
-        }
 
         placeable.transform = av_transform;
     }
@@ -225,46 +201,46 @@ function ServerHandleMove(param) {
 
     if (attrs.GetAttribute("enableWalk")) {
         if (param == "forward") {
-            motion_x = 1;
+            motion_z = 1;
         }
         if (param == "back") {
-            motion_x = -1;
+            motion_z = -1;
         }
         if (param == "right") {
-            motion_y = 1;
+            motion_x = 1;
         }
         if (param == "left") {
-            motion_y = -1;
+            motion_x = -1;
         }
     }
 
     if (param == "up") {
-        motion_z = 1;
+        motion_y = 1;
     }
     if (param == "down") {
-        motion_z = -1;
+        motion_y = -1;
     }
 
     ServerSetAnimationState();
 }
 
 function ServerHandleStop(param) {
-    if ((param == "forward") && (motion_x == 1)) {
+    if ((param == "forward") && (motion_z == 1)) {
         motion_x = 0;
     }
-    if ((param == "back") && (motion_x == -1)) {
+    if ((param == "back") && (motion_z == -1)) {
         motion_x = 0;
     }
-    if ((param == "right") && (motion_y == 1)) {
+    if ((param == "right") && (motion_x == 1)) {
         motion_y = 0;
     }
-    if ((param == "left") && (motion_y == -1)) {
+    if ((param == "left") && (motion_x == -1)) {
         motion_y = 0;
     }
-    if ((param == "up") && (motion_z == 1)) {
+    if ((param == "up") && (motion_y == 1)) {
         motion_z = 0;
     }
-    if ((param == "down") && (motion_z == -1)) {
+    if ((param == "down") && (motion_y == -1)) {
         motion_z = 0;
     }
 
@@ -302,8 +278,8 @@ function ServerSetFlying(newFlying) {
         // so the motion does not just stop to a wall
         var moveVec = new Vector3df();
         moveVec.x = motion_x * 120;
-        moveVec.y = -motion_y * 120;
-        moveVec.z = motion_z * 120;
+        moveVec.y = motion_y * 120;
+        moveVec.z = -motion_z * 120;
         var pushVec = placeable.GetRelativeVector(moveVec);
         rigidbody.ApplyImpulse(pushVec);
     }
@@ -314,7 +290,11 @@ function ServerHandleSetRotation(param) {
     var attrs = me.dynamiccomponent;
     if (attrs.GetAttribute("enableRotate")) {
         var rotateVec = new Vector3df();
+<<<<<<< HEAD
         rotateVec.z = parseFloat(param);
+=======
+        rotateVec.y = parseFloat(param);
+>>>>>>> c57fa1f... Coordinate system conversion -> Y up.
         me.rigidbody.SetRotation(rotateVec);
     }
 }
@@ -322,14 +302,14 @@ function ServerHandleSetRotation(param) {
 function ServerSetAnimationState() {
     // Not flying: Stand, Walk or Crouch
     var animName = standAnimName;
-    if ((motion_x != 0) || (motion_y != 0)) {
+    if ((motion_x != 0) || (motion_z != 0)) {
         animName = walkAnimName;
     }
 
-    // Flying: Fly if moving in x-axis, otherwise hover
+    // Flying: Fly if moving forward or back, otherwise hover
     if (flying || falling) {
         animName = flyAnimName;
-        if (motion_x == 0)
+        if (motion_z == 0)
             animName = hoverAnimName;
     }
 
@@ -355,7 +335,7 @@ function ClientInitialize() {
         ClientCreateInputMapper();
         ClientCreateAvatarCamera();
         crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
-        var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
+        var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
         soundlistener.active = true;
 
         me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
@@ -367,7 +347,7 @@ function ClientInitialize() {
         var avatarurl = client.GetLoginProperty("avatarurl");
         if (avatarurl && avatarurl.length > 0)
         {
-            var avatar = me.GetOrCreateComponent("EC_Avatar");
+            var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
             var r = avatar.appearanceRef;
             r.ref = "local://default_avatar.xml";
             avatar.appearanceRef = r;
@@ -377,11 +357,11 @@ function ClientInitialize() {
     else
     {
         // Make hovering name tag for other clients
-        var clientName = me.GetComponent("EC_Name");
+        var clientName = me.GetComponentRaw("EC_Name");
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {
-                var hoveringWidget = me.GetOrCreateComponent("EC_HoveringWidget", 2, false);
+                var hoveringWidget = me.GetOrCreateComponentRaw("EC_HoveringWidget", 2, false);
                 if (hoveringWidget != null) {
                     hoveringWidget.SetNetworkSyncEnabled(false);
                     hoveringWidget.SetTemporary(true);
@@ -437,7 +417,7 @@ function ClientUpdate(frametime)
 
 function ClientCreateInputMapper() {
     // Create a nonsynced inputmapper
-    var inputmapper = me.GetOrCreateComponent("EC_InputMapper", 2, false);
+    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = false;
     inputmapper.takeKeyboardEventsOverQt = false;
@@ -473,7 +453,11 @@ function ClientCreateInputMapper() {
     inputContext.MouseMove.connect(ClientHandleMouseMove);
 
     // Local mapper for mouse scroll and rotate
+<<<<<<< HEAD
     var inputmapper = me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
+=======
+    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", "CameraMapper", 2, false);
+>>>>>>> c57fa1f... Coordinate system conversion -> Y up.
     inputmapper.SetNetworkSyncEnabled(false);
     inputmapper.contextPriority = 100;
     inputmapper.takeMouseEventsOverQt = true;
@@ -496,8 +480,8 @@ function ClientCreateAvatarCamera() {
     cameraentity.SetName("AvatarCamera");
     cameraentity.SetTemporary(true);
 
-    var camera = cameraentity.GetOrCreateComponent("EC_Camera");
-    var placeable = cameraentity.GetOrCreateComponent("EC_Placeable");
+    var camera = cameraentity.GetOrCreateComponentRaw("EC_OgreCamera");
+    var placeable = cameraentity.GetOrCreateComponentRaw("EC_Placeable");
 
     camera.AutoSetPlaceable();
     camera.SetActive();
@@ -668,23 +652,37 @@ function ClientUpdateAvatarCamera() {
     if (!first_person)
         pitch = 0;
     var cameratransform = cameraplaceable.transform;
+<<<<<<< HEAD
     cameratransform.rot.x = pitch + 90;
     cameratransform.rot.y = 0;
     cameratransform.rot.z = yaw;
+=======
+    cameratransform.rot.x = pitch;
+    cameratransform.rot.z = yaw;
+    cameratransform.rot.y = 0;
+
+>>>>>>> c57fa1f... Coordinate system conversion -> Y up.
     cameraplaceable.transform = cameratransform;
 
     var avatartransform = avatarplaceable.transform;
     var offsetVec = new Vector3df();
+<<<<<<< HEAD
     offsetVec.x = -avatar_camera_distance;
+=======
+    offsetVec.z = avatar_camera_distance;
+>>>>>>> c57fa1f... Coordinate system conversion -> Y up.
     offsetVec.y = avatar_camera_height;
     offsetVec = cameraplaceable.GetRelativeVector(offsetVec);
     cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
     cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
     cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
+<<<<<<< HEAD
 
     // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
     cameratransform.rot.z -= 90;
 
+=======
+>>>>>>> c57fa1f... Coordinate system conversion -> Y up.
     cameraplaceable.transform = cameratransform;
 }
 
@@ -694,7 +692,7 @@ function ClientCheckState()
     var first_person = attrs.GetAttribute("cameraDistance") < 0;
 
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    var avatar_placeable = me.GetComponent("EC_Placeable");
+    var avatar_placeable = me.GetComponentRaw("EC_Placeable");
 
     if (crosshair == null)
         return;
@@ -869,11 +867,11 @@ function CommonUpdateAnimation(frametime) {
 function CreateFish() {
     // Note: attaching meshes to bone of another mesh is strictly client-only! It does not replicate.
     // Therefore this needs to be run locally on every client
-    var avatarmesh = me.GetComponent("EC_Mesh", "");
+    var avatarmesh = me.GetComponentRaw("EC_Mesh", "");
     // Do not act until the actual avatar has been created
     if ((avatarmesh) && (avatarmesh.HasMesh())) {
         // Create a local mesh component into the same entity
-        var fishmesh = me.GetOrCreateComponent("EC_Mesh", "fish", 2, false);
+        var fishmesh = me.GetOrCreateComponentRaw("EC_Mesh", "fish", 2, false);
         var r = fishmesh.meshRef;
         if (r.ref != "local://fish.mesh") {
             r.ref = "local://fish.mesh";

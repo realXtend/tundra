@@ -7,6 +7,7 @@
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
 #include "SceneDesc.h"
+#include "Vector3D.h"
 
 #include <QObject>
 #include <QVariant>
@@ -14,9 +15,7 @@
 #include <boost/enable_shared_from_this.hpp>
 
 class Framework;
-
 class SceneAPI;
-
 class QDomDocument;
 
 /// Container for an ongoing attribute interpolation
@@ -171,6 +170,13 @@ public slots:
         @note If the way we introduce js dependencies (!ref: and engine.IncludeFile()) changes, this function needs to change too.
     */
     void SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const;
+
+    /// Returns scene up vector. For now it is a compile-time constant
+    const Vector3df& GetUpVector() const;
+    /// Returns scene right vector. For now it is a compile-time constant
+    const Vector3df& GetRightVector() const;
+    /// Returns scene forward vector. For now it is a compile-time constant
+    const Vector3df& GetForwardVector() const;
 
     /// @todo Clean these overload functions created for PythonQt and QtScript compatibility as much as possible.
     //  For documentation, see the plain C++ public methods above.

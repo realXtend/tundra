@@ -480,9 +480,10 @@ Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const
     }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
+    // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
     Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
-    local.z = GetInterpolatedHeightValue(local.x, local.y);
+    local.y = GetInterpolatedHeightValue(local.x, local.z);
     Ogre::Vector4 world = worldTM * local;
     return Vector3df(world.x, world.y, world.z);
 }
@@ -496,9 +497,10 @@ Vector3df EC_Terrain::GetPointOnMapLocal(const Vector3df &point) const
     }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
+    // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
     Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
-    local.z = GetInterpolatedHeightValue(local.x, local.y);
+    local.y = GetInterpolatedHeightValue(local.x, local.z);
     return Vector3df(local.x, local.y, local.z);
 }
 
@@ -632,6 +634,8 @@ void EC_Terrain::GetTriangleNormals(float x, float y, Vector3df &n1, Vector3df &
 
 void EC_Terrain::GetTriangleVertices(float x, float y, Vector3df &v1, Vector3df &v2, Vector3df &v3, float &u, float &v) const
 {
+    // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
+    
     x = max(0.f, min((float)VerticesWidth()-1.f, x));
     y = max(0.f, min((float)VerticesHeight()-1.f, y));
 
@@ -648,19 +652,19 @@ void EC_Terrain::GetTriangleVertices(float x, float y, Vector3df &v1, Vector3df 
     float xFrac = fmod(x, 1.f);
     float yFrac = fmod(y, 1.f);
 
-    v2 = Vector3df((float)xFloor, (float)yCeil, GetPoint(xFloor, yCeil));
-    v3 = Vector3df((float)xCeil, (float)yFloor, GetPoint(xCeil, yFloor));
+    v2 = Vector3df((float)xFloor, GetPoint(xFloor, yCeil), (float)yCeil);
+    v3 = Vector3df((float)xCeil, GetPoint(xCeil, yFloor), (float)yFloor);
 
     if (xFrac + yFrac >= 1.f)
     {
         //if xFrac >= yFrac
-        v1 = Vector3df((float)xCeil, (float)yCeil, GetPoint(xCeil, yCeil));
+        v1 = Vector3df((float)xCeil, GetPoint(xCeil, yCeil), (float)yCeil);
         xFrac = 1.f - xFrac;
         yFrac = 1.f - yFrac;
     }
     else
     {
-        v1 = Vector3df((float)xFloor, (float)yFloor, GetPoint(xFloor, yFloor));
+        v1 = Vector3df((float)xFloor, GetPoint(xFloor, yFloor), (float)yFloor);
         swap(v2, v3);
     }
     u = xFrac;
@@ -720,7 +724,8 @@ Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) co
     if ((py <= 0) || (py >= patchHeight * cPatchSize))
         y_slope *= 2;
 
-    Vector3df normal(x_slope, y_slope, 2.0);
+    // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
+    Vector3df normal(x_slope, 2.0, y_slope);
     normal.normalize();
     return normal;
 }
@@ -1185,8 +1190,10 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
     Ogre::Vector3 maxExtents;
     ComputeAABB(vertices, minExtents, maxExtents);
 
+    // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y.
+    // So we expect a mesh where Y also represent height values
     int xVertices = (int)ceil(maxExtents.x - minExtents.x);
-    int yVertices = (int)ceil(maxExtents.y - minExtents.y);
+    int yVertices = (int)ceil(maxExtents.z - minExtents.z);
     xVertices = ((xVertices + cPatchSize-1) / cPatchSize) * cPatchSize;
     yVertices = ((yVertices + cPatchSize-1) / cPatchSize) * cPatchSize;
 
@@ -1199,12 +1206,12 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
     float minHeight = std::numeric_limits<float>::max();
     float maxHeight = -std::numeric_limits<float>::max();
 
-    const float raycastHeight = maxExtents.z + 100.f;
+    const float raycastHeight = maxExtents.y + 100.f;
 
     for(int y = 0; y < yVertices; ++y)
         for(int x = 0; x < xVertices; ++x)
         {
-            Ogre::Ray r(Ogre::Vector3(minExtents.x + x, minExtents.y + y, raycastHeight), Ogre::Vector3(0,0,-1.f));
+            Ogre::Ray r(Ogre::Vector3(minExtents.x + x, raycastHeight, minExtents.z + y), Ogre::Vector3(0,-1.f,0));
             float height = FindClosestRayIntersection(r, vertices, indices);
             if (height < 1e8f)
             {
@@ -1390,8 +1397,8 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     const float vertexSpacingY = 1.f;
     const float patchSpacingX = cPatchSize * vertexSpacingX;
     const float patchSpacingY = cPatchSize * vertexSpacingY;
-//        const Ogre::Vector3 patchOrigin(patch.y * patchSpacingY, 0.f, patch.x * patchSpacingX);
-    const Ogre::Vector3 patchOrigin(patch.x * patchSpacingX, patch.y * patchSpacingY, 0.f);
+    const Ogre::Vector3 patchOrigin(patch.x * patchSpacingX, 0.f, patch.y * patchSpacingY);
+// Opensim:    const Ogre::Vector3 patchOrigin(patch.x * patchSpacingX, patch.y * patchSpacingY, 0.f);
 
     int curIndex = 0;
 
@@ -1415,10 +1422,10 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
             // These coordinates are directly generated to our Ogre coordinate system, i.e. are cycled from OpenSim XYZ -> our YZX.
             // see OpenSimToOgreCoordinateAxes.
             Ogre::Vector3 pos;
-// Ogre:                pos.x = vertexSpacingY * y;
-// Ogre:                pos.z = vertexSpacingX * x;
             pos.x = vertexSpacingX * x;
-            pos.y = vertexSpacingY * y;
+            pos.z = vertexSpacingY * y;
+// Opensim:             pos.x = vertexSpacingX * x;
+// Opensim              pos.y = vertexSpacingY * y;
 
             EC_Terrain::Patch *thisPatch;
             int X = x;
@@ -1430,13 +1437,14 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
                 if ((patch.x + 1 < patchWidth || x+1 < cPatchVertexWidth) &&
                     (patch.y + 1 < patchHeight || y+1 < cPatchVertexHeight))
                 {
+                    // Note: winding needs to be flipped when terrain X axis goes along world X axis and terrain Y axis along world Z
+                    manual->index(curIndex+stride);
+                    manual->index(curIndex+1);
                     manual->index(curIndex);
-                    manual->index(curIndex+1);
-                    manual->index(curIndex+stride);
 
-                    manual->index(curIndex+1);
-                    manual->index(curIndex+stride+1);
                     manual->index(curIndex+stride);
+                    manual->index(curIndex+stride+1);
+                    manual->index(curIndex+1);
                 }
             }
             else if (x == cPatchVertexWidth && y == cPatchVertexHeight)
@@ -1456,15 +1464,15 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
                 Y = 0;
             }
 
-// Ogre:        pos.y = thisPatch->heightData[Y*patchSize+X];
-            pos.z = thisPatch->heightData[Y*cPatchVertexWidth+X];
+            pos.y = thisPatch->heightData[Y*cPatchVertexWidth+X];
+// Opensim:            pos.z = thisPatch->heightData[Y*cPatchVertexWidth+X];
 
             manual->position(pos);
             manual->normal(OgreRenderer::ToOgreVector3(CalculateNormal(thisPatch->x, thisPatch->y, X, Y)));
 
             // The UV set 0 contains the diffuse texture UV map. Do a planar mapping with the given specified UV scale.
-// Ogre:                manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);
-            manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.y + pos.y) * vScale);
+            manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);
+// Opensim:             manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.y + pos.y) * vScale);
 
             // The UV set 1 contains the terrain blend mask UV map, which stretches once across the whole terrain.
             manual->textureCoord((float)(patch.x*cPatchSize + x)/(VerticesWidth()-1), (float)(patch.y*cPatchSize + y)/(VerticesHeight()-1)); 
@@ -1561,7 +1569,7 @@ void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, 
     const float vertexSpacingY = 1.f;
     const float patchSpacingX = 16 * vertexSpacingX;
     const float patchSpacingY = 16 * vertexSpacingY;
-    const Ogre::Vector3 patchOrigin(patchX * patchSpacingX, patchY * patchSpacingY, 0.f);
+    const Ogre::Vector3 patchOrigin(patchX * patchSpacingX, 0.f, patchY * patchSpacingY);
 
     node->setPosition(patchOrigin);
 }

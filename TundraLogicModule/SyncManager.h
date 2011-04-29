@@ -89,10 +89,10 @@ private slots:
     /// Trigger sync of entity action to specific user
     void OnUserActionTriggered(UserConnection* user, Entity *entity, const QString &action, const QStringList &params);
 
-    //! Asset uploaded. Send discovery message
+    /// Asset uploaded. Send discovery message
     void OnAssetUploaded(const QString& assetRef);
     
-    //! Asset deleted. Send deleted message
+    /// Asset deleted. Send deleted message
     void OnAssetDeleted(const QString& assetRef);
 
 private slots:

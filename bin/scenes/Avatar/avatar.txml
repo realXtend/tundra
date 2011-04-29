@@ -21,7 +21,7 @@
  </entity>
  <entity id="4">
   <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
    <attribute value="file://fish.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
    <attribute value="" name="Mesh materials"/>
@@ -34,12 +34,13 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="1.54743,5.16996,-4.63342,-105.895,-25.4063,-30.2581,1,1,1" name="Transform"/>
+   <attribute value="0.999392,0.434842,4.89735,-27.1434,57.2496,-117.604,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
   </component>
   <component type="EC_RigidBody" sync="1">
-   <attribute value="100" name="Mass"/>
+   <attribute value="10" name="Mass"/>
    <attribute value="6" name="Shape type"/>
    <attribute value="1 1 1" name="Size"/>
    <attribute value="file://fish.mesh" name="Collision mesh ref"/>
@@ -51,13 +52,13 @@
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
    <attribute value="false" name="Draw Debug"/>
-   <attribute value="0.0570946783 0.0409746468 -0.104621559" name="Linear velocity"/>
-   <attribute value="-8.90668583 11.1905508 -0.15712966" name="Angular velocity"/>
+   <attribute value="0.0100854626 -0.00476773083 -0.00456209946" name="Linear velocity"/>
+   <attribute value="-0.897368252 -0.165160373 -0.979462624" name="Angular velocity"/>
   </component>
  </entity>
  <entity id="5">
   <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,90,0,180,0.14,0.2,0.14" name="Transform"/>
+   <attribute value="0,0,0,0,0,0,0.14,0.2,0.14" name="Transform"/>
    <attribute value="file://WoodPallet.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
    <attribute value="" name="Mesh materials"/>
@@ -73,11 +74,12 @@
    <attribute value="0,0,-5,0,0,0,100,1,100" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
   </component>
   <component type="EC_RigidBody" sync="1">
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
-   <attribute value="1 1 0.200000003" name="Size"/>
+   <attribute value="1 0.200000003 1" name="Size"/>
    <attribute value="" name="Collision mesh ref"/>
    <attribute value="0.5" name="Friction"/>
    <attribute value="0" name="Restitution"/>
@@ -123,7 +125,7 @@
    <attribute value="RexSkyBox" name="Material"/>
    <attribute value="rex_sky_front.dds;rex_sky_back.dds;rex_sky_left.dds;rex_sky_right.dds;rex_sky_top.dds;rex_sky_bot.dds" name="Texture"/>
    <attribute value="50" name="Distance"/>
-   <attribute value="0.707106769 0.707106769 0 0" name="Orientation"/>
+   <attribute value="1 0 0 0" name="Orientation"/>
    <attribute value="true" name="Draw first"/>
   </component>
  </entity>

@@ -15,16 +15,16 @@
 namespace Physics
 {
 
-void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr, bool flipAxes)
+void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr)
 {
     std::vector<Vector3df> triangles;
-    GetTrianglesFromMesh(mesh, triangles, flipAxes);
+    GetTrianglesFromMesh(mesh, triangles);
     
     for(uint i = 0; i < triangles.size(); i += 3)
         ptr->addTriangle(ToBtVector3(triangles[i]), ToBtVector3(triangles[i+1]), ToBtVector3(triangles[i+2]));
 }
 
-void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr, bool flipAxes)
+void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr)
 {
     class ConvexResultReceiver : public ConvexDecomposition::ConvexDecompInterface
     {
@@ -63,7 +63,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr, bool flipAxes)
     };
     
     std::vector<Vector3df> triangles;
-    GetTrianglesFromMesh(mesh, triangles, flipAxes);
+    GetTrianglesFromMesh(mesh, triangles);
 
     std::vector<float> vertexData;
     std::vector<uint> indexData;
@@ -96,7 +96,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr, bool flipAxes)
     
 }
 
-void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest, bool flipAxes)
+void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest)
 {
     dest.clear();
     
@@ -126,26 +126,14 @@ void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest, bool f
                 uint i2 = pLong[k+1];
                 uint i3 = pLong[k+2];
                 
-                /// Haxor the collision mesh for the Ogre->Opensim coordinate space adjust
-                /** \todo Hopefully the need for this is eliminated soon
-                 */
                 posElem->baseVertexPointerToElement(vertices + i1 * vertexSize, &pReal);
-                if (flipAxes)
-                    dest.push_back(Vector3df(-pReal[0], pReal[2], pReal[1]));
-                else
-                    dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
                     
                 posElem->baseVertexPointerToElement(vertices + i2 * vertexSize, &pReal);
-                if (flipAxes)
-                    dest.push_back(Vector3df(-pReal[0], pReal[2], pReal[1]));
-                else
-                    dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
                     
                 posElem->baseVertexPointerToElement(vertices + i3 * vertexSize, &pReal);
-                if (flipAxes)
-                    dest.push_back(Vector3df(-pReal[0], pReal[2], pReal[1]));
-                else
-                    dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
                 
 
             }
@@ -158,26 +146,14 @@ void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest, bool f
                 uint i2 = pShort[k+1];
                 uint i3 = pShort[k+2];
                 
-                /// Haxor the collision mesh for the Ogre->Opensim coordinate space adjust
-                /** \todo Hopefully the need for this is eliminated soon
-                 */
                 posElem->baseVertexPointerToElement(vertices + i1 * vertexSize, &pReal);
-                if (flipAxes)
-                    dest.push_back(Vector3df(-pReal[0], pReal[2], pReal[1]));
-                else
-                    dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
                     
                 posElem->baseVertexPointerToElement(vertices + i2 * vertexSize, &pReal);
-                if (flipAxes)
-                    dest.push_back(Vector3df(-pReal[0], pReal[2], pReal[1]));
-                else
-                    dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
                     
                 posElem->baseVertexPointerToElement(vertices + i3 * vertexSize, &pReal);
-                if (flipAxes)
-                    dest.push_back(Vector3df(-pReal[0], pReal[2], pReal[1]));
-                else
-                    dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
             }
         }
         

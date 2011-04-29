@@ -168,7 +168,7 @@ void EC_Camera::UpdateSignals()
     Entity* parent = GetParentEntity();
     if (parent)
     {
-        // Connect to ComponentRemoved signal of the parent entity, so we can check if the mesh gets removed
+        // Connect to ComponentRemoved signal of the parent entity, so we can check if the placeable gets removed
         connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)),
             SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
         

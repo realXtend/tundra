@@ -466,7 +466,7 @@ namespace OgreRenderer
 
         default_camera_->setNearClipDistance(0.1f);
         default_camera_->setFarClipDistance(2000.f);
-        default_camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
+        //default_camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
         default_camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
         default_camera_->setAspectRatio(Ogre::Real(viewport_->getActualWidth()) / Ogre::Real(viewport_->getActualHeight()));
         default_camera_->setAutoAspectRatio(true);

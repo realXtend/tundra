@@ -201,7 +201,7 @@ QList<Entity *> SceneImporter::Import(const std::string& filename, std::string i
         
         bool flipyz = false;
         QString upaxis = scene_elem.attribute("upAxis");
-        if (upaxis == "y")
+        if (upaxis == "z")
             flipyz = true;
         
         if (clearscene)
@@ -1122,28 +1122,16 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                     
                     Transform entity_transform;
                     
-                    if (!flipyz)
+                    /// Todo: allow any transformation of coordinate axes, not just fixed y/z flip
+                    if (flipyz)
                     {
-                        /// \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
-                        Vector3df rot_euler;
-                        Quaternion adjustedrot = Quaternion(0, 0, PI) * newrot;
-                        adjustedrot.toEuler(rot_euler);
-                        entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
-                        entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
-                        entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
-                    }
-                    else
-                    {
-                        /// \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
                         Vector3df rot_euler;
                         Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
                         adjustedrot.toEuler(rot_euler);
                         entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
                         entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
-                        entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                        entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
                     }
-                    
-                    meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), change);
                     
                     placeablePtr->transform.Set(entity_transform, change);
                     meshPtr->meshRef.Set(AssetReference(mesh_name), change);
@@ -1314,28 +1302,15 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, V
                 
                 Transform entity_transform;
                 
-                if (!flipyz)
+                if (flipyz)
                 {
-                    /// \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
-                    Vector3df rot_euler;
-                    Quaternion adjustedrot = Quaternion(0, 0, PI) * newrot;
-                    adjustedrot.toEuler(rot_euler);
-                    entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
-                    entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
-                    entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
-                }
-                else
-                {
-                    /// \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
                     Vector3df rot_euler;
                     Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
                     adjustedrot.toEuler(rot_euler);
                     entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
                     entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
-                    entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                    entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
                 }
-                
-                meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), change);
                 
                 placeablePtr->transform.Set(entity_transform, change);
                 meshPtr->meshRef.Set(AssetReference(mesh_name), change);

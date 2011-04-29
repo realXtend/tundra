@@ -18,9 +18,9 @@ namespace Physics
 {
     struct ConvexHullSet;
 
-    void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr, bool flipAxes);
-    void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest, bool flipAxes);
-    void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr, bool flipAxes);
+    void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr);
+    void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest);
+    void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr);
 }
 
 

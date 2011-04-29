@@ -203,7 +203,7 @@ Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(ScenePtr scene,
     
     SceneManager* ptr = scene.get();
     boost::shared_ptr<PhysicsWorld> new_world(new PhysicsWorld(this, isClient));
-    new_world->SetGravity(Vector3df(0.0f,0.0f,-9.81f));
+    new_world->SetGravity(scene->GetUpVector() * -9.81f);
     
     physicsWorlds_[ptr] = new_world;
     QObject::connect(ptr, SIGNAL(Removed(SceneManager*)), this, SLOT(OnSceneRemoved(SceneManager*)));
@@ -337,7 +337,7 @@ boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogr
 #include "DisableMemoryLeakCheck.h"
     ptr = boost::shared_ptr<btTriangleMesh>(new btTriangleMesh());
 #include "EnableMemoryLeakCheck.h"
-    GenerateTriangleMesh(mesh, ptr.get(), true);
+    GenerateTriangleMesh(mesh, ptr.get());
     
     triangleMeshes_[mesh->getName()] = ptr;
     
@@ -357,7 +357,7 @@ boost::shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogr
     
     // Create new, then interrogate the Ogre mesh
     ptr = boost::shared_ptr<ConvexHullSet>(new ConvexHullSet());
-    GenerateConvexHullSet(mesh, ptr.get(), true);
+    GenerateConvexHullSet(mesh, ptr.get());
 
     convexHullSets_[mesh->getName()] = ptr;
     

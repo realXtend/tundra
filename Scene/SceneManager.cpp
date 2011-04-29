@@ -33,6 +33,10 @@
 
 using namespace kNet;
 
+static const Vector3df cRightVector(Vector3df::UNIT_X);
+static const Vector3df cUpVector(Vector3df::UNIT_Y);
+static const Vector3df cForwardVector(-Vector3df::UNIT_Z);
+
 SceneManager::SceneManager() :
     framework_(0),
     gid_(1),
@@ -1147,6 +1151,21 @@ QByteArray SceneManager::GetEntityXml(Entity *entity)
     scene_doc.appendChild(scene_elem);
     
     return scene_doc.toByteArray();
+}
+
+const Vector3df& SceneManager::GetUpVector() const
+{
+    return cUpVector;
+}
+
+const Vector3df& SceneManager::GetRightVector() const
+{
+    return cRightVector;
+}
+
+const Vector3df& SceneManager::GetForwardVector() const
+{
+    return cForwardVector;
 }
 
 bool SceneManager::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, float length)

@@ -194,7 +194,7 @@ namespace Environment
         Ogre::Matrix4 inv = worldTM.inverse(); // world->local
         Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
      
-        local.z = 0;
+        local.y = 0;
         Ogre::Vector4 world = worldTM * local;
         return Vector3df(world.x, world.y, world.z);
     }
@@ -208,7 +208,7 @@ namespace Environment
 
         //Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
       
-        return point.z - pointOnPlane.z;
+        return point.y - pointOnPlane.y;
     }
 
     bool EC_WaterPlane::IsTopOrBelowWaterPlane(const Vector3df& point) const
@@ -287,7 +287,7 @@ namespace Environment
                 float vTile =  scaleVfactor.Get() * y;
                 
                 Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(name_.toStdString().c_str(),
-                    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::Plane(Ogre::Vector3::UNIT_Z, 0),
+                    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::Plane(Ogre::Vector3::UNIT_Y, 0),
                     x, y, xSegments.Get(), ySegments.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
                 
                 entity_ = sceneMgr->createEntity(renderer_.lock()->GetUniqueObjectName("EC_WaterPlane_entity"), name_.toStdString().c_str());

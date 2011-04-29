@@ -9,7 +9,7 @@ var motion_x = 0;
 
 if (!me.HasComponent("EC_Camera"))
 {
-    // Create components & setup default position/lookat for the camera, mimicing RexLogicModule::CreateOpenSimViewerCamera()
+    // Create components & setup default position/lookat for the camera
     var camera = me.GetOrCreateComponent("EC_Camera");
     var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
     var placeable = me.GetOrCreateComponent("EC_Placeable");
@@ -24,7 +24,6 @@ if (!me.HasComponent("EC_Camera"))
         camera.SetActive();
 
     var transform = placeable.transform;
-    transform.rot.x = 90;
     placeable.transform = transform;
 
     // Hook to update tick
@@ -146,7 +145,7 @@ function HandleMouseLookX(param)
     var move = parseInt(param);
     var placeable = me.GetComponent("EC_Placeable");
     var newtransform = placeable.transform;
-    newtransform.rot.z -= rotate_sensitivity * move;
+    newtransform.rot.y -= rotate_sensitivity * move;
     placeable.transform = newtransform;
 }
 

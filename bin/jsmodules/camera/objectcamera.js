@@ -1,5 +1,7 @@
 // An object camera script. Enables object look using Alt+Click, rotating around object and zooming in and out
 
+// Todo: fix this for flexible coordinate axes, or remove
+
 var rotate_sensitivity = 0.5;
 var camera_distance = 7.0;
 var scroll_speed = 0.8;

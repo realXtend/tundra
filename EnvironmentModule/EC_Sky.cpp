@@ -24,9 +24,9 @@ namespace Environment
 /// \todo Use Asset API for fetching sky resources.
 EC_Sky::EC_Sky(IModule *module) :
     IComponent(module->GetFramework()),
-    materialRef(this, "Material", AssetReference("RexSkyBox")), ///< \todo Add "orge://" when AssetAPI can handle it.
+    materialRef(this, "Material", AssetReference("RexSkyBox")), ///< \todo Add "ogre://" when AssetAPI can handle it.
     textureRefs(this, "Texture"),
-    orientation(this, "Orientation", Quaternion(f32(M_PI/2.0), Vector3df(1.0,0.0,0.0))),
+    orientation(this, "Orientation", Quaternion()),
     distance(this, "Distance",50.0),
     drawFirst(this, "Draw first", true)
 {

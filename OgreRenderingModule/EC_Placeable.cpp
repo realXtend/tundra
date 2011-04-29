@@ -58,7 +58,7 @@ EC_Placeable::EC_Placeable(IModule* module) :
     scene_node_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Placeable_SceneNode"));
     
     // In case the placeable is used for camera control, set fixed yaw axis
-    scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
+    //scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
 
     // Hook the transform attribute change
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
