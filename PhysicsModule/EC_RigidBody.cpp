@@ -2,15 +2,14 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include <btBulletDynamicsCommon.h>
-#include "MemoryLeakCheck.h"
+
 #include "EC_RigidBody.h"
 #include "ConvexHull.h"
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
-#include "OgreMeshAsset.h"
 
+#include "OgreMeshAsset.h"
 #include "Entity.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
@@ -18,10 +17,15 @@
 #include "ServiceManager.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
+#include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 
+#include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
+
 #include <set>
+
+#include "MemoryLeakCheck.h"
 
 using namespace Physics;
 

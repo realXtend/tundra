@@ -2,14 +2,18 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
+#include "EC_Placeable.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "EC_Placeable.h"
+
+#include "AttributeMetadata.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
+
+#include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 

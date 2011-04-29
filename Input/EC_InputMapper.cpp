@@ -10,6 +10,7 @@
 #include "EC_InputMapper.h"
 
 #include "IAttribute.h"
+#include "AttributeMetadata.h"
 #include "InputAPI.h"
 #include "Entity.h"
 

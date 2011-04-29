@@ -3,23 +3,25 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "CoreStdIncludes.h"
-#include <QList>
-#include <QVector>
-#include "MemoryLeakCheck.h"
-#include "IModule.h"
+#include "EC_Light.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
-#include "Entity.h"
 #include "OgreConversionUtils.h"
+
+#include "IModule.h"
+#include "Entity.h"
 #include "XMLUtilities.h"
+#include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 
 #include <QDomDocument>
+#include <QList>
+#include <QVector>
+
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 
-#include "EC_Light.h"
+#include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 

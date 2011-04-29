@@ -2,18 +2,19 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include <QList>
-#include "MemoryLeakCheck.h"
+
 #include "EC_Script.h"
 #include "IScriptInstance.h"
 #include "ScriptAsset.h"
 
 #include "IAttribute.h"
+#include "AttributeMetadata.h"
 #include "IAssetTransfer.h"
 #include "Entity.h"
 #include "AssetRefListener.h"
-
 #include "LoggingFunctions.h"
+
+#include "MemoryLeakCheck.h"
 
 EC_Script::~EC_Script()
 {

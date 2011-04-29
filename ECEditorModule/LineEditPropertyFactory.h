@@ -7,6 +7,7 @@
 
 #include "SceneFwd.h"
 #include "IAttribute.h"
+#include "AttributeMetadata.h"
 
 #include <qteditorfactory.h>
 

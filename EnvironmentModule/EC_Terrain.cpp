@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "EC_Terrain.h"
 
 #include "BinaryAsset.h"
@@ -20,9 +20,12 @@
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
 #include "TextureAsset.h"
+#include "AttributeMetadata.h"
 
 #include <Ogre.h>
 #include <utility>
+
+#include "MemoryLeakCheck.h"
 
 using namespace std;
 using namespace OgreRenderer;

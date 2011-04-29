@@ -8,6 +8,7 @@
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "IAttribute.h"
+#include "AttributeMetadata.h"
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "OgreMaterialUtils.h"

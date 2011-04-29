@@ -13,6 +13,7 @@
 #include "OgreMaterialAsset.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
+#include "AttributeMetadata.h"
 
 #include <Ogre.h>
 #include <OgreTagPoint.h>

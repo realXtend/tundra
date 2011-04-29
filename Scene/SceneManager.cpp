@@ -10,6 +10,7 @@
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "EC_Name.h"
+#include "AttributeMetadata.h"
 
 #include "Framework.h"
 #include "ComponentManager.h"

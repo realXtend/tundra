@@ -11,6 +11,7 @@
 #include "IComponent.h"
 #include "Transform.h"
 #include "AssetReference.h"
+#include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 
 #include <QtTreePropertyBrowser>

@@ -1,25 +1,21 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "DebugOperatorNew.h"
+
 #include "EC_Sound.h"
+
 #include "IModule.h"
 #include "Framework.h"
-
 #include "Entity.h"
 #include "SceneManager.h"
-
+#include "AttributeMetadata.h"
 #include "AudioAPI.h"
 #include "AudioAsset.h"
-
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
-
 #include "EC_Placeable.h"
 #include "EC_SoundListener.h"
-
-#include <QStringList>
-
 #include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"

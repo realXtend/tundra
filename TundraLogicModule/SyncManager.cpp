@@ -24,6 +24,7 @@
 #include "EC_DynamicComponent.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
+#include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 
 #include "SceneAPI.h"

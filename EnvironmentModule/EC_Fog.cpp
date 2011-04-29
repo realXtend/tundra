@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "EC_Fog.h"
 
+#include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 
 #include <QDebug>

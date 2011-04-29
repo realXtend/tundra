@@ -10,6 +10,7 @@
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
 #include "TextureAsset.h"
+#include "AttributeMetadata.h"
 
 #include <Ogre.h>
 
