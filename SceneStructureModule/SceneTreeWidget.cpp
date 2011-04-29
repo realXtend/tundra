@@ -19,7 +19,6 @@
 #include "SceneImporter.h"
 #include "ComponentManager.h"
 #include "ModuleManager.h"
-#include "TundraEvents.h"
 #include "EventManager.h"
 #include "ConfigurationManager.h"
 #include "ECEditorWindow.h"

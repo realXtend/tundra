@@ -1279,7 +1279,6 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
  //   if(terrainMaterial)
 //    {
         OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
-//        emit TerrainTextureChanged(); ///\todo Regression here. Re-enable this so that the EnvironmentEditor texture viewer can see the textures?
 //    }
 //    else
 //        EnvironmentModule::LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
@@ -1509,9 +1508,6 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     node->attachObject(patch.entity);
 
     patch.patch_geometry_dirty = false;
-
-    ///\todo Regression. Re-enable this to have the EnvironmentEditor module function again.
-//    emit HeightmapGeometryUpdated();
 }
 
 void EC_Terrain::CreateRootNode()

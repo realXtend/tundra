@@ -86,6 +86,9 @@ signals:
     /// This signal is emitted when the client has disconnected from the server.
     void Disconnected();
 
+    /// Emitted when a login attempt failed to a server.
+    void LoginFailed();
+
 public slots:
     /// Connects and logs in. The QUrl's query parameters will be evaluated for the login data.
     /** Minimum information needed to try a connection in the url are host and username.
@@ -133,9 +136,13 @@ public slots:
     /// Deletes all set login properties.
     void ClearLoginProperties() { properties.clear(); }
 
-private:
+private slots:
     /// Handles a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
+
+    void OnConnectionAttemptFailed();
+
+private:
 
     /// Handles pending login to server
     void CheckLogin();

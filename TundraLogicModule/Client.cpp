@@ -12,7 +12,6 @@
 #include "CoreStringUtils.h"
 #include "SyncManager.h"
 #include "TundraMessages.h"
-#include "TundraEvents.h"
 #include "PhysicsModule.h"
 
 #include "SceneAPI.h"
@@ -41,6 +40,12 @@ Client::Client(TundraLogicModule* owner) :
 {
     tundraEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
+
+    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
+
+    connect(kristalli, SIGNAL(ConnectionAttemptFailed()), this, SLOT(OnConnectionAttemptFailed()));
 }
 
 Client::~Client()
@@ -149,7 +154,10 @@ void Client::Logout(bool fail)
     }
     
     if (fail)
+    {
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_LOGIN_FAILED, 0);
+        emit LoginFailed();
+    }
     else // An user deliberately disconnected from the world, and not due to a connection error.
     {
         // Clear all the login properties we used for this session, so that the next login session will start from an
@@ -230,18 +238,12 @@ kNet::MessageConnection* Client::GetConnection()
 
 void Client::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 {
-    if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
-    {
-        if (!owner_->IsServer())
-        {
-            KristalliProtocol::Events::KristalliNetMessageIn* eventData = checked_static_cast<KristalliProtocol::Events::KristalliNetMessageIn*>(data);
-            HandleKristalliMessage(eventData->source, eventData->id, eventData->data, eventData->numBytes);
-        }
-    }
-    if (event_id == KristalliProtocol::Events::CONNECTION_FAILED)
-    {
-        Logout(true);
-    }
+    Logout(true);
+}
+
+void Client::OnConnectionAttemptFailed()
+{
+	Logout(true);
 }
 
 void Client::HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes)

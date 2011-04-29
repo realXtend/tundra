@@ -195,6 +195,7 @@ void KristalliProtocolModule::Update(f64 frametime)
             {
                 LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
                 framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, 0);
+                emit ConnectionAttemptFailed();
                 reconnectTimer.Stop();
                 serverIp = "";
             }
@@ -302,8 +303,6 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
         return;
 
     source->RegisterInboundMessageHandler(this);
-    ///\todo Regression. Re-enable. -jj.
-//    source->SetDatagramInFlowRatePerSecond(200);
     
     UserConnection* connection = new UserConnection();
     connection->userID = AllocateNewConnectionID();
@@ -318,6 +317,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     
     Events::KristalliUserConnected msg(connection);
     framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
+    emit ClientConnectedEvent(connection);
 }
 
 void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
@@ -328,6 +328,7 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
         {
             Events::KristalliUserDisconnected msg((*iter));
             framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
+            emit ClientDisconnectedEvent(*iter);
             
             LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
             delete(*iter);
@@ -348,6 +349,7 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
         Events::KristalliNetMessageIn msg(source, id, data, numBytes);
 
         framework_->GetEventManager()->SendEvent(networkEventCategory, Events::NETMESSAGE_IN, &msg);
+        emit NetworkMessageReceived(source, id, data, numBytes);
     } catch(std::exception &e)
     {
         LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " +

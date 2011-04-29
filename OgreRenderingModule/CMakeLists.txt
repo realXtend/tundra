@@ -38,7 +38,7 @@ add_definitions (-DOGRE_MODULE_EXPORTS)
 #add_definitions (-DUSE_NVIDIA_PERFHUD)
 
 use_package_assimp()
-use_modules (Core Foundation Interfaces Scene AssetModule RexCommon ProtocolUtilities Input Ui Asset Console)
+use_modules (Core Foundation Interfaces Scene RexCommon ProtocolUtilities Input Ui Asset Console)
 
 if (CAELUM)
     use_package (CAELUM)
