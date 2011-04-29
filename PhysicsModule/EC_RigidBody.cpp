@@ -25,8 +25,6 @@
 
 #include <set>
 
-#include "MemoryLeakCheck.h"
-
 using namespace Physics;
 
 static const float cForceThreshold = 0.0005f;
