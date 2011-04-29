@@ -81,6 +81,11 @@ public:
     Q_PROPERTY(QVariantList entities READ getentities WRITE setentities);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, entities);
 
+//$ BEGIN_MOD $
+    //! Name of RigidBody component. default value is "VolumeTrigger".
+    Q_PROPERTY(QString rigidBodyName READ getrigidBodyName WRITE setrigidBodyName);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, rigidBodyName);    
+//$ END_MOD $
     virtual ~EC_VolumeTrigger();
 
     //! Set component as serializable.

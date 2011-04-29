@@ -22,6 +22,9 @@ EC_VolumeTrigger::EC_VolumeTrigger(IModule* module) :
     IComponent(module->GetFramework()),
     byPivot(this, "By Pivot", false),
     entities(this, "Entities"),
+//$ BEGIN_MOD $
+    rigidBodyName(this, "RigidBody Name", "VolumeTrigger"),
+//$ END_MOD $
     owner_(checked_static_cast<Physics::PhysicsModule*>(module))
 {
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
@@ -184,7 +187,9 @@ void EC_VolumeTrigger::CheckForRigidBody()
     
     if (!rigidbody_.lock())
     {
-        boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>();
+//$ BEGIN_MOD $
+        boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>(rigidBodyName.Get());
+//$ END_MOD $
         if (rigidbody)
         {
             rigidbody_ = rigidbody;
@@ -278,4 +283,3 @@ void EC_VolumeTrigger::OnEntityRemoved(Scene::Entity *entity)
         emit EntityLeave(entity);
     }
 }
-
