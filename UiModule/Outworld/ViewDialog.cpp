@@ -9,6 +9,7 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QList>
+#include <QMessageBox>
 
 namespace UiServices
 {

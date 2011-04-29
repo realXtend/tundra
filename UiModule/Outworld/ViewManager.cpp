@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QVariantList>
 #include <QMainWindow>
+#include <QDockWidget>
 
 namespace UiServices
 {

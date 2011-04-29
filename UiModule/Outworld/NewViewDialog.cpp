@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QList>
+#include <QMessageBox>
 
 namespace UiServices
 {

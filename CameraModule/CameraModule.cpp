@@ -362,7 +362,7 @@ namespace Camera
 
     void CameraModule::GenerateValidWidgetTitle(QString &title)
     {       
-        if (title.isNull())
+        if (title.isNull() || title=="")
         {            
             title = QString("CameraExt").append(QString::number(rand()));
         }
