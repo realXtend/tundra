@@ -9,8 +9,8 @@ if (!server.IsRunning() && !framework.IsHeadless())
 }
 
 // A simple walking avatar with physics & 1st/3rd person camera
-var rotate_speed = 150.0;
-var mouse_rotate_sensitivity = 0.3;
+var rotate_speed = 100.0;
+var mouse_rotate_sensitivity = 0.2;
 var move_force = 15.0;
 var fly_speed_factor = 0.25;
 var damping_force = 3.0;
@@ -22,6 +22,10 @@ var avatar_mass = 10;
 var motion_x = 0;
 var motion_y = 0;
 var motion_z = 0;
+
+// Clientside yaw, pitch & rotation state
+var yaw = 0;
+var pitch = 0;
 var rotate = 0;
 
 // Needed bools for logic
@@ -93,16 +97,14 @@ function ServerInitialize() {
     // Hook to physics update
     rigidbody.GetPhysicsWorld().Updated.connect(ServerUpdatePhysics);
 
-    // Hook to tick update for continuous rotation update
+    // Hook to tick update for animation update
     frame.Updated.connect(ServerUpdate);
 
     // Connect actions. These come from the client side inputmapper
     me.Action("Move").Triggered.connect(ServerHandleMove);
     me.Action("Stop").Triggered.connect(ServerHandleStop);
     me.Action("ToggleFly").Triggered.connect(ServerHandleToggleFly);
-    me.Action("Rotate").Triggered.connect(ServerHandleRotate);
-    me.Action("StopRotate").Triggered.connect(ServerHandleStopRotate);
-    me.Action("MouseLookX").Triggered.connect(ServerHandleMouseLookX);
+    me.Action("SetRotation").Triggered.connect(ServerHandleSetRotation);
 
     rigidbody.PhysicsCollision.connect(ServerHandleCollision);
 }
@@ -112,14 +114,6 @@ function ServerUpdate(frametime) {
 
     if (!animsDetected) {
         CommonFindAnimations();
-    }
-
-    if (rotate != 0) {
-        if (attrs.GetAttribute("enableRotate")) {
-            var rotateVec = new Vector3df();
-            rotateVec.z = -rotate_speed * rotate * frametime;
-            me.rigidbody.Rotate(rotateVec);
-        }
     }
 
     // If walk enable was toggled off, make sure the motion state is cleared
@@ -316,34 +310,12 @@ function ServerSetFlying(newFlying) {
     ServerSetAnimationState();
 }
 
-function ServerHandleRotate(param) {
+function ServerHandleSetRotation(param) {
     var attrs = me.dynamiccomponent;
     if (attrs.GetAttribute("enableRotate")) {
-        if (param == "left") {
-            rotate = -1;
-        }
-        if (param == "right") {
-            rotate = 1;
-        }
-    }
-}
-
-function ServerHandleStopRotate(param) {
-    if ((param == "left") && (rotate == -1)) {
-        rotate = 0;
-    }
-    if ((param == "right") && (rotate == 1)) {
-        rotate = 0;
-    }
-}
-
-function ServerHandleMouseLookX(param) {
-    var attrs = me.dynamiccomponent;
-    if (attrs.GetAttribute("enableRotate")) {
-        var move = parseInt(param);
         var rotateVec = new Vector3df();
-        rotateVec.z = -mouse_rotate_sensitivity * move;
-        me.rigidbody.Rotate(rotateVec);
+        rotateVec.z = parseFloat(param);
+        me.rigidbody.SetRotation(rotateVec);
     }
 }
 
@@ -388,6 +360,8 @@ function ClientInitialize() {
 
         me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
         me.Action("Zoom").Triggered.connect(ClientHandleKeyboardZoom);
+        me.Action("Rotate").Triggered.connect(ClientHandleRotate);
+        me.Action("StopRotate").Triggered.connect(ClientHandleStopRotate);
 
         // Inspect the login avatar url property
         var avatarurl = client.GetLoginProperty("avatarurl");
@@ -447,6 +421,7 @@ function ClientUpdate(frametime)
                 inputmapper.enabled = active;
             }
         }
+        ClientUpdateRotation(frametime);
         ClientUpdateAvatarCamera(frametime);
     }
 
@@ -477,8 +452,6 @@ function ClientCreateInputMapper() {
     inputmapper.RegisterMapping("D", "Move(right))", 1);
     inputmapper.RegisterMapping("Up", "Move(forward)", 1);
     inputmapper.RegisterMapping("Down", "Move(back)", 1);
-    inputmapper.RegisterMapping("Left", "Rotate(left)", 1);
-    inputmapper.RegisterMapping("Right", "Rotate(right))", 1);
     inputmapper.RegisterMapping("F", "ToggleFly()", 1);
     inputmapper.RegisterMapping("Space", "Move(up)", 1);
     inputmapper.RegisterMapping("C", "Move(down)", 1);
@@ -490,8 +463,6 @@ function ClientCreateInputMapper() {
     inputmapper.RegisterMapping("D", "Stop(right)", 3);
     inputmapper.RegisterMapping("Up", "Stop(forward)", 3);
     inputmapper.RegisterMapping("Down", "Stop(back)", 3);
-    inputmapper.RegisterMapping("Left", "StopRotate(left)", 3);
-    inputmapper.RegisterMapping("Right", "StopRotate(right))", 3);
     inputmapper.RegisterMapping("Space", "Stop(up)", 3);
     inputmapper.RegisterMapping("C", "Stop(down)", 3);
 
@@ -501,7 +472,7 @@ function ClientCreateInputMapper() {
     inputContext.GestureUpdated.connect(GestureUpdated);
     inputContext.MouseMove.connect(ClientHandleMouseMove);
 
-    // Local camera mapper for mouse scroll
+    // Local mapper for mouse scroll and rotate
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", "CameraMapper", 2, false);
     inputmapper.SetNetworkSyncEnabled(false);
     inputmapper.contextPriority = 100;
@@ -510,6 +481,10 @@ function ClientCreateInputMapper() {
     inputmapper.executionType = 1; // Execute actions locally
     inputmapper.RegisterMapping("+", "Zoom(in)", 1);
     inputmapper.RegisterMapping("-", "Zoom(out)", 1);
+    inputmapper.RegisterMapping("Left", "Rotate(left)", 1);
+    inputmapper.RegisterMapping("Right", "Rotate(right))", 1);
+    inputmapper.RegisterMapping("Left", "StopRotate(left)", 3);
+    inputmapper.RegisterMapping("Right", "StopRotate(right))", 3);
 }
 
 function ClientCreateAvatarCamera() {
@@ -538,8 +513,14 @@ function GestureStarted(gestureEvent)
     if (gestureEvent.GestureType() == Qt.PanGesture)
     {
         listenGesture = true;
-        var x = new Number(gestureEvent.Gesture().offset.toPoint().x());
-        me.Exec(2, "MouseLookX", x.toString());
+
+        var attrs = me.dynamiccomponent;
+        if (attrs.GetAttribute("enableRotate")) {
+            var x = new Number(gestureEvent.Gesture().offset.toPoint().x());
+            yaw += x;
+            me.Exec(2, "SetRotation", yaw.toString());
+        }
+        
         gestureEvent.Accept();
     }
     else if (gestureEvent.GestureType() == Qt.PinchGesture)
@@ -555,8 +536,8 @@ function GestureUpdated(gestureEvent)
     {
         // Rotate avatar with X pan gesture
         delta = gestureEvent.Gesture().delta.toPoint();
-        var x = new Number(delta.x());
-        me.Exec(2, "MouseLookX", x.toString());
+        yaw += delta.x;
+        me.Exec(2, "SetRotation", yaw.toString());
 
         // Start walking or stop if total Y len of pan gesture is 100
         var walking = false;
@@ -638,6 +619,36 @@ function ClientHandleMouseScroll(relativeScroll)
     }
 }
 
+function ClientHandleRotate(param) {
+    if (param == "left") {
+        rotate = -1;
+    }
+    if (param == "right") {
+        rotate = 1;
+    }
+}
+
+function ClientHandleStopRotate(param) {
+    if ((param == "left") && (rotate == -1)) {
+        rotate = 0;
+    }
+    if ((param == "right") && (rotate == 1)) {
+        rotate = 0;
+    }
+}
+
+function ClientUpdateRotation(frametime) {
+    var attrs = me.dynamiccomponent;
+    // Check that rotation is allowed
+    if (!attrs.GetAttribute("enableRotate"))
+        return;
+
+    if (rotate != 0) {
+        yaw -= rotate_speed * rotate * frametime;
+        me.Exec(2, "SetRotation", yaw.toString());
+    }
+}
+
 function ClientUpdateAvatarCamera() {
 
     // Check 1st/3rd person mode toggle
@@ -653,19 +664,27 @@ function ClientUpdateAvatarCamera() {
     var cameraplaceable = cameraentity.placeable;
     var avatarplaceable = me.placeable;
 
+    // First modify the rotation so that the camera can tell us a rotated offset vector
+    if (!first_person)
+        pitch = 0;
     var cameratransform = cameraplaceable.transform;
+    cameratransform.rot.x = pitch + 90;
+    cameratransform.rot.y = 0;
+    cameratransform.rot.z = yaw;
+    cameraplaceable.transform = cameratransform;
+
     var avatartransform = avatarplaceable.transform;
     var offsetVec = new Vector3df();
     offsetVec.x = -avatar_camera_distance;
-    offsetVec.z = avatar_camera_height;
-    offsetVec = avatarplaceable.GetRelativeVector(offsetVec);
+    offsetVec.y = avatar_camera_height;
+    offsetVec = cameraplaceable.GetRelativeVector(offsetVec);
     cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
     cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
     cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
+
     // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
-    if(!first_person)
-        cameratransform.rot.x = 90;
-    cameratransform.rot.z = avatartransform.rot.z - 90;
+    cameratransform.rot.z -= 90;
+
     cameraplaceable.transform = cameratransform;
 }
 
@@ -682,7 +701,6 @@ function ClientCheckState()
     // If ent got destroyed or something fatal, return cursor
     if (cameraentity == null || avatar_placeable == null) {
         if (crosshair.isActive()) {
-            me.inputmapper.takeMouseEventsOverQt = false;
             crosshair.hide();
         }
         return;
@@ -690,7 +708,6 @@ function ClientCheckState()
 
     if (!first_person) {
         if (crosshair.isActive()) {
-            me.inputmapper.takeMouseEventsOverQt = false;
             crosshair.hide();
         }
         return;
@@ -701,7 +718,6 @@ function ClientCheckState()
         // hide curson and show av
         if (!cameraentity.ogrecamera.IsActive()) {
             if (crosshair.isActive()) {
-                me.inputmapper.takeMouseEventsOverQt = false;
                 crosshair.hide();
             }
         }
@@ -709,8 +725,6 @@ function ClientCheckState()
             // 1st person mode and camera is active
             // show curson and av
             if (!crosshair.isActive()) {
-                // In 1st person mode, take mouse events over Qt so that the crosshair label does not disturb
-                me.inputmapper.takeMouseEventsOverQt = true;
                 crosshair.show();
             }
         }
@@ -722,15 +736,20 @@ function ClientHandleMouseMove(mouseevent)
     var attrs = me.dynamiccomponent;
     var first_person = attrs.GetAttribute("cameraDistance") < 0;
 
-    if (!first_person)
-        return;
-
-    if (input.IsMouseCursorVisible())
+    if ((first_person) && (input.IsMouseCursorVisible()))
     {
         input.SetMouseCursorVisible(false);
         if (!crosshair.isUsingLabel)
             QApplication.setOverrideCursor(crosshair.cursor);
     }
+        
+    // Do not rotate if not allowed
+    if (!attrs.GetAttribute("enableRotate"))
+        return;
+
+    // Do not rotate in third person if right mousebutton not held down
+    if ((!first_person) && (input.IsMouseCursorVisible()))
+        return;
 
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if (cameraentity == null)
@@ -743,24 +762,24 @@ function ClientHandleMouseMove(mouseevent)
     var cameraplaceable = cameraentity.placeable;
     var cameratransform = cameraplaceable.transform;
 
-    // Note: This causes MouseLookX message to be sent *twice* to server. Once here, and once directly by inputmapper, if the user is holding RMB down.
     if (mouseevent.relativeX != 0)
-        me.Exec(2, "MouseLookX", String(mouse_rotate_sensitivity * parseInt(mouseevent.relativeX))); 
-        
+    {
+        // Rotate avatar or camera
+        yaw -= mouse_rotate_sensitivity * parseInt(mouseevent.relativeX);
+        me.Exec(2, "SetRotation", yaw.toString());
+    }
+
     if (mouseevent.relativeY != 0)
     {
-        // Look up/down. This is clientside only, as it affects only the first person camera
-        // Nevertheless, check if rotation is allowed
+        // Look up/down
         var attrs = me.dynamiccomponent;
-        if (attrs.GetAttribute("enableRotate")) {
-            cameratransform.rot.x -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeY);
+        pitch -= mouse_rotate_sensitivity * parseInt(mouseevent.relativeY);
 
-            // Dont let the 1st person flip vertically, 180 deg view angle
-            if (cameratransform.rot.x < 0)
-                cameratransform.rot.x = 0;
-            if (cameratransform.rot.x > 180)
-                cameratransform.rot.x = 180;
-        }
+        // Dont let the 1st person flip vertically, 180 deg view angle
+        if (pitch < -90)
+            pitch = -90;
+        if (pitch > 90)
+            pitch = 90;
     }
 
     cameraplaceable.transform = cameratransform;
