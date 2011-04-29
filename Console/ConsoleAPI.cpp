@@ -90,6 +90,7 @@ ConsoleAPI::ConsoleAPI(Foundation::Framework *fw) :
     QObject(fw),
     framework_(fw),
     uiConsoleManager(0),
+    commandManager(new CommandManager(this, framework_)),
 //START FROM CONSOLEMANAGER
     consoleChannel(new ConsoleChannel(this)),
     logListener(new LogListener(this))
@@ -97,7 +98,7 @@ ConsoleAPI::ConsoleAPI(Foundation::Framework *fw) :
 {
     if (!fw->IsHeadless())
     {
-        uiConsoleManager = new UiConsoleManager(framework_);
+        uiConsoleManager = new UiConsoleManager(commandManager, framework_);
         for(unsigned i=0; i<earlyMessages.size();i++)
             Print(earlyMessages.at(i).c_str());
         earlyMessages.clear();
@@ -108,7 +109,6 @@ ConsoleAPI::ConsoleAPI(Foundation::Framework *fw) :
     connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
 //START FROM CONSOLEMANAGER
-    commandManager = new CommandManager(this, framework_);
     framework_->AddLogChannel(consoleChannel.get());
 
     Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
