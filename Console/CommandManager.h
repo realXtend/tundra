@@ -15,6 +15,7 @@ namespace Foundation { class Framework; }
 class NativeConsole;
 class ConsoleAPI;
 
+/// @todo Remove this class and merge its contents to ConsoleAPI.
 class CommandManager : public QObject
 {
     Q_OBJECT
