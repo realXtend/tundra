@@ -77,15 +77,22 @@ namespace OgreRenderer
         /// Do a frustum query to the world from viewport coordinates.
         virtual QList<Entity*> FrustumQuery(QRect &viewrect);
 
-        /// Do raycast into the world from viewport coordinates.
+        /// Do raycast into the world from viewport coordinates, using all selection layers
         /** The coordinates are a position in the render window, not scaled to [0,1].
-            \todo Returns raw pointer to entity. Returning smart pointer may take some thinking/design. Maybe just return entity id?
-
             \param x Horizontal position for the origin of the ray
             \param y Vertical position for the origin of the ray
             \return Raycast result structure
         */
         virtual RaycastResult* Raycast(int x, int y);
+
+        /// Do raycast into the world from viewport coordinates, using specific selection layer(s)
+        /** The coordinates are a position in the render window, not scaled to [0,1].
+            \param x Horizontal position for the origin of the ray
+            \param y Vertical position for the origin of the ray
+            \param layerMask Which selection layer(s) to use (bitmask)
+            \return Raycast result structure
+        */
+        virtual RaycastResult* Raycast(int x, int y, unsigned layerMask);
 
         /// Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;

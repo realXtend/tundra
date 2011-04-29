@@ -67,7 +67,7 @@ public:
     /// Renders the scene
     virtual void Render() = 0;
 
-    /// Do raycast into the world from viewport coordinates.
+    /// Do raycast into the world from viewport coordinates, using all selection layers
     /** The coordinates are a position in the render window, not scaled to [0,1].
         \param x Horizontal position for the origin of the ray
         \param y Vertical position for the origin of the ray
@@ -75,6 +75,15 @@ public:
     */
     virtual RaycastResult* Raycast(int x, int y) = 0;
 
+    /// Do raycast into the world from viewport coordinates, using specific selection layer(s)
+    /** The coordinates are a position in the render window, not scaled to [0,1].
+        \param x Horizontal position for the origin of the ray
+        \param y Vertical position for the origin of the ray
+        \param layerMask Which selection layer(s) to use (bitmask)
+        \return Raycast result structure
+    */
+    virtual RaycastResult* Raycast(int x, int y, unsigned layerMask) = 0;
+    
     /// Do a frustum query to the world from viewport coordinates.
     /** Returns the found entities as a QVariantList so that
         Python and Javascript can get the result directly from here.

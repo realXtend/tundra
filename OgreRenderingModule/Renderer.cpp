@@ -942,6 +942,11 @@ namespace OgreRenderer
 
     RaycastResult* Renderer::Raycast(int x, int y)
     {
+        return Raycast(x, y, 0xffffffff);
+    }
+    
+    RaycastResult* Renderer::Raycast(int x, int y, unsigned layerMask)
+    {
         static RaycastResult result;
         
         result.entity_ = 0; 
@@ -957,47 +962,7 @@ namespace OgreRenderer
         ray_query_->setRay(ray);
         Ogre::RaySceneQueryResult &results = ray_query_->execute();
 
-        // The minimum priority to use if we're picking an Entity that doesn't have the component that contains priority.
-        const int minimum_priority = -1000000;
-
-        int best_priority = minimum_priority;
-        // Prepass: get best available priority for breaking early
-        for(size_t i = 0; i < results.size(); ++i)
-        {
-            Ogre::RaySceneQueryResultEntry &entry = results[i];
-            if (!entry.movable)
-                continue;
-
-            /// \todo Do we want results for invisible entities?
-            if (!entry.movable->isVisible())
-                continue;
-            
-            Ogre::Any any = entry.movable->getUserAny();
-            if (any.isEmpty())
-                continue;
-            
-            Entity *entity = 0;
-            try
-            {
-                entity = Ogre::any_cast<Entity*>(any);
-            }
-            catch(Ogre::InvalidParametersException &/*e*/)
-            {
-                continue;
-            }
-
-            EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
-            if (!placeable)
-                continue;
-
-            int current_priority = placeable->GetSelectPriority();
-            if (current_priority > best_priority)
-                best_priority = current_priority;
-        }
-
-        // Now do the real pass
         Ogre::Real closest_distance = -1.0f;
-        int closest_priority = minimum_priority;
         Ogre::Vector2 closest_uv;
 
         static std::vector<Ogre::Vector3> vertices;
@@ -1012,11 +977,7 @@ namespace OgreRenderer
         for(size_t i = 0; i < results.size(); ++i)
         {
             Ogre::RaySceneQueryResultEntry &entry = results[i];
-            // Stop checking if we have found a raycast hit that is closer
-            // than all remaining entities, and the priority found is best possible
-            if ((closest_distance >= 0.0f) && (closest_distance < entry.distance) && (closest_priority >= best_priority))
-                break;
-
+        
             if (!entry.movable)
                 continue;
 
@@ -1037,18 +998,14 @@ namespace OgreRenderer
             {
                 continue;
             }
-
-            int current_priority = minimum_priority;
+            
+            EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
+            if (placeable)
             {
-                EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
-                if (placeable)
-                {
-                    current_priority = placeable->GetSelectPriority();
-                    //if (current_priority < closest_priority)
-                    //  continue;
-                }
+                if (!(placeable->selectionLayer.Get() & layerMask))
+                    continue;
             }
-
+            
             // Mesh entity check: triangle intersection
             if (entry.movable->getMovableType().compare("Entity") == 0)
             {
@@ -1069,23 +1026,19 @@ namespace OgreRenderer
                         vertices[indices[j+1]], vertices[indices[j+2]], true, false);
                     if (hit.first)
                     {
-                        if ((closest_distance < 0.0f) || (hit.second < closest_distance) || (current_priority > closest_priority))
+                        if ((closest_distance < 0.0f) || (hit.second < closest_distance))
                         {
-                            if (current_priority >= closest_priority)
-                            {
-                                // this is the closest/best so far, save it
-                                closest_distance = hit.second;
-                                closest_priority = current_priority;
+                            // this is the closest/best so far, save it
+                            closest_distance = hit.second;
 
-                                Ogre::Vector2 uv = FindUVs(ray, hit.second, vertices, texcoords, indices, j); 
-                                Ogre::Vector3 point = ray.getPoint(closest_distance);
+                            Ogre::Vector2 uv = FindUVs(ray, hit.second, vertices, texcoords, indices, j); 
+                            Ogre::Vector3 point = ray.getPoint(closest_distance);
 
-                                result.entity_ = entity;
-                                result.pos_ = Vector3df(point.x, point.y, point.z);
-                                result.submesh_ = GetSubmeshFromIndexRange(j, submeshstartindex);
-                                result.u_ = uv.x;
-                                result.v_ = uv.y;
-                            }
+                            result.entity_ = entity;
+                            result.pos_ = Vector3df(point.x, point.y, point.z);
+                            result.submesh_ = GetSubmeshFromIndexRange(j, submeshstartindex);
+                            result.u_ = uv.x;
+                            result.v_ = uv.y;
                         }
                     }
                 }
@@ -1093,22 +1046,18 @@ namespace OgreRenderer
             else
             {
                 // Not an entity, fall back to just using the bounding box - ray intersection
-                if ((closest_distance < 0.0f) || (entry.distance < closest_distance) || (current_priority > closest_priority))
+                if ((closest_distance < 0.0f) || (entry.distance < closest_distance))
                 {
-                    if (current_priority >= closest_priority)
-                    {
-                        // this is the closest/best so far, save it
-                        closest_distance = entry.distance;
-                        closest_priority = current_priority;
+                    // this is the closest/best so far, save it
+                    closest_distance = entry.distance;
 
-                        Ogre::Vector3 point = ray.getPoint(closest_distance);
+                    Ogre::Vector3 point = ray.getPoint(closest_distance);
 
-                        result.entity_ = entity;
-                        result.pos_ = Vector3df(point.x, point.y, point.z);
-                        result.submesh_ = 0;
-                        result.u_ = 0.0f;
-                        result.v_ = 0.0f;
-                    }
+                    result.entity_ = entity;
+                    result.pos_ = Vector3df(point.x, point.y, point.z);
+                    result.submesh_ = 0;
+                    result.u_ = 0.0f;
+                    result.v_ = 0.0f;
                 }
             }
         }

@@ -31,6 +31,8 @@ Registered by OgreRenderer::OgreRenderingModule.
 <div>Sets the position, rotation and scale of the entity.</div>
 <li>bool: drawDebug
 <div>Shows the debug bounding box of geometry attached to the placeable.</div>
+<li>int: selectionLayer
+<div>Selection layer for raycasts.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -89,8 +91,7 @@ public:
     Q_PROPERTY(float Yaw READ GetYaw)
     Q_PROPERTY(float Pitch READ GetPitch)
     Q_PROPERTY(float Roll READ GetRoll)
-    Q_PROPERTY(int SelectPriority READ GetSelectPriority WRITE SetSelectPriority)
-
+    
     /// Transformation attribute for position, rotation and scale adjustments.
     Q_PROPERTY(Transform transform READ gettransform WRITE settransform);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, transform);
@@ -102,6 +103,10 @@ public:
     /// Specifies whether any objects attached to the scene node of this placeable are visible or not.
     Q_PROPERTY(bool visible READ getvisible WRITE setvisible);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, visible);
+    
+    /// Specifies selection layer for raycasts
+    Q_PROPERTY(int selectionLayer READ getselectionLayer WRITE setselectionLayer)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, selectionLayer);
 
     virtual ~EC_Placeable();
         
@@ -149,11 +154,6 @@ public:
      */
     void SetScale(const Vector3df& scale);
 
-    /// sets select priority
-    /** \param priority new select priority
-     */
-    void SetSelectPriority(int priority) { select_priority_ = priority; }
-    
     /// gets parent placeable
     ComponentPtr GetParent() { return parent_; }
     
@@ -181,17 +181,8 @@ public:
     /** Do not manipulate the pos/orientation/scale of this node directly
      */
     Ogre::SceneNode* GetSceneNode() const { return scene_node_; }
-   
-    /// returns Ogre scenenode for linking another placeable in OpenSim compatible way.
-    /** Only used by other placeables, or in other rare cases. Do not use if GetSceneNode() works for you,
-        as this doesn't take scaling into account!
-     */
-    Ogre::SceneNode* GetLinkSceneNode() const { return link_scene_node_; }
     
-    /// returns select priority
-    int GetSelectPriority() const { return select_priority_; }
-
-    /// experimental accessors that use the new 3d vector etc types in Qt 4.6, for qproperties
+    /// get node position
     QVector3D GetQPosition() const;
     void SetQPosition(QVector3D newpos);
 
@@ -278,17 +269,11 @@ private:
     /// parent placeable
     ComponentPtr parent_;
     
-    /// Ogre scene node for geometry. scale is handled here
+    /// Ogre scene node for geometry
     Ogre::SceneNode* scene_node_;
 
-    /// Ogre scene node for linking. position & orientation are handled here, and the geometry scene node is attached to this
-    Ogre::SceneNode* link_scene_node_;
-    
     /// attached to scene hierarchy-flag
     bool attached_;
-    
-    /// selection priority for picking
-    int select_priority_;
 };
 
 #endif
