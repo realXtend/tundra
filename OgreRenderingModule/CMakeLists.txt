@@ -38,7 +38,7 @@ add_definitions (-DOGRE_MODULE_EXPORTS)
 #add_definitions (-DUSE_NVIDIA_PERFHUD)
 
 use_package_assimp()
-use_modules (Framework Scene AssetModule Input Ui Asset Console)
+use_modules (Framework Scene Input Ui Asset Console)
 
 if (CAELUM)
     use_package (CAELUM)

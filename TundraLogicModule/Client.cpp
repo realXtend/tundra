@@ -10,7 +10,6 @@
 #include "CoreStringUtils.h"
 #include "SyncManager.h"
 #include "TundraMessages.h"
-#include "TundraEvents.h"
 #include "PhysicsModule.h"
 
 #include "SceneAPI.h"
@@ -37,6 +36,12 @@ Client::Client(TundraLogicModule* owner) :
     reconnect_(false),
     client_id_(0)
 {
+
+    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
+
+    connect(kristalli, SIGNAL(ConnectionAttemptFailed()), this, SLOT(OnConnectionAttemptFailed()));
 }
 
 Client::~Client()
@@ -138,8 +143,6 @@ void Client::Logout(bool fail)
         loginstate_ = NotConnected;
         client_id_ = 0;
         
-///\todo EventManager regression. -jj.
-//        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
         framework_->Scene()->RemoveScene("TundraClient");
         
         emit Disconnected();
@@ -147,8 +150,7 @@ void Client::Logout(bool fail)
     
     if (fail)
     {
-///\todo EventManager regression. -jj.
-//        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_LOGIN_FAILED, 0);
+        emit LoginFailed();
     }
     else // An user deliberately disconnected from the world, and not due to a connection error.
     {
@@ -228,24 +230,11 @@ kNet::MessageConnection* Client::GetConnection()
     return owner_->GetKristalliModule()->GetMessageConnection();
 }
 
-///\todo EventManager regression. -jj.
-/*
-void Client::HandleKristalliEvent(event_id_t event_id, IEventData* data)
+void Client::OnConnectionAttemptFailed()
 {
-    if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
-    {
-        if (!owner_->IsServer())
-        {
-            KristalliProtocol::Events::KristalliNetMessageIn* eventData = checked_static_cast<KristalliProtocol::Events::KristalliNetMessageIn*>(data);
-            HandleKristalliMessage(eventData->source, eventData->id, eventData->data, eventData->numBytes);
-        }
-    }
-    if (event_id == KristalliProtocol::Events::CONNECTION_FAILED)
-    {
-        Logout(true);
-    }
+    Logout(true);
 }
-*/
+
 void Client::HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes)
 {
     if (source != GetConnection())
@@ -295,12 +284,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             
             framework_->Scene()->SetDefaultScene(scene);
             owner_->GetSyncManager()->RegisterToScene(scene);
-            
-            Events::TundraConnectedEventData event_data;
-            event_data.user_id_ = msg.userID;
-///\todo EventManager regression. -jj.
-//            framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
-            
+                        
             UserConnectedResponseData responseData;
             if (msg.loginReplyData.size() > 0)
                 responseData.responseData.setContent(QByteArray((const char *)&msg.loginReplyData[0], (int)msg.loginReplyData.size()));

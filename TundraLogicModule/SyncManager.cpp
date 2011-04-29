@@ -59,6 +59,10 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     connect(framework_->Asset(), SIGNAL(AssetUploaded(const QString &)), this, SLOT(OnAssetUploaded(const QString &)));
     // Connect to asset deletes to be able to post delete messages
     connect(framework_->Asset(), SIGNAL(AssetDeleted(const QString &)), this, SLOT(OnAssetDeleted(const QString &)));
+
+    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
 }
 
 SyncManager::~SyncManager()
@@ -112,17 +116,6 @@ void SyncManager::RegisterToScene(ScenePtr scene)
         SLOT( OnActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)));
 }
 
-///\todo EventManager regression. -jj.
-/*
-void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
-{
-    if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
-    {
-        KristalliProtocol::Events::KristalliNetMessageIn* eventData = checked_static_cast<KristalliProtocol::Events::KristalliNetMessageIn*>(data);
-        HandleKristalliMessage(eventData->source, eventData->id, eventData->data, eventData->numBytes);
-    }
-}
-*/
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
     switch (id)

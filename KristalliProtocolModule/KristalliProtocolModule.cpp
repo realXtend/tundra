@@ -116,10 +116,6 @@ void KristalliProtocolModule::PreInitialize()
 
 void KristalliProtocolModule::Initialize()
 {
- ///\todo EventManager regression. -jj.
-//   EventManagerPtr event_manager = framework_->GetEventManager();
-//    networkEventCategory = event_manager->RegisterEventCategory("Kristalli");
-
     defaultTransport = kNet::SocketOverTCP;
     const boost::program_options::variables_map &options = framework_->ProgramOptions();
     if (options.count("protocol") > 0)
@@ -192,8 +188,7 @@ void KristalliProtocolModule::Update(f64 frametime)
             else
             {
                 ::LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
-///\todo EventManager regression. -jj.
-//                framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, 0);
+                emit ConnectionAttemptFailed();
 
                 reconnectTimer.Stop();
                 serverIp = "";
@@ -298,8 +293,6 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
         return;
 
     source->RegisterInboundMessageHandler(this);
-    ///\todo Regression. Re-enable. -jj.
-//    source->SetDatagramInFlowRatePerSecond(200);
     
     UserConnection* connection = new UserConnection();
     connection->userID = AllocateNewConnectionID();
@@ -312,9 +305,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
 
     ::LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
-///\todo EventManager regression. -jj.
-//    Events::KristalliUserConnected msg(connection);
-//    framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
+    emit ClientConnectedEvent(connection);
 }
 
 void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
@@ -323,9 +314,7 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->connection == source)
         {
-///\todo EventManager regression. -jj.
-//            Events::KristalliUserDisconnected msg((*iter));
-//            framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
+            emit ClientDisconnectedEvent(*iter);
             
             ::LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
             delete(*iter);
@@ -343,10 +332,7 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
 
     try
     {
-
-///\todo EventManager regression. -jj.
-//        Events::KristalliNetMessageIn msg(source, id, data, numBytes);
-//        framework_->GetEventManager()->SendEvent(networkEventCategory, Events::NETMESSAGE_IN, &msg);
+        emit NetworkMessageReceived(source, id, data, numBytes);
     } catch(std::exception &e)
     {
         ::LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " +

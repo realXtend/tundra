@@ -10,7 +10,6 @@
 #include "KristalliProtocolModule.h"
 #include "CoreStringUtils.h"
 #include "TundraMessages.h"
-#include "TundraEvents.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 
@@ -68,6 +67,11 @@ Server::Server(TundraLogicModule* owner) :
     current_port_(-1),
     current_protocol_("")
 {
+    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
+
+    connect(kristalli, SIGNAL(ClientDisconnectedEvent(UserConnection *)), this, SLOT(HandleUserDisconnected(UserConnection *)));
 }
 
 Server::~Server()
@@ -132,13 +136,7 @@ bool Server::Start(unsigned short port)
         // Create an authoritative physics world
         Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
         physics->CreatePhysicsWorldForScene(scene, false);
-        
-        /// \todo Hack - find better way and remove! Allow environment also on server by sending a fake connect event
-        Events::TundraConnectedEventData event_data;
-        event_data.user_id_ = 0;
-///\todo EventManager regression. -jj.
-//        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
-        
+                
         emit ServerStarted();
     }
     
@@ -235,27 +233,7 @@ UserConnection* Server::GetActionSender() const
 {
     return actionsender_;
 }
-///\todo EventManager regression. -jj.
-/*
-void Server::HandleKristalliEvent(event_id_t event_id, IEventData* data)
-{
-    if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
-    {
-        if (owner_->IsServer())
-        {
-            KristalliProtocol::Events::KristalliNetMessageIn* eventData = checked_static_cast<KristalliProtocol::Events::KristalliNetMessageIn*>(data);
-            HandleKristalliMessage(eventData->source, eventData->id, eventData->data, eventData->numBytes);
-        }
-    }
-    if (event_id == KristalliProtocol::Events::USER_DISCONNECTED)
-    {
-        KristalliProtocol::Events::KristalliUserDisconnected* eventData = checked_static_cast<KristalliProtocol::Events::KristalliUserDisconnected*>(data);
-        UserConnection* user = eventData->connection;
-        if (user)
-            HandleUserDisconnected(user);
-    }
-}
-*/
+
 void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
     if (!owner_->IsServer())

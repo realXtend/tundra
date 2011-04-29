@@ -6,7 +6,6 @@
 #include "TundraLogicModule.h"
 #include "Client.h"
 #include "Server.h"
-#include "TundraEvents.h"
 #include "SceneImporter.h"
 #include "SyncManager.h"
 
@@ -186,9 +185,6 @@ void TundraLogicModule::Load()
 
 void TundraLogicModule::Initialize()
 {
-///\todo EventManager regression. -jj.
-//    tundraEventCategory_ = framework_->GetEventManager()->RegisterEventCategory("Tundra");
-    
     syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this));
     client_ = boost::shared_ptr<Client>(new Client(this));
     server_ = boost::shared_ptr<Server>(new Server(this));
@@ -199,9 +195,6 @@ void TundraLogicModule::Initialize()
 
 void TundraLogicModule::PostInitialize()
 {
-///\todo EventManager regression. -jj.
-//    kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
-    
     framework_->Console()->RegisterCommand(CreateConsoleCommand("startserver", 
         "Starts a server. Usage: startserver(port)",
         ConsoleBind(this, &TundraLogicModule::ConsoleStartServer)));
@@ -573,35 +566,6 @@ bool TundraLogicModule::IsServer() const
 {
     return kristalliModule_->IsServer();
 }
-
-// virtual
-///\todo EventManager regression. -jj.
-/*
-bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-{
-    if (category_id == tundraEventCategory_)
-    {
-        // Handle login request from the loginwindow
-        if (event_id == Events::EVENT_TUNDRA_LOGIN)
-        {
-            Events::TundraLoginEventData* event_data = checked_static_cast<Events::TundraLoginEventData*>(data);
-            if (client_)
-                client_->Login(QString::fromStdString(event_data->address_), event_data->port_ ? event_data->port_ : cDefaultPort, QString::fromStdString(event_data->username_), QString::fromStdString(event_data->password_), QString::fromStdString(event_data->protocol_));
-        }
-    }
-    
-    if (category_id == kristalliEventCategory_)
-    {
-        if (client_)
-            client_->HandleKristalliEvent(event_id, data);
-        if (server_)
-            server_->HandleKristalliEvent(event_id, data);
-        if (syncManager_)
-            syncManager_->HandleKristalliEvent(event_id, data);
-    }
-    return false;
-}
-*/    
 
 }
 

@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <Tundra>
-	<plugin path="AssetModule" />	
-	<plugin path="OgreRenderingModule" />	
-	<plugin path="AvatarModule" />	
-	<plugin path="EnvironmentModule" />
-	<plugin path="PhysicsModule" />
 	<plugin path="KristalliProtocolModule" />
-	<plugin path="TundraLogicModule" />
-	<plugin path="ECEditorModule" />
-	<plugin path="JavascriptModule" />
-	<plugin path="SceneStructureModule" />
-	<plugin path="DebugStatsModule" />
-	<plugin path="MumbleVoipModule" />
+  <plugin path="JavascriptModule" />
+	<plugin path="OgreRenderingModule" />
+	<plugin path="EnvironmentModule" /> <!-- EnvironmentModule depends on OgreRenderingModule -->
+	<plugin path="PhysicsModule" /> <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
+  <plugin path="TundraLogicModule" /> <!-- TundraLogicModule depends on KristalliProtocolModule, OgreRenderingModule and PhysicsModule -->
+	<plugin path="AssetModule" />	<!-- AssetModule depends on KristalliProtocolModule and TundraLogicModule -->
+	<plugin path="AvatarModule" />	<!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
+	<plugin path="ECEditorModule" /> <!-- ECEditorModule depends on OgreRenderingModule -->
+  <plugin path="SceneStructureModule" /> <!-- SceneStructureModule depends on ECEditorModule, TundraLogicModule, OgreRenderingModule and AssetModule -->
+	<plugin path="DebugStatsModule" /> <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
+	<plugin path="MumbleVoipModule" /> <!-- MumbleVoipModule depends on OgreRenderingModule and TundraLogicModule -->
 </Tundra>

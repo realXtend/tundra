@@ -24,7 +24,6 @@
 #include "CompositionHandler.h"
 #include "EC_Name.h"
 #include "EC_Terrain.h"
-#include "../TundraLogicModule/TundraEvents.h"
 
 #include "MemoryLeakCheck.h"
 

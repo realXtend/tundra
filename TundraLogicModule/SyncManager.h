@@ -94,10 +94,12 @@ private slots:
     
     //! Asset deleted. Send deleted message
     void OnAssetDeleted(const QString& assetRef);
-    
-private:
+
+private slots:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
+
+private:
     
     /// Handle create entity message
     void HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg);

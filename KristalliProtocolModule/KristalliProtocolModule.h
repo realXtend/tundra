@@ -11,12 +11,16 @@
 
 #include "kNet.h"
 
+#include <QObject>
+
 namespace KristalliProtocol
 {
     //  warning C4275: non dll-interface class 'IMessageHandler' used as base for dll-interface class 'KristalliProtocolModule'
     // Tämän voi ignoroida, koska base classiin ei tarvitse kajota ulkopuolelta - restrukturoin jos/kun on tarvetta.
-    class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public IModule, public kNet::IMessageHandler, public kNet::INetworkServerListener
+    class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public QObject, public IModule, public kNet::IMessageHandler, public kNet::INetworkServerListener
     {
+        Q_OBJECT
+
     public:
         KristalliProtocolModule();
         ~KristalliProtocolModule();
@@ -75,7 +79,20 @@ namespace KristalliProtocol
 
         /// What trasport layer to use. Read on startup from --protocol udp/tcp. Defaults to TCP if no start param was given.
         kNet::SocketTransportLayer defaultTransport;
-        
+
+    signals:
+        /// Triggered whenever a new message is received rom the network.
+        void NetworkMessageReceived(kNet::MessageConnection *source, kNet::message_id_t id, const char *data, size_t numBytes);
+
+        /// Triggered on the server side when a new user connects.
+        void ClientConnectedEvent(UserConnection *connection);
+
+        /// Triggered on the server side when a user disconnects.
+        void ClientDisconnectedEvent(UserConnection *connection);
+
+        /// Triggered on the client side when a server connection attempt has failed.
+        void ConnectionAttemptFailed();
+
     private:
         /// This timer tracks when we perform the next reconnection attempt when the connection is lost.
         kNet::PolledTimer reconnectTimer;

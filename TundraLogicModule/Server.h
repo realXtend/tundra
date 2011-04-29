@@ -115,13 +115,15 @@ public slots:
     /// Initialize server datatypes for a script engine
     void OnScriptEngineCreated(QScriptEngine* engine);
     
-private:
+private slots:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
-    
+
     /// Handle a user disconnecting
     void HandleUserDisconnected(UserConnection* user);
-    
+
+private:
+        
     /// Handle a login message
     void HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg);
         
