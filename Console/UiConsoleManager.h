@@ -16,6 +16,7 @@ class QGraphicsView;
 class UiProxyWidget;
 class CommandManager;
 
+// @todo Rename to ConsoleWindow, remove ConsoleWidget.ui and implemented the widget fully in C++ code. Make ConsoleAPI work as "UiConsoleManager".
 class UiConsoleManager: public QObject
 {
     Q_OBJECT
