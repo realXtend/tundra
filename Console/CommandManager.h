@@ -51,6 +51,11 @@ public:
     /// Exit application
     ConsoleCommandResult ConsoleExit(const StringVector &params);
 
+    typedef std::map<std::string, ConsoleCommandStruct> CommandMap;
+
+    /// Returns all registered console commands for introspection purposes.
+    const CommandMap &Commands() const { return commands_; }
+
 signals:
     /// Emitted when console command with no callback pointer is invoked.
     /** @param command Command name.
@@ -61,7 +66,6 @@ signals:
 private:
     ConsoleCommandResult ExecuteCommandAlways(const std::string &name, const StringVector &params, bool always);
 
-    typedef std::map<std::string, ConsoleCommandStruct> CommandMap;
     typedef std::queue<std::string> StringQueue;
     typedef std::map< std::string, StringVector> CommandParamMap;
 

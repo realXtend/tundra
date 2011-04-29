@@ -7,6 +7,7 @@
 #include "ui_ConsoleWidget.h"
 #include "ConsoleProxyWidget.h"
 #include "ConsoleAPI.h"
+#include "CommandManager.h"
 
 #include "UiAPI.h"
 #include "UiProxyWidget.h"
@@ -21,7 +22,8 @@
 
 #include "MemoryLeakCheck.h"
 
-UiConsoleManager::UiConsoleManager(Foundation::Framework *fw) :
+UiConsoleManager::UiConsoleManager(CommandManager* mgr, Foundation::Framework *fw) :
+    commandManager(mgr),
     framework(fw),
     graphicsView(fw->Ui()->GraphicsView()),
     consoleUi(0),
@@ -115,7 +117,7 @@ void UiConsoleManager::HandleInput()
     QString cmd = consoleUi->ConsoleInputArea->text();
     framework->Console()->ExecuteCommand(cmd);
     consoleUi->ConsoleInputArea->clear();
-
+    commandStub.clear();
     commandHistory.push_front(cmd);
 }
 
@@ -140,9 +142,6 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
         QKeyEvent *keyEvent = dynamic_cast<QKeyEvent*>(e);
         if (keyEvent)
         {
-//            if (keyEvent->isAutoRepeat())
-//                return true;
-
             switch(keyEvent->key())
             {
             case Qt::Key_Up:
@@ -158,13 +157,46 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
                     commandHistoryIndex = -1;
 
                 if (commandHistoryIndex == -1)
-                    consoleUi->ConsoleInputArea->clear(); // Putty-like behavior: clear line edit.
+                    // Irssi-like behavior: clear line edit if not browsing history and down is pressed
+                    consoleUi->ConsoleInputArea->clear();
                 else if (commandHistoryIndex > -1 && commandHistoryIndex < commandHistory.size()-1)
                         consoleUi->ConsoleInputArea->setText(commandHistory[commandHistoryIndex]);
                 return true;
             }
-            ///\todo Autocompletion/suggestion
-            //case Qt::Key_Tab:
+            case Qt::Key_Tab:
+            {
+                QString text = consoleUi->ConsoleInputArea->text().trimmed();
+                if (!text.isEmpty())
+                {
+                    if (text != commandStub && !prevSuggestions.contains(text))
+                    {
+                        commandStub = text;
+                        prevSuggestions.clear();
+                    }
+
+                    QStringList suggestions;
+                    std::pair<std::string, ConsoleCommandStruct> p;
+                    foreach(p, commandManager->Commands())
+                    {
+                        QString cmd(p.first.c_str());
+                        if (cmd.startsWith(commandStub))
+                            suggestions.push_back(cmd);
+                    }
+
+                    if (!prevSuggestions.isEmpty() && suggestions == prevSuggestions)
+                        prevSuggestions.clear(); // Clear previous suggestion so that we can "start over".
+
+                    foreach(const QString &cmd, suggestions)
+                        if (!prevSuggestions.contains(cmd))
+                        {
+                            consoleUi->ConsoleInputArea->setText(cmd);
+                            prevSuggestions.push_back(cmd);
+                            break;
+                        }
+
+                    return true;
+                }
+            }
             default:
                 return QObject::eventFilter(obj, e);
             }

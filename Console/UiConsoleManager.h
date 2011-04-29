@@ -14,13 +14,14 @@ namespace Ui { class ConsoleWidget; }
 class QRectF;
 class QGraphicsView;
 class UiProxyWidget;
+class CommandManager;
 
 class UiConsoleManager: public QObject
 {
     Q_OBJECT
 
 public:
-    explicit UiConsoleManager(Foundation::Framework *fw);
+    UiConsoleManager(CommandManager* mgr, Foundation::Framework *fw);
     virtual ~UiConsoleManager();
 
 public slots:
@@ -57,6 +58,7 @@ private:
     void DecorateString(QString &str);
     bool visible; ///< Is the console UI visible.
     Foundation::Framework* framework; ///< Framework pointer
+    CommandManager *commandManager; ///< Command manager.
     QGraphicsView *graphicsView; ///< View to the scene
     Ui::ConsoleWidget* consoleUi; ///< UI
     QWidget * consoleWidget; ///< Widget in UI
@@ -64,6 +66,8 @@ private:
     QPropertyAnimation slideAnimation; ///< Animation used for sliding effect
     QList<QString> commandHistory; ///< Command history stack.
     int commandHistoryIndex; ///< Current command history index.
+    QString commandStub; ///< Current command stub used for autocompletion/suggestion
+    QStringList prevSuggestions; ///< Already shown suggestions.
 };
 
 #endif
