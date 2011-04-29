@@ -95,10 +95,21 @@ bool Server::Start(unsigned short port)
             TundraLogicModule::LogError("Failed to start server in port " + ToString<int>(port));
             return false;
         }
+        catch(...) {}
+    }
 
-        // Store current port and protocol
-        current_port_ = (int)port;
-        current_protocol_ = transportLayer == kNet::SocketOverUDP ? "udp" : "tcp";
+    // Inspect protocol
+    if (userSetProtocol != "udp" && userSetProtocol != "tcp")
+        ::LogWarning("Server::Start: Server config has an invalid server protocol '" + userSetProtocol + "'. Use tcp or udp. Resetting to default protocol.");
+    else
+        transportLayer = userSetProtocol == "udp" ? kNet::SocketOverUDP : kNet::SocketOverTCP;
+    
+    // Start server
+    if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
+    {
+        ::LogError("Failed to start server in port " + ToString<int>(port));
+        return false;
+    }
 
         // Create the default server scene
         /// \todo Should be not hard coded like this. Give some unique id (uuid perhaps) that could be returned to the client to make the corresponding named scene in client?
@@ -118,18 +129,36 @@ bool Server::Start(unsigned short port)
         emit ServerStarted();
     }
     
+    // Create an authoritative physics world
+    Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
+    physics->CreatePhysicsWorldForScene(scene, false);
+            
+    emit ServerStarted();
+
+    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
+
+    connect(kristalli, SIGNAL(ClientDisconnectedEvent(UserConnection *)), this, SLOT(HandleUserDisconnected(UserConnection *)), Qt::UniqueConnection);
+
     return true;
 }
 
 void Server::Stop()
 {
-    if (!owner_->IsServer())
+    if (owner_->IsServer())
     {
         owner_->GetKristalliModule()->StopServer();
         framework_->Scene()->RemoveScene("TundraServer");
         
         emit ServerStopped();
     }
+
+    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    disconnect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
+
+    disconnect(kristalli, SIGNAL(ClientDisconnectedEvent(UserConnection *)), this, SLOT(HandleUserDisconnected(UserConnection *)));
 }
 
 bool Server::IsRunning() const
