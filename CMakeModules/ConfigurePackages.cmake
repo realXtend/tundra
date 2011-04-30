@@ -457,7 +457,6 @@ macro(use_package_knet)
     if (UNIX)    
         add_definitions(-DUNIX)
     endif()
-    add_definitions(-DKNET_USE_BOOST)
 endmacro()
 
 macro(link_package_knet)
