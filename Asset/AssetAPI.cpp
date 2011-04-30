@@ -1384,16 +1384,10 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
 
     if (file.endsWith(".ui"))
         return "QtUiFile";
-
-    if (file.endsWith(".ui"))
-        return "QtUiFile";
         
     if (file.endsWith(".avatar"))
         return "Avatar";
 
-    // \todo Dont hadcode these if the extension some day change!
-    // cTundraBinFileExtension and cTundraXmlFileExtension are defined 
-    // in SceneStructureModules .h files, move to core?
     if (file.endsWith(".xml") || file.endsWith(".txml") || file.endsWith(".tbin")) 
         return "Binary";
 
