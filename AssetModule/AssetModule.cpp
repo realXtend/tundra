@@ -22,6 +22,7 @@
 #include "UserConnectedResponseData.h"
 #include "UserConnection.h"
 
+#include "kNetBuildConfig.h"
 #include "kNet/MessageConnection.h"
 
 #include <QDir>
