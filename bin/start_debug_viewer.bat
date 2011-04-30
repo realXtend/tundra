@@ -1,0 +1,1 @@
+tundrad --config viewer.xml
