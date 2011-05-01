@@ -110,7 +110,7 @@ EntityPtr SceneManager::GetEntity(entity_id_t id) const
     return EntityPtr();
 }
 
-EntityPtr SceneManager::GetEntity(const QString& name) const
+EntityPtr SceneManager::GetEntityByName(const QString &name) const
 {
     EntityMap::const_iterator it = entities_.begin();
     while(it != entities_.end())
@@ -123,25 +123,6 @@ EntityPtr SceneManager::GetEntity(const QString& name) const
     return EntityPtr();
 }
 
-Entity *SceneManager::GetEntityByNameRaw(const QString &name) const
-{
-    return GetEntityByName(name).get();
-}
-
-EntityPtr SceneManager::GetEntityByName(const QString& name) const
-{
-    EntityMap::const_iterator it = entities_.begin();
-    while(it != entities_.end())
-    {
-        EntityPtr entity = it->second;
-        if (entity->HasComponent(EC_Name::TypeNameStatic()))
-            if (entity->GetComponent<EC_Name>()->name.Get() == name)
-                return entity;
-        ++it;
-    }
-
-    return EntityPtr();
-}
 
 entity_id_t SceneManager::GetNextFreeId()
 {

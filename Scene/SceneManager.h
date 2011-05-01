@@ -191,8 +191,6 @@ public slots:
 
     void DeleteEntityById(uint id, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity((entity_id_t)id, change); }
 
-    Entity* GetEntityByNameRaw(const QString& name) const;
-
     /// Return a scene document with just the desired entity
     QByteArray GetEntityXml(Entity *entity);
 
@@ -212,19 +210,13 @@ public slots:
 
     /// Returns entity with the specified id
     /** @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
-        to avoid dangling references that prevent entities from being properly destroyed.
-    */
+        to avoid dangling references that prevent entities from being properly destroyed. */
     EntityPtr GetEntity(entity_id_t id) const;
-
-    /// Returns entity with the specified name
-    /** If found, returns the first one; there may be many with same name and uniqueness is not guaranteed
-    */
-    EntityPtr GetEntity(const QString& name) const;
     
-    /// Returns entity with the specified name, searches through only those entities which has EC_Name-component.
-    /** @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
-              to avoid dangling references that prevent entities from being properly destroyed.
-    */
+    /// Returns entity with the specified name.
+    /** @note The name of the entity is stored in a component EC_Name. If this component is not present in the entity, it has no name.
+        @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
+              to avoid dangling references that prevent entities from being properly destroyed. */
     EntityPtr GetEntityByName(const QString& name) const;
 
     /// Returns true if entity with the specified id exists in this scene, false otherwise

@@ -1065,7 +1065,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
 
             // Try to find existing entity by name
             if (replace)
-                entity = scene_->GetEntity(node_name_qstr);
+                entity = scene_->GetEntityByName(node_name_qstr);
 
             if (!entity)
             {
