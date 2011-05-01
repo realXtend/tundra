@@ -1070,7 +1070,7 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
 
     if(!entity_)
     {
-        LogDebug("Could not set skeleton yet because entity is not yet created");
+//        LogDebug("Could not set skeleton yet because entity is not yet created");
         return;
     }
 

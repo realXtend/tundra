@@ -1171,7 +1171,7 @@ void AssetAPI::RequestAssetDependencies(AssetPtr asset)
             asset->DependencyLoaded(existing);
         else // We don't have the given asset yet, request it.
         {
-            LogDebug("Asset " + asset->ToString() + " depends on asset " + ref.ref + " (type=\"" + ref.type + "\") which has not been loaded yet. Requesting..");
+//            LogDebug("Asset " + asset->ToString() + " depends on asset " + ref.ref + " (type=\"" + ref.type + "\") which has not been loaded yet. Requesting..");
             RequestAsset(ref);
         }
     }

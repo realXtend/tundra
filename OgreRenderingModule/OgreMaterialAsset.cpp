@@ -32,7 +32,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 
     const std::string assetName = this->Name().toStdString();
     Ogre::MaterialManager& matmgr = Ogre::MaterialManager::getSingleton(); 
-    ::LogDebug("Parsing material " + assetName);
+//    ::LogDebug("Parsing material " + assetName);
     
     if (!data_)
     {
