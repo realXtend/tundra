@@ -49,10 +49,7 @@ class LineEditPropertyFactory: public QtAbstractEditorFactory<QtStringPropertyMa
 public:
     LineEditPropertyFactory(QObject *parent = 0);
 
-    ~LineEditPropertyFactory()
-    {
-
-    }
+    ~LineEditPropertyFactory() {}
 
     /// Override the old component with a new list of components.
     void SetComponents(QtProperty *property, QList<ComponentWeakPtr> components) {components2_[property] = components;}
@@ -63,6 +60,9 @@ public:
 public slots:
     void ComponentAdded(QtProperty *property, IComponent *comp);
     void ComponentRemoved(QtProperty *property, IComponent *comp);
+
+signals:
+    void EditorCreated(LineEditWithButtons *);
 
 protected:
     virtual void connectPropertyManager(QtStringPropertyManager *manager);

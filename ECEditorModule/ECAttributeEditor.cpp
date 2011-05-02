@@ -12,6 +12,9 @@
 #include "IAttribute.h"
 #include "Transform.h"
 #include "AssetReference.h"
+#include "AssetsWindow.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
 
 // QtPropertyBrowser headers.
 #include <qtvariantproperty.h>
@@ -1478,9 +1481,11 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
     {
         QtStringPropertyManager *stringManager = new QtStringPropertyManager(this);
         LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
+        connect(lineEditFactory, SIGNAL(EditorCreated(LineEditWithButtons *)), SLOT(HandleNewEditor(LineEditWithButtons *)));
         propertyMgr_ = stringManager;
         factory_ = lineEditFactory;
 
+/*
         if (components_.size())
         {
             ComponentPtr comp = components_[0].lock();
@@ -1495,6 +1500,9 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
                 }
             }
         }
+*/
+        lineEditFactory->SetComponents(rootProperty_, components_);
+
         connect(this, SIGNAL(OnComponentAdded(QtProperty*, IComponent*)), lineEditFactory, SLOT(ComponentAdded(QtProperty*, IComponent*)));
         connect(this, SIGNAL(OnComponentRemoved(QtProperty*, IComponent*)), lineEditFactory, SLOT(ComponentRemoved(QtProperty*, IComponent*)));
 
@@ -1518,6 +1526,27 @@ template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property)
 {
     if (listenEditorChangedSignal_)
         SetValue(AssetReference(property->valueText()));
+}
+
+void AssetReferenceAttributeEditor::HandleNewEditor(LineEditWithButtons *editor)
+{
+    // Add button which opens AssetsWindow always for AssetReference attributes.
+    //rootProperty_ editor->pro
+    assert(editor);
+    if (editor)
+    {
+        QPushButton *button = editor->CreateButton("OpenAssetsWindow", "...");
+        button->setParent(editor);
+        connect(button, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
+    }
+}
+
+void AssetReferenceAttributeEditor::OpenAssetsWindow()
+{
+    assert(fw);
+    AssetsWindow *assetsWindow = new AssetsWindow(fw, fw->Ui()->MainWindow());
+    assetsWindow->setWindowFlags(Qt::Tool);
+    assetsWindow->show();
 }
 
 //-------------------------ASSETREFERENCELIST ATTRIBUTE TYPE-------------------------

@@ -341,6 +341,23 @@ template<> void ECAttributeEditor<AssetReference>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<AssetReference>::Initialize();
 template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property);
 
+class LineEditWithButtons;
+
+class AssetReferenceAttributeEditor : public ECAttributeEditor<AssetReference>
+{
+    Q_OBJECT
+public:
+        AssetReferenceAttributeEditor(QtAbstractPropertyBrowser *owner, ComponentPtr component,
+            const QString &name, const QString &type, QObject *parent = 0) :
+            ECAttributeEditor<AssetReference>(owner, component, name, type, parent),
+            fw(component->GetFramework()){}
+private slots:
+    void OpenAssetsWindow();
+    void HandleNewEditor(LineEditWithButtons *);
+private:
+    Framework *fw;
+};
+
 template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<AssetReferenceList>::Initialize();
 template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty *property);
