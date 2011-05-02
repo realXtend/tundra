@@ -4,6 +4,7 @@
 
 #include "UiMainWindow.h"
 #include "Framework.h"
+#include "VersionInfo.h"
 #include "ConfigurationManager.h"
 
 #include <QCloseEvent>
@@ -62,7 +63,7 @@ void UiMainWindow::LoadWindowSettingsFromFile()
     bool maximized = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_maximized", false);
     bool fullscreen = owner->GetDefaultConfig().DeclareSetting("MainWindow", "fullscreen", false);
 
-    setWindowTitle("realXtend Tundra v1.0.6");
+    setWindowTitle(owner->ApplicationInfo()->toString());
 
     width = max(1, min(DesktopWidth(), width));
     height = max(1, min(DesktopHeight(), height));

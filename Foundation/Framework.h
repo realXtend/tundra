@@ -23,7 +23,8 @@ class DebugAPI;
 class SceneAPI;
 class ConfigAPI;
 class Application;
-class VersionInfo;
+class ApiVersionInfo;
+class ApplicationVersionInfo;
 
 namespace Poco
 {
@@ -51,7 +52,8 @@ namespace Foundation
     */
     class Framework : public QObject
     {
-        Q_OBJECT
+    
+    Q_OBJECT
 
     public:
         /// Constructs and initializes the framework.
@@ -232,6 +234,12 @@ namespace Foundation
         /// Returns core API Config object.
         ConfigAPI *Config() const;
 
+        /// Returns Tundra API version info object.
+        ApiVersionInfo *ApiInfo() const;
+
+        /// Returns Tundra application version info object.
+        ApplicationVersionInfo *ApplicationInfo() const;
+    
         /// Returns if we're running the application in headless or not.
         bool IsHeadless() const { return headless_; }
 
@@ -292,7 +300,11 @@ namespace Foundation
         SceneAPI *scene; ///< The Scene API.
         ConfigAPI *config; ///< The Config API.
 
-        VersionInfo *api_versioninfo_; //The API version of this build. May differ from the end user application version of the default distribution, i.e. app may change when api stays same.
+        /// The Tundra API version info of this build. May differ from the end user application version of the default distribution, i.e. app may change when api stays same.
+        ApiVersionInfo *api_versioninfo_;
+
+        /// The Tundra application version info for this build.
+        ApplicationVersionInfo *application_versioninfo_;
 
         int argc_; ///< Command line argument count as supplied by the operating system.
         char **argv_; ///< Command line arguments as supplied by the operating system.

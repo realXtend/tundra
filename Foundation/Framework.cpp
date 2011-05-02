@@ -79,6 +79,10 @@ namespace Foundation
     {
         ParseProgramOptions();
 
+        /// \note Major becomes 1 when we stop breaking the API, which is still planned after 1.0.6 which is kind of an alpha of 1.0 still.
+        api_versioninfo_ = new ApiVersionInfo(this, 0, 6, 0, 0);
+        application_versioninfo_ = new ApplicationVersionInfo(this, 1, 0, 6, 0, "realXtend", "Tundra");
+
         if (commandLineVariables.count("help")) 
         {
             std::cout << "Supported command line arguments: " << std::endl;
@@ -135,8 +139,7 @@ namespace Foundation
             //
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.4.1"));
-            api_versioninfo_ = new VersionInfo(0, 6, 0, 0); //the API version in Tundra 1.0.6 release. Major becomes 1 when we stop breaking the API, which is still planned after 1.0.6 which is kind of an alpha of 1.0 still.
-
+            
             CreateLoggingSystem(); // depends on config and platform
 
             // create managers
@@ -179,12 +182,8 @@ namespace Foundation
             RegisterDynamicObject("audio", audio);
             RegisterDynamicObject("debug", debug);
             RegisterDynamicObject("application", application);
-
-            /*! \todo JS now registers 'scene' manually to the default scene. Add this maybe later
-                or register additiona 'sceneapi' */
-            //RegisterDynamicObject("sceneapi", scene);
-
             RegisterDynamicObject("apiversion", api_versioninfo_);
+            RegisterDynamicObject("applicationversion", application_versioninfo_);
         }
     }
 
@@ -781,6 +780,16 @@ namespace Foundation
     ConfigAPI *Framework::Config() const
     {
         return config;
+    }
+
+    ApiVersionInfo *Framework::ApiInfo() const
+    {
+        return api_versioninfo_;
+    }
+
+    ApplicationVersionInfo *Framework::ApplicationInfo() const
+    {
+        return application_versioninfo_;   
     }
 
     QObject *Framework::GetModuleQObj(const QString &name)
