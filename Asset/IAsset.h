@@ -107,6 +107,8 @@ signals:
 public:
     /// Loads this asset from the specified file data in memory. Loading an asset from memory cannot change its name or type.
     /// Returns true if loading succeeded, false otherwise.
+	/// @param data A pointer to the data to be loaded in. This pointer may be null if numBytes == 0, in which case
+	/// this function is used to signal loading into "null data".
     bool LoadFromFileInMemory(const u8 *data, size_t numBytes);
 
     /// Called whenever another asset this asset depends on is loaded.
