@@ -162,6 +162,16 @@ var BrowserManager = Class.extend
     start: function()
     {
         this.setVisible(true);
+        
+        if (!this.connected)
+            this.connected = client.IsConnected();
+        if (this.connected)
+        {
+            this.tabs.currentIndex = 0;
+            this.onTabIndexChanged(this.tabs.currentIndex);
+            return;
+        }
+        
         this.onTabIndexChanged(this.tabs.currentIndex);
         
         if (this.settings.startupLoadHomePage)
@@ -278,6 +288,7 @@ var BrowserManager = Class.extend
     onConnected: function()
     {
         p_.connected = true;
+        p_.tabs.currentIndex = 0;
         p_.refreshSqueezer();
         p_.onTabIndexChanged(p_.tabs.currentIndex);
     },
