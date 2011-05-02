@@ -151,8 +151,11 @@ QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool re
 }
 
 QString LocalAssetStorage::GetFullAssetURL(const QString &localName)
-{    
-    return BaseURL() + AssetAPI::ExtractFilenameFromAssetRef(localName);
+{
+    QString filename;
+    QString subAssetName;
+    AssetAPI::ParseAssetRef(localName, 0, 0, 0, 0, &filename, 0, 0, &subAssetName);
+    return BaseURL() + filename + (subAssetName.isEmpty() ? "" : ("," + subAssetName));
 }
 
 QString LocalAssetStorage::SerializeToString() const
