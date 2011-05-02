@@ -199,10 +199,13 @@ QList<Entity *> SceneImporter::Import(const std::string& filename, std::string i
             return ret;
         }
         
-        bool flipyz = false;
+        // We assume two cases:
+        // - Blender exporter, up axis not specified; Ogre meshes will be exported as Y-up, but the scene is Z-up (!). Need to change the scene coordinate system.
+        // - Up axis specified as Y: no conversion needs to be done
+        bool flipyz = true;
         QString upaxis = scene_elem.attribute("upAxis");
-        if (upaxis == "z")
-            flipyz = true;
+        if (upaxis == "y")
+            flipyz = false;
         
         if (clearscene)
             scene_->RemoveAllEntities(true, change);
@@ -1127,11 +1130,21 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                     {
                         Vector3df rot_euler;
                         Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
+                        adjustedrot = Quaternion(0, PI, 0) * adjustedrot;
                         adjustedrot.toEuler(rot_euler);
                         entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
                         entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
                         entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
                     }
+                    else
+                    {
+                        Vector3df rot_euler;
+                        newrot.toEuler(rot_euler);
+                        entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
+                        entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                        entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                    }
+                    
                     
                     placeablePtr->transform.Set(entity_transform, change);
                     meshPtr->meshRef.Set(AssetReference(mesh_name), change);
@@ -1310,6 +1323,14 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, V
                     entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
                     entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
                     entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
+                }
+                else
+                {
+                    Vector3df rot_euler;
+                    newrot.toEuler(rot_euler);
+                    entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
+                    entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                    entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
                 }
                 
                 placeablePtr->transform.Set(entity_transform, change);
