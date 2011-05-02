@@ -17,6 +17,8 @@
 
 class Framework;
 
+class LogListener;
+class CommandManager;
 class ConsoleManager;
 class UiConsoleManager;
 struct ConsoleCommandStruct;
@@ -72,11 +74,7 @@ public:
     /// Destructor.
     ~ConsoleAPI();
 
-    // Note: these are public temporarily due to ongoing console refactoring.
-    ConsoleManager *consoleManager;
-    UiConsoleManager *uiConsoleManager;
-
-    ///\todo Temporary function. Remove.
+    ///\todo Temporary function due to ongoing refactoring. Remove.
     void Uninitialize();
 
 public slots:
@@ -124,6 +122,18 @@ private:
     Framework *framework_; ///< Framework.
     QMap<QString, ConsoleCommand *> commands_; ///< List of registered console commands.
     InputContextPtr inputContext;
+    UiConsoleManager *uiConsoleManager;
+
+// START FROM CONSOLEMANAGER
+public:
+    void Update(f64 frametime);
+    void Print_(const std::string &text);
+private:
+    void UnsubscribeLogListener();
+    CommandManager *commandManager; ///< Command manager.
+    boost::shared_ptr<LogListener> logListener; ///< Listener to get logs from renderer 
+    std::vector<std::string> earlyMessages; ///< This is a buffer for messages generated before actual console UI
+// END FROM CONSOLEMANAGER
 
 private slots:
     /// Checks if we have executed console command object stored. If we have, we invoke it.
@@ -136,4 +146,19 @@ private slots:
     void ToggleConsole();
 };
 
+// START FROM CONSOLEMANAGER
+/// loglistener is used to listen log messages from renderer
+class LogListener
+{
+    LogListener();
+
+public:
+    explicit LogListener(ConsoleAPI *c): console(c) {}
+    virtual ~LogListener() {}
+
+    virtual void LogMessage(const std::string &message){ console->Print(message.c_str()); }
+    ConsoleAPI *console;
+};
+
+// END FROM CONSOLEMANAGER
 #endif

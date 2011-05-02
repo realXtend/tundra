@@ -84,7 +84,11 @@ AddComponentDialog::~AddComponentDialog()
 
 void AddComponentDialog::SetComponentList(const QStringList &component_types)
 {
-    type_combo_box_->addItems(component_types);
+    foreach(const QString &type, component_types)
+        if (type.startsWith("EC_"))
+            type_combo_box_->addItem(type.mid(3));
+        else
+            type_combo_box_->addItem(type);
 }
 
 void AddComponentDialog::SetComponentName(const QString &name)
@@ -94,7 +98,10 @@ void AddComponentDialog::SetComponentName(const QString &name)
 
 QString AddComponentDialog::GetTypeName() const
 {
-    return type_combo_box_->currentText();
+    if (!type_combo_box_->currentText().startsWith("EC_"))
+        return "EC_" + type_combo_box_->currentText();
+    else
+        return type_combo_box_->currentText();
 }
 
 QString AddComponentDialog::GetName() const

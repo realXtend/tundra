@@ -10,7 +10,7 @@ class NativeInput
 {
 public:
     /// constructor
-    NativeInput() : command_service_(0) { }
+    NativeInput() : commandManager(0) { }
 
     /// destructor
     ~NativeInput() {}
@@ -18,30 +18,27 @@ public:
     /// (thread) entry point
     void operator()();
 
-    void SetCommandManager(CommandManager *command_service) { command_service_ = command_service; assert (command_service_); }
-    void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
+    CommandManager *commandManager;
 
 private:
-    NativeInput(const NativeInput &other);
-
-    CommandManager *command_service_;
-    Framework *framework_;
+    Q_DISABLE_COPY(NativeInput)
 };
 
 /// Native debug input console
 class NativeConsole
 {
-    NativeConsole();
 public:
-    /// constructor
-    NativeConsole(CommandManager *command_service, Framework *framework);
+    //! constructor
+    NativeConsole(CommandManager *mgr);
 
     /// destructor
     virtual ~NativeConsole();
 
 private:
-    Thread thread_; ///< input thread
-    NativeInput input_; ///< Handles input from native console
+    Q_DISABLE_COPY(NativeConsole)
+
+    Thread thread; ///< Input thread
+    NativeInput input; ///< Handles input from native console
 };
 
 #endif

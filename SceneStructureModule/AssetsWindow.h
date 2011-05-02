@@ -21,7 +21,8 @@ class Framework;
 class AssetTreeWidget;
 
 /// The main UI for managing asset storages and assets.
-/**
+/** AssetsWindow is highly autonomous and doens't provide any kind of API.
+    Most of the functionality provided by AssetsWindow is implemented in AssetTreeWidget.
 */
 class AssetsWindow : public QWidget
 {
@@ -37,13 +38,12 @@ public:
     /// Destructor.
     ~AssetsWindow();
 
-    /// Event filter to catch and react to child widget events
-    virtual bool eventFilter(QObject *obj, QEvent *e);
-
     /// Populates the tree widget with all assets from all asset storages.
     void PopulateTreeWidget();
 
 private:
+    /// Event filter to catch and react to child widget events
+    virtual bool eventFilter(QObject *obj, QEvent *e);
 
     /// If @c asset has asset references, adds the asset references as children to the @c parent.
     /** @param asset Asset to be added to the tree widget.
@@ -80,6 +80,16 @@ private slots:
 
     /// Checks the expand status to mark it to the expand/collapse button
     void CheckTreeExpandStatus(QTreeWidgetItem *item);
+
+    /// Unmarks unloaded assets in the UI.
+    /** @param asset Asset which was loaded.
+    */
+    void HandleAssetLoaded(AssetPtr asset);
+
+    /// Marks unloaded assets in the UI.
+    /** @param asset Asset which was unloaded.
+    */
+    void HandleAssetUnloaded(IAsset *asset);
 };
 
 #endif

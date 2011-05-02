@@ -18,7 +18,6 @@
 #include "CoreException.h"
 #include "Entity.h"
 #include "SceneAPI.h"
-#include "ConsoleManager.h"
 
 #include "UiAPI.h"
 #include "UiMainWindow.h"
@@ -114,8 +113,9 @@ namespace OgreRenderer
 
         void messageLogged(const std::string& message, Ogre::LogMessageLevel lml, bool maskDebug, const std::string &logName)
         {
-            for(ListenerList::iterator it = listeners_.begin(); it != listeners_.end(); ++it)
-                (*it)->LogMessage(message);
+            ///\todo Poco/Console regression.
+//            for(ListenerList::iterator it = listeners_.begin(); it != listeners_.end(); ++it)
+//                (*it)->LogMessage(message);
         }
 
     private:

@@ -9,14 +9,15 @@
 #include "DebugOperatorNew.h"
 
 #include "ConsoleAPI.h"
-#include "ConsoleManager.h"
 #include "CommandManager.h"
 #include "UiConsoleManager.h"
 #include "ConsoleCommandUtils.h"
 
 #include "Framework.h"
+#include "InputAPI.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
+#include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
@@ -43,10 +44,10 @@ ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &
     commands_.insert(name, command);
 
     ConsoleCommandStruct cmd = { name.toStdString(), desc.toStdString(), ConsoleCallbackPtr(), false };
-    consoleManager->GetCommandManager()->RegisterCommand(cmd);
+    commandManager->RegisterCommand(cmd);
 
     // Use UniqueConnection so that we don't have duplicate connections.
-    connect(consoleManager->GetCommandManager(), SIGNAL(CommandInvoked(const QString &, const QStringList &)),
+    connect(commandManager, SIGNAL(CommandInvoked(const QString &, const QStringList &)),
         SLOT(InvokeCommand(const QString &, const QStringList &)), Qt::UniqueConnection);
 
     return command;
@@ -61,45 +62,89 @@ void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, const
         connect(command, SIGNAL(Invoked(const QStringList &)), receiver, member);
 
         ConsoleCommandStruct cmd = { name.toStdString(), desc.toStdString(), ConsoleCallbackPtr(), false };
-        consoleManager->GetCommandManager()->RegisterCommand(cmd);
+        commandManager->RegisterCommand(cmd);
 
         // Use UniqueConnection so that we don't have duplicate connections.
-        connect(consoleManager->GetCommandManager(), SIGNAL(CommandInvoked(const QString &, const QStringList &)),
+        connect(commandManager, SIGNAL(CommandInvoked(const QString &, const QStringList &)),
             SLOT(InvokeCommand(const QString &, const QStringList &)), Qt::UniqueConnection);
     }
 }
 
 void ConsoleAPI::ExecuteCommand(const QString &command)
 {
-    consoleManager->ExecuteCommand(command.toStdString());
+    commandManager->ExecuteCommand(command.toStdString());
 }
 
 void ConsoleAPI::Print(const QString &message)
 {
-    consoleManager->Print(message.toStdString());
+    Print_(message.toStdString());
 }
 
 void ConsoleAPI::RegisterCommand(const ConsoleCommandStruct &command)
 {
-    consoleManager->GetCommandManager()->RegisterCommand(command);
+    commandManager->RegisterCommand(command);
 }
 
 ConsoleAPI::ConsoleAPI(Framework *fw) :
     QObject(fw),
     framework_(fw),
     uiConsoleManager(0),
-    consoleManager(new ConsoleManager(fw))
+    commandManager(new CommandManager(this, framework_)),
+//START FROM CONSOLEMANAGER
+    logListener(new LogListener(this))
+//END FROM CONSOLEMANAGER
 {
-    UiGraphicsView *ui_view = framework_->Ui()->GraphicsView();
-    if (ui_view)
-        uiConsoleManager = new UiConsoleManager(framework_, ui_view);
-
-    consoleManager->SetUiInitialized(!consoleManager->IsUiInitialized());
+    if (!fw->IsHeadless())
+    {
+        uiConsoleManager = new UiConsoleManager(commandManager, framework_);
+        for(unsigned i=0; i<earlyMessages.size();i++)
+            Print(earlyMessages.at(i).c_str());
+        earlyMessages.clear();
+    }
 
     inputContext = framework_->Input()->RegisterInputContext("Console", 100);
     inputContext->SetTakeKeyboardEventsOverQt(true);
     connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+
+//START FROM CONSOLEMANAGER
+    ///\todo Poco Regression.
+///    framework_->AddLogChannel(consoleChannel.get());
+
+    RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
+    if (renderer)
+        renderer->SubscribeLogListener(logListener);
+//        else
+//            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't subscribe to renderer log listener.");
+//END FROM CONSOLEMANAGER
 }
+
+//START FROM CONSOLEMANAGER
+void ConsoleAPI::Update(f64 frametime)
+{
+    commandManager->Update();
+}
+
+void ConsoleAPI::Print_(const std::string &text)
+{
+    if (uiConsoleManager)
+        uiConsoleManager->PrintToConsole(text.c_str());
+    else
+        earlyMessages.push_back(text);
+}
+
+void ConsoleAPI::UnsubscribeLogListener()
+{
+    RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
+    if (renderer)
+        renderer->UnsubscribeLogListener(logListener);
+//        else
+//            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't unsubscribe renderer log listener.");
+
+    ///\todo Poco regression.
+//    framework_->RemoveLogChannel(consoleChannel.get());
+}
+
+//END FROM CONSOLEMANAGER
 
 void ConsoleAPI::ToggleConsole()
 {
@@ -117,8 +162,7 @@ void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
 void ConsoleAPI::Uninitialize()
 {
     SAFE_DELETE(uiConsoleManager);
-    consoleManager->UnsubscribeLogListener();
-    SAFE_DELETE(consoleManager);
+    UnsubscribeLogListener();
 }
 
 void ConsoleAPI::InvokeCommand(const QString &name, const QStringList &params) const

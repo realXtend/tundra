@@ -25,6 +25,9 @@ class TreeWidgetItemExpandMemory;
 class ECEditorWindow;
 class ECComponentEditor;
 typedef std::vector<ComponentWeakPtr> ComponentWeakPtrVector;
+
+namespace Foundation { class Framework; }
+
 //typedef std::list<ComponentGroup*> ComponentGroupList;
 
 class Framework;
@@ -40,7 +43,7 @@ class Framework;
 
     User can add attributes to dynamic component by using CreateAttribute() and remove attributes with RemoveAttribute().
 
-    \todo Try to find a way to remove the unecessary paint events when we are updating the browser parameters.
+    \todo Try to find a way to remove the unnecessary paint events when we are updating the browser parameters.
     \ingroup ECEditorModuleClient.
  */
 class ECBrowser : public QtTreePropertyBrowser
@@ -161,6 +164,9 @@ private slots:
      *  But if item has parent set, we can assume that selected item is attribute or it's value is selected.
      */
     void OnDeleteAction();
+
+    /// Resizes header to contents of the tree widget.
+    void ResizeHeaderToContents();
 
 private:
     /// Try to find the right component group for given component. If right type of component group is found return it's pointer.

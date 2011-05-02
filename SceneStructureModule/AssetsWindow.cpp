@@ -38,7 +38,6 @@ namespace
 AssetsWindow::AssetsWindow(Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw),
-    searchField(0),
     expandAndCollapseButton(0)
 {
     // Init main widget
@@ -60,7 +59,7 @@ AssetsWindow::AssetsWindow(Framework *fw, QWidget *parent) :
     searchField->installEventFilter(this);
 
     expandAndCollapseButton = new QPushButton(tr("Expand All"), this);
-    
+
     QHBoxLayout *hlayout= new QHBoxLayout;
     hlayout->addWidget(searchField);
     hlayout->addWidget(expandAndCollapseButton);
@@ -93,6 +92,42 @@ AssetsWindow::~AssetsWindow()
         SAFE_DELETE(item);
         ++it;
     }
+}
+
+bool AssetsWindow::eventFilter(QObject *obj, QEvent *e)
+{
+    if (searchField && searchField == obj)
+    {
+        switch (e->type())
+        {
+        case QEvent::FocusIn:
+        {
+            QString currentText = searchField->text();
+            if (currentText == tr("Search..."))
+            {
+                searchField->setText("");
+                searchField->setStyleSheet("color:black;");
+            }
+            else if (!currentText.isEmpty())
+            {
+                // Calling selectAll() directly here won't do anything
+                // as the ongoing QFocusEvent will overwrite what it does.
+                QTimer::singleShot(1, searchField, SLOT(selectAll()));
+            }
+            break;
+        }
+        case QEvent::FocusOut:
+            if (searchField->text().simplified().isEmpty())
+            {
+                searchField->setText(tr("Search..."));
+                searchField->setStyleSheet("color:grey;");
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return QWidget::eventFilter(obj, e);
 }
 
 void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
@@ -156,6 +191,9 @@ void AssetsWindow::AddAsset(AssetPtr asset)
     ///\todo Check that the asset doesn't already exists
     AssetItem *item = new AssetItem(asset);
     AddChildren(asset, item);
+
+    connect(asset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleAssetLoaded(AssetPtr)));
+    connect(asset.get(), SIGNAL(Unloaded(IAsset *)), SLOT(HandleAssetUnloaded(IAsset *)));
 
     bool storageFound = false;
     AssetStoragePtr storage = asset->GetAssetStorage();
@@ -231,39 +269,26 @@ void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
         expandAndCollapseButton->setText(tr("Expand All"));
 }
 
-
-bool AssetsWindow::eventFilter(QObject *obj, QEvent *e)
+void AssetsWindow::HandleAssetLoaded(AssetPtr asset)
 {
-    if (searchField && searchField == obj)
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
     {
-        switch (e->type())
-        {
-        case QEvent::FocusIn:
-        {
-            QString currentText = searchField->text();
-            if (currentText == "Search...")
-            {
-                searchField->setText("");
-                searchField->setStyleSheet("color:black;");
-            }
-            else if (!currentText.isEmpty())
-            {
-                // Calling selectAll() directly here won't do anything
-                // as the ongoing QFocusEvent will overwrite what it does.
-                QTimer::singleShot(1, searchField, SLOT(selectAll()));
-            }
-            break;
-        }
-        case QEvent::FocusOut:
-            if (searchField->text().simplified().isEmpty())
-            {
-                searchField->setText(tr("Search..."));
-                searchField->setStyleSheet("color:grey;");
-            }
-            break;
-        default:
-            break;
-        }
+        AssetItem *item = dynamic_cast<AssetItem *>(*it);
+        if (item && item->Asset() == asset)
+            item->MarkUnloaded(false);
+        ++it;
     }
-    return QWidget::eventFilter(obj, e);
+}
+
+void AssetsWindow::HandleAssetUnloaded(IAsset *asset)
+{
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
+    {
+        AssetItem *item = dynamic_cast<AssetItem *>(*it);
+        if (item && item->Asset().get() == asset)
+            item->MarkUnloaded(true);
+        ++it;
+    }
 }

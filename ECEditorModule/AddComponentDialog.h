@@ -35,6 +35,9 @@ public:
     ~AddComponentDialog();
 
     /// Sets available component types.
+    /** In order to improve readibility and usability, the "EC_" prefix is stripped from the type name.
+        GetTypeName() however returns the full type name.
+    */
     void SetComponentList(const QStringList &component_types);
 
     /// Sets default name.

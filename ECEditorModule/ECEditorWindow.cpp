@@ -19,8 +19,6 @@
 #include "FunctionInvoker.h"
 #include "ECEditorModule.h"
 
-#include "UiProxyWidget.h"
-#include "ModuleManager.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "EC_Name.h"
@@ -90,6 +88,7 @@ void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
         item->setSelected(!item->isSelected());
         entity_list_->blockSignals(false);
     }
+
     if (udpate_ui)
         RefreshPropertyBrowser();
 }
@@ -160,6 +159,7 @@ void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
                 break;
             }
         }
+
     entity_list_->blockSignals(false);
     RefreshPropertyBrowser();
 }
