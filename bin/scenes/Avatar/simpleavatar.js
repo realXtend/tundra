@@ -290,11 +290,7 @@ function ServerHandleSetRotation(param) {
     var attrs = me.dynamiccomponent;
     if (attrs.GetAttribute("enableRotate")) {
         var rotateVec = new Vector3df();
-<<<<<<< HEAD
-        rotateVec.z = parseFloat(param);
-=======
         rotateVec.y = parseFloat(param);
->>>>>>> c57fa1f... Coordinate system conversion -> Y up.
         me.rigidbody.SetRotation(rotateVec);
     }
 }
@@ -453,15 +449,7 @@ function ClientCreateInputMapper() {
     inputContext.MouseMove.connect(ClientHandleMouseMove);
 
     // Local mapper for mouse scroll and rotate
-<<<<<<< HEAD
-<<<<<<< HEAD
     var inputmapper = me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
-=======
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", "CameraMapper", 2, false);
->>>>>>> c57fa1f... Coordinate system conversion -> Y up.
-=======
-    var inputmapper = me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
->>>>>>> 7301646... Fixed physics coordinate space for capsule & cylinder shapes.
     inputmapper.SetNetworkSyncEnabled(false);
     inputmapper.contextPriority = 100;
     inputmapper.takeMouseEventsOverQt = true;
@@ -656,37 +644,20 @@ function ClientUpdateAvatarCamera() {
     if (!first_person)
         pitch = 0;
     var cameratransform = cameraplaceable.transform;
-<<<<<<< HEAD
-    cameratransform.rot.x = pitch + 90;
-    cameratransform.rot.y = 0;
-    cameratransform.rot.z = yaw;
-=======
     cameratransform.rot.x = pitch;
     cameratransform.rot.y = yaw;
     cameratransform.rot.z = 0;
 
->>>>>>> c57fa1f... Coordinate system conversion -> Y up.
     cameraplaceable.transform = cameratransform;
 
     var avatartransform = avatarplaceable.transform;
     var offsetVec = new Vector3df();
-<<<<<<< HEAD
-    offsetVec.x = -avatar_camera_distance;
-=======
     offsetVec.z = avatar_camera_distance;
->>>>>>> c57fa1f... Coordinate system conversion -> Y up.
     offsetVec.y = avatar_camera_height;
     offsetVec = cameraplaceable.GetRelativeVector(offsetVec);
     cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
     cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
     cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
-<<<<<<< HEAD
-
-    // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
-    cameratransform.rot.z -= 90;
-
-=======
->>>>>>> c57fa1f... Coordinate system conversion -> Y up.
     cameraplaceable.transform = cameratransform;
 }
 
