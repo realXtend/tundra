@@ -51,6 +51,8 @@ endif()
 # Enables Ogre asset editor module.
 SET(OGREASSETEDITOR 0)
 
+SET(HAVE_OPENDOCUMENT_SUPPORT 0)
+
 use_package(OPENAL)
 use_package(OGG)
 use_package(VORBIS)
@@ -68,6 +70,10 @@ add_subdirectory(Ui)
 
 add_subdirectory(OgreRenderingModule)
 add_subdirectory(KristalliProtocolModule)
+if (HAVE_OPENDOCUMENT_SUPPORT)
+   add_definitions(-DHAVE_OPENDOCUMENT_SUPPORT)
+   add_subdirectory(OpenDocuments)
+endif()
 
 # The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
 # they will not be able to conditionally compile the EC.

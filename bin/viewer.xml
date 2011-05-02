@@ -6,6 +6,7 @@
   <plugin path="OgreRenderingModule" />
   <plugin path="EnvironmentModule" /> <!-- EnvironmentModule depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" /> <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
+  <plugin path="OpenDocuments" />
   <plugin path="TundraLogicModule" /> <!-- TundraLogicModule depends on KristalliProtocolModule, OgreRenderingModule and PhysicsModule -->
   <plugin path="AssetModule" />	<!-- AssetModule depends on KristalliProtocolModule and TundraLogicModule -->
   <plugin path="AvatarModule" />	<!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
