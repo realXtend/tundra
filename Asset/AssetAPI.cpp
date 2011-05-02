@@ -1069,7 +1069,8 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     transfer->asset->SetAssetProvider(transfer->provider.lock());
     transfer->asset->SetAssetTransfer(transfer);
 
-    bool success = transfer->asset->LoadFromFileInMemory(&transfer->rawAssetData[0], transfer->rawAssetData.size());
+	const u8 *data = (transfer->rawAssetData.size() > 0 ? &transfer->rawAssetData[0] : 0);
+    bool success = transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
     if (!success)
     {
         QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
@@ -1391,7 +1392,7 @@ namespace
     bool IsFileOfType(const QString &filename, const char **suffixes, int numSuffixes)
     {
         for(int i = 0;i < numSuffixes; ++i)
-            if (filename.endsWith(suffixes[i]))
+            if (filename.endsWith(suffixes[i], Qt::CaseInsensitive))
                 return true;
 
         return false;
@@ -1406,15 +1407,15 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
     ///\todo This whole function is to be removed, and moved into the asset type providers for separate access. -jj.
 
     QString file = filename.trimmed().toLower();
-    if (file.endsWith(".qml") || file.endsWith(".qmlzip"))
+    if (file.endsWith(".qml", Qt::CaseInsensitive) || file.endsWith(".qmlzip", Qt::CaseInsensitive))
         return "QML";
-    if (file.endsWith(".mesh"))
+    if (file.endsWith(".mesh", Qt::CaseInsensitive))
         return "OgreMesh";
-    if (file.endsWith(".skeleton"))
+    if (file.endsWith(".skeleton", Qt::CaseInsensitive))
         return "OgreSkeleton";
-    if (file.endsWith(".material"))
+    if (file.endsWith(".material", Qt::CaseInsensitive))
         return "OgreMaterial";
-    if (file.endsWith(".particle"))
+    if (file.endsWith(".particle", Qt::CaseInsensitive))
         return "OgreParticle";
 
     const char *textureFileTypes[] = { ".jpg", ".jpeg", ".png", ".tga", ".bmp", ".dds", ".gif" };
@@ -1429,22 +1430,30 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
     if (IsFileOfType(file, openAssImpFileTypes, NUMELEMS(openAssImpFileTypes)))
         return "OgreMesh"; // We use the OgreMeshResource type for mesh files opened using the Open Asset Import Library.
 
-    if (file.endsWith(".js") || file.endsWith(".py"))
+    if (file.endsWith(".js", Qt::CaseInsensitive) || file.endsWith(".py", Qt::CaseInsensitive))
         return "Script";
 
-    if (file.endsWith(".ntf"))
+    if (file.endsWith(".ntf", Qt::CaseInsensitive))
         return "Terrain";
 
-    if (file.endsWith(".wav") || file.endsWith(".ogg") || file.endsWith(".mp3"))
+    if (file.endsWith(".wav", Qt::CaseInsensitive) || file.endsWith(".ogg", Qt::CaseInsensitive) || file.endsWith(".mp3", Qt::CaseInsensitive))
         return "Audio";
 
-    if (file.endsWith(".ui"))
+    if (file.endsWith(".ui", Qt::CaseInsensitive))
         return "QtUiFile";
         
-    if (file.endsWith(".avatar"))
+    if (file.endsWith(".avatar", Qt::CaseInsensitive))
         return "Avatar";
 
-    if (file.endsWith(".xml") || file.endsWith(".txml") || file.endsWith(".tbin")) 
+    if (file.endsWith(".pdf", Qt::CaseInsensitive))
+        return "PdfAsset";
+
+    const char *openDocFileTypes[] = { ".odt", ".doc", ".rtf", ".txt", ".docx", ".docm", ".ods", ".xls", ".odp", ".ppt", ".odg" };
+    if (IsFileOfType(file, openDocFileTypes, NUMELEMS(openDocFileTypes)))
+        return "DocAsset";
+
+
+    if (file.endsWith(".xml", Qt::CaseInsensitive) || file.endsWith(".txml", Qt::CaseInsensitive) || file.endsWith(".tbin", Qt::CaseInsensitive)) 
         return "Binary";
 
     // Unknown type, return Binary type.
