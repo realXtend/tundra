@@ -8,6 +8,8 @@
 #include "OgreModuleFwd.h"
 #include "Declare_EC.h"
 
+#include "Vector3D.h"
+
 /// Ogre camera entity component
 /**
 <table class="header">
@@ -21,7 +23,11 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 \ingroup OgreRenderingModuleClient
 
-<b>No Attributes</b>.
+<b>Attributes</b>:
+<ul>
+<li>Vector3df: upVector
+<div>Up vector that defines the yaw axis.</div>
+</ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
@@ -34,7 +40,9 @@ Registered by OgreRenderer::OgreRenderingModule.
         note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
         \param farclip new far clip distance
 <li>"SetVerticalFov": sets vertical fov 
-        \param fov new vertical fov in radians 
+        \param fov new vertical fov in radians
+<li>"GetInitialRotation": returns initial Euler rotation according to the up vector.
+<li>"GetAdjustedRotation": returns an adjusted Euler rotation according to the up vector.
 <li>"GetNearClip": returns near clip distance
 <li>"GetFarClip": returns far clip distance
 <li>"GetVerticalFov": returns vertical fov as radians
@@ -61,6 +69,10 @@ class OGRE_MODULE_API EC_Camera : public IComponent
     DECLARE_EC(EC_Camera);
 
 public:
+    /// Camera up vector. Defines the yaw axis
+    Q_PROPERTY(Vector3df upVector READ getupVector WRITE setupVector);
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, upVector);
+
     virtual ~EC_Camera();
 
     /// sets placeable component
@@ -75,6 +87,13 @@ public slots:
     
     /// sets as active camera in the viewport
     void SetActive();
+    
+    /// Get an initial rotation for the camera (in Euler angles, can be assigned to a Transform) that corresponds to the up vector
+    /// Note: the left/right & front/back axes are unspecified
+    Vector3df GetInitialRotation() const;
+    
+    /// Adjust a pitch/yaw/roll Euler rotation vector using the up vector
+    Vector3df GetAdjustedRotation(const Vector3df& rotation) const;
     
     /// sets near clip distance
     /** note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!

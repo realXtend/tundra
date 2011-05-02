@@ -19,7 +19,8 @@ EC_Camera::EC_Camera(IModule* module) :
     IComponent(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     attached_(false),
-    camera_(0)
+    camera_(0),
+    upVector(this, "Up vector", Vector3df::UNIT_Y)
 {
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
 }
@@ -50,6 +51,41 @@ void EC_Camera::AutoSetPlaceable()
         if (placeable)
             SetPlaceable(placeable);
     }
+}
+
+Vector3df EC_Camera::GetInitialRotation() const
+{
+    Vector3df normUpVector = upVector.Get();
+    normUpVector.normalize();
+    
+    // Identity rotation corresponds to -Z = forward & Y = up. Calculate which rotation we need to adjust for our up vector.
+    Quaternion rot;
+    rot.rotationFromTo(Vector3df::UNIT_Y, normUpVector);
+    
+    Vector3df euler;
+    rot.toEuler(euler);
+    euler *= RADTODEG;
+    return euler;
+}
+
+Vector3df EC_Camera::GetAdjustedRotation(const Vector3df& rotVec) const
+{
+    // Optimization: if the up vector is Y-positive, no adjustment is necessary
+    Vector3df normUpVector = upVector.Get();
+    normUpVector.normalize();
+    if (normUpVector.equals(Vector3df::UNIT_Y))
+        return rotVec;
+    
+    Quaternion adjustQuat;
+    adjustQuat.rotationFromTo(Vector3df::UNIT_Y, normUpVector);
+    
+    Quaternion rotQuat(rotVec.x * DEGTORAD, rotVec.y * DEGTORAD, rotVec.z * DEGTORAD);
+    Quaternion final = rotQuat * adjustQuat;
+    
+    Vector3df euler;
+    final.toEuler(euler);
+    euler *= RADTODEG;
+    return euler;
 }
 
 void EC_Camera::SetPlaceable(ComponentPtr placeable)

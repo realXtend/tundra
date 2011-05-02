@@ -360,35 +360,6 @@ QVector3D EC_Placeable::GetQOrientationEuler() const
     return QVector3D(trans.rotation.x, trans.rotation.y, trans.rotation.z);
 }
 
-QVector3D EC_Placeable::translate(int axis, float amount)
-{
-    Ogre::Matrix3 m;
-    Ogre::Vector3 v;
-    float x, y, z;
-    x = y = z = 0.0;
-    m.SetColumn(0, scene_node_->getOrientation().xAxis());
-    m.SetColumn(1, scene_node_->getOrientation().yAxis());
-    m.SetColumn(2, scene_node_->getOrientation().zAxis());
-    switch(axis) {
-        case 0:
-            x = amount;
-            break;
-        case 1:
-            y = amount;
-            break;
-        case 2:
-            z = amount;
-            break;
-        default:
-            // nothing, don't translate
-            break;
-
-    }
-    scene_node_->translate(m, Ogre::Vector3(x, y, z), Ogre::Node::TS_LOCAL);
-    const Ogre::Vector3 newpos = scene_node_->getPosition();
-    return QVector3D(newpos.x, newpos.y, newpos.z);
-}
-
 void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     if (attribute == &transform)

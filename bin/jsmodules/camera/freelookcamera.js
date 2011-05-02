@@ -7,6 +7,9 @@ var motion_z = 0;
 var motion_y = 0;
 var motion_x = 0;
 
+var yaw = 0;
+var pitch = 0;
+
 if (!me.HasComponent("EC_Camera"))
 {
     // Create components & setup default position/lookat for the camera
@@ -24,6 +27,11 @@ if (!me.HasComponent("EC_Camera"))
         camera.SetActive();
 
     var transform = placeable.transform;
+
+    // Set initial transform according to camera's up vector
+    var initialRot = camera.GetInitialRotation();
+    transform.rot = initialRot;
+
     placeable.transform = transform;
 
     // Hook to update tick
@@ -63,8 +71,8 @@ if (!me.HasComponent("EC_Camera"))
     var inputContext = inputmapper.GetInputContext();
     if (inputContext.GestureStarted && inputContext.GestureUpdated)
     {
-	inputContext.GestureStarted.connect(GestureStarted);
-	inputContext.GestureUpdated.connect(GestureUpdated);
+	    inputContext.GestureStarted.connect(GestureStarted);
+	    inputContext.GestureUpdated.connect(GestureUpdated);
     }
 }
 
@@ -144,9 +152,17 @@ function HandleMouseLookX(param)
 
     var move = parseInt(param);
     var placeable = me.GetComponent("EC_Placeable");
-    var newtransform = placeable.transform;
-    newtransform.rot.y -= rotate_sensitivity * move;
-    placeable.transform = newtransform;
+
+    var move = parseInt(param);
+    yaw -= rotate_sensitivity * move;
+
+    var rotvec = new Vector3df();
+    rotvec.x = pitch;
+    rotvec.y = yaw;
+
+    var transform = me.placeable.transform;
+    transform.rot = me.camera.GetAdjustedRotation(rotvec);
+    me.placeable.transform = transform;
 }
 
 function HandleMouseLookY(param)
@@ -155,10 +171,19 @@ function HandleMouseLookY(param)
         return;
 
     var move = parseInt(param);
-    var placeable = me.GetComponent("EC_Placeable");
-    var newtransform = placeable.transform;
-    newtransform.rot.x -= rotate_sensitivity * move;
-    placeable.transform = newtransform;
+    pitch -= rotate_sensitivity * move;
+    if (pitch > 90.0)
+        pitch = 90.0;
+    if (pitch < -90.0)
+        pitch = -90.0;
+
+    var rotvec = new Vector3df();
+    rotvec.x = pitch;
+    rotvec.y = yaw;
+
+    var transform = me.placeable.transform;
+    transform.rot = me.camera.GetAdjustedRotation(rotvec);
+    me.placeable.transform = transform;
 }
 
 function GestureStarted(gestureEvent)
