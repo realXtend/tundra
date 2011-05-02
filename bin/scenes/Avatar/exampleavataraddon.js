@@ -28,7 +28,7 @@ function ClientInitialize()
 
         // Connect keys to the inputmapper actions
         // If simpleavatar.js has not yet run, create the inputmapper here
-        var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
+        var inputmapper = me.GetOrCreateComponent("EC_InputMapper", 2, false);
         inputmapper.RegisterMapping("Q", "AddonWave()", 1); // 1 = Keypress
         inputmapper.RegisterMapping("E", "AddonSit()", 1); // 1 = Keypress
     }

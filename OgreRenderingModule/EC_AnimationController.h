@@ -204,12 +204,12 @@ public:
 
     virtual ~EC_AnimationController();
     
-    /// Updates animation(s) by elapsed time
-    void Update(f64 frametime);
-    
 public slots:
     /// Auto-associate mesh component if not yet set
     void AutoSetMesh();
+    
+    /// Updates animation(s) by elapsed time
+    void Update(float frametime);
     
     /// Enables animation with optional fade-in time
     /* \param name Animation name

@@ -197,7 +197,7 @@ void EC_Avatar::AdjustHeightOffset()
         }
     }
 
-    mesh->SetAdjustPosition(Vector3df(0.0f, 0.0f, -offset.y + FIXED_HEIGHT_OFFSET));
+    mesh->SetAdjustPosition(Vector3df(0.0f, -offset.y + FIXED_HEIGHT_OFFSET, 0.0f));
 }
 
 void EC_Avatar::SetupMeshAndMaterials()
@@ -241,12 +241,9 @@ void EC_Avatar::SetupMeshAndMaterials()
     for (uint i = 0; i < desc->materials_.size(); ++i)
         mesh->SetMaterial(i, LookupAsset(desc->materials_[i]));
     
-    // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
-    Quaternion adjust(PI/2, 0, -PI/2);
-    mesh->SetAdjustOrientation(adjust);
     // Position approximately within the bounding box
     // Will be overridden by bone-based height adjust, if available
-    mesh->SetAdjustPosition(Vector3df(0.0f, 0.0f, FIXED_HEIGHT_OFFSET));
+    mesh->SetAdjustPosition(Vector3df(0.0f, FIXED_HEIGHT_OFFSET, 0.0f));
     mesh->SetCastShadows(true);
 }
 

@@ -56,17 +56,17 @@ if (isserver) {
 function ServerInitialize() {
 
     // Create the avatar component & set the avatar appearance. The avatar component will create the mesh & animationcontroller, once the avatar asset has loaded
-    var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
+    var avatar = me.GetOrCreateComponent("EC_Avatar");
     var r = avatar.appearanceRef;
     r.ref = "local://default_avatar.avatar";
     avatar.appearanceRef = r;
 
     // Create rigid body component and set physics properties
-    var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
+    var rigidbody = me.GetOrCreateComponent("EC_RigidBody");
     var sizeVec = new Vector3df();
-    sizeVec.z = 2.4;
     sizeVec.x = 0.5;
-    sizeVec.y = 0.5;
+    sizeVec.y = 2.4;
+    sizeVec.z = 0.5;
     rigidbody.mass = avatar_mass;
     rigidbody.shapeType = 3; // Capsule
     rigidbody.size = sizeVec;
@@ -91,8 +91,8 @@ function ServerInitialize() {
     attrs.SetAttribute("cameraDistance", 7.0);
 
     // Create an inactive proximitytrigger, so that other proximitytriggers can detect the avatar
-    var proxtrigger = me.GetOrCreateComponentRaw("EC_ProximityTrigger");
-    proxtrigger.active = false;
+    // var proxtrigger = me.GetOrCreateComponent("EC_ProximityTrigger");
+    // proxtrigger.active = false;
 
     // Hook to physics update
     rigidbody.GetPhysicsWorld().Updated.connect(ServerUpdatePhysics);
@@ -149,7 +149,7 @@ function ServerUpdatePhysics(frametime) {
             var mag = 1.0 / Math.sqrt(motion_x * motion_x + motion_z * motion_z);
             var impulseVec = new Vector3df();
             impulseVec.x = mag * move_force * motion_x;
-            impulseVec.z = -mag * move_force * motion_y;
+            impulseVec.z = -mag * move_force * motion_z;
             impulseVec = placeable.GetRelativeVector(impulseVec);
             rigidbody.ApplyImpulse(impulseVec);
         }
@@ -226,22 +226,22 @@ function ServerHandleMove(param) {
 
 function ServerHandleStop(param) {
     if ((param == "forward") && (motion_z == 1)) {
-        motion_x = 0;
+        motion_z = 0;
     }
     if ((param == "back") && (motion_z == -1)) {
-        motion_x = 0;
+        motion_z = 0;
     }
     if ((param == "right") && (motion_x == 1)) {
-        motion_y = 0;
+        motion_x = 0;
     }
     if ((param == "left") && (motion_x == -1)) {
-        motion_y = 0;
+        motion_x = 0;
     }
     if ((param == "up") && (motion_y == 1)) {
-        motion_z = 0;
+        motion_y = 0;
     }
     if ((param == "down") && (motion_y == -1)) {
-        motion_z = 0;
+        motion_y = 0;
     }
 
     ServerSetAnimationState();
@@ -335,7 +335,7 @@ function ClientInitialize() {
         ClientCreateInputMapper();
         ClientCreateAvatarCamera();
         crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
-        var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
+        var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
         soundlistener.active = true;
 
         me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
@@ -347,7 +347,7 @@ function ClientInitialize() {
         var avatarurl = client.GetLoginProperty("avatarurl");
         if (avatarurl && avatarurl.length > 0)
         {
-            var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
+            var avatar = me.GetOrCreateComponent("EC_Avatar");
             var r = avatar.appearanceRef;
             r.ref = "local://default_avatar.xml";
             avatar.appearanceRef = r;
@@ -357,11 +357,11 @@ function ClientInitialize() {
     else
     {
         // Make hovering name tag for other clients
-        var clientName = me.GetComponentRaw("EC_Name");
+        var clientName = me.GetComponent("EC_Name");
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {
-                var hoveringWidget = me.GetOrCreateComponentRaw("EC_HoveringWidget", 2, false);
+                var hoveringWidget = me.GetOrCreateComponent("EC_HoveringWidget", 2, false);
                 if (hoveringWidget != null) {
                     hoveringWidget.SetNetworkSyncEnabled(false);
                     hoveringWidget.SetTemporary(true);
@@ -382,10 +382,10 @@ function ClientInitialize() {
 
 function IsCameraActive()
 {
-    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
         return false;
-    var camera = cameraentity.ogrecamera;
+    var camera = cameraentity.camera;
     return camera.IsActive();
 }
 
@@ -393,10 +393,10 @@ function ClientUpdate(frametime)
 {
     // Tie enabled state of inputmapper to the enabled state of avatar camera
     if (own_avatar) {
-        var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+        var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
         var inputmapper = me.inputmapper;
         if ((avatarcameraentity != null) && (inputmapper != null)) {
-            var active = avatarcameraentity.ogrecamera.IsActive();
+            var active = avatarcameraentity.camera.IsActive();
             if (inputmapper.enabled != active) {
                 inputmapper.enabled = active;
             }
@@ -417,7 +417,7 @@ function ClientUpdate(frametime)
 
 function ClientCreateInputMapper() {
     // Create a nonsynced inputmapper
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
+    var inputmapper = me.GetOrCreateComponent("EC_InputMapper", 2, false);
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = false;
     inputmapper.takeKeyboardEventsOverQt = false;
@@ -454,10 +454,14 @@ function ClientCreateInputMapper() {
 
     // Local mapper for mouse scroll and rotate
 <<<<<<< HEAD
+<<<<<<< HEAD
     var inputmapper = me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
 =======
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", "CameraMapper", 2, false);
 >>>>>>> c57fa1f... Coordinate system conversion -> Y up.
+=======
+    var inputmapper = me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
+>>>>>>> 7301646... Fixed physics coordinate space for capsule & cylinder shapes.
     inputmapper.SetNetworkSyncEnabled(false);
     inputmapper.contextPriority = 100;
     inputmapper.takeMouseEventsOverQt = true;
@@ -472,16 +476,16 @@ function ClientCreateInputMapper() {
 }
 
 function ClientCreateAvatarCamera() {
-    if (scene.GetEntityByNameRaw("AvatarCamera") != null) {
+    if (scene.GetEntityByName("AvatarCamera") != null) {
         return;
     }
 
-    var cameraentity = scene.CreateEntityRaw(scene.NextFreeIdLocal());
+    var cameraentity = scene.CreateEntity(scene.NextFreeIdLocal());
     cameraentity.SetName("AvatarCamera");
     cameraentity.SetTemporary(true);
 
-    var camera = cameraentity.GetOrCreateComponentRaw("EC_OgreCamera");
-    var placeable = cameraentity.GetOrCreateComponentRaw("EC_Placeable");
+    var camera = cameraentity.GetOrCreateComponent("EC_Camera");
+    var placeable = cameraentity.GetOrCreateComponent("EC_Placeable");
 
     camera.AutoSetPlaceable();
     camera.SetActive();
@@ -642,7 +646,7 @@ function ClientUpdateAvatarCamera() {
     avatar_camera_distance = attrs.GetAttribute("cameraDistance");
     var first_person = avatar_camera_distance < 0;
 
-    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
         return;
     var cameraplaceable = cameraentity.placeable;
@@ -658,8 +662,8 @@ function ClientUpdateAvatarCamera() {
     cameratransform.rot.z = yaw;
 =======
     cameratransform.rot.x = pitch;
-    cameratransform.rot.z = yaw;
-    cameratransform.rot.y = 0;
+    cameratransform.rot.y = yaw;
+    cameratransform.rot.z = 0;
 
 >>>>>>> c57fa1f... Coordinate system conversion -> Y up.
     cameraplaceable.transform = cameratransform;
@@ -691,8 +695,8 @@ function ClientCheckState()
     var attrs = me.dynamiccomponent;
     var first_person = attrs.GetAttribute("cameraDistance") < 0;
 
-    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    var avatar_placeable = me.GetComponentRaw("EC_Placeable");
+    var cameraentity = scene.GetEntityByName("AvatarCamera");
+    var avatar_placeable = me.GetComponent("EC_Placeable");
 
     if (crosshair == null)
         return;
@@ -714,7 +718,7 @@ function ClientCheckState()
     {
         // We might be in 1st person mode but camera might not be active
         // hide curson and show av
-        if (!cameraentity.ogrecamera.IsActive()) {
+        if (!cameraentity.camera.IsActive()) {
             if (crosshair.isActive()) {
                 crosshair.hide();
             }
@@ -749,16 +753,13 @@ function ClientHandleMouseMove(mouseevent)
     if ((!first_person) && (input.IsMouseCursorVisible()))
         return;
 
-    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
         return;
 
     // Dont move av rotation if we are not the active cam
-    if (!cameraentity.ogrecamera.IsActive())
+    if (!cameraentity.camera.IsActive())
         return;
-
-    var cameraplaceable = cameraentity.placeable;
-    var cameratransform = cameraplaceable.transform;
 
     if (mouseevent.relativeX != 0)
     {
@@ -779,8 +780,6 @@ function ClientHandleMouseMove(mouseevent)
         if (pitch > 90)
             pitch = 90;
     }
-
-    cameraplaceable.transform = cameratransform;
 }
 
 function CommonFindAnimations() {
@@ -859,7 +858,7 @@ function CommonUpdateAnimation(frametime) {
     // If walk animation is playing, adjust its speed according to the avatar rigidbody velocity
     if (animName != ""  && animcontroller.IsAnimationActive(walkAnimName)) {
         var velocity = rigidbody.linearVelocity;
-        var walkspeed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * walk_anim_speed;
+        var walkspeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * walk_anim_speed;
         animcontroller.SetAnimationSpeed(walkAnimName, walkspeed);
     }
 }
@@ -867,11 +866,11 @@ function CommonUpdateAnimation(frametime) {
 function CreateFish() {
     // Note: attaching meshes to bone of another mesh is strictly client-only! It does not replicate.
     // Therefore this needs to be run locally on every client
-    var avatarmesh = me.GetComponentRaw("EC_Mesh", "");
+    var avatarmesh = me.GetComponent("EC_Mesh", "");
     // Do not act until the actual avatar has been created
     if ((avatarmesh) && (avatarmesh.HasMesh())) {
         // Create a local mesh component into the same entity
-        var fishmesh = me.GetOrCreateComponentRaw("EC_Mesh", "fish", 2, false);
+        var fishmesh = me.GetOrCreateComponent("EC_Mesh", "fish", 2, false);
         var r = fishmesh.meshRef;
         if (r.ref != "local://fish.mesh") {
             r.ref = "local://fish.mesh";

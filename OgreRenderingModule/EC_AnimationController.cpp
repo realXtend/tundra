@@ -5,6 +5,7 @@
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
 #include "Entity.h"
+#include "FrameAPI.h"
 #include "OgreRenderingModule.h"
 #include "CoreStringUtils.h"
 
@@ -23,6 +24,7 @@ EC_AnimationController::EC_AnimationController(IModule* module) :
 {
     ResetState();
     
+    QObject::connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
@@ -65,7 +67,7 @@ QStringList EC_AnimationController::GetActiveAnimations() const
     return activeList;
 }
 
-void EC_AnimationController::Update(f64 frametime)
+void EC_AnimationController::Update(float frametime)
 {
     Ogre::Entity* entity = GetEntity();
     if (!entity) 

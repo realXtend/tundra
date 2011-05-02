@@ -71,7 +71,7 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="0,0,-5,0,0,0,100,1,100" name="Transform"/>
+   <attribute value="0,-5,0,0,0,0,100,1,100" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>

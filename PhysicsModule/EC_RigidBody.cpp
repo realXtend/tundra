@@ -291,10 +291,10 @@ void EC_RigidBody::CreateCollisionShape()
         shape_ = new btSphereShape(sizeVec.x * 0.5f);
         break;
     case Shape_Cylinder:
-        shape_ = new btCylinderShapeZ(btVector3(sizeVec.x * 0.5f, sizeVec.y * 0.5f, sizeVec.z * 0.5f));
+        shape_ = new btCylinderShape(btVector3(sizeVec.x * 0.5f, sizeVec.y * 0.5f, sizeVec.z * 0.5f));
         break;
     case Shape_Capsule:
-        shape_ = new btCapsuleShapeZ(sizeVec.x * 0.5f, sizeVec.z * 0.5f);
+        shape_ = new btCapsuleShape(sizeVec.x * 0.5f, sizeVec.y * 0.5f);
         break;
     case Shape_TriMesh:
         if (triangleMesh_)

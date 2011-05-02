@@ -39,15 +39,15 @@ if (isserver == false) {
 
 function ClientHandleToggleCamera() {
     // For camera switching to work, must have both the freelookcamera & avatarcamera in the scene
-    var freelookcameraentity = scene.GetEntityByNameRaw("FreeLookCamera");
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var freelookcameraentity = scene.GetEntityByName("FreeLookCamera");
+    var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     var freecameralistener = freelookcameraentity.GetComponent("EC_SoundListener");
-    var avatarent = scene.GetEntityByNameRaw("Avatar" + client.GetConnectionID());
+    var avatarent = scene.GetEntityByName("Avatar" + client.GetConnectionID());
     var avatarlistener = avatarent.GetComponent("EC_SoundListener");
     if ((freelookcameraentity == null) || (avatarcameraentity == null))
         return;
-    var freelookcamera = freelookcameraentity.ogrecamera;
-    var avatarcamera = avatarcameraentity.ogrecamera;
+    var freelookcamera = freelookcameraentity.camera;
+    var avatarcamera = avatarcameraentity.camera;
 
     if (avatarcamera.IsActive()) {
         freelookcameraentity.placeable.transform = avatarcameraentity.placeable.transform;
@@ -78,7 +78,7 @@ function ServerHandleUserConnected(connectionID, user) {
     // - Placeable for position
     // - AnimationController for skeletal animation control
     // - DynamicComponent for holding disabled/enabled avatar features
-    var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController", "EC_DynamicComponent"]);
+    var avatarEntity = scene.CreateEntity(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController", "EC_DynamicComponent"]);
     avatarEntity.SetTemporary(true); // We never want to save the avatar entities to disk.
     avatarEntity.SetName(avatarEntityName);
     
@@ -95,7 +95,7 @@ function ServerHandleUserConnected(connectionID, user) {
     
     // Simpleavatar.js implements the basic avatar movement and animation.
     // Also load an additional script file to the same entity to demonstrate adding features to the avatar.
-    var script2 = avatarEntity.GetOrCreateComponentRaw("EC_Script", "Addon", 0, true);
+    var script2 = avatarEntity.GetOrCreateComponent("EC_Script", "Addon", 0, true);
     script2.type = "js"
     script2.runOnLoad = true;
     r = script2.scriptRef;
@@ -119,7 +119,7 @@ function ServerHandleUserConnected(connectionID, user) {
 
 function ServerHandleUserDisconnected(connectionID, user) {
     var avatarEntityName = "Avatar" + connectionID;
-    var avatartEntity = scene.GetEntityByNameRaw(avatarEntityName);
+    var avatartEntity = scene.GetEntityByName(avatarEntityName);
     if (avatartEntity != null) {
         var entityID = avatartEntity.id;
         scene.RemoveEntityRaw(entityID);
