@@ -63,7 +63,7 @@ void UiMainWindow::LoadWindowSettingsFromFile()
     bool maximized = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_maximized", false);
     bool fullscreen = owner->GetDefaultConfig().DeclareSetting("MainWindow", "fullscreen", false);
 
-    setWindowTitle(owner->ApplicationInfo()->toString());
+    setWindowTitle(owner->ApplicationVersion()->toString());
 
     width = max(1, min(DesktopWidth(), width));
     height = max(1, min(DesktopHeight(), height));

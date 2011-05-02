@@ -235,10 +235,10 @@ namespace Foundation
         ConfigAPI *Config() const;
 
         /// Returns Tundra API version info object.
-        ApiVersionInfo *ApiInfo() const;
+        ApiVersionInfo *ApiVersion() const;
 
         /// Returns Tundra application version info object.
-        ApplicationVersionInfo *ApplicationInfo() const;
+        ApplicationVersionInfo *ApplicationVersion() const;
     
         /// Returns if we're running the application in headless or not.
         bool IsHeadless() const { return headless_; }

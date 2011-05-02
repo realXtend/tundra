@@ -136,7 +136,7 @@ namespace Foundation
             config_manager_->Load();
 
             // Set config values we explicitly always want to override
-            //
+            /// \todo remove this version code, use fw->ApplicationVersion() instead.
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.4.1"));
             
@@ -782,12 +782,12 @@ namespace Foundation
         return config;
     }
 
-    ApiVersionInfo *Framework::ApiInfo() const
+    ApiVersionInfo *Framework::ApiVersion() const
     {
         return api_versioninfo_;
     }
 
-    ApplicationVersionInfo *Framework::ApplicationInfo() const
+    ApplicationVersionInfo *Framework::ApplicationVersion() const
     {
         return application_versioninfo_;   
     }
