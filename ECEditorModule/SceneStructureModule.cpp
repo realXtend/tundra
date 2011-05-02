@@ -814,17 +814,3 @@ void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QStri
     if (urlToDropPos.contains(transfer->GetSourceUrl()))
         urlToDropPos.remove(transfer->GetSourceUrl());
 }
-
-void SetProfiler(Profiler *profiler)
-{
-    ProfilerSection::SetProfiler(profiler);
-}
-
-extern "C"
-{
-__declspec(dllexport) void TundraPluginMain(Framework *fw)
-{
-    IModule *module = new SceneStructureModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
-}
-}

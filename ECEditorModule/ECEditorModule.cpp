@@ -331,17 +331,3 @@ bool ECEditorModule::IsECEditorWindowVisible() const
         return false;
     }
 }
-
-void SetProfiler(Profiler *profiler)
-{
-    ProfilerSection::SetProfiler(profiler);
-}
-
-extern "C"
-{
-__declspec(dllexport) void TundraPluginMain(Framework *fw)
-{
-    IModule *module = new ECEditorModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
-}
-}

@@ -107,7 +107,9 @@ add_subdirectory(EnvironmentModule)     # Depends on OgreRenderingModule and Tai
 add_subdirectory(PhysicsModule)         # Depends on OgreRenderingModule.
 
 # The following are optional.
-add_subdirectory(ECEditorModule)        # Tool for editing world scene data. Requires EC_DynamicComponent. Depends on OgreRenderingModule.
+# Tool for editing world scene data. Requires EC_DynamicComponent. Depends on OgreRenderingModule.
+# Contains also SceneStructureModule, which allows accessing, editing, importing and exporting of scene structure data
+add_subdirectory(ECEditorModule)
 if (OGREASSETEDITOR)
     add_subdirectory(OgreAssetEditorModule) # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
 endif()
