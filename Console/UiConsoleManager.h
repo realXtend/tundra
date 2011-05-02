@@ -33,8 +33,6 @@ public slots:
     /// Toggles visibility of the console UI.
     void ToggleConsole();
 
-    void KeyPressed(KeyEvent *key_event);
-
 signals:
     //! This emit is Qt::QueuedConnection type to avoid issues when printing from threads
     void PrintOrderReceived(const QString &text);

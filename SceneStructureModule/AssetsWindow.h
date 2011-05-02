@@ -39,14 +39,12 @@ public:
     /// Destructor.
     ~AssetsWindow();
 
-private:
-    /// Event filter to catch and react to child widget events
-    virtual bool eventFilter(QObject *obj, QEvent *e);
-
     /// Populates the tree widget with all assets from all asset storages.
     void PopulateTreeWidget();
 
 private:
+    /// Event filter to catch and react to child widget events
+    virtual bool eventFilter(QObject *obj, QEvent *e);
 
     /// If @c asset has asset references, adds the asset references as children to the @c parent.
     /** @param asset Asset to be added to the tree widget.
