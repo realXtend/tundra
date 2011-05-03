@@ -129,7 +129,7 @@ bool OgreMeshAsset::IsLoaded() const
     return ogreMesh.get() != 0;
 }
 
-bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
+bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     if (ogreMesh.isNull())
     {

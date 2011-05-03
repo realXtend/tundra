@@ -20,7 +20,7 @@ public:
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
     /// Load material into memory
-    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters);
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
     /// Unload material from ogre
     virtual void DoUnload();
