@@ -243,17 +243,19 @@ QString WStringToQString(const std::wstring &str)
 
 AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outProtocolPart, QString *outNamedStorage, QString *outProtocol_Path, 
                                                QString *outPath_Filename_SubAssetName, QString *outPath_Filename, QString *outPath, 
-                                               QString *outFilename, QString *outSubAssetName, QString *outFullRef)
+                                               QString *outFilename, QString *outSubAssetName, QString *outFullRef, QString *outFullRefNoSubAssetName)
 {
     if (outProtocolPart) *outProtocolPart = "";
     if (outNamedStorage) *outNamedStorage = "";
     if (outProtocol_Path) *outProtocol_Path = "";
+    QString protocol_path = "";
     if (outPath_Filename_SubAssetName) *outPath_Filename_SubAssetName = "";
     if (outPath_Filename) *outPath_Filename = "";
     if (outPath) *outPath = "";
     if (outFilename) *outFilename = "";
     if (outSubAssetName) *outSubAssetName = "";
     if (outFullRef) *outFullRef = "";
+    if (outFullRefNoSubAssetName) *outFullRefNoSubAssetName = "";
 
     /* Examples of asset refs:
 
@@ -316,8 +318,9 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
             *outProtocolPart = protocol;
 
         fullPath = what[2].str();
+        protocol_path = protocol + "://";
         if (outProtocol_Path) // Partially save the beginning of the protocol & path part. This will be completed below with the full path.
-            *outProtocol_Path = protocol + "://";
+            *outProtocol_Path = protocol_path;
 
         if (outFullRef)
             *outFullRef = protocol.toLower() + "://";
@@ -329,8 +332,9 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
             *outProtocolPart = "http";
         fullPath = ref;
 
+        protocol_path = "http://";
         if (outProtocol_Path) // Partially save the beginning of the protocol & path part. This will be completed below with the full path.
-            *outProtocol_Path = "http://";
+            *outProtocol_Path = protocol_path;
         if (outFullRef)
             *outFullRef = "http://";
     }
@@ -352,10 +356,11 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
             *outNamedStorage = storage;
         fullPath = what[2].str();
 
+        protocol_path = storage + ":";
         if (outProtocol_Path)
-            *outProtocol_Path = storage + ":";
+            *outProtocol_Path = protocol_path;
         if (outFullRef)
-            *outFullRef = storage + ":";
+            *outFullRef = protocol_path;
     }
     else // We assume it must be of type b4).
     {
@@ -393,10 +398,12 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     QString path = GuaranteeTrailingSlash(fullPathRef.left(directorySeparatorIndex+1).trimmed());
     if (outPath)
         *outPath = path;
+    protocol_path += path;
     if (outProtocol_Path)
         *outProtocol_Path += path;
+    QString assetFilename = fullPathRef.mid(directorySeparatorIndex+1);
     if (outFilename)
-        *outFilename = fullPathRef.mid(directorySeparatorIndex+1);
+        *outFilename = assetFilename;
     if (outFullRef)
     {
         *outFullRef += fullPathRef;
@@ -407,6 +414,8 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
                 *outFullRef += ", " + subAssetName;
     }
 
+    if (outFullRefNoSubAssetName)
+        *outFullRefNoSubAssetName = (protocol_path.isEmpty() ? "" : (protocol_path + "/")) + assetFilename;
     return refType;
 }
 
@@ -671,11 +680,12 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     if (assetRef.isEmpty())
         return AssetTransferPtr();
 
+    QString assetRefWithoutSubAsset;
     assetType = assetType.trimmed();
+    QString assetFilename;
+    ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &assetFilename, 0, 0, &assetRefWithoutSubAsset);
     if (assetType.isEmpty())
     {
-        QString assetFilename;
-        ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &assetFilename);
         assetType = GetResourceTypeFromAssetRef(assetFilename);
     }
 
@@ -697,7 +707,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
     // Check if we've already downloaded this asset before and it already is loaded in the system. We never reload an asset we've downloaded before, unless the 
     // client explicitly forces so, or if we get a change notification signal from the source asset provider telling the asset was changed.
-    AssetMap::iterator iter2 = assets.find(assetRef);
+    AssetMap::iterator iter2 = assets.find(assetRefWithoutSubAsset);
     if (iter2 != assets.end())
     {
         // Whenever the client requests an asset that was loaded before, we create a request for that asset nevertheless.
@@ -707,7 +717,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         // The asset was already downloaded. Generate a 'virtual asset transfer' and return it to the client.
         AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer());
         transfer->asset = iter2->second; // For 'normal' requests, the asset ptr is zero, but for these virtual requests, we can already fill the asset here.
-        transfer->source.ref = assetRef;        
+        transfer->source.ref = assetRef;
         transfer->assetType = assetType;
         transfer->provider = transfer->asset->GetAssetProvider();
         transfer->storage = transfer->asset->GetAssetStorage();
@@ -826,7 +836,9 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
     // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
     QString assetPath;
     QString namedStorage;
-    AssetRefType assetRefType = ParseAssetRef(assetRef, 0, &namedStorage, 0, &assetPath);
+    QString fullRef;
+    AssetRefType assetRefType = ParseAssetRef(assetRef, 0, &namedStorage, 0, &assetPath, 0, 0, 0, 0, &fullRef);
+    assetRef = fullRef; // The first thing we do is normalize the form of the ref. This means e.g. adding 'http://' in front of refs that look like 'www.server.com/'.
     switch(assetRefType)
     {
     case AssetRefLocalPath: // Absolute path like "C:\myassets\texture.png".
@@ -1015,6 +1027,23 @@ QString GuaranteeTrailingSlash(const QString &source)
     return s;
 }
 
+AssetAPI::AssetTransferMap::iterator AssetAPI::FindTransferIterator(QString assetRef)
+{
+    return currentTransfers.find(assetRef);
+}
+
+AssetAPI::AssetTransferMap::iterator AssetAPI::FindTransferIterator(IAssetTransfer *transfer)
+{
+    if (!transfer)
+        return currentTransfers.end();
+
+    for(AssetTransferMap::iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
+        if (iter->second.get() == transfer)
+            return iter;
+
+    return currentTransfers.end();
+}
+
 void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 {
     // At this point, the transfer can originate from several different things:
@@ -1040,7 +1069,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     }
 
     // We should be tracking this transfer in an internal data structure.
-    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    AssetTransferMap::iterator iter = FindTransferIterator(transfer_);
     if (iter == currentTransfers.end())
         LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
 
@@ -1171,7 +1200,7 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
 void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
 {
     // This asset transfer has finished - remove it from the internal list of ongoing transfers.
-    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    AssetTransferMap::iterator iter = FindTransferIterator(transfer.get());
     if (iter != currentTransfers.end())
         currentTransfers.erase(iter);
     else // Even if we didn't know about this transfer, just print a warning and continue execution here nevertheless.

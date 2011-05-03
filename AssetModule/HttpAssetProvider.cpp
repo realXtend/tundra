@@ -54,6 +54,9 @@ bool HttpAssetProvider::IsValidRef(QString assetRef, QString)
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
     assetRef = assetRef.trimmed();
+    QString assetRefWithoutSubAssetName;
+    AssetAPI::ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, 0, 0, 0, &assetRefWithoutSubAssetName);
+    assetRef = assetRefWithoutSubAssetName;
     if (!IsValidRef(assetRef))
     {
         LogError("HttpAssetProvider::RequestAsset: Cannot get asset from invalid URL \"" + assetRef.toStdString() + "\"!");

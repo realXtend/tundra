@@ -129,7 +129,7 @@ public:
     /// @param outFullRef [out] Returns a cleaned or "canonicalized" version of the asset ref in full.
     static AssetRefType ParseAssetRef(QString assetRef, QString *outProtocolPart = 0, QString *outNamedStorage = 0, QString *outProtocol_Path = 0, 
         QString *outPath_Filename_SubAssetName = 0, QString *outPath_Filename = 0, QString *outPath = 0, QString *outFilename = 0, QString *outSubAssetName = 0,
-        QString *outFullRef = 0);
+        QString *outFullRef = 0, QString *outFullRefNoSubAssetName = 0);
 
 public slots:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
@@ -370,6 +370,10 @@ private slots:
 private:
     bool isHeadless_;
     typedef std::map<QString, AssetTransferPtr, AssetAPI::QStringLessThanNoCase> AssetTransferMap;
+
+    AssetTransferMap::iterator FindTransferIterator(QString assetRef);
+    AssetTransferMap::iterator FindTransferIterator(IAssetTransfer *transfer);
+
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;
 
