@@ -131,9 +131,11 @@ void KristalliProtocolModule::Initialize()
 
 void KristalliProtocolModule::PostInitialize()
 {
+#ifdef KNET_USE_QT
     RegisterConsoleCommand(Console::CreateCommand(
             "kNet", "Shows the kNet statistics window.", 
             Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
+#endif
 }
 
 void KristalliProtocolModule::Uninitialize()
@@ -141,6 +143,7 @@ void KristalliProtocolModule::Uninitialize()
     Disconnect();
 }
 
+#ifdef KNET_USE_QT
 Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
 {
     NetworkDialog *networkDialog = new NetworkDialog(0, &network);
@@ -149,6 +152,7 @@ Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVe
 
     return Console::ResultSuccess();
 }
+#endif
 
 void KristalliProtocolModule::Update(f64 frametime)
 {

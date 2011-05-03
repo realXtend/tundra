@@ -31,7 +31,9 @@ namespace KristalliProtocol
 
         MODULE_LOGGING_FUNCTIONS;
 
+#ifdef KNET_USE_QT
         Console::CommandResult OpenKNetLogWindow(const StringVector &);
+#endif
 
         /// Connects to the Kristalli server at the given address.
         void Connect(const char *ip, unsigned short port, kNet::SocketTransportLayer transport);
