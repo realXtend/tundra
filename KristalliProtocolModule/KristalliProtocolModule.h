@@ -37,6 +37,10 @@ namespace KristalliProtocol
 
         ConsoleCommandResult OpenKNetLogWindow(const StringVector &);
 
+#ifdef KNET_USE_QT
+        ConsoleCommandResult OpenKNetLogWindow(const StringVector &);
+#endif
+
         /// Connects to the Kristalli server at the given address.
         void Connect(const char *ip, unsigned short port, kNet::SocketTransportLayer transport);
 
@@ -150,4 +154,3 @@ namespace KristalliProtocol
 }
 
 #endif
-
