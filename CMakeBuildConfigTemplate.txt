@@ -116,7 +116,6 @@ endif()
 add_subdirectory(DebugStatsModule)      # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule and Taiga subsystem.
 #add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
 add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script instances.
-add_subdirectory(SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
 if (OPENASSETIMPORT)
     add_subdirectory(OpenAssetImport)        # Allows import of various mesh file formats
 endif()
