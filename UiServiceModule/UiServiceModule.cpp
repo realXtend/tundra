@@ -29,6 +29,7 @@ void UiServiceModule::PreInitialize()
 
 void UiServiceModule::Initialize()
 {
+    ///\todo This doesn't need to be loaded in headless server mode.
     framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
 
     if (GetFramework()->IsHeadless())

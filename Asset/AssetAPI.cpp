@@ -18,6 +18,7 @@
 #include "IAssetTypeFactory.h"
 #include "IAssetUploadTransfer.h"
 #include "GenericAssetFactory.h"
+#include "NullAssetFactory.h"
 #include "AssetCache.h"
 #include "Platform.h"
 #include <QDir>
@@ -279,6 +280,8 @@ QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
 AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
 {
     AssetPtr asset = CreateNewAsset(assetType, assetFile);
+    if (!asset)
+        return AssetPtr();
     bool success = asset->LoadFromFile(assetFile);
     if (success)
         return asset;
@@ -500,6 +503,9 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
+
+    if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(assetType).get()))
+        return AssetTransferPtr();
 
     assetRef = assetRef.trimmed();
 
@@ -758,6 +764,8 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
         LogError("AssetAPI:CreateNewAsset: Cannot create asset of type \"" + type.toStdString() + "\", name: \"" + name.toStdString() + "\". No type factory registered for the type!");
         return AssetPtr();
     }
+    if (dynamic_cast<NullAssetFactory*>(factory.get()))
+        return AssetPtr();
     AssetPtr asset = factory->CreateEmptyAsset(this, name.toStdString().c_str());
     if (!asset)
     {
@@ -1065,6 +1073,10 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
         if (ref.isEmpty())
             continue;
 
+        // We silently ignore this dependency if the asset type in question is disabled.
+        if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(GetResourceTypeFromAssetRef(refs[i])).get()))
+            continue;
+
         AssetPtr existing = GetAsset(refs[i].ref);
         if (!existing)
         {
@@ -1159,6 +1171,14 @@ namespace
 
         return false;
     }
+}
+
+QString GetResourceTypeFromAssetRef(const AssetReference &ref)
+{
+    QString type = "";//ref.type.trimmed(); ///\todo
+    if (!type.isEmpty())
+        return type;
+    return GetResourceTypeFromResourceFileName(ref.ref.toLower().toStdString().c_str());
 }
 
 QString GetResourceTypeFromResourceFileName(const char *name)

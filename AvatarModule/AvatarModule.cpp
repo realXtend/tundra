@@ -77,6 +77,7 @@ namespace Avatar
             connect(avatar_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), SLOT(KeyReleased(KeyEvent*)));
         }
 
+        ///\todo This doesn't need to be loaded in headless server mode.
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("GenericAvatarXml")));
     }
 
