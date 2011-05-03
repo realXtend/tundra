@@ -36,12 +36,17 @@ signals:
     /// Emitted when this asset is ready to be used in the system.
     void Loaded(AssetPtr asset);
 
+    /// Emitted when the transfer failed
+    void Failed(IAssetTransfer *transfer, QString reason);
+
 private slots:
     void EmitDownloaded(IAssetTransfer *transfer);
 
     void EmitDecoded(AssetPtr asset);
 
     void EmitLoaded(AssetPtr asset);
+    
+    void EmitFailed(IAssetTransfer *transfer, QString reason);
 
 private:
     AssetWeakPtr asset;
