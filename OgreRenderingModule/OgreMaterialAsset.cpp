@@ -186,7 +186,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     return true;
 }
 
-bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
+bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     if (ogreMaterial.isNull())
     {

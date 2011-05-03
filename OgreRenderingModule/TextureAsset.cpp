@@ -94,7 +94,7 @@ void TextureAsset::RegenerateAllMipLevels()
         }
 }
 */
-bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
+bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     if (ogreTexture.isNull())
     {
