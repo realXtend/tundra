@@ -38,7 +38,7 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
         return; ///\todo Log out warning.
 
     connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(EmitDownloaded(IAssetTransfer*)), Qt::UniqueConnection);
-    connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), this, SLOT(EmitFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
+    connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), this, SLOT(EmitTransferFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
 //    connect(transfer.get(), SIGNAL(Decoded(AssetPtr)), this, SLOT(EmitDecoded(AssetPtr)), Qt::UniqueConnection);
 //    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(EmitLoaded(AssetPtr)), Qt::UniqueConnection);
 
@@ -74,7 +74,7 @@ void AssetRefListener::EmitLoaded(AssetPtr asset)
     emit Loaded(asset);
 }
 
-void AssetRefListener::EmitFailed(IAssetTransfer* transfer, QString reason)
+void AssetRefListener::EmitTransferFailed(IAssetTransfer* transfer, QString reason)
 {
-    emit Failed(transfer, reason);
+    emit TransferFailed(transfer, reason);
 }

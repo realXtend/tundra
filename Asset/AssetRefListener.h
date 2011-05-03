@@ -37,7 +37,7 @@ signals:
     void Loaded(AssetPtr asset);
 
     /// Emitted when the transfer failed
-    void Failed(IAssetTransfer *transfer, QString reason);
+    void TransferFailed(IAssetTransfer *transfer, QString reason);
 
 private slots:
     void EmitDownloaded(IAssetTransfer *transfer);
@@ -46,7 +46,7 @@ private slots:
 
     void EmitLoaded(AssetPtr asset);
     
-    void EmitFailed(IAssetTransfer *transfer, QString reason);
+    void EmitTransferFailed(IAssetTransfer *transfer, QString reason);
 
 private:
     AssetWeakPtr asset;
