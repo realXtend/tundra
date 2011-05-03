@@ -779,7 +779,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
     QByteArray data_qt((const char *)&data[0], data.size());
     if (data_qt.isEmpty())
     {
-        LogError("Failed to convert txml data to QByteArray.");
+        LogError("Failed to convert txml/tbin data to QByteArray.");
         return;
     }
 
