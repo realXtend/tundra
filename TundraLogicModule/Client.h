@@ -7,7 +7,7 @@
 #include "TundraLogicModuleApi.h"
 #include "ForwardDefines.h"
 
-#include <kNet/Socket.h>
+#include <kNet.h>
 
 #include <QObject>
 
