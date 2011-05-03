@@ -32,6 +32,8 @@ QString SanitateAssetRefForCache(QString assetRef)
     return assetRef;
 }
 
+// AssetCache
+
 AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) : 
     QNetworkDiskCache(owner),
     assetAPI(owner),
@@ -309,4 +311,77 @@ void AssetCache::ClearDirectory(const QString &absoluteDirPath)
                 LogWarning("AssetCache::ClearDirectory could not remove file " + entry.absoluteFilePath().toStdString());
         }
     }
+}
+
+CookieJar *AssetCache::NewCookieJar(const QString &cookieDiskFile)
+{
+    return new CookieJar(this, cookieDiskFile);
+}
+
+// CookieJar
+
+CookieJar::CookieJar(QObject *parent, const QString &cookieDiskFile) :
+    QNetworkCookieJar(parent),
+    cookieDiskFile_(cookieDiskFile)
+{
+    ReadCookies();
+}
+
+CookieJar::~CookieJar()
+{
+    StoreCookies();
+}
+
+void CookieJar::SetDataFile(const QString &cookieDiskFile)
+{
+    cookieDiskFile_ = cookieDiskFile;
+}
+
+void CookieJar::ClearCookies()
+{
+    if (!cookieDiskFile_.isEmpty())
+    {
+        QFile cookiesFile(cookieDiskFile_);
+        if (cookiesFile.exists())
+            cookiesFile.remove();
+    }
+    setAllCookies(QList<QNetworkCookie>());
+}
+
+void CookieJar::ReadCookies()
+{
+    if (cookieDiskFile_.isEmpty())
+        return;
+
+    QFile cookiesFile(cookieDiskFile_);
+    if (!cookiesFile.open(QIODevice::ReadOnly))
+        return;
+    
+    QList<QNetworkCookie> cookies;
+    QDataStream cookieData(&cookiesFile);
+    while (!cookieData.atEnd()) 
+    {
+        QByteArray rawCookie;
+        cookieData >> rawCookie;
+        cookies.append(QNetworkCookie::parseCookies(rawCookie));
+    }
+    cookiesFile.close();
+    setAllCookies(cookies);
+}
+
+void CookieJar::StoreCookies()
+{
+    if (cookieDiskFile_.isEmpty())
+        return;
+    if (allCookies().empty())
+        return;
+
+    QFile cookiesFile(cookieDiskFile_);
+    if (!cookiesFile.open(QIODevice::WriteOnly))
+        return;
+
+    QDataStream cookieData(&cookiesFile);
+    foreach (QNetworkCookie cookie, allCookies())
+        cookieData << cookie.toRawForm();
+    cookiesFile.close();
 }

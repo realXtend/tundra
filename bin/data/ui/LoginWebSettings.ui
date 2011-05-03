@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>340</width>
-    <height>224</height>
+    <width>358</width>
+    <height>331</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -138,7 +138,91 @@ QPushButton::pressed {
        </property>
       </widget>
      </item>
+     <item>
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>15</width>
+         <height>15</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QCheckBox" name="enableCookies">
+         <property name="toolTip">
+          <string>Enable cookies for web pages</string>
+         </property>
+         <property name="text">
+          <string>Enable cookies</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="clearCookies">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>18</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Clear Cookies</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QCheckBox" name="enableCache">
+         <property name="toolTip">
+          <string>This will enable icons on the page tabs and allows the web browser to store cache data on the hard drive</string>
+         </property>
+         <property name="text">
+          <string>Enable cache</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="clearCache">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>18</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Clear Cache</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="cacheInfoLabel">
+     <property name="styleSheet">
+      <string>color: grey;</string>
+     </property>
+     <property name="text">
+      <string>Disabling/enabling cache requires a restart to be applied.
+ Pressing Cancel won't cancel cleared cookies/cache.</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -147,8 +231,8 @@ QPushButton::pressed {
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>20</width>
-       <height>40</height>
+       <width>1</width>
+       <height>15</height>
       </size>
      </property>
     </spacer>

@@ -6,6 +6,7 @@
 #define incl_Asset_AssetCache_h
 
 #include <QString>
+#include <QNetworkCookieJar>
 #include <QNetworkDiskCache>
 #include <QNetworkCacheMetaData>
 #include <QHash>
@@ -16,7 +17,7 @@
 #include "CoreTypes.h"
 #include "AssetFwd.h"
 
-class QNetworkDiskCache;
+class CookieJar;
 
 /// An utility function that takes an assetRef and makes a string out of it that can safely be used as a part of a filename.
 /// Replaces characters / \ : * ? " ' < > | with _
@@ -108,6 +109,11 @@ public slots:
     /// Will not clear subfolders in the cache folders, or remove any folders.
     void ClearAssetCache();
 
+    /// Creates a new cookie jar that implements disk writing and reading. Can be used with any QNetworkAccessManager with setCookieJar() function.
+    /// \note AssetCache will be the CookieJars parent and it will destroyed by it, don't take ownerwhip of the returned CookieJar.
+    /// \param QString File path to the file the jar will read/write cookies to/from.
+    CookieJar *NewCookieJar(const QString &cookieDiskFile);
+
 private slots:
     /// Writes metadata into a file. Helper function for the QNetworkDiskCache overrides.
     bool WriteMetadata(const QString &filePath, const QNetworkCacheMetaData &metaData);
@@ -136,6 +142,32 @@ private:
 
     /// Internal tracking of prepared QUrl to QIODevice pairs.
     QHash<QString, QFile*> preparedItems;
+};
+
+/*! CookieJar is a subclass of QNetworkCookieJar. This is the only way to do disk storage for cookies with Qt.
+    Part reason why this is declared here is because JavaScript cannot do proper inheritance of QNetworkCookieJar to access the protected functions.
+    
+    \todo If you feel that there is a more appropriate place for this, please move the class but be sure to check depending 3rd party code.
+    \note You can ask AssetCache::NewCookiJar to make you a new CookieJar.
+*/
+class CookieJar : public QNetworkCookieJar
+{
+
+Q_OBJECT
+
+public:
+    CookieJar(QObject *parent, const QString &cookieDiskFile = QString());
+    ~CookieJar();
+
+public slots:
+    void SetDataFile(const QString &cookieDiskFile);
+    void ClearCookies();
+    void ReadCookies();
+    void StoreCookies();
+
+private:
+    QString cookieDiskFile_;
+
 };
 
 #endif

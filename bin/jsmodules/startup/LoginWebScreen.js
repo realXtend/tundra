@@ -4,6 +4,7 @@
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 engine.ImportExtension("qt.webkit");
+engine.ImportExtension("qt.network");
 
 engine.IncludeFile("jsmodules/lib/class.js");
 engine.IncludeFile("jsmodules/startup/LoginScreen.js");
@@ -29,6 +30,7 @@ var BrowserManager = Class.extend
         this.squeezeEnabled = false;
         
         this.settings = new BrowserSettings(this);
+        this.browserstorage = new BrowserStorage(this);
 
         var uiBase = "./data/ui/";
         var imageBase = uiBase + "images/";
@@ -591,6 +593,7 @@ var BrowserTab = Class.extend
     {
         this.webview = new QWebView();
         this.webview.page().forwardUnsupportedContent = true;
+        this.webview.page().setNetworkAccessManager(p_.browserstorage.accessManager);
         
         this.callback = callback;
         
@@ -600,6 +603,7 @@ var BrowserTab = Class.extend
         this.webview.loadStarted.connect(this, this.loadStarted);
         this.webview.loadFinished.connect(this, this.loadFinished);
         this.webview.loadProgress.connect(this, this.loadProgress);
+        this.webview.iconChanged.connect(this, this.iconChanged);
         this.webview.page().unsupportedContent.connect(this, this.unsupportedContent);
         
         tabs.currentIndex = this.myIndex();
@@ -654,7 +658,6 @@ var BrowserTab = Class.extend
     unsupportedContent: function(reply)
     {
         var replyUrl = reply.url().toString();
-        print("unsupportedContent:" + replyUrl);
         if (HasTundraScheme(replyUrl))
             this.callback("weblogin", replyUrl, this.myIndex());
     },
@@ -693,6 +696,11 @@ var BrowserTab = Class.extend
             var html = "<p>The page could not be loaded...</p>";
             this.webview.page().mainFrame().setHtml(html);
         }
+    },
+    
+    iconChanged: function()
+    {
+        this.tabs.setTabIcon(this.myIndex(), this.webview.icon);
     }
 });
 
@@ -701,6 +709,7 @@ var BrowserSettings = Class.extend
     init: function(browserManager)
     {
         this.browserManager = browserManager;
+        this.subscribers = new Array();
         
         this.configFile = "browsersettings";
         this.urlSection = "url";
@@ -717,6 +726,11 @@ var BrowserSettings = Class.extend
         button.clicked.connect(this.onSettingsCancel);
         
         this.readConfig();
+    },
+    
+    subscribe: function(notifyFunction)
+    {
+        this.subscribers.push(notifyFunction);
     },
     
     onSettingsPressed: function()
@@ -768,8 +782,17 @@ var BrowserSettings = Class.extend
         child = findChild(p_s.widget, "connectToHomePage");
         p_s.startupConnectToHomePage = child.checked;
         
+        child = findChild(p_s.widget, "enableCookies");
+        p_s.cookiesEnabled = child.checked;
+        
+        child = findChild(p_s.widget, "enableCache");
+        p_s.cacheEnabled = child.checked;
+        
         p_.settings.widget.visible = false;
         p_s.writeConfig();
+        
+        for (index in this.subscribers)
+            this.subscribers[index]();
     },
     
     onSettingsCancel: function()
@@ -796,6 +819,12 @@ var BrowserSettings = Class.extend
         
         child = findChild(p_s.widget, "connectToHomePage");
         child.checked = p_s.startupConnectToHomePage;
+        
+        child = findChild(p_s.widget, "enableCookies");
+        child.checked = p_s.cookiesEnabled;
+        
+        child = findChild(p_s.widget, "enableCache");
+        child.checked = p_s.cacheEnabled;
     },
     
     readConfig: function()
@@ -835,6 +864,22 @@ var BrowserSettings = Class.extend
             this.startupConnectToHomePage = true;
         else
             this.startupConnectToHomePage = false;
+            
+        if (!config.HasValue(this.configFile, this.behaviourSection, "enable_cookies"))
+            config.Set(this.configFile, this.behaviourSection, "enable_cookies", "true");
+        this.cookiesEnabled = config.Get(this.configFile, this.behaviourSection, "enable_cookies");
+        if (this.cookiesEnabled == "true")
+            this.cookiesEnabled = true;
+        else
+            this.cookiesEnabled = false;
+            
+        if (!config.HasValue(this.configFile, this.behaviourSection, "enable_cache"))
+            config.Set(this.configFile, this.behaviourSection, "enable_cache", "true");
+        this.cacheEnabled = config.Get(this.configFile, this.behaviourSection, "enable_cache");
+        if (this.cacheEnabled == "true")
+            this.cacheEnabled = true;
+        else
+            this.cacheEnabled = false;
     },
     
     writeConfig: function()
@@ -843,11 +888,93 @@ var BrowserSettings = Class.extend
         config.Set(this.configFile, this.urlSection, "newtab", this.newTabUrl);
         config.Set(this.configFile, this.behaviourSection, "newtab_load_homepage", this.newTabOpenHomepage);
         config.Set(this.configFile, this.behaviourSection, "startup_load_homepage", this.startupLoadHomePage);
-        config.Set(this.configFile, this.behaviourSection, "startup_load_homeserver", this.startupConnectToHomePage); 
+        config.Set(this.configFile, this.behaviourSection, "startup_load_homeserver", this.startupConnectToHomePage);
+        config.Set(this.configFile, this.behaviourSection, "enable_cookies", this.cookiesEnabled);
+        config.Set(this.configFile, this.behaviourSection, "enable_cache", this.cacheEnabled);
 
         this.browserManager.actionHome.toolTip = "Go to home page " + this.homepage;
     },
     
+});
+
+// Disabling/enabling cache from UI requires a restart of the viewer to take effect. Qt docs explains more:
+// "Note: It is currently not supported to change the network access manager after the QWebPage has used it. The results of doing this are undefined."
+
+var BrowserStorage = Class.extend
+({
+    init: function(browsermanager)
+    {
+        this.browsermanager = browsermanager;
+        this.settings = browsermanager.settings;
+        this.enabled = true;
+        if (!this.initFolders())
+            return;
+               
+        // Initialise cache objects
+        this.cache = new QNetworkDiskCache(null);
+        this.cache.setCacheDirectory(this.cacheDataDir);
+        this.accessManager = new QNetworkAccessManager(null);
+        this.cookieJar = asset.GetAssetCache().NewCookieJar(this.cookieDataFile);
+        
+        // Initialize cache items to our access manager.
+        if (this.settings.cacheEnabled)
+        {
+            this.accessManager.setCache(this.cache);
+            QWebSettings.setIconDatabasePath(this.iconDataDir);
+        }
+        if (this.settings.cookiesEnabled)
+        {
+            this.accessManager.setCookieJar(this.cookieJar);
+        }
+        
+        // Connect to clear buttons
+        var button = findChild(this.settings.widget, "clearCookies");
+        if (button != null)
+            button.clicked.connect(this.clearCookies);
+        button = findChild(this.settings.widget, "clearCache");
+        if (button != null)
+            button.clicked.connect(this.clearCache);
+    },
+    
+    initFolders: function()
+    {
+        // \todo This is a hack because framework.platform is not exposed to js.
+        // So we can't resolve the data dir correctly from there, change this code once its exposed.
+        var folderToFind = "browsercache";
+        var browserDataDir = new QDir(asset.GetAssetCache().GetCacheDirectory()); // <data_dir>/assetcache/data
+        browserDataDir.cdUp(); // data
+        browserDataDir.cdUp(); // assetcache
+        if (!browserDataDir.exists(folderToFind))
+            browserDataDir.mkdir(folderToFind);
+        if (!browserDataDir.cd(folderToFind))
+        {
+            debug.LogError("Could not resolve browser data dir, disabling cache and cookies.");
+            this.enabled = false;
+            return false;
+        }
+        
+        this.browserDataPath = browserDataDir.absolutePath();
+        this.cacheDataDir = browserDataDir.absolutePath();
+        this.iconDataDir = browserDataDir.absolutePath();
+        if (this.settings.cookiesEnabled)
+            this.cookieDataFile = browserDataDir.absoluteFilePath("cookies.data");
+        else 
+            this.cookieDataFile = "";
+        return true;
+    },
+
+    clearCache: function()
+    {
+        QWebSettings.clearIconDatabase();
+        QWebSettings.clearMemoryCaches();
+        p_.browserstorage.cache.clear();
+    },
+    
+    clearCookies: function()
+    {
+        p_.browserstorage.cookieJar.ClearCookies();
+    }
+ 
 });
 
 function HasTundraScheme(urlString)

@@ -60,6 +60,7 @@ Q_DECLARE_METATYPE(IAssetUploadTransfer*);
 Q_DECLARE_METATYPE(AssetStoragePtr);
 Q_DECLARE_METATYPE(IAssetStorage*);
 Q_DECLARE_METATYPE(AssetCache*);
+Q_DECLARE_METATYPE(CookieJar*);
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
@@ -241,6 +242,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetStorage>, qScriptValueToBoostSharedPtr<IAssetStorage>);
 
     qScriptRegisterQObjectMetaType<AssetCache*>(engine);
+    qScriptRegisterQObjectMetaType<CookieJar*>(engine);
 
     // Ui metatypes.
     qScriptRegisterQObjectMetaType<UiMainWindow*>(engine);
