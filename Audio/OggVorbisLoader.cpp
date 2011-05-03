@@ -133,7 +133,7 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
 
     std::ostringstream msg;
     msg << "Decoding ogg vorbis stream with " << vi->channels << " channels, frequency " << vi->rate; 
-    LogDebug(msg.str()); 
+//    LogDebug(msg.str()); 
 
     *frequency = vi->rate;
     *isStereo = (vi->channels > 1);
@@ -158,7 +158,7 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
     {
         std::ostringstream msg;
         msg << "Decoded " << decoded_bytes << " bytes of ogg vorbis sound data";
-        LogDebug(msg.str());
+//        LogDebug(msg.str());
     }
      
     ov_clear(&vf);
