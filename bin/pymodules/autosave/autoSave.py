@@ -34,15 +34,15 @@ class AutoSave(Component):
             self.path_rel = str(self.path_rel)
         self.path_world = 'Default/'
         self.path_temp = str(strftime("%Y%m%d%H%M%S")) + "/"        
-        self.path = self.path_sys + self.path_rel + self.path_world + self.path_temp        
-        d = os.path.dirname(self.path)
-        if not os.path.exists(d):
-            os.makedirs(d)             
+        self.path = self.path_sys + self.path_rel + self.path_world + self.path_temp                 
         self.restore = False
                         
     def on_sceneadded(self, name):
         if not naali.server.IsRunning():
             return
+        d = os.path.dirname(self.path)
+        if not os.path.exists(d):
+            os.makedirs(d)
         #connect with scene to know 
         self.scene = naali.getScene(name)
         if self.scene is None:
@@ -128,7 +128,7 @@ class AutoSave(Component):
                 path_temp_restore = str(comp.GetAttribute("version"))
                 if path_temp_restore == "0":
                     for directory in os.listdir(self.path_sys + self.path_rel + self.path_world):
-                        if int(path_temp_restore) < int(directory):
+                        if int(path_temp_restore) < int(directory) and int(directory) < int(str(self.path_temp).replace('/', '')):
                             path_temp_restore = directory
                         
                 self.path_restore = self.path_sys + self.path_rel + self.path_world + str(path_temp_restore) + "/"
