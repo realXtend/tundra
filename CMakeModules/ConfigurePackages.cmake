@@ -454,6 +454,7 @@ macro(use_package_knet)
     link_directories(${KNET_DIR}/lib)
     if (UNIX)    
         add_definitions(-DUNIX)
+        add_definitions(-DKNET_USE_BOOST)
     endif()
 endmacro()
 
