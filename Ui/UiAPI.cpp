@@ -12,6 +12,7 @@
 #include "Framework.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
+#include "NullAssetFactory.h"
 #include "LoggingFunctions.h"
 
 #include <QEvent>
@@ -70,8 +71,14 @@ UiAPI::UiAPI(Framework *owner_) :
     graphicsView(0),
     graphicsScene(0)
 {
-    if (owner->IsHeadless())
+
+    if (owner_->IsHeadless())
+    {
+        owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("QtUiFile")));
         return;
+    }
+
+    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
     
     mainWindow = new UiMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
@@ -126,8 +133,6 @@ UiAPI::UiAPI(Framework *owner_) :
 
     /// Do a full repaint of the view now that we've shown it.
     graphicsView->MarkViewUndirty();
-
-    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
 }
 
 UiAPI::~UiAPI()

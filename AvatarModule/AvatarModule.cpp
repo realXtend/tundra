@@ -9,6 +9,7 @@
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
+#include "NullAssetFactory.h"
 #include "AvatarDescAsset.h"
 #include "ConsoleAPI.h"
 
@@ -45,7 +46,11 @@ namespace Avatar
             connect(avatar_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), SLOT(KeyReleased(KeyEvent*)));
         }
 
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("Avatar")));
+        ///\todo This doesn't need to be loaded in headless server mode.
+        if (!framework_->IsHeadless())
+            framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("Avatar")));
+        else
+            framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Avatar")));
         
         framework_->Console()->RegisterCommand(CreateConsoleCommand("editavatar",
             "Edits the avatar in a specific entity. Usage: editavatar(entityname)",

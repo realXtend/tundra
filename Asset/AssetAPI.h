@@ -228,6 +228,8 @@ public slots:
     /// each asset type has.
     static QString GetResourceTypeFromAssetRef(QString assetRef);
 
+    static QString GetResourceTypeFromAssetRef(const AssetReference &ref);
+
     /// Parses a (relative) assetRef in the given context, and returns an assetRef pointing to the same asset as an absolute asset ref.
     /// For example: context: "local://myasset.material", ref: "texture.png" returns "local://texture.png".
     /// context: "http://myserver.com/path/myasset.material", ref: "texture.png" returns "http://myserver.com/path/texture.png".

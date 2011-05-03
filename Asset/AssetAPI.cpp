@@ -19,6 +19,7 @@
 #include "IAssetTypeFactory.h"
 #include "IAssetUploadTransfer.h"
 #include "GenericAssetFactory.h"
+#include "NullAssetFactory.h"
 #include "AssetCache.h"
 #include <QDir>
 #include <QFileSystemWatcher>
@@ -401,6 +402,8 @@ QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
 AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
 {
     AssetPtr asset = CreateNewAsset(assetType, assetFile);
+    if (!asset)
+        return AssetPtr();
     bool success = asset->LoadFromFile(assetFile);
     if (success)
         return asset;
@@ -632,6 +635,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     {
         assetType = GetResourceTypeFromAssetRef(assetFilename);
     }
+    if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(assetType).get()))
+        return AssetTransferPtr();
 
     // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
     // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since
@@ -907,6 +912,8 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
         LogError("AssetAPI:CreateNewAsset: Cannot create asset of type \"" + type + "\", name: \"" + name + "\". No type factory registered for the type!");
         return AssetPtr();
     }
+    if (dynamic_cast<NullAssetFactory*>(factory.get()))
+        return AssetPtr();
     AssetPtr asset = factory->CreateEmptyAsset(this, name.toStdString().c_str());
     if (!asset)
     {
@@ -1243,6 +1250,10 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
         if (ref.isEmpty())
             continue;
 
+        // We silently ignore this dependency if the asset type in question is disabled.
+        if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(GetResourceTypeFromAssetRef(refs[i])).get()))
+            continue;
+
         AssetPtr existing = GetAsset(refs[i].ref);
         if (!existing)
         {
@@ -1370,6 +1381,14 @@ namespace
 
         return false;
     }
+}
+
+QString AssetAPI::GetResourceTypeFromAssetRef(const AssetReference &ref)
+{
+    QString type = ref.type.trimmed();
+    if (!type.isEmpty())
+        return type;
+    return GetResourceTypeFromAssetRef(ref.ref);
 }
 
 QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)

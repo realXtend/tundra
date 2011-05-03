@@ -92,7 +92,7 @@ Framework::Framework(int argc, char** argv) :
         ui = new UiAPI(this);                
 
         // Create AudioAPI, depends on the AssetAPI, so must be loaded after it.
-        audio = new AudioAPI(asset);
+        audio = new AudioAPI(this, asset);
 
         // Create Input and PluginAPI.
         input = new InputAPI(this);

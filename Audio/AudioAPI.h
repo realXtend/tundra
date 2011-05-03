@@ -9,7 +9,14 @@
 #include "AudioApiExports.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
-  
+
+class Framework;
+
+// Remove <Windows.h> PlaySound defines.
+#ifdef PlaySound
+#undef PlaySound
+#endif
+
 /// Sound service implementation. Owned by OpenALAudioModule.
 class AUDIO_API AudioAPI : public QObject
 {
@@ -18,7 +25,7 @@ class AUDIO_API AudioAPI : public QObject
 public:
     /// The Audio API constructor initializes OpenAL audio using default device.
     /// @param assetAPI The Audio API depends on the asset API to be able to programmatically create audio record buffer assets. Pass in the audio API here.
-    explicit AudioAPI(AssetAPI *assetAPI);
+    AudioAPI(Framework *fw, AssetAPI *assetAPI);
     
     ~AudioAPI();
     

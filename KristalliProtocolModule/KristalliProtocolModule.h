@@ -33,8 +33,6 @@ namespace KristalliProtocol
         void Uninitialize();
         void Update(f64 frametime);
 
-        ConsoleCommandResult OpenKNetLogWindow(const StringVector &);
-
 #ifdef KNET_USE_QT
         ConsoleCommandResult OpenKNetLogWindow(const StringVector &);
 #endif

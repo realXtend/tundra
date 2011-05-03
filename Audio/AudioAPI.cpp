@@ -3,14 +3,15 @@
 #include "DebugOperatorNew.h"
 #include <boost/algorithm/string.hpp>
 #include <QList>
-#include "MemoryLeakCheck.h"
 #include "AudioAPI.h"
 #include "CoreTypes.h"
 #include "AssetAPI.h"
 #include "AudioAsset.h"
 #include "GenericAssetFactory.h"
+#include "NullAssetFactory.h"
 #include "SoundChannel.h"
 #include "LoggingFunctions.h"
+#include "Framework.h"
 
 #ifndef Q_WS_MAC
 #include <AL/al.h>
@@ -19,6 +20,8 @@
 #include <al.h>
 #include <alc.h>
 #endif
+
+#include "MemoryLeakCheck.h"
 
 //#include <boost/thread/mutex.hpp>
 
@@ -55,7 +58,7 @@ public:
 //    boost::mutex mutex;
 };
 
-AudioAPI::AudioAPI(AssetAPI *assetAPI_)
+AudioAPI::AudioAPI(Framework *fw, AssetAPI *assetAPI_)
 :impl(new AudioApiImpl),
 assetAPI(assetAPI_)
 {
@@ -83,7 +86,10 @@ assetAPI(assetAPI_)
     soundMasterGain[SoundChannel::Voice] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "voice_sound_gain", 1.0f);
     */
 
-    assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); 
+    if (!fw->IsHeadless())
+        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); 
+    else
+        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Audio"))); 
 }
 
 AudioAPI::~AudioAPI()
@@ -244,7 +250,12 @@ void AudioAPI::SetListener(const Vector3df &position, const Quaternion &orientat
     impl->listenerPosition = position;
     impl->listenerOrientation = orientation;
 }
-  
+
+// Remove <Windows.h> PlaySound defines.
+#ifdef PlaySound
+#undef PlaySound
+#endif
+
 SoundChannelPtr AudioAPI::PlaySound(AssetPtr audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
 {
     if (!impl || !impl->initialized)

@@ -186,7 +186,7 @@ void SyncManager::NewUserConnected(UserConnection* user)
     ScenePtr scene = scene_.lock();
     if (!scene)
     {
-        TundraLogicModule::LogWarning("SyncManager: Cannot handle new user connection message - No scene set!");
+        LogWarning("SyncManager: Cannot handle new user connection message - No scene set!");
         return;
     }
     
@@ -737,7 +737,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     ScenePtr scene = GetRegisteredScene();
     if (!scene)
     {
-        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgCreateEntity as no scene exists!");
+        LogWarning("SyncManager: Ignoring received MsgCreateEntity as no scene exists!");
         return;
     }
     
@@ -835,7 +835,7 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
     ScenePtr scene = GetRegisteredScene();
     if (!scene)
     {
-        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgRemoveEntity as no scene exists!");
+        LogWarning("SyncManager: Ignoring received MsgRemoveEntity as no scene exists!");
         return;
     }
     
@@ -869,7 +869,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     ScenePtr scene = GetRegisteredScene();
     if (!scene)
     {
-        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgCreateComponents as no scene exists!");
+        LogWarning("SyncManager: Ignoring received MsgCreateComponents as no scene exists!");
         return;
     }
     
@@ -954,7 +954,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     ScenePtr scene = GetRegisteredScene();
     if (!scene)
     {
-        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgUpdateComponents as no scene exists!");
+        LogWarning("SyncManager: Ignoring received MsgUpdateComponents as no scene exists!");
         return;
     }
     
@@ -1161,7 +1161,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     ScenePtr scene = GetRegisteredScene();
     if (!scene)
     {
-        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgRemoveComponents as no scene exists!");
+        LogWarning("SyncManager: Ignoring received MsgRemoveComponents as no scene exists!");
         return;
     }
     
@@ -1210,7 +1210,7 @@ void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const
     ScenePtr scene = GetRegisteredScene();
     if (!scene)
     {
-        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgEntityIDCollision as no scene exists!");
+        LogWarning("SyncManager: Ignoring received MsgEntityIDCollision as no scene exists!");
         return;
     }
     
@@ -1239,7 +1239,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     ScenePtr scene = GetRegisteredScene();
     if (!scene)
     {
-        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgEntityAction as no scene exists!");
+        LogWarning("SyncManager: Ignoring received MsgEntityAction as no scene exists!");
         return;
     }
     
@@ -1288,7 +1288,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     }
     
     if (!handled)
-        TundraLogicModule::LogWarning("SyncManager: Received MsgEntityAction message \"" + action.toStdString() + "\", but it went unhandled because of its type=" + QString::number(type).toStdString());
+        LogWarning("SyncManager: Received MsgEntityAction message \"" + action.toStdString() + "\", but it went unhandled because of its type=" + QString::number(type).toStdString());
 
     // Clear the action sender after action handling
     Server *server = owner_->GetServer().get();
