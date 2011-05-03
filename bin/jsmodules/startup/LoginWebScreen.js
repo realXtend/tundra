@@ -709,7 +709,6 @@ var BrowserSettings = Class.extend
     init: function(browserManager)
     {
         this.browserManager = browserManager;
-        this.subscribers = new Array();
         
         this.configFile = "browsersettings";
         this.urlSection = "url";
@@ -728,11 +727,7 @@ var BrowserSettings = Class.extend
         this.readConfig();
     },
     
-    subscribe: function(notifyFunction)
-    {
-        this.subscribers.push(notifyFunction);
-    },
-    
+   
     onSettingsPressed: function()
     {
         var p_s = p_.settings;
@@ -790,9 +785,6 @@ var BrowserSettings = Class.extend
         
         p_.settings.widget.visible = false;
         p_s.writeConfig();
-        
-        for (index in this.subscribers)
-            this.subscribers[index]();
     },
     
     onSettingsCancel: function()
