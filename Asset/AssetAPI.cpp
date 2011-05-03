@@ -360,7 +360,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     }
 
     if (outFullRefNoSubAssetName)
-        *outFullRefNoSubAssetName = (protocol_path.isEmpty() ? "" : (protocol_path + "/")) + assetFilename;
+        *outFullRefNoSubAssetName = GuaranteeTrailingSlash(protocol_path) + assetFilename;
     return refType;
 }
 
