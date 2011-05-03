@@ -6,9 +6,8 @@
 #include "ConvexHull.h"
 #include "PhysicsUtils.h"
 #include "btBulletDynamicsCommon.h"
-
-#include "ConvexDecomposition/ConvexBuilder.h"
-#include "ConvexDecomposition/ConvexDecomposition.h"
+#include "LoggingFunctions.h"
+#include "hull.h"
 
 #include <Ogre.h>
 
@@ -26,74 +25,36 @@ void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr)
 
 void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr)
 {
-    class ConvexResultReceiver : public ConvexDecomposition::ConvexDecompInterface
+    std::vector<Vector3df> vertices;
+    GetTrianglesFromMesh(mesh, vertices);
+    if (!vertices.size())
     {
-    public:
-        ConvexResultReceiver(ConvexHullSet* dest) : dest_(dest)
-        {
-        }
-        
-        virtual void ConvexDecompResult(ConvexDecomposition::ConvexResult &result)
-        {
-            ConvexHull hull;
-            hull.position_ = Vector3df(0,0,0);
-            
-            btAlignedObjectArray<btVector3> vertices;
-            
-            for(uint i = 0; i < result.mHullVcount; ++i)
-            {
-                btVector3 vertex(result.mHullVertices[i*3],result.mHullVertices[i*3+1],result.mHullVertices[i*3+2]);
-                Vector3df vertexVec = ToVector3(vertex);
-                hull.position_ += vertexVec;
-                vertices.push_back(vertex);
-            }
-            
-            hull.position_ /= (float)result.mHullVcount;
-            
-            btVector3 positionBtVec(hull.position_.x, hull.position_.y, hull.position_.z);
-            
-            for(uint i = 0; i < result.mHullVcount; ++i)
-                vertices[i] -= positionBtVec;
-            
-            hull.hull_ = boost::shared_ptr<btConvexHullShape>(new btConvexHullShape((const btScalar*)&vertices[0], vertices.size(), sizeof(btVector3)));
-            dest_->hulls_.push_back(hull);
-        }
-        
-        ConvexHullSet* dest_;
-    };
-    
-    std::vector<Vector3df> triangles;
-    GetTrianglesFromMesh(mesh, triangles);
-
-    std::vector<float> vertexData;
-    std::vector<uint> indexData;
-    
-    // Add all triangles as individual vertices, make up index data as we go along
-    for(uint i = 0; i < triangles.size(); ++i)
-    {
-        vertexData.push_back(triangles[i].x);
-        vertexData.push_back(triangles[i].y);
-        vertexData.push_back(triangles[i].z);
-        indexData.push_back(i);
+        LogError("Mesh had no triangles; aborting convex hull generation");
+        return;
     }
     
-    ConvexResultReceiver crr(ptr);
-    ConvexDecomposition::DecompDesc desc;
-    desc.mVcount = vertexData.size() / 3;
-    desc.mVertices = &vertexData[0];
-    desc.mTcount = indexData.size() / 3;
-    desc.mIndices = &indexData[0];
-    // Fixed parameters
-    desc.mDepth = 0;
-    desc.mCpercent = 5.0f;
-    desc.mPpercent = 15.0f;
-    desc.mMaxVertices = 100;
-    desc.mSkinWidth = 0.01f;
-    desc.mCallback = &crr;
+    StanHull::HullDesc desc;
+    desc.SetHullFlag(StanHull::QF_TRIANGLES);
+    desc.mVcount = vertices.size();
+    desc.mVertices = &vertices[0].x;
+    desc.mVertexStride = sizeof(Vector3df);
+    desc.mSkinWidth = 0.01f; // Hardcoded skin width
     
-    ConvexBuilder cb(desc.mCallback);
-    cb.process(desc);
+    StanHull::HullLibrary lib;
+    StanHull::HullResult result;
+    lib.CreateConvexHull(desc, result);
+
+    if (!result.mNumOutputVertices)
+    {
+        LogError("No vertices were generated; aborting convex hull generation");
+        return;
+    }
     
+    ConvexHull hull;
+    hull.position_ = Vector3df(0,0,0);
+    /// \todo StanHull always produces only 1 hull. Therefore using a hull set is unnecessary and could be optimized away
+    hull.hull_ = boost::shared_ptr<btConvexHullShape>(new btConvexHullShape((const btScalar*)&result.mOutputVertices[0], result.mNumOutputVertices, 3 * sizeof(float)));
+    ptr->hulls_.push_back(hull);
 }
 
 void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest)

@@ -173,7 +173,9 @@ void TundraLogicModule::Load()
 #ifdef EC_Selected_ENABLED
     DECLARE_MODULE_EC(EC_Selected);
 #endif
-
+#ifdef EC_Billboard_ENABLED
+    DECLARE_MODULE_EC(EC_Billboard);
+#endif
 #ifdef EC_ProximityTrigger_ENABLED
     DECLARE_MODULE_EC(EC_ProximityTrigger);
 #endif

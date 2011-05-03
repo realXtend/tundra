@@ -172,11 +172,11 @@ public slots:
     void SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const;
 
     /// Returns scene up vector. For now it is a compile-time constant
-    const Vector3df& GetUpVector() const;
+    Vector3df GetUpVector() const;
     /// Returns scene right vector. For now it is a compile-time constant
-    const Vector3df& GetRightVector() const;
+    Vector3df GetRightVector() const;
     /// Returns scene forward vector. For now it is a compile-time constant
-    const Vector3df& GetForwardVector() const;
+    Vector3df GetForwardVector() const;
 
     /// @todo Clean these overload functions created for PythonQt and QtScript compatibility as much as possible.
     //  For documentation, see the plain C++ public methods above.
