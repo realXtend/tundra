@@ -166,7 +166,10 @@ void SyncManager::NewUserConnected(UserConnection* user)
 
     Scene::ScenePtr scene = scene_.lock();
     if (!scene)
+    {
+        TundraLogicModule::LogWarning("SyncManager: Cannot handle new user connection message - No scene set!");
         return;
+    }
     
     // Connect to actions sent to specifically to this user
     connect(user, SIGNAL(ActionTriggered(UserConnection*, Scene::Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Scene::Entity*, const QString&, const QStringList&)));
@@ -191,6 +194,10 @@ void SyncManager::NewUserConnected(UserConnection* user)
 
 void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
 {
+    assert(comp && attr);
+    if (!comp || !attr)
+        return;
+
     if (!comp->IsSerializable())
         return;
     
@@ -251,6 +258,10 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
 
 void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
+    assert(entity && comp);
+    if (!entity || !comp)
+        return;
+
     if (!comp->IsSerializable())
         return;
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
@@ -277,6 +288,9 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
 
 void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
+    assert(entity && comp);
+    if (!entity || !comp)
+        return;
     if (!comp->IsSerializable())
         return;
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
@@ -303,6 +317,9 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
 
 void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type change)
 {
+    assert(entity);
+    if (!entity)
+        return;
     if ((change != AttributeChange::Replicate) || (entity->IsLocal()))
         return;
 
@@ -332,6 +349,9 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
 
 void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type change)
 {
+    assert(entity);
+    if (!entity)
+        return;
     if (change != AttributeChange::Replicate)
         return;
     if (entity->IsLocal())
@@ -402,11 +422,12 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
 
 void SyncManager::OnUserActionTriggered(UserConnection* user, Scene::Entity *entity, const QString &action, const QStringList &params)
 {
+    assert(user && entity);
+    if (!entity || !user)
+        return;
     bool isServer = owner_->IsServer();
     if (!isServer)
         return; // Should never happen
-    if ((!entity) || (!user))
-        return;
     if (user->properties["authenticated"] != "true")
         return; // Not yet authenticated, do not receive actions
     
@@ -680,6 +701,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
 {
+    assert(source);
     if (entityID & Scene::LocalEntity)
     {
         TundraLogicModule::LogWarning("Received an entity sync message for a local entity. Disregarding.");
@@ -700,9 +722,14 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg)
 {
+    assert(source);
+
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
+    {
+        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgCreateEntity as no scene exists!");
         return;
+    }
     
     entity_id_t entityID = msg.entityID;
     if (!ValidateAction(source, msg.MessageID(), entityID))
@@ -797,7 +824,10 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
+    {
+        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgRemoveEntity as no scene exists!");
         return;
+    }
     
     entity_id_t entityID = msg.entityID;
 
@@ -828,7 +858,10 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
+    {
+        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgCreateComponents as no scene exists!");
         return;
+    }
     
     entity_id_t entityID = msg.entityID;
     if (!ValidateAction(source, msg.MessageID(), entityID))
@@ -910,7 +943,10 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
+    {
+        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgUpdateComponents as no scene exists!");
         return;
+    }
     
     entity_id_t entityID = msg.entityID;
     if (!ValidateAction(source, msg.MessageID(), entityID))
@@ -1114,7 +1150,10 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
+    {
+        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgRemoveComponents as no scene exists!");
         return;
+    }
     
     entity_id_t entityID = msg.entityID;
     if (!ValidateAction(source, msg.MessageID(), entityID))
@@ -1160,7 +1199,10 @@ void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
+    {
+        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgEntityIDCollision as no scene exists!");
         return;
+    }
     
     if (owner_->IsServer())
     {
@@ -1186,14 +1228,17 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
+    {
+        TundraLogicModule::LogWarning("SyncManager: Ignoring received MsgEntityAction as no scene exists!");
         return;
+    }
     
     entity_id_t entityId = msg.entityId;
     Scene::EntityPtr entity = scene->GetEntity(entityId);
     if (!entity)
     {
         TundraLogicModule::LogWarning("Entity " + ToString<int>(entityId) + " not found for EntityAction message.");
-        return;
+        return; ///\todo Are we ok to return here? Perhaps we should replicate this action to peers if they might have an entity with that id in the scene?
     }
 
     // If we are server, get the user who sent the action, so it can be queried
@@ -1214,25 +1259,31 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
 
     EntityAction::ExecutionType type = (EntityAction::ExecutionType)(msg.executionType);
 
+    bool handled = false;
+
     if ((type & EntityAction::Local) != 0 || (isServer && (type & EntityAction::Server) != 0))
+    {
         entity->Exec(EntityAction::Local, action, params); // Execute the action locally, so that it doesn't immediately propagate back to network for sending.
+        handled = true;
+    }
 
     // If execution type is Peers, replicate to all peers but the sender.
-    if (isServer && type & EntityAction::Peers)
+    if (isServer && (type & EntityAction::Peers) != 0)
     {
         msg.executionType = (u8)EntityAction::Local;
         foreach(UserConnection* userConn, owner_->GetKristalliModule()->GetUserConnections())
             if (userConn->connection != source) // The EC action will not be sent to the machine that originated the request to send an action to all peers.
                 userConn->connection->Send(msg);
+        handled = true;
     }
     
+    if (!handled)
+        TundraLogicModule::LogWarning("SyncManager: Received MsgEntityAction message \"" + action.toStdString() + "\", but it went unhandled because of its type=" + QString::number(type).toStdString());
+
     // Clear the action sender after action handling
-    if (isServer)
-    {
-        Server* server = owner_->GetServer().get();
-        if (server)
-            server->SetActionSender(0);
-    }
+    Server *server = owner_->GetServer().get();
+    if (server)
+        server->SetActionSender(0);
 }
 
 SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connection)
