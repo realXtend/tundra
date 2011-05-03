@@ -11,7 +11,8 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
-#include "OgreMaterialUtils.h"
+#include "OgreMaterialAsset.h"
+#include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
 
 #include <OgreBillboardSet.h>
@@ -28,132 +29,197 @@ EC_Billboard::EC_Billboard(IModule *module) :
     IComponent(module->GetFramework()),
     billboardSet_(0),
     billboard_(0),
-    materialName_("")
+    attached_(false),
+    materialRef(this, "Material ref"),
+    position(this, "Position", Vector3df::ZERO),
+    width(this, "Size X", 1.0f),
+    height(this, "Size Y", 1.0f),
+    rotation(this, "Rotation", 0.0f),
+    show(this, "Show billboard", true),
+    autoHideTime(this, "Auto-hide time", -1.0f)
 {
+    materialAsset_ = AssetRefListenerPtr(new AssetRefListener());
+    connect(materialAsset_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+    
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_Billboard::~EC_Billboard()
 {
+    DestroyBillboard();
 }
 
-void EC_Billboard::SetPosition(const Vector3df& position)
+void EC_Billboard::OnParentEntitySet()
 {
-    if (IsCreated())
-        billboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
-}
-
-void EC_Billboard::SetDimensions(float w, float h)
-{
-    if (IsCreated())
-        billboardSet_->setDefaultDimensions(w, h);
-}
-
-void EC_Billboard::Show(const std::string &imageName, int timeToShow)
-{
-    if (!GetFramework())
+    Entity* parent = GetParentEntity();
+    if (!parent)
         return;
+    
+    connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceable()));
+    connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
+    
+    CreateBillboard();
+    CheckForPlaceable();
+}
 
+void EC_Billboard::CheckForPlaceable()
+{
+    if (placeable_)
+        return; // Already assigned
+    
+    placeable_ = GetParentEntity()->GetComponent<EC_Placeable>();
+    if ((placeable_) && (show.Get()))
+        Show();
+}
+
+void EC_Billboard::OnComponentRemoved(IComponent* component, AttributeChange::Type change)
+{
+    if (component == placeable_.get())
+    {
+        DetachBillboard();
+        placeable_.reset();
+    }
+}
+
+void EC_Billboard::CreateBillboard()
+{
+    if (!ViewEnabled())
+        return;
+    
     boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
         <OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
         return;
 
     Ogre::SceneManager *scene = renderer->GetSceneManager();
-    assert(scene);
     if (!scene)
         return;
 
-    Entity *entity = GetParentEntity();
-    assert(entity);
-    if (!entity)
-        return;
-
-    EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
-    if (!placeable)
-        return;
-
-    Ogre::SceneNode *node = placeable->GetSceneNode();
-    assert(node);
-    if (!node)
-        return;
-
-    if (imageName.empty())
-        return;
-
-    bool succesful = CreateOgreTextureResource(imageName);
-    if (!succesful)
-        return;
-
-    if (!IsCreated())
-    {
-        // Billboard not created yet, create it now.
+    if (!billboardSet_)
         billboardSet_ = scene->createBillboardSet(renderer->GetUniqueObjectName("EC_Billboard"), 1);
-        assert(billboardSet_);
-
-        materialName_ = renderer->GetUniqueObjectName("EC_Billboard_material"); 
-        Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", materialName_);
-        OgreRenderer::SetTextureUnitOnMaterial(material, imageName);
-        billboardSet_->setMaterialName(materialName_);
-
-        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 1.5f));
-        assert(billboard_);
-        billboardSet_->setDefaultDimensions(0.5f, 0.5f);
-
-        node->attachObject(billboardSet_);
-    }
-    else
+    
+    // Remove old billboard if it existed
+    if (billboard_)
     {
-        // Billboard already created Set new texture for the material
-        assert(!materialName_.empty());
-        if (!materialName_.empty())
-        {
-            Ogre::MaterialManager &mgr = Ogre::MaterialManager::getSingleton();
-            Ogre::MaterialPtr material = mgr.getByName(materialName_);
-            assert(material.get());
-            OgreRenderer::SetTextureUnitOnMaterial(material, imageName);
-        }
+        billboardSet_->removeBillboard(billboard_);
+        billboard_ = 0;
     }
-
-    Show(timeToShow);
+    
+    billboard_ = billboardSet_->createBillboard(OgreRenderer::ToOgreVector3(position.Get()));
+    billboard_->setDimensions(width.Get(), height.Get());
+    billboard_->setRotation(Ogre::Radian(Ogre::Degree(rotation.Get())));
 }
 
-void EC_Billboard::Show(int timeToShow)
+void EC_Billboard::UpdateBillboardProperties()
 {
-    if (IsCreated())
+    if (billboard_)
     {
-        billboardSet_->setVisible(true);
-        clamp(timeToShow, -1, 86401);
-        if (timeToShow > 0)
-            QTimer::singleShot(1000*timeToShow, this, SLOT(Hide()));
+        billboard_->setPosition(OgreRenderer::ToOgreVector3(position.Get()));
+        billboard_->setDimensions(width.Get(), height.Get());
+        billboard_->setRotation(Ogre::Radian(Ogre::Degree(rotation.Get())));
     }
+}
+
+void EC_Billboard::DestroyBillboard()
+{
+    DetachBillboard();
+    
+    if ((billboard_) && (billboardSet_))
+    {
+        billboardSet_->removeBillboard(billboard_);
+        billboard_ = 0;
+    }
+    if (billboardSet_)
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
+            <OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+        if (!renderer)
+            return;
+        
+        Ogre::SceneManager *scene = renderer->GetSceneManager();
+        if (!scene)
+            return;
+        
+        scene->destroyBillboardSet(billboardSet_);
+        billboardSet_ = 0;
+    }
+}
+
+
+void EC_Billboard::Show()
+{
+    AttachBillboard();
+    
+    // Optionally autohide
+    float hideTime = autoHideTime.Get();
+    if (hideTime >= 0.0f)
+        QTimer::singleShot((int)(hideTime*1000), this, SLOT(Hide()));
 }
 
 void EC_Billboard::Hide()
 {
-    if (IsCreated())
-        billboardSet_->setVisible(false);
+    DetachBillboard();
 }
 
-bool EC_Billboard::CreateOgreTextureResource(const std::string &imageName)
+void EC_Billboard::AttachBillboard()
 {
-    Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
-    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.getByName(imageName).get());
-    if (!tex)
+    if ((placeable_) && (!attached_) && (billboardSet_))
     {
-        ///\bug OGRE doesn't seem to add all texture to the resource group although the texture
-        ///     exists in folder spesified in the resource.cfg
-        LogWarning("Ogre Texture \"" +imageName + "\" not found from the default resource group");
+        placeable_->GetSceneNode()->attachObject(billboardSet_);
+        attached_ = true;
+    }
+}
 
-        Ogre::ResourcePtr rp = manager.create(imageName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-        if (!rp.isNull())
-        {
-            LogInfo("But should be now...");
-            return true;
-        }
+void EC_Billboard::DetachBillboard()
+{
+    if ((placeable_) && (attached_) && (billboardSet_))
+    {
+        placeable_->GetSceneNode()->detachObject(billboardSet_);
+        attached_ = false;
+    }
+}
 
-        return false;
+void EC_Billboard::OnAttributeUpdated(IAttribute *attribute)
+{
+    if ((attribute == &position) || (attribute == &width) || (attribute == &height) || (attribute == &rotation))
+    {
+        if (billboard_)
+            UpdateBillboardProperties();
+        else
+            CreateBillboard();
+    }
+    
+    if (attribute == &materialRef)
+    {
+        if (!ViewEnabled())
+            return;
+        
+        materialAsset_->HandleAssetRefChange(&materialRef);
+    }
+    
+    if (attribute == &show)
+    {
+        if (show.Get())
+            Show();
+        else
+            Hide();
+    }
+}
+
+void EC_Billboard::OnMaterialAssetLoaded(AssetPtr asset)
+{
+    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(asset.get());
+    if (!ogreMaterial)
+    {
+        LogError("OnMaterialAssetLoaded: Material asset load finished for asset \"" +
+            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreMaterialAsset!");
+        return;
     }
 
-    return true;
+    Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
+    
+    if (billboardSet_)
+        billboardSet_->setMaterialName(material->getName());
 }
 

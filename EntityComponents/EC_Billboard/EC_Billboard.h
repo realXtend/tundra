@@ -12,6 +12,10 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
+#include "AssetReference.h"
+#include "AssetRefListener.h"
+
+class EC_Placeable;
 
 namespace Ogre
 {
@@ -30,14 +34,28 @@ Billboard shows a billboard (3D sprite) that is attached to an entity.
 
 Registered by Naali::InWorldChatModule.
 
-<b>No Attributes</b>
+<b>Attributes</b>:
+<ul>
+<li>AssetReference: materialRef
+<div>Material used by the billboard.</div>
+<li>Vector3df: position
+<div>Position of billboard relative to the placeable component's position.</div> 
+<li>float: width
+<div>Billboard width.</div>
+<li>float: height
+<div>Billboard height.</div>
+<li>float: rotation
+<div>Billboard rotation in degrees.</div>
+<li>bool: show
+<div>Whether to show the billboard.</div>
+<li>float: autoHideTime
+<div>Time in seconds after which the billboard will hide itself automatically after showing. Negative values will not hide.</div> 
+</ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"Show": Creates and shows billboard.
-    @param imageName Name of the image file. Note the image must be located in the OGRE resource group.
-    @param timeToShow How long this billboard is visible in seconds.
-<li>"Hide: Hides the billboard.
+<li>"Show": Shows billboard (and autohides after autoHideTime seconds, if it's positive). Does not affect the "show" -attribute.
+<li>"Hide: Hides the billboard. Does not affect the "show" -attribute.
 </ul>
 
 <b>Reacts on the following actions:</b>
@@ -70,49 +88,87 @@ public:
     /// Destructor.
     ~EC_Billboard();
 
-    /// Sets postion for the billboard.
-    /// @param position Position.
-    /// @note The position is relative to the entity to which the billboard is attached.
-    /// @note Call this after you have first called Show()
-    void SetPosition(const Vector3df& position);
+    /// Material asset reference for the billboard
+    Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
+    
+    /// Billboard position in relation to the placeable component
+    Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, position);
+    
+    /// Billboard width
+    Q_PROPERTY(float width READ getwidth WRITE setwidth);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, width);
+    
+    /// Billboard height
+    Q_PROPERTY(float height READ getheight WRITE setheight);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, height);
+    
+    /// Billboard rotation in degrees
+    Q_PROPERTY(float rotation READ getrotation WRITE setrotation);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, rotation);
+    
+    /// Show flag
+    Q_PROPERTY(bool show READ getshow WRITE setshow);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, show);
 
-    /// Sets the width and height for billboard.
-    /// @param w Width.
-    /// @param h height.
-    /// @note Call this after you have first called Show()
-    void SetDimensions(float w, float h);
-
-    /// Returns true if the billboard is created properly.
-    bool IsCreated() const { return billboardSet_ != 0 && billboard_ != 0; }
-
+    /// Time (in seconds) in which to autohide the billboard after showing. Negative values never hide
+    Q_PROPERTY(float autoHideTime READ getautoHideTime WRITE setautoHideTime);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, autoHideTime);
+    
 public slots:
-    /// Creates and shows billboard.
-    /// @param imageName Name of the image file. Note the image must be located in the OGRE resource group.
-    /// @param timeToShow How long this billboard is visible in seconds.
-    /// Use -1 (default)if you want the billboard be visible always.
-    void Show(const std::string &imageName, int timeToShow = -1);
-
-    /// Shows the billboard if it exists with the texture.
-    /// @param timeToShow How long this billboard is visible in seconds.
-    /// Use -1 (default)if you want the billboard be visible always.
-    void Show(int timeToShow = -1);
-
-    /// Hides the billboard.
+    /// Show billboard. If autoHideTime is positive, it will be autohidden after the time has passed
+    void Show();
+    
+    /// Hide billboard
     void Hide();
-
+    
+private slots:
+    /// Component has been assigned to an entity
+    void OnParentEntitySet();
+    
+    /// Check for placeable being added to the entity
+    void CheckForPlaceable();
+    
+    /// Component removed; check if it was the placeable
+    void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
+    
+    /// Called when some of the attributes has been changed
+    void OnAttributeUpdated(IAttribute *attribute);
+    
+    /// Called when material asset has been downloaded.
+    void OnMaterialAssetLoaded(AssetPtr material);
+    
 private:
-    /// Creates Ogre texture resource for image.
-    /// @return True if creation was succesful, false otherwise.
-    bool CreateOgreTextureResource(const std::string &imageName);
-
-    /// Name of the material used for the billboard set.
-    std::string materialName_;
+    /// Create billboardset & billboard
+    void CreateBillboard();
+    
+    /// Update position & dimensions
+    void UpdateBillboardProperties();
+    
+    /// Destroy billboardset
+    void DestroyBillboard();
+    
+    /// Attach billboardset to the placeable's scene node
+    void AttachBillboard();
+    
+    /// Detach billboardset from the placeable's scene node
+    void DetachBillboard();
 
     /// Ogre billboard set.
     Ogre::BillboardSet *billboardSet_;
 
     /// Ogre billboard.
     Ogre::Billboard *billboard_;
+    
+    /// Attached flag
+    bool attached_;
+    
+    /// Placeable pointer
+    boost::shared_ptr<EC_Placeable> placeable_;
+    
+    /// Asset ref listener for the material
+    AssetRefListenerPtr materialAsset_;
 };
 
 #endif

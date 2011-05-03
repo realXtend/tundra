@@ -48,6 +48,7 @@ LinkEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
 LinkEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
 LinkEntityComponent(EntityComponents/EC_ProximityTrigger EC_ProximityTrigger)
 LinkEntityComponent(EntityComponents/EC_QmlApp EC_QmlApp)
+LinkEntityComponent(EntityComponents/EC_Billboard EC_Billboard)
 
 link_modules (Framework Asset Scene KristalliProtocolModule
     OgreRenderingModule PhysicsModule Console)

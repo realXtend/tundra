@@ -86,6 +86,10 @@
 #include "EC_ProximityTrigger.h"
 #endif
 
+#ifdef EC_Billboard_ENABLED
+#include "EC_Billboard.h"
+#endif
+
 #ifdef EC_QmlApp_ENABLED
 #include "EC_QmlApp.h"
 #include "QmlAsset.h"
