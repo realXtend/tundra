@@ -37,7 +37,7 @@ public:
         return true;
     }
 
-    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters)
+    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
     {
         dst = data;
         return true;

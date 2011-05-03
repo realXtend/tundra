@@ -25,7 +25,7 @@ public:
 
     /// Saves this asset to the given data buffer. Returns true on success. If this asset is unloaded, will return false.
     /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.
-    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "");
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
 
     /// Find dependencies from the asset
     virtual std::vector<AssetReference> FindReferences() const;

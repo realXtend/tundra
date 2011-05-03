@@ -21,7 +21,7 @@ public:
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
     /// Load texture into memory
-    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters);
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
     /// Handle load errors detected by AssetAPI
     virtual void HandleLoadError(const QString &loadError);

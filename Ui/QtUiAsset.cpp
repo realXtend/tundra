@@ -95,7 +95,7 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     return true;
 }
 
-bool QtUiAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters )
+bool QtUiAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     data = originalData;
     return data.size() > 0;

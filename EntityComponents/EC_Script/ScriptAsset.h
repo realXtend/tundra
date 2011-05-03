@@ -21,7 +21,7 @@ public:
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
 
     /// Load script asset into memory
-    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters);
+    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const;
 
     /// Unload script asset
     virtual void DoUnload();
