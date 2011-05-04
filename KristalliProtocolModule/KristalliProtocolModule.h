@@ -92,7 +92,7 @@ namespace KristalliProtocol
         kNet::SocketTransportLayer defaultTransport;
 
     signals:
-        /// Triggered whenever a new message is received rom the network.
+        /// Triggered whenever a new message is received from the network.
         void NetworkMessageReceived(kNet::MessageConnection *source, kNet::message_id_t id, const char *data, size_t numBytes);
 
         /// Triggered on the server side when a new user connects.

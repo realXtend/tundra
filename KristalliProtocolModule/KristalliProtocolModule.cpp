@@ -16,6 +16,7 @@
 
 #include <kNet.h>
 #include <kNet/qt/NetworkDialog.h>
+#include <kNet/UDPMessageConnection.h>
 
 #include <algorithm>
 
@@ -251,6 +252,9 @@ void KristalliProtocolModule::PerformConnection()
         return;
     }
 
+    if (serverTransport == kNet::SocketOverUDP)
+        dynamic_cast<kNet::UDPMessageConnection*>(serverConnection.ptr())->SetDatagramSendRate(500);
+
     // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
     if (serverConnection->GetSocket() && serverConnection->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
         serverConnection->GetSocket()->SetNaglesAlgorithmEnabled(false);
@@ -305,6 +309,9 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     assert(source);
     if (!source)
         return;
+
+    if (dynamic_cast<kNet::UDPMessageConnection*>(source))
+        dynamic_cast<kNet::UDPMessageConnection*>(source)->SetDatagramSendRate(500);
 
     source->RegisterInboundMessageHandler(this);
     
