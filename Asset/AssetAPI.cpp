@@ -5,7 +5,6 @@
 #include <boost/algorithm/string.hpp>
 #include <QList>
 #include <boost/regex.hpp>
-#include "MemoryLeakCheck.h"
 #include "AssetAPI.h"
 #include "Framework.h"
 #include "IAssetTransfer.h"
@@ -23,6 +22,7 @@
 #include "Platform.h"
 #include <QDir>
 #include <QFileSystemWatcher>
+#include "MemoryLeakCheck.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
