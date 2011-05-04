@@ -13,7 +13,15 @@ function HandleGotoNext() {
     }
     var screen = entities[current];
     camera.placeable.LookAt(screen.placeable.position);
+}
 
+function HandleGotoPrev() {
+    current--;
+    if (current < 0) {
+	current = end - 1;
+    }
+    var screen = entities[current];
+    camera.placeable.LookAt(screen.placeable.position);
 }
 
 var entities = scene.GetEntitiesWithComponentRaw("EC_WebView");
@@ -22,10 +30,11 @@ var end = entities.length;
 
 var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
 var camera = scene.GetEntityByNameRaw("FreeLookCamera");
-print(camera);
 
 inputmapper.RegisterMapping('n', "GotoNext", 1);
+inputmapper.RegisterMapping('p', "GotoPrev", 1);
 
 me.Action("GotoNext").Triggered.connect(HandleGotoNext);
+me.Action("GotoPrev").Triggered.connect(HandleGotoPrev);
 
 print('..');
