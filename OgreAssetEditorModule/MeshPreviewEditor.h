@@ -3,9 +3,6 @@
 #ifndef incl_OgreAssetEditorModule_MeshPreviewEditor_h
 #define incl_OgreAssetEditorModule_MeshPreviewEditor_h
 
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "RexTypes.h"
-#endif
 #include "InputAPI.h"
 #include "MouseEvent.h"
 #include "AssetFwd.h"
@@ -44,18 +41,15 @@ class ASSET_EDITOR_MODULE_API MeshPreviewEditor: public QWidget
     Q_OBJECT
 
 public:
-    MeshPreviewEditor(Foundation::Framework *framework, const QString &inventory_id, const asset_type_t &asset_type,
-        const QString &name, const QString &assetID, QWidget *parent = 0);
-
-    MeshPreviewEditor(Foundation::Framework *framework, QWidget* parent = 0);
+    MeshPreviewEditor(Framework *framework, QWidget* parent = 0);
 
     virtual ~MeshPreviewEditor();
 
     void RequestMeshAsset(const QString &asset_id);
-    QImage ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels);
+    QImage ConvertToQImage(const u8 *raw_image_data, uint width, uint height, uint channels);
     void Open(const QString& asset_id);
 
-    static MeshPreviewEditor *OpenMeshPreviewEditor(Foundation::Framework *framework, const QString &asset_id, QWidget* parent = 0);
+    static MeshPreviewEditor *OpenMeshPreviewEditor(Framework *framework, const QString &asset_id, QWidget* parent = 0);
 
 public slots:
     void Update();
@@ -64,7 +58,7 @@ public slots:
 
 signals:
     /// This signal is emitted when the editor is closed.
-    void Closed(const QString &inventory_id, asset_type_t asset_type);
+    void Closed(const QString &inventory_id);
 
 private slots:
     /// Delete this object.
@@ -75,9 +69,7 @@ private:
     void CreateRenderTexture();
     void AdjustScene();
 
-    Foundation::Framework *framework_;
-    asset_type_t assetType_;
-    QString inventoryId_;
+    Framework *framework_;
 
     QWidget *mainWidget_;
     QPushButton *okButton_;

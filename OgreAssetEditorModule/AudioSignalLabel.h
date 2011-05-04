@@ -9,9 +9,8 @@
 #ifndef incl_OgreAssetEditorModule_AudioSignalLabel_h
 #define incl_OgreAssetEditorModule_AudioSignalLabel_h
 
-#ifdef ENABLE_TAIGA_SUPPORT
-#include <RexTypes.h>
-#endif
+#include "CoreTypes.h"
+
 #include <QLabel>
 
 class AudioSignalLabel: public QLabel

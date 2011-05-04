@@ -12,10 +12,9 @@
 #include <QWidget>
 #include <QString>
 
-namespace Foundation
-{
-    class Framework;
-}
+
+class Framework;
+
 
 namespace Inventory
 {
@@ -124,7 +123,7 @@ private:
     QString GetCurrentMaterialFilename() const;
 
     /// Framework pointer.
-    Foundation::Framework *framework_;
+    Framework *framework_;
 
     /// Main widget loaded from .ui file.
     QWidget *mainWidget_;

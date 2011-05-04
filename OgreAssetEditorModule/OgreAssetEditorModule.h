@@ -18,12 +18,6 @@
 
 class QMenu;
 
-namespace Inventory
-{
-    class InventoryUploadEventData;
-    class InventoryUploadBufferEventData;
-}
-
 class MaterialWizard;
 class EditorManager;
 
@@ -59,14 +53,6 @@ public:
     static const std::string &NameStatic() { return typeNameStatic; }
 
 public slots:
-    /// Uploads new asset from file.
-    /// @param data Inventory upload event data.
-    void UploadFile(Inventory::InventoryUploadEventData *data);
-
-    /// Uploads new asset from buffer.
-    /// @param data Inventory buffer upload event data.
-    void UploadBuffer(Inventory::InventoryUploadBufferEventData *data);
-
     bool IsSupportedAssetTypes(const QString &type) const;
 
 //    void OpenAssetInEditor(const AssetPtr &asset);

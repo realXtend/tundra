@@ -5,18 +5,15 @@
  *  @brief  EditorManager manages the editor windows.
  */
 
+#if 0
+
 #ifndef incl_OgreAssetEditorModule_EditorManager_h
 #define incl_OgreAssetEditorModule_EditorManager_h
-
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "RexTypes.h"
-#endif
 
 #include <QWidget>
 #include <QMap>
 #include <QPair>
 #include <QString>
-
 
 typedef QPair<QString, asset_type_t> EditorMapKey;
 typedef QMap<EditorMapKey, QWidget *> EditorMap;
@@ -78,5 +75,7 @@ private:
     /// Map of currently existing editors.
     EditorMap editors_;
 };
+
+#endif
 
 #endif

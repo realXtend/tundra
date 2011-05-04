@@ -1,10 +1,14 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
-#include "Framework.h"
 #include "DebugOperatorNew.h"
+
 #include "AudioPreviewEditor.h"
 #include "AudioSignalLabel.h"
 #include "OgreAssetEditorModule.h"
 
+#include "Framework.h"
+#include "Application.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "ModuleManager.h"
@@ -19,15 +23,9 @@
 
 #include "MemoryLeakCheck.h"
 
-AudioPreviewEditor::AudioPreviewEditor(Foundation::Framework *framework,
-                                       const QString &inventory_id,
-                                       const asset_type_t &asset_type,
-                                       const QString &name,
-                                       QWidget *parent):
+AudioPreviewEditor::AudioPreviewEditor(Framework *framework, const QString &name, QWidget *parent):
     QWidget(parent),
     framework_(framework),
-    assetType_(asset_type),
-    inventoryId_(inventory_id),
     okButton_(0),
     playButton_(0),
     playTimer_(0)
@@ -43,7 +41,7 @@ AudioPreviewEditor::~AudioPreviewEditor()
 
     ///\todo Regression. Reimplement using the new Asset API. -jj.
     /*
-void AudioPreviewEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
+void AudioPreviewEditor::HandleAssetReady(AssetInterfacePtr asset)
 {
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
     if(service_manager)
@@ -117,7 +115,7 @@ void AudioPreviewEditor::Closed()
 
     ui->RemoveWidgetFromScene(this);
 
-    emit Closed(inventoryId_, assetType_);
+//    emit Closed(inventoryId_, assetType_);
 }
 
 void AudioPreviewEditor::PlaySound()
@@ -212,10 +210,10 @@ void AudioPreviewEditor::InitializeEditorWidget()
 
     // Create widget from ui file
     QUiLoader loader;
-    QFile file(Application::InstallationDirectory + "data/ui/audio_preview.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/audio_preview.ui");
     if (!file.exists())
     {
-        OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");
+        LogError("Cannot find OGRE Script Editor .ui file.");
         return;
     }
     mainWidget_ = loader.load(&file);

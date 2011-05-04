@@ -19,10 +19,7 @@
 
 #include "AssetFwd.h"
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 typedef QMap<QString, QVariant> PropertyMap;
 typedef QMap<QString, QVariant> TypeValuePair;
@@ -36,7 +33,7 @@ public:
     /// Constructor.
     /// @param asset Asset pointer to the material binary data.
     explicit OgreMaterialProperties(const QString &name, void *asset); ///\todo Regression. Reimplement using the new Asset API. -jj.
-//    explicit OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset);
+//    explicit OgreMaterialProperties(const QString &name, AssetInterfacePtr asset);
 
     /// Destructor.
     ~OgreMaterialProperties();

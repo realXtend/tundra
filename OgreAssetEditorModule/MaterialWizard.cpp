@@ -8,12 +8,15 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "MaterialWizard.h"
 #include "OgreAssetEditorModule.h"
 
-#include "Inventory/InventoryEvents.h"
+#include "Application.h"
 
 #include <QUiLoader>
+
+#include "MemoryLeakCheck.h"
 
 // Useful defines
 #define ENABLE(p) p->setEnabled(true);
@@ -26,10 +29,10 @@ MaterialWizard::MaterialWizard(QWidget *parent) :
     scriptName_("")
 {
     QUiLoader loader;
-    QFile file(Application::InstallationDirectory + "data/ui/materialwizard.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/materialwizard.ui");
     if (!file.exists())
     {
-        OgreAssetEditorModule::LogError("Cannot find Material Wizard .ui file.");
+        LogError("Cannot find Material Wizard .ui file.");
         return;
     }
 
@@ -73,22 +76,23 @@ MaterialWizard::~MaterialWizard()
 
 void MaterialWizard::Create()
 {
-    QString filename(Application::InstallationDirectory + "media/materials/templates/");
+    QString filename(Application::InstallationDirectory() + "media/materials/templates/");
     filename.append(GetCurrentMaterialFilename());
     filename.append(".material");
 
     QFile file(filename);
     if (!file.exists())
     {
-        OgreAssetEditorModule::LogError("Could create appropriate material script for these parameters!");
+        LogError("Could create appropriate material script for these parameters!");
         return;
     }
 
+/*
     Inventory::InventoryUploadEventData event_data;
     event_data.filenames.push_back(file.fileName());
     event_data.names.push_back(scriptName_);
-
     emit NewMaterial(&event_data);
+*/
 
     graphicsProxyWidget()->hide();
     ClearSelections();

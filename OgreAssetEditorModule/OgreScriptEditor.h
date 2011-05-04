@@ -9,9 +9,6 @@
 #ifndef incl_OgreAssetEditorModule_OgreScriptEditor_h
 #define incl_OgreAssetEditorModule_OgreScriptEditor_h
 
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "RexTypes.h"
-#endif
 #include "OgreAssetEditorModuleApi.h"
 #include "AssetFwd.h"
 
@@ -30,17 +27,17 @@ class ASSET_EDITOR_MODULE_API OgreScriptEditor : public QWidget
     Q_OBJECT
 
 public:
-    /// Constructor.
-    /** @param inventory_id Inventory ID unique for this item.
-        @param asset_type Asset type.
-        @param name Name.
-        @param parent Parent widget.
-    */
-    OgreScriptEditor(const QString &inventory_id, asset_type_t asset_type, const QString &name, QWidget *parent = 0);
+    enum ScriptType
+    {
+        MaterialScript,
+        ParticleScript
+    };
+
+    OgreScriptEditor(ScriptType type, const QString &name, QWidget *parent = 0);
 
     virtual ~OgreScriptEditor();
 
-    static OgreScriptEditor *OpenOgreScriptEditor(const QString &asset_id, asset_type_t asset_type, QWidget* parent = 0);
+    static OgreScriptEditor *OpenOgreScriptEditor(const QString &asset_id, ScriptType type, QWidget* parent = 0);
 
 public slots:
     void Open();
@@ -82,7 +79,7 @@ private:
     QTextEdit *textEdit_; ///< Text edit field used in raw edit mode.
     PropertyTableWidget *propertyTable_; ///< Table widget for editing material properties.
     QString inventoryId_; ///< Inventory id.
-    asset_type_t assetType_; ///< Asset type.
+    ScriptType type_; ///< Script type.
     QString name_; ///< Script name.
     OgreMaterialProperties *materialProperties_; ///< Material properties.
 };

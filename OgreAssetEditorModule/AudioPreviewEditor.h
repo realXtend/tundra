@@ -9,35 +9,24 @@
 #ifndef incl_OgreAssetEditorModule_AudioPreviewEditor_h
 #define incl_OgreAssetEditorModule_AudioPreviewEditor_h
 
-#ifdef ENABLE_TAIGA_SUPPORT
-#include <RexTypes.h>
-#endif
+
 #include <QWidget>
 
 #include "AssetFwd.h"
 
 #include <boost/shared_ptr.hpp>
 
-QT_BEGIN_NAMESPACE
 class QPushButton;
 class QTimer;
-QT_END_NAMESPACE
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 /// AudioPreviewEditor is used to play different audioclips from the inventory and display a audio info diagram.
 class AudioPreviewEditor: public QWidget
 {
     Q_OBJECT
 public:
-    AudioPreviewEditor(Foundation::Framework *framework,
-                       const QString &inventory_id,
-                       const asset_type_t &asset_type,
-                       const QString &name,
-                       QWidget *parent = 0);
+    AudioPreviewEditor(Framework *framework, const QString &name, QWidget *parent = 0);
     virtual ~AudioPreviewEditor();
 
 public slots:
@@ -50,7 +39,7 @@ public slots:
 
 signals:
     /// This signal is emitted when the editor is closed.
-    void Closed(const QString &inventory_id, asset_type_t asset_type);
+    void Closed(const QString &inventory_id);
 
     /// Signal for widget resize.
     void WidgetResized(QSize size);
@@ -61,9 +50,8 @@ protected:
 private:
     void InitializeEditorWidget();
 
-    Foundation::Framework *framework_;
-    asset_type_t assetType_;
-    QString inventoryId_;
+    Framework *framework_;
+
     QString assetId_;
 
     QWidget     *mainWidget_;

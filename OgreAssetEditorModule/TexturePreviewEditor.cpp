@@ -11,11 +11,7 @@
 #include "TexturePreviewEditor.h"
 #include "OgreAssetEditorModule.h"
 
-//#include "UiServiceInterface.h"
-//#include "UiProxyWidget.h"
-//#include "ModuleManager.h"
-//#include "Inventory/InventoryEvents.h"
-
+#include "Application.h"
 #include "LoggingFunctions.h"
 
 #include <QUiLoader>
@@ -42,27 +38,6 @@ void TextureLabel::mousePressEvent(QMouseEvent *ev)
     emit MouseClicked(ev);
 }
 
-TexturePreviewEditor::TexturePreviewEditor(const QString &inventory_id,
-    const asset_type_t &asset_type, const QString &name, const QString &asset_id, QWidget *parent) :
-    QWidget(parent),
-    inventoryId_(inventory_id),
-    assetId_(asset_id),
-    assetType_(asset_type),
-    mainWidget_(0),
-    okButtonName_(0),
-    headerLabel_(0),
-    imageLabel_(0),
-    scaleLabel_(0),
-    layout_(0),
-    //request_tag_(0),
-    imageSize_(QSize(0,0)),
-    useOriginalImageSize_(true)
-{
-    setObjectName(name);
-    Initialize();
-    RequestTextureAsset(assetId_);
-}
-
 TexturePreviewEditor::~TexturePreviewEditor()
 {
     LogInfo("Deleting TexturePreviewEditor " + objectName());
@@ -70,7 +45,6 @@ TexturePreviewEditor::~TexturePreviewEditor()
 
 TexturePreviewEditor::TexturePreviewEditor(QWidget* parent) :
     QWidget(parent),
-    assetType_(0),
     mainWidget_(0),
     okButtonName_(0),
     headerLabel_(0),
@@ -90,7 +64,7 @@ void TexturePreviewEditor::Close()
 //        return
 //    ui->RemoveWidgetFromScene(this);
     // Must be last line in this function, since it is possible this causes the deletion of this object
-    emit Closed(inventoryId_);
+    emit Closed("");
 }
 
 void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
@@ -102,8 +76,8 @@ void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
     {
         if(service_manager->IsRegistered(Service::ST_Texture))
         {
-            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = 
-                service_manager->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();
+            boost::shared_ptr<TextureServiceInterface> texture_service = 
+                service_manager->GetService<TextureServiceInterface>(Service::ST_Texture).lock();
             if(!texture_service)
                 return;
             // Request texture assets.
@@ -118,7 +92,7 @@ void TexturePreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *r
 {
     if(request_tag_ == res->tag_)
     {
-        Foundation::TextureInterface *tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
+        TextureInterface *tex = dynamic_cast<TextureInterface *>(res->resource_.get());
         if(tex)
         {
             QImage img = ConvertToQImage(tex->GetData(), tex->GetWidth(), tex->GetHeight(), tex->GetComponents());
@@ -212,10 +186,10 @@ void TexturePreviewEditor::Initialize()
 
     // Create widget from ui file
     QUiLoader loader;
-    QFile file(Application::InstallationDirectory + "data/ui/texture_preview.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/texture_preview.ui");
     if (!file.exists())
     {
-        OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");
+        LogError("Cannot find OGRE Script Editor .ui file.");
         return;
     }
 
@@ -237,10 +211,10 @@ void TexturePreviewEditor::Initialize()
 
     headerLabel_ = mainWidget_->findChild<QLabel *>("imageNameLabel");
     scaleLabel_ = mainWidget_->findChild<QLabel *>("imageScaleLabel");
-    
+
     QLabel *assetIdLabel = mainWidget_->findChild<QLabel *>("imageAssetIdLabel");
-    if(assetIdLabel)
-        assetIdLabel->setText(inventoryId_);
+    if (assetIdLabel)
+        assetIdLabel->setText("inventoryId_");
 
     imageLabel_ = new TextureLabel();
     imageLabel_->setObjectName("previewImageLabel");
@@ -374,7 +348,7 @@ float TexturePreviewEditor::CalculateImageScale()
     return -1.0f;
 }
 
-QImage TexturePreviewEditor::ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels)
+QImage TexturePreviewEditor::ConvertToQImage(const u8 *raw_image_data, uint width, uint height, uint channels)
 {
     uint img_width_step = width * channels; 
     QImage image;

@@ -6,9 +6,10 @@
 #include "MeshPreviewEditor.h"
 #include "OgreAssetEditorModule.h"
 
+#include "Application.h"
 #include "Renderer.h"
 #include "CoreMath.h"
-#include "OgreRenderingModule.h"
+//#include "OgreRenderingModule.h"
 #include "RenderWindow.h"
 
 #include <QUiLoader>
@@ -52,36 +53,7 @@ void MeshPreviewLabel::mouseMoveEvent(QMouseEvent *ev)
         sendMouseEvent(ev);
 }
 
-MeshPreviewEditor::MeshPreviewEditor(Foundation::Framework *framework, const QString &inventory_id,
-    const asset_type_t &asset_type, const QString &name, const QString &assetID, QWidget *parent) :
-    QWidget(parent),
-    framework_(framework),
-    assetType_(asset_type),
-    inventoryId_(inventory_id),
-    okButton_(0),
-    assetId_(assetID),
-    lastPos_(QPointF()),
-    camAlphaAngle_(0),
-    mesh_id_(""),
-    mouseDelta_(0),
-    label_(0),
-    manager_(0),
-    camera_(0),
-    entity_(0),
-    scene_(0),
-    root_scene_(0),
-    newLight_(0),
-    render_texture_(0),
-    width_(400),
-    height_(400)
-{
-    setObjectName(name);
-    InitializeEditorWidget();
-    RequestMeshAsset(assetId_);
-    setMouseTracking(true);
-}
-
-MeshPreviewEditor::MeshPreviewEditor(Foundation::Framework *framework, QWidget* parent): 
+MeshPreviewEditor::MeshPreviewEditor(Framework *framework, QWidget* parent): 
     QWidget(parent), framework_(framework), lastPos_(QPointF()),
     camAlphaAngle_(0), mouseDelta_(0),label_(0),
     manager_(0),
@@ -110,12 +82,12 @@ void MeshPreviewEditor::Open(const QString &asset_id)
     }
     catch (Ogre::Exception &e)
     {
-        OgreAssetEditorModule::LogError("Exception while opening mesh " + asset_id.toStdString() + " for editing.");
-        OgreAssetEditorModule::LogError(e.what());
+        LogError("Exception while opening mesh " + asset_id.toStdString() + " for editing.");
+        LogError(e.what());
     }
 }
 
-MeshPreviewEditor *MeshPreviewEditor::OpenMeshPreviewEditor(Foundation::Framework *framework, const QString &asset_id, QWidget* parent)
+MeshPreviewEditor *MeshPreviewEditor::OpenMeshPreviewEditor(Framework *framework, const QString &asset_id, QWidget* parent)
 {
     MeshPreviewEditor *editor = new MeshPreviewEditor(framework, parent);
     connect(editor, SIGNAL(Closed(const QString &, asset_type_t)), editor, SLOT(close()));
@@ -316,10 +288,10 @@ void MeshPreviewEditor::InitializeEditorWidget()
 {
     // Create widget from ui file
     QUiLoader loader;
-    QFile file(Application::InstallationDirectory + "data/ui/mesh_preview.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/mesh_preview.ui");
     if (!file.exists())
     {
-        OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");
+        LogError("Cannot find OGRE Script Editor .ui file.");
         return;
     }
 
@@ -410,7 +382,7 @@ void MeshPreviewEditor::MouseEvent(QMouseEvent* event)
    lastPos_ = pos;
 }
 
-QImage MeshPreviewEditor::ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels)
+QImage MeshPreviewEditor::ConvertToQImage(const u8 *raw_image_data, uint width, uint height, uint channels)
 {
     uint img_width_step = width * channels; 
     QImage image;

@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   PropertyTableWidget.h
  *  @brief  PropertyTableWidget inherits QTableWidget and add some custom drop-functionality.
  */

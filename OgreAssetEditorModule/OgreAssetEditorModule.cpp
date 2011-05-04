@@ -19,8 +19,6 @@
 
 #include "Framework.h"
 #include "ModuleManager.h"
-#include "NetworkEvents.h"
-#include "Inventory/InventoryEvents.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "UiProxyWidget.h"
@@ -66,8 +64,9 @@ void OgreAssetEditorModule::PostInitialize()
             Application::InstallationDirectory + "data/ui/images/menus/edbutton_MATWIZ_normal.png");
         connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
     }
-*/
+
     editorManager = new EditorManager;
+*/
 
     connect(framework_->Ui(), SIGNAL(ContextMenuAboutToOpen(QMenu *, QList<QObject *>)), SLOT(OnContextMenuAboutToOpen(QMenu *, QList<QObject *>)));
 }
@@ -75,7 +74,7 @@ void OgreAssetEditorModule::PostInitialize()
 void OgreAssetEditorModule::Uninitialize()
 {
     SAFE_DELETE(materialWizard);
-    SAFE_DELETE(editorManager);
+//    SAFE_DELETE(editorManager);
 }
 
 void OgreAssetEditorModule::Update(f64 frametime)
@@ -130,13 +129,13 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     }
     else if (asset->Type() == "OgreMaterial")
     {
-        OgreScriptEditor *scriptEditor = new OgreScriptEditor(QString(), RexTypes::RexAT_MaterialScript, assetName);
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(OgreScriptEditor::MaterialScript, assetName);
         scriptEditor->Open();
         editor = scriptEditor;
     }
     else if (asset->Type() == "OgreParticle")
     {
-        OgreScriptEditor *scriptEditor = new OgreScriptEditor(QString(), RexTypes::RexAT_ParticleScript, assetName);
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(OgreScriptEditor::ParticleScript, assetName);
         editor = scriptEditor;
 
     }
@@ -160,14 +159,14 @@ void OgreAssetEditorModule::OpenAssetInEditor()
 }
 
 
-void SetProfiler(Foundation::Profiler *profiler)
+void SetProfiler(Profiler *profiler)
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    ProfilerSection::SetProfiler(profiler);
 }
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+__declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     IModule *module = new OgreAssetEditorModule();
     fw->GetModuleManager()->DeclareStaticModule(module);

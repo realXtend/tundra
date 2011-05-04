@@ -6,6 +6,9 @@
  */
 
 #include "StableHeaders.h"
+
+#if 0
+
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 #include "EditorManager.h"
@@ -92,3 +95,5 @@ QWidget *EditorManager::TakeEditor(const QString &inventory_id, asset_type_t ass
     else
         return 0;
 }
+
+#endif

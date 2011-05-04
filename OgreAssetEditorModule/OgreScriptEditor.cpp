@@ -13,7 +13,8 @@
 #include "OgreAssetEditorModule.h"
 #include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
-#include "RexUUID.h"
+
+#include "Application.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -28,7 +29,7 @@
 
 #include "MemoryLeakCheck.h"
 
-OgreScriptEditor::OgreScriptEditor(const QString &inventory_id, asset_type_t asset_type, const QString &name, QWidget *parent) :
+OgreScriptEditor::OgreScriptEditor(ScriptType type, const QString &name, QWidget *parent) :
     QWidget(parent),
     mainWidget_(0),
     lineEditName_(0),
@@ -36,17 +37,16 @@ OgreScriptEditor::OgreScriptEditor(const QString &inventory_id, asset_type_t ass
     buttonCancel_(0),
     textEdit_(0),
     propertyTable_(0),
-    inventoryId_(inventory_id),
-    assetType_(asset_type),
+    type_(type),
     name_(name),
     materialProperties_(0)
 {
     // Create widget from ui file
     QUiLoader loader;
-    QFile file(Application::InstallationDirectory + "data/ui/ogrescripteditor.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/ogrescripteditor.ui");
     if (!file.exists())
     {
-        OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");
+        LogError("Cannot find OGRE Script Editor .ui file.");
         return;
     }
 
@@ -82,9 +82,9 @@ OgreScriptEditor::~OgreScriptEditor()
     SAFE_DELETE(mainWidget_);
 }
 
-OgreScriptEditor *OgreScriptEditor::OpenOgreScriptEditor(const QString &asset_id, asset_type_t asset_type, QWidget* parent)
+OgreScriptEditor *OgreScriptEditor::OpenOgreScriptEditor(const QString &asset_id, ScriptType type, QWidget* parent)
 {
-    OgreScriptEditor *editor = new OgreScriptEditor(QString(), asset_type, asset_id, parent);
+    OgreScriptEditor *editor = new OgreScriptEditor(type, asset_id, parent);
 //    editor->HandleAssetReady();
     editor->Open();
     return editor;
@@ -93,7 +93,7 @@ OgreScriptEditor *OgreScriptEditor::OpenOgreScriptEditor(const QString &asset_id
 
 void OgreScriptEditor::Open()
 {
-    if (assetType_ == RexTypes::RexAT_MaterialScript)
+    if (type_ == MaterialScript)
     {
         Ogre::MaterialSerializer serializer;
         Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(name_.toStdString());
@@ -111,7 +111,7 @@ void OgreScriptEditor::Open()
 }
 /*
     ///\todo Regression. Reimplement using the new Asset API. -jj.
-void OgreScriptEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
+void OgreScriptEditor::HandleAssetReady(AssetInterfacePtr asset)
 {
     bool edit_raw = false;
 
@@ -155,25 +155,25 @@ void OgreScriptEditor::SaveAs()
 {
     // Get the script.
     QString script;
-    if (assetType_ == RexTypes::RexAT_ParticleScript)
+    if (type_ == ParticleScript)
     {
         script = textEdit_->toPlainText();
         script = script.trimmed();
         if (script.isEmpty() || script.isNull())
         {
-            OgreAssetEditorModule::LogError("Empty script cannot be saved.");
+            LogError("Empty script cannot be saved.");
             return;
         }
     }
 
-    if (assetType_ == RexTypes::RexAT_MaterialScript && materialProperties_)
+    if (type_ == MaterialScript && materialProperties_)
         script = materialProperties_->ToString();
 
     // Get the name.
     QString filename = lineEditName_->text();
     if (filename.isEmpty() || filename.isNull())
     {
-        OgreAssetEditorModule::LogError("Empty name for the script, cannot upload.");
+        LogError("Empty name for the script, cannot upload.");
         return;
     }
 
@@ -218,7 +218,7 @@ void OgreScriptEditor::PropertyChanged(int row, int column)
     if (type == "TEX_1D" || type == "TEX_2D" || type == "TEX_3D" && type == "TEX_CUBEMAP")
     {
         // If the texture name is not valid UUID or URL it can't be used.
-        if (RexUUID::IsValid(newValueString))
+        if (1/*RexUUID::IsValid(newValueString)*/)
             valid = true;
         else if(newValueString.indexOf("http://") != -1)
             valid = true;

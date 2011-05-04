@@ -26,8 +26,6 @@ class ECEditorWindow;
 class ECComponentEditor;
 typedef std::vector<ComponentWeakPtr> ComponentWeakPtrVector;
 
-namespace Foundation { class Framework; }
-
 //typedef std::list<ComponentGroup*> ComponentGroupList;
 
 class Framework;
