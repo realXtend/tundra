@@ -6,27 +6,32 @@
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 
-function HandleGotoNext() {
-    current++;
-    if (current >= end) {
-	current = 0;
-    }
-    var screen = entities[current];
+function viewScreen(screen) {
     camera.placeable.LookAt(screen.placeable.position);
+}
+
+
+function HandleGotoNext() {
+    currentIndex++;
+    if (currentIndex >= endIndex) {
+	currentIndex = 0;
+    }
+    var screen = entities[currentIndex];
+    viewScreen(screen);
 }
 
 function HandleGotoPrev() {
-    current--;
-    if (current < 0) {
-	current = end - 1;
+    currentIndex--;
+    if (currentIndex < 0) {
+	currentIndex = endIndex - 1;
     }
-    var screen = entities[current];
-    camera.placeable.LookAt(screen.placeable.position);
+    var screen = entities[currentIndex];
+    viewScreen(screen);
 }
 
 var entities = scene.GetEntitiesWithComponentRaw("EC_WebView");
-var current = 0;
-var end = entities.length;
+var currentIndex = 0;
+var endIndex = entities.length;
 
 var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
 var camera = scene.GetEntityByNameRaw("FreeLookCamera");
