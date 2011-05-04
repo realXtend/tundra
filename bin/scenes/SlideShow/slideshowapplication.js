@@ -3,6 +3,7 @@
 
   TODO
    * Get filesuffix better
+   * Start using EC_WebView instead of 3DCanvasSource
 
 */
 
