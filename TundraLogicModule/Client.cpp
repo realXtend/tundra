@@ -251,7 +251,20 @@ kNet::MessageConnection* Client::GetConnection()
 
 void Client::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 {
-    Logout(true);
+    if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
+    {
+        if (!owner_->IsServer())
+        {
+            KristalliProtocol::Events::KristalliNetMessageIn* eventData = checked_static_cast<KristalliProtocol::Events::KristalliNetMessageIn*>(data);
+            HandleKristalliMessage(eventData->source, eventData->id, eventData->data, eventData->numBytes);
+    
+            emit NetworkMessageReceived(eventData->id, eventData->data, eventData->numBytes);
+        }
+    }
+    if (event_id == KristalliProtocol::Events::CONNECTION_FAILED)
+    {
+        Logout(true);
+    }
 }
 
 void Client::OnConnectionAttemptFailed()

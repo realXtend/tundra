@@ -83,6 +83,9 @@ signals:
     /// @param responseData This is the data that the server sent back to the client related to the connection.
     void Connected(UserConnectedResponseData *responseData);
 
+    /// Triggered whenever a new message is received from the network.
+    void NetworkMessageReceived(kNet::message_id_t id, const char *data, size_t numBytes);
+
     /// This signal is emitted when the client has disconnected from the server.
     void Disconnected();
 
