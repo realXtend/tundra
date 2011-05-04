@@ -1537,9 +1537,13 @@ void AssetReferenceAttributeEditor::HandleNewEditor(LineEditWithButtons *editor)
     assert(editor);
     if (editor)
     {
-        QPushButton *button = editor->CreateButton("OpenAssetsWindow", "...");
-        button->setParent(editor);
-        connect(button, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
+        QPushButton *pickButton = editor->CreateButton("OpenAssetsWindow", "...");
+        pickButton->setParent(editor);
+        connect(pickButton, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
+
+        QPushButton *editButton = editor->CreateButton("OpenEditor", tr("E"));
+        editButton->setParent(editor);
+        connect(editButton, SIGNAL(clicked(bool)), SLOT(OpenEditor()));
     }
 }
 
@@ -1576,6 +1580,23 @@ void AssetReferenceAttributeEditor::HandleAssetPicked(AssetPtr asset)
 void AssetReferenceAttributeEditor::RestoreOriginalValue()
 {
     SetValue(AssetReference(originalRef));
+}
+
+void AssetReferenceAttributeEditor::OpenEditor()
+{
+    Attribute<AssetReference> *assetRef= dynamic_cast<Attribute<AssetReference>*>(FindAttribute(components_[0].lock()));
+    if (assetRef)
+    {
+        AssetPtr asset = fw->Asset()->GetAsset(assetRef->Get().ref);
+        if (asset)
+        {
+            QMenu *menu = new QMenu();
+            fw->Ui()->EmitContextMenuAboutToOpen(menu, QObjectList(QObjectList() << asset.get()));
+            QAction *editAction = menu->findChild<QAction *>("Edit");
+            if (editAction)
+                editAction->trigger();
+        }
+    }
 }
 
 //-------------------------ASSETREFERENCELIST ATTRIBUTE TYPE-------------------------

@@ -12,14 +12,7 @@
 #include <QWidget>
 #include <QString>
 
-
 class Framework;
-
-
-namespace Inventory
-{
-    class InventoryUploadEventData;
-}
 
 class QVBoxLayout;
 
@@ -28,6 +21,13 @@ class MaterialWizard : public QWidget
     Q_OBJECT
 
 public:
+    /// Constructor.
+    /// @param parent Parent widget.
+    explicit MaterialWizard(QWidget *parent = 0);
+
+    /// Destructor.
+    ~MaterialWizard();
+
     /// Enumeration of the Material Wizard options and possible combinations.
     enum MaterialWizardOption
     {
@@ -88,21 +88,14 @@ public:
     };
     Q_DECLARE_FLAGS(MaterialWizardOptions, MaterialWizardOption)
 
-    /// Consturctor.
-    /// @param parent Parent widget.
-    explicit MaterialWizard(QWidget *parent = 0);
-
-    /// Destructor.
-    ~MaterialWizard();
-
 public slots:
     /// Closes the material wizard.
     void Close();
 
-signals:
+//signals:
     /// Emitted when new material is succesfully chosen and ready for upload.
     /// @param event_data Inventory upload event data. If null v
-    void NewMaterial(Inventory::InventoryUploadEventData *event_data);
+//    void NewMaterial(Inventory::InventoryUploadEventData *event_data);
 
 private slots:
     /// Chooses the right material script file and uploads it.
@@ -122,17 +115,10 @@ private:
     /// or null string if no matches for current parameters.
     QString GetCurrentMaterialFilename() const;
 
-    /// Framework pointer.
-    Framework *framework_;
-
-    /// Main widget loaded from .ui file.
-    QWidget *mainWidget_;
-
-    /// Bit mask of current material configuration options.
-    MaterialWizardOptions currentOptions_;
-
-    /// Name of the script.
-    QString scriptName_;
+    Framework *framework_; ///< Framework pointer.
+    QWidget *mainWidget_; ///< Main widget loaded from .ui file.
+    MaterialWizardOptions currentOptions_; ///< Bit mask of current material configuration options.
+    QString scriptName_; ///< Name of the script.
 };
 
 #endif

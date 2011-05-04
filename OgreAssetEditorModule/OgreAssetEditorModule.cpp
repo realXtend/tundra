@@ -51,11 +51,11 @@ void OgreAssetEditorModule::Initialize()
 
 void OgreAssetEditorModule::PostInitialize()
 {
+/*
     materialWizard = new MaterialWizard;
     connect(materialWizard, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
 
-/*
     uiService_ = framework_->GetServiceManager()->GetService<UiServiceInterface>(Service::ST_Gui);
     if (!uiService_.expired())
     {
@@ -103,6 +103,7 @@ void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject 
         {
             menu->addSeparator();
             EditorAction *openAction = new EditorAction(asset, tr("Open"), menu);
+            openAction->setObjectName("Edit");
             connect(openAction, SIGNAL(triggered()), SLOT(OpenAssetInEditor()));
             menu->addAction(openAction);
         }
@@ -129,6 +130,7 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     }
     else if (asset->Type() == "OgreMaterial")
     {
+        LogInfo("asset->Type() == OgreMaterial");
         OgreScriptEditor *scriptEditor = new OgreScriptEditor(OgreScriptEditor::MaterialScript, assetName);
         scriptEditor->Open();
         editor = scriptEditor;

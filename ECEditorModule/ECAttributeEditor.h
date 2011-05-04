@@ -275,6 +275,7 @@ private slots:
     void HandleNewEditor(LineEditWithButtons *);
     void HandleAssetPicked(AssetPtr asset);
     void RestoreOriginalValue();
+    void OpenEditor();
 
 private:
     Framework *fw;
