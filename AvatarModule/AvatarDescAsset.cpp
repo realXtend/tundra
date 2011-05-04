@@ -20,8 +20,7 @@ std::string modifierMode[] = {
 };
 
 AvatarDescAsset::AvatarDescAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
-    IAsset(owner, type_, name_),
-    assetCounter_(0)
+    IAsset(owner, type_, name_)
 {
 }
 
@@ -523,9 +522,9 @@ const QString& AvatarDescAsset::GetProperty(const QString& name)
 
 void AvatarDescAsset::AssetReferencesChanged()
 {
-    assetCounter_ = FindReferences().size();
+    unsigned assets = FindReferences().size();
     // If no references (unlikely), send AppearanceChanged() immediately
-    if (!assetCounter_)
+    if (!assets)
         emit AppearanceChanged();
     else
     {
@@ -536,13 +535,11 @@ void AvatarDescAsset::AssetReferencesChanged()
 
 void AvatarDescAsset::DependencyLoaded(AssetPtr dependee)
 {
-    if (assetCounter_ > 0)
-    {
-        --assetCounter_;
-        // Check if all loaded
-        if (!assetCounter_)
-            emit AppearanceChanged();
-    }
+    IAsset::DependencyLoaded(dependee);
+    
+    // Emit AppearanceChanged() when all references have been loaded, and the avatar description is ready to use
+    if (assetAPI->NumPendingDependencies(this->shared_from_this()) == 0)
+        emit AppearanceChanged();
 }
 
 void AvatarDescAsset::CalculateMasterModifiers()

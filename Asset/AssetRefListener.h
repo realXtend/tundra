@@ -30,9 +30,6 @@ signals:
     /// Emitted when the raw byte download of this asset finishes.
     void Downloaded(IAssetTransfer *transfer);
 
-    /// Emitted when a decoder plugin has decoded this asset.
-    void Decoded(AssetPtr asset);
-
     /// Emitted when this asset is ready to be used in the system.
     void Loaded(AssetPtr asset);
 
@@ -40,13 +37,9 @@ signals:
     void TransferFailed(IAssetTransfer *transfer, QString reason);
 
 private slots:
-    void EmitDownloaded(IAssetTransfer *transfer);
-
-    void EmitDecoded(AssetPtr asset);
-
-    void EmitLoaded(AssetPtr asset);
-    
-    void EmitTransferFailed(IAssetTransfer *transfer, QString reason);
+    void OnTransferSucceeded(AssetPtr asset);
+    void OnAssetLoaded(AssetPtr asset);
+    void OnTransferFailed(IAssetTransfer *transfer, QString reason);
 
 private:
     AssetWeakPtr asset;

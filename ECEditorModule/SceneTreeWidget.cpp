@@ -1310,7 +1310,7 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
         filename += "/" + assetName;
 
         filesaves_.insert(transfer->source.ref, filename);
-        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
     }
 }
 
@@ -1517,7 +1517,7 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
         }
 
         filesaves_.insert(transfer->source.ref, filename);
-        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
     }
 }
 
@@ -1551,7 +1551,7 @@ void SceneTreeWidget::AssetLoaded(AssetPtr asset)
                 if (!saved_assets_.contains(ref.ref))
                 {
                     AssetTransferPtr transfer = framework->Asset()->RequestAsset(ref.ref);
-                    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
+                    connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
 
                     QString oldAssetName = AssetAPI::ExtractFilenameFromAssetRef(filename);
                     QString newAssetName = AssetAPI::ExtractFilenameFromAssetRef(ref.ref);

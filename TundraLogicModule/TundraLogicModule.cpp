@@ -357,7 +357,7 @@ void TundraLogicModule::LoadStartupScene()
             LogError("Asset transfer initialization failed for scene file " + startupScene + " failed");
             return;
         }
-        connect(sceneTransfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(StartupSceneLoaded(AssetPtr)));
+        connect(sceneTransfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(StartupSceneLoaded(AssetPtr)));
         connect(sceneTransfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(StartupSceneTransferFailed(IAssetTransfer*, QString)));
         LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
     }

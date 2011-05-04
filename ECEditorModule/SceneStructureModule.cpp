@@ -146,7 +146,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
                 if (transfer.get())
                 {
                     urlToDropPos[filename] = worldPos;
-                    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleSceneDescLoaded(AssetPtr)));
+                    connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(HandleSceneDescLoaded(AssetPtr)));
                     connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(HandleSceneDescFailed(IAssetTransfer*, QString)));
                     break; // Only allow one .txml drop at a time
                 }
@@ -162,7 +162,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
                 if (transfer.get())
                 {
                     urlToDropPos[filename] = worldPos;
-                    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleSceneDescLoaded(AssetPtr)));
+                    connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(HandleSceneDescLoaded(AssetPtr)));
                     connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(HandleSceneDescFailed(IAssetTransfer*, QString)));
                     break; // Only allow one .tbin drop at a time
                 }

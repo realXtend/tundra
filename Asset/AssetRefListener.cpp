@@ -37,44 +37,37 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
     if (!transfer)
         return; ///\todo Log out warning.
 
-    connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(EmitDownloaded(IAssetTransfer*)), Qt::UniqueConnection);
-    connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), this, SLOT(EmitTransferFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
-//    connect(transfer.get(), SIGNAL(Decoded(AssetPtr)), this, SLOT(EmitDecoded(AssetPtr)), Qt::UniqueConnection);
-//    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(EmitLoaded(AssetPtr)), Qt::UniqueConnection);
+    connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnTransferSucceeded(AssetPtr)), Qt::UniqueConnection);
+    connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), this, SLOT(OnTransferFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
 
+    // Disconnect from the old asset's load signal
     AssetPtr assetData = asset.lock();
     if (assetData)
         disconnect(assetData.get(), SIGNAL(Loaded(AssetPtr)), this, SIGNAL(Loaded(AssetPtr)));
     asset = AssetPtr();
 }
 
-void AssetRefListener::EmitDownloaded(IAssetTransfer *transfer)
+void AssetRefListener::OnTransferSucceeded(AssetPtr assetData)
 {
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    AssetPtr assetData = transfer->asset;
     assert(assetData);
     if (!assetData)
         return;
+    
     asset = assetData;
     
-    connect(assetData.get(), SIGNAL(Loaded(AssetPtr)), this, SIGNAL(Loaded(AssetPtr)));
-    emit Downloaded(transfer);
+    // Connect to further reloads of the asset to be able to notify of them.
+    connect(assetData.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+    
+    emit Loaded(assetData);
 }
 
-void AssetRefListener::EmitDecoded(AssetPtr asset)
+void AssetRefListener::OnAssetLoaded(AssetPtr assetData)
 {
-    emit Decoded(asset);
+    if (assetData == asset.lock())
+        emit Loaded(assetData);
 }
 
-void AssetRefListener::EmitLoaded(AssetPtr asset)
-{
-    emit Loaded(asset);
-}
-
-void AssetRefListener::EmitTransferFailed(IAssetTransfer* transfer, QString reason)
+void AssetRefListener::OnTransferFailed(IAssetTransfer* transfer, QString reason)
 {
     emit TransferFailed(transfer, reason);
 }

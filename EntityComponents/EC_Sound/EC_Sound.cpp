@@ -56,7 +56,7 @@ void EC_Sound::OnAttributeUpdated(IAttribute *attribute)
     {
         AssetTransferPtr tranfer =  framework_->Asset()->RequestAsset(soundRef.Get().ref);
         if (tranfer.get())
-            connect(tranfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AudioAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+            connect(tranfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(AudioAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
     else if (attribute == &playOnLoad)
     {

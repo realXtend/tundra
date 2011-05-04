@@ -25,15 +25,14 @@ void IAsset::SetDiskSource(QString diskSource_)
 
 bool IAsset::LoadFromCache()
 {
+    // If asset did not have dependencies, this causes Loaded() to be emitted
     bool success = LoadFromFile(DiskSource());
     if (!success)
         return false;
 
     AssetPtr thisAsset = shared_from_this();
 
-    if (assetAPI->NumPendingDependencies(thisAsset) == 0)
-        emit Loaded(thisAsset);
-    else
+    if (assetAPI->NumPendingDependencies(thisAsset) > 0)
         assetAPI->RequestAssetDependencies(thisAsset);
 
     return success;
@@ -44,6 +43,11 @@ void IAsset::Unload()
 //    LogDebug("IAsset::Unload called for asset \"" + name.toStdString() + "\".");
     DoUnload();
     emit Unloaded(this);
+}
+
+bool IAsset::IsEmpty() const
+{
+    return !IsLoaded() && diskSource.isEmpty();
 }
 
 AssetPtr IAsset::Clone(QString newAssetName) const
@@ -133,7 +137,21 @@ bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
     else
         contentHashChanged = false;
 
-    return DeserializeFromData(data, numBytes);
+    bool success = DeserializeFromData(data, numBytes);
+    
+    AssetPtr thisAsset = this->shared_from_this();
+    // If asset was loaded successfully, and there are no pending dependencies, emit Loaded() now
+    if (success && assetAPI->NumPendingDependencies(thisAsset) == 0)
+        emit Loaded(thisAsset);
+    return success;
+}
+
+void IAsset::DependencyLoaded(AssetPtr dependee)
+{
+    AssetPtr thisAsset = this->shared_from_this();
+    // If we are loaded, and this was the last dependency, emit Loaded()
+    if (IsLoaded() && assetAPI->NumPendingDependencies(thisAsset) == 0)
+        emit Loaded(thisAsset);
 }
 
 void IAsset::HandleLoadError(const QString &loadError)
@@ -218,18 +236,4 @@ AssetProviderPtr IAsset::GetAssetProvider()
 QString IAsset::ToString() const
 { 
     return (Name().isEmpty() ? "(noname)" : Name()) + " (" + (Type().isEmpty() ? "notype" : Type()) + ")";
-}
-
-void IAsset::EmitLoaded()
-{
-    emit Loaded(shared_from_this());
-
-    AssetTransferPtr t = transfer.lock();
-    if (t)
-    {
-        assert(t->asset.get() == this);
-        t->EmitAssetLoaded();
-    }
-
-    contentHashChanged = false;
 }

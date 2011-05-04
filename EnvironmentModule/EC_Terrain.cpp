@@ -255,7 +255,7 @@ void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(material.Get());
         if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
 /*
     else if (changedAttribute == texture0.GetNameString())

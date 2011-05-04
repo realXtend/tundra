@@ -111,10 +111,6 @@ public:
     std::vector<MasterModifier> masterModifiers_; 
     /// Miscellaneous properties (freedata)
     QMap<QString, QString> properties_;
-    
-private:
-    /// Counter for rerequesting depended upon assets
-    int assetCounter_;
 };
 
 typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;

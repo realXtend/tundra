@@ -6,21 +6,9 @@ void IAssetTransfer::EmitAssetDownloaded()
     emit Downloaded(this);
 }
 
-void IAssetTransfer::EmitAssetDecoded()
+void IAssetTransfer::EmitTransferSucceeded()
 {
-//    if (this->asset)
-//        emit Decoded(this->asset);
-}
-
-void IAssetTransfer::EmitAssetLoaded()
-{
-    emit Loaded(this->asset);
-    /*
-    if (this->asset)
-    {
-        this->asset->EmitLoaded();
-    }
-    */
+    emit Succeeded(this->asset);
 }
 
 void IAssetTransfer::EmitAssetFailed(QString reason)

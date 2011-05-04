@@ -654,17 +654,17 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return transfer;
     }
 
-    // Check if we've already downloaded this asset before and it already is loaded in the system. We never reload an asset we've downloaded before, unless the 
-    // client explicitly forces so, or if we get a change notification signal from the source asset provider telling the asset was changed.
+    // Check if we've already downloaded this asset before and it already is loaded in the system, non-empty. We never reload an asset we've downloaded before, 
+    // unless the client explicitly forces so, or if we get a change notification signal from the source asset provider telling the asset was changed.
     AssetMap::iterator iter2 = assets.find(assetRefWithoutSubAsset);
-    if (iter2 != assets.end())
+    if (iter2 != assets.end() && !iter2->second->IsEmpty())
     {
         // Whenever the client requests an asset that was loaded before, we create a request for that asset nevertheless.
         // The idea is to have the code path run the same independent of whether the asset existed or had to be downloaded, i.e.
         // a request is always made, and the receiver writes only a single asynchronous code path for handling the asset.
 
         // The asset was already downloaded. Generate a 'virtual asset transfer' and return it to the client.
-        AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer());
+        AssetTransferPtr transfer = AssetTransferPtr(new VirtualAssetTransfer());
         transfer->asset = iter2->second; // For 'normal' requests, the asset ptr is zero, but for these virtual requests, we can already fill the asset here.
         transfer->source.ref = assetRef;
         transfer->assetType = assetType;
@@ -735,7 +735,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     // so we'll avoid multiple downloads to the exact same asset.
     assert(currentTransfers.find(assetRef) == currentTransfers.end());
     currentTransfers[assetRef] = transfer;
-    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)));
+    connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)));
     return transfer;
 }
 
@@ -1006,13 +1006,10 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
 //    LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
 
-    if (transfer->asset) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
+    if (dynamic_cast<VirtualAssetTransfer*>(transfer_) && transfer->asset) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
     {
         transfer->EmitAssetDownloaded();
-//        transfer->asset->EmitDecoded
-        transfer->EmitAssetDecoded();
-        transfer->asset->EmitLoaded();
-        transfer->EmitAssetLoaded();
+        transfer->EmitTransferSucceeded();
         pendingDownloadRequests.erase(transfer->source.ref);
         currentTransfers.erase(transfer->source.ref);
 
@@ -1024,8 +1021,10 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     if (iter == currentTransfers.end())
         LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
 
-    // We've finished an asset data download, now create an actual instance of an asset of that type.
-    transfer->asset = CreateNewAsset(transfer->assetType, transfer->source.ref);
+    // We've finished an asset data download, now create an actual instance of an asset of that type
+    // Not necessary, if we already had that asset as empty
+    if (!transfer->asset)
+        transfer->asset = CreateNewAsset(transfer->assetType, transfer->source.ref);
     if (!transfer->asset)
     {
         QString error("AssetAPI: Failed to create new asset of type \"" + transfer->assetType + "\" and name \"" + transfer->source.ref + "\"");
@@ -1049,7 +1048,10 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     transfer->asset->SetAssetProvider(transfer->provider.lock());
     transfer->asset->SetAssetTransfer(transfer);
 
-	const u8 *data = (transfer->rawAssetData.size() > 0 ? &transfer->rawAssetData[0] : 0);
+    // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
+    transfer->EmitAssetDownloaded();
+
+    const u8 *data = (transfer->rawAssetData.size() > 0 ? &transfer->rawAssetData[0] : 0);
     bool success = transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
     if (!success)
     {
@@ -1074,10 +1076,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
     RequestAssetDependencies(transfer->asset);
 
-    // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
-    transfer->EmitAssetDownloaded();
-
-    // If we don't have any outstanding dependencies, fire the Loaded signal for the asset as well.
+    // If we don't have any outstanding dependencies, succeed and remove the transfer
     if (NumPendingDependencies(transfer->asset) == 0)
         AssetDependenciesCompleted(transfer);
 }
@@ -1142,14 +1141,16 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
         if (!transfer)
             return; ///\todo Evaluate the path to take here.
         connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)));
-        connect(transfer.get(), SIGNAL(Decoded(AssetPtr)), req.transfer.get(), SIGNAL(Decoded(AssetPtr)));
-        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), req.transfer.get(), SIGNAL(Loaded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), req.transfer.get(), SIGNAL(Loaded(AssetPtr)));
         connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), req.transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)));
     }
 }
 
 void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
 {
+    // Emit success for this transfer
+    transfer->EmitTransferSucceeded();
+    
     // This asset transfer has finished - remove it from the internal list of ongoing transfers.
     AssetTransferMap::iterator iter = FindTransferIterator(transfer.get());
     if (iter != currentTransfers.end())
@@ -1162,13 +1163,6 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
         LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished: but data size was 0 bytes!");
         return;
     }
-
-    ///\todo Specify the following flow better.
-    transfer->EmitAssetDecoded();
-
-    // This asset is now completely finished, and all its dependencies have been loaded.
-    if (transfer->asset)
-        transfer->asset->EmitLoaded();
     
     pendingDownloadRequests.erase(transfer->source.ref);
 }
@@ -1204,7 +1198,7 @@ void AssetAPI::RequestAssetDependencies(AssetPtr asset)
             continue;
 
         AssetPtr existing = GetAsset(ref.ref);
-        if (existing)
+        if (existing && !existing->IsEmpty())
             asset->DependencyLoaded(existing);
         else // We don't have the given asset yet, request it.
         {
@@ -1262,9 +1256,13 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
         }
         else
         {
-            // Ask the dependencies of the dependency, we want all of the asset
-            // down the chain to be loaded before we load the base asset
-            numDependencies += NumPendingDependencies(existing);
+            // If asset is empty, count it as an unloaded dependency
+            if (existing->IsEmpty())
+                ++numDependencies;
+            else
+                // Ask the dependencies of the dependency, we want all of the asset
+                // down the chain to be loaded before we load the base asset
+                numDependencies += NumPendingDependencies(existing);
         }
     }
 
