@@ -225,6 +225,14 @@ UserConnection* Server::GetActionSender() const
     return actionsender_;
 }
 
+kNet::NetworkServer *Server::GetServer() const
+{
+    if (!owner_ || !owner_->GetKristalliModule())
+        return 0;
+
+    return owner_->GetKristalliModule()->GetServer();
+}
+
 void Server::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 {
     if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
@@ -246,31 +254,33 @@ void Server::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 
 void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
+    if (!source)
+        return;
+
     if (!owner_->IsServer())
         return;
-        
+
+    UserConnection *user = GetUserConnection(source);
+    if (!user)
+    {
+        TundraLogicModule::LogWarning("Server: dropping message " + ToString(id) + " from unknown connection \"" + source->ToString() + "\"");
+        return;
+    }
+
     // If we are server, only allow the login message from an unauthenticated user
-    if (id != cLoginMessage)
+    if (id != cLoginMessage && user->properties["authenticated"] != "true")
     {
-        UserConnection* user = GetUserConnection(source);
-        if ((!user) || (user->properties["authenticated"] != "true"))
-        {
-            TundraLogicModule::LogWarning("Server: dropping message " + ToString(id) + " from unauthenticated user");
-            //! \todo something more severe, like disconnecting the user
-            return;
-        }
+        TundraLogicModule::LogWarning("Server: Unauthenticated client sent message " + ToString(id) + ", dropping connection!");
+        source->Close(0);
+        return;
     }
-    
-    switch (id)
+    else if (id == cLoginMessage)
     {
-        // Server
-    case cLoginMessage:
-        {
-            MsgLogin msg(data, numBytes);
-            HandleLogin(source, msg);
-        }
-        break;
+        MsgLogin msg(data, numBytes);
+        HandleLogin(source, msg);
     }
+
+    emit MessageReceived(user, id, data, numBytes);
 }
 
 void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
