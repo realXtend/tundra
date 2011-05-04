@@ -35,7 +35,7 @@ if (CAELUM)
 endif (CAELUM)
 
 use_modules (Core Foundation Interfaces Scene RexCommon OgreRenderingModule ProtocolUtilities
-    ProtocolModuleTaiga ProtocolModuleOpenSim Asset Console)
+    ProtocolModuleTaiga ProtocolModuleOpenSim Asset Console TundraLogicModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
 

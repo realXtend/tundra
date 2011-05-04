@@ -13,7 +13,7 @@
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "IAsset.h"
-
+#include "TundraEvents.h"
 #include "SceneManager.h"
 #include "ConsoleCommandUtils.h"
 #include "EventManager.h"
@@ -443,6 +443,8 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
     }
     
     return false;
+}
+
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

@@ -35,8 +35,6 @@ namespace KristalliProtocol
 
         MODULE_LOGGING_FUNCTIONS;
 
-        ConsoleCommandResult OpenKNetLogWindow(const StringVector &);
-
 #ifdef KNET_USE_QT
         ConsoleCommandResult OpenKNetLogWindow(const StringVector &);
 #endif

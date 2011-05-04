@@ -22,7 +22,7 @@
 #include "EC_EnvironmentLight.h"
 #include "TerrainWeightEditor.h"
 #include "EC_OgreEnvironment.h"
-
+#include "TundraEvents.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"

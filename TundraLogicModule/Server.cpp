@@ -5,6 +5,7 @@
 
 #include "Server.h"
 #include "TundraLogicModule.h"
+#include "TundraEvents.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "SyncManager.h"
@@ -95,21 +96,10 @@ bool Server::Start(unsigned short port)
             TundraLogicModule::LogError("Failed to start server in port " + ToString<int>(port));
             return false;
         }
-        catch(...) {}
-    }
 
-    // Inspect protocol
-    if (userSetProtocol != "udp" && userSetProtocol != "tcp")
-        ::LogWarning("Server::Start: Server config has an invalid server protocol '" + userSetProtocol + "'. Use tcp or udp. Resetting to default protocol.");
-    else
-        transportLayer = userSetProtocol == "udp" ? kNet::SocketOverUDP : kNet::SocketOverTCP;
-    
-    // Start server
-    if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
-    {
-        ::LogError("Failed to start server in port " + ToString<int>(port));
-        return false;
-    }
+        // Store current port and protocol
+        current_port_ = (int)port;
+        current_protocol_ = transportLayer == kNet::SocketOverUDP ? "udp" : "tcp";
 
         // Create the default server scene
         /// \todo Should be not hard coded like this. Give some unique id (uuid perhaps) that could be returned to the client to make the corresponding named scene in client?
@@ -127,19 +117,13 @@ bool Server::Start(unsigned short port)
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
         
         emit ServerStarted();
+
+        KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+        connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
+            this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
+
+        connect(kristalli, SIGNAL(ClientDisconnectedEvent(UserConnection *)), this, SLOT(HandleUserDisconnected(UserConnection *)), Qt::UniqueConnection);
     }
-    
-    // Create an authoritative physics world
-    Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
-    physics->CreatePhysicsWorldForScene(scene, false);
-            
-    emit ServerStarted();
-
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
-    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
-        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
-
-    connect(kristalli, SIGNAL(ClientDisconnectedEvent(UserConnection *)), this, SLOT(HandleUserDisconnected(UserConnection *)), Qt::UniqueConnection);
 
     return true;
 }

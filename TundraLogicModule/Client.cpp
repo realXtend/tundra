@@ -6,6 +6,7 @@
 #include "Client.h"
 #include "TundraLogicModule.h"
 #include "EventManager.h"
+#include "TundraEvents.h"
 #include "ModuleManager.h"
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
