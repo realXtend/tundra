@@ -3,10 +3,11 @@
 #ifndef incl_OgreRenderingModule_TextureAsset_h
 #define incl_OgreRenderingModule_TextureAsset_h
 
+#include <OgreTexture.h>
+
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 #include "AssetAPI.h"
-#include <OgreTexture.h>
 #include <QImage>
 #include "OgreModuleApi.h"
 
@@ -32,6 +33,12 @@ public:
     QImage ToQImage(size_t faceIndex = 0, size_t mipmapLevel = 0) const;
 
     bool IsLoaded() const;
+
+    ///\todo Implement regenerateMipmaps option.
+    ///\todo Add individual surface set option.
+    /// @param data The new contents of the texture. If you only want to resize the texture, and not fill it
+    ///     with any data at this time, you may pass in a null pointer here.
+    void SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps);
 
     //void RegenerateAllMipLevels();
 

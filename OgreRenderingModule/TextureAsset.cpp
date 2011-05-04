@@ -199,3 +199,43 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
     pixelBuffer->unlock();
     return img;
 }
+
+void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps)
+{
+    PROFILE(TextureAsset_SetContents);
+
+    if (!ogreTexture.get())
+    {
+        ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+        newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, Ogre::TU_DEFAULT);
+        if (!ogreTexture.get())
+            return; ///\todo Log error
+    }
+
+    bool needRecreate = (newWidth != ogreTexture->getWidth() || newHeight != ogreTexture->getHeight() || ogreFormat != ogreTexture->getFormat());
+//    if (newWidth == ogreTexture->getWidth() && newHeight == ogreTexture->getHeight() && ogreFormat == ogreTexture->getFormat())
+//        return;
+
+    if (needRecreate)
+    {
+        ogreTexture->freeInternalResources(); 
+        ogreTexture->setWidth(newWidth);
+        ogreTexture->setHeight(newHeight);
+        ogreTexture->setFormat(ogreFormat);
+    }
+    if (ogreTexture->getBuffer().isNull())
+    {
+        LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
+        return;
+    }
+
+    if (data)
+    {
+        ///\todo Review Ogre internals of whether the const_cast here is safe!
+        Ogre::PixelBox pixelBox(Ogre::Box(0,0, newWidth, newHeight), ogreFormat, const_cast<u8*>(data));
+        ogreTexture->getBuffer()->blitFromMemory(pixelBox);
+    }
+
+    if (needRecreate)
+        ogreTexture->createInternalResources();
+}
