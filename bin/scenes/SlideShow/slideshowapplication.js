@@ -285,13 +285,13 @@ function createCanvas(event) {
             if (placeable) {
             var q = placeable.Orientation;
 
-        // create unitvector for negative Z-axis
-        var unz = new Vector3df();
-        unz.z = -1;
-
-        // calculate conjugate
-        var v = conjg(q, unz);
-        worldpos = vadd(placeable.Position, smul(v, 20));
+	    // create unitvector for negative Z-axis
+	    var unz = new Vector3df();
+	    unz.z = -1;
+	    
+	    // calculate conjugate
+	    var v = conjg(q, unz);
+	    worldpos = vadd(placeable.Position, smul(v, 20));
             break;
             }
         }
