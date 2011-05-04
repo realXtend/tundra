@@ -37,12 +37,152 @@ namespace
 
 AssetsWindow::AssetsWindow(Framework *fw, QWidget *parent) :
     QWidget(parent),
-    framework(fw),
-    expandAndCollapseButton(0)
+    framework(fw)
+{
+    Initialize();
+    PopulateTreeWidget();
+}
+
+AssetsWindow::AssetsWindow(const QString &assetType, Framework *fw, QWidget *parent) :
+    QWidget(parent),
+    framework(fw)
+{
+    this->assetType = assetType;
+
+    Initialize();
+    PopulateTreeWidget();
+
+    // Asset picking layout
+    QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QPushButton *cancelButton = new QPushButton(tr("Cancel"), this);
+    QPushButton *pickButton = new QPushButton(tr("Pick"), this);
+
+    QHBoxLayout *hlayout2= new QHBoxLayout;
+    hlayout2->insertSpacerItem(-1, spacer);
+    hlayout2->addWidget(cancelButton);
+    hlayout2->addWidget(pickButton);
+    static_cast<QVBoxLayout *>(layout())->addLayout(hlayout2);
+
+    connect(treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), SLOT(PickAsset(QTreeWidgetItem *)));
+    connect(pickButton, SIGNAL(clicked()), SLOT(close()));
+    connect(cancelButton, SIGNAL(clicked()), SLOT(Cancel()));
+}
+
+AssetsWindow::~AssetsWindow()
+{
+    // Disable ResizeToContents, Qt goes sometimes into eternal loop after
+    // ~AssetsWindow() if we have lots (hudreds or thousands) of items.
+    treeWidget->header()->setResizeMode(QHeaderView::Interactive);
+
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
+    {
+        QTreeWidgetItem *item = *it;
+        SAFE_DELETE(item);
+        ++it;
+    }
+}
+
+void AssetsWindow::PopulateTreeWidget()
+{
+    treeWidget->clear();
+    alreadyAdded.clear();
+    // Create "No provider" for assets without storage.
+    noProviderItem = new QTreeWidgetItem;
+    noProviderItem->setText(0, tr("No provider"));
+
+    AssetStoragePtr defaultStorage = framework->Asset()->GetDefaultAssetStorage();
+
+    foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
+    {
+        QTreeWidgetItem *item = new QTreeWidgetItem;
+        item->setText(0, storage->ToString());
+        treeWidget->addTopLevelItem(item);
+
+        item->setData(0, Qt::UserRole, QVariant(storage->Name()));
+
+        // The current default storage is bolded.
+        if (storage == defaultStorage)
+        {
+            QFont font = item->font(0);
+            font.setBold(true);
+            item->setFont(0, font);
+        }
+    }
+
+    std::pair<QString, AssetPtr> pair;
+    foreach(pair, framework->Asset()->GetAllAssets())
+        if (alreadyAdded.find(pair.second) == alreadyAdded.end())
+        {
+            // If we're viewing only specific asset type, ignore non-matching assets.
+            if (!assetType.isEmpty() && assetType != pair.second->Type())
+                continue;
+            AddAsset(pair.second);
+        }
+
+    treeWidget->addTopLevelItem(noProviderItem);
+    noProviderItem->setHidden(noProviderItem->childCount() == 0);
+}
+
+void AssetsWindow::AddAsset(AssetPtr asset)
+{
+    ///\todo Check that the asset doesn't already exists
+    AssetItem *item = new AssetItem(asset);
+    AddChildren(asset, item);
+
+    connect(asset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleAssetLoaded(AssetPtr)));
+    connect(asset.get(), SIGNAL(Unloaded(IAsset *)), SLOT(HandleAssetUnloaded(IAsset *)));
+
+    bool storageFound = false;
+    AssetStoragePtr storage = asset->GetAssetStorage();
+    if (storage)
+        for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+        {
+            QTreeWidgetItem *storageItem = treeWidget->topLevelItem(i);
+            if (storageItem->text(0) == storage->ToString())
+            {
+                storageItem->addChild(item);
+                storageFound = true;
+                break;
+            }
+        }
+
+    if (!storageFound)
+        noProviderItem->addChild(item);
+
+    noProviderItem->setHidden(noProviderItem->childCount() == 0);
+}
+
+void AssetsWindow::RemoveAsset(AssetPtr asset)
+{
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
+    {
+        AssetItem *item = dynamic_cast<AssetItem *>(*it);
+        if (item && item->Asset() && item->Asset() == asset)
+        {
+            QTreeWidgetItem *parent = item->parent();
+            parent->removeChild(item);
+            SAFE_DELETE(item);
+        }
+
+        ++it;
+    }
+}
+
+void AssetsWindow::Search(const QString &filter)
+{
+    TreeWidgetSearch(treeWidget, 0, filter);
+}
+
+void AssetsWindow::Initialize()
 {
     // Init main widget
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(tr("Assets"));
+    // Append asset type if we're viewing only assets of specific type.
+    if (!assetType.isEmpty())
+        setWindowTitle(windowTitle() + ": " + assetType);
     resize(300, 400);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -67,8 +207,6 @@ AssetsWindow::AssetsWindow(Framework *fw, QWidget *parent) :
     layout->addLayout(hlayout);
     layout->addWidget(treeWidget);
 
-    PopulateTreeWidget();
-
     connect(searchField, SIGNAL(textEdited(const QString &)), SLOT(Search(const QString &)));
     connect(expandAndCollapseButton, SIGNAL(clicked()), SLOT(ExpandOrCollapseAll()));
 
@@ -77,21 +215,6 @@ AssetsWindow::AssetsWindow(Framework *fw, QWidget *parent) :
 
     connect(treeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
     connect(treeWidget, SIGNAL(itemExpanded(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
-}
-
-AssetsWindow::~AssetsWindow()
-{
-    // Disable ResizeToContents, Qt goes sometimes into eternal loop after
-    // ~AssetsWindow() if we have lots (hudreds or thousands) of items.
-    treeWidget->header()->setResizeMode(QHeaderView::Interactive);
-
-    QTreeWidgetItemIterator it(treeWidget);
-    while(*it)
-    {
-        QTreeWidgetItem *item = *it;
-        SAFE_DELETE(item);
-        ++it;
-    }
 }
 
 bool AssetsWindow::eventFilter(QObject *obj, QEvent *e)
@@ -150,93 +273,6 @@ void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
     }
 }
 
-void AssetsWindow::PopulateTreeWidget()
-{
-    treeWidget->clear();
-	alreadyAdded.clear();
-    // Create "No provider" for assets without storage.
-    noProviderItem = new QTreeWidgetItem;
-    noProviderItem->setText(0, tr("No provider"));
-
-    AssetStoragePtr defaultStorage = framework->Asset()->GetDefaultAssetStorage();
-
-    foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
-    {
-        QTreeWidgetItem *item = new QTreeWidgetItem;
-        item->setText(0, storage->ToString());
-        treeWidget->addTopLevelItem(item);
-
-        item->setData(0, Qt::UserRole, QVariant(storage->Name()));
-
-        // The current default storage is bolded.
-        if (storage == defaultStorage)
-        {
-            QFont font = item->font(0);
-            font.setBold(true);
-            item->setFont(0, font);
-        }
-    }
-
-    std::pair<QString, AssetPtr> pair;
-    foreach(pair, framework->Asset()->GetAllAssets())
-        if (alreadyAdded.find(pair.second) == alreadyAdded.end())
-            AddAsset(pair.second);
-
-    treeWidget->addTopLevelItem(noProviderItem);
-    noProviderItem->setHidden(noProviderItem->childCount() == 0);
-}
-
-void AssetsWindow::AddAsset(AssetPtr asset)
-{
-    ///\todo Check that the asset doesn't already exists
-    AssetItem *item = new AssetItem(asset);
-    AddChildren(asset, item);
-
-    connect(asset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleAssetLoaded(AssetPtr)));
-    connect(asset.get(), SIGNAL(Unloaded(IAsset *)), SLOT(HandleAssetUnloaded(IAsset *)));
-
-    bool storageFound = false;
-    AssetStoragePtr storage = asset->GetAssetStorage();
-    if (storage)
-        for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
-        {
-            QTreeWidgetItem *storageItem = treeWidget->topLevelItem(i);
-            if (storageItem->text(0) == storage->ToString())
-            {
-                storageItem->addChild(item);
-                storageFound = true;
-                break;
-            }
-        }
-
-    if (!storageFound)
-        noProviderItem->addChild(item);
-
-    noProviderItem->setHidden(noProviderItem->childCount() == 0);
-}
-
-void AssetsWindow::RemoveAsset(AssetPtr asset)
-{
-    QTreeWidgetItemIterator it(treeWidget);
-    while(*it)
-    {
-        AssetItem *item = dynamic_cast<AssetItem *>(*it);
-        if (item && item->Asset() && item->Asset() == asset)
-        {
-            QTreeWidgetItem *parent = item->parent();
-            parent->removeChild(item);
-            SAFE_DELETE(item);
-        }
-
-        ++it;
-    }
-}
-
-void AssetsWindow::Search(const QString &filter)
-{
-    TreeWidgetSearch(treeWidget, 0, filter);
-}
-
 void AssetsWindow::ExpandOrCollapseAll()
 {
     bool treeExpanded = TreeWidgetExpandOrCollapseAll(treeWidget);
@@ -247,7 +283,7 @@ void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
 {
     bool anyExpanded = false;
     QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
-    while(*iter) 
+    while(*iter)
     {
         QTreeWidgetItem *iterItem = (*iter);
         if (iterItem->isExpanded())
@@ -291,4 +327,29 @@ void AssetsWindow::HandleAssetUnloaded(IAsset *asset)
             item->MarkUnloaded(true);
         ++it;
     }
+}
+
+void AssetsWindow::PickAsset(QTreeWidgetItem *current)
+{
+    // Note: clause if <=1 cause for some reason when activating item for the first time
+    // treeWidget->selectedItems().size() returns 0, even though we should have 1.
+    if (treeWidget->selectedItems().size() <= 1 && current)
+    {
+        AssetItem *item = dynamic_cast<AssetItem  *>(current);
+        if (item && item->Asset())
+            emit AssetPicked(item->Asset());
+    }
+}
+
+void AssetsWindow::PickAssetAndClose()
+{
+    if (treeWidget->selectedItems().size() == 1)
+        PickAsset(treeWidget->currentItem());
+    close();
+}
+
+void AssetsWindow::Cancel()
+{
+    emit PickCanceled();
+    close();
 }

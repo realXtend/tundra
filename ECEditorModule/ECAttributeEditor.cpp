@@ -15,6 +15,8 @@
 #include "AssetsWindow.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
+#include "AssetAPI.h"
+#include "IAsset.h"
 
 // QtPropertyBrowser headers.
 #include <qtvariantproperty.h>
@@ -1544,9 +1546,36 @@ void AssetReferenceAttributeEditor::HandleNewEditor(LineEditWithButtons *editor)
 void AssetReferenceAttributeEditor::OpenAssetsWindow()
 {
     assert(fw);
-    AssetsWindow *assetsWindow = new AssetsWindow(fw, fw->Ui()->MainWindow());
-    assetsWindow->setWindowFlags(Qt::Tool);
-    assetsWindow->show();
+    Attribute<AssetReference> *assetRef= dynamic_cast<Attribute<AssetReference>*>(FindAttribute(components_[0].lock()));
+    if (assetRef)
+    {
+        QString assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef->Get());
+        LogInfo("Creating AssetsWindow for asset type " + assetType);
+        AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
+        connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
+        connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
+        assetsWindow->setWindowFlags(Qt::Tool);
+        assetsWindow->show();
+
+        // Save the original asset ref, if we decide to cancel
+        originalRef = assetRef->Get().ref;
+    }
+}
+
+void AssetReferenceAttributeEditor::HandleAssetPicked(AssetPtr asset)
+{
+    if (asset)
+    {
+        LogInfo("AssetReferenceAttributeEditor: Setting new value " + asset->Name());
+        SetValue(AssetReference(asset->Name()));
+        Update();
+        ///\todo multi-edit
+    }
+}
+
+void AssetReferenceAttributeEditor::RestoreOriginalValue()
+{
+    SetValue(AssetReference(originalRef));
 }
 
 //-------------------------ASSETREFERENCELIST ATTRIBUTE TYPE-------------------------
@@ -1622,7 +1651,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
             rootProperty_->addSubProperty(childProperty);
 
             Update();
-            QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
 
         owner_->setFactoryForManager(stringManager, lineEditFactory);
