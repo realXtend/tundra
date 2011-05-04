@@ -90,6 +90,10 @@
 #include "EC_Billboard.h"
 #endif
 
+#ifdef EC_ParticleSystem_ENABLED
+#include "EC_ParticleSystem.h"
+#endif
+
 #ifdef EC_QmlApp_ENABLED
 #include "EC_QmlApp.h"
 #include "QmlAsset.h"
@@ -153,7 +157,7 @@ void TundraLogicModule::Load()
 //#ifdef EC_Name_ENABLED
     DECLARE_MODULE_EC(EC_Name);
 //#endif
-#ifdef EC_Movable_ENABLED
+#ifdef EC_ParticleSystem_ENABLED
     DECLARE_MODULE_EC(EC_ParticleSystem);
 #endif
 #ifdef EC_Sound_ENABLED

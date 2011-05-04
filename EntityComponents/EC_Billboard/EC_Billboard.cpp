@@ -40,6 +40,7 @@ EC_Billboard::EC_Billboard(IModule *module) :
 {
     materialAsset_ = AssetRefListenerPtr(new AssetRefListener());
     connect(materialAsset_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+    connect(materialAsset_.get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
     
     connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
@@ -221,5 +222,11 @@ void EC_Billboard::OnMaterialAssetLoaded(AssetPtr asset)
     
     if (billboardSet_)
         billboardSet_->setMaterialName(material->getName());
+}
+
+void EC_Billboard::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
+{
+    if (billboardSet_)
+        billboardSet_->setMaterialName("AssetLoadError");
 }
 

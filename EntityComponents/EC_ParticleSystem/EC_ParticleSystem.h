@@ -8,6 +8,7 @@
 #include "Declare_EC.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
+#include "AssetRefListener.h"
 
 /// Particle system.
 /**
@@ -76,7 +77,8 @@ public slots:
 
 private slots:
     void OnAttributeUpdated(IAttribute *attribute);
-    void ParticleSystemAssetLoaded();
+    void OnParticleAssetLoaded(AssetPtr asset);
+    void OnParticleAssetFailed(IAssetTransfer* transfer, QString reason);
     void EntitySet();
     void OnComponentRemoved(IComponent *component, AttributeChange::Type change);
     
@@ -86,7 +88,9 @@ private:
 
     OgreRenderer::RendererWeakPtr renderer_;
     std::vector<Ogre::ParticleSystem*> particleSystems_;
-    Ogre::SceneNode* node_;
+    
+    /// Asset ref listener for the particle asset
+    AssetRefListenerPtr particleAsset_;
 };
 
 #endif

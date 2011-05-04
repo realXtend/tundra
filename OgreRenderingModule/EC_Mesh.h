@@ -402,6 +402,9 @@ private slots:
     /// Called when material asset has been downloaded.
     void OnMaterialAssetLoaded(AssetPtr material);
 
+    /// Called when loading a material asset failed
+    void OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason);
+
 private:
     /// constructor
     /** \param module renderer module

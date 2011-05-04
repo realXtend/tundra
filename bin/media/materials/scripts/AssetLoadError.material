@@ -1,0 +1,17 @@
+// Error material
+material AssetLoadError
+{
+	technique
+	{
+		pass
+		{
+		    lighting off
+		    
+            texture_unit
+		    {
+    		    filtering none
+                texture AssetLoadError.png
+            }
+        }
+    }
+}

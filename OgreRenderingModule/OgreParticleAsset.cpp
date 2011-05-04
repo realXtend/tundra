@@ -14,8 +14,6 @@
 
 using namespace OgreRenderer;
 
-void ModifyVectorParameter(Ogre::String& line, std::vector<Ogre::String>& line_vec);
-
 OgreParticleAsset::~OgreParticleAsset()
 {
     Unload();
@@ -82,9 +80,6 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 			line_vec[i] = vec[i];
 #endif               
 
-                // Check for vector parameters to be modified, so that particle scripts can be authored in typical Ogre coord system
-                ModifyVectorParameter(line, line_vec);
-
                 // Process opening/closing braces
                 if (!ProcessBraces(line, brace_level))
                 {
@@ -112,13 +107,13 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                         }
                         // Check for material definition
                         else if (line_vec[0] == "material")
-                        {             
+                        {
                             if (line_vec.size() >= 2)
                             {
-                                // Tundra: we only support material refs in particle scripts
                                 std::string mat_name = line_vec[1];
-                                references_.push_back(AssetReference(assetAPI->ResolveAssetRef(Name(), mat_name.c_str())));
-                                line = "material " + SanitateAssetIdForOgre(mat_name);
+                                AssetReference assetRef(assetAPI->ResolveAssetRef(Name(), mat_name.c_str()));
+                                references_.push_back(assetRef);
+                                line = "material " + SanitateAssetIdForOgre(assetRef.ref);
                             }
                         }
                     }
@@ -203,37 +198,5 @@ void OgreParticleAsset::RemoveTemplates()
         } catch(...) {}
     }
     templates_.clear();
-}
-
-void ModifyVectorParameter(Ogre::String& line, std::vector<Ogre::String>& line_vec)
-{
-    static const std::string modify_these[] = {"position", "direction", "force_vector", "common_direction", "common_up_vector", "plane_point", "plane_normal", ""};
-    
-    // Line should consist of the command & 3 values
-    if (line_vec.size() != 4)
-        return;
-    
-    for(uint i = 0; modify_these[i].length(); ++i)
-    {
-        if (line_vec[0] == modify_these[i])
-        {   
-            try
-            {
-                float x = ParseString<float>(line_vec[1]);
-                float y = ParseString<float>(line_vec[2]);
-                float z = ParseString<float>(line_vec[3]);
-
-                // For compatibility with old rex assets, the Z coord has to be reversed
-                std::stringstream s;
-                s << line_vec[0] << " " << x << " " << y << " " << -z;
-                // Write back the modified string
-                line = s.str();
-            }
-            catch(...)
-            {
-            }
-            return;
-        }        
-    }
 }
 

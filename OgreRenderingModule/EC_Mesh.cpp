@@ -978,6 +978,7 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
         for(int i = 0; i < materials.Size(); ++i)
         {
             connect(materialAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+            connect(materialAssets[i].get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
             materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].ref);
         }
     }
@@ -1121,6 +1122,18 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
             meshRef.Get().ref.toStdString() + ", but no submesh refers to the given material! The references are: ");
         for(int i = 0; i < materialList.Size(); ++i)
             LogWarning(QString::number(i).toStdString() + ": " + materialList[i].ref.toStdString());
+    }
+}
+
+void EC_Mesh::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
+{
+    // Check which of the material(s) match the failed ref
+    AssetReferenceList materialList = meshMaterial.Get();
+    for(int i = 0; i < materialList.Size(); ++i)
+    {
+        QString absoluteRef = framework_->Asset()->ResolveAssetRef("", materialList[i].ref);
+        if (absoluteRef == transfer->source.ref)
+            SetMaterial(i, QString("AssetLoadError"));
     }
 }
 

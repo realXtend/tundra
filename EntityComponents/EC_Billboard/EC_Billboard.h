@@ -80,7 +80,7 @@ class EC_Billboard : public IComponent
     DECLARE_EC(EC_Billboard);
 
 private:
-    /// Constuctor.
+    /// Constructor.
     /// @param module Module.
     explicit EC_Billboard(IModule *module);
 
@@ -138,6 +138,9 @@ private slots:
     
     /// Called when material asset has been downloaded.
     void OnMaterialAssetLoaded(AssetPtr material);
+    
+    /// Called when material asset failed to load
+    void OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason);
     
 private:
     /// Create billboardset & billboard
