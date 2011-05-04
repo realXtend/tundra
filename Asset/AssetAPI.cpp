@@ -833,6 +833,11 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
 {
     context = context.trimmed();
 
+    // First see if we have an exact match for the ref to an existing asset.
+    AssetMap::iterator iter = assets.find(assetRef);
+    if (iter != assets.end())
+        return assetRef; // Use the ref as-is, there's an existing asset to map this string to.
+
     // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
     QString assetPath;
     QString namedStorage;
@@ -969,6 +974,10 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
         LogError("AssetAPI:CreateNewAsset: IAssetTypeFactory::CreateEmptyAsset(type \"" + type + "\", name: \"" + name + "\") failed to create asset!");
         return AssetPtr();
     }
+
+    // Remember this asset in the global AssetAPI storage.
+    assets[name] = asset;
+
     return asset;
 }
 
@@ -983,10 +992,15 @@ AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
 
 AssetPtr AssetAPI::GetAsset(QString assetRef)
 {
-    // Normalize and resolve the lookup of the given asset.
+    // First try to see if the ref has an exact match.
+    AssetMap::iterator iter = assets.find(assetRef);
+    if (iter != assets.end())
+        return iter->second;
+
+    // If not, normalize and resolve the lookup of the given asset.
     assetRef = ResolveAssetRef("", assetRef);
 
-    AssetMap::iterator iter = assets.find(assetRef);
+    iter = assets.find(assetRef);
     if (iter != assets.end())
         return iter->second;
     return AssetPtr();
@@ -1108,14 +1122,6 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         return;
     }
 
-    // Remember the newly created asset in AssetAPI's internal data structure to allow clients to later fetch it without re-requesting it.
-    AssetMap::iterator iter2 = assets.find(transfer->source.ref);
-    if (iter2 != assets.end())
-    {
-        AssetPtr existing = iter2->second;
-        LogWarning("AssetAPI: Overwriting a previously downloaded asset \"" + existing->Name() + "\", type \"" + existing->Type() + "\" with asset of same name!");
-    }
-    assets[transfer->source.ref] = transfer->asset;
     if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
         diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
     emit AssetCreated(transfer->asset);
