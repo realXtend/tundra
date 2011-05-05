@@ -33,7 +33,7 @@
 
 #include <QtScript>
 
-namespace jsprofiler {
+namespace JsProfiler {
 
 class Action {
 public:

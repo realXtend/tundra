@@ -113,9 +113,9 @@ namespace Environment
         void SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, uint texture_index);
 
         //! Change new terrain height value,
-        /** @Param start_height what height texture starts at (meters).
-            @Param height_range how many meters texture will go up from the texture_start_height 
-            @Param corner what texture height we want to change.
+        /** @param start_height what height texture starts at (meters).
+            @param height_range how many meters texture will go up from the texture_start_height 
+            @param corner what texture height we want to change.
             @todo Seems like older OpenSim server (tested 0.6.5) won't inform all the users that terrain heights has been updated,
             if needed add custom code that will Request a new ReqionInfo message from the server. 
             That message contain all the information related to environment like terrain and water.

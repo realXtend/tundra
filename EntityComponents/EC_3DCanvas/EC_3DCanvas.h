@@ -36,12 +36,14 @@ class QTimer;
 <tr>
 <td>
 <h2>3DCanvas</h2>
-Makes the entity a light source.
+
+\note This component will not sync to network, it is made for local rendering use. It is also not meant to be used directly from the entity-component editor, as you need to pass QWidget* etc for it to do anything. Other components utilizes it when they need QWidget painting done to a 3D object. 
+
+Paints UI widgets on to a 3D object surface via EC_Mesh and a submesh index. So a EC_Mesh needs to be present on the entity this component is used.
 
 Registered by RexLogic::RexLogicModule.
 
 <b>No Attributes</b>
-
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
