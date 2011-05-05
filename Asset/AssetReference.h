@@ -55,7 +55,7 @@ struct AssetReferenceList
     /// Subscript operator. If index @c i is invalid and empty AssetReference is returned.
     AssetReference operator[] (int i)
     {
-        assert(i > 0 || i < refs.size());
+        assert(i >= 0 || i < refs.size());
         if (i < 0 || i > refs.size())
             return AssetReference();
         else
@@ -65,7 +65,7 @@ struct AssetReferenceList
     /// This is an overloaded function.
     AssetReference operator[] (int i) const
     {
-        assert(i > 0 || i < refs.size());
+        assert(i >= 0 || i < refs.size());
         if (i < 0 || i > refs.size())
             return AssetReference();
         else
