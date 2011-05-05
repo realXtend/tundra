@@ -36,9 +36,13 @@ public:
 
     /// Specifies the URL of the asset that is being pointed to.
     QString ref;
+
     /// Specifies the type of the asset to load from that URL. If "", the type is interpreted directly from the ref string.
-    /// Not all asset types can support this kind of interpretation. For example, avatar assets are of type .xml, which can
-    /// only be distinguished from generic xml files by explicitly specifying the type here.
+    /** Not all asset types can support this kind of interpretation. For example, avatar assets are of type .xml, which can
+        only be distinguished from generic xml files by explicitly specifying the type here.
+
+        @sa AssetAPI::GetResourceTypeFromAssetRef()
+    */
     QString type;
 };
 
@@ -47,6 +51,11 @@ struct AssetReferenceList
 {
     /// Default constructor.
     AssetReferenceList() {}
+
+    /// Constructor.
+    /** @param type Preferred asset type for the list.
+    */
+    AssetReferenceList(const QString &type) { this->type = type; }
 
     /// Removes the last item in the list.
     /** The list must not be empty. If the list can be empty, call IsEmpty() before calling this function.
@@ -98,6 +107,12 @@ struct AssetReferenceList
 
     /// List of asset references.
     QVariantList refs;
+
+    /// Preferred type for asset refs in the list
+    /** @sa AssetReference::type;
+        @sa AssetAPI::GetResourceTypeFromAssetRef()
+    */
+    QString type;
 };
 
 Q_DECLARE_METATYPE(AssetReference)

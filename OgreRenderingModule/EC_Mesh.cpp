@@ -29,7 +29,7 @@ EC_Mesh::EC_Mesh(IModule* module) :
     nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(0,0,0),Vector3df(1,1,1))),
     meshRef(this, "Mesh ref"),
     skeletonRef(this, "Skeleton ref"),
-    meshMaterial(this, "Mesh materials"),
+    meshMaterial(this, "Mesh materials", AssetReferenceList("OgreMaterial")),
     drawDistance(this, "Draw distance", 0.0f),
     castShadows(this, "Cast shadows", false),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),

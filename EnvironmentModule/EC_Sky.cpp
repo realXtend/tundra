@@ -25,36 +25,36 @@ namespace Environment
 EC_Sky::EC_Sky(IModule *module) :
     IComponent(module->GetFramework()),
     materialRef(this, "Material", AssetReference("RexSkyBox")), ///< \todo Add "ogre://" when AssetAPI can handle it.
-    textureRefs(this, "Texture"),
+    textureRefs(this, "Texture", AssetReferenceList("Texture")),
     orientation(this, "Orientation", Quaternion()),
     distance(this, "Distance",50.0),
     drawFirst(this, "Draw first", true)
 {
-     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
-     static AttributeMetadata materialRefMetadata;
-     AttributeMetadata::ButtonInfoList materialRefButtons;
-     materialRefButtons.push_back(AttributeMetadata::ButtonInfo(materialRef.GetName(), "V", "View"));
-     materialRefMetadata.buttons = materialRefButtons;
-     materialRef.SetMetadata(&materialRefMetadata);
+    static AttributeMetadata materialRefMetadata;
+    AttributeMetadata::ButtonInfoList materialRefButtons;
+    materialRefButtons.push_back(AttributeMetadata::ButtonInfo(materialRef.GetName(), "V", "View"));
+    materialRefMetadata.buttons = materialRefButtons;
+    materialRef.SetMetadata(&materialRefMetadata);
 
-     // Find out default textures.
-     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
+    // Find out default textures.
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
-     StringVector names;
-     Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
-     if (materialPtr.get() != 0)
-     {
-         OgreRenderer::GetTextureNamesFromMaterial(materialPtr, names);
-         AssetReferenceList lst;
-         if (names.size() == cSkyBoxTextureCount)
-         {
+    StringVector names;
+    Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
+    if (materialPtr.get() != 0)
+    {
+        OgreRenderer::GetTextureNamesFromMaterial(materialPtr, names);
+        AssetReferenceList lst;
+        if (names.size() == cSkyBoxTextureCount)
+        {
             // This code block is not currently working, but if for some reason GetTextureNamesFromMaterial understands cubic_textures this codeblock is runned
             for(int i = 0; i < cSkyBoxTextureCount; ++i)
                 lst.Append(AssetReference(names[i].c_str()));
-         }
-         else
-         {
+        }
+        else
+        {
             // Add default values, hardcoded
             /// HACK use hardcoded-values because ogre textureunit state class cannot find out texture names for cubic_texture type.
             lst.Append(AssetReference(names[0].c_str()));
@@ -63,10 +63,10 @@ EC_Sky::EC_Sky(IModule *module) :
             lst.Append(AssetReference("rex_sky_right.dds"));
             lst.Append(AssetReference("rex_sky_top.dds"));
             lst.Append(AssetReference("rex_sky_bot.dds"));
-         }
+    }
 
-        textureRefs.Set(lst, AttributeChange::LocalOnly);
-     }
+    textureRefs.Set(lst, AttributeChange::LocalOnly);
+    }
 
     // Disable old sky.
     // DisableSky();
@@ -78,23 +78,21 @@ EC_Sky::EC_Sky(IModule *module) :
     lastDrawFirst_ = drawFirst.Get();
 
     while(textureAssets.size() < cSkyBoxTextureCount)
-        textureAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
-
+    textureAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
 
     for(int i = 0; i < cSkyBoxTextureCount; ++i)
-        {
-            connect(textureAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnTextureAssetLoaded(AssetPtr)), Qt::UniqueConnection);
-            //materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].ref);
-        }
-   
+    {
+        connect(textureAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnTextureAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+        //materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].ref);
+    }
 }
 
 EC_Sky::~EC_Sky()
 {
     DisableSky();
     renderer_.reset();
-     
-   while(textureAssets.size() > cSkyBoxTextureCount)
+
+    while(textureAssets.size() > cSkyBoxTextureCount)
         textureAssets.pop_back();
 }
 
@@ -223,7 +221,6 @@ void EC_Sky::OnAttributeUpdated(IAttribute* attribute)
             textureAssets[i]->HandleAssetRefChange(framework_->Asset(), textures[i].ref);
         }
 
-     
         //SetTextures();
     }
 }
