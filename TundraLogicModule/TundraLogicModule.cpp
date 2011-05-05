@@ -8,6 +8,8 @@
 #include "Server.h"
 #include "SceneImporter.h"
 #include "SyncManager.h"
+#include "PhysicsModule.h"
+#include "PhysicsWorld.h"
 
 #include "SceneAPI.h"
 #include "AssetAPI.h"
@@ -334,6 +336,11 @@ void TundraLogicModule::LoadStartupScene()
     if (!scene)
     {
         scene = framework_->Scene()->CreateScene("TundraServer", true);
+
+        // Create physics world for the startup scene
+        Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
+        physics->CreatePhysicsWorldForScene(scene, false);
+        
         framework_->Scene()->SetDefaultScene(scene);
     }
     
