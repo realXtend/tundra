@@ -16,11 +16,15 @@
 #include "ConsoleAPI.h"
 #include "Application.h"
 
+#include "KristalliProtocolModule.h"
 #include "TundraLogicModule.h"
+#include "TundraMessages.h"
 #include "Client.h"
 #include "Server.h"
 #include "UserConnectedResponseData.h"
 #include "UserConnection.h"
+#include "MsgAssetDeleted.h"
+#include "MsgAssetDiscovery.h"
 
 #include "kNetBuildConfig.h"
 #include "kNet/MessageConnection.h"
@@ -42,10 +46,14 @@ namespace Asset
     {
         boost::shared_ptr<HttpAssetProvider> http = boost::shared_ptr<HttpAssetProvider>(new HttpAssetProvider(framework_));
         framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(http));
-
+        
         boost::shared_ptr<LocalAssetProvider> local = boost::shared_ptr<LocalAssetProvider>(new LocalAssetProvider(framework_));
         framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(local));
-
+        
+        // Connect to delete messages of the providers to be able to broadcast asset deletion messages
+        connect(http.get(), SIGNAL(AssetDeletedFromStorage(const QString&)), this, SLOT(OnAssetDeleted(const QString&)));
+        connect(local.get(), SIGNAL(AssetDeletedFromStorage(const QString&)), this, SLOT(OnAssetDeleted(const QString&)));
+        
         QString systemAssetDir = Application::InstallationDirectory() + "data/assets";
         local->AddStorageDirectory(systemAssetDir, "System", true);
         // Set asset dir as also as AssetAPI property
@@ -90,6 +98,13 @@ namespace Asset
         TundraLogic::Client *client = framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient().get();
         QObject::connect(client, SIGNAL(Connected(UserConnectedResponseData *)), this, SLOT(ClientConnectedToServer(UserConnectedResponseData *)));
         QObject::connect(client, SIGNAL(Disconnected()), this, SLOT(ClientDisconnectedFromServer()));
+        
+        KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+        connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
+            this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
+
+        // Connect to asset uploads to be able to broadcast asset discovery messages
+        connect(framework_->Asset(), SIGNAL(AssetUploaded(const QString &)), this, SLOT(OnAssetUploaded(const QString &)));
     }
 
     void AssetModule::ProcessCommandLineOptions()
@@ -248,6 +263,138 @@ namespace Asset
         }
         storagesReceivedFromServer.clear();
     }
+
+    void AssetModule::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
+    {
+        switch (id)
+        {
+        case cAssetDiscoveryMessage:
+            {
+                MsgAssetDiscovery msg(data, numBytes);
+                HandleAssetDiscovery(source, msg);
+            }
+            break;
+        case cAssetDeletedMessage:
+            {
+                MsgAssetDeleted msg(data, numBytes);
+                HandleAssetDeleted(source, msg);
+            }
+            break;
+        }
+    }
+
+    void AssetModule::HandleAssetDiscovery(kNet::MessageConnection* source, MsgAssetDiscovery& msg)
+    {
+        QString assetRef = QString::fromStdString(BufferToString(msg.assetRef));
+        QString assetType = QString::fromStdString(BufferToString(msg.assetType));
+        
+        // Check for possible malicious discovery message and ignore it. Otherwise let AssetAPI handle
+        if (!framework_->Asset()->ShouldReplicateAssetDiscovery(assetRef))
+            return;
+        
+        // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
+        TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
+        KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+        bool isServer = tundra->IsServer();
+        
+        if (isServer)
+        {
+            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+            {
+                if (userConn->connection != source)
+                    userConn->connection->Send(msg);
+            }
+        }
+        
+        // Then let assetAPI handle locally
+        framework_->Asset()->HandleAssetDiscovery(assetRef, assetType);
+    }
+
+    void AssetModule::HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDeleted& msg)
+    {
+        QString assetRef = QString::fromStdString(BufferToString(msg.assetRef));
+        
+        // Check for possible malicious delete message and ignore it. Otherwise let AssetAPI handle
+        if (!framework_->Asset()->ShouldReplicateAssetDiscovery(assetRef))
+            return;
+        
+        // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
+        TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
+        KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+        bool isServer = tundra->IsServer();
+        
+        if (isServer)
+        {
+            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+            {
+                if (userConn->connection != source)
+                    userConn->connection->Send(msg);
+            }
+        }
+        
+        // Then let assetAPI handle locally
+        framework_->Asset()->HandleAssetDeleted(assetRef);
+    }
+
+    void AssetModule::OnAssetUploaded(const QString& assetRef)
+    {
+        // Check whether the asset upload needs to be replicated
+        if (!framework_->Asset()->ShouldReplicateAssetDiscovery(assetRef))
+            return;
+        
+        TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
+        KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+        
+        bool isServer = tundra->IsServer();
+        
+        MsgAssetDiscovery msg;
+        msg.assetRef = StringToBuffer(assetRef.toStdString());
+        /// \todo Would preferably need the assettype as well
+        
+        // If we are server, send to everyone
+        if (isServer)
+        {
+            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+                userConn->connection->Send(msg);
+        }
+        // If we are client, send to server
+        else
+        {
+            kNet::MessageConnection* connection = tundra->GetClient()->GetConnection();
+            if (connection)
+                connection->Send(msg);
+        }
+    }
+
+    void AssetModule::OnAssetDeleted(const QString& assetRef)
+    {
+        // Check whether the asset delete needs to be replicated
+        if (!framework_->Asset()->ShouldReplicateAssetDiscovery(assetRef))
+            return;
+        
+        TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
+        KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+        
+        bool isServer = tundra->IsServer();
+        
+        MsgAssetDeleted msg;
+        msg.assetRef = StringToBuffer(assetRef.toStdString());
+        
+        // If we are server, send to everyone
+        if (isServer)
+        {
+            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+                userConn->connection->Send(msg);
+        }
+        // If we are client, send to server
+        else
+        {
+            kNet::MessageConnection* connection = tundra->GetClient()->GetConnection();
+            if (connection)
+                connection->Send(msg);
+        }
+    }
+
 }
 
 void SetProfiler(Profiler *profiler)

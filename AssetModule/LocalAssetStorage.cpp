@@ -119,7 +119,7 @@ void LocalAssetStorage::RefreshAssetRefs()
     {
     }
     
-    emit AssetRefsChanged();
+    emit AssetRefsChanged(this->shared_from_this());
 }
 
 QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)

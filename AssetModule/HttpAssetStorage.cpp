@@ -133,7 +133,7 @@ void HttpAssetStorage::OnHttpTransferFinished(QNetworkReply *reply)
     
     // If no outstanding searches, asset discovery is done
     if (searches.empty())
-        emit AssetRefsChanged();
+        emit AssetRefsChanged(this->shared_from_this());
 }
 
 void HttpAssetStorage::AddAssetRef(const QString& ref)
@@ -141,7 +141,7 @@ void HttpAssetStorage::AddAssetRef(const QString& ref)
     if (!assetRefs.contains(ref))
     {
         assetRefs.push_back(ref);
-        emit AssetRefsChanged();
+        emit AssetRefsChanged(this->shared_from_this());
     }
 }
 
@@ -150,6 +150,6 @@ void HttpAssetStorage::DeleteAssetRef(const QString& ref)
     if (assetRefs.contains(ref))
     {
         assetRefs.removeAll(ref);
-        emit AssetRefsChanged();
+        emit AssetRefsChanged(this->shared_from_this());
     }
 }

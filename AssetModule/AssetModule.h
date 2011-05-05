@@ -8,12 +8,20 @@
 #include <QObject>
 #include "ConsoleCommandUtils.h"
 
-struct UserConnectedResponseData;
-class UserConnection;
-
 #include "IAssetProvider.h"
 #include "AssetModuleApi.h"
 #include "ConsoleCommand.h"
+
+struct MsgAssetDiscovery;
+struct MsgAssetDeleted;
+struct UserConnectedResponseData;
+class UserConnection;
+
+namespace kNet
+{
+    class MessageConnection;
+    typedef unsigned long message_id_t;
+}
 
 namespace Asset
 {
@@ -59,9 +67,25 @@ namespace Asset
         void ServerNewUserConnected(int connectionID, UserConnection *connection, UserConnectedResponseData *responseData);
         /// If we are the client, this function gets called when we connect to a server. Adds all storages received from the server to our storage list.
         void ClientConnectedToServer(UserConnectedResponseData *responseData);
-        /// If we are the client, this functio gets called when we disconnected. Removes all storages received from the server from our storage list.
+        /// If we are the client, this function gets called when we disconnected. Removes all storages received from the server from our storage list.
         void ClientDisconnectedFromServer();
 
+    private slots:
+        /// Handles a Kristalli protocol message. Used for AssetDiscovery & AssetDeleted messages
+        void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
+        
+        /// Handle incoming asset discovery message.
+        void HandleAssetDiscovery(kNet::MessageConnection* source, MsgAssetDiscovery& msg);
+        
+        /// Handle incoming asset deleted message.
+        void HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDeleted& msg);
+        
+        /// Asset uploaded. Send AssetDiscovery network message
+        void OnAssetUploaded(const QString& assetRef);
+    
+        /// Asset deleted from a storage. Send AssetDeleted network message
+        void OnAssetDeleted(const QString& assetRef);
+        
     private:
         void ProcessCommandLineOptions();
 

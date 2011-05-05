@@ -63,13 +63,13 @@ public:
     /// Return the network access manager
     QNetworkAccessManager* GetNetworkAccessManager() { return networkAccessManager; }
     
+signals:
+    /// The asset provider deleted an asset from storage
+    void AssetDeletedFromStorage(const QString& assetRef);
+    
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
     
-    void OnAssetDiscovered(const QString& ref, const QString& assetType);
-
-    void OnAssetDeleted(const QString& ref);
-
 private:
     Framework *framework;
     

@@ -60,6 +60,10 @@ namespace Asset
 
         QString GenerateUniqueStorageName() const;
 
+    signals:
+        /// The asset provider deleted an asset from storage
+        void AssetDeletedFromStorage(const QString& assetRef);
+    
     private:
 
         /// Finds a path where the file localFilename can be found. Searches through all local storages.

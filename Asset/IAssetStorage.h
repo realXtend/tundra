@@ -50,7 +50,7 @@ public slots:
 
 signals:
     /// Asset refs have changed, either as a result of refresh, or upload / delete
-    void AssetRefsChanged();
+    void AssetRefsChanged(AssetStoragePtr storage);
 };
 
 #endif

@@ -101,6 +101,11 @@ AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &stora
             if (s.contains("default") && ParseBool(s["default"]))
                 SetDefaultAssetStorage(assetStorage);
 
+            // Connect to the asset storage's refs refreshed signal, so that we can create actual empty assets from its refs
+            connect(assetStorage.get(), SIGNAL(AssetRefsChanged(AssetStoragePtr)), this, SLOT(OnAssetStorageRefsChanged(AssetStoragePtr)), Qt::UniqueConnection);
+            // Get refs right now in case the storage already has them
+            OnAssetStorageRefsChanged(assetStorage),
+            
             emit AssetStorageAdded(assetStorage);
             return assetStorage;
         }
@@ -936,10 +941,13 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
         LogError("AssetAPI:CreateNewAsset: IAssetTypeFactory::CreateEmptyAsset(type \"" + type + "\", name: \"" + name + "\") failed to create asset!");
         return AssetPtr();
     }
+    assert(asset->IsEmpty());
 
     // Remember this asset in the global AssetAPI storage.
     assets[name] = asset;
 
+    emit AssetCreated(asset);
+    
     return asset;
 }
 
@@ -1082,7 +1090,6 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
         diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
-    emit AssetCreated(transfer->asset);
 
     // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
     RequestAssetDependencies(transfer->asset);
@@ -1242,6 +1249,15 @@ std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
     return dependents;
 }
 
+bool AssetAPI::ShouldReplicateAssetDiscovery(const QString& assetRef)
+{
+    AssetAPI::AssetRefType type = ParseAssetRef(assetRef);
+    if ((type == AssetAPI::AssetRefInvalid) || (type == AssetAPI::AssetRefLocalPath) || (type == AssetAPI::AssetRefLocalUrl) || (type == AssetAPI::AssetRefRelativePath))
+        return false;
+    else
+        return true;
+}
+
 int AssetAPI::NumPendingDependencies(AssetPtr asset)
 {
     int numDependencies = 0;
@@ -1283,14 +1299,31 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
     return numDependencies;
 }
 
-void AssetAPI::EmitAssetDiscovered(const QString& assetRef, const QString& assetType)
+void AssetAPI::HandleAssetDiscovery(const QString &assetRef, const QString &assetType)
 {
-    emit AssetDiscovered(assetRef, assetType);
+    AssetPtr existing = GetAsset(assetRef);
+    // If asset did not exist, create new empty asset
+    if (!existing)
+    {
+        // If assettype is empty, guess it
+        QString newType = assetType;
+        if (newType.isEmpty())
+            newType = GetResourceTypeFromAssetRef(assetRef);
+        CreateNewAsset(newType, assetRef);
+    }
+    // If asset exists and is already loaded, forcibly request updated data
+    else if (existing->IsLoaded())
+        RequestAsset(assetRef, assetType, true);
 }
 
-void AssetAPI::EmitAssetDeleted(const QString& assetRef)
+void AssetAPI::HandleAssetDeleted(const QString &assetRef)
 {
-    emit AssetDeleted(assetRef);
+    // If the asset is unloaded, delete it from memory. If it is loaded, it might be in use, so do nothing
+    AssetPtr existing = GetAsset(assetRef);
+    if (!existing)
+        return;
+    if (!existing->IsLoaded())
+        ForgetAsset(existing, false);
 }
 
 QMap<QString, QString> AssetAPI::ParseAssetStorageString(QString storageString)
@@ -1339,6 +1372,8 @@ void AssetAPI::OnAssetLoaded(AssetPtr asset)
 
 void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
 {
+    LogInfo("OnAssetDiskSourceChanged " + path_);
+    
     QDir path(path_);
     for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
     {
@@ -1355,6 +1390,19 @@ void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
             else
                 LogDebug("Reloaded changed asset \"" + asset->ToString() + "\" from file \"" + path_ + "\".");
         }
+    }
+}
+
+void AssetAPI::OnAssetStorageRefsChanged(AssetStoragePtr storage)
+{
+    QStringList refs = storage->GetAllAssetRefs();
+    
+    for (int i = 0; i < refs.size(); ++i)
+    {
+        // If the asset does not exist at all, create a new empty asset.
+        // However, if the asset already exists, do not refresh its data now (as we may be getting a huge amount of refs)
+        if (!GetAsset(refs[i]))
+            HandleAssetDiscovery(refs[i], "");
     }
 }
 

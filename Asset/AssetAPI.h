@@ -321,12 +321,15 @@ public slots:
     /// An utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
     int NumPendingDependencies(AssetPtr asset);
 
-    /// Emit AssetDiscovered signal
-    void EmitAssetDiscovered(const QString &assetRef, const QString &assetType);
+    /// Utility function that checks whether an asset ref's discovery or deletion should be replicated
+    bool ShouldReplicateAssetDiscovery(const QString &assetRef);
     
-    /// Emit AssetDeleted signal
-    void EmitAssetDeleted(const QString &assetRef);
+    /// Handle discovery of a new asset through the AssetDiscovery network message
+    void HandleAssetDiscovery(const QString &assetRef, const QString &assetType);
 
+    /// Handle deletion of an asset through the AssetDeleted network message
+    void HandleAssetDeleted(const QString &assetRef);
+    
 public:
     /// Explodes the given asset storage description string to key-value pairs.
     static QMap<QString, QString> ParseAssetStorageString(QString storageString);
@@ -347,12 +350,6 @@ signals:
 
     /// Emitted when an asset storage has been added
     void AssetStorageAdded(AssetStoragePtr storage);
-
-    /// Emitted when a new assetref has been discovered through the AssetDiscovery network message
-    void AssetDiscovered(const QString &assetRef, const QString &assetType);
-
-    /// Emitted when an asset is successfully deleted from storage. It is the providers' responsibility to make the AssetAPI emit this signal
-    void AssetDeleted(const QString &assetRef);
     
     /// Emitted when the contents of an asset disk source has changed. ///\todo Implement.
  //   void AssetDiskSourceChanged(AssetPtr asset);
@@ -366,6 +363,9 @@ private slots:
 
     /// The Asset API reloads all assets from file when their disk source contents change.
     void OnAssetDiskSourceChanged(const QString &path);
+    
+    /// An asset storage refreshed its references. Create empty assets from the new refs as necessary
+    void OnAssetStorageRefsChanged(AssetStoragePtr storage);
 
 private:
     bool isHeadless_;

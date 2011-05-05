@@ -27,7 +27,6 @@ namespace Asset
 LocalAssetProvider::LocalAssetProvider(Framework* framework_)
 :framework(framework_)
 {
-    /// \Todo: react to AssetDiscovered & AssetDeleted like HttpAssetProvider does
 }
 
 LocalAssetProvider::~LocalAssetProvider()
@@ -126,7 +125,7 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
         QFile::remove(assetRef); ///\todo Check here that the assetRef points to one of the accepted storage directories, and don't allow deleting anything else.
     
     LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
-    framework->Asset()->EmitAssetDeleted(assetRef);
+    emit AssetDeletedFromStorage(assetRef);
 }
 
 bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
@@ -163,9 +162,11 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &dire
     storage->SetupWatcher(); // Start listening on file change notifications.
 //    connect(storage->changeWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(FileChanged(QString)));
 //    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
-
     storages.push_back(storage);
 
+    // Make the storage refresh itself immediately.
+    storage->RefreshAssetRefs();
+    
     return storage;
 }
 
