@@ -12,6 +12,7 @@
 #include "AddContentWindow.h"
 #include "SupportedFileTypes.h"
 #include "RequestNewAssetDialog.h"
+#include "CloneAssetDialog.h"
 
 #include "AssetsWindow.h"
 #include "SceneAPI.h"
@@ -186,6 +187,10 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
 
         menu->addSeparator();
+
+        QAction *cloneAction = new QAction(tr("Clone..."), menu);
+        menu->addAction(cloneAction);
+        connect(cloneAction, SIGNAL(triggered()), SLOT(Clone()));
 
         QAction *exportAction = new QAction(tr("Export..."), menu);
         menu->addAction(exportAction);
@@ -388,6 +393,30 @@ void AssetTreeWidget::Export()
     {
         QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
+}
+
+void AssetTreeWidget::Clone()
+{
+    QList<AssetItem *> sel = GetSelection();
+    if (sel.isEmpty())
+        return;
+
+    CloneAssetDialog *dialog = new CloneAssetDialog(sel.first()->Asset(), framework->Asset(), this);
+    connect(dialog, SIGNAL(finished(int)), SLOT(CloneAssetDialogClosed(int)));
+    dialog->show();
+}
+
+void AssetTreeWidget::CloneAssetDialogClosed(int result)
+{
+    CloneAssetDialog *dialog = qobject_cast<CloneAssetDialog *>(sender());
+    if (!dialog)
+        return;
+
+    if (result != QDialog::Accepted)
+        return;
+
+    if (dialog->Asset().lock())
+        dialog->Asset().lock()->Clone(dialog->NewName());
 }
 
 void AssetTreeWidget::SaveAssetDialogClosed(int result)

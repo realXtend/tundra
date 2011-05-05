@@ -118,6 +118,14 @@ private slots:
     /// Exports selected asset(s).
     void Export();
 
+    /// Clones selected asset(s).
+    void Clone();
+
+    /// Called by CloneAssetDialog when it's closed.
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
+    */
+    void CloneAssetDialogClosed(int result);
+
     /// Called by SaveAssetAs save file dialog when it's closed.
     /** @param result Result of dialog closure. Save is 1, Cancel is 0.
     */
