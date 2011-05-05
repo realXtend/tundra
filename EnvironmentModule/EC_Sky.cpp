@@ -46,7 +46,7 @@ EC_Sky::EC_Sky(IModule *module) :
     if (materialPtr.get() != 0)
     {
         OgreRenderer::GetTextureNamesFromMaterial(materialPtr, names);
-        AssetReferenceList lst;
+        AssetReferenceList lst("Texture");
         if (names.size() == cSkyBoxTextureCount)
         {
             // This code block is not currently working, but if for some reason GetTextureNamesFromMaterial understands cubic_textures this codeblock is runned
@@ -206,8 +206,10 @@ void EC_Sky::OnAttributeUpdated(IAttribute* attribute)
     }
     else if (name == textureRefs.GetNameString() )
     {
-      
         AssetReferenceList textures = textureRefs.Get();
+        // Make sure that the asset ref list type stays intact.
+        textures.type = "Texture";
+        textureRefs.Set(textures, AttributeChange::Disconnected);
 
         // Reallocate the number of texture asset reflisteners.
         while(textureAssets.size() > (size_t)textures.Size())

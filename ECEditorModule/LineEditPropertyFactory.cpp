@@ -101,7 +101,7 @@ QWidget *LineEditPropertyFactory::createEditor(QtStringPropertyManager *manager,
     connect(editor, SIGNAL(EditingFinished()), this, SLOT(EditingFinished()));
     connect(editor, SIGNAL(destroyed(QObject*)), this, SLOT(EditorDestroyed(QObject*)));
 
-    emit EditorCreated(editor);
+    emit EditorCreated(property, editor);
 
     return editor;
 }

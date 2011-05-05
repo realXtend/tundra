@@ -272,7 +272,7 @@ public:
 
 private slots:
     void OpenAssetsWindow();
-    void HandleNewEditor(LineEditWithButtons *);
+    void HandleNewEditor(QtProperty *prop, LineEditWithButtons *);
     void HandleAssetPicked(AssetPtr asset);
     void RestoreOriginalValue();
     void OpenEditor();
@@ -285,5 +285,33 @@ private:
 template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<AssetReferenceList>::Initialize();
 template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty *property);
+
+/// Special case editor for AssetReferenceList attributes.
+class AssetReferenceListAttributeEditor : public ECAttributeEditor<AssetReferenceList>
+{
+    Q_OBJECT
+
+public:
+    AssetReferenceListAttributeEditor(QtAbstractPropertyBrowser *owner, ComponentPtr component,
+        const QString &name, const QString &type, QObject *parent = 0) :
+        ECAttributeEditor<AssetReferenceList>(owner, component, name, type, parent),
+        fw(component->GetFramework())
+    {
+    }
+
+private:
+    int currentIndex;
+
+private slots:
+    void OpenAssetsWindow();
+    void HandleNewEditor(QtProperty *prop, LineEditWithButtons *);
+    void HandleAssetPicked(AssetPtr asset);
+    void RestoreOriginalValue();
+    void OpenEditor();
+
+private:
+    Framework *fw;
+    QString originalRef;
+};
 
 #endif

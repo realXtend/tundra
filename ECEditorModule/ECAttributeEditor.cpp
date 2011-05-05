@@ -1353,9 +1353,9 @@ template<> void ECAttributeEditor<QVariantList>::Initialize()
         optionalPropertyManagers_.push_back(stringManager);
 
         rootProperty_ = groupManager->addProperty();
-        rootProperty_->setPropertyName(name_);
         if(rootProperty_)
         {
+            rootProperty_->setPropertyName(name_);
             QtProperty *childProperty = 0;
             // Get number of elements in attribute array and create for property for each array element.
             ComponentPtr comp = components_[0].lock();
@@ -1483,7 +1483,7 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
     {
         QtStringPropertyManager *stringManager = new QtStringPropertyManager(this);
         LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
-        connect(lineEditFactory, SIGNAL(EditorCreated(LineEditWithButtons *)), SLOT(HandleNewEditor(LineEditWithButtons *)));
+        connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, LineEditWithButtons *)), SLOT(HandleNewEditor(QtProperty *,LineEditWithButtons *)));
         propertyMgr_ = stringManager;
         factory_ = lineEditFactory;
 
@@ -1530,18 +1530,17 @@ template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property)
         SetValue(AssetReference(property->valueText()));
 }
 
-void AssetReferenceAttributeEditor::HandleNewEditor(LineEditWithButtons *editor)
+void AssetReferenceAttributeEditor::HandleNewEditor(QtProperty *prop, LineEditWithButtons *editor)
 {
     // Add button which opens AssetsWindow always for AssetReference attributes.
     //rootProperty_ editor->pro
-    assert(editor);
     if (editor)
     {
-        QPushButton *pickButton = editor->CreateButton("OpenAssetsWindow", "...");
+        QPushButton *pickButton = editor->CreateButton(prop->propertyName(), "...");
         pickButton->setParent(editor);
         connect(pickButton, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
 
-        QPushButton *editButton = editor->CreateButton("OpenEditor", tr("E"));
+        QPushButton *editButton = editor->CreateButton(prop->propertyName(), tr("E"));
         editButton->setParent(editor);
         connect(editButton, SIGNAL(clicked(bool)), SLOT(OpenEditor()));
     }
@@ -1549,7 +1548,6 @@ void AssetReferenceAttributeEditor::HandleNewEditor(LineEditWithButtons *editor)
 
 void AssetReferenceAttributeEditor::OpenAssetsWindow()
 {
-    assert(fw);
     Attribute<AssetReference> *assetRef= dynamic_cast<Attribute<AssetReference>*>(FindAttribute(components_[0].lock()));
     if (assetRef)
     {
@@ -1643,6 +1641,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
         QtGroupPropertyManager *groupManager = new QtGroupPropertyManager(this);
         QtStringPropertyManager *stringManager = new QtStringPropertyManager(this);
         LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
+        connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, LineEditWithButtons *)), SLOT(HandleNewEditor(QtProperty *, LineEditWithButtons *)));
         propertyMgr_ = groupManager;
         factory_ = lineEditFactory;
         optionalPropertyManagers_.push_back(stringManager);
@@ -1714,6 +1713,134 @@ template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty *property)
 
         SetValue(value);
         Update();
+    }
+}
+
+void AssetReferenceListAttributeEditor::HandleNewEditor(QtProperty *prop, LineEditWithButtons *editor)
+{
+    // Add button which opens AssetsWindow always for AssetReference attributes.
+
+    if (editor)
+    {
+        QPushButton *pickButton = editor->CreateButton(prop->propertyName(), "...");
+        pickButton->setParent(editor);
+        connect(pickButton, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
+
+        QPushButton *editButton = editor->CreateButton(prop->propertyName(), tr("E"));
+        editButton->setParent(editor);
+        connect(editButton, SIGNAL(clicked(bool)), SLOT(OpenEditor()));
+    }
+}
+
+void AssetReferenceListAttributeEditor::OpenAssetsWindow()
+{
+    QPushButton *button = qobject_cast<QPushButton *>(sender());
+    if (!button)
+        return;
+
+    QString objName = button->objectName();
+    int start = objName.lastIndexOf('[');
+    int end = objName.lastIndexOf(']');
+    if (start == -1 || end == -1)
+    {
+        currentIndex = -1;
+        return;
+    }
+
+    bool ok;
+    int idx = objName.mid(start+1, end-start-1).toInt(&ok);
+    if (!ok || idx < 0)
+    {
+        currentIndex = -1;
+        return;
+    }
+
+    Attribute<AssetReferenceList> *refList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
+    if (!refList)
+    {
+        currentIndex = -1;
+        return;
+    }
+
+    //refList->Get().Size()
+    //AssetReference assetRef = refList->Get()[idx];
+    //QString assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef);
+    QString assetType = refList->Get().type;
+    LogInfo("Creating AssetsWindow for asset type " + assetType);
+    AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
+    connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
+    connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
+    assetsWindow->setWindowFlags(Qt::Tool);
+    assetsWindow->show();
+
+    // Save the original asset ref, if we decide to cancel
+    //originalRef = assetRef.ref;
+    currentIndex = idx;
+}
+
+void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
+{
+    Attribute<AssetReferenceList> *refList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
+    if (!refList)
+    {
+        currentIndex = -1;
+        return;
+    }
+
+    if (currentIndex < 0 || (!refList->Get().IsEmpty() && currentIndex >= refList->Get().Size()))
+    {
+        currentIndex = -1;
+        return;
+    }
+
+    if (asset)
+    {
+        LogInfo("AssetReferenceListAttributeEditor: Setting new value " + asset->Name());
+        AssetReferenceList newRefList = refList->Get();
+        if (newRefList.IsEmpty())
+            newRefList.Append(AssetReference(asset->Name()));
+        else
+            newRefList[currentIndex].ref = asset->Name();
+        SetValue(newRefList);
+        Update();
+        ///\todo multi-edit
+    }
+}
+
+void AssetReferenceListAttributeEditor::RestoreOriginalValue()
+{
+    //SetValue(AssetReference(originalRef));
+}
+
+void AssetReferenceListAttributeEditor::OpenEditor()
+{
+    QPushButton *button = qobject_cast<QPushButton *>(sender());
+    if (!button)
+        return;
+    QString objName = button->objectName();
+    int start = objName.lastIndexOf('[');
+    int end = objName.lastIndexOf(']');
+    if (start == -1 || end == -1)
+        return;
+
+    bool ok;
+    int idx = objName.mid(start+1, end-start-1).toInt(&ok);
+    if (!ok || idx < 0)
+        return;
+
+    Attribute<AssetReferenceList> *assetRefList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
+    if (assetRefList)
+    {
+        AssetReference assetRef = assetRefList->Get()[idx];
+        AssetPtr asset = fw->Asset()->GetAsset(assetRef.ref);
+        if (asset)
+        {
+            QMenu *menu = new QMenu();
+            fw->Ui()->EmitContextMenuAboutToOpen(menu, QObjectList(QObjectList() << asset.get()));
+            QAction *editAction = menu->findChild<QAction *>("Edit");
+            if (editAction)
+                editAction->trigger();
+        }
     }
 }
 

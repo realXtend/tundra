@@ -968,6 +968,9 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
 //            return;
 
         AssetReferenceList materials = meshMaterial.Get();
+        // Make sure that the asset ref list type stays intact.
+        materials.type = "OgreMaterial";
+        meshMaterial.Set(materials, AttributeChange::Disconnected);
 
         // Reallocate the number of material asset reflisteners.
         while(materialAssets.size() > (size_t)materials.Size())

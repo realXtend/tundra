@@ -53,7 +53,9 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         //attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, type, editor);
         attributeEditor = new AssetReferenceAttributeEditor(browser, component, name, type, editor);
     else if(type == "assetreferencelist")
-        attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, type, editor);
+        // AssetReferenceList uses own special case editor.
+        //attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, type, editor);
+        attributeEditor = new AssetReferenceListAttributeEditor(browser, component, name, type, editor);
     else if(type == "transform")
         attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, type, editor);
     else if(type == "qsize")

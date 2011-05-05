@@ -55,7 +55,7 @@ struct AssetReferenceList
     /// Constructor.
     /** @param type Preferred asset type for the list.
     */
-    AssetReferenceList(const QString &type) { this->type = type; }
+    AssetReferenceList(const QString &preferredType) { type = preferredType; }
 
     /// Removes the last item in the list.
     /** The list must not be empty. If the list can be empty, call IsEmpty() before calling this function.

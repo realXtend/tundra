@@ -62,7 +62,7 @@ public slots:
     void ComponentRemoved(QtProperty *property, IComponent *comp);
 
 signals:
-    void EditorCreated(LineEditWithButtons *);
+    void EditorCreated(QtProperty *prop, LineEditWithButtons *);
 
 protected:
     virtual void connectPropertyManager(QtStringPropertyManager *manager);
