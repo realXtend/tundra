@@ -19,6 +19,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QGraphicsScene>
+#include <QRadioButton>
 
 #include <QUiLoader>
 #include <QFile>

@@ -21,6 +21,7 @@
 #include <QObject>
 #include <QList>
 #include <QMap>
+#include <QString>
 
 namespace Camera
 {
@@ -63,13 +64,13 @@ namespace Camera
          * \param projection_type Type of projection
          * \param wireframe Wireframe enable/disable
          */
-        void CreateNewCamera(QString title = 0, bool restored = false, int camera_type = 0, int projection_type = 1, bool wireframe = 0);
+        void CreateNewCamera(QString title = "", bool restored = false, int camera_type = 0, int projection_type = 1, bool wireframe = 0);
 
         /*!Create camera view 
          * \param title The name of the camera widget
          * \param restored Widget restored
          */
-        CameraWidget* CreateCameraWidget(QString title = 0, bool restored=false);
+        CameraWidget* CreateCameraWidget(QString title = "", bool restored=false);
 
         /*!Create camera handler
          */
