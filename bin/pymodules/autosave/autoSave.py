@@ -15,14 +15,19 @@ class AutoSave(Component):
         self.dirtyEntities = []
         self.removedEntities = []
         self.deleting_files = False
+        self.signal_waiting = 0
         
         #initial values
         self.time_update = naali.config.Get("AutoSaveSettings", "time_for_update")
         if self.time_update is None:
             self.time_update = 120
         else:
-            self.time_update = int(self.time_update)            
-        self.save = True
+            self.time_update = int(self.time_update)   
+                 
+        self.save = naali.config.Get("AutoSaveSettings", "save")
+        if self.save is None:
+            self.save = True
+
         self.exiting = False
         
         #path values
@@ -66,7 +71,9 @@ class AutoSave(Component):
 
         if(self.save):
             #Connect timing
+            #naali.frame.DelayedExecute(self.time_update).connect('Triggered(float)', self.on_timeout)
             naali.frame.DelayedExecute(self.time_update).connect('Triggered(float)', self.on_timeout)
+            self.signal_waiting +=1
             
     def createSaveEntity(self):
         #initialize entity_saver
@@ -155,6 +162,9 @@ class AutoSave(Component):
                 else:
                     self.removedEntities.append(entity.Id * (-1))          
             self.entities.remove(entity)
+            
+        if entity in self.dirtyEntities:
+            self.dirtyEntities.remove(entity)
     
     def on_componentAdded(self, entity, component, type):
         if str(type) is not '3':
@@ -172,7 +182,8 @@ class AutoSave(Component):
     
     def on_attributeChanged(self, component, attribute, type):
         if str(type) is not '3':
-            return        
+            return
+                   
         if component.GetParentEntity() in self.entities:       
             if not component.GetParentEntity() in self.dirtyEntities:
                 self.dirtyEntities.append(component.GetParentEntity())
@@ -196,9 +207,14 @@ class AutoSave(Component):
         self.restore = False
                 
     def on_timeout(self):
+        self.signal_waiting -= 1
+        if self.signal_waiting > 0:
+            return
+        
         r.logDebug("Timeout reached, lets write files in " + str(self.path))
-        if not self.exiting:
+        if not self.exiting and self.save:
             naali.frame.DelayedExecute(self.time_update).connect('Triggered(float)', self.on_timeout)
+            self.signal_waiting += 1
         
         if not self.save:
             r.logWarning("save canceled (save to false)")
@@ -219,7 +235,8 @@ class AutoSave(Component):
             f.close()
             
         for ent_del in self.removedEntities:
-            os.remove(self.path + str(ent_del) + ".txml")       
+            if os.path.exists(self.path + str(ent_del) + ".txml"):
+                os.remove(self.path + str(ent_del) + ".txml")       
         
         #clean array
         del self.dirtyEntities[:]
@@ -237,8 +254,33 @@ class AutoSave(Component):
             #self.settings.setValue("path", self.path_rel)
             naali.config.Set("AutoSaveSettings","path", self.path_rel)
             self.dirtyEntities = self.entities[:]
+        
+        if (self.save != self.component_saver_conf.GetAttribute('save')):
+            self.save = self.component_saver_conf.GetAttribute('save') 
+            naali.config.Set("AutoSaveSettings", "save", self.save) 
+            if not self.save:
+                #save!
+                for ent_save in self.dirtyEntities:
+                    if ent_save.Id < 0:
+                        f = open(self.path + str(ent_save.Id * (-1)) + ".txml", 'w')
+                    else:
+                        f = open(self.path + str(ent_save.Id) + ".txml", 'w')            
+                    f.write(str(self.scene.GetEntityXml(ent_save)))
+                    f.close()
+                    
+                    for ent_del in self.removedEntities:
+                        if os.path.exists(self.path + str(ent_del) + ".txml"):
+                            os.remove(self.path + str(ent_del) + ".txml")       
+                
+                    #clean array
+                    del self.dirtyEntities[:]
+                    del self.removedEntities[:]
+                
+            else:
+                naali.frame.DelayedExecute(self.time_update).connect('Triggered(float)', self.on_timeout)
+                self.signal_waiting += 1
+                self.dirtyEntities = self.entities[:]
             
-        self.save = self.component_saver_conf.GetAttribute('save');     
         self.time_update = self.component_saver_conf.GetAttribute('time_for_update');
         #self.settings.setValue("time_update", int(self.time_update))
         naali.config.Set("AutoSaveSettings","time_for_update", int(self.time_update))
