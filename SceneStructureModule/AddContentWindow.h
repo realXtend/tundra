@@ -43,6 +43,7 @@ public:
     /// Destructor.
     ~AddContentWindow();
 
+public slots:
     /// Adds scene description to be shown in the window.
     /** @param desc Scene description.
     */
@@ -51,7 +52,7 @@ public:
     /// Adds multiple scene descriptions to be shown in the window.
     /** @param desc Scene description.
     */
-//    void AddDescriptions(const QList<SceneDesc> &descs);
+    //void AddDescriptions(const QList<SceneDesc> &descs);
 
     /// Adds files to be shown in the window.
     /** @param fileNames List of files.
@@ -63,6 +64,17 @@ public:
     */
     void AddPosition(const Vector3df &pos) { position = pos; }
 
+    /// Silently without showing ui commit everything as is and close the dialog. 
+    /// This will not show anything to user and will do everything with default settings.
+    /// Especially handy when you know there are no assets to upload (everything has web refs),
+    /// and you just want the entities to be added to the scene silently eg. on a drag and drop event.
+    void CommitEverythingAndClose();
+
+    /// Returns if current dialog content has uploads that need processing.
+    /** @return bool True if there are assets that are marked for download, false other wise.
+    */
+    bool HasAssetUploads() const;
+    
 signals:
     void Completed(bool contentAdded, const QString &uploadBaseUrl);
 
@@ -126,6 +138,9 @@ private:
 
     // Bool for completion
     bool contentAdded_;
+
+    // Bool if we are in silent commit mode, see CommitEverythingAndClose().
+    bool silentCommit_;
 
 private slots:
     /// Checks all entity check boxes.

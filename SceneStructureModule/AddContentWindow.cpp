@@ -145,7 +145,8 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     scene(dest),
     parentEntities_(0),
     parentAssets_(0),
-    contentAdded_(false)
+    contentAdded_(false),
+    silentCommit_(false)
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -323,8 +324,19 @@ AddContentWindow::~AddContentWindow()
 
 void AddContentWindow::showEvent(QShowEvent *e)
 {
-    CenterToMainWindow();
-    QWidget::showEvent(e);
+    // This will ensure the ui is not shown on a silent commit
+    // even if our child widgets show() function is called
+    // (those might invoke our main show also)
+    if (!silentCommit_)
+    {
+        CenterToMainWindow();
+        QWidget::showEvent(e);
+    }
+    else
+    {
+        e->ignore();
+        hide();
+    }
 }
 
 void AddContentWindow::AddDescription(const SceneDesc &desc)
@@ -340,6 +352,17 @@ void AddContentWindow::AddDescriptions(const QList<SceneDesc> &descs)
 {
 }
 */
+
+void AddContentWindow::CommitEverythingAndClose()
+{
+    silentCommit_ = true;
+    AddContent();
+}
+
+bool AddContentWindow::HasAssetUploads() const
+{
+    return !newDesc_.assets.empty();
+}
 
 void AddContentWindow::AddFiles(const QStringList &fileNames)
 {
@@ -850,6 +873,10 @@ void AddContentWindow::AddEntities()
     cancelButton->setText(tr("Close"));
     addContentButton->setEnabled(true);
     storageComboBox->setEnabled(true);
+
+    // Close and emit Completed signal if in silent mode.
+    if (silentCommit_)
+        Close();
 }
 
 void AddContentWindow::CenterToMainWindow()
