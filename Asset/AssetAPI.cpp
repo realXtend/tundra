@@ -1152,7 +1152,7 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
         if (!transfer)
             return; ///\todo Evaluate the path to take here.
         connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)));
-        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), req.transfer.get(), SIGNAL(Loaded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), req.transfer.get(), SIGNAL(Succeeded(AssetPtr)));
         connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), req.transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)));
     }
 }
