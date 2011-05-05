@@ -28,7 +28,7 @@
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
    <attribute value="local://screen.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="/home/therauli/naali-tundra/bin/scenes/SlideCircle/scr_other_screen_othe.material;/home/therauli/naali-tundra/bin/scenes/SlideCircle/scr_room_main_main_sc.material" name="Mesh materials"/>
+   <attribute value="local://screen.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="false" name="Cast shadows"/>
   </component>
@@ -56,7 +56,7 @@
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
    <attribute value="local://screen.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="/home/therauli/naali-tundra/bin/scenes/SlideCircle/scr_other_screen_othe.material;/home/therauli/naali-tundra/bin/scenes/SlideCircle/scr_room_main_main_sc.material" name="Mesh materials"/>
+   <attribute value="local://screen.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="false" name="Cast shadows"/>
   </component>
@@ -84,7 +84,7 @@
    <attribute value="0,0,0,90,10,180,1,1,1" name="Transform"/>
    <attribute value="local://screen.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="/home/therauli/naali-tundra/bin/scenes/SlideCircle/scr_other_screen_othe.material;/home/therauli/naali-tundra/bin/scenes/SlideCircle/scr_room_main_main_sc.material" name="Mesh materials"/>
+   <attribute value="local://screen.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="false" name="Cast shadows"/>
   </component>
@@ -112,7 +112,7 @@
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
    <attribute value="local://screen.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="/home/therauli/naali-tundra/bin/scenes/SlideCircle/scr_other_screen_othe.material;/home/therauli/naali-tundra/bin/scenes/SlideCircle/scr_room_main_main_sc.material" name="Mesh materials"/>
+   <attribute value="local://screen.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="false" name="Cast shadows"/>
   </component>
