@@ -149,11 +149,12 @@ public slots:
     /** @param assetRef The asset reference (a filename or a full URL) to request. The name of the resulting asset is the same as the asset reference
               that is used to load it.
         @param assetType The type of the asset to request. This can be null if the assetRef itself identifies the asset type.
+        @param forceTransfer Force transfer even if the asset is in the loaded state
         @return A pointer to the created asset transfer, or null if the transfer could not be initiated. */
-    AssetTransferPtr RequestAsset(QString assetRef, QString assetType = "");
+    AssetTransferPtr RequestAsset(QString assetRef, QString assetType = "", bool forceTransfer = false);
 
     /// Same as RequestAsset(assetRef, assetType), but provided for convenience with the AssetReference type.
-    AssetTransferPtr RequestAsset(const AssetReference &ref);
+    AssetTransferPtr RequestAsset(const AssetReference &ref, bool forceTransfer = false);
 
     /// Returns the asset provider that is used to fetch assets from the given full URL.
     /** Example: GetProviderForAssetRef("local://my.mesh") will return an instance of LocalAssetProvider.
