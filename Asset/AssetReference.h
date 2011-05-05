@@ -71,8 +71,20 @@ struct AssetReferenceList
     /// Returns true if the list contains no items, false otherwise.
     bool IsEmpty() const { return refs.isEmpty(); }
 
+    /// Sets new value in the list.
+    /** @param i Index.
+        @ref New asset reference value.
+    */
+    void Set(int i, AssetReference ref)
+    {
+        assert(i >= 0 && i < refs.size());
+        if (i >= 0 && i < refs.size())
+            refs[i] = QVariant::fromValue(ref);
+    }
+
     /// Subscript operator. If index @c i is invalid and empty AssetReference is returned.
-    AssetReference operator[] (int i)
+    /** @note Doesn't return reference for script-compatibility/safety.*/
+    const AssetReference operator[] (int i)
     {
         assert(i >= 0 && i < refs.size());
         if (i < 0 || i >= refs.size())
@@ -82,7 +94,8 @@ struct AssetReferenceList
     }
 
     /// This is an overloaded function.
-    AssetReference operator[] (int i) const
+    /** @note Doesn't return reference for script-compatibility/safety. */
+    const AssetReference operator[] (int i) const
     {
         assert(i >= 0 && i < refs.size());
         if (i < 0 || i >= refs.size())

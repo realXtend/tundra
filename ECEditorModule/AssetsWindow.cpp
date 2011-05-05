@@ -115,7 +115,7 @@ void AssetsWindow::PopulateTreeWidget()
         if (alreadyAdded.find(pair.second) == alreadyAdded.end())
         {
             // If we're viewing only specific asset type, ignore non-matching assets.
-            if (!assetType.isEmpty() && assetType != pair.second->Type())
+            if (!assetType.isEmpty() && assetType != pair.second->Type() && assetType != "Binary" )
                 continue;
             AddAsset(pair.second);
         }

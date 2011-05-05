@@ -1578,6 +1578,7 @@ void AssetReferenceAttributeEditor::HandleAssetPicked(AssetPtr asset)
 void AssetReferenceAttributeEditor::RestoreOriginalValue()
 {
     SetValue(AssetReference(originalRef));
+    Update();
 }
 
 void AssetReferenceAttributeEditor::OpenEditor()
@@ -1762,10 +1763,16 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
         return;
     }
 
-    //refList->Get().Size()
-    //AssetReference assetRef = refList->Get()[idx];
-    //QString assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef);
     QString assetType = refList->Get().type;
+    // If no type defined to the AssetReferenceList, try to retrieve it from the first item.
+    if (assetType.isEmpty() && !refList->Get().IsEmpty())
+    {
+        assetType = refList->Get()[0].type;
+        // As a last resort, try to figure it out using AssetAPI.
+        if (assetType.isEmpty())
+            assetType = AssetAPI::GetResourceTypeFromAssetRef(refList->Get()[0]);
+    }
+
     LogInfo("Creating AssetsWindow for asset type " + assetType);
     AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
@@ -1774,7 +1781,8 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     assetsWindow->show();
 
     // Save the original asset ref, if we decide to cancel
-    //originalRef = assetRef.ref;
+    if (idx < refList->Get().Size())
+        originalRef = refList->Get()[idx].ref;
     currentIndex = idx;
 }
 
@@ -1800,7 +1808,7 @@ void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
         if (newRefList.IsEmpty())
             newRefList.Append(AssetReference(asset->Name()));
         else
-            newRefList[currentIndex].ref = asset->Name();
+            newRefList.Set(currentIndex, AssetReference(asset->Name()));
         SetValue(newRefList);
         Update();
         ///\todo multi-edit
@@ -1809,7 +1817,17 @@ void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
 
 void AssetReferenceListAttributeEditor::RestoreOriginalValue()
 {
-    //SetValue(AssetReference(originalRef));
+    Attribute<AssetReferenceList> *refList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
+    if (refList)
+    {
+        LogInfo("Setting original asset ref " + originalRef);
+        AssetReferenceList refs = refList->Get();
+        if (!refs.IsEmpty())
+            refs.Set(currentIndex, AssetReference(originalRef));
+        SetValue(refs);
+    }
+
+    Update();
 }
 
 void AssetReferenceListAttributeEditor::OpenEditor()
