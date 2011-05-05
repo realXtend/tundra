@@ -968,12 +968,6 @@ AssetPtr AssetAPI::GetAsset(QString assetRef)
     return AssetPtr();
 }
 
-AssetPtr AssetAPI::GetAssetByHash(QString assetHash)
-{
-    ///\todo Implement.
-    return AssetPtr();
-}
-
 void AssetAPI::Update(f64 frametime)
 {
     for(size_t i = 0; i < providers.size(); ++i)
@@ -1062,7 +1056,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     // Save this asset to cache, and find out which file will represent a cached version of this asset.
     QString assetDiskSource = transfer->DiskSource(); // The asset provider may have specified an explicit filename to use as a disk source.
     if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0)
-        assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref, ""); ///\todo Specify the content hash.
+        assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref);
 
     // If disksource is still empty, forcibly look up from cache
     if (!assetDiskSource.length())

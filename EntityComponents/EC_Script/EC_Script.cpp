@@ -107,17 +107,6 @@ void EC_Script::ScriptAssetLoaded(AssetPtr asset_)
         return;
     }
 
-    // Don't reload this script is all the following are met:
-    // 1. We already have a valid script instance (aka this is not the first load)
-    // 2. The script name has not changed (aka asset ref)
-    // 3. Assets content hash has not changed since last load (aka source code changed)
-    if (scriptInstance_) // 1.
-    {
-        if (scriptInstance_->GetLoadedScriptName() == asset_->Name()) // 2.
-            if (asset_->ContentHashChanged() == false) // 3.
-                return;
-    }
-
     emit ScriptAssetChanged(asset);
 }
 

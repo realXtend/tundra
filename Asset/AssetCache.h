@@ -76,11 +76,6 @@ public slots:
     /// This is only used by AssetAPI as an emergency mechanism for querying http asset disk source after loading
     QString GetDiskSourceByRef(const QString &assetRef);
     
-    /// Checks whether the asset cache contains an asset with the given content hash, and returns the absolute path name to it, if so.
-    /// Otherwise returns an empty string.
-    /// @todo Implement.
-    QString GetDiskSourceByContentHash(const QString &contentHash);
-
     /// Get the cache directory. Returned path is guaranteed to have a trailing slash /.
     /// @return QString absolute path to the caches data directory
     QString GetCacheDirectory() const;
@@ -91,7 +86,7 @@ public slots:
 
     /// Saves the specified data to the asset cache.
     /// @return QString the absolute path name to the asset cache entry. If not successfull returns an empty string.
-    QString StoreAsset(const u8 *data, size_t numBytes, const QString &assetName, const QString &assetContentHash);
+    QString StoreAsset(const u8 *data, size_t numBytes, const QString &assetName);
 
     /// Deletes the asset with the given assetRef from the cache, if it exists.
     /// @param QString asset reference.

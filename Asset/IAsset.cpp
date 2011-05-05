@@ -2,7 +2,6 @@
 #include <QList>
 #include <boost/thread.hpp>
 #include "MemoryLeakCheck.h"
-#include <QCryptographicHash>
 #include <QByteArray>
 #include <set>
 
@@ -13,7 +12,7 @@
 #include "AssetAPI.h"
 
 IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-:assetAPI(owner), type(type_), name(name_), contentHashChanged(true)
+:assetAPI(owner), type(type_), name(name_)
 {
     assert(assetAPI);
 }
@@ -122,20 +121,6 @@ bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
         LogDebug("LoadFromFileInMemory failed for asset \"" + ToString().toStdString() + "\"! No data present!");
         return false;
     }
-
-    // Before loading the asset, recompute the content hash for the asset data.
-    QCryptographicHash hash(QCryptographicHash::Sha1);
-    hash.addData((const char*)data, numBytes);
-
-    // Check the hash and update it if needed, set change boolean
-    QString hashNow(hash.result().toHex());
-    if (hashNow != contentHash)
-    {
-        contentHash = hashNow;
-        contentHashChanged = true;
-    }  
-    else
-        contentHashChanged = false;
 
     bool success = DeserializeFromData(data, numBytes);
     

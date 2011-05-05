@@ -29,15 +29,6 @@ public slots:
     /// Returns the unique name of this asset. The name of an asset cannot change during the lifetime of the instance of an asset.
     QString Name() const { return name; }
 
-    /// Returns a SHA-1 hash of the contents of this asset in readable ASCII string form containing hex bytes. Can return an empty string if the asset is not loaded
-    /// or if the hash was not computed.
-    QString ContentHash() const { return contentHash; }
-
-    /// Returns if this assets content hash has changed from the previous load. Situations where this is useful: 
-    /// checking in your Loaded() handler if the data actually changed and if you need to respond to the change. 
-    /// @note The contentHashChanged boolean is reseted to false always after Loaded() signal is emitted.
-    bool ContentHashChanged() const { return contentHashChanged; }
-
     /// Specifies the file from which this asset can be reloaded, if it is unloaded in between. 
     void SetDiskSource(QString diskSource);
 
@@ -169,13 +160,6 @@ protected:
 
     /// This path specifies a local filename from which this asset can be reloaded if necessary.
     QString diskSource;
-
-    /// Stores the SHA-1 hash of this content, saved as a string for convenience for script access. 
-    QString contentHash;
-
-    /// Boolean if assets content hash has changed.
-    /// @note This is reseted to false always after Loaded() signal is emitted.
-    bool contentHashChanged;
 };
 
 #endif

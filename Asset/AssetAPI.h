@@ -193,9 +193,6 @@ public slots:
     /// @note The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
     AssetPtr GetAsset(QString assetRef);
     
-    /// Returns the given asset by the specified SHA-1 content hash. If no such asset exists, returns null.
-    AssetPtr GetAssetByHash(QString assetHash);
-
     /// Returns the asset cache object that genereates a disk source for all assets.
     AssetCache *GetAssetCache() { return assetCache; }
 

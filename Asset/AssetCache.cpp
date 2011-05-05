@@ -214,13 +214,6 @@ QString AssetCache::GetDiskSourceByRef(const QString &assetRef)
     return "";
 }
 
-QString AssetCache::GetDiskSourceByContentHash(const QString &contentHash)
-{
-    /// \todo Implement.
-    LogWarning("AssetCache::GetDiskSourceByContentHash not implemented yet.");
-    return "";
-}
-
 QString AssetCache::GetCacheDirectory() const
 {
     return GuaranteeTrailingSlash(assetDataDir.absolutePath());
@@ -230,10 +223,10 @@ QString AssetCache::StoreAsset(AssetPtr asset)
 {
     std::vector<u8> data;
     asset->SerializeTo(data);
-    return StoreAsset(&data[0], data.size(), asset->Name(), asset->ContentHash()); /// \todo Content hash can mismatch here.
+    return StoreAsset(&data[0], data.size(), asset->Name());
 }
 
-QString AssetCache::StoreAsset(const u8 *data, size_t numBytes, const QString &assetName, const QString &assetContentHash)
+QString AssetCache::StoreAsset(const u8 *data, size_t numBytes, const QString &assetName)
 {
     QString absolutePath = GetAbsoluteDataFilePath(assetName);
     bool success = SaveAssetFromMemoryToFile(data, numBytes, absolutePath.toStdString().c_str());
