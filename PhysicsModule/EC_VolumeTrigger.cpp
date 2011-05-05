@@ -29,7 +29,6 @@ EC_VolumeTrigger::EC_VolumeTrigger(IModule* module) :
 {
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(AttributeUpdated(IAttribute*)));
-
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
@@ -163,6 +162,10 @@ void EC_VolumeTrigger::AttributeUpdated(IAttribute* attribute)
 
     //if (attribute == &mass)
     //    ReadBody();
+	//$ BEGIN_MOD $
+	if (attribute == &rigidBodyName)
+		OnRigidBodyNameChanged();
+	//$ END_MOD $
 }
 
 void EC_VolumeTrigger::UpdateSignals()
@@ -189,6 +192,9 @@ void EC_VolumeTrigger::CheckForRigidBody()
     {
 //$ BEGIN_MOD $
         boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>(rigidBodyName.Get());
+		//If rigidbody without name founded, get first one
+		if (!rigidbody)
+			boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>();
 //$ END_MOD $
         if (rigidbody)
         {
@@ -196,8 +202,24 @@ void EC_VolumeTrigger::CheckForRigidBody()
             connect(rigidbody.get(), SIGNAL(PhysicsCollision(Scene::Entity*, const Vector3df&, const Vector3df&, float, float, bool)),
                 this, SLOT(OnPhysicsCollision(Scene::Entity*, const Vector3df&, const Vector3df&, float, float, bool)));
         }
+
     }
 }
+//$ BEGIN_MOD $
+void EC_VolumeTrigger::OnRigidBodyNameChanged()
+{
+	Scene::Entity* parent = GetParentEntity();
+    if (!parent)
+        return;
+	boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>(rigidBodyName.Get());
+	//If rigidbody without name founded, return
+    if (rigidbody)
+    {
+		rigidbody_ = rigidbody;
+		connect(rigidbody.get(), SIGNAL(PhysicsCollision(Scene::Entity*, const Vector3df&, const Vector3df&, float, float, bool)), this, SLOT(OnPhysicsCollision(Scene::Entity*, const Vector3df&, const Vector3df&, float, float, bool)));
+    }
+}
+//$ END_MOD $
 
 void EC_VolumeTrigger::OnPhysicsUpdate()
 {
@@ -223,8 +245,16 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 
                 if (entity)
                 {
-                    emit EntityLeave(entity.get());
-                    disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+					//$ BEGIN_MOD $
+					if(!IsPivotInside(entity.get()))
+					{
+					//$ END_MOD $
+						emit EntityLeave(entity.get());
+						disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+					//$ BEGIN_MOD $
+					}
+					//$ END_MOD $
+					
                 }
                 continue;
             }

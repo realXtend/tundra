@@ -181,6 +181,8 @@ private slots:
     //! Called when entity inside this volume is removed from the scene
     void OnEntityRemoved(Scene::Entity* entity);
 
+	void OnRigidBodyNameChanged();
+
 private:
     //! constructor
     /*! \param module Physics module
