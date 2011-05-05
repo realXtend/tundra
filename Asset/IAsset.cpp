@@ -8,7 +8,6 @@
 #include "LoggingFunctions.h"
 
 #include "IAsset.h"
-#include "IAssetTransfer.h"
 #include "AssetAPI.h"
 
 IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
@@ -201,11 +200,6 @@ void IAsset::SetAssetProvider(AssetProviderPtr provider_)
 void IAsset::SetAssetStorage(AssetStoragePtr storage_)
 {
     storage = storage_;
-}
-
-void IAsset::SetAssetTransfer(AssetTransferPtr transfer_)
-{
-    transfer = transfer_;
 }
 
 AssetStoragePtr IAsset::GetAssetStorage()

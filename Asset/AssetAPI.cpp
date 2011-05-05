@@ -1066,7 +1066,6 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     transfer->asset->SetDiskSource(assetDiskSource.trimmed());
     transfer->asset->SetAssetStorage(transfer->storage.lock());
     transfer->asset->SetAssetProvider(transfer->provider.lock());
-    transfer->asset->SetAssetTransfer(transfer);
 
     // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
     transfer->EmitAssetDownloaded();

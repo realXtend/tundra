@@ -126,9 +126,6 @@ public:
     /// Saves the storage this asset was downloaded from. Intended to be only called internally by Asset API at asset load time.
     void SetAssetStorage(AssetStoragePtr storage); 
 
-    /// Saves the asset transfer associated to this asset. Intended to be only called internally by Asset API at asset load time.
-    void SetAssetTransfer(AssetTransferPtr transfer); 
-
     /// Saves this asset to the given data buffer. Returns true on success. If this asset is unloaded, will return false.
     /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
@@ -147,10 +144,6 @@ protected:
 
     /// Specifies the storage this asset was downloaded from. May be null.
     AssetStorageWeakPtr storage;
-
-    /// Specifies the asset transfer that generated this transfer. This field expires to null immediately once the asset download completes
-    /// and all asset dependencies have been loaded.
-    AssetTransferWeakPtr transfer;
 
     /// Specifies the type of this asset, e.g. "Texture" or "OgreMaterial".
     QString type;
