@@ -6,45 +6,69 @@
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 
-function vprint(v) {
-    print(v.x + ", " + v.y + ", " + v.z);
+function distance(v1, v2) {
+    var a = Math.pow((v1.x() - v2.x()), 2);
+    var b = Math.pow((v1.y() - v2.y()), 2);
+    var c = Math.pow((v1.z() - v2.z()), 2);
+    return Math.sqrt(a + b + c);
 }
 
 function crossp(v1, v2) {
-    var result = new Vector3df();
+    var result = new QVector3D();
 
-    result.x = v1.y * v2.z - v1.z * v2.y;
-    result.y = v1.z * v2.x - v1.x * v2.z;
-    result.z = v1.x * v2.y - v1.y * v2.x;
+    result.setX(v1.y() * v2.z() - v1.z() * v2.y());
+    result.setY(v1.z() * v2.x() - v1.x() * v2.z());
+    result.setZ(v1.x() * v2.y() - v1.y() * v2.x());
 
     return result;
 }
 
 function vadd(v1, v2) {
-    var result = new Vector3df();
+    var result = new QVector3D();
 
-    result.x = v1.x + v2.x;
-    result.y = v1.y + v2.y;
-    result.z = v1.z + v2.z;
+    result.setX(v1.x() + v2.x());
+    result.setY(v1.y() + v2.y());
+    result.setZ(v1.z() + v2.z());
+
+    return result;
+}
+
+function vsubb(v1, v2) {
+    var result = new QVector3D();
+
+    result.setX(v1.x() - v2.x());
+    result.setY(v1.y() - v2.y());
+    result.setZ(v1.z() - v2.z());
+
+    return result;
+}
+
+function norm(v) {
+    return Math.sqrt(Math.pow(v.x(), 2) + Math.pow(v.y(), 2) + Math.pow(v.z(), 2))
+}
+
+function normalize(v) {
+    var result = new QVector3D();
+    var l = norm(v);
+    result.setX(v.x() / l);
+    result.setY(v.y() / l);
+    result.setZ(v.z() / l);
 
     return result;
 }
 
 function smul(v1, s) {
-    var result = new Vector3df();
+    var result = new QVector3D();
     
-    result.x = v1.x * s;
-    result.y = v1.y * s;
-    result.z = v1.z * s;
+    result.setX(v1.x() * s);
+    result.setY(v1.y() * s);
+    result.setZ(v1.z() * s);
 
     return result;
 }
 
 function conjg(quat, v) {
-    var qvec = new Vector3df();
-    qvec.x = quat.x();
-    qvec.y = quat.y();
-    qvec.z = quat.z();
+    var qvec = quat.vector();
 
     var uv = crossp(qvec, v);
     var uuv = crossp(qvec, uv);
@@ -54,51 +78,103 @@ function conjg(quat, v) {
     return vadd(vadd(v, uv), uuv);
 }
 
-function viewScreen(screen) {
-    var placeable = screen.placeable;
+function getNormal(entity, distance) {
+    /* returns the place in front of entity from distance */
+    var placeable = entity.placeable;
     var q = placeable.orientation;
 
-    var temp_position = new Vector3df();
-    temp_position.x = placeable.position.x();
-    temp_position.y = placeable.position.y();
-    temp_position.z = placeable.position.z();
+    var un = new QVector3D();
 
-    var un = new Vector3df();
-
-    un.y = 1;
+    un.setY(1);
 
     var v = conjg(q, un);
-    var worldpos = vadd(temp_position, smul(v, 10));
+    var pos = vadd(placeable.position, smul(v, distance));
+
+    return pos;
+}
+
+function viewScreen(screen) {
+
+    var pos = getNormal(screen, 10);
 
     var p = camera.placeable.position;
 
-    p.setX(worldpos.x);
-    p.setY(worldpos.y);
-    p.setZ(worldpos.z);
+    p.setX(pos.x());
+    p.setY(pos.y());
+    p.setZ(pos.z());
 
     camera.placeable.position = p;
 
     camera.placeable.LookAt(screen.placeable.position);
 }
 
+function getPoints(from, to) {
+    targets = [];
+    targets.push(getNormal(from, 15));
+    targets.push(getNormal(to, 15));
+    targets.push(getNormal(to, 10));
+    
+}
 
 function HandleGotoNext() {
-    currentIndex++;
-    if (currentIndex >= endIndex) {
-	currentIndex = 0;
+    newIndex = currentIndex + 1;
+    if (newIndex >= endIndex) {
+	newIndex = 0;
     }
-    var screen = entities[currentIndex];
-    viewScreen(screen);
+    getPoints(entities[currentIndex], entities[newIndex]);
+    currentIndex = newIndex;
 }
 
 function HandleGotoPrev() {
-    currentIndex--;
-    if (currentIndex < 0) {
-	currentIndex = endIndex - 1;
+    newIndex = currentIndex - 1;
+    if (newIndex < 0) {
+	newIndex = endIndex - 1;
     }
-    var screen = entities[currentIndex];
-    viewScreen(screen);
+    getPoints(entities[currentIndex], entities[newIndex]);
+    currentIndex = newIndex;
 }
+
+function animationUpdate(dt) {
+
+    if (targets.length == 0) {
+	return;
+    }
+    var target = targets[0];
+    var pos = camera.placeable.position;
+    //print(pos);
+    //print(target);
+    var d = distance(pos, target);
+ 
+    //print(d);
+
+    if (d <= 0.1) {
+	targets.splice(0, 1);
+	return;
+    }
+
+    var velocity = vsubb(pos, target);
+    velocity = normalize(velocity);
+
+    var newPos = vadd(pos, smul(velocity, -dt * 5));
+
+    pos.setX(newPos.x());
+    pos.setY(newPos.y());
+    pos.setZ(newPos.z());
+
+    camera.placeable.position = pos;
+    camera.placeable.LookAt(entities[currentIndex].placeable.position);
+
+}
+
+function reset() {
+    viewScreen(entities[currentIndex]);
+    targets = [];
+}
+
+function putCube(place) {
+    cube.placeable.position = place;
+}
+
 
 var entities = scene.GetEntitiesWithComponentRaw("EC_WebView");
 var currentIndex = 0;
@@ -106,11 +182,19 @@ var endIndex = entities.length;
 
 var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
 var camera = scene.GetEntityByNameRaw("FreeLookCamera");
+var cube = scene.GetEntityByName("Cubbe");
 
 inputmapper.RegisterMapping('n', "GotoNext", 1);
 inputmapper.RegisterMapping('p', "GotoPrev", 1);
+inputmapper.RegisterMapping('r', "ResetShow", 1);
 
 me.Action("GotoNext").Triggered.connect(HandleGotoNext);
 me.Action("GotoPrev").Triggered.connect(HandleGotoPrev);
+me.Action("ResetShow").Triggered.connect(reset);
+
+var targets = [];
+print(targets);
 
 print('..');
+
+frame.Updated.connect(animationUpdate);
