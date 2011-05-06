@@ -246,15 +246,20 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 if (entity)
                 {
 					//$ BEGIN_MOD $
-					if(!IsPivotInside(entity.get()))
+					if (byPivot.Get())
 					{
-					//$ END_MOD $
+						if(!IsPivotInside(entity.get()))
+						{
+							emit EntityLeave(entity.get());
+							disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+						}
+					}
+					else
+					{
 						emit EntityLeave(entity.get());
 						disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
-					//$ BEGIN_MOD $
 					}
 					//$ END_MOD $
-					
                 }
                 continue;
             }
