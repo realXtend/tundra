@@ -1,7 +1,3 @@
-configure_openal ()
-configure_ogg ()
-configure_vorbis ()
-
 # Define target name and output directory
 init_target(Audio OUTPUT ./)
 

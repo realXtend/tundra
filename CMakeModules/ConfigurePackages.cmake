@@ -402,6 +402,19 @@ endif()
     sagase_configure_report (VORBIS)
 endmacro (configure_vorbis)
 
+macro (configure_theora)
+    sagase_configure_package(THEORA
+        NAMES theora libtheora
+        COMPONENTS theora libtheora
+        PREFIXES ${ENV_NAALI_DEP_PATH}/libtheora)
+        
+        # Force include dir on MSVC
+        if (MSVC)
+  		   set (THEORA_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libtheora/include)
+        endif ()
+    sagase_configure_report (THEORA)
+endmacro (configure_theora)
+
 macro (configure_mumbleclient)
     sagase_configure_package(MUMBLECLIENT
         NAMES mumbleclient
