@@ -884,6 +884,12 @@ SceneDesc SceneManager::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDe
 
                 // Find asset references.
                 ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+                if (!comp.get()) // Move to next element if component creation fails.
+                {
+                    comp_elem = comp_elem.nextSiblingElement("component");
+                    continue;
+                }
+
                 comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                 foreach(IAttribute *a,comp->GetAttributes())
                 {

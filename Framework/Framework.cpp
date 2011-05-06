@@ -231,12 +231,15 @@ void Framework::ProcessOneFrame()
 
         console->Update(frametime);
 
-        // if we have a renderer service, render now
-        boost::weak_ptr<RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
-        if (renderer.expired() == false)
+        if (!IsHeadless()) // Skip render if in headless mode.
         {
-            PROFILE(FW_Render);
-            renderer.lock()->Render();
+            // if we have a renderer service, render now
+            boost::weak_ptr<RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
+            if (renderer.expired() == false)
+            {
+                PROFILE(FW_Render);
+                renderer.lock()->Render();
+            }
         }
     }
 
