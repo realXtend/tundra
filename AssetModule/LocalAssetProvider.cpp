@@ -20,6 +20,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include "MemoryLeakCheck.h"
 
 namespace Asset
 {

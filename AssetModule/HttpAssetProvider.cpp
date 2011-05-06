@@ -16,6 +16,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include "MemoryLeakCheck.h"
 
 HttpAssetProvider::HttpAssetProvider(Framework *framework_)
 :framework(framework_)

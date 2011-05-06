@@ -15,6 +15,7 @@
 
 #include <kNet.h>
 #include <kNet/qt/NetworkDialog.h>
+#include <kNet/UDPMessageConnection.h>
 
 #include <algorithm>
 
@@ -194,6 +195,7 @@ void KristalliProtocolModule::Update(f64 frametime)
                 ::LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
                 emit ConnectionAttemptFailed();
 
+                emit ConnectionAttemptFailed();
                 reconnectTimer.Stop();
                 serverIp = "";
             }
@@ -239,6 +241,9 @@ void KristalliProtocolModule::PerformConnection()
         ::LogError("Unable to connect to " + serverIp + ":" + ToString(serverPort));
         return;
     }
+
+    if (serverTransport == kNet::SocketOverUDP)
+        dynamic_cast<kNet::UDPMessageConnection*>(serverConnection.ptr())->SetDatagramSendRate(500);
 
     // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
     if (serverConnection->GetSocket() && serverConnection->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
@@ -296,6 +301,9 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     if (!source)
         return;
 
+    if (dynamic_cast<kNet::UDPMessageConnection*>(source))
+        dynamic_cast<kNet::UDPMessageConnection*>(source)->SetDatagramSendRate(500);
+
     source->RegisterInboundMessageHandler(this);
     
     UserConnection* connection = new UserConnection();
@@ -310,6 +318,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     ::LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
     emit ClientConnectedEvent(connection);
+    emit ClientConnectedEvent(connection);
 }
 
 void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
@@ -318,6 +327,7 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->connection == source)
         {
+            emit ClientDisconnectedEvent(*iter);
             emit ClientDisconnectedEvent(*iter);
             
             ::LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
@@ -336,6 +346,7 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
 
     try
     {
+        emit NetworkMessageReceived(source, id, data, numBytes);
         emit NetworkMessageReceived(source, id, data, numBytes);
     } catch(std::exception &e)
     {

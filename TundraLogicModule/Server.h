@@ -67,6 +67,10 @@ public:
     /// Set current action sender. Called by SyncManager
     void SetActionSender(UserConnection* user);
     
+    //! Returns the backend server object. Use this object to Broadcast messages
+    //! to all currently connected clients.
+    kNet::NetworkServer *GetServer() const;
+
 signals:
     /// A user is connecting. This is your chance to deny access.
     /** Call user->Disconnect() to deny access and kick the user out
@@ -78,7 +82,9 @@ signals:
         client and the applications on the client computer can read them as needed. */
     void UserConnected(int connectionID, UserConnection* connection, UserConnectedResponseData *responseData);
     
-    /// A user has disconnected
+    void MessageReceived(UserConnection *connection, kNet::message_id_t id, const char* data, size_t numBytes);
+
+    //! A user has disconnected
     void UserDisconnected(int connectionID, UserConnection* connection);
     
     /// The server has been started

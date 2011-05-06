@@ -23,6 +23,7 @@
 #include "AssetCache.h"
 #include <QDir>
 #include <QFileSystemWatcher>
+#include "MemoryLeakCheck.h"
 
 AssetAPI::AssetAPI(bool isHeadless)
 :assetCache(0),

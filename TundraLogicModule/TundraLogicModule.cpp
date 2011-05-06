@@ -15,7 +15,6 @@
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "IAsset.h"
-
 #include "ConfigAPI.h"
 
 #include "SceneManager.h"
