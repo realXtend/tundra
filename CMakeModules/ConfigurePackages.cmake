@@ -147,10 +147,11 @@ macro (configure_ogre)
     	  set (OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
     	  set (OGRE_LIBRARIES ${OGRE_LIBRARY})
         else ()
-            sagase_configure_package (OGRE 
-            NAMES Ogre OgreSDK ogre OGRE
-            COMPONENTS Ogre ogre OGRE OgreMain 
-            PREFIXES ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+            # Windows only, Ogre from deps SVN. D3D9 includes are now mandatory
+            add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
+            include_directories(${ENV_NAALI_DEP_PATH}/Ogre/include)
+            include_directories(${ENV_NAALI_DEP_PATH}/Ogre/include/RenderSystems/Direct3D9)
+            link_directories(${ENV_NAALI_DEP_PATH}/Ogre/lib)
         endif ()
 
         sagase_configure_report (OGRE)
