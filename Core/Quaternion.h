@@ -367,7 +367,10 @@ inline void Quaternion::getMatrix_transposed( Matrix4 &dest ) const
 // Inverts this Quaternion
 inline Quaternion& Quaternion::makeInverse()
 {
-    x = -x; y = -y; z = -z;
+	f32 s = x * x + y * y + z * z + w * w;
+	if (s == 0)
+		s = 1.0f;
+    x = -x / s; y = -y / s; z = -z / s; w = w / s;
     return *this;
 }
 
