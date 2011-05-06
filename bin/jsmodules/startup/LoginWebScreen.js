@@ -903,18 +903,23 @@ var BrowserStorage = Class.extend
             return;
                
         // Initialise cache objects
-        this.cache = new QNetworkDiskCache(null);
-        this.cache.setCacheDirectory(this.cacheDataDir);
-        this.accessManager = new QNetworkAccessManager(null);
-        this.cookieJar = asset.GetAssetCache().NewCookieJar(this.cookieDataFile);
-        
+        try {
+            this.cache = new QNetworkDiskCache(null);
+            this.cache.setCacheDirectory(this.cacheDataDir);
+            this.accessManager = new QNetworkAccessManager(null);
+            this.cookieJar = asset.GetAssetCache().NewCookieJar(this.cookieDataFile);
+            this.have_cache = true;
+        } catch (err) {
+            print("Cache init failed: " + err);
+            this.have_cache = false;
+        }
         // Initialize cache items to our access manager.
-        if (this.settings.cacheEnabled)
+        if (this.have_cache && this.settings.cacheEnabled)
         {
             this.accessManager.setCache(this.cache);
             QWebSettings.setIconDatabasePath(this.iconDataDir);
         }
-        if (this.settings.cookiesEnabled)
+        if (this.have_cache && this.settings.cookiesEnabled)
         {
             this.accessManager.setCookieJar(this.cookieJar);
         }
