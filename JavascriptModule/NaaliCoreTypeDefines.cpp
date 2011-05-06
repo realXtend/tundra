@@ -266,7 +266,7 @@ QScriptValue Quaternion_prototype_rotationFromTo(QScriptContext *ctx, QScriptEng
     if (!vec1)
         return ctx->throwError("Vector3df rotationFromTo(): first argument is not a Vector3df.");
     
-    Vector3dfPtr vec2 = qscriptvalue_cast<Vector3dfPtr>(ctx->argument(0));    
+    Vector3dfPtr vec2 = qscriptvalue_cast<Vector3dfPtr>(ctx->argument(1));    
     if (!vec2)
         return ctx->throwError("Vector3df rotationFromTo(): second argument is not a Vector3df.");
     
@@ -287,7 +287,7 @@ QScriptValue Quaternion_prototype_product(QScriptContext *ctx, QScriptEngine *en
         return toScriptValueVector3(engine, (*this_q) * (*v));
     
     //if not, check Quaternion
-    QuaternionPtr q = qscriptvalue_cast<QuaternionPtr>(ctx->thisObject());
+    QuaternionPtr q = qscriptvalue_cast<QuaternionPtr>(ctx->argument(0));
     if (q)
         return toScriptValueQuaternion(engine,(*this_q) * (*q));
 
@@ -505,7 +505,7 @@ QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
 QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
 {    
     Vector3df *newVec = new Vector3df();
-    if ((ctx->argumentCount() == 3) && (ctx->isCalledAsConstructor()))
+    if ((ctx->isCalledAsConstructor()) && (ctx->argumentCount() == 3))
     {
         if (!ctx->argument(0).isNumber())
             return ctx->throwError(QScriptContext::TypeError, "new Vector3df(x,y,z): x argument is not a number");
@@ -518,7 +518,7 @@ QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
         newVec->y = ctx->argument(1).toNumber();
         newVec->z = ctx->argument(2).toNumber();
     }       
-    else if (ctx->argumentCount() != 0) 
+    else if (!(ctx->isCalledAsConstructor()) || (ctx->argumentCount() != 0)) 
         return ctx->throwError("Error creating Vector3df. Usage: new Vector3df() or new Vector3df(x, y, z).");
 
     Vector3dfPtr pointer(newVec);
@@ -546,12 +546,12 @@ QScriptValue createQuaternion(QScriptContext *ctx, QScriptEngine *engine)
     }
     else if ((ctx->argumentCount() == 1) && (ctx->isCalledAsConstructor())) //Quaternion(v): v is euler vector (radians)
     {
-        Vector3dfPtr vec1 = qscriptvalue_cast<Vector3dfPtr>(ctx->thisObject());;        
+        Vector3dfPtr vec1 = qscriptvalue_cast<Vector3dfPtr>(ctx->argument(0));;        
         if (!vec1)
             return ctx->throwError("new Quaternion(v): v argument is not a Vector3df.");
         newQuat->set(*vec1);
     }
-    else if (ctx->argumentCount() != 0)
+    else if (ctx->argumentCount() != 0 || !(ctx->isCalledAsConstructor()))
         return ctx->throwError("Error creating Quaternion. Usage: new Quaternion(), new Quaternion(v) or new Quaternion(x, y, z, w).");
 
     QuaternionPtr pointer(newQuat);
