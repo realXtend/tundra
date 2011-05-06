@@ -367,7 +367,10 @@ inline void Quaternion::getMatrix_transposed( Matrix4 &dest ) const
 // Inverts this Quaternion
 inline Quaternion& Quaternion::makeInverse()
 {
-    x = -x; y = -y; z = -z;
+	f32 s = x * x + y * y + z * z + w * w;
+	if (s == 0)
+		s = 1.0f;
+    x = -x / s; y = -y / s; z = -z / s; w = w / s;
     return *this;
 }
 
@@ -569,16 +572,30 @@ inline Quaternion& Quaternion::rotationFromTo(const Vector3df& from, const Vecto
     {
         return makeIdentity();
     }
+//$ BEGIN_MOD $
+	if (d < 1e-6f - 1.0f) //check inverse vector. Code from Ogre3d. http://www.ogre3d.org/docs/api/html/OgreVector3_8h-source.html
+    {
+        // Generate an axis
+        Vector3df axis = Vector3df::UNIT_X.crossProduct(from);
+        if (axis.getLength() == 0) // pick another if colinear
+            axis = Vector3df::UNIT_Y.crossProduct(from);
+        axis.normalize();
+        fromAngleAxis(PI, axis);
+    }
+    else //normal case
+    {
+//$ END_MOD $
+        const f32 s = sqrtf( (1.001+d)*2 ); // optimize inv_sqrt
+        const f32 invs = 1.f / s;
+        const Vector3df c = v0.crossProduct(v1)*invs;
 
-    const f32 s = sqrtf( (1+d)*2 ); // optimize inv_sqrt
-    const f32 invs = 1.f / s;
-    const Vector3df c = v0.crossProduct(v1)*invs;
-
-    x = c.x;
-    y = c.y;
-    z = c.z;
-    w = s * 0.5f;
-
+        x = c.x;
+        y = c.y;
+        z = c.z;
+        w = s * 0.5f;
+//$ BEGIN_MOD $
+    }
+//$ END_MOD $
     return *this;
 }
 
