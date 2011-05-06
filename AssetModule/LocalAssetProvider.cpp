@@ -73,16 +73,31 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
     return transfer;
 }
 
-QString LocalAssetProvider::GetPathForAsset(const QString &assetRef, LocalAssetStoragePtr *storage)
+QString LocalAssetProvider::GetPathForAsset(const QString &assetRef, LocalAssetStoragePtr *storage) const
 {
     QString path;
     QString path_filename;
     AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed(), 0, 0, 0, 0, &path_filename, &path);
     if (refType == AssetAPI::AssetRefLocalPath)
-        return path; // If the asset ref has already been converted to an absolute path, simply return the assetRef as is.
-
+    {
+        // If the asset ref has already been converted to an absolute path, simply return the assetRef as is.
+        // However, lookup also the storage if wanted
+        if (storage)
+        {
+            for (size_t i = 0; i < storages.size(); ++i)
+            {
+                if (path.startsWith(storages[i]->directory, Qt::CaseInsensitive))
+                {
+                    *storage = storages[i];
+                    return path;
+                }
+            }
+        }
+        
+        return path;
+    }
     // Check first all subdirs without recursion, because recursion is potentially slow
-    for(size_t i = 0; i < storages.size(); ++i)
+    for (size_t i = 0; i < storages.size(); ++i)
     {
         QString path = storages[i]->GetFullPathForAsset(path_filename.toStdString().c_str(), false);
         if (path != "")
@@ -93,7 +108,7 @@ QString LocalAssetProvider::GetPathForAsset(const QString &assetRef, LocalAssetS
         }
     }
 
-    for(size_t i = 0; i < storages.size(); ++i)
+    for (size_t i = 0; i < storages.size(); ++i)
     {
         QString path = storages[i]->GetFullPathForAsset(path_filename.toStdString().c_str(), true);
         if (path != "")
@@ -123,10 +138,12 @@ void LocalAssetProvider::Update(f64 frametime)
 void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
 {
     if (!assetRef.isEmpty())
+    {
         QFile::remove(assetRef); ///\todo Check here that the assetRef points to one of the accepted storage directories, and don't allow deleting anything else.
-    
-    LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
-    emit AssetDeletedFromStorage(assetRef);
+        
+        LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
+        framework->Asset()->EmitAssetDeletedFromStorage(assetRef);
+    }
 }
 
 bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
@@ -313,6 +330,13 @@ AssetStoragePtr LocalAssetProvider::GetStorageByName(const QString &name) const
             return storages[i];
 
     return AssetStoragePtr();
+}
+
+AssetStoragePtr LocalAssetProvider::GetStorageForAssetRef(const QString &assetRef) const
+{
+    LocalAssetStoragePtr storage;
+    GetPathForAsset(assetRef, &storage);
+    return boost::static_pointer_cast<IAssetStorage>(storage);
 }
 
 void LocalAssetProvider::CompletePendingFileUploads()

@@ -57,6 +57,8 @@ public:
 
     virtual AssetStoragePtr GetStorageByName(const QString &name) const = 0;
 
+    virtual AssetStoragePtr GetStorageForAssetRef(const QString &assetRef) const = 0;
+    
     /// Starts an asset upload from the given file in memory to the given storage.
     /// The default implementation fails all upload attempts and returns 0 immediately.
     virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName) { return AssetUploadTransferPtr(); }

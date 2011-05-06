@@ -70,12 +70,23 @@ void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
     providers.push_back(provider);
 }
 
-AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
+AssetStoragePtr AssetAPI::GetAssetStorageByName(const QString &name) const
 {
     foreach(AssetProviderPtr provider, GetAssetProviders())
         foreach(AssetStoragePtr storage, provider->GetStorages())
-			if (storage->Name().compare(name, Qt::CaseInsensitive) == 0)
+            if (storage->Name().compare(name, Qt::CaseInsensitive) == 0)
                 return storage;
+    return AssetStoragePtr();
+}
+
+AssetStoragePtr AssetAPI::GetStorageForAssetRef(const QString &ref) const
+{
+    foreach(AssetProviderPtr provider, GetAssetProviders())
+    {
+        AssetStoragePtr storage = provider->GetStorageForAssetRef(ref);
+        if (storage)
+            return storage;
+    }
     return AssetStoragePtr();
 }
 
@@ -493,7 +504,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     QString newAssetName = assetName;
     if (newAssetName.isEmpty())
         newAssetName = file.fileName().split("/").last();
-    AssetStoragePtr storage = GetAssetStorage(storageName);
+    AssetStoragePtr storage = GetAssetStorageByName(storageName);
     if (!storage.get())
     {
         LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName + "! Please add a storage with this name.");
@@ -549,7 +560,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &d
         LogError("AssetAPI::UploadAssetFromFileInMemory failed! QByteArray data is empty and/or null for " + assetName + " asset upload request.");
         return AssetUploadTransferPtr();
     }
-    AssetStoragePtr storage = GetAssetStorage(storageName);
+    AssetStoragePtr storage = GetAssetStorageByName(storageName);
     if (!storage.get())
     {
         LogError("AssetAPI::UploadAssetFromFileInMemory failed! No storage found with name " + storageName + "! Please add a storage with this name.");
@@ -782,7 +793,7 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     }
     else if (assetRefType == AssetRefNamedStorage) // The asset ref explicitly points to a named storage. Use the provider for that storage.
     {
-        AssetStoragePtr storage = GetAssetStorage(namedStorage);
+        AssetStoragePtr storage = GetAssetStorageByName(namedStorage);
         AssetProviderPtr provider = (storage ? storage->provider.lock() : AssetProviderPtr());
         return provider;
     }
@@ -849,7 +860,7 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
         break;
     case AssetRefNamedStorage: // The asset ref explicitly points to a named storage. Use the provider for that storage.
         {
-            AssetStoragePtr storage = GetAssetStorage(namedStorage);
+            AssetStoragePtr storage = GetAssetStorageByName(namedStorage);
             if (!storage)
                 return assetRef; // Failed to find the provider, just use the ref as it was, and hope.
             return storage->GetFullAssetURL(assetPath);
@@ -920,6 +931,11 @@ QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuff
 
 AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
 {
+    return CreateNewAsset(type, name, AssetStoragePtr());
+}
+
+AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr storage)
+{
     type = type.trimmed();
     name = name.trimmed();
     if (name.length() == 0)
@@ -944,6 +960,18 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
     }
     assert(asset->IsEmpty());
 
+    // Fill the provider & storage for the new asset already heree if possible
+    if (!storage)
+    {
+        asset->SetAssetProvider(GetProviderForAssetRef(type, name));
+        asset->SetAssetStorage(GetStorageForAssetRef(name));
+    }
+    else
+    {
+        asset->SetAssetProvider(storage->provider.lock());
+        asset->SetAssetStorage(storage);
+    }
+    
     // Remember this asset in the global AssetAPI storage.
     assets[name] = asset;
 
@@ -1302,6 +1330,11 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
 
 void AssetAPI::HandleAssetDiscovery(const QString &assetRef, const QString &assetType)
 {
+    HandleAssetDiscovery(assetRef, assetType, AssetStoragePtr());
+}
+
+void AssetAPI::HandleAssetDiscovery(const QString &assetRef, const QString &assetType, AssetStoragePtr storage)
+{
     AssetPtr existing = GetAsset(assetRef);
     // If asset did not exist, create new empty asset
     if (!existing)
@@ -1310,7 +1343,7 @@ void AssetAPI::HandleAssetDiscovery(const QString &assetRef, const QString &asse
         QString newType = assetType;
         if (newType.isEmpty())
             newType = GetResourceTypeFromAssetRef(assetRef);
-        CreateNewAsset(newType, assetRef);
+        CreateNewAsset(newType, assetRef, storage);
     }
     // If asset exists and is already loaded, forcibly request updated data
     else if (existing->IsLoaded())
@@ -1325,6 +1358,11 @@ void AssetAPI::HandleAssetDeleted(const QString &assetRef)
         return;
     if (!existing->IsLoaded())
         ForgetAsset(existing, false);
+}
+
+void AssetAPI::EmitAssetDeletedFromStorage(const QString &assetRef)
+{
+    emit AssetDeletedFromStorage(assetRef);
 }
 
 QMap<QString, QString> AssetAPI::ParseAssetStorageString(QString storageString)
@@ -1403,7 +1441,8 @@ void AssetAPI::OnAssetStorageRefsChanged(AssetStoragePtr storage)
         // If the asset does not exist at all, create a new empty asset.
         // However, if the asset already exists, do not refresh its data now (as we may be getting a huge amount of refs)
         if (!GetAsset(refs[i]))
-            HandleAssetDiscovery(refs[i], "");
+            // Use optimized discovery: the storage does not have to be looked up as it is known
+            HandleAssetDiscovery(refs[i], "", storage);
     }
 }
 

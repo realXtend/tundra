@@ -198,7 +198,11 @@ public slots:
 
     /// Returns the asset storage of the given name.
     /// @param name The name of the storage to get. Remember that Asset Storage names are case-insensitive.
-    AssetStoragePtr GetAssetStorage(const QString &name) const;
+    AssetStoragePtr GetAssetStorageByName(const QString &name) const;
+
+    /// Returns the asset storage for a given asset ref
+    /// @param ref The ref to search for
+    AssetStoragePtr GetStorageForAssetRef(const QString& ref) const;
 
     /// Removes the given asset storage from the list of all asset storages.
     /// The scene can still refer to assets in this storage, and download requests can be performed to it, but it will not show up in the Assets dialog,
@@ -330,6 +334,9 @@ public slots:
     /// Handle deletion of an asset through the AssetDeleted network message
     void HandleAssetDeleted(const QString &assetRef);
     
+    /// Cause AssetAPI to emit AssetDeletedFromStorage. Called by asset providers
+    void EmitAssetDeletedFromStorage(const QString &assetRef);
+    
 public:
     /// Explodes the given asset storage description string to key-value pairs.
     static QMap<QString, QString> ParseAssetStorageString(QString storageString);
@@ -344,9 +351,12 @@ signals:
 
     /// Emitted before an assets disk source will be removed.
     void DiskSourceAboutToBeRemoved(AssetPtr asset);
-
+    
     /// Emitted when an asset has been uploaded
     void AssetUploaded(const QString &assetRef);
+
+    /// Emitted when asset was confirmedly deleted from storage
+    void AssetDeletedFromStorage(const QString &assetRef);
 
     /// Emitted when an asset storage has been added
     void AssetStorageAdded(AssetStoragePtr storage);
@@ -389,6 +399,12 @@ private:
     /// Removes from AssetDependenciesMap all dependencies the given asset has.
     void RemoveAssetDependencies(QString asset);
 
+    /// Handle discovery of a new asset, when the storage is already known. This is used internally for optimization, so that providers don't need to be queried
+    void HandleAssetDiscovery(const QString &assetRef, const QString &assetType, AssetStoragePtr storage);
+    
+    /// Create new asset, when the storage is already known. This is used internally for optimization
+    AssetPtr CreateNewAsset(QString type, QString name, AssetStoragePtr storage);
+    
     /// Stores a list of asset requests to assets that have already been downloaded into the system. These requests don't go to the asset providers
     /// to process, but are internally filled by the Asset API. This member vector is needed to be able to delay the requests and virtual completions
     /// by one frame, so that the client gets a chance to connect his handler's Qt signals to the AssetTransferPtr slots.

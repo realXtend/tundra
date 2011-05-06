@@ -54,21 +54,20 @@ namespace Asset
 
         virtual AssetStoragePtr GetStorageByName(const QString &name) const;
 
+        virtual AssetStoragePtr GetStorageForAssetRef(const QString &assetRef) const;
+
         virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
         virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage);
 
         QString GenerateUniqueStorageName() const;
 
-    signals:
-        /// The asset provider deleted an asset from storage
-        void AssetDeletedFromStorage(const QString& assetRef);
     
     private:
 
         /// Finds a path where the file localFilename can be found. Searches through all local storages.
         /// @param storage [out] Receives the local storage that contains the asset.
-        QString GetPathForAsset(const QString &localFilename, LocalAssetStoragePtr *storage);
+        QString GetPathForAsset(const QString &localFilename, LocalAssetStoragePtr *storage) const;
         
         /// Framework
         Framework *framework;

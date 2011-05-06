@@ -45,7 +45,7 @@ public:
 
     virtual AssetStoragePtr GetStorageByName(const QString &name) const;
 
-    HttpAssetStoragePtr GetStorageForAssetRef(QString assetRef) const;
+    virtual AssetStoragePtr GetStorageForAssetRef(const QString &assetRef) const;
 
     /// Starts an asset upload from the given file in memory to the given storage.
     virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
@@ -62,10 +62,6 @@ public:
 
     /// Return the network access manager
     QNetworkAccessManager* GetNetworkAccessManager() { return networkAccessManager; }
-    
-signals:
-    /// The asset provider deleted an asset from storage
-    void AssetDeletedFromStorage(const QString& assetRef);
     
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);

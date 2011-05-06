@@ -30,6 +30,14 @@ namespace Avatar
     void AvatarModule::Load()
     {
         DECLARE_MODULE_EC(EC_Avatar);
+
+        ///\todo This doesn't need to be loaded in headless server mode.
+        // Note: need to register in Initialize(), because in PostInitialize() AssetModule refreshes the local asset storages, and that 
+        // would result in inability to create any avatar assets in unloaded state
+        if (!framework_->IsHeadless())
+            framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("Avatar")));
+        else
+            framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Avatar")));
     }
 
     void AvatarModule::Initialize()
@@ -46,12 +54,6 @@ namespace Avatar
             connect(avatar_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), SLOT(KeyReleased(KeyEvent*)));
         }
 
-        ///\todo This doesn't need to be loaded in headless server mode.
-        if (!framework_->IsHeadless())
-            framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("Avatar")));
-        else
-            framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Avatar")));
-        
         framework_->Console()->RegisterCommand(CreateConsoleCommand("editavatar",
             "Edits the avatar in a specific entity. Usage: editavatar(entityname)",
             ConsoleBind(this, &AvatarModule::EditAvatar)));
