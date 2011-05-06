@@ -90,6 +90,30 @@ else
     touch $tags/$what-done
 fi
 
+what=qtscriptgenerator
+if false && test -f $tags/$what-done; then 
+   echo $what is done
+else
+    cd $build
+    rm -rf $what
+    git clone git://gitorious.org/qt-labs/$what.git
+    cd $what
+
+    cd generator
+    qmake
+    make -j $nprocs
+    ./generator --include-paths=/usr/include/qt4
+    cd ..
+
+    cd qtbindings
+    sed -i 's/qtscript_phonon //' qtbindings.pro 
+    sed -i 's/qtscript_webkit //' qtbindings.pro 
+    qmake
+    make -j $nprocs
+
+    touch $tags/$what-done
+fi
+
 what=knet
 if false && test -f $tags/$what-done; then 
    echo $what is done
