@@ -255,8 +255,8 @@ namespace Environment
        void CreateInputContext();
 
         //! Convert Degoded texture into QImage format. Note! This method is planned to be removed when QImage can directly created using raw data pointer.
-        //! @Param tex Reference to texture resource.
-        //! @Return converted QImage.
+        //! @param tex Reference to texture resource.
+        //! @return converted QImage.
         ///\todo Regression. Use the new Asset API here instead. -jj.
 //        QImage ConvertToQImage(Foundation::TextureInterface &tex);
 
@@ -297,15 +297,15 @@ namespace Environment
         void UpdateHeightmapImagePaintArea(uint x_pos, uint y_pos);
 
         //! Clear old sky properties and create a new one for spesific sky type.
-        //! @Param sky_type is used to tell what type of sky is in use, so right properties will be created.
+        //! @param sky_type is used to tell what type of sky is in use, so right properties will be created.
         void CreateSkyProperties(SkyType sky_type);
 
         //! Clean all option widgets on the option scroll area.
         void CleanSkyProperties();
 
         //! Ask texture decoder for a texture resource.
-        //! @Param index Index will tell us what terrain texture we are requesting range [0 - 3] where 0 is the lowest terrain texture and 3 is the highest.
-        //! @Return request tag for the texture.
+        //! @param index Index will tell us what terrain texture we are requesting range [0 - 3] where 0 is the lowest terrain texture and 3 is the highest.
+        //! @return request tag for the texture.
 //        request_tag_t RequestTerrainTexture(uint index);
 
         QWidget* GetPage(const QString& name);

@@ -9,8 +9,9 @@
 
 #include <QUrl>
 #include <QFile>
-#include <QDataStream>
 #include <QFileInfo>
+#include <QDataStream>
+#include <QCryptographicHash>
 #include <QScopedPointer>
 
 #include "MemoryLeakCheck.h"
@@ -174,6 +175,22 @@ QNetworkCacheMetaData AssetCache::metaData(const QUrl &url)
             metaDataFile.close();
         }
     }
+
+    // If we have a cache data file also, verify data integrity.
+    // If the file is corrupted, return empty metadata to trigger a new full fetch for data.
+    if (resultMetaData.isValid())
+    {
+        QString absoluteDataFile = GetAbsoluteFilePath(false, url);
+        if (QFile::exists(absoluteDataFile))
+        {
+            if (!VerifyCacheContentDigest(absoluteDataFile, resultMetaData))
+            {
+                LogError("Detected a corrupted cache file, triggering a full fetch for " + url.toString());
+                return QNetworkCacheMetaData();
+            }
+        }
+    }
+
     return resultMetaData;
 }
 
@@ -276,6 +293,57 @@ bool AssetCache::WriteMetadata(const QString &filePath, const QNetworkCacheMetaD
     QDataStream metaDataStream(&metaDataFile);
     metaDataStream << metaData;
     metaDataFile.close();
+    return true;
+}
+
+bool AssetCache::VerifyCacheContentDigest(const QString &absoluteDataFilePath, const QNetworkCacheMetaData &metaData)
+{
+    // If we are not processing a web asset, the content digest wont be there
+    // if we haven't inserted it there ourselves (we should when providers are implemented).
+    // so return true and allow the cache item to be passed onward.
+    QString dataUrlScheme = metaData.url().scheme().toLower();
+    if (dataUrlScheme != "http" && dataUrlScheme != "https" && dataUrlScheme != "ftp")
+        return true;
+
+    QNetworkCacheMetaData::RawHeaderList headers = metaData.rawHeaders();
+    
+    QByteArray cachedContentDigest;
+    QByteArray contentDigestHeader("content-md5");
+    foreach(QNetworkCacheMetaData::RawHeader header, headers)
+    {
+        if (header.first.toLower() == contentDigestHeader)
+        {
+            cachedContentDigest = header.second;
+            break;
+        }
+    }
+    
+    // All server do not serve the "Content-MD5" header,
+    // if not we skip this check and allow the cache item to be passed onward.
+    if (cachedContentDigest.isEmpty())
+        return true;
+
+    // We have the header present, now its time to compare the data
+    // If we fail to open the file, remove it and return false to trigger a full fetch.
+    QFile dataFile(absoluteDataFilePath);
+    if (!dataFile.open(QIODevice::ReadOnly))
+    {
+        if (!remove(metaData.url()))
+            LogError("Failed to remove a corrupted data or metadata file.");
+        return false;
+    }
+
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    hash.addData(dataFile.readAll());
+    dataFile.close();
+
+    QByteArray dataContentDigest = hash.result().toBase64();
+    if (dataContentDigest != cachedContentDigest)
+    {
+        if (!remove(metaData.url()))
+            LogError("Failed to remove a corrupted data or metadata file.");
+        return false;
+    }
     return true;
 }
 

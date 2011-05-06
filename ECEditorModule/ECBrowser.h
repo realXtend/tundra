@@ -155,7 +155,7 @@ private slots:
     void OnComponentNameChanged(const QString &newName);
 
     /// Show dialog, so that user can create a new attribute.
-    /// @Note: Only works with dynamic components.
+    /// @note: Only works with dynamic components.
     void CreateAttribute();
 
     /// Remove component or attribute based on selected QTreeWidgeItem.
