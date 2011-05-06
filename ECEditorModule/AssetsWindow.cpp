@@ -59,8 +59,8 @@ AssetsWindow::AssetsWindow(const QString &assetType, Framework *fw, QWidget *par
 
     QHBoxLayout *hlayout2= new QHBoxLayout;
     hlayout2->insertSpacerItem(-1, spacer);
-    hlayout2->addWidget(cancelButton);
     hlayout2->addWidget(pickButton);
+    hlayout2->addWidget(cancelButton);
     static_cast<QVBoxLayout *>(layout())->addLayout(hlayout2);
 
     connect(treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), SLOT(PickAsset(QTreeWidgetItem *)));
