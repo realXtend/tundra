@@ -113,7 +113,9 @@ function getPoints(from, to) {
     targets.push(getNormal(from, 15));
     targets.push(getNormal(to, 15));
     targets.push(getNormal(to, 10));
-    
+    lookAtTargets = [];
+    lookAtTargets.push(getNormal(from, 10));
+    lookAtTargets.push(getNormal(to, 10));
 }
 
 function HandleGotoNext() {
@@ -135,7 +137,7 @@ function HandleGotoPrev() {
 }
 
 function animationUpdate(dt) {
-
+    
     if (targets.length == 0) {
 	return;
     }
@@ -149,21 +151,23 @@ function animationUpdate(dt) {
 
     if (d <= 0.1) {
 	targets.splice(0, 1);
+	if (lookAtTargets.length == 2) {
+	    lookAtTargets.splice(0, 1);
+	}
 	return;
     }
 
-    var velocity = vsubb(pos, target);
-    velocity = normalize(velocity);
+    var direction = vsubb(pos, target);
+    direction = normalize(direction);
 
-    var newPos = vadd(pos, smul(velocity, -dt * 5));
+    var newPos = vadd(pos, smul(direction, -dt * 5));
 
     pos.setX(newPos.x());
     pos.setY(newPos.y());
     pos.setZ(newPos.z());
 
     camera.placeable.position = pos;
-    camera.placeable.LookAt(entities[currentIndex].placeable.position);
-
+    camera.placeable.LookAt(lookAtTargets[0]);
 }
 
 function reset() {
@@ -182,7 +186,7 @@ var endIndex = entities.length;
 
 var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
 var camera = scene.GetEntityByNameRaw("FreeLookCamera");
-var cube = scene.GetEntityByName("Cubbe");
+//var camera = scene.GetEntityByName("Monkey");
 
 inputmapper.RegisterMapping('n', "GotoNext", 1);
 inputmapper.RegisterMapping('p', "GotoPrev", 1);
@@ -193,6 +197,7 @@ me.Action("GotoPrev").Triggered.connect(HandleGotoPrev);
 me.Action("ResetShow").Triggered.connect(reset);
 
 var targets = [];
+var lookAtTargets = [];
 print(targets);
 
 print('..');
