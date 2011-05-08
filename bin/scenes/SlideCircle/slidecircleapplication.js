@@ -157,10 +157,10 @@ function animationUpdate(dt) {
 	return;
     }
 
-    var direction = vsubb(pos, target);
+    var direction = vsubb(target, pos);
     direction = normalize(direction);
 
-    var newPos = vadd(pos, smul(direction, -dt * 5));
+    var newPos = vadd(pos, smul(direction, dt * 5));
 
     pos.setX(newPos.x());
     pos.setY(newPos.y());
