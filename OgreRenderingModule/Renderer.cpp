@@ -1231,30 +1231,6 @@ namespace OgreRenderer
         return return_pixmap;
     }
 
-    QPixmap Renderer::RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation)
-    {
-        int window_width = renderWindow->OgreRenderWindow()->getWidth();
-        int window_height = renderWindow->OgreRenderWindow()->getHeight();
-        PrepareImageRendering(window_width, window_height);
-        if (!texture_rendering_cam_entity_)
-            return QPixmap();
-
-        // Calculate positions
-        Vector3df pos = avatar_position;
-        pos += (avatar_orientation * Vector3df::UNIT_X * 0.6f);
-        pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_Z * 0.5f);
-        Vector3df lookat = avatar_position + avatar_orientation * Vector3df(0,0,-0.4f);
-
-        EC_Placeable *cam_ec_placable = texture_rendering_cam_entity_->GetComponent<EC_Placeable>().get();
-        if (!cam_ec_placable)
-            return QPixmap();
-
-        cam_ec_placable->SetPosition(pos);
-        cam_ec_placable->LookAt(lookat);
-
-        return RenderImage(false);
-    }
-
     QImage Renderer::CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height)
     {
         SAFE_DELETE(capture_screen_pixel_data_);

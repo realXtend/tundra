@@ -50,7 +50,7 @@ namespace OgreRenderer
         Q_OBJECT
 
     public slots:
-        /// Renders the screen. 
+        /// Renders the screen.
         //as a slot for webserver plugin to render when needed
         virtual void Render();
 
@@ -99,10 +99,6 @@ namespace OgreRenderer
         /// Render current main window content to texture
         virtual QPixmap RenderImage(bool use_main_camera = true);
 
-        /// Render current main window with focus on the avatar
-        /// @todo make this focus non hard coded but as param
-        virtual QPixmap RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation);
-
         /// Prepapres the texture and entities used in texture rendering
         void PrepareImageRendering(int width, int height);
 
@@ -129,7 +125,7 @@ namespace OgreRenderer
 
         /// Destructor
         virtual ~Renderer();
-        
+
         /// Subscribe a listener to renderer log. Can be used before renderer is initialized.
         virtual void SubscribeLogListener(const LogListenerPtr &listener);
 
@@ -172,17 +168,16 @@ namespace OgreRenderer
         Ogre::Viewport* GetViewport() const { return viewport_; }
 
         /// Returns active camera
-        /** Note: use with care. Never set the position of the camera, but query rather the camera entity from scene,
-            and use the EC_Camera entity component + its placeable
-         */
+        /** @note Use with care. Never set the position of the camera, but query rather the camera entity from scene,
+            and use the EC_Camera entity component + its placeable.
+        */
         Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
         /// Returns current render window
         Ogre::RenderWindow* GetCurrentRenderWindow() const;
 
         /// Returns an unique name to create Ogre objects that require a mandatory name
-        ///\todo Generates object names, not material or billboardset names, but anything unique goes.
-        /// Perhaps would be nicer to just have a GetUniqueName(string prefix)?
+        /** @param prefix Prefix for the name. */
         std::string GetUniqueObjectName(const std::string &prefix);
 
         /// Removes log listener
@@ -190,23 +185,21 @@ namespace OgreRenderer
 
         /// Initializes renderer. Called by OgreRenderingModule
         /** Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before.
-         */
+        */
         void Initialize();
 
         /// Post-initializes renderer. Called by OgreRenderingModule
         /** Queries event categories it needs
-         */
+        */
         void PostInitialize();
 
         /// Performs update. Called by OgreRenderingModule
         /** Pumps Ogre window events.
-         */
+        */
         void Update(f64 frametime);
 
         /// Sets current camera used for rendering the main viewport
-        /** Called by EC_Camera when activating. Null will default to the default camera, so that we don't crash
-            when rendering.
-         */
+        /** Called by EC_Camera when activating. Null will default to the default camera, so that we don't crash when rendering. */
         void SetCurrentCamera(Ogre::Camera* camera);
 
         /// returns the composition handler responsible of the post-processing effects
@@ -227,7 +220,6 @@ namespace OgreRenderer
         RenderWindow *GetRenderWindow() const { return renderWindow; }
 
     private:
-        
         /// Sleeps the main thread to throttle the main loop execution speed.
         void DoFrameTimeLimiting();
 
