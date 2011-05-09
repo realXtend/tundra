@@ -7,6 +7,7 @@
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
 #include "LineEditPropertyFactory.h"
+#include "EditorButtonFactory.h"
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -664,7 +665,7 @@ template<> void ECAttributeEditor<Color>::Set(QtProperty *property)
     {
         QtVariantProperty *prop = dynamic_cast<QtVariantProperty*>(rootProperty_);
         QColor value = prop->value().value<QColor>();
-        SetValue(Color(value.red() / 255, value.green() / 255, value.blue() / 255, value.alpha() / 255)); 
+        SetValue(Color(value.red() / 255.0f, value.green() / 255.0f, value.blue() / 255.0f, value.alpha() / 255.0f)); 
     }
 }
 
@@ -1483,7 +1484,7 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
     {
         QtStringPropertyManager *stringManager = new QtStringPropertyManager(this);
         LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
-        connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, LineEditWithButtons *)), SLOT(HandleNewEditor(QtProperty *,LineEditWithButtons *)));
+        connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, QObject *)), SLOT(HandleNewEditor(QtProperty *, QObject *)));
         propertyMgr_ = stringManager;
         factory_ = lineEditFactory;
 
@@ -1519,7 +1520,11 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
         owner_->setFactoryForManager(stringManager, lineEditFactory);
     }
     else
+    {
         InitializeMultiEditor();
+        if (factory_)
+            connect(factory_, SIGNAL(EditorCreated(QtProperty *, QObject *)), SLOT(HandleNewEditor(QtProperty *, QObject *)));
+    }
 
     emit EditorChanged(name_);
 }
@@ -1530,18 +1535,32 @@ template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property)
         SetValue(AssetReference(property->valueText()));
 }
 
-void AssetReferenceAttributeEditor::HandleNewEditor(QtProperty *prop, LineEditWithButtons *editor)
+void AssetReferenceAttributeEditor::HandleNewEditor(QtProperty *prop, QObject *factory)
 {
-    // Add button which opens AssetsWindow always for AssetReference attributes.
-    //rootProperty_ editor->pro
-    if (editor)
-    {
-        QPushButton *pickButton = editor->CreateButton(prop->propertyName(), "...");
-        pickButton->setParent(editor);
-        connect(pickButton, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
+    QPushButton *pickButton = 0, *editButton = 0;
 
-        QPushButton *editButton = editor->CreateButton(prop->propertyName(), tr("E"));
-        editButton->setParent(editor);
+    if (useMultiEditor_)
+    {
+        MultiEditPropertyFactory *multiEditFactory = qobject_cast<MultiEditPropertyFactory *>(factory);
+        if (multiEditFactory && multiEditFactory->buttonFactory)
+        {
+            pickButton = multiEditFactory->buttonFactory->AddButton(prop->propertyName(), "...");
+            editButton = multiEditFactory->buttonFactory->AddButton(prop->propertyName(), tr("E"));
+        }
+    }
+    else
+    {
+        LineEditPropertyFactory *lineEditFactory = qobject_cast<LineEditPropertyFactory *>(factory);
+        if (lineEditFactory && lineEditFactory->buttonFactory)
+        {
+            pickButton = lineEditFactory->buttonFactory->AddButton(prop->propertyName(), "...");
+            editButton = lineEditFactory->buttonFactory->AddButton(prop->propertyName(), tr("E"));
+        }
+    }
+
+    if (pickButton && editButton)
+    {
+        connect(pickButton, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
         connect(editButton, SIGNAL(clicked(bool)), SLOT(OpenEditor()));
     }
 }
@@ -1571,7 +1590,6 @@ void AssetReferenceAttributeEditor::HandleAssetPicked(AssetPtr asset)
         LogInfo("AssetReferenceAttributeEditor: Setting new value " + asset->Name());
         SetValue(AssetReference(asset->Name()));
         Update();
-        ///\todo multi-edit
     }
 }
 
@@ -1589,9 +1607,9 @@ void AssetReferenceAttributeEditor::OpenEditor()
         AssetPtr asset = fw->Asset()->GetAsset(assetRef->Get().ref);
         if (asset)
         {
-            QMenu *menu = new QMenu();
-            fw->Ui()->EmitContextMenuAboutToOpen(menu, QObjectList(QObjectList() << asset.get()));
-            QAction *editAction = menu->findChild<QAction *>("Edit");
+            QMenu menu;
+            fw->Ui()->EmitContextMenuAboutToOpen(&menu, QObjectList(QObjectList() << asset.get()));
+            QAction *editAction = menu.findChild<QAction *>("Edit");
             if (editAction)
                 editAction->trigger();
         }
@@ -1642,7 +1660,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
         QtGroupPropertyManager *groupManager = new QtGroupPropertyManager(this);
         QtStringPropertyManager *stringManager = new QtStringPropertyManager(this);
         LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
-        connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, LineEditWithButtons *)), SLOT(HandleNewEditor(QtProperty *, LineEditWithButtons *)));
+        connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, QObject *)), SLOT(HandleNewEditor(QtProperty *, QObject *)));
         propertyMgr_ = groupManager;
         factory_ = lineEditFactory;
         optionalPropertyManagers_.push_back(stringManager);
@@ -1678,7 +1696,11 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
         owner_->setFactoryForManager(stringManager, lineEditFactory);
     }
     else
+    {
         InitializeMultiEditor();
+        if (factory_)
+            connect(factory_, SIGNAL(EditorCreated(QtProperty *, QObject *)), SLOT(HandleNewEditor(QtProperty *, QObject *)));
+    }
 
     emit EditorChanged(name_);
 }
@@ -1717,20 +1739,49 @@ template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty *property)
     }
 }
 
-void AssetReferenceListAttributeEditor::HandleNewEditor(QtProperty *prop, LineEditWithButtons *editor)
+void AssetReferenceListAttributeEditor::HandleNewEditor(QtProperty *prop, QObject *factory)
 {
-    // Add button which opens AssetsWindow always for AssetReference attributes.
-
-    if (editor)
+    // Add buttons for opening Assets window and editing always for AssetReference attributes.
+    QPushButton *pickButton = 0, *editButton = 0;
+    if (useMultiEditor_)
     {
-        QPushButton *pickButton = editor->CreateButton(prop->propertyName(), "...");
-        pickButton->setParent(editor);
-        connect(pickButton, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
+        MultiEditPropertyFactory *multiEditFactory = qobject_cast<MultiEditPropertyFactory *>(factory);
+        if (multiEditFactory && multiEditFactory->buttonFactory)
+        {
+            pickButton = multiEditFactory->buttonFactory->AddButton(prop->propertyName(), "...");
+            editButton = multiEditFactory->buttonFactory->AddButton(prop->propertyName(), tr("E"));
+        }
+    }
+    else
+    {
+        LineEditPropertyFactory *lineEditFactory = qobject_cast<LineEditPropertyFactory *>(factory);
+        if (lineEditFactory && lineEditFactory->buttonFactory)
+        {
+            pickButton = lineEditFactory->buttonFactory->AddButton(prop->propertyName(), "...");
+            editButton = lineEditFactory->buttonFactory->AddButton(prop->propertyName(), tr("E"));
+        }
+    }
 
-        QPushButton *editButton = editor->CreateButton(prop->propertyName(), tr("E"));
-        editButton->setParent(editor);
+    if (pickButton && editButton)
+    {
+        connect(pickButton, SIGNAL(clicked(bool)), SLOT(OpenAssetsWindow()));
         connect(editButton, SIGNAL(clicked(bool)), SLOT(OpenEditor()));
     }
+}
+
+int ParseIndex(const QString &objName)
+{
+    int start = objName.lastIndexOf('[');
+    int end = objName.lastIndexOf(']');
+    if (start == -1 || end == -1)
+        return -1;
+
+    bool ok;
+    int idx = objName.mid(start+1, end-start-1).toInt(&ok);
+    if (!ok || idx < 0)
+        return -1;
+
+    return idx;
 }
 
 void AssetReferenceListAttributeEditor::OpenAssetsWindow()
@@ -1739,29 +1790,14 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     if (!button)
         return;
 
-    QString objName = button->objectName();
-    int start = objName.lastIndexOf('[');
-    int end = objName.lastIndexOf(']');
-    if (start == -1 || end == -1)
-    {
-        currentIndex = -1;
-        return;
-    }
-
-    bool ok;
-    int idx = objName.mid(start+1, end-start-1).toInt(&ok);
-    if (!ok || idx < 0)
-    {
-        currentIndex = -1;
-        return;
-    }
-
     Attribute<AssetReferenceList> *refList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
     if (!refList)
-    {
-        currentIndex = -1;
         return;
-    }
+
+    // In multi-edit we have only one index.
+    currentIndex = useMultiEditor_ ? 0 : ParseIndex(button->objectName());
+    if (currentIndex == -1)
+        return;
 
     QString assetType = refList->Get().type;
     // If no type defined to the AssetReferenceList, try to retrieve it from the first item.
@@ -1773,6 +1809,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
             assetType = AssetAPI::GetResourceTypeFromAssetRef(refList->Get()[0]);
     }
 
+    LogInfo("OpenAssetsWindow, index " + ToString(currentIndex));
     LogInfo("Creating AssetsWindow for asset type " + assetType);
     AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
@@ -1781,9 +1818,10 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     assetsWindow->show();
 
     // Save the original asset ref, if we decide to cancel
-    if (idx < refList->Get().Size())
-        originalRef = refList->Get()[idx].ref;
-    currentIndex = idx;
+    if (currentIndex < refList->Get().Size())
+        originalRef = refList->Get()[currentIndex].ref;
+
+    ///\todo Multi-edit cancel
 }
 
 void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
@@ -1803,15 +1841,16 @@ void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
 
     if (asset)
     {
-        LogInfo("AssetReferenceListAttributeEditor: Setting new value " + asset->Name());
+        LogInfo("AssetReferenceListAttributeEditor: Setting new value " + asset->Name().toStdString() + " for index " + ToString(currentIndex));
         AssetReferenceList newRefList = refList->Get();
+
         if (newRefList.IsEmpty())
             newRefList.Append(AssetReference(asset->Name()));
         else
             newRefList.Set(currentIndex, AssetReference(asset->Name()));
+
         SetValue(newRefList);
         Update();
-        ///\todo multi-edit
     }
 }
 
@@ -1820,7 +1859,7 @@ void AssetReferenceListAttributeEditor::RestoreOriginalValue()
     Attribute<AssetReferenceList> *refList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
     if (refList)
     {
-        LogInfo("Setting original asset ref " + originalRef);
+        LogInfo("Setting original asset ref " + originalRef.toStdString() + " for index " + ToString(currentIndex));
         AssetReferenceList refs = refList->Get();
         if (!refs.IsEmpty())
             refs.Set(currentIndex, AssetReference(originalRef));
@@ -1835,30 +1874,24 @@ void AssetReferenceListAttributeEditor::OpenEditor()
     QPushButton *button = qobject_cast<QPushButton *>(sender());
     if (!button)
         return;
-    QString objName = button->objectName();
-    int start = objName.lastIndexOf('[');
-    int end = objName.lastIndexOf(']');
-    if (start == -1 || end == -1)
-        return;
-
-    bool ok;
-    int idx = objName.mid(start+1, end-start-1).toInt(&ok);
-    if (!ok || idx < 0)
-        return;
 
     Attribute<AssetReferenceList> *assetRefList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
-    if (assetRefList)
+    if (!assetRefList)
+        return;
+
+    // In multi-edit we have only one index.
+    currentIndex = useMultiEditor_ ? 0 : ParseIndex(button->objectName());
+    if (currentIndex == -1)
+        return;
+
+    AssetReference assetRef = assetRefList->Get()[currentIndex];
+    AssetPtr asset = fw->Asset()->GetAsset(assetRef.ref);
+    if (asset)
     {
-        AssetReference assetRef = assetRefList->Get()[idx];
-        AssetPtr asset = fw->Asset()->GetAsset(assetRef.ref);
-        if (asset)
-        {
-            QMenu *menu = new QMenu();
-            fw->Ui()->EmitContextMenuAboutToOpen(menu, QObjectList(QObjectList() << asset.get()));
-            QAction *editAction = menu->findChild<QAction *>("Edit");
-            if (editAction)
-                editAction->trigger();
-        }
+        QMenu menu;
+        fw->Ui()->EmitContextMenuAboutToOpen(&menu, QObjectList(QObjectList() << asset.get()));
+        QAction *editAction = menu.findChild<QAction *>("Edit");
+        if (editAction)
+            editAction->trigger();
     }
 }
-

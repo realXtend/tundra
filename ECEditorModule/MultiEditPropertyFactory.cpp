@@ -1,34 +1,55 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "MultiEditPropertyFactory.h"
-#include "qteditorfactory.h"
-#include <QLayout>
+#include "EditorButtonFactory.h"
 
-#include "Application.h"
+#include <QLayout>
+#include <qteditorfactory.h>
 
 #include "MemoryLeakCheck.h"
 
-MultiEditPropertyFact::MultiEditPropertyFact(QObject *parent):
-    QtAbstractEditorFactory<MultiEditPropertyManager>(parent)
+MultiEditButton::MultiEditButton(QWidget *parent) : QWidget(parent)
 {
-    
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setContentsMargins(0,0,0,0);
+    layout->setSpacing(0);
+    setLayout(layout);
+
+    button = new QPushButton(this);
+    button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    layout->addWidget(button);
+    setFocusProxy(button);
 }
 
-MultiEditPropertyFact::~MultiEditPropertyFact()
+MultiEditPropertyFactory::MultiEditPropertyFactory(QObject *parent):
+    QtAbstractEditorFactory<MultiEditPropertyManager>(parent),
+    buttonFactory(0)
+{
+}
+
+MultiEditPropertyFactory::~MultiEditPropertyFactory()
 {
     qDeleteAll(editorToProperty_.keys());
 }
 
-void MultiEditPropertyFact::connectPropertyManager(MultiEditPropertyManager *manager)
+void MultiEditPropertyFactory::connectPropertyManager(MultiEditPropertyManager *manager)
 {
-    /*QObject::connect(manager, SIGNAL(AttributeValuesUpdated(const QtProperty *, const QStringList &)),
-                        this, SLOT(UpdateAttributeValues(const QtProperty *, const QStringList &)));*/
+/*
+    connect(manager, SIGNAL(AttributeValuesUpdated(const QtProperty *, const QStringList &)),
+        SLOT(UpdateAttributeValues(const QtProperty *, const QStringList &)));
+*/
 }
 
-QWidget *MultiEditPropertyFact::createEditor(MultiEditPropertyManager *manager, QtProperty *property, QWidget *parent)
+QWidget *MultiEditPropertyFactory::createEditor(MultiEditPropertyManager *manager, QtProperty *property, QWidget *parent)
 {
-    QPushButton *multiEditButton = new QPushButton(parent);
+    //QPushButton *multiEditButton = new QPushButton(parent);
+    MultiEditButton *multiEditButton = new MultiEditButton(parent);
+    SAFE_DELETE(buttonFactory);
+    buttonFactory = new EditorButtonFactory(parent);
+    multiEditButton->layout()->addWidget(buttonFactory);
 
     /// \bug QInputContext has a bug where if you have a QInputDialog in a QGraphicsView and close the dialog, the QInputContext
     /// will access a dangling pointer and crash. This bug can be avoided by never freeing the QInputDialog (and leaking),
@@ -42,30 +63,32 @@ QWidget *MultiEditPropertyFact::createEditor(MultiEditPropertyManager *manager, 
     dialog->setComboBoxItems(attributes);
     dialog->setInputMode(QInputDialog::TextInput);
     dialog->setComboBoxEditable(true);
-    QObject::connect(multiEditButton, SIGNAL(clicked()), dialog, SLOT(open()));
-    multiEditButton->setText(QString("(%1 values)").arg(attributes.size()));
+    connect(multiEditButton->button, SIGNAL(clicked()), dialog, SLOT(open()));
+    multiEditButton->button->setText(QString("(%1 values)").arg(attributes.size()));
 
     createdEditors_[property] = dialog;
     editorToProperty_[dialog] = property;
-    QObject::connect(dialog, SIGNAL(textValueSelected(const QString &)), 
-                     this, SLOT(DialogValueSelected(const QString &)));
-    QObject::connect(this, SIGNAL(ValueSelected(QtProperty *, const QString &)), 
-                     manager, SLOT(SetValue(QtProperty *, const QString &)));
-    QObject::connect(dialog, SIGNAL(destroyed(QObject *)),
-                     this, SLOT(EditorDestroyed(QObject *)));
+
+    connect(dialog, SIGNAL(textValueSelected(const QString &)), SLOT(DialogValueSelected(const QString &)));
+    connect(this, SIGNAL(ValueSelected(QtProperty *, const QString &)), manager, SLOT(SetValue(QtProperty *, const QString &)));
+    connect(dialog, SIGNAL(destroyed(QObject *)), SLOT(EditorDestroyed(QObject *)));
+
+    emit EditorCreated(property, this);
 
     return multiEditButton;
 }
 
-void MultiEditPropertyFact::disconnectPropertyManager(MultiEditPropertyManager *manager)
+void MultiEditPropertyFactory::disconnectPropertyManager(MultiEditPropertyManager *manager)
 {
-    /*QObject::disconnect(manager, SIGNAL(AttributeValuesUpdated(const QtProperty *, const QStringList &)),
-                           this, SLOT(UpdateAttributeValues(const QtProperty *, const QStringList &)));*/
+/*
+    disconnect(manager, SIGNAL(AttributeValuesUpdated(const QtProperty *, const QStringList &)),
+        SLOT(UpdateAttributeValues(const QtProperty *, const QStringList &)));
+*/
 }
 
-void MultiEditPropertyFact::DialogValueSelected(const QString &value)
+void MultiEditPropertyFactory::DialogValueSelected(const QString &value)
 {
-    QInputDialog *dialog = dynamic_cast<QInputDialog *>(QObject::sender());
+    QInputDialog *dialog = dynamic_cast<QInputDialog *>(sender());
     if(!dialog)
         return;
     if(!editorToProperty_.contains(dialog))
@@ -75,10 +98,10 @@ void MultiEditPropertyFact::DialogValueSelected(const QString &value)
     emit ValueSelected(property, value);
 }
 
-void MultiEditPropertyFact::EditorDestroyed(QObject *object)
+void MultiEditPropertyFactory::EditorDestroyed(QObject *object)
 {
     QMap<QDialog *, const QtProperty *>::ConstIterator iter = editorToProperty_.constBegin();
-    while(iter != editorToProperty_.constEnd()) 
+    while(iter != editorToProperty_.constEnd())
     {
         if (iter.key() == object)
         {

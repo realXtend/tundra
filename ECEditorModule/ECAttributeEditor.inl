@@ -103,7 +103,8 @@ void ECAttributeEditor<T>::InitializeMultiEditor()
     if(useMultiEditor_)
     {
         MultiEditPropertyManager *multiEditManager = new MultiEditPropertyManager(this);
-        MultiEditPropertyFact *multiEditFactory = new MultiEditPropertyFact(this);
+        MultiEditPropertyFactory *multiEditFactory = new MultiEditPropertyFactory(this);
+        
         propertyMgr_ = multiEditManager;
         factory_ = multiEditFactory;
 
