@@ -163,6 +163,7 @@ configure_qtpropertybrowser()
 configure_openal ()
 configure_ogg ()
 configure_vorbis ()
+configure_theora()
 
 use_package(BOOST)
 use_package(OGRE)

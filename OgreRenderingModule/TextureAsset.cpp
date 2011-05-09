@@ -1,12 +1,15 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 
 #include "TextureAsset.h"
 #include "OgreConversionUtils.h"
 
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
+#include <d3d9.h>
+#include <OgreD3D9RenderSystem.h>
+#include <OgreD3D9HardwarePixelBuffer.h>
+#include "MemoryLeakCheck.h"
 
 #include "LoggingFunctions.h"
 
@@ -197,4 +200,73 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
     QImage img((uchar*)data, pixelBuffer->getWidth(), pixelBuffer->getHeight(), fmt);
     pixelBuffer->unlock();
     return img;
+}
+
+void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps)
+{
+    PROFILE(TextureAsset_SetContents);
+
+    if (!ogreTexture.get())
+    {
+        ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+            newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+        if (!ogreTexture.get())
+            return; ///\todo Log error
+    }
+
+    bool needRecreate = (newWidth != ogreTexture->getWidth() || newHeight != ogreTexture->getHeight() || ogreFormat != ogreTexture->getFormat());
+//    if (newWidth == ogreTexture->getWidth() && newHeight == ogreTexture->getHeight() && ogreFormat == ogreTexture->getFormat())
+//        return;
+
+    if (needRecreate)
+    {
+        ogreTexture->freeInternalResources(); 
+        ogreTexture->setWidth(newWidth);
+        ogreTexture->setHeight(newHeight);
+        ogreTexture->setFormat(ogreFormat);
+    }
+    if (ogreTexture->getBuffer().isNull())
+    {
+        LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
+        return;
+    }
+
+    if (data)
+    {
+        Ogre::HardwarePixelBufferSharedPtr pb = ogreTexture->getBuffer();
+        Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(pb.get());
+        assert(pixelBuffer);
+
+        LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(Ogre::D3D9RenderSystem::getActiveD3D9Device());
+        if (surface)
+        {
+            D3DSURFACE_DESC desc;
+            HRESULT hr = surface->GetDesc(&desc);
+            if (SUCCEEDED(hr))
+            {
+                D3DLOCKED_RECT lock;
+                HRESULT hr = surface->LockRect(&lock, 0, 0);
+                if (SUCCEEDED(hr))
+                {
+                    const int bytesPerPixel = 4; ///\todo Count from Ogre::PixelFormat!
+                    const int sourceStride = bytesPerPixel * newWidth;
+                    if (lock.Pitch == sourceStride)
+                        memcpy(lock.pBits, data, sourceStride * newHeight);
+                    else
+                        for(int y = 0; y < newHeight; ++y)
+                            memcpy((u8*)lock.pBits + lock.Pitch * y, data + sourceStride * y, sourceStride);
+                    surface->UnlockRect();
+                }
+            }
+        }
+
+        /*
+        ///\todo Review Ogre internals of whether the const_cast here is safe!
+        Ogre::PixelBox pixelBox(Ogre::Box(0,0, newWidth, newHeight), ogreFormat, const_cast<u8*>(data));
+        ogreTexture->getBuffer()->blitFromMemory(pixelBox);
+		*/
+    }
+
+    if (needRecreate)
+        ogreTexture->createInternalResources();
 }

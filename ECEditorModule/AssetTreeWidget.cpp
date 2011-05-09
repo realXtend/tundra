@@ -344,7 +344,7 @@ void AssetTreeWidget::MakeDefaultStorage()
     if (selected.size() == 1)
     {
         QString storageName = selected.first()->data(0, Qt::UserRole).toString();
-        framework->Asset()->SetDefaultAssetStorage(framework->Asset()->GetAssetStorage(storageName));
+        framework->Asset()->SetDefaultAssetStorage(framework->Asset()->GetAssetStorageByName(storageName));
     }
 
     AssetsWindow *parent = dynamic_cast<AssetsWindow*>(parentWidget());

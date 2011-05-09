@@ -610,7 +610,7 @@ bool AddContentWindow::CreateNewDesctiption()
     AssetStoragePtr dest;
     if (storageName != cDoNotAlterAssetReferences)
     {
-        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : framework->Asset()->GetAssetStorage(storageName);
+        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : framework->Asset()->GetAssetStorageByName(storageName);
         if (!dest)
         {
             LogError("AddContentWindow::CreateNewDesctiption: Could not retrieve asset storage " + storageName + ".");
@@ -693,7 +693,7 @@ bool AddContentWindow::UploadAssets()
     // No upload if we don't touch asset refs
     if (!doNotAlter)
     {
-        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : dest = framework->Asset()->GetAssetStorage(storageName);
+        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : dest = framework->Asset()->GetAssetStorageByName(storageName);
         if (!dest)
         {
             LogError("AddContentWindow::UploadAssets: Could not retrieve asset storage " + storageName + ".");
@@ -762,7 +762,7 @@ void AddContentWindow::AddEntities()
     // No upload if we don't touch asset refs
     if (!doNotAlter)
     {
-        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : dest = framework->Asset()->GetAssetStorage(storageName);
+        dest = storageName == cDefaultStorage ? framework->Asset()->GetDefaultAssetStorage() : dest = framework->Asset()->GetAssetStorageByName(storageName);
         if (!dest)
         {
             LogError("AddContentWindow::AddEntities: Could not retrieve asset storage " + storageName + ".");
@@ -887,7 +887,7 @@ void AddContentWindow::SetAssetsVisible(bool visible)
 
 void AddContentWindow::Close()
 {
-    AssetStoragePtr storage = framework->Asset()->GetAssetStorage(GetCurrentStorageName());
+    AssetStoragePtr storage = framework->Asset()->GetAssetStorageByName(GetCurrentStorageName());
     QString currentStorageBaseUrl = storage ? storage->BaseURL() : "";
     emit Completed(contentAdded_, currentStorageBaseUrl);
     close();
@@ -929,7 +929,7 @@ void AddContentWindow::RewriteDestinationNames()
     bool useDefault = storageName == cDefaultStorage;
     if (!doNotAlter)
     {
-        dest = useDefault ? framework->Asset()->GetDefaultAssetStorage() : framework->Asset()->GetAssetStorage(storageName);
+        dest = useDefault ? framework->Asset()->GetDefaultAssetStorage() : framework->Asset()->GetAssetStorageByName(storageName);
         if (!dest)
         {
             LogError("AddContentWindow::RewriteDestinationNames: Could not retrieve asset storage " + storageName + ".");

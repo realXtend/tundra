@@ -13,7 +13,6 @@
 #include "EC_Sky.h"
 #include "EC_EnvironmentLight.h"
 #include "TerrainWeightEditor.h"
-
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"

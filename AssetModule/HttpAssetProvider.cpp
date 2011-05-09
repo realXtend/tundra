@@ -16,6 +16,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include "MemoryLeakCheck.h"
 
 HttpAssetProvider::HttpAssetProvider(Framework *framework_)
 :framework(framework_)
@@ -228,7 +229,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             QString ref = reply->url().toString();
             LogInfo("Http DELETE to address \"" + ref.toStdString() + "\" returned successfully.");
             DeleteAssetRefFromStorages(ref);
-            emit AssetDeletedFromStorage(ref);
+            framework->Asset()->EmitAssetDeletedFromStorage(ref);
         }
         else
             LogError("Http DELETE to address \"" + reply->url().toString().toStdString() + "\" failed with an error: \"" + reply->errorString().toStdString() + "\"");
@@ -280,7 +281,7 @@ AssetStoragePtr HttpAssetProvider::GetStorageByName(const QString &name) const
     return AssetStoragePtr();
 }
 
-HttpAssetStoragePtr HttpAssetProvider::GetStorageForAssetRef(QString assetRef) const
+AssetStoragePtr HttpAssetProvider::GetStorageForAssetRef(const QString &assetRef) const
 {
     QString namedStorage;
     QString protocolPath;

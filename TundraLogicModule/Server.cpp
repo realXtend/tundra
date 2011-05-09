@@ -67,6 +67,11 @@ Server::Server(TundraLogicModule* owner) :
     current_port_(-1),
     current_protocol_("")
 {
+    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+    connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
+
+    connect(kristalli, SIGNAL(ClientDisconnectedEvent(UserConnection *)), this, SLOT(HandleUserDisconnected(UserConnection *)));
 }
 
 Server::~Server()
@@ -128,7 +133,7 @@ bool Server::Start(unsigned short port)
     ScenePtr scene = framework_->Scene()->CreateScene("TundraServer", true);
     framework_->Scene()->SetDefaultScene(scene);
     owner_->GetSyncManager()->RegisterToScene(scene);
-    
+
     // Create an authoritative physics world
     Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
     physics->CreatePhysicsWorldForScene(scene, false);
@@ -243,11 +248,21 @@ UserConnection* Server::GetActionSender() const
 
 void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
+    if (!source)
+        return;
+
     if (!owner_->IsServer())
         return;
-        
+
+    UserConnection *user = GetUserConnection(source);
+    if (!user)
+    {
+        ::LogWarning("Server: dropping message " + ToString(id) + " from unknown connection \"" + source->ToString() + "\"");
+        return;
+    }
+
     // If we are server, only allow the login message from an unauthenticated user
-    if (id != cLoginMessage)
+    if (id != cLoginMessage && user->properties["authenticated"] != "true")
     {
         UserConnection* user = GetUserConnection(source);
         if ((!user) || (user->properties["authenticated"] != "true"))
@@ -257,17 +272,13 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::messa
             return;
         }
     }
-    
-    switch (id)
+    else if (id == cLoginMessage)
     {
-        // Server
-    case cLoginMessage:
-        {
-            MsgLogin msg(data, numBytes);
-            HandleLogin(source, msg);
-        }
-        break;
+        MsgLogin msg(data, numBytes);
+        HandleLogin(source, msg);
     }
+
+    emit MessageReceived(user, id, data, numBytes);
 }
 
 void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)

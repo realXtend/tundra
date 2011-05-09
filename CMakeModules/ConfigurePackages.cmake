@@ -147,10 +147,11 @@ macro (configure_ogre)
     	  set (OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
     	  set (OGRE_LIBRARIES ${OGRE_LIBRARY})
         else ()
-            sagase_configure_package (OGRE 
-            NAMES Ogre OgreSDK ogre OGRE
-            COMPONENTS Ogre ogre OGRE OgreMain 
-            PREFIXES ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+            # Windows only, Ogre from deps SVN. D3D9 includes are now mandatory
+            add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
+            include_directories(${ENV_NAALI_DEP_PATH}/Ogre/include)
+            include_directories(${ENV_NAALI_DEP_PATH}/Ogre/include/RenderSystems/Direct3D9)
+            link_directories(${ENV_NAALI_DEP_PATH}/Ogre/lib)
         endif ()
 
         sagase_configure_report (OGRE)
@@ -401,6 +402,19 @@ endif()
         endif ()
     sagase_configure_report (VORBIS)
 endmacro (configure_vorbis)
+
+macro (configure_theora)
+    sagase_configure_package(THEORA
+        NAMES theora libtheora
+        COMPONENTS theora libtheora
+        PREFIXES ${ENV_NAALI_DEP_PATH}/libtheora)
+        
+        # Force include dir on MSVC
+        if (MSVC)
+  		   set (THEORA_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libtheora/include)
+        endif ()
+    sagase_configure_report (THEORA)
+endmacro (configure_theora)
 
 macro (configure_mumbleclient)
     sagase_configure_package(MUMBLECLIENT

@@ -50,10 +50,6 @@ namespace Asset
         boost::shared_ptr<LocalAssetProvider> local = boost::shared_ptr<LocalAssetProvider>(new LocalAssetProvider(framework_));
         framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(local));
         
-        // Connect to delete messages of the providers to be able to broadcast asset deletion messages
-        connect(http.get(), SIGNAL(AssetDeletedFromStorage(const QString&)), this, SLOT(OnAssetDeleted(const QString&)));
-        connect(local.get(), SIGNAL(AssetDeletedFromStorage(const QString&)), this, SLOT(OnAssetDeleted(const QString&)));
-        
         QString systemAssetDir = Application::InstallationDirectory() + "data/assets";
         local->AddStorageDirectory(systemAssetDir, "System", true);
         // Set asset dir as also as AssetAPI property
@@ -103,8 +99,9 @@ namespace Asset
         connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
             this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
 
-        // Connect to asset uploads to be able to broadcast asset discovery messages
+        // Connect to asset uploads & deletions from storage to be able to broadcast asset discovery & deletion messages
         connect(framework_->Asset(), SIGNAL(AssetUploaded(const QString &)), this, SLOT(OnAssetUploaded(const QString &)));
+        connect(framework_->Asset(), SIGNAL(AssetDeletedFromStorage(const QString&)), this, SLOT(OnAssetDeleted(const QString&)));
     }
 
     void AssetModule::ProcessCommandLineOptions()
@@ -246,7 +243,7 @@ namespace Asset
             if (!defaultStorage.isNull())
             {
                 QString defaultStorageName = defaultStorage.attribute("name");
-                AssetStoragePtr defaultStoragePtr = framework_->Asset()->GetAssetStorage(defaultStorageName);
+                AssetStoragePtr defaultStoragePtr = framework_->Asset()->GetAssetStorageByName(defaultStorageName);
                 if (defaultStoragePtr)
                     framework_->Asset()->SetDefaultAssetStorage(defaultStoragePtr);
             }
