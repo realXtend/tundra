@@ -29,6 +29,7 @@ namespace Ogre
     class ParticleSystem;
     class Skeleton;
     class TagPoint;
+    class MaterialPtr;
 }
 
 namespace OgreRenderer
@@ -41,10 +42,7 @@ namespace OgreRenderer
     class LogListener;
     class ResourceHandler;
     class RenderableListener;
-    class QOgreUIView;
-    class QOgreWorldView;
-    class CAVEManager;
-    class StereoController;
+
     class CompositionHandler;
     class GaussianListener;
 
@@ -53,6 +51,8 @@ namespace OgreRenderer
     typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
     typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
 }
+
+class OgreMaterialAsset;
 
 class EC_Placeable;
 class EC_Mesh;

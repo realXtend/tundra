@@ -13,21 +13,9 @@
 #include "AssetFwd.h"
 #include "Declare_EC.h"
 #include "Color.h"
+#include "OgreModuleFwd.h"
 
-namespace OgreRenderer
-{
-    class Renderer;
-}
-
-namespace Ogre
-{
-    class SceneNode;
-    class Entity;
-}
-
-class OgreMaterialAsset;
-class EC_Mesh;
-
+/// EC_Highlight enables visual highlighting effect for of scene entity.
 /**
 <table class="header">
 <tr>
@@ -64,7 +52,6 @@ Does not emit any actions.
 <b>Depends on components Placeable and OgreMesh</b>. 
 </table>
 */
-
 class EC_Highlight : public IComponent
 {
     Q_OBJECT
@@ -77,15 +64,15 @@ public:
     /// Visible flag. If true,the mesh component in the same entity will be highlighted
     Q_PROPERTY(bool visible READ getvisible WRITE setvisible)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, visible)
-    
+
     /// Color of the solid fill pass
     Q_PROPERTY(Color solidColor READ getsolidColor WRITE setsolidColor);
     DEFINE_QPROPERTY_ATTRIBUTE(Color, solidColor);
-    
+
     /// Color of the outline (wireframe) pass
     Q_PROPERTY(Color outlineColor READ getoutlineColor WRITE setoutlineColor);
     DEFINE_QPROPERTY_ATTRIBUTE(Color, outlineColor);
-    
+
 public slots:
     /// Shows the highlighting effect. Does not change the visible attribute
     void Show();

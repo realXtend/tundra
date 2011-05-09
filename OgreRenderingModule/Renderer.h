@@ -39,21 +39,6 @@ namespace OgreRenderer
         Texture_Normal ///< Normal
     };
 
-    class OgreRenderingModule;
-    class LogListener;
-    class ResourceHandler;
-    class RenderableListener;
-    class CAVEManager;
-    class StereoController;
-    class CompositionHandler;
-    class GaussianListener;
-    class CompositionHandler;
-
-    typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
-    typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
-    typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
-    typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
-
     /// Ogre renderer
     /** Created by OgreRenderingModule. Implements the RenderServiceInterface.
         \ingroup OgreRenderingModuleClient
@@ -79,18 +64,18 @@ namespace OgreRenderer
 
         /// Do raycast into the world from viewport coordinates, using all selection layers
         /** The coordinates are a position in the render window, not scaled to [0,1].
-            \param x Horizontal position for the origin of the ray
-            \param y Vertical position for the origin of the ray
-            \return Raycast result structure
+            @param x Horizontal position for the origin of the ray
+            @param y Vertical position for the origin of the ray
+            @return Raycast result structure
         */
         virtual RaycastResult* Raycast(int x, int y);
 
         /// Do raycast into the world from viewport coordinates, using specific selection layer(s)
         /** The coordinates are a position in the render window, not scaled to [0,1].
-            \param x Horizontal position for the origin of the ray
-            \param y Vertical position for the origin of the ray
-            \param layerMask Which selection layer(s) to use (bitmask)
-            \return Raycast result structure
+            @param x Horizontal position for the origin of the ray
+            @param y Vertical position for the origin of the ray
+            @param layerMask Which selection layer(s) to use (bitmask)
+            @return Raycast result structure
         */
         virtual RaycastResult* Raycast(int x, int y, unsigned layerMask);
 
@@ -101,7 +86,7 @@ namespace OgreRenderer
         virtual int GetWindowHeight() const;
 
         /// Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
-        /** \param directory Directory path to add
+        /** @param directory Directory path to add
          */
         //for local dotscene loading to be able to load from the dir where the export is
         void AddResourceDirectory(const QString &directory);
@@ -128,13 +113,13 @@ namespace OgreRenderer
 
         /// Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
         void DoFullUIRedraw();
-        
+
     public:
         /// Constructor
-        /** \param framework Framework pointer.
-            \param config Config filename.
-            \param plugins Plugins filename.
-            \param window_title Renderer window title.
+        /** @param framework Framework pointer.
+            @param config Config filename.
+            @param plugins Plugins filename.
+            @param window_title Renderer window title.
         */
         Renderer(
             Framework* framework,
@@ -167,8 +152,8 @@ namespace OgreRenderer
         virtual const std::set<entity_id_t>& GetVisibleEntities() { return visible_entities_; }
 
         /// Takes a screenshot and saves it to a file.
-        /// \param filePath File path.
-        /// \param fileName File name.
+        /// @param filePath File path.
+        /// @param fileName File name.
         virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
 
         /// Returns framework
@@ -247,7 +232,7 @@ namespace OgreRenderer
         void DoFrameTimeLimiting();
 
         /// Loads Ogre plugins in a manner which allows individual plugin loading to fail
-        /** \param plugin_filename path & filename of the Ogre plugins file
+        /** @param plugin_filename path & filename of the Ogre plugins file
          */
         void LoadPlugins(const std::string& plugin_filename);
 
