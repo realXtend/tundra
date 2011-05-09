@@ -66,6 +66,7 @@ void SuppressedPaintWidget::paintEvent(QPaintEvent *event)
 }
 
 UiAPI::UiAPI(Framework *owner_) :
+    QObject(owner_),
     owner(owner_),
     mainWindow(0),
     graphicsView(0),

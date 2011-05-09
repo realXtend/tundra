@@ -87,17 +87,11 @@ Framework::Framework(int argc, char** argv) :
         module_manager_ = ModuleManagerPtr(new ModuleManager(this));
         service_manager_ = ServiceManagerPtr(new ServiceManager());
 
-        // Create AssetAPI.
+        // Create core APIs
         asset = new AssetAPI(headless_);
         asset->OpenAssetCache(Application::UserDataDirectory() + "assetcache");
-
-        // Create AssetAPI.
-        ui = new UiAPI(this);                
-
-        // Create AudioAPI, depends on the AssetAPI, so must be loaded after it.
-        audio = new AudioAPI(this, asset);
-
-        // Create Input and PluginAPI.
+        ui = new UiAPI(this);
+        audio = new AudioAPI(this, asset); // AudioAPI epends on the AssetAPI, so must be loaded after it.
         input = new InputAPI(this);
         plugin = new PluginAPI(this);
         console = new ConsoleAPI(this);
