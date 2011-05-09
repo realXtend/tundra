@@ -255,8 +255,6 @@ template<> void ECAttributeEditor<AssetReference>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<AssetReference>::Initialize();
 template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property);
 
-class LineEditWithButtons;
-
 /// Special case editor for AssetReference attributes.
 class AssetReferenceAttributeEditor : public ECAttributeEditor<AssetReference>
 {
@@ -272,7 +270,7 @@ public:
 
 private slots:
     void OpenAssetsWindow();
-    void HandleNewEditor(QtProperty *prop, LineEditWithButtons *);
+    void HandleNewEditor(QtProperty *prop, QObject *);
     void HandleAssetPicked(AssetPtr asset);
     void RestoreOriginalValue();
     void OpenEditor();
@@ -304,7 +302,7 @@ private:
 
 private slots:
     void OpenAssetsWindow();
-    void HandleNewEditor(QtProperty *prop, LineEditWithButtons *);
+    void HandleNewEditor(QtProperty *prop, QObject *);
     void HandleAssetPicked(AssetPtr asset);
     void RestoreOriginalValue();
     void OpenEditor();

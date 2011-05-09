@@ -5,6 +5,7 @@
 
 #include "LineEditPropertyFactory.h"
 #include "FunctionInvoker.h"
+#include "EditorButtonFactory.h"
 
 #include "Entity.h"
 
@@ -28,24 +29,20 @@ LineEditWithButtons::LineEditWithButtons(const QString &text, QWidget *parent):
     connect(lineEditor_, SIGNAL(editingFinished()), this, SIGNAL(EditingFinished()));
 }
 
-LineEditWithButtons::~LineEditWithButtons() 
+LineEditWithButtons::~LineEditWithButtons()
 {
-}
-
-QPushButton* LineEditWithButtons::CreateButton(const QString &objectName, const QString &text)
-{
-    QPushButton *button = new QPushButton(text, this);
-    button->setObjectName(objectName);
-    button->setMaximumWidth(20);
-    layout_->addWidget(button);
-    buttons_.push_back(button);
-    return button;
 }
 
 LineEditPropertyFactory::LineEditPropertyFactory(QObject *parent):
     QtAbstractEditorFactory<QtStringPropertyManager>(parent),
-    invoker_(new FunctionInvoker())
+    invoker_(new FunctionInvoker()),
+    buttonFactory(0)
 {
+}
+
+LineEditPropertyFactory::~LineEditPropertyFactory()
+{
+    SAFE_DELETE(invoker_);
 }
 
 void LineEditPropertyFactory::AddButtons(AttributeMetadata::ButtonInfoList buttons)
@@ -89,19 +86,24 @@ void LineEditPropertyFactory::connectPropertyManager(QtStringPropertyManager *ma
 QWidget *LineEditPropertyFactory::createEditor(QtStringPropertyManager *manager, QtProperty *property, QWidget *parent)
 {
     LineEditWithButtons *editor = new LineEditWithButtons(manager->value(property), parent);
+    SAFE_DELETE(buttonFactory);
+    buttonFactory = new EditorButtonFactory(parent);
+    editor->layout()->addWidget(buttonFactory);
+/*
     for(uint i = 0; i < (uint)buttons_.size(); ++i)
     {
         QPushButton *button = editor->CreateButton(buttons_[i].objectName, buttons_[i].text);
-        connect(button, SIGNAL(clicked(bool)), this, SLOT(ButtonClicked()));
+        connect(button, SIGNAL(clicked(bool)), SLOT(OnButtonClicked()));
     }
+*/
 
     propertyToWidget_[property] = editor;
     widgetToProperty_[editor] = property;
 
-    connect(editor, SIGNAL(EditingFinished()), this, SLOT(EditingFinished()));
-    connect(editor, SIGNAL(destroyed(QObject*)), this, SLOT(EditorDestroyed(QObject*)));
+    connect(editor, SIGNAL(EditingFinished()), SLOT(OnEditingFinished()));
+    connect(editor, SIGNAL(destroyed(QObject*)), SLOT(OnEditorDestroyed(QObject*)));
 
-    emit EditorCreated(property, editor);
+    emit EditorCreated(property, this);
 
     return editor;
 }
@@ -110,7 +112,7 @@ void LineEditPropertyFactory::disconnectPropertyManager(QtStringPropertyManager 
 {
 }
 
-void LineEditPropertyFactory::ButtonClicked()
+void LineEditPropertyFactory::OnButtonClicked()
 {
     QPushButton *button = qobject_cast<QPushButton*>(sender());
     if (!button)
@@ -128,7 +130,7 @@ void LineEditPropertyFactory::ButtonClicked()
 
     if(!function.isNull())
     {
-        foreach(ComponentWeakPtr comp_ptr, components_)
+        foreach(const ComponentWeakPtr &comp_ptr, components_)
         {
             ComponentPtr comp = comp_ptr.lock();
             if (comp)
@@ -141,7 +143,7 @@ void LineEditPropertyFactory::ButtonClicked()
     }
 }
 
-void LineEditPropertyFactory::EditingFinished()
+void LineEditPropertyFactory::OnEditingFinished()
 {
     LineEditWithButtons *edit = qobject_cast<LineEditWithButtons*>(sender());
     if (!edit)
@@ -160,7 +162,7 @@ void LineEditPropertyFactory::EditingFinished()
     }
 }
 
-void LineEditPropertyFactory::EditorDestroyed(QObject *object)
+void LineEditPropertyFactory::OnEditorDestroyed(QObject *object)
 {
     QWidget *editor = qobject_cast<QWidget*>(object);
     WidgetToPropertyMap::ConstIterator iter = widgetToProperty_.find(editor);
