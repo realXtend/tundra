@@ -3,8 +3,7 @@
  *
  *  @file   EC_Highlight.cpp
  *  @brief  EC_Highlight enables visual highlighting effect for of scene entity.
- *  @note   The entity must have EC_Placeable and EC_Mesh (if mesh) or
- *          EC_OgreCustomObject (if prim) components available in advance.
+ *  @note   The entity must have EC_Mesh component available to be useful
  */
 
 #include "DebugOperatorNew.h"
@@ -13,172 +12,254 @@
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
+#include "OgreMaterialAsset.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
-#include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
+#include "AssetAPI.h"
+
+#include <QTimer>
 
 #include "MemoryLeakCheck.h"
 
+#include <OgreMaterial.h>
+#include <OgreTechnique.h>
+#include <OgrePass.h>
+
+EC_Highlight::EC_Highlight(IModule *module) :
+    IComponent(module->GetFramework()),
+    visible(this, "Is visible", false),
+    solidColor(this, "Solid color", Color(0.3f, 0.5f, 0.1f, 0.5f)),
+    outlineColor(this, "Outline color", Color(1.0f, 1.0f, 1.0f, 0.5f)),
+    reapplyPending_(false),
+    inApply_(false)
+{
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+}
+
 EC_Highlight::~EC_Highlight()
 {
-    // OgreRendering module might be already deleted. If so, the cloned entity is also already deleted.
-    // In this case, just set pointer to 0.
-    if (!renderer_.expired())
-    {
-        Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
-        if (entityClone_)
-            sceneMgr->destroyEntity(entityClone_);
-    }
-    else
-    {
-        entityClone_ = 0;
-        sceneNode_ = 0;
-    }
+    Hide();
 }
 
 void  EC_Highlight::Show()
 {
-    if (!entityClone_)
-        Create();
-
-    if (!entityClone_)
-    {
-        LogError("EC_Highlight not initialized properly.");
+    if (mesh_.expired())
         return;
+    
+    inApply_ = true;
+    
+    // Remove old materials first if they exist
+    Hide();
+    
+    EC_Mesh* mesh = mesh_.lock().get();
+    AssetAPI* assetAPI = framework_->Asset();
+    entity_id_t entityID = GetParentEntity()->GetId();
+    
+    // Clone all valid material assets that we can find from the mesh
+    /// \todo Currently will clone the same material several times if used on several submeshes
+    /// \todo What if the material is yet pending, or is not an asset (LitTextured)
+    AssetReferenceList materialList = mesh->meshMaterial.Get();
+    for(int i = 0; i < materialList.Size(); ++i)
+    {
+        if (!materialList[i].ref.isEmpty())
+        {
+            QString assetFullName = assetAPI->ResolveAssetRef("", materialList[i].ref);
+            AssetPtr asset = assetAPI->GetAsset(assetFullName);
+            if ((asset) && (asset->IsLoaded()) && (dynamic_cast<OgreMaterialAsset*>(asset.get())))
+            {
+                /// \todo The material emits an error print when cloning, due to attempting to resolve already sanitated assetrefs
+                AssetPtr clone = asset->Clone("EC_Highlight_" + QString::number(entityID) + "_" + QString::number(i) + ".material");
+                if (clone)
+                {
+                    OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(clone.get());
+                    CreateHighlightToOgreMaterial(matAsset->ogreMaterial);
+                    mesh->SetMaterial(i, clone->Name());
+                    materials_.push_back(clone);
+                }
+            }
+        }
     }
-
-    if (entityClone_ && sceneNode_)
-        sceneNode_->getAttachedObject(cloneName_)->setVisible(true);
+    
+    inApply_ = false;
 }
 
-void  EC_Highlight::Hide()
+void EC_Highlight::Hide()
 {
-    if (entityClone_ && sceneNode_)
-        sceneNode_->getAttachedObject(cloneName_)->setVisible(false);
+    if (!mesh_.expired())
+    {
+        // Restore mesh component's original materials to hide highlight effect
+        EC_Mesh* mesh = mesh_.lock().get();
+        mesh->ApplyMaterial();
+    }
+    
+    // Destroy all the highlight materials
+    AssetAPI* assetAPI = framework_->Asset();
+    for (unsigned i = 0; i < materials_.size(); ++i)
+        assetAPI->ForgetAsset(materials_[i], false);
+    materials_.clear();
 }
 
 bool EC_Highlight::IsVisible() const
 {
-    if (entityClone_ && sceneNode_)
-        return sceneNode_->getAttachedObject(cloneName_)->isVisible();
-
-    return false;
+    return materials_.size() > 0;
 }
 
-EC_Highlight::EC_Highlight(IModule *module) :
-    IComponent(module->GetFramework()),
-    entityClone_(0),
-    sceneNode_(0)
+void EC_Highlight::UpdateSignals()
 {
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
+    Entity* parent = GetParentEntity();
+    if (parent)
+    {
+        // Connect to ComponentAdded/Removed signals of the parent entity, so we can check when the mesh component gets added or removed
+        connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(AcquireMesh()));
+        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
+        // Also try to acquire the mesh component immediately
+        AcquireMesh();
+    }
 }
 
-void EC_Highlight::Create()
+void EC_Highlight::OnComponentRemoved(IComponent* component, AttributeChange::Type change)
 {
-    if (renderer_.expired())
-        return;
-
-    Ogre::SceneManager *scene = renderer_.lock()->GetSceneManager();
-    assert(scene);
-    if (!scene)
-        return;
-
-    Scene::Entity *entity = GetParentEntity();
-    assert(entity);
-    if (!entity)
-        return;
-
-    EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
-    assert(placeable);
-    if (!placeable)
-        return;
-
-    // Check out if this entity has EC_Mesh or EC_OgreCustomObject.
-    Ogre::Entity *originalEntity  = 0;
-    if (entity->GetComponent(EC_Mesh::TypeNameStatic()))
+    if (component == mesh_.lock().get())
     {
-        EC_Mesh *ec_mesh= entity->GetComponent<EC_Mesh>().get();
-        assert(ec_mesh);
-
-        originalEntity = ec_mesh->GetEntity();
-        sceneNode_ = ec_mesh->GetAdjustmentSceneNode();
+        Hide();
+        mesh_.reset();
     }
-    else if(entity->GetComponent(EC_OgreCustomObject::TypeNameStatic()))
-    {
-        EC_OgreCustomObject *ec_custom = entity->GetComponent<EC_OgreCustomObject>().get();
-        assert(ec_custom);
-        if (!ec_custom->IsCommitted())
-        {
-            LogError("Mesh entity have not been created for the target primitive. Cannot create EC_Highlight.");
-            return;
-        }
+}
 
-        originalEntity = ec_custom->GetEntity();
-        sceneNode_ = placeable->GetSceneNode();
-    }
-    else
-    {
-        LogError("This entity doesn't have either EC_Mesh or EC_OgreCustomObject present. Cannot create EC_Highlight.");
+void EC_Highlight::AcquireMesh()
+{
+    // Return if already acquired
+    if (!mesh_.expired())
         return;
-    }
-
-    if (!originalEntity)
-        return; 
-
-    assert(sceneNode_);
-    if (!sceneNode_)
-        return;
-
-    // Clone the Ogre entity.
-    cloneName_ = renderer_.lock()->GetUniqueObjectName("EC_Highlight_entity");
-    entityClone_ = originalEntity->clone(cloneName_);
-
-    //This is set so we can exclude the hightlight mesh from a viewport, if so wanted
-    entityClone_->setVisibilityFlags(0x1);
-    assert(entityClone_);
-
-    // Disable casting of shadows for the clone.
-    entityClone_->setCastShadows(false);
-
-    ///\todo If original entity has skeleton, (try to) link it to the clone.
-/*
-    if (originalEntity->hasSkeleton())
+    
+    mesh_ = GetParentEntity()->GetComponent<EC_Mesh>();
+    
+    EC_Mesh* mesh = mesh_.lock().get();
+    if (mesh)
     {
-        Ogre::SkeletonInstance *skel = originalEntity->getSkeleton();
-        // If sharing a skeleton, force the attachment mesh to use the same skeleton
-        // This is theoretically quite a scary operation, for there is possibility for things to go wrong
-        Ogre::SkeletonPtr entity_skel = originalEntity->getMesh()->getSkeleton();
-        if (entity_skel.isNull())
-        {
-            LogError("Cannot share skeleton for attachment, not found");
-        }
+        // Connect to mesh & material change signals so we can reapply the highlight
+        connect(mesh, SIGNAL(MeshChanged()), this, SLOT(TriggerReapply()), Qt::UniqueConnection);
+        connect(mesh, SIGNAL(MaterialChanged(uint, const QString &)), this, SLOT(TriggerReapply()), Qt::UniqueConnection);
+        
+        // Also show right now if highlight active
+        if (visible.Get())
+            Show();
+    }
+}
+
+void EC_Highlight::OnAttributeUpdated(IAttribute *attribute)
+{
+    if (attribute == &visible)
+    {
+        if (visible.Get())
+            Show();
         else
+            Hide();
+    }
+    
+    if ((attribute == &solidColor) || (attribute == &outlineColor))
+        ApplyHighlightColors();
+}
+
+void EC_Highlight::TriggerReapply()
+{
+    // Disregard signal if in the middle of applying highlight
+    if (inApply_)
+        return;
+    
+    // We might get multiple requests to reapply, but actually execute on the next frame, so that we don't do needless recreation of materials
+    if ((!reapplyPending_) && (visible.Get()))
+    {
+        reapplyPending_ = true;
+        QTimer::singleShot(0, this, SLOT(ReapplyHighlight()));
+    }
+}
+
+void EC_Highlight::ReapplyHighlight()
+{
+    if (visible.Get())
+        Show();
+    reapplyPending_ = false;
+}
+
+void EC_Highlight::CreateHighlightToOgreMaterial(Ogre::MaterialPtr mat)
+{
+    if (mat.isNull())
+        return;
+    
+    /// \todo Add functions to material asset so that this can be done without accessing Ogre passes directly
+    
+    unsigned numTech = mat->getNumTechniques();
+    for (unsigned i = 0; i < numTech; ++i)
+    {
+        Ogre::Technique* tech = mat->getTechnique(i);
+        if (tech)
         {
-            try
+            Color solid = solidColor.Get();
+            Color outline = outlineColor.Get();
+            
+            // Setting the shaders requires the SolidAmbient.material to exist in the resource groups, so that the shaders exist
+            
+            // First additional pass: transparent color fill
+            Ogre::Pass* pass = tech->createPass();
+            pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+            pass->setDepthWriteEnabled(false);
+            pass->setLightingEnabled(false);
+            pass->setDepthBias(0.001f);
+            pass->setDepthFunction(Ogre::CMPF_LESS_EQUAL);
+            pass->setAmbient(Ogre::ColourValue(solid.r, solid.g, solid.b, solid.a));
+            pass->setVertexProgram("SolidAmbientVP");
+            pass->setFragmentProgram("SolidAmbientFP");
+            
+            // Second additional pass: wireframe
+            Ogre::Pass* pass2 = tech->createPass();
+            pass2->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+            pass2->setPolygonMode(Ogre::PM_WIREFRAME);
+            pass2->setDepthWriteEnabled(false);
+            pass2->setLightingEnabled(false);
+            pass2->setDepthBias(0.002f);
+            pass2->setDepthFunction(Ogre::CMPF_LESS_EQUAL);
+            pass2->setAmbient(Ogre::ColourValue(outline.r, outline.g, outline.b, outline.a));
+            pass2->setVertexProgram("SolidAmbientVP");
+            pass2->setFragmentProgram("SolidAmbientFP");
+        }
+    }
+}
+
+void EC_Highlight::ApplyHighlightColors()
+{
+    Color solid = solidColor.Get();
+    Color outline = outlineColor.Get();
+    
+    for (unsigned i = 0; i < materials_.size(); ++i)
+    {
+        Ogre::MaterialPtr mat = dynamic_cast<OgreMaterialAsset*>(materials_[i].get())->ogreMaterial;
+        if (mat.isNull())
+            continue;
+        
+        /// \todo Add functions to material asset so that this can be done without accessing Ogre materials directly
+        
+        unsigned numTech = mat->getNumTechniques();
+        for (unsigned i = 0; i < numTech; ++i)
+        {
+            Ogre::Technique* tech = mat->getTechnique(i);
+            if (tech)
             {
-                entityClone_->getMesh()->_notifySkeleton(entity_skel);
-            }
-            catch(Ogre::Exception &e)
-            {
-                LogError("Could not set shared skeleton for attachment: " + std::string(e.what()));
+                // Modify the diffuse color of the last 2 passes
+                // (this should be a highlight material that we added the 2 passes to)
+                unsigned numPasses = tech->getNumPasses();
+                if (numPasses >= 2)
+                {
+                    Ogre::Pass* pass = tech->getPass(numPasses - 2);
+                    Ogre::Pass* pass2 = tech->getPass(numPasses - 1);
+                    if (pass)
+                        pass->setAmbient(Ogre::ColourValue(solid.r, solid.g, solid.b, solid.a));
+                    if (pass2)
+                        pass2->setAmbient(Ogre::ColourValue(outline.r, outline.g, outline.b, outline.a));
+                }
             }
         }
     }
-*/
-
-    std::string newMatName = renderer_.lock()->GetUniqueObjectName("EC_Highlight_mat");
-    try
-    {
-        Ogre::MaterialPtr highlightMaterial = OgreRenderer::CloneMaterial("Highlight", newMatName);
-        entityClone_->setMaterialName(newMatName);
-    }
-    catch(Ogre::Exception &e)
-    {
-        LogError("Could not set material \"" + newMatName + "\": " + std::string(e.what()));
-        return;
-    }
-
-    sceneNode_->attachObject(entityClone_);
 }
-

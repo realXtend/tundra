@@ -664,7 +664,7 @@ template<> void ECAttributeEditor<Color>::Set(QtProperty *property)
     {
         QtVariantProperty *prop = dynamic_cast<QtVariantProperty*>(rootProperty_);
         QColor value = prop->value().value<QColor>();
-        SetValue(Color(value.red() / 255, value.green() / 255, value.blue() / 255, value.alpha() / 255)); 
+        SetValue(Color(value.red() / 255.0f, value.green() / 255.0f, value.blue() / 255.0f, value.alpha() / 255.0f)); 
     }
 }
 

@@ -79,7 +79,7 @@ endif()
 # they will not be able to conditionally compile the EC.
 
 # The following EC's are declared by RexLogicModule and are optional. You may comment these lines out to disable any ECs you do not want to include.
-#AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
+AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
 AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
 #AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
