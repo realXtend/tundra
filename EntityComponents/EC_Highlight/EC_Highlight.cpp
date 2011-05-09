@@ -74,7 +74,7 @@ void  EC_Highlight::Show()
                 if (clone)
                 {
                     OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(clone.get());
-                    CreateHighlightToOgreMaterial(matAsset->ogreMaterial);
+                    CreateHighlightToOgreMaterial(matAsset);
                     mesh->SetMaterial(i, clone->Name());
                     materials_.push_back(clone);
                 }
@@ -184,81 +184,50 @@ void EC_Highlight::ReapplyHighlight()
     reapplyPending_ = false;
 }
 
-void EC_Highlight::CreateHighlightToOgreMaterial(Ogre::MaterialPtr mat)
+void EC_Highlight::CreateHighlightToOgreMaterial(OgreMaterialAsset* mat)
 {
-    if (mat.isNull())
+    if (!mat)
         return;
     
-    /// \todo Add functions to material asset so that this can be done without accessing Ogre passes directly
-    
-    unsigned numTech = mat->getNumTechniques();
+    unsigned numTech = mat->GetNumTechniques();
     for (unsigned i = 0; i < numTech; ++i)
     {
-        Ogre::Technique* tech = mat->getTechnique(i);
-        if (tech)
-        {
-            Color solid = solidColor.Get();
-            Color outline = outlineColor.Get();
-            
-            // Setting the shaders requires the SolidAmbient.material to exist in the resource groups, so that the shaders exist
-            
-            // First additional pass: transparent color fill
-            Ogre::Pass* pass = tech->createPass();
-            pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-            pass->setDepthWriteEnabled(false);
-            pass->setLightingEnabled(false);
-            pass->setDepthBias(0.001f);
-            pass->setDepthFunction(Ogre::CMPF_LESS_EQUAL);
-            pass->setAmbient(Ogre::ColourValue(solid.r, solid.g, solid.b, solid.a));
-            pass->setVertexProgram("SolidAmbientVP");
-            pass->setFragmentProgram("SolidAmbientFP");
-            
-            // Second additional pass: wireframe
-            Ogre::Pass* pass2 = tech->createPass();
-            pass2->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-            pass2->setPolygonMode(Ogre::PM_WIREFRAME);
-            pass2->setDepthWriteEnabled(false);
-            pass2->setLightingEnabled(false);
-            pass2->setDepthBias(0.002f);
-            pass2->setDepthFunction(Ogre::CMPF_LESS_EQUAL);
-            pass2->setAmbient(Ogre::ColourValue(outline.r, outline.g, outline.b, outline.a));
-            pass2->setVertexProgram("SolidAmbientVP");
-            pass2->setFragmentProgram("SolidAmbientFP");
-        }
+        int pass1 = mat->CreatePass(i);
+        int pass2 = mat->CreatePass(i);
+        
+        // Setting the shaders requires the SolidAmbient.material to exist in the resource groups, so that the shaders exist
+        mat->SetLighting(i, pass1, false);
+        mat->SetAlphaBlend(i, pass1);
+        mat->SetDepthWrite(i, pass1, false);
+        mat->SetDepthBias(i, pass1, 0.001f);
+        mat->SetShaders(i, pass1, "SolidAmbientVP", "SolidAmbientFP");
+        mat->SetAmbientColor(i, pass1, solidColor.Get());
+        
+        mat->SetLighting(i, pass2, false);
+        mat->SetAlphaBlend(i, pass2);
+        mat->SetDepthWrite(i, pass2, false);
+        mat->SetDepthBias(i, pass2, 0.002f);
+        mat->SetShaders(i, pass2, "SolidAmbientVP", "SolidAmbientFP");
+        mat->SetAmbientColor(i, pass2, outlineColor.Get());
+        mat->SetWireframe(i, pass2);
     }
 }
 
 void EC_Highlight::ApplyHighlightColors()
 {
-    Color solid = solidColor.Get();
-    Color outline = outlineColor.Get();
-    
     for (unsigned i = 0; i < materials_.size(); ++i)
     {
-        Ogre::MaterialPtr mat = dynamic_cast<OgreMaterialAsset*>(materials_[i].get())->ogreMaterial;
-        if (mat.isNull())
-            continue;
-        
-        /// \todo Add functions to material asset so that this can be done without accessing Ogre materials directly
-        
-        unsigned numTech = mat->getNumTechniques();
+        OgreMaterialAsset* mat = dynamic_cast<OgreMaterialAsset*>(materials_[i].get());
+        unsigned numTech = mat->GetNumTechniques();
         for (unsigned i = 0; i < numTech; ++i)
         {
-            Ogre::Technique* tech = mat->getTechnique(i);
-            if (tech)
+            unsigned numPasses = mat->GetNumPasses(i);
+            // Modify the diffuse color of the last 2 passes
+            // (this should be a highlight material that we added the 2 passes to)
+            if (numPasses >= 2)
             {
-                // Modify the diffuse color of the last 2 passes
-                // (this should be a highlight material that we added the 2 passes to)
-                unsigned numPasses = tech->getNumPasses();
-                if (numPasses >= 2)
-                {
-                    Ogre::Pass* pass = tech->getPass(numPasses - 2);
-                    Ogre::Pass* pass2 = tech->getPass(numPasses - 1);
-                    if (pass)
-                        pass->setAmbient(Ogre::ColourValue(solid.r, solid.g, solid.b, solid.a));
-                    if (pass2)
-                        pass2->setAmbient(Ogre::ColourValue(outline.r, outline.g, outline.b, outline.a));
-                }
+                mat->SetAmbientColor(i, numPasses - 2, solidColor.Get());
+                mat->SetAmbientColor(i, numPasses - 1, outlineColor.Get());
             }
         }
     }

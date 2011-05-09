@@ -23,7 +23,6 @@ namespace Ogre
 {
     class SceneNode;
     class Entity;
-    class MaterialPtr;
 }
 
 class OgreMaterialAsset;
@@ -119,7 +118,7 @@ private slots:
     
 private:
     /// Create highlight pass to an Ogre material's all techniques
-    void CreateHighlightToOgreMaterial(Ogre::MaterialPtr mat);
+    void CreateHighlightToOgreMaterial(OgreMaterialAsset* mat);
     
     /// Apply a color change to all existing highlight materials
     void ApplyHighlightColors();
