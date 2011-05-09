@@ -171,6 +171,8 @@ void Client::Logout(bool fail)
         this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
 
     disconnect(kristalli, SIGNAL(ConnectionAttemptFailed()), this, SLOT(OnConnectionAttemptFailed()));
+
+    TundraLogicModule::LogInfo("Client logged out.");
 }
 
 bool Client::IsConnected() const
@@ -250,7 +252,6 @@ void Client::HandleKristalliEvent(event_id_t event_id, IEventData* data)
         if (!owner_->IsServer())
         {
             KristalliProtocol::Events::KristalliNetMessageIn* eventData = checked_static_cast<KristalliProtocol::Events::KristalliNetMessageIn*>(data);
-            HandleKristalliMessage(eventData->source, eventData->id, eventData->data, eventData->numBytes);
     
             emit NetworkMessageReceived(eventData->id, eventData->data, eventData->numBytes);
         }
