@@ -237,7 +237,11 @@ void InputAPI::ApplyMouseCursorOverride()
     if (!IsMouseCursorVisible())
         return;
 
-    bool is2DUiUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(lastMouseX, lastMouseY) != 0;
+    UiGraphicsView *gv = framework->Ui()->GraphicsView();
+    if (!gv) // If the tundra is running in headless, mode no graphics view is created.
+        return;
+
+    bool is2DUiUnderMouse = gv->GetVisibleItemAtCoords(lastMouseX, lastMouseY) != 0;
 
     for(InputContextList::iterator iter = registeredInputContexts.begin(); 
         iter != registeredInputContexts.end(); ++iter)
