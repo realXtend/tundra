@@ -1,5 +1,8 @@
 engine.ImportExtension("qt.core");
 
+var test_entities_running = [];
+var test_entities_to_remove = [];
+
 //Wait for tests to finish
 var jasmine_reporter = 0;
 var jasmine_reporters_list = jasmine.getEnv().reporter.subReporters_;
@@ -63,7 +66,10 @@ function JasmineRecursivelyFindTests()
 				for (k=0; k < entities.length; k++)
 				{
 					if ("script" in entities[k])
+					{
 						entities[k].name.name = "JasmineTestPath=" + dir.path();
+						test_entities_running.push(entities[k].Id);
+					}
 				}
 			}
 			dir.cdUp();
@@ -77,8 +83,6 @@ function JasmineRecursivelyFindTests()
 	}
 }
 
-var test_entities_to_remove = [];
-
 function JasmineTestFinished(id)
 {
 	test_entities_to_remove.push(id);
@@ -90,4 +94,21 @@ function JasmineDoEntityRemoval()
 	var entity = test_entities_to_remove.pop();
 	jasmine.getGlobal().console.log("Jasmine removing test entity " + entity);
 	scene.RemoveEntityRaw(entity);
+	for (i in test_entities_running)
+	{
+		if (entity == test_entities_running[i])
+		{
+			test_entities_running.splice(i, 1);
+			if (test_entities_running.length == 0)
+			{
+				jasmine.getGlobal().console.log("Jasmine Manager: all tests finished.");
+				if (jasmine_exit_on_finished)
+				{
+					jasmine.getGlobal().console.log("Jasmine Manager: closing application.");
+					framework.Exit();
+				}
+					
+			}
+		}
+	}
 }
