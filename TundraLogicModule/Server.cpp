@@ -127,17 +127,19 @@ void Server::Stop()
 {
     if (owner_->IsServer())
     {
+        TundraLogicModule::LogInfo("Stopped Tundra server. Removing TundraServer scene.");
+
         owner_->GetKristalliModule()->StopServer();
         framework_->Scene()->RemoveScene("TundraServer");
         
         emit ServerStopped();
+
+        KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
+        disconnect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
+            this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
+
+        disconnect(kristalli, SIGNAL(ClientDisconnectedEvent(UserConnection *)), this, SLOT(HandleUserDisconnected(UserConnection *)));
     }
-
-    KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
-    disconnect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
-        this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)));
-
-    disconnect(kristalli, SIGNAL(ClientDisconnectedEvent(UserConnection *)), this, SLOT(HandleUserDisconnected(UserConnection *)));
 }
 
 bool Server::IsRunning() const
@@ -230,21 +232,6 @@ kNet::NetworkServer *Server::GetServer() const
 
 void Server::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 {
-    if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
-    {
-        if (owner_->IsServer())
-        {
-            KristalliProtocol::Events::KristalliNetMessageIn* eventData = checked_static_cast<KristalliProtocol::Events::KristalliNetMessageIn*>(data);
-            HandleKristalliMessage(eventData->source, eventData->id, eventData->data, eventData->numBytes);
-        }
-    }
-    if (event_id == KristalliProtocol::Events::USER_DISCONNECTED)
-    {
-        KristalliProtocol::Events::KristalliUserDisconnected* eventData = checked_static_cast<KristalliProtocol::Events::KristalliUserDisconnected*>(data);
-        UserConnection* user = eventData->connection;
-        if (user)
-            HandleUserDisconnected(user);
-    }
 }
 
 void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
