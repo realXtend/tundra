@@ -79,7 +79,6 @@ void OgreAssetEditorModule::Uninitialize()
 
 void OgreAssetEditorModule::Update(f64 frametime)
 {
-    RESETPROFILER;
 }
 
 bool OgreAssetEditorModule::IsSupportedAssetTypes(const QString &type) const
@@ -158,12 +157,6 @@ void OgreAssetEditorModule::OpenAssetInEditor()
         editor->setWindowFlags(Qt::Tool);
         editor->show();
     }
-}
-
-
-void SetProfiler(Profiler *profiler)
-{
-    ProfilerSection::SetProfiler(profiler);
 }
 
 extern "C"

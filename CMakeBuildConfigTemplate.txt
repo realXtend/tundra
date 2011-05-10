@@ -49,7 +49,7 @@ if (MSVC)
 endif()
 
 # Enables Ogre asset editor module.
-SET(OGREASSETEDITOR 0)
+SET(OGREASSETEDITOR 1)
 
 SET(HAVE_OPENDOCUMENT_SUPPORT 0)
 
@@ -97,6 +97,8 @@ AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
 #AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
 AddEntityComponent(EntityComponents/EC_QmlApp EC_QmlApp)
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)
+
+add_subdirectory(StreamsModule)
 
 # The following two are declared by both PythonScriptModule and JavascriptModule. They are optional.
 AddEntityComponent(EntityComponents/EC_Script EC_Script)
