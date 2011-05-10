@@ -5,10 +5,11 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Declare_EC.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
 #include "AssetRefListener.h"
+
+class IModule;
 
 /// Particle system.
 /**
@@ -47,10 +48,13 @@ Does not emit any actions.
 */
 class EC_ParticleSystem : public IComponent
 {
-    DECLARE_EC(EC_ParticleSystem);
     Q_OBJECT
+    COMPONENT_NAME("EC_ParticleSystem", 27)
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_ParticleSystem(Framework *fw);
+
     ~EC_ParticleSystem();
 
     /// Particle asset reference
@@ -81,14 +85,13 @@ private slots:
     void OnParticleAssetFailed(IAssetTransfer* transfer, QString reason);
     void EntitySet();
     void OnComponentRemoved(IComponent *component, AttributeChange::Type change);
-    
+
 private:
-    explicit EC_ParticleSystem(IModule *module);
     ComponentPtr FindPlaceable() const;
 
     OgreRenderer::RendererWeakPtr renderer_;
     std::vector<Ogre::ParticleSystem*> particleSystems_;
-    
+
     /// Asset ref listener for the particle asset
     AssetRefListenerPtr particleAsset_;
 };

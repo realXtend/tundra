@@ -13,14 +13,15 @@
 #include "IAssetTransfer.h"
 #include "LoggingFunctions.h"
 #include "AttributeMetadata.h"
+#include "Framework.h"
 
 #include <Ogre.h>
 #include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 
-EC_ParticleSystem::EC_ParticleSystem(IModule *module):
-    IComponent(module->GetFramework()),
+EC_ParticleSystem::EC_ParticleSystem(Framework *fw):
+    IComponent(fw),
     particleRef(this, "Particle ref" ),
     castShadows(this, "Cast shadows", false),
     renderingDistance(this, "Rendering distance", 0.0f)

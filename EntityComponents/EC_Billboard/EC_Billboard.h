@@ -22,8 +22,8 @@ namespace Ogre
     class Billboard;
 }
 
+/// EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
 /**
-
 <table class="header">
 <tr>
 <td>
@@ -68,19 +68,16 @@ Does not emit any actions.
 
 <b>Depends on components Placeable</b>.  
 </table>
-
 */
-
-/// EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
 class EC_Billboard : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_Billboard", 2)
 
-private:
+public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Billboard(Framework *fw);
 
-public:
     /// Destructor.
     ~EC_Billboard();
 
@@ -111,8 +108,7 @@ public:
     /// Time (in seconds) in which to autohide the billboard after showing. Negative values never hide
     Q_PROPERTY(float autoHideTime READ getautoHideTime WRITE setautoHideTime);
     DEFINE_QPROPERTY_ATTRIBUTE(float, autoHideTime);
-    
-    COMPONENT_NAME("EC_Billboard", 2)
+
 public slots:
 
     /// Show billboard. If autoHideTime is positive, it will be autohidden after the time has passed
