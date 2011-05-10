@@ -62,7 +62,7 @@ QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
     //this should suffice only once for the prototype somehow, but couldn't get that to work
     //ctorVector3df.property("prototype").setProperty("normalize", normalizeVector3df);
     obj.setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
-    obj.setProperty("getLength", engine->newFunction(Vector3df_prototype_getLength));
+    obj.setProperty("length", engine->newFunction(Vector3df_prototype_getLength));
     obj.setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
 
     return obj;
@@ -106,6 +106,9 @@ QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine)
     return toScriptValueVector3(engine, vec * scalar);
 }
 
+QScriptValue Quaternion_prototype_ToEuler(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Quaternion_prototype_Normalize(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Quaternion_prototype_MakeIdentity(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue toScriptValueQuaternion(QScriptEngine *engine, const Quaternion &s)
 {
     QScriptValue obj = engine->newObject();
@@ -122,6 +125,36 @@ void fromScriptValueQuaternion(const QScriptValue &obj, Quaternion &s)
     s.y = (float)obj.property("y").toNumber();
     s.z = (float)obj.property("z").toNumber();
     s.w = (float)obj.property("w").toNumber();
+}
+
+QScriptValue Quaternion_prototype_ToEuler(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Quaternion quat;
+    fromScriptValueQuaternion(ctx->thisObject(), quat);
+    Vector3df eulerVal;
+    quat.toEuler(eulerVal);
+    // Convert to degree.
+    eulerVal.x = RADTODEG * eulerVal.x;
+    eulerVal.y = RADTODEG * eulerVal.y;
+    eulerVal.z = RADTODEG * eulerVal.z;
+
+    return toScriptValueVector3(engine, eulerVal);
+}
+
+QScriptValue Quaternion_prototype_Normalize(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Quaternion quat;
+    fromScriptValueQuaternion(ctx->thisObject(), quat);
+    
+    return toScriptValueQuaternion(engine, quat.normalize());
+}
+
+QScriptValue Quaternion_prototype_MakeIdentity(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Quaternion quat;
+    fromScriptValueQuaternion(ctx->thisObject(), quat);
+    
+    return toScriptValueQuaternion(engine, quat.makeIdentity());
 }
 
 QScriptValue toScriptValueTransform(QScriptEngine *engine, const Transform &s)
@@ -177,8 +210,11 @@ void fromScriptValueAssetReferenceList(const QScriptValue &obj, AssetReferenceLi
     while(it.hasNext()) 
     {
         it.next();
-        AssetReference reference(it.value().toString());
-        s.Append(reference);
+        if (it.value().isString())
+        {
+            AssetReference reference(it.value().toString());
+            s.Append(reference);
+        }
     }
 }
 
@@ -271,39 +307,140 @@ void fromScriptValueIAttribute(const QScriptValue &obj, IAttribute *&s)
 QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
 {
     Color newColor;
+    if (ctx->argumentCount() == 3) //RGB
+    {
+        if (ctx->argument(0).isNumber() &&
+            ctx->argument(1).isNumber() &&
+            ctx->argument(2).isNumber())
+        {
+            newColor.r = (float)ctx->argument(0).toNumber();
+            newColor.g = (float)ctx->argument(1).toNumber();
+            newColor.b = (float)ctx->argument(2).toNumber();
+        }
+        else
+            return ctx->throwError(QScriptContext::TypeError, "Color(): arguments aren't numbers.");
+    }
+    else if(ctx->argumentCount() == 4) //RGBA
+    {
+        if (ctx->argument(0).isNumber() &&
+            ctx->argument(1).isNumber() &&
+            ctx->argument(2).isNumber() &&
+            ctx->argument(3).isNumber())
+        {
+            newColor.r = (float)ctx->argument(0).toNumber();
+            newColor.g = (float)ctx->argument(1).toNumber();
+            newColor.b = (float)ctx->argument(2).toNumber();
+            newColor.a = (float)ctx->argument(3).toNumber();
+        }
+        else
+            return ctx->throwError(QScriptContext::TypeError, "Color(): arguments aren't numbers.");
+    }
     return engine->toScriptValue(newColor);
 }
 
 QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
 {
     Vector3df newVec;
-    newVec.x = 0;
-    newVec.y = 0;
-    newVec.z = 0;
-    return engine->toScriptValue(newVec);
+    if (ctx->argumentCount() == 3)
+    {
+        if (ctx->argument(0).isNumber() &&
+            ctx->argument(1).isNumber() &&
+            ctx->argument(2).isNumber())
+        {
+            newVec.x = (f32)ctx->argument(0).toNumber();
+            newVec.y = (f32)ctx->argument(1).toNumber();
+            newVec.z = (f32)ctx->argument(2).toNumber();
+        }
+        else
+            return ctx->throwError(QScriptContext::TypeError, "Vector3df(): arguments aren't numbers.");
+    }
+    QScriptValue returnValue = engine->toScriptValue(newVec);
+    // Expose native functions to javascript.
+    returnValue.setProperty("Normalize", engine->newFunction(Vector3df_prototype_normalize));
+    returnValue.setProperty("Length", engine->newFunction(Vector3df_prototype_getLength));
+    returnValue.setProperty("Mul", engine->newFunction(Vector3df_prototype_mul));
+    return returnValue;
 }
 
 QScriptValue createQuaternion(QScriptContext *ctx, QScriptEngine *engine)
 {
     Quaternion newQuat;
-    return engine->toScriptValue(newQuat);
+    if (ctx->argumentCount() == 3)
+    {
+        if (ctx->argument(0).isNumber() &&
+            ctx->argument(1).isNumber() &&
+            ctx->argument(2).isNumber())
+        {
+            newQuat.set(DEGTORAD * (f32)ctx->argument(0).toNumber(),
+                        DEGTORAD * (f32)ctx->argument(1).toNumber(),
+                        DEGTORAD * (f32)ctx->argument(2).toNumber());
+        }
+        else
+            return ctx->throwError(QScriptContext::TypeError, "Quaternion(): arguments aren't numbers.");
+    }
+    QScriptValue retVal = engine->toScriptValue(newQuat);
+    // Expose native functions to javascript.
+    retVal.setProperty("ToEuler", engine->newFunction(Quaternion_prototype_ToEuler));
+    retVal.setProperty("Normalize", engine->newFunction(Quaternion_prototype_Normalize));
+    retVal.setProperty("MakeIdentity", engine->newFunction(Quaternion_prototype_MakeIdentity));
+
+    return retVal;
 }
 
 QScriptValue createTransform(QScriptContext *ctx, QScriptEngine *engine)
 {
     Transform newTransform;
+    if (ctx->argumentCount() == 3) // Support three Vector3df as arguments.
+    {
+        //! todo! Figure out how this could be more safe.
+        if (ctx->argument(0).isObject() &&
+            ctx->argument(1).isObject() &&
+            ctx->argument(2).isObject())
+        {
+            Vector3df pos = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+            Vector3df rot = engine->fromScriptValue<Vector3df>(ctx->argument(1));
+            Vector3df scale = engine->fromScriptValue<Vector3df>(ctx->argument(2));
+            newTransform.position = pos;
+            newTransform.rotation = rot;
+            newTransform.scale = scale;
+        }
+    }
     return engine->toScriptValue(newTransform);
 }
 
 QScriptValue createAssetReference(QScriptContext *ctx, QScriptEngine *engine)
 {
     AssetReference newAssetRef;
+    if (ctx->argumentCount() == 2) // Both ref and it's type are given as arguments.
+        if (ctx->argument(0).isString() &&
+            ctx->argument(1).isString())
+        {
+            newAssetRef.ref = ctx->argument(0).toString();
+            newAssetRef.type = ctx->argument(0).toString();
+        }
+    else if(ctx->argumentCount() == 1) // Only ref.
+        if (ctx->argument(0).isString())
+            newAssetRef.ref = ctx->argument(0).toString();
     return engine->toScriptValue(newAssetRef);
 }
 
 QScriptValue createAssetReferenceList(QScriptContext *ctx, QScriptEngine *engine)
 {
     AssetReferenceList newAssetRefList;
+    if (ctx->argumentCount() >= 1)
+    {
+        if(ctx->argument(0).isArray())
+            fromScriptValueAssetReferenceList(ctx->argument(0), newAssetRefList);
+        else
+            return ctx->throwError(QScriptContext::TypeError, "AssetReferenceList(): argument 0 type isn't array.");
+        if (ctx->argumentCount() == 2)
+        {
+            if(ctx->argument(1).isString())
+                newAssetRefList.type = ctx->toString();
+            else
+                return ctx->throwError(QScriptContext::TypeError, "AssetReferenceList(): argument 1 type isn't string.");
+        }
+    }
     return engine->toScriptValue(newAssetRefList);
 }
 
@@ -349,6 +486,8 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType<std::string>(engine, toScriptValueStdString, fromScriptValueStdString);
     
     // Register constructors
+    QScriptValue ctorVector3 = engine->newFunction(createVector3df);
+    engine->globalObject().setProperty("Vector3df", ctorVector3);
     QScriptValue ctorColor = engine->newFunction(createColor);
     engine->globalObject().setProperty("Color", ctorColor);
     QScriptValue ctorTransform = engine->newFunction(createTransform);
@@ -361,10 +500,10 @@ void ExposeCoreTypes(QScriptEngine *engine)
     // Register both constructors and methods (with js prototype style)
     // http://doc.qt.nokia.com/latest/scripting.html#prototype-based-programming-with-the-qtscript-c-api
     /* doesn't work for some reason, is now hacked in toScriptValue to every instance (bad!) */
-    QScriptValue protoVector3df = engine->newObject();
+    /*QScriptValue protoVector3df = engine->newObject();
     protoVector3df.setProperty("normalize2", engine->newFunction(Vector3df_prototype_normalize)); //leaving in for debug/test purposes
     QScriptValue ctorVector3df = engine->newFunction(createVector3df, protoVector3df); //this is supposed to work according to docs, doesnt.
-    engine->globalObject().setProperty("Vector3df", ctorVector3df);
+    engine->globalObject().setProperty("Vector3df", ctorVector3df);*/
     
     QScriptValue ctorQuaternion = engine->newFunction(createQuaternion);
     engine->globalObject().setProperty("Quaternion", ctorQuaternion);

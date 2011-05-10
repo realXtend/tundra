@@ -119,10 +119,6 @@ public:
     /** \param position new position
      */
     void SetPosition(const Vector3df& position);
-    /// sets orientation
-    /** \param orientation new orientation
-     */
-    void SetOrientation(const Quaternion& orientation);
 
     /// orients to look at a point in space
     /** \param look_at point to look at
@@ -158,8 +154,6 @@ public:
     
     /// returns position
     Vector3df GetPosition() const;
-    /// returns orientation
-    Quaternion GetOrientation() const;
     /// returns scale
     Vector3df GetScale() const;
 
@@ -202,6 +196,14 @@ public:
 
     COMPONENT_NAME("EC_Placeable", 20)
 public slots:
+    /// sets orientation
+    /** \param orientation new orientation
+     */
+    void SetOrientation(const Quaternion& orientation);
+
+    /// returns orientation
+    Quaternion GetOrientation() const;
+
 
     /// LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
     void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
