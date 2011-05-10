@@ -110,7 +110,7 @@ EC_WebView::EC_WebView(IModule *module) :
     SceneInteractWeakPtr sceneInteract = GetFramework()->Scene()->GetSceneIteract();
     if (!sceneInteract.isNull())
     {
-        connect(sceneInteract.data(), SIGNAL(EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)), 
+        connect(sceneInteract.data(), SIGNAL(EntityMousePressed(Scene::Entity*, Qt::MouseButton, RaycastResult*)), 
                 SLOT(EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)));
     }
 

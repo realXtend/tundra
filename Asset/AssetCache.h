@@ -9,6 +9,7 @@
 #include <QNetworkCookieJar>
 #include <QNetworkDiskCache>
 #include <QNetworkCacheMetaData>
+#include <QByteArray>
 #include <QHash>
 #include <QUrl>
 #include <QDir>
@@ -34,37 +35,37 @@ public:
     explicit AssetCache(AssetAPI *owner, QString assetCacheDirectory);
 
     /// Allocates new QFile*, it is the callers responsibility to free the memory once done with it.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual QIODevice* data(const QUrl &url);
     
     /// Frees allocated QFile* that was prepared in prepare().
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual void insert(QIODevice* device);
 
     /// Allocates new QFile*, the data is freed in either insert() or remove(), 
     /// remove() cancels the preparation and insert() finishes it.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual QIODevice* prepare(const QNetworkCacheMetaData &metaData);
     
     /// Frees allocated QFile* if one was prepared in prepare().
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual bool remove(const QUrl &url);
 
-    /// Reads metadata file to hard drive.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// Reads metadata file from hard drive.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual QNetworkCacheMetaData metaData(const QUrl &url);
 
     /// Writes metadata file to hard drive, if metadata is different from known cache metadata.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual void updateMetaData(const QNetworkCacheMetaData &metaData);
 
     /// Deletes all data and metadata files from the asset cache.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual void clear();
 
     /// Checks if asset cache is currently over the maximum limit.
     /// This call is ignored untill we decide to limit the disk cache size.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual qint64 expire();
 
 public slots:
@@ -117,6 +118,14 @@ public slots:
 private slots:
     /// Writes metadata into a file. Helper function for the QNetworkDiskCache overrides.
     bool WriteMetadata(const QString &filePath, const QNetworkCacheMetaData &metaData);
+
+    /// If the metadata for this cache item has Content-MD5 digest, compare them with the data file we are about to pass onwards.
+    /// \note If the metadata does not contain the header Content-MD5 this function will do nothing and return true. All http servers don't send this header eg. disabled by default on apache.
+    /// \note In the case that corruption is detected this function will remove the data and metadata files from disk and return false. This will trigger a full fetch for the asset data.
+    /// \param QString Absolute path to data file. You should validate that the file actually exists.
+    /// \param QNetworkCacheMetaData The assets metadata.
+    /// \return False if digest did not match with data file, true otherwise.
+    bool VerifyCacheContentDigest(const QString &absoluteDataFilePath, const QNetworkCacheMetaData &metaData);
 
     /// Genrates the absolute path to an asset cache entry. Helper function for the QNetworkDiskCache overrides.
     QString GetAbsoluteFilePath(bool isMetaData, const QUrl &url);
