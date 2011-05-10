@@ -1,12 +1,44 @@
 // An object camera script. Enables object look using Alt+Click, rotating around object and zooming in and out
+engine.ImportExtension("qt.core");
+engine.ImportExtension("qt.gui");
 
-var rotate_sensitivity = 0.5;
 var camera_distance = 7.0;
-var scroll_speed = 0.8;
 var alt_key_pressed = false;
-var last_clicked;
+var last_clicked = null;
 var zooming = false;
 var global_transform;
+
+var mouse_left_pressed = false;
+var objectcameraentity;
+var objectcamera_mode = false;
+var last_camera = null;
+
+var return_button = null;
+var return_button_proxy = null;
+
+function init_ui()
+{
+    if (!return_button)
+    {
+        return_button = new QPushButton("Return");
+        return_button.resize(150, 50);
+        return_button.font = new QFont("Arial");
+        return_button_proxy = new UiProxyWidget(return_button); 
+        ui.AddProxyWidgetToScene(return_button_proxy);
+        return_button_proxy.windowFlags = 0;
+
+        var style = "QWidget { background-color: transparent; } QPushButton { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(228, 228, 228, 255), stop:1 rgba(82, 82, 82, 255)); border: 1px solid grey; border-radius: 10px; color: white; } QPushButton::hover { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.699, y2:1, stop:0 rgba(228, 228, 228, 255), stop:1 rgba(82, 82, 82, 255)); } QPushButton::pressed { color: rgb(248, 248, 248); background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(228, 228, 228, 255), stop:1 rgba(82, 82, 82, 255)); }";
+        return_button.styleSheet = style;
+        return_button.setAttribute(Qt.WA_OpaquePaintEvent);
+
+
+        scene_rect_changed(ui.GraphicsScene().sceneRect);
+        ui.GraphicsScene().sceneRectChanged.connect(scene_rect_changed);
+
+        return_button.clicked.connect(toggle_objectcamera);
+    }
+    return_button_proxy.visible = true;
+}
 
 if (!me.HasComponent("EC_OgreCamera"))
 {
@@ -21,119 +53,72 @@ if (!me.HasComponent("EC_OgreCamera"))
     var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if (!avatarcameraentity)
         camera.SetActive();
-    
+
     var transform = placeable.transform;
     transform.rot.x = 90;
     placeable.transform = transform;
 
-    frame.Updated.connect(Update);
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = true;
+
     input.TopLevelInputContext().MouseLeftPressed.connect(mouseLeftPress);
+    input.TopLevelInputContext().MouseLeftReleased.connect(mouseLeftRelease);
+
     input.TopLevelInputContext().MouseScroll.connect(mouseScroll);
     input.TopLevelInputContext().KeyPressed.connect(keyPress);
     input.TopLevelInputContext().KeyReleased.connect(keyRelease);
-
-    me.Action("MouseLookX").Triggered.connect(HandleMouseLookX);
-    me.Action("MouseLookY").Triggered.connect(HandleMouseLookY);
+    input.TopLevelInputContext().MouseMove.connect(mouseMove);
 }
 
-
-function Update(frametime)
+function scene_rect_changed(rect)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
-    if (camera.IsActive() == false || last_clicked == null)
-        return;
-
-    var placeable = me.GetComponentRaw("EC_Placeable");
-
-    if (zooming)
-    {
-        cameraZoom();
-    }
-
-    if (camera.IsActive() == true && last_clicked != null)
-    {
-        placeable.LookAt(last_clicked.placeable.transform.pos);
-    }
-
+    return_button_proxy.pos = new QPointF(rect.width()/2 - return_button.size.width()/2, 100);
 }
 
-
-function HandleMouseLookX(param)
+function toggle_objectcamera()
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
-    if (camera.IsActive() == false || last_clicked == null)
-        return;
-
-    if (!last_clicked)
-	return;
-
-    var move = parseInt(param);
-    var placeable = me.GetComponentRaw("EC_Placeable");
-
-    var newtransform = placeable.transform;
-    newtransform.rot.z -= rotate_sensitivity * move;
-
-    newtransform.pos.y = camera_distance * Math.sin(newtransform.rot.z * Math.PI/180) + last_clicked.placeable.transform.pos.y;
-    newtransform.pos.x = camera_distance * Math.cos(newtransform.rot.z * Math.PI/180) + last_clicked.placeable.transform.pos.x;
-
-    placeable.transform = newtransform;
-    placeable.LookAt(last_clicked.placeable.transform.pos);
-}
-
-
-function HandleMouseLookY(param)
-{
-    var camera = me.GetComponentRaw("EC_OgreCamera");
-    if (camera.IsActive() == false || last_clicked == null)
-        return;
-
-    var move = parseInt(param);
-    var placeable = me.GetComponentRaw("EC_Placeable");
-
-    var newtransform = placeable.transform;
-    newtransform.rot.x -= rotate_sensitivity * move;
-
-    newtransform.pos.z = camera_distance * Math.cos(newtransform.rot.x * Math.PI/180) + last_clicked.placeable.transform.pos.z;
-
-    if ((newtransform.pos.z > camera_distance && move < 0) || (newtransform.pos.z < -camera_distance + 1 && move > 0)) 
-        return;
-
-    placeable.transform = newtransform;
-    placeable.LookAt(last_clicked.placeable.transform.pos);
+    last_camera.SetActive();
+    return_button_proxy.visible = false;
 }
 
 function mouseLeftPress(event)
 {
     if (alt_key_pressed == true)
     {
-        var raycastResult = renderer.Raycast(event.x, event.y);
-        if (raycastResult.entity !== null)
+        mouse_left_pressed = true;
+        if (!objectcamera_mode)
         {
-            var entityclicked = scene.GetEntityRaw(raycastResult.entity.id);
-            var objectcameraentity = scene.GetEntityByNameRaw("ObjectCamera");
-            var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-            if ((objectcameraentity == null) || (avatarcameraentity == null))
-                return;
-            var objectcamera = objectcameraentity.ogrecamera;
-            var avatarcamera = avatarcameraentity.ogrecamera;
+            init_ui();
+            var raycastResult = renderer.Raycast(event.x, event.y);
+            if (raycastResult.entity !== null)
+            {
+                var entityclicked = scene.GetEntityRaw(raycastResult.entity.id);
+                objectcameraentity = scene.GetEntityByNameRaw("ObjectCamera");
 
-            if (objectcamera.IsActive() && last_clicked == entityclicked)
-                return;
+                if (objectcameraentity == null)
+                    return;
+                var objectcamera = objectcameraentity.ogrecamera;
 
-            last_clicked = entityclicked;
-            var cameratransform = objectcameraentity.placeable.transform;
+                if (objectcamera.IsActive())
+                {
+                    cameratransform = objectcameraentity.placeable.transform;
+                } else
+                {
+                    var cameralist = scene.GetEntitiesWithComponentRaw("EC_OgreCamera");
+                    for (var i = 0; i < cameralist.length; i++)
+                    {
+                        if (cameralist[i].ogrecamera.IsActive())
+                        {
+                            last_camera = cameralist[i].ogrecamera;
+                            objectcameraentity.placeable.transform = cameralist[i].placeable.transform;
+                        }
+                    }
+                    objectcamera.SetActive();
+                }
 
-            global_transform = entityclicked.placeable.transform;
-            global_transform.pos.y = camera_distance * Math.sin(cameratransform.rot.z * Math.PI/180) + last_clicked.placeable.transform.pos.y;
-            global_transform.pos.x = camera_distance * Math.cos(cameratransform.rot.z * Math.PI/180) + last_clicked.placeable.transform.pos.x;
-            global_transform.pos.z = camera_distance * Math.cos(cameratransform.rot.x * Math.PI/180) + last_clicked.placeable.transform.pos.z;
-
-            zooming = true;
-
-            if (avatarcamera.IsActive())
-                objectcamera.SetActive();
+                objectcamera_mode = true;
+                last_clicked = entityclicked;
+            }
         }
     }
 }
@@ -141,62 +126,56 @@ function mouseLeftPress(event)
 
 function mouseScroll(event)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
-    if (camera.IsActive() == false)
-        return;
-
-    var placeable = me.GetComponentRaw("EC_Placeable");
-
-    var delta;
-
-    if (event.relativeZ < 0)
-        delta = -25;
-    else if (event.relativeZ > 0)
-        delta = 25;
-
-    var zoomed = false;
-
-    var pos = new Vector3df()
-    pos = placeable.transform.pos;
-
-    var point = new Vector3df();
-    point = last_clicked.placeable.transform.pos;
-
-    var dir = new Vector3df();
-    dir.x = point.x - pos.x;
-    dir.y = point.y - pos.y;
-    dir.z = point.z - pos.z;
-
-    var distance = new Vector3df();
-    distance = dir;
-
-    var acceleration = 0.01;
-    dir.x *= delta * acceleration;
-    dir.y *= delta * acceleration;
-    dir.z *= delta * acceleration;
-
-    var min = 5;
-    var max = 100;
-    var distance_length = Math.sqrt(distance.x*distance.x + distance.y*distance.y + distance.z*distance.z);
-    var dir_length = Math.sqrt(dir.x*dir.x + dir.y*dir.y + dir.z*dir.z);
-
-    if (delta>0 && (distance_length+dir_length > min))
+    if (objectcameraentity)
     {
-        zoomed = true;
-        camera_distance -= scroll_speed;
-    }
-    if (delta<0 && (distance_length+dir_length < max))
-    {
-        zoomed = true;
-        camera_distance += scroll_speed;
-    }
-    if (zoomed)
-    {
-        var newtransform = placeable.transform;
-        newtransform.pos.y = camera_distance * Math.sin(newtransform.rot.z * Math.PI/180) + last_clicked.placeable.transform.pos.y;
-        newtransform.pos.x = camera_distance * Math.cos(newtransform.rot.z * Math.PI/180) + last_clicked.placeable.transform.pos.x;
-        newtransform.pos.z = camera_distance * Math.cos(newtransform.rot.x * Math.PI/180) + last_clicked.placeable.transform.pos.z;
-        placeable.transform = newtransform;
+        var zoomed = false;
+        var min = 5;
+        var max = 100;
+
+        var transform = objectcameraentity.placeable.transform;       
+        var pos = new Vector3df();
+        pos.x = transform.pos.x;
+        pos.y = transform.pos.y;
+        pos.z = transform.pos.z;
+
+        var pivot = last_clicked.placeable.transform.pos;
+
+        var dir = new Vector3df();
+        dir.x = pivot.x - pos.x;
+        dir.y = pivot.y - pos.y;
+        dir.z = pivot.z - pos.z;
+
+        var distance = new Vector3df();
+        distance.x = dir.x;
+        distance.y = dir.y;
+        distance.z = dir.z;
+
+        dir = normalize(dir);
+        var acceleration = 0.01;
+        var delta = event.relativeZ;
+
+        dir.x = dir.x * delta*acceleration;
+        dir.y = dir.y * delta*acceleration;
+        dir.z = dir.z * delta*acceleration;
+
+        if (delta>0 && (getLength(distance)+getLength(dir) > min))
+        {
+            zoomed = true;
+        }
+        if (delta<0 && (getLength(distance)+getLength(dir) <max))
+        {
+            zoomed = true;
+        }
+        if (zoomed)
+        {
+            transform.pos.x = transform.pos.x + dir.x;
+            transform.pos.y = transform.pos.y + dir.y;
+            transform.pos.z = transform.pos.z + dir.z;
+
+            objectcameraentity.placeable.transform = transform; 
+
+            objectcameraentity.placeable.LookAt(new QVector3D(pivot.x, pivot.y, pivot.z));
+        }
     }
 }
 
@@ -207,41 +186,22 @@ function keyPress(event)
         alt_key_pressed = true;
         return;
     }
-
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    var freelookcameraentity = scene.GetEntityByNameRaw("FreeLookCamera");
-    if (avatarcameraentity == null) // || freelookcameraentity == null) 
-        return;
-
-    var avatarcamera = avatarcameraentity.ogrecamera;
-    var freelookcamera = freelookcameraentity.ogrecamera;
-
-    if (freelookcamera.IsActive())
-        return;
-
-    //XXX \todo BUG: steals activity from any other camera, this can not be done!
-    //this cam is now disabled alltogether, fix this if wanna enable it
-    if (!avatarcamera.IsActive())
-    {
-        if (event.sequence.toString() == "W" 
-         || event.sequence.toString() == "S" 
-         || event.sequence.toString() == "A" 
-         || event.sequence.toString() == "D"
-         || event.sequence.toString() == "Left"
-         || event.sequence.toString() == "Up"
-         || event.sequence.toString() == "Right"
-         || event.sequence.toString() == "Down")
-            avatarcamera.SetActive();
-    }
 }
 
 function keyRelease(event)
 {
-    alt_key_pressed = false;
+    if (event.keyCodeInt() == Qt.Key_Alt)
+    {
+        alt_key_pressed = false;
+        objectcamera_mode = false;
+    }
 }
 
 function cameraZoom()
 {
+    /*
+     * TODO: cameraZoom function needs to be implemented
+     *
     var entityplaceable = last_clicked.GetComponentRaw("EC_Placeable");
     var cameraentity = scene.GetEntityByNameRaw("ObjectCamera");
     if (cameraentity == null)
@@ -271,10 +231,91 @@ function cameraZoom()
     if (u > camera_distance)
     {
         cameraplaceable.transform = cameratransform;
-        cameraplaceable.LookAt(cameratransform.pos);
+        cameraplaceable.LookAt(new QVector3D(cameratransform.pos.x, cameratransform.pos.y, cameratransform.pos.z));
     }
     else
     {
         zooming = false;
     }
+    */
+}
+
+function mouseMove(event)
+{
+    if(objectcamera_mode)
+    {
+        var width = renderer.GetWindowWidth();
+        var height = renderer.GetWindowHeight();
+
+        var x = 2*Math.PI*event.relativeX/width;
+        var y = 2*Math.PI*event.relativeY/height;
+
+        var transform = objectcameraentity.placeable.transform;       
+        var pos = new Vector3df();
+        pos.x = transform.pos.x;
+        pos.y = transform.pos.y;
+        pos.z = transform.pos.z;
+
+        var pivot = last_clicked.placeable.transform.pos;
+
+        var dir = new Vector3df();
+        dir.x = pos.x - pivot.x;
+        dir.y = pos.y - pivot.y;
+        dir.z = pos.z - pivot.z;
+
+        var quat = QQuaternion.fromAxisAndAngle(objectcameraentity.placeable.LocalYAxis, (-x*180)/Math.PI);
+        quat = multiply_quats(quat, QQuaternion.fromAxisAndAngle(objectcameraentity.placeable.LocalXAxis, (-y*180)/Math.PI));
+        var dirq = quat.rotatedVector(new QVector3D(dir.x, dir.y, dir.z));
+        dir.x = dirq.x();
+        dir.y = dirq.y();
+        dir.z = dirq.z();
+
+        var new_pos = new Vector3df();
+        new_pos.x = pivot.x + dir.x;
+        new_pos.y = pivot.y + dir.y;
+        new_pos.z = pivot.z + dir.z;
+
+        transform.pos.x = new_pos.x;
+        transform.pos.y = new_pos.y;
+        transform.pos.z = new_pos.z; 
+
+        objectcameraentity.placeable.transform = transform;
+        objectcameraentity.placeable.LookAt(new QVector3D(pivot.x, pivot.y, pivot.z));
+    }
+}
+
+function mouseLeftRelease(event)
+{
+    mouse_left_pressed = false;
+}
+
+function multiply_quats(q, r)
+{
+    var w = q.scalar()*r.scalar() - q.x()*r.x() - q.y()*r.y() - q.z()*r.z();
+    var x = q.scalar()*r.x() + q.x()*r.scalar() + q.y()*r.z() - q.z()*r.y();
+    var y = q.scalar()*r.y() + q.y()*r.scalar() + q.z()*r.x() - q.x()*r.z();
+    var z = q.scalar()*r.z() + q.z()*r.scalar() + q.x()*r.y() - q.y()*r.x();
+    var t = new QQuaternion(w, x, y, z);
+    return t;
+}
+
+function normalize(vec)
+{
+    var result = new Vector3df();
+    var length = vec.x*vec.x + vec.y*vec.y + vec.z*vec.z;
+    if (length == 0)
+        return new Vector3df(0, 0, 0);
+
+    length = 1/Math.sqrt(length);
+    result.x = vec.x * length;
+    result.y = vec.y * length;
+    result.z = vec.z * length;
+
+    return result;
+}
+
+function getLength(vec)
+{
+    var result = Math.sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);    
+    return result;
 }
