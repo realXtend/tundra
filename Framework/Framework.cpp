@@ -120,6 +120,7 @@ Framework::~Framework()
     delete asset;
     delete audio;
     delete plugin;
+    delete ui;
 #ifdef PROFILING
     delete profiler;
 #endif

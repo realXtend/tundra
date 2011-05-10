@@ -21,7 +21,7 @@ class UI_API UiAPI : public QObject
 
 public:
     /// Constructs the UI API.
-    /** param owner Owner framework. Takes ownership of the object.
+    /** param owner Owner framework.
     */
     explicit UiAPI(Framework *owner);
 
