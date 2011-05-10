@@ -272,6 +272,7 @@ void Client::HandleKristalliMessage(MessageConnection* source, message_id_t id, 
         }
         break;
     }
+    emit NetworkMessageReceived(id, data, numBytes);
 }
 
 void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& msg)
