@@ -875,7 +875,7 @@ void SceneTreeWidget::Paste()
                     if (!type.isNull())
                     {
                         // If we already have component with the same type name and name, add suffix to the new component's name.
-                        if (entity->HasComponent(type, name))
+                        if (entity->GetComponent(type, name))
                             name.append("_copy");
 
                         ComponentPtr component = framework->Scene()->CreateComponentByName(type, name);

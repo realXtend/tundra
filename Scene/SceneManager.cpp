@@ -231,7 +231,7 @@ EntityList SceneManager::GetEntitiesWithComponent(const QString &type_name) cons
     while(it != entities_.end())
     {
         EntityPtr entity = it->second;
-        if (entity->HasComponent(type_name))
+        if (entity->GetComponent(type_name))
             entities.push_back(entity);
         ++it;
     }
@@ -668,7 +668,7 @@ QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numB
             uint num_components = source.Read<u32>();
             for(uint i = 0; i < num_components; ++i)
             {
-                uint type_hash = source.Read<u32>();
+                u32 typeId = source.Read<u32>(); ///\todo VLE this!
                 QString name = QString::fromStdString(source.ReadString());
                 bool sync = source.Read<u8>() ? true : false;
                 uint data_size = source.Read<u32>();
@@ -682,7 +682,7 @@ QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numB
                 
                 try
                 {
-                    ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
+                    ComponentPtr new_comp = entity->GetOrCreateComponent(typeId, name);
                     if (new_comp)
                     {
                         new_comp->SetNetworkSyncEnabled(sync);
@@ -694,11 +694,11 @@ QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numB
                         }
                     }
                     else
-                        LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"!");
+                        LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
                 }
                 catch(...)
                 {
-                    LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"!");
+                    LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
                 }
             }
 
@@ -1053,8 +1053,8 @@ SceneDesc SceneManager::GetSceneDescFromBinary(QByteArray &data, SceneDesc &scen
                 SceneAPI *sceneAPI = framework_->Scene();
 
                 ComponentDesc compDesc;
-                uint type_hash = source.Read<u32>();
-                compDesc.typeName = sceneAPI->GetComponentTypeName(type_hash);
+                u32 typeId = source.Read<u32>(); ///\todo VLE this!
+                compDesc.typeName = sceneAPI->GetComponentTypeName(typeId);
                 compDesc.name = QString::fromStdString(source.ReadString());
                 compDesc.sync = source.Read<u8>() ? true : false;
                 uint data_size = source.Read<u32>();
@@ -1068,7 +1068,7 @@ SceneDesc SceneManager::GetSceneDescFromBinary(QByteArray &data, SceneDesc &scen
 
                 try
                 {
-                    ComponentPtr comp = sceneAPI->CreateComponentById(type_hash, compDesc.name);
+                    ComponentPtr comp = sceneAPI->CreateComponentById(typeId, compDesc.name);
                     if (comp)
                     {
                         if (data_size)

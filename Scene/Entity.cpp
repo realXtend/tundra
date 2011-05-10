@@ -143,22 +143,22 @@ ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QStrin
     return CreateComponent(type_name, name, change, syncEnabled);
 }
 
-ComponentPtr Entity::GetOrCreateComponent(uint type_hash, AttributeChange::Type change)
+ComponentPtr Entity::GetOrCreateComponent(u32 typeId, AttributeChange::Type change)
 {
-    ComponentPtr new_comp = GetComponent(type_hash);
+    ComponentPtr new_comp = GetComponent(typeId);
     if (new_comp)
         return new_comp;
 
-    return CreateComponent(type_hash, change);
+    return CreateComponent(typeId, change);
 }
 
-ComponentPtr Entity::GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change)
+ComponentPtr Entity::GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change)
 {
-    ComponentPtr new_comp = GetComponent(type_hash, name);
+    ComponentPtr new_comp = GetComponent(typeId, name);
     if (new_comp)
         return new_comp;
 
-    return CreateComponent(type_hash, name, change);
+    return CreateComponent(typeId, name, change);
 }
 
 ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
@@ -189,12 +189,12 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &na
     return new_comp;
 }
 
-ComponentPtr Entity::CreateComponent(uint type_hash, AttributeChange::Type change)
+ComponentPtr Entity::CreateComponent(u32 typeId, AttributeChange::Type change)
 {
-    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(type_hash);
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(typeId);
     if (!new_comp)
     {
-        LogError("Failed to create a component of type hash " + QString::number(type_hash) + " to " + ToString());
+        LogError("Failed to create a component of type hash " + QString::number(typeId) + " to " + ToString());
         return ComponentPtr();
     }
 
@@ -202,12 +202,12 @@ ComponentPtr Entity::CreateComponent(uint type_hash, AttributeChange::Type chang
     return new_comp;
 }
 
-ComponentPtr Entity::CreateComponent(uint type_hash, const QString &name, AttributeChange::Type change)
+ComponentPtr Entity::CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change)
 {
-    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(type_hash, name);
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(typeId, name);
     if (!new_comp)
     {
-        LogError("Failed to create a component of type hash " + QString::number(type_hash) + " and name \"" + name + "\" to " + ToString());
+        LogError("Failed to create a component of type hash " + QString::number(typeId) + " and name \"" + name + "\" to " + ToString());
         return ComponentPtr();
     }
 
@@ -225,10 +225,10 @@ ComponentPtr Entity::GetComponent(const QString &type_name) const
     return ComponentPtr();
 }
 
-ComponentPtr Entity::GetComponent(uint type_hash) const
+ComponentPtr Entity::GetComponent(u32 typeId) const
 {
-    for(size_t i=0 ; i<components_.size() ; ++i)
-        if (components_[i]->TypeNameHash() == type_hash)
+    for(size_t i = 0;  i <components_.size(); ++i)
+        if (components_[i]->TypeId() == typeId)
             return components_[i];
 
     return ComponentPtr();
@@ -246,16 +246,16 @@ Entity::ComponentVector Entity::GetComponents(const QString &type_name) const
 ComponentPtr Entity::GetComponent(const QString &type_name, const QString& name) const
 {
     for(size_t i=0 ; i<components_.size() ; ++i)
-        if ((components_[i]->TypeName() == type_name) && (components_[i]->Name() == name))
+        if (components_[i]->TypeName() == type_name && components_[i]->Name() == name)
             return components_[i];
 
     return ComponentPtr();
 }
 
-ComponentPtr Entity::GetComponent(uint type_hash, const QString& name) const
+ComponentPtr Entity::GetComponent(u32 typeId, const QString& name) const
 {
-    for(size_t i=0 ; i<components_.size() ; ++i)
-        if ((components_[i]->TypeNameHash() == type_hash) && (components_[i]->Name() == name))
+    for(size_t i = 0; i < components_.size(); ++i)
+        if (components_[i]->TypeId() == typeId && components_[i]->Name() == name)
             return components_[i];
 
     return ComponentPtr();
@@ -272,38 +272,6 @@ QObjectList Entity::GetComponentsRaw(const QString &type_name) const
             if (components_[i]->TypeName() == type_name)
                 ret.push_back(components_[i].get());
     return ret;
-}
-
-bool Entity::HasComponent(const QString &type_name) const
-{
-    for(size_t i=0 ; i<components_.size() ; ++i)
-        if (components_[i]->TypeName() == type_name)
-            return true;
-    return false;
-}
-
-bool Entity::HasComponent(uint type_hash) const
-{
-    for(size_t i=0 ; i<components_.size() ; ++i)
-        if (components_[i]->TypeNameHash() == type_hash)
-            return true;
-    return false;
-}
-
-bool Entity::HasComponent(const QString &type_name, const QString& name) const
-{
-    for(size_t i=0 ; i<components_.size() ; ++i)
-        if ((components_[i]->TypeName() == type_name) && (components_[i]->Name() == name))
-            return true;
-    return false;
-}
-
-bool Entity::HasComponent(uint type_hash, const QString& name) const
-{
-    for(size_t i=0 ; i<components_.size() ; ++i)
-        if ((components_[i]->TypeNameHash() == type_hash) && (components_[i]->Name() == name))
-            return true;
-    return false;
 }
 
 IAttribute *Entity::GetAttribute(const std::string &name) const

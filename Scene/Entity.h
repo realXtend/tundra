@@ -73,15 +73,14 @@ public slots:
     /** If there are several components with the specified type, returns the first component found (arbitrary).
         \param type_name type of the component */
     ComponentPtr GetComponent(const QString &type_name) const;
-    /** \param type_hash Type name hash of the component. */
-    ComponentPtr GetComponent(uint type_hash) const;
+    ComponentPtr GetComponent(u32 typeId) const;
     /** \param name Specifies the name of the component to fetch. This can be used to distinguish between multiple instances of components of same type. */
     ComponentPtr GetComponent(const QString &type_name, const QString &name) const;
 
     /// This is an overloaded function.
-    /** \param type_has Type name hash of the component
+    /** \param typeId The type id of the component to get.
         \param name name of the component */
-    ComponentPtr GetComponent(uint type_hash, const QString &name) const;
+    ComponentPtr GetComponent(u32 typeId, const QString &name) const;
 
     /// Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
     /** \param type_name The type string of the component to create, obtained from IComponent::TypeName().
@@ -91,9 +90,9 @@ public slots:
     ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
     /** \param name If specified, the component having the given name is returned, or created if it doesn't exist. */
     ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
-    /** \param type_hash Identifies the component type to create by the hash of the type instead of the name. */
-    ComponentPtr GetOrCreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::Default);
-    ComponentPtr GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
+    /** \param typeId Identifies the component type to create by the id of the type instead of the name. */
+    ComponentPtr GetOrCreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default);
+    ComponentPtr GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Creates a new component and attaches it to this entity. 
     /** \param type_name type of the component
@@ -103,8 +102,8 @@ public slots:
         is that a component with the same (typename, name) pair exists, or that components of the given typename are not recognized by the system. */
     ComponentPtr CreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
     ComponentPtr CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
-    ComponentPtr CreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::Default);
-    ComponentPtr CreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
+    ComponentPtr CreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default);
+    ComponentPtr CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Attachs an existing parentless component to this entity.
     /** Entities can contain any number of components of any type.
@@ -169,15 +168,6 @@ public slots:
     /// Returns list of components with type @c type_name or if @c type_name is empty return all components
     /// \param type_name type of the component
     QObjectList GetComponentsRaw(const QString &type_name) const;
-
-    /// Returns whether or not this entity has a component with certain type and name.
-    /** \param type_name Type of the component. */
-    bool HasComponent(const QString &type_name) const;
-    /** \param type_has Type name hash of the component. */
-    bool HasComponent(uint type_hash) const;
-    /** \param name name of the component */
-    bool HasComponent(const QString &type_name, const QString &name) const;
-    bool HasComponent(uint type_hash, const QString &name) const;
 
     /// Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
     /** @param name Name. */

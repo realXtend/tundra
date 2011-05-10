@@ -126,7 +126,7 @@ QList<entity_id_t> AddComponentDialog::GetEntityIds() const
 
 void AddComponentDialog::CheckComponentName(const QString &name)
 {
-    bool name_dublicates = false;
+    bool name_duplicates = false;
     ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if(scene && type_combo_box_ && name_line_edit_)
     {
@@ -134,13 +134,13 @@ void AddComponentDialog::CheckComponentName(const QString &name)
         for(uint i = 0; i < (uint)entities_.size(); i++)
         {
             entity = scene->GetEntity(entities_[i]);
-            if(entity->HasComponent(type_combo_box_->currentText(), name_line_edit_->text()))
+            if (entity->GetComponent(type_combo_box_->currentText(), name_line_edit_->text()))
             {
-                name_dublicates = true;
+                name_duplicates = true;
                 break;
             }
         }
-        if (name_dublicates)
+        if (name_duplicates)
             ok_button_->setEnabled(false);
         else
             ok_button_->setEnabled(true);

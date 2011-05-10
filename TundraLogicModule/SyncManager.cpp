@@ -575,7 +575,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                 const AttributeVector& attributes = component->GetAttributes();
                                 for(uint k = 0; k < attributes.size(); k++)
                                 {
-                                    if (componentstate->dirty_static_attributes_.find(attributes[k]) != componentstate->dirty_static_attributes_.end())
+                                    if (componentstate->dirty_static_attributes.find(attributes[k]) != componentstate->dirty_static_attributes.end())
                                     {
                                         dest.Add<bit>(1);
                                         attributes[k]->ToBinary(dest);
@@ -597,7 +597,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                 updComponent.componentTypeHash = component->TypeNameHash();
                                 updComponent.componentName = StringToBuffer(component->Name().toStdString());
                                 bool has_changes = false;
-                                const std::set<QString>& dirtyAttrs = componentstate->dirty_dynamic_attributes_;
+                                const std::set<QString>& dirtyAttrs = componentstate->dirty_dynamic_attributes;
                                 std::set<QString>::const_iterator k = dirtyAttrs.begin();
                                 while(k != dirtyAttrs.end())
                                 {
@@ -775,9 +775,9 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     // Read the components
     for(uint i = 0; i < msg.components.size(); ++i)
     {
-        uint type_hash = msg.components[i].componentTypeHash;
+        u32 typeId = msg.components[i].componentTypeHash; ///\todo VLE this!
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr component = entity->GetOrCreateComponent(type_hash, name, change);
+        ComponentPtr component = entity->GetOrCreateComponent(typeId, name, change);
         if (component)
         {
             if (msg.components[i].componentData.size())
@@ -790,17 +790,17 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
                 }
                 catch(...)
                 {
-                    ::LogError("Error while deserializing component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"! (typeID: " + type_hash + ")");
+                    ::LogError("Error while deserializing component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"! (typeID: " + QString::number(typeId) + ")");
                 }
                 
                 // Reflect changes back to syncstate
                 EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
-                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_hash, name);
+                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(typeId, name);
                 UNREFERENCED_PARAM(componentstate);
             }
         }
         else
-            LogWarning("Could not create component with typeID " + framework_->Scene()->GetComponentTypeName(type_hash));
+            LogWarning("Could not create component with type " + framework_->Scene()->GetComponentTypeName(typeId));
     }
  
     // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
@@ -891,9 +891,9 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     
     for(uint i = 0; i < msg.components.size(); ++i)
     {
-        uint type_hash = msg.components[i].componentTypeHash;
+        u32 typeId = msg.components[i].componentTypeHash; ///\todo VLE this!
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr component = entity->GetOrCreateComponent(type_hash, name, change);
+        ComponentPtr component = entity->GetOrCreateComponent(typeId, name, change);
         if (component)
         {
             if (msg.components[i].componentData.size())
@@ -908,17 +908,17 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
                 }
                 catch(...)
                 {
-                    ::LogError("Error while deserializing component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"! (typeID: " + type_hash + ")");
+                    ::LogError("Error while deserializing component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"! (typeID: " + QString::number(typeId) + ")");
                 }
                 
                 // Reflect changes back to syncstate
                 EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
-                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_hash, name);
+                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(typeId, name);
                 UNREFERENCED_PARAM(componentstate);
             }
         }
         else
-            LogWarning("Could not create component with typeID " + framework_->Scene()->GetComponentTypeName(type_hash));
+            LogWarning("Could not create component with type " + framework_->Scene()->GetComponentTypeName(typeId));
     }
     
     // Signal the component changes last
@@ -977,9 +977,9 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     // Read the static structured components
     for(uint i = 0; i < msg.components.size(); ++i)
     {
-        uint type_hash = msg.components[i].componentTypeHash;
+        u32 typeId = msg.components[i].componentTypeHash; ///\todo VLE this!
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr component = entity->GetOrCreateComponent(type_hash, name, change);
+        ComponentPtr component = entity->GetOrCreateComponent(typeId, name, change);
         if (component)
         {
             if (msg.components[i].componentData.size())
@@ -1027,21 +1027,21 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                     }
                     catch(...)
                     {
-                        ::LogError("Error while delta-deserializing component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"!");
+                        ::LogError("Error while delta-deserializing component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
                     }
                 }
             }
         }
         else
-            LogWarning("Could not create component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"!");
+            LogWarning("Could not create component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
     }
     
     // Read the dynamic structured components. For now, they have to be DynamicComponents.
     for(uint i = 0; i < msg.dynamiccomponents.size(); ++i)
     {
-        uint type_hash = msg.dynamiccomponents[i].componentTypeHash;
+        u32 typeId = msg.dynamiccomponents[i].componentTypeHash; ///\todo VLE this!
         QString name = QString::fromStdString(BufferToString(msg.dynamiccomponents[i].componentName));
-        ComponentPtr component = entity->GetOrCreateComponent(type_hash, name, change);
+        ComponentPtr component = entity->GetOrCreateComponent(typeId, name, change);
         if (component)
         {
             EC_DynamicComponent* dynComp = dynamic_cast<EC_DynamicComponent*>(component.get());
@@ -1092,7 +1092,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
             }
         }
         else
-            LogWarning("Could not create component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"!");
+            LogWarning("Could not create component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
     }
     
     // Signal static components
@@ -1168,10 +1168,10 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     
     for(unsigned i = 0; i < msg.components.size(); ++i)
     {
-        uint type_hash = msg.components[i].componentTypeHash;
+        u32 typeId = msg.components[i].componentTypeHash; ///\todo VLE this!
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
         
-        ComponentPtr comp = entity->GetComponent(type_hash, name);
+        ComponentPtr comp = entity->GetComponent(typeId, name);
         if (comp)
         {
             entity->RemoveComponent(comp, change);
@@ -1181,7 +1181,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
         // Reflect changes back to syncstate
         EntitySyncState* entitystate = state->GetEntity(entityID);
         if (entitystate)
-            entitystate->RemoveComponent(type_hash, name);
+            entitystate->RemoveComponent(typeId, name);
     }
 }
 

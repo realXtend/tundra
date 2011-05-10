@@ -19,11 +19,11 @@ namespace TundraLogic
 /// State of component replication for a specific user
 struct ComponentSyncState
 {
-    uint type_hash_;
-    QString name_;
+    u32 typeId;
+    QString name;
     // Note! These pointers are never dereferenced, and might be invalid. They are just for quick response to AttributeChanged signals.
-    std::set<IAttribute*> dirty_static_attributes_;
-    std::set<QString> dirty_dynamic_attributes_;
+    std::set<IAttribute*> dirty_static_attributes;
+    std::set<QString> dirty_dynamic_attributes;
 };
 
 /// State of entity replication for a specific user
@@ -36,90 +36,90 @@ struct EntitySyncState
     /// Pending removed components (typenamehash, name)
     std::set<std::pair<uint, QString> > removed_components_;
     
-    ComponentSyncState* GetOrCreateComponent(uint type_hash, const QString& name)
+    ComponentSyncState* GetOrCreateComponent(u32 typeId, const QString &name)
     {
         // If we want to recreate the component and have a pending remove, remove the remove
-        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
-        ComponentSyncState* old = GetComponent(type_hash, name);
+        removed_components_.erase(std::make_pair<uint, QString>(typeId, name));
+        ComponentSyncState* old = GetComponent(typeId, name);
         if (old)
             return old;
         ComponentSyncState newstate;
-        newstate.type_hash_ = type_hash;
-        newstate.name_ = name;
+        newstate.typeId = typeId;
+        newstate.name = name;
         components_.push_back(newstate);
         return &components_[components_.size()-1];
     }
     
-    ComponentSyncState* GetComponent(uint type_hash, const QString& name)
+    ComponentSyncState* GetComponent(u32 typeId, const QString& name)
     {
-        for(int i = 0; i < (int)components_.size(); ++i)
+        for(size_t i = 0; i < components_.size(); ++i)
         {
-            if ((components_[i].type_hash_ == type_hash) && (components_[i].name_ == name))
+            if (components_[i].typeId == typeId && components_[i].name == name)
                 return &components_[i];
         }
         return 0;
     }
     
-    void RemoveComponent(uint type_hash, const QString& name)
+    void RemoveComponent(u32 typeId, const QString& name)
     {
-        dirty_components_.erase(std::make_pair<uint, QString>(type_hash, name));
-        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
-        for(int i = 0; i < (int)components_.size(); ++i)
+        dirty_components_.erase(std::make_pair<uint, QString>(typeId, name));
+        removed_components_.erase(std::make_pair<uint, QString>(typeId, name));
+        for(size_t i = 0; i < components_.size(); ++i)
         {
-            if ((components_[i].type_hash_ == type_hash) && (components_[i].name_ == name))
+            if (components_[i].typeId == typeId && components_[i].name == name)
                 components_.erase(components_.begin() + i);
         }
     }
     
-    void OnComponentAdded(uint type_hash, const QString& name)
+    void OnComponentAdded(u32 typeId, const QString& name)
     {
-        dirty_components_.insert(std::make_pair<uint, QString>(type_hash, name));
-        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+        dirty_components_.insert(std::make_pair<uint, QString>(typeId, name));
+        removed_components_.erase(std::make_pair<uint, QString>(typeId, name));
     }
     
-    void OnAttributeChanged(uint type_hash, const QString& name, IAttribute* attribute)
+    void OnAttributeChanged(u32 typeId, const QString& name, IAttribute* attribute)
     {
-        dirty_components_.insert(std::make_pair<uint, QString>(type_hash, name));
-        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+        dirty_components_.insert(std::make_pair<uint, QString>(typeId, name));
+        removed_components_.erase(std::make_pair<uint, QString>(typeId, name));
         // If client already has the component state, dirty the specific attribute
         if (attribute)
         {
-            ComponentSyncState* compState = GetComponent(type_hash, name);
+            ComponentSyncState* compState = GetComponent(typeId, name);
             if (compState)
-                compState->dirty_static_attributes_.insert(attribute);
+                compState->dirty_static_attributes.insert(attribute);
         }
     }
     
-    void OnDynamicAttributeChanged(uint type_hash, const QString& name, const QString& attrName)
+    void OnDynamicAttributeChanged(u32 typeId, const QString& name, const QString& attrName)
     {
-        dirty_components_.insert(std::make_pair<uint, QString>(type_hash, name));
-        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+        dirty_components_.insert(std::make_pair<uint, QString>(typeId, name));
+        removed_components_.erase(std::make_pair<uint, QString>(typeId, name));
         // If client already has the component state, dirty the specific attribute
-        ComponentSyncState* compState = GetComponent(type_hash, name);
+        ComponentSyncState* compState = GetComponent(typeId, name);
         if (compState)
-            compState->dirty_dynamic_attributes_.insert(attrName);
+            compState->dirty_dynamic_attributes.insert(attrName);
     }
     
-    void OnComponentRemoved(uint type_hash, const QString& name)
+    void OnComponentRemoved(u32 typeId, const QString& name)
     {
-        removed_components_.insert(std::make_pair<uint, QString>(type_hash, name));
-        dirty_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+        removed_components_.insert(std::make_pair<uint, QString>(typeId, name));
+        dirty_components_.erase(std::make_pair<uint, QString>(typeId, name));
     }
     
-    void AckDirty(uint type_hash, const QString& name)
+    void AckDirty(u32 typeId, const QString& name)
     {
-        dirty_components_.erase(std::make_pair<uint, QString>(type_hash, name));
-        ComponentSyncState* compState = GetComponent(type_hash, name);
+        dirty_components_.erase(std::make_pair<uint, QString>(typeId, name));
+        ComponentSyncState* compState = GetComponent(typeId, name);
         if (compState)
         {
-            compState->dirty_static_attributes_.clear();
-            compState->dirty_dynamic_attributes_.clear();
+            compState->dirty_static_attributes.clear();
+            compState->dirty_dynamic_attributes.clear();
         }
     }
     
-    void AckRemove(uint type_hash, const QString& name)
+    void AckRemove(u32 typeId, const QString& name)
     {
-        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+        removed_components_.erase(std::make_pair<uint, QString>(typeId, name));
     }
 };
 
@@ -178,7 +178,7 @@ struct SceneSyncState : public ISyncState
         removed_entities_.insert(id);
     }
     
-    void OnAttributeChanged(entity_id_t id, uint type_hash, const QString& name, IAttribute* attribute)
+    void OnAttributeChanged(entity_id_t id, u32 typeId, const QString& name, IAttribute* attribute)
     {
         OnEntityChanged(id);
         // If the entity does not exist in the user's syncstate yet, don't have to care
@@ -186,10 +186,10 @@ struct SceneSyncState : public ISyncState
         EntitySyncState* entitystate = GetEntity(id);
         if (!entitystate)
             return;
-        entitystate->OnAttributeChanged(type_hash, name, attribute);
+        entitystate->OnAttributeChanged(typeId, name, attribute);
     }
     
-    void OnDynamicAttributeChanged(entity_id_t id, uint type_hash, const QString& name, const QString& attrName)
+    void OnDynamicAttributeChanged(entity_id_t id, u32 typeId, const QString& name, const QString& attrName)
     {
         OnEntityChanged(id);
         // If the entity does not exist in the user's syncstate yet, don't have to care
@@ -197,10 +197,10 @@ struct SceneSyncState : public ISyncState
         EntitySyncState* entitystate = GetEntity(id);
         if (!entitystate)
             return;
-        entitystate->OnDynamicAttributeChanged(type_hash, name, attrName);
+        entitystate->OnDynamicAttributeChanged(typeId, name, attrName);
     }
     
-    void OnComponentAdded(entity_id_t id, uint type_hash, const QString& name)
+    void OnComponentAdded(entity_id_t id, u32 typeId, const QString& name)
     {
         OnEntityChanged(id);
         // If the entity does not exist in the user's syncstate yet, don't have to care
@@ -208,10 +208,10 @@ struct SceneSyncState : public ISyncState
         EntitySyncState* entitystate = GetEntity(id);
         if (!entitystate)
             return;
-        entitystate->OnComponentAdded(type_hash, name);
+        entitystate->OnComponentAdded(typeId, name);
     }
     
-    void OnComponentRemoved(entity_id_t id, uint type_hash, const QString& name)
+    void OnComponentRemoved(entity_id_t id, u32 typeId, const QString& name)
     {
         OnEntityChanged(id);
         // If the entity does not exist in the user's syncstate yet, don't have to care
@@ -219,7 +219,7 @@ struct SceneSyncState : public ISyncState
         EntitySyncState* entitystate = GetEntity(id);
         if (!entitystate)
             return;
-        entitystate->OnComponentRemoved(type_hash, name);
+        entitystate->OnComponentRemoved(typeId, name);
     }
     
     void AckDirty(entity_id_t id)

@@ -74,7 +74,7 @@ void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
         //If entity don't have EC_Name then entity_name is same as it's id.
         QString entity_name = QString::number(entity_id);
         EntityPtr entity = framework_->Scene()->GetDefaultScene()->GetEntity(entity_id);
-        if(entity && entity->HasComponent("EC_Name"))
+        if (entity && entity->GetComponent("EC_Name"))
             entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
 
         /// @todo This will now work if we loose windows focus and previos key state stays, replace this with InputContext.
@@ -100,7 +100,7 @@ void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select
     {
         QString entity_name = QString::number(id);
         EntityPtr entity = framework_->Scene()->GetDefaultScene()->GetEntity(id);
-        if(entity && entity->HasComponent("EC_Name"))
+        if (entity && entity->GetComponent("EC_Name"))
             entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
 
         int row = AddUniqueListItem(entity.get(), entity_list_, entity_name);

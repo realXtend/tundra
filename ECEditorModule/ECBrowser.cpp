@@ -593,7 +593,7 @@ void ECBrowser::PasteComponent()
             ComponentPtr component;
             QString type = comp_elem.attribute("type");
             QString name = comp_elem.attribute("name");
-            if (!entity_ptr->HasComponent(type, name))
+            if (!entity_ptr->GetComponent(type, name))
             {
                 component = framework_->Scene()->CreateComponentByName(type, name);
                 entity_ptr->AddComponent(component, AttributeChange::Default);
