@@ -201,6 +201,7 @@ void KristalliProtocolModule::Update(f64 frametime)
                 LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
                 framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, 0);
                 emit ConnectionAttemptFailed();
+
                 reconnectTimer.Stop();
                 serverIp = "";
             }
