@@ -195,7 +195,6 @@ void KristalliProtocolModule::Update(f64 frametime)
                 ::LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
                 emit ConnectionAttemptFailed();
 
-                emit ConnectionAttemptFailed();
                 reconnectTimer.Stop();
                 serverIp = "";
             }
@@ -318,7 +317,6 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     ::LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
     emit ClientConnectedEvent(connection);
-    emit ClientConnectedEvent(connection);
 }
 
 void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
@@ -327,7 +325,6 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->connection == source)
         {
-            emit ClientDisconnectedEvent(*iter);
             emit ClientDisconnectedEvent(*iter);
             
             ::LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
@@ -346,7 +343,6 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
 
     try
     {
-        emit NetworkMessageReceived(source, id, data, numBytes);
         emit NetworkMessageReceived(source, id, data, numBytes);
     } catch(std::exception &e)
     {
