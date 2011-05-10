@@ -19,14 +19,13 @@
 #include "UiMainWindow.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
+#include "LoggingFunctions.h"
 
 // QtPropertyBrowser headers.
 #include <qtvariantproperty.h>
 #include <qtpropertymanager.h>
 #include <qtpropertybrowser.h>
 #include <qteditorfactory.h>
-
-#include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -169,7 +168,7 @@ void ECAttributeEditorBase::MultiEditValueSelected(const QString &value)
         }
 }
 
-IAttribute *ECAttributeEditorBase::FindAttribute(ComponentPtr component) const
+IAttribute *ECAttributeEditorBase::FindAttribute(const ComponentPtr &component) const
 {
     PROFILE(ECAttributeEditor_FindAttribute);
     if(component)
@@ -204,7 +203,7 @@ void ECAttributeEditorBase::CleanExpiredComponents()
 
 void ECAttributeEditorBase::PreInitialize()
 {
-    if(propertyMgr_ || factory_ || rootProperty_)
+    if (propertyMgr_ || factory_ || rootProperty_)
         UnInitialize();
 }
 
@@ -280,7 +279,7 @@ template<> void ECAttributeEditor<float>::Initialize()
         if(rootProperty_)
         {
             Update();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(realPropertyManager, variantFactory);
     }
@@ -296,7 +295,7 @@ template<> void ECAttributeEditor<float>::Update(IAttribute *attr)
 {
     Attribute<float> *attribute = 0;
     if (!attr)
-        attribute = dynamic_cast<Attribute<float>*>(FindAttribute(components_[0].lock()));
+        attribute = FindAttribute<float>(components_[0].lock());
     else
         attribute = dynamic_cast<Attribute<float>*>(attr);
     if (!attribute)
@@ -391,7 +390,7 @@ template<> void ECAttributeEditor<int>::Initialize()
         if(rootProperty_)
         {
             Update();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(intPropertyManager, variantFactory);
     }
@@ -408,7 +407,7 @@ template<> void ECAttributeEditor<int>::Update(IAttribute *attr)
     {
         Attribute<int> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<int>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<int>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<int>*>(attr);
         if (!attribute)
@@ -472,7 +471,7 @@ template<> void ECAttributeEditor<bool>::Initialize()
         if(rootProperty_)
         {
             Update();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(boolPropertyManager, variantFactory);
     }
@@ -500,7 +499,7 @@ template<> void ECAttributeEditor<bool>::Update(IAttribute *attr)
     {
         Attribute<bool> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<bool>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<bool>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<bool>*>(attr);
         if (!attribute)
@@ -528,7 +527,7 @@ template<> void ECAttributeEditor<Vector3df>::Update(IAttribute *attr)
     {
         Attribute<Vector3df> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<Vector3df>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<Vector3df>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<Vector3df>*>(attr);
         if (!attribute)
@@ -577,7 +576,7 @@ template<> void ECAttributeEditor<Vector3df>::Initialize()
             childProperty = variantManager->addProperty(QVariant::Double, "z");
             rootProperty_->addSubProperty(childProperty);
             Update();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(variantManager, variantFactory);
     }
@@ -595,8 +594,7 @@ template<> void ECAttributeEditor<Vector3df>::Set(QtProperty *property)
         QList<QtProperty *> children = rootProperty_->subProperties();
         if(children.size() >= 3)
         {
-            ComponentPtr comp = components_[0].lock();
-            Attribute<Vector3df> *attribute = dynamic_cast<Attribute<Vector3df> *>(FindAttribute(comp));
+            Attribute<Vector3df> *attribute = FindAttribute<Vector3df>(components_[0].lock());
             if (!attribute)
                 return;
 
@@ -621,7 +619,7 @@ template<> void ECAttributeEditor<Color>::Update(IAttribute *attr)
     {
         Attribute<Color> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<Color>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<Color>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<Color>*>(attr);
         if (!attribute)
@@ -634,7 +632,8 @@ template<> void ECAttributeEditor<Color>::Update(IAttribute *attr)
         if (rootProperty_)
         {
             Color colorValue = attribute->Get();
-            variantManager->setValue(rootProperty_, QVariant::fromValue<QColor>(QColor(colorValue.r * 255, colorValue.g * 255, colorValue.b * 255, colorValue.a * 255)));
+            variantManager->setValue(rootProperty_, QVariant::fromValue<QColor>(
+                QColor(colorValue.r * 255, colorValue.g * 255, colorValue.b * 255, colorValue.a * 255)));
         }
     }
     else
@@ -652,7 +651,7 @@ template<> void ECAttributeEditor<Color>::Initialize()
         propertyMgr_ = variantManager;
         factory_ = variantFactory;
         Update();
-        QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+        connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         owner_->setFactoryForManager(variantManager, variantFactory);
     }
     else
@@ -678,7 +677,7 @@ template<> void ECAttributeEditor<QSize>::Update(IAttribute *attr)
     {
         Attribute<QSize> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<QSize>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<QSize>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<QSize>*>(attr);
         if (!attribute)
@@ -724,7 +723,7 @@ template<> void ECAttributeEditor<QSize>::Initialize()
             rootProperty_->addSubProperty(childProperty);
 
             Update();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(variantManager, variantFactory);
     }
@@ -812,7 +811,7 @@ template<> void ECAttributeEditor<QSizeF>::Initialize()
             rootProperty_->addSubProperty(childProperty);
 
             Update();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(variantManager, variantFactory);
     }
@@ -831,7 +830,7 @@ template<> void ECAttributeEditor<QSizeF>::Set(QtProperty *property)
         if(children.size() >= 2)
         {
             ComponentPtr comp = components_[0].lock();
-            Attribute<QSizeF> *attribute = dynamic_cast<Attribute<QSizeF> *>(FindAttribute(comp));
+            Attribute<QSizeF> *attribute = FindAttribute<QSizeF>(comp);
             if (!attribute)
                 return;
 
@@ -854,7 +853,7 @@ template<> void ECAttributeEditor<QPoint>::Update(IAttribute *attr)
     {
         Attribute<QPoint> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<QPoint>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<QPoint>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<QPoint>*>(attr);
         if (!attribute)
@@ -900,7 +899,7 @@ template<> void ECAttributeEditor<QPoint>::Initialize()
             rootProperty_->addSubProperty(childProperty);
 
             Update();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(variantManager, variantFactory);
     }
@@ -918,8 +917,7 @@ template<> void ECAttributeEditor<QPoint>::Set(QtProperty *property)
         QList<QtProperty *> children = rootProperty_->subProperties();
         if(children.size() >= 2)
         {
-            ComponentPtr comp = components_[0].lock();
-            Attribute<QPoint> *attribute = dynamic_cast<Attribute<QPoint> *>(FindAttribute(comp));
+            Attribute<QPoint> *attribute = FindAttribute<QPoint>(components_[0].lock());
             if (!attribute)
                 return;
 
@@ -942,7 +940,7 @@ template<> void ECAttributeEditor<QPointF>::Update(IAttribute *attr)
     {
         Attribute<QPointF> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<QPointF>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<QPointF>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<QPointF>*>(attr);
         if (!attribute)
@@ -988,7 +986,7 @@ template<> void ECAttributeEditor<QPointF>::Initialize()
             rootProperty_->addSubProperty(childProperty);
 
             Update();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(variantManager, variantFactory);
     }
@@ -1006,8 +1004,7 @@ template<> void ECAttributeEditor<QPointF>::Set(QtProperty *property)
         QList<QtProperty *> children = rootProperty_->subProperties();
         if(children.size() >= 2)
         {
-            ComponentPtr comp = components_[0].lock();
-            Attribute<QPointF> *attribute = dynamic_cast<Attribute<QPointF> *>(FindAttribute(comp));
+            Attribute<QPointF> *attribute = FindAttribute<QPointF>(components_[0].lock());
             if (!attribute)
                 return;
 
@@ -1078,7 +1075,7 @@ template<> void ECAttributeEditor<QString>::Update(IAttribute *attr)
     {
         Attribute<QString> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<QString>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<QString>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<QString>*>(attr);
         if (!attribute)
@@ -1192,7 +1189,7 @@ template<> void ECAttributeEditor<Transform>::Initialize()
             scaleProperty->addSubProperty(childProperty);
 
             Update();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(variantManager, variantFactory);
     }
@@ -1210,8 +1207,7 @@ template<> void ECAttributeEditor<Transform>::Set(QtProperty *property)
         QList<QtProperty *> children = rootProperty_->subProperties();
         if(children.size() >= 3)
         {
-            ComponentPtr comp = components_[0].lock();
-            Attribute<Transform> *attribute = dynamic_cast<Attribute<Transform> *>(FindAttribute(comp));
+            Attribute<Transform> *attribute = FindAttribute<Transform>(components_[0].lock());
             if(!attribute)
             {
                 LogWarning("Failed to update attribute value in ECEditor. Couldn't dynamic_cast attribute pointer to Attribute<Transform> format.");
@@ -1293,7 +1289,7 @@ template<> void ECAttributeEditor<QVariant>::Initialize()
         if(rootProperty_)
         {
             Update();
-            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(qStringPropertyManager, lineEditFactory);
     }
@@ -1319,7 +1315,7 @@ template<> void ECAttributeEditor<QVariant>::Update(IAttribute *attr)
     {
         Attribute<QVariant> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<QVariant>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<QVariant>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<QVariant>*>(attr);
         if (!attribute)
@@ -1360,8 +1356,7 @@ template<> void ECAttributeEditor<QVariantList>::Initialize()
             rootProperty_->setPropertyName(name_);
             QtProperty *childProperty = 0;
             // Get number of elements in attribute array and create for property for each array element.
-            ComponentPtr comp = components_[0].lock();
-            Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList >*>(FindAttribute(comp));
+            Attribute<QVariantList > *attribute = FindAttribute<QVariantList>(components_[0].lock());
             if(!attribute)
             {
                 LogWarning("Failed to update attribute value in ECEditor. Couldn't dynamic_cast attribute pointer to Attribute<QVariantList> format.");
@@ -1377,7 +1372,7 @@ template<> void ECAttributeEditor<QVariantList>::Initialize()
             rootProperty_->addSubProperty(childProperty);
 
             Update();
-            QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
         }
         owner_->setFactoryForManager(stringManager, lineEditFactory);
     }
@@ -1391,8 +1386,7 @@ template<> void ECAttributeEditor<QVariantList>::Set(QtProperty *property)
 {
     if (listenEditorChangedSignal_)
     {
-        ComponentPtr comp = components_[0].lock();
-        Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList >*>(FindAttribute(comp));
+        Attribute<QVariantList > *attribute = FindAttribute<QVariantList>(components_[0].lock());
         if (!attribute)
         {
             LogWarning("Failed to update attribute value in ECEditor. Couldn't dynamic_cast attribute pointer to Attribute<QVariantList> format.");
@@ -1423,7 +1417,7 @@ template<> void ECAttributeEditor<QVariantList>::Update(IAttribute *attr)
     {
         Attribute<QVariantList> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<QVariantList>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<QVariantList>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<QVariantList>*>(attr);
         if (!attribute)
@@ -1459,7 +1453,7 @@ template<> void ECAttributeEditor<AssetReference>::Update(IAttribute *attr)
     {
         Attribute<AssetReference> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<AssetReference>*>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<AssetReference>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<AssetReference>*>(attr);
         if (!attribute)
@@ -1488,7 +1482,6 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
         connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, QObject *)), SLOT(HandleNewEditor(QtProperty *, QObject *)));
         propertyMgr_ = stringManager;
         factory_ = lineEditFactory;
-
 /*
         if (components_.size())
         {
@@ -1568,7 +1561,7 @@ void AssetReferenceAttributeEditor::HandleNewEditor(QtProperty *prop, QObject *f
 
 void AssetReferenceAttributeEditor::OpenAssetsWindow()
 {
-    Attribute<AssetReference> *assetRef= dynamic_cast<Attribute<AssetReference>*>(FindAttribute(components_[0].lock()));
+    Attribute<AssetReference> *assetRef= FindAttribute<AssetReference>(components_[0].lock());
     if (assetRef)
     {
         QString assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef->Get());
@@ -1579,8 +1572,15 @@ void AssetReferenceAttributeEditor::OpenAssetsWindow()
         assetsWindow->setWindowFlags(Qt::Tool);
         assetsWindow->show();
 
-        // Save the original asset ref, if we decide to cancel
-        originalRef = assetRef->Get().ref;
+        // Save the original asset ref(s), if we decide to cancel
+        foreach(const ComponentWeakPtr &c, components_)
+            if (c.lock())
+            {
+                Attribute<AssetReference> *ref = FindAttribute<AssetReference>(c.lock());
+                if (ref)
+                    originalValues.insert(c, ref->Get());
+            }
+        //originalRef = assetRef->Get().ref;
     }
 }
 
@@ -1596,13 +1596,49 @@ void AssetReferenceAttributeEditor::HandleAssetPicked(AssetPtr asset)
 
 void AssetReferenceAttributeEditor::RestoreOriginalValue()
 {
-    SetValue(AssetReference(originalRef));
+    Attribute<AssetReference> *assetRef= FindAttribute<AssetReference>(components_[0].lock());
+    if (!assetRef)
+        return;
+
+//    if (useMultiEditor_)
+//    {
+//            LogInfo("RestoreOriginalValue, useMultiEditor_, restoring original values:");
+//            for(int i = 0; i < originalValues.size(); ++i)
+//                for(int j = 0; j < originalValues[i].Size(); ++j)
+//                LogInfo(originalValues[i][j].ref);
+
+        QMapIterator<ComponentWeakPtr, AssetReference> it(originalValues);
+        while(it.hasNext())
+        {
+            ComponentWeakPtr c = it.next().key();
+            if (!c.expired())
+                SetValue(c.lock(), it.value());
+        }
+
+        originalValues.clear();
+        
+        //for(int i = 0; i < components_.size() && originalValues.size(); ++i)
+          //  if (components_[i].lock())
+            //    SetValue(components_[i].lock(), originalValues[i]);
+/*
+    }
+    else
+    {
+        AssetReferenceList refs = refList->Get();
+        if (!refs.IsEmpty())
+            refs.Set(currentIndex, AssetReference(originalRef));
+
+        SetValue(AssetReference(originalRef));
+        //refs = originalValues;
+        SetValue(refs);
+    }
+*/
     Update();
 }
 
 void AssetReferenceAttributeEditor::OpenEditor()
 {
-    Attribute<AssetReference> *assetRef= dynamic_cast<Attribute<AssetReference>*>(FindAttribute(components_[0].lock()));
+    Attribute<AssetReference> *assetRef= FindAttribute<AssetReference>(components_[0].lock());
     if (assetRef)
     {
         AssetPtr asset = fw->Asset()->GetAsset(assetRef->Get().ref);
@@ -1625,7 +1661,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr)
     {
         Attribute<AssetReferenceList> *attribute = 0;
         if (!attr)
-            attribute = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
+            attribute = FindAttribute<AssetReferenceList>(components_[0].lock());
         else
             attribute = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
         if (!attribute)
@@ -1671,8 +1707,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
         if (rootProperty_)
         {
             // Get number of elements in attribute array and create for property for each array element.
-            ComponentPtr comp = components_[0].lock();
-            Attribute<AssetReferenceList> *attribute = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(comp));
+            Attribute<AssetReferenceList> *attribute = FindAttribute<AssetReferenceList>(components_[0].lock());
             if (!attribute)
             {
                 LogWarning("Failed to update attribute value in ECEditor. Couldn't dynamic_cast attribute pointer to Attribute<AssetReferenceList> format.");
@@ -1710,8 +1745,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty *property)
 {
     if (listenEditorChangedSignal_)
     {
-        ComponentPtr comp = components_[0].lock();
-        Attribute<AssetReferenceList> *attribute = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(comp));
+        Attribute<AssetReferenceList> *attribute = FindAttribute<AssetReferenceList>(components_[0].lock());
         if (!attribute)
         {
             LogWarning("Failed to update attribute value in ECEditor. Couldn't dynamic_cast attribute pointer to Attribute<AssetReferenceList> format.");
@@ -1791,7 +1825,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     if (!button)
         return;
 
-    Attribute<AssetReferenceList> *refList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
+    Attribute<AssetReferenceList> *refList = FindAttribute<AssetReferenceList>(components_[0].lock());
     if (!refList)
         return;
 
@@ -1818,16 +1852,21 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
 
-    // Save the original asset ref, if we decide to cancel
-    if (currentIndex < refList->Get().Size())
-        originalRef = refList->Get()[currentIndex].ref;
+    originalValues.clear();
 
-    ///\todo Multi-edit cancel
+    // Save the original asset ref(s), if we decide to cancel
+    foreach(const ComponentWeakPtr &c, components_)
+        if (!c.expired())
+        {
+            Attribute<AssetReferenceList> *refs = FindAttribute<AssetReferenceList>(c.lock());
+            if (refs)
+                originalValues.insert(c, refs->Get());
+        }
 }
 
 void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
 {
-    Attribute<AssetReferenceList> *refList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
+    Attribute<AssetReferenceList> *refList = FindAttribute<AssetReferenceList>(components_[0].lock());
     if (!refList)
     {
         currentIndex = -1;
@@ -1844,7 +1883,6 @@ void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
     {
         LogInfo("AssetReferenceListAttributeEditor: Setting new value " + asset->Name().toStdString() + " for index " + ToString(currentIndex));
         AssetReferenceList newRefList = refList->Get();
-
         if (newRefList.IsEmpty())
             newRefList.Append(AssetReference(asset->Name()));
         else
@@ -1857,15 +1895,19 @@ void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
 
 void AssetReferenceListAttributeEditor::RestoreOriginalValue()
 {
-    Attribute<AssetReferenceList> *refList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
+    Attribute<AssetReferenceList> *refList = FindAttribute<AssetReferenceList>(components_[0].lock());
     if (refList)
     {
-        LogInfo("Setting original asset ref " + originalRef.toStdString() + " for index " + ToString(currentIndex));
-        AssetReferenceList refs = refList->Get();
-        if (!refs.IsEmpty())
-            refs.Set(currentIndex, AssetReference(originalRef));
-        SetValue(refs);
+        QMapIterator<ComponentWeakPtr, AssetReferenceList> it(originalValues);
+        while(it.hasNext())
+        {
+            ComponentWeakPtr c = it.next().key();
+            if (c.lock())
+                SetValue(c.lock(), it.value());
+        }
     }
+
+    originalValues.clear();
 
     Update();
 }
@@ -1876,7 +1918,7 @@ void AssetReferenceListAttributeEditor::OpenEditor()
     if (!button)
         return;
 
-    Attribute<AssetReferenceList> *assetRefList = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
+    Attribute<AssetReferenceList> *assetRefList = FindAttribute<AssetReferenceList>(components_[0].lock());
     if (!assetRefList)
         return;
 

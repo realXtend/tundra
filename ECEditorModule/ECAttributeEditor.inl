@@ -6,23 +6,21 @@ template<typename T>
 void ECAttributeEditor<T>::SetValue(const T &value)
 {
     foreach(const ComponentWeakPtr &comp, components_)
+        if (!comp.expired())
+            SetValue(comp.lock(), value);
+}
+
+template<typename T>
+void ECAttributeEditor<T>::SetValue(const ComponentPtr &comp, const T &value)
+{
+    Attribute<T> *attr = FindAttribute<T>(comp);
+    if(attr)
     {
-        ComponentPtr comp_ptr = comp.lock();
-        if(comp_ptr)
-        {
-            IAttribute *attribute = FindAttribute(comp_ptr);
-            if(attribute)
-            {
-                Attribute<T> *attr = dynamic_cast<Attribute<T>*>(attribute);
-                if(attr)
-                {
-                    listenEditorChangedSignal_ = false;
-                    attr->Set(value, AttributeChange::Default);
-                    listenEditorChangedSignal_ = true;
-                }
-            }
-        }
+        listenEditorChangedSignal_ = false;
+        attr->Set(value, AttributeChange::Default);
+        listenEditorChangedSignal_ = true;
     }
+
 }
 
 template<typename T>

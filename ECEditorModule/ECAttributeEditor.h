@@ -87,29 +87,27 @@ public slots:
 
 signals:
     /// Signal is emmitted when editor has been reinitialized.
-    /** @param name Attribute name.
-     */
+    /** @param name Attribute name. */
     void EditorChanged(const QString &name);
     void OnComponentAdded(QtProperty*, IComponent *comp);
     void OnComponentRemoved(QtProperty*, IComponent *comp);
 
 private slots:
     /// Called when user has picked one of the multiselect values.
-    /** @param value new value that has been picked.
-    */
+    /** @param value new value that has been picked. */
     void MultiEditValueSelected(const QString &value);
 
     /// Listens if any of editor's values has been changed and the value change need to forward to the a attribute.
     void PropertyChanged(QtProperty *property) { Set(property); }
 
 protected:
-    /// Initialize attribute editor's ui elements.
+    /// Initializes attribute editor's ui elements.
     virtual void Initialize() = 0;
 
-    /// Read current value from the ui and set it to IAttribute.
+    /// Reads current value from the ui and sets it to IAttribute.
     virtual void Set(QtProperty *property) = 0;
 
-    /// Read attribute value from IAttribute and set it to ui.
+    /// Reads attribute value from IAttribute and sets it to ui.
     virtual void Update(IAttribute *attr = 0) = 0;
 
     /// Checks if all components are holding the same attribute value.
@@ -124,8 +122,18 @@ protected:
     /// Delete property manager and its factory.
     void UnInitialize();
 
-    /// Try to find attribute in component and if found return it's pointer.
-    IAttribute *FindAttribute(ComponentPtr component) const;
+    /// Tries to find attribute in the component and if found, returns pointer to it.
+    /** The attribute is searched by its name. */
+    IAttribute *FindAttribute(const ComponentPtr &component) const;
+
+    /// This is an overloaded function.
+    /** @return Pointer to attribute of @component by type @c T. */
+    template<typename T>
+    Attribute<T> *FindAttribute(const ComponentPtr &component) const
+    {
+        return dynamic_cast<Attribute<T> *>(FindAttribute(component));
+    }
+
     QList<ComponentWeakPtr>::iterator FindComponent(ComponentPtr component);
 
     QtAbstractPropertyBrowser *owner_;
@@ -143,9 +151,10 @@ protected:
     MetaDataFlag metaDataFlag_;
 };
 
-/// Implements attribute editor UI elements for attribute type of type @c T and forwards attribute changes to IAttribute objects.
-/** Support editing of multiple attributes at the same time and extra attribute objects can be passed using a AddComponent method,
-    removing editable components can be done via RemoveComponent method.
+/// Implements attribute editor UI elements for attribute of type @c T and forwards attribute changes to IAttribute objects.
+/** Supports multi-editing of attributes. Additional attributes can be passed using a AddComponent method, and  removing editable
+    components can be done via RemoveComponent method.
+
     To add a new attribute types to the ECEditor you need to define following methods:
      - Initialize: For intializing all ui elements for the editor. In this method the spesific QtPropertyManagers and QtPropertyFactories
        are created and registered to QtAbstractPropertyBrowser object. QtPropertyManager is used to create a new QtProperties. More info can be
@@ -170,10 +179,16 @@ public:
     ~ECAttributeEditor() {}
 
 protected:
-    /// Sends a new value to each component and emit AttributeChanged signal.
-    /** @param value_ new value that is sended over to component.
-    */
+    /// Sets new value for each currently selected component.
+    /** @param value New value. */
     void SetValue(const T &value);
+
+    /// This is an overloaded function.
+    /** Sets new value for single component.
+        @param comp Component.
+        @param value New value.
+    */
+    void SetValue(const ComponentPtr &comp, const T &value);
 
     /// ECAttributeEditorBase override.
     virtual void Initialize();
@@ -277,7 +292,7 @@ private slots:
 
 private:
     Framework *fw;
-    QString originalRef;
+    QMap<ComponentWeakPtr, AssetReference> originalValues;
 };
 
 template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr);
@@ -297,9 +312,6 @@ public:
     {
     }
 
-private:
-    int currentIndex;
-
 private slots:
     void OpenAssetsWindow();
     void HandleNewEditor(QtProperty *prop, QObject *);
@@ -309,7 +321,8 @@ private slots:
 
 private:
     Framework *fw;
-    QString originalRef;
+    int currentIndex;
+    QMap<ComponentWeakPtr, AssetReferenceList> originalValues;
 };
 
 #endif
