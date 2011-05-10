@@ -182,7 +182,7 @@ public:
     Q_PROPERTY(bool phantom READ getphantom WRITE setphantom)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, phantom)
     
-    /// DrawDebug flag. If true (default), collision shape will be visualized when physics debug drawing is enabled.
+    /// DrawDebug flag. If true, collision shape will be visualized when physics debug drawing is enabled.
     Q_PROPERTY(bool drawDebug READ getdrawDebug WRITE setdrawDebug)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, drawDebug)
     

@@ -11,14 +11,11 @@
 
 #include <QGraphicsProxyWidget>
 
-class QTimeLine;
-class QParallelAnimationGroup;
-class QPropertyAnimation;
-
 /// Represents a UI widget created by embedding QWidget to the same canvas as the in-world 3D scene.
 class UiProxyWidget : public QGraphicsProxyWidget
 {
     Q_OBJECT
+    Q_PROPERTY(QGraphicsEffect* graphicsEffect READ GraphicsEffect WRITE SetGraphicsEffect);
 
 public:
     /// Constructor.
@@ -33,16 +30,6 @@ public:
     /// Destructor.
     ~UiProxyWidget();
 
-    /// Sets opacity for unfocused state.
-    /** @param opacity Opacity value between 0 and 100.
-    */
-    void SetUnfocusedOpacity(int opacity);
-
-    /// Sets show animation speed
-    /** @param speed Speed in milliseconds.
-    */
-    void SetShowAnimationSpeed(int speed);
-
     /// Brings to front in the scene, sets focus and shows this proxy widget.
     /// @todo Seems that isn't working properly.
     void BringToFront();
@@ -55,15 +42,19 @@ public:
     bool eventFilter(QObject *obj, QEvent *e);
 
 public slots:
-    /// Toggles visibility with show/hide
-    void ToggleVisibility();
+    /// Add graphics effect to proxy widget.
+    void SetGraphicsEffect(QGraphicsEffect *effect)
+    {
+        setGraphicsEffect(effect);
+    }
 
-    /// Performs animated hide, if animations are enabled.
-    void AnimatedHide();
+    /// Get graphics effect from proxy widget.
+    QGraphicsEffect *GraphicsEffect() const
+    {
+        return graphicsEffect();
+    }
 
 signals:
-    void FocusChanged(QFocusEvent *event);
-
     /// Emitted when the proxy is closed/hidden.
     void Closed();
 
@@ -76,18 +67,6 @@ signals:
     /** @param visible Visibility.
     */
     void BringProxyToFrontRequest(QGraphicsProxyWidget *widget);
-
-    /// Emitted when proxy widget has moved.
-    /** @param widget Widget.
-        @param pos New position.
-    */
-    void ProxyMoved(QGraphicsProxyWidget *widget, const QPointF &pos);
-
-    /// Emitted when proxy widget has been ungrabbed.
-    /** @param widget
-        @param pos New Position.
-    */
-    void ProxyUngrabbed(QGraphicsProxyWidget *widget, const QPointF &pos);
 
 protected:
     /// QGraphicsProxyWidget override.
@@ -104,39 +83,6 @@ protected:
     /** Emits Closed() signal.
     */
     void closeEvent(QCloseEvent *e);
-
-    /// QGraphicsProxyWidget override.
-    /** Alters opacity of the proxy widget.
-    */
-    void focusInEvent(QFocusEvent *e);
-
-    /// QGraphicsProxyWidget override.
-    /** Alters opacity of the proxy widget.
-    */
-    void focusOutEvent(QFocusEvent *e);
-
-    /// QGraphicsProxyWidget override.
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-
-    /// QGraphicsProxyWidget override.
-    /** Emits Moved() signal.
-    */
-    void moveEvent(QGraphicsSceneMoveEvent * e);
-
-    /// QGraphicsProxyWidget override.
-    /** Emits ProxyUngrabbed() signal.
-    */
-    void ungrabMouseEvent(QEvent *e);
-
-private slots:
-    /// Hides proxy widget after animated hide is complete.
-    void FinishHide();
-
-private:
-    QParallelAnimationGroup *animations_; ///< Group of parallel animations.
-    QPropertyAnimation *fade_animation_; ///< Fade animation.
-    qreal unfocus_opacity_; ///< Opacity in unfocused state, 0.0-1.0.
-    bool show_animation_enabled_; ///< Is the animated show enabled.
 };
 
 #endif

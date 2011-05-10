@@ -7,6 +7,7 @@
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "AssetAPI.h"
+#include "TextureAsset.h"
 
 #include "LoggingFunctions.h"
 
@@ -246,4 +247,348 @@ void OgreMaterialAsset::DoUnload()
         Ogre::MaterialManager::getSingleton().remove(materialName);
     }
     catch(...) {}
+}
+
+Ogre::Technique* OgreMaterialAsset::GetTechnique(int techIndex)
+{
+    if (ogreMaterial.isNull())
+        return 0;
+    if (techIndex < 0 || techIndex >= ogreMaterial->getNumTechniques())
+        return 0;
+    return ogreMaterial->getTechnique(techIndex);
+}
+
+Ogre::Pass* OgreMaterialAsset::GetPass(int techIndex, int passIndex)
+{
+    Ogre::Technique* tech = GetTechnique(techIndex);
+    if (!tech)
+        return 0;
+    if (passIndex < 0 || passIndex >= tech->getNumPasses())
+        return 0;
+    return tech->getPass(passIndex);
+}
+
+Ogre::TextureUnitState* OgreMaterialAsset::GetTextureUnit(int techIndex, int passIndex, int texUnitIndex)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return 0;
+    if (texUnitIndex < 0 || texUnitIndex >= pass->getNumTextureUnitStates())
+        return 0;
+     return pass->getTextureUnitState(texUnitIndex);
+}
+
+int OgreMaterialAsset::GetNumTechniques()
+{
+    if (ogreMaterial.isNull())
+        return -1;
+    return ogreMaterial->getNumTechniques();
+}
+
+int OgreMaterialAsset::GetNumPasses(int techIndex)
+{
+    Ogre::Technique* tech = GetTechnique(techIndex);
+    if (!tech)
+        return -1;
+    return tech->getNumPasses();
+}
+
+int OgreMaterialAsset::GetNumTextureUnits(int techIndex, int passIndex)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return -1;
+    return pass->getNumTextureUnitStates();
+}
+
+bool OgreMaterialAsset::HasTechnique(int techIndex)
+{
+    return GetTechnique(techIndex) != 0;
+}
+
+bool OgreMaterialAsset::HasPass(int techIndex, int passIndex)
+{
+    return GetPass(techIndex, passIndex) != 0;
+}
+
+int OgreMaterialAsset::CreateTechnique()
+{
+    if (ogreMaterial.isNull())
+        return -1;
+    
+    try
+    {
+        Ogre::Technique* newTech = ogreMaterial->createTechnique();
+        if (!newTech)
+            return -1;
+        // Do not assume that the index is the last technique, though that is probably the case. Instead check all
+        for (unsigned i = 0; i < ogreMaterial->getNumTechniques(); ++i)
+        {
+            if (ogreMaterial->getTechnique(i) == newTech)
+                return i;
+        }
+    }
+    catch (...)
+    {
+    }
+    
+    return -1;
+}
+
+int OgreMaterialAsset::CreatePass(int techIndex)
+{
+    Ogre::Technique* tech = GetTechnique(techIndex);
+    if (!tech)
+        return -1;
+    
+    try
+    {
+        Ogre::Pass* newPass = tech->createPass();
+        if (!newPass)
+            return -1;
+        for (unsigned i = 0; i < tech->getNumPasses(); ++i)
+        {
+            if (tech->getPass(i) == newPass)
+                return i;
+        }
+    }
+    catch (...)
+    {
+    }
+    
+    return -1;
+}
+
+int OgreMaterialAsset::CreateTextureUnit(int techIndex, int passIndex)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return -1;
+    
+    try
+    {
+        Ogre::TextureUnitState* newState = pass->createTextureUnitState();
+        if (!newState)
+            return -1;
+        for (unsigned i = 0; i < pass->getNumTextureUnitStates(); ++i)
+        {
+            if (pass->getTextureUnitState(i) == newState)
+                return i;
+        }
+    }
+    catch (...)
+    {
+    }
+    
+    return -1;
+}
+
+bool OgreMaterialAsset::RemoveTextureUnit(int techIndex, int passIndex, int texUnitIndex)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    if (texUnitIndex < 0 || texUnitIndex >= pass->getNumTextureUnitStates())
+        return false;
+    try
+    {
+        pass->removeTextureUnitState(texUnitIndex);
+    }
+    catch (...)
+    {
+        return false;
+    }
+    
+    return true;
+}
+
+bool OgreMaterialAsset::RemovePass(int techIndex, int passIndex)
+{
+    Ogre::Technique* tech = GetTechnique(techIndex);
+    if (!tech)
+        return false;
+    if (passIndex < 0 || passIndex >= tech->getNumPasses())
+        return false;
+    try
+    {
+        tech->removePass(passIndex);
+    }
+    catch (...)
+    {
+        return false;
+    }
+    
+    return true;
+}
+
+bool OgreMaterialAsset::RemoveTechnique(int techIndex)
+{
+    if (ogreMaterial.isNull())
+        return false;
+    if (techIndex < 0 || techIndex >= ogreMaterial->getNumTechniques())
+        return false;
+    try
+    {
+        ogreMaterial->removeTechnique(techIndex);
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool OgreMaterialAsset::SetTexture(int techIndex, int passIndex, int texUnitIndex, AssetPtr texture)
+{
+    if (!texture)
+        return false;
+    TextureAsset* texAsset = dynamic_cast<TextureAsset*>(texture.get());
+    if (!texAsset || !texAsset->IsLoaded())
+        return false;
+    Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
+    if (!texUnit)
+        return false;
+    try
+    {
+        texUnit->setTextureName(texAsset->ogreTexture->getName());
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool OgreMaterialAsset::SetShaders(int techIndex, int passIndex, const QString& vertexProgramName, const QString& fragmentProgramName)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    try
+    {
+        pass->setVertexProgram(vertexProgramName.toStdString());
+        pass->setFragmentProgram(fragmentProgramName.toStdString());
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+bool OgreMaterialAsset::SetLighting(int techIndex, int passIndex, bool enable)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setLightingEnabled(enable);
+    return true;
+}
+
+bool OgreMaterialAsset::SetDiffuseColor(int techIndex, int passIndex, const Color& color)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setDiffuse(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+    return true;
+}
+
+bool OgreMaterialAsset::SetAmbientColor(int techIndex, int passIndex, const Color& color)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setAmbient(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+    return true;
+}
+
+bool OgreMaterialAsset::SetSpecularColor(int techIndex, int passIndex, const Color& color)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setSpecular(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+    return true;
+}
+
+bool OgreMaterialAsset::SetEmissiveColor(int techIndex, int passIndex, const Color& color)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setSelfIllumination(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+    return true;
+}
+
+bool OgreMaterialAsset::SetAlphaBlend(int techIndex, int passIndex)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    return true;
+}
+
+bool OgreMaterialAsset::SetAdditive(int techIndex, int passIndex)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setSceneBlending(Ogre::SBT_ADD);
+    return true;
+}
+
+bool OgreMaterialAsset::SetModulate(int techIndex, int passIndex)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setSceneBlending(Ogre::SBT_MODULATE);
+    return true;
+}
+
+bool OgreMaterialAsset::SetReplace(int techIndex, int passIndex)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setSceneBlending(Ogre::SBT_REPLACE);
+    return true;
+}
+
+bool OgreMaterialAsset::SetSolid(int techIndex, int passIndex)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setPolygonMode(Ogre::PM_SOLID);
+    return true;
+}
+
+bool OgreMaterialAsset::SetWireframe(int techIndex, int passIndex)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setPolygonMode(Ogre::PM_WIREFRAME);
+    return true;
+}
+
+bool OgreMaterialAsset::SetDepthWrite(int techIndex, int passIndex, bool enable)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setDepthWriteEnabled(enable);
+    return true;
+}
+
+bool OgreMaterialAsset::SetDepthBias(int techIndex, int passIndex, float bias)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setDepthBias(bias);
+    return true;
 }
