@@ -39,6 +39,8 @@ function CreateCamera(scene)
 
 	/* somehow breaks the game cameras in lvm 
          - they are deactivated, and av cam or something is activated instead, upon any arrowkey/wasd presses in the games
+         - it has return button now, so it doesn't use the arrow and wasd keys
+    */
     if (scene.GetEntityByNameRaw("ObjectCamera") != null)
 		return;
 
@@ -54,5 +56,4 @@ function CreateCamera(scene)
 	objectcamerascript.scriptRef = objectcameraRef;
 	
 	scene.EmitEntityCreatedRaw(objectcameraentity);
-     */
 }
