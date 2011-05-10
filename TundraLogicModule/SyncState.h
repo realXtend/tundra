@@ -33,7 +33,7 @@ struct EntitySyncState
     std::vector<ComponentSyncState> components_;
     /// Created/modified components
     std::set<std::pair<uint, QString> > dirty_components_;
-    /// Pending removed components (typenamehash, name)
+    /// Pending removed components (typenameid, name)
     std::set<std::pair<uint, QString> > removed_components_;
     
     ComponentSyncState* GetOrCreateComponent(u32 typeId, const QString &name)

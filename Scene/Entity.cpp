@@ -194,7 +194,7 @@ ComponentPtr Entity::CreateComponent(u32 typeId, AttributeChange::Type change)
     ComponentPtr new_comp = framework_->Scene()->CreateComponentById(typeId);
     if (!new_comp)
     {
-        LogError("Failed to create a component of type hash " + QString::number(typeId) + " to " + ToString());
+        LogError("Failed to create a component of type id " + QString::number(typeId) + " to " + ToString());
         return ComponentPtr();
     }
 
@@ -207,7 +207,7 @@ ComponentPtr Entity::CreateComponent(u32 typeId, const QString &name, AttributeC
     ComponentPtr new_comp = framework_->Scene()->CreateComponentById(typeId, name);
     if (!new_comp)
     {
-        LogError("Failed to create a component of type hash " + QString::number(typeId) + " and name \"" + name + "\" to " + ToString());
+        LogError("Failed to create a component of type id " + QString::number(typeId) + " and name \"" + name + "\" to " + ToString());
         return ComponentPtr();
     }
 
@@ -296,7 +296,7 @@ void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
     foreach(const ComponentPtr &comp, Components())
         if (!comp->IsTemporary())
         {
-            dst.Add<u32>(comp->TypeNameHash());
+            dst.Add<u32>(comp->TypeId()); ///\todo VLE this!
             dst.AddString(comp->Name().toStdString());
             dst.Add<u8>(comp->GetNetworkSyncEnabled() ? 1 : 0);
             

@@ -10,7 +10,7 @@ var motion_x = 0;
 var yaw = 0;
 var pitch = 0;
 
-if (!me.HasComponent("EC_Camera"))
+if (!me.GetComponent("EC_Camera"))
 {
     // Create components & setup default position/lookat for the camera
     var camera = me.GetOrCreateComponent("EC_Camera");

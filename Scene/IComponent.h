@@ -105,9 +105,6 @@ public:
 
     virtual const u32 TypeId() const = 0;
 
-    /// Returns type name hash of the component
-    uint TypeNameHash() const;
-
     /// Returns the name of this component.
     /** The name of a component is a custom user-specified name for
         this component instance, and identifies separate instances of the same component in an object. 

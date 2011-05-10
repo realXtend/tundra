@@ -231,10 +231,10 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
             if (state)
             {
                 if (!dynamic)
-                    state->OnAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), attr);
+                    state->OnAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), attr);
                 else
                     // Note: this may be an add, change or remove. We inspect closer when it's time to send the update message.
-                    state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), QString::fromStdString(attr->GetNameString()));
+                    state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), QString::fromStdString(attr->GetNameString()));
             }
         }
     }
@@ -242,9 +242,9 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     {
         SceneSyncState* state = &server_syncstate_;
         if (!dynamic)
-            state->OnAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), attr);
+            state->OnAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), attr);
         else
-            state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), QString::fromStdString(attr->GetNameString()));
+            state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), QString::fromStdString(attr->GetNameString()));
     }
     
     // This attribute changing might in turn cause other attributes to change on the server, and these must be echoed to all, so reset sender now
@@ -269,13 +269,13 @@ void SyncManager::OnComponentAdded(Entity* entity, IComponent* comp, AttributeCh
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
-                state->OnComponentAdded(entity->GetId(), comp->TypeNameHash(), comp->Name());
+                state->OnComponentAdded(entity->GetId(), comp->TypeId(), comp->Name());
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnComponentAdded(entity->GetId(), comp->TypeNameHash(), comp->Name());
+        state->OnComponentAdded(entity->GetId(), comp->TypeId(), comp->Name());
     }
 }
 
@@ -296,13 +296,13 @@ void SyncManager::OnComponentRemoved(Entity* entity, IComponent* comp, Attribute
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
-                state->OnComponentRemoved(entity->GetId(), comp->TypeNameHash(), comp->Name());
+                state->OnComponentRemoved(entity->GetId(), comp->TypeId(), comp->Name());
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnComponentRemoved(entity->GetId(), comp->TypeNameHash(), comp->Name());
+        state->OnComponentRemoved(entity->GetId(), comp->TypeId(), comp->Name());
     }
 }
 
@@ -509,10 +509,10 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 if (component->GetNetworkSyncEnabled())
                 {
                     // Create componentstate so we can start tracking individual attributes
-                    ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeNameHash(), component->Name());
+                    ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeId(), component->Name());
                     UNREFERENCED_PARAM(componentstate);
                     MsgCreateEntity::S_components newComponent;
-                    newComponent.componentTypeHash = component->TypeNameHash();
+                    newComponent.componentTypeHash = component->TypeId();
                     newComponent.componentName = StringToBuffer(component->Name().toStdString());
                     newComponent.componentData.resize(64 * 1024);
                     DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
@@ -521,7 +521,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     msg.components.push_back(newComponent);
                 }
                 
-                entitystate->AckDirty(component->TypeNameHash(), component->Name());
+                entitystate->AckDirty(component->TypeId(), component->Name());
             }
             destination->Send(msg);
             ++num_messages_sent;
@@ -543,15 +543,15 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     ComponentPtr component = entity->GetComponent(j->first, j->second);
                     if (component && component->GetNetworkSyncEnabled())
                     {
-                        ComponentSyncState* componentstate = entitystate->GetComponent(component->TypeNameHash(), component->Name());
+                        ComponentSyncState* componentstate = entitystate->GetComponent(component->TypeId(), component->Name());
                         // New component
                         if (!componentstate)
                         {
                             // Create componentstate so we can start tracking individual attributes
-                            componentstate = entitystate->GetOrCreateComponent(component->TypeNameHash(), component->Name());
+                            componentstate = entitystate->GetOrCreateComponent(component->TypeId(), component->Name());
                             
                             MsgCreateComponents::S_components newComponent;
-                            newComponent.componentTypeHash = component->TypeNameHash();
+                            newComponent.componentTypeHash = component->TypeId();
                             newComponent.componentName = StringToBuffer(component->Name().toStdString());
                             newComponent.componentData.resize(64 * 1024);
                             DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
@@ -566,7 +566,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                             if (!component->HasDynamicStructure())
                             {
                                 MsgUpdateComponents::S_components updComponent;
-                                updComponent.componentTypeHash = component->TypeNameHash();
+                                updComponent.componentTypeHash = component->TypeId();
                                 updComponent.componentName = StringToBuffer(component->Name().toStdString());
                                 updComponent.componentData.resize(64 * 1024);
                                 DataSerializer dest((char*)&updComponent.componentData[0], updComponent.componentData.size());
@@ -594,7 +594,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                             else
                             {
                                 MsgUpdateComponents::S_dynamiccomponents updComponent;
-                                updComponent.componentTypeHash = component->TypeNameHash();
+                                updComponent.componentTypeHash = component->TypeId();
                                 updComponent.componentName = StringToBuffer(component->Name().toStdString());
                                 bool has_changes = false;
                                 const std::set<QString>& dirtyAttrs = componentstate->dirty_dynamic_attributes;

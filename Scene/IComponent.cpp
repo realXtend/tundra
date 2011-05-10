@@ -87,11 +87,6 @@ void IComponent::SetNetworkSyncEnabled(bool enabled)
     network_sync_ = enabled;
 }
 
-uint IComponent::TypeNameHash() const
-{
-    return GetHash(TypeName());
-}
-
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
 {
     for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)

@@ -1197,7 +1197,7 @@ bool SceneManager::StartAttributeInterpolation(IAttribute* attr, IAttribute* end
     AttributeInterpolation newInterp;
     newInterp.entityId = entity->GetId();
     newInterp.compName = comp->Name();
-    newInterp.compTypeNameHash = comp->TypeNameHash();
+    newInterp.compTypeId = comp->TypeId();
     newInterp.dest = attr;
     newInterp.start = attr->Clone();
     newInterp.end = endvalue;
@@ -1250,7 +1250,7 @@ void SceneManager::UpdateAttributeInterpolations(float frametime)
         Entity* entity = GetEntity(interp.entityId).get();
         IComponent* comp = 0;
         if (entity)
-            comp = entity->GetComponent(interp.compTypeNameHash, interp.compName).get();
+            comp = entity->GetComponent(interp.compTypeId, interp.compName).get();
         
         if (comp)
         {

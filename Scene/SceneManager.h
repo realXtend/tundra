@@ -26,7 +26,7 @@ struct AttributeInterpolation
     IAttribute* start;
     IAttribute* end;
     entity_id_t entityId;
-    uint compTypeNameHash;
+    uint compTypeId;
     QString compName;
     float time;
     float length;

@@ -1,7 +1,7 @@
 print("Loading EC_SoundListener example script.");
 
 var touchable_comp = 0;
-if (me.HasComponent("EC_Touchable"))
+if (me.GetComponent("EC_Touchable"))
 {
 	touchable_comp = me.GetComponent("EC_Touchable");
 	AddConnections();

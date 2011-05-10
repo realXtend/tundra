@@ -10,7 +10,7 @@ var last_clicked;
 var zooming = false;
 var global_transform;
 
-if (!me.HasComponent("EC_Camera"))
+if (!me.GetComponent("EC_Camera"))
 {
     var camera = me.GetOrCreateComponent("EC_Camera");
     var inputmapper = me.GetOrCreateComponent("EC_InputMapper");

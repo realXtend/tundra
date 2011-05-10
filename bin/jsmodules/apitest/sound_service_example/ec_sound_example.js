@@ -9,7 +9,7 @@ print("Loading EC_Sound example script.");
 //3. Set EC_Script name to ".\jsmodules\apitest\sound_service_example\ec_sound_example.js"
 
 var touchable_comp = 0;
-if (me.HasComponent("EC_Touchable"))
+if (me.GetComponent("EC_Touchable"))
 {
     touchable_comp = me.GetComponent("EC_Touchable");
     AddConnections();
