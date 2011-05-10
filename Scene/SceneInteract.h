@@ -15,8 +15,6 @@
 
 #include <QObject>
 
-class RaycastResult;
-
 /// Transforms generic mouse and keyboard input events to input-related entity action for scene entities and Qt signals. 
 /**
 <table class="header"><tr><td>
@@ -72,17 +70,28 @@ public:
 signals:
     /// Emitted when scene was clicked and raycast hit an entity.
     /** @param entity Hit entity.
-        @param Qt::MouseButton Qt enum of the clicked mouse button
-        @param RaycastResult Raycast result data object.
+        @param Clicked mouse button
+        @param result Raycast result data object.
     */
-    void EntityClicked(Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
+    void EntityClicked(Entity *entity, Qt::MouseButton button, RaycastResult *result);
 
-    void EntityMouseMove(Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
+    /// Emitted when scene was clicked and raycast hit an entity.
+    /** @param entity Hit entity.
+        @param Possible mouse button held down during the move.
+        @param result Raycast result data object.
+    */
+    void EntityMouseMove(Entity *entity, Qt::MouseButton button, RaycastResult *result);
 
-    void EntityClickReleased(Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
+    /// Emitted when scene was clicked and raycast hit an entity.
+    /** @param entity Hit entity.
+        @param Released mouse button.
+        @param result Raycast result data object.
+    */
+    void EntityClickReleased(Entity *entity, Qt::MouseButton button, RaycastResult *result);
+
 private:
     /// Performs raycast to last known mouse cursor position.
-    /** @return RaycastResult Result data of the raycast.*/
+    /** @return Result of the raycast. */
     RaycastResult* Raycast();
 
     Framework *framework_; ///< Framework.

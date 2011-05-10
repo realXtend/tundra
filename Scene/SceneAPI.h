@@ -4,15 +4,14 @@
 #define incl_Scene_SceneAPI_h
 
 #include "SceneFwd.h"
-#include "SceneInteract.h"
 #include "CoreTypes.h"
 #include "CoreStringUtils.h"
 
 #include <QObject>
 #include <QString>
 
-typedef std::map<QString, ScenePtr> SceneMap;
 class Framework;
+class SceneInteract;
 
 /// Scene core API.
 /**
@@ -35,9 +34,6 @@ Owned by Framework.
 </ul>
 
 </td></tr></table>
-
-\todo Change typedef ScenePtr from boost::shared_ptr<SceneManager> to 
-QPointer/QSharedPointer/QWeakPointer<SceneManager> to get rid of *Raw() functions for scripts.
 */
 class SceneAPI : public QObject
 {
@@ -49,35 +45,42 @@ public:
     /// Destructor.
     ~SceneAPI();
 
+    /// Creates new component of the type @c T.
+    /** @param newComponentName Name for the component (optional).
+    */
+    template<typename T>
+    boost::shared_ptr<T> CreateComponent(const QString &newComponentName = "")
+    {
+        return boost::dynamic_pointer_cast<T>(CreateComponentById(T::TypeIdStatic(), newComponentName));
+    }
+
 signals:
     /// Emitted after new scene has been added to framework.
-    /// \param name new scene name.
+    /// @param name new scene name.
     void SceneAdded(const QString &name);
 
     /// Emitted after scene has been removed from the framework.
-    /// \param name removed scene name.
+    /// @param name removed scene name.
     void SceneRemoved(const QString &name);
 
     /// Emitted when default world scene changes.
-    /// \param scene new default world scene object.
+    /// @param scene new default world scene object.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     void DefaultWorldSceneChanged(SceneManager *scene);
 
 public slots:
     /// Get Scene Interact weak pointer.
     ///\todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
-    SceneInteractWeakPtr GetSceneInteract() const;
+    SceneInteract *GetSceneInteract() const;
 
     /// Returns true if specified scene exists, false otherwise
     bool HasScene(const QString &name) const;
 
     /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     void SetDefaultScene(const QString &name);
 
     /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
-    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     void SetDefaultScene(const ScenePtr &scene);
     
@@ -88,7 +91,6 @@ public slots:
 
     /// Returns the default scene ptr.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     SceneManager* GetDefaultSceneRaw() const;
 
     /// Returns a pointer to a scene
@@ -98,18 +100,18 @@ public slots:
         \note Returns a shared pointer, but it is preferable to use a weak pointer, SceneWeakPtr,
               to avoid dangling references that prevent scenes from being properly destroyed.
 
-        \param name Name of the scene to return
-        \return The scene, or empty pointer if the scene with the specified name could not be found 
+        @param name Name of the scene to return
+        @return The scene, or empty pointer if the scene with the specified name could not be found 
     */
     /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<SceneManager> rename GetSceneRaw() to GetScene().
     ScenePtr GetScene(const QString &name) const;
 
     /// Creates new empty scene.
-    /** \param name name of the new scene
-        \param viewenabled Whether the scene is view enabled
-        \return The new scene, or empty pointer if scene with the specified name already exists.
+    /** @param name name of the new scene
+        @param viewEnabled Whether the scene is view enabled
+        @return The new scene, or empty pointer if scene with the specified name already exists.
     */
-    ScenePtr CreateScene(const QString &name, bool viewenabled);
+    ScenePtr CreateScene(const QString &name, bool viewEnabled);
 
     /// Removes a scene with the specified name.
     /** The scene may not get deleted since there may be dangling references to it.
@@ -118,24 +120,16 @@ public slots:
 
         Does nothing if scene with the specified name doesn't exist.
 
-        \param name name of the scene to delete
+        @param name name of the scene to delete
     */
     void RemoveScene(const QString &name);
 
     /// Returns the scene map for self reflection / introspection.
-    const SceneMap &GetSceneMap() const;
+    const SceneMap &Scenes() const;
 
     /// Registers a new factory to create new components of type 'componentTypename' and id 'componentTypeid'.
     void RegisterComponentFactory(ComponentFactoryPtr factory);
 
-public:
-    template<typename T>
-    boost::shared_ptr<T> CreateComponent(const QString &newComponentName = "")
-    {
-        return boost::dynamic_pointer_cast<T>(CreateComponentById(T::TypeIdStatic(), newComponentName));
-    }
-
-public slots:
     /// Creates a new component instance by specifying the typename of the new component to create.
     ComponentPtr CreateComponentByName(const QString &componentTypename, const QString &newComponentName = "");
 
@@ -163,7 +157,7 @@ public slots:
 
 private:
     /// Constructor. Framework takes ownership of this object.
-    /// \param framework Framework ptr.
+    /// @param framework Framework ptr.
     explicit SceneAPI(Framework *framework);
 
     /// Frees all known scene and the scene interact object.
@@ -178,28 +172,19 @@ private:
     /// \note This function is called by our fried class Framework when modules have loaded and RenderServiceInterface is ready.
     void PostInitialize();
 
-    /// Framework ptr.
-    Framework *framework_;
-
-    /// Map of scenes.
-    SceneMap scenes_;
+    ComponentFactoryPtr GetFactory(const QString &typeName);
+    ComponentFactoryPtr GetFactory(u32 typeId);
 
     typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
     typedef std::map<QString, ComponentFactoryPtr, QStringLessThanNoCase> ComponentFactoryMap;
     typedef std::map<u32, boost::weak_ptr<IComponentFactory> > ComponentFactoryWeakMap;
+
     ComponentFactoryMap componentFactories;
     ComponentFactoryWeakMap componentFactoriesByTypeid;
-
-    ComponentFactoryPtr GetFactory(const QString &typeName);
-    ComponentFactoryPtr GetFactory(u32 typeId);
-
-    /// Current 'default' scene.
-    /// \todo Delete this.
-    ScenePtr defaultScene_;
-
-    /// Scene interact shared ptr.
-    ///\todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
-    QSharedPointer<SceneInteract> sceneInteract;
+    Framework *framework_; ///< Framework.
+    SceneMap scenes_; ///< All currently created scenes.
+    ScenePtr defaultScene_; ///< Current 'default' scene. \todo Delete this.
+    SceneInteract *sceneInteract; ///< Scene interact. \todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
 };
 
 #endif

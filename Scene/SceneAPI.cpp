@@ -8,6 +8,7 @@
 #include "IComponentFactory.h"
 #include "IComponent.h"
 #include "AssetReference.h"
+#include "SceneInteract.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -15,8 +16,8 @@ SceneAPI::SceneAPI(Framework *framework) :
     QObject(framework),
     framework_(framework)
 {
-    sceneInteract = QSharedPointer<SceneInteract>(new SceneInteract());
-    framework->RegisterDynamicObject("sceneinteract", sceneInteract.data());
+    sceneInteract = new SceneInteract();
+    framework->RegisterDynamicObject("sceneinteract", sceneInteract);
 
     defaultScene_.reset();
     scenes_.clear();
@@ -28,7 +29,7 @@ SceneAPI::~SceneAPI()
 
 void SceneAPI::Reset()
 {
-    sceneInteract.clear();
+    SAFE_DELETE(sceneInteract);
     defaultScene_.reset();
     scenes_.clear();
 }
@@ -43,9 +44,9 @@ void SceneAPI::PostInitialize()
     sceneInteract->PostInitialize();
 }
 
-SceneInteractWeakPtr SceneAPI::GetSceneInteract() const
+SceneInteract *SceneAPI::GetSceneInteract() const
 {
-    return SceneInteractWeakPtr(sceneInteract);
+    return sceneInteract;
 }
 
 bool SceneAPI::HasScene(const QString &name) const
@@ -87,7 +88,7 @@ ScenePtr SceneAPI::GetScene(const QString &name) const
     SceneMap::const_iterator scene = scenes_.find(name);
     if (scene != scenes_.end())
         return scene->second;
-    return ScenePtr();  
+    return ScenePtr();
 }
 
 ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled)
@@ -121,7 +122,7 @@ void SceneAPI::RemoveScene(const QString &name)
     }
 }
 
-const SceneMap &SceneAPI::GetSceneMap() const
+const SceneMap &SceneAPI::Scenes() const
 {
     return scenes_;
 }
@@ -150,7 +151,6 @@ void SceneAPI::RegisterComponentFactory(ComponentFactoryPtr factory)
     componentFactoriesByTypeid[factory->TypeId()] = factory;
 }
 
-/// Creates a new component instance by specifying the typename of the new component to create.
 ComponentPtr SceneAPI::CreateComponentByName(const QString &componentTypename, const QString &newComponentName)
 {
     ComponentFactoryPtr factory = GetFactory(componentTypename);
@@ -162,7 +162,6 @@ ComponentPtr SceneAPI::CreateComponentByName(const QString &componentTypename, c
     return factory->Create(newComponentName, framework_);
 }
 
-/// Creates a new component instance by specifying the typeid of the new component to create.
 ComponentPtr SceneAPI::CreateComponentById(u32 componentTypeid, const QString &newComponentName)
 {
     ComponentFactoryPtr factory = GetFactory(componentTypeid);
@@ -174,7 +173,6 @@ ComponentPtr SceneAPI::CreateComponentById(u32 componentTypeid, const QString &n
     return factory->Create(newComponentName, framework_);
 }
 
-/// Looks up the given type id and returns the type name string for that id.
 QString SceneAPI::GetComponentTypeName(u32 componentTypeid)
 {
     ComponentFactoryPtr factory = GetFactory(componentTypeid);
@@ -184,7 +182,6 @@ QString SceneAPI::GetComponentTypeName(u32 componentTypeid)
         return "";
 }
 
-/// Looks up the given type name and returns the type id for that component type.
 u32 SceneAPI::GetComponentTypeId(const QString &componentTypename)
 {
     ComponentFactoryPtr factory = GetFactory(componentTypename);
@@ -194,8 +191,6 @@ u32 SceneAPI::GetComponentTypeId(const QString &componentTypename)
         return 0;
 }
 
-/// Creates a clone of the specified component. The new component will be detached, i.e. it has no parent entity.
-    ///\todo Implement this.
 /*
 ComponentPtr SceneAPI::CloneComponent(const ComponentPtr &component, const QString &newComponentName)
 {
@@ -206,7 +201,7 @@ ComponentPtr SceneAPI::CloneComponent(const ComponentPtr &component, const QStri
     return factory->Clone(component.get(), newComponentName);
 }
 */
-/// Create new attribute for spesific component.
+
 IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attributeTypename, const QString &newAttributeName)
 {
     // The dynamically created attributes are deleted at the EC_DynamicComponent dtor.
@@ -242,7 +237,6 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
     return attribute;
 }
 
-/// Returns a list of all attribute typenames that can be used in the CreateAttribute function to create an attribute.
 QStringList SceneAPI::GetAttributeTypes() const
 {
     QStringList attrTypes;
@@ -250,7 +244,6 @@ QStringList SceneAPI::GetAttributeTypes() const
     return attrTypes;
 }
 
-/// Returns a list of all component typenames that can be used in the CreateComponentByName function to create a component.
 QStringList SceneAPI::GetComponentTypes() const
 {
     QStringList componentTypes;

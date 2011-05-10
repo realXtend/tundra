@@ -94,13 +94,7 @@ public:
     Framework *GetFramework() const;
 
 protected:
-    /// Parent framework
-    Framework *framework_;
-
-    /// Registers console command for this module.
-    /** @param command Console command.
-    */
-    void RegisterConsoleCommand(const Console::Command &command);
+    Framework *framework_; ///< Parent framework
 
 private:
     // Modules are noncopyable.

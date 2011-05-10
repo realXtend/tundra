@@ -29,6 +29,9 @@ typedef boost::shared_ptr<Entity> EntityPtr;
 typedef std::list<EntityPtr> EntityList;
 
 struct SceneDesc;
+struct ComponentDesc;
+struct AttributeDesc;
+struct AssetDesc;
 
 class IComponentFactory;
 class IComponent;
@@ -39,8 +42,5 @@ typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
 typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
 typedef std::vector<IAttribute*> AttributeVector;
 typedef std::map<QString, ScenePtr> SceneMap;
-
-class SceneInteract;
-typedef QWeakPointer<SceneInteract> SceneInteractWeakPtr;
 
 #endif
