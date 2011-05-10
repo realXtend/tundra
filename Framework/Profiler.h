@@ -438,7 +438,11 @@ public:
     static Profiler *GetProfiler()
     {
         assert(Framework::GetInstance());
+#ifdef PROFILING
         return Framework::GetInstance()->GetProfiler();
+#else
+        return 0;
+#endif
     }
 
 private:
