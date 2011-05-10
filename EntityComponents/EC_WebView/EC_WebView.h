@@ -182,6 +182,10 @@ private slots:
     //! Handler when EC_Mesh emits that the mesh is ready.
     void TargetMeshReady();
 
+    //! Handler when EC_Mesh emits that a material has changed on one of its sub meshes.
+    //! We inspect if the index is same as we are rendering to. If this is detected we re-apply our material to the sub mesh.
+    void TargetMeshMaterialChanged(uint index, const QString &material);
+
     //! Monitors this entitys added components.
     void ComponentAdded(IComponent *component, AttributeChange::Type change);
 
@@ -258,6 +262,10 @@ private:
 
     //! Tracking the scroll position when we are in control.
     QPoint controlledScrollPos_;
+
+    //! The scene canvas that we are using. This needs to be unique to enable
+    //! multiple web views in a entity. This is used to perform cleanup when this component is destroyed.
+    QString sceneCanvasName_;
 };
 
 #endif
