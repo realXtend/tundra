@@ -193,6 +193,7 @@ void EC_Placeable::LookAt(const Vector3df& look_at)
     // so start in identity transform
     link_scene_node_->setOrientation(Ogre::Quaternion::IDENTITY);
     link_scene_node_->lookAt(Ogre::Vector3(look_at.x, look_at.y, look_at.z), Ogre::Node::TS_WORLD);
+    SetOrientation(GetOrientation());
 }
 
 void EC_Placeable::SetYaw(float radians)
