@@ -23,6 +23,7 @@
 #include "IAssetStorage.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include "SceneAPI.h"
 

@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "Profiler.h"
 
 #include "RenderWindow.h"
 

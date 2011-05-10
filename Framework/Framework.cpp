@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "Framework.h"
+#include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "RenderServiceInterface.h"
@@ -25,6 +26,8 @@
 
 #include "MemoryLeakCheck.h"
 
+Framework *Framework::instance = 0;
+
 Framework::Framework(int argc, char** argv) :
     exit_signal_(false),
     argc_(argc),
@@ -44,6 +47,9 @@ Framework::Framework(int argc, char** argv) :
     connection(0),
     server(0)
 {
+    // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
+    instance = this;
+
     // Application name and version. Can be accessed via ConfigAPI.
     /// \note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
     const QString applicationOrganization = "realXtend";
@@ -62,7 +68,7 @@ Framework::Framework(int argc, char** argv) :
         if (commandLineVariables.count("headless"))
             headless_ = true;
 #ifdef PROFILING
-        ProfilerSection::SetProfiler(&profiler_);
+        profiler = new Profiler();
 #endif
         PROFILE(FW_Startup);
 
@@ -120,6 +126,9 @@ Framework::~Framework()
     delete asset;
     delete audio;
     delete plugin;
+#ifdef PROFILING
+    delete profiler;
+#endif
 
     // This delete must be the last one in Framework since application derives QApplication.
     // When we delete QApplication, we must have ensured that all QObjects have been deleted.
@@ -238,8 +247,6 @@ void Framework::ProcessOneFrame()
             }
         }
     }
-
-    RESETPROFILER
 }
 
 void Framework::Go()
@@ -428,9 +435,9 @@ void Framework::RegisterConsoleCommands()
 }
 
 #ifdef PROFILING
-Profiler &Framework::GetProfiler()
+Profiler *Framework::GetProfiler()
 {
-    return profiler_;
+    return profiler;
 }
 #endif
 

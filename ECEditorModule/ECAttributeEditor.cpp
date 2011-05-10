@@ -8,6 +8,7 @@
 #include "MultiEditPropertyFactory.h"
 #include "LineEditPropertyFactory.h"
 #include "EditorButtonFactory.h"
+#include "Profiler.h"
 
 #include "IComponent.h"
 #include "IAttribute.h"

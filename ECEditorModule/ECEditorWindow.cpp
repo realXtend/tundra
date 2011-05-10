@@ -18,7 +18,7 @@
 #include "ArgumentType.h"
 #include "FunctionInvoker.h"
 #include "ECEditorModule.h"
-
+#include "Profiler.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "EC_Name.h"

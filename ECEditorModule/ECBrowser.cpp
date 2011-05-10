@@ -6,6 +6,7 @@
 #include "ECBrowser.h"
 #include "ECComponentEditor.h"
 #include "TreeWidgetItemExpandMemory.h"
+#include "Profiler.h"
 
 #include "SceneAPI.h"
 #include "Entity.h"

@@ -7,6 +7,7 @@
 #include "AvatarModule.h"
 #include "AssetAPI.h"
 #include "XMLUtilities.h"
+#include "Profiler.h"
 
 #include <QDomDocument>
 #include <cstring>

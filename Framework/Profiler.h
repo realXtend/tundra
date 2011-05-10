@@ -8,6 +8,7 @@
 #include <Windows.h>
 #endif
 
+#include "Framework.h"
 #include "HighPerfClock.h"
 
 // Disable warning C4244 coming from boost
@@ -331,8 +332,7 @@ namespace
 */
 class Profiler
 {
-    friend class Framework;
-public://private:
+public:
 Profiler()
     :current_node_(&EmptyDeletor),
         root_("Root")
@@ -410,13 +410,12 @@ private:
 /// Used by PROFILE - macro to automatically stop profiling clock when going out of scope
 class ProfilerSection
 {
-    friend class Framework;
     ProfilerSection(); // N/I
     ProfilerSection(const ProfilerSection &rhs);
 public:
     explicit ProfilerSection(const std::string &name) : name_(name), destroyed_(false)
     {
-        assert (profiler_ && "Trying to profile before profiler initialized.");
+        assert(Framework::GetInstance() && "Cannot get Framework instance! Did you forget to call Framework::SetInstance(fw); in your TundraPluginMain?");
         GetProfiler()->StartBlock(name);
     }
 
@@ -431,19 +430,18 @@ public:
     /// Explicitly destroy this section before it runs out of scope
     __inline void Destruct()
     {
-        assert (profiler_ && "Trying to profile before profiler initialized.");
+        assert (Framework::GetInstance() && "Trying to profile before profiler initialized.");
 
         GetProfiler()->EndBlock(name_);
         destroyed_ = true;
     }
-    static Profiler *GetProfiler() { return profiler_; }
-    /// This should only be called once per translation unit. it contains some side-effects too
-    static void SetProfiler(Profiler *profiler) { profiler_ = profiler; }
+    static Profiler *GetProfiler()
+    {
+        assert(Framework::GetInstance());
+        return Framework::GetInstance()->GetProfiler();
+    }
 
 private:
-    /// Parent profiler used by this section
-    static Profiler *profiler_;
-
     /// Name of this profiling section
     const std::string name_;
 

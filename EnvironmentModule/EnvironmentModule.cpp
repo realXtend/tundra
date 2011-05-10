@@ -65,8 +65,6 @@ namespace Environment
 
     void EnvironmentModule::Update(f64 frametime)
     {
-        RESETPROFILER;
-        PROFILE(EnvironmentModule_Update);
     }
 
     void EnvironmentModule::ShowTerrainWeightEditor()
@@ -87,15 +85,12 @@ namespace Environment
 
 }
 
-void SetProfiler(Profiler *profiler)
-{
-    ProfilerSection::SetProfiler(profiler);
-}
 
 extern "C"
 {
 __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new Environment::EnvironmentModule();
     fw->GetModuleManager()->DeclareStaticModule(module);
 }

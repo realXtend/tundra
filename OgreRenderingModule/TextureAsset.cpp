@@ -1,6 +1,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Profiler.h"
 #include "TextureAsset.h"
 #include "OgreConversionUtils.h"
 

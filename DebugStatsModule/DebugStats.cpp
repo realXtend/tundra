@@ -26,6 +26,7 @@
 #include "InputAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
+#include "Profiler.h"
 
 #include <utility>
 #include <QDebug>
@@ -129,8 +130,6 @@ ConsoleCommandResult DebugStatsModule::ShowProfilingWindow()
 
 void DebugStatsModule::Update(f64 frametime)
 {
-    RESETPROFILER;
-
 #ifdef _WINDOWS
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
@@ -188,15 +187,11 @@ ConsoleCommandResult DebugStatsModule::Exec(const StringVector &params)
 
 }
 
-void SetProfiler(Profiler *profiler)
-{
-    ProfilerSection::SetProfiler(profiler);
-}
-
 extern "C"
 {
 __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new DebugStats::DebugStatsModule();
     fw->GetModuleManager()->DeclareStaticModule(module);
 }

@@ -81,7 +81,6 @@ void ECEditorModule::Uninitialize()
 
 void ECEditorModule::Update(f64 frametime)
 {
-    RESETPROFILER;
 }
 
 ECEditorWindow *ECEditorModule::GetActiveECEditor() const

@@ -13,6 +13,7 @@
 #include "AssetReference.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include <QtTreePropertyBrowser>
 #include <QtGroupPropertyManager>

@@ -187,7 +187,6 @@ void PhysicsModule::Update(f64 frametime)
             UpdateDebugGeometry();
     }
     
-    RESETPROFILER;
 }
 
 Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(ScenePtr scene, bool isClient)
@@ -367,17 +366,13 @@ boost::shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogr
 
 }
 
-void SetProfiler(Profiler *profiler)
-{
-    ProfilerSection::SetProfiler(profiler);
-}
-
 using namespace Physics;
 
 extern "C"
 {
 __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new Physics::PhysicsModule();
     fw->GetModuleManager()->DeclareStaticModule(module);
 }

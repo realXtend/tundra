@@ -30,6 +30,7 @@
 #include "ConfigAPI.h"
 #include "SceneAPI.h"
 #include "IComponentFactory.h"
+#include "Profiler.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -154,7 +155,6 @@ namespace OgreRenderer
             PROFILE(OgreRenderingModule_Update);
             renderer_->Update(frametime);
         }
-        RESETPROFILER;
     }
 
     ConsoleCommandResult OgreRenderingModule::ConsoleStats(const StringVector &params)
@@ -175,17 +175,13 @@ namespace OgreRenderer
     }
 }
 
-void SetProfiler(Profiler *profiler)
-{
-    ProfilerSection::SetProfiler(profiler);
-}
-
 using namespace OgreRenderer;
 
 extern "C"
 {
 __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new OgreRenderer::OgreRenderingModule();
     fw->GetModuleManager()->DeclareStaticModule(module);
 }

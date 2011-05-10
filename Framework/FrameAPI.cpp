@@ -13,6 +13,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "FrameAPI.h"
+#include "HighPerfClock.h"
 
 #include <QTimer>
 

@@ -8,6 +8,7 @@
 #include "Entity.h"
 #include "EC_DynamicComponent.h"
 #include "IComponent.h"
+#include "Profiler.h"
 
 #include <QtProperty>
 

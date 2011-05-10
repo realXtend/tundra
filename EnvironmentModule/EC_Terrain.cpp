@@ -21,6 +21,7 @@
 #include "LoggingFunctions.h"
 #include "TextureAsset.h"
 #include "AttributeMetadata.h"
+#include "Profiler.h"
 
 #include <Ogre.h>
 #include <utility>

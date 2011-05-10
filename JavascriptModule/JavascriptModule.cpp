@@ -12,7 +12,7 @@
 #include "ScriptMetaTypeDefines.h"
 #include "JavascriptInstance.h"
 #include "ScriptCoreTypeDefines.h"
-
+#include "Profiler.h"
 #include "Application.h"
 #include "SceneAPI.h"
 #include "Entity.h"
@@ -106,7 +106,6 @@ void JavascriptModule::Uninitialize()
 
 void JavascriptModule::Update(f64 frametime)
 {
-    RESETPROFILER;
 }
 
 ConsoleCommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
@@ -361,15 +360,11 @@ QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
     return QScriptValue();
 }
 
-void SetProfiler(Profiler *profiler)
-{
-    ProfilerSection::SetProfiler(profiler);
-}
-
 extern "C"
 {
 __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new JavascriptModule();
     fw->GetModuleManager()->DeclareStaticModule(module);
 }

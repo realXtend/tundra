@@ -3,7 +3,6 @@
 #ifndef incl_Framework_Framework_h
 #define incl_Framework_Framework_h
 
-#include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 
@@ -107,7 +106,7 @@ public:
 
 #ifdef PROFILING
     /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
-    Profiler &GetProfiler();
+    Profiler *GetProfiler();
 #endif
     /*
     /// List all loaded modules
@@ -181,6 +180,10 @@ public slots:
 
     PluginAPI *Plugins() const;
 
+    static Framework *GetInstance() { return instance; }
+
+    static void SetInstance(Framework *fw) { instance = fw; }
+
     /// Returns if we're running the application in headless or not.
     bool IsHeadless() const { return headless_; }
 
@@ -213,7 +216,7 @@ private:
     
     bool exit_signal_; ///< If true, exit application.
 #ifdef PROFILING
-    Profiler profiler_; ///< Profiler.
+    Profiler *profiler; ///< Profiler.
 #endif
     boost::program_options::variables_map commandLineVariables; ///< program options
     boost::program_options::options_description commandLineDescriptions; ///< program option descriptions
@@ -234,6 +237,7 @@ private:
     ConnectionAPI *connection; ///< The Connection API.
     ServerAPI *server; ///< The Server API, null if we're not operating as a server.
 
+    static Framework *instance;
     int argc_; ///< Command line argument count as supplied by the operating system.
     char **argv_; ///< Command line arguments as supplied by the operating system.
 };

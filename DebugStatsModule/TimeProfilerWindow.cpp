@@ -795,7 +795,7 @@ void TimeProfilerWindow::DoThresholdLogging()
 
     QTextStream out(&file);
 
-    Profiler &profiler = framework_->GetProfiler();
+    Profiler &profiler = *framework_->GetProfiler();
     profiler.Lock();
 
     ProfilerNodeTree *node = profiler.GetRoot();
@@ -1196,7 +1196,7 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
 #ifdef PROFILING
 //    Profiler *profiler = ProfilerSection::GetProfiler();
 
-    Profiler &profiler = framework_->GetProfiler();
+    Profiler &profiler = *framework_->GetProfiler();
     profiler.Lock();
 //    ProfilerNodeTree *node = profiler.Lock().get();
     ProfilerNodeTree *node = profiler.GetRoot();
@@ -1268,7 +1268,7 @@ bool ProfilingNodeLessThan(const ProfilerNode *a, const ProfilerNode *b)
 void TimeProfilerWindow::RefreshProfilingDataList()
 {
 #ifdef PROFILING
-    Profiler &profiler = framework_->GetProfiler();
+    Profiler &profiler = *framework_->GetProfiler();
     profiler.Lock();
 
     ProfilerNodeTree *root = profiler.GetRoot();

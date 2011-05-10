@@ -207,7 +207,6 @@ void KristalliProtocolModule::Update(f64 frametime)
     if (serverConnection && serverConnection->GetConnectionState() == ConnectionOK)
         reconnectAttempts = cReconnectAttempts;
     
-    RESETPROFILER;
 }
 
 void KristalliProtocolModule::Connect(const char *ip, unsigned short port, SocketTransportLayer transport)
@@ -380,15 +379,11 @@ UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
 
 } // ~KristalliProtocolModule namespace
 
-void SetProfiler(Profiler *profiler)
-{
-    ProfilerSection::SetProfiler(profiler);
-}
-
 extern "C"
 {
 __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new KristalliProtocol::KristalliProtocolModule();
     fw->GetModuleManager()->DeclareStaticModule(module);
 }

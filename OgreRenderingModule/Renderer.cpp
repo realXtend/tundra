@@ -18,7 +18,7 @@
 #include "CoreException.h"
 #include "Entity.h"
 #include "SceneAPI.h"
-
+#include "Profiler.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "UiGraphicsView.h"

@@ -10,7 +10,7 @@
 #include "SyncManager.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
-
+#include "Profiler.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
@@ -318,7 +318,6 @@ void TundraLogicModule::Update(f64 frametime)
             scene->UpdateAttributeInterpolations(frametime);
     }
     
-    RESETPROFILER;
 }
 
 void TundraLogicModule::LoadStartupScene()
@@ -577,17 +576,13 @@ bool TundraLogicModule::IsServer() const
 
 }
 
-void SetProfiler(Profiler *profiler)
-{
-    ProfilerSection::SetProfiler(profiler);
-}
-
 using namespace TundraLogic;
 
 extern "C"
 {
 __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new TundraLogic::TundraLogicModule();
     fw->GetModuleManager()->DeclareStaticModule(module);
 }

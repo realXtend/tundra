@@ -10,7 +10,6 @@
 #include "HighPerfClock.h"
 
 bool ProfilerBlock::supported_ = false;
-Profiler *ProfilerSection::profiler_ = 0;
 
 bool ProfilerBlock::QueryCapability()
 {
