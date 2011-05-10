@@ -5,12 +5,13 @@
 
 #include "IModule.h"
 #include "KristalliProtocolModuleApi.h"
-#include "ConsoleCommand.h"
 #include "UserConnection.h"
 
 #include "kNet.h"
 
 #include <QObject>
+
+struct ConsoleCommandResult;
 
 namespace KristalliProtocol
 {

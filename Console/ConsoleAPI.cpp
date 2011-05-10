@@ -17,7 +17,7 @@
 #include "InputAPI.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
-#include "RenderServiceInterface.h"
+//#include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
@@ -109,10 +109,11 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
 //START FROM CONSOLEMANAGER
     ///\todo Poco Regression.
 ///    framework_->AddLogChannel(consoleChannel.get());
-
+/*
     RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
     if (renderer)
         renderer->SubscribeLogListener(logListener);
+*/
 //        else
 //            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't subscribe to renderer log listener.");
 //END FROM CONSOLEMANAGER
@@ -134,9 +135,11 @@ void ConsoleAPI::Print_(const std::string &text)
 
 void ConsoleAPI::UnsubscribeLogListener()
 {
+/*
     RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
     if (renderer)
         renderer->UnsubscribeLogListener(logListener);
+*/
 //        else
 //            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't unsubscribe renderer log listener.");
 

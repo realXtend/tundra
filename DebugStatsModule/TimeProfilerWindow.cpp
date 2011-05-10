@@ -10,7 +10,7 @@
 #include "Framework.h"
 #include "Application.h"
 #include "SceneManager.h"
-#include "RenderServiceInterface.h"
+#include "OgreRenderingModule.h"
 
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
@@ -19,7 +19,7 @@
 #include "UiMainWindow.h"
 #include "SceneAPI.h"
 #include "Entity.h"
-
+#include "Renderer.h"
 #include <utility>
 
 #include <QVBoxLayout>
@@ -1408,8 +1408,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     if (!scene)
         return;
     
-    boost::shared_ptr<RenderServiceInterface> renderer = 
-        framework_->GetServiceManager()->GetService<RenderServiceInterface>(Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     assert(renderer);
     if (!renderer)
         return;

@@ -14,6 +14,7 @@
 #include "OgreMaterialAsset.h"
 #include "OgreConversionUtils.h"
 #include "Framework.h"
+#include "OgreRenderingModule.h"
 #include "LoggingFunctions.h"
 
 #include <OgreBillboardSet.h>
@@ -89,8 +90,7 @@ void EC_Billboard::CreateBillboard()
     if (!ViewEnabled())
         return;
     
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
 
@@ -134,8 +134,7 @@ void EC_Billboard::DestroyBillboard()
     }
     if (billboardSet_)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
-            <OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+        OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
         if (!renderer)
             return;
         

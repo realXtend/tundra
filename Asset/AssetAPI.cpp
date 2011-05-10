@@ -13,7 +13,7 @@
 #include "IAsset.h"
 #include "IAssetStorage.h"
 #include "IAssetProvider.h"
-#include "RenderServiceInterface.h"
+//#include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
 #include "CoreException.h"
 #include "IAssetTypeFactory.h"

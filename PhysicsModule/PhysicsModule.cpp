@@ -10,7 +10,7 @@
 #include "EC_RigidBody.h"
 #include "EC_VolumeTrigger.h"
 #include "OgreBulletCollisionsDebugLines.h"
-
+#include "OgreRenderingModule.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
 #include "EC_Terrain.h"
@@ -254,7 +254,7 @@ void PhysicsModule::SetDrawDebugGeometry(bool enable)
     if ((!framework_) || (framework_->IsHeadless()) || (!framework_->GetServiceManager()) || (drawDebugGeometry_ == enable))
         return;
 
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
     Ogre::SceneManager* scenemgr = renderer->GetSceneManager();

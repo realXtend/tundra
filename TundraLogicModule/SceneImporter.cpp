@@ -21,6 +21,7 @@
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
 #include "SceneAPI.h"
+#include "OgreRenderingModule.h"
 
 #include <Ogre.h>
 
@@ -275,7 +276,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
     {
         QByteArray mesh_bytes = mesh_in.readAll();
         mesh_in.close();
-        OgreRenderer::Renderer *renderer = scene_->GetFramework()->GetService<OgreRenderer::Renderer>();
+        OgreRenderer::RendererPtr renderer = scene_->GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
         if (!renderer)
         {
             LogError("Renderer does not exist");

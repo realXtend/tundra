@@ -12,6 +12,7 @@
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "OgreMaterialUtils.h"
+#include "OgreRenderingModule.h"
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
@@ -60,10 +61,10 @@ namespace Environment
 
         fogMode.SetMetadata(&metadata);
 
-        renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>();
-        if(!renderer_.expired())
+        renderer_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+        if (renderer_.lock())
         {
-            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
+            Ogre::SceneManager *scene_mgr = renderer_.lock()->GetSceneManager();
             node_ = scene_mgr->createSceneNode(renderer_.lock()->GetUniqueObjectName("EC_WaterPlane_Root"));
         }
 

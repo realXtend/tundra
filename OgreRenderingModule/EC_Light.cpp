@@ -13,6 +13,7 @@
 #include "XMLUtilities.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
+#include "OgreRenderingModule.h"
 
 #include <QDomDocument>
 #include <QList>
@@ -52,7 +53,7 @@ EC_Light::EC_Light(Framework *fw) :
     }
     type.SetMetadata(&typeAttrData);
 
-    boost::shared_ptr<Renderer> renderer = fw->GetServiceManager()->GetService<Renderer>(Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
 
@@ -67,8 +68,7 @@ EC_Light::~EC_Light()
     if (!GetFramework())
         return;
 
-    boost::shared_ptr<Renderer> renderer = GetFramework()->GetServiceManager()->GetService
-        <Renderer>(Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
 

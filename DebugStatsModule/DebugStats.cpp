@@ -58,7 +58,7 @@ void DebugStatsModule::PostInitialize()
 #endif
 
 #ifdef PROFILING
-    framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
+    framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindowCommand()));
 
 #endif
 
@@ -116,7 +116,12 @@ void DebugStatsModule::StartProfiling(bool visible)
         profilerWindow_->OnProfilerWindowTabChanged(-1); 
 }
 
-ConsoleCommandResult DebugStatsModule::ShowProfilingWindow()
+void DebugStatsModule::ShowProfilingWindow()
+{
+    ShowProfilingWindowCommand();
+}
+
+ConsoleCommandResult DebugStatsModule::ShowProfilingWindowCommand()
 {
     // If the window is already created, bring it to front.
     if (profilerWindow_)

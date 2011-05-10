@@ -16,6 +16,7 @@
 #include "OgreMaterialUtils.h"
 #include "Framework.h"
 #include "LoggingFunctions.h"
+#include "OgreRenderingModule.h"
 
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
@@ -42,7 +43,7 @@ EC_ChatBubble::EC_ChatBubble(Framework *fw) :
     default_z_pos_(1.9f)
 {
     // Get renderer service
-    renderer_ = fw->GetServiceManager()->GetService<OgreRenderer::Renderer>();
+    renderer_ = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
 
     // Pop timer init
     pop_timer_->setSingleShot(true);

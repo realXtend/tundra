@@ -19,7 +19,8 @@
 #include <QObject>
 #include <QString>
 #include <QVariantMap>
-#include "ConsoleCommand.h"
+
+struct ConsoleCommandResult;
 
 /// Enables Javascript execution and scripting by using QtScript.
 class JavascriptModule : public QObject, public IModule

@@ -22,7 +22,7 @@
 #include "TextureAsset.h"
 #include "AttributeMetadata.h"
 #include "Profiler.h"
-
+#include "OgreRenderingModule.h"
 #include <Ogre.h>
 #include <utility>
 
@@ -370,7 +370,7 @@ void EC_Terrain::DestroyPatch(int x, int y)
     if (!GetFramework())
         return;
 
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
+    OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
         return;
 
@@ -414,7 +414,7 @@ void EC_Terrain::Destroy()
     if (!GetFramework())
         return;
 
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
+    OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
         return;
 
@@ -1330,7 +1330,7 @@ void EC_Terrain::AttachTerrainRootNode()
     if (!rootNode)
         CreateRootNode();
 
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
 
@@ -1365,7 +1365,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
 
     EC_Terrain::Patch &patch = GetPatch(patchX, patchY);
 
-    Renderer *renderer = framework_->GetService<Renderer>();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
     if (!ViewEnabled())
@@ -1527,7 +1527,7 @@ void EC_Terrain::CreateRootNode()
     if (rootNode)
         return;
 
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
 
@@ -1545,7 +1545,7 @@ void EC_Terrain::CreateRootNode()
 
 void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
 {
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
 

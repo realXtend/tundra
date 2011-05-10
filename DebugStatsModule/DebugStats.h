@@ -18,9 +18,9 @@
 
 #include <WinSock2.h>
 #include <Windows.h>
-#include "ConsoleCommand.h"
 
 class EC_Placeable;
+struct ConsoleCommandResult;
 
 namespace DebugStats
 {
@@ -38,9 +38,12 @@ namespace DebugStats
         void PostInitialize();
         void Update(f64 frametime);
 
+        /// Creates and shows the profiling window.
+        ConsoleCommandResult ShowProfilingWindowCommand();
+
     public slots:
         /// Creates and shows the profiling window.
-        ConsoleCommandResult ShowProfilingWindow(/*const StringVector &params*/);
+        void ShowProfilingWindow();
 
     private slots:
         void AddProfilerWidgetToUi();

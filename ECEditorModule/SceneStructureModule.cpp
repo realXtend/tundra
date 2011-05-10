@@ -23,6 +23,8 @@
 #include "Entity.h"
 #include "ConsoleAPI.h"
 #include "InputAPI.h"
+#include "OgreRenderingModule.h"
+#include "Renderer.h"
 #include "RenderServiceInterface.h"
 #include "SceneImporter.h"
 #include "EC_Camera.h"
@@ -444,7 +446,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
             e->setAccepted(false);
             currentToolTipDestination = "<br><span style='font-weight:bold;'>Destination:</span> ";
             // Raycast to see if there is a submesh under the material drop
-            RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
+            OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
             if (renderer)
             {
                 RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -473,7 +475,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
 
     if (e->isAccepted() && currentToolTipDestination.isEmpty())
     {
-        RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
+        OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
         if (renderer)
         {
             RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -537,7 +539,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         // Handle other supported file types
         QList<Entity *> importedEntities;
 
-        RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
+        OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
         if (!renderer)
             return;
 
@@ -586,7 +588,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
 void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString &materialRef)
 {   
     // Raycast to see if there is a submesh under the material drop
-    RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (renderer)
     {
         RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());

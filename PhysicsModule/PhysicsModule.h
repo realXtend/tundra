@@ -5,7 +5,6 @@
 
 #include "PhysicsModuleApi.h"
 #include "IModule.h"
-#include "ConsoleCommand.h"
 #include "SceneFwd.h"
 
 #include <LinearMath/btIDebugDraw.h>
@@ -22,6 +21,7 @@ class btVector3;
 class btTriangleMesh;
 class QScriptEngine;
 class EC_RigidBody;
+struct ConsoleCommandResult;
 
 namespace Physics
 {

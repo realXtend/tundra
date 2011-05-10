@@ -12,7 +12,8 @@
 #include <QObject>
 #include <QList>
 #include <QMap>
-#include "ConsoleCommand.h"
+
+struct ConsoleCommandResult;
 
 namespace Avatar
 {

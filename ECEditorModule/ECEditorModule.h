@@ -8,7 +8,6 @@
 #include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
 #include "InputFwd.h"
-#include "ConsoleCommand.h"
 
 #include <QObject>
 #include <QPointer>
@@ -19,6 +18,8 @@ typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
 
 class ECEditorWindow;
 class EcXmlEditorWidget;
+
+struct ConsoleCommandResult;
 
 /// EC Editor module
 /** \defgroup ECEditorModuleClient ECEditorModule Client interface.

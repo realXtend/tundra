@@ -41,6 +41,10 @@ void SceneInteract::Initialize(Framework *framework)
 void SceneInteract::PostInitialize()
 {
     renderer_ = framework_->GetServiceManager()->GetService<RenderServiceInterface>(Service::ST_Renderer);
+
+    ///\todo Want to do this:
+    // renderer_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+    // Move SceneInteract into its own dll.
 }
 
 void SceneInteract::Update()

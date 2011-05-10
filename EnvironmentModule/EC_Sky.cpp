@@ -39,7 +39,7 @@ EC_Sky::EC_Sky(Framework *fw) :
     materialRef.SetMetadata(&materialRefMetadata);
 
     // Find out default textures.
-    renderer_ = fw->GetServiceManager()->GetService<OgreRenderer::Renderer>();
+    renderer_ = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
 
     StringVector names;
     Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());

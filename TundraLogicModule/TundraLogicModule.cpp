@@ -17,7 +17,7 @@
 #include "IAsset.h"
 #include "ConfigAPI.h"
 #include "IComponentFactory.h"
-
+#include "ConsoleCommand.h"
 #include "SceneManager.h"
 #include "ConsoleCommandUtils.h"
 #include "ModuleManager.h"

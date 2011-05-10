@@ -13,7 +13,7 @@
 #include "SceneManager.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
-
+#include "OgreRenderingModule.h"
 #include <Ogre.h>
 #include <OgreQuaternion.h>
 #include <OgreColourValue.h>
@@ -42,7 +42,7 @@ namespace Environment
        ,caelumSystem_(0)
 #endif
     {
-        renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>();
+        renderer_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
 #ifdef CAELUM
        caelumSystem_ =  framework_->GetModule<EnvironmentModule >()->GetCaelum();
 #endif 

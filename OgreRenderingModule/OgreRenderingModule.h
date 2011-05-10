@@ -4,11 +4,11 @@
 #define incl_OgreRenderingModule_OgreRenderingModule_h
 
 #include "IModule.h"
-#include "ConsoleCommand.h"
 
 #include "OgreModuleApi.h"
 
 class Framework;
+struct ConsoleCommandResult;
 
 namespace OgreRenderer
 {

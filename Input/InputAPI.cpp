@@ -5,11 +5,11 @@
 
 #include "ServiceManager.h"
 #include "Framework.h"
-#include "RenderServiceInterface.h"
+//#include "RenderServiceInterface.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
-
+#include "CoreDefines.h"
 #include "ConfigAPI.h"
 
 #include <boost/thread.hpp>

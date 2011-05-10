@@ -4,9 +4,10 @@
 #define incl_TundraLogicModule_TundraLogicModule_h
 
 #include "IModule.h"
-#include "ConsoleCommand.h"
 #include "TundraLogicModuleApi.h"
 #include "AssetFwd.h"
+
+struct ConsoleCommandResult;
 
 namespace kNet
 {
