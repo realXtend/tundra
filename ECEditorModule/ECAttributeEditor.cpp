@@ -1884,6 +1884,10 @@ void AssetReferenceListAttributeEditor::OpenEditor()
     if (currentIndex == -1)
         return;
 
+    // If list is empty, do not open (would cause assert in debug mode)
+    if (!assetRefList->Get().Size())
+        return;
+
     AssetReference assetRef = assetRefList->Get()[currentIndex];
     AssetPtr asset = fw->Asset()->GetAsset(assetRef.ref);
     if (asset)

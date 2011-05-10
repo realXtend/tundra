@@ -25,8 +25,7 @@ MultiEditButton::MultiEditButton(QWidget *parent) : QWidget(parent)
 }
 
 MultiEditPropertyFactory::MultiEditPropertyFactory(QObject *parent):
-    QtAbstractEditorFactory<MultiEditPropertyManager>(parent),
-    buttonFactory(0)
+    QtAbstractEditorFactory<MultiEditPropertyManager>(parent)
 {
 }
 
@@ -47,7 +46,6 @@ QWidget *MultiEditPropertyFactory::createEditor(MultiEditPropertyManager *manage
 {
     //QPushButton *multiEditButton = new QPushButton(parent);
     MultiEditButton *multiEditButton = new MultiEditButton(parent);
-    SAFE_DELETE(buttonFactory);
     buttonFactory = new EditorButtonFactory(parent);
     multiEditButton->layout()->addWidget(buttonFactory);
 

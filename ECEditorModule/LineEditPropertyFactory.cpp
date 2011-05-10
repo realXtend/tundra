@@ -35,8 +35,7 @@ LineEditWithButtons::~LineEditWithButtons()
 
 LineEditPropertyFactory::LineEditPropertyFactory(QObject *parent):
     QtAbstractEditorFactory<QtStringPropertyManager>(parent),
-    invoker_(new FunctionInvoker()),
-    buttonFactory(0)
+    invoker_(new FunctionInvoker())
 {
 }
 
@@ -86,7 +85,6 @@ void LineEditPropertyFactory::connectPropertyManager(QtStringPropertyManager *ma
 QWidget *LineEditPropertyFactory::createEditor(QtStringPropertyManager *manager, QtProperty *property, QWidget *parent)
 {
     LineEditWithButtons *editor = new LineEditWithButtons(manager->value(property), parent);
-    SAFE_DELETE(buttonFactory);
     buttonFactory = new EditorButtonFactory(parent);
     editor->layout()->addWidget(buttonFactory);
 /*

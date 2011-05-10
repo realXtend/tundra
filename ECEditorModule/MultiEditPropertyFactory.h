@@ -6,6 +6,7 @@
 #define QT_QTPROPERTYBROWSER_IMPORT
 
 #include <qtpropertybrowser.h>
+#include <QPointer>
 
 #include "MultiEditPropertyManager.h"
 
@@ -36,7 +37,7 @@ public:
     MultiEditPropertyFactory(QObject *parent = 0);
     ~MultiEditPropertyFactory();
 
-    EditorButtonFactory *buttonFactory;
+    QPointer<EditorButtonFactory> buttonFactory;
 
 protected:
     /// QtAbstractEditorFactory override.

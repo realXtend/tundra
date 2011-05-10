@@ -14,6 +14,7 @@
 #include <QtGroupPropertyManager>
 #include <QMap>
 #include <QList>
+#include <QPointer>
 
 class QLineEdit;
 class QPushButton;
@@ -57,7 +58,7 @@ public:
     /// Give all buttons that need to get created while creatEditor method is called.
     void AddButtons(AttributeMetadata::ButtonInfoList buttons);
 
-    EditorButtonFactory *buttonFactory;
+    QPointer<EditorButtonFactory> buttonFactory;
 
 public slots:
     void ComponentAdded(QtProperty *property, IComponent *comp);
