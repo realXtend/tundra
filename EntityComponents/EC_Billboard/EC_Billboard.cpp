@@ -13,6 +13,7 @@
 #include "Entity.h"
 #include "OgreMaterialAsset.h"
 #include "OgreConversionUtils.h"
+#include "Framework.h"
 #include "LoggingFunctions.h"
 
 #include <OgreBillboardSet.h>
@@ -25,8 +26,8 @@
 
 #include <QTimer>
 
-EC_Billboard::EC_Billboard(IModule *module) :
-    IComponent(module->GetFramework()),
+EC_Billboard::EC_Billboard(Framework *fw) :
+    IComponent(fw),
     billboardSet_(0),
     billboard_(0),
     attached_(false),

@@ -5,7 +5,6 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Declare_EC.h"
 #include "Quaternion.h"
 #include "AssetReference.h"
 #include "OgreModuleFwd.h"
@@ -52,9 +51,11 @@ Currently Caelum must be disabled before these features can be used.
     class EC_Sky : public IComponent
     {
         Q_OBJECT
-        DECLARE_EC(EC_Sky);
 
     public:
+        /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+        explicit EC_Sky(Framework *fw);
+
         virtual ~EC_Sky();
 
         /// Sky material reference
@@ -77,7 +78,9 @@ Currently Caelum must be disabled before these features can be used.
         DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirst);
         Q_PROPERTY(bool drawFirst READ getdrawFirst WRITE setdrawFirst);
 
+        COMPONENT_NAME("EC_Sky", 10)
     public slots:
+
         /// View sky assets.
         void View(const QString &attributeName);
         /// Called If some of the attributes has been changed.
@@ -90,11 +93,6 @@ Currently Caelum must be disabled before these features can be used.
         void OnTextureAssetLoaded(AssetPtr tex);
 
     private:
-        /// Constructor.
-        /** @param module Module where component belongs.
-        */
-        explicit EC_Sky(IModule *module);
-
         void CreateSky();
         void SetTextures();
 

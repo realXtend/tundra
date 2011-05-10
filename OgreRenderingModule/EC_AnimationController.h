@@ -6,7 +6,7 @@
 #include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
-#include "Declare_EC.h"
+#include "CoreStringUtils.h"
 
 #include <OgreAnimationState.h>
 
@@ -124,8 +124,7 @@ class OGRE_MODULE_API EC_AnimationController : public IComponent
 {
     Q_OBJECT
     
-    DECLARE_EC(EC_AnimationController);
-
+    COMPONENT_NAME("EC_AnimationController", 14)
 public slots:
 
     /// Gets mesh entity component
@@ -135,6 +134,10 @@ public slots:
     void SetMeshEntity(EC_Mesh *new_mesh);
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_AnimationController(Framework *fw);
+    ~EC_AnimationController();
+
     /// Animation state attribute. Is a "freedata" field to store the current animation state.
     /** It is up to a logic script to change & interpret this, AnimationController does not change or read it by itself.
      */
@@ -191,19 +194,8 @@ public:
         }
     };
 
-    class QStringLessThanNoCase
-    {
-    public:
-        bool operator()(const QString &a, const QString b) const
-        {
-            return QString::compare(a, b, Qt::CaseInsensitive) < 0;
-        }
-    };
-
     typedef std::map<QString, Animation, QStringLessThanNoCase> AnimationMap;
 
-    virtual ~EC_AnimationController();
-    
 public slots:
     /// Auto-associate mesh component if not yet set
     void AutoSetMesh();
@@ -342,10 +334,6 @@ signals:
     void AnimationCycled(const QString& animationName);
     
 private:
-    /// Constructor
-    /** \param module renderer module
-     */
-    EC_AnimationController(IModule* module);
     
     /// Gets Ogre entity from the mesh entity component and checks if it has changed; in that case resets internal state
     Ogre::Entity* GetEntity();

@@ -23,7 +23,7 @@
 #include "CompositionHandler.h"
 #include "EC_Name.h"
 #include "EC_Terrain.h"
-
+#include "IComponentFactory.h"
 #include "MemoryLeakCheck.h"
 
 namespace Environment
@@ -40,11 +40,11 @@ namespace Environment
 
     void EnvironmentModule::Load()
     {
-        DECLARE_MODULE_EC(EC_Terrain);
-        DECLARE_MODULE_EC(EC_WaterPlane);
-        DECLARE_MODULE_EC(EC_Fog);
-        DECLARE_MODULE_EC(EC_Sky);
-        DECLARE_MODULE_EC(EC_EnvironmentLight);
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Terrain>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_WaterPlane>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Fog>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sky>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_EnvironmentLight>));
 
         /// Create an asset type factory for Terrain assets. The terrain assets are handled as binary blobs - the EC_Terrain parses it when showing the asset.
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Terrain")));

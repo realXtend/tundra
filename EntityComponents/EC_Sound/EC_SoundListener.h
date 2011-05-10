@@ -11,7 +11,6 @@
 #define incl_EC_SoundListener_EC_SoundListener_h
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 
 class EC_Placeable;
 
@@ -53,15 +52,23 @@ Does not emit any actions.
 */
 class EC_SoundListener : public IComponent
 {
-    DECLARE_EC(EC_SoundListener);
     Q_OBJECT
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_SoundListener(Framework *fw);
+
     /// Destructor. Detaches placeable component from this entity.
     ~EC_SoundListener();
 
     Q_PROPERTY(bool active READ getactive WRITE setactive);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, active);
+
+    COMPONENT_NAME("EC_SoundListener", 7)
+
+private:
+    /// Parent entity's placeable component.
+    boost::weak_ptr<EC_Placeable> placeable_;
 
 private slots:
     /// Retrieves placeable component when parent entity is set.
@@ -70,16 +77,6 @@ private slots:
     /// Updates listeners position for sound service, is this listener is active. Called each frame.
     void Update();
 
-private:
-    /// Constructor.
-    /** @param module Declaring module.
-    */
-    explicit EC_SoundListener(IModule *module);
-
-    /// Parent entity's placeable component.
-    boost::weak_ptr<EC_Placeable> placeable_;
-
-private slots:
     /// Called when component changes.
     /** If this listener component is set active it iterates the scene and
         disables all the other sound listeners.

@@ -24,8 +24,8 @@
 
 namespace Environment
 {
-    EC_WaterPlane::EC_WaterPlane(IModule *module) :
-        IComponent(module->GetFramework()),
+    EC_WaterPlane::EC_WaterPlane(Framework *fw) :
+        IComponent(fw),
         xSize(this, "x-size", 5000),
         ySize(this, "y-size", 5000),
         depth(this, "Depth", 20),

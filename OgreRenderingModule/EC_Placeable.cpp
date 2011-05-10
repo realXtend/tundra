@@ -31,9 +31,8 @@ void SetShowBoundingBoxRecursive(Ogre::SceneNode* node, bool enable)
     }
 }
 
-EC_Placeable::EC_Placeable(IModule* module) :
-    IComponent(module->GetFramework()),
-    renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
+EC_Placeable::EC_Placeable(Framework *fw) :
+    IComponent(fw),
     scene_node_(0),
     attached_(false),
     transform(this, "Transform"),
@@ -41,6 +40,7 @@ EC_Placeable::EC_Placeable(IModule* module) :
     visible(this, "Visible", true),
     selectionLayer(this, "Selection layer", 1)
 {
+    renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
     // Enable network interpolation for the transform
     static AttributeMetadata transAttrData;
     static AttributeMetadata nonDesignableAttrData;

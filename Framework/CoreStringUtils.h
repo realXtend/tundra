@@ -22,6 +22,15 @@
 
 #include <QString>
 
+class QStringLessThanNoCase
+{
+public:
+    bool operator()(const QString &a, const QString b) const
+    {
+        return QString::compare(a, b, Qt::CaseInsensitive) < 0;
+    }
+};
+
 QString QStringfromWCharArray(const wchar_t *string, int size);
 int QStringtoWCharArray(QString qstr, wchar_t *array);
 std::wstring QStringToWString(const QString &qstr);

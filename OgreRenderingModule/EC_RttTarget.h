@@ -5,7 +5,6 @@
 
 #include "StableHeaders.h"
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "Core.h"
 #include "OgreModuleApi.h"
 
@@ -47,9 +46,12 @@ class OGRE_MODULE_API EC_RttTarget : public IComponent
 {
     Q_OBJECT
     
-    DECLARE_EC(EC_RttTarget);
-
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_RttTarget(Framework *fw);
+
+    virtual ~EC_RttTarget();
+
     Q_PROPERTY(QString targettexture READ gettargettexture WRITE settargettexture);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, targettexture);
 
@@ -59,9 +61,9 @@ public:
     Q_PROPERTY(int size_y READ getsize_y WRITE setsize_y);
     DEFINE_QPROPERTY_ATTRIBUTE(int, size_y);
 
-    virtual ~EC_RttTarget();
-
+    COMPONENT_NAME("EC_RttTarget", 21)
 public slots:
+
     void PrepareRtt();
     void SetAutoUpdated(bool val);
 
@@ -70,11 +72,6 @@ private slots:
     //void UpdateRtt();
 
 private:
-    /// constructor
-    /** \param module Ogre module
-     */
-    EC_RttTarget(IModule* module);
-
     /// Owner module of this component
     //OgreRenderer::OgreRenderingModule *owner_;
 

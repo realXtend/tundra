@@ -6,7 +6,6 @@
 #include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
-#include "Declare_EC.h"
 
 #include "Vector3D.h"
 
@@ -66,14 +65,16 @@ Does not emit any actions.
 class OGRE_MODULE_API EC_Camera : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_Camera);
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Camera(Framework *fw);
+
+    virtual ~EC_Camera();
+
     /// Camera up vector. Defines the yaw axis
     Q_PROPERTY(Vector3df upVector READ getupVector WRITE setupVector);
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, upVector);
-
-    virtual ~EC_Camera();
 
     /// sets placeable component
     /** set a null placeable to detach the camera, otherwise will attach
@@ -81,7 +82,9 @@ public:
      */
     void SetPlaceable(ComponentPtr placeable);
 
+    COMPONENT_NAME("EC_Camera", 15)
 public slots:
+
     /// automatically find the placeable and set it
     void AutoSetPlaceable();
     
@@ -147,10 +150,6 @@ private slots:
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
 
 private:
-    /// constructor
-    /** \param module renderer module
-     */
-    explicit EC_Camera(IModule* module);
     
     /// attaches camera to placeable
     void AttachCamera();

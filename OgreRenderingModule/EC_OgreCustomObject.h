@@ -6,7 +6,6 @@
 #include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
-#include "Declare_EC.h"
 
 #include "Vector3D.h"
 
@@ -48,8 +47,10 @@ class OGRE_MODULE_API EC_OgreCustomObject : public IComponent
 {
     Q_OBJECT
 
-    DECLARE_EC(EC_OgreCustomObject);
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_OgreCustomObject(Framework *fw);
+
     virtual ~EC_OgreCustomObject();
 
     /// gets placeable component
@@ -99,11 +100,9 @@ public:
     /// Returns the Ogre entity.
     Ogre::Entity *GetEntity() const { return entity_; }
 
+    COMPONENT_NAME("EC_OgreCustomObject", 19)
+
 private:
-    /// constructor
-    /** \param module renderer module
-     */
-    EC_OgreCustomObject(IModule* module);
     
     /// attaches entity to placeable
     void AttachEntity();

@@ -17,7 +17,6 @@
 #include "QtUtils.h"
 #include "LoggingFunctions.h"
 #include "SceneImporter.h"
-#include "ComponentManager.h"
 #include "ModuleManager.h"
 #include "ConfigAPI.h"
 #include "ECEditorWindow.h"
@@ -31,6 +30,7 @@
 #include "CoreTypes.h"
 #include "OgreConversionUtils.h"
 #include "AssetAPI.h"
+#include "SceneAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "UiAPI.h"
@@ -755,7 +755,7 @@ void SceneTreeWidget::NewComponent()
         return;
 
     AddComponentDialog *dialog = new AddComponentDialog(framework, sel.EntityIds(), this);
-    dialog->SetComponentList(framework->GetComponentManager()->GetAvailableComponentTypeNames());
+    dialog->SetComponentList(framework->Scene()->GetComponentTypes());
     connect(dialog, SIGNAL(finished(int)), SLOT(ComponentDialogFinished(int)));
     dialog->show();
 }
@@ -793,7 +793,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
             continue;
         }
 
-        comp = framework->GetComponentManager()->CreateComponent(dialog->GetTypeName(), dialog->GetName());
+        comp = framework->Scene()->CreateComponentByName(dialog->GetTypeName(), dialog->GetName());
         assert(comp);
         if (comp)
         {
@@ -878,7 +878,7 @@ void SceneTreeWidget::Paste()
                         if (entity->HasComponent(type, name))
                             name.append("_copy");
 
-                        ComponentPtr component = framework->GetComponentManager()->CreateComponent(type, name);
+                        ComponentPtr component = framework->Scene()->CreateComponentByName(type, name);
                         if (component)
                         {
                             entity->AddComponent(component);

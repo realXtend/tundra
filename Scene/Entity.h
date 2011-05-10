@@ -95,7 +95,7 @@ public slots:
     ComponentPtr GetOrCreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::Default);
     ComponentPtr GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
-    /// Creates a new component using the ComponentManager and attaches it to this entity. 
+    /// Creates a new component and attaches it to this entity. 
     /** \param type_name type of the component
         \param change Network replication mode, in case component has to be created
         \param syncEnabled Whether new component will have networksync enabled
@@ -117,7 +117,7 @@ public slots:
         component using a following code "entity.mesh.SetMesh("mesh id");"
 
         \param component The component to add to this entity. The component must be parentless, i.e.
-                      previously created using ComponentManager::CreateComponent.
+                      previously created using SceneAPI::CreateComponent.
         \param change Network replication mode */
     void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
 

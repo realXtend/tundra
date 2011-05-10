@@ -5,7 +5,6 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Declare_EC.h"
 
 namespace kNet
 {
@@ -74,11 +73,12 @@ Does not emit any actions.
 */
 class EC_DynamicComponent : public IComponent
 {
-    DECLARE_EC(EC_DynamicComponent);
     Q_OBJECT
 
 public:
-    /// Destructor.
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_DynamicComponent(Framework *fw);
+
     ~EC_DynamicComponent();
 
     /// IComponent override. This component has dynamic attribute structure.
@@ -111,7 +111,9 @@ public:
     /// IComponent override
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
+    COMPONENT_NAME("EC_DynamicComponent", 25)
 public slots:
+
     /// A factory method that constructs a new attribute of a given the type name.
     /** @param typeName Type name of the attribute.
         @param name Name of the attribute.
@@ -203,12 +205,6 @@ signals:
         @todo REMOVE
     */
     void AttributeRemoved(const QString &name);
-
-private:
-    /// Constructor.
-    /** @param module Declaring module
-    */
-    explicit EC_DynamicComponent(IModule *module);
 };
 
 #endif

@@ -3,7 +3,6 @@
 #ifndef incl_KristalliProtocolModule_KristalliProtocolModule_h
 #define incl_KristalliProtocolModule_KristalliProtocolModule_h
 
-#include "Foundation.h"
 #include "IModule.h"
 #include "KristalliProtocolModuleApi.h"
 #include "ConsoleCommand.h"

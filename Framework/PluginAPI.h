@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QObject>
+#include <Winsock2.h>
 #include <Windows.h> ///\todo Cross-platform -> <dlfcn.h>
 
 class Framework;

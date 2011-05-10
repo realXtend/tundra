@@ -595,7 +595,7 @@ void ECBrowser::PasteComponent()
             QString name = comp_elem.attribute("name");
             if (!entity_ptr->HasComponent(type, name))
             {
-                component = framework_->GetComponentManager()->CreateComponent(type, name);
+                component = framework_->Scene()->CreateComponentByName(type, name);
                 entity_ptr->AddComponent(component, AttributeChange::Default);
             }
             else
@@ -672,7 +672,7 @@ void ECBrowser::CreateAttribute()
     //! @todo Should this dialog be converted to modeless?
     bool ok = false;
     QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"),
-        framework_->GetComponentManager()->GetAttributeTypes(), 0, false, &ok);
+        framework_->Scene()->GetAttributeTypes(), 0, false, &ok);
     if (!ok)
         return;
     QString name = QInputDialog::getText(this, tr("Give attribute name"), tr("Name:"), QLineEdit::Normal, QString(), &ok);

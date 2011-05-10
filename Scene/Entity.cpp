@@ -6,11 +6,11 @@
 #include "Entity.h"
 #include "SceneManager.h"
 #include "EC_Name.h"
+#include "SceneAPI.h"
 
 #include "Framework.h"
 #include "IComponent.h"
 #include "CoreStringUtils.h"
-#include "ComponentManager.h"
 #include "LoggingFunctions.h"
 
 #include <QDomDocument>
@@ -163,7 +163,7 @@ ComponentPtr Entity::GetOrCreateComponent(uint type_hash, const QString &name, A
 
 ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
 {
-    ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentByName(type_name);
     if (!new_comp)
     {
         LogError("Failed to create a component of type \"" + type_name + "\" to " + ToString());
@@ -177,7 +177,7 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::
 
 ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
 {
-    ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentByName(type_name, name);
     if (!new_comp)
     {
         LogError("Failed to create a component of type \"" + type_name + "\" and name \"" + name + "\" to " + ToString());
@@ -191,7 +191,7 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &na
 
 ComponentPtr Entity::CreateComponent(uint type_hash, AttributeChange::Type change)
 {
-    ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash);
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(type_hash);
     if (!new_comp)
     {
         LogError("Failed to create a component of type hash " + QString::number(type_hash) + " to " + ToString());
@@ -204,7 +204,7 @@ ComponentPtr Entity::CreateComponent(uint type_hash, AttributeChange::Type chang
 
 ComponentPtr Entity::CreateComponent(uint type_hash, const QString &name, AttributeChange::Type change)
 {
-    ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash, name);
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(type_hash, name);
     if (!new_comp)
     {
         LogError("Failed to create a component of type hash " + QString::number(type_hash) + " and name \"" + name + "\" to " + ToString());

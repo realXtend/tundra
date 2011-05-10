@@ -5,6 +5,8 @@
 
 #include "SceneFwd.h"
 #include "SceneInteract.h"
+#include "CoreTypes.h"
+#include "CoreStringUtils.h"
 
 #include <QObject>
 #include <QString>
@@ -123,6 +125,42 @@ public slots:
     /// Returns the scene map for self reflection / introspection.
     const SceneMap &GetSceneMap() const;
 
+    /// Registers a new factory to create new components of type 'componentTypename' and id 'componentTypeid'.
+    void RegisterComponentFactory(ComponentFactoryPtr factory);
+
+public:
+    template<typename T>
+    boost::shared_ptr<T> CreateComponent(const QString &newComponentName = "")
+    {
+        return boost::dynamic_pointer_cast<T>(CreateComponentById(T::TypeIdStatic(), newComponentName));
+    }
+
+public slots:
+    /// Creates a new component instance by specifying the typename of the new component to create.
+    ComponentPtr CreateComponentByName(const QString &componentTypename, const QString &newComponentName = "");
+
+    /// Creates a new component instance by specifying the typeid of the new component to create.
+    ComponentPtr CreateComponentById(u32 componentTypeid, const QString &newComponentName = "");
+
+    /// Looks up the given type id and returns the type name string for that id.
+    QString GetComponentTypeName(u32 componentTypeid);
+
+    /// Looks up the given type name and returns the type id for that component type.
+    u32 GetComponentTypeId(const QString &componentTypename);
+
+    /// Creates a clone of the specified component. The new component will be detached, i.e. it has no parent entity.
+    ///\todo Implement this.
+//    ComponentPtr CloneComponent(const ComponentPtr &component, const QString &newComponentName);
+
+    /// Create new attribute for spesific component.
+    IAttribute *CreateAttribute(IComponent *owner, const QString &attributeTypename, const QString &newAttributeName);
+
+    /// Returns a list of all attribute typenames that can be used in the CreateAttribute function to create an attribute.
+    QStringList GetAttributeTypes() const;
+
+    /// Returns a list of all component typenames that can be used in the CreateComponentByName function to create a component.
+    QStringList GetComponentTypes() const;
+
 private:
     /// Constructor. Framework takes ownership of this object.
     /// \param framework Framework ptr.
@@ -145,6 +183,15 @@ private:
 
     /// Map of scenes.
     SceneMap scenes_;
+
+    typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
+    typedef std::map<QString, ComponentFactoryPtr, QStringLessThanNoCase> ComponentFactoryMap;
+    typedef std::map<u32, boost::weak_ptr<IComponentFactory> > ComponentFactoryWeakMap;
+    ComponentFactoryMap componentFactories;
+    ComponentFactoryWeakMap componentFactoriesByTypeid;
+
+    ComponentFactoryPtr GetFactory(const QString &typeName);
+    ComponentFactoryPtr GetFactory(u32 typeId);
 
     /// Current 'default' scene.
     /// \todo Delete this.

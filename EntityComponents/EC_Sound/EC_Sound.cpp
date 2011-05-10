@@ -20,8 +20,8 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_Sound::EC_Sound(IModule *module):
-    IComponent(module->GetFramework()),
+EC_Sound::EC_Sound(Framework *fw):
+    IComponent(fw),
     soundRef(this, "Sound ref"),
     soundInnerRadius(this, "Sound radius inner", 0.0f),
     soundOuterRadius(this, "Sound radius outer", 20.0f),

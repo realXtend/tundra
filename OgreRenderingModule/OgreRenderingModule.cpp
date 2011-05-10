@@ -28,6 +28,8 @@
 #include "ConsoleAPI.h"
 #include "ConsoleCommandUtils.h"
 #include "ConfigAPI.h"
+#include "SceneAPI.h"
+#include "IComponentFactory.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -45,15 +47,15 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::Load()
     {
-        DECLARE_MODULE_EC(EC_Placeable);
-        DECLARE_MODULE_EC(EC_Mesh);
-        DECLARE_MODULE_EC(EC_Light);
-        DECLARE_MODULE_EC(EC_OgreCustomObject);
-        DECLARE_MODULE_EC(EC_AnimationController);
-        DECLARE_MODULE_EC(EC_Camera);
-        DECLARE_MODULE_EC(EC_OgreCompositor);
-        DECLARE_MODULE_EC(EC_RttTarget);
-        DECLARE_MODULE_EC(EC_SelectionBox);
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Placeable>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Mesh>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Light>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_OgreCustomObject>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_AnimationController>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Camera>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_OgreCompositor>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_RttTarget>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SelectionBox>));
 
         // Create asset type factories for each asset OgreRenderingModule provides to the system.
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh")));

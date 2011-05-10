@@ -19,11 +19,9 @@ namespace Console
     struct CommandResult;
 }
 
-class ComponentManager;
 class ModuleManager;
 class ServiceManager;
 
-typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
 typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
 typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
 

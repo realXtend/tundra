@@ -10,7 +10,6 @@
 #define incl_EC_ChatBubble_EC_ChatBubble_h
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "Vector3D.h"
 
 #include <QStringList>
@@ -69,12 +68,10 @@ Does not emit any actions.
 class EC_ChatBubble : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_ChatBubble);
 
 private:
-    /// Constuctor.
-    /// @param module Owner module.
-    explicit EC_ChatBubble(IModule *module);
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_ChatBubble(Framework *fw);
 
 public:
     /// Destructor.
@@ -106,7 +103,9 @@ public:
     /// Clears the 3D subsystem resources for this object.
     void Destroy();
 
+    COMPONENT_NAME("EC_ChatBubble", 3)
 public slots:
+
     /// Adds new message to be shown on the chat bubble.
     /// @param msg Message to be shown.
     /// @note The time the message is shown is calculated from the message length.

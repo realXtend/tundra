@@ -10,7 +10,6 @@
 #define incl_EC_Billboard_EC_BillBoard_h
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "Vector3D.h"
 #include "AssetReference.h"
 #include "AssetRefListener.h"
@@ -77,12 +76,9 @@ class EC_Billboard : public IComponent
 {
     Q_OBJECT
 
-    DECLARE_EC(EC_Billboard);
-
 private:
-    /// Constructor.
-    /// @param module Module.
-    explicit EC_Billboard(IModule *module);
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Billboard(Framework *fw);
 
 public:
     /// Destructor.
@@ -116,7 +112,9 @@ public:
     Q_PROPERTY(float autoHideTime READ getautoHideTime WRITE setautoHideTime);
     DEFINE_QPROPERTY_ATTRIBUTE(float, autoHideTime);
     
+    COMPONENT_NAME("EC_Billboard", 2)
 public slots:
+
     /// Show billboard. If autoHideTime is positive, it will be autohidden after the time has passed
     void Show();
     

@@ -5,7 +5,6 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Declare_EC.h"
 #include "AssetReference.h"
 #include "AssetFwd.h"
 #include "AudioFwd.h"
@@ -72,10 +71,12 @@ Does not emit any actions.
 */
 class EC_Sound : public IComponent
 {
-    DECLARE_EC(EC_Sound);
     Q_OBJECT
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Sound(Framework *fw);
+
     ~EC_Sound();
 
     /// Sound asset reference.
@@ -106,7 +107,9 @@ public:
     Q_PROPERTY(bool spatial READ getspatial WRITE setspatial);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, spatial);
 
+    COMPONENT_NAME("EC_Sound", 6)
 public slots:
+
     /// Show the asset in asset viewer window.
     ///\todo implement
     void View(const QString &attributeName);
@@ -140,7 +143,6 @@ private slots:
     void PlaceableUpdated(IAttribute* attribute);
 
 private:
-    explicit EC_Sound(IModule *module);
     ComponentPtr FindPlaceable() const;
     SoundChannelPtr soundChannel;
 };

@@ -5,6 +5,7 @@
 
 #include <QDateTime>
 #if defined(_WINDOWS)
+#include <WinSock2.h>
 #include <Windows.h>
 #endif
 

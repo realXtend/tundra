@@ -5,6 +5,9 @@
 
 #include "SceneAPI.h"
 #include "SceneManager.h"
+#include "IComponentFactory.h"
+#include "IComponent.h"
+#include "AssetReference.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -121,4 +124,155 @@ void SceneAPI::RemoveScene(const QString &name)
 const SceneMap &SceneAPI::GetSceneMap() const
 {
     return scenes_;
+}
+
+void SceneAPI::RegisterComponentFactory(ComponentFactoryPtr factory)
+{
+    if (factory->TypeName().trimmed() != factory->TypeName() || factory->TypeName().isEmpty() || factory->TypeId() == 0)
+    {
+        LogError("Cannot add a new ComponentFactory for component typename \"" + factory->TypeName() + "\" and typeid " + QString::number(factory->TypeId()) + ". Invalid input!");
+        return;
+    }
+
+    ComponentFactoryMap::iterator existing = componentFactories.find(factory->TypeName());
+    ComponentFactoryWeakMap::iterator existing2 = componentFactoriesByTypeid.find(factory->TypeId());
+    if (existing != componentFactories.end() || (existing2 != componentFactoriesByTypeid.end() && existing2->second.lock()))
+    {
+        ComponentFactoryPtr existingFactory = existing->second ? existing->second : existing2->second.lock();
+        if (existingFactory)
+            LogError("Cannot add a new ComponentFactory for component typename \"" + factory->TypeName() + "\" and typeid " + QString::number(factory->TypeId()) + ". Conflicting type factory with typename " + existingFactory->TypeName() + " and typeid " + QString::number(existingFactory->TypeId()) + " already exists!");
+        else
+            LogError("Cannot add a new ComponentFactory for component typename \"" + factory->TypeName() + "\" and typeid " + QString::number(factory->TypeId()) + ". Conflicting type factory exists!");
+        return;
+    }
+
+    componentFactories[factory->TypeName()] = factory;
+    componentFactoriesByTypeid[factory->TypeId()] = factory;
+}
+
+/// Creates a new component instance by specifying the typename of the new component to create.
+ComponentPtr SceneAPI::CreateComponentByName(const QString &componentTypename, const QString &newComponentName)
+{
+    ComponentFactoryPtr factory = GetFactory(componentTypename);
+    if (!factory)
+    {
+        LogError("Cannot create component for type \"" + componentTypename + "\" - no factory exists!");
+        return ComponentPtr();
+    }
+    return factory->Create(newComponentName, framework_);
+}
+
+/// Creates a new component instance by specifying the typeid of the new component to create.
+ComponentPtr SceneAPI::CreateComponentById(u32 componentTypeid, const QString &newComponentName)
+{
+    ComponentFactoryPtr factory = GetFactory(componentTypeid);
+    if (!factory)
+    {
+        LogError("Cannot create component for typeid \"" + QString::number(componentTypeid) + "\" - no factory exists!");
+        return ComponentPtr();
+    }
+    return factory->Create(newComponentName, framework_);
+}
+
+/// Looks up the given type id and returns the type name string for that id.
+QString SceneAPI::GetComponentTypeName(u32 componentTypeid)
+{
+    ComponentFactoryPtr factory = GetFactory(componentTypeid);
+    if (factory)
+        return factory->TypeName();
+    else
+        return "";
+}
+
+/// Looks up the given type name and returns the type id for that component type.
+u32 SceneAPI::GetComponentTypeId(const QString &componentTypename)
+{
+    ComponentFactoryPtr factory = GetFactory(componentTypename);
+    if (factory)
+        return factory->TypeId();
+    else
+        return 0;
+}
+
+/// Creates a clone of the specified component. The new component will be detached, i.e. it has no parent entity.
+    ///\todo Implement this.
+/*
+ComponentPtr SceneAPI::CloneComponent(const ComponentPtr &component, const QString &newComponentName)
+{
+    ComponentFactoryPtr factory = GetFactory(component->TypeId());
+    if (!factory)
+        return ComponentPtr();
+
+    return factory->Clone(component.get(), newComponentName);
+}
+*/
+/// Create new attribute for spesific component.
+IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attributeTypename, const QString &newAttributeName)
+{
+    // The dynamically created attributes are deleted at the EC_DynamicComponent dtor.
+    IAttribute *attribute = 0;
+    if (attributeTypename == "string")
+        attribute = new Attribute<QString>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "int")
+        attribute = new Attribute<int>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "real")
+        attribute = new Attribute<float>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "color")
+        attribute = new Attribute<Color>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "vector3df")
+        attribute = new Attribute<Vector3df>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "bool")
+        attribute = new Attribute<bool>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "uint")
+        attribute = new Attribute<uint>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "quaternion")
+        attribute = new Attribute<Quaternion>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "assetreference")
+        attribute = new Attribute<AssetReference>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "assetreferencelist")
+        attribute = new Attribute<AssetReferenceList>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "qvariant")
+        attribute = new Attribute<QVariant>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "qvariantlist")
+        attribute = new Attribute<QVariantList >(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "transform")
+        attribute = new Attribute<Transform>(owner, newAttributeName.toStdString().c_str());
+    else
+        LogError("Cannot create attribute of type \"" + attributeTypename + "\"! This type is not known to SceneAPI::CreateAttribute!");
+    return attribute;
+}
+
+/// Returns a list of all attribute typenames that can be used in the CreateAttribute function to create an attribute.
+QStringList SceneAPI::GetAttributeTypes() const
+{
+    QStringList attrTypes;
+    attrTypes << "string" << "int" << "real" << "color" << "vector3df" << "bool" << "uint" << "quaternion" << "assetreference" << "assetreferencelist" << "qvariant" << "qvariantlist" << "transform";
+    return attrTypes;
+}
+
+/// Returns a list of all component typenames that can be used in the CreateComponentByName function to create a component.
+QStringList SceneAPI::GetComponentTypes() const
+{
+    QStringList componentTypes;
+    for(ComponentFactoryMap::const_iterator iter = componentFactories.begin(); iter != componentFactories.end(); ++iter)
+        componentTypes << iter->first;
+    return componentTypes;
+}
+
+ComponentFactoryPtr SceneAPI::GetFactory(const QString &typeName)
+{
+    ComponentFactoryMap::iterator factory = componentFactories.find(typeName);
+    if (factory == componentFactories.end())
+        return ComponentFactoryPtr();
+    else
+        return factory->second;
+}
+
+ComponentFactoryPtr SceneAPI::GetFactory(u32 typeId)
+{
+    ComponentFactoryWeakMap::iterator factory = componentFactoriesByTypeid.find(typeId);
+    if (factory == componentFactoriesByTypeid.end())
+        return ComponentFactoryPtr();
+    else
+        return factory->second.lock();
 }

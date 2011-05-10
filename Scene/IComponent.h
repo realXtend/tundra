@@ -23,6 +23,44 @@ class QDomElement;
 
 class Framework;
 
+/// Specifies the name of this component. This #define should be instantiated inside the public slots: section
+/// of the component.
+/// Warning: This #define alters the current visibility specifier in the class file.
+#define COMPONENT_NAME(componentName, componentTypeId)                                  \
+public:                                                                                 \
+    static const QString &TypeNameStatic()                                              \
+    {                                                                                   \
+        static const QString name(componentName);                                       \
+        return name;                                                                    \
+    }                                                                                   \
+    static const u32 TypeIdStatic()                                                     \
+    {                                                                                   \
+        return componentTypeId;                                                         \
+    }                                                                                   \
+public slots:                                                                           \
+    virtual const QString &TypeName() const                                             \
+    {                                                                                   \
+        return TypeNameStatic();                                                        \
+    }                                                                                   \
+    virtual const u32 TypeId() const                                                    \
+    {                                                                                   \
+        return componentTypeId;                                                         \
+    }                                                                                   \
+private: // Return the class visibility specifier to the strictest form so that the user most likely catches that this macro had to change the visibility.
+
+//Q_PROPERTY(type attribute READ get##attribute WRITE set##attribute)
+/// Exposes an existing 'Attribute<type> attribute' member as an automatically generated QProperty of name 'attribute'.
+#define EXPOSE_ATTRIBUTE_AS_QPROPERTY(type, attribute) \
+    type get##attribute() const { return (type)attribute.Get(); } \
+    void set##atribute(type value) { attribute.Set((type)value, AttributeChange::Default); }
+
+//Q_PROPERTY(type attribute READ get##attribute WRITE set##attribute)
+/// Defines a new 'Attribute<type> attribute' member as an automatically generated QProperty of name 'attribute'.
+#define DEFINE_QPROPERTY_ATTRIBUTE(type, attribute) \
+    Attribute<type > attribute; \
+    type get##attribute() const { return (type)attribute.Get(); } \
+    void set##attribute(type value) { attribute.Set((type)value, AttributeChange::Default); }
+
 /// IComponent is the base class for all user-created components. Inherit your own components from this class.
 /** Each Component has a compile-time specified type name that identifies the class-name of the Component.
     This differentiates different derived implementations of the IComponent class. Each implemented Component
@@ -64,6 +102,8 @@ public:
         The typename of a component never changes at runtime.
     */
     virtual const QString &TypeName() const = 0;
+
+    virtual const u32 TypeId() const = 0;
 
     /// Returns type name hash of the component
     uint TypeNameHash() const;

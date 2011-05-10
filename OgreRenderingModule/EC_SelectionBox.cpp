@@ -13,11 +13,11 @@ using namespace OgreRenderer;
 
 #include "MemoryLeakCheck.h"
 
-EC_SelectionBox::EC_SelectionBox(IModule* module) :
-    IComponent(module->GetFramework()),
-    renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
+EC_SelectionBox::EC_SelectionBox(Framework *fw) :
+    IComponent(fw),
     selectionBox_(0)
 {
+    renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     selectionBox_ = scene_mgr->createManualObject(renderer->GetUniqueObjectName("EC_Selected"));

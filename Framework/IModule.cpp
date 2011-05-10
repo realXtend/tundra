@@ -36,10 +36,6 @@ void IModule::InitializeInternal()
     assert(framework_ != 0);
     assert(state_ == MS_Loaded);
 
-    /// Register components
-    for(size_t n = 0; n < component_registrars_.size(); ++n)
-        component_registrars_[n]->Register(framework_, this);
-
     Initialize();
 }
 
@@ -52,9 +48,6 @@ void IModule::UninitializeInternal()
         // Initialization failed somehow, can't do proper uninit
         return;
     }
-
-    for(size_t n=0 ; n<component_registrars_.size() ; ++n)
-        component_registrars_[n]->Unregister(framework_);
 
     Uninitialize();
 

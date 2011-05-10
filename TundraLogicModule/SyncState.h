@@ -3,11 +3,11 @@
 #ifndef incl_TundraLogicModule_SyncState_h
 #define incl_TundraLogicModule_SyncState_h
 
-#include "Foundation.h"
 #include "IAttribute.h"
 #include "UserConnection.h"
 #include "Entity.h"
 #include "TundraLogicModule.h"
+#include "LoggingFunctions.h"
 
 #include <QString>
 

@@ -13,14 +13,14 @@
 
 using namespace OgreRenderer;
 
-EC_OgreCustomObject::EC_OgreCustomObject(IModule* module) :
-    IComponent(module->GetFramework()),
-    renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
+EC_OgreCustomObject::EC_OgreCustomObject(Framework *fw) :
+    IComponent(fw),
     entity_(0),
     attached_(false),
     cast_shadows_(false),
     draw_distance_(0.0f)
 {
+    renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
 }
 
 EC_OgreCustomObject::~EC_OgreCustomObject()

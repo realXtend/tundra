@@ -17,8 +17,8 @@
 
 using namespace OgreRenderer;
 
-EC_AnimationController::EC_AnimationController(IModule* module) :
-    IComponent(module->GetFramework()),
+EC_AnimationController::EC_AnimationController(Framework *fw) :
+    IComponent(fw),
     animationState(this, "Animation state", ""),
     mesh(0)
 {

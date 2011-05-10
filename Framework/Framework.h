@@ -79,9 +79,6 @@ public:
     /// Runs through a single frame of logic update and rendering.
     void ProcessOneFrame();
 
-    /// Returns component manager.
-    ComponentManagerPtr GetComponentManager() const;
-
     /// Returns module manager.
     ModuleManagerPtr GetModuleManager() const;
 
@@ -212,7 +209,6 @@ private:
     void RegisterConsoleCommands();
 
     ModuleManagerPtr module_manager_; ///< Module manager.
-    ComponentManagerPtr component_manager_; ///< Component manager.
     ServiceManagerPtr service_manager_; ///< Service manager.
     
     bool exit_signal_; ///< If true, exit application.

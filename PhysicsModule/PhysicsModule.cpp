@@ -23,6 +23,7 @@
 #include "Renderer.h"
 #include "ConsoleAPI.h"
 #include "ConsoleCommandUtils.h"
+#include "IComponentFactory.h"
 
 #include <btBulletDynamicsCommon.h>
 
@@ -81,8 +82,8 @@ PhysicsModule::~PhysicsModule()
 
 void PhysicsModule::Load()
 {
-    DECLARE_MODULE_EC(EC_RigidBody);
-    DECLARE_MODULE_EC(EC_VolumeTrigger);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_RigidBody>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_VolumeTrigger>));
 }
 
 void PhysicsModule::Initialize()

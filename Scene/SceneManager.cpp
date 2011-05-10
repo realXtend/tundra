@@ -13,7 +13,6 @@
 #include "AttributeMetadata.h"
 
 #include "Framework.h"
-#include "ComponentManager.h"
 #include "AssetAPI.h"
 #include "Profiler.h"
 #include "LoggingFunctions.h"
@@ -88,7 +87,7 @@ EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &componen
     EntityPtr entity = EntityPtr(new Entity(framework_, newentityid, this));
     for(size_t i=0 ; i<(size_t)components.size() ; ++i)
     {
-        ComponentPtr newComp = framework_->GetComponentManager()->CreateComponent(components[i]);
+        ComponentPtr newComp = framework_->Scene()->CreateComponentByName(components[i]);
         if (newComp)
         {
             if (!defaultNetworkSync)
@@ -695,11 +694,11 @@ QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numB
                         }
                     }
                     else
-                        LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                        LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"!");
                 }
                 catch(...)
                 {
-                    LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                    LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"!");
                 }
             }
 
@@ -876,14 +875,14 @@ SceneDesc SceneManager::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDe
                 // A bit of a hack to get the name from EC_Name.
                 if (entityDesc.name.isEmpty() && type_name == EC_Name::TypeNameStatic())
                 {
-                    ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+                    ComponentPtr comp = framework_->Scene()->CreateComponentByName(type_name, name);
                     EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
                     ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                     entityDesc.name = ecName->name.Get();
                 }
 
                 // Find asset references.
-                ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+                ComponentPtr comp = framework_->Scene()->CreateComponentByName(type_name, name);
                 if (!comp.get()) // Move to next element if component creation fails.
                 {
                     comp_elem = comp_elem.nextSiblingElement("component");
@@ -1051,11 +1050,11 @@ SceneDesc SceneManager::GetSceneDescFromBinary(QByteArray &data, SceneDesc &scen
             uint num_components = source.Read<u32>();
             for(uint i = 0; i < num_components; ++i)
             {
-                ComponentManagerPtr compMgr = framework_->GetComponentManager();
+                SceneAPI *sceneAPI = framework_->Scene();
 
                 ComponentDesc compDesc;
                 uint type_hash = source.Read<u32>();
-                compDesc.typeName = compMgr->GetComponentTypeName(type_hash);
+                compDesc.typeName = sceneAPI->GetComponentTypeName(type_hash);
                 compDesc.name = QString::fromStdString(source.ReadString());
                 compDesc.sync = source.Read<u8>() ? true : false;
                 uint data_size = source.Read<u32>();
@@ -1069,7 +1068,7 @@ SceneDesc SceneManager::GetSceneDescFromBinary(QByteArray &data, SceneDesc &scen
 
                 try
                 {
-                    ComponentPtr comp = compMgr->CreateComponent(type_hash, compDesc.name);
+                    ComponentPtr comp = sceneAPI->CreateComponentById(type_hash, compDesc.name);
                     if (comp)
                     {
                         if (data_size)

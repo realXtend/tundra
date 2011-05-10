@@ -15,17 +15,12 @@
 #pragma warning( disable : 4251 )
 #endif
 
-#include "IComponentRegistrar.h"
 #include "CoreTypes.h"
 #include "FrameworkFwd.h"
 #include "CoreModuleApi.h"
 
-/// this define can be used to make component declaration automatic when the parent module gets loaded / unloaded.
-#define DECLARE_MODULE_EC(component) \
-    { ComponentRegistrarPtr registrar = ComponentRegistrarPtr(new component::component##Registrar); \
-    DeclareComponent(registrar); } \
-
-/// Possible module states
+///\todo Delete this.
+/// Possible module states 
 /** @ingroup Module_group
 */
 enum ModuleState
@@ -56,7 +51,7 @@ public:
 
     /// Called when module is loaded into memory. Do not trust that framework can be used.
     /** Override in your own module. Do not call.
-        Components in the module should be declared here by using DECLARE_MODULE_EC(Component) macro, where
+        Components in the module should be registered here using the SceneApi component type factory registration functions.
         Component is the class of the component.
     */
     virtual void Load() {}
@@ -88,9 +83,6 @@ public:
         @param frametime elapsed time in seconds since last frame
     */
     virtual void Update(f64 frametime) {}
-
-    /// Declare a component the module defines. For internal use.
-    void DeclareComponent(const ComponentRegistrarPtr &registrar) { component_registrars_.push_back(registrar); }
 
     /// Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
     const std::string &Name() const { return name; }
@@ -137,9 +129,6 @@ private:
     /// Uninitialize the module. Called when module is removed from use. For internal use.
     /// Unregisters all declared components
     void UninitializeInternal();
-
-    /// Component registrars
-    RegistrarVector component_registrars_;
 
     /// name of the module
     const std::string name;

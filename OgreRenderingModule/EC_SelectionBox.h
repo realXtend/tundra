@@ -7,7 +7,6 @@
 #include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
-#include "Declare_EC.h"
 
 /// Ogre selection box component
 /**
@@ -40,13 +39,15 @@ class OGRE_MODULE_API EC_SelectionBox : public IComponent
 {
     Q_OBJECT
     
-    DECLARE_EC(EC_SelectionBox);
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_SelectionBox(Framework *fw);
     
-    /// Destructor.
     virtual ~EC_SelectionBox();
 
+    COMPONENT_NAME("EC_SelectionBox", 22)
 public slots:
+
     /// Set the selection box dimensions.
     /// \param view screen coordinates
     void SetBoundingBox(QRect &view);
@@ -58,10 +59,6 @@ public slots:
 
     
 private:
-    /// constructor
-    /// \param module renderer module
-    EC_SelectionBox(IModule* module);
-
     /// The object to draw selection box with
     Ogre::ManualObject *selectionBox_;
     

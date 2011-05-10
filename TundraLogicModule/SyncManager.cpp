@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "ComponentManager.h"
 #include "CoreStringUtils.h"
 #include "DebugOperatorNew.h"
 #include "KristalliProtocolModule.h"
@@ -791,7 +790,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
                 }
                 catch(...)
                 {
-                    ::LogError("Error while deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                    ::LogError("Error while deserializing component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"! (typeID: " + type_hash + ")");
                 }
                 
                 // Reflect changes back to syncstate
@@ -801,7 +800,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
             }
         }
         else
-            LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+            LogWarning("Could not create component with typeID " + framework_->Scene()->GetComponentTypeName(type_hash));
     }
  
     // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
@@ -909,7 +908,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
                 }
                 catch(...)
                 {
-                    ::LogError("Error while deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                    ::LogError("Error while deserializing component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"! (typeID: " + type_hash + ")");
                 }
                 
                 // Reflect changes back to syncstate
@@ -919,7 +918,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
             }
         }
         else
-            LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+            LogWarning("Could not create component with typeID " + framework_->Scene()->GetComponentTypeName(type_hash));
     }
     
     // Signal the component changes last
@@ -1028,13 +1027,13 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                     }
                     catch(...)
                     {
-                        ::LogError("Error while delta-deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                        ::LogError("Error while delta-deserializing component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"!");
                     }
                 }
             }
         }
         else
-            LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+            LogWarning("Could not create component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"!");
     }
     
     // Read the dynamic structured components. For now, they have to be DynamicComponents.
@@ -1093,7 +1092,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
             }
         }
         else
-            LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+            LogWarning("Could not create component \"" + framework_->Scene()->GetComponentTypeName(type_hash) + "\"!");
     }
     
     // Signal static components

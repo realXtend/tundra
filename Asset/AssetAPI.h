@@ -9,6 +9,7 @@
 #include <map>
 
 #include "CoreTypes.h"
+#include "CoreStringUtils.h"
 #include "AssetFwd.h"
 
 class QFileSystemWatcher;
@@ -82,15 +83,6 @@ public:
 
     /// Returns all the currently loaded assets which depend on the asset dependeeAssetRef.
     std::vector<AssetPtr> FindDependents(QString dependeeAssetRef);
-
-    class QStringLessThanNoCase
-    {
-    public:
-        bool operator()(const QString &a, const QString b) const
-        {
-            return QString::compare(a, b, Qt::CaseInsensitive) < 0;
-        }
-    };
 
     /// Specifies the different possible results for AssetAPI::ResolveLocalAssetPath.
     enum FileQueryResult
@@ -379,7 +371,7 @@ private slots:
 
 private:
     bool isHeadless_;
-    typedef std::map<QString, AssetTransferPtr, AssetAPI::QStringLessThanNoCase> AssetTransferMap;
+    typedef std::map<QString, AssetTransferPtr, QStringLessThanNoCase> AssetTransferMap;
 
     AssetTransferMap::iterator FindTransferIterator(QString assetRef);
     AssetTransferMap::iterator FindTransferIterator(IAssetTransfer *transfer);
@@ -387,7 +379,7 @@ private:
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;
 
-    typedef std::map<QString, AssetUploadTransferPtr, AssetAPI::QStringLessThanNoCase> AssetUploadTransferMap;
+    typedef std::map<QString, AssetUploadTransferPtr, QStringLessThanNoCase> AssetUploadTransferMap;
     /// Stores all the currently ongoing asset uploads, maps full assetRefs to the asset upload transfer structures.
     AssetUploadTransferMap currentUploadTransfers;
 
@@ -427,7 +419,7 @@ private:
         QString assetType;
         AssetTransferPtr transfer;
     };
-    typedef std::map<QString, PendingDownloadRequest, AssetAPI::QStringLessThanNoCase> PendingDownloadRequestMap;
+    typedef std::map<QString, PendingDownloadRequest, QStringLessThanNoCase> PendingDownloadRequestMap;
     PendingDownloadRequestMap pendingDownloadRequests;
 
     /// Stores all the already loaded assets in the system.

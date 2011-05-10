@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "EC_DynamicComponent.h"
 
+#include "SceneAPI.h"
 #include "IModule.h"
 #include "ModuleManager.h"
 #include "Entity.h"
@@ -53,8 +54,8 @@ bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
     return a.name_ < b.name_;
 }
 
-EC_DynamicComponent::EC_DynamicComponent(IModule *module):
-    IComponent(module->GetFramework())
+EC_DynamicComponent::EC_DynamicComponent(Framework *fw):
+    IComponent(fw)
 {
 }
 
@@ -173,7 +174,7 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     if(ContainsAttribute(name))
         return IComponent::GetAttribute(name);
 
-    IAttribute *attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
+    IAttribute *attribute = framework_->Scene()->CreateAttribute(this, typeName, name);
     if(!attribute)
     {
         LogError("Failed to create new attribute:" + name + " in dynamic component:" + Name());

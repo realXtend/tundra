@@ -11,8 +11,8 @@
 #include "Entity.h"
 #include "LoggingFunctions.h"
 
-EC_RttTarget::EC_RttTarget(IModule* module) :
-    IComponent(module->GetFramework()),
+EC_RttTarget::EC_RttTarget(Framework *fw) :
+    IComponent(fw),
     targettexture(this, "Target texture", "RttTex"),
     size_x(this, "Texture size x", 400),
     size_y(this, "Texture size y", 300)

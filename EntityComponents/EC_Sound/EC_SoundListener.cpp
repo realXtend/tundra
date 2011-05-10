@@ -17,17 +17,18 @@
 #include "AudioAPI.h"
 #include "SceneAPI.h"
 #include "FrameAPI.h"
+#include "Framework.h"
 #include "MemoryLeakCheck.h"
 
-EC_SoundListener::EC_SoundListener(IModule *module):
-    IComponent(module->GetFramework()),
+EC_SoundListener::EC_SoundListener(Framework *fw):
+    IComponent(fw),
     active(this, "active", false)
 {
     // By default, this component is NOT network-serialized
     SetNetworkSyncEnabled(false);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
-    connect(GetFramework()->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
+    connect(fw->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnActiveChanged()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }

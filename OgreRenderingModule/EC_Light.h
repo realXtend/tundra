@@ -5,7 +5,6 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Declare_EC.h"
 #include "Vector3D.h"
 #include "Color.h"
 
@@ -71,11 +70,15 @@ Does not emit any actions.
 */
 class EC_Light : public IComponent
 {
-    DECLARE_EC(EC_Light);
-    
     Q_OBJECT
+    COMPONENT_NAME("EC_Light", 16)
     
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Light(Framework *fw);
+
+    virtual ~EC_Light();
+
     /// light type enumeration
     enum Type
     {
@@ -83,10 +86,7 @@ public:
         LT_Spot,
         LT_Directional
     };
-    
-    /// Destructor.
-    ~EC_Light();
-    
+        
     /// Gets placeable component
     ComponentPtr GetPlaceable() const { return placeable_; }
     
@@ -143,16 +143,11 @@ public:
     /// Spotlight outer angle (degrees)
     Q_PROPERTY(float outerAngle READ getouterAngle WRITE setouterAngle)
     DEFINE_QPROPERTY_ATTRIBUTE(float, outerAngle);
-    
 
 private slots:
     void UpdateOgreLight();
     
 private:
-    /// Constuctor.
-    /** \param module Module.
-     */
-    explicit EC_Light(IModule *module);
     
     /// Attaches light to placeable
     void AttachLight();

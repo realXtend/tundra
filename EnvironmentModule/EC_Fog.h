@@ -4,7 +4,6 @@
 #define EC_FOG_H_
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "Color.h"
 
 namespace Ogre
@@ -44,9 +43,11 @@ whole scene. This component applies whenever the camera is outside of any water 
 class EC_Fog : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_Fog);
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Fog(Framework *fw);
+
     virtual ~EC_Fog() {}
 
     /// Fog start distance 
@@ -72,11 +73,7 @@ public:
     /// Returns fog color as Ogre colour value.
     Ogre::ColourValue GetColorAsOgreValue() const;
 
-private:
-    /// Constuctor.
-    /** @param module Module where component belongs.
-    **/
-    explicit EC_Fog(IModule *module);
+    COMPONENT_NAME("EC_Fog", 9)
 };
 
 }

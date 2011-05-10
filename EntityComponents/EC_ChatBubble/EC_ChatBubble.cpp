@@ -14,6 +14,7 @@
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
+#include "Framework.h"
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
@@ -28,8 +29,8 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_ChatBubble::EC_ChatBubble(IModule *module) :
-    IComponent(module->GetFramework()),
+EC_ChatBubble::EC_ChatBubble(Framework *fw) :
+    IComponent(fw),
     font_(QFont("Arial", 50)),
     bubbleColor_(QColor(48, 113, 255, 255)),
     textColor_(Qt::white),
@@ -41,7 +42,7 @@ EC_ChatBubble::EC_ChatBubble(IModule *module) :
     default_z_pos_(1.9f)
 {
     // Get renderer service
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
+    renderer_ = fw->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
     // Pop timer init
     pop_timer_->setSingleShot(true);

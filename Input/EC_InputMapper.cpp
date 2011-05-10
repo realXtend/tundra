@@ -8,6 +8,7 @@
 
 #include "DebugOperatorNew.h"
 #include "EC_InputMapper.h"
+#include "Framework.h"
 
 #include "IAttribute.h"
 #include "AttributeMetadata.h"
@@ -58,8 +59,8 @@ void EC_InputMapper::RemoveMapping(const QString &keySeq, int eventType)
         mappings_.erase(it);
 }
 
-EC_InputMapper::EC_InputMapper(IModule *module):
-    IComponent(module->GetFramework()),
+EC_InputMapper::EC_InputMapper(Framework *fw):
+    IComponent(fw),
     contextName(this, "Input context name", "EC_InputMapper"),
     contextPriority(this, "Input context priority", 90),
     takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", false),

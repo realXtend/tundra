@@ -10,7 +10,6 @@
 #include "Transform.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
-#include "Declare_EC.h"
 
 #include <QQuaternion>
 #include <QVector3D>
@@ -64,11 +63,13 @@ Note: do not use the properties (Position, Scale, Orientation) below. They are d
 */
 class OGRE_MODULE_API EC_Placeable : public IComponent
 {
-    DECLARE_EC(EC_Placeable);
-
     Q_OBJECT
     
 public:
+    explicit EC_Placeable(Framework *fw);
+
+    virtual ~EC_Placeable();
+
     /// position property
     /// @note This affects internally the transform attribute, but allows QVector3D access to it
     Q_PROPERTY(QVector3D position READ GetQPosition WRITE SetQPosition)
@@ -107,8 +108,6 @@ public:
     /// Specifies selection layer for raycasts
     Q_PROPERTY(int selectionLayer READ getselectionLayer WRITE setselectionLayer)
     DEFINE_QPROPERTY_ATTRIBUTE(int, selectionLayer);
-
-    virtual ~EC_Placeable();
         
     /// sets parent placeable
     /** set null placeable to attach to scene root (the default)
@@ -201,8 +200,9 @@ public:
     /// get node scale
     void SetQScale(QVector3D newscale);
 
-
+    COMPONENT_NAME("EC_Placeable", 20)
 public slots:
+
     /// LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
     void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
     
@@ -248,10 +248,6 @@ private slots:
 	void RegisterActions();
 
 private:
-    /// constructor
-    /** \param module renderer module
-     */
-    explicit EC_Placeable(IModule* module);
     
     /// attaches scenenode to parent
     void AttachNode();

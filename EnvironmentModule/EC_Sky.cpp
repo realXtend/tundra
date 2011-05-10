@@ -22,8 +22,8 @@ namespace Environment
 {
 
 /// \todo Use Asset API for fetching sky resources.
-EC_Sky::EC_Sky(IModule *module) :
-    IComponent(module->GetFramework()),
+EC_Sky::EC_Sky(Framework *fw) :
+    IComponent(fw),
     materialRef(this, "Material", AssetReference("RexSkyBox")), ///< \todo Add "ogre://" when AssetAPI can handle it.
     textureRefs(this, "Texture", AssetReferenceList("Texture")),
     orientation(this, "Orientation", Quaternion()),
@@ -39,7 +39,7 @@ EC_Sky::EC_Sky(IModule *module) :
     materialRef.SetMetadata(&materialRefMetadata);
 
     // Find out default textures.
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
+    renderer_ = fw->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
     StringVector names;
     Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());

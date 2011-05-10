@@ -12,6 +12,7 @@
 #include "NullAssetFactory.h"
 #include "AvatarDescAsset.h"
 #include "ConsoleAPI.h"
+#include "IComponentFactory.h"
 
 #include "EntityComponent/EC_Avatar.h"
 
@@ -29,7 +30,7 @@ namespace Avatar
 
     void AvatarModule::Load()
     {
-        DECLARE_MODULE_EC(EC_Avatar);
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Avatar>));
 
         ///\todo This doesn't need to be loaded in headless server mode.
         // Note: need to register in Initialize(), because in PostInitialize() AssetModule refreshes the local asset storages, and that 

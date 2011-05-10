@@ -5,7 +5,6 @@
 
 #include "EnvironmentModuleApi.h"
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "Vector3D.h"
 #include "Transform.h"
 #include "AssetReference.h"
@@ -70,8 +69,9 @@ class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
 {
     Q_OBJECT
 
-    DECLARE_EC(EC_Terrain);
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Terrain(Framework *fw);
     virtual ~EC_Terrain();
 
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
@@ -184,7 +184,9 @@ public:
 
     Vector3df CalculateNormal(int mapX, int mapY) const { return CalculateNormal( (int) mapX / cPatchSize, (int) mapY / cPatchSize, mapX % cPatchSize, mapY % cPatchSize); }
 
+    COMPONENT_NAME("EC_Terrain", 11)
 public slots:
+
     /// Returns true if the given patch exists, i.e. whether the given coordinates are within the current terrain patch dimensions.
     /// This function does not tell whether the data for the patch is actually loaded on the CPU or the GPU.
     bool PatchExists(int patchX, int patchY) const
@@ -392,7 +394,6 @@ private slots:
     void AttachTerrainRootNode();
 
 private:
-    explicit EC_Terrain(IModule* module);
 
     /// Creates the patch parent/root node if it does not exist.
     /** After this function returns, the 'root' member node will exist, unless Ogre rendering subsystem fails. */

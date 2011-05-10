@@ -16,12 +16,13 @@
 
 #include "LoggingFunctions.h"
 
-EC_VolumeTrigger::EC_VolumeTrigger(IModule* module) :
-    IComponent(module->GetFramework()),
+EC_VolumeTrigger::EC_VolumeTrigger(Framework *fw) :
+    IComponent(fw),
     byPivot(this, "By Pivot", false),
-    entities(this, "Entities"),
-    owner_(checked_static_cast<Physics::PhysicsModule*>(module))
+    entities(this, "Entities")
 {
+    owner_ = fw->GetModule<Physics::PhysicsModule>();
+
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }

@@ -65,8 +65,8 @@ void EC_Script::Unload(const QString &name)
     scriptInstance_->Unload();
 }
 
-EC_Script::EC_Script(IModule *module):
-    IComponent(module->GetFramework()),
+EC_Script::EC_Script(Framework *fw):
+    IComponent(fw),
     scriptRef(this, "Script ref"),
     type(this, "Type"),
     runOnLoad(this, "Run on load", false),

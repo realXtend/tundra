@@ -4,9 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "Framework.h"
-#include "Foundation.h"
 #include "ModuleManager.h"
-#include "ComponentManager.h"
 #include "ServiceManager.h"
 #include "RenderServiceInterface.h"
 #include "CoreException.h"
@@ -81,7 +79,6 @@ Framework::Framework(int argc, char** argv) :
 
         // Create managers
         module_manager_ = ModuleManagerPtr(new ModuleManager(this));
-        component_manager_ = ComponentManagerPtr(new ComponentManager(this));
         service_manager_ = ServiceManagerPtr(new ServiceManager());
 
         // Create AssetAPI.
@@ -116,7 +113,6 @@ Framework::Framework(int argc, char** argv) :
 Framework::~Framework()
 {
     service_manager_.reset();
-    component_manager_.reset();
     module_manager_.reset();
 
     // Delete the QObjects that don't have a parent.
@@ -437,11 +433,6 @@ Profiler &Framework::GetProfiler()
     return profiler_;
 }
 #endif
-
-ComponentManagerPtr Framework::GetComponentManager() const
-{
-    return component_manager_;
-}
 
 ModuleManagerPtr Framework::GetModuleManager() const
 {

@@ -10,9 +10,9 @@
 #define incl_Input_EC_InputMapper_h
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "InputFwd.h"
 #include "KeyEvent.h"
+#include "MouseEvent.h"
 
 #include <QMap>
 #include <QKeySequence>
@@ -73,11 +73,11 @@ given set of key and mouse sequences to Entity Actions on the entity the compone
 */
 class EC_InputMapper : public IComponent
 {
-    DECLARE_EC(EC_InputMapper);
     Q_OBJECT
 
 public:
-    /// Destructor.
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_InputMapper(Framework *fw);
     ~EC_InputMapper();
 
     /// This input mapper's input context priority.
@@ -127,7 +127,9 @@ public:
     
     typedef QMap<QPair<QKeySequence, KeyEvent::EventType>, ActionInvocation> Mappings_t;
 
+    COMPONENT_NAME("EC_InputMapper", 13)
 public slots:
+
     /// Register new key sequence - action mapping for this input mapper.
     /** @param keySeq Key sequence.
         @param action Name of the action. If you want to use parameters the string should look the following: 
@@ -155,11 +157,6 @@ public slots:
     InputContext *GetInputContext() const { return input_.get(); }
 
 private:
-    /// Constructor.
-    /** @param module Declaring module.
-    */
-    explicit EC_InputMapper(IModule *module);
-
     boost::shared_ptr<InputContext> input_; ///< Input context for this EC.
     Mappings_t mappings_; ///< List of registered key sequence - action mappings.
 

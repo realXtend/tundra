@@ -20,6 +20,7 @@
 #include "Renderer.h"
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
+#include "SceneAPI.h"
 
 #include <Ogre.h>
 
@@ -372,16 +373,15 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     //    meshleafname += std::string("/") + meshName;
 
     // Create attribute descriptions.
-    ComponentManagerPtr mgr = scene_->GetFramework()->GetComponentManager();
+    SceneAPI *sceneAPI = scene_->GetFramework()->Scene(); ///\todo Replace with scene_->SceneAPI();
 
     // Fill the mesh attributes
     AssetReferenceList materials;
     foreach(QString matName, materialNames)
         materials.Append(AssetReference(path + "/" + matName + ".material"));
 
-    // Mesh
-    ComponentPtr meshPtr = mgr->CreateComponent(EC_Mesh::TypeNameStatic());
-    EC_Mesh *mesh = checked_static_cast<EC_Mesh *>(meshPtr.get());
+    // Mesh  
+    boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>();
     if (mesh)
     {
         mesh->meshRef.Set(AssetReference(path + "/" + meshleafname), AttributeChange::Disconnected);
@@ -396,7 +396,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
         }
     }
 
-    ComponentPtr placeable = mgr->CreateComponent(EC_Placeable::TypeNameStatic());
+    boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>();
     if (placeable)
         foreach(IAttribute *a, placeable->GetAttributes())
         {
@@ -405,8 +405,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
         }
 
     // Name
-    ComponentPtr namePtr = mgr->CreateComponent(EC_Name::TypeNameStatic());
-    EC_Name *name = checked_static_cast<EC_Name *>(namePtr.get());
+    boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>();
     if (name)
     {
         name->name.Set(meshEntityName, AttributeChange::Disconnected);
@@ -423,6 +422,8 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     return sceneDesc;
 }
 
+///\todo Bad code duplication. Remove the SceneImporter::GetSceneDescForMesh(QUrl) function altogether to avoid excessive code copy-paste. Have SceneImporter::GetSceneDescForMesh(QString) do the job of both. -jj.
+///\todo Delete this function.
 SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
 {
     SceneDesc sceneDesc;
@@ -455,11 +456,10 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
     sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
     
     // Create attribute descriptions
-    ComponentManagerPtr mgr = scene_->GetFramework()->GetComponentManager();
+    SceneAPI *sceneAPI = scene_->GetFramework()->Scene();
 
     // Mesh
-    ComponentPtr meshPtr = mgr->CreateComponent(EC_Mesh::TypeNameStatic());
-    EC_Mesh *mesh = checked_static_cast<EC_Mesh *>(meshPtr.get());
+    boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>();
     if (mesh)
     {
         mesh->meshRef.Set(AssetReference(meshUrl.toString()), AttributeChange::Disconnected);
@@ -471,7 +471,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
     }
 
     // Placeable
-    ComponentPtr placeable = mgr->CreateComponent(EC_Placeable::TypeNameStatic());
+    boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>();
     if (placeable)
     {
         foreach(IAttribute *a, placeable->GetAttributes())
@@ -482,8 +482,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
     }
 
     // Name
-    ComponentPtr namePtr = mgr->CreateComponent(EC_Name::TypeNameStatic());
-    EC_Name *name = checked_static_cast<EC_Name *>(namePtr.get());
+    boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>();
     if (name)
     {
         name->name.Set(meshEntityName, AttributeChange::Disconnected);
@@ -602,7 +601,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
             //AssetAPI::ResolveLocalAssetPath();
 
             /// Create dummy placeable desc.
-            ComponentPtr placeable = scene_->GetFramework()->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic());
+            ComponentPtr placeable = scene_->GetFramework()->Scene()->CreateComponent<EC_Placeable>();
             if (placeable)
             {
                 ComponentDesc placeableDesc;

@@ -3,7 +3,6 @@
 #ifndef incl_KristalliProtocolModule_UserConnection_h
 #define incl_KristalliProtocolModule_UserConnection_h
 
-#include "Foundation.h"
 #include "KristalliProtocolModuleApi.h"
 #include "kNet.h"
 

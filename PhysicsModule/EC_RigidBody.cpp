@@ -31,8 +31,8 @@ static const float cForceThreshold = 0.0005f;
 static const float cImpulseThreshold = 0.0005f;
 static const float cTorqueThreshold = 0.0005f;
 
-EC_RigidBody::EC_RigidBody(IModule* module) :
-    IComponent(module->GetFramework()),
+EC_RigidBody::EC_RigidBody(Framework *fw) :
+    IComponent(fw),
     mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
     size(this, "Size", Vector3df(1,1,1)),
@@ -52,9 +52,9 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     shape_(0),
     heightField_(0),
     disconnected_(false),
-    owner_(checked_static_cast<PhysicsModule*>(module)),
     cachedShapeType_(-1)
 {
+    owner_ = fw->GetModule<PhysicsModule>();
     static AttributeMetadata shapemetadata;
     static bool metadataInitialized = false;
     if(!metadataInitialized)

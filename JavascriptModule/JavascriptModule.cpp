@@ -28,6 +28,7 @@
 #include "PluginAPI.h"
 #include "ConsoleAPI.h"
 #include "ConsoleCommandUtils.h"
+#include "IComponentFactory.h"
 
 #include "ScriptAsset.h"
 
@@ -51,7 +52,7 @@ JavascriptModule::~JavascriptModule()
 
 void JavascriptModule::Load()
 {
-    DECLARE_MODULE_EC(EC_Script);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Script>));
     framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory));
 }
 

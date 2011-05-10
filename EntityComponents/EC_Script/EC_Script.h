@@ -4,7 +4,6 @@
 #define incl_EC_Script_EC_Script_h
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "AssetReference.h"
 #include "AssetFwd.h"
 
@@ -53,10 +52,11 @@ Does not emit any actions.
 class EC_Script: public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_Script)
 
 public:
-    /// Destructor.
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Script(Framework *fw);
+
     ~EC_Script();
 
     /// Type of the script as string (js/py)
@@ -81,7 +81,9 @@ public:
     /// Returns the current script instance.
     IScriptInstance *GetScriptInstance() const { return scriptInstance_; }
 
+    COMPONENT_NAME("EC_Script", 5)
 public slots:
+
     /// Runs the script instance.
     /** @param name Name of the script, optional. The script is ran only if the script name matches.
     */
@@ -110,11 +112,6 @@ private slots:
     void RegisterActions();
 
 private:
-    /// Constuctor.
-    /** @param module Declaring module.
-    */
-    explicit EC_Script(IModule *module);
-
     /// Handles the downloading of script assets.
     boost::shared_ptr<AssetRefListener> scriptAsset;
 

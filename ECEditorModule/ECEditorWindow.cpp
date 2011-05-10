@@ -22,7 +22,6 @@
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "EC_Name.h"
-#include "ComponentManager.h"
 #include "EC_Placeable.h"
 #include "InputAPI.h"
 #include "LoggingFunctions.h"
@@ -211,7 +210,7 @@ void ECEditorWindow::CreateComponent()
     if (ids.size())
     {
         component_dialog_ = new AddComponentDialog(framework_, ids, NULL);
-        component_dialog_->SetComponentList(framework_->GetComponentManager()->GetAvailableComponentTypeNames());
+        component_dialog_->SetComponentList(framework_->Scene()->GetComponentTypes());
         connect(component_dialog_, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinished(int)));
         component_dialog_->show();
     }
@@ -810,7 +809,7 @@ void ECEditorWindow::ComponentDialogFinished(int result)
             continue;
         }
 
-        comp = framework_->GetComponentManager()->CreateComponent(dialog->GetTypeName(), dialog->GetName());
+        comp = framework_->Scene()->CreateComponentByName(dialog->GetTypeName(), dialog->GetName());
         assert(comp);
         if (comp)
         {

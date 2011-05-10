@@ -12,17 +12,17 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_OgreCompositor::EC_OgreCompositor(IModule* module) :
-    IComponent(module->GetFramework()),
+EC_OgreCompositor::EC_OgreCompositor(Framework *fw) :
+    IComponent(fw),
     enabled(this, "Enabled", true),
     compositorref(this, "Compositor ref", ""),
     priority(this, "Priority", -1),
     parameters(this, "Parameters"),
-    owner_(checked_static_cast<OgreRenderer::OgreRenderingModule*>(module)),
     handler_(owner_->GetRenderer()->GetCompositionHandler())
 {
     assert (handler_ && "No CompositionHandler.");
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+    owner_ = fw->GetModule<OgreRenderer::OgreRenderingModule>();
 }
 
 EC_OgreCompositor::~EC_OgreCompositor()

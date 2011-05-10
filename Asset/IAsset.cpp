@@ -1,7 +1,6 @@
 #include "DebugOperatorNew.h"
 #include <QList>
 #include <boost/thread.hpp>
-#include "MemoryLeakCheck.h"
 #include <QByteArray>
 #include <set>
 
@@ -9,6 +8,7 @@
 
 #include "IAsset.h"
 #include "AssetAPI.h"
+#include "MemoryLeakCheck.h"
 
 IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
 :assetAPI(owner), type(type_), name(name_)

@@ -4,22 +4,60 @@
 #define incl_Scene_IComponentFactory_h
 
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <QString>
+#include "CoreTypes.h"
+#include "LoggingFunctions.h"
 
 class IComponent;
 
-/// A class implements this interface to provide factory functionality for generating one type of entity-components.
-/** Each EC has its own factory for creating the component.
-
-    \note When creating new entity components, it is not necessary to use this class if DECLARE_EC -macro is used.
-*/
 class IComponentFactory
 {
 public:
     IComponentFactory() {}
     virtual ~IComponentFactory() {}
 
-    virtual boost::shared_ptr<IComponent> operator()() = 0;
-    virtual boost::shared_ptr<IComponent> operator()(const boost::shared_ptr<IComponent> &) = 0;
+    virtual QString TypeName() = 0;
+    virtual u32 TypeId() = 0;
+    virtual boost::shared_ptr<IComponent> Create(const QString &newComponentName, Framework *fw) = 0;
+//    virtual boost::shared_ptr<IComponent> Clone(IComponent *existingComponent, const QString &newComponentName) = 0;
+};
+
+template<typename T>
+class GenericComponentFactory : public IComponentFactory
+{
+public:
+    QString TypeName() { return T::TypeNameStatic(); }
+    u32 TypeId() { return T::TypeIdStatic(); }
+
+    boost::shared_ptr<IComponent> Create(const QString &newComponentName, Framework *fw)
+    {
+        boost::shared_ptr<IComponent> component = boost::make_shared<T>(fw);
+        component->SetName(newComponentName);
+        return component;
+    }
+/*     ///\todo Implement this.
+
+    boost::shared_ptr<IComponent> Clone(IComponent *existingComponent, const QString &newComponentName)
+    {
+        if (!existingComponent)
+        {
+            LogError("Cannot clone component from a null pointer!");
+            return boost::shared_ptr<IComponent>();
+        }
+
+        T *existing = dynamic_cast<T*>(existingComponent);
+        if (!existing)
+        {
+            LogError("Cannot clone component of type \"" + TypeName() + " from a component of type \"" + existingComponent->TypeName() + "\"!");
+            return boost::shared_ptr<IComponent>();
+        }
+//        boost::shared_ptr<T> component = boost::make_shared<T>(*existingComponent);
+        boost::shared_ptr<T> component = boost::shared_ptr<T>(new T(*existingComponent));
+        component->SetName(newComponentName);
+        return component;
+    }
+    */
 };
 
 #endif

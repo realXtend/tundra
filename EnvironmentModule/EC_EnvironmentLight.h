@@ -4,7 +4,6 @@
 #define EC_ENVIRONMENTLIGHT_H_
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "CoreTypes.h"
 #include "Vector3D.h"
 #include "OgreModuleFwd.h"
@@ -63,9 +62,11 @@ to all users.
 class EC_EnvironmentLight : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_EnvironmentLight);
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_EnvironmentLight(Framework *fw);
+
     virtual ~EC_EnvironmentLight();
 
     /// Defines sun color.
@@ -99,9 +100,10 @@ public:
      /// Defines that is caelum to used to define sun color & direction vector and ambient light.
     DEFINE_QPROPERTY_ATTRIBUTE(bool, useCaelumAttr);
     Q_PROPERTY(bool useCaelumAttr READ getuseCaelumAttr WRITE setuseCaelumAttr); 
-
    
-public slots: 
+    COMPONENT_NAME("EC_EnvironmentLight", 8)
+public slots:
+
     /// Called If some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
 
@@ -121,12 +123,6 @@ public slots:
     void UpdateTime();
 
 private:
-    /** 
-     * Constuctor.
-     * @param module Module where component belongs.
-     **/
-    explicit EC_EnvironmentLight(IModule *module);
-    
     void CreateOgreLight();
 
     /**

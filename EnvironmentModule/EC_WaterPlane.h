@@ -4,7 +4,6 @@
 #define incl_EnvironmentModule_EC_WaterPlane_h
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "CoreTypes.h"
 #include "Color.h"
 #include "Quaternion.h"
@@ -81,9 +80,12 @@ in the world space where this water plane is by default is placed at. Note compo
 class EC_WaterPlane : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_WaterPlane);
+    COMPONENT_NAME("EC_WaterPlane", 12)
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_WaterPlane(Framework *fw);
+
     virtual ~EC_WaterPlane();
 
     /// Water plane x-size
@@ -199,11 +201,6 @@ public slots:
     void ComponentAdded(IComponent* component, AttributeChange::Type type);
 
 private:
-    /// Constructor.
-    /** @param module Module where component belongs.
-    */
-    explicit EC_WaterPlane(IModule *module);
-
     /// Finds out that is EC_Placeable component connected to same entity where water plane component is placed. 
     /** @returns component pointer to EC_Placeable component.
     */

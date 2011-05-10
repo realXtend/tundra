@@ -24,15 +24,14 @@
 
 using namespace OgreRenderer;
 
-EC_Mesh::EC_Mesh(IModule* module) :
-    IComponent(module->GetFramework()),
+EC_Mesh::EC_Mesh(Framework *fw) :
+    IComponent(fw),
     nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(0,0,0),Vector3df(1,1,1))),
     meshRef(this, "Mesh ref"),
     skeletonRef(this, "Skeleton ref"),
     meshMaterial(this, "Mesh materials", AssetReferenceList("OgreMaterial")),
     drawDistance(this, "Draw distance", 0.0f),
     castShadows(this, "Cast shadows", false),
-    renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     entity_(0),
     bone_tagpoint_(0),
     bone_parent_mesh_(0),
@@ -40,6 +39,8 @@ EC_Mesh::EC_Mesh(IModule* module) :
     attached_(false),
     attached_to_bone_(false)
 {
+    renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
+
     static AttributeMetadata drawDistanceData("", "0", "10000");
     drawDistance.SetMetadata(&drawDistanceData);
 

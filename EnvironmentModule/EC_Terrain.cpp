@@ -38,8 +38,8 @@ typedef boost::shared_ptr<Renderer> RendererPtr;
 namespace Environment
 {
 
-EC_Terrain::EC_Terrain(IModule* module) :
-    IComponent(module->GetFramework()),
+EC_Terrain::EC_Terrain(Framework *fw) :
+    IComponent(fw),
     nodeTransformation(this, "Transform"),
     xPatches(this, "Grid Width"),
     yPatches(this, "Grid Height"),

@@ -15,13 +15,14 @@
 
 using namespace OgreRenderer;
 
-EC_Camera::EC_Camera(IModule* module) :
-    IComponent(module->GetFramework()),
-    renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
+EC_Camera::EC_Camera(Framework *fw) :
+    IComponent(fw),
     attached_(false),
     camera_(0),
     upVector(this, "Up vector", Vector3df::UNIT_Y)
 {
+    renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
+
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
 }
 

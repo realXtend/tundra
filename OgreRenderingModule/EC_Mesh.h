@@ -10,7 +10,6 @@
 #include "Quaternion.h"
 #include "Transform.h"
 #include "AssetReference.h"
-#include "Declare_EC.h"
 #include "AssetRefListener.h"
 
 #include <QVariant>
@@ -141,9 +140,13 @@ Does not emit any actions.
 class OGRE_MODULE_API EC_Mesh : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_Mesh);
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Mesh(Framework *fw);
+
+    virtual ~EC_Mesh();
+
     /// Transformation attribute is used to do some position, rotation and scale adjustments.
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
@@ -168,9 +171,9 @@ public:
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
-    virtual ~EC_Mesh();
-
+    COMPONENT_NAME("EC_Mesh", 17)
 public slots:
+
     /// open mesh preview window and display the mesh asset.
     void View(const QString &attributeName);
 
@@ -406,11 +409,7 @@ private slots:
     void OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason);
 
 private:
-    /// constructor
-    /** \param module renderer module
-     */
-    EC_Mesh(IModule* module);
-    
+   
     /// prepares a mesh for creating an entity. some safeguards are needed because of Ogre "features"
     /** \param mesh_name Mesh to prepare
         \param clone Whether should return an uniquely named clone of the mesh, rather than the original

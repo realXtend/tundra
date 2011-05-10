@@ -27,8 +27,8 @@
 
 namespace Environment
 {
-    EC_EnvironmentLight::EC_EnvironmentLight(IModule *module)
-        : IComponent(module->GetFramework()),
+    EC_EnvironmentLight::EC_EnvironmentLight(Framework *fw)
+        : IComponent(fw),
        sunColorAttr(this, "Sun color", Color(0.639f,0.639f,0.639f)),
        ambientColorAttr(this, "Ambient color", Color(0.364f, 0.364f, 0.364f, 1)),
        sunDiffuseColorAttr(this, "Sun diffuse color", Color(0.93f, 0.93f, 0.93f, 1)),

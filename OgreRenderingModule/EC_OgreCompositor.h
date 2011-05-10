@@ -4,7 +4,6 @@
 #define incl_OgreRenderer_EC_OgreCompositor_h
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "Core.h"
 #include "OgreModuleApi.h"
 
@@ -55,8 +54,12 @@ class OGRE_MODULE_API EC_OgreCompositor : public IComponent
 {
     Q_OBJECT
     
-    DECLARE_EC(EC_OgreCompositor);
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_OgreCompositor(Framework *fw);
+
+    virtual ~EC_OgreCompositor();
+
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
 
@@ -69,9 +72,9 @@ public:
     Q_PROPERTY(QVariantList parameters READ getparameters WRITE setparameters);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, parameters);
 
-    virtual ~EC_OgreCompositor();
-
+    COMPONENT_NAME("EC_OgreCompositor", 18)
 public slots:
+
     /// Returns list of available compositor names.
     QStringList AvailableCompositors() const;
 
@@ -84,11 +87,6 @@ private:
 
     /// Updates compositor shader parameters
     void UpdateCompositorParams(const QString &compositor);
-
-    /// constructor
-    /** \param module Ogre module
-     */
-    EC_OgreCompositor(IModule* module);
 
     /// Owner module of this component
     OgreRenderer::OgreRenderingModule *owner_;

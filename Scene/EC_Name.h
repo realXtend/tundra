@@ -8,7 +8,6 @@
 
 #include "IComponent.h"
 #include "IModule.h"
-#include "Declare_EC.h"
 
 /// Provides network-synchronizable means of identification for entities in addition to the plain ID number
 /**
@@ -35,11 +34,17 @@ Does not emit any actions.
 */
 class EC_Name : public IComponent
 {
-    DECLARE_EC(EC_Name);
     Q_OBJECT
 
 public:
-    /// Desctructor.
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Name(Framework *fw) :
+        IComponent(fw),
+        name(this, "name", ""),
+        description(this, "description", ""),
+        userDefined(this, "user-defined", false)
+    {}
+
     ~EC_Name() {}
 
     /// Name
@@ -54,12 +59,5 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, userDefined);
     Q_PROPERTY(bool userDefined READ getuserDefined WRITE setuserDefined); 
 
-private:
-    /// Constructor. Sets name and description to empty strings.
-    EC_Name(IModule *module) :
-        IComponent(module->GetFramework()),
-        name(this, "name", ""),
-        description(this, "description", ""),
-        userDefined(this, "user-defined", false)
-    {}
+    COMPONENT_NAME("EC_Name", 26)
 };

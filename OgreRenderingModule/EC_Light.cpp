@@ -25,8 +25,8 @@
 
 using namespace OgreRenderer;
 
-EC_Light::EC_Light(IModule *module) :
-    IComponent(module->GetFramework()),
+EC_Light::EC_Light(Framework *fw) :
+    IComponent(fw),
     light_(0),
     attached_(false),
     type(this, "light type", LT_Point),
@@ -52,8 +52,7 @@ EC_Light::EC_Light(IModule *module) :
     }
     type.SetMetadata(&typeAttrData);
 
-    boost::shared_ptr<Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService
-        <Renderer>(Service::ST_Renderer).lock();
+    boost::shared_ptr<Renderer> renderer = fw->GetServiceManager()->GetService<Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
         return;
 

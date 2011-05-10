@@ -1,10 +1,15 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "Foundation.h"
 #include "LoggingFunctions.h"
 #include "DebugOperatorNew.h"
 #include "Application.h"
+#include "Framework.h"
 #include <QDir>
+
+#ifdef _WIN32
+#include <WinSock2.h>
+#include <Windows.h>
+#endif
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit

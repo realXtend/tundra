@@ -7,7 +7,6 @@
 #include "IComponent.h"
 #include "LinearMath/btMotionState.h"
 #include "AssetReference.h"
-#include "Declare_EC.h"
 #include "AssetFwd.h"
 
 #include "PhysicsModuleApi.h"
@@ -119,10 +118,15 @@ class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState
     friend class Physics::PhysicsWorld;
     
     Q_OBJECT
+    COMPONENT_NAME("EC_RigidBody", 23)
     Q_ENUMS(ShapeType)
     
-    DECLARE_EC(EC_RigidBody);
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_RigidBody(Framework *fw);
+
+    virtual ~EC_RigidBody();
+
     enum ShapeType
     {
         Shape_Box = 0,
@@ -190,8 +194,6 @@ public:
     Q_PROPERTY(Vector3df angularVelocity READ getangularVelocity WRITE setangularVelocity)
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, angularVelocity)
     
-    virtual ~EC_RigidBody();
-    
     /// btMotionState override. Called when Bullet wants us to tell the body's initial transform
     virtual void getWorldTransform(btTransform &worldTrans) const;
 
@@ -212,6 +214,7 @@ signals:
     void PhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
     
 public slots:
+
     /// Set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
     /** \return true if successful (EC_Mesh could be found and contained a mesh reference)
      */
@@ -317,11 +320,6 @@ private slots:
     void OnCollisionMeshAssetLoaded(AssetPtr asset);
 
 private:
-    /// constructor
-    /** \param module Physics module
-     */
-    EC_RigidBody(IModule* module);
-    
     /// (Re)create the collisionshape
     void CreateCollisionShape();
     

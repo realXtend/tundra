@@ -132,9 +132,9 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
         else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
         {
             TundraLogic::SceneImporter importer(scene);
-            if (IsUrl(filename))
+            if (IsUrl(filename)) ///\todo Bad code duplication. Remove the SceneImporter::GetSceneDescForMesh(QUrl) function altogether to avoid excessive code copy-paste. Have SceneImporter::GetSceneDescForMesh do the job of both. -jj.
                 ///\todo Perhaps download the mesh before instantiating so we could inspect the mesh binar for materials and skeleton? The path is already there for tundra scene file web drops
-                sceneDescs.append(importer.GetSceneDescForMesh(QUrl(filename)));
+                sceneDescs.append(importer.GetSceneDescForMesh(QUrl(filename))); ///\todo Bad code duplication. Remove the SceneImporter::GetSceneDescForMesh(QUrl) function altogether to avoid excessive code copy-paste. Have SceneImporter::GetSceneDescForMesh do the job of both. -jj.
             else
                 sceneDescs.append(importer.GetSceneDescForMesh(filename));
         }

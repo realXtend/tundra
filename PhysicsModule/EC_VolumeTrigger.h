@@ -4,7 +4,6 @@
 #define incl_Physics_EC_VolumeTrigger_h
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "Core.h"
 
 // forward declares
@@ -70,9 +69,14 @@ class EC_VolumeTrigger : public IComponent
     friend class Physics::PhysicsWorld;
     
     Q_OBJECT
-    DECLARE_EC(EC_VolumeTrigger)
+    COMPONENT_NAME("EC_VolumeTrigger", 24)
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_VolumeTrigger(Framework *fw);
+
+    virtual ~EC_VolumeTrigger();
+
     /// Pivot trigger flag. If false (default), triggers by entity volume. If true, triggers by entity pivot point (ie. entity pivot points enters/leaves the volume).
     Q_PROPERTY(bool byPivot READ getbyPivot WRITE setbyPivot)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, byPivot)
@@ -81,8 +85,6 @@ public:
     Q_PROPERTY(QVariantList entities READ getentities WRITE setentities);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, entities);
 
-    virtual ~EC_VolumeTrigger();
-
 signals:
     /// Note: needs to be lowercase for QML to accept connections to it
     void entityEnter(Entity* entity/*, const Vector3df& position*/);
@@ -90,6 +92,7 @@ signals:
     void entityLeave(Entity* entity/*, const Vector3df& position*/);
 
 public slots:
+
     /// Get a list of entities currently residing inside the volume.
     /** \note Return value is invalidated by physics update.
         \return list of entities
@@ -175,11 +178,6 @@ private slots:
     void OnEntityRemoved(Entity* entity);
 
 private:
-    /// constructor
-    /** \param module Physics module
-     */
-    EC_VolumeTrigger(IModule* module);
-
     /// Rigid body component that is needed for collision signals
     boost::weak_ptr<EC_RigidBody> rigidbody_;
 

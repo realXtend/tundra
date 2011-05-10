@@ -16,6 +16,7 @@
 #include "IAssetTransfer.h"
 #include "IAsset.h"
 #include "ConfigAPI.h"
+#include "IComponentFactory.h"
 
 #include "SceneManager.h"
 #include "ConsoleCommandUtils.h"
@@ -95,11 +96,6 @@
 #include "EC_ParticleSystem.h"
 #endif
 
-#ifdef EC_QmlApp_ENABLED
-#include "EC_QmlApp.h"
-#include "QmlAsset.h"
-#endif
-
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
 #include "EC_AnimationController.h"
@@ -128,69 +124,65 @@ void TundraLogicModule::PreInitialize()
 
 void TundraLogicModule::Load()
 {    
-    DECLARE_MODULE_EC(EC_DynamicComponent);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_DynamicComponent>));
 
     // External EC's
 #ifdef EC_Highlight_ENABLED
-    DECLARE_MODULE_EC(EC_Highlight);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Highlight>));
 #endif
 #ifdef EC_HoveringText_ENABLED
-    DECLARE_MODULE_EC(EC_HoveringText);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_HoveringText>));
 #endif
 #ifdef EC_Clone_ENABLED
-    DECLARE_MODULE_EC(EC_Clone);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Clone>));
 #endif
 #ifdef EC_Touchable_ENABLED
-    DECLARE_MODULE_EC(EC_Touchable);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Touchable>));
 #endif
 #ifdef EC_3DCanvas_ENABLED
-    DECLARE_MODULE_EC(EC_3DCanvas);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_3DCanvas>));
 #endif
 #ifdef EC_3DCanvasSource_ENABLED
-    DECLARE_MODULE_EC(EC_3DCanvasSource);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_3DCanvasSource>));
 #endif
 #ifdef EC_Ruler_ENABLED
-    DECLARE_MODULE_EC(EC_Ruler);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Ruler>));
 #endif
 #ifdef EC_SoundRuler_ENABLED
-    DECLARE_MODULE_EC(EC_SoundRuler);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundRuler>));
 #endif
 //#ifdef EC_Name_ENABLED
-    DECLARE_MODULE_EC(EC_Name);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Name>));
 //#endif
 #ifdef EC_ParticleSystem_ENABLED
-    DECLARE_MODULE_EC(EC_ParticleSystem);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
 #endif
 #ifdef EC_Sound_ENABLED
-    DECLARE_MODULE_EC(EC_Sound);
-    DECLARE_MODULE_EC(EC_SoundListener);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sound>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundListener>));
 #endif
-    DECLARE_MODULE_EC(EC_InputMapper);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_InputMapper>));
 #ifdef EC_Movable_ENABLED
-    DECLARE_MODULE_EC(EC_Movable);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Movable>));
 #endif
 #ifdef EC_VideoSource_ENABLED
-    DECLARE_MODULE_EC(EC_VideoSource);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_VideoSource>));
 #endif
 #ifdef EC_Gizmo_ENABLED
-    DECLARE_MODULE_EC(EC_Gizmo);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Gizmo>));
 #endif
 
 #ifdef EC_PlanarMirror_ENABLED
-    DECLARE_MODULE_EC(EC_PlanarMirror);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_PlanarMirror>));
 #endif
 #ifdef EC_Selected_ENABLED
-    DECLARE_MODULE_EC(EC_Selected);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Selected>));
 #endif
 #ifdef EC_Billboard_ENABLED
-    DECLARE_MODULE_EC(EC_Billboard);
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Billboard>));
 #endif
 #ifdef EC_ProximityTrigger_ENABLED
-    DECLARE_MODULE_EC(EC_ProximityTrigger);
-#endif
-#ifdef EC_QmlApp_ENABLED
-    DECLARE_MODULE_EC(EC_QmlApp);
-    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QmlAsset>("QML")));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ProximityTrigger>));
 #endif
 }
 

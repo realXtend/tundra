@@ -165,7 +165,7 @@ void Client::Logout(bool fail)
 
     disconnect(kristalli, SIGNAL(ConnectionAttemptFailed()), this, SLOT(OnConnectionAttemptFailed()));
 
-    TundraLogicModule::LogInfo("Client logged out.");
+    ::LogInfo("Client logged out.");
 }
 
 bool Client::IsConnected() const

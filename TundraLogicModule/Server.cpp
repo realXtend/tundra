@@ -243,6 +243,14 @@ UserConnection* Server::GetActionSender() const
     return actionsender_;
 }
 
+kNet::NetworkServer *Server::GetServer() const
+{
+    if (!owner_ || !owner_->GetKristalliModule())
+        return 0;
+
+    return owner_->GetKristalliModule()->GetServer();
+}
+
 void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
     if (!source)

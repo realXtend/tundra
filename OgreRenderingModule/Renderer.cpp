@@ -1148,8 +1148,8 @@ namespace OgreRenderer
             if (!cam_entity)
                 return;
 
-            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic()));
-            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Camera::TypeNameStatic()));
+            cam_entity->AddComponent(framework_->Scene()->CreateComponent<EC_Placeable>());
+            cam_entity->AddComponent(framework_->Scene()->CreateComponent<EC_Camera>());
             scene->EmitEntityCreated(cam_entity);
             
             ComponentPtr component_placable = cam_entity->GetComponent(EC_Placeable::TypeNameStatic());
