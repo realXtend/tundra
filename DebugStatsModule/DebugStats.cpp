@@ -58,7 +58,7 @@ void DebugStatsModule::PostInitialize()
 #endif
 
 #ifdef PROFILING
-    framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindowCommand()));
+    framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
 
 #endif
 
