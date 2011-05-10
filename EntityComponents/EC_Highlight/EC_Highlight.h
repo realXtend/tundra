@@ -11,11 +11,10 @@
 
 #include "IComponent.h"
 #include "AssetFwd.h"
-#include "Declare_EC.h"
 #include "Color.h"
 #include "OgreModuleFwd.h"
 
-/// EC_Highlight enables visual highlighting effect for of scene entity.
+/// Enables visual highlighting effect for of scene entity.
 /**
 <table class="header">
 <tr>
@@ -55,9 +54,12 @@ Does not emit any actions.
 class EC_Highlight : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_Highlight);
+    COMPONENT_NAME("EC_Highlight", 28)
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Highlight(Framework *fw);
+
     /// Destructor.
     ~EC_Highlight();
 
@@ -109,11 +111,7 @@ private:
     
     /// Apply a color change to all existing highlight materials
     void ApplyHighlightColors();
-    
-    /// Constuctor.
-    /// @param module Owner module.
-    explicit EC_Highlight(IModule *module);
-    
+        
     /// Mesh component pointer
     boost::weak_ptr<EC_Mesh> mesh_;
     
