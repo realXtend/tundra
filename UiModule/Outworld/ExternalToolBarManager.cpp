@@ -18,7 +18,8 @@ namespace UiServices
     ExternalToolBarManager::ExternalToolBarManager(QMainWindow *main_window, UiModule *owner) :
             main_window_(main_window),
 			owner_(owner),
-			controller_toolbar_()
+			controller_toolbar_(),
+			actionsOfToolBars_()
     {
     }
 
@@ -53,25 +54,29 @@ namespace UiServices
 		//Put an entry in the menu Bar
 		QAction *menuAc = new QAction(name, toolbar);
 		menuAc->setCheckable(true);
-		owner_->GetExternalMenuManager()->AddExternalMenuAction(menuAc, name, "ToolBars");
+		actionsOfToolBars_[toolbar->windowTitle()] = menuAc;
+		owner_->GetExternalMenuManager()->AddExternalMenuAction(menuAc, name, "ToolBars",0, 50, true);
+		connect(toolbar, SIGNAL(visibilityChanged(bool)), SLOT(CheckMenuAction(bool)));
 		connect(menuAc, SIGNAL(triggered()), SLOT(ActionNodeClicked()));
 		
 		HideExternalToolbar(name);
 		return true;
 	}
 
+	void ExternalToolBarManager::CheckMenuAction(bool vis)
+	{
+		QToolBar *toolb = dynamic_cast<QToolBar*>(sender());
+		actionsOfToolBars_[toolb->windowTitle()]->setChecked(vis);		
+	}
+
 	void ExternalToolBarManager::ActionNodeClicked()
     {
 		QAction *act = dynamic_cast<QAction*>(sender());
-
 		QToolBar  *aux = dynamic_cast<QToolBar *>(act->parentWidget());
-		if (aux->isHidden()){
+		if (aux->isHidden())
 			aux->show();
-			act->setChecked(true);
-		}else{
+		else
 			aux->hide();
-			act->setChecked(false);
-		}
 	}
 
 	bool ExternalToolBarManager::RemoveExternalToolbar(QString name){
@@ -79,7 +84,9 @@ namespace UiServices
 			return false;
 
 		main_window_->removeToolBar(controller_toolbar_.value(name));
+		delete(controller_toolbar_.value(name));
 		controller_toolbar_.remove(name);
+		actionsOfToolBars_.remove(name);
 		return true;
 	}
 

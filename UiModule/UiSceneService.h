@@ -65,16 +65,19 @@ namespace UiServices
 		bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence);
 
         /// UiServiceInterface override.
-        void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);
+        void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon, int priority = 50);
 
         /// UiServiceInterface override.
-        void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon);
+        void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon, int priority = 50);
 
         /// UiServiceInterface override.
-        void AddWidgetToMenu(QWidget *widget);
+        void AddWidgetToMenu(QWidget *widget, int priority = 50);
+
+        /// UiServiceInterface override.
+        bool AddExternalMenuToMenu(QMenu *new_menu, const QString &menu, const QString &icon = 0, int priority = 50);
 
 		/// UiServiceInterface override.
-		bool AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon = 0);
+        bool AddExternalMenu(const QString &menu, int priority = 50);
 
         /// UiServiceInterface override.
         void RemoveWidgetFromMenu(QWidget *widget);
@@ -154,7 +157,11 @@ namespace UiServices
 
 //$ BEGIN_MOD $
 		/// UiServiceInterface override.
-		bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0);
+		bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0, int priority = 50, bool ischeckable = false);
+
+		/// UiServiceInterface override.
+		bool RemoveExternalMenuAction(QAction *action);
+
 		/// UiServiceInterface override.
         void BringWidgetToFront(QString widget);
 		/// UiServiceInterface override.

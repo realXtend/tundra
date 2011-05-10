@@ -140,10 +140,11 @@ void KristalliProtocolModule::PostInitialize()
 //$ BEGIN_MOD $
 	if (!framework_->IsHeadless() && !framework_->IsEditionless()) {
 		networkDialog = new NetworkDialog(0, &network);
+		networkDialog->setWindowTitle("Knet Statistics");
 		UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
 		if (ui)
 			ui->AddWidgetToScene(networkDialog, true, true);
-			ui->AddWidgetToMenu(networkDialog, "knet Statistics", "View");
+			ui->AddWidgetToMenu(networkDialog, "Knet Statistics", "View");
 	}
 //$ END_MOD $
 }

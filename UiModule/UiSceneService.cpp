@@ -106,16 +106,16 @@ namespace UiServices
 
 	bool UiSceneService::AddProxyWidgetToScene(UiProxyWidget *proxy) { return AddWidgetToScene(proxy); }
 
-	void UiSceneService::AddWidgetToMenu(QWidget *widget)
+	void UiSceneService::AddWidgetToMenu(QWidget *widget, int priority)
     {
 		//Save initial values
 		if (!panels_menus_list_.contains(widget->windowTitle()))
 			panels_menus_list_[widget->windowTitle()]=menusPair("", "");
 
 		if (external_dockeable_widgets_.contains(widget->windowTitle()))
-           owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_dockeable_widgets_[widget->windowTitle()],widget->windowTitle(),"Panels");
+           owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_dockeable_widgets_[widget->windowTitle()],widget->windowTitle(),"Panels", priority);
 		else if  (external_nondockeable_widgets_.contains(widget->windowTitle()))
-			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],widget->windowTitle(),"Panels");
+			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],widget->windowTitle(),"Panels", priority);
         else if  (internal_widgets_.contains(widget->windowTitle()))
 			owner_->GetInworldSceneController()->AddWidgetToMenu(external_nondockeable_widgets_[widget->windowTitle()], widget->windowTitle(), "", "");
     }
@@ -125,21 +125,21 @@ namespace UiServices
 		return owner_->GetInworldSceneController()->AddInternalWidgetToScene(widget, corner, orientation, priority, persistence);
 	}
 
-    void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu, const QString &icon)
+    void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu, const QString &icon, int priority)
     {
 		//Save initial values
 		if (!panels_menus_list_.contains(widget->windowTitle()))
 			panels_menus_list_[widget->windowTitle()]=menusPair(menu, icon);
 
 		if (external_dockeable_widgets_.contains(widget->windowTitle()))
-           owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_dockeable_widgets_[widget->windowTitle()],entry,menu);
+           owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_dockeable_widgets_[widget->windowTitle()],entry,menu, priority);
 		else if  (external_nondockeable_widgets_.contains(widget->windowTitle()))
-			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],entry,menu);
+			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],entry,menu, priority);
         else if  (internal_widgets_.contains(widget->windowTitle()))
             owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
     }
 
-    void UiSceneService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, const QString &menu, const QString &icon)
+    void UiSceneService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, const QString &menu, const QString &icon, int priority)
     {
 		//Save initial values
 		if (!panels_menus_list_.contains(widget->windowTitle()))
@@ -148,13 +148,19 @@ namespace UiServices
 		if (internal_widgets_.contains(widget->windowTitle()))
 			owner_->GetInworldSceneController()->AddWidgetToMenu(widget->widget(), entry, menu, icon);
 		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
-			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_dockeable_widgets_[widget->windowTitle()],entry,menu);
+			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_dockeable_widgets_[widget->windowTitle()],entry,menu, priority);
 		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
-			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],entry,menu);
+			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],entry,menu, priority);
     }
 
-	bool UiSceneService::AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon){
-		return owner_->GetExternalMenuManager()->AddExternalMenu(new_menu,menu,icon);
+	bool UiSceneService::AddExternalMenuToMenu(QMenu *new_menu, const QString &menu, const QString &icon, int priority)
+	{
+		return owner_->GetExternalMenuManager()->AddExternalMenuToMenu(new_menu,menu,icon, priority);
+	}
+
+	bool UiSceneService::AddExternalMenu(const QString &menu, int priority)
+	{
+		return owner_->GetExternalMenuManager()->AddExternalMenu(menu, priority);
 	}
 
     void UiSceneService::RemoveWidgetFromMenu(QWidget *widget)
@@ -469,8 +475,12 @@ namespace UiServices
         }
     }
 //$ BEGIN_MOD $
-	bool UiSceneService::AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon){
-		return owner_->GetExternalMenuManager()->AddExternalMenuAction(action,name,menu,icon);
+	bool UiSceneService::AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon, int priority, bool ischeckable){
+		return owner_->GetExternalMenuManager()->AddExternalMenuAction(action,name,menu,icon, priority, ischeckable);
+	}
+
+	bool UiSceneService::RemoveExternalMenuAction(QAction *action){
+		return owner_->GetExternalMenuManager()->RemoveExternalMenuAction(action);
 	}
 
 	bool UiSceneService::AddExternalToolbar(QToolBar *toolbar, const QString &name){

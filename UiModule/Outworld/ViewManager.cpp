@@ -42,46 +42,48 @@ namespace UiServices
 		views= settings.childGroups();
 
 		//Create the menu
-		QMenuBar* menuBar = qWin_->menuBar();
 		configWindow_ = new ViewDialog(views);
-		menu_ = new QMenu("Window",menuBar);
-		menuBar->addMenu(menu_);
+		uiService_->AddExternalMenu("Window");
 
 		//Insert New Action
-		QAction* newAction = new QAction(tr("New"), menu_);
+		QAction* newAction = new QAction(tr("New"), this);
 		connect(newAction, SIGNAL(triggered()), SLOT(NewViewWindow()));
-		menu_->addAction(newAction);
+		uiService_->AddExternalMenuAction(newAction, "New", "Window", 0, 99);
 
 		//Insert Configure Action
-		QAction* open = new QAction(tr("Configure"), menu_);
+		QAction* open = new QAction(tr("Configure"), this);
 		connect(open, SIGNAL(triggered()),configWindow_, SLOT(show()));
-		menu_->addAction(open);
-		menu_->addSeparator();
+		uiService_->AddExternalMenuAction(open, "Configure", "Window", 0, 98);
+
+		//Add separator
+		QAction* separator = new QAction(tr(""), this);
+		separator->setSeparator(true);
+		uiService_->AddExternalMenuAction(separator, "separator", "Window", 0,  97);
 
 		//Create the Action Group and insert all views
-		actionGroup_=new QActionGroup(menu_);
+		actionGroup_=new QActionGroup(this);
 		connect(actionGroup_, SIGNAL(triggered(QAction*)), SLOT(ActionChanged(QAction*)));
 
-		previous_ = new QAction(tr("Previous"), menu_);
+		previous_ = new QAction(tr("Previous"), this);
 		actionGroup_->addAction(previous_);
-		menu_->addAction(previous_);
+		uiService_->AddExternalMenuAction(previous_, tr("Previous"), "Window", 0, 50, true);
 		previous_->setVisible(false);
 
-		QAction* hide = new QAction(tr("Hide"), menu_);
+		QAction* hide = new QAction(tr("Hide"), this);
 		actionGroup_->addAction(hide);
-		menu_->addAction(hide);
+		uiService_->AddExternalMenuAction(hide, tr("Hide"), "Window", 0, 50, true);
 
 		QListIterator<QString> i(views);
 		while(i.hasNext()){
 			QString name=i.next();
-			actionGroup_->addAction(new QAction(name,menu_));
+			actionGroup_->addAction(new QAction(name,this));
 		}
 
 		QListIterator<QAction*> q(actionGroup_->actions());
 		while(q.hasNext()){
 			QAction* a=q.next();
 			a->setCheckable(true);
-			menu_->addAction(a);
+			uiService_->AddExternalMenuAction(a, a->text(), "Window", 0, 50, true);
 		}
 
 		connect(configWindow_,SIGNAL(Save(const QString &)),this,SLOT(SaveView(const QString &)));		
@@ -218,10 +220,10 @@ namespace UiServices
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/ConfigurationViews");
 
 		if(!settings.childGroups().contains(name)){
-			QAction* a = new QAction(name,menu_);
+			QAction* a = new QAction(name,this);
 			a->setCheckable(true);
 			actionGroup_->addAction(a);
-			menu_->addAction(a);
+			uiService_->AddExternalMenuAction(a, a->text(), "Window", 0, 50, true);
 			a->setChecked(true);
 		}
 		
@@ -267,10 +269,11 @@ namespace UiServices
 		QStringList groups = settings.childGroups();
 		if(groups.contains(name)){
 			QListIterator<QAction*> q(actionGroup_->actions());
+			uiService_ = owner_->GetFramework()->GetService<UiServiceInterface>();
 			while(q.hasNext()){
 				QAction* a=q.next();
-				if(a->text()==name)
-					menu_->removeAction(a);
+				if(a->text()==name && uiService_) //Check if uiservice is still available
+					uiService_->RemoveExternalMenuAction(a);
 			}
 			settings.remove(name);
 			configWindow_->UpdateViews(settings.childGroups());

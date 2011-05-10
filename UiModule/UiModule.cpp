@@ -248,15 +248,7 @@ namespace UiServices
 			RestoreMainWindow();
 		}
     }
-	//void UiModule::RegisterUiEvents()
-	//{
-	//	eventManager_ = framework_->GetEventManager();
-
-	//	uiEventCategory_ = eventManager_->RegisterEventCategory("Ui");
-	//	eventManager_->RegisterEvent(uiEventCategory_, Events::DYNAMIC_WIDGET_ADD, "DynamicWidget Added");
-	//	eventManager_->RegisterEvent(uiEventCategory_, Events::DYNAMIC_WIDGET_DEL, "DynamicWidget Deleted");
-
-	// }
+	
     bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(UiModule_HandleEvent);

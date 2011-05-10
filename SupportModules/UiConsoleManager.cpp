@@ -39,11 +39,11 @@ namespace Console
             return; // Headless
             
         console_ui_ = new Ui::ConsoleWidget();
-        console_widget_ = new QWidget();
-		console_widget_->setWindowTitle("Console");
+        console_widget_ = new QWidget();		
         
         // Init internals
         console_ui_->setupUi(console_widget_);
+		console_widget_->setWindowTitle("Console");
         UiServicePtr ui_service = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (!ui_service)
             return;

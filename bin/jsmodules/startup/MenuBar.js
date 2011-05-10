@@ -1,55 +1,61 @@
 var iseditionless = framework.IsEditionless();
+var actionQuit;
 
 if (!framework.IsHeadless() && !iseditionless)
 {
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
+	var actions_parent = ui.MainWindow();
 
-    var menu = ui.MainWindow().menuBar();
+	if (!uiservice)
+		return;
 
-    var fileMenu = menu.addMenu("&File");
-    if (framework.GetModuleQObj("UpdateModule"))
-        fileMenu.addAction(new QIcon("./data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
-    //fileMenu.addAction("New scene").triggered.connect(NewScene);
+	//Create menus structure
+	var fileMenu = uiservice.AddExternalMenu("File", 99);
+	var fileMenu = uiservice.AddExternalMenu("View", 60);
+	var fileMenu = uiservice.AddExternalMenu("ToolBars", 59);
+	var fileMenu = uiservice.AddExternalMenu("Window", 58);
+	var fileMenu = uiservice.AddExternalMenu("Scripts", 57);
+	var helpMenu = uiservice.AddExternalMenu("Help", 40);
+	
+	
+	
+    if (framework.GetModuleQObj("UpdateModule") && fileMenu)
+	{
+		var action = new QAction(new QIcon("./data/ui/images/icon/update.ico"), "Check Updates", actions_parent);
+		action.triggered.connect(CheckForUpdates);
+		uiservice.AddExternalMenuAction(action, "Check Updates", "File");
+	}
+       
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
     {
-        var disconnectAction = fileMenu.addAction(new QIcon("./data/ui/images/icon/disconnect.ico"), "Disconnect");
+        var disconnectAction = new QAction(new QIcon("./data/ui/images/icon/disconnect.ico"), "Disconnect", actions_parent);
         disconnectAction.triggered.connect(Disconnect);
         client.Connected.connect(Connected);
         client.Disconnected.connect(Disconnected);
+		uiservice.AddExternalMenuAction(disconnectAction, "Disconnect", "File");
         Disconnected();
     }
-    fileMenu.addAction(new QIcon("./data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
-
-    /*var viewMenu = menu.addMenu("&View");
-    if (framework.GetModuleQObj("SceneStructure"))
-    {
-        viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
-        viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
-    }
-
-    if (framework.GetModuleQObj("Console"))
-    {
-        viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);  
-    }
-
-    //var eceditorAction = viewMenu.addAction("EC Editor");
-
-    if (framework.GetModuleQObj("DebugStats"))
-        viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
-
-    if (framework.GetModuleQObj("Environment"))
-        viewMenu.addAction("Terrain Editor").triggered.connect(OpenTerrainEditor);
-
-    if (framework.GetModuleQObj("PythonScript"))
-        viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
-
-*/
-    var helpMenu = menu.addMenu("&Help");
-    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
-    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
-    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Mailing list").triggered.connect(OpenMailingListUrl);
+	actionQuit = new QAction(new QIcon("./data/ui/images/icon/system-shutdown.ico"), "Quit", actions_parent);
+	actionQuit.triggered.connect(Quit);
+	//actionQuit.setText("Quit");
+	uiservice.AddExternalMenuAction(actionQuit, "Quit", "File", 1);
+	
+	if (helpMenu)
+	{
+		var actionOpenWikiUrl = new QAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki", actions_parent);
+		actionOpenWikiUrl.triggered.connect(OpenWikiUrl);
+		uiservice.AddExternalMenuAction(actionOpenWikiUrl, "Wiki", "Help");
+		
+		var actionOpenDoxygenUrl = new QAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen", actions_parent);
+		actionOpenDoxygenUrl.triggered.connect(OpenDoxygenUrl);
+		uiservice.AddExternalMenuAction(actionOpenDoxygenUrl, "Doxygen", "Help");
+		
+		var actionOpenMailingListUrl = new QAction(new QIcon("./data/ui/images/icon/browser.ico"), "Mailing list", actions_parent);
+		actionOpenMailingListUrl.triggered.connect(OpenMailingListUrl);
+		uiservice.AddExternalMenuAction(actionOpenMailingListUrl, "Mailing list", "Help");
+	}
 
     function NewScene()
     {
@@ -101,35 +107,4 @@ if (!framework.IsHeadless() && !iseditionless)
     {
         QDesktopServices.openUrl(new QUrl("http://www.realxtend.org/doxygen/"));
     }
-/*
-    function OpenSceneWindow()
-    {
-        framework.GetModuleQObj("SceneStructure").ToggleSceneStructureWindow();
-    }
-
-    function OpenAssetsWindow()
-    {
-        framework.GetModuleQObj("SceneStructure").ToggleAssetsWindow();
-    }
-
-    function OpenProfilerWindow()
-    {
-        console.ExecuteCommand("prof");
-    }
-
-    function OpenTerrainEditor()
-    {
-        console.ExecuteCommand("TerrainTextureEditor");
-    }
-
-    function OpenPythonConsole()
-    {
-        console.ExecuteCommand("pythonconsole");
-    }
-
-    function OpenConsoleWindow()
-    {
-        framework.GetModuleQObj("Console").ToggleConsole();
-    }
-	*/
 }
