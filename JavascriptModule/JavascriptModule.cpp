@@ -59,6 +59,8 @@ void JavascriptModule::Initialize()
 
     LogInfo("Module " + Name() + " initializing...");
 
+    QString pluginspath("./qtscript-plugins");
+    QCoreApplication::addLibraryPath(pluginspath);
     assert(!javascriptModuleInstance_);
     javascriptModuleInstance_ = this;
 
@@ -301,7 +303,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     instance->RegisterService(framework_, "framework");
     instance->RegisterService(instance, "engine");
     
-    for(uint i = 0; i < properties.size(); ++i)
+    for(int i = 0; i < properties.size(); ++i)
         instance->RegisterService(framework_->property(properties[i]).value<QObject*>(), properties[i]);
 
     if (comp)
