@@ -3,7 +3,6 @@ engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 
 var camera_distance = 7.0;
-var alt_key_pressed = false;
 var last_clicked = null;
 var zooming = false;
 var global_transform;
@@ -20,9 +19,9 @@ function init_ui()
 {
     if (!return_button)
     {
-        return_button = new QPushButton("Return");
-        return_button.resize(150, 50);
-        return_button.font = new QFont("Arial");
+        return_button = new QPushButton("Return To Previous Camera");
+        return_button.resize(210, 50);
+        return_button.font = new QFont("Arial", 10);
         return_button_proxy = new UiProxyWidget(return_button); 
         ui.AddProxyWidgetToScene(return_button_proxy);
         return_button_proxy.windowFlags = 0;
@@ -65,8 +64,6 @@ if (!me.HasComponent("EC_OgreCamera"))
     input.TopLevelInputContext().MouseLeftReleased.connect(mouseLeftRelease);
 
     input.TopLevelInputContext().MouseScroll.connect(mouseScroll);
-    //input.TopLevelInputContext().KeyPressed.connect(keyPress);
-    input.TopLevelInputContext().KeyReleased.connect(keyRelease);
     input.TopLevelInputContext().MouseMove.connect(mouseMove);
 }
 
@@ -80,6 +77,15 @@ function toggle_objectcamera()
     if (last_camera != null)
     {
         last_camera.SetActive();
+    } else
+    {
+        var freelookcameraentity = scene.GetEntityByNameRaw("FreeLookCamera");
+        if (freelookcameraentity)
+        {
+            var freelookcamera = freelookcameraentity.ogrecamera;
+            if (freelookcamera)
+                freelookcamera.SetActive();
+        }
     }
     if (return_button_proxy != null)
     {
@@ -185,22 +191,6 @@ function mouseScroll(event)
     }
 }
 
-/*
-function keyPress(event)
-{
-
-}
-*/
-
-function keyRelease(event)
-{
-    if (event.keyCodeInt() == Qt.Key_Alt)
-    {
-        alt_key_pressed = false;
-        objectcamera_mode = false;
-    }
-}
-
 function cameraZoom()
 {
     /*
@@ -290,7 +280,11 @@ function mouseMove(event)
 
 function mouseLeftRelease(event)
 {
-    mouse_left_pressed = false;
+    if (objectcamera_mode)
+    {
+        mouse_left_pressed = false;
+        objectcamera_mode = false;
+    }
 }
 
 function multiply_quats(q, r)
