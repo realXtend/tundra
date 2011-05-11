@@ -78,7 +78,7 @@ endif()
 # The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
 # they will not be able to conditionally compile the EC.
 
-# The following EC's are declared by RexLogicModule and are optional. You may comment these lines out to disable any ECs you do not want to include.
+# The following EC's are declared by TundraLogicModule and are optional. You may comment these lines out to disable any ECs you do not want to include.
 
 AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
@@ -106,10 +106,10 @@ add_subdirectory(StreamsModule)
 # The following two are declared by both PythonScriptModule and JavascriptModule. They are optional.
 AddEntityComponent(EntityComponents/EC_Script EC_Script)
 
-add_subdirectory(TundraLogicModule)   
+add_subdirectory(TundraLogicModule)
 add_subdirectory(AvatarModule)          # Depends on OgreRenderingModule.
-add_subdirectory(AssetModule)           # Depends on Taiga subsystem.
-add_subdirectory(EnvironmentModule)     # Depends on OgreRenderingModule and Taiga subsystem. 
+add_subdirectory(AssetModule)
+add_subdirectory(EnvironmentModule)     # Depends on OgreRenderingModule.
 add_subdirectory(PhysicsModule)         # Depends on OgreRenderingModule.
 
 # The following are optional.
@@ -119,8 +119,8 @@ add_subdirectory(ECEditorModule)
 if (OGREASSETEDITOR)
     add_subdirectory(OgreAssetEditorModule) # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
 endif()
-add_subdirectory(DebugStatsModule)      # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule and Taiga subsystem.
-#add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
+add_subdirectory(DebugStatsModule)      # Enables a developer window for debugging. Depends on OgreRenderingModule and EnvironmentModule.
+#add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule and AvatarModule
 add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script instances.
 if (OPENASSETIMPORT)
     add_subdirectory(OpenAssetImport)        # Allows import of various mesh file formats
