@@ -79,12 +79,16 @@ endif()
 # they will not be able to conditionally compile the EC.
 
 # The following EC's are declared by RexLogicModule and are optional. You may comment these lines out to disable any ECs you do not want to include.
+
 AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
+AddEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
 AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
+AddEntityComponent(EntityComponents/EC_QmlApp EC_QmlApp)
+AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)
+
 #AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
 #AddEntityComponent(EntityComponents/EC_3DCanvasSource EC_3DCanvasSource)
-#AddEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
 #AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
 #AddEntityComponent(EntityComponents/EC_Light EC_Light)
 #AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
@@ -95,8 +99,7 @@ AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
 #AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
 #AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
 #AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
-AddEntityComponent(EntityComponents/EC_QmlApp EC_QmlApp)
-AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)
+
 
 add_subdirectory(StreamsModule)
 

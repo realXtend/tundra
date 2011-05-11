@@ -16,6 +16,8 @@
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 #include "SceneManager.h"
+#include "Framework.h"
+#include "OgreRenderingModule.h"
 
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
@@ -29,8 +31,8 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_HoveringText::EC_HoveringText(IModule *module) :
-    IComponent(module->GetFramework()),
+EC_HoveringText::EC_HoveringText(Framework *fw) :
+    IComponent(fw),
     font_(QFont("Arial", 100)),
     backgroundColor_(Qt::transparent),
     textColor_(Qt::black),
@@ -50,8 +52,8 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
     borderColorAttr(this, "Border Color", Color(0.0f,0.0f,0.0f,0.0f)),
     borderThicknessAttr(this, "Border Thickness", 0.0)
 {
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
-
+    //renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
+    renderer_ = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     visibility_animation_timeline_->setFrameRange(0,100);
     visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
     visibility_timer_->setSingleShot(true);
@@ -262,7 +264,8 @@ void EC_HoveringText::ShowMessage(const QString &text)
     if (!scene)
         return;
 
-    Scene::Entity *entity = GetParentEntity();
+    //Scene::Entity *entity = GetParentEntity();
+    Entity* entity = GetParentEntity();
     assert(entity);
     if (!entity)
         return;
@@ -442,7 +445,7 @@ void EC_HoveringText::UpdateSignals()
     disconnect(this, SLOT(OnAttributeUpdated(IComponent *, IAttribute *)));
     if(GetParentEntity())
     {
-        Scene::SceneManager *scene = GetParentEntity()->GetScene();
+        SceneManager *scene = GetParentEntity()->GetScene();
         if(scene)
         connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
                 this, SLOT(OnAttributeUpdated(IComponent*, IAttribute*))); 

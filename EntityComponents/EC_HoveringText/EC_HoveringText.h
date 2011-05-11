@@ -10,9 +10,9 @@
 #define incl_EC_HoveringText_EC_HoveringText_h
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "Vector3D.h"
 #include "OgreModuleFwd.h"
+#include "AssetFwd.h"
 
 #include <QVector3D>
 #include <QFont>
@@ -93,14 +93,11 @@ Does not emit any actions.
 class EC_HoveringText : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_HoveringText);
-
-private:
-    /// Constuctor.
-    /// @param module Owner module.
-    explicit EC_HoveringText(IModule *module);
 
 public:
+    
+    explicit EC_HoveringText(Framework *fw);
+
     /// Destructor.
     ~EC_HoveringText();
 
@@ -139,6 +136,7 @@ public:
 
     /// Clears the 3D subsystem resources for this object.
     void Destroy();
+    COMPONENT_NAME("EC_HoveringText",29);
 
 public slots:
     /// Shows the hovering text.
