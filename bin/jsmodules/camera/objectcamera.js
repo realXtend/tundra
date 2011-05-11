@@ -42,23 +42,23 @@ function init_ui()
 if (!me.HasComponent("EC_OgreCamera"))
 {
     var camera = me.GetOrCreateComponentRaw("EC_OgreCamera");
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
+    //XXX var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
     var placeable = me.GetOrCreateComponentRaw("EC_Placeable");
     var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
     soundlistener.active = true;    
 
     camera.AutoSetPlaceable();
 
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    if (!avatarcameraentity)
-        camera.SetActive();
+    //XXX var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    //XXX if (!avatarcameraentity)
+    //XXX    camera.SetActive();
 
     var transform = placeable.transform;
     transform.rot.x = 90;
     placeable.transform = transform;
 
-    inputmapper.contextPriority = 101;
-    inputmapper.takeMouseEventsOverQt = true;
+    //XXX inputmapper.contextPriority = 101;
+    //XXX inputmapper.takeMouseEventsOverQt = true;
 
     input.TopLevelInputContext().MouseLeftPressed.connect(mouseLeftPress);
     input.TopLevelInputContext().MouseLeftReleased.connect(mouseLeftRelease);
