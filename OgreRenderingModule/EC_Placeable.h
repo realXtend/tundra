@@ -14,6 +14,10 @@
 #include <QQuaternion>
 #include <QVector3D>
 
+#include <OgreNode.h>
+
+class EC_Mesh;
+
 /// Ogre placeable (scene node) component
 /**
 <table class="header">
@@ -32,6 +36,10 @@ Registered by OgreRenderer::OgreRenderingModule.
 <div>Shows the debug bounding box of geometry attached to the placeable.</div>
 <li>int: selectionLayer
 <div>Selection layer for raycasts.</div>
+<li>int: parentID
+<div>The entity ID to attach to. The entity in question needs to have EC_Placeable as well to work correctly</div>
+<li>string: parentBone
+<div>The bone to attach to. The parent entity needs to have a skeletal EC_Mesh component</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -64,6 +72,9 @@ Note: do not use the properties (Position, Scale, Orientation) below. They are d
 class OGRE_MODULE_API EC_Placeable : public IComponent
 {
     Q_OBJECT
+    
+    friend class BoneAttachmentListener;
+    friend class CustomTagPoint;
     
 public:
     explicit EC_Placeable(Framework *fw);
@@ -108,13 +119,15 @@ public:
     /// Specifies selection layer for raycasts
     Q_PROPERTY(int selectionLayer READ getselectionLayer WRITE setselectionLayer)
     DEFINE_QPROPERTY_ATTRIBUTE(int, selectionLayer);
-        
-    /// sets parent placeable
-    /** set null placeable to attach to scene root (the default)
-        \param placeable new parent
-     */
-    void SetParent(ComponentPtr placeable);
+
+    /// Parent entity ID. 0 for no parenting
+    Q_PROPERTY(int parentID READ getparentID WRITE setparentID)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, parentID);
     
+    /// Parent entity bone name. Needs the parent entity to have a skeletal mesh. Empty for no parent bone assignment
+    Q_PROPERTY(QString parentBone READ getparentBone WRITE setparentBone)
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, parentBone);
+
     /// sets position
     /** \param position new position
      */
@@ -149,9 +162,6 @@ public:
      */
     void SetScale(const Vector3df& scale);
 
-    /// gets parent placeable
-    ComponentPtr GetParent() { return parent_; }
-    
     /// returns position
     Vector3df GetPosition() const;
     /// returns scale
@@ -173,7 +183,7 @@ public:
     /// returns Ogre scenenode for attaching geometry.
     /** Do not manipulate the pos/orientation/scale of this node directly
      */
-    Ogre::SceneNode* GetSceneNode() const { return scene_node_; }
+    Ogre::SceneNode* GetSceneNode() const { return sceneNode_; }
     
     /// get node position
     QVector3D GetQPosition() const;
@@ -230,15 +240,18 @@ public slots:
 	void ToggleVisibility();
 
 signals:
-    /// emmitted when position has changed.
+    /// emitted when position has changed.
     void PositionChanged(const QVector3D &pos);
 
-    /// emmitted when rotation has changed.
+    /// emitted when rotation has changed.
     void OrientationChanged(const QQuaternion &rot);
 
-    /// emmitted when scale has changed.
+    /// emitted when scale has changed.
     void ScaleChanged(const QVector3D &scale);
 
+    /// Emitted when about to be destroyed
+    void AboutToBeDestroyed();
+    
 private slots:
     /// Handle attributechange
     /** \param attribute Attribute that changed.
@@ -249,6 +262,21 @@ private slots:
     /// Registers the action this EC provides to the parent entity, when it's set.
 	void RegisterActions();
 
+    /// Handle destruction of the parent placeable
+    void OnParentPlaceableDestroyed();
+    
+    /// Handle destruction of the parent mesh
+    void OnParentMeshDestroyed();
+    
+    /// Handle late creation of the parent entity, and try attaching to it
+    void CheckParentEntityCreated(Entity* entity, AttributeChange::Type change);
+    
+    /// Handle change of the parent mesh
+    void OnParentMeshChanged();
+    
+    /// Handle a component being added to the parent entity, in case it is the missing component we need
+    void OnComponentAdded(IComponent* component, AttributeChange::Type change);
+    
 private:
     
     /// attaches scenenode to parent
@@ -260,11 +288,20 @@ private:
     /// renderer
     OgreRenderer::RendererWeakPtr renderer_;
     
-    /// parent placeable
-    ComponentPtr parent_;
+    /// Ogre scene node for geometry. This always exists as long as the EC_Placeable is alive
+    Ogre::SceneNode* sceneNode_;
     
-    /// Ogre scene node for geometry
-    Ogre::SceneNode* scene_node_;
+    /// Ogre scene node for manual bone attachment
+    Ogre::SceneNode* boneAttachmentNode_;
+
+    /// The bone we are tracking in bone attachment mode
+    Ogre::Bone* parentBone_;
+    
+    /// Parent placeable, if any
+    EC_Placeable* parentPlaceable_;
+    
+    /// Parent mesh in bone attachment mode
+    EC_Mesh* parentMesh_;
 
     /// attached to scene hierarchy-flag
     bool attached_;

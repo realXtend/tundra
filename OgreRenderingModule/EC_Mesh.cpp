@@ -33,11 +33,7 @@ EC_Mesh::EC_Mesh(Framework *fw) :
     drawDistance(this, "Draw distance", 0.0f),
     castShadows(this, "Cast shadows", false),
     entity_(0),
-    bone_tagpoint_(0),
-    bone_parent_mesh_(0),
-    bone_attached_mesh_(0),
-    attached_(false),
-    attached_to_bone_(false)
+    attached_(false)
 {
     renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
 
@@ -70,7 +66,10 @@ EC_Mesh::EC_Mesh(Framework *fw) :
 EC_Mesh::~EC_Mesh()
 {
     if (renderer_.expired())
+    {
+        LogError("EC_Mesh::~EC_Mesh: No renderer available to call this function!");
         return;
+    }
     RendererPtr renderer = renderer_.lock();
 
     RemoveMesh();
@@ -223,8 +222,6 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
     if (!ViewEnabled())
         return false;
     
-    if (renderer_.expired())
-        return false;
     RendererPtr renderer = renderer_.lock();
 
     std::string mesh_name = meshResourceName.trimmed().toStdString();
@@ -274,26 +271,23 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         }
         
         // Make sure adjustment node is uptodate
-        if (adjustment_node_)
-        {
-            Transform newTransform = nodeTransformation.Get();
-            adjustment_node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
-            Quaternion adjust(DEGTORAD * newTransform.rotation.x,
-                            DEGTORAD * newTransform.rotation.y,
-                            DEGTORAD * newTransform.rotation.z);
-            adjustment_node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
+        Transform newTransform = nodeTransformation.Get();
+        adjustment_node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
+        Quaternion adjust(DEGTORAD * newTransform.rotation.x,
+                        DEGTORAD * newTransform.rotation.y,
+                        DEGTORAD * newTransform.rotation.z);
+        adjustment_node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
+        
+        // Prevent Ogre exception from zero scale
+        if (newTransform.scale.x < 0.0000001f)
+            newTransform.scale.x = 0.0000001f;
+        if (newTransform.scale.y < 0.0000001f)
+            newTransform.scale.y = 0.0000001f;
+        if (newTransform.scale.z < 0.0000001f)
+            newTransform.scale.z = 0.0000001f;
+
+        adjustment_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
             
-            // Prevent Ogre exception from zero scale
-            if (newTransform.scale.x < 0.0000001f)
-                newTransform.scale.x = 0.0000001f;
-            if (newTransform.scale.y < 0.0000001f)
-                newTransform.scale.y = 0.0000001f;
-            if (newTransform.scale.z < 0.0000001f)
-                newTransform.scale.z = 0.0000001f;
-
-            adjustment_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
-        }
-
         // Force a re-apply of all materials to this new mesh.
         ApplyMaterial();
     }
@@ -312,8 +306,6 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
 bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
 {
     if (!ViewEnabled())
-        return false;
-    if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();
 
@@ -382,20 +374,14 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
 
 void EC_Mesh::RemoveMesh()
 {
-    if (renderer_.expired())
-        return;
     RendererPtr renderer = renderer_.lock();
 
     if (entity_)
     {
-        if (attached_to_bone_)
-            DetachMeshFromBone();
+        emit MeshAboutToBeDestroyed();
         
         RemoveAllAttachments();
         DetachEntity();
-        
-        if (bone_attached_mesh_)
-            bone_attached_mesh_->DetachMeshFromBone();
         
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         scene_mgr->destroyEntity(entity_);
@@ -421,8 +407,6 @@ void EC_Mesh::RemoveMesh()
 bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point, bool share_skeleton)
 {
     if (!ViewEnabled())
-        return false;
-    if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();
 
@@ -528,10 +512,8 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
 
 void EC_Mesh::RemoveAttachmentMesh(uint index)
 {
-    if (renderer_.expired())
-        return;
     RendererPtr renderer = renderer_.lock();   
-        
+    
     if (!entity_)
         return;
         
@@ -771,20 +753,16 @@ QVector3D EC_Mesh::GetWorldSize() const
     ///\bug Rewrite this code to properly take the world transform into account. -jj.
     bbox.scale(adjustment_node_->getScale());
 
-    ///\bug Remove the following hardcoded axis swaps, it doesn't take the proper hierarchy into account. -jj.
     // Get size and take placeable scale into consideration to get real in-world size
     const Ogre::Vector3& bbsize = bbox.getSize();
     const Vector3df &placeable_scale = placeable->GetScale();
     // Swap y and z to make it align with other vectors
-    size = QVector3D(bbsize.x*placeable_scale.x, bbsize.z*placeable_scale.z, bbsize.y*placeable_scale.y);
+    size = QVector3D(bbsize.x*placeable_scale.x, bbsize.y*placeable_scale.y, bbsize.z*placeable_scale.z);
     return size;
 }
 
 void EC_Mesh::DetachEntity()
 {
-    if (attached_to_bone_)
-        return;
-    
     if ((!attached_) || (!entity_) || (!placeable_))
         return;
     
@@ -797,9 +775,6 @@ void EC_Mesh::DetachEntity()
 
 void EC_Mesh::AttachEntity()
 {
-    if (attached_to_bone_)
-        return;
-    
     if ((attached_) || (!entity_) || (!placeable_))
         return;
     
@@ -817,8 +792,6 @@ void EC_Mesh::AttachEntity()
 Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
 {
     if (!ViewEnabled())
-        return 0;
-    if (renderer_.expired())
         return 0;
     RendererPtr renderer = renderer_.lock();   
         
@@ -908,31 +881,22 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
     }
     else if (attribute == &nodeTransformation)
     {
-        Ogre::Node* adjustmentTarget = adjustment_node_;
-        if (bone_tagpoint_)
-            adjustmentTarget = bone_tagpoint_;
+        Transform newTransform = nodeTransformation.Get();
+        adjustment_node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
+        Quaternion adjust(DEGTORAD * newTransform.rotation.x,
+                          DEGTORAD * newTransform.rotation.y,
+                          DEGTORAD * newTransform.rotation.z);
+        adjustment_node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
         
-        if (adjustmentTarget)
-        {
-            Transform newTransform = nodeTransformation.Get();
-            adjustmentTarget->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
-            Quaternion adjust(DEGTORAD * newTransform.rotation.x,
-                              DEGTORAD * newTransform.rotation.y,
-                              DEGTORAD * newTransform.rotation.z);
-            // Let's not assume the needed haxor adjustment here, but let user specify it as necessary
-            //adjust = Quaternion(PI/2, 0, PI) * adjust;
-            adjustmentTarget->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
-            
-            // Prevent Ogre exception from zero scale
-            if (newTransform.scale.x < 0.0000001f)
-                newTransform.scale.x = 0.0000001f;
-            if (newTransform.scale.y < 0.0000001f)
-                newTransform.scale.y = 0.0000001f;
-            if (newTransform.scale.z < 0.0000001f)
-                newTransform.scale.z = 0.0000001f;
-            
-            adjustmentTarget->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
-        }
+        // Prevent Ogre exception from zero scale
+        if (newTransform.scale.x < 0.0000001f)
+            newTransform.scale.x = 0.0000001f;
+        if (newTransform.scale.y < 0.0000001f)
+            newTransform.scale.y = 0.0000001f;
+        if (newTransform.scale.z < 0.0000001f)
+            newTransform.scale.z = 0.0000001f;
+        
+        adjustment_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
     }
     else if (attribute == &meshRef)
     {
@@ -1145,6 +1109,19 @@ void EC_Mesh::ApplyMaterial()
     }
 }
 
+Ogre::Bone* EC_Mesh::GetBone(const QString& bone_name)
+{
+    std::string boneNameStd = bone_name.toStdString();
+    
+    if (!entity_)
+        return 0;
+    Ogre::Skeleton* skel = entity_->getSkeleton();
+    if (skel && skel->hasBone(boneNameStd))
+        return skel->getBone(boneNameStd);
+    else
+        return 0;
+}
+
 bool EC_Mesh::HasMaterialsChanged() const
 {
     if(!entity_ || !meshMaterial.Get().Size())
@@ -1162,58 +1139,3 @@ bool EC_Mesh::HasMaterialsChanged() const
     }
     return false;
 }
-
-bool EC_Mesh::AttachMeshToBone(QObject* targetMesh, const QString& boneName)
-{
-    if (!entity_)
-        return false;
-    
-    // First make sure that the target mesh is valid, and the bone can be found
-    EC_Mesh* targetMeshPtr = dynamic_cast<EC_Mesh*>(targetMesh);
-    if (!targetMeshPtr)
-        return false;
-    Ogre::Entity* targetEntity = targetMeshPtr->GetEntity();
-    if (!targetEntity)
-        return false;
-    std::string boneNameStd = boneName.toStdString();
-    Ogre::SkeletonInstance* skeleton = targetEntity->getSkeleton();
-    if (!skeleton)
-        return false;
-    if (!skeleton->hasBone(boneNameStd))
-        return false;
-    
-    // We are ready to go. Detach the entity from its normal scene node first
-    DetachMeshFromBone();
-    DetachEntity();
-    
-    bone_tagpoint_ = targetEntity->attachObjectToBone(boneNameStd, entity_);
-    bone_parent_mesh_ = targetMeshPtr;
-    bone_parent_mesh_->bone_attached_mesh_ = this;
-    attached_to_bone_ = true;
-    
-    // Force the adjustment for the tagpoint now
-    OnAttributeUpdated(&nodeTransformation);
-    
-    return true;
-}
-
-void EC_Mesh::DetachMeshFromBone()
-{
-    if ((!entity_) || (!attached_to_bone_) || (!bone_parent_mesh_))
-        return;
-    
-    Ogre::Entity* targetEntity = bone_parent_mesh_->GetEntity();
-    if (targetEntity)
-        targetEntity->detachObjectFromBone(entity_);
-    else
-        return;
-    
-    bone_parent_mesh_->bone_attached_mesh_ = 0;
-    bone_parent_mesh_ = 0;
-    attached_to_bone_ = false;
-    bone_tagpoint_ = 0;
-    
-    // Reattach entity to normal placeable
-    AttachEntity();
-}
-

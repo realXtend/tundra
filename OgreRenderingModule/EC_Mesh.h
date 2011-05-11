@@ -15,6 +15,11 @@
 #include <QVariant>
 #include <QVector3D>
 
+namespace Ogre
+{
+    class Bone;
+}
+
 /// Ogre mesh entity component
 /**
 <table class="header">
@@ -118,11 +123,6 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"GetAttachmentScale": returns offset scale of attachment
 <li>"GetDrawDistance": returns draw distance
 <li>"GetAdjustmentSceneNode": Returns adjustment scene node (used for scaling/offset/orientation modifications)
-<li>"AttachMeshToBone": attaches mesh to bone on another EC_Mesh. Local only.
-     \param targetMesh Pointer to target EC_Mesh component
-     \param boneName Bone name
-     \return true if successful
-<li>"DetachMeshFromBone": detaches mesh from bone
 </ul>
 
 <b>Reacts on the following actions:</b>
@@ -366,17 +366,17 @@ public slots:
     /// 
 //    float3x4 IComponent::GetWorldTransform();
     
-    /// Attach this mesh to a bone on another EC_Mesh component. Client-side only. Use with caution.
-    bool AttachMeshToBone(QObject* targetMesh, const QString& boneName);
-
-    /// Detach from the bone and reattach to placeable if was attached
-    void DetachMeshFromBone();
-
     /// Helper for setting asset ref from js with less code (and at all from py, due to some trouble with assetref decorator setting)
     void SetMeshRef(const AssetReference& newref) { setmeshRef(newref); }
     void SetMeshRef(const QString& newref) { setmeshRef(AssetReference(newref)); }
     
+    /// Return Ogre bone safely
+    Ogre::Bone* GetBone(const QString& bone_name);
+    
 signals:
+    /// Emitted before the Ogre mesh entity is about to be destroyed
+    void MeshAboutToBeDestroyed();
+    
     /// Signal is emitted when mesh has successfully loaded and applied to entity.
     void MeshChanged();
 
@@ -448,13 +448,6 @@ private:
     /// mesh entity attached to placeable -flag
     bool attached_;
     
-    /// attached to bone -flag
-    bool attached_to_bone_;
-    
-    Ogre::TagPoint* bone_tagpoint_;
-    EC_Mesh* bone_attached_mesh_;
-    EC_Mesh* bone_parent_mesh_;
-
     /// Manages material asset requests for EC_Mesh. This utility object is used so that EC_Mesh also gets notifications about
     /// changes to material assets on disk.
     std::vector<AssetRefListenerPtr> materialAssets;
