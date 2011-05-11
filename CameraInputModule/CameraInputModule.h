@@ -40,6 +40,8 @@ class CAMERAINPUT_MODULE_API CameraInputModule : public QObject, public IModule
 Q_OBJECT
 
 public:
+    friend class CameraInput;
+
     /// Default constructor.
     CameraInputModule();
 
@@ -66,6 +68,10 @@ private slots:
     void OnCapturingStateChanged(bool capturing);
     bool UpdateSurfaces(const CvSize &size);
 
+protected:
+    void SetCaptureFps(int fps);
+    int captureFps_;
+
 private:
     CameraInput *cameraInput_;
     CvCapture *openCvCamera_;
@@ -78,6 +84,7 @@ private:
 
     qreal updateBuildup_;
     qreal updateInterval_;
+    
 };
 
 #endif

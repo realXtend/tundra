@@ -20,7 +20,7 @@ public:
     friend class CameraInputModule;
 
     /// Default constructor.
-    CameraInput(QObject *parent, Foundation::Framework *framework);
+    CameraInput(CameraInputModule *cameraInputModule, Foundation::Framework *framework);
 
     /// Destructor.
     virtual ~CameraInput();
@@ -39,6 +39,16 @@ public slots:
 
     /// Stop capturing.
     void StopCapturing();
+
+    /// Get the capture frames per second.
+    /// \return int Capture fps.
+    int GetCaptureFps() const;
+
+    /// Set the capture frames per second. Default value is 15 set by CameraInputModule on its creation.
+    /// \note Be careful going above 20 if you are using the FrameUpdate signal in scripting languages.
+    /// \note This function will enforce fps to be between 1 and 60.
+    /// \param int New capture fps.
+    void SetCaptureFps(int fps);
 
     /// Return the current captured frame.
     /// \return QImage The current captured frame.
@@ -62,6 +72,7 @@ protected:
 
 private:
     Foundation::Framework *framework_;
+    CameraInputModule *cameraInputModule_;
     bool hasDevice_;
     bool capturing_;
     QImage currentFrame_;

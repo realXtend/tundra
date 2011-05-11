@@ -16,7 +16,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("CameraInputModule")
 CameraInputModule::CameraInputModule() :
     IModule("CameraInputModule"),
     updateBuildup_(0.0),
-    updateInterval_(1.0 / 15.0), // 15 fps
+    captureFps_(15),
     openCvCamera_(0),
     tchannel0(0),
     tchannel1(0),
@@ -24,6 +24,7 @@ CameraInputModule::CameraInputModule() :
     tchannel3(0),
     destFrame(0)
 {
+    SetCaptureFps(captureFps_);
 }
 
 CameraInputModule::~CameraInputModule()
@@ -43,6 +44,17 @@ void CameraInputModule::Initialize()
 void CameraInputModule::Uninitialize()
 {
     ReleaseDevice();
+}
+
+void CameraInputModule::SetCaptureFps(int fps)
+{
+    if (fps < 1)
+        fps = 1;
+    if (fps > 60)
+        fps = 60;
+
+    captureFps_ = fps;
+    updateInterval_ = 1.0 / (qreal)fps;
 }
 
 CameraInput *CameraInputModule::GetCameraInput() const
@@ -111,10 +123,6 @@ void CameraInputModule::Update(f64 frametime)
     if (!cameraInput_->IsCapturing())
          return;
 
-
-    // Don't update too often, stick with 15 fps (updateInterval_)
-    // Going 20 or over wont leave any time for Qts/our main loop to run
-    // if one or multiple places are processing the emitted frames.
     updateBuildup_ += frametime;
     if (updateBuildup_ >= updateInterval_)
     {
