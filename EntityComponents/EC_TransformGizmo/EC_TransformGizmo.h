@@ -9,8 +9,8 @@
 
 #include "IComponent.h"
 #include "InputFwd.h"
+#include "Vector3D.h"
 
-class Vector3df;
 class Quaternion;
 class EC_Placeable;
 class EC_Mesh;
@@ -65,10 +65,14 @@ public slots:
     void SetCurrentGizmoType(GizmoType type) { currentType = type; }
 
     ///
-//    void Show();
+    void Show();
 
     ///
-//    void Hide();
+    void Hide();
+
+    ///
+    /** @param visible */
+    void SetVisible(bool visibile);
 
 signals:
     ///
@@ -84,12 +88,15 @@ signals:
     void Scaled(const Vector3df &offset);
 
 private:
-    InputContextPtr input;
-    EC_Placeable *placeable;
-    EC_Mesh *mesh;
-    GizmoType currentType;
+    InputContextPtr input; ///< Input context for the gizmo.
+    boost::shared_ptr<EC_Placeable> placeable; ///< Placeable component.
+    boost::shared_ptr<EC_Mesh> mesh; ///< Mesh component.
+    GizmoType currentType; ///< Current gizmo type.
 
 private slots:
+    /// Initializes the gizmo when parent entity is set.
+    void Initialize();
+
     /// Handles key events from input service.
     /** @param e Key event.
     */

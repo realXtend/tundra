@@ -19,6 +19,7 @@ use_modules (Framework Scene Input Asset OgreRenderingModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
+link_ogre()
 link_modules (Framework Scene Input Asset OgreRenderingModule)
 
 final_target ()

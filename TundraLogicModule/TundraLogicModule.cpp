@@ -96,6 +96,10 @@
 #include "EC_ParticleSystem.h"
 #endif
 
+#ifdef EC_TransformGizmo_ENABLED
+#include "EC_TransformGizmo.h"
+#endif
+
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
 #include "EC_AnimationController.h"
@@ -184,6 +188,10 @@ void TundraLogicModule::Load()
 #ifdef EC_ProximityTrigger_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ProximityTrigger>));
 #endif
+#ifdef EC_TransformGizmo_ENABLED
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_TransformGizmo>));
+#endif
+
 }
 
 void TundraLogicModule::Initialize()
