@@ -307,7 +307,7 @@ void fromScriptValueIAttribute(const QScriptValue &obj, IAttribute *&s)
 QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
 {
     Color newColor;
-    if (ctx->argumentCount() == 3) //RGB
+    if (ctx->argumentCount() >= 3) //RGB
     {
         if (ctx->argument(0).isNumber() &&
             ctx->argument(1).isNumber() &&
@@ -322,16 +322,8 @@ QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
     }
     else if(ctx->argumentCount() == 4) //RGBA
     {
-        if (ctx->argument(0).isNumber() &&
-            ctx->argument(1).isNumber() &&
-            ctx->argument(2).isNumber() &&
-            ctx->argument(3).isNumber())
-        {
-            newColor.r = (float)ctx->argument(0).toNumber();
-            newColor.g = (float)ctx->argument(1).toNumber();
-            newColor.b = (float)ctx->argument(2).toNumber();
+        if (ctx->argument(3).isNumber())
             newColor.a = (float)ctx->argument(3).toNumber();
-        }
         else
             return ctx->throwError(QScriptContext::TypeError, "Color(): arguments aren't numbers.");
     }
@@ -411,16 +403,12 @@ QScriptValue createTransform(QScriptContext *ctx, QScriptEngine *engine)
 QScriptValue createAssetReference(QScriptContext *ctx, QScriptEngine *engine)
 {
     AssetReference newAssetRef;
-    if (ctx->argumentCount() == 2) // Both ref and it's type are given as arguments.
-        if (ctx->argument(0).isString() &&
-            ctx->argument(1).isString())
-        {
-            newAssetRef.ref = ctx->argument(0).toString();
-            newAssetRef.type = ctx->argument(0).toString();
-        }
-    else if(ctx->argumentCount() == 1) // Only ref.
+    if (ctx->argumentCount() >= 1)
         if (ctx->argument(0).isString())
             newAssetRef.ref = ctx->argument(0).toString();
+    if (ctx->argumentCount() == 2) // Both ref and it's type are given as arguments.
+        if (ctx->argument(1).isString())
+            newAssetRef.type = ctx->argument(0).toString();
     return engine->toScriptValue(newAssetRef);
 }
 
