@@ -488,7 +488,7 @@ void EC_Placeable::DetachNode()
         }
         else if (parentPlaceable_)
         {
-            disconnect(parentPlaceable_, SIGNAL(PlaceableAboutToBeDestroyed()));
+            disconnect(parentPlaceable_, SIGNAL(AboutToBeDestroyed()));
             parentPlaceable_->GetSceneNode()->removeChild(sceneNode_);
             parentPlaceable_ = 0;
         }
