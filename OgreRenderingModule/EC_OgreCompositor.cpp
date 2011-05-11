@@ -18,11 +18,15 @@ EC_OgreCompositor::EC_OgreCompositor(Framework *fw) :
     compositorref(this, "Compositor ref", ""),
     priority(this, "Priority", -1),
     parameters(this, "Parameters"),
-    handler_(owner_->GetRenderer()->GetCompositionHandler())
+    owner_(0),
+    handler_(0)
 {
+    owner_ = fw->GetModule<OgreRenderer::OgreRenderingModule>();
+    assert(owner_ && "No OgrerenderingModule.");
+    handler_ = owner_->GetRenderer()->GetCompositionHandler();
     assert (handler_ && "No CompositionHandler.");
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
-    owner_ = fw->GetModule<OgreRenderer::OgreRenderingModule>();
+    
 }
 
 EC_OgreCompositor::~EC_OgreCompositor()

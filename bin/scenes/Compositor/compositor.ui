@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>368</width>
-    <height>605</height>
+    <height>685</height>
    </rect>
   </property>
   <property name="maximumSize">
    <size>
     <width>368</width>
-    <height>605</height>
+    <height>685</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -132,7 +132,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -198,7 +198,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
        <property name="baseSize">
@@ -206,6 +206,11 @@
          <width>250</width>
          <height>50</height>
         </size>
+       </property>
+       <property name="plainText">
+        <string>speedX=0.1
+speedY=0.1
+normalStr=0.02</string>
        </property>
       </widget>
      </item>
@@ -270,7 +275,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -336,7 +341,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -402,7 +407,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -468,7 +473,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -534,7 +539,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -600,7 +605,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -666,7 +671,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -732,7 +737,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -798,7 +803,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -864,7 +869,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -930,7 +935,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -996,7 +1001,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -1062,7 +1067,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>
@@ -1128,7 +1133,7 @@
        <property name="maximumSize">
         <size>
          <width>250</width>
-         <height>25</height>
+         <height>30</height>
         </size>
        </property>
       </widget>

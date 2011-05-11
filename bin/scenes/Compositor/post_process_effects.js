@@ -13,14 +13,64 @@ var effects = ["Bloom", "UnderWater", "Glass","B&W", "Embossed", "Sharpen Edges"
 // TRICK how to get information about sender..
 /*
 function ParameterHandler(effect,index) {
-    this.effectName = effect;
+this.effectName = effect;
 }
 
 ParameterHandler.prototype.textChanged = function() {
-    print("UpdateEffect, in parameterHandler..");
-    UpdateEffect(this.effectName);
+print("UpdateEffect, in parameterHandler..");
+UpdateEffect(this.effectName);
 }
 */
+
+function ReturnDefaultParameters() {
+
+    if (widget_ != null) {
+
+        for (var i = 0; i < effects.length; ++i) {
+
+            var str = effects[i].split(' ').join('');
+            if (str == "B&W")
+                str = "BW";
+
+            name = "edit" + str;
+
+            var line = findChild(widget_, name);
+            if (line != null) {
+                
+                var text = "";
+                
+                if (effects[i] == "UnderWater") {
+                    text = " speedX=0.1 \n speedY=0.1 \n normalStr=0.02";
+                }
+                if (effects[i] == "WetLens") {
+                    text = " strength=0.1 \n animSpeed=0.01";
+                }
+                if (effects[i] == "Bloom") {
+                    text = " RT=1 \n Blur1=1 ";
+                }
+                if (effects[i] == "Motion Blur") {
+                    text = " blur=0.7 \n ";
+                }
+                if (effects[i] == "Laplace") {
+                    text = " pixelSize=0.0031 \n scale=1.0";
+                }
+                if (effects[i] == "Tiling") {
+                    text = " NumTiles=75.0 \n Threshhold=0.15";
+                }
+                if (effects[i] == "HDR") {
+                    text = " inRTT=0 \n inLum=1 \n inBloom=1";
+                }
+                if (effects[i] == "Radial Blur") {
+                    text = " sampleDist=1.0 \n sampleStrength=2.2";
+                }
+                
+                line.plainText = text;
+            }
+        }
+    }
+
+
+}
 
 function ShowWidget() {
       
@@ -39,7 +89,7 @@ function ShowWidget() {
     var gscene = ui.GraphicsScene();
     gscene.sceneRectChanged.connect(OnWindowSizeChanged);
     widget_.move(widget_.width + 10, widget_.height/2.0 );
-    proxy.ToggleVisibility();
+    proxy.visible = true;
 
 
     for (var i = 0; i < effects.length; ++i) {
@@ -71,7 +121,16 @@ function ShowWidget() {
         if (butApply != null) {
             butApply.clicked.connect(UpdateEffectParams);
         }
+
+        butCancel = findChild(widget_, "butCancel");
+        if (butCancel != null) {
+            butCancel.clicked.connect(ReturnDefaultParameters);
+        }
+        
     }
+    
+    ReturnDefaultParameters();
+    
   
 }
 
@@ -93,6 +152,7 @@ function UpdateEffectParams() {
 
 function UpdateEffect(name) {
 
+    
     var str = name.split(' ').join('');
 
     if (str == "B&W")
@@ -101,8 +161,8 @@ function UpdateEffect(name) {
     var editName = "edit" + str;
     var line = findChild(widget_, editName);
     if (line != null) {
+        
         var text = line.plainText;
-
         SetParamsToEffect(text, me.GetComponent("EC_OgreCompositor", name));
     }
         
@@ -198,8 +258,9 @@ function HideEffect(name) {
 function ShowEffect(name) {
 
     activeEffects.push(name);
+
+    // Create component for each effect.
     
-    // Create component
     var component = me.CreateComponent("EC_OgreCompositor",name);
     var ref = component.compositorref;
     ref = name;
@@ -213,7 +274,9 @@ function OnScriptDestroyed() {
     
 }
 
-// Starts scripts..
+
+// Starts script..
+
 ShowWidget();
     
   
