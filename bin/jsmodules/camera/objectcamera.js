@@ -65,7 +65,7 @@ if (!me.HasComponent("EC_OgreCamera"))
     input.TopLevelInputContext().MouseLeftReleased.connect(mouseLeftRelease);
 
     input.TopLevelInputContext().MouseScroll.connect(mouseScroll);
-    input.TopLevelInputContext().KeyPressed.connect(keyPress);
+    //input.TopLevelInputContext().KeyPressed.connect(keyPress);
     input.TopLevelInputContext().KeyReleased.connect(keyRelease);
     input.TopLevelInputContext().MouseMove.connect(mouseMove);
 }
@@ -77,13 +77,19 @@ function scene_rect_changed(rect)
 
 function toggle_objectcamera()
 {
-    last_camera.SetActive();
-    return_button_proxy.visible = false;
+    if (last_camera != null)
+    {
+        last_camera.SetActive();
+    }
+    if (return_button_proxy != null)
+    {
+        return_button_proxy.visible = false;
+    }
 }
 
 function mouseLeftPress(event)
 {
-    if (alt_key_pressed == true)
+    if (event.HasAltModifier())
     {
         mouse_left_pressed = true;
         if (!objectcamera_mode)
@@ -179,14 +185,12 @@ function mouseScroll(event)
     }
 }
 
+/*
 function keyPress(event)
 {
-    if (event.HasAltModifier() == true)
-    {
-        alt_key_pressed = true;
-        return;
-    }
+
 }
+*/
 
 function keyRelease(event)
 {
