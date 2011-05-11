@@ -6,7 +6,7 @@
 #include "ModuleManager.h"
 #include "Framework.h"
 #include "LoggingFunctions.h"
-
+#include "Profiler.h"
 #include "ConfigAPI.h"
 #include "CoreException.h"
 
@@ -75,6 +75,9 @@ void ModuleManager::UpdateModules(f64 frametime)
     {
         try
         {
+#ifdef PROFILING
+            ProfilerSection ps(("Module_" + modules_[i]->Name() + "_Update").c_str());
+#endif
             modules_[i]->Update(frametime);
         }
         catch(const std::exception &e)

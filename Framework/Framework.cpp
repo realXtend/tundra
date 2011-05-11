@@ -229,7 +229,10 @@ void Framework::ProcessOneFrame()
             frame->Update(frametime);
         }
 
-        console->Update(frametime);
+        {
+            PROFILE(Console_Update);
+            console->Update(frametime);
+        }
 
         if (!IsHeadless()) // Skip render if in headless mode.
         {

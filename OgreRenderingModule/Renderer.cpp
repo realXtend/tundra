@@ -509,7 +509,8 @@ namespace OgreRenderer
     
     void Renderer::Update(f64 frametime)
     {
-        Ogre::WindowEventUtilities::messagePump();
+        PROFILE(Ogre_WindowEventUtilities_messagePump);
+//        Ogre::WindowEventUtilities::messagePump();
     }
     
     void Renderer::SetViewDistance(float distance)
