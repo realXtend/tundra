@@ -462,9 +462,9 @@ ConsoleCommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &par
     
     bool success;
     if (!useBinary)
-        success = scene->SaveSceneXML(params[0].c_str());
+        success = scene->SaveSceneXML(params[0].c_str(), false, true);
     else
-        success = scene->SaveSceneBinary(params[0].c_str());
+        success = scene->SaveSceneBinary(params[0].c_str(), false, true);
     
     if (success)
         return ConsoleResultSuccess();

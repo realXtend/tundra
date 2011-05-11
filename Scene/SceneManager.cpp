@@ -424,42 +424,39 @@ QByteArray SceneManager::GetSceneXML(bool gettemporary, bool getlocal) const
 
     for(EntityMap::const_iterator iter = entities_.begin(); iter != entities_.end(); ++iter) 
     {
-        if (iter->second)
+        bool serialize = true;
+        if (iter->second->IsLocal() && !getlocal)
+                serialize = false;
+
+        if (iter->second->IsTemporary() && !gettemporary)
+                serialize = false;
+
+        if (serialize) 
         {
-            bool serialize = true;
-            if (iter->second->IsLocal() && !getlocal)
-                    serialize = false;
+            /* copied from GetEntityXML so that we can get local and temporary components also.
+            ugly hack! */
+            EntityPtr entity = iter->second;
+            QDomElement entity_elem = scene_doc.createElement("entity");
 
-            if (iter->second->IsTemporary() && !gettemporary)
-                    serialize = false;
+            QString id_str;
+            id_str.setNum((int)entity->GetId());
+            entity_elem.setAttribute("id", id_str);
 
-            if (serialize) 
-            {
-                /* copied from GetEntityXML so that we can get local and temporary components also.
-                ugly hack! */
-                EntityPtr entity = iter->second;
-                QDomElement entity_elem = scene_doc.createElement("entity");
+            const Entity::ComponentVector &components = entity->Components();
+            for(uint i = 0; i < components.size(); ++i)
+                components[i]->SerializeTo(scene_doc, entity_elem);
 
-                QString id_str;
-                id_str.setNum((int)entity->GetId());
-                entity_elem.setAttribute("id", id_str);
-
-                const Entity::ComponentVector &components = entity->Components();
-                for(uint i = 0; i < components.size(); ++i)
-                    components[i]->SerializeTo(scene_doc, entity_elem);
-
-                scene_elem.appendChild(entity_elem);
-            }
-            scene_doc.appendChild(scene_elem);
+            scene_elem.appendChild(entity_elem);
         }
     }
+    scene_doc.appendChild(scene_elem);
 
     return scene_doc.toByteArray();
 }
 
-bool SceneManager::SaveSceneXML(const QString& filename)
+bool SceneManager::SaveSceneXML(const QString& filename, bool saveTemporary, bool saveLocal)
 {
-    QByteArray bytes = GetSceneXML();
+    QByteArray bytes = GetSceneXML(saveTemporary, saveLocal);
     QFile scenefile(filename);
     if (scenefile.open(QFile::WriteOnly))
     {
@@ -500,25 +497,39 @@ QList<Entity *> SceneManager::LoadSceneBinary(const QString& filename, bool clea
     return CreateContentFromBinary(bytes.data(), bytes.size(), useEntityIDsFromFile, change);
 }
 
-bool SceneManager::SaveSceneBinary(const QString& filename)
+bool SceneManager::SaveSceneBinary(const QString& filename, bool getTemporary, bool getLocal)
 {
     QByteArray bytes;
     // Assume 4MB max for now
     bytes.resize(4 * 1024 * 1024);
     DataSerializer dest(bytes.data(), bytes.size());
     
-    // Count non-temporary entities
+    // Count number of entities we accept
     uint num_entities = 0;
     for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-        if ((iter->second) && (!iter->second->IsTemporary()))
-            num_entities++;
-
+    {
+        bool serialize = true;
+        if (iter->second->IsLocal() && !getLocal)
+            serialize = false;
+        if (iter->second->IsTemporary() && !getTemporary)
+            serialize = false;
+        if (serialize)
+            ++num_entities;
+    }
+    
     dest.Add<u32>(num_entities);
 
     for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-        if ((iter->second) && (!iter->second->IsTemporary()))
+    {
+        bool serialize = true;
+        if (iter->second->IsLocal() && !getLocal)
+            serialize = false;
+        if (iter->second->IsTemporary() && !getTemporary)
+            serialize = false;
+        if (serialize)
             iter->second->SerializeToBinary(dest);
-
+    }
+    
     bytes.resize(dest.BytesFilled());
     QFile scenefile(filename);
     if (scenefile.open(QFile::WriteOnly))

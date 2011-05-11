@@ -328,13 +328,15 @@ public slots:
         @param getLocal Are local entities wanted to be included.
         @return The scene XML as a byte array string.
     */
-    QByteArray GetSceneXML(bool getTemporary = false, bool getLocal = false) const;
+    QByteArray GetSceneXML(bool getTemporary, bool getLocal) const;
 
     /// Saves the scene to XML.
     /** @param filename File name
+        @param saveTemporary Are temporary entities wanted to be included.
+        @param saveLocal Are local entities wanted to be included.
         @return true if successful
     */
-    bool SaveSceneXML(const QString& filename);
+    bool SaveSceneXML(const QString& filename, bool saveTemporary, bool saveLocal);
 
     /// Loads the scene from a binary file.
     /** Note: will remove all existing entities
@@ -350,9 +352,11 @@ public slots:
 
     /// Save the scene to binary
     /** @param filename File name
+        @param saveTemporary Are temporary entities wanted to be included.
+        @param saveLocal Are local entities wanted to be included.
         @return true if successful
     */
-    bool SaveSceneBinary(const QString& filename);
+    bool SaveSceneBinary(const QString& filename, bool saveTemporary, bool saveLocal);
 
     /// Creates scene content from XML.
     /** @param xml XML document as string.
