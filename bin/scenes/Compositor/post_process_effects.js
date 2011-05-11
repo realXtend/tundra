@@ -172,10 +172,10 @@ function SetParamsToEffect(params, component) {
     
     var p = component.parameters;
     var list = [];
-    
     list = params.split("\n");
     for (var i = 0; i < list.length; ++i) {
-        p[i] = list[i];
+        // Trim string.
+        p[i] = list[i].replace(/^\s\s*/, '').replace(/\s\s*$/, ''); 
     }
    
     component.parameters = p;
