@@ -61,9 +61,9 @@ QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
 
     //this should suffice only once for the prototype somehow, but couldn't get that to work
     //ctorVector3df.property("prototype").setProperty("normalize", normalizeVector3df);
-    obj.setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
+    /*obj.setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
     obj.setProperty("length", engine->newFunction(Vector3df_prototype_getLength));
-    obj.setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
+    obj.setProperty("mul", engine->newFunction(Vector3df_prototype_mul));*/
 
     return obj;
 }
@@ -104,6 +104,29 @@ QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine)
     fromScriptValueVector3(ctx->thisObject(), vec);
 
     return toScriptValueVector3(engine, vec * scalar);
+}
+
+QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Vector3df vec;
+    Vector3df vec2;
+    float d = 0.0;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+    if (ctx->argumentCount() == 2)
+    {
+        if (ctx->argument(0).isObject() &&
+            ctx->argument(1).isNumber())
+        {
+            vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+            d = (float)ctx->argument(1).toNumber();
+        }
+        else
+            return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): agrument types are invalid.");
+    }
+    else
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments.");
+      
+    return toScriptValueVector3(engine, vec.getInterpolated(vec2, d));
 }
 
 QScriptValue Quaternion_prototype_ToEuler(QScriptContext *ctx, QScriptEngine *engine);
@@ -348,9 +371,10 @@ QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
     }
     QScriptValue returnValue = engine->toScriptValue(newVec);
     // Expose native functions to javascript.
-    returnValue.setProperty("Normalize", engine->newFunction(Vector3df_prototype_normalize));
-    returnValue.setProperty("Length", engine->newFunction(Vector3df_prototype_getLength));
-    returnValue.setProperty("Mul", engine->newFunction(Vector3df_prototype_mul));
+    returnValue.setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
+    returnValue.setProperty("length", engine->newFunction(Vector3df_prototype_getLength));
+    returnValue.setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
+    returnValue.setProperty("lerp", engine->newFunction(Vector3df_prototype_inter));
     return returnValue;
 }
 
@@ -372,9 +396,9 @@ QScriptValue createQuaternion(QScriptContext *ctx, QScriptEngine *engine)
     }
     QScriptValue retVal = engine->toScriptValue(newQuat);
     // Expose native functions to javascript.
-    retVal.setProperty("ToEuler", engine->newFunction(Quaternion_prototype_ToEuler));
-    retVal.setProperty("Normalize", engine->newFunction(Quaternion_prototype_Normalize));
-    retVal.setProperty("MakeIdentity", engine->newFunction(Quaternion_prototype_MakeIdentity));
+    retVal.setProperty("toEuler", engine->newFunction(Quaternion_prototype_ToEuler));
+    retVal.setProperty("normalize", engine->newFunction(Quaternion_prototype_Normalize));
+    retVal.setProperty("makeIdentity", engine->newFunction(Quaternion_prototype_MakeIdentity));
 
     return retVal;
 }
@@ -420,7 +444,7 @@ QScriptValue createAssetReferenceList(QScriptContext *ctx, QScriptEngine *engine
         if(ctx->argument(0).isArray())
             fromScriptValueAssetReferenceList(ctx->argument(0), newAssetRefList);
         else
-            return ctx->throwError(QScriptContext::TypeError, "AssetReferenceList(): argument 0 type isn't array.");
+            return ctx->throwError(QScriptContext::TypeError, "AssetReferenceList(): argument 0 type isn't array."); 
         if (ctx->argumentCount() == 2)
         {
             if(ctx->argument(1).isString())
