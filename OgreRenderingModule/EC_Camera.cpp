@@ -200,6 +200,14 @@ void EC_Camera::AttachCamera()
     attached_ = true;
 }
 
+Ogre::Ray EC_Camera::GetMouseRay(float x, float y)
+{
+    if (camera_)
+        return camera_->getCameraToViewportRay(clamp(x, 0.f, 1.f), clamp(y, 0.f, 1.f));
+    else
+        return Ogre::Ray();
+}
+
 void EC_Camera::UpdateSignals()
 {
     Entity* parent = GetParentEntity();

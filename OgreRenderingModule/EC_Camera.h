@@ -6,8 +6,9 @@
 #include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
-
 #include "Vector3D.h"
+
+#include <OgreRay.h>
 
 /// Ogre camera entity component
 /**
@@ -34,12 +35,12 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"SetActive": sets as active camera in the viewport
 <li>"SetNearClip": sets near clip distance
         \note EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
-        \param nearclip new near clip distance
+        @param nearclip new near clip distance
 <li>"SetFarClip": sets far clip distance
         note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
-        \param farclip new far clip distance
+        @param farclip new far clip distance
 <li>"SetVerticalFov": sets vertical fov 
-        \param fov new vertical fov in radians
+        @param fov new vertical fov in radians
 <li>"GetInitialRotation": returns initial Euler rotation according to the up vector.
 <li>"GetAdjustedRotation": returns an adjusted Euler rotation according to the up vector.
 <li>"GetNearClip": returns near clip distance
@@ -65,107 +66,109 @@ Does not emit any actions.
 class OGRE_MODULE_API EC_Camera : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_Camera", 15)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Camera(Framework *fw);
-
     virtual ~EC_Camera();
 
     /// Camera up vector. Defines the yaw axis
     Q_PROPERTY(Vector3df upVector READ getupVector WRITE setupVector);
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, upVector);
 
-    /// sets placeable component
+    /// Sets placeable component
     /** set a null placeable to detach the camera, otherwise will attach
-        \param placeable placeable component
-     */
+        @param placeable placeable component
+    */
     void SetPlaceable(ComponentPtr placeable);
 
-    COMPONENT_NAME("EC_Camera", 15)
 public slots:
-
     /// automatically find the placeable and set it
     void AutoSetPlaceable();
-    
+
     /// sets as active camera in the viewport
     void SetActive();
-    
+
     /// Get an initial rotation for the camera (in Euler angles, can be assigned to a Transform) that corresponds to the up vector
-    /// Note: the left/right & front/back axes are unspecified
+    /// @note the left/right & front/back axes are unspecified
     Vector3df GetInitialRotation() const;
-    
+
     /// Adjust a pitch/yaw/roll Euler rotation vector using the up vector
     Vector3df GetAdjustedRotation(const Vector3df& rotation) const;
-    
+
     /// sets near clip distance
-    /** note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
-        \param nearclip new near clip distance
-     */ 
+    /** @note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+        @param nearclip new near clip distance
+    */
     void SetNearClip(float nearclip);
-    
+
     /// sets far clip distance
-    /** note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
-        \param farclip new far clip distance
-     */         
+    /** @note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+        @param farclip new far clip distance
+    */
     void SetFarClip(float farclip);
-    
-    /// sets vertical fov 
-    /** \param fov new vertical fov in radians 
-     */
+
+    /// Sets vertical fov 
+    /** @param fov new vertical fov in radians 
+    */
     void SetVerticalFov(float fov);
-    
+
     /// returns near clip distance
     float GetNearClip() const;
-    
+
     /// returns far clip distance
     float GetFarClip() const;
-    
+
     /// returns vertical fov as radians
     float GetVerticalFov() const;
-    
+
     /// returns whether camera is active in the viewport
     bool IsActive() const;
-    
-    /// returns the actual Ogre camera.
-    /** use with caution. never set the position of the camera directly, use the placeable component for that.
-     */
+
+    /// Returns the actual Ogre camera.
+    /** @note Use with caution. Never set the position of the camera directly, use the placeable component for that. */
     Ogre::Camera* GetCamera() const { return camera_; }
 
 /* The following functions moved here from RenderServiceInterface. Reimplement them:
 
     /// take sceenshot to a location
-    /// \param filePath File path.
-    /// \param fileName File name.
+    /// @param filePath File path.
+    /// @param fileName File name.
     virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName) = 0;
 
     /// Render current main window content to texture
     virtual QPixmap RenderImage(bool use_main_camera = true) = 0; */
 
+    /// Returns a world space ray as cast from the camera through a viewport position.
+    /** @param The x position at which the ray should intersect the viewport, in normalized screen coordinates [0,1].
+        @param The y position at which the ray should intersect the viewport, in normalized screen coordinates [0,1].
+    */
+    Ogre::Ray GetMouseRay(float x, float y);
+
 private slots:
     /// Called when the parent entity has been set.
-
     void UpdateSignals();
+
     /// Called when component has been removed from the parent entity. Checks if the component removed was the mesh, and autodissociates it.
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
 
 private:
-    
     /// attaches camera to placeable
     void AttachCamera();
-    
+
     /// detaches camera from placeable
     void DetachCamera();
-    
+
     /// placeable component 
     ComponentPtr placeable_;
 
     /// attached to placeable -flag
     bool attached_;
-    
+
     /// renderer ptr
     OgreRenderer::RendererWeakPtr renderer_;
-    
+
     /// Ogre camera
     Ogre::Camera* camera_;
 };
