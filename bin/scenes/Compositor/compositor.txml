@@ -1,0 +1,24 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="3">
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="post_process_effects.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="2">
+  <component type="EC_Name" sync="1">
+   <attribute value="Environment" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Sky" sync="1">
+   <attribute value="RexSkyBox" name="Material"/>
+   <attribute value="rex_sky_front.dds;rex_sky_back.dds;rex_sky_left.dds;rex_sky_right.dds;rex_sky_top.dds;rex_sky_bot.dds" name="Texture"/>
+   <attribute value="50" name="Distance"/>
+   <attribute value="1 0 0 0" name="Orientation"/>
+   <attribute value="true" name="Draw first"/>
+  </component>
+ </entity>
+</scene>

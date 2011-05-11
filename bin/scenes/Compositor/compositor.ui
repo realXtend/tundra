@@ -7,29 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>368</width>
-    <height>594</height>
+    <height>605</height>
    </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>368</width>
+    <height>605</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Post Process Effects </string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
-   <item>
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Maximum</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>10</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -138,11 +128,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editBloom">
+      <widget class="QPlainTextEdit" name="editBloom">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -204,10 +194,16 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editUnderWater">
+      <widget class="QPlainTextEdit" name="editUnderWater">
        <property name="maximumSize">
         <size>
-         <width>200</width>
+         <width>250</width>
+         <height>25</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>250</width>
          <height>50</height>
         </size>
        </property>
@@ -270,11 +266,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editGlass">
+      <widget class="QPlainTextEdit" name="editGlass">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -336,11 +332,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editBW">
+      <widget class="QPlainTextEdit" name="editBW">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -402,11 +398,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editEmbossed">
+      <widget class="QPlainTextEdit" name="editEmbossed">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -468,11 +464,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editSharpenEdges">
+      <widget class="QPlainTextEdit" name="editSharpenEdges">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -534,11 +530,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editInvert">
+      <widget class="QPlainTextEdit" name="editInvert">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -600,11 +596,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editPosterize">
+      <widget class="QPlainTextEdit" name="editPosterize">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -666,11 +662,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editLaplace">
+      <widget class="QPlainTextEdit" name="editLaplace">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -732,11 +728,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editTiling">
+      <widget class="QPlainTextEdit" name="editTiling">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -798,11 +794,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editHDR">
+      <widget class="QPlainTextEdit" name="editHDR">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -864,11 +860,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editStrongHDR">
+      <widget class="QPlainTextEdit" name="editStrongHDR">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -930,11 +926,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editGaussianBlur">
+      <widget class="QPlainTextEdit" name="editGaussianBlur">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -996,11 +992,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editMotionBlur">
+      <widget class="QPlainTextEdit" name="editMotionBlur">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -1062,11 +1058,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editRadialBlur">
+      <widget class="QPlainTextEdit" name="editRadialBlur">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -1128,11 +1124,11 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="editWetLens">
+      <widget class="QPlainTextEdit" name="editWetLens">
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>50</height>
+         <width>250</width>
+         <height>25</height>
         </size>
        </property>
       </widget>
@@ -1158,12 +1154,12 @@
       <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
+      <enum>QSizePolicy::Expanding</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>55</height>
       </size>
      </property>
     </spacer>
@@ -1214,19 +1210,6 @@
       </spacer>
      </item>
     </layout>
-   </item>
-   <item>
-    <spacer name="verticalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>
