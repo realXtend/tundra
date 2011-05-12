@@ -246,7 +246,7 @@ kNet::MessageConnection* Client::GetConnection()
 }
 
 void Client::HandleKristalliEvent(event_id_t event_id, IEventData* data)
-{
+{/*
     if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
     {
         if (!owner_->IsServer())
@@ -259,7 +259,7 @@ void Client::HandleKristalliEvent(event_id_t event_id, IEventData* data)
     if (event_id == KristalliProtocol::Events::CONNECTION_FAILED)
     {
         Logout(true);
-    }
+    }*/
 }
 
 void Client::OnConnectionAttemptFailed()
