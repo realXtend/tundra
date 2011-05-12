@@ -808,6 +808,9 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
 
 QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
 {
+    if (assetRef.trimmed().isEmpty())
+        return "";
+
     context = context.trimmed();
 
     // First see if we have an exact match for the ref to an existing asset.
