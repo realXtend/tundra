@@ -119,25 +119,39 @@ QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine)
 
 QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engine)
 {
-    Vector3df vec;
-    Vector3df vec2;
-    float d = 0.0;
-    fromScriptValueVector3(ctx->thisObject(), vec);
-    if (ctx->argumentCount() == 2)
+    QScriptValue retValue;
+
+    int argCount = ctx->argumentCount();
+    if (argCount >= 2 && argCount <= 3)
     {
-        if (ctx->argument(0).isObject() &&
-            ctx->argument(1).isNumber())
+        Vector3df vec, vec2;
+        fromScriptValueVector3(ctx->thisObject(), vec);
+
+        // Ensure that the last argument is a number. 
+        if (!ctx->argument(argCount - 1).isNumber())
+            return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): agrument(" + QString::number(argCount - 1) + ") isn't a number.");
+        float d = ctx->argument(argCount - 1).toNumber();
+
+        if (argCount == 2 && ctx->argument(0).isObject())
         {
             vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
-            d = (float)ctx->argument(1).toNumber();
+            retValue = toScriptValueVector3(engine, vec.getInterpolated(vec2, d));
+        }
+        else if(ctx->argument(0).isObject() &&
+                ctx->argument(1).isObject())
+        {
+            Vector3df vec3;
+            vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+            vec3 = engine->fromScriptValue<Vector3df>(ctx->argument(1));
+            vec = vec.interpolate(vec3, vec2, d);
+            retValue = toScriptValueVector3(engine, vec); 
         }
         else
             return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): agrument types are invalid.");
     }
     else
         return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments.");
-      
-    return toScriptValueVector3(engine, vec.getInterpolated(vec2, d));
+    return retValue;
 }
 
 QScriptValue Quaternion_prototype_ToEuler(QScriptContext *ctx, QScriptEngine *engine);
