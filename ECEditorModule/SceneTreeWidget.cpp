@@ -322,7 +322,6 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     {
         menu->addAction(editAction);
         menu->setDefaultAction(editAction);
-        menu->setDefaultAction(editAction);
         menu->addAction(editInNewAction);
     }
 
