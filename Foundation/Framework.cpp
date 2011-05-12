@@ -144,7 +144,7 @@ namespace Foundation
             application = new Application(this, argc_, argv_);
             initialized_ = true;
 
-            asset = new AssetAPI(headless_);
+            asset = new AssetAPI(this, headless_);
             const char cDefaultAssetCachePath[] = "/assetcache";
             asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
 

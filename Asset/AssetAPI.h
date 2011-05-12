@@ -30,12 +30,17 @@ typedef std::map<QString, AssetPtr> AssetMap;
 
 typedef std::vector<AssetStoragePtr> AssetStorageVector;
 
+namespace Foundation
+{
+    class Framework;
+}
+
 class AssetAPI : public QObject
 {
     Q_OBJECT
 
 public:
-    AssetAPI(bool isHeadless);
+    AssetAPI(Foundation::Framework *fw, bool isHeadless);
 
     ~AssetAPI();
 
@@ -327,6 +332,8 @@ public slots:
     /// Emit AssetDeleted signal
     void EmitAssetDeleted(const QString &assetRef);
 
+    Foundation::Framework *GetFramework() { return fw; }
+
 public:
     /// Explodes the given asset storage description string to key-value pairs.
     static QMap<QString, QString> ParseAssetStorageString(QString storageString);
@@ -424,6 +431,8 @@ private:
     std::vector<AssetProviderPtr> providers;
 
     AssetCache *assetCache;
+
+    Foundation::Framework *fw;
 };
 
 #include "AssetAPI.inl"

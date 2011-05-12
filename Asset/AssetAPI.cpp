@@ -28,8 +28,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
 using namespace Foundation;
 
-AssetAPI::AssetAPI(bool isHeadless)
-:assetCache(0),
+AssetAPI::AssetAPI(Foundation::Framework *fw_, bool isHeadless)
+:fw(fw_), assetCache(0),
 diskSourceChangeWatcher(0),
 isHeadless_(isHeadless)
 {
