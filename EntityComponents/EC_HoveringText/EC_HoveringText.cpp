@@ -40,17 +40,17 @@ EC_HoveringText::EC_HoveringText(Framework *fw) :
     billboard_(0),
     visibility_animation_timeline_(new QTimeLine(1000, this)),
     visibility_timer_(new QTimer(this)),
-    usingGradAttr(this, "Use Gradiant", false),
-    textAttr(this, "Text"),
-    fontAttr(this, "Font", "Arial"),
-    fontColorAttr(this, "Font Color"),
-    fontSizeAttr(this, "Font Size", 100),    
-    backgroundColorAttr(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
-    positionAttr(this, "Position", Vector3df(0.0f, 0.0f, 1.0f)),
-    gradStartAttr(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
-    gradEndAttr(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
-    borderColorAttr(this, "Border Color", Color(0.0f,0.0f,0.0f,0.0f)),
-    borderThicknessAttr(this, "Border Thickness", 0.0)
+    usingGrad(this, "Use Gradiant", false),
+    text(this, "Text"),
+    font(this, "Font", "Arial"),
+    fontColor(this, "Font Color"),
+    fontSize(this, "Font Size", 100),    
+    backgroundColor(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
+    position(this, "Position", Vector3df(0.0f, 0.0f, 0.0f)),
+    gradStart(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
+    gradEnd(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
+    borderColor(this, "Border Color", Color(0.0f,0.0f,0.0f,0.0f)),
+    borderThickness(this, "Border Thickness", 0.0)
 {
     //renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
     renderer_ = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
@@ -297,7 +297,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
         sceneNode->attachObject(billboardSet_);
     }
 
-    //textAttr.Set(text);
+    //text.Set(text);
     Redraw();
 }
 
@@ -404,17 +404,17 @@ QPixmap EC_HoveringText::GetTextPixmap()
 
     // Ask painter the rect for the text
     painter.setFont(font_);
-    QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, textAttr.Get());
+    QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, text.Get());
 
     // Add some padding to it
     QFontMetrics metric(font_); 
-    int width = metric.width(textAttr.Get()) + metric.averageCharWidth();
+    int width = metric.width(text.Get()) + metric.averageCharWidth();
     int height = metric.height() + 20;
     rect.setWidth(width);
     rect.setHeight(height);
 
     // Set background brush
-    if (usingGradAttr.Get())
+    if (usingGrad.Get())
     {   bg_grad_.setStart(QPointF(0,rect.top()));
         bg_grad_.setFinalStop(QPointF(0,rect.bottom()));
         painter.setBrush(QBrush(bg_grad_));
@@ -423,19 +423,19 @@ QPixmap EC_HoveringText::GetTextPixmap()
         painter.setBrush(backgroundColor_);
 
     QColor borderCol;
-    Color col = borderColorAttr.Get();
+    Color col = borderColor.Get();
     borderCol.setRgbF(col.r, col.g, col.b, col.a);
 
     // Draw background rect
     QPen borderPen;
     borderPen.setColor(borderCol);
-    borderPen.setWidthF(borderThicknessAttr.Get());
+    borderPen.setWidthF(borderThickness.Get());
     painter.setPen(borderPen);
     painter.drawRoundedRect(rect, 20.0, 20.0);
 
     // Draw text
     painter.setPen(textColor_);
-    painter.drawText(rect, Qt::AlignCenter | Qt::TextWordWrap, textAttr.Get());
+    painter.drawText(rect, Qt::AlignCenter | Qt::TextWordWrap, text.Get());
 
     return pixmap;
 }
@@ -458,38 +458,38 @@ void EC_HoveringText::OnAttributeUpdated(IComponent *component, IAttribute *attr
         return;
 
     QString attrName = QString::fromStdString(attribute->GetNameString());
-    if(QString::fromStdString(fontAttr.GetNameString()) == attrName ||QString::fromStdString(fontSizeAttr.GetNameString()) == attrName)
+    if(QString::fromStdString(font.GetNameString()) == attrName ||QString::fromStdString(fontSize.GetNameString()) == attrName)
     {
-        SetFont(QFont(fontAttr.Get(), fontSizeAttr.Get()));
+        SetFont(QFont(font.Get(), fontSize.Get()));
     }
-    else if(QString::fromStdString(backgroundColorAttr.GetNameString()) == attrName)
+    else if(QString::fromStdString(backgroundColor.GetNameString()) == attrName)
     {
-        Color col = backgroundColorAttr.Get();
+        Color col = backgroundColor.Get();
         backgroundColor_.setRgbF(col.r, col.g, col.b, col.a);
     }
-    else if(QString::fromStdString(fontColorAttr.GetNameString()) == attrName)
+    else if(QString::fromStdString(fontColor.GetNameString()) == attrName)
     {
-        Color col = fontColorAttr.Get();
+        Color col = fontColor.Get();
         textColor_.setRgbF(col.r, col.g, col.b, col.a);
     }
-    else if(QString::fromStdString(positionAttr.GetNameString()) == attrName)
+    else if(QString::fromStdString(position.GetNameString()) == attrName)
     {
-        SetPosition(positionAttr.Get());
+        SetPosition(position.Get());
     }
-    else if(QString::fromStdString(gradEndAttr.GetNameString()) == attrName ||
-        QString::fromStdString(gradStartAttr.GetNameString()) == attrName ||
-        QString::fromStdString(gradEndAttr.GetNameString()) == attrName)
+    else if(QString::fromStdString(gradEnd.GetNameString()) == attrName ||
+        QString::fromStdString(gradStart.GetNameString()) == attrName ||
+        QString::fromStdString(gradEnd.GetNameString()) == attrName)
     {
         QColor colStart;
         QColor colEnd;
-        Color col = gradStartAttr.Get();
+        Color col = gradStart.Get();
         colStart.setRgbF(col.r, col.g, col.b);
-        col = gradEndAttr.Get();
+        col = gradEnd.Get();
         colEnd.setRgbF(col.r, col.g, col.b);
         SetBackgroundGradient(colStart, colEnd);
     }
 
     // Repaint the new text with new appearance.
-    ShowMessage(textAttr.Get());
+    ShowMessage(text.Get());
 }
 

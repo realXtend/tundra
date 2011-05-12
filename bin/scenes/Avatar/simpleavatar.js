@@ -356,16 +356,19 @@ function ClientInitialize() {
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {
-                var hoveringWidget = me.GetOrCreateComponent("EC_HoveringWidget", 2, false);
-                if (hoveringWidget != null) {
-                    hoveringWidget.SetNetworkSyncEnabled(false);
-                    hoveringWidget.SetTemporary(true);
-                    hoveringWidget.InitializeBillboards();
-                    hoveringWidget.SetButtonsDisabled(true);
-                    hoveringWidget.SetText(clientName.description);
-                    hoveringWidget.SetFontSize(100);
-                    hoveringWidget.SetTextHeight(200);
-                    hoveringWidget.Show();
+                var name_tag = me.GetOrCreateComponent("EC_HoveringText", 2, false);
+                if (name_tag != null) {
+                    name_tag.SetNetworkSyncEnabled(false);
+                    name_tag.SetTemporary(true);
+                    name_tag.text = clientName.description;
+                    var pos = name_tag.position;
+                    pos.y = 1.3;
+                    name_tag.position = pos;
+                    name_tag.fontSize = 90;
+                    var color = new Color(0.2, 0.2, 0.2, 1.0);
+                    name_tag.backgroundColor = color;
+                    var font_color = new Color(1.0, 1.0, 1.0, 1.0);                
+                    name_tag.fontColor = font_color;
                 }
             }
         }

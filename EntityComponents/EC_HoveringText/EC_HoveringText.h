@@ -40,27 +40,27 @@ HoveringText shows a hovering text attached to an entity.
 <b>Attributes</b>:
 
 <ul>
-<li>QString : textAttr
+<li>QString : text
 <div>Text to be shown</div>
-<li>QString: fontAttr
+<li>QString: font
 <div>Font family</div>
-<li>Color: fontColorAttr
+<li>Color: fontColor
 <div>Font Color</div>
-<li>int: fontSizeAttr
+<li>int: fontSize
 <div>Font Size</div>
-<li>Color: backgroundColorAttr
+<li>Color: backgroundColor
 <div>Color of the background</div>
-<li>Vector3df: positionAttr
+<li>Vector3df: position
 <div>Position of the text on entity</div>
-<li>bool: usingGradAttr
+<li>bool: usingGrad
 <div>If using Gradient color </div>
-<li>Color: gradStartAttr
+<li>Color: gradStart
 <div>Gradient start</div>
-<li>Color: gradEndAttr
+<li>Color: gradEnd
 <div>Gradient End</div>
-<li>Color: borderColorAttr
+<li>Color: borderColor
 <div>define color of the border</div>
-<li>float: borderThicknessAttr
+<li>float: borderThickness
 <din>define width of border</div>
 </ul>
 
@@ -101,38 +101,38 @@ public:
     /// Destructor.
     ~EC_HoveringText();
 
-    Q_PROPERTY(QString textAttr READ gettextAttr WRITE settextAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, textAttr);
+    Q_PROPERTY(QString text READ gettext WRITE settext);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, text);
 
-    Q_PROPERTY(QString fontAttr READ getfontAttr WRITE setfontAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, fontAttr);
+    Q_PROPERTY(QString font READ getfont WRITE setfont);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, font);
 
-    Q_PROPERTY(int fontSizeAttr READ getfontSizeAttr WRITE setfontSizeAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, fontSizeAttr);
+    Q_PROPERTY(int fontSize READ getfontSize WRITE setfontSize);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, fontSize);
 
-    Q_PROPERTY(Color fontColorAttr READ getfontColorAttr WRITE setfontColorAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(Color, fontColorAttr);
+    Q_PROPERTY(Color fontColor READ getfontColor WRITE setfontColor);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, fontColor);
 
-    Q_PROPERTY(Color backgroundColorAttr READ getbackgroundColorAttr WRITE setbackgroundColorAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(Color, backgroundColorAttr);
+    Q_PROPERTY(Color backgroundColor READ getbackgroundColor WRITE setbackgroundColor);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, backgroundColor);
 
-    Q_PROPERTY(Color borderColorAttr READ getborderColorAttr WRITE setborderColorAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(Color, borderColorAttr);
+    Q_PROPERTY(Color borderColor READ getborderColor WRITE setborderColor);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, borderColor);
 
-    Q_PROPERTY(float borderThicknessAttr READ getborderThicknessAttr WRITE setborderThicknessAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(float, borderThicknessAttr);
+    Q_PROPERTY(float borderThickness READ getborderThickness WRITE setborderThickness);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, borderThickness);
 
-    Q_PROPERTY(Vector3df positionAttr READ getpositionAttr WRITE setpositionAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, positionAttr);
+    Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, position);
     
-    Q_PROPERTY(bool usingGradAttr READ getusingGradAttr WRITE setusingGradAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, usingGradAttr);
+    Q_PROPERTY(bool usingGrad READ getusingGrad WRITE setusingGrad);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, usingGrad);
 
-    Q_PROPERTY(Color gradStartAttr READ getgradStartAttr WRITE setgradStartAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(Color, gradStartAttr);
+    Q_PROPERTY(Color gradStart READ getgradStart WRITE setgradStart);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, gradStart);
     
-    Q_PROPERTY(Color gradEndAttr READ getgradEndAttr WRITE setgradEndAttr);
-    DEFINE_QPROPERTY_ATTRIBUTE(Color, gradEndAttr);
+    Q_PROPERTY(Color gradEnd READ getgradEnd WRITE setgradEnd);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, gradEnd);
 
     /// Clears the 3D subsystem resources for this object.
     void Destroy();
