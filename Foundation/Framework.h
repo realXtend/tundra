@@ -22,6 +22,7 @@ class ConsoleAPI;
 class DebugAPI;
 class SceneAPI;
 class ConfigAPI;
+class DevicesAPI;
 class Application;
 class ApiVersionInfo;
 class ApplicationVersionInfo;
@@ -234,6 +235,9 @@ namespace Foundation
         /// Returns core API Config object.
         ConfigAPI *Config() const;
 
+        /// Return core API Devices object.
+        DevicesAPI *Devices() const;
+
         /// Returns Tundra API version info object.
         ApiVersionInfo *ApiVersion() const;
 
@@ -299,6 +303,7 @@ namespace Foundation
         DebugAPI *debug; ///< The Debug API.
         SceneAPI *scene; ///< The Scene API.
         ConfigAPI *config; ///< The Config API.
+        DevicesAPI *devices; ///< The Devices API.
 
         /// The Tundra API version info of this build. May differ from the end user application version of the default distribution, i.e. app may change when api stays same.
         ApiVersionInfo *api_versioninfo_;

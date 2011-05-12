@@ -24,6 +24,7 @@
 #include "DebugAPI.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
+#include "DevicesAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "VersionInfo.h"
@@ -170,6 +171,7 @@ namespace Foundation
 
             input = new InputAPI(this);
             console = new ConsoleAPI(this);
+            devices = new DevicesAPI(this);
 
             // Initialize SceneAPI.
             scene->Initialise();
@@ -780,6 +782,11 @@ namespace Foundation
     ConfigAPI *Framework::Config() const
     {
         return config;
+    }
+
+    DevicesAPI *Framework::Devices() const
+    {
+        return devices;
     }
 
     ApiVersionInfo *Framework::ApiVersion() const

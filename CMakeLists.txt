@@ -198,11 +198,13 @@ include_directories(Input)
 include_directories(Ui)
 include_directories(Asset)
 include_directories(Scene)
+include_directories(Devices)
 
 link_directories(Input)
 link_directories(Ui)
 link_directories(Asset)
 link_directories(Scene)
+link_directories(Devices)
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from the template file.

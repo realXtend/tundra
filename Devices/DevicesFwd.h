@@ -1,0 +1,3 @@
+
+class DevicesAPI;
+class IDevice;

@@ -66,6 +66,7 @@ add_subdirectory(Console)
 add_subdirectory(Input)
 add_subdirectory(Ui)
 add_subdirectory(Scene)
+add_subdirectory(Devices)
 
 add_subdirectory(OgreRenderingModule)
 add_subdirectory(KristalliProtocolModule)

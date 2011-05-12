@@ -1,0 +1,353 @@
+/*! 
+
+\page device_api_page DeviceAPI: Implementing and using a device
+
+\section device_api_intro Introduction
+
+DevicesAPI provides registering and getting devies. These devices implement a common interface IDevice or one of the more spesific device interfaces.
+The beneficial part of using (registering your device) DevicesAPI versus just making a custom module to do device I/O, is that the data can be shared in a common manner via IDevices and their data signals. 
+Without the need of the device user needing to fetch your module and getting the device in that manner. The using code does not have to know anything were the device is actually implemented
+
+The device data source can be anything, not just hardware. It can be a file on your hard drive (like the example code shows), network, hardware device, another process etc. Its up to you when you implement a device.
+There is a more detailed interface for positional devices, as we are in a 3D application such devices are common, eg. kinect, head tracker, gps, mobile phone accelerometer etc. If you have a positional device you
+propably want to inherit IPositionalDevice instead of IDevice, just as our example will show you.
+
+Next we will cover example code on how to use DevicesAPI. First how to implement a device and then how to implement code that uses this device.
+
+\section DummyDevice
+
+This dummy device will show you how to implement a device that works with DeviceAPI. This class is called DummyDevice as its data source is a text file that has positions listed in it. Inherits IPositionalDevice.
+    
+<h2>Device source data file</h2>
+
+\code
+0.01 0.01 0.01
+0.01 0.01 0.01
+0.01 0.01 0.01
+0.02 0.02 0.02
+0.03 0.03 0.03
+0.04 0.04 0.04
+0.05 0.05 0.05
+0.06 0.06 0.06
+0.07 0.07 0.07
+0.08 0.08 0.08
+0.09 0.09 0.09
+0.10 0.10 0.10
+-0.01 -0.01 -0.01
+-0.01 -0.01 -0.01
+-0.01 -0.01 -0.01
+-0.02 -0.02 -0.02
+-0.03 -0.03 -0.03
+-0.04 -0.04 -0.04
+-0.05 -0.05 -0.05
+-0.06 -0.06 -0.06
+-0.07 -0.07 -0.07
+-0.08 -0.08 -0.08
+-0.09 -0.09 -0.09
+-0.10 -0.10 -0.10
+\endcode
+
+<h2>DummyDevice.h</h2>
+
+\code
+    #ifndef incl_DummyDevice_h
+    #define incl_DummyDevice_h
+
+    #include "IPositionalDevice.h"
+
+    class DummyDevice : public IPositionalDevice
+    {
+    Q_OBJECT
+
+    public:
+        DummyDevice(const QString &name, const QString &dataFilePath);
+        virtual ~DummyDevice();
+
+    protected:
+        /// IDevice override.
+        virtual bool InternalInitialize();
+
+        /// IDevice override.
+        virtual bool InternalStart();
+
+        /// IDevice override
+        virtual bool InternalStop();
+
+        /// IDevice override.
+        void InternalUpdate(float frametime);
+
+    private:
+        int dataIndex_;
+
+        float updateFps_;
+        float updateBuildup_;
+
+        QString dataFilePath_;
+        QList<Vector3df> dataPositions_;
+    };
+
+    #endif
+\endcode
+
+<h2>DummyDevice.cpp</h2>
+
+\code
+    #include "StableHeaders.h"
+    #include "DummyDevice.h"
+
+    #include <QFile>
+    #include <QDebug>
+
+    #include "LoggingFunctions.h"
+    DEFINE_POCO_LOGGING_FUNCTIONS("DummyDevice")
+
+    DummyDevice::DummyDevice(const QString &name, const QString &dataFilePath) :
+        IPositionalDevice(name),
+        dataFilePath_(dataFilePath),
+        dataIndex_(0),
+        updateFps_(1.0f / 25.0f), // 25 fps
+        updateBuildup_(0.0f)
+    {
+    }
+
+    DummyDevice::~DummyDevice()
+    {
+    }
+
+    bool DummyDevice::InternalInitialize()
+    {
+        QFile dataFile(dataFilePath_);
+        if (!dataFile.exists())
+        {
+            LogWarning(Name() + " could not read the data source: " + dataFilePath_);
+            return false;
+        }
+        if (!dataFile.open(QIODevice::ReadOnly))
+        {
+            LogWarning(Name() + " could not open the data source: " + dataFilePath_);
+            return false;
+        }
+
+        while(true)
+        {
+            // One line has one vector as "x y z"
+            QString line = dataFile.readLine();
+            if (line.isEmpty())
+                break;
+            QStringList vectorSplit = line.split(" ", QString::SkipEmptyParts);
+            if (vectorSplit.count() >= 3)
+                dataPositions_.append(Vector3df(vectorSplit.at(0).toFloat(), vectorSplit.at(1).toFloat(), vectorSplit.at(2).toFloat()));
+        }
+
+        dataFile.close();
+        return !dataPositions_.isEmpty();
+    }
+
+    bool DummyDevice::InternalStart()
+    {
+        // Nothing to start for a dummy device
+        return true;
+    }
+
+    bool DummyDevice::InternalStop()
+    {
+        // Nothing to stop for our dummy device.
+        return true;
+    }
+
+    void DummyDevice::InternalUpdate(float frametime)
+    {
+        // For our dummy device we don't constantly read a library or similar for streamed input
+        // but we loop around our vector line. In a read device this function would read the device library for data and emit the most recent data.
+
+        // 'Artificial' 25 fps limiter not to emit data too fast
+        // its up to the device implementation to figure our the correct fps
+        // you can and should utilise IDevice::SetSettings() for things like fps.
+        updateBuildup_ += frametime;
+        if (updateBuildup_ < updateFps_)
+            return;
+        updateBuildup_ = 0.0;
+
+        if (dataIndex_ >= dataPositions_.count())
+            dataIndex_ = 0;
+
+        Vector3df nextPos = dataPositions_.at(dataIndex_);
+        dataIndex_++;
+
+        emit PositionEvent("main-pos", nextPos);
+    }
+
+\endcode
+
+\section DummyDeviceReader
+
+This dummy device reader connects to the devices data signal. Adds a UI toggle button to the client ui when connected inworld. Device is started and stopped when this UI button is pressed. On positional data we manipulate the active camera position.
+    
+<h2>DummyDeviceReader.h</h2>
+
+\code
+    #ifndef incl_DummyDeviceReader_h
+    #define incl_DummyDeviceReader_h
+
+    #include <QObject>
+    #include "Vector3D.h"
+
+    namespace Foundation { class Framework; }
+
+    class DummyDeviceReader : public QObject
+    {
+
+    Q_OBJECT
+
+    public:
+        DummyDeviceReader(Foundation::Framework *framework, const QString &deviceName);
+        virtual ~DummyDeviceReader();
+
+    private slots:
+        /// Gets notification of connected event.
+        void ClientConnected();
+
+        /// Gets notification of disconnected event.
+        void ClientDisconnected();
+
+        /// Handler for when manip camera UI action is triggered.
+        void ToggleManipCamera();
+
+        /// Get position updates from our device.
+        void PositionUpdate(const QString &objectId, Vector3df pos);
+
+    private:
+        Foundation::Framework *framework_;
+        QString deviceName_;
+
+    };
+
+    #endif
+\endcode
+
+<h2>DummyDeviceReader.cpp</h2>
+
+\code
+    #include "StableHeaders.h"
+    #include "DummyDeviceReader.h"
+
+    #include "Framework.h"
+    #include "TundraLogicModule.h"
+    #include "Client.h"
+
+    #include "SceneAPI.h"
+    #include "UiAPI.h"
+    #include "DevicesAPI.h"
+
+    #include "EC_OgreCamera.h"
+    #include "EC_Placeable.h"
+
+    #include "SceneManager.h"
+    #include "Entity.h"
+
+    #include "IPositionalDevice.h"
+
+    #include <QAction>
+
+    #include "LoggingFunctions.h"
+    DEFINE_POCO_LOGGING_FUNCTIONS("DummyDeviceReader")
+
+    DummyDeviceReader::DummyDeviceReader(Foundation::Framework *framework, const QString &deviceName) :
+        QObject(0),
+        framework_(framework),
+        deviceName_(deviceName)
+    {
+        // We want to start the device when connected and stop when disconnected. This is one way of doing that
+        TundraLogic::TundraLogicModule *tundraLogic = framework_->GetModule<TundraLogic::TundraLogicModule>();
+        if (tundraLogic)
+        {
+            TundraLogic::Client *client = tundraLogic->GetClient().get();
+            connect(client, SIGNAL(Connected()), SLOT(ClientConnected()));
+            connect(client, SIGNAL(Disconnected()), SLOT(ClientDisconnected()));
+        }
+        else
+            LogError("Could not connect to connected/disconnected from client. Tundra logic module not loaded yet?");
+
+        // Fetch our device that we are interested in and connect to its data signal.
+        IDevice *dummyDevice = framework_->Devices()->GetDevice(deviceName_);
+        if (dummyDevice)
+        {
+            IPositionalDevice *posDummyDevice = dynamic_cast<IPositionalDevice*>(dummyDevice);
+            if (posDummyDevice)
+                connect(posDummyDevice, SIGNAL(PositionEvent(const QString &, Vector3df)), SLOT(PositionUpdate(const QString&, Vector3df)));
+            else
+                LogError("The '" + deviceName_ + "' is not a PositionalDevice.");
+        }
+        else
+            LogError("Could not find '" + deviceName_ + "' from DevicesAPI.");
+    }
+
+    DummyDeviceReader::~DummyDeviceReader()
+    {
+    }
+
+    void DummyDeviceReader::ClientConnected()
+    {
+        // Add a toggle for starting and stopping manip. Note that you propably only want to make this action once in ctor and always pass that same one when connected.
+        QAction *act = new QAction("Manipulate Camera with dummy input device data", this);
+        connect(act, SIGNAL(triggered()), SLOT(ToggleManipCamera()));
+        framework_->Ui()->EmitAddAction(act, "Toggle Manipulating Camera with device data");
+    }
+
+    void DummyDeviceReader::ClientDisconnected()
+    {
+        // Stop the device when disconnecting
+        IDevice *dummyDevice = framework_->Devices()->GetDevice(deviceName_);
+        if (dummyDevice)
+            dummyDevice->Stop();
+    }
+
+    void DummyDeviceReader::ToggleManipCamera()
+    {
+        // This function is called when UI toggle button is pressed. See ClientConnected().
+
+        // Start/stop the device, it will start emitting its data signals if started
+        IDevice *dummyDevice = framework_->Devices()->GetDevice(deviceName_);
+        if (dummyDevice)
+        {
+            if (!dummyDevice->IsRunning())
+                dummyDevice->Start();
+            else
+                dummyDevice->Stop();
+        }
+    }
+
+    void DummyDeviceReader::PositionUpdate(const QString &objectId, Vector3df pos)
+    {
+        // Get current scene
+        Scene::SceneManager *scene = framework_->Scene()->GetDefaultSceneRaw();
+        if (!scene)
+            return;
+
+        // Find the active camera to manipulate
+        EC_OgreCamera *activeCam = 0;
+        QList<Scene::Entity*> camEnts = scene->GetEntitiesWithComponentRaw(EC_OgreCamera::TypeNameStatic());
+        foreach(Scene::Entity *camEnt, camEnts)
+        {
+            EC_OgreCamera *cam = camEnt->GetComponent<EC_OgreCamera>().get();
+            if (cam->IsActive())
+            {
+                activeCam = cam;
+                break;
+            }
+        }
+
+        // Manipulate camera position with device data.
+        if (activeCam && activeCam->GetParentEntity())
+        {
+            EC_Placeable *activePlaceable = activeCam->GetParentEntity()->GetComponent<EC_Placeable>().get();
+            if (activePlaceable)
+            {
+                Transform t = activePlaceable->gettransform();
+                t.position += pos;
+                activePlaceable->settransform(t);
+            }
+        }
+    }
+\endcode
+*/
