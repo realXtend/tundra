@@ -23,6 +23,7 @@ struct MsgLogin
 		priority = 100;
 	}
 
+    enum { messageID = 100 };
 	static inline u32 MessageID() { return 100; }
 	static inline const char *Name() { return "Login"; }
 

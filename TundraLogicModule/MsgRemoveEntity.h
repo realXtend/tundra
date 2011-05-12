@@ -23,6 +23,7 @@ struct MsgRemoveEntity
 		priority = 100;
 	}
 
+    enum { messageID = 111 };
 	static inline u32 MessageID() { return 111; }
 	static inline const char *Name() { return "RemoveEntity"; }
 

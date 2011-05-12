@@ -23,6 +23,7 @@ struct MsgClientJoined
 		priority = 100;
 	}
 
+    enum { messageID = 102 };
 	static inline u32 MessageID() { return 102; }
 	static inline const char *Name() { return "ClientJoined"; }
 
