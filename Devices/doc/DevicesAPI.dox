@@ -16,6 +16,53 @@ Next we will cover example code on how to use DevicesAPI. First how to implement
 
 \section DummyDevice
 
+<h2>A brief script example: Implementing and resing a device</h2>
+
+You can also register devices from scripting languages. The DeviceAPI can create a device for you, but you will lose the nice features of inheriting the actual interfaces. But this is more straight forward than
+figuring out how to inherit a C++ interface in your script. Next a brief example what you need to do in python to register and use a device.
+
+\code
+
+class KinectFeeder:
+
+    def init(self):
+        self.kinect = naali.devices.CreateAndRegisterPositionalDevice("kinect")
+        if self.kinect == None:
+            print "Failed to register kinect device!"
+        else:
+            # As we are not inheriting IPositionalDevice in our implementation we need to take 
+            # care of our own when we do updates and emit data signals
+            naali.frame.connect("Updated(float)", self.updatekinect)
+
+    def updatekinect(frametime):
+        # Do your device data reading
+        ...
+        
+        # Emit data signals
+        for bonename, bonepos in bonepositions:
+            self.kinect.PositionEvent(bonename, bonepos)
+        self.kinect.OrientationEvent("hand-orientation", handquaternion)
+
+class KinectReader:
+    
+    def init(self):
+        kinect = naali.devices.GetDevice("kinect")
+        if kinect == None:
+            print "Coult not find kinect device!"
+        else:
+            kinect.connect("PositionalEvent(QString, Vector3df)", self.handleposdata)
+
+    def handleposdata(name, pos):
+        # Do something sensible with the data, like move avatar bones
+        print "Object name: ", name
+        print "Position" + pos.x + " " + pos.y + " " + pos.z
+    
+if __name__ == "__main__":
+    feeder = KinectFeeder()
+    reader = KinectReader()
+    
+\endcode
+
 This dummy device will show you how to implement a device that works with DeviceAPI. This class is called DummyDevice as its data source is a text file that has positions listed in it. Inherits IPositionalDevice.
     
 <h2>Device source data file</h2>
