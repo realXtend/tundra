@@ -14,6 +14,12 @@
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("OgreTextureAsset")
 
+TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_)
+:IAsset(owner, type_, name_)
+{
+    ogreAssetName = OgreRenderer::SanitateAssetIdForOgre(this->Name().toStdString()).c_str();
+}
+
 TextureAsset::~TextureAsset()
 {
     Unload();
@@ -203,6 +209,14 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
     return img;
 }
 
+void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps)
+{
+    ///\todo Could optimize a lot here, don't create this temporary vector.
+    ///\todo This only works for 32bpp images.
+    std::vector<u32> data(newWidth * newHeight, color);
+    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps);
+}
+
 void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps)
 {
     PROFILE(TextureAsset_SetContents);
@@ -251,11 +265,13 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
                 {
                     const int bytesPerPixel = 4; ///\todo Count from Ogre::PixelFormat!
                     const int sourceStride = bytesPerPixel * newWidth;
+
                     if (lock.Pitch == sourceStride)
                         memcpy(lock.pBits, data, sourceStride * newHeight);
                     else
                         for(int y = 0; y < newHeight; ++y)
                             memcpy((u8*)lock.pBits + lock.Pitch * y, data + sourceStride * y, sourceStride);
+
                     surface->UnlockRect();
                 }
             }
