@@ -23,18 +23,22 @@ Windows Registry Editor Version 5.00
 [HKEY_CLASSES_ROOT\Applications\Tundrad.exe]
 [HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell]
 [HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenServerD]
-@="Open in Tundra ServerD"
+@="Open in TundraD Server (UDP, 2345)"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
-[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenServerD\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundrad.exe\" --file \"%1\""
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenServer\Command]
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\Tundrad.exe\" --file \"%1\" --server 2345 --protocol udp"
 
-[HKEY_CLASSES_ROOT\Applications\Tundrad.exe]
-[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell]
 [HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenViewerD]
-@="Open Tundra ViewerD in this directory"
+@="Open in offline TundraD Viewer"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
-[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenViewerD\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundrad.exe\" --storage \"%1\""
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenViewer\Command]
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\Tundrad.exe\" --file \"%1\""
+
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenClientD]
+@="Launch TundraD Client"
+"Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
+[HKEY_CLASSES_ROOT\Applications\Tundrad.exe\Shell\OpenClient\Command]
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\Tundrad.exe\" --config viewer.xml"
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type]
 @="Tundra Scene File"
@@ -44,13 +48,19 @@ Windows Registry Editor Version 5.00
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell]
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenServerD]
-@="Open in Tundra ServerD"
+@="Open in TundraD Server (UDP, 2345)"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenServerD\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundrad.exe\" --file \"%1\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\Tundrad.exe\" --file \"%1\" --server 2345 --protocol udp"
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenViewerD]
-@="Open Tundra ViewerD in this directory"
+@="Open in offline TundraD Viewer"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenViewerD\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundrad.exe\" --storage \"%1\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\Tundrad.exe\" --file \"%1\""
+
+[HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenClientD]
+@="Launch Tundra ClientD"
+"Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon_debug.ico\",0"
+[HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenClientD\Command]
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\Tundrad.exe\" --config viewer.xml"

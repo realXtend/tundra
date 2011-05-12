@@ -23,18 +23,22 @@ Windows Registry Editor Version 5.00
 [HKEY_CLASSES_ROOT\Applications\Tundra.exe]
 [HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell]
 [HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenServer]
-@="Open in Tundra Server"
+@="Open in Tundra Server (UDP, 2345)"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\naali_logo_32px_RC1.ico\",0"
 [HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenServer\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --file \"%1\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --file \"%1\" --server 2345 --protocol udp"
 
-[HKEY_CLASSES_ROOT\Applications\Tundra.exe]
-[HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell]
 [HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenViewer]
-@="Open Tundra Viewer in this directory"
+@="Open in offline Tundra Viewer"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\naali_logo_32px_RC1.ico\",0"
 [HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenViewer\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --storage \"%1\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --file \"%1\""
+
+[HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenClient]
+@="Launch Tundra Client"
+"Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\naali_logo_32px_RC1.ico\",0"
+[HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenClient\Command]
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --config viewer.xml"
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type]
 @="Tundra Scene File"
@@ -44,13 +48,19 @@ Windows Registry Editor Version 5.00
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell]
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenServer]
-@="Open in Tundra Server"
+@="Open in Tundra Server (UDP, 2345)"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\naali_logo_32px_RC1.ico\",0"
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenServer\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --file \"%1\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --file \"%1\" --server 2345 --protocol udp"
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenViewer]
-@="Open Tundra Viewer in this directory"
+@="Open in offline Tundra Viewer"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\naali_logo_32px_RC1.ico\",0"
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenViewer\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --storage \"%1\""
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --file \"%1\""
+
+[HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenClient]
+@="Launch Tundra Client"
+"Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\naali_logo_32px_RC1.ico\",0"
+[HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenClient\Command]
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --config viewer.xml"
