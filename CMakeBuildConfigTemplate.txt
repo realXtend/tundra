@@ -27,9 +27,6 @@ endif()
 # If WINDOWS_APP == 1, this window is not shown. This flag only affects when building on Windows.
 SET(WINDOWS_APP 0)
 
-# Set login scene type: 1 = dynamic switchable ether + normal login, 0 = static classical login
-SET(DYNAMIC_LOGIN_SCENE 1)
-
 # Enable the following flag to add compile with support for a built-in execution time profiler.
 #add_definitions(-DPROFILING)
 

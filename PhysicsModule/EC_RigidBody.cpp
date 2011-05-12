@@ -47,6 +47,8 @@ EC_RigidBody::EC_RigidBody(Framework *fw) :
     angularVelocity(this, "Angular velocity", Vector3df(0,0,0)),
     phantom(this, "Phantom", false),
     drawDebug(this, "Draw Debug", false),
+    collisionLayer(this, "Collision Layer", -1),
+    collisionMask(this, "Collision Mask", -1),
     body_(0),
     world_(0),
     shape_(0),
@@ -347,7 +349,7 @@ void EC_RigidBody::CreateBody()
     body_ = new btRigidBody(m, this, shape_, localInertia);
     body_->setUserPointer(this);
     body_->setCollisionFlags(collisionFlags);
-    world_->GetWorld()->addRigidBody(body_);
+    world_->GetWorld()->addRigidBody(body_, collisionLayer.Get(), collisionMask.Get());
     body_->activate();
 }
 
@@ -367,7 +369,7 @@ void EC_RigidBody::ReaddBody()
     body_->setCollisionFlags(collisionFlags);
     
     world_->GetWorld()->removeRigidBody(body_);
-    world_->GetWorld()->addRigidBody(body_);
+    world_->GetWorld()->addRigidBody(body_, collisionLayer.Get(), collisionMask.Get());
     body_->clearForces();
     body_->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
     body_->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
@@ -476,8 +478,8 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
     if (!body_)
         return;
     
-    if (attribute == &mass)
-        // Readd body to the world in case static/dynamic classification changed
+    if ((attribute == &mass) || (attribute == &collisionLayer) || (attribute == &collisionMask))
+        // Readd body to the world in case static/dynamic classification changed, or if collision mask changed
         ReaddBody();
     
     if (attribute == &friction)

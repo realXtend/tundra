@@ -76,7 +76,7 @@ Vector3df PhysicsWorld::GetGravity() const
     return ToVector3(world_->getGravity());
 }
 
-btDynamicsWorld* PhysicsWorld::GetWorld() const
+btDiscreteDynamicsWorld* PhysicsWorld::GetWorld() const
 {
     return world_;
 }
@@ -169,11 +169,8 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const Vector3df& origin, const Vecto
     normalizedDir.normalize();
     
     btCollisionWorld::ClosestRayResultCallback rayCallback(ToBtVector3(origin), ToBtVector3(origin + maxdistance * normalizedDir));
-    if ((collisiongroup) && (collisionmask))
-    {
-        rayCallback.m_collisionFilterGroup = collisiongroup;
-        rayCallback.m_collisionFilterMask = collisionmask;
-    }
+    rayCallback.m_collisionFilterGroup = collisiongroup;
+    rayCallback.m_collisionFilterMask = collisionmask;
     
     world_->rayTest(rayCallback.m_rayFromWorld, rayCallback.m_rayToWorld, rayCallback);
     

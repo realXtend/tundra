@@ -16,7 +16,6 @@ class btBroadphaseInterface;
 class btConstraintSolver;
 class btDiscreteDynamicsWorld;
 class btDispatcher;
-class btDynamicsWorld;
 class btCollisionObject;
 
 class PhysicsRaycastResult : public QObject
@@ -77,17 +76,17 @@ public slots:
     /** \param origin World origin position
         \param direction Direction to raycast to. Will be normalized automatically
         \param maxdistance Length of ray
-        \param collisiongroup Collision filter group (0 = use default)
-        \param collisionmask Collision filter mask (0 = use default)
+        \param collisionlayer Collision layer. Default has all bits set.
+        \param collisionmask Collision mask. Default has all bits set.
         \return result PhysicsRaycastResult structure
      */
-    PhysicsRaycastResult* Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup = 0, int collisionmask = 0);
+    PhysicsRaycastResult* Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup = -1, int collisionmask = -1);
     
     /// Return gravity
     Vector3df GetGravity() const;
     
     /// Return the Bullet world object
-    btDynamicsWorld* GetWorld() const;
+    btDiscreteDynamicsWorld* GetWorld() const;
     
     /// Return whether the physics world is for a client scene. Client scenes only simulate local entities' motion on their own.
     bool IsClient() const { return isClient_; }
@@ -105,12 +104,12 @@ signals:
         \param newCollision True if same collision did not happen on the previous frame. If collision has multiple contact points, newCollision can only be true for the first of them.
      */
     void PhysicsCollision(Entity* entityA, Entity* entityB, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
-     
-     /// Emitted after each simulation step
-     /** \param frametime Length of simulation step
-      */
-     void Updated(float frametime);
-     
+    
+    /// Emitted after each simulation step
+    /** \param frametime Length of simulation step
+     */
+    void Updated(float frametime);
+    
 private:
     /// Bullet collision config
     btCollisionConfiguration* collisionConfiguration_;

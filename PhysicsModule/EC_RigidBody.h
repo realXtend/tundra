@@ -68,6 +68,10 @@ Set to 0,0,0 to make for example an avatar capsule that does not tip over by its
 <div>If true, contact response is disabled, ie. there is no collision interaction between this object and others.</div>
 <li>bool: drawDebug
 <div>If true (default), collision shape will be visualized when physics debug drawing is enabled.</div>
+<li>int: collisionLayer
+<div>The collision layer bitmask of this rigidbody. Several bits can be set. 0 is default (all bits set)</div>
+<li>int: collisionMask
+<div>Tells with which collision layers this rigidbody collides with (a bitmask). 0 is default (all bits set)</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -193,6 +197,14 @@ public:
     /// Angular velocity
     Q_PROPERTY(Vector3df angularVelocity READ getangularVelocity WRITE setangularVelocity)
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, angularVelocity)
+    
+    /// Collision layer
+    Q_PROPERTY(int collisionLayer READ getcollisionLayer WRITE setcollisionLayer)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, collisionLayer)
+    
+    /// Collision mask
+    Q_PROPERTY(int collisionMask READ getcollisionMask WRITE setcollisionMask)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, collisionMask)
     
     /// btMotionState override. Called when Bullet wants us to tell the body's initial transform
     virtual void getWorldTransform(btTransform &worldTrans) const;
