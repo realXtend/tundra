@@ -65,6 +65,12 @@ public slots:
     virtual QVariantMap GetSettings() { return QVariantMap(); }
 
 signals:
+    /// Signal to notify when device was started.
+    void Started();
+
+    /// Signal to notify when device was stopped.
+    void Stopped();
+
     /// Generic data event for emitting data.
     /// \note Not all devices use this generic data signal, they might emit device specific signals.
     /// \param QVariantMap. QVariantMap is a typedef of QMap<QString, QVariant>. QString (the key) is name of data variable, QVariant (the value) is the data.

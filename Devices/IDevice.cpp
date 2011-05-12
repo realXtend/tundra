@@ -19,6 +19,8 @@ void IDevice::Start()
         return;
 
     running_ = InternalStart();
+    if (running_)
+        emit Started();
 }
 
 void IDevice::Stop()
@@ -27,6 +29,8 @@ void IDevice::Stop()
         return;
 
     running_ = !InternalStop();
+    if (!running_)
+        emit Stopped();
 }
 
 bool IDevice::IsRunning()
