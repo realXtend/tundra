@@ -28,16 +28,25 @@ TextureAsset::~TextureAsset()
 bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     if (!data)
-        return false; ///\todo Log out error.
+    {
+        LogError("TextureAsset::DeserializeFromData failed: Cannot deserialize from input null pointer!");
+        return false;
+    }
     if (numBytes == 0)
-        return false; ///\todo Log out error.
+    {
+        LogError("TextureAsset::DeserializeFromData failed: numBytes == 0!");
+        return false;
+    }
 
+    assert(!assetAPI->IsHeadless());
+    /*
+    ///\todo This can be removed.
     // Don't load textures to memory in headless mode
     if (assetAPI->IsHeadless())
     {
 	    return false;
     }
-
+*/
     try
     {
         // Convert the data into Ogre's own DataStream format.
@@ -183,7 +192,10 @@ bool TextureAsset::IsLoaded() const
 QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
 {
     if (!ogreTexture.get())
+    {
+        LogError("TextureAsset::ToQImage: Can't convert texture to QImage, Ogre texture is not initialized for asset \"" + ToString() + "\"!");
         return QImage();
+    }
 
     Ogre::HardwarePixelBufferSharedPtr pixelBuffer = ogreTexture->getBuffer(faceIndex, mipmapLevel);
     QImage::Format fmt;
@@ -231,7 +243,10 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
         ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
             newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
         if (!ogreTexture.get())
-            return; ///\todo Log error
+        {
+            LogError("TextureAsset::SetContents failed: Cannot create texture asset \"" + ToString() + "\" to name \"" + Name() + "\" and size " + QString::number(newWidth) + "x" + QString::number(newHeight) + "!");
+            return;
+        }
     }
 
     bool needRecreate = (newWidth != ogreTexture->getWidth() || newHeight != ogreTexture->getHeight() || ogreFormat != ogreTexture->getFormat());
