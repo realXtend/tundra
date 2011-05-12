@@ -53,8 +53,13 @@ public slots:
     bool IsRunning();
 
     /// Get the name of the device.
-    /// \name QString The name of the device
+    /// \name QString The name of the device.
     QString Name();
+
+    /// Get the interface type of the device as a string.
+    /// \note This is mostly for scripting languages to determine type of the interface so it can connect to the correct signals.
+    /// \return QString Type of the device, eg. "IDevice", "IPositonalDevice".
+    QString InterfaceType();
 
     /// Set settings for the device. All devices may not support settings, you can use GetSettings for a map that has the current settings available.
     /// \param QVariantMap. QVariantMap is a typedef of QMap<QString, QVariant>. QString (the key) is name of settings, QVariant (the value) is the setting value.
@@ -98,13 +103,17 @@ protected:
     /// @param frametime Frame time.
     virtual void InternalUpdate(float frametime) = 0;
 
+    /// Setter for the interface type. Called from I*Device implementations.
+    void SetInterfaceType(const QString &interfaceType) { interfaceType_ = interfaceType; }
+
 private:
-    /// Name of the device.
-    /// Can be accessed with IDevice::Name().
+    /// Name of the device. Can be accessed with IDevice::Name().
     QString name_;
 
-    /// Boolean for tracking if device is running.
-    /// Can be accessed with IDevice::IsRunning().
+    /// Interface type of the device.  Can be accessed with IDevice::InterfaceType().
+    QString interfaceType_;
+
+    /// Boolean for tracking if device is running. Can be accessed with IDevice::IsRunning().
     bool running_;
 };
 

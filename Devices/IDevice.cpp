@@ -4,7 +4,8 @@
 
 IDevice::IDevice(const QString &name) :
     name_(name),
-    running_(false)
+    running_(false),
+    interfaceType_("IDevice")
 {
 }
 
@@ -41,4 +42,9 @@ bool IDevice::IsRunning()
 QString IDevice::Name()
 {
     return name_;
+}
+
+QString IDevice::InterfaceType()
+{
+    return interfaceType_;
 }

@@ -5,6 +5,7 @@
 IPositionalDevice::IPositionalDevice(const QString &name) :
     IDevice(name)
 {
+    SetInterfaceType("IPositionalDevice");
 }
 
 IPositionalDevice::~IPositionalDevice()
