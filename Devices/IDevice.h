@@ -89,19 +89,19 @@ protected:
     /// Initialise the device. If this function returns false, the device is not added to the registered devices map. Called from IDevice::RegisterDevice().
     /// \note There is no InternalUninitialize. Uninitialize your device in the deconstructor as usual, when IDevice::~IDevice() is invoked it will automatically emit Destroyed() signal for your device.
     /// \return Bool Return true if initializing was successful, false otherwise.
-    virtual bool InternalInitialize() = 0;
+    virtual bool InternalInitialize() { return true; }
 
     /// Start the device, internal implementation. Called from IDevice::Start().
     /// \return Bool Return true if start was successful, false otherwise.
-    virtual bool InternalStart() = 0;
+    virtual bool InternalStart() { return true; }
 
     /// Stop the device, internal implementation. Called from IDevice::Stop().
     /// \return Bool Return true if stop was successful, false otherwise.
-    virtual bool InternalStop() = 0;
+    virtual bool InternalStop() { return true; }
 
     /// Update device I/O handling and emit data signals. Called from IDevice::Update() if this device is running.
     /// @param frametime Frame time.
-    virtual void InternalUpdate(float frametime) = 0;
+    virtual void InternalUpdate(float frametime) {};
 
     /// Setter for the interface type. Called from I*Device implementations.
     void SetInterfaceType(const QString &interfaceType) { interfaceType_ = interfaceType; }

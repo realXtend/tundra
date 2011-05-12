@@ -33,12 +33,23 @@ public slots:
     /// Registers a new device to DeviceAPI.
     /// \note Devices must have a unique name, if you register a knows device this function will print warning and do nothing.
     /// \param Device* The device to be registered
-    void RegisterDevice(IDevice *device);
+    /// \return Bool True if succesfully registered, false otherwise.
+    bool RegisterDevice(IDevice *device);
 
     /// Get a device by name.
     /// \param QString Name of the device.
     /// \return IDevice* Returns device pointer if found with name, otherwiwe 0.
     IDevice *GetDevice(const QString &name);
+
+    /// Create and register a device new device with name. DeviceAPI takes ownership of the created device and releases its memory on shutdown.
+    /// \note Convinience function for scripting languages so they don't have to inherit IDevice in their implementation. Prefer using inheriting and RegisterDevice() on C++.
+    /// \return IDevice* Created device. If 0 the device was not creted and registered.
+    IDevice *CreateAndRegisterDevice(const QString &name);
+
+    /// Create and register a positional device new device with name. DeviceAPI takes ownership of the created device and releases its memory on shutdown.
+    /// \note Convinience function for scripting languages so they don't have to inherit IPositionalDevice in their implementation. Prefer using inheriting and RegisterDevice() on C++.
+    /// \return IPositionalDevice* Created device. If 0 the device was not created and registered.
+    IPositionalDevice *CreateAndRegisterPositionalDevice(const QString &name);
 
     /// Get all the registered device names. You can get a device from GetDevice() with the names are returned.
     /// \return QStringList List of device names.

@@ -2,6 +2,7 @@
 
 #include "DevicesAPI.h"
 #include "IDevice.h"
+#include "IPositionalDevice.h"
 
 #include "Framework.h"
 #include "FrameAPI.h"
@@ -24,13 +25,13 @@ DevicesAPI::~DevicesAPI()
 
 // Public
 
-void DevicesAPI::RegisterDevice(IDevice *device)
+bool DevicesAPI::RegisterDevice(IDevice *device)
 {
     DeviceCleanup();
 
     QString deviceNameLower = device->Name().toLower();
     if (deviceNameLower.isEmpty())
-        return;
+        return false;
 
     if (!devices.contains(deviceNameLower))
     {
@@ -39,12 +40,15 @@ void DevicesAPI::RegisterDevice(IDevice *device)
             devices[deviceNameLower] = QPointer<IDevice>(device);
             emit DeviceRegistered(deviceNameLower, device);
             connect(device, SIGNAL(Destroyed()), SLOT(OnDeviceDestroyed()));
+            return true;
         }
         else
             LogWarning("Device '" + device->Name() + "' did not initialize properly, denying registration.");
     }
     else
         LogWarning("Device '" + device->Name() + "' already registered.");
+    
+    return false;
 }
 
 IDevice *DevicesAPI::GetDevice(const QString &name)
@@ -61,6 +65,49 @@ IDevice *DevicesAPI::GetDevice(const QString &name)
     return 0;
 }
 
+IDevice *DevicesAPI::CreateAndRegisterDevice(const QString &name)
+{
+    DeviceCleanup();
+
+    QString deviceNameLower = name.toLower();
+    if (devices.contains(deviceNameLower))
+        return 0;
+
+    IDevice *device = new IDevice(deviceNameLower);
+    
+    if (RegisterDevice(device))
+    {
+        device->setParent(this);
+        return device;
+    }
+    else
+    {
+        delete device;
+        return 0;
+    }
+}
+
+IPositionalDevice *DevicesAPI::CreateAndRegisterPositionalDevice(const QString &name)
+{
+    DeviceCleanup();
+
+    QString deviceNameLower = name.toLower();
+    if (devices.contains(deviceNameLower))
+        return 0;
+
+    IPositionalDevice *device = new IPositionalDevice(deviceNameLower);
+    
+    if (RegisterDevice(device))
+    {
+        device->setParent(this);
+        return device;
+    }
+    else
+    {
+        delete device;
+        return 0;
+    }
+}
 
 QStringList DevicesAPI::GetAllDeviceNames()
 {
