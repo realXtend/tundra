@@ -820,6 +820,7 @@ var BrowserSettings = Class.extend
         this.behaviourSection = "behaviour";
         
         this.widget = ui.LoadFromFile("./data/ui/LoginWebSettings.ui", false);
+        this.widget.setParent(ui.MainWindow());
         this.widget.setWindowFlags(Qt.Tool);
         this.widget.visible = false;
         
