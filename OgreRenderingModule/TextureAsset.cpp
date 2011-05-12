@@ -211,6 +211,11 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
 
 void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps)
 {
+    if (newWidth == 0 || newHeight == 0)
+    {
+        Unload();
+        return;
+    }
     ///\todo Could optimize a lot here, don't create this temporary vector.
     ///\todo This only works for 32bpp images.
     std::vector<u32> data(newWidth * newHeight, color);
