@@ -84,7 +84,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 
     //internal_name_ = SanitateAssetIdForOgre(id_);
     
-    LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
+//    LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
     return true;
 }
 

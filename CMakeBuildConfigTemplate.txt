@@ -78,6 +78,8 @@ add_subdirectory(Server)
 add_subdirectory(Interfaces)
 add_subdirectory(RexCommon)
 
+add_subdirectory(StreamsModule)
+
 # The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
 # they will not be able to conditionally compile the EC.
 
