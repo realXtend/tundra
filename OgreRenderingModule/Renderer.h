@@ -173,6 +173,9 @@ namespace OgreRenderer
         */
         Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
+        /// Returns currently active camera component.
+        boost::shared_ptr<EC_Camera> GetActiveCamera() const;
+
         /// Returns current render window
         Ogre::RenderWindow* GetCurrentRenderWindow() const;
 
