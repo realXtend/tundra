@@ -685,6 +685,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
     if (iter2 != assets.end())
         existing = iter2->second;
     
+    ///\todo Evaluate whether existing->IsLoaded() should rather be existing->IsEmpty().
     if (existing && existing->IsLoaded() && !forceTransfer)
     {
         // Whenever the client requests an asset that was loaded before, we create a request for that asset nevertheless.

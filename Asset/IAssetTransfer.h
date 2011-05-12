@@ -77,7 +77,7 @@ public slots:
     AssetPtr GetAsset() { return asset; }
 
 signals:
-    /// Emitted when the raw byte download of this asset finishes. The asset pointer is set at this point
+    /// Emitted when the raw byte download of this asset finishes. The asset pointer is set at this point.
     void Downloaded(IAssetTransfer *transfer);
 
     /// Emitted when the transfer succeeded and the asset is ready to be used in the system, with all of its dependencies loaded
