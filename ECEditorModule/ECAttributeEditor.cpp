@@ -1482,22 +1482,15 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
         connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, QObject *)), SLOT(HandleNewEditor(QtProperty *, QObject *)));
         propertyMgr_ = stringManager;
         factory_ = lineEditFactory;
-/*
-        if (components_.size())
+
+        if (components_.size() && !components_[0].expired())
         {
-            ComponentPtr comp = components_[0].lock();
-            if (comp)
-            {
-                IAttribute *attr = comp->GetAttribute(name_);
-                if (attr && attr->HasMetadata())
-                {
-                    AttributeMetadata *meta = attr->GetMetadata();
-                    lineEditFactory->SetComponents(rootProperty_, components_);
-                    lineEditFactory->AddButtons(meta->buttons);
-                }
-            }
+            IAttribute *attr = components_[0].lock()->GetAttribute(name_);
+            if (attr && attr->HasMetadata())
+                //lineEditFactory->SetComponents(rootProperty_, components_);
+                lineEditFactory->AddButtons(attr->GetMetadata()->buttons);
         }
-*/
+
         lineEditFactory->SetComponents(rootProperty_, components_);
 
         connect(this, SIGNAL(OnComponentAdded(QtProperty*, IComponent*)), lineEditFactory, SLOT(ComponentAdded(QtProperty*, IComponent*)));
