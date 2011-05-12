@@ -36,7 +36,7 @@ class AssetAPI : public QObject
     Q_OBJECT
 
 public:
-    AssetAPI(bool isHeadless);
+    AssetAPI(Framework *fw, bool isHeadless);
 
     ~AssetAPI();
 
@@ -329,6 +329,8 @@ public slots:
     /// Cause AssetAPI to emit AssetDeletedFromStorage. Called by asset providers
     void EmitAssetDeletedFromStorage(const QString &assetRef);
     
+    Framework *GetFramework() { return fw; }
+
 public:
     /// Explodes the given asset storage description string to key-value pairs.
     static QMap<QString, QString> ParseAssetStorageString(QString storageString);
@@ -432,6 +434,8 @@ private:
     std::vector<AssetProviderPtr> providers;
 
     AssetCache *assetCache;
+
+    Framework *fw;
 };
 
 #include "AssetAPI.inl"

@@ -88,7 +88,7 @@ Framework::Framework(int argc, char** argv) :
         service_manager_ = ServiceManagerPtr(new ServiceManager());
 
         // Create core APIs
-        asset = new AssetAPI(headless_);
+        asset = new AssetAPI(this, headless_);
         asset->OpenAssetCache(Application::UserDataDirectory() + "assetcache");
         ui = new UiAPI(this);
         audio = new AudioAPI(this, asset); // AudioAPI epends on the AssetAPI, so must be loaded after it.

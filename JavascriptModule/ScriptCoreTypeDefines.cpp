@@ -280,13 +280,22 @@ QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &
 
 void fromScriptValueAssetReference(const QScriptValue &obj, AssetReference &s)
 {
-    s.ref = obj.property("ref").toString();
+    if (obj.isString())
+        s.ref = obj.toString();
+    else
+    {
+        if (!obj.property("ref").isValid() || !obj.property("ref").isString())
+            LogError("Can't convert QScriptValue to AssetReference! QScriptValue is not a string and it doesn't contain a ref attribute!");
+        s.ref = obj.property("ref").toString();
+        s.type = obj.property("type").toString();
+    }
 }
 
 QScriptValue toScriptValueAssetReference(QScriptEngine *engine, const AssetReference &s)
 {
     QScriptValue obj = engine->newObject();
     obj.setProperty("ref", QScriptValue(engine, s.ref));
+    obj.setProperty("type", QScriptValue(engine, s.type));
     return obj;
 }
 

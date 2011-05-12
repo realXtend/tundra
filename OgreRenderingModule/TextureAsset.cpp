@@ -14,6 +14,12 @@
 
 #include "LoggingFunctions.h"
 
+TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_)
+:IAsset(owner, type_, name_)
+{
+    ogreAssetName = OgreRenderer::SanitateAssetIdForOgre(this->Name().toStdString()).c_str();
+}
+
 TextureAsset::~TextureAsset()
 {
     Unload();
@@ -201,6 +207,19 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
     QImage img((uchar*)data, pixelBuffer->getWidth(), pixelBuffer->getHeight(), fmt);
     pixelBuffer->unlock();
     return img;
+}
+
+void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps)
+{
+    if (newWidth == 0 || newHeight == 0)
+    {
+        Unload();
+        return;
+    }
+    ///\todo Could optimize a lot here, don't create this temporary vector.
+    ///\todo This only works for 32bpp images.
+    std::vector<u32> data(newWidth * newHeight, color);
+    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps);
 }
 
 void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps)

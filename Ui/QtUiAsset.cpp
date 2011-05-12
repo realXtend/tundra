@@ -3,16 +3,20 @@
 #include "DebugOperatorNew.h"
 #include "QtUiAsset.h"
 
+#include "Framework.h"
 #include "AssetAPI.h"
+#include "UiAPI.h"
 
 #include "LoggingFunctions.h"
 
 #include <boost/regex.hpp>
 
+#include <QUiLoader>
 #include <QByteArrayMatcher>
 #include <QUrl>
 #include <QFile>
 
+#include "UiProxyWidget.h"
 #include "MemoryLeakCheck.h"
 
 QtUiAsset::QtUiAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
@@ -158,4 +162,35 @@ QByteArray QtUiAsset::GetRefReplacedAssetData() const
 bool QtUiAsset::IsLoaded() const
 {
     return originalData.size() > 0;
+}
+
+QWidget *QtUiAsset::Instantiate(bool addToScene, QWidget *parent)
+{
+    if (!IsLoaded())
+    {
+        LogError("QtUiAsset::Instantiate: Cannot instantiate an unloaded UI Asset \"" + Name().toStdString() + "\"!");
+        return 0;
+    }
+
+    // Get the asset data with the assetrefs replaced to point to the disk sources on the current local system.
+    QByteArray data = GetRefReplacedAssetData();
+        
+    QUiLoader loader;
+    QDataStream dataStream(&data, QIODevice::ReadOnly);
+    QWidget *widget = loader.load(dataStream.device(), parent);
+
+    if (!widget)
+    {
+        LogError("QtUiAsset::Instantiate: Failed to instantiate widget from UI asset \"" + Name().toStdString() + "\"!");
+        return 0;
+    }
+
+    if (addToScene)
+    {
+        UiProxyWidget *proxy = assetAPI->GetFramework()->Ui()->AddWidgetToScene(widget);
+        if (!proxy)
+            LogError("QtUiAsset::Instantiate: Failed to add widget to main QGraphicsScene in UI asset \"" + Name().toStdString() + "\"!");
+    }
+
+    return widget;
 }

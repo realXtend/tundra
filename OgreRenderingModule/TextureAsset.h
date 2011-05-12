@@ -15,7 +15,7 @@ class OGRE_MODULE_API TextureAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_) : IAsset(owner, type_, name_) {}
+    TextureAsset(AssetAPI *owner, const QString &type, const QString &name);
     ~TextureAsset();
 
     /// Load texture from memory
@@ -39,6 +39,9 @@ public:
     /// @param data The new contents of the texture. If you only want to resize the texture, and not fill it
     ///     with any data at this time, you may pass in a null pointer here.
     void SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps);
+
+    /// Sets this texture to the given size and fills it with the given color value.
+    void SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps);
 
     //void RegenerateAllMipLevels();
 
