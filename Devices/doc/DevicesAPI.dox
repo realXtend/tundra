@@ -14,8 +14,6 @@ propably want to inherit IPositionalDevice instead of IDevice, just as our examp
 
 Next we will cover example code on how to use DevicesAPI. First how to implement a device and then how to implement code that uses this device.
 
-\section DummyDevice
-
 <h2>A brief script example: Implementing and resing a device</h2>
 
 You can also register devices from scripting languages. The DeviceAPI can create a device for you, but you will lose the nice features of inheriting the actual interfaces. But this is more straight forward than
@@ -62,11 +60,12 @@ if __name__ == "__main__":
     reader = KinectReader()
     
 \endcode
+    
+<h2>C++ example: Dummy Device</h2>
 
 This dummy device will show you how to implement a device that works with DeviceAPI. This class is called DummyDevice as its data source is a text file that has positions listed in it. Inherits IPositionalDevice.
-    
-<h2>Device source data file</h2>
 
+Dummy data source:
 \code
 0.01 0.01 0.01
 0.01 0.01 0.01
