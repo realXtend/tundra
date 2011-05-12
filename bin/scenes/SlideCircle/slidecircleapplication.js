@@ -115,6 +115,7 @@ function getPoints(from, to) {
     targets.push(getNormal(to, 10));
     lookAtTargets = [];
     lookAtTargets.push(getNormal(from, 10));
+    lookAtTargets.push(getNormal(to, 15));
     lookAtTargets.push(getNormal(to, 10));
 }
 
@@ -151,9 +152,7 @@ function animationUpdate(dt) {
 
     if (d <= 0.1) {
 	targets.splice(0, 1);
-	if (lookAtTargets.length == 2) {
-	    lookAtTargets.splice(0, 1);
-	}
+	lookAtTargets.splice(0, 1);
 	return;
     }
 
@@ -167,7 +166,66 @@ function animationUpdate(dt) {
     pos.setZ(newPos.z());
 
     camera.placeable.position = pos;
+
+    // camera panning
+    
+    if (lookAtTargets.length == 0) {
+	return;
+    }
+
+    //Transform's orientation is a Vector3df so we can't call our
+    //vector math function since QVector3D has setX instead of setx
+    //etc.
+
+    function pr(a) {
+	print(a.x + ", " + a.y + ", " + a.z);
+    }
+
+    // Get current rotation
+    var oldtransform = camera.placeable.transform;
+    var currentRotation = oldtransform.rot;
+    
+    // get target rotation
+
     camera.placeable.LookAt(lookAtTargets[0]);
+    var newtransform = camera.placeable.transform;
+    var targetRotation = newtransform.rot;
+
+    // put back to current position
+    camera.placeable.transform = oldtransform;
+
+    var a = Math.pow((currentRotation.x - targetRotation.x), 2);
+    var b = Math.pow((currentRotation.y - targetRotation.y), 2);
+    var c = Math.pow((currentRotation.z - targetRotation.z), 2);
+    var r = Math.sqrt(a + b + c);
+
+    
+    print("agledistance: " + r);
+
+    // If we're close enought we won't turn
+    if (r <= 2.0) {
+	print("END");
+	return;
+    }
+    
+    var drotx = targetRotation.x - currentRotation.x;
+    print("x difference " + drotx);
+
+
+    newtransform.rot.x = (currentRotation.x + drotx * dt * 2);
+
+    var droty = targetRotation.y - currentRotation.y;
+    print("y difference " + droty);
+
+    newtransform.rot.y = (currentRotation.y + droty * dt * 2);
+
+    var drotz = targetRotation.z - currentRotation.z;
+    print("z difference " + drotz);
+
+    newtransform.rot.z = (currentRotation.z + drotz * dt * 2);
+
+    camera.placeable.transform = newtransform;
+
 }
 
 function reset() {
