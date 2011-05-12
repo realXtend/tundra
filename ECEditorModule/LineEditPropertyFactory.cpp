@@ -87,13 +87,12 @@ QWidget *LineEditPropertyFactory::createEditor(QtStringPropertyManager *manager,
     LineEditWithButtons *editor = new LineEditWithButtons(manager->value(property), parent);
     buttonFactory = new EditorButtonFactory(parent);
     editor->layout()->addWidget(buttonFactory);
-/*
+
     for(uint i = 0; i < (uint)buttons_.size(); ++i)
     {
-        QPushButton *button = editor->CreateButton(buttons_[i].objectName, buttons_[i].text);
+        QPushButton *button = buttonFactory->AddButton(buttons_[i].objectName, buttons_[i].text);
         connect(button, SIGNAL(clicked(bool)), SLOT(OnButtonClicked()));
     }
-*/
 
     propertyToWidget_[property] = editor;
     widgetToProperty_[editor] = property;

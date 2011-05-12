@@ -54,7 +54,10 @@ namespace OgreRenderer
 
 class OgreMaterialAsset;
 
-class EC_Placeable;
+class EC_AnimationController;
+class EC_Camera;
+class EC_Light;
 class EC_Mesh;
+class EC_Placeable;
 
 #endif

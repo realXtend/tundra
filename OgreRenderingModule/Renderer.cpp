@@ -1114,6 +1114,23 @@ namespace OgreRenderer
         return (visible_entities_.find(ent_id) != visible_entities_.end());
     }
 
+    boost::shared_ptr<EC_Camera> Renderer::GetActiveCamera() const
+    {
+        boost::shared_ptr<EC_Camera> cam;
+        ScenePtr scene = framework_->Scene()->GetDefaultScene();
+        if (!scene)
+            return cam;
+
+        foreach(const EntityPtr &e, scene->GetEntitiesWithComponent(EC_Camera::TypeNameStatic()))
+        {
+            cam = e->GetComponent<EC_Camera>();
+            if (cam && cam->IsActive())
+                break;
+        }
+
+        return cam;
+    }
+
     Ogre::RenderWindow *Renderer::GetCurrentRenderWindow() const
     {
         return renderWindow->OgreRenderWindow();
