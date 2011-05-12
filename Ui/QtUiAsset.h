@@ -38,6 +38,10 @@ public slots:
     /// Returns true if this UI asset is valid and loaded in memory.
     bool IsLoaded() const;
 
+    /// Creates an instance of this .ui file.
+    /// @param addToScene If true, this widget is added to the main UI. Otherwise the window is shown externally.
+    QWidget *Instantiate(bool addToScene, QWidget *parent);
+
 private:
     /// Unloading a ui asset does not have any meaning, as it's not a GPU resource and it doesn't have any kind of decompress/unpack step.
     /// Implementation for this asset is a no-op.

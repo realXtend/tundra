@@ -121,7 +121,7 @@ public slots:
         @param addToScene Do we want to add new widget to the graphics scene.
         @return loaded widget's pointer (null if loading failed).
     */
-    QWidget *LoadFromFile(const QString &filePath,  bool addToScene = true, QWidget *parent = 0);
+    QWidget *LoadFromFile(const QString &filePath, bool addToScene = true, QWidget *parent = 0);
 
     /// Emits a signal that can be used to attach context menu actions for specific object types.
     /** @param menu Menu to which possible functionality can be appended.
