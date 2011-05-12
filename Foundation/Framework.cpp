@@ -183,6 +183,7 @@ namespace Foundation
             RegisterDynamicObject("asset", asset);
             RegisterDynamicObject("audio", audio);
             RegisterDynamicObject("debug", debug);
+            RegisterDynamicObject("devices", devices);
             RegisterDynamicObject("application", application);
             RegisterDynamicObject("apiversion", api_versioninfo_);
             RegisterDynamicObject("applicationversion", application_versioninfo_);

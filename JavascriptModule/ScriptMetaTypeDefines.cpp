@@ -32,11 +32,14 @@
 #include "EntityAction.h"
 #include "InputFwd.h"
 #include "ConfigAPI.h"
-#include "LoggingFunctions.h"
+#include "DevicesAPI.h"
+#include "IDevice.h"
+#include "IPositionalDevice.h"
 
 #include <QUiLoader>
 #include <QFile>
 
+#include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("Script")
 
 //! Qt defines
@@ -95,6 +98,11 @@ Q_DECLARE_METATYPE(ConfigAPI*);
 
 //! Naali renderer defines
 Q_DECLARE_METATYPE(RaycastResult*);
+
+//! DeviceAPI defined
+Q_DECLARE_METATYPE(DevicesAPI*);
+Q_DECLARE_METATYPE(IDevice*);
+Q_DECLARE_METATYPE(IPositionalDevice*);
 
 //! Communications metatype
 Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
@@ -224,6 +232,11 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     // Config metatypes.
     qScriptRegisterQObjectMetaType<ConfigAPI*>(engine);
+
+    // Devices metatype.
+    qScriptRegisterQObjectMetaType<DevicesAPI*>(engine);
+    qScriptRegisterQObjectMetaType<IDevice*>(engine);
+    qScriptRegisterQObjectMetaType<IPositionalDevice*>(engine);
 
     // Asset API
     qRegisterMetaType<AssetPtr>("AssetPtr");

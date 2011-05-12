@@ -22,6 +22,7 @@ scene = _naali.Scene()
 audio = _naali.Audio()
 ui = _naali.Ui()
 debug = _naali.Debug()
+devices = _naali.Devices()
 
 """Aka. Tundra
 The API object is there also in client mode, used to check if is running as server or not""" 
