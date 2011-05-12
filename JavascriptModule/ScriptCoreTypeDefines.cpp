@@ -52,12 +52,23 @@ void fromScriptValueColor(const QScriptValue &obj, Color &s)
 QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engine);
+void createVector3Functions(QScriptValue &value, QScriptEngine *engine)
+{
+    // Expose native functions to script value.
+    value.setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
+    value.setProperty("length", engine->newFunction(Vector3df_prototype_getLength));
+    value.setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
+    value.setProperty("lerp", engine->newFunction(Vector3df_prototype_inter));
+}
+
 QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
 {
     QScriptValue obj = engine->newObject();
     obj.setProperty("x", QScriptValue(engine, s.x));
     obj.setProperty("y", QScriptValue(engine, s.y));
     obj.setProperty("z", QScriptValue(engine, s.z));
+    createVector3Functions(obj, engine);
 
     //this should suffice only once for the prototype somehow, but couldn't get that to work
     //ctorVector3df.property("prototype").setProperty("normalize", normalizeVector3df);
@@ -132,6 +143,16 @@ QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engin
 QScriptValue Quaternion_prototype_ToEuler(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_Normalize(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_MakeIdentity(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Quaternion_prototype_Slerp(QScriptContext *ctx, QScriptEngine *engine);
+void createQuaternionFunctions(QScriptValue &value, QScriptEngine *engine)
+{
+    // Expose native functions to script value. 
+    value.setProperty("toEuler", engine->newFunction(Quaternion_prototype_ToEuler));
+    value.setProperty("normalize", engine->newFunction(Quaternion_prototype_Normalize));
+    value.setProperty("makeIdentity", engine->newFunction(Quaternion_prototype_MakeIdentity));
+    value.setProperty("slerp", engine->newFunction(Quaternion_prototype_Slerp));
+}
+
 QScriptValue toScriptValueQuaternion(QScriptEngine *engine, const Quaternion &s)
 {
     QScriptValue obj = engine->newObject();
@@ -139,6 +160,7 @@ QScriptValue toScriptValueQuaternion(QScriptEngine *engine, const Quaternion &s)
     obj.setProperty("y", QScriptValue(engine, s.y));
     obj.setProperty("z", QScriptValue(engine, s.z));
     obj.setProperty("w", QScriptValue(engine, s.w));
+    createQuaternionFunctions(obj, engine);
     return obj;
 }
 
@@ -178,6 +200,36 @@ QScriptValue Quaternion_prototype_MakeIdentity(QScriptContext *ctx, QScriptEngin
     fromScriptValueQuaternion(ctx->thisObject(), quat);
     
     return toScriptValueQuaternion(engine, quat.makeIdentity());
+}
+
+QScriptValue Quaternion_prototype_Slerp(QScriptContext *ctx, QScriptEngine *engine)
+{
+    int argCount = ctx->argumentCount();
+    if (argCount >= 2 && argCount > 3)
+        return ctx->throwError(QScriptContext::TypeError, "Quaternion slerp(): Invalid number of arguments.");
+    if (!ctx->argument(argCount - 1).isNumber())
+        return ctx->throwError(QScriptContext::TypeError, "Quaternion slerp(): argument(" + QString::number(argCount - 1) + ") isn't a number.");
+
+    Quaternion quat1;
+    fromScriptValueQuaternion(ctx->thisObject(), quat1);
+
+    Quaternion quat2;
+    Quaternion result;
+    float time = ctx->argument(argCount - 1).toNumber();
+    if (argCount != 3)
+    {
+        fromScriptValueQuaternion(ctx->argument(0), quat2);
+        result = quat1.slerp(quat1, quat2, time);
+    }
+    else
+    {
+        Quaternion quat3;
+        fromScriptValueQuaternion(ctx->argument(0), quat2);
+        fromScriptValueQuaternion(ctx->argument(1), quat3);
+        result = quat1.slerp(quat2, quat3, time);
+    }
+
+    return toScriptValueQuaternion(engine, result);
 }
 
 QScriptValue toScriptValueTransform(QScriptEngine *engine, const Transform &s)
@@ -369,13 +421,7 @@ QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
         else
             return ctx->throwError(QScriptContext::TypeError, "Vector3df(): arguments aren't numbers.");
     }
-    QScriptValue returnValue = engine->toScriptValue(newVec);
-    // Expose native functions to javascript.
-    returnValue.setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
-    returnValue.setProperty("length", engine->newFunction(Vector3df_prototype_getLength));
-    returnValue.setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
-    returnValue.setProperty("lerp", engine->newFunction(Vector3df_prototype_inter));
-    return returnValue;
+    return engine->toScriptValue(newVec);
 }
 
 QScriptValue createQuaternion(QScriptContext *ctx, QScriptEngine *engine)
@@ -394,13 +440,7 @@ QScriptValue createQuaternion(QScriptContext *ctx, QScriptEngine *engine)
         else
             return ctx->throwError(QScriptContext::TypeError, "Quaternion(): arguments aren't numbers.");
     }
-    QScriptValue retVal = engine->toScriptValue(newQuat);
-    // Expose native functions to javascript.
-    retVal.setProperty("toEuler", engine->newFunction(Quaternion_prototype_ToEuler));
-    retVal.setProperty("normalize", engine->newFunction(Quaternion_prototype_Normalize));
-    retVal.setProperty("makeIdentity", engine->newFunction(Quaternion_prototype_MakeIdentity));
-
-    return retVal;
+    return engine->toScriptValue(newQuat);
 }
 
 QScriptValue createTransform(QScriptContext *ctx, QScriptEngine *engine)
