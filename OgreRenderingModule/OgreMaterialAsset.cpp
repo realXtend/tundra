@@ -8,10 +8,75 @@
 #include "Renderer.h"
 #include "AssetAPI.h"
 #include "TextureAsset.h"
+#include "IAssetTransfer.h"
+#include "XMLUtilities.h"
 
 #include "LoggingFunctions.h"
 
 using namespace OgreRenderer;
+
+struct EnumStr
+{
+    EnumStr(QString name, unsigned value) :
+        name_(name),
+        value_(value)
+    {
+    }
+    
+    EnumStr() :
+        value_(0xffffffff)
+    {
+    }
+    
+    QString name_;
+    unsigned value_;
+};
+
+EnumStr sceneBlendModes[] =
+{
+    EnumStr("replace", Ogre::SBT_REPLACE),
+    EnumStr("add", Ogre::SBT_ADD),
+    EnumStr("modulate", Ogre::SBT_MODULATE),
+    EnumStr("alpha_blend", Ogre::SBT_TRANSPARENT_ALPHA),
+    EnumStr("colour_blend", Ogre::SBT_TRANSPARENT_COLOUR),
+    EnumStr()
+};
+
+EnumStr onOff[] =
+{
+    EnumStr("on", 1),
+    EnumStr("off", 0),
+    EnumStr()
+};
+
+// Return value from an enum table. First (default) value will be returned if no match found
+unsigned GetEnumValue(const QString& name, EnumStr* enums)
+{
+    EnumStr* ptr = enums;
+    while (ptr && ptr->name_.length() > 0)
+    {
+        if (ptr->name_ == name)
+            return ptr->value_;
+        ++ptr;
+    }
+    
+    return enums->value_;
+}
+
+// Convert lowercase text to bool. Accepted variations are on/off, true/false & 0/1
+bool GetBoolValue(const QString& value)
+{
+    if (value.isEmpty())
+        return false;
+    if (value == "1")
+        return true;
+    if (value == "on")
+        return true;
+    if (value == "true")
+        return true;
+    return false;
+}
+
 
 OgreMaterialAsset::~OgreMaterialAsset()
 {
@@ -249,6 +314,107 @@ void OgreMaterialAsset::DoUnload()
     catch(...) {}
 }
 
+void OgreMaterialAsset::SetAttribute(const QString& key, const QString& value)
+{
+    // Material must exist
+    if (!IsLoaded())
+        return;
+    
+    QStringList keyParts = key.toLower().split(' ');
+    if (!keyParts.size())
+        return;
+    
+    QString attr = keyParts.back();
+    QString trimmedValue = value.trimmed().toLower(); // trimmed and converted to lowercase. However also retain original value for asset refs etc.
+    
+    // If we are setting a material-level attribute, no need to scan for technique/pass/textureunit
+    if (SetMaterialAttribute(attr, trimmedValue, value))
+        return;
+    
+    // Identify technique, pass & texture unit. The default is 'any'.
+    int techNum = -1; // -1 = any
+    int passNum = -1; 
+    int tuNum = -1;
+    
+    for (int i = 0; i < (int)keyParts.size() - 1; ++i)
+    {
+        if (keyParts[i].size() > 1)
+        {
+            // Technique or texture unit setting
+            if (keyParts[i][0] == 't')
+            {
+                if (keyParts[i].size() > 2)
+                {
+                    if (keyParts[i][1] == 'u')
+                        tuNum = keyParts[i].mid(2).toInt();
+                    else
+                        techNum = keyParts[i].mid(1).toInt();
+                }
+                else
+                    techNum = keyParts[i].mid(1).toInt();
+            }
+            // Pass setting
+            else if (keyParts[i][0] == 'p')
+                passNum = keyParts[i].mid(1).toInt();
+        }
+    }
+    
+    int firstTech = 0;
+    int lastTech = GetNumTechniques() - 1;
+    if (techNum != -1)
+    {
+        firstTech = techNum;
+        lastTech = techNum;
+    }
+    
+    for (int t = firstTech; t <= lastTech; ++t)
+    {
+        // Handle technique-level attribute
+        Ogre::Technique* tech = GetTechnique(t);
+        if (!tech)
+            continue;
+        
+        if (SetTechniqueAttribute(tech, t, attr, trimmedValue, value))
+            continue;
+        
+        int firstPass = 0;
+        int lastPass = GetNumPasses(t) - 1;
+        if (passNum != -1)
+        {
+            firstPass = passNum;
+            lastPass = passNum;
+        }
+        
+        for (int p = firstPass; p <= lastPass; ++p)
+        {
+            Ogre::Pass* pass = GetPass(t, p);
+            if (!pass)
+                continue;
+            
+            // Handle pass-level attribute
+            if (SetPassAttribute(pass, t, p, attr, trimmedValue, value))
+                continue;
+            
+            int firstTu = 0;
+            int lastTu = GetNumTextureUnits(t, p);
+            if (tuNum != -1)
+            {
+                firstTu = tuNum;
+                lastTu = tuNum;
+            }
+            
+            for (int tu = firstTu; tu <= lastTu; ++tu)
+            {
+                Ogre::TextureUnitState* texUnit = GetTextureUnit(t, p, tu);
+                if (!texUnit)
+                    continue;
+                // Handle textureunit-level attribute
+                SetTextureUnitAttribute(texUnit, t, p, tu, attr, trimmedValue, value);
+            }
+        }
+    }
+}
+
 Ogre::Technique* OgreMaterialAsset::GetTechnique(int techIndex)
 {
     if (ogreMaterial.isNull())
@@ -438,19 +604,90 @@ bool OgreMaterialAsset::RemoveTechnique(int techIndex)
     }
 }
 
-bool OgreMaterialAsset::SetTexture(int techIndex, int passIndex, int texUnitIndex, AssetPtr texture)
+bool OgreMaterialAsset::SetTexture(int techIndex, int passIndex, int texUnitIndex, const QString& assetRef)
 {
-    if (!texture)
-        return false;
-    TextureAsset* texAsset = dynamic_cast<TextureAsset*>(texture.get());
-    if (!texAsset || !texAsset->IsLoaded())
-        return false;
     Ogre::TextureUnitState* texUnit = GetTextureUnit(techIndex, passIndex, texUnitIndex);
     if (!texUnit)
         return false;
+    
+    // Calculate the absolute reference index so that we know which reference to change. This requires going through all the texture units up to this.
+    int refIndex = 0;
+    bool refIndexFound = false;
+    for (int t = 0; (!refIndexFound) && t <= techIndex; ++t)
+    {
+        for (int p = 0; (!refIndexFound) && p < GetNumPasses(t); ++p)
+        {
+            for (int tu = 0; (!refIndexFound) && tu < GetNumTextureUnits(t, p); ++tu)
+            {
+                Ogre::TextureUnitState* texUnit2 = GetTextureUnit(t, p, tu);
+                if (texUnit2 == texUnit)
+                {
+                    refIndexFound = true;
+                    break;
+                }
+                // Note: we may also have no-texture textureunits. Don't count them
+                else if ((texUnit2) && (!texUnit2->getTextureName().empty()))
+                    ++refIndex;
+            }
+        }
+    }
+    
+    // If the reference vector does not have enough space (new texture assignment to a previously no-texture unit, add new slot
+    if (refIndex >= (int)references_.size())
+    {
+        references_.resize(references_.size() + 1);
+        refIndex = references_.size() - 1;
+    }
+    
+    QString resolvedRef = assetAPI->ResolveAssetRef(Name(), assetRef);
+    references_[refIndex] = AssetReference(resolvedRef);
+    
+    // Easy case: try to get the asset directly
+    AssetPtr asset = assetAPI->GetAsset(resolvedRef);
+    if (asset)
+    {
+        TextureAsset* texAsset = dynamic_cast<TextureAsset*>(asset.get());
+        if (texAsset && texAsset->IsLoaded())
+        {
+            try
+            {
+                texUnit->setTextureName(texAsset->ogreTexture->getName());
+            }
+            catch (Ogre::Exception& e)
+            {
+                LogError("SetTexture exception for " + Name().toStdString() + ", reason: " + std::string(e.what()));
+                return false;
+            }
+            return true;
+        }
+    }
+    
+    // Asset was not found. Request it and fill a pending refs entry so that we can apply it once it gets loaded
+    AssetTransferPtr transfer = assetAPI->RequestAsset(resolvedRef);
+    if (transfer)
+    {
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(OnTransferSucceeded(AssetPtr)), Qt::UniqueConnection);
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), this, SLOT(OnTransferFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
+        
+        PendingTextureApply newApply;
+        newApply.transfer = transfer.get(); // To store a raw pointer is intentional. We never dereference the stored transfer, only compare to it in slot functions
+        newApply.techIndex = techIndex;
+        newApply.passIndex = passIndex;
+        newApply.tuIndex = texUnitIndex;
+        pendingApplies.push_back(newApply);
+    }
+    
+    return true;
+}
+
+bool OgreMaterialAsset::SetVertexShader(int techIndex, int passIndex, const QString& vertexShaderName)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
     try
     {
-        texUnit->setTextureName(texAsset->ogreTexture->getName());
+        pass->setVertexProgram(vertexShaderName.toStdString());
         return true;
     }
     catch (...)
@@ -459,15 +696,14 @@ bool OgreMaterialAsset::SetTexture(int techIndex, int passIndex, int texUnitInde
     }
 }
 
-bool OgreMaterialAsset::SetShaders(int techIndex, int passIndex, const QString& vertexProgramName, const QString& fragmentProgramName)
+bool OgreMaterialAsset::SetPixelShader(int techIndex, int passIndex, const QString& pixelShaderName)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
     try
     {
-        pass->setVertexProgram(vertexProgramName.toStdString());
-        pass->setFragmentProgram(fragmentProgramName.toStdString());
+        pass->setFragmentProgram(pixelShaderName.toStdString());
         return true;
     }
     catch (...)
@@ -521,57 +757,21 @@ bool OgreMaterialAsset::SetEmissiveColor(int techIndex, int passIndex, const Col
     return true;
 }
 
-bool OgreMaterialAsset::SetAlphaBlend(int techIndex, int passIndex)
+bool OgreMaterialAsset::SetSceneBlend(int techIndex, int passIndex, unsigned blendMode)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
-    pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    pass->setSceneBlending((Ogre::SceneBlendType)blendMode);
     return true;
 }
 
-bool OgreMaterialAsset::SetAdditive(int techIndex, int passIndex)
+bool OgreMaterialAsset::SetPolygonMode(int techIndex, int passIndex, unsigned polygonMode)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
-    pass->setSceneBlending(Ogre::SBT_ADD);
-    return true;
-}
-
-bool OgreMaterialAsset::SetModulate(int techIndex, int passIndex)
-{
-    Ogre::Pass* pass = GetPass(techIndex, passIndex);
-    if (!pass)
-        return false;
-    pass->setSceneBlending(Ogre::SBT_MODULATE);
-    return true;
-}
-
-bool OgreMaterialAsset::SetReplace(int techIndex, int passIndex)
-{
-    Ogre::Pass* pass = GetPass(techIndex, passIndex);
-    if (!pass)
-        return false;
-    pass->setSceneBlending(Ogre::SBT_REPLACE);
-    return true;
-}
-
-bool OgreMaterialAsset::SetSolid(int techIndex, int passIndex)
-{
-    Ogre::Pass* pass = GetPass(techIndex, passIndex);
-    if (!pass)
-        return false;
-    pass->setPolygonMode(Ogre::PM_SOLID);
-    return true;
-}
-
-bool OgreMaterialAsset::SetWireframe(int techIndex, int passIndex)
-{
-    Ogre::Pass* pass = GetPass(techIndex, passIndex);
-    if (!pass)
-        return false;
-    pass->setPolygonMode(Ogre::PM_WIREFRAME);
+    pass->setPolygonMode((Ogre::PolygonMode)polygonMode);
     return true;
 }
 
@@ -591,4 +791,153 @@ bool OgreMaterialAsset::SetDepthBias(int techIndex, int passIndex, float bias)
         return false;
     pass->setDepthBias(bias);
     return true;
+}
+
+
+bool OgreMaterialAsset::SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal)
+{
+    if (attr == "receive_shadows")
+    {
+        ogreMaterial->setReceiveShadows(GetBoolValue(val));
+        return true;
+    }
+    if (attr == "transparency_casts_shadows")
+    {
+        ogreMaterial->setTransparencyCastsShadows(GetBoolValue(val));
+        return true;
+    }
+    return false;
+}
+
+bool OgreMaterialAsset::SetTechniqueAttribute(Ogre::Technique* tech, int techIndex, const QString& attr, const QString& val, const QString& origVal)
+{
+    /// \todo Material asset requests
+    if (attr == "shadow_caster_material")
+    {
+        tech->setShadowCasterMaterial(origVal.toStdString());
+        return true;
+    }
+    if (attr == "shadow_receiver_material")
+    {
+        tech->setShadowReceiverMaterial(origVal.toStdString());
+        return true;
+    }
+    
+    return false;
+}
+
+bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int passIndex, const QString& attr, const QString& val, const QString& origVal)
+{
+    if (attr == "scene_blend")
+    {
+        unsigned blend = GetEnumValue(val, sceneBlendModes);
+        pass->setSceneBlending((Ogre::SceneBlendType)blend);
+        return true;
+    }
+    if (attr == "lighting")
+    {
+        SetLighting(techIndex, passIndex, GetBoolValue(val));
+        return true;
+    }
+    if (attr == "ambient")
+    {
+        SetAmbientColor(techIndex, passIndex, ParseColor(val.toStdString()));
+        return true;
+    }
+    if (attr == "diffuse")
+    {
+        SetDiffuseColor(techIndex, passIndex, ParseColor(val.toStdString()));
+        return true;
+    }
+    if (attr == "specular")
+    {
+        SetSpecularColor(techIndex, passIndex, ParseColor(val.toStdString()));
+        return true;
+    }
+    if (attr == "emissive")
+    {
+        SetEmissiveColor(techIndex, passIndex, ParseColor(val.toStdString()));
+        return true;
+    }
+    if (attr == "vertex_program_ref")
+    {
+        SetVertexShader(techIndex, passIndex, origVal);
+        return true;
+    }
+    if (attr == "fragment_program_ref")
+    {
+        SetPixelShader(techIndex, passIndex, origVal);
+        return true;
+    }
+    if (attr == "depth_write")
+    {
+        SetDepthWrite(techIndex, passIndex, GetBoolValue(val));
+        return true;
+    }
+    
+    return false;
+}
+
+bool OgreMaterialAsset::SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit, int techIndex, int passIndex, int tuIndex, const QString& attr, const QString& val, const QString& origVal)
+{
+    if (attr == "texture")
+    {
+        SetTexture(techIndex, passIndex, tuIndex, origVal);
+        return true;
+    }
+    
+    return false;
+}
+
+void OgreMaterialAsset::OnTransferSucceeded(AssetPtr asset)
+{
+    IAssetTransfer* transfer = static_cast<IAssetTransfer*>(sender());
+    for (unsigned i = pendingApplies.size() - 1; i < pendingApplies.size(); --i)
+    {
+        PendingTextureApply& entry = pendingApplies[i];
+        if (entry.transfer == transfer)
+        {
+            TextureAsset* texAsset = dynamic_cast<TextureAsset*>(asset.get());
+            if (texAsset && texAsset->IsLoaded())
+            {
+                Ogre::TextureUnitState* texUnit = GetTextureUnit(entry.techIndex, entry.passIndex, entry.tuIndex);
+                if (texUnit)
+                {
+                    try
+                    {
+                        texUnit->setTextureName(texAsset->ogreTexture->getName());
+                    }
+                    catch (Ogre::Exception& e)
+                    {
+                        LogError("SetTexture exception for " + Name().toStdString() + ", reason: " + std::string(e.what()));
+                    }
+                }
+            }
+            pendingApplies.erase(pendingApplies.begin() + i);
+        }
+    }
+}
+
+void OgreMaterialAsset::OnTransferFailed(IAssetTransfer* transfer, QString reason)
+{
+    for (unsigned i = pendingApplies.size() - 1; i < pendingApplies.size(); --i)
+    {
+        PendingTextureApply& entry = pendingApplies[i];
+        if (entry.transfer == transfer)
+        {
+            Ogre::TextureUnitState* texUnit = GetTextureUnit(entry.techIndex, entry.passIndex, entry.tuIndex);
+            if (texUnit)
+            {
+                try
+                {
+                    texUnit->setTextureName("AssetLoadError.png");
+                }
+                catch (Ogre::Exception& e)
+                {
+                    LogError("SetTexture exception for " + Name().toStdString() + ", reason: " + std::string(e.what()));
+                }
+            }
+            pendingApplies.erase(pendingApplies.begin() + i);
+        }
+    }
 }

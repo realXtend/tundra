@@ -200,19 +200,21 @@ void EC_Highlight::CreateHighlightToOgreMaterial(OgreMaterialAsset* mat)
         
         // Setting the shaders requires the SolidAmbient.material to exist in the resource groups, so that the shaders exist
         mat->SetLighting(i, pass1, false);
-        mat->SetAlphaBlend(i, pass1);
+        mat->SetSceneBlend(i, pass1, Ogre::SBT_TRANSPARENT_ALPHA);
         mat->SetDepthWrite(i, pass1, false);
         mat->SetDepthBias(i, pass1, 0.001f);
-        mat->SetShaders(i, pass1, "SolidAmbientVP", "SolidAmbientFP");
+        mat->SetVertexShader(i, pass1, "SolidAmbientVP");
+        mat->SetPixelShader(i, pass1, "SolidAmbientFP");
         mat->SetAmbientColor(i, pass1, solidColor.Get());
-        
+
         mat->SetLighting(i, pass2, false);
-        mat->SetAlphaBlend(i, pass2);
+        mat->SetSceneBlend(i, pass2, Ogre::SBT_TRANSPARENT_ALPHA);
         mat->SetDepthWrite(i, pass2, false);
         mat->SetDepthBias(i, pass2, 0.002f);
-        mat->SetShaders(i, pass2, "SolidAmbientVP", "SolidAmbientFP");
+        mat->SetVertexShader(i, pass2, "SolidAmbientVP");
+        mat->SetPixelShader(i, pass2, "SolidAmbientFP");
         mat->SetAmbientColor(i, pass2, outlineColor.Get());
-        mat->SetWireframe(i, pass2);
+        mat->SetPolygonMode(i, pass2, Ogre::PM_WIREFRAME);
     }
 }
 

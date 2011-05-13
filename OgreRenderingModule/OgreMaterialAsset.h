@@ -52,6 +52,10 @@ public:
     Ogre::TextureUnitState* GetTextureUnit(int techIndex, int passIndex, int texUnitIndex);
     
 public slots:
+    /// Set a material attribute using a key-value format, where key is "t<x> p<y> tu<z> paramname", to access technique, pass and
+    /// texture unit specific attributes. These can also be omitted to affect all techniques, passes or units as applicable.
+    void SetAttribute(const QString& key, const QString& value);
+
     /// Return number of material techniques. Returns -1 if the material is unloaded
     int GetNumTechniques();
     /// Return number of passes in a technique. Returns -1 if the technique does not exist
@@ -76,10 +80,12 @@ public slots:
     /// Remove a technique. Returns true if successful. Note: technique indices will be adjusted so that they are continuous
     bool RemoveTechnique(int techIndex);
     
-    /// Set texture in a texture unit. The AssetPtr must contain a loaded TextureAsset. Return true if successful.
-    bool SetTexture(int techIndex, int passIndex, int texUnitIndex, AssetPtr texture);
-    /// Set shader names of the pass. Depending on Ogre, this may cause any nasty things to happen. Returns true if did not cause an Ogre exception
-    bool SetShaders(int techIndex, int passIndex, const QString& vertexProgramName, const QString& fragmentProgramName);
+    /// Set texture in a texture unit. Return true if successful.
+    bool SetTexture(int techIndex, int passIndex, int texUnitIndex, const QString& assetRef);
+    /// Set vertex shader of the pass. Depending on Ogre, this may cause any nasty things to happen. Return true if did not cause an Ogre exception
+    bool SetVertexShader(int techIndex, int passIndex, const QString& vertexShaderName);
+    /// Set pixel shader of the pass. Depending on Ogre, this may cause any nasty things to happen. Return true if did not cause an Ogre exception
+    bool SetPixelShader(int techIndex, int passIndex, const QString& pixelShaderName);
     /// Enable or disable lighting in a pass
     bool SetLighting(int techIndex, int passIndex, bool enable);
     /// Set diffuse color of a pass. Return true if successful.
@@ -90,22 +96,37 @@ public slots:
     bool SetSpecularColor(int techIndex, int passIndex, const Color& color);
     /// Set emissive color of a pass
     bool SetEmissiveColor(int techIndex, int passIndex, const Color& color);
-    /// Set replace blend mode
-    bool SetReplace(int techIndex, int passIndex);
-    /// Set alpha blend mode
-    bool SetAlphaBlend(int techIndex, int passIndex);
-    /// Set additive blend mode
-    bool SetAdditive(int techIndex, int passIndex);
-    /// Set modulate blend mode
-    bool SetModulate(int techIndex, int passIndex);
-    /// Set solid polygon mode
-    bool SetSolid(int techIndex, int passIndex);
-    /// Set wireframe polygon mode
-    bool SetWireframe(int techIndex, int passIndex);
+    /// Set scene blend mode of a pass
+    bool SetSceneBlend(int techIndex, int passIndex, unsigned blendMode);
+    /// Set polygon mode of a pass
+    bool SetPolygonMode(int techIndex, int passIndex, unsigned polygonMode);
     /// Set depth write on/off
     bool SetDepthWrite(int techIndex, int passIndex, bool enable);
     /// Set constant depth bias
     bool SetDepthBias(int techIndex, int passIndex, float bias);
+
+private slots:
+    /// Asset transfer (for texture apply operation) succeeded
+    void OnTransferSucceeded(AssetPtr asset);
+    /// Asset transfer (for texture apply operation) failed
+    void OnTransferFailed(IAssetTransfer *transfer, QString reason);
+    
+private:
+    bool SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal);
+    bool SetTechniqueAttribute(Ogre::Technique* tech, int techIndex, const QString& attr, const QString& val, const QString& origVal);
+    bool SetPassAttribute(Ogre::Pass* pass, int techIndex, int passIndex, const QString& attr, const QString& val, const QString& origVal);
+    bool SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit, int techIndex, int passIndex, int tuIndex, const QString& attr, const QString& val, const QString& origVal);
+    
+    /// Pending texture apply operation due to a texture asset request
+    struct PendingTextureApply
+    {
+        int techIndex;
+        int passIndex;
+        int tuIndex;
+        IAssetTransfer* transfer;
+    };
+    
+    std::vector<PendingTextureApply> pendingApplies;
 };
 
 #endif

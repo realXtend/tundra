@@ -45,6 +45,9 @@ namespace OgreRenderer
         /// callback for console command
         ConsoleCommandResult ConsoleStats(const StringVector &params);
 
+        /// callback for console command
+        ConsoleCommandResult SetMaterialAttribute(const StringVector &params);
+
     private:
         /// renderer
         RendererPtr renderer_;

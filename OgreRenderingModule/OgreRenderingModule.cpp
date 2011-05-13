@@ -129,6 +129,11 @@ namespace OgreRenderer
         framework_->Console()->RegisterCommand(CreateConsoleCommand(
                 "RenderStats", "Prints out render statistics.", 
                 ConsoleBind(this, &OgreRenderingModule::ConsoleStats)));
+
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
+                "SetMaterialAttribute", "Sets an attribute on a material asset", 
+                ConsoleBind(this, &OgreRenderingModule::SetMaterialAttribute)));
+                
         renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
     }
 
@@ -172,6 +177,22 @@ namespace OgreRenderer
         }
 
         return ConsoleResultFailure("No renderer found.");
+    }
+    
+    ConsoleCommandResult OgreRenderingModule::SetMaterialAttribute(const StringVector &params)
+    {
+        if (params.size() < 3)
+            return ConsoleResultFailure("Usage: SetMaterialAttribute(asset,attribute,value)");
+        
+        AssetAPI* asset = framework_->Asset();
+        AssetPtr assetPtr = asset->GetAsset(asset->ResolveAssetRef("", QString::fromStdString(params[0])));
+        if ((!assetPtr) || (!assetPtr->IsLoaded()))
+            return ConsoleResultFailure("No asset found or not loaded");
+        OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(assetPtr.get());
+        if (!matAsset)
+            return ConsoleResultFailure("Not a material asset");
+        matAsset->SetAttribute(QString::fromStdString(params[1]), QString::fromStdString(params[2]));
+        return ConsoleResultSuccess();
     }
 }
 
