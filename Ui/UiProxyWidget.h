@@ -43,12 +43,16 @@ public:
 
 public slots:
     /// Add graphics effect to proxy widget.
+    /** @param effect new effect that we are applying to proxy.
+    */
     void SetGraphicsEffect(QGraphicsEffect *effect)
     {
         setGraphicsEffect(effect);
     }
 
     /// Get graphics effect from proxy widget.
+    /** @return graphics effect in use (return null if no graphics effect is used).
+    */
     QGraphicsEffect *GraphicsEffect() const
     {
         return graphicsEffect();

@@ -290,6 +290,11 @@ void EC_Placeable::SetOrientation(const Quaternion& orientation)
     transform.Set(newtrans, AttributeChange::Default);
 }
 
+void EC_Placeable::SetOrientation(const Vector3df& euler)
+{
+    SetOrientation(Quaternion(euler));
+}
+
 void EC_Placeable::LookAt(const Vector3df& look_at)
 {
     // Don't rely on the stability of the lookat (since it uses previous orientation), 

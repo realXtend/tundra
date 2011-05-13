@@ -223,6 +223,7 @@ public slots:
     void Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QStringList &params);
 
     /// This is an overloaded function. Experimental overload using QVariant. Converts the variants to strings.
+    /// Note! If you want to call this function from javascript, you should use following syntax "me["Exec(int,QString,QVariantList)"](2, "name", params);";
     /** @param type Execution type, i.e. where the actions is executed. @note Currently int instead of the real enum for javascript compability!
         @param action Name of the action.
         @param params List of parameters for the action. */

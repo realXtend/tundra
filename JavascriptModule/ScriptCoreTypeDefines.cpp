@@ -53,6 +53,9 @@ QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *e
 QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_rotToDir(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_cross(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_dot(QScriptContext *ctx, QScriptEngine *engine);
 void createVector3Functions(QScriptValue &value, QScriptEngine *engine)
 {
     // Expose native functions to script value.
@@ -60,6 +63,9 @@ void createVector3Functions(QScriptValue &value, QScriptEngine *engine)
     value.setProperty("length", engine->newFunction(Vector3df_prototype_getLength));
     value.setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
     value.setProperty("lerp", engine->newFunction(Vector3df_prototype_inter));
+    value.setProperty("rotToDir", engine->newFunction(Vector3df_prototype_rotToDir));
+    value.setProperty("cross", engine->newFunction(Vector3df_prototype_cross));
+    value.setProperty("dot", engine->newFunction(Vector3df_prototype_dot));
 }
 
 QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
@@ -152,6 +158,39 @@ QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engin
     else
         return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments.");
     return retValue;
+}
+
+QScriptValue Vector3df_prototype_rotToDir(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments.");
+
+    Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
+    Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+
+    return toScriptValueVector3(engine, vec1.rotationToDirection(vec2));
+}
+
+QScriptValue Vector3df_prototype_cross(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments."); 
+
+    Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
+    Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+
+    return toScriptValueVector3(engine, vec1.crossProduct(vec2));
+}
+
+QScriptValue Vector3df_prototype_dot(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments."); 
+
+    Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
+    Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+
+    return QScriptValue(engine, vec1.dotProduct(vec2));
 }
 
 QScriptValue Quaternion_prototype_ToEuler(QScriptContext *ctx, QScriptEngine *engine);

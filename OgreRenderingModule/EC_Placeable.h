@@ -128,11 +128,6 @@ public:
     Q_PROPERTY(QString parentBone READ getparentBone WRITE setparentBone)
     DEFINE_QPROPERTY_ATTRIBUTE(QString, parentBone);
 
-    /// sets position
-    /** \param position new position
-     */
-    void SetPosition(const Vector3df& position);
-
     /// orients to look at a point in space
     /** \param look_at point to look at
      */
@@ -156,16 +151,6 @@ public:
     float GetPitch() const;
     /// get the roll of the node
     float GetRoll() const;
-    
-    /// sets scale
-    /** \param scale new scale
-     */
-    void SetScale(const Vector3df& scale);
-
-    /// returns position
-    Vector3df GetPosition() const;
-    /// returns scale
-    Vector3df GetScale() const;
 
     /// Get the local X axis from the node orientation
     Vector3df GetLocalXAxis() const;
@@ -206,14 +191,35 @@ public:
 
     COMPONENT_NAME("EC_Placeable", 20)
 public slots:
+
+    // sets position
+    /** \param position new position
+     */
+    void SetPosition(const Vector3df& position);
+
+    /// returns position
+    Vector3df GetPosition() const;
+
+    /// sets scale
+    /** \param scale new scale
+     */
+    void SetScale(const Vector3df& scale);
+
+    /// returns scale
+    Vector3df GetScale() const;
+
     /// sets orientation
     /** \param orientation new orientation
      */
     void SetOrientation(const Quaternion& orientation);
 
+    /// sets orientation using euler angles. 
+    /** \param eulerVec euler rotations.
+     */
+    void SetOrientation(const Vector3df& euler);
+
     /// returns orientation
     Quaternion GetOrientation() const;
-
 
     /// LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
     void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
