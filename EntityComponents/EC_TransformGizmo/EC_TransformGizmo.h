@@ -41,7 +41,7 @@ class EC_TransformGizmo : public IComponent
 {
     Q_OBJECT
     Q_ENUMS(GizmoType)
-    COMPONENT_NAME("EC_TransformGizmo", 29)
+    COMPONENT_NAME("EC_TransformGizmo", 30)
 
 public:
     EC_TransformGizmo(Framework *fw);

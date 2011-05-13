@@ -15,6 +15,7 @@
 #include "EC_OgreCompositor.h"
 #include "EC_RttTarget.h"
 #include "EC_SelectionBox.h"
+#include "EC_Material.h"
 #include "Entity.h"
 #include "RendererSettings.h"
 #include "AssetAPI.h"
@@ -57,6 +58,7 @@ namespace OgreRenderer
         framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_OgreCompositor>));
         framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_RttTarget>));
         framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SelectionBox>));
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Material>));
 
         // Create asset type factories for each asset OgreRenderingModule provides to the system.
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh")));
