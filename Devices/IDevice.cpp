@@ -39,6 +39,11 @@ bool IDevice::IsRunning()
     return running_;
 }
 
+bool IDevice::HasError() 
+{
+    return !error_.isEmpty(); 
+}
+
 QString IDevice::Name()
 {
     return name_;
@@ -47,4 +52,9 @@ QString IDevice::Name()
 QString IDevice::InterfaceType()
 {
     return interfaceType_;
+}
+
+QString IDevice::ErrorString()
+{
+    return error_;
 }

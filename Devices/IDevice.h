@@ -52,6 +52,10 @@ public slots:
     /// \return bool True if device is running, false otherwise.
     bool IsRunning();
 
+    /// Returns if this device is in a error state. You can fetch the error with ErrorString() function.
+    /// \return True if an error has been reported to the device, false otherwise.
+    bool HasError();
+
     /// Get the name of the device.
     /// \name QString The name of the device.
     QString Name();
@@ -60,6 +64,10 @@ public slots:
     /// \note This is mostly for scripting languages to determine type of the interface so it can connect to the correct signals.
     /// \return QString Type of the device, eg. "IDevice", "IPositonalDevice".
     QString InterfaceType();
+
+    /// Get the error string for this device. Also see HasError() function.
+    /// \return QString Error that has occurred.
+    QString ErrorString();
 
     /// Set settings for the device. All devices may not support settings, you can use GetSettings for a map that has the current settings available.
     /// \param QVariantMap. QVariantMap is a typedef of QMap<QString, QVariant>. QString (the key) is name of settings, QVariant (the value) is the setting value.
@@ -106,12 +114,23 @@ protected:
     /// Setter for the interface type. Called from I*Device implementations.
     void SetInterfaceType(const QString &interfaceType) { interfaceType_ = interfaceType; }
 
+    /// Set error string, if you implementation of a device detects errors and cant initialise, start or stop.
+    /// You should set you error string here, so the code using your device can query the problem.
+    /// \param QString The error that has occurred as string.
+    void SetError(const QString &error) { error_ = error; }
+
+    /// Clear error string for this device.
+    void ClearError() { error_ = ""; }
+
 private:
     /// Name of the device. Can be accessed with IDevice::Name().
     QString name_;
 
     /// Interface type of the device.  Can be accessed with IDevice::InterfaceType().
     QString interfaceType_;
+
+    /// Current error string.
+    QString error_;
 
     /// Boolean for tracking if device is running. Can be accessed with IDevice::IsRunning().
     bool running_;
