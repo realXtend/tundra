@@ -15,6 +15,7 @@
 #include "TundraEvents.h"
 #include "PhysicsModule.h"
 
+#include "NaaliApplication.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
 
@@ -121,11 +122,15 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, protocol);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
+
+	connect(framework_->GetNaaliApplication(), SIGNAL(ExitRequested()), this, SLOT(Logout()));
 }
 
 void Client::Logout(bool fail)
 {
 	emit AboutToDisconnect();
+
+	disconnect(framework_->GetNaaliApplication(), SIGNAL(ExitRequested()), this, SLOT(Logout()));
 
     if (loginstate_ != NotConnected)
     {
