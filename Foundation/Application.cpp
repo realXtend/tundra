@@ -5,6 +5,7 @@
 
 #include "Application.h"
 #include "Framework.h"
+#include "VersionInfo.h"
 #include "ConfigurationManager.h"
 #include "CoreStringUtils.h"
 
@@ -14,13 +15,15 @@
 #include <QLocale>
 #include <QIcon>
 #include <QWebSettings>
+#include <QSplashScreen>
+#include <QFont>
+
+#include "UiMainWindow.h"
+#include "UiAPI.h"
 
 #ifdef Q_WS_MAC
 #include <QMouseEvent>
 #include <QWheelEvent>
-
-#include "UiMainWindow.h"
-#include "UiAPI.h"
 #include "UiGraphicsView.h"
 #endif
 
@@ -33,7 +36,8 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     framework(framework_),
     appActivated(true),
     nativeTranslator(new QTranslator),
-    appTranslator(new QTranslator)
+    appTranslator(new QTranslator),
+    splashScreen(0)
 {
     QApplication::setApplicationName("realXtend-Naali");
 
@@ -69,8 +73,41 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
 
 Application::~Application()
 {
+    SAFE_DELETE(splashScreen);
     SAFE_DELETE(nativeTranslator);
     SAFE_DELETE(appTranslator);
+}
+
+void Application::InitializeSplash()
+{
+    if (framework->IsHeadless())
+        return;
+
+    if (!splashScreen)
+    {
+#ifdef Q_WS_X11
+        splashScreen = new QSplashScreen(QPixmap("./data/ui/images/splash.png"), Qt::WindowStaysOnTopHint|Qt::X11BypassWindowManagerHint);
+#else
+        splashScreen = new QSplashScreen(QPixmap("./data/ui/images/splash.png"), Qt::WindowStaysOnTopHint);
+#endif
+        splashScreen->setFont(QFont("Calibri", 9));
+        splashScreen->show();
+        SetSplashMessage("Initializing framework...");
+    }
+}
+
+void Application::SetSplashMessage(const QString &message)
+{
+    if (framework->IsHeadless())
+        return;
+    
+    if (splashScreen && splashScreen->isVisible())
+    {
+        // Call QApplication::processEvents() to update splash painting as at this point main loop is not running yet
+        QString finalMessage = "v" + framework->ApplicationVersion()->GetVersion() + " - " + message.toUpper();
+        splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(240, 240, 240));
+        processEvents();
+    }
 }
 
 QStringList Application::GetQmFiles(const QDir& dir)
@@ -87,6 +124,11 @@ QStringList Application::GetQmFiles(const QDir& dir)
 
 void Application::Go()
 {
+    if (splashScreen)
+        splashScreen->close();
+    if (!framework->IsHeadless() && framework->Ui()->MainWindow())
+        framework->Ui()->MainWindow()->show();
+
     installEventFilter(this);
 
     QObject::connect(&frameUpdateTimer, SIGNAL(timeout()), this, SLOT(UpdateFrame()));

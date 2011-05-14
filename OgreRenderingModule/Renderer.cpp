@@ -352,13 +352,6 @@ namespace OgreRenderer
                 renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
                 connect(framework_->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
                 renderWindow->Resize(framework_->Ui()->GraphicsView()->width(), framework_->Ui()->GraphicsView()->height());
-
-                if(fullscreen)
-                {
-                    framework_->Ui()->MainWindow()->showFullScreen();
-                }
-                else
-                    framework_->Ui()->MainWindow()->show();
             }
             catch (Ogre::Exception &/*e*/)
             {
