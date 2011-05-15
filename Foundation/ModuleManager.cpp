@@ -606,8 +606,7 @@ void ModuleManager::InitializeModule(IModule *module)
 {
     assert(module);
     assert(module->State() == MS_Loaded);
-
-    framework_->GetApplication()->SetSplashMessage("Initializing " + QString::fromStdString(module->Name()));
+    framework_->GetApplication()->SetSplashMessage("Preparing " + QString::fromStdString(module->Name()));
     RootLogDebug("Initializing module " + module->Name());
     module->InitializeInternal();
 
@@ -619,7 +618,6 @@ void ModuleManager::PostInitializeModule(IModule *module)
 {
     assert(module);
     assert(module->State() == MS_Loaded);
-    framework_->GetApplication()->SetSplashMessage("Preparing " + QString::fromStdString(module->Name()));
     RootLogDebug("Postinitializing module " + module->Name());
     module->PostInitializeInternal();
 

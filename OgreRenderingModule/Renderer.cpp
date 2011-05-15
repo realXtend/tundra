@@ -5,16 +5,20 @@
 
 #include "Renderer.h"
 #include "RendererEvents.h"
+#include "OgreListeners.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include "EC_Placeable.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "RenderWindow.h"
-#include "UiGraphicsView.h"
+
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
 #include "OgreDefaultHardwareBufferManager.h"
+
+#include "Framework.h"
+#include "Application.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "ConfigurationManager.h"
@@ -23,7 +27,6 @@
 #include "CoreException.h"
 #include "Entity.h"
 #include "SceneAPI.h"
-
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "UiGraphicsView.h"
@@ -39,7 +42,6 @@
 #include <OgreD3D9RenderWindow.h>
 #endif
 
-#include <QApplication>
 #include <QDesktopWidget>
 #include <QIcon>
 #include <QVBoxLayout>
@@ -59,75 +61,6 @@ using namespace Foundation;
 
 namespace OgreRenderer
 {
-    //! Ogre renderable listener to find out visible objects for each frame
-    class RenderableListener : public Ogre::RenderQueue::RenderableListener
-    {
-    public:
-        RenderableListener(Renderer* renderer) :
-            renderer_(renderer)
-        {
-        }
-        
-        ~RenderableListener()
-        {
-        }
-        
-        virtual bool renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID,
-            Ogre::ushort priority, Ogre::Technique** ppTech, Ogre::RenderQueue* pQueue)
-        {
-            Ogre::Any any = rend->getUserAny();
-            if (any.isEmpty())
-                return true;
-            
-            Scene::Entity *entity = 0;
-            try
-            {
-                entity = Ogre::any_cast<Scene::Entity*>(any);
-                if (entity)
-                    renderer_->visible_entities_.insert(entity->GetId());
-            }
-            catch (Ogre::InvalidParametersException &/*e*/)
-            {
-            }
-            return true;
-        }
-        
-    private:
-        Renderer* renderer_;
-    };
-
-    //! Ogre log listener, for passing ogre log messages
-    class LogListener : public Ogre::LogListener
-    {
-    public:
-        LogListener() : Ogre::LogListener() {}
-        virtual ~LogListener() {}
-
-        //! Subscribe new listener for ogre log messages
-        void SubscribeListener(const Foundation::LogListenerPtr &listener)
-        {
-            listeners_.push_back(listener);
-        }
-
-        //! Unsubscribe listener for ogre log messages
-        void UnsubscribeListener(const Foundation::LogListenerPtr &listener)
-        {
-            listeners_.remove(listener);
-        }
-
-        void messageLogged(const std::string& message, Ogre::LogMessageLevel lml, bool maskDebug, const std::string &logName)
-        {
-            for (ListenerList::iterator it = listeners_.begin(); it != listeners_.end(); ++it)
-                (*it)->LogMessage(message);
-        }
-
-    private:
-        typedef std::list<Foundation::LogListenerPtr> ListenerList;
-
-        //! list of subscribed listeners
-        ListenerList listeners_;
-    };
-
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
         framework_(framework),
@@ -185,47 +118,6 @@ namespace OgreRenderer
         SAFE_DELETE(renderWindow);
     }
 
-    void Renderer::RemoveLogListener()
-    {
-        if (log_listener_)
-        {
-            Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
-            log_listener_.reset();
-        }
-    }
-
-    void Renderer::DoFrameTimeLimiting()
-    {
-        if (targetFpsLimit > 1.f)
-        {
-            tick_t timeNow = GetCurrentClockTime();
-
-            double msecsSpentInFrame = (double)(timeNow - lastPresentTime) * 1000.0 / timerFrequency;
-            const double msecsPerFrame = 1000.0 / targetFpsLimit;
-            if (msecsSpentInFrame < msecsPerFrame)
-            {
-                PROFILE(Renderer_DoFrameTimeLimiting);
-                while(msecsSpentInFrame >= 0.0 && msecsSpentInFrame < msecsPerFrame)
-                {
-                    if (msecsSpentInFrame + 1.0 < msecsPerFrame)
-                        boost::this_thread::sleep(boost::posix_time::milliseconds(1)); // Sleep in 1msec slices (which on most systems is far from guaranteed to be 1msec, but suits the purpose here)
-
-                    msecsSpentInFrame = (double)(GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
-                }
-
-                // Busy-wait the rest of the time slice to avoid jittering and to produce smoother updates.
-                while(msecsSpentInFrame >= 0 && msecsSpentInFrame < msecsPerFrame)
-                    msecsSpentInFrame = (double)(GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
-            }
-
-            lastPresentTime = GetCurrentClockTime();
-
-//            timeSleptLastFrame = (double)((timeNow - lastPresentTime) * 1000.0 / timerFrequency);
-        }
-//        else
-//            timeSleptLastFrame = 0.0;
-    }
-
     void Renderer::InitializeEvents()
     {
         EventManagerPtr event_manager = framework_->GetEventManager();
@@ -239,6 +131,9 @@ namespace OgreRenderer
     {
         if (initialized_)
             return;
+
+        QString baseSplashMsg = "Preparing " + QString::fromStdString(OgreRenderingModule::NameStatic());
+        Application *app = framework_->GetApplication();
 
         std::string logfilepath, rendersystem_name;
         Ogre::RenderSystem *rendersystem = 0;
@@ -277,11 +172,11 @@ namespace OgreRenderer
 // On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwareBufferManager singleton will crash.
 ///\todo Perhaps this #ifdef should instead be if(Ogre Render System == OpenGL) (test how Windows + OpenGL behaves)
 #ifdef UNIX 
-    if (framework_->IsHeadless())
-    {
-        // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
-        new Ogre::DefaultHardwareBufferManager();
-    }
+        if (framework_->IsHeadless())
+        {
+            // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
+            new Ogre::DefaultHardwareBufferManager();
+        }
 #endif
 
 #include "EnableMemoryLeakCheck.h"
@@ -294,6 +189,7 @@ namespace OgreRenderer
         view_distance_ = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "view_distance", 500.0);
 
         // Load plugins
+        app->SetSplashMessage(baseSplashMsg + " [LOADING PLUGINS]");
         LoadPlugins(plugins_filename_);
 
 #ifdef _WINDOWS
@@ -353,12 +249,13 @@ namespace OgreRenderer
                 connect(framework_->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
                 renderWindow->Resize(framework_->Ui()->GraphicsView()->width(), framework_->Ui()->GraphicsView()->height());
             }
-            catch (Ogre::Exception &/*e*/)
+            catch (Ogre::Exception&)
             {
                 OgreRenderingModule::LogError("Could not create ogre rendering window!");
                 throw;
             }
             OgreRenderingModule::LogDebug("Initializing resources, may take a while...");
+            app->SetSplashMessage(baseSplashMsg + " [LOADING RESOURCES]");
             SetupResources();
         }
 
@@ -366,40 +263,8 @@ namespace OgreRenderer
         initialized_ = true;
     }
 
-    bool Renderer::IsFullScreen() const
-    {
-        if (!framework_->IsHeadless())
-            return framework_->Ui()->MainWindow()->isFullScreen();
-        else
-            return false;
-    }
-
     void Renderer::PostInitialize()
     {
-    }
-
-    void Renderer::SetFullScreen(bool value)
-    {
-        // In headless mode, we can safely ignore Fullscreen mode requests.
-        if (framework_->IsHeadless())
-            return;
-
-        if(value)
-            framework_->Ui()->MainWindow()->showFullScreen();
-        else
-            framework_->Ui()->MainWindow()->showNormal();
-    }
-
-    void Renderer::SetShadowQuality(ShadowQuality newquality)
-    {
-        // We cannot effect the new setting immediately, so save only to config
-        framework_->GetDefaultConfig().SetSetting<int>("OgreRenderer", "shadow_quality", (int)newquality);
-    }
-
-    void Renderer::SetTextureQuality(TextureQuality newquality)
-    {
-        // We cannot effect the new setting immediately, so save only to config
-        framework_->GetDefaultConfig().SetSetting<int>("OgreRenderer", "texture_quality", (int)newquality);
     }
 
     void Renderer::LoadPlugins(const std::string& plugin_filename)
@@ -409,7 +274,7 @@ namespace OgreRenderer
         {
             file.load(plugin_filename);
         }
-        catch (Ogre::Exception &/*e*/)
+        catch (Ogre::Exception&)
         {
             OgreRenderingModule::LogError("Could not load Ogre plugins configuration file");
             return;
@@ -417,7 +282,7 @@ namespace OgreRenderer
 
         Ogre::String plugin_dir = file.getSetting("PluginFolder");
         Ogre::StringVector plugins = file.getMultiSetting("Plugin");
-        
+
         if (plugin_dir.length())
         {
             if ((plugin_dir[plugin_dir.length() - 1] != '\\') && (plugin_dir[plugin_dir.length() - 1] != '/'))
@@ -429,14 +294,14 @@ namespace OgreRenderer
 #endif
             }
         }
-        
+
         for (uint i = 0; i < plugins.size(); ++i)
         {
             try
             {
                 root_->loadPlugin(plugin_dir + plugins[i]);
             }
-            catch (Ogre::Exception &/*e*/)
+            catch (Ogre::Exception&)
             {
                 OgreRenderingModule::LogError("Plugin " + plugins[i] + " failed to load");
             }
@@ -477,7 +342,7 @@ namespace OgreRenderer
             Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/materials/scripts/shadows_low", "FileSystem", "General");
             break;
         }
-        
+
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
 
@@ -486,7 +351,7 @@ namespace OgreRenderer
         scenemanager_ = root_->createSceneManager(Ogre::ST_GENERIC, "SceneManager");
         if (framework_->IsHeadless())
             return;
-        
+
         default_camera_ = scenemanager_->createCamera("DefaultCamera");
         viewport_ = renderWindow->OgreRenderWindow()->addViewport(default_camera_);
 
@@ -501,13 +366,82 @@ namespace OgreRenderer
 
         ray_query_ = scenemanager_->createRayQuery(Ogre::Ray());
         ray_query_->setSortByDistance(true); 
-        
+
         renderable_listener_ = RenderableListenerPtr(new RenderableListener(this));
         scenemanager_->getRenderQueue()->setRenderableListener(renderable_listener_.get());
 
         InitShadows();
 
         c_handler_->Initialize(framework_ ,viewport_);
+    }
+
+    bool Renderer::IsFullScreen() const
+    {
+        if (!framework_->IsHeadless())
+            return framework_->Ui()->MainWindow()->isFullScreen();
+        else
+            return false;
+    }
+
+    void Renderer::RemoveLogListener()
+    {
+        if (log_listener_)
+        {
+            Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
+            log_listener_.reset();
+        }
+    }
+
+    void Renderer::DoFrameTimeLimiting()
+    {
+        if (targetFpsLimit > 1.f)
+        {
+            tick_t timeNow = GetCurrentClockTime();
+
+            double msecsSpentInFrame = (double)(timeNow - lastPresentTime) * 1000.0 / timerFrequency;
+            const double msecsPerFrame = 1000.0 / targetFpsLimit;
+            if (msecsSpentInFrame < msecsPerFrame)
+            {
+                PROFILE(Renderer_DoFrameTimeLimiting);
+                while(msecsSpentInFrame >= 0.0 && msecsSpentInFrame < msecsPerFrame)
+                {
+                    if (msecsSpentInFrame + 1.0 < msecsPerFrame)
+                        boost::this_thread::sleep(boost::posix_time::milliseconds(1)); // Sleep in 1msec slices (which on most systems is far from guaranteed to be 1msec, but suits the purpose here)
+
+                    msecsSpentInFrame = (double)(GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
+                }
+
+                // Busy-wait the rest of the time slice to avoid jittering and to produce smoother updates.
+                while(msecsSpentInFrame >= 0 && msecsSpentInFrame < msecsPerFrame)
+                    msecsSpentInFrame = (double)(GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
+            }
+
+            lastPresentTime = GetCurrentClockTime();
+        }
+    }
+
+    void Renderer::SetFullScreen(bool value)
+    {
+        // In headless mode, we can safely ignore Fullscreen mode requests.
+        if (framework_->IsHeadless())
+            return;
+
+        if(value)
+            framework_->Ui()->MainWindow()->showFullScreen();
+        else
+            framework_->Ui()->MainWindow()->showNormal();
+    }
+
+    void Renderer::SetShadowQuality(ShadowQuality newquality)
+    {
+        // We cannot effect the new setting immediately, so save only to config
+        framework_->GetDefaultConfig().SetSetting<int>("OgreRenderer", "shadow_quality", (int)newquality);
+    }
+
+    void Renderer::SetTextureQuality(TextureQuality newquality)
+    {
+        // We cannot effect the new setting immediately, so save only to config
+        framework_->GetDefaultConfig().SetSetting<int>("OgreRenderer", "texture_quality", (int)newquality);
     }
 
     int Renderer::GetWindowWidth() const
