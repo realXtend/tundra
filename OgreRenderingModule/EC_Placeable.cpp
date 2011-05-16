@@ -436,6 +436,19 @@ Vector3df EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df
     return result;
 }
 
+// $ BEGIN_MOD $
+Vector3df EC_Placeable::GetRotationTo(const Vector3df& to)
+{
+    Transform trans = transform.Get();
+    Quaternion orientation;
+    orientation.rotationFromTo(trans.position,to);
+    Vector3df result;
+    orientation.toEuler(result);
+    result *= RADTODEG;
+    return result;
+}
+// $ END_MOD $
+
 void EC_Placeable::Show()
 {
 	visible.Set(true, AttributeChange::Default);

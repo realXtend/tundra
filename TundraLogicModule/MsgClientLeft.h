@@ -23,6 +23,7 @@ struct MsgClientLeft
 		priority = 100;
 	}
 
+    enum { messageID = 103 };
 	static inline u32 MessageID() { return 103; }
 	static inline const char *Name() { return "ClientLeft"; }
 

@@ -229,6 +229,10 @@ public slots:
     //! Calculates rotation
     Vector3df GetRotationFromTo(const Vector3df& from, const Vector3df& to);
 
+    // $ BEGIN_MOD $
+    //! Calculates rotation from placeable position
+    Vector3df GetRotationTo(const Vector3df& to);
+    // $ END_MOD $
     /// Shows the Entity
     void Show();
 

@@ -44,6 +44,8 @@
      *                  "Class init"); default: true
      */
     var JUnitXmlReporter = function(savePath, consolidate, useDotNotation) {
+    	this.started = false;
+    	this.finished = false;
         this.savePath = savePath || '';
         this.consolidate = consolidate === jasmine.undefined ? true : consolidate;
         this.useDotNotation = useDotNotation === jasmine.undefined ? true : useDotNotation;
@@ -51,6 +53,7 @@
 
     JUnitXmlReporter.prototype = {
         reportRunnerStarting: function(runner) {
+    		this.started = true;
             this.log("Runner Started.");
         },
 
@@ -145,6 +148,7 @@
                     this.writeFile(this.savePath + fileName, output);
                 }
             }
+            this.finished = true;
         },
 
         getNestedOutput: function(suite) {

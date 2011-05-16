@@ -33,7 +33,9 @@ namespace KristalliProtocol
 
         MODULE_LOGGING_FUNCTIONS;
 
+#ifdef KNET_USE_QT
         Console::CommandResult OpenKNetLogWindow(const StringVector &);
+#endif
 
         /// Connects to the Kristalli server at the given address.
         void Connect(const char *ip, unsigned short port, kNet::SocketTransportLayer transport);
@@ -87,9 +89,11 @@ namespace KristalliProtocol
         /// What trasport layer to use. Read on startup from --protocol udp/tcp. Defaults to TCP if no start param was given.
         kNet::SocketTransportLayer defaultTransport;
 
-		//$ BEGIN_MOD $
-		kNet::NetworkDialog *networkDialog;
-		//$ END_MOD $
+//$ BEGIN_MOD $
+	#ifdef KNET_USE_QT
+		NetworkDialog *networkDialog;
+	#endif
+//$ END_MOD $
         
     private:
         /// This timer tracks when we perform the next reconnection attempt when the connection is lost.

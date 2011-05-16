@@ -23,6 +23,7 @@ struct MsgEntityAction
 		priority = 100;
 	}
 
+    enum { messageID = 116 };
 	static inline u32 MessageID() { return 116; }
 	static inline const char *Name() { return "EntityAction"; }
 
