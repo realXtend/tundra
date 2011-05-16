@@ -109,6 +109,7 @@ function viewScreen(screen) {
 }
 
 function getPoints(from, to) {
+    orig_target = from.placeable.position;
     targets = [];
     targets.push(getNormal(from, 15));
     targets.push(getNormal(to, 15));
@@ -146,12 +147,15 @@ function animationUpdate(dt) {
     var pos = camera.placeable.position;
     //print(pos);
     //print(target);
-    var d = distance(pos, target);
+    var dist = distance(pos, target);
  
+    var orig_dist = distance(target, orig_target);
+
     //print(d);
 
-    if (d <= 0.1) {
-	targets.splice(0, 1);
+    if (dist <= 0.1) {
+	orig_target = targets.splice(0, 1)[0];
+	print("NEW TARGET ------------------------------------------------------------");
 	lookAtTargets.splice(0, 1);
 	return;
     }
@@ -198,31 +202,32 @@ function animationUpdate(dt) {
     var b = Math.pow((currentRotation.y - targetRotation.y), 2);
     var c = Math.pow((currentRotation.z - targetRotation.z), 2);
     var r = Math.sqrt(a + b + c);
-
     
     print("agledistance: " + r);
 
-    // If we're close enought we won't turn
-    if (r <= 2.0) {
+    // If we're close enough we won't turn
+    if ((r <= 2) || (r >= 358)) {
 	print("END");
 	return;
     }
-    
+
+
     var drotx = targetRotation.x - currentRotation.x;
-    print("x difference " + drotx);
-
-
-    newtransform.rot.x = (currentRotation.x + drotx * dt * 2);
-
     var droty = targetRotation.y - currentRotation.y;
-    print("y difference " + droty);
-
-    newtransform.rot.y = (currentRotation.y + droty * dt * 2);
-
     var drotz = targetRotation.z - currentRotation.z;
-    print("z difference " + drotz);
+    
+    // Count magnitude
+    var magnitude = Math.sqrt(Math.pow(drotx, 2) + Math.pow(droty, 2) + Math.pow(drotz, 2))
 
-    newtransform.rot.z = (currentRotation.z + drotz * dt * 2);
+
+    print("x difference " + drotx);
+    newtransform.rot.x = currentRotation.x + (drotx / magnitude) * dt * 100 * dist * 2 / orig_dist;
+
+    print("y difference " + droty);
+    newtransform.rot.y = currentRotation.y + (droty / magnitude) * dt * 100 * dist * 2 / orig_dist;
+
+    print("z difference " + drotz);
+    newtransform.rot.z = currentRotation.z + (drotz / magnitude) * dt * 100 * dist * 2 / orig_dist;
 
     camera.placeable.transform = newtransform;
 
@@ -254,6 +259,7 @@ me.Action("GotoNext").Triggered.connect(HandleGotoNext);
 me.Action("GotoPrev").Triggered.connect(HandleGotoPrev);
 me.Action("ResetShow").Triggered.connect(reset);
 
+var orig_target;
 var targets = [];
 var lookAtTargets = [];
 print(targets);
