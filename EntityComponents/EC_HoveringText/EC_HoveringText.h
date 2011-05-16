@@ -141,6 +141,9 @@ public:
     Q_PROPERTY(Color gradEndAttr READ getgradEndAttr WRITE setgradEndAttr);
     DEFINE_QPROPERTY_ATTRIBUTE(Color, gradEndAttr);
 
+    Q_PROPERTY(float overlayAlpha READ getoverlayAlpha WRITE setoverlayAlpha);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, overlayAlpha);
+
     /// Clears the 3D subsystem resources for this object.
     void Destroy();
 
@@ -198,6 +201,9 @@ public slots:
     /// @param end_color End color.
     /// @note Sets the using_gradient_ boolean to true.
     void SetBackgroundGradient(const QColor &start_color, const QColor &end_color);
+
+    /// Sets the Ogre overlay alpha value. Called in response to when the alpha value attribute changes.
+    void SetOverlayAlpha(float alpha);
 
 private slots:
     /// Updates the animation
