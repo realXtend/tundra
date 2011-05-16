@@ -1,3 +1,10 @@
+The build instructions are in the wiki:
+http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk
+(now more up-to-date in 
+https://github.com/realXtend/naali/wiki/Building-from-source)
+
+Here some additional info about running on linux:
+
 The viewer has many external libraries which may not be satisfied by default 
 on many distributions. A list of dependencies can be found in them 
 depencies.txt file. However not all of them will be missing from your 
