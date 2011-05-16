@@ -238,6 +238,13 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
 {
     PROFILE(TextureAsset_SetContents);
 
+    if (numBytes != newWidth * newHeight * 4)
+    {
+        LogError("TextureAsset::SetContents failed: Inputted " + QString::number(numBytes) + " bytes of data, but " + QString::number(newWidth) + "x" + QString::number(newHeight)
+            + " at 4 bytes per pixel requires " + QString::number(newWidth * newHeight * 4) + " bytes!");
+        return;
+    }
+
     if (!ogreTexture.get())
     {
         ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
