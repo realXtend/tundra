@@ -889,7 +889,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         transfer->EmitAssetFailed(error);
         return;
     }
-
+/*
     // Remember the newly created asset in AssetAPI's internal data structure to allow clients to later fetch it without re-requesting it.
     AssetMap::iterator iter2 = assets.find(transfer->source.ref);
     if (iter2 != assets.end())
@@ -897,7 +897,8 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         AssetPtr existing = iter2->second;
         LogWarning("AssetAPI: Overwriting a previously downloaded asset \"" + existing->Name().toStdString() + "\", type \"" + existing->Type().toStdString() + "\" with asset of same name!");
     }
-//    assets[transfer->source.ref] = transfer->asset;
+    assets[transfer->source.ref] = transfer->asset;
+*/
     if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
         diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
     emit AssetCreated(transfer->asset);
