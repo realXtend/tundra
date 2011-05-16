@@ -648,12 +648,6 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
     assetType = assetType.trimmed();
     QString assetFilename;
     ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &assetFilename, 0, 0, &assetRefWithoutSubAsset);
-    if (assetType.isEmpty())
-    {
-        assetType = GetResourceTypeFromAssetRef(assetFilename);
-    }
-    if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(assetType).get()))
-        return AssetTransferPtr();
 
     // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
     // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since
@@ -669,7 +663,10 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
             LogError("AssetAPI::RequestAsset: Received forceTransfer for asset " + assetRef + " while a virtual transfer is already going on");
             return transfer;
         }
-        
+
+        if (assetType.isEmpty())
+            assetType = GetResourceTypeFromAssetRef(assetRefWithoutSubAsset);
+
         // Check that the requested types were the same. Don't know what to do if they differ, so only print a warning if so.
         if (!assetType.isEmpty() && !transfer->assetType.isEmpty() && assetType != transfer->assetType)
             LogWarning("AssetAPI::RequestAsset: Asset \"" + assetRef + "\" first requested by type " + transfer->assetType + 
@@ -683,7 +680,19 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
     AssetMap::iterator iter2 = assets.find(assetRefWithoutSubAsset);
     AssetPtr existing;
     if (iter2 != assets.end())
+    {
         existing = iter2->second;
+        if (assetType != existing->Type())
+            LogWarning("AssetAPI::RequestAsset: Tried to request asset \"" + assetRef + "\" by type \"" + assetType + "\". Asset by that name exists, but it is of type \"" + existing->Type() + "\"!");
+        assetType = existing->Type();
+    }
+    else
+    {
+        if (assetType.isEmpty())
+            assetType = GetResourceTypeFromAssetRef(assetRefWithoutSubAsset);
+        if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(assetType).get()))
+            return AssetTransferPtr();
+    }
     
     ///\todo Evaluate whether existing->IsLoaded() should rather be existing->IsEmpty().
     if (existing && existing->IsLoaded() && !forceTransfer)
