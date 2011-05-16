@@ -100,8 +100,6 @@ AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)
 #AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
 
 
-add_subdirectory(StreamsModule)
-
 # The following two are declared by both PythonScriptModule and JavascriptModule. They are optional.
 AddEntityComponent(EntityComponents/EC_Script EC_Script)
 
