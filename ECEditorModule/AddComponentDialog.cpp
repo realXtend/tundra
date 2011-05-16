@@ -51,10 +51,10 @@ AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &
     sync_check_box_->setChecked(true);
     temp_check_box_ = new QCheckBox(tr("Temporary"), this);
 
-    layout->addWidget(component_name_label);
-    layout->addWidget(name_line_edit_);
     layout->addWidget(component_type_label);
     layout->addWidget(type_combo_box_);
+    layout->addWidget(component_name_label);
+    layout->addWidget(name_line_edit_);
     layout->addWidget(sync_check_box_);
     layout->addWidget(temp_check_box_);
 

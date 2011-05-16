@@ -1573,7 +1573,6 @@ void AssetReferenceAttributeEditor::OpenAssetsWindow()
                 if (ref)
                     originalValues.insert(c, ref->Get());
             }
-        //originalRef = assetRef->Get().ref;
     }
 }
 
@@ -1593,39 +1592,16 @@ void AssetReferenceAttributeEditor::RestoreOriginalValue()
     if (!assetRef)
         return;
 
-//    if (useMultiEditor_)
-//    {
-//            LogInfo("RestoreOriginalValue, useMultiEditor_, restoring original values:");
-//            for(int i = 0; i < originalValues.size(); ++i)
-//                for(int j = 0; j < originalValues[i].Size(); ++j)
-//                LogInfo(originalValues[i][j].ref);
-
-        QMapIterator<ComponentWeakPtr, AssetReference> it(originalValues);
-        while(it.hasNext())
-        {
-            ComponentWeakPtr c = it.next().key();
-            if (!c.expired())
-                SetValue(c.lock(), it.value());
-        }
-
-        originalValues.clear();
-        
-        //for(int i = 0; i < components_.size() && originalValues.size(); ++i)
-          //  if (components_[i].lock())
-            //    SetValue(components_[i].lock(), originalValues[i]);
-/*
-    }
-    else
+    QMapIterator<ComponentWeakPtr, AssetReference> it(originalValues);
+    while(it.hasNext())
     {
-        AssetReferenceList refs = refList->Get();
-        if (!refs.IsEmpty())
-            refs.Set(currentIndex, AssetReference(originalRef));
-
-        SetValue(AssetReference(originalRef));
-        //refs = originalValues;
-        SetValue(refs);
+        ComponentWeakPtr c = it.next().key();
+        if (!c.expired())
+            SetValue(c.lock(), it.value());
     }
-*/
+
+    originalValues.clear();
+
     Update();
 }
 
@@ -1832,7 +1808,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     if (assetType.isEmpty() && !refList->Get().IsEmpty())
     {
         assetType = refList->Get()[0].type;
-        // As a last resort, try to figure it out using AssetAPI.
+        // As the last resort, try to figure it out using AssetAPI.
         if (assetType.isEmpty())
             assetType = AssetAPI::GetResourceTypeFromAssetRef(refList->Get()[0]);
     }
