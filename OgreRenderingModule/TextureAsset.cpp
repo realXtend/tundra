@@ -5,6 +5,11 @@
 #include "TextureAsset.h"
 #include "OgreConversionUtils.h"
 
+#include <QPixmap>
+#include <QRect>
+#include <QFontMetrics>
+#include <QPainter>
+
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
 #include <d3d9.h>
@@ -311,4 +316,37 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
 
     if (needRecreate)
         ogreTexture->createInternalResources();
+}
+
+void TextureAsset::SetTextContent(int newWidth, int newHeight, const QString& text, const QColor& textColor, const QFont& font, const QBrush& backgroundBrush, const QPen& borderPen, int flags)
+{
+    
+    QRect max_rect(0,0, newWidth, newHeight);
+
+    // Create transparent pixmap
+    QPixmap pixmap(max_rect.size());
+    pixmap.fill(Qt::transparent);
+
+    // Init painter with pixmap as the paint device
+    QPainter painter(&pixmap);
+
+    // Ask painter the rect for the text
+    painter.setFont(font);
+    QRect rect = painter.boundingRect(max_rect, flags, text);
+
+    // Set background brush
+    painter.setBrush(backgroundBrush);
+ 
+    painter.setPen(borderPen);
+    // Draws the given rectangle rect with rounded corners
+    painter.drawRoundedRect(rect, 20.0, 20.0);
+
+    // Draw text
+    painter.setPen(textColor);
+    painter.drawText(rect, flags, text);
+
+    QImage img = pixmap.toImage();
+    u8* data = static_cast<u8* >(img.bits());
+    SetContents(newWidth, newHeight, data,  img.byteCount(), Ogre::PF_A8R8G8B8, false);
+ 
 }

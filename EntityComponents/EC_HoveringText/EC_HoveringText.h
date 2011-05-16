@@ -22,6 +22,7 @@
 #include "Color.h"
 
 class QTimeLine;
+class TextureAsset;
 
 namespace Ogre
 {
@@ -209,9 +210,7 @@ private slots:
     void OnAttributeUpdated(IComponent *component, IAttribute *attribute);
 
 private:
-    /// Returns pixmap with chat bubble and current messages renderer to it.
-    QPixmap GetTextPixmap();
-
+    
     /// Renderer pointer.
     OgreRenderer::RendererWeakPtr renderer_;
 
@@ -244,6 +243,9 @@ private:
 
     // Timed visibility timer
     QTimer *visibility_timer_;
+
+    // Texture which contains hovering text
+    TextureAsset* texture_;  
 };
 
 #endif

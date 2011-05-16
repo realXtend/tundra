@@ -43,6 +43,9 @@ public:
     /// Sets this texture to the given size and fills it with the given color value.
     void SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps);
 
+    /// Sets given text to a texture.
+    void SetTextContent(int newWidth, int newHeight, const QString& text, const QColor& textColor, const QFont& font, const QBrush& backgroundBrush, const QPen& borderPen, int flags = Qt::AlignCenter | Qt::TextWordWrap);
+
     //void RegenerateAllMipLevels();
 
     /// This points to the loaded texture asset, if it is present.

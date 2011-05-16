@@ -18,7 +18,8 @@
 #include "SceneManager.h"
 #include "Framework.h"
 #include "OgreRenderingModule.h"
-
+#include "AssetApi.h"
+#include "TextureAsset.h"
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
 #include <OgreTextureManager.h>
@@ -50,7 +51,8 @@ EC_HoveringText::EC_HoveringText(Framework *fw) :
     gradStart(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
     gradEnd(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
     borderColor(this, "Border Color", Color(0.0f,0.0f,0.0f,0.0f)),
-    borderThickness(this, "Border Thickness", 0.0)
+    borderThickness(this, "Border Thickness", 0.0), 
+    texture_(0)
 {
     //renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
     renderer_ = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
@@ -66,6 +68,9 @@ EC_HoveringText::EC_HoveringText(Framework *fw) :
 
 EC_HoveringText::~EC_HoveringText()
 {
+    delete texture_;
+    texture_ = 0;
+
     Destroy();
 }
 
@@ -77,11 +82,7 @@ void EC_HoveringText::Destroy()
     OgreRenderer::RendererPtr renderer = renderer_.lock();
     if (renderer)
     {
-        try{
-        Ogre::TextureManager::getSingleton().remove(textureName_);
-        } catch(...)
-        {
-        }
+      
         try{
         Ogre::MaterialManager::getSingleton().remove(materialName_);
         } catch(...)
@@ -309,55 +310,65 @@ void EC_HoveringText::Redraw()
     if (renderer_.expired() || !billboardSet_ || !billboard_)
         return;
 
-    // Get pixmap with text rendered to it.
-    QPixmap pixmap = GetTextPixmap();
-    if (pixmap.isNull())
-        return;
-    QImage img = pixmap.toImage();
-
-    // Create Ogre texture
-    Ogre::TexturePtr texPtr;
     try
     {
-        if (textureName_.empty())
+        if (texture_ == 0)
         {
-            textureName_ = renderer_.lock()->GetUniqueObjectName("EC_HoveringText_texture");
+       
+            AssetAPI* asset = framework_->Asset();
 
-            texPtr = Ogre::TextureManager::getSingleton().createManual(
-                textureName_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
-                img.width(), img.height(), 0, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
-    ///\todo Disabled mip map generation for now, since the line 'texPtr->getBuffer()->blitFromMemory(pixel_box);' below
-    /// will not regenerate them. 
-//                img.width(), img.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
-
-            assert(!texPtr.isNull());
-            if (texPtr.isNull())
+            textureName_ = asset->GenerateUniqueAssetName("tex", "EC_HoveringText_").toStdString();
+            QString name(textureName_.c_str());
+            texture_  = boost::dynamic_pointer_cast<TextureAsset>(asset->CreateNewAsset("Texture", name)).get();  
+            
+            assert(texture_);
+            
+            if (texture_ == 0)
             {
                 LogError("Failed to create texture " + textureName_);
                 return;
             }
         }
+       
+
+        QFontMetrics metric(font_); 
+        int width = metric.width(text.Get()) + metric.averageCharWidth();
+        int height = metric.height() + 20;
+        
+        QBrush* brush = 0;
+
+        if (usingGrad.Get())
+        {   
+            QRect rect(0,0,width, height);
+            bg_grad_.setStart(QPointF(0,rect.top()));
+            bg_grad_.setFinalStop(QPointF(0,rect.bottom()));
+            brush = new QBrush(bg_grad_);
+        }
         else
         {
-            texPtr = Ogre::TextureManager::getSingleton().getByName(textureName_);
-            assert(!texPtr.isNull());
-            // See if size/format changed, have to delete/recreate internal resources
-            if (img.width() != (int)texPtr->getWidth() || img.height() != (int)texPtr->getHeight())
-            {
-                texPtr->freeInternalResources();
-                texPtr->setWidth(img.width());
-                texPtr->setHeight(img.height());
-                texPtr->setFormat(Ogre::PF_A8R8G8B8);
-                texPtr->createInternalResources();
-            }
+            brush = new QBrush(backgroundColor_);
         }
 
-        Ogre::Box dimensions(0,0, img.width(), img.height());
-        Ogre::PixelBox pixel_box(dimensions, Ogre::PF_A8R8G8B8, (void*)img.bits());
-        if (!texPtr->getBuffer().isNull())
-        {
-            texPtr->getBuffer()->blitFromMemory(pixel_box);
-        }
+        QColor borderCol;
+        Color col = borderColor.Get();
+        borderCol.setRgbF(col.r, col.g, col.b, col.a);
+
+        QPen borderPen;
+        borderPen.setColor(borderCol);
+        borderPen.setWidthF(borderThickness.Get());
+        
+        
+        texture_->SetTextContent(width, 
+                                height, 
+                                text.Get(), 
+                                textColor_, 
+                                font_, 
+                                *brush, 
+                                borderPen);
+
+         delete brush;
+         brush = 0;
+
     }
     catch(Ogre::Exception &e)
     {
@@ -374,70 +385,6 @@ void EC_HoveringText::Redraw()
         assert(material.get());
         OgreRenderer::SetTextureUnitOnMaterial(material, textureName_);
     }
-}
-
-QPixmap EC_HoveringText::GetTextPixmap()
-{
-///\todo Resize the font size according to the render window size and distance
-/// avatar's distance from the camera
-//    const int minWidth =
-//    const int minHeight =
-//    Ogre::Viewport* viewport = renderer_.lock()->GetViewport();
-//    const int max_width = viewport->getActualWidth()/4;
-//    int max_height = viewport->getActualHeight()/10;
-
-    if (!ViewEnabled())
-        return QPixmap();
-
-    //if (renderer_.expired() || text_.isEmpty() || text_ == " ")
-    if (renderer_.expired())
-        return QPixmap();
-
-    QRect max_rect(0, 0, 1024, 512);
-
-    // Create transparent pixmap
-    QPixmap pixmap(max_rect.size());
-    pixmap.fill(Qt::transparent);
-
-    // Init painter with pixmap as the paint device
-    QPainter painter(&pixmap);
-
-    // Ask painter the rect for the text
-    painter.setFont(font_);
-    QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, text.Get());
-
-    // Add some padding to it
-    QFontMetrics metric(font_); 
-    int width = metric.width(text.Get()) + metric.averageCharWidth();
-    int height = metric.height() + 20;
-    rect.setWidth(width);
-    rect.setHeight(height);
-
-    // Set background brush
-    if (usingGrad.Get())
-    {   bg_grad_.setStart(QPointF(0,rect.top()));
-        bg_grad_.setFinalStop(QPointF(0,rect.bottom()));
-        painter.setBrush(QBrush(bg_grad_));
-    }
-    else
-        painter.setBrush(backgroundColor_);
-
-    QColor borderCol;
-    Color col = borderColor.Get();
-    borderCol.setRgbF(col.r, col.g, col.b, col.a);
-
-    // Draw background rect
-    QPen borderPen;
-    borderPen.setColor(borderCol);
-    borderPen.setWidthF(borderThickness.Get());
-    painter.setPen(borderPen);
-    painter.drawRoundedRect(rect, 20.0, 20.0);
-
-    // Draw text
-    painter.setPen(textColor_);
-    painter.drawText(rect, Qt::AlignCenter | Qt::TextWordWrap, text.Get());
-
-    return pixmap;
 }
 
 void EC_HoveringText::UpdateSignals()
