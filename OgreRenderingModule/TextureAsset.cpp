@@ -311,7 +311,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
         ///\todo Review Ogre internals of whether the const_cast here is safe!
         Ogre::PixelBox pixelBox(Ogre::Box(0,0, newWidth, newHeight), ogreFormat, const_cast<u8*>(data));
         ogreTexture->getBuffer()->blitFromMemory(pixelBox);
-		*/
+        */
     }
 
     if (needRecreate)
@@ -320,30 +320,27 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
 
 void TextureAsset::SetTextContent(int newWidth, int newHeight, const QString& text, const QColor& textColor, const QFont& font, const QBrush& backgroundBrush, const QPen& borderPen, int flags)
 {
-    
-    QRect max_rect(0,0, newWidth, newHeight);
-
     // Create transparent pixmap
-    QPixmap pixmap(max_rect.size());
-    pixmap.fill(Qt::transparent);
+    QImage image(newWidth, newHeight, QImage::Format_ARGB32);
+    image.fill(Qt::transparent);
 
-    // Init painter with pixmap as the paint device
-    QPainter painter(&pixmap);
+    {
+        // Init painter with pixmap as the paint device
+        QPainter painter(&image);
 
-    // Ask painter the rect for the text
-    painter.setFont(font);
-    QRect rect = painter.boundingRect(max_rect, flags, text);
+        // Ask painter the rect for the text
+        painter.setFont(font);
+        QRect rect = painter.boundingRect(image.rect(), flags, text);
 
-    // Set background brush
-    painter.setBrush(backgroundBrush);
-    painter.setPen(borderPen);
-  
-    // Draw text
-    painter.setPen(textColor);
-    painter.drawText(rect, flags, text);
+        // Set background brush
+        painter.setBrush(backgroundBrush);
 
-    QImage img = pixmap.toImage();
-    u8* data = static_cast<u8* >(img.bits());
-    SetContents(newWidth, newHeight, data,  img.byteCount(), Ogre::PF_A8R8G8B8, false);
- 
+        painter.setPen(borderPen);
+
+        // Draw text
+        painter.setPen(textColor);
+        painter.drawText(rect, flags, text);
+    }
+
+    SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, false);
 }
