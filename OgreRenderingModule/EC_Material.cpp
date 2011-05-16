@@ -46,10 +46,6 @@ void EC_Material::ProcessMaterial()
         if (parentEntity)
             outputMatName.replace(questionMark, 1, QString::number(parentEntity->GetId()));
     }
-    // If outputmaterial name does not end in ".material", add it here, because otherwise the material will not be correctly requested by other components
-    //if (!outputMatName.toLower().endsWith(".material"))
-    //    outputMatName += ".material";
-    
     
     AssetPtr srcAsset;
     AssetPtr destAsset;
