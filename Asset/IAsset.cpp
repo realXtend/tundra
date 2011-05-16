@@ -47,6 +47,48 @@ void IAsset::Unload()
     emit Unloaded(this);
 }
 
+AssetPtr IAsset::Clone(QString newAssetName) const
+{
+    assert(assetAPI);
+
+    AssetPtr existing = assetAPI->GetAsset(newAssetName);
+    if (existing)
+    {
+        LogError("Cannot Clone() asset \"" + Name().toStdString() + "\" to a new asset \"" + newAssetName.toStdString() + "\": An asset with that name already exists!");
+        return AssetPtr();
+    }
+
+    std::vector<u8> data;
+    bool success = const_cast<IAsset*>(this)->SerializeTo(data);
+    if (!success)
+    {
+        LogError("Cannot Clone() asset \"" + Name().toStdString() + "\" to a new asset \"" + newAssetName.toStdString() + "\": Serializing the asset failed!");
+        return AssetPtr();
+    }
+    if (data.size() == 0)
+    {
+        LogError("Cannot Clone() asset \"" + Name().toStdString() + "\" to a new asset \"" + newAssetName.toStdString() + "\": Asset serialization succeeded with zero size!");
+        return AssetPtr();
+    }
+
+    AssetPtr newAsset = assetAPI->CreateNewAsset(this->Type(), newAssetName);
+    if (!newAsset)
+    {
+        LogError("Cannot Clone() asset \"" + Name().toStdString() + "\" to a new asset \"" + newAssetName.toStdString() + "\": AssetAPI::CreateNewAsset failed!");
+        return AssetPtr();
+    }
+
+    success = newAsset->LoadFromFileInMemory(&data[0], data.size());
+    if (!success)
+    {
+        LogError("Cannot Clone() asset \"" + Name().toStdString() + "\" to a new asset \"" + newAssetName.toStdString() + "\": Deserializing the new asset from bytes failed!");
+        assetAPI->ForgetAsset(newAsset, false);
+        return AssetPtr();
+    }
+
+    return newAsset;
+}
+
 bool IAsset::LoadFromFile(QString filename)
 {
     filename = filename.trimmed(); ///\todo Sanitate.

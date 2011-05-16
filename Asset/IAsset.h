@@ -50,6 +50,8 @@ public slots:
     /// but its dependencies cannot be determined and it cannot be used in any other way.
     void Unload();
 
+    AssetPtr Clone(QString newAssetName) const;
+
     /// Stores the *current in-memory copy* of this asset to disk to the given file on the local filesystem. Use this function to export an asset from the system to a file.
     /// Returns true if saving succeeded, false otherwise.
     /// The default implementation immediately returns false for the asset.

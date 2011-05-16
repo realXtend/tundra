@@ -772,6 +772,10 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
         LogError("AssetAPI:CreateNewAsset: IAssetTypeFactory::CreateEmptyAsset(type \"" + type.toStdString() + "\", name: \"" + name.toStdString() + "\") failed to create asset!");
         return AssetPtr();
     }
+
+    // Remember this asset in the global AssetAPI storage.
+    assets[name] = asset;
+
     return asset;
 }
 
@@ -893,7 +897,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         AssetPtr existing = iter2->second;
         LogWarning("AssetAPI: Overwriting a previously downloaded asset \"" + existing->Name().toStdString() + "\", type \"" + existing->Type().toStdString() + "\" with asset of same name!");
     }
-    assets[transfer->source.ref] = transfer->asset;
+//    assets[transfer->source.ref] = transfer->asset;
     if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
         diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
     emit AssetCreated(transfer->asset);
