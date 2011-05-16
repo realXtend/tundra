@@ -387,9 +387,9 @@ function ClientInitialize() {
         {
             var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
             var r = avatar.appearanceRef;
-            r.ref = "local://default_avatar.xml";
+            r.ref = avatarurl;
             avatar.appearanceRef = r;
-            print("Avatar from login parameters enabled:", avatarAssetRef);
+            debug.Log("Avatar from login parameters enabled: " + avatarurl);
         }
     }
     else
