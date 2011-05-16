@@ -677,12 +677,12 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
 
     // Check if we've already downloaded this asset before and it already is loaded in the system. We never reload an asset we've downloaded before, 
     // unless the client explicitly forces so, or if we get a change notification signal from the source asset provider telling the asset was changed.
-    AssetMap::iterator iter2 = assets.find(assetRefWithoutSubAsset);
+    AssetMap::iterator iter2 = assets.find(assetRef);
     AssetPtr existing;
     if (iter2 != assets.end())
     {
         existing = iter2->second;
-        if (assetType != existing->Type())
+        if (!assetType.isEmpty() && assetType != existing->Type())
             LogWarning("AssetAPI::RequestAsset: Tried to request asset \"" + assetRef + "\" by type \"" + assetType + "\". Asset by that name exists, but it is of type \"" + existing->Type() + "\"!");
         assetType = existing->Type();
     }
