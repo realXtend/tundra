@@ -5,6 +5,7 @@
 
 #include "KristalliProtocolModuleApi.h"
 #include "kNet.h"
+#include <boost/shared_ptr.hpp>
 
 #include <QObject>
 
