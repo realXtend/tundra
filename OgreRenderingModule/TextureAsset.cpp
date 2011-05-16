@@ -316,11 +316,8 @@ void TextureAsset::SetTextContent(int newWidth, int newHeight, const QString& te
 
     // Set background brush
     painter.setBrush(backgroundBrush);
- 
     painter.setPen(borderPen);
-    // Draws the given rectangle rect with rounded corners
-    painter.drawRoundedRect(rect, 20.0, 20.0);
-
+  
     // Draw text
     painter.setPen(textColor);
     painter.drawText(rect, flags, text);

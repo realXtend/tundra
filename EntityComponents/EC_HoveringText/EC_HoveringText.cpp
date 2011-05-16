@@ -28,7 +28,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_HoveringText");
 #include <OgreBillboardSet.h>
 #include <OgreTextureManager.h>
 #include <OgreResource.h>
-
 #include <QFile>
 #include <QPainter>
 #include <QTimer>
@@ -55,11 +54,9 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
     gradStart(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
     gradEnd(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
     borderColor(this, "Border Color", Color(0.0f,0.0f,0.0f,0.0f)),
-    borderThickness(this, "Border Thickness", 0.0), 
-    texture_(0)
+    borderThickness(this, "Border Thickness", 0.0)
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
-
     visibility_animation_timeline_->setFrameRange(0,100);
     visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
     visibility_timer_->setSingleShot(true);
@@ -72,9 +69,6 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
 
 EC_HoveringText::~EC_HoveringText()
 {
-    delete texture_;
-    texture_ = 0;
-
     Destroy();
 }
 
@@ -315,14 +309,14 @@ void EC_HoveringText::Redraw()
 
     try
     {
-        if (texture_ == 0)
+        if (texture_.get() == 0)
         {
        
             AssetAPI* asset = framework_->Asset();
 
             textureName_ = asset->GenerateUniqueAssetName("tex", "EC_HoveringText_").toStdString();
             QString name(textureName_.c_str());
-            texture_  = boost::dynamic_pointer_cast<TextureAsset>(asset->CreateNewAsset("Texture", name)).get();  
+            texture_  = boost::dynamic_pointer_cast<TextureAsset>(asset->CreateNewAsset("Texture", name));  
             
             assert(texture_);
             
@@ -336,8 +330,16 @@ void EC_HoveringText::Redraw()
 
         QFontMetrics metric(font_); 
         int width = metric.width(text.Get()) + metric.averageCharWidth();
-        int height = metric.height() + 20;
+        int height = metric.height() + 100;
         
+        if ( width > 800 )
+        {
+            int s = width % 800;
+            int lines = (width - s) / 800;
+            height = height * lines;
+            width = 800 + s;
+        }
+       
         QBrush* brush = 0;
 
         if (usingGrad.Get())

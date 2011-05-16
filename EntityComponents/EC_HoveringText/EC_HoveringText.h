@@ -251,7 +251,7 @@ private:
     QTimer *visibility_timer_;
 
     // Texture which contains hovering text
-    TextureAsset* texture_;  
+    boost::shared_ptr<TextureAsset> texture_;  
 };
 
 #endif
