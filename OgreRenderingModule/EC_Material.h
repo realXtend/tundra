@@ -7,6 +7,9 @@
 #include "IComponent.h"
 #include "Core.h"
 #include "OgreModuleApi.h"
+#include "AssetRefListener.h"
+
+class OgreMaterialAsset;
 
 namespace OgreRenderer { class OgreRenderingModule; };
 
@@ -70,9 +73,34 @@ public slots:
 
 private slots:
     void OnAttributeUpdated(IAttribute* attribute);
-
+    
+    /// Parent entity has been set. Check for existence of EC_Mesh
+    void OnParentEntitySet();
+    
+    /// Component has been added to the entity. Check if it is EC_Mesh
+    void OnComponentAdded(IComponent* component, AttributeChange::Type change);
+    
+    /// Attributes of EC_Mesh component have changed. Check for material change
+    void OnMeshAttributeUpdated(IAttribute* attribute);
+    
+    /// Input asset has been successfully loaded.
+    void OnMaterialAssetLoaded(AssetPtr material);
+    
 private:
-    void ProcessMaterial();
+    /// Return the submesh number to use from EC_Mesh, or -1 if not using the EC_Mesh's material
+    int GetSubmeshNumber() const;
+
+    /// Return the input material name to use in asset request
+    QString GetInputMaterialName() const;
+
+    /// Attributes have changed. Request input material.
+    void CheckForInputMaterial();
+    
+    /// Apply parameters to the output material. Requires loaded input material.
+    void ApplyParameters(OgreMaterialAsset* srcMatAsset);
+    
+    /// Ref listener for the input material asset
+    AssetRefListenerPtr materialAsset;
 };
 
 #endif
