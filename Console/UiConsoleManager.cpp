@@ -164,7 +164,7 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
             }
             case Qt::Key_Tab:
             {
-                QString text = consoleUi->ConsoleInputArea->text().trimmed();
+                QString text = consoleUi->ConsoleInputArea->text().trimmed().toLower();
                 if (!text.isEmpty())
                 {
                     if (text != commandStub && !prevSuggestions.contains(text))
