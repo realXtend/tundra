@@ -38,17 +38,19 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
-if lsb_release -c | egrep -q "lucid|maverick"; then
+if lsb_release -c | egrep -q "lucid|maverick|natty"; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
 	 build-essential g++ libogre-dev libboost-all-dev libpoco-dev \
-	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
-         libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
-         libtelepathy-qt4-dev python-gst0.10-dev freeglut3-dev \
+	 ccache libqt4-dev python-dev \
+	 freeglut3-dev \
 	 libxmlrpc-epi-dev bison flex libxml2-dev cmake libalut-dev \
 	 liboil0.3-dev mercurial unzip xsltproc libqtscript4-qtbindings
 fi
+	 #python-gtk2-dev libdbus-glib-1-dev \
+         #libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
+         #libtelepathy-qt4-dev python-gst0.10-dev \ 
 
 function build-regular {
     urlbase=$1
@@ -89,6 +91,34 @@ else
     make install
     touch $tags/$what-done
 fi
+
+what=qtscriptgenerator
+if test -f $tags/$what-done; then 
+   echo $what is done
+else
+    cd $build
+    rm -rf $what
+    git clone git://gitorious.org/qt-labs/$what.git
+    cd $what
+
+    cd generator
+    qmake
+    make -j $nprocs
+    ./generator --include-paths=/usr/include/qt4
+    cd ..
+
+    cd qtbindings
+    sed -i 's/qtscript_phonon //' qtbindings.pro 
+    sed -i 's/qtscript_webkit //' qtbindings.pro 
+    qmake
+    make -j $nprocs
+    cd ..
+    cd ..
+    touch $tags/$what-done
+fi
+mkdir -p $viewer/bin/qtscript-plugins/script
+cp -lf $build/$what/plugins/script/* $viewer/bin/qtscript-plugins/script/
+
 
 what=knet
 if false && test -f $tags/$what-done; then 
@@ -176,7 +206,7 @@ ln -fvs /usr/include/xmlrpc-epi/*.h $prefix/include/
 if lsb_release -c | grep -q lucid; then
     : # nothing
 else
-    build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
+    : #build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
 fi
 
 

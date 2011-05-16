@@ -113,12 +113,6 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     graphicsView->verticalScrollBar()->setValue(0);
     graphicsView->verticalScrollBar()->setRange(0, 0);
 
-    // Setup Qt's main window with title and geometry
-    //mainWindow->setWindowTitle(QString(window_title_.c_str()));
-    //mainWindow->setGeometry(window_left, window_top, width, height);
-    //if (maximized)
-    //    mainWindow->showMaximized();
-
     graphicsScene = new QGraphicsScene(this);
 
     graphicsView->setScene(graphicsScene);
@@ -131,9 +125,11 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     mainWindow->LoadWindowSettingsFromFile();
     graphicsView->Resize(mainWindow->width(), mainWindow->height());
 
-    graphicsView->show();
+    // Unfortunate hack we have to do, will mess up the splash screen for a moment.
+    // Reason why we need to show/hide hack is qt makes the QWidget::winId() valid on first show event.
+    // This means we need to have a valid win id before ogre is loaded and the winid is passet to its renderer to paint into.
     mainWindow->show();
-    viewportWidget->show();
+    mainWindow->hide();
 
     /// Do a full repaint of the view now that we've shown it.
     graphicsView->MarkViewUndirty();

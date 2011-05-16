@@ -7,6 +7,7 @@ engine.ImportExtension("qt.webkit");
 engine.ImportExtension("qt.network");
 
 engine.IncludeFile("jsmodules/lib/class.js");
+engine.IncludeFile("jsmodules/lib/json2.js");
 engine.IncludeFile("jsmodules/startup/LoginScreen.js");
 
 var iconRefresh = new QIcon("./data/ui/images/browser/refresh.png");
@@ -31,6 +32,7 @@ var BrowserManager = Class.extend
         
         this.settings = new BrowserSettings(this);
         this.browserstorage = new BrowserStorage(this);
+        this.bookmarks = new BrowserBookmarks(this);
 
         var uiBase = "./data/ui/";
         var imageBase = uiBase + "images/";
@@ -119,6 +121,9 @@ var BrowserManager = Class.extend
         this.favoritesToolBar.iconSize = new QSize(23,23);
         this.favoritesToolBar.floatable = false;
         this.favoritesToolBar.movable = false;
+        this.actionBookmarks = this.favoritesToolBar.addAction(new QIcon(imageBase + "browser/bookmarks.png"), "");
+        this.actionBookmarks.triggered.connect(this.onBookmarksPressed);
+        this.actionBookmarks.tooltip = "Bookmarks";
         this.actionAddFavorite = this.favoritesToolBar.addAction(new QIcon(imageBase + "browser/favorites.png"), "");
         this.actionAddFavorite.triggered.connect(this.onFavoritePressed);
         this.actionAddFavorite.tooltip = "Add as home page or add to bookmarks";
@@ -328,10 +333,83 @@ var BrowserManager = Class.extend
         p_.refreshSplitter();
     },
     
+    onBookmarksPressed: function()
+    {
+        var bookmarksmenu = new QMenu("Bookmarks", null);
+       
+        // Tundra world section
+        var titleWorlds = bookmarksmenu.addAction("Tundra Worlds");
+        var titleFont = titleWorlds.font;
+        titleFont.setBold(true);
+        titleWorlds.font = titleFont;
+        
+        var worldmarks = p_.bookmarks.bookmarksworlds;
+        if (worldmarks.length > 0)
+        {
+            for (var i in worldmarks)
+            {
+                var mark = worldmarks[i];
+                var act = bookmarksmenu.addAction(mark.title);
+                act.setData(mark.url);
+                act.icon = QWebSettings.iconForUrl(new QUrl(mark.url));
+            }
+        }
+        else
+            bookmarksmenu.addAction("No items").enabled = false;
+        bookmarksmenu.addSeparator();
+        
+        // Web pages section
+        var titleWeb = bookmarksmenu.addAction("Web Pages");
+        titleWeb.font = titleFont;
+        
+        var webmarks = p_.bookmarks.bookmarksweb;
+        if (webmarks.length > 0)
+        {
+            for (var i in webmarks)
+            {
+                var mark = webmarks[i];
+                var act = bookmarksmenu.addAction(mark.title);
+                act.setData(mark.url);
+                act.icon = QWebSettings.iconForUrl(new QUrl(mark.url));
+            }
+        }
+        else
+            bookmarksmenu.addAction("No items").enabled = false;
+        
+        // Manage bookmarks
+        bookmarksmenu.addSeparator();
+        var manageAction = bookmarksmenu.addAction("Manage Bookmarks");
+        manageAction.font = titleFont;
+        manageAction.icon = new QIcon("./data/ui/images/browser/settings.png");
+        manageAction.triggered.connect(p_.bookmarks.manageBookmarks);
+            
+        // Execute menu and act on it
+        var clickedAct = bookmarksmenu.exec(QCursor.pos());
+        if (clickedAct != null)
+        {
+            var url = clickedAct.data();
+            if (url != null && url != "")
+                p_.openUrl(url);
+        }
+    },
+    
     onFavoritePressed: function()
     {
         var addressBarInput = p_.addressBar.lineEdit().text;
         var tabsCurrentIndex = p_.tabs.currentIndex;
+
+        // Validate url for web tabs
+        if (tabsCurrentIndex != 0)
+        {
+            if (p_.getCurrentWidget().url.toString() == "")
+            {
+                var dialogTitle = "Page load not ready";
+                var messageBox = new QMessageBox(QMessageBox.Information, dialogTitle, "Wait for the page to load succesfully first", QMessageBox.NoButton, 0, Qt.Tool);
+                messageBox.addButton("OK", QMessageBox.YesRole);
+                messageBox.exec();
+                return;
+            }
+        }
         
         var messageBox = new QMessageBox(QMessageBox.NoIcon, 
                                          "Add To Favorites", 
@@ -343,7 +421,7 @@ var BrowserManager = Class.extend
         // Disable bookmarks for now
         // \todo Implement bookmarks
         messageBox.addButton("Set As Homepage", QMessageBox.YesRole);
-        messageBox.addButton("Add To Bookmarks", QMessageBox.AcceptRole).enabled = false;
+        messageBox.addButton("Add To Bookmarks", QMessageBox.AcceptRole);
         messageBox.addButton("Cancel", QMessageBox.NoRole);
         messageBox.iconPixmap = new QPixmap("./data/ui/images/browser/favorites.png");
         
@@ -356,7 +434,34 @@ var BrowserManager = Class.extend
         }
         else if (result == 1) // QMessageBox.AcceptRole
         {
-            // \todo implement bookmark saving
+            if (tabsCurrentIndex != 0)
+                p_.bookmarks.addBookmark(p_.getCurrentWidget().title, p_.getCurrentWidget().url.toString());
+            else
+            {
+                var originalUrl = addressBarInput;
+                if (originalUrl.substring(0,9) == "tundra://")
+                    originalUrl = originalUrl.substring(9);
+            
+                // Only keep host and port from world url
+                var worldTitle = originalUrl;
+                var indexOfFwdSlash = worldTitle.indexOf("/");
+                if (indexOfFwdSlash > 0)
+                    worldTitle = worldTitle.substring(0, indexOfFwdSlash);
+                    
+                // Try to resolve username from url and add to title
+                var unameStart = originalUrl.indexOf("username=");
+                if (unameStart > 0)
+                {
+                    var unameEnd = originalUrl.indexOf("&", unameStart);
+                    if (unameEnd > unameStart)
+                    {
+                        var username = originalUrl.substring(unameStart + 9, unameEnd);
+                        worldTitle = worldTitle + " as " + username;
+                    }
+                }
+                
+                p_.bookmarks.addBookmark(worldTitle, addressBarInput);
+            }
         }
     },
     
@@ -715,6 +820,7 @@ var BrowserSettings = Class.extend
         this.behaviourSection = "behaviour";
         
         this.widget = ui.LoadFromFile("./data/ui/LoginWebSettings.ui", false);
+        this.widget.setParent(ui.MainWindow());
         this.widget.setWindowFlags(Qt.Tool);
         this.widget.visible = false;
         
@@ -889,6 +995,371 @@ var BrowserSettings = Class.extend
     
 });
 
+var BrowserBookmarks = Class.extend
+({
+    init: function(browsermanager)
+    {
+        this.browsermanager = browsermanager;
+        this.settings = browsermanager.settings;
+        
+        this.bookmarksweb = new Array();
+        this.bookmarksworlds = new Array();
+        
+        // Main and list widgets
+        this.bookmarkmanager = new QWidget();
+        this.bookmarkmanager.setParent(ui.MainWindow());
+        this.bookmarkmanager.setWindowTitle("Bookmark Manager");
+        this.bookmarkmanager.setWindowFlags(Qt.Tool);
+        this.bookmarkmanager.visible = false;
+        
+        this.listweb = new QListWidget();
+        this.listweb.sortingEnabled = false;
+        this.listworlds = new QListWidget();
+        this.listworlds.sortingEnabled = false;
+        
+        // Close button
+        var closeButton = new QPushButton("Close");
+        closeButton.clicked.connect(this.bookmarkmanager.hide);       
+        
+        var imageBase = "./data/ui/images/browser/";
+        
+        // World toolbar
+        this.buttonsWorld = new QToolBar();
+        this.buttonsWorld.setStyleSheet("background-color: none; border: 0px;");
+        this.buttonsWorld.toolButtonStyle = Qt.ToolButtonIconOnly;
+        this.buttonsWorld.orientation = Qt.Vertical;
+        this.buttonsWorld.iconSize = new QSize(24,24);
+        this.buttonsWorld.floatable = false;
+        this.buttonsWorld.movable = false;
+        
+        this.buttonsWorld.addAction(new QIcon(imageBase + "up.png"), "Move Up").triggered.connect(this.moveUpWorld);
+        this.buttonsWorld.addAction(new QIcon(imageBase + "down.png"), "Move Down").triggered.connect(this.moveDownWorld);
+        this.buttonsWorld.addAction(new QIcon(imageBase + "add.png"), "Add Bookmark").triggered.connect(this.addWorld);
+        this.buttonsWorld.addAction(new QIcon(imageBase + "edit.png"), "Edit Bookmark").triggered.connect(this.editWorld);
+        this.buttonsWorld.addAction(new QIcon(imageBase + "trash.png"), "Remove Bookmark").triggered.connect(this.removeWorld);
+        
+        // Web toolbar
+        this.buttonsWeb = new QToolBar();
+        this.buttonsWeb.setStyleSheet("background-color: none; border: 0px;");
+        this.buttonsWeb.toolButtonStyle = Qt.ToolButtonIconOnly;
+        this.buttonsWeb.orientation = Qt.Vertical;
+        this.buttonsWeb.iconSize = new QSize(24,24);
+        this.buttonsWeb.floatable = false;
+        this.buttonsWeb.movable = false;
+        
+        this.buttonsWeb.addAction(new QIcon(imageBase + "up.png"), "Move Up").triggered.connect(this.moveUpWeb);
+        this.buttonsWeb.addAction(new QIcon(imageBase + "down.png"), "Move Down").triggered.connect(this.moveDownWeb);
+        this.buttonsWeb.addAction(new QIcon(imageBase + "add.png"), "Add Bookmark").triggered.connect(this.addWeb);
+        this.buttonsWeb.addAction(new QIcon(imageBase + "edit.png"), "Edit Bookmark").triggered.connect(this.editWeb);
+        this.buttonsWeb.addAction(new QIcon(imageBase + "trash.png"), "Remove Bookmark").triggered.connect(this.removeWeb);
+               
+        // Title labels
+        var titleFont = new QFont("Calibri", 12);
+        titleFont.setBold(true);
+        var titleWorld = new QLabel("World Bookmarks");
+        titleWorld.font = titleFont;
+        var titleWeb = new QLabel("Web Bookmarks");
+        titleWeb.font = titleFont;
+        
+        // Layouts
+        this.worldLayoutHorizontal = new QHBoxLayout();
+        this.webLayoutHorizontal = new QHBoxLayout();        
+        
+        this.bookmarkmanager.setLayout(new QVBoxLayout());
+        this.bookmarkmanager.layout().addWidget(titleWorld, 0, 0);
+        this.bookmarkmanager.layout().addLayout(this.worldLayoutHorizontal);
+        this.bookmarkmanager.layout().addWidget(titleWeb, 0, 0);
+        this.bookmarkmanager.layout().addLayout(this.webLayoutHorizontal);
+        this.bookmarkmanager.layout().addWidget(closeButton, 0, 0);
+        
+        this.worldLayoutHorizontal.addWidget(this.listworlds, 1, 0);
+        this.worldLayoutHorizontal.addWidget(this.buttonsWorld, 0, 0);
+        
+        this.webLayoutHorizontal.addWidget(this.listweb, 1, 0);
+        this.webLayoutHorizontal.addWidget(this.buttonsWeb, 0, 0);
+        
+        // Edit widget
+        this.editWidget = new QDialog();
+        this.editWidget.setParent(ui.MainWindow());
+        this.editWidget.setWindowFlags(Qt.Tool);
+        this.editWidget.minimumWidth = 350;
+        this.editWidget.visible = false;
+        this.editWidget.setLayout(new QFormLayout());
+        
+        this.editDoneButton = new QPushButton("Save");
+        this.editDoneButton.clicked.connect(this.editWidget.accept);
+        this.editTitleLineEdit = new QLineEdit();
+        this.editWidget.layout().addRow("Title", this.editTitleLineEdit);
+        this.editUrlLineEdit = new QLineEdit();
+        this.editWidget.layout().addRow("URL", this.editUrlLineEdit);
+        this.editWidget.layout().addRow("", this.editDoneButton);
+        
+        this.readBookmarks();
+    },
+    
+    readBookmarks: function()
+    {
+        if (config.HasValue(this.settings.configFile, "bookmarks", "web"))
+        {
+            var jsonstringWeb = config.Get(this.settings.configFile, "bookmarks", "web");
+            this.bookmarksweb = JSON.parse(jsonstringWeb);
+        }
+        if (config.HasValue(this.settings.configFile, "bookmarks", "worlds"))
+        {
+            var jsonstringWorlds = config.Get(this.settings.configFile, "bookmarks", "worlds");
+            this.bookmarksworlds = JSON.parse(jsonstringWorlds);
+        }
+    },
+    
+    readWorldBookmarksFromUi: function()
+    {
+        var b = p_.bookmarks;
+        b.bookmarksworlds = new Array();
+        for (var i=0; i<b.listworlds.count; i++)
+        {
+            var item = b.listworlds.item(i);
+            if (item != null)
+                b.bookmarksworlds.push({title:item.text(), url:item.data(Qt.WhatsThisRole)});
+        }
+        p_.bookmarks.writeWorldBookmarks();
+    },
+        
+    readWebBookmarksFromUi: function()
+    {
+        var b = p_.bookmarks;
+        b.bookmarksweb = new Array();
+        for (var i=0; i<b.listweb.count; i++)
+        {
+            var item = b.listweb.item(i);
+            if (item != null)
+                b.bookmarksweb.push({title:item.text(), url:item.data(Qt.WhatsThisRole)});
+        }
+        p_.bookmarks.writeWebBookmarks();
+    },
+    
+    writeWorldBookmarks: function()
+    {
+        if (this.bookmarksworlds.length > 0)
+        {
+            var jsonstringWorlds = JSON.stringify(this.bookmarksworlds);
+            config.Set(this.settings.configFile, "bookmarks", "worlds", jsonstringWorlds);
+        }
+    },
+    
+    writeWebBookmarks: function()
+    {
+        if (this.bookmarksweb.length > 0)
+        {
+            var jsonstringWeb = JSON.stringify(this.bookmarksweb);
+            config.Set(this.settings.configFile, "bookmarks", "web", jsonstringWeb);
+        }
+    },
+       
+    addBookmark: function(title, urlString)
+    {
+        if (HasTundraScheme(urlString))
+        {
+            var moddedTitle = QInputDialog.getText(ui.MainWindow(), "Add World Bookmark", "Title of the world bookmark", QLineEdit.Normal, title, Qt.Tool);
+            if (moddedTitle != null && moddedTitle != "")
+            {
+                p_.bookmarks.bookmarksworlds.push({title:moddedTitle, url:urlString});
+                p_.bookmarks.writeWorldBookmarks();
+            }
+        }
+        else
+        {
+            var moddedTitle = QInputDialog.getText(ui.MainWindow(), "Add Web Bookmark", "Title of the web bookmark", QLineEdit.Normal, title, Qt.Tool);
+            if (moddedTitle != null && moddedTitle != "")
+            {
+                p_.bookmarks.bookmarksweb.push({title:moddedTitle, url:urlString});
+                p_.bookmarks.writeWebBookmarks();
+            }
+        }
+    },
+    
+    manageBookmarks: function()
+    {        
+        // QListWidgetItem
+        var w = p_.bookmarks.bookmarkmanager;
+        
+        // Calculate center pos on our main window
+        var mainWinPosi = ui.MainWindow().pos;
+        var mainWinSize = ui.MainWindow().size;
+        var center_x = mainWinPosi.x() + (mainWinSize.width() / 2);
+        var center_y = mainWinPosi.y() + (mainWinSize.height() / 2);       
+
+        // Populate list views
+        p_.bookmarks.listworlds.clear();
+        p_.bookmarks.listweb.clear();
+        
+        var worldmarks = p_.bookmarks.bookmarksworlds;
+        for (var i in worldmarks)
+        {
+            var mark = worldmarks[i];
+            var item = new QListWidgetItem(mark.title);
+            item.setData(Qt.WhatsThisRole, mark.url);
+            item.setIcon(QWebSettings.iconForUrl(new QUrl(mark.url)));
+            
+            p_.bookmarks.listworlds.addItem(item);
+        }
+        
+        var webmarks = p_.bookmarks.bookmarksweb;
+        for (var i in webmarks)
+        {
+            var mark = webmarks[i];
+            var item = new QListWidgetItem(mark.title);
+            item.setData(Qt.WhatsThisRole, mark.url);
+            item.setIcon(QWebSettings.iconForUrl(new QUrl(mark.url)));
+            
+            p_.bookmarks.listweb.addItem(item);
+        }
+        
+        w.pos = new QPoint(center_x - (w.width / 2), center_y - (w.height / 2));
+        w.visible = true;
+    },
+    
+    moveUpWorld: function()
+    {
+        var l = p_.bookmarks.listworlds;
+        var rowNow = l.currentRow;
+        if (rowNow >= 0)
+        {
+            var item = l.takeItem(rowNow);
+            l.insertItem(rowNow-1, item);
+            l.currentRow = rowNow-1;
+        }
+        p_.bookmarks.readWorldBookmarksFromUi();
+    },
+    
+    moveDownWorld: function()
+    {
+        var l = p_.bookmarks.listworlds;
+        var rowNow = l.currentRow;
+        if (rowNow >= 0)
+        {
+            var item = l.takeItem(rowNow);
+            l.insertItem(rowNow+1, item);
+            l.currentRow = rowNow+1;
+        }
+        p_.bookmarks.readWorldBookmarksFromUi();
+    },
+    
+    addWorld: function()
+    {
+        var b = p_.bookmarks;
+        var l = b.listworlds;
+                
+        b.editTitleLineEdit.text = "";
+        b.editUrlLineEdit.text = "tundra://";
+        b.editWidget.setWindowTitle("Add World Bookmark");
+        if (b.editWidget.exec() == 1)
+        {
+            var item = new QListWidgetItem(b.editTitleLineEdit.text);
+            item.setData(Qt.WhatsThisRole, QUrl.fromUserInput(b.editUrlLineEdit.text).toString());
+            item.setIcon(QWebSettings.iconForUrl(new QUrl(b.editUrlLineEdit.text)));
+            l.addItem(item);
+        }
+        p_.bookmarks.readWorldBookmarksFromUi();
+    },
+    
+    editWorld: function()
+    {
+        var b = p_.bookmarks;
+        var l = b.listworlds;
+        
+        var item = l.currentItem();
+        if (item == null)
+            return;
+        b.editTitleLineEdit.text = item.text();
+        b.editUrlLineEdit.text = item.data(Qt.WhatsThisRole);
+        b.editWidget.setWindowTitle("Edit World Bookmark");
+        if (b.editWidget.exec() == 1)
+        {
+            item.setText(b.editTitleLineEdit.text);
+            item.setData(Qt.WhatsThisRole, QUrl.fromUserInput(b.editUrlLineEdit.text).toString());
+        }
+        p_.bookmarks.readWorldBookmarksFromUi();
+    },
+    
+    removeWorld: function()
+    {
+        var l = p_.bookmarks.listworlds;
+        l.takeItem(l.currentRow);
+        p_.bookmarks.readWorldBookmarksFromUi();
+    },
+    
+    moveUpWeb: function()
+    {
+        var l = p_.bookmarks.listweb;
+        var rowNow = l.currentRow;
+        if (rowNow >= 0)
+        {
+            var item = l.takeItem(rowNow);
+            l.insertItem(rowNow-1, item);
+            l.currentRow = rowNow-1;
+        }
+        p_.bookmarks.readWebBookmarksFromUi();
+    },
+    
+    moveDownWeb: function()
+    {
+        var l = p_.bookmarks.listweb;
+        var rowNow = l.currentRow;
+        if (rowNow >= 0)
+        {
+            var item = l.takeItem(rowNow);
+            l.insertItem(rowNow+1, item);
+            l.currentRow = rowNow+1;
+        }
+        p_.bookmarks.readWebBookmarksFromUi();
+    },
+    
+    addWeb: function()
+    {
+        var b = p_.bookmarks;
+        var l = b.listweb;
+        
+        b.editTitleLineEdit.text = "";
+        b.editUrlLineEdit.text = "http://";
+        b.editWidget.setWindowTitle("Add Web Bookmark");
+        if (b.editWidget.exec() == 1)
+        {
+            var item = new QListWidgetItem(b.editTitleLineEdit.text);
+            item.setData(Qt.WhatsThisRole, QUrl.fromUserInput(b.editUrlLineEdit.text).toString());
+            item.setIcon(QWebSettings.iconForUrl(new QUrl(b.editUrlLineEdit.text)));
+            l.addItem(item);
+        }
+        p_.bookmarks.readWebBookmarksFromUi();
+    },
+    
+    editWeb: function()
+    {
+        var b = p_.bookmarks;
+        var l = b.listweb;
+        
+        var item = l.currentItem();
+        if (item == null)
+            return;
+        b.editTitleLineEdit.text = item.text();
+        b.editUrlLineEdit.text = item.data(Qt.WhatsThisRole);
+        b.editWidget.setWindowTitle("Edit Web Bookmark");
+        if (b.editWidget.exec() == 1)
+        {
+            item.setText(b.editTitleLineEdit.text);
+            item.setData(Qt.WhatsThisRole, QUrl.fromUserInput(b.editUrlLineEdit.text).toString());
+        }
+        p_.bookmarks.readWebBookmarksFromUi();
+    },
+    
+    removeWeb: function()
+    {
+        var l = p_.bookmarks.listweb;
+        l.takeItem(l.currentRow);
+        p_.bookmarks.readWebBookmarksFromUi();
+    }
+    
+});
+
 // Disabling/enabling cache from UI requires a restart of the viewer to take effect. Qt docs explains more:
 // "Note: It is currently not supported to change the network access manager after the QWebPage has used it. The results of doing this are undefined."
 
@@ -903,18 +1374,23 @@ var BrowserStorage = Class.extend
             return;
                
         // Initialise cache objects
-        this.cache = new QNetworkDiskCache(null);
-        this.cache.setCacheDirectory(this.cacheDataDir);
-        this.accessManager = new QNetworkAccessManager(null);
-        this.cookieJar = asset.GetAssetCache().NewCookieJar(this.cookieDataFile);
-        
+        try {
+            this.cache = new QNetworkDiskCache(null);
+            this.cache.setCacheDirectory(this.cacheDataDir);
+            this.accessManager = new QNetworkAccessManager(null);
+            this.cookieJar = asset.GetAssetCache().NewCookieJar(this.cookieDataFile);
+            this.have_cache = true;
+        } catch (err) {
+            print("Cache init failed: " + err);
+            this.have_cache = false;
+        }
         // Initialize cache items to our access manager.
-        if (this.settings.cacheEnabled)
+        if (this.have_cache && this.settings.cacheEnabled)
         {
             this.accessManager.setCache(this.cache);
             QWebSettings.setIconDatabasePath(this.iconDataDir);
         }
-        if (this.settings.cookiesEnabled)
+        if (this.have_cache && this.settings.cookiesEnabled)
         {
             this.accessManager.setCookieJar(this.cookieJar);
         }

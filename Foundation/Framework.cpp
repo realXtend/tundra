@@ -24,6 +24,7 @@
 #include "DebugAPI.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
+#include "DevicesAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "VersionInfo.h"
@@ -111,6 +112,7 @@ namespace Foundation
             // This will make us load modules etc. correctly even if the working dir is something else
             // than our actual install dir.
             application = new Application(this, argc_, argv_);
+            application->InitializeSplash();
 
             // Force install directory as the current working directory.
             /** \Todo: we may not want to do this in all cases, but there is a huge load of places
@@ -170,6 +172,7 @@ namespace Foundation
 
             input = new InputAPI(this);
             console = new ConsoleAPI(this);
+            devices = new DevicesAPI(this);
 
             // Initialize SceneAPI.
             scene->Initialise();
@@ -181,6 +184,7 @@ namespace Foundation
             RegisterDynamicObject("asset", asset);
             RegisterDynamicObject("audio", audio);
             RegisterDynamicObject("debug", debug);
+            RegisterDynamicObject("devices", devices);
             RegisterDynamicObject("application", application);
             RegisterDynamicObject("apiversion", api_versioninfo_);
             RegisterDynamicObject("applicationversion", application_versioninfo_);
@@ -780,6 +784,11 @@ namespace Foundation
     ConfigAPI *Framework::Config() const
     {
         return config;
+    }
+
+    DevicesAPI *Framework::Devices() const
+    {
+        return devices;
     }
 
     ApiVersionInfo *Framework::ApiVersion() const

@@ -22,8 +22,9 @@
 
 using namespace std;
 
-UiMainWindow::UiMainWindow(Foundation::Framework *owner_)
-:owner(owner_)
+UiMainWindow::UiMainWindow(Foundation::Framework *owner_) :
+    QMainWindow(),
+    owner(owner_)
 {
     setAcceptDrops(true);
 }

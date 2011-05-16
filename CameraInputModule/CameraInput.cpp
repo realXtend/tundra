@@ -4,8 +4,9 @@
 #include "CameraInputModule.h"
 #include "CameraInput.h"
 
-CameraInput::CameraInput(QObject *parent, Foundation::Framework *framework) :
-    QObject(parent),
+CameraInput::CameraInput(CameraInputModule *cameraInputModule, Foundation::Framework *framework) :
+    QObject(cameraInputModule),
+    cameraInputModule_(cameraInputModule),
     framework_(framework),
     hasDevice_(false),
     capturing_(false)
@@ -51,6 +52,16 @@ void CameraInput::StopCapturing()
         capturing_ = false;
         emit Capturing(capturing_);
     }
+}
+
+int CameraInput::GetCaptureFps() const
+{
+    return cameraInputModule_->captureFps_;
+}
+
+void CameraInput::SetCaptureFps(int fps)
+{
+    cameraInputModule_->SetCaptureFps(fps);
 }
 
 const QImage &CameraInput::CurrentFrame()
