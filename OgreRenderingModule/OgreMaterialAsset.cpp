@@ -32,7 +32,7 @@ struct EnumStr
     unsigned value_;
 };
 
-EnumStr sceneBlendModes[] =
+EnumStr sceneBlendTypes[] =
 {
     EnumStr("replace", Ogre::SBT_REPLACE),
     EnumStr("add", Ogre::SBT_ADD),
@@ -42,10 +42,18 @@ EnumStr sceneBlendModes[] =
     EnumStr()
 };
 
-EnumStr onOff[] =
+EnumStr sceneBlendFactors[] = 
 {
-    EnumStr("on", 1),
-    EnumStr("off", 0),
+    EnumStr("one", Ogre::SBF_ONE),
+    EnumStr("zero", Ogre::SBF_ZERO),
+    EnumStr("dest_colour", Ogre::SBF_DEST_COLOUR),
+    EnumStr("src_colour", Ogre::SBF_SOURCE_COLOUR),
+    EnumStr("one_minus_dest_colour", Ogre::SBF_ONE_MINUS_DEST_COLOUR),
+    EnumStr("one_minus_src_colour", Ogre::SBF_ONE_MINUS_SOURCE_COLOUR),
+    EnumStr("dest_alpha", Ogre::SBF_DEST_ALPHA),
+    EnumStr("src_alpha", Ogre::SBF_SOURCE_ALPHA),
+    EnumStr("one_minus_dest_alpha", Ogre::SBF_ONE_MINUS_DEST_ALPHA),
+    EnumStr("one_minus_src_alpha", Ogre::SBF_ONE_MINUS_SOURCE_ALPHA),
     EnumStr()
 };
 
@@ -76,7 +84,6 @@ bool GetBoolValue(const QString& value)
         return true;
     return false;
 }
-
 
 OgreMaterialAsset::~OgreMaterialAsset()
 {
@@ -890,8 +897,23 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
 {
     if (attr == "scene_blend")
     {
-        unsigned blend = GetEnumValue(val, sceneBlendModes);
-        pass->setSceneBlending((Ogre::SceneBlendType)blend);
+        // Check whether value is simple or complex
+        QStringList values = val.split(' ');
+        if (values.size() < 2)
+            SetSceneBlend(techIndex, passIndex, GetEnumValue(val, sceneBlendTypes));
+        else
+            pass->setSceneBlending((Ogre::SceneBlendFactor)GetEnumValue(values[0], sceneBlendFactors), (Ogre::SceneBlendFactor)GetEnumValue(values[1], sceneBlendFactors));
+        return true;
+    }
+    if (attr == "separate_scene_blend")
+    {
+        // Check whether value is simple or complex
+        QStringList values = val.split(' ');
+        if (values.size() < 4)
+            pass->setSeparateSceneBlending((Ogre::SceneBlendType)GetEnumValue(values[0], sceneBlendTypes), (Ogre::SceneBlendType)GetEnumValue(values[1], sceneBlendTypes));
+        else
+            pass->setSeparateSceneBlending((Ogre::SceneBlendFactor)GetEnumValue(values[0], sceneBlendFactors), (Ogre::SceneBlendFactor)GetEnumValue(values[1], sceneBlendFactors),
+                (Ogre::SceneBlendFactor)GetEnumValue(values[0], sceneBlendFactors), (Ogre::SceneBlendFactor)GetEnumValue(values[1], sceneBlendFactors));
         return true;
     }
     if (attr == "lighting")
