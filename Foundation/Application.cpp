@@ -9,6 +9,10 @@
 #include "ConfigurationManager.h"
 #include "CoreStringUtils.h"
 
+#include "InputAPI.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+
 #include <QDir>
 #include <QGraphicsView>
 #include <QTranslator>
@@ -18,8 +22,7 @@
 #include <QSplashScreen>
 #include <QFont>
 
-#include "UiMainWindow.h"
-#include "UiAPI.h"
+#include <QDebug>
 
 #ifdef Q_WS_MAC
 #include <QMouseEvent>
@@ -34,26 +37,26 @@ using namespace Foundation;
 Application::Application(Framework *framework_, int &argc, char **argv) :
     QApplication(argc, argv),
     framework(framework_),
-    appActivated(true),
     nativeTranslator(new QTranslator),
     appTranslator(new QTranslator),
-    splashScreen(0)
+    splashScreen(0),
+    targetFps_(0.0f),
+    fwSkipFrames_(0)
 {
-    QApplication::setApplicationName("realXtend-Naali");
+    QApplication::setApplicationName("realXtend-Tundra");
 
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
-        // If under windows, add run_dir/plugins as library path
-        // unix users will get plugins from their OS Qt installation folder automatically
-
-        QString runDirectory = QString::fromStdString(ReplaceChar(framework->GetPlatform()->GetInstallDirectory(), '\\', '/'));
-        runDirectory += "/qtplugins";
-        addLibraryPath(runDirectory);
+    // If under windows, add run_dir/plugins as library path
+    // unix users will get plugins from their OS Qt installation folder automatically
+    QString runDirectory = QString::fromStdString(ReplaceChar(framework->GetPlatform()->GetInstallDirectory(), '\\', '/'));
+    runDirectory += "/qtplugins";
+    addLibraryPath(runDirectory);
 #endif
 
+    // Initialize languages
+    // - Search then that is there corresponding native translations for system locals.
     QDir dir("data/translations/qt_native_translations");
     QStringList qmFiles = GetQmFiles(dir);
-
-    // Search then that is there corresponding native translations for system locals.
     QString loc = QLocale::system().name();
     loc.chop(3);
 
@@ -61,14 +64,27 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     QStringList lst = qmFiles.filter(name);
     if (!lst.empty() )
         nativeTranslator->load(lst[0]);
-
     this->installTranslator(nativeTranslator);
     
     std::string default_language = framework->GetConfigManager()->DeclareSetting(Framework::ConfigurationGroup(),
         "language", std::string("data/translations/naali_en"));
     ChangeLanguage(QString::fromStdString(default_language));
 
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enablig flash
+    // Enable plugins for global web settings, eg. Flash for the browser.
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
+
+    // Framework update fps limit from start params
+    const boost::program_options::variables_map &options = framework_->ProgramOptions();
+    if (options.count("fpslimit") > 0)
+    {
+        targetFps_ = options["fpslimit"].as<float>();
+        if (targetFps_ < 1.f)
+            targetFps_ = 0.f;
+    }
+    else
+        targetFps_ = 60.f;
+    targetFpsStartParam_ = targetFps_;
+    timerFrequency_ = GetCurrentClockFreq();
 }
 
 Application::~Application()
@@ -124,36 +140,36 @@ QStringList Application::GetQmFiles(const QDir& dir)
 
 void Application::Go()
 {
+    // Close splash screen and show main window
     if (splashScreen)
         splashScreen->close();
     if (!framework->IsHeadless() && framework->Ui()->MainWindow())
         framework->Ui()->MainWindow()->show();
 
+    // Install QObject event filter for QApplication, every thing runs trough this filter
     installEventFilter(this);
-
-    QObject::connect(&frameUpdateTimer, SIGNAL(timeout()), this, SLOT(UpdateFrame()));
-    frameUpdateTimer.setSingleShot(true);
-    frameUpdateTimer.start(0); 
 
     try
     {
-        exec ();
+        fwUpdateId_ = startTimer(1);
+        exec();
     }
     catch(const std::exception &e)
     {
-        RootLogCritical(std::string("NaaliApplication::Go caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        RootLogCritical(std::string("NaaliApplication::Go() Caught an exception: ") + (e.what() ? e.what() : "(null)"));
         throw;
     }
     catch(...)
     {
-        RootLogCritical(std::string("NaaliApplication::Go caught an unknown exception!"));
+        RootLogCritical(std::string("NaaliApplication::Go() Caught an unknown exception!"));
         throw;
     }
 }
 
 bool Application::eventFilter(QObject *obj, QEvent *event)
 {
-#ifdef Q_WS_MAC // workaround for Mac, because mouse events are not received as it ought to be
+    // Workaround for Mac, because mouse events are not behaving as expected 
+#ifdef Q_WS_MAC 
     QMouseEvent *mouse = dynamic_cast<QMouseEvent*>(event);
     if (mouse)
     {
@@ -178,14 +194,22 @@ bool Application::eventFilter(QObject *obj, QEvent *event)
         }
     }
 #endif
+
     try
     {
+        if (framework && !framework->IsHeadless())
+        {
+            if (obj == framework->Ui()->MainWindow() && event->type() == QEvent::Move)
+                fwSkipFrames_ = 5;
+        }
+
         if (obj == this)
         {
+            // Drop down fps on a inactive app
             if (event->type() == QEvent::ApplicationActivate)
-                appActivated = true;
+                RestoreTargetFps();
             if (event->type() == QEvent::ApplicationDeactivate)
-                appActivated = false;
+                SetTargetFps(30.0f); 
         }
 
         return QObject::eventFilter(obj, event);
@@ -255,12 +279,14 @@ bool Application::notify(QObject *receiver, QEvent *event)
     try
     {
         return QApplication::notify(receiver, event);
-    } catch(const std::exception &e)
+    } 
+    catch(const std::exception &e)
     {
         std::cout << std::string("QApp::notify caught an exception: ") << (e.what() ? e.what() : "(null)") << std::endl;
         RootLogCritical(std::string("QApp::notify caught an exception: ") + (e.what() ? e.what() : "(null)"));
         throw;
-    } catch(...)
+    } 
+    catch(...)
     {
         std::cout << std::string("QApp::notify caught an unknown exception!") << std::endl;
         RootLogCritical(std::string("QApp::notify caught an unknown exception!"));
@@ -268,41 +294,84 @@ bool Application::notify(QObject *receiver, QEvent *event)
     }
 }
 
+void Application::timerEvent(QTimerEvent *event)
+{
+    if (fwUpdateId_ == event->timerId())
+        UpdateFrame();
+}
+
 void Application::UpdateFrame()
 {
     // Don't pump the QEvents to QApplication if we are exiting
-    // also don't process our mainloop frames.
+    // also don't process our main loop frames.
     if (framework->IsExiting())
         return;
 
-    try
+    // No target fps limiting for time critical APIs
+    framework->UpdateTimeCriticalAPIs();
+
+    // Check fps limiter if we should update our modules
+    if (RunFrameworkUpdate())
     {
-        QApplication::processEvents(QEventLoop::AllEvents, 1);
-        QApplication::sendPostedEvents();
-
-        framework->ProcessOneFrame();
-
-        // Reduce frame rate when unfocused
-        if (!frameUpdateTimer.isActive())
+        // Mark last time before doing updates, so we don't start to lag behind the target fps
+        lastPresentTime_ = GetCurrentClockTime();
+        
+        try
         {
-            if (appActivated)
-                frameUpdateTimer.start(0); 
-            else 
-                frameUpdateTimer.start(5);
+            PROFILE(Update_MainLoop);
+
+            double frametime = framework->CalculateFrametime();
+            framework->UpdateModules(frametime);
+            framework->UpdateAPIs(frametime);
+            framework->UpdateRendering(frametime);
+            
+            // Disabled the rendering skipping when window is moved for now...
+            // windows specific freeze when main window is moved from monitor to monitor
+            //if (fwSkipFrames_ == 0)
+            //    framework->UpdateRendering(frametime);
+            //else
+            //    fwSkipFrames_--;
+
+            RESETPROFILER
+        }
+        catch(const std::exception &e)
+        {
+            std::cout << "QApp::UpdateFrame caught an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
+            RootLogCritical(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
+            throw;
+        }
+        catch(...)
+        {
+            std::cout << "QApp::UpdateFrame caught an unknown exception!" << std::endl;
+            RootLogCritical(std::string("QApp::UpdateFrame caught an unknown exception!"));
+            throw;
         }
     }
-    catch(const std::exception &e)
+}
+
+bool Application::RunFrameworkUpdate()
+{
+    if (targetFps_ >= 1.0f)
     {
-        std::cout << "QApp::UpdateFrame caught an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
-        RootLogCritical(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
-        throw;
+        tick_t timeNow = GetCurrentClockTime();
+        double currentFrameTime = (double)(timeNow - lastPresentTime_) * 1000.0 / timerFrequency_;
+        const double msecsPerFrame = 1000.0 / targetFps_;
+        if (currentFrameTime < msecsPerFrame)
+            return false;
     }
-    catch(...)
-    {
-        std::cout << "QApp::UpdateFrame caught an unknown exception!" << std::endl;
-        RootLogCritical(std::string("QApp::UpdateFrame caught an unknown exception!"));
-        throw;
-    }
+    return true;
+}
+
+void Application::SetTargetFps(float fps)
+{
+    if (fps < 1.0f)
+        fps = 0.0f;
+    targetFps_ = fps;
+}
+
+void Application::RestoreTargetFps()
+{
+    targetFps_ = targetFpsStartParam_;
 }
 
 void Application::AboutToExit()

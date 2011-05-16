@@ -88,10 +88,27 @@ namespace Foundation
         void PostInitialize();
 
         /// Entry point for the framework.
+        /// \note This function call will block as long as Application exits.
         void Go();
 
-        /// Runs through a single frame of logic update and rendering.
-        void ProcessOneFrame();
+        /// Calculate the main loop frametime for updates
+        /// \return double Frametime
+        double CalculateFrametime();
+
+        /// Update modules
+        /// \param double Frametime
+        void UpdateModules(double frametime);
+
+        /// Update time critical APIs
+        void UpdateTimeCriticalAPIs();
+
+        /// Update APIs
+        /// \param double Frametime
+        void UpdateAPIs(double frametime);
+
+        /// Update rendering
+        /// \param double Frametime
+        void UpdateRendering(double frametime);
 
         /// Returns component manager.
         ComponentManagerPtr GetComponentManager() const;
@@ -273,7 +290,6 @@ namespace Foundation
 
         /// Creates logging system.
         void CreateLoggingSystem();
-
         ModuleManagerPtr module_manager_; ///< Module manager.
         ComponentManagerPtr component_manager_; ///< Component manager.
         ServiceManagerPtr service_manager_; ///< Service manager.

@@ -358,10 +358,10 @@ namespace Foundation
         RegisterConsoleCommands();
     }
 
-    void Framework::ProcessOneFrame()
+    double Framework::CalculateFrametime()
     {
-        static tick_t clock_freq;
         static tick_t last_clocktime;
+        static tick_t clock_freq;
 
         if (!last_clocktime)
             last_clocktime = GetCurrentClockTime();
@@ -369,70 +369,94 @@ namespace Foundation
         if (!clock_freq)
             clock_freq = GetCurrentClockFreq();
 
-        if (exit_signal_ == true)
-            return; // We've accidentally ended up to update a frame, but we're actually quitting.
+        tick_t curr_clocktime = GetCurrentClockTime();
+        double frametime = ((double)curr_clocktime - (double)last_clocktime) / (double) clock_freq;
+        last_clocktime = curr_clocktime;
 
+        return frametime;
+    }
+
+    void Framework::UpdateModules(double frametime)
+    {
+        if (exit_signal_)
+            return;
+
+        // Update modules
         {
-            PROFILE(FW_MainLoop);
-
-            tick_t curr_clocktime = GetCurrentClockTime();
-            double frametime = ((double)curr_clocktime - (double)last_clocktime) / (double) clock_freq;
-            last_clocktime = curr_clocktime;
-
-            {
-                PROFILE(FW_UpdateModules);
-                module_manager_->UpdateModules(frametime);
-            }
-
-            // check framework's thread task manager for completed requests, send as events
-            {
-                PROFILE(FW_ProcessThreadTaskResults)
-                thread_task_manager_->SendResultEvents();
-            }
-
-            // process delayed events
-            {
-                PROFILE(FW_ProcessDelayedEvents);
-                event_manager_->ProcessDelayedEvents(frametime);
-            }
-
-            // Process the asset API updates.
-            {
-                PROFILE(Asset_Update);
-                asset->Update(frametime);
-            }
-
-            // Process all keyboard input.
-            {
-                PROFILE(Input_Update);
-                input->Update(frametime);
-            }
-
-            // Process all audio playback.
-            {
-                PROFILE(Audio_Update);
-                audio->Update(frametime);
-            }
-
-            // Process frame update now. Scripts handling the frame tick will be run at this point, and will have up-to-date 
-            // information after for example network updates, that have been performed by the modules.
-            {
-                PROFILE(Frame_Update);
-                frame->Update(frametime);
-            }
-
-            console->Update(frametime);
-
-            // if we have a renderer service, render now
-            boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
-            if (renderer.expired() == false)
-            {
-                PROFILE(FW_Render);
-                renderer.lock()->Render();
-            }
+            PROFILE(Update_Modules);
+            module_manager_->UpdateModules(frametime);
         }
 
-        RESETPROFILER
+        // Check framework's thread task manager for completed requests, send as events
+        {
+            PROFILE(Update_ThreadTasks)
+            thread_task_manager_->SendResultEvents();
+        }
+
+        // Process delayed events
+        {
+            PROFILE(Update_DelayedEvents);
+            event_manager_->ProcessDelayedEvents(frametime);
+        }
+    }
+
+    void Framework::UpdateTimeCriticalAPIs()
+    {
+        if (exit_signal_)
+            return;
+
+        // \note HACK: None of the below use frametime for anything, but still...
+        double frametime = 0.0f;
+
+        // InputAPI
+        {
+            PROFILE(Update_InputAPI);
+            input->Update(frametime);
+        }
+        // AudioAPI
+        {
+            PROFILE(Update_AudioAPI);
+            audio->Update(frametime);
+        }
+    }
+
+    void Framework::UpdateAPIs(double frametime)
+    {
+        if (exit_signal_)
+            return;
+
+        // AssetAPI
+        {
+            PROFILE(Update_AssetAPI);
+            asset->Update(frametime);
+        }
+        // FrameAPI
+        // Process frame update now. Scripts handling the frame tick will be run at this point, and will have up-to-date 
+        // information after for example network updates, that have been performed by the modules.
+        {
+            PROFILE(Update_FrameAPI);
+            frame->Update(frametime);
+        }
+        // ConsoleAPI
+        {
+            PROFILE(Update_ConsoleAPI)
+            console->Update(frametime);
+        }
+    }
+
+    void Framework::UpdateRendering(double frametime)
+    {
+        if (exit_signal_)
+            return;
+        if (IsHeadless())
+            return;
+
+        boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
+        if (renderer.expired() == false)
+        {
+            PROFILE(Update_Rendering);
+            renderer.lock()->Render();
+        }
     }
 
     void Framework::Go()
