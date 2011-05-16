@@ -50,7 +50,8 @@ EC_HoveringText::EC_HoveringText(Framework *fw) :
     gradStart(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
     gradEnd(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
     borderColor(this, "Border Color", Color(0.0f,0.0f,0.0f,0.0f)),
-    borderThickness(this, "Border Thickness", 0.0)
+    borderThickness(this, "Border Thickness", 0.0),
+    overlayAlpha(this, "Overlay Alpha", 1.0)
 {
   
     renderer_ = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
@@ -216,6 +217,17 @@ void EC_HoveringText::AnimatedHide()
     visibility_animation_timeline_->start();
 }
 
+void EC_HoveringText::SetOverlayAlpha(float alpha)
+{
+    Ogre::MaterialManager &mgr = Ogre::MaterialManager::getSingleton();
+    Ogre::MaterialPtr material = mgr.getByName(materialName_);
+    if (!material.get() || material->getNumTechniques() < 1 || material->getTechnique(0)->getNumPasses() < 1 || material->getTechnique(0)->getPass(0)->getNumTextureUnitStates() < 1)
+        return;
+
+    material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(
+        Ogre::LBX_BLEND_MANUAL, Ogre::LBS_TEXTURE, Ogre::LBS_MANUAL, 1.0, 0.0, alpha);
+}
+
 void EC_HoveringText::UpdateAnimationStep(int step)
 {
     if (materialName_.empty())
@@ -224,12 +236,7 @@ void EC_HoveringText::UpdateAnimationStep(int step)
     float alpha = step;
     alpha /= 100;
 
-    Ogre::MaterialManager &mgr = Ogre::MaterialManager::getSingleton();
-    Ogre::MaterialPtr material = mgr.getByName(materialName_);
-    assert(material.get());
-
-    material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(
-        Ogre::LBX_BLEND_MANUAL, Ogre::LBS_TEXTURE, Ogre::LBS_MANUAL, 1.0, 0.0, alpha);
+    SetOverlayAlpha(alpha);
 }
 
 void EC_HoveringText::AnimationFinished()
@@ -443,6 +450,8 @@ void EC_HoveringText::OnAttributeUpdated(IComponent *component, IAttribute *attr
         colEnd.setRgbF(col.r, col.g, col.b);
         SetBackgroundGradient(colStart, colEnd);
     }
+    else if (attribute == &overlayAlpha)
+        SetOverlayAlpha(overlayAlpha.Get());
 
     // Repaint the new text with new appearance.
     ShowMessage(text.Get());
