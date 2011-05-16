@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "LanguageWidget.h"
-#include "Inworld/ControlPanelManager.h"
+//#include "../ControlPanelManager.h"
 
 #include <QPropertyAnimation>
 #include <QGraphicsScene>

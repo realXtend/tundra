@@ -23,6 +23,7 @@ namespace CoreUi
     {
         InitLayout();
         AdjustLayoutContainer(scene_->sceneRect());
+        //Get here from parent InworldScene controller access to signal whem centralWidget of QMainWindow changes. Or at least change Scene when QMainWidget changes too!!
 
         connect(scene_, SIGNAL( sceneRectChanged(const QRectF &) ), SLOT( AdjustLayoutContainer(const QRectF &) ));
     }
@@ -37,12 +38,14 @@ namespace CoreUi
     void AnchorLayoutManager::InitLayout()
     {
         anchor_layout_ = new QGraphicsAnchorLayout();
-        anchor_layout_->setSpacing(0);
+        anchor_layout_->setHorizontalSpacing(2);
+        anchor_layout_->setVerticalSpacing(10);
         anchor_layout_->setContentsMargins(0,0,0,0);
 
         layout_container_ = new QGraphicsWidget();
         layout_container_->setLayout(anchor_layout_);
 
+        //scene_->addItem(layout_container_);
         scene_->addItem(layout_container_);
     }
 
@@ -53,13 +56,19 @@ namespace CoreUi
             widget->setGeometry(new_rect);
     }
 
+    void AnchorLayoutManager::AdjustLayoutContainer(int newWidth, int newHeight)
+    {
+        layout_container_->resize(newWidth, newHeight);
+    }
+
     void AnchorLayoutManager::CheckVisibility(QGraphicsLayoutItem *layout_item)
     {
-        QGraphicsWidget *widget = dynamic_cast<QGraphicsWidget *>(layout_item);
+        /*QGraphicsWidget *widget = dynamic_cast<QGraphicsWidget *>(layout_item);
         if (!widget)
             return;
         if (!widget->isVisible())
             widget->show();
+            */
     }
 
     // Public
@@ -80,13 +89,11 @@ namespace CoreUi
     void AnchorLayoutManager::AddCornerAnchor(QGraphicsLayoutItem *layout_item, Qt::Corner layout_anchor_corner, Qt::Corner widget_anchor_corner)
     {
         anchor_layout_->addCornerAnchors(anchor_layout_, layout_anchor_corner, layout_item, widget_anchor_corner);
-        CheckVisibility(layout_item);
     }
 
     void AnchorLayoutManager::AddSideAnchor(QGraphicsLayoutItem *layout_item, Qt::Orientation orientation)
     {
         anchor_layout_->addAnchors(anchor_layout_, layout_item, orientation);
-        CheckVisibility(layout_item);
     }
 
     void AnchorLayoutManager::AnchorWidgetsHorizontally(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item)

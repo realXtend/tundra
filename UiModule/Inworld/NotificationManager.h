@@ -42,8 +42,6 @@ namespace UiServices
 
     private slots:
         void InitSelf();
-        void UpdatePosition(const QRectF &scene_rect);
-        void UpdateStack();
         void NotificationHideHandler(CoreUi::NotificationBaseWidget *completed_notification);
 
         void ToggleNotificationBrowser();
@@ -57,7 +55,6 @@ namespace UiServices
 
     private:
         InworldSceneController *inworld_scene_controller_;
-        QGraphicsScene *scene_;
 
         int notice_max_width_;
         QPointF notice_start_pos_;
@@ -66,7 +63,6 @@ namespace UiServices
         QList<CoreUi::NotificationBaseWidget *> visible_notifications_;
 
         CoreUi::NotificationBrowserWidget *browser_widget_;
-        CoreUi::ControlPanelManager *panel_;
 
     };
 }

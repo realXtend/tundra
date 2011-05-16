@@ -65,6 +65,9 @@ namespace UiServices
 		bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence);
 
         /// UiServiceInterface override.
+        bool RemoveInternalWidgetFromScene(QWidget *widget);
+
+        /// UiServiceInterface override.
         void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon, int priority = 50);
 
         /// UiServiceInterface override.
@@ -145,6 +148,9 @@ namespace UiServices
 
         /// UiServiceInterface override.
         void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget);
+
+        /// UiServiceInterface override.
+        //void ShowQuestionNotification(int hide_in_msec, const QString &question ,QString first_button_title = "Yes", QString second_button_title = "No", QString third_button_title = "", QString hidden_value = "");
 
 		/// UiServiceInterface override.
 		void ShowNotification(int hide_in_msec, const QString &message);

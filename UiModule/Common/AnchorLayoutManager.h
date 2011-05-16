@@ -34,6 +34,7 @@ namespace CoreUi
         void AddFullscreenWidget(QGraphicsWidget *graphics_widget);
         void AddItemToScene(QGraphicsWidget *graphics_widget);
         void RemoveItemFromScene(QGraphicsWidget *graphics_widget);
+        void AdjustLayoutContainer(int newWidth, int newHeight);
 		void resetLayout();
 
     private slots:

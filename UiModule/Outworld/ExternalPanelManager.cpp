@@ -47,10 +47,10 @@ namespace UiServices
 			return false;
 
         //Configure zones for the dockwidget
-		if (owner_->HasBeenPostinitializaded())
-			qWin_->addDockWidget(Qt::NoDockWidgetArea, widget, Qt::Vertical);
-		else
-			qWin_->addDockWidget(Qt::LeftDockWidgetArea, widget, Qt::Vertical);
+		//if (owner_->HasBeenPostinitializaded())
+		//	qWin_->addDockWidget(Qt::NoDockWidgetArea, widget, Qt::Vertical);
+		//else
+		qWin_->addDockWidget(Qt::LeftDockWidgetArea, widget, Qt::Vertical);
 		widget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea);
 				
 		widget->setFloating(true);
@@ -96,21 +96,31 @@ namespace UiServices
     
 	void ExternalPanelManager::ShowWidget(QWidget *widget){
 		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget))){
-			//QDockWidget *aux = dynamic_cast<QDockWidget *>(widget->parentWidget());
-			//if (!aux)
+			QDockWidget *aux = dynamic_cast<QDockWidget *>(widget->parentWidget());
+			if (aux)
+                aux->show();
+            else
+                widget->show();
 			//	return;
 			////Hide or show the widget; we make every widget a qdockwidget before integrate it in the qmainwindow
 			//if (aux->isHidden())
 			//	aux->show();
 			//widget->parentWidget()->show();	
 			//dynamic_cast<QDockWidget*>(widget)->widget()->show();
-			widget->show();
+            //widget->parentWidget()->show();
+			//widget->show();
 		}
 	}
 
 	void ExternalPanelManager::HideWidget(QWidget *widget){
 		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget()))){
-			widget->hide();
+            //widget->parentWidget()->hide();
+			//widget->hide();
+            QDockWidget *aux = dynamic_cast<QDockWidget *>(widget->parentWidget());
+			if (aux)
+                aux->hide();
+            else
+                widget->hide();
 		}
 	}
 

@@ -11,20 +11,22 @@
 #include "InputAPI.h"
 
 #include "Inworld/InworldSceneController.h"
-#include "Inworld/ControlPanelManager.h"
+//#include "Inworld/ControlPanelManager.h"
 #include "Inworld/NotificationManager.h"
 #include "UiProxyWidget.h"
 #include "Inworld/Notifications/MessageNotification.h"
-#include "Inworld/Notifications/InputNotification.h"
-#include "Inworld/Notifications/QuestionNotification.h"
-#include "Inworld/Notifications/ProgressNotification.h"
+
+#include "Inworld/ControlPanel/SettingsWidget.h"
+#include "Inworld/ControlPanel/LanguageWidget.h"
+#include "Inworld/ControlPanel/CacheSettingsWidget.h"
+#include "Inworld/ControlPanel/ChangeThemeWidget.h"
 
 #include "Outworld/ExternalPanelManager.h"
 #include "Outworld/ExternalMenuManager.h"
 #include "Outworld/ExternalToolBarManager.h"
 #include "Outworld/ViewManager.h"
 
-#include "Common/UiAction.h"
+//#include "Common/UiAction.h"
 #include "UiSceneService.h"
 #include "UiAPI.h"
 #include "NaaliGraphicsView.h"
@@ -68,7 +70,8 @@ namespace UiServices
 		external_panel_manager_(0),
 		external_toolbar_manager_(0),
         inworld_notification_manager_(0),
-		win_restored_(false)
+		win_restored_(false),
+        win_uninitialized_(false)
     {
     }
 
@@ -110,9 +113,8 @@ namespace UiServices
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
             LogDebug("Scene Manager service READY");
 
+            //Notifications
             inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);
-            /*connect(ui_state_machine_, SIGNAL(SceneAboutToChange(const QString&, const QString&)), 
-                    inworld_notification_manager_, SLOT(SceneAboutToChange(const QString&, const QString&)));*/
 			connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), inworld_notification_manager_, SLOT(SceneAboutToChange()));
             LogDebug("Notification Manager service READY");
 
@@ -121,7 +123,6 @@ namespace UiServices
             framework_->GetServiceManager()->RegisterService(Service::ST_Gui, ui_scene_service_);
             connect(ui_scene_service_.get(), SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)),
                     inworld_scene_controller_, SLOT(HandleWidgetTransfer(const QString&, QGraphicsProxyWidget*)));
-
             framework_->RegisterDynamicObject("uiservice", ui_scene_service_.get());
         }
         else
@@ -145,6 +146,9 @@ namespace UiServices
         }
         else
 			LogWarning("Could not acquire QMainWindow!");
+
+        //Settings
+        settings_widget_ = new CoreUi::SettingsWidget(ui_view_->scene(), this);
     }
 
 
@@ -153,11 +157,22 @@ namespace UiServices
 		if (ui_scene_service_)
 		{
 			SubscribeToEventCategories();
-			ui_scene_service_->CreateSettingsPanel();
+			//ui_scene_service_->CreateSettingsPanel();
 
 			//Create the view manager
 			if (!framework_->IsEditionless())
 				viewManager_=new ViewManager(this);
+
+            //Add some tabs to settings.. @todo: move somewhere else
+            // Adding cache tab
+            CoreUi::CacheSettingsWidget *cache_settings_widget_ = new CoreUi::CacheSettingsWidget(settings_widget_);
+            settings_widget_->AddWidget(cache_settings_widget_, "Cache");
+            // Adding a language tab.
+            CoreUi::LanguageWidget *language_widget_ = new CoreUi::LanguageWidget(settings_widget_);
+            settings_widget_->AddWidget(language_widget_, "Language");
+            // Adding change theme tab
+            CoreUi::ChangeThemeWidget *changetheme_widget_ = new CoreUi::ChangeThemeWidget(settings_widget_, framework_);
+            settings_widget_->AddWidget(changetheme_widget_, "Change theme");
 		}
     }
 
@@ -196,6 +211,8 @@ namespace UiServices
 
     void UiModule::Uninitialize()
     {
+        win_uninitialized_ = true;
+
 		if (GetFramework()->IsHeadless())
 			return;
 
@@ -238,6 +255,7 @@ namespace UiServices
 		}
 
 		viewManager_->DeleteView("Previous");
+        //SAFE_DELETE(settings_widget_);
     }
 
     void UiModule::Update(f64 frametime)

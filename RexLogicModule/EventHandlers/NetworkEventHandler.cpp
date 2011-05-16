@@ -30,8 +30,8 @@
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/NotificationManager.h"
-#include "Inworld/ControlPanelManager.h"
-#include "Inworld/Notifications/QuestionNotification.h"
+//#include "Inworld/ControlPanelManager.h"
+//#include "Inworld/Notifications/QuestionNotification.h"
 #endif
 
 #include "ServiceManager.h"
@@ -529,7 +529,7 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(NetworkEventInboundData *dat
 
     if (region_name.empty())
         return false;
-
+/*
 #ifndef UISERVICE_TEST
     UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (!ui_module)
@@ -559,6 +559,7 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(NetworkEventInboundData *dat
         ongoing_script_teleport_ = true;
     }
 #endif
+    */
     return false;
 }
 

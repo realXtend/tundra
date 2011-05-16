@@ -19,6 +19,7 @@
 #include "Inworld/Menus/MenuManager.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
+//include "Inworld/Notifications/QuestionNotification.h"
 
 #include <QUiLoader>
 #include <QSettings>
@@ -124,6 +125,12 @@ namespace UiServices
 	{
 		return owner_->GetInworldSceneController()->AddInternalWidgetToScene(widget, corner, orientation, priority, persistence);
 	}
+
+    bool UiSceneService::RemoveInternalWidgetFromScene(QWidget *widget)
+    {
+        return owner_->GetInworldSceneController()->RemoveInternalWidgetFromScene(widget);
+    }
+
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu, const QString &icon, int priority)
     {
@@ -325,7 +332,8 @@ namespace UiServices
 	//$ END_MOD $
     bool UiSceneService::AddSettingsWidget(QWidget *widget, const QString &name) const
     {
-        return owner_->GetInworldSceneController()->AddSettingsWidget(widget, name);
+        owner_->GetSettingsPanel()->AddWidget(widget, name);
+        return true;
     }
 
     QGraphicsScene *UiSceneService::GetScene(const QString &name) const
@@ -377,6 +385,11 @@ namespace UiServices
 	{
 		owner_->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(message,hide_in_msec));
 	}
+
+    /*void UiSceneService::ShowQuestionNotification(int hide_in_msec, const QString &question ,QString first_button_title, QString second_button_title, QString third_button_title, QString hidden_value)
+	{
+       // owner_->GetNotificationManager()->ShowNotification(new UiServices::QuestionNotification(question, first_button_title, second_button_title, third_button_title, hidden_value , hide_in_msec));
+	}*/
 
     QWidget *UiSceneService::LoadFromFile(const QString &file_path, bool add_to_scene, QWidget *parent)
     {
@@ -513,7 +526,8 @@ namespace UiServices
 
 	//TO MANAGE MENU SETTINGS
 	void UiSceneService::CreateSettingsPanel(){
-		CoreUi::SettingsWidget *settings_widget_ = dynamic_cast<CoreUi::SettingsWidget *>(owner_->GetInworldSceneController()->GetSettingsObject());
+        /*
+        CoreUi::SettingsWidget *settings_widget_ = dynamic_cast<CoreUi::SettingsWidget *>(owner_->GetSettingsPanel());
 		QWidget *internal_wid = settings_widget_->GetInternalWidget();//
 		if (internal_wid)
             if (!owner_->GetFramework()->IsEditionless())
@@ -524,6 +538,7 @@ namespace UiServices
             {
                 AddWidgetToScene(internal_wid, false, false);
             }
+            */
 	}
 
 	bool UiSceneService::IsMenuInside(QString name){

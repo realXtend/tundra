@@ -4,6 +4,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "ExternalMenuManager.h"
+#include "UiServiceInterface.h"
 
 #include <QDebug>
 #include <QTabBar>
@@ -146,8 +147,9 @@ namespace UiServices
 		controller_panels_visibility_[qdoc->windowTitle()] = vis;
 		//Find act
 		foreach(menu_action_pair_ pair, all_actions_)
-			if (qdoc->windowTitle() == pair.second->text())
-				pair.second->setChecked(vis);
+            if (!owner_->HasBeenUninitializaded())
+                if (qdoc->windowTitle() == pair.second->text())
+                    pair.second->setChecked(vis);
 	}
 
     bool ExternalMenuManager::RemoveExternalMenuPanel(QWidget *controlled_widget)
