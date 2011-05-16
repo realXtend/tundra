@@ -52,6 +52,9 @@ public:
     Ogre::TextureUnitState* GetTextureUnit(int techIndex, int passIndex, int texUnitIndex);
     
 public slots:
+    /// Copy content from another OgreMaterialAsset using Ogre internal functions, without having to serialize/deserialize
+    void CopyContent(AssetPtr source);
+    
     /// Set a material attribute using a key-value format, where key is "t<x> p<y> tu<z> paramname", to access technique, pass and
     /// texture unit specific attributes. These can also be omitted to affect all techniques, passes or units as applicable.
     void SetAttribute(const QString& key, const QString& value);

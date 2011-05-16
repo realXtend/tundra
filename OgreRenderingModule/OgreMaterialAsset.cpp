@@ -252,6 +252,66 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     return true;
 }
 
+void OgreMaterialAsset::CopyContent(AssetPtr source)
+{
+    // Not supported in headless mode
+    if (assetAPI->IsHeadless())
+        return;
+        
+    if (!source)
+    {
+        LogError("CopyContent: Null source");
+        return;
+    }
+    OgreMaterialAsset* sourceMat = dynamic_cast<OgreMaterialAsset*>(source.get());
+    if (!sourceMat)
+    {
+        LogError("CopyContent: Source is not an OgreMaterialAsset");
+        return;
+    }
+    if (sourceMat == this)
+    {
+        LogWarning("CopyContent: Source is same as destination, cannot copy");
+        return;
+    }
+    if (sourceMat->ogreMaterial.isNull())
+    {
+        LogError("CopyContent: source " + source->Name() + " is unloaded");
+        return;
+    }
+    
+    // If we are unloaded, create an empty material first
+    if (ogreMaterial.isNull())
+    {
+        try
+        {
+            std::string sanitatedName = SanitateAssetIdForOgre(Name());
+            ogreMaterial = Ogre::MaterialManager::getSingleton().create(sanitatedName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        }
+        catch (Ogre::Exception& e)
+        {
+            LogError("CopyContent: Failed to create empty material " + Name().toStdString() + ", reason: " + e.what());
+            return;
+        }
+    }
+    
+    Ogre::Material* sourceOgreMat = sourceMat->ogreMaterial.get();
+    
+    // Then copy parameters & techniques
+    ogreMaterial->setReceiveShadows(sourceOgreMat->getReceiveShadows());
+    ogreMaterial->setTransparencyCastsShadows(sourceOgreMat->getTransparencyCastsShadows());
+    ogreMaterial->removeAllTechniques();
+    for (unsigned i = 0; i < sourceOgreMat->getNumTechniques(); ++i)
+    {
+        Ogre::Technique* sourceTech = sourceOgreMat->getTechnique(i);
+        if (sourceTech)
+        {
+            Ogre::Technique* destTech = ogreMaterial->createTechnique();
+            *destTech = *sourceTech;
+        }
+    }
+}
+
 bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     if (ogreMaterial.isNull())
