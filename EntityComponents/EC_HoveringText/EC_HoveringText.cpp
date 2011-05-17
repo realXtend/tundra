@@ -361,7 +361,7 @@ void EC_HoveringText::Redraw()
         borderPen.setWidthF(borderThickness.Get());
         
         
-        texture_->SetTextContent(width, 
+        texture_->SetContentsDrawText(width, 
                                 height, 
                                 text.Get(), 
                                 textColor_, 

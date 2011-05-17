@@ -318,7 +318,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
         ogreTexture->createInternalResources();
 }
 
-void TextureAsset::SetTextContent(int newWidth, int newHeight, const QString& text, const QColor& textColor, const QFont& font, const QBrush& backgroundBrush, const QPen& borderPen, int flags)
+void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, const QString& text, const QColor& textColor, const QFont& font, const QBrush& backgroundBrush, const QPen& borderPen, int flags)
 {
     // Create transparent pixmap
     QImage image(newWidth, newHeight, QImage::Format_ARGB32);
