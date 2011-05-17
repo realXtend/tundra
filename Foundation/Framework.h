@@ -93,14 +93,11 @@ namespace Foundation
 
         /// Calculate the main loop frametime for updates
         /// \return double Frametime
-        double CalculateFrametime();
+        double CalculateFrametime(tick_t currentClockTime);
 
         /// Update modules
         /// \param double Frametime
         void UpdateModules(double frametime);
-
-        /// Update time critical APIs
-        void UpdateTimeCriticalAPIs();
 
         /// Update APIs
         /// \param double Frametime

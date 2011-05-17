@@ -358,7 +358,7 @@ namespace Foundation
         RegisterConsoleCommands();
     }
 
-    double Framework::CalculateFrametime()
+    double Framework::CalculateFrametime(tick_t currentClockTime)
     {
         static tick_t last_clocktime;
         static tick_t clock_freq;
@@ -369,9 +369,9 @@ namespace Foundation
         if (!clock_freq)
             clock_freq = GetCurrentClockFreq();
 
-        tick_t curr_clocktime = GetCurrentClockTime();
-        double frametime = ((double)curr_clocktime - (double)last_clocktime) / (double) clock_freq;
-        last_clocktime = curr_clocktime;
+        //tick_t curr_clocktime = GetCurrentClockTime();
+        double frametime = ((double)currentClockTime - (double)last_clocktime) / (double) clock_freq;
+        last_clocktime = currentClockTime;
 
         return frametime;
     }
@@ -400,13 +400,10 @@ namespace Foundation
         }
     }
 
-    void Framework::UpdateTimeCriticalAPIs()
+    void Framework::UpdateAPIs(double frametime)
     {
         if (exit_signal_)
             return;
-
-        // \note HACK: None of the below use frametime for anything, but still...
-        double frametime = 0.0f;
 
         // InputAPI
         {
@@ -418,17 +415,15 @@ namespace Foundation
             PROFILE(Update_AudioAPI);
             audio->Update(frametime);
         }
-    }
-
-    void Framework::UpdateAPIs(double frametime)
-    {
-        if (exit_signal_)
-            return;
-
         // AssetAPI
         {
             PROFILE(Update_AssetAPI);
             asset->Update(frametime);
+        }
+        // ConsoleAPI
+        {
+            PROFILE(Update_ConsoleAPI)
+                console->Update(frametime);
         }
         // FrameAPI
         // Process frame update now. Scripts handling the frame tick will be run at this point, and will have up-to-date 
@@ -436,11 +431,6 @@ namespace Foundation
         {
             PROFILE(Update_FrameAPI);
             frame->Update(frametime);
-        }
-        // ConsoleAPI
-        {
-            PROFILE(Update_ConsoleAPI)
-            console->Update(frametime);
         }
     }
 

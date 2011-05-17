@@ -296,8 +296,58 @@ bool Application::notify(QObject *receiver, QEvent *event)
 
 void Application::timerEvent(QTimerEvent *event)
 {
+    if (framework->IsExiting())
+        return;
+
     if (fwUpdateId_ == event->timerId())
-        UpdateFrame();
+    {
+        // This is another method of doing the frame limiting,
+        // comment all of the below in remove comment from UpdateFrame() to try it out.
+        //UpdateFrame();
+
+        killTimer(fwUpdateId_);
+
+        PROFILE(Update_MainLoop);
+
+        lastPresentTime_ = GetCurrentClockTime();
+        double frametime = framework->CalculateFrametime(lastPresentTime_);
+
+        try
+        {
+            framework->UpdateModules(frametime);
+            framework->UpdateAPIs(frametime);
+            framework->UpdateRendering(frametime);
+
+            // Disabled the rendering skipping when window is moved for now...
+            // windows specific freeze when main window is moved from monitor to monitor
+            //if (fwSkipFrames_ == 0)
+            //    framework->UpdateRendering(frametime);
+            //else
+            //    fwSkipFrames_--;
+        }
+        catch(const std::exception &e)
+        {
+            std::cout << "QApp::UpdateFrame caught an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
+            RootLogCritical(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
+            throw;
+        }
+        catch(...)
+        {
+            std::cout << "QApp::UpdateFrame caught an unknown exception!" << std::endl;
+            RootLogCritical(std::string("QApp::UpdateFrame caught an unknown exception!"));
+            throw;
+        }
+        const double msecsPerFrame = 1000.0 / targetFps_;
+
+        double updateSpentTime = (double)(GetCurrentClockTime() - lastPresentTime_) * 1000.0 / timerFrequency_;
+        frametime = frametime + updateSpentTime;
+        double timeToWait = msecsPerFrame - frametime;
+        if (timeToWait < 1)
+            timeToWait = 1;
+        fwUpdateId_ = startTimer((int)(timeToWait + 0.5));
+
+        RESETPROFILER
+    }
 }
 
 void Application::UpdateFrame()
@@ -307,20 +357,17 @@ void Application::UpdateFrame()
     if (framework->IsExiting())
         return;
 
-    // No target fps limiting for time critical APIs
-    framework->UpdateTimeCriticalAPIs();
-
     // Check fps limiter if we should update our modules
     if (RunFrameworkUpdate())
     {
         // Mark last time before doing updates, so we don't start to lag behind the target fps
         lastPresentTime_ = GetCurrentClockTime();
-        
+        double frametime = framework->CalculateFrametime(lastPresentTime_);
+
         try
         {
             PROFILE(Update_MainLoop);
-
-            double frametime = framework->CalculateFrametime();
+            
             framework->UpdateModules(frametime);
             framework->UpdateAPIs(frametime);
             framework->UpdateRendering(frametime);
