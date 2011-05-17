@@ -69,6 +69,8 @@ public:
     /// Destructor.
     ~EC_Highlight();
 
+    virtual bool IsSerializable() const { return true; }
+
     /// Visible flag. If true,the mesh component in the same entity will be highlighted
     Q_PROPERTY(bool visible READ getvisible WRITE setvisible)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, visible)
