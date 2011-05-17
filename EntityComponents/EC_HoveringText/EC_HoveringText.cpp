@@ -66,6 +66,11 @@ EC_HoveringText::EC_HoveringText(Framework *fw) :
 
 EC_HoveringText::~EC_HoveringText()
 {
+    if ( texture_.get() != 0 )
+    {
+         AssetAPI* asset = framework_->Asset();
+         asset->ForgetAsset(texture_,false);
+    }
     Destroy();
 }
 
