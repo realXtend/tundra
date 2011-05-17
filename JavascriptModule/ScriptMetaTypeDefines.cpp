@@ -255,11 +255,11 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<AssetStoragePtr>("AssetStoragePtr");
     qScriptRegisterQObjectMetaType<IAssetStorage*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetStorage>, qScriptValueToBoostSharedPtr<IAssetStorage>);
-
+/*
     qRegisterMetaType<AssetStoragePtr>("ScriptAssetPtr");
     qScriptRegisterQObjectMetaType<ScriptAsset*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<ScriptAsset>, qScriptValueToBoostSharedPtr<ScriptAsset>);
-
+*/
     qScriptRegisterQObjectMetaType<AssetCache*>(engine);
 
     qRegisterMetaType<AssetMap>("AssetMap");

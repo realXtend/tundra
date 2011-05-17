@@ -186,7 +186,7 @@ bool Client::IsConnected() const
 
 void Client::SetLoginProperty(QString key, QString value)
 {
-    KristalliProtocol::KristalliProtocolModule::LogInfo(key.toStdString() + ":" + value.toStdString());
+    ::LogInfo(key.toStdString() + ":" + value.toStdString());
     key = key.trimmed();
     value = value.trimmed();
     if (value.isEmpty())
