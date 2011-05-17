@@ -23,6 +23,9 @@ The Tundra Viewer is the client software that is used to connect to a server.
 Compiling from the source
 -------------------------
 Tundra source code is available at https://github.com/realXtend , under the Apache 2.0 license. Remember to git checkout to the branch Tundra after cloning the repository.
+
+git clone http://github.com/realXtend/naali.git
+git checkout -b tundra origin/tundra
  
 Tundra uses CMake as its build system.
 
