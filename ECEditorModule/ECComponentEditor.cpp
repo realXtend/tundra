@@ -49,6 +49,8 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         attributeEditor = new ECAttributeEditor<QVariant>(browser, component, name, type, editor);
     else if(type == "qvariantlist")
         attributeEditor = new ECAttributeEditor<QVariantList>(browser, component, name, type, editor);
+    else if(type == "entityreference")
+        attributeEditor = new ECAttributeEditor<EntityReference>(browser, component, name, type, editor);
     else if(type == "assetreference")
         // AssetReference uses own special case editor.
         //attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, type, editor);

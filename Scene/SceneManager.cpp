@@ -122,6 +122,21 @@ EntityPtr SceneManager::GetEntityByName(const QString &name) const
     return EntityPtr();
 }
 
+bool SceneManager::IsUniqueName(const QString& name) const
+{
+    int count = 0;
+    EntityMap::const_iterator it = entities_.begin();
+    while(it != entities_.end())
+    {
+        if (it->second->GetName() == name)
+            ++count;
+        if (count > 1)
+            return false;
+        ++it;
+    }
+    
+    return true;
+}
 
 entity_id_t SceneManager::GetNextFreeId()
 {

@@ -8,6 +8,7 @@
 #include "IComponentFactory.h"
 #include "IComponent.h"
 #include "AssetReference.h"
+#include "EntityReference.h"
 #include "SceneInteract.h"
 
 #include "MemoryLeakCheck.h"
@@ -226,6 +227,8 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
         attribute = new Attribute<AssetReference>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "assetreferencelist")
         attribute = new Attribute<AssetReferenceList>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "entityreference")
+        attribute = new Attribute<EntityReference>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "qvariant")
         attribute = new Attribute<QVariant>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "qvariantlist")
@@ -240,7 +243,7 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
 QStringList SceneAPI::GetAttributeTypes() const
 {
     QStringList attrTypes;
-    attrTypes << "string" << "int" << "real" << "color" << "vector3df" << "bool" << "uint" << "quaternion" << "assetreference" << "assetreferencelist" << "qvariant" << "qvariantlist" << "transform";
+    attrTypes << "string" << "int" << "real" << "color" << "vector3df" << "bool" << "uint" << "quaternion" << "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform";
     return attrTypes;
 }
 

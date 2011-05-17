@@ -225,6 +225,9 @@ public slots:
               to avoid dangling references that prevent entities from being properly destroyed. */
     EntityPtr GetEntityByName(const QString& name) const;
 
+    /// Return whether name is unique within the scene, ie. is only encountered once, or not at all.
+    bool IsUniqueName(const QString& name) const;
+
     /// Returns true if entity with the specified id exists in this scene, false otherwise
     bool HasEntity(entity_id_t id) const { return (entities_.find(id) != entities_.end()); }
 

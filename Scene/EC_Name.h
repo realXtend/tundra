@@ -6,6 +6,9 @@
  *          to the plain ID number. This EC is not present by default for entities.
  */
 
+#ifndef incl_Scene_EC_Name_h
+#define incl_Scene_EC_Name_h
+
 #include "IComponent.h"
 #include "IModule.h"
 
@@ -61,3 +64,5 @@ public:
 
     COMPONENT_NAME("EC_Name", 26)
 };
+
+#endif

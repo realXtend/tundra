@@ -5,6 +5,7 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
+#include "EntityReference.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "Transform.h"
@@ -36,8 +37,8 @@ Registered by OgreRenderer::OgreRenderingModule.
 <div>Shows the debug bounding box of geometry attached to the placeable.</div>
 <li>int: selectionLayer
 <div>Selection layer for raycasts.</div>
-<li>int: parentID
-<div>The entity ID to attach to. The entity in question needs to have EC_Placeable as well to work correctly</div>
+<li>EntityReference: parentRef
+<div>The entity to attach to. The entity in question needs to have EC_Placeable as well to work correctly</div>
 <li>string: parentBone
 <div>The bone to attach to. The parent entity needs to have a skeletal EC_Mesh component</div>
 </ul>
@@ -120,9 +121,9 @@ public:
     Q_PROPERTY(int selectionLayer READ getselectionLayer WRITE setselectionLayer)
     DEFINE_QPROPERTY_ATTRIBUTE(int, selectionLayer);
 
-    /// Parent entity ID. 0 for no parenting
-    Q_PROPERTY(int parentID READ getparentID WRITE setparentID)
-    DEFINE_QPROPERTY_ATTRIBUTE(int, parentID);
+    /// Parent entity ref. 0 for no parenting
+    Q_PROPERTY(EntityReference parentRef READ getparentRef WRITE setparentRef)
+    DEFINE_QPROPERTY_ATTRIBUTE(EntityReference, parentRef);
     
     /// Parent entity bone name. Needs the parent entity to have a skeletal mesh. Empty for no parent bone assignment
     Q_PROPERTY(QString parentBone READ getparentBone WRITE setparentBone)

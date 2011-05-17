@@ -157,7 +157,7 @@ EC_Placeable::EC_Placeable(Framework *fw) :
     drawDebug(this, "Show bounding box", false),
     visible(this, "Visible", true),
     selectionLayer(this, "Selection layer", 1),
-    parentID(this, "Parent entity ID", 0),
+    parentRef(this, "Parent entity ref", 0),
     parentBone(this, "Parent bone name", "")
 {
     renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
@@ -352,6 +352,13 @@ void EC_Placeable::AttachNode()
     }
     RendererPtr renderer = renderer_.lock();
     
+    Entity* ownEntity = GetParentEntity();
+    if (!ownEntity)
+        return;
+    SceneManager* scene = ownEntity->GetScene();
+    if (!scene)
+        return;
+    
     try
     {
         // If already attached, detach first
@@ -365,90 +372,93 @@ void EC_Placeable::AttachNode()
         // 1) attach to scene root node
         // 2) attach to another EC_Placeable's scene node
         // 3) attach to a bone on a skeletal mesh
-        Entity* ownEntity = GetParentEntity();
-        if (ownEntity)
+        // Disconnect from the EntityCreated & ParentMeshChanged signals, as responding to them might not be needed anymore.
+        // We will reconnect signals as necessary
+        disconnect(this, SLOT(CheckParentEntityCreated(Entity*, AttributeChange::Type)));
+        disconnect(this, SLOT(OnParentMeshChanged()));
+        disconnect(this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
+        
+        // Try to attach to another entity if the parent ref is non-empty
+        // Make sure we're not trying to attach to ourselves as the parent
+        const EntityReference& parent = parentRef.Get();
+        if (!parent.IsEmpty())
         {
-            // Disconnect from the EntityCreated & ParentMeshChanged signals, as responding to them might not be needed anymore.
-            // We will reconnect signals as necessary
-            disconnect(this, SLOT(CheckParentEntityCreated(Entity*, AttributeChange::Type)));
-            disconnect(this, SLOT(OnParentMeshChanged()));
-            disconnect(this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
-            
-            SceneManager* scene = ownEntity->GetScene();
-            // Try to attach to another entity if the parent ID is non-zero.
-            // Make sure we're not trying to attach to ourselves as the parent
-            unsigned pID = parentID.Get();
-            if (pID != 0 && pID != ownEntity->GetId() && scene)
+            Entity* parentEntity = parent.Lookup(scene).get();
+            if (parentEntity == ownEntity)
             {
-                Entity* parentEntity = scene->GetEntity(pID).get();
-                if (parentEntity)
+                // If we refer to self, attach to the root
+                root_node->addChild(sceneNode_);
+                attached_ = true;
+                return;
+            }
+            
+            if (parentEntity)
+            {
+                // Note: if we don't find the correct bone, we attach to the root
+                QString boneName = parentBone.Get();
+                if (!boneName.isEmpty())
                 {
-                    // Note: if we don't find the correct bone, we attach to the root
-                    QString boneName = parentBone.Get();
-                    if (!boneName.isEmpty())
+                    EC_Mesh* parentMesh = parentEntity->GetComponent<EC_Mesh>().get();
+                    if (parentMesh)
                     {
-                        EC_Mesh* parentMesh = parentEntity->GetComponent<EC_Mesh>().get();
-                        if (parentMesh)
+                        Ogre::Bone* bone = parentMesh->GetBone(boneName);
+                        if (bone)
                         {
-                            Ogre::Bone* bone = parentMesh->GetBone(boneName);
-                            if (bone)
+                            // Create the node for bone attachment if it did not exist already
+                            if (!boneAttachmentNode_)
                             {
-                                // Create the node for bone attachment if it did not exist already
-                                if (!boneAttachmentNode_)
-                                {
-                                    boneAttachmentNode_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Placeable_BoneAttachmentNode"));
-                                    root_node->addChild(boneAttachmentNode_);
-                                }
-                                
-                                // Setup manual bone tracking, as Ogre does not allow to attach scene nodes to bones
-                                attachmentListener.AddAttachment(parentMesh->GetEntity(), bone, this);
-                                
-                                boneAttachmentNode_->addChild(sceneNode_);
-                                
-                                parentBone_ = bone;
-                                parentMesh_ = parentMesh;
-                                connect(parentMesh, SIGNAL(MeshAboutToBeDestroyed()), this, SLOT(OnParentMeshDestroyed()), Qt::UniqueConnection);
-                                attached_ = true;
-                                return;
+                                boneAttachmentNode_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Placeable_BoneAttachmentNode"));
+                                root_node->addChild(boneAttachmentNode_);
                             }
-                            else
-                            {
-                                // Could not find the bone. Connect to the parent mesh MeshChanged signal to wait for the proper mesh to be assigned.
-                                connect(parentMesh, SIGNAL(MeshChanged()), this, SLOT(OnParentMeshChanged()), Qt::UniqueConnection);
-                                return;
-                            }
+                            
+                            // Setup manual bone tracking, as Ogre does not allow to attach scene nodes to bones
+                            attachmentListener.AddAttachment(parentMesh->GetEntity(), bone, this);
+                            
+                            boneAttachmentNode_->addChild(sceneNode_);
+                            
+                            parentBone_ = bone;
+                            parentMesh_ = parentMesh;
+                            connect(parentMesh, SIGNAL(MeshAboutToBeDestroyed()), this, SLOT(OnParentMeshDestroyed()), Qt::UniqueConnection);
+                            attached_ = true;
+                            return;
                         }
                         else
                         {
-                            // If can't find the mesh component yet, wait for it to be created
-                            connect(parentEntity, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+                            // Could not find the bone. Connect to the parent mesh MeshChanged signal to wait for the proper mesh to be assigned.
+                            connect(parentMesh, SIGNAL(MeshChanged()), this, SLOT(OnParentMeshChanged()), Qt::UniqueConnection);
                             return;
                         }
                     }
-                    
-                    parentPlaceable_ = parentEntity->GetComponent<EC_Placeable>().get();
-                    if (parentPlaceable_)
-                    {
-                        parentPlaceable_->GetSceneNode()->addChild(sceneNode_);
-                        
-                        // Connect to destruction of the placeable to be able to detach gracefully
-                        connect(parentPlaceable_, SIGNAL(AboutToBeDestroyed()), this, SLOT(OnParentPlaceableDestroyed()), Qt::UniqueConnection);
-                        attached_ = true;
-                        return;
-                    }
                     else
                     {
-                        // If can't find the placeable component yet, wait for it to be created
+                        // If can't find the mesh component yet, wait for it to be created
                         connect(parentEntity, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
                         return;
                     }
                 }
-                else
+                
+                parentPlaceable_ = parentEntity->GetComponent<EC_Placeable>().get();
+                if (parentPlaceable_)
                 {
-                    // Could not find parent entity. Check for it later, when new entities are created into the scene
-                    connect(scene, SIGNAL(EntityCreated(Entity*, AttributeChange::Type)), this, SLOT(CheckParentEntityCreated(Entity*, AttributeChange::Type)), Qt::UniqueConnection);
+                    parentPlaceable_->GetSceneNode()->addChild(sceneNode_);
+                    
+                    // Connect to destruction of the placeable to be able to detach gracefully
+                    connect(parentPlaceable_, SIGNAL(AboutToBeDestroyed()), this, SLOT(OnParentPlaceableDestroyed()), Qt::UniqueConnection);
+                    attached_ = true;
                     return;
                 }
+                else
+                {
+                    // If can't find the placeable component yet, wait for it to be created
+                    connect(parentEntity, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+                    return;
+                }
+            }
+            else
+            {
+                // Could not find parent entity. Check for it later, when new entities are created into the scene
+                connect(scene, SIGNAL(EntityCreated(Entity*, AttributeChange::Type)), this, SLOT(CheckParentEntityCreated(Entity*, AttributeChange::Type)), Qt::UniqueConnection);
+                return;
             }
         }
         
@@ -657,8 +667,8 @@ Vector3df EC_Placeable::GetRelativeVector(const Vector3df& vec)
 
 void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
-    // If parent ID or parent bone changed, reattach node to scene hierarchy
-    if ((attribute == &parentID) || (attribute == &parentBone))
+    // If parent ref or parent bone changed, reattach node to scene hierarchy
+    if ((attribute == &parentRef) || (attribute == &parentBone))
         AttachNode();
     
     if (attribute == &transform)
@@ -709,8 +719,12 @@ void EC_Placeable::OnParentPlaceableDestroyed()
 
 void EC_Placeable::CheckParentEntityCreated(Entity* entity, AttributeChange::Type change)
 {
-    if (!attached_ && entity->GetId() == (unsigned)parentID.Get())
-        AttachNode();
+    if ((!attached_) && (entity))
+    {
+        // Check if the entity is the one we should use as parent
+        if (entity == parentRef.Get().Lookup(entity->GetScene()).get())
+            AttachNode();
+    }
 }
 
 void EC_Placeable::OnParentMeshChanged()

@@ -7,6 +7,7 @@
 #include "IComponent.h"
 #include "Transform.h"
 #include "AssetReference.h"
+#include "EntityReference.h"
 #include "AssetFwd.h"
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
@@ -269,6 +270,10 @@ template<> void ECAttributeEditor<QVariantList>::Set(QtProperty *property);
 template<> void ECAttributeEditor<AssetReference>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<AssetReference>::Initialize();
 template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property);
+
+template<> void ECAttributeEditor<EntityReference>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<EntityReference>::Initialize();
+template<> void ECAttributeEditor<EntityReference>::Set(QtProperty *property);
 
 /// Special case editor for AssetReference attributes.
 class AssetReferenceAttributeEditor : public ECAttributeEditor<AssetReference>

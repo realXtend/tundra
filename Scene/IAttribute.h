@@ -230,6 +230,7 @@ template<> std::string Attribute<Quaternion>::ToString() const;
 template<> std::string Attribute<Color>::ToString() const;
 template<> std::string Attribute<AssetReference>::ToString() const;
 tempalte<> std::string Attribute<QVariant>::ToString() const;
+template<> std::string Attribute<EntityReference>::ToString() const;
 
 template<> void Attribute<std::string>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<bool>::FromString(const std::string& str, ChangeType change);
@@ -241,6 +242,7 @@ template<> void Attribute<Color>::FromString(const std::string& str, ChangeType 
 template<> void Attribute<Quaternion>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<AssetReference>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<QVariant>::FromString(const std::string& str, ChangeType change);
+template<> void Attribute<EntityReference>::FromString(const std::string& str, ChangeType change);
 
 template<> 
 */

@@ -1911,3 +1911,80 @@ void AssetReferenceListAttributeEditor::OpenEditor()
             editAction->trigger();
     }
 }
+
+//-------------------------ENTITYREFERENCE ATTRIBUTE TYPE------------------------
+
+template<> void ECAttributeEditor<EntityReference>::Update(IAttribute *attr)
+{
+    if (!useMultiEditor_)
+    {
+        Attribute<EntityReference> *attribute = 0;
+        if (!attr)
+            attribute = FindAttribute<EntityReference>(components_[0].lock());
+        else
+            attribute = dynamic_cast<Attribute<EntityReference>*>(attr);
+        if (!attribute)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, Couldn't dynamic_cast attribute pointer to Attribute<EntityReference> format.");
+            return;
+        }
+
+        QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
+        if (!stringManager)
+            return;
+
+        stringManager->setValue(rootProperty_, attribute->Get().ref);
+    }
+    else
+        UpdateMultiEditorValue(attr);
+}
+
+template<> void ECAttributeEditor<EntityReference>::Initialize()
+{
+    ECAttributeEditorBase::PreInitialize();
+    if (!useMultiEditor_)
+    {
+        QtStringPropertyManager *stringManager = new QtStringPropertyManager(this);
+        LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
+        connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, QObject *)), SLOT(HandleNewEditor(QtProperty *, QObject *)));
+        propertyMgr_ = stringManager;
+        factory_ = lineEditFactory;
+
+        if (components_.size() && !components_[0].expired())
+        {
+            IAttribute *attr = components_[0].lock()->GetAttribute(name_);
+            if (attr && attr->HasMetadata())
+                //lineEditFactory->SetComponents(rootProperty_, components_);
+                lineEditFactory->AddButtons(attr->GetMetadata()->buttons);
+        }
+
+        lineEditFactory->SetComponents(rootProperty_, components_);
+
+        connect(this, SIGNAL(OnComponentAdded(QtProperty*, IComponent*)), lineEditFactory, SLOT(ComponentAdded(QtProperty*, IComponent*)));
+        connect(this, SIGNAL(OnComponentRemoved(QtProperty*, IComponent*)), lineEditFactory, SLOT(ComponentRemoved(QtProperty*, IComponent*)));
+
+        rootProperty_ = propertyMgr_->addProperty(name_);
+        assert(rootProperty_);
+        if (rootProperty_)
+        {
+            Update();
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), SLOT(PropertyChanged(QtProperty*)));
+        }
+
+        owner_->setFactoryForManager(stringManager, lineEditFactory);
+    }
+    else
+    {
+        InitializeMultiEditor();
+        if (factory_)
+            connect(factory_, SIGNAL(EditorCreated(QtProperty *, QObject *)), SLOT(HandleNewEditor(QtProperty *, QObject *)));
+    }
+
+    emit EditorChanged(name_);
+}
+
+template<> void ECAttributeEditor<EntityReference>::Set(QtProperty *property)
+{
+    if (listenEditorChangedSignal_)
+        SetValue(EntityReference(property->valueText()));
+}

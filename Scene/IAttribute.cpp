@@ -15,6 +15,7 @@
 #include "CoreStdIncludes.h"
 #include "Transform.h"
 #include "AssetReference.h"
+#include "EntityReference.h"
 
 #include <QVector3D>
 #include <QVariant>
@@ -121,6 +122,11 @@ template<> std::string Attribute<AssetReferenceList>::ToString() const
     }
 
     return stringValue;
+}
+
+template<> std::string Attribute<EntityReference>::ToString() const
+{
+    return Get().ref.toStdString();
 }
 
 template<> std::string Attribute<QVariant>::ToString() const
@@ -257,6 +263,11 @@ template<> std::string Attribute<AssetReference>::TypeName() const
 template<> std::string Attribute<AssetReferenceList>::TypeName() const
 {
     return "assetreferencelist";
+}
+
+template<> std::string Attribute<EntityReference>::TypeName() const
+{
+    return "entityreference";
 }
 
 template<> std::string Attribute<QVariant>::TypeName() const
@@ -427,6 +438,11 @@ template<> void Attribute<AssetReferenceList>::FromString(const std::string& str
             value.RemoveLast();
 
     Set(value, change);
+}
+
+template<> void Attribute<EntityReference>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    Set(EntityReference(str.c_str()), change);
 }
 
 template<> void Attribute<QVariant>::FromString(const std::string& str, AttributeChange::Type change)
@@ -603,6 +619,11 @@ template<> void Attribute<AssetReferenceList>::FromQVariant(const QVariant &vari
     Set(qvariant_cast<AssetReferenceList>(variant), change);
 }
 
+template<> void Attribute<EntityReference>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<EntityReference>(variant), change);
+}
+
 template<> void Attribute<QVariant>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
     Set(variant, change);
@@ -695,6 +716,11 @@ template<> QVariant Attribute<AssetReferenceList>::ToQVariant() const
     return QVariant::fromValue<AssetReferenceList>(Get());
 }
 
+template<> QVariant Attribute<EntityReference>::ToQVariant() const
+{
+    return QVariant::fromValue<EntityReference>(Get());
+}
+
 template<> QVariant Attribute<QVariant>::ToQVariant() const
 {
     return Get();
@@ -785,6 +811,11 @@ template<> void Attribute<AssetReference>::FromScriptValue(const QScriptValue &v
 template<> void Attribute<AssetReferenceList>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
 {
     Set(qScriptValueToValue<AssetReferenceList>(value), change);
+}
+
+template<> void Attribute<EntityReference>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<EntityReference>(value), change);
 }
 
 template<> void Attribute<QVariant>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
@@ -900,6 +931,11 @@ template<> void Attribute<AssetReferenceList>::ToBinary(kNet::DataSerializer& de
     dest.Add<u8>(value_.Size());
     for(int i = 0; i < value_.Size(); ++i)
         dest.AddString(value_[i].ref.toStdString());
+}
+
+template<> void Attribute<EntityReference>::ToBinary(kNet::DataSerializer& dest) const
+{
+    dest.AddString(value_.ref.toStdString());
 }
 
 template<> void Attribute<QVariant>::ToBinary(kNet::DataSerializer& dest) const
@@ -1035,6 +1071,13 @@ template<> void Attribute<AssetReferenceList>::FromBinary(kNet::DataDeserializer
     for(u32 i = 0; i < numValues; ++i)
         value.Append(AssetReference(source.ReadString().c_str()));
 
+    Set(value, change);
+}
+
+template<> void Attribute<EntityReference>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    EntityReference value;
+    value.ref = source.ReadString().c_str();
     Set(value, change);
 }
 
@@ -1198,6 +1241,11 @@ template<> void Attribute<AssetReference>::Interpolate(IAttribute* start, IAttri
 template<> void Attribute<AssetReferenceList>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
 }
+
+template<> void Attribute<EntityReference>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+}
+
 
 template<> void Attribute<QVariant>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {

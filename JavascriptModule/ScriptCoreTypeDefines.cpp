@@ -9,6 +9,7 @@
 #include "Matrix4.h"
 #include "IAttribute.h"
 #include "AssetReference.h"
+#include "EntityReference.h"
 #include "Entity.h"
 #include "ScriptMetaTypeDefines.h"
 #include "SceneManager.h"
@@ -499,6 +500,33 @@ QScriptValue toScriptValueAssetReferenceList(QScriptEngine *engine, const AssetR
     return obj;
 }
 
+void fromScriptValueEntityReference(const QScriptValue &obj, EntityReference &s)
+{
+    if (obj.isString())
+        s.ref = obj.toString();
+    else
+    {
+        if (!obj.property("ref").isValid())
+            LogError("Can't convert QScriptValue to EntityReference! QScriptValue does not contain ref attribute!");
+        else
+        {
+            if (obj.property("ref").isString())
+                s.ref = obj.property("ref").toString();
+            else if (obj.property("ref").isNumber())
+                s.ref = QString::number(obj.property("ref").toInt32());
+            else
+                LogError("Can't convert QScriptValue to EntityReference! Ref attribute is not string or a number");
+        }
+    }
+}
+
+QScriptValue toScriptValueEntityReference(QScriptEngine *engine, const EntityReference &s)
+{
+    QScriptValue obj = engine->newObject();
+    obj.setProperty("ref", QScriptValue(engine, s.ref));
+    return obj;
+}
+
 void fromScriptValueEntityList(const QScriptValue &obj, QList<Entity*> &ents)
 {
     ents.clear();
@@ -704,6 +732,7 @@ void RegisterCoreMetaTypes()
     qRegisterMetaType<Transform>("Transform");
     qRegisterMetaType<AssetReference>("AssetReference");
     qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
+    qRegisterMetaType<EntityReference>("EntityReference");
     qRegisterMetaType<IAttribute*>("IAttribute*");
     qRegisterMetaType<QList<Entity*> >("QList<Entity*>");
     qRegisterMetaType<EntityList>("EntityList");
@@ -718,7 +747,8 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueTransform, fromScriptValueTransform);
     qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
     qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
-
+    qScriptRegisterMetaType(engine, toScriptValueEntityReference, fromScriptValueEntityReference);
+    
     int id = qRegisterMetaType<ScenePtr>("ScenePtr");
     qScriptRegisterMetaType_helper(
         engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(qScriptValueFromBoostSharedPtr<SceneManager>),
