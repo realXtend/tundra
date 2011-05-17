@@ -2,7 +2,7 @@
 // input context to process camera movement (WASD + mouse)
 
 var rotate_sensitivity = 0.3;
-var move_sensitivity = 30.0;
+var move_sensitivity = 15.0;
 var motion_z = 0;
 var motion_y = 0;
 var motion_x = 0;
