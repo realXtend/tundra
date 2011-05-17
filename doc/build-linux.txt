@@ -19,7 +19,6 @@ The most up-to-date and specific documentation of the build process is that buil
 as the buildslaves in the test system build with it after every commit.
 Please be in touch in e.g. #realxtend-dev irc channel on Freenode,
 or on the realxtend-dev mailing list in google groups.
->>>>>>> Stashed changes
 
 The viewer has many external libraries which may not be satisfied by default 
 on many distributions. A list of dependencies can be found in them 
