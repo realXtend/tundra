@@ -102,7 +102,7 @@ public slots:
     /// This is optional. KeyEventSignals are freed properly when the context is destroyed.
     void UnregisterKeyEvent(QKeySequence keySequence);
 
-    /// This function is called by the QtInputService whenever there is a new
+    /// This function is called by the InpuAPI whenever there is a new
     /// key event for this context to handle. The event is emitted through
     /// all relevant signals. You may call this function yourself to inject 
     /// keyboard events to this context manually.

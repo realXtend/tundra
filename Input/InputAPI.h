@@ -27,13 +27,13 @@ class Framework;
 
     Input events are processed in the following order:
         1) Very first, when a new input event is received, it is posted to the top level input context.
-           See QtInputService::TopLevelInputContext(). This is already before any Qt widgets get the
+           See TopLevelInputContext(). This is already before any Qt widgets get the
            chance to process the event.
         2) If the event is a mouse event that occurs on top of a Qt widget, or the event is a key event
            and a Qt widget has keyboard focus, the event is passed to Qt, and suppressed from going
            further.
         3) The event is posted to all the registered input contexts in their order of priority. See 
-           QtInputService::RegisterInputContext().
+           RegisterInputContext().
         4) The event is posted to the system-wide event tree. See the QtInputEvents namespace.
 
     At any level, the handler may set the handled member of a KeyEvent or MouseEvent to true to suppress
@@ -44,7 +44,7 @@ class Framework;
     IsKeyReleased, IsMouseButtonDown, IsMouseButtonPressed and IsMouseButtonReleased.
 
     The InputContext -based API utilizes Qt signals. The polling API can be used by any object that
-    has access to QtInputService, and the event tree -based API can be used by all modules.
+    has access to InpuAPI, and the event tree -based API can be used by all modules.
 */
 class InputAPI : public QObject
 {
@@ -89,7 +89,7 @@ public slots:
     bool IsKeyDown(Qt::Key keyCode) const;
 
     /// Returns true if the given key was pressed down during this frame. A frame in this context means a period
-    /// between two subsequent calls to QtInputService::Update. During a single frame, calling this function
+    /// between two subsequent calls to Update. During a single frame, calling this function
     /// several times will always return true if the key was pressed down this frame, i.e. the pressed-bit is not
     /// cleared after the first query.
     /// Key repeats will not be reported through this function.
@@ -132,9 +132,9 @@ public slots:
     /// Returns the current mouse position in the main window coordinate space.
     QPoint MousePos() const;
 
-    /// Called by QtInputService internally for each generate KeyEvent. This function passes the event forward to all registered
-    /// input contexts. You may generate KeyEvent objects yourself and call this function directly to inject a custom KeyEvent
-    /// to the system.
+    /// Called internally for each generated KeyEvent.
+    /** This function passes the event forward to all registered input contexts. You may generate KeyEvent objects
+        yourself and call this function directly to inject a custom KeyEvent to the system. */
     void TriggerKeyEvent(KeyEvent &key);
 
     /// This is the same as TriggerKeyEvent, but for mouse events.
