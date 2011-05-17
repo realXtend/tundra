@@ -2155,6 +2155,9 @@ public:
 
 void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget)
 {
+    // Clear tree.
+    widget->clear();
+   
     Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
     while(iter.hasMoreElements())
     {
