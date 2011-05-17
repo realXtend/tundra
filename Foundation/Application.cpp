@@ -40,8 +40,7 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     nativeTranslator(new QTranslator),
     appTranslator(new QTranslator),
     splashScreen(0),
-    targetFps_(0.0f),
-    fwSkipFrames_(0)
+    targetFps_(0.0f)
 {
     QApplication::setApplicationName("realXtend-Tundra");
 
@@ -85,6 +84,11 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
         targetFps_ = 60.f;
     targetFpsStartParam_ = targetFps_;
     timerFrequency_ = GetCurrentClockFreq();
+
+    // Frame update timer
+    frameTimer_ = new QTimer(this);
+    frameTimer_->setSingleShot(true);
+    connect(frameTimer_, SIGNAL(timeout()), SLOT(UpdateFrame()), Qt::QueuedConnection);
 }
 
 Application::~Application()
@@ -151,17 +155,17 @@ void Application::Go()
 
     try
     {
-        fwUpdateId_ = startTimer(1);
+        frameTimer_->start(1);
         exec();
     }
     catch(const std::exception &e)
     {
-        RootLogCritical(std::string("NaaliApplication::Go() Caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        RootLogCritical(std::string("Application::Go() caught an exception:\n") + (e.what() ? e.what() : "<no exception message in std::exception>"));
         throw;
     }
     catch(...)
     {
-        RootLogCritical(std::string("NaaliApplication::Go() Caught an unknown exception!"));
+        RootLogCritical(std::string("Application::Go() caught an unknown exception!"));
         throw;
     }
 }
@@ -197,12 +201,6 @@ bool Application::eventFilter(QObject *obj, QEvent *event)
 
     try
     {
-        if (framework && !framework->IsHeadless())
-        {
-            if (obj == framework->Ui()->MainWindow() && event->type() == QEvent::Move)
-                fwSkipFrames_ = 5;
-        }
-
         if (obj == this)
         {
             // Drop down fps on a inactive app
@@ -211,18 +209,16 @@ bool Application::eventFilter(QObject *obj, QEvent *event)
             if (event->type() == QEvent::ApplicationDeactivate)
                 SetTargetFps(30.0f); 
         }
-
         return QObject::eventFilter(obj, event);
     }
     catch(const std::exception &e)
     {
-        std::cout << std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)") << std::endl;
-        RootLogCritical(std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        RootLogCritical(std::string("Application::eventFilter() caught an exception:\n") + (e.what() ? e.what() : "<no exception message in std::exception>"));
         throw;
-    } catch(...)
+    } 
+    catch(...)
     {
-        std::cout << std::string("QApp::eventFilter caught an unknown exception!") << std::endl;
-        RootLogCritical(std::string("QApp::eventFilter caught an unknown exception!"));
+        RootLogCritical(std::string("Application::eventFilter() caught an unknown exception!"));
         throw;
     }
 }
@@ -282,131 +278,54 @@ bool Application::notify(QObject *receiver, QEvent *event)
     } 
     catch(const std::exception &e)
     {
-        std::cout << std::string("QApp::notify caught an exception: ") << (e.what() ? e.what() : "(null)") << std::endl;
-        RootLogCritical(std::string("QApp::notify caught an exception: ") + (e.what() ? e.what() : "(null)"));
+        RootLogCritical(std::string("Application::notify() caught an exception:\n") + (e.what() ? e.what() : "<no exception message in std::exception>"));
         throw;
     } 
     catch(...)
     {
-        std::cout << std::string("QApp::notify caught an unknown exception!") << std::endl;
-        RootLogCritical(std::string("QApp::notify caught an unknown exception!"));
+        RootLogCritical(std::string("Application::notify() caught an unknown exception!"));
         throw;
-    }
-}
-
-void Application::timerEvent(QTimerEvent *event)
-{
-    if (framework->IsExiting())
-        return;
-
-    if (fwUpdateId_ == event->timerId())
-    {
-        // This is another method of doing the frame limiting,
-        // comment all of the below in remove comment from UpdateFrame() to try it out.
-        //UpdateFrame();
-
-        killTimer(fwUpdateId_);
-
-        PROFILE(Update_MainLoop);
-
-        lastPresentTime_ = GetCurrentClockTime();
-        double frametime = framework->CalculateFrametime(lastPresentTime_);
-
-        try
-        {
-            framework->UpdateModules(frametime);
-            framework->UpdateAPIs(frametime);
-            framework->UpdateRendering(frametime);
-
-            // Disabled the rendering skipping when window is moved for now...
-            // windows specific freeze when main window is moved from monitor to monitor
-            //if (fwSkipFrames_ == 0)
-            //    framework->UpdateRendering(frametime);
-            //else
-            //    fwSkipFrames_--;
-        }
-        catch(const std::exception &e)
-        {
-            std::cout << "QApp::UpdateFrame caught an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
-            RootLogCritical(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
-            throw;
-        }
-        catch(...)
-        {
-            std::cout << "QApp::UpdateFrame caught an unknown exception!" << std::endl;
-            RootLogCritical(std::string("QApp::UpdateFrame caught an unknown exception!"));
-            throw;
-        }
-        const double msecsPerFrame = 1000.0 / targetFps_;
-
-        double updateSpentTime = (double)(GetCurrentClockTime() - lastPresentTime_) * 1000.0 / timerFrequency_;
-        frametime = frametime + updateSpentTime;
-        double timeToWait = msecsPerFrame - frametime;
-        if (timeToWait < 1)
-            timeToWait = 1;
-        fwUpdateId_ = startTimer((int)(timeToWait + 0.5));
-
-        RESETPROFILER
     }
 }
 
 void Application::UpdateFrame()
 {
-    // Don't pump the QEvents to QApplication if we are exiting
-    // also don't process our main loop frames.
     if (framework->IsExiting())
         return;
 
-    // Check fps limiter if we should update our modules
-    if (RunFrameworkUpdate())
+    PROFILE(Update_MainLoop);
+
+    // Get frame time for framework updates
+    lastPresentTime_ = GetCurrentClockTime();
+    double frametime = framework->CalculateFrametime(lastPresentTime_);
+
+    try
     {
-        // Mark last time before doing updates, so we don't start to lag behind the target fps
-        lastPresentTime_ = GetCurrentClockTime();
-        double frametime = framework->CalculateFrametime(lastPresentTime_);
-
-        try
-        {
-            PROFILE(Update_MainLoop);
-            
-            framework->UpdateModules(frametime);
-            framework->UpdateAPIs(frametime);
-            framework->UpdateRendering(frametime);
-            
-            // Disabled the rendering skipping when window is moved for now...
-            // windows specific freeze when main window is moved from monitor to monitor
-            //if (fwSkipFrames_ == 0)
-            //    framework->UpdateRendering(frametime);
-            //else
-            //    fwSkipFrames_--;
-
-            RESETPROFILER
-        }
-        catch(const std::exception &e)
-        {
-            std::cout << "QApp::UpdateFrame caught an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
-            RootLogCritical(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
-            throw;
-        }
-        catch(...)
-        {
-            std::cout << "QApp::UpdateFrame caught an unknown exception!" << std::endl;
-            RootLogCritical(std::string("QApp::UpdateFrame caught an unknown exception!"));
-            throw;
-        }
+        // Update modules, APIs and rendering
+        framework->UpdateModules(frametime);
+        framework->UpdateAPIs(frametime);
+        framework->UpdateRendering(frametime);
     }
-}
-
-bool Application::RunFrameworkUpdate()
-{
-    if (targetFps_ >= 1.0f)
+    catch(const std::exception &e)
     {
-        tick_t timeNow = GetCurrentClockTime();
-        double currentFrameTime = (double)(timeNow - lastPresentTime_) * 1000.0 / timerFrequency_;
-        const double msecsPerFrame = 1000.0 / targetFps_;
-        if (currentFrameTime < msecsPerFrame)
-            return false;
+        RootLogCritical(std::string("Application::UpdateFrame() caught an exception:\n") + (e.what() ? e.what() : "<no exception message in std::exception>"));
+        throw;
     }
-    return true;
+    catch(...)
+    {
+        RootLogCritical("Application::UpdateFrame() caught an unknown exception!\n");
+        throw;
+    }
+
+    // Calculate time until next frame update and start timer
+    double spentTimeThisFrame = (double)(GetCurrentClockTime() - lastPresentTime_) * 1000.0 / timerFrequency_;
+    const double msecsPerFrame = 1000.0 / targetFps_;
+    double timeToWait = msecsPerFrame - spentTimeThisFrame;
+    if (timeToWait < 1)
+        timeToWait = 1;
+    frameTimer_->start((int)(timeToWait + 0.5));
+
+    RESETPROFILER
 }
 
 void Application::SetTargetFps(float fps)

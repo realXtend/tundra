@@ -43,9 +43,6 @@ public:
     /// \note This function blocks, it returns only after Qt's main loop is stopped.
     void Go();
 
-protected:
-    virtual void timerEvent(QTimerEvent *event);
-
 public slots:
     /// Process all Qt events and process framework frame.
     void UpdateFrame();
@@ -67,7 +64,6 @@ public slots:
     void SetSplashMessage(const QString &message);
 
 private:
-    bool RunFrameworkUpdate();
     void SetTargetFps(float fps);
     void RestoreTargetFps();
 
@@ -91,12 +87,11 @@ private:
     QTranslator *nativeTranslator;
     QTranslator *appTranslator;
 
-    int fwUpdateId_;
-    uint fwSkipFrames_;
-    float targetFpsStartParam_;
-    float targetFps_;
+    QTimer *frameTimer_;
     tick_t lastPresentTime_;
     tick_t timerFrequency_;
+    float targetFpsStartParam_;
+    float targetFps_;
 
     int argc; ///< Command line argument count as supplied by the operating system.
     char **argv; ///< Command line arguments as supplied by the operating system.
