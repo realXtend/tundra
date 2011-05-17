@@ -331,15 +331,9 @@ namespace Foundation
             ("server", po::value<std::string>(), "World server and port")
             ("auth_server", po::value<std::string>(), "RealXtend authentication server address and port")
             ("auth_login", po::value<std::string>(), "RealXtend authentication server user name");
-//        try
-        {
-            po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
-        }
-        // catch (std::exception &e)
-        // {
-        //     std::cerr << e.what() << endl; // Can't log yet since logging isn't initialized
-            
-        // }
+
+        po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
+
         po::notify(commandLineVariables);
     }
 
