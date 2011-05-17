@@ -321,9 +321,9 @@ namespace Foundation
             ("startserver", po::value<int>(0), "Start server automatically in specified port") // TundraLogicModule
             ("protocol", po::value<std::string>(), "Spesifies which transport layer to use. Used when starting a server and when client connects. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified.") // KristalliProtocolModule
             ("fpslimit", po::value<float>(0), "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable") // OgreRenderingModule
-            ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
-            ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
-            ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
+            ("run", po::value<std::vector<std::string> >(), "Run script on startup") // JavaScriptModule
+            ("file", po::value<std::vector<std::string> >(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
+              ("storage", po::value<std::vector<std::string> >(), "Adds the given directory as a local storage directory on startup") // AssetModule
             ("login", po::value<std::string>(), "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username")
             ///\todo The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
             ("user", po::value<std::string>(), "OpenSim login name")
@@ -331,14 +331,15 @@ namespace Foundation
             ("server", po::value<std::string>(), "World server and port")
             ("auth_server", po::value<std::string>(), "RealXtend authentication server address and port")
             ("auth_login", po::value<std::string>(), "RealXtend authentication server user name");
-        try
+//        try
         {
             po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
         }
-        catch (std::exception &e)
-        {
-            RootLogWarning(e.what());
-        }
+        // catch (std::exception &e)
+        // {
+        //     std::cerr << e.what() << endl; // Can't log yet since logging isn't initialized
+            
+        // }
         po::notify(commandLineVariables);
     }
 

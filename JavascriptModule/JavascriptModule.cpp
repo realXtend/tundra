@@ -95,11 +95,14 @@ void JavascriptModule::PostInitialize()
 
     if (programOptions.count("run"))
     {
-        commandLineStartupScript_ = programOptions["run"].as<std::string>();
-        JavascriptInstance *jsInstance = new JavascriptInstance(commandLineStartupScript_.c_str(), this);
-        PrepareScriptInstance(jsInstance);
-        startupScripts_.push_back(jsInstance);
-        jsInstance->Run();
+        std::vector<std::string> sv =  programOptions["run"].as<std::vector<std::string> >();
+        for(std::vector<std::string>::iterator i = sv.begin(); i != sv.end(); ++i)
+        {
+            JavascriptInstance *jsInstance = new JavascriptInstance(i->c_str(), this);
+            PrepareScriptInstance(jsInstance);
+            startupScripts_.push_back(jsInstance);
+            jsInstance->Run();
+        }
     }
 }
 
