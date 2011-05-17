@@ -57,6 +57,100 @@ EnumStr sceneBlendFactors[] =
     EnumStr()
 };
 
+EnumStr compareFunctions[] =
+{
+    EnumStr("always_fail", Ogre::CMPF_ALWAYS_FAIL),
+    EnumStr("always_pass", Ogre::CMPF_ALWAYS_PASS),
+    EnumStr("less", Ogre::CMPF_LESS),
+    EnumStr("less_equal", Ogre::CMPF_LESS_EQUAL),
+    EnumStr("equal", Ogre::CMPF_EQUAL),
+    EnumStr("not_equal", Ogre::CMPF_NOT_EQUAL),
+    EnumStr("greater_equal", Ogre::CMPF_GREATER_EQUAL),
+    EnumStr("greater", Ogre::CMPF_GREATER),
+    EnumStr()
+};
+
+EnumStr sceneBlendOps[] =
+{
+    EnumStr("add", Ogre::SBO_ADD),
+    EnumStr("subtract", Ogre::SBO_SUBTRACT),
+    EnumStr("reverse_subtract", Ogre::SBO_REVERSE_SUBTRACT),
+    EnumStr("min", Ogre::SBO_MIN),
+    EnumStr("max", Ogre::SBO_MAX),
+    EnumStr()
+};
+
+EnumStr cullingModes[] =
+{
+    EnumStr("clockwise", Ogre::CULL_CLOCKWISE),
+    EnumStr("anticlockwise", Ogre::CULL_ANTICLOCKWISE),
+    EnumStr("none", Ogre::CULL_NONE),
+    EnumStr()
+};
+
+EnumStr shadingModes[] =
+{
+    EnumStr("flat", Ogre::SO_FLAT),
+    EnumStr("gouraud", Ogre::SO_GOURAUD),
+    EnumStr("phong", Ogre::SO_PHONG),
+    EnumStr()
+};
+
+EnumStr polygonModes[] =
+{
+    EnumStr("solid", Ogre::PM_SOLID),
+    EnumStr("wireframe", Ogre::PM_WIREFRAME),
+    EnumStr("points", Ogre::PM_POINTS),
+    EnumStr()
+};
+
+EnumStr texAddressModes[] =
+{
+    EnumStr("wrap", Ogre::TextureUnitState::TAM_WRAP),
+    EnumStr("clamp", Ogre::TextureUnitState::TAM_CLAMP),
+    EnumStr("mirror", Ogre::TextureUnitState::TAM_MIRROR),
+    EnumStr("border", Ogre::TextureUnitState::TAM_BORDER),
+    EnumStr()
+};
+
+EnumStr texFilterOptions[] =
+{
+    EnumStr("none", Ogre::TFO_NONE),
+    EnumStr("bilinear", Ogre::TFO_BILINEAR),
+    EnumStr("trilinear", Ogre::TFO_TRILINEAR),
+    EnumStr("anisotropic", Ogre::TFO_ANISOTROPIC),
+    EnumStr()
+};
+
+EnumStr envMapTypes[] =
+{
+    EnumStr("spherical", Ogre::TextureUnitState::ENV_CURVED),
+    EnumStr("planar", Ogre::TextureUnitState::ENV_PLANAR),
+    EnumStr("cubic_reflection", Ogre::TextureUnitState::ENV_REFLECTION),
+    EnumStr("cubic_normal", Ogre::TextureUnitState::ENV_NORMAL),
+    EnumStr()
+};
+
+EnumStr textureTransformTypes[] =
+{
+    EnumStr("scroll_x", Ogre::TextureUnitState::TT_TRANSLATE_U),
+    EnumStr("scroll_y", Ogre::TextureUnitState::TT_TRANSLATE_V),
+    EnumStr("rotate", Ogre::TextureUnitState::TT_ROTATE),
+    EnumStr("scale_x", Ogre::TextureUnitState::TT_SCALE_U),
+    EnumStr("scale_y", Ogre::TextureUnitState::TT_SCALE_V),
+    EnumStr()
+};
+
+EnumStr waveformTypes[] =
+{
+    EnumStr("sine", Ogre::WFT_SINE),
+    EnumStr("triangle", Ogre::WFT_TRIANGLE),
+    EnumStr("square", Ogre::WFT_SQUARE),
+    EnumStr("sawtooth", Ogre::WFT_SAWTOOTH),
+    EnumStr("inverse_sawtooth", Ogre::WFT_INVERSE_SAWTOOTH),
+    EnumStr()
+};
+
 // Return value from an enum table. First (default) value will be returned if no match found
 unsigned GetEnumValue(const QString& name, EnumStr* enums)
 {
@@ -793,7 +887,7 @@ bool OgreMaterialAsset::SetDiffuseColor(int techIndex, int passIndex, const Colo
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
-    pass->setDiffuse(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+    pass->setDiffuse(ToOgreColor(color));
     return true;
 }
 
@@ -802,7 +896,7 @@ bool OgreMaterialAsset::SetAmbientColor(int techIndex, int passIndex, const Colo
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
-    pass->setAmbient(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+    pass->setAmbient(ToOgreColor(color));
     return true;
 }
 
@@ -811,7 +905,7 @@ bool OgreMaterialAsset::SetSpecularColor(int techIndex, int passIndex, const Col
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
-    pass->setSpecular(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+    pass->setSpecular(ToOgreColor(color));
     return true;
 }
 
@@ -820,7 +914,7 @@ bool OgreMaterialAsset::SetEmissiveColor(int techIndex, int passIndex, const Col
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
-    pass->setSelfIllumination(Ogre::ColourValue(color.r, color.g, color.b, color.a));
+    pass->setSelfIllumination(ToOgreColor(color));
     return true;
 }
 
@@ -839,6 +933,15 @@ bool OgreMaterialAsset::SetPolygonMode(int techIndex, int passIndex, unsigned po
     if (!pass)
         return false;
     pass->setPolygonMode((Ogre::PolygonMode)polygonMode);
+    return true;
+}
+
+bool OgreMaterialAsset::SetDepthCheck(int techIndex, int passIndex, bool enable)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setDepthCheckEnabled(enable);
     return true;
 }
 
@@ -895,32 +998,6 @@ bool OgreMaterialAsset::SetTechniqueAttribute(Ogre::Technique* tech, int techInd
 
 bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int passIndex, const QString& attr, const QString& val, const QString& origVal)
 {
-    if (attr == "scene_blend")
-    {
-        // Check whether value is simple or complex
-        QStringList values = val.split(' ');
-        if (values.size() < 2)
-            SetSceneBlend(techIndex, passIndex, GetEnumValue(val, sceneBlendTypes));
-        else
-            pass->setSceneBlending((Ogre::SceneBlendFactor)GetEnumValue(values[0], sceneBlendFactors), (Ogre::SceneBlendFactor)GetEnumValue(values[1], sceneBlendFactors));
-        return true;
-    }
-    if (attr == "separate_scene_blend")
-    {
-        // Check whether value is simple or complex
-        QStringList values = val.split(' ');
-        if (values.size() < 4)
-            pass->setSeparateSceneBlending((Ogre::SceneBlendType)GetEnumValue(values[0], sceneBlendTypes), (Ogre::SceneBlendType)GetEnumValue(values[1], sceneBlendTypes));
-        else
-            pass->setSeparateSceneBlending((Ogre::SceneBlendFactor)GetEnumValue(values[0], sceneBlendFactors), (Ogre::SceneBlendFactor)GetEnumValue(values[1], sceneBlendFactors),
-                (Ogre::SceneBlendFactor)GetEnumValue(values[0], sceneBlendFactors), (Ogre::SceneBlendFactor)GetEnumValue(values[1], sceneBlendFactors));
-        return true;
-    }
-    if (attr == "lighting")
-    {
-        SetLighting(techIndex, passIndex, GetBoolValue(val));
-        return true;
-    }
     if (attr == "ambient")
     {
         SetAmbientColor(techIndex, passIndex, ParseColor(val.toStdString()));
@@ -941,6 +1018,108 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
         SetEmissiveColor(techIndex, passIndex, ParseColor(val.toStdString()));
         return true;
     }
+    if (attr == "scene_blend")
+    {
+        // Check whether value is simple or complex
+        QStringList values = val.split(' ');
+        if (values.size() < 2)
+            SetSceneBlend(techIndex, passIndex, GetEnumValue(val, sceneBlendTypes));
+        else
+            pass->setSceneBlending((Ogre::SceneBlendFactor)GetEnumValue(values[0], sceneBlendFactors), (Ogre::SceneBlendFactor)GetEnumValue(values[1], sceneBlendFactors));
+        return true;
+    }
+    if (attr == "separate_scene_blend")
+    {
+        // Check whether value is simple or complex
+        QStringList values = val.split(' ');
+        if (values.size() == 2)
+            pass->setSeparateSceneBlending((Ogre::SceneBlendType)GetEnumValue(values[0], sceneBlendTypes), (Ogre::SceneBlendType)GetEnumValue(values[1], sceneBlendTypes));
+        else if (values.size() == 4)
+            pass->setSeparateSceneBlending((Ogre::SceneBlendFactor)GetEnumValue(values[0], sceneBlendFactors), (Ogre::SceneBlendFactor)GetEnumValue(values[1], sceneBlendFactors),
+                (Ogre::SceneBlendFactor)GetEnumValue(values[2], sceneBlendFactors), (Ogre::SceneBlendFactor)GetEnumValue(values[3], sceneBlendFactors));
+        return true;
+    }
+    if (attr == "scene_blend_op")
+    {
+        pass->setSceneBlendingOperation((Ogre::SceneBlendOperation)GetEnumValue(val, sceneBlendOps));
+        return true;
+    }
+    if (attr == "separate_scene_blend_op")
+    {
+        QStringList values = val.split(' ');
+        if (values.size() >= 2)
+            pass->setSeparateSceneBlendingOperation((Ogre::SceneBlendOperation)GetEnumValue(values[0], sceneBlendOps), (Ogre::SceneBlendOperation)GetEnumValue(values[1], sceneBlendOps));
+        return true;
+    }
+    if (attr == "depth_check")
+    {
+        SetDepthCheck(techIndex, passIndex, GetBoolValue(val));
+        return true;
+    }
+    if (attr == "depth_write")
+    {
+        SetDepthWrite(techIndex, passIndex, GetBoolValue(val));
+        return true;
+    }
+    if (attr == "depth_func")
+    {
+        pass->setDepthFunction((Ogre::CompareFunction)GetEnumValue(val, compareFunctions));
+        return true;
+    }
+    if (attr == "depth_bias")
+    {
+        QStringList values = val.split(' ');
+        if (values.size() < 2)
+            pass->setDepthBias(val.toFloat());
+        else
+            pass->setDepthBias(values[0].toFloat(), values[1].toFloat());
+        return true;
+    }
+    if (attr == "alpha_rejection")
+    {
+        QStringList values = val.split(' ');
+        if (values.size() >= 2)
+        {
+            pass->setAlphaRejectFunction((Ogre::CompareFunction)GetEnumValue(values[0], compareFunctions));
+            pass->setAlphaRejectValue(values[1].toUInt());
+        }
+        return true;
+    }
+    if (attr == "normalise_normals")
+    {
+        pass->setNormaliseNormals(GetBoolValue(val));
+        return true;
+    }
+    if (attr == "transparent_sorting")
+    {
+        pass->setTransparentSortingEnabled(GetBoolValue(val));
+        return true;
+    }
+    if (attr == "cull_hardware")
+    {
+        pass->setCullingMode((Ogre::CullingMode)GetEnumValue(val, cullingModes));
+        return true;
+    }
+    if (attr == "lighting")
+    {
+        SetLighting(techIndex, passIndex, GetBoolValue(val));
+        return true;
+    }
+    if (attr == "shading")
+    {
+        pass->setShadingMode((Ogre::ShadeOptions)GetEnumValue(val, shadingModes));
+        return true;
+    }
+    if (attr == "polygon_mode")
+    {
+        SetPolygonMode(techIndex, passIndex, (Ogre::PolygonMode)GetEnumValue(val, polygonModes));
+        return true;
+    }
+    if (attr == "colour_write")
+    {
+        pass->setColourWriteEnabled(GetBoolValue(val));
+        return true;
+    }
     if (attr == "vertex_program_ref")
     {
         SetVertexShader(techIndex, passIndex, origVal);
@@ -951,12 +1130,6 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
         SetPixelShader(techIndex, passIndex, origVal);
         return true;
     }
-    if (attr == "depth_write")
-    {
-        SetDepthWrite(techIndex, passIndex, GetBoolValue(val));
-        return true;
-    }
-    
     return false;
 }
 
@@ -965,6 +1138,99 @@ bool OgreMaterialAsset::SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit,
     if (attr == "texture")
     {
         SetTexture(techIndex, passIndex, tuIndex, origVal);
+        return true;
+    }
+    if (attr == "tex_coord_set")
+    {
+        texUnit->setTextureCoordSet(val.toInt());
+        return true;
+    }
+    if (attr == "tex_address_mode")
+    {
+        QStringList values = val.split(' ');
+        if (values.size() < 2)
+            texUnit->setTextureAddressingMode((Ogre::TextureUnitState::TextureAddressingMode)GetEnumValue(val, texAddressModes));
+        else
+        {
+            if (values.size() >= 3)
+                texUnit->setTextureAddressingMode(
+                    (Ogre::TextureUnitState::TextureAddressingMode)GetEnumValue(values[0], texAddressModes),
+                    (Ogre::TextureUnitState::TextureAddressingMode)GetEnumValue(values[1], texAddressModes),
+                    (Ogre::TextureUnitState::TextureAddressingMode)GetEnumValue(values[2], texAddressModes));
+            else
+                texUnit->setTextureAddressingMode(
+                    (Ogre::TextureUnitState::TextureAddressingMode)GetEnumValue(values[0], texAddressModes),
+                    (Ogre::TextureUnitState::TextureAddressingMode)GetEnumValue(values[1], texAddressModes),
+                    Ogre::TextureUnitState::TAM_WRAP);
+        }
+        return true;
+    }
+    if (attr == "tex_border_colour")
+    {
+        texUnit->setTextureBorderColour(ToOgreColor(ParseColor(val.toStdString())));
+        return true;
+    }
+    
+    if (attr == "filtering")
+    {
+        texUnit->setTextureFiltering((Ogre::TextureFilterOptions)GetEnumValue(val, texFilterOptions));
+        return true;
+    }
+    if (attr == "max_anisotropy")
+    {
+        texUnit->setTextureAnisotropy(val.toUInt());
+        return true;
+    }
+    if (attr == "mipmap_bias")
+    {
+        texUnit->setTextureMipmapBias(val.toFloat());
+        return true;
+    }
+    if (attr == "env_map")
+    {
+        if (val != "off")
+            texUnit->setEnvironmentMap(true, (Ogre::TextureUnitState::EnvMapType)GetEnumValue(val, envMapTypes));
+        else
+            texUnit->setEnvironmentMap(false);
+        return true;
+    }
+    if (attr == "scroll")
+    {
+        QStringList values = val.split(' ');
+        if (values.size() >= 2)
+            texUnit->setTextureScroll(values[0].toFloat(), values[1].toFloat());
+        return true;
+    }
+    if (attr == "scroll_anim")
+    {
+        QStringList values = val.split(' ');
+        if (values.size() >= 2)
+            texUnit->setScrollAnimation(values[0].toFloat(), values[1].toFloat());
+        return true;
+    }
+    if (attr == "rotate")
+    {
+        texUnit->setTextureRotate(Ogre::Degree(val.toFloat()));
+        return true;
+    }
+    if (attr == "rotate_anim")
+    {
+        texUnit->setRotateAnimation(val.toFloat());
+        return true;
+    }
+    if (attr == "scale")
+    {
+        QStringList values = val.split(' ');
+        if (values.size() >= 2)
+            texUnit->setTextureScale(values[0].toFloat(), values[1].toFloat());
+        return true;
+    }
+    if (attr == "wave_xform")
+    {
+        QStringList values = val.split(' ');
+        if (values.size() >= 6)
+            texUnit->setTransformAnimation((Ogre::TextureUnitState::TextureTransformType)GetEnumValue(values[0], textureTransformTypes), 
+            (Ogre::WaveformType)GetEnumValue(values[1], waveformTypes), values[2].toFloat(), values[3].toFloat(), values[4].toFloat(), values[5].toFloat());
         return true;
     }
     

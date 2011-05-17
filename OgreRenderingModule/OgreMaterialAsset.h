@@ -103,6 +103,8 @@ public slots:
     bool SetSceneBlend(int techIndex, int passIndex, unsigned blendMode);
     /// Set polygon mode of a pass
     bool SetPolygonMode(int techIndex, int passIndex, unsigned polygonMode);
+    /// Set depth check on/off
+    bool SetDepthCheck(int techIndex, int passIndex, bool enable);
     /// Set depth write on/off
     bool SetDepthWrite(int techIndex, int passIndex, bool enable);
     /// Set constant depth bias
