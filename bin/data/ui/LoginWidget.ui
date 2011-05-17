@@ -238,22 +238,5 @@ border-radius: 5px;</string>
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>serverAddressLineEdit</sender>
-   <signal>editingFinished()</signal>
-   <receiver>loginButton</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>479</x>
-     <y>282</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>560</x>
-     <y>313</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
