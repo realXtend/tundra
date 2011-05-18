@@ -121,14 +121,14 @@ namespace UiServices
 			owner_->GetInworldSceneController()->AddWidgetToMenu(external_nondockeable_widgets_[widget->windowTitle()], widget->windowTitle(), "", "");
     }
 
-	bool UiSceneService::AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence)
+	bool UiSceneService::AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence)
 	{
-		return owner_->GetInworldSceneController()->AddInternalWidgetToScene(widget, corner, orientation, priority, persistence);
+		return owner_->GetInworldSceneController()->AddAnchoredWidgetToScene(widget, corner, orientation, priority, persistence);
 	}
 
-    bool UiSceneService::RemoveInternalWidgetFromScene(QWidget *widget)
+    bool UiSceneService::RemoveAnchoredWidgetFromScene(QWidget *widget)
     {
-        return owner_->GetInworldSceneController()->RemoveInternalWidgetFromScene(widget);
+        return owner_->GetInworldSceneController()->RemoveAnchoredWidgetFromScene(widget);
     }
 
 

@@ -36,7 +36,7 @@ namespace CoreUi
 
         QPushButton *sett_button = new QPushButton("Settings");
         connect(sett_button, SIGNAL(clicked()),SLOT(ToggleVisibility()));
-        ui_module->GetInworldSceneController()->AddInternalWidgetToScene(sett_button, Qt::TopRightCorner, Qt::Horizontal, 50, true);
+        ui_module->GetInworldSceneController()->AddAnchoredWidgetToScene(sett_button, Qt::TopRightCorner, Qt::Horizontal, 50, true);
     }
 
     // Public

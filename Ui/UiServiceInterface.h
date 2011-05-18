@@ -71,14 +71,14 @@ public slots:
 	*
 	* @return true if evertything allright
 	*/
-	virtual bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence) = 0;
+	virtual bool AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence) = 0;
 
     /* Removes a widget from layout in the scene 
 	* @param widget widget to be removed in the layout
 	*
 	* @return true if evertything allright
 	*/
-    virtual bool RemoveInternalWidgetFromScene(QWidget *widget) = 0;
+    virtual bool RemoveAnchoredWidgetFromScene(QWidget *widget) = 0;
 
     /** Adds widget to menu without any spesific properties: adds entry to the root menu,
      *  takes name from the window title and uses default icon.

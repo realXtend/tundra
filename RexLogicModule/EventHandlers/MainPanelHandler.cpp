@@ -29,7 +29,7 @@ MainPanelHandler::MainPanelHandler(RexLogicModule *rexlogic) : rexlogic_(rexlogi
     {
         QPushButton *butt = new QPushButton("Quit");
         connect(butt, SIGNAL(clicked(bool)),SLOT(QuitRequested()));
-        ui->AddInternalWidgetToScene(butt, Qt::TopRightCorner, Qt::Horizontal, 1, true);
+        ui->AddAnchoredWidgetToScene(butt, Qt::TopRightCorner, Qt::Horizontal, 1, true);
     }
     
 

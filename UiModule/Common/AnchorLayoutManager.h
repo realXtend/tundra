@@ -29,8 +29,8 @@ namespace CoreUi
 
         void AddCornerAnchor(QGraphicsLayoutItem *layout_item, Qt::Corner layout_anchor_corner, Qt::Corner widget_anchor_corner);
         void AddSideAnchor(QGraphicsLayoutItem *layout_item, Qt::Orientation orientation);
-        void AnchorWidgetsHorizontally(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item);
-		void AnchorWidgetsVertically(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item);
+        void AnchorWidgetsHorizontally(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item, bool align_top);
+		void AnchorWidgetsVertically(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item, bool align_left);
         void AddFullscreenWidget(QGraphicsWidget *graphics_widget);
         void AddItemToScene(QGraphicsWidget *graphics_widget);
         void RemoveItemFromScene(QGraphicsWidget *graphics_widget);

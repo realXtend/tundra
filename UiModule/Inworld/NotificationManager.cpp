@@ -44,11 +44,11 @@ namespace UiServices
         //Create and manage button to manage visibility in scene
         QPushButton *nottif_button = new QPushButton("Notifications");
         connect(nottif_button, SIGNAL(clicked()),SLOT(ToggleNotificationBrowser()));
-        inworld_scene_controller_->AddInternalWidgetToScene(nottif_button, Qt::TopRightCorner, Qt::Horizontal, 50, true);
+        inworld_scene_controller_->AddAnchoredWidgetToScene(nottif_button, Qt::TopRightCorner, Qt::Horizontal, 50, true);
 
         //Add widget
         browser_widget_->hide();
-        inworld_scene_controller_->AddInternalWidgetToScene(browser_widget_, Qt::TopRightCorner, Qt::Vertical, 75, true);
+        inworld_scene_controller_->AddAnchoredWidgetToScene(browser_widget_, Qt::TopRightCorner, Qt::Vertical, 75, true);
     }
 
     void NotificationManager::NotificationHideHandler(CoreUi::NotificationBaseWidget *completed_notification)
@@ -57,7 +57,7 @@ namespace UiServices
             visible_notifications_.removeOne(completed_notification);
 
         //Remove it from AnchorLayout
-        inworld_scene_controller_->RemoveInternalWidgetFromScene(completed_notification);
+        inworld_scene_controller_->RemoveAnchoredWidgetFromScene(completed_notification);
     }
 
     void NotificationManager::ToggleNotificationBrowser()
@@ -101,7 +101,7 @@ namespace UiServices
             if (visible_notifications_.contains(notification_widget))
                 return;
 
-            inworld_scene_controller_->AddInternalWidgetToScene(notification_widget, Qt::TopRightCorner, Qt::Vertical, 80, true);
+            inworld_scene_controller_->AddAnchoredWidgetToScene(notification_widget, Qt::TopRightCorner, Qt::Vertical, 80, true);
 
             // Connect completed (hide) signal to managers handler
             connect(notification_widget, SIGNAL(Completed(CoreUi::NotificationBaseWidget *)),

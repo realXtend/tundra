@@ -96,16 +96,22 @@ namespace CoreUi
         anchor_layout_->addAnchors(anchor_layout_, layout_item, orientation);
     }
 
-    void AnchorLayoutManager::AnchorWidgetsHorizontally(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item)
+    void AnchorLayoutManager::AnchorWidgetsHorizontally(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item, bool align_top)
     {
         anchor_layout_->addAnchor(first_item, Qt::AnchorLeft, second_item, Qt::AnchorRight);
-		anchor_layout_->addAnchor(first_item, Qt::AnchorBottom, second_item, Qt::AnchorBottom);
+        if (align_top)
+            anchor_layout_->addAnchor(first_item, Qt::AnchorTop, second_item, Qt::AnchorTop);
+        else
+            anchor_layout_->addAnchor(first_item, Qt::AnchorBottom, second_item, Qt::AnchorBottom);
     }
 
-	void AnchorLayoutManager::AnchorWidgetsVertically(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item)
+	void AnchorLayoutManager::AnchorWidgetsVertically(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item, bool align_left)
     {
 		anchor_layout_->addAnchor(first_item, Qt::AnchorTop, second_item, Qt::AnchorBottom);
-		anchor_layout_->addAnchor(first_item, Qt::AnchorRight, second_item, Qt::AnchorRight);
+        if (align_left)
+            anchor_layout_->addAnchor(first_item, Qt::AnchorLeft, second_item, Qt::AnchorLeft);
+        else
+            anchor_layout_->addAnchor(first_item, Qt::AnchorRight, second_item, Qt::AnchorRight);
     }
 
     void AnchorLayoutManager::AddFullscreenWidget(QGraphicsWidget *graphics_widget)

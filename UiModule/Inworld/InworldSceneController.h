@@ -70,16 +70,16 @@ namespace UiServices
 	    *
 	    * @return true if evertything allright
 	    */
-		bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority = 0, bool persistence = true);
-        bool AddInternalWidgetToScene(QGraphicsProxyWidget *qgrap, Qt::Corner corner, Qt::Orientation orientation, int priority = 0, bool persistence = 0);
+		bool AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority = 0, bool persistence = true);
+        bool AddAnchoredWidgetToScene(QGraphicsProxyWidget *qgrap, Qt::Corner corner, Qt::Orientation orientation, int priority = 0, bool persistence = 0);
         
         /* Removes a widget from layout in the scene 
 	    * @param widget widget to be removed in the layout
     	*
 	    * @return true if evertything allright
 	    */
-        bool RemoveInternalWidgetFromScene(QWidget *widget);
-        bool RemoveInternalWidgetFromScene(QGraphicsProxyWidget *qgrap) ;
+        bool RemoveAnchoredWidgetFromScene(QWidget *widget);
+        bool RemoveAnchoredWidgetFromScene(QGraphicsProxyWidget *qgrap) ;
 
         //! Adds widget to menu.
         /*! \param widget Widget.

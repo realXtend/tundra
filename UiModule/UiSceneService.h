@@ -62,10 +62,10 @@ namespace UiServices
 		bool AddProxyWidgetToScene(UiProxyWidget *proxy);
 
 		/// UiServiceInterface override.
-		bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence);
+		bool AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence);
 
         /// UiServiceInterface override.
-        bool RemoveInternalWidgetFromScene(QWidget *widget);
+        bool RemoveAnchoredWidgetFromScene(QWidget *widget);
 
         /// UiServiceInterface override.
         void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon, int priority = 50);
