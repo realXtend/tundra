@@ -352,13 +352,6 @@ void EC_Placeable::AttachNode()
     }
     RendererPtr renderer = renderer_.lock();
     
-    Entity* ownEntity = GetParentEntity();
-    if (!ownEntity)
-        return;
-    SceneManager* scene = ownEntity->GetScene();
-    if (!scene)
-        return;
-    
     try
     {
         // If already attached, detach first
@@ -383,6 +376,13 @@ void EC_Placeable::AttachNode()
         const EntityReference& parent = parentRef.Get();
         if (!parent.IsEmpty())
         {
+            Entity* ownEntity = GetParentEntity();
+            if (!ownEntity)
+                return;
+            SceneManager* scene = ownEntity->GetScene();
+            if (!scene)
+                return;
+
             Entity* parentEntity = parent.Lookup(scene).get();
             if (parentEntity == ownEntity)
             {
