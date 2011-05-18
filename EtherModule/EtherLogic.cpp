@@ -46,7 +46,7 @@ namespace Ether
               data_manager_(new Data::DataManager(this)),
               card_size_(QRectF(0, 0, 470, 349)),
               previous_scene_(0),
-			  has_been_connected_(false)
+			  is_user_connecting_(false)
         {
 #ifdef DYNAMIC_LOGIN_SCENE
             StoreDataToFilesIfEmpty();
@@ -529,7 +529,7 @@ namespace Ether
                     scene_controller_->ShowStatusInformation("Joining world");
                     scene_controller_->RevertLoginAnimation(true);
                     scene_->SetConnectionStatus(true);
-					has_been_connected_ = true;
+					is_user_connecting_ = false;
                     break;
                 case Ether::Disconnected:
                     UpdateUiPixmaps();
@@ -542,11 +542,11 @@ namespace Ether
                 case Ether::Failed:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
-					if (!has_been_connected_)
-						scene_controller_->ShowStatusInformation("Failed to connect to the world with avatar selected \n"+ message);
+					if (is_user_connecting_)
+						scene_controller_->ShowStatusInformation("Failed to connect. "+ message);
 					else
-						scene_controller_->ShowStatusInformation("You were kicked from the server");
-					has_been_connected_ = false;
+						scene_controller_->ShowStatusInformation("You were kicked out from server");
+					is_user_connecting_ = false;
                     scene_controller_->RevertLoginAnimation(false);
                     scene_->SetConnectionStatus(false);
                     break;
@@ -597,6 +597,7 @@ namespace Ether
 			LogInfo("Attempting " + logindata.protocol_ + " Tundra connection to " + data["WorldHost"].toStdString() + ":" + data["WorldPort"].toStdString() + " as " + logindata.username_);
 			event_category_id_t tundra_category_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
 			framework_->GetEventManager()->SendEvent(tundra_category_, TundraLogic::Events::EVENT_TUNDRA_LOGIN, &logindata);
+            is_user_connecting_ = true;
 		}
 
 		void EtherLogic::LoginSuccesful()

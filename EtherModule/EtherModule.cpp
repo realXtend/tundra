@@ -171,7 +171,7 @@ namespace Ether
 				break;
 			case EVENT_CONNECTION_FAILED:
 				connected_ = false;
-				ether_logic_->SetConnectionState(Failed);
+				ether_logic_->SetConnectionState(Failed, "OpenSim conexion error");
 				if (ui)
 					ui->SwitchToScene("Ether");
 				break;
@@ -204,7 +204,15 @@ namespace Ether
 				connected_ = false;
 				if (ui && ether_logic_)
 				{
-					ether_logic_->SetConnectionState(Failed);
+                    ether_logic_->SetConnectionState(Failed, "Cause: server not available");
+				    ui->SwitchToScene("Ether");
+				}
+				break;
+            case TundraLogic::Events::EVENT_TUNDRA_LOGIN_FAILED_NOPERMISSION:
+                connected_ = false;
+                if (ui && ether_logic_)
+				{
+                    ether_logic_->SetConnectionState(Failed, "Cause: invalid avatar");
 				    ui->SwitchToScene("Ether");
 				}
 				break;

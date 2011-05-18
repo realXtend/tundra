@@ -281,7 +281,10 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         keyvalueElem = keyvalueElem.nextSiblingElement();
     }
     
+    //$ BEGIN_MOD $
     user->properties["authenticated"] = "true";
+    //user->properties["authenticated"] = "false"; For debug purposes
+    //$ END_MOD $
     emit UserAboutToConnect(user->userID, user);
     if (user->properties["authenticated"] != "true")
     {
