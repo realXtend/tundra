@@ -14,11 +14,11 @@
 #include "OgreModuleFwd.h"
 #include "OgreString.h"
 #include "OgreMaterialUtils.h"
-#include "MouseEvent.h"
-#include "InputContext.h"
 #include "IAttribute.h"
 #include "Vector3D.h"
 #include "Color.h"
+
+#include "InputFwd.h"
 
 #include <QColor>
 
@@ -51,7 +51,7 @@ private:
     Ogre::String id_;
 
     //! Parent entity input context
-    InputContext *input_;
+    InputContextPtr input_;
 
     //! Update limiter so that we do not overload the server
     bool canUpdate_;
@@ -80,6 +80,10 @@ private slots:
 
     //! Updates color if it is changed
     void UpdateColor();
+
+    bool IsMouseInsideWindow();
+
+    bool IsItemUnderMouse();
 
 public:
     //! Destructor

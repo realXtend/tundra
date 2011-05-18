@@ -17,6 +17,14 @@
 #include "Entity.h"
 #include "SceneManager.h"
 
+#include "InputAPI.h"
+#include "InputContext.h"
+#include "MouseEvent.h"
+
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+#include "UiGraphicsView.h"
+
 #include <QTimer>
 
 #include "LoggingFunctions.h"
@@ -33,7 +41,6 @@ EC_LaserPointer::EC_LaserPointer(IModule *module) :
     laserObject_(0),
     canUpdate_(true),
     updateInterval_(20),
-    input_(0),
     id_()
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
@@ -75,7 +82,7 @@ void EC_LaserPointer::CreateLaser()
     else
         LogWarning("Placeable is not preset, cannot connect to position changes!");
 
-    id_ = Ogre::StringConverter::toString((int)parentEntity->GetId());
+    id_ = renderer_.lock()->GetUniqueObjectName("");
 
     laserObject_ = scene->createManualObject("laser" + id_);
     Ogre::SceneNode* laserObjectNode = scene->getRootSceneNode()->createChildSceneNode("laser" + id_ + "_node");
@@ -87,13 +94,14 @@ void EC_LaserPointer::CreateLaser()
 
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(HandleAttributeChange(IAttribute*, AttributeChange::Type)));
     
-
-    EC_InputMapper *mapper = parentEntity->GetComponent<EC_InputMapper>().get();
-    if (mapper)
+    input_ = framework_->Input()->RegisterInputContext(QString::fromStdString(id_), 90);
+    if (input_.get())
     {
-        input_ = mapper->GetInputContext();
-        connect(input_, SIGNAL(MouseMove(MouseEvent*)), this, SLOT(Update(MouseEvent*)));
+        input_->SetTakeMouseEventsOverQt(true);
+        connect(input_.get(), SIGNAL(MouseMove(MouseEvent*)), this, SLOT(Update(MouseEvent*)));
     }
+    else
+        LogError("Could not register a input context, cannot track mouse movement!");
 }
 
 void EC_LaserPointer::DestroyLaser()
@@ -143,15 +151,24 @@ void EC_LaserPointer::Update(MouseEvent *e)
     {
         if (canUpdate_)
         {
-            EC_Placeable *placeable = GetParentEntity()->GetComponent<EC_Placeable>().get();
-            if (!placeable)
+            // See if we are inside the main window or there is a graphics item under the mouse
+            if (!IsMouseInsideWindow() || IsItemUnderMouse())
+            {
+                laserObject_->clear();
                 return;
+            }
 
             OgreRenderer::Renderer *renderer = renderer_.lock().get();
             RaycastResult *result = renderer->Raycast(e->x, e->y);
-            if (result->getentity() && result->getentity() != GetParentEntity())
+            if (result && result->getentity() && result->getentity() != GetParentEntity())
             {
-                SetStartPos(placeable->GetPosition());
+                EC_Placeable *placeable = GetParentEntity()->GetComponent<EC_Placeable>().get();
+                if (placeable)
+                {
+                    Vector3df position = placeable->gettransform().position;
+                    if (position != startPos_.Get())
+                        SetStartPos(position);
+                }
                 SetEndPos(result->getpos());
                 DisableUpdate();
             }
@@ -216,6 +233,27 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
         Vector3df position = placeable->gettransform().position;
         if (position != startPos_.Get())
             startPos_.Set(position, AttributeChange::Default);
+
+        // See if we are inside the main window or there is a graphics item under the mouse
+        if (!IsMouseInsideWindow() || IsItemUnderMouse())
+        {
+            laserObject_->clear();
+            return;
+        }
+
+        OgreRenderer::Renderer *renderer = renderer_.lock().get();
+        if (!renderer)
+            return;
+
+        QPoint scenePos = framework_->Ui()->GraphicsView()->mapFromGlobal(QCursor::pos());
+        RaycastResult *result = renderer->Raycast(scenePos.x(), scenePos.y());
+        if (result && result->getentity() && result->getentity() != GetParentEntity())
+        {
+            SetEndPos(result->getpos());
+            DisableUpdate();
+        }
+        else
+            laserObject_->clear();
     }
 }
 
@@ -310,4 +348,20 @@ void EC_LaserPointer::UpdateColor()
     laserMaterial_->getTechnique(0)->getPass(0)->setDiffuse(color.r,color.g,color.b,color.a);
     laserMaterial_->getTechnique(0)->getPass(0)->setAmbient(color.r,color.g,color.b);
     laserMaterial_->getTechnique(0)->getPass(0)->setSelfIllumination(color.r,color.g,color.b);
+}
+
+bool EC_LaserPointer::IsMouseInsideWindow()
+{
+    if (!framework_->Ui()->MainWindow())
+        return false;
+    return framework_->Ui()->MainWindow()->geometry().contains(QCursor::pos(), true);
+}
+
+bool EC_LaserPointer::IsItemUnderMouse()
+{
+    if (!framework_->Ui()->GraphicsView() || !framework_->Ui()->MainWindow())
+        return true;
+    QPoint scenePos = framework_->Ui()->GraphicsView()->mapFromGlobal(QCursor::pos());
+    QGraphicsItem *itemUnderMouse = framework_->Ui()->GraphicsView()->itemAt(scenePos);
+    return (itemUnderMouse ? true : false);
 }
