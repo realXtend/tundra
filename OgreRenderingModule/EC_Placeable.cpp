@@ -157,7 +157,7 @@ EC_Placeable::EC_Placeable(Framework *fw) :
     drawDebug(this, "Show bounding box", false),
     visible(this, "Visible", true),
     selectionLayer(this, "Selection layer", 1),
-    parentRef(this, "Parent entity ref", 0),
+    parentRef(this, "Parent entity ref", EntityReference()),
     parentBone(this, "Parent bone name", "")
 {
     renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
