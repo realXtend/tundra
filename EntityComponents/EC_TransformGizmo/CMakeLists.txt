@@ -15,11 +15,13 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_modules (Framework Scene Input Asset OgreRenderingModule)
+use_package_bullet()
+use_modules (Framework Scene Ui Input Asset OgreRenderingModule)# PhysicsModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
+#link_package_bullet()
 link_ogre()
-link_modules (Framework Scene Input Asset OgreRenderingModule)
+link_modules (Framework Scene Ui Input Asset OgreRenderingModule)# PhysicsModule)
 
 final_target ()
