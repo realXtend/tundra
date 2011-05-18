@@ -57,67 +57,27 @@ void FunctionInvoker::Invoke(QObject *obj, const QString &function, QVariant *re
     }
     catch(const Exception &e)
     {
-        LogDebug(std::string("The function call threw an Exception \"") + std::string(e.what()) + std::string("\"!"));
+        LogError("The function call threw an Exception \"" + std::string(e.what()) + "\"!");
         if (errorMsg)
             errorMsg->append("The function call threw an Exception \"" + QString(e.what()) + "\"!");
     }
     catch(const std::exception &e)
     {
-        LogDebug(std::string("The function call threw a std::exception \"") + std::string(e.what()) + std::string("\"!"));
+        LogError("The function call threw a std::exception \"" + std::string(e.what()) + "\"!");
         if (errorMsg)
             errorMsg->append("The function call threw a std::exception \"" + QString(e.what()) + "\"!");
     }
     catch(...)
     {
-        LogDebug("The function call threw an exception of unknown type!");
+        LogError("The function call threw an unknown exception!");
         if (errorMsg)
-            errorMsg->append("The function call threw an exception of unknown type!");
+            errorMsg->append("The function call threw an unknown exception!");
     }
 }
 
 void FunctionInvoker::Invoke(QObject *obj, const QString &function, const QVariantList &params, QString *errorMsg)
 {
-    QList<QGenericArgument> args;
-    foreach(QVariant p, params)
-    {
-        IArgumentType *arg = CreateArgumentType(p.typeName());
-        if (!arg)
-        {
-            if (errorMsg)
-                errorMsg->append("Could not generate argument for parameter type " + QString(p.typeName()));
-            return;
-        }
-
-        arg->FromQVariant(p);
-        args.push_back(arg->Value());
-    }
-
-    while(args.size() < 10)
-        args.push_back(QGenericArgument());
-
-    try
-    {
-        QMetaObject::invokeMethod(obj, function.toStdString().c_str(), Qt::DirectConnection,
-            args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
-    }
-    catch(const Exception &e)
-    {
-        LogDebug(std::string("The function call threw an Exception \"") + std::string(e.what()) + std::string("\"!"));
-        if (errorMsg)
-            errorMsg->append("The function call threw a std::exception \"" + QString(e.what()) + "\"!");
-    }
-    catch(const std::exception &e)
-    {
-        LogDebug(std::string("The function call threw a std::exception \"") + std::string(e.what()) + std::string("\"!"));
-        if (errorMsg)
-            errorMsg->append("The function call threw a std::exception \"" + QString(e.what()) + "\"!");
-    }
-    catch(...)
-    {
-        LogDebug("The function call threw an exception of unknown type!");
-        if (errorMsg)
-            errorMsg->append("The function call threw an exception of unknown type!");
-    }
+    Invoke(obj, function, 0, params, errorMsg);
 }
 
 QList<IArgumentType *> FunctionInvoker::CreateArgumentList(const QObject *obj, const QString &signature)
@@ -163,7 +123,7 @@ IArgumentType *FunctionInvoker::CreateArgumentType(const QString &type)
     else if (type == "double")
         arg = new ArgumentType<double>(type.toStdString().c_str());
     else
-        LogDebug("Unsupported argument type: " + type.toStdString());
+        LogError("FunctionInvoker: Unsupported argument type: " + type);
 
     return arg;
 }
