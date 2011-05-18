@@ -1,10 +1,19 @@
 /*
   SlideCircle
+   - circling around slide thingies for your sliding pleasure
+
+   TODO
+   * Add a help text
+   * Fix voodoo magic camera panning code
+   * Path finding so that we won't go through things
 
 */
 
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
+
+
+// Some functions needed for QVector3D calculations.
 
 function distance(v1, v2) {
     var a = Math.pow((v1.x() - v2.x()), 2);
@@ -93,6 +102,7 @@ function getNormal(entity, distance) {
     return pos;
 }
 
+/* Goes in front of given entity*/
 function viewScreen(screen) {
 
     var pos = getNormal(screen, 10);
@@ -108,6 +118,8 @@ function viewScreen(screen) {
     camera.placeable.LookAt(screen.placeable.position);
 }
 
+
+/* calculates to point to move and look */
 function getPoints(from, to) {
     orig_target = from.placeable.position;
     targets = [];
@@ -145,17 +157,13 @@ function animationUpdate(dt) {
     }
     var target = targets[0];
     var pos = camera.placeable.position;
-    //print(pos);
-    //print(target);
     var dist = distance(pos, target);
  
     var orig_dist = distance(target, orig_target);
-
-    //print(d);
-
+    
+    // If we're there change targets for moving and looking.
     if (dist <= 0.1) {
 	orig_target = targets.splice(0, 1)[0];
-	print("NEW TARGET ------------------------------------------------------------");
 	lookAtTargets.splice(0, 1);
 	return;
     }
@@ -181,10 +189,6 @@ function animationUpdate(dt) {
     //vector math function since QVector3D has setX instead of setx
     //etc.
 
-    function pr(a) {
-	print(a.x + ", " + a.y + ", " + a.z);
-    }
-
     // Get current rotation
     var oldtransform = camera.placeable.transform;
     var currentRotation = oldtransform.rot;
@@ -202,12 +206,9 @@ function animationUpdate(dt) {
     var b = Math.pow((currentRotation.y - targetRotation.y), 2);
     var c = Math.pow((currentRotation.z - targetRotation.z), 2);
     var r = Math.sqrt(a + b + c);
-    
-    print("agledistance: " + r);
 
     // If we're close enough we won't turn
     if ((r <= 2) || (r >= 358)) {
-	print("END");
 	return;
     }
 
@@ -217,20 +218,15 @@ function animationUpdate(dt) {
     var drotz = targetRotation.z - currentRotation.z;
     
     // Count magnitude
-    var magnitude = Math.sqrt(Math.pow(drotx, 2) + Math.pow(droty, 2) + Math.pow(drotz, 2))
+    var magnitude = Math.sqrt(Math.pow(drotx, 2) + Math.pow(droty, 2) + Math.pow(drotz, 2));
 
-
-    print("x difference " + drotx);
-    newtransform.rot.x = currentRotation.x + (drotx / magnitude) * dt * 100 * dist * 2 / orig_dist;
-
-    print("y difference " + droty);
-    newtransform.rot.y = currentRotation.y + (droty / magnitude) * dt * 100 * dist * 2 / orig_dist;
-
-    print("z difference " + drotz);
-    newtransform.rot.z = currentRotation.z + (drotz / magnitude) * dt * 100 * dist * 2 / orig_dist;
-
+    var ratio = Math.min(orig_dist / dist * 2, 10);
+    
+    newtransform.rot.x = (currentRotation.x + drotx / magnitude * ratio) % 360;
+    newtransform.rot.y = (currentRotation.y + droty / magnitude * ratio) % 360;
+    newtransform.rot.z = (currentRotation.z + drotz / magnitude * ratio) % 360;
+    
     camera.placeable.transform = newtransform;
-
 }
 
 function reset() {
@@ -238,12 +234,9 @@ function reset() {
     targets = [];
 }
 
-function putCube(place) {
-    cube.placeable.position = place;
-}
-
-
+// We look for anything that has a EC_WebView and circulate between them
 var entities = scene.GetEntitiesWithComponentRaw("EC_WebView");
+
 var currentIndex = 0;
 var endIndex = entities.length;
 
