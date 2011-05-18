@@ -93,6 +93,7 @@ QScriptValue Vector3df_prototype_dot(QScriptContext *ctx, QScriptEngine *engine)
 QScriptValue Vector3df_prototype_invert(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_distance(QScriptContext *ctx, QScriptEngine *engine);
 void createVector3Functions(QScriptValue &value, QScriptEngine *engine)
 {
     // Expose native functions to script value.
@@ -106,6 +107,7 @@ void createVector3Functions(QScriptValue &value, QScriptEngine *engine)
     value.setProperty("invert", engine->newFunction(Vector3df_prototype_invert));
     value.setProperty("toString", engine->newFunction(Vector3df_prototype_ToString));
     value.setProperty("fromString", engine->newFunction(Vector3df_prototype_FromString));
+    value.setProperty("distance", engine->newFunction(Vector3df_prototype_distance));
 }
 
 QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
@@ -261,12 +263,24 @@ QScriptValue Vector3df_prototype_FromString(QScriptContext *ctx, QScriptEngine *
     return toScriptValueVector3(engine, retValue);
 }
 
+QScriptValue Vector3df_prototype_distance(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df distance(): invalid number of arguments.");
+
+    Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
+    Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+
+    return vec1.getDistanceFrom(vec2);
+}
+
 QScriptValue Quaternion_prototype_ToEuler(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_Normalize(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_MakeIdentity(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_Slerp(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Quaternion_prototype_RotationTo(QScriptContext *ctx, QScriptEngine *engine);
 void createQuaternionFunctions(QScriptValue &value, QScriptEngine *engine)
 {
     // Expose native functions to script value. 
@@ -276,6 +290,7 @@ void createQuaternionFunctions(QScriptValue &value, QScriptEngine *engine)
     value.setProperty("slerp", engine->newFunction(Quaternion_prototype_Slerp));
     value.setProperty("toString", engine->newFunction(Quaternion_prototype_ToString));
     value.setProperty("fromString", engine->newFunction(Quaternion_prototype_FromString));
+    value.setProperty("rotationTo", engine->newFunction(Quaternion_prototype_RotationTo));
 }
 
 QScriptValue toScriptValueQuaternion(QScriptEngine *engine, const Quaternion &s)
@@ -380,6 +395,26 @@ QScriptValue Quaternion_prototype_FromString(QScriptContext *ctx, QScriptEngine 
 
     Quaternion quat(values[0].toFloat(), values[1].toFloat(), values[2].toFloat(), values[3].toFloat());
     return toScriptValueQuaternion(engine, quat);
+}
+
+QScriptValue Quaternion_prototype_RotationTo(QScriptContext *ctx, QScriptEngine *engine)
+{
+    int argCount = ctx->argumentCount();
+    if (argCount != 2)
+        return ctx->throwError(QScriptContext::TypeError, "Quaternion RotationTo(): Invalid number of arguments.");
+
+    Quaternion quat;
+    fromScriptValueQuaternion(ctx->thisObject(), quat);
+
+    Quaternion result;    
+    Vector3df vec2;
+    Vector3df vec3;
+
+    fromScriptValueVector3(ctx->argument(0), vec2);
+    fromScriptValueVector3(ctx->argument(1), vec3);
+    result = quat.rotationFromTo(vec2, vec3);
+
+    return toScriptValueQuaternion(engine, result);
 }
 
 QScriptValue Transform_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
