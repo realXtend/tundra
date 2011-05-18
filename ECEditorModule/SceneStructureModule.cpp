@@ -236,8 +236,8 @@ void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QLis
         }
     }
 
-    // We assume that world's up axis is Z-coordinate axis.
-    Vector3df importPivotPos = Vector3df((minPos.x + maxPos.x) / 2, (minPos.y + maxPos.y) / 2, minPos.z);
+    // We assume that world's up axis is Y-coordinate axis.
+    Vector3df importPivotPos = Vector3df((minPos.x + maxPos.x) / 2, minPos.y, (minPos.z + maxPos.z) / 2);
     Vector3df offset = pos - importPivotPos;
 
     foreach(Entity *e, entities)
