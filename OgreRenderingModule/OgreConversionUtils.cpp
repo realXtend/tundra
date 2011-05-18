@@ -19,12 +19,12 @@ Ogre::ColourValue ToOgreColor(const Color& color)
     return Ogre::ColourValue(color.r, color.g, color.b, color.a);
 }
 
-Color ToCoreColor(const Ogre::ColourValue& ogreColour)
+Color ToCoreColor(const Ogre::ColourValue& color)
 {
-   return Color(ogreColour.r, ogreColour.g, ogreColour.b, ogreColour.a);
+   return Color(color.r, color.g, color.b, color.a);
 }
 
-Ogre::Matrix4 OGRE_MODULE_API ToOgreMatrix4(const Matrix4 &matrix)
+Ogre::Matrix4 ToOgreMatrix4(const Matrix4 &matrix)
 {
     return Ogre::Matrix4(
         matrix[0], matrix[4], matrix[8], matrix[12],
@@ -36,6 +36,11 @@ Ogre::Matrix4 OGRE_MODULE_API ToOgreMatrix4(const Matrix4 &matrix)
 Ogre::Vector3 ToOgreVector3(const Vector3df &vector)
 {
     return Ogre::Vector3(vector.x, vector.y, vector.z);
+}
+
+Vector3df ToCoreVector(const Ogre::Vector3 &vector)
+{
+    return Vector3df(vector.x, vector.y, vector.z);
 }
 
 Ogre::Quaternion ToOgreQuaternion(const Quaternion &quat)
