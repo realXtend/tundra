@@ -1,3 +1,25 @@
+Ubuntu
+------
+
+Run the tools/build-ubuntu-deps.bash script. It should automagically
+build the dependencies and naali itself. It should be up to date as
+our buildbot uses it, i.e. it is ran after any commit to the
+repository.
+
+If all went well, you can try running the viewer:
+
+ cd bin
+ ./viewer
+
+Other distributions
+-------------------
+
+We don't currently have such a automated script for other distributions.
+The most up-to-date and specific documentation of the build process is that build script,
+as the buildslaves in the test system build with it after every commit.
+Please be in touch in e.g. #realxtend-dev irc channel on Freenode,
+or on the realxtend-dev mailing list in google groups.
+
 The viewer has many external libraries which may not be satisfied by default 
 on many distributions. A list of dependencies can be found in them 
 depencies.txt file. However not all of them will be missing from your 

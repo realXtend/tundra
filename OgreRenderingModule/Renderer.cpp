@@ -394,6 +394,7 @@ namespace OgreRenderer
 
     void Renderer::DoFrameTimeLimiting()
     {
+        /*
         if (targetFpsLimit > 1.f)
         {
             tick_t timeNow = GetCurrentClockTime();
@@ -418,6 +419,7 @@ namespace OgreRenderer
 
             lastPresentTime = GetCurrentClockTime();
         }
+        */
     }
 
     void Renderer::SetFullScreen(bool value)

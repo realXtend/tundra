@@ -106,8 +106,6 @@ private:
     /// Engines for executing startup (possibly persistent) scripts
     std::vector<JavascriptInstance *> startupScripts_;
 
-    /// Additional startupscript defined from command line
-    std::string commandLineStartupScript_;
 };
 
 // API things

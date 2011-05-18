@@ -8,6 +8,8 @@
 #include <QApplication>
 #include <QStringList>
 
+#include "HighPerfClock.h"
+
 class QDir;
 class QGraphicsView;
 class QTranslator;
@@ -61,6 +63,10 @@ public slots:
     /// \note Does nothing in headless mode or if Go() has been called.
     void SetSplashMessage(const QString &message);
 
+private:
+    void SetTargetFps(float fps);
+    void RestoreTargetFps();
+
 signals:
     /// This signal is sent when QApplication language is changed, provided for convenience.
     void LanguageChanged();
@@ -77,12 +83,16 @@ private:
     QStringList GetQmFiles(const QDir &dir);
     Foundation::Framework *framework;
 
-    QTimer frameUpdateTimer;
     QSplashScreen *splashScreen;
     QTranslator *nativeTranslator;
     QTranslator *appTranslator;
 
-    bool appActivated;
+    QTimer *frameTimer_;
+    tick_t lastPresentTime_;
+    tick_t timerFrequency_;
+    float targetFpsStartParam_;
+    float targetFps_;
+
     int argc; ///< Command line argument count as supplied by the operating system.
     char **argv; ///< Command line arguments as supplied by the operating system.
 };

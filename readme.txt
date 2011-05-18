@@ -23,6 +23,9 @@ The Tundra Viewer is the client software that is used to connect to a server.
 Compiling from the source
 -------------------------
 Tundra source code is available at https://github.com/realXtend , under the Apache 2.0 license. Remember to git checkout to the branch Tundra after cloning the repository.
+
+git clone http://github.com/realXtend/naali.git
+git checkout -b tundra origin/tundra
  
 Tundra uses CMake as its build system.
 
@@ -36,7 +39,7 @@ See doc/dependencies.txt for more detailed instructions on dependencies.
 
 Windows
 -------
-read doc/build-windows.txt
+read the Windows section in https://github.com/realXtend/naali/wiki/Building-from-source
 
 Quickstart for Windows / Visual Studio: install CMake, then run cmake.bat if not using VS2008, and cmake_vs2008.bat, if using VS2008.
 
@@ -45,7 +48,7 @@ N.B. When compiling for the first time, compile in debug mode and run the exe at
 
 Linux
 -----
-read doc/build-linux.txt
+read doc/build-linux.txt or the Linux section in https://github.com/realXtend/naali/wiki/Building-from-source
 
 License
 -------

@@ -46,14 +46,16 @@ private:
     //! Laser object (3d line)
     Ogre::ManualObject* laserObject_;
     Ogre::MaterialPtr laserMaterial_;
+
     //! Laser id, same as this EC's owner id, used to differentiate laser object and node names from one another
     Ogre::String id_;
-    //! Parent entity EC_Placeable pointer
-    EC_Placeable *node_;
+
     //! Parent entity input context
     InputContext *input_;
+
     //! Update limiter so that we do not overload the server
     bool canUpdate_;
+
     //! Update interval (default is 20ms)
     int updateInterval_;
 
@@ -63,12 +65,19 @@ private:
 private slots:
     //! (If it is allowed) updates start and end points on mousemove
     void Update(MouseEvent *e);
+
     //! Handles start and end point changes
-    void HandleAttributeChange(IAttribute*, AttributeChange::Type);
+    void HandleAttributeChange(IAttribute *attribute, AttributeChange::Type change);
+
+    //! Handle placeable changes
+    void HandlePlaceableAttributeChange(IAttribute *attribute, AttributeChange::Type change);
+
     //! Enables update; used for update limiter
     void EnableUpdate();
+
     //! Disables updates for <updateInterval_> time
     void DisableUpdate();
+
     //! Updates color if it is changed
     void UpdateColor();
 

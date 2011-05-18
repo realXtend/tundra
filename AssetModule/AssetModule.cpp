@@ -87,9 +87,15 @@ namespace Asset
             }
         }
 
-        if (options.count("storage") > 0)
+        
+        if (!options.count("storage"))
+            return;
+
+        std::vector<std::string> sv = options["storage"].as<std::vector<std::string> >();
+            
+        for(std::vector<std::string>::iterator i = sv.begin(); i != sv.end(); ++i)
         {
-            std::string startup_scene_ = QString(options["storage"].as<std::string>().c_str()).trimmed().toStdString();
+            std::string startup_scene_ = QString(i->c_str()).trimmed().toStdString();
             if (!startup_scene_.empty())
             {
                 // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
@@ -104,6 +110,7 @@ namespace Asset
                     framework_->Asset()->setProperty("assetdir", QVariant(GuaranteeTrailingSlash(QString::fromStdString(dirname))));
                 }
             }
+                                                                                                
         }
     }
 
