@@ -1,0 +1,17 @@
+material AxisWhite
+{
+    receive_shadows on
+    technique
+    {
+        pass
+        {
+            ambient 0.000000 0.000000 0.000000 0.750000
+            diffuse 0.000000 0.000000 0.000000 0.750000
+            specular 0.000000 0.000000 0.000000 0.750000 12.750000
+            emissive 1.0 1.0 1.0 0.75
+            scene_blend alpha_blend
+            depth_check off
+            depth_write off
+        }
+    }
+}
