@@ -175,7 +175,7 @@ QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engin
 
         // Ensure that the last argument is a number. 
         if (!ctx->argument(argCount - 1).isNumber())
-            return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): agrument(" + QString::number(argCount - 1) + ") isn't a number.");
+            return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): argument(" + QString::number(argCount - 1) + ") isn't a number.");
         float d = ctx->argument(argCount - 1).toNumber();
 
         if (argCount == 2 && ctx->argument(0).isObject())
@@ -193,7 +193,7 @@ QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engin
             retValue = toScriptValueVector3(engine, vec); 
         }
         else
-            return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): agrument types are invalid.");
+            return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): argument types are invalid.");
     }
     else
         return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments.");
@@ -500,6 +500,13 @@ QScriptValue toScriptValueAssetReferenceList(QScriptEngine *engine, const AssetR
     return obj;
 }
 
+QScriptValue EntityReference_prototype_Lookup(QScriptContext *ctx, QScriptEngine *engine);
+void createEntityReferenceFunctions(QScriptValue &value, QScriptEngine *engine)
+{
+    // Expose native functions to script value.
+    value.setProperty("Lookup", engine->newFunction(EntityReference_prototype_Lookup));
+}
+
 void fromScriptValueEntityReference(const QScriptValue &obj, EntityReference &s)
 {
     if (obj.isString())
@@ -510,12 +517,21 @@ void fromScriptValueEntityReference(const QScriptValue &obj, EntityReference &s)
             LogError("Can't convert QScriptValue to EntityReference! QScriptValue does not contain ref attribute!");
         else
         {
-            if (obj.property("ref").isString())
-                s.ref = obj.property("ref").toString();
-            else if (obj.property("ref").isNumber())
-                s.ref = QString::number(obj.property("ref").toInt32());
+            QScriptValue ref = obj.property("ref");
+            if (ref.isNull())
+                s.ref = ""; // Empty the reference
+            else if (ref.isString())
+                s.ref = ref.toString();
+            else if (ref.isNumber())
+                s.ref = QString::number(ref.toInt32());
+            else if (ref.isQObject())
+            {
+                // If the object is an Entity, call EntityReference::Set() with it
+                Entity* entity = dynamic_cast<Entity*>(ref.toQObject());
+                s.Set(entity);
+            }
             else
-                LogError("Can't convert QScriptValue to EntityReference! Ref attribute is not string or a number");
+                LogError("Can't convert QScriptValue to EntityReference! Ref attribute is not null, string, a number, or an entity");
         }
     }
 }
@@ -524,7 +540,26 @@ QScriptValue toScriptValueEntityReference(QScriptEngine *engine, const EntityRef
 {
     QScriptValue obj = engine->newObject();
     obj.setProperty("ref", QScriptValue(engine, s.ref));
+    createEntityReferenceFunctions(obj, engine);
     return obj;
+}
+
+QScriptValue EntityReference_prototype_Lookup(QScriptContext *ctx, QScriptEngine *engine)
+{
+    int argCount = ctx->argumentCount();
+    if (argCount != 1)
+        return ctx->throwError(QScriptContext::TypeError, "EntityReference Lookup(): Invalid number of arguments.");
+    
+    if (!ctx->argument(0).isQObject())
+        return ctx->throwError(QScriptContext::TypeError, "EntityReference Lookup(): Argument is not a QObject");
+    
+    SceneManager* scene = dynamic_cast<SceneManager*>(ctx->argument(0).toQObject());
+    
+    EntityReference s;
+    fromScriptValueEntityReference(ctx->thisObject(), s);
+    
+    EntityPtr entity = s.Lookup(scene);
+    return engine->newQObject(entity.get());
 }
 
 void fromScriptValueEntityList(const QScriptValue &obj, QList<Entity*> &ents)

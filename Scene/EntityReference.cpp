@@ -16,8 +16,19 @@
 
 #include "MemoryLeakCheck.h"
 
+void EntityReference::Set(EntityPtr entity)
+{
+    Set(entity.get());
+}
+
 void EntityReference::Set(Entity* entity)
 {
+    if (!entity)
+    {
+        ref.clear();
+        return;
+    }
+    
     QString name = entity->GetName();
     SceneManager* scene = entity->GetScene();
     if (!scene)

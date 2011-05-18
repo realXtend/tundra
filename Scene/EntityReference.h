@@ -18,6 +18,7 @@ struct EntityReference
     EntityReference(entity_id_t id) : ref(QString::number(id)) {}
 
     /// Set from an entity. If the name is unique within its parent scene, the name will be set, otherwise ID.
+    void Set(EntityPtr entity);
     void Set(Entity* entity);
     
     /// Lookup an entity from the scene according to the ref. Return null pointer if not found
