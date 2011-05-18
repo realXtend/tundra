@@ -15,11 +15,11 @@
 #include "EC_Placeable.h"
 #include "EC_InputMapper.h"
 #include "Entity.h"
-#include "LoggingFunctions.h"
 #include "SceneManager.h"
 
 #include <QTimer>
 
+#include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_LaserPointer");
 
 #include <Ogre.h>
@@ -31,11 +31,10 @@ EC_LaserPointer::EC_LaserPointer(IModule *module) :
     color_(this, "color", Color(1.0f,0.0f,0.0f,1.0f)),
     enabled_(this, "enabled", false),
     laserObject_(0),
-    id_(),
-    node_(0),
-    input_(0),
     canUpdate_(true),
-    updateInterval_(20)
+    updateInterval_(20),
+    input_(0),
+    id_()
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 
@@ -63,19 +62,18 @@ void EC_LaserPointer::CreateLaser()
         return;
 
     Ogre::SceneManager *scene = renderer_.lock()->GetSceneManager();
-    assert(scene);
     if (!scene)
         return;
 
     Scene::Entity *parentEntity = GetParentEntity();
-    assert(parentEntity);
     if (!parentEntity)
         return;
 
-    node_ = parentEntity->GetComponent<EC_Placeable>().get();
-
-    if (!node_)
-        return;
+    EC_Placeable *placeable = parentEntity->GetComponent<EC_Placeable>().get();
+    if (placeable)
+        connect(placeable, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(HandlePlaceableAttributeChange(IAttribute*, AttributeChange::Type)));
+    else
+        LogWarning("Placeable is not preset, cannot connect to position changes!");
 
     id_ = Ogre::StringConverter::toString((int)parentEntity->GetId());
 
@@ -88,6 +86,7 @@ void EC_LaserPointer::CreateLaser()
     laserObjectNode->attachObject(laserObject_);
 
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(HandleAttributeChange(IAttribute*, AttributeChange::Type)));
+    
 
     EC_InputMapper *mapper = parentEntity->GetComponent<EC_InputMapper>().get();
     if (mapper)
@@ -137,15 +136,22 @@ void EC_LaserPointer::DestroyLaser()
 
 void EC_LaserPointer::Update(MouseEvent *e)
 {
+    if (!GetParentEntity())
+        return;
+
     if (IsEnabled() && !GetFramework()->IsHeadless())
     {
         if (canUpdate_)
         {
+            EC_Placeable *placeable = GetParentEntity()->GetComponent<EC_Placeable>().get();
+            if (!placeable)
+                return;
+
             OgreRenderer::Renderer *renderer = renderer_.lock().get();
             RaycastResult *result = renderer->Raycast(e->x, e->y);
             if (result->getentity() && result->getentity() != GetParentEntity())
             {
-                SetStartPos(node_->GetPosition());
+                SetStartPos(placeable->GetPosition());
                 SetEndPos(result->getpos());
                 DisableUpdate();
             }
@@ -170,6 +176,9 @@ void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChan
         return;
     }
 
+    if (!laserObject_)
+        return;
+
     if (IsEnabled())
     {
         laserObject_->clear();
@@ -188,6 +197,27 @@ void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChan
         laserObject_->clear();
 }
 
+void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, AttributeChange::Type change)
+{
+    if (attribute->GetNameString() == "Transform")
+    {
+        if (!ViewEnabled())
+            return;
+        if (!IsEnabled())
+            return;
+        if (!canUpdate_)
+            return;
+        if (!GetParentEntity())
+            return;
+        EC_Placeable *placeable = GetParentEntity()->GetComponent<EC_Placeable>().get();
+        if (!placeable)
+            return;
+
+        Vector3df position = placeable->gettransform().position;
+        if (position != startPos_.Get())
+            startPos_.Set(position, AttributeChange::Default);
+    }
+}
 
 void EC_LaserPointer::Enable()
 {
@@ -272,6 +302,8 @@ void EC_LaserPointer::UpdateColor()
     if (renderer_.expired())
         return;
     if (GetFramework()->IsHeadless())
+        return;
+    if (laserMaterial_.isNull())
         return;
 
     Color color = GetColor();
