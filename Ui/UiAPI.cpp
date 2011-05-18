@@ -135,6 +135,8 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     graphicsView->MarkViewUndirty();
 
     owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
+
+    connect(mainWindow, SIGNAL(WindowCloseEvent()), owner, SLOT(Exit()));
 }
 
 UiAPI::~UiAPI()

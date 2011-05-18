@@ -19,6 +19,7 @@
 #include "Md5.h"
 #include "Platform.h"
 #include "Framework.h"
+#include "VersionInfo.h"
 #include "ConfigurationManager.h"
 
 // Extenal lib includes
@@ -103,9 +104,8 @@ namespace TaigaProtocol
             std::string id0_hash = GetMd5Hash(GetId0String());
 
             // Gather version information.
-            const std::string &group = Foundation::Framework::ConfigurationGroup();
-            const char *major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major").c_str();
-            const char *minor = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor").c_str();
+            const char *major = QString::number(framework_->ApplicationVersion()->GetMajor()).toStdString().c_str();
+            const char *minor = QString::number(framework_->ApplicationVersion()->GetMinor()).toStdString().c_str();
 
             call.AddMember("start", QString("last").toStdString());
             call.AddMember("version", QString("realXtend Naali %1.%2").arg(major, minor).toStdString());

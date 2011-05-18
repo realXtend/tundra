@@ -33,6 +33,7 @@
 #include "TextureAsset.h"
 #include "ConsoleAPI.h"
 #include "ConsoleCommandUtils.h"
+#include "VersionInfo.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -89,14 +90,8 @@ namespace OgreRenderer
         std::string plugins_filename = "plugins-unix.cfg";
 #endif
 
-        // Create window title
-        std::string group = Foundation::Framework::ConfigurationGroup();
-        std::string version_major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major");
-        std::string version_minor = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor");
-        std::string window_title = framework_->GetDefaultConfig().GetSetting<std::string>(group, "window_title") + " " + version_major + "." + version_minor;
-
         // Create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
-        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
+        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, framework_->ApplicationVersion()->toString().toStdString()));
     }
 
     void OgreRenderingModule::Initialize()
