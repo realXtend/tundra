@@ -1946,7 +1946,7 @@ template<> void ECAttributeEditor<EntityReference>::Initialize()
     {
         QtStringPropertyManager *stringManager = new QtStringPropertyManager(this);
         LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
-        connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, QObject *)), SLOT(HandleNewEditor(QtProperty *, QObject *)));
+//        connect(lineEditFactory, SIGNAL(EditorCreated(QtProperty *, QObject *)), SLOT(HandleNewEditor(QtProperty *, QObject *)));
         propertyMgr_ = stringManager;
         factory_ = lineEditFactory;
 
