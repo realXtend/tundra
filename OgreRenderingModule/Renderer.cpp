@@ -950,7 +950,7 @@ namespace OgreRenderer
     {
         static RaycastResult result;
         
-        result.entity_ = 0; 
+        result.entity = 0; 
         if (!initialized_)
             return &result;
         if (!renderWindow)
@@ -1035,11 +1035,11 @@ namespace OgreRenderer
                             Ogre::Vector2 uv = FindUVs(ray, hit.second, vertices, texcoords, indices, j); 
                             Ogre::Vector3 point = ray.getPoint(closest_distance);
 
-                            result.entity_ = entity;
-                            result.pos_ = Vector3df(point.x, point.y, point.z);
-                            result.submesh_ = GetSubmeshFromIndexRange(j, submeshstartindex);
-                            result.u_ = uv.x;
-                            result.v_ = uv.y;
+                            result.entity = entity;
+                            result.pos = Vector3df(point.x, point.y, point.z);
+                            result.submesh = GetSubmeshFromIndexRange(j, submeshstartindex);
+                            result.u = uv.x;
+                            result.v = uv.y;
                         }
                     }
                 }
@@ -1054,11 +1054,11 @@ namespace OgreRenderer
 
                     Ogre::Vector3 point = ray.getPoint(closest_distance);
 
-                    result.entity_ = entity;
-                    result.pos_ = Vector3df(point.x, point.y, point.z);
-                    result.submesh_ = 0;
-                    result.u_ = 0.0f;
-                    result.v_ = 0.0f;
+                    result.entity = entity;
+                    result.pos = Vector3df(point.x, point.y, point.z);
+                    result.submesh = 0;
+                    result.u = 0.0f;
+                    result.v = 0.0f;
                 }
             }
         }

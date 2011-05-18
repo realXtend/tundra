@@ -24,29 +24,29 @@ class Entity;
 class RaycastResult : public QObject
 {
     Q_OBJECT
-    
+
 public:
     Q_PROPERTY(Entity* entity READ getentity);
-    Entity* getentity() const { return entity_; }
+    Entity* getentity() const { return entity; }
     Q_PROPERTY(Vector3df pos READ getpos);
-    Vector3df getpos() const { return pos_; }
+    Vector3df getpos() const { return pos; }
     Q_PROPERTY(unsigned submesh READ getsubmesh);
-    unsigned getsubmesh() const { return submesh_; }
+    unsigned getsubmesh() const { return submesh; }
     Q_PROPERTY(float u READ getu);
-    float getu() const { return u_; }
+    float getu() const { return u; }
     Q_PROPERTY(float v READ getv);
-    float getv() const { return v_; }
-    
+    float getv() const { return v; }
+
     /// Entity that was hit, null if none
-    Entity* entity_;
+    Entity* entity;
     /// World coordinates of hit position
-    Vector3df pos_;
+    Vector3df pos;
     /// Submesh index in entity, starting from 0
-    unsigned submesh_;
+    unsigned submesh;
     /// U coord in entity. 0 if no texture mapping
-    float u_;
+    float u;
     /// V coord in entity. 0 if no texture mapping
-    float v_;
+    float v;
 };
 
 /// Render service interface.

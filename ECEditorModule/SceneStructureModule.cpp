@@ -450,12 +450,12 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
             if (renderer)
             {
                 RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
-                if (res->entity_)
+                if (res->entity)
                 {
-                    EC_Mesh *mesh = res->entity_->GetComponent<EC_Mesh>().get();
+                    EC_Mesh *mesh = res->entity->GetComponent<EC_Mesh>().get();
                     if (mesh)
                     {
-                        currentToolTipDestination.append("Submesh " + QString::number(res->submesh_));
+                        currentToolTipDestination.append("Submesh " + QString::number(res->submesh));
                         if (!mesh->Name().isEmpty())
                             currentToolTipDestination.append(" on " + mesh->Name());
                         else if (!mesh->GetParentEntity()->GetName().isEmpty())
@@ -481,17 +481,17 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
             RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
             if (res)
             {
-                if (res->entity_)
+                if (res->entity)
                 {
-                    QString entityName = res->entity_->GetName();
+                    QString entityName = res->entity->GetName();
                     currentToolTipDestination = "<br><span style='font-weight:bold;'>Destination:</span> ";
                     if (!entityName.isEmpty())
                         currentToolTipDestination.append(entityName + " ");
-                    QString xStr = QString::number(res->pos_.x);
+                    QString xStr = QString::number(res->pos.x);
                     xStr = xStr.left(xStr.indexOf(".")+3);
-                    QString yStr = QString::number(res->pos_.y);
+                    QString yStr = QString::number(res->pos.y);
                     yStr = yStr.left(yStr.indexOf(".")+3);
-                    QString zStr = QString::number(res->pos_.z);
+                    QString zStr = QString::number(res->pos.z);
                     zStr = zStr.left(zStr.indexOf(".")+3);
                     currentToolTipDestination.append(QString("(%2 %3 %4)</p>").arg(xStr, yStr, zStr));
                 }
@@ -545,7 +545,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
 
         Vector3df worldPos;
         RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
-        if (!res->entity_)
+        if (!res->entity)
         {
             // No entity hit, use camera's position with hard-coded offset.
             const ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
@@ -568,7 +568,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
                 }
         }
         else
-            worldPos = res->pos_;
+            worldPos = res->pos;
 
         foreach (QUrl url, e->mimeData()->urls())
         {
@@ -592,13 +592,13 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
     if (renderer)
     {
         RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
-        if (res->entity_)
+        if (res->entity)
         {
-            EC_Mesh *mesh = res->entity_->GetComponent<EC_Mesh>().get();
+            EC_Mesh *mesh = res->entity->GetComponent<EC_Mesh>().get();
             if (mesh)
             {
                 uint subMeshCount = mesh->GetNumSubMeshes();
-                uint subMeshIndex = res->submesh_;
+                uint subMeshIndex = res->submesh;
                 if (subMeshIndex < subMeshCount)
                 {
                     materialDropData.affectedIndexes.clear();
