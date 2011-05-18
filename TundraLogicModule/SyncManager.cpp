@@ -116,11 +116,6 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
 
 void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 {
-    if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
-    {
-        KristalliProtocol::Events::KristalliNetMessageIn* eventData = checked_static_cast<KristalliProtocol::Events::KristalliNetMessageIn*>(data);
-        HandleKristalliMessage(eventData->source, eventData->id, eventData->data, eventData->numBytes);
-    }
 }
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
