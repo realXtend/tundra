@@ -31,6 +31,15 @@ Q_DECLARE_METATYPE(Entity*);
 Q_DECLARE_METATYPE(std::string);
 Q_DECLARE_METATYPE(EntityList);
 
+QScriptValue Color_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Color_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine);
+void createColorFunctions(QScriptValue &value, QScriptEngine *engine)
+{
+    // Expose native functions to script value.
+    value.setProperty("toString", engine->newFunction(Color_prototype_ToString));
+    value.setProperty("fromString", engine->newFunction(Color_prototype_FromString));
+}
+
 QScriptValue toScriptValueColor(QScriptEngine *engine, const Color &s)
 {
     QScriptValue obj = engine->newObject();
@@ -38,6 +47,7 @@ QScriptValue toScriptValueColor(QScriptEngine *engine, const Color &s)
     obj.setProperty("g", QScriptValue(engine, s.g));
     obj.setProperty("b", QScriptValue(engine, s.b));
     obj.setProperty("a", QScriptValue(engine, s.a));
+    createColorFunctions(obj, engine);
     return obj;
 }
 
@@ -49,6 +59,29 @@ void fromScriptValueColor(const QScriptValue &obj, Color &s)
     s.a = (float)obj.property("a").toNumber();
 }
 
+//! @todo this code duplicates with IAttribute.
+QScriptValue Color_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Color value = engine->fromScriptValue<Color>(ctx->thisObject());
+    QString retVal = QString::number(value.r) + " " +
+                     QString::number(value.g) + " " +
+                     QString::number(value.b) + " " +
+                     QString::number(value.a);
+    return engine->toScriptValue(retVal);
+}
+
+QScriptValue Color_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError(QScriptContext::TypeError, "Color fromString(): invalid number of arguments."); 
+    QStringList values = ctx->argument(0).toString().split(" ");
+    if (values.count() != 4)
+        return ctx->throwError(QScriptContext::TypeError, "Color fromString(): invalid string value."); 
+    
+    Color retVal(values[0].toFloat(), values[1].toFloat(), values[2].toFloat(), values[3].toFloat());
+    return toScriptValueColor(engine, retVal);
+}
+
 QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine);
@@ -56,6 +89,9 @@ QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engin
 QScriptValue Vector3df_prototype_rotToDir(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_cross(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_dot(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_invert(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine);
 void createVector3Functions(QScriptValue &value, QScriptEngine *engine)
 {
     // Expose native functions to script value.
@@ -66,6 +102,9 @@ void createVector3Functions(QScriptValue &value, QScriptEngine *engine)
     value.setProperty("rotToDir", engine->newFunction(Vector3df_prototype_rotToDir));
     value.setProperty("cross", engine->newFunction(Vector3df_prototype_cross));
     value.setProperty("dot", engine->newFunction(Vector3df_prototype_dot));
+    value.setProperty("invert", engine->newFunction(Vector3df_prototype_invert));
+    value.setProperty("toString", engine->newFunction(Vector3df_prototype_ToString));
+    value.setProperty("fromString", engine->newFunction(Vector3df_prototype_FromString));
 }
 
 QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
@@ -75,12 +114,6 @@ QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
     obj.setProperty("y", QScriptValue(engine, s.y));
     obj.setProperty("z", QScriptValue(engine, s.z));
     createVector3Functions(obj, engine);
-
-    //this should suffice only once for the prototype somehow, but couldn't get that to work
-    //ctorVector3df.property("prototype").setProperty("normalize", normalizeVector3df);
-    /*obj.setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
-    obj.setProperty("length", engine->newFunction(Vector3df_prototype_getLength));
-    obj.setProperty("mul", engine->newFunction(Vector3df_prototype_mul));*/
 
     return obj;
 }
@@ -112,15 +145,21 @@ QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
         return ctx->throwError("Vector3df mul() takes a single number argument.");
-    if (!ctx->argument(0).isNumber())
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df mul(): argument is not a number");
-    float scalar = ctx->argument(0).toNumber();
-    //XXX add vec*vec
-    
+    //if (!ctx->argument(0).isNumber())
+    //    return ctx->throwError(QScriptContext::TypeError, "Vector3df mul(): argument is not a number");
     Vector3df vec;
     fromScriptValueVector3(ctx->thisObject(), vec);
-
-    return toScriptValueVector3(engine, vec * scalar);
+    if (ctx->argument(0).isNumber()) // Multiply by scalar
+    {
+        float scalar = ctx->argument(0).toNumber();
+        return toScriptValueVector3(engine, vec * scalar);
+    }
+    else if(ctx->argument(0).isObject()) // Multiply by vector3
+    {
+        Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+        return toScriptValueVector3(engine, vec * vec2);
+    }
+    return ctx->throwError(QScriptContext::TypeError, "Vector3df mul(): argument is not a number or vector3df");
 }
 
 QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engine)
@@ -163,7 +202,7 @@ QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engin
 QScriptValue Vector3df_prototype_rotToDir(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments.");
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df rotToDir(): invalid number of arguments.");
 
     Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
     Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
@@ -174,7 +213,7 @@ QScriptValue Vector3df_prototype_rotToDir(QScriptContext *ctx, QScriptEngine *en
 QScriptValue Vector3df_prototype_cross(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments."); 
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df crss(): invalid number of arguments."); 
 
     Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
     Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
@@ -185,7 +224,7 @@ QScriptValue Vector3df_prototype_cross(QScriptContext *ctx, QScriptEngine *engin
 QScriptValue Vector3df_prototype_dot(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments."); 
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df dot(): invalid number of arguments."); 
 
     Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
     Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
@@ -193,10 +232,40 @@ QScriptValue Vector3df_prototype_dot(QScriptContext *ctx, QScriptEngine *engine)
     return QScriptValue(engine, vec1.dotProduct(vec2));
 }
 
+QScriptValue Vector3df_prototype_invert(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Vector3df vec = engine->fromScriptValue<Vector3df>(ctx->thisObject());
+    return toScriptValueVector3(engine, vec.invert());
+}
+
+//! @todo this code duplicates with IAttribute.
+QScriptValue Vector3df_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Vector3df value = engine->fromScriptValue<Vector3df>(ctx->thisObject());
+    QString retVal = QString::number(value.x) + " " +
+                     QString::number(value.y) + " " +
+                     QString::number(value.z);
+    return engine->toScriptValue(retVal);
+}
+
+QScriptValue Vector3df_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df fromString(): invalid number of arguments."); 
+    QStringList values = ctx->argument(0).toString().split(" ");
+    if (values.count() != 3)
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df fromString(): invalid string value."); 
+    
+    Vector3df retValue(values[0].toFloat(), values[1].toFloat(), values[2].toFloat());
+    return toScriptValueVector3(engine, retValue);
+}
+
 QScriptValue Quaternion_prototype_ToEuler(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_Normalize(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_MakeIdentity(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_Slerp(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Quaternion_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Quaternion_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine);
 void createQuaternionFunctions(QScriptValue &value, QScriptEngine *engine)
 {
     // Expose native functions to script value. 
@@ -204,6 +273,8 @@ void createQuaternionFunctions(QScriptValue &value, QScriptEngine *engine)
     value.setProperty("normalize", engine->newFunction(Quaternion_prototype_Normalize));
     value.setProperty("makeIdentity", engine->newFunction(Quaternion_prototype_MakeIdentity));
     value.setProperty("slerp", engine->newFunction(Quaternion_prototype_Slerp));
+    value.setProperty("toString", engine->newFunction(Quaternion_prototype_ToString));
+    value.setProperty("fromString", engine->newFunction(Quaternion_prototype_FromString));
 }
 
 QScriptValue toScriptValueQuaternion(QScriptEngine *engine, const Quaternion &s)
@@ -259,7 +330,7 @@ QScriptValue Quaternion_prototype_Slerp(QScriptContext *ctx, QScriptEngine *engi
 {
     int argCount = ctx->argumentCount();
     if (argCount >= 2 && argCount > 3)
-        return ctx->throwError(QScriptContext::TypeError, "Quaternion slerp(): Invalid number of arguments.");
+        return ctx->throwError(QScriptContext::TypeError, "Quaternion slerp(): invalid number of arguments.");
     if (!ctx->argument(argCount - 1).isNumber())
         return ctx->throwError(QScriptContext::TypeError, "Quaternion slerp(): argument(" + QString::number(argCount - 1) + ") isn't a number.");
 
@@ -285,20 +356,85 @@ QScriptValue Quaternion_prototype_Slerp(QScriptContext *ctx, QScriptEngine *engi
     return toScriptValueQuaternion(engine, result);
 }
 
+//! @todo This code is copy pasted from IAttribute.cpp. There should be a funtion that both could call.
+QScriptValue Quaternion_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Quaternion quat;
+    fromScriptValueQuaternion(ctx->thisObject(), quat);
+    QString retVal = QString::number(quat.x) + " " +
+                     QString::number(quat.y) + " " +
+                     QString::number(quat.z) + " " +
+                     QString::number(quat.w);
+    return QScriptValue(engine, retVal);
+
+}
+
+QScriptValue Quaternion_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        ctx->throwError(QScriptContext::TypeError, "Quaternion fromString(): invalid number of arguments.");
+    QStringList values = ctx->argument(0).toString().split(" ");
+    if (values.count() != 4)
+        ctx->throwError(QScriptContext::TypeError, "Quaternion fromString(): invalid string value.");
+
+    Quaternion quat(values[0].toFloat(), values[1].toFloat(), values[2].toFloat(), values[3].toFloat());
+    return toScriptValueQuaternion(engine, quat);
+}
+
+QScriptValue Transform_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Transform_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine);
+void createTransformFunctions(QScriptValue &value, QScriptEngine *engine)
+{
+    // Expose native functions to script value. 
+    value.setProperty("toString", engine->newFunction(Transform_prototype_ToString));
+    value.setProperty("fromString", engine->newFunction(Transform_prototype_FromString));
+}
+
 QScriptValue toScriptValueTransform(QScriptEngine *engine, const Transform &s)
 {
     QScriptValue obj = engine->newObject();
     obj.setProperty("pos", toScriptValueVector3(engine, s.position));
     obj.setProperty("rot", toScriptValueVector3(engine, s.rotation));
     obj.setProperty("scale", toScriptValueVector3(engine, s.scale));
+    createTransformFunctions(obj, engine);
     return obj;
 }
 
-void fromScriptValueTransform(const QScriptValue &obj, Transform &s)
+void fromScriptValueTransform(const QScriptValue &obj, Transform &s) 
 {
     fromScriptValueVector3(obj.property("pos"), s.position);
     fromScriptValueVector3(obj.property("rot"), s.rotation);
     fromScriptValueVector3(obj.property("scale"), s.scale);
+}
+
+//! @todo this code duplicates with IAttribute.
+QScriptValue Transform_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Transform value = engine->fromScriptValue<Transform>(ctx->thisObject());
+    QString retVal = QString::number(value.position.x) + " " +
+                     QString::number(value.position.y) + " " +
+                     QString::number(value.position.z) + " " +
+                     QString::number(value.rotation.x) + " " +
+                     QString::number(value.rotation.y) + " " +
+                     QString::number(value.rotation.z) + " " +
+                     QString::number(value.scale.x) + " " +
+                     QString::number(value.scale.y) + " " +
+                     QString::number(value.scale.z);
+    return engine->toScriptValue(retVal);
+}
+
+QScriptValue Transform_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError(QScriptContext::TypeError, "Transform fromString(): invalid number of arguments."); 
+    QStringList values = ctx->argument(0).toString().split(" ");
+    if (values.count() != 9)
+        return ctx->throwError(QScriptContext::TypeError, "Transform fromString(): invalid string value."); 
+    
+    Transform retVal(Vector3df(values[0].toFloat(), values[1].toFloat(), values[2].toFloat()), //Pos
+                     Vector3df(values[3].toFloat(), values[4].toFloat(), values[5].toFloat()), //Rot
+                     Vector3df(values[6].toFloat(), values[7].toFloat(), values[8].toFloat()));//Scale
+    return toScriptValueTransform(engine, retVal);
 }
 
 QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &s)
@@ -602,10 +738,13 @@ void ExposeCoreTypes(QScriptEngine *engine)
     // Register constructors
     QScriptValue ctorVector3 = engine->newFunction(createVector3df);
     engine->globalObject().setProperty("Vector3df", ctorVector3);
+    engine->globalObject().property("Vector3df").setProperty("fromString", engine->newFunction(Vector3df_prototype_FromString));
     QScriptValue ctorColor = engine->newFunction(createColor);
     engine->globalObject().setProperty("Color", ctorColor);
+    engine->globalObject().property("Color").setProperty("fromString", engine->newFunction(Color_prototype_FromString));
     QScriptValue ctorTransform = engine->newFunction(createTransform);
     engine->globalObject().setProperty("Transform", ctorTransform);
+    engine->globalObject().property("Transform").setProperty("fromString", engine->newFunction(Transform_prototype_FromString));
     QScriptValue ctorAssetReference = engine->newFunction(createAssetReference);
     engine->globalObject().setProperty("AssetReference", ctorAssetReference);
     QScriptValue ctorAssetReferenceList = engine->newFunction(createAssetReferenceList);
@@ -621,4 +760,5 @@ void ExposeCoreTypes(QScriptEngine *engine)
     
     QScriptValue ctorQuaternion = engine->newFunction(createQuaternion);
     engine->globalObject().setProperty("Quaternion", ctorQuaternion);
+    engine->globalObject().property("Quaternion").setProperty("fromString", engine->newFunction(Quaternion_prototype_FromString));
 }
