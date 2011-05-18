@@ -105,7 +105,7 @@ function getNormal(entity, distance) {
 /* Goes in front of given entity*/
 function viewScreen(screen) {
 
-    var pos = getNormal(screen, 10);
+    var pos = getNormal(screen, close);
 
     var p = camera.placeable.position;
 
@@ -123,13 +123,13 @@ function viewScreen(screen) {
 function getPoints(from, to) {
     orig_target = from.placeable.position;
     targets = [];
-    targets.push(getNormal(from, 15));
-    targets.push(getNormal(to, 15));
-    targets.push(getNormal(to, 10));
+    targets.push(getNormal(from, far));
+    targets.push(getNormal(to, far));
+    targets.push(getNormal(to, close));
     lookAtTargets = [];
-    lookAtTargets.push(getNormal(from, 10));
-    lookAtTargets.push(getNormal(to, 15));
-    lookAtTargets.push(getNormal(to, 10));
+    lookAtTargets.push(getNormal(from, close));
+    lookAtTargets.push(getNormal(to, far));
+    lookAtTargets.push(getNormal(to, close));
 }
 
 function HandleGotoNext() {
@@ -212,7 +212,6 @@ function animationUpdate(dt) {
 	return;
     }
 
-
     var drotx = targetRotation.x - currentRotation.x;
     var droty = targetRotation.y - currentRotation.y;
     var drotz = targetRotation.z - currentRotation.z;
@@ -220,8 +219,8 @@ function animationUpdate(dt) {
     // Count magnitude
     var magnitude = Math.sqrt(Math.pow(drotx, 2) + Math.pow(droty, 2) + Math.pow(drotz, 2));
 
-    var ratio = Math.min(orig_dist / dist * 2, 10);
-    
+    var ratio = Math.min(orig_dist / dist, 5);
+
     newtransform.rot.x = (currentRotation.x + drotx / magnitude * ratio) % 360;
     newtransform.rot.y = (currentRotation.y + droty / magnitude * ratio) % 360;
     newtransform.rot.z = (currentRotation.z + drotz / magnitude * ratio) % 360;
@@ -247,6 +246,9 @@ var camera = scene.GetEntityByNameRaw("FreeLookCamera");
 inputmapper.RegisterMapping('n', "GotoNext", 1);
 inputmapper.RegisterMapping('p', "GotoPrev", 1);
 inputmapper.RegisterMapping('r', "ResetShow", 1);
+
+var close = 5;
+var far = 15;
 
 me.Action("GotoNext").Triggered.connect(HandleGotoNext);
 me.Action("GotoPrev").Triggered.connect(HandleGotoPrev);
