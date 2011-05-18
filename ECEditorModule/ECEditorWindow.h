@@ -18,8 +18,6 @@
 #include <QPointer>
 #include <QWidget>
 
-extern std::vector<std::string> AttributeTypenames;
-
 class QPushButton;
 class QListWidget;
 class QTreeWidget;
@@ -32,7 +30,7 @@ struct EntityComponentSelection
 };
 
 class ECBrowser;
-class AddComponentDialog;
+class TransformEditor;
 
 /// Contains entity pointer as a QPointer. This class is used to indentify a right item using an entity ID.
 /// \ingroup ECEditorModuleClient.
@@ -74,10 +72,10 @@ public:
     */
     void AddEntity(entity_id_t id, bool udpate_ui = true);
 
-    /// Set new list of entities to ECEditor. Calling this method will clear 
-    /// previously selected entities from the editor.
-    /** @param entities a new list of entities that we want to add into the editor.
-     *  @param select_all Do we want to select all entities from the list.
+    /// Set new list of entities to ECEditor.
+    /** Calling this method will clear previously selected entities from the editor.
+        @param entities a new list of entities that we want to add into the editor.
+        @param select_all Do we want to select all entities from the list.
     */
     void AddEntities(const QList<entity_id_t> &entities, bool select_all = false);
 
@@ -113,7 +111,7 @@ public slots:
      */
     void CreateComponent();
 
-    /// Shows dialog for invoking entity actions.
+    /// Shows dialog for invoking entity actions for currently selected entities.
     void OpenEntityActionDialog();
 
     /// Called by entity action dialog when it's finished.
@@ -121,7 +119,7 @@ public slots:
     */
     void EntityActionDialogFinished(int result);
 
-    /// Shows dialog for invoking functions.
+    /// Shows dialog for invoking functions for currently selected entities.
     void OpenFunctionDialog();
 
     /// Called by function dialog when it's finished.
@@ -143,7 +141,6 @@ public slots:
     void ShowXmlEditorForComponent(std::vector<ComponentPtr> components);
 
     /// Shows EC XML editor.for a single component.
-    //void ShowXmlEditorForComponent();
     void ShowXmlEditorForComponent(const std::string &componentType);
 
     /// Show/Hide entity list.
@@ -156,6 +153,7 @@ public slots:
     /// focus it should accept entity select actions and add clicked entities from the scene.
     void SetFocus(bool focus);
 
+    /// QWidget override.
     void setVisible(bool visible);
 
 signals:
@@ -218,17 +216,12 @@ private:
     /// Note! this method will unbold previous selection.
     void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);
 
-    /// Initializes the widget.
-    void Initialize();
-
-    /// Framework pointer.
-    Framework *framework_;
-
+    Framework *framework_; ///< Framework pointer.
     QPushButton* toggle_entities_button_;
     QListWidget* entity_list_;
     ECBrowser *browser_;
-    QPointer<AddComponentDialog> component_dialog_; /// @todo remove this.
-    bool has_focus_; // To tack if this editor has a focus.
+    bool has_focus_; ///< To track if this editor has a focus.
+    TransformEditor *transformEditor;
 };
 
 #endif

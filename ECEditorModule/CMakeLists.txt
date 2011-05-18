@@ -11,7 +11,7 @@ file (GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h ECAttributeEditor.h ECBro
     MultiEditPropertyFactory.h MultiEditPropertyManager.h EntityPlacer.h ECComponentEditor.h LineEditPropertyFactory.h
     AddComponentDialog.h EntityActionDialog.h FunctionDialog.h TreeWidgetItemExpandMemory.h SceneStructureModule.h
     SceneStructureWindow.h SceneTreeWidget.h AddContentWindow.h AssetsWindow.h AssetTreeWidget.h RequestNewAssetDialog.h
-    CloneAssetDialog.h EditorButtonFactory.h)
+    CloneAssetDialog.h EditorButtonFactory.h TransformEditor.h)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
@@ -39,6 +39,8 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 link_ogre()
 link_package (QT_PROPERTY_BROWSER)
 link_modules (Framework Scene Input Console Ui OgreRenderingModule TundraLogicModule AssetModule)
+
+LinkEntityComponent(EntityComponents/EC_TransformGizmo EC_TransformGizmo)
 
 SetupCompileFlagsWithPCH()
 

@@ -8,7 +8,6 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "Application.h"
 #include "ECEditorWindow.h"
 #include "ECBrowser.h"
 #include "EntityPlacer.h"
@@ -18,6 +17,9 @@
 #include "ArgumentType.h"
 #include "FunctionInvoker.h"
 #include "ECEditorModule.h"
+#include "TransformEditor.h"
+
+#include "Application.h"
 #include "Profiler.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
@@ -40,7 +42,7 @@ uint AddUniqueListItem(Entity *entity, QListWidget* list, const QString& name)
             return i;
     }
 
-   new EntityListWidgetItem(name, list, entity);
+    new EntityListWidgetItem(name, list, entity);
     return list->count() - 1;
 }
 
@@ -55,10 +57,81 @@ ECEditorWindow::ECEditorWindow(Framework* framework) :
     toggle_entities_button_(0),
     entity_list_(0),
     browser_(0),
-    component_dialog_(0),
-    has_focus_(true)
+    has_focus_(true),
+    transformEditor(new TransformEditor())
 {
-    Initialize();
+    QUiLoader loader;
+    loader.setLanguageChangeEnabled(true);
+    QFile file(Application::InstallationDirectory() + "data/ui/eceditor.ui");
+    file.open(QFile::ReadOnly);
+    QWidget *contents = loader.load(&file, this);
+    if (!contents)
+    {
+        LogError("Could not load editor layout");
+        return;
+    }
+    contents->installEventFilter(this);
+    file.close();
+
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->addWidget(contents);
+    layout->setContentsMargins(0,0,0,0);
+    setLayout(layout);
+    setWindowTitle(contents->windowTitle());
+    resize(contents->size());
+
+    toggle_entities_button_ = findChild<QPushButton *>("but_show_entities");
+    entity_list_ = findChild<QListWidget*>("list_entities");
+    QWidget *entity_widget = findChild<QWidget*>("entity_widget");
+    if(entity_widget)
+        entity_widget->hide();
+
+    QWidget *browserWidget = findChild<QWidget*>("browser_widget");
+    if(browserWidget)
+    {
+        browser_ = new ECBrowser(framework_, browserWidget);
+        browser_->setMinimumWidth(100);
+        QVBoxLayout *property_layout = dynamic_cast<QVBoxLayout *>(browserWidget->layout());
+        if (property_layout)
+            property_layout->addWidget(browser_);
+    }
+
+    if(browser_)
+    {
+        // signals from attribute browser to editor window.
+        connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), SLOT(ShowXmlEditorForComponent(const std::string &)));
+        connect(browser_, SIGNAL(CreateNewComponent()), SLOT(CreateComponent()));
+        connect(browser_, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)), SLOT(HighlightEntities(const QString&, const QString&)));
+        connect(browser_, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)),
+                SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
+        browser_->SetItemExpandMemory(framework_->GetModule<ECEditorModule>()->ExpandMemory());
+    }
+
+    if (entity_list_)
+    {
+        entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
+        connect(entity_list_, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowEntityContextMenu(const QPoint &)));
+    }
+
+    if (toggle_entities_button_)
+        connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
+
+    // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
+    connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(SceneManager *)), SLOT(DefaultSceneChanged(SceneManager *)));
+
+    ECEditorModule *module = framework_->GetModule<ECEditorModule>();
+    if (module)
+        connect(this, SIGNAL(OnFocusChanged(ECEditorWindow *)), module, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
+
+    SceneManager *scene = framework_->Scene()->GetDefaultScene().get();
+    if (scene)
+    {
+        connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), 
+            SLOT(EntityRemoved(Entity*)), Qt::UniqueConnection);
+        connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
+                SLOT(ActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
+    }
 }
 
 ECEditorWindow::~ECEditorWindow()
@@ -209,10 +282,10 @@ void ECEditorWindow::CreateComponent()
 
     if (ids.size())
     {
-        component_dialog_ = new AddComponentDialog(framework_, ids, NULL);
-        component_dialog_->SetComponentList(framework_->Scene()->GetComponentTypes());
-        connect(component_dialog_, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinished(int)));
-        component_dialog_->show();
+        AddComponentDialog *dialog = new AddComponentDialog(framework_, ids, NULL);
+        dialog->SetComponentList(framework_->Scene()->GetComponentTypes());
+        connect(dialog, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinished(int)));
+        dialog->show();
     }
 }
 
@@ -222,9 +295,7 @@ void ECEditorWindow::ActionTriggered(Entity *entity, const QString &action, cons
     {
         MouseEvent::MouseButton mouse_event = static_cast<MouseEvent::MouseButton>(params[0].toUInt());
         if (has_focus_ && isVisible() && mouse_event == MouseEvent::LeftButton)
-        {
             AddEntity(entity->GetId());
-        }
     }
 }
 
@@ -329,10 +400,6 @@ void ECEditorWindow::PasteEntity()
 
 void ECEditorWindow::OpenEntityActionDialog()
 {
-    QAction *action = dynamic_cast<QAction *>(sender());
-    if (!action)
-        return;
-
     QList<EntityWeakPtr> entities;
     foreach(EntityPtr entity, GetSelectedEntities())
         entities.append(entity);
@@ -361,21 +428,16 @@ void ECEditorWindow::EntityActionDialogFinished(int result)
 
 void ECEditorWindow::OpenFunctionDialog()
 {
-    QAction *action = dynamic_cast<QAction *>(sender());
-    assert(action);
-    if (!action)
-        return;
-
     QObjectWeakPtrList objs;
     foreach(EntityPtr entity, GetSelectedEntities())
         objs << boost::dynamic_pointer_cast<QObject>(entity);
 
-    if (objs.empty())
-        return;
-
-    FunctionDialog *d = new FunctionDialog(objs, this);
-    connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogFinished(int)));
-    d->show();
+    if (objs.size())
+    {
+        FunctionDialog *d = new FunctionDialog(objs, this);
+        connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogFinished(int)));
+        d->show();
+    }
 }
 
 void ECEditorWindow::FunctionDialogFinished(int result)
@@ -436,7 +498,7 @@ void ECEditorWindow::HighlightEntities(const QString &type, const QString &name)
     BoldEntityListItems(entities);
 }
 
-void ECEditorWindow::RefreshPropertyBrowser() 
+void ECEditorWindow::RefreshPropertyBrowser()
 {
     PROFILE(EC_refresh_browser);
     if (!browser_)
@@ -449,11 +511,11 @@ void ECEditorWindow::RefreshPropertyBrowser()
         return;
     }
 
-    QSet<entity_id_t> emtpty_list; 
-    BoldEntityListItems(emtpty_list);
+    QSet<entity_id_t> emptyList;
+    BoldEntityListItems(emptyList);
 
     QList<EntityPtr> entities = GetSelectedEntities();
-    // If any of enities was not selected clear the browser window.
+    // If any of entities was not selected clear the browser window.
     if (!entities.size())
     {
         browser_->clear();
@@ -503,6 +565,8 @@ void ECEditorWindow::RefreshPropertyBrowser()
         }
     }
     browser_->UpdateBrowser();
+
+    transformEditor->SetSelectedEntities(entities);
 }
 
 void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
@@ -685,82 +749,6 @@ void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entitie
                 item->setFont(font);
             }
         }
-    }
-}
-
-void ECEditorWindow::Initialize()
-{
-    QUiLoader loader;
-    loader.setLanguageChangeEnabled(true);
-    QFile file(Application::InstallationDirectory() + "data/ui/eceditor.ui");
-    file.open(QFile::ReadOnly);
-    QWidget *contents = loader.load(&file, this);
-    if (!contents)
-    {
-        LogError("Could not load editor layout");
-        return;
-    }
-    contents->installEventFilter(this);
-    file.close();
-
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->addWidget(contents);
-    layout->setContentsMargins(0,0,0,0);
-    setLayout(layout);
-    setWindowTitle(contents->windowTitle());
-    resize(contents->size());
-
-    toggle_entities_button_ = findChild<QPushButton *>("but_show_entities");
-    entity_list_ = findChild<QListWidget*>("list_entities");
-    QWidget *entity_widget = findChild<QWidget*>("entity_widget");
-    if(entity_widget)
-        entity_widget->hide();
-
-    QWidget *browserWidget = findChild<QWidget*>("browser_widget");
-    if(browserWidget)
-    {
-        browser_ = new ECBrowser(framework_, browserWidget);
-        browser_->setMinimumWidth(100);
-        QVBoxLayout *property_layout = dynamic_cast<QVBoxLayout *>(browserWidget->layout());
-        if (property_layout)
-            property_layout->addWidget(browser_);
-    }
-
-    if(browser_)
-    {
-        // signals from attribute browser to editor window.
-        connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), SLOT(ShowXmlEditorForComponent(const std::string &)));
-        connect(browser_, SIGNAL(CreateNewComponent()), SLOT(CreateComponent()));
-        connect(browser_, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)), SLOT(HighlightEntities(const QString&, const QString&)));
-        connect(browser_, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)),
-                SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
-        browser_->SetItemExpandMemory(framework_->GetModule<ECEditorModule>()->ExpandMemory());
-    }
-
-    if (entity_list_)
-    {
-        entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
-        connect(entity_list_, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowEntityContextMenu(const QPoint &)));
-    }
-
-    if (toggle_entities_button_)
-        connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
-
-    // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
-    connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(SceneManager *)), SLOT(DefaultSceneChanged(SceneManager *)));
-
-    ECEditorModule *module = framework_->GetModule<ECEditorModule>();
-    if (module)
-        connect(this, SIGNAL(OnFocusChanged(ECEditorWindow *)), module, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
-
-    SceneManager *scene = framework_->Scene()->GetDefaultScene().get();
-    if (scene)
-    {
-        connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), 
-            SLOT(EntityRemoved(Entity*)), Qt::UniqueConnection);
-        connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
-                SLOT(ActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
     }
 }
 
