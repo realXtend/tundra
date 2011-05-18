@@ -88,7 +88,7 @@ namespace Asset
         }
 
         
-        if (!options.count("run"))
+        if (!options.count("storage"))
             return;
 
         std::vector<std::string> sv = options["storage"].as<std::vector<std::string> >();
