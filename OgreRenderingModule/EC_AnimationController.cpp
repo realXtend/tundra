@@ -542,6 +542,62 @@ bool EC_AnimationController::SetAnimationTimePosition(const QString& name, float
     return false;
 }
 
+bool EC_AnimationController::SetAnimationRelativeTimePosition(const QString& name, float newPosition)
+{
+    Ogre::Entity* entity = GetEntity();
+    Ogre::AnimationState* animstate = GetAnimationState(entity, name);
+    if (!animstate) 
+        return false;
+        
+    // See if we find this animation in the list of active animations
+    AnimationMap::iterator i = animations_.find(name);
+    if (i != animations_.end())
+    {
+        animstate->setTimePosition(clamp(newPosition, 0.0f, 1.0f) * animstate->getLength());
+        return true;
+    }
+    // Animation not active
+    return false;
+}
+
+float EC_AnimationController::GetAnimationLength(const QString& name)
+{
+    Ogre::Entity* entity = GetEntity();
+    Ogre::AnimationState* animstate = GetAnimationState(entity, name);
+    if (!animstate)
+        return 0.0f;
+    else
+        return animstate->getLength();
+}
+
+float EC_AnimationController::GetAnimationTimePosition(const QString& name)
+{
+    Ogre::Entity* entity = GetEntity();
+    Ogre::AnimationState* animstate = GetAnimationState(entity, name);
+    if (!animstate)
+        return 0.0f;
+    
+    // See if we find this animation in the list of active animations
+    AnimationMap::iterator i = animations_.find(name);
+    if (i != animations_.end())
+        return animstate->getTimePosition();
+    else return 0.0f;
+}
+
+float EC_AnimationController::GetAnimationRelativeTimePosition(const QString& name)
+{
+    Ogre::Entity* entity = GetEntity();
+    Ogre::AnimationState* animstate = GetAnimationState(entity, name);
+    if (!animstate)
+        return 0.0f;
+    
+    // See if we find this animation in the list of active animations
+    AnimationMap::iterator i = animations_.find(name);
+    if (i != animations_.end())
+        return animstate->getTimePosition() / animstate->getLength();
+    else return 0.0f;
+}
+
 void EC_AnimationController::UpdateSignals()
 {
     Entity* parent = GetParentEntity();

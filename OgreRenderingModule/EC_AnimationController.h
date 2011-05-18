@@ -279,6 +279,13 @@ public slots:
      */
     bool SetAnimationTimePosition(const QString& name, float new_position);
 
+    /// Sets length-relative time position of an active animation (ie. 0 = start, 1 = end)
+    /** \param name Animation name
+        \param new_position New time position
+        \return true if successful (animation was currently playing)
+     */
+    bool SetAnimationRelativeTimePosition(const QString& name, float new_position);
+    
     /// Sets autostop on animation
     /** \param name Animation name
         \param enable Autostop flag
@@ -298,6 +305,24 @@ public slots:
     
     /// Get active animations as a simple stringlist
     QStringList GetActiveAnimations() const;
+    
+    /// Returns length of animation
+    /** \param name Animation name
+        \return length of animation in seconds, or 0 if no such animation
+      */
+    float GetAnimationLength(const QString& name);
+    
+    /// Returns time position of animation
+    /** \param name Animation name
+        \return time position of animation in seconds, or 0 if not active
+      */
+    float GetAnimationTimePosition(const QString& name);
+    
+    /// Returns relative time position of animation
+    /** \param name Animation name
+        \return time position of animation between 0 - 1, or 0 if not active
+      */
+    float GetAnimationRelativeTimePosition(const QString& name);
     
     /// Implements the PlayAnim action
     void PlayAnim(const QString &name, const QString &fadein, const QString &exclusive);
