@@ -490,8 +490,6 @@ namespace OgreRenderer
     
     void Renderer::Update(f64 frametime)
     {
-        PROFILE(Ogre_WindowEventUtilities_messagePump);
-//        Ogre::WindowEventUtilities::messagePump();
     }
     
     void Renderer::SetCurrentCamera(Ogre::Camera* camera)
@@ -511,7 +509,7 @@ namespace OgreRenderer
         if (framework_->IsHeadless())
             return;
             
-        PROFILE(Renderer_Render_QtBlit);
+        PROFILE(Renderer_DoFullUIRedraw);
 
         UiGraphicsView *view = framework_->Ui()->GraphicsView();
 
@@ -527,11 +525,17 @@ namespace OgreRenderer
         QSize mainwindowSize(framework_->Ui()->MainWindow()->size());
         QSize renderWindowSize(renderWindow->OgreRenderWindow()->getWidth(), renderWindow->OgreRenderWindow()->getHeight());
 
-        backBuffer->fill(Qt::transparent);
+        {
+            PROFILE(Renderer_DoFullUIRedraw_backbufferfill);
+            backBuffer->fill(Qt::transparent);
+        }
 
         // Paint ui view into buffer
-        QPainter painter(backBuffer);
-        view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+        {
+            PROFILE(Renderer_DoFullUIRedraw_GraphicsViewPaint);
+            QPainter painter(backBuffer);
+            view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+        }
 
         renderWindow->UpdateOverlayImage(*backBuffer);
     }
@@ -719,6 +723,7 @@ namespace OgreRenderer
 
         try
         {
+            PROFILE(Renderer_Render_OgreRoot_renderOneFrame);
             root_->renderOneFrame();
         } catch(const std::exception &e)
         {
