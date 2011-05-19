@@ -107,7 +107,7 @@ bool ConfigAPI::HasValue(QString file, QString section, QString key)
     if (configFolder_.isEmpty())
     {
         LogError("ConfigAPI::Get: Config folder has not been prepared, returning empty string.");
-        return "";
+        return false;
     }
 
     PrepareString(file);
@@ -117,7 +117,7 @@ bool ConfigAPI::HasValue(QString file, QString section, QString key)
     QSettings config(GetFilePath(file), QSettings::IniFormat);
     if (!section.isEmpty())
         key = section + "/" + key;
-    return config.allKeys().contains(key);
+    return config.allKeys().contains(key) == true;
 }
 
 QVariant ConfigAPI::Get(const ConfigData &data)

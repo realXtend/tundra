@@ -32,7 +32,7 @@ public:
 
 public slots:
     /// Call this to get a copy of the .ui asset file contents, that has each asset reference replaced with the actual disk source of each asset in the system.
-    /// Called from UiService::LoadFromFile(). This function will return a modified copy of the original .ui file.
+    /// Called from UiAPI::LoadFromFile(). This function will return a modified copy of the original .ui file.
     QByteArray GetRefReplacedAssetData() const;
 
     /// Returns true if this UI asset is valid and loaded in memory.

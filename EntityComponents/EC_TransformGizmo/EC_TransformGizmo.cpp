@@ -177,7 +177,7 @@ void EC_TransformGizmo::Initialize()
     }
 
     placeable->SetTemporary(true);
-    placeable->selectionLayer.Set(0, AttributeChange::Default);
+    placeable->selectionLayer.Set(0, AttributeChange::Default); // ignore raycast
     placeable->Hide();
 
     mesh = boost::dynamic_pointer_cast<EC_Mesh>(GetParentEntity()->CreateComponent(
