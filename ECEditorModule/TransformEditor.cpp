@@ -21,6 +21,11 @@ TransformEditor::TransformEditor(const ScenePtr &scene)
     CreateGizmo();
 }
 
+TransformEditor::~TransformEditor()
+{
+    DeleteGizmo();
+}
+
 void TransformEditor::SetSelection(const QList<EntityPtr> &entities)
 {
     ClearSelection();
@@ -58,6 +63,7 @@ void TransformEditor::ClearSelection()
 
 void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
 {
+#ifdef EC_TransformGizmo_ENABLED
     if (targets.isEmpty())
         return;
 
@@ -87,6 +93,66 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
         if (tg)
             tg->SetPosition(pivotPos);
     }
+#endif
+}
+
+void TransformEditor::SetGizmoVisible(bool show)
+{
+#ifdef EC_TransformGizmo_ENABLED
+    if (gizmo)
+    {
+        EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
+        if (tg)
+        {
+            if (show)
+                tg->Show();
+            else
+                tg->Hide();
+        }
+    }
+#endif
+}
+
+void TransformEditor::TranslateTargets(const Vector3df &offset)
+{
+    foreach(const AttributeWeakPtr attr, targets)
+    {
+        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
+        if (transform)
+        {
+            Transform t = transform->Get();
+            t.position += offset;
+            transform->Set(t, AttributeChange::Default);
+        }
+    }
+
+    FocusGizmoPivotToAabbBottomCenter();
+}
+
+void TransformEditor::RotateTargets(const Quaternion &delta)
+{
+    foreach(const AttributeWeakPtr attr, targets)
+    {
+        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
+        if (transform)
+        {
+        }
+    }
+
+    FocusGizmoPivotToAabbBottomCenter();
+}
+
+void TransformEditor::ScaleTargets(const Vector3df &offset)
+{
+    foreach(const AttributeWeakPtr attr, targets)
+    {
+        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
+        if (transform)
+        {
+        }
+    }
+
+    FocusGizmoPivotToAabbBottomCenter();
 }
 
 void TransformEditor::CreateGizmo()
@@ -116,35 +182,9 @@ void TransformEditor::CreateGizmo()
 #endif
 }
 
-void TransformEditor::TranslateTargets(const Vector3df &offset)
+void TransformEditor::DeleteGizmo()
 {
-    foreach(const AttributeWeakPtr attr, targets)
-    {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-        }
-    }
-}
-
-void TransformEditor::RotateTargets(const Quaternion &delta)
-{
-    foreach(const AttributeWeakPtr attr, targets)
-    {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-        }
-    }
-}
-
-void TransformEditor::ScaleTargets(const Vector3df &offset)
-{
-    foreach(const AttributeWeakPtr attr, targets)
-    {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-        }
-    }
+    ScenePtr s = scene.lock();
+    if (s && gizmo)
+        s->RemoveEntity(gizmo->GetId());
 }

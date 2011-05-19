@@ -157,6 +157,12 @@ void EC_TransformGizmo::SetVisible(bool visible)
 
 void EC_TransformGizmo::Initialize()
 {
+    assert(GetParentEntity());
+    if (!GetParentEntity())
+        return;
+
+    GetParentEntity()->SetName("TransformGizmo");
+
     placeable = boost::dynamic_pointer_cast<EC_Placeable>(GetParentEntity()->CreateComponent(
         EC_Placeable::TypeNameStatic(), "TransformGizmoPlaceable", AttributeChange::Default, false));
     if (!placeable)
@@ -166,6 +172,7 @@ void EC_TransformGizmo::Initialize()
     }
 
     placeable->SetTemporary(true);
+    placeable->selectionLayer.Set(0, AttributeChange::Default);
 
     mesh = boost::dynamic_pointer_cast<EC_Mesh>(GetParentEntity()->CreateComponent(
         EC_Mesh::TypeNameStatic(), "TransformGizmoMesh", AttributeChange::Default, false));
@@ -183,8 +190,6 @@ void EC_TransformGizmo::Initialize()
     materials.Append(cAxisRed);
     materials.Append(cAxisBlue);
     mesh->meshMaterial.Set(materials, AttributeChange::Default);
-
-    placeable->Show();
 }
 
 /*
@@ -200,7 +205,7 @@ AssetReferenceList GetMaterials(const &QList<GizmoAxis> activeAxes = QList<Gizmo
 */
 
 const float cClickDistanceThreshold = 0.25f;
-const float cClickOffsetThreshold = 10.f;
+const float cClickOffsetThreshold = 5.f;//10.f;
 
 void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 {
@@ -358,15 +363,11 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
             {
                 if (activeAxes.size() == 1)
                     curPoint = ClosestPointOnLineAToLineB(activeAxes.first().ray, mouseRay, 0);
-    /*
                 else if (activeAxes.size() == 2)
                 {
-                    std::pair<bool, Ogre::Real> p = mouseRay.intersects(Ogre::Plane(normal, point));
+                    //std::pair<bool, Ogre::Real> p = mouseRay.intersects(Ogre::Plane(normal, point));
                 }
-    /*            ;// plane
-            else if (activeAxes.size() == 3)
-                ;///pivot selected, free move;
-    */
+
                 switch(gizmoType)
                 {
                 case EC_TransformGizmo::Translate:

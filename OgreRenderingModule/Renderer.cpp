@@ -1329,7 +1329,7 @@ namespace OgreRenderer
         //unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  */
         float shadowFarDist = 50;
         unsigned short shadowTextureSize = 2048;
-        size_t shadowTextureCount = 1;
+        unsigned short shadowTextureCount = 1;
         
         if(using_pssm)
         {
