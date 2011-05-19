@@ -52,13 +52,13 @@ bool CmpEntityById(EntityPtr a, EntityPtr b)
     return a->GetId() < b->GetId();
 }
 
-ECEditorWindow::ECEditorWindow(Framework* framework) :
-    framework_(framework),
+ECEditorWindow::ECEditorWindow(Framework* fw) :
+    framework_(fw),
     toggle_entities_button_(0),
     entity_list_(0),
     browser_(0),
     has_focus_(true),
-    transformEditor(new TransformEditor())
+    transformEditor(new TransformEditor(fw->Scene()->GetDefaultScene()))
 {
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
@@ -147,8 +147,8 @@ void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
         //If entity don't have EC_Name then entity_name is same as it's id.
         QString entity_name = QString::number(entity_id);
         EntityPtr entity = framework_->Scene()->GetDefaultScene()->GetEntity(entity_id);
-        if (entity && entity->GetComponent("EC_Name"))
-            entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
+        if (entity && entity->GetComponent<EC_Name>())
+            entity_name = entity->GetName();
 
         /// @todo This will now work if we loose windows focus and previos key state stays, replace this with InputContext.
         if(!framework_->Input()->IsKeyDown(Qt::Key_Control))
@@ -566,7 +566,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     }
     browser_->UpdateBrowser();
 
-    transformEditor->SetSelectedEntities(entities);
+    transformEditor->SetSelection(entities);
 }
 
 void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)

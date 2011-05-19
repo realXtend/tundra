@@ -60,9 +60,9 @@ class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
 
 public:
     /// Constructor
-    /** @param framework Framework.
+    /** @param fw Framework.
     */
-    explicit ECEditorWindow(Framework* framework);
+    explicit ECEditorWindow(Framework* fw);
 
     /// Destructor.
     ~ECEditorWindow();

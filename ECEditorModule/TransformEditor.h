@@ -38,20 +38,43 @@ class ECEDITOR_MODULE_API TransformEditor : public QObject
     Q_OBJECT
 
 public:
-    TransformEditor();
+    ///
+    /** */
+    TransformEditor(const ScenePtr &scene);
 
-//    void AddEntities();
-//    void RemoveEntities();
-//    void ClearSelection();
+    ///
+    /** @param entities */
+    void SetSelection(const QList<EntityPtr> &entities);
 
-    void SetSelectedEntities(const QList<EntityPtr> &entities);
+    ///
+    /** @param entities */
+    void AppendSelection(const QList<EntityPtr> &entities);
+
+    /// This is an overloaded function.
+    /** @param entity */
+    void AppendSelection(const EntityPtr &entity);
+
+    ///
+    /** @param */
+    void RemoveFromSelection(const QList<EntityPtr> &entities);
+
+    /// This is an overloaded function.
+    /** @param */
+    void RemoveFromSelection(const EntityPtr &entity);
+
+    ///
+    void ClearSelection();
+
+    ///
     void FocusGizmoPivotToAabbBottomCenter();
+
+    ///
     void CreateGizmo();
 
 public slots:
     ///
     /** @param */
-    void TranslateTargets(const Vector3df offset);
+    void TranslateTargets(const Vector3df &offset);
 
     ///
     /** @param */
@@ -62,6 +85,7 @@ public slots:
     void ScaleTargets(const Vector3df &offset);
 
 private:
+    SceneWeakPtr scene;
     EntityPtr gizmo;
     QList<AttributeWeakPtr> targets;
 };
