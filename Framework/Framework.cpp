@@ -249,6 +249,9 @@ void Framework::Go()
         LogDebug("Unloading module " + modules[i]->Name());
         modules[i]->Unload();
     }
+
+    /// Let go of all the module shared pointers, which causes a deletion of each module.
+    modules.clear();
 }
 
 void Framework::Exit()

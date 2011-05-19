@@ -47,7 +47,7 @@ RendererSettingsWindow::RendererSettingsWindow(Framework* fw, QWidget *parent) :
     setLayout(layout);
 
     QDoubleSpinBox* spin = settings_widget_->findChild<QDoubleSpinBox*>("spinbox_viewdistance");
-    OgreRenderer::Renderer *renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!spin || !renderer)
         return;
     spin->setValue(renderer->GetViewDistance());

@@ -120,8 +120,7 @@ void OgreRenderingModule::Initialize()
     // Restore the original cwd to not disturb the enviroment we are running in.
     Application::SetCurrentWorkingDirectory(cwd);
 
-        framework_->RegisterRenderer(renderer_.get());
-
+    framework_->RegisterRenderer(renderer.get());
     framework_->RegisterDynamicObject("renderer", renderer.get());
 }
 
@@ -141,17 +140,14 @@ void OgreRenderingModule::Uninitialize()
     // no refs to Ogre assets remain - below 'renderer.reset()' is going to delete Ogre::Root.
     framework_->Asset()->ForgetAllAssets();
 
-    framework_->GetServiceManager()->UnregisterService(renderer);
-
-        // Clear up the renderer object, so that it will not be left dangling.
-        framework_->RegisterRenderer(0);
+    // Clear up the renderer object, so that it will not be left dangling.
+    framework_->RegisterRenderer(0);
+}
 
 void OgreRenderingModule::Update(f64 frametime)
 {
-    {
-        PROFILE(OgreRenderingModule_Update);
-        renderer->Update(frametime);
-    }
+    PROFILE(OgreRenderingModule_Update);
+    renderer->Update(frametime);
 }
 
 void OgreRenderingModule::ShowSettingsWindow()
