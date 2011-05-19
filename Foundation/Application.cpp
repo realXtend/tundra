@@ -5,6 +5,7 @@
 
 #include "Application.h"
 #include "Framework.h"
+#include "Platform.h"
 #include "VersionInfo.h"
 #include "ConfigurationManager.h"
 #include "CoreStringUtils.h"
@@ -105,10 +106,11 @@ void Application::InitializeSplash()
 
     if (!splashScreen)
     {
+        QString runDir = QString::fromStdString(ReplaceChar(framework->GetPlatform()->GetInstallDirectory(), '\\', '/'));
 #ifdef Q_WS_X11
-        splashScreen = new QSplashScreen(QPixmap("./data/ui/images/splash.png"), Qt::WindowStaysOnTopHint|Qt::X11BypassWindowManagerHint);
+        splashScreen = new QSplashScreen(QPixmap(runDir + "/data/ui/images/splash.png"), Qt::WindowStaysOnTopHint|Qt::X11BypassWindowManagerHint);
 #else
-        splashScreen = new QSplashScreen(QPixmap("./data/ui/images/splash.png"), Qt::WindowStaysOnTopHint);
+        splashScreen = new QSplashScreen(QPixmap(runDir + "/data/ui/images/splash.png"), Qt::WindowStaysOnTopHint);
 #endif
         splashScreen->setFont(QFont("Calibri", 9));
         splashScreen->show();
