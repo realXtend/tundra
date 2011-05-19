@@ -155,9 +155,7 @@ void TundraLogicModule::Load()
 #ifdef EC_SoundRuler_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundRuler>));
 #endif
-//#ifdef EC_Name_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Name>));
-//#endif
 #ifdef EC_ParticleSystem_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
 #endif

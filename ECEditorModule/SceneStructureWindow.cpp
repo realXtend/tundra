@@ -328,7 +328,6 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
                     SLOT(UpdateEntityName(IAttribute *)), Qt::UniqueConnection);
             }
 
-//#ifdef EC_DynamicComponent_ENABLED
             // If dynamic component exists, hook up its change signals in case AssetReference attribute is added/removed to it.
             if (comp->TypeName() == EC_DynamicComponent::TypeNameStatic())
             {
@@ -337,7 +336,7 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
                 connect(comp, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
                     SLOT(UpdateAssetReference(IAttribute *)), Qt::UniqueConnection);
             }
-//#endif
+
             // Add possible asset references.
             foreach(IAttribute *attr, comp->GetAttributes())
                 if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
