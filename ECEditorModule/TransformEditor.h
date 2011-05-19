@@ -15,21 +15,20 @@
 
 class Quaternion;
 
+/// Represents weak pointer to IAttribute.
 struct AttributeWeakPtr
 {
-    AttributeWeakPtr(const ComponentPtr c, IAttribute *a) : component(c), attribute(a) {}
+    /// Constructor.
+    /** @param c Owner component.
+        @param a The actual attribute.
+    */
+    AttributeWeakPtr(const ComponentPtr c, IAttribute *a) : owner(c), attribute(a) {}
 
-    IAttribute *Get() const
-    {
-        ComponentPtr c = component.lock();
-        if (c)
-            return attribute;
-        else
-            return 0;
-    }
+    /// Returns pointer to the attribute or null if the owner component doens't exist anymore.
+    IAttribute *Get() const { return owner.lock() ? attribute : 0; }
 
-    ComponentWeakPtr component;
-    IAttribute *attribute;
+    ComponentWeakPtr owner; ///< Owner component.
+    IAttribute *attribute; ///< The actual attribute.
 };
 
 ///
@@ -41,6 +40,7 @@ public:
     ///
     /** */
     TransformEditor(const ScenePtr &scene);
+    ~TransformEditor();
 
     ///
     /** @param entities */
@@ -68,10 +68,10 @@ public:
     ///
     void FocusGizmoPivotToAabbBottomCenter();
 
-    ///
-    void CreateGizmo();
-
 public slots:
+    /// 
+    void SetGizmoVisible(bool show);
+
     ///
     /** @param */
     void TranslateTargets(const Vector3df &offset);
@@ -85,6 +85,12 @@ public slots:
     void ScaleTargets(const Vector3df &offset);
 
 private:
+    /// Creates transform gizmo for the editor.
+    void CreateGizmo();
+
+    /// Destroyes editor's transform gizmo.
+    void DeleteGizmo();
+
     SceneWeakPtr scene;
     EntityPtr gizmo;
     QList<AttributeWeakPtr> targets;

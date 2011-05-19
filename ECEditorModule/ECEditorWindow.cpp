@@ -136,6 +136,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw) :
 
 ECEditorWindow::~ECEditorWindow()
 {
+    SAFE_DELETE(transformEditor);
 }
 
 void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
@@ -519,6 +520,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     if (!entities.size())
     {
         browser_->clear();
+        transformEditor->SetGizmoVisible(false);
         return;
     }
 
@@ -568,6 +570,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
 
     transformEditor->SetSelection(entities);
     transformEditor->FocusGizmoPivotToAabbBottomCenter();
+    transformEditor->SetGizmoVisible(true);
 }
 
 void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
