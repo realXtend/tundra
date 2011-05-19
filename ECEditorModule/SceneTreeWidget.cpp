@@ -541,7 +541,7 @@ void SceneTreeWidget::Edit()
 
         ECEditorWindow *editor = 0;
         ECEditorModule *module = framework->GetModule<ECEditorModule>();
-        editor = module->GetActiveECEditor();
+        editor = module->ActiveEditor();
         if (editor && !ecEditors.contains(editor))
         {
             editor->setAttribute(Qt::WA_DeleteOnClose);

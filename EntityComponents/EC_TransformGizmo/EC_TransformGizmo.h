@@ -62,6 +62,8 @@ public slots:
     ///
     //void SetPivot(float3x4 tm)
 
+    void SetPosition(const Vector3df &pos);
+
     /// Returns current type of the gizmo.
     GizmoType CurrentGizmoType() const { return gizmoType; }
 

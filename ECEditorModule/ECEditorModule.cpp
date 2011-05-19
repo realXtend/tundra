@@ -24,15 +24,11 @@
 
 ECEditorModule::ECEditorModule()
 :IModule("ECEditor"),
-xmlEditor_(0)
+xmlEditor(0)
 {
 }
 
 ECEditorModule::~ECEditorModule()
-{
-}
-
-void ECEditorModule::Load()
 {
 }
 
@@ -45,9 +41,7 @@ void ECEditorModule::Initialize()
 void ECEditorModule::PostInitialize()
 {
     framework_->Console()->RegisterCommand("doc", "Prints the class documentation for the given symbol.",
-        this, SLOT(ShowDocumentation()));
-
-    AddEditorWindowToUI();
+        this, SLOT(ShowDocumentation(const QString &)));
 
     inputContext = framework_->Input()->RegisterInputContext("ECEditorInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -55,69 +49,61 @@ void ECEditorModule::PostInitialize()
 
 void ECEditorModule::Uninitialize()
 {
-    if (common_editor_)
-        SAFE_DELETE(common_editor_);
-    SAFE_DELETE_LATER(xmlEditor_);
+    if (commonEditor)
+        SAFE_DELETE(commonEditor);
+    SAFE_DELETE_LATER(xmlEditor);
 }
 
 void ECEditorModule::Update(f64 frametime)
 {
 }
 
-ECEditorWindow *ECEditorModule::GetActiveECEditor() const
+ECEditorWindow *ECEditorModule::ActiveEditor() const
 {
-    return active_editor_;
+    return activeEditor;
 }
 
 void ECEditorModule::ECEditorFocusChanged(ECEditorWindow *editor)
 {
-    if (editor == active_editor_ && !editor)
+    if (editor == activeEditor && !editor)
         return;
 
     // Unfocus previously active editor and disconnect all signals from that editor.
-    if (active_editor_)
+    if (activeEditor)
     {
-        active_editor_->SetFocus(false);
-        disconnect(active_editor_, SIGNAL(destroyed(QObject*)), this, SLOT(ActiveECEditorDestroyed(QObject*)));
-        disconnect(active_editor_, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
+        activeEditor->SetFocus(false);
+        disconnect(activeEditor, SIGNAL(destroyed(QObject*)), this, SLOT(ActiveECEditorDestroyed(QObject*)));
+        disconnect(activeEditor, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
                    this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)));
     }
-    active_editor_ = editor;
-    active_editor_->SetFocus(true);
-    connect(active_editor_, SIGNAL(destroyed(QObject*)), SLOT(ActiveECEditorDestroyed(QObject*)), Qt::UniqueConnection);
-    connect(active_editor_, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
+
+    activeEditor = editor;
+    activeEditor->SetFocus(true);
+    connect(activeEditor, SIGNAL(destroyed(QObject*)), SLOT(ActiveECEditorDestroyed(QObject*)), Qt::UniqueConnection);
+    connect(activeEditor, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
             this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
 }
 
-void ECEditorModule::AddEditorWindowToUI()
+void ECEditorModule::ShowEditorWindow()
 {
-    if (active_editor_)
+    if (framework_->IsHeadless())
+        return;
+
+    if (activeEditor)
     {
-        active_editor_->setVisible(!active_editor_->isVisible());
+        activeEditor->setVisible(!activeEditor->isVisible());
         return;
     }
 
-    UiAPI *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
-
-    active_editor_ = new ECEditorWindow(GetFramework());
-    common_editor_ = active_editor_;
-    active_editor_->setParent(ui->MainWindow());
-    active_editor_->setWindowFlags(Qt::Tool);
-    active_editor_->setAttribute(Qt::WA_DeleteOnClose);
-
-    //UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
-    // We need to listen proxy widget's focus signal, because for some reason QWidget's focusInEvent wont get triggered when
-    // it's attached to QGraphicsProxyWidget.
-    //connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);
-
-    // We don't need to worry about attaching ECEditorWindow to ui scene, because ECEditorWindow's initialize operation will do it automaticly.
-    //ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", Application::InstallationDirectory() + "data/ui/images/menus/edbutton_OBJED_normal.png");
-    //ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
+    activeEditor = new ECEditorWindow(GetFramework());
+    commonEditor = activeEditor;
+    activeEditor->setParent(framework_->Ui()->MainWindow());
+    activeEditor->setWindowFlags(Qt::Tool);
+    activeEditor->setAttribute(Qt::WA_DeleteOnClose);
+    activeEditor->show();
 }
 
-void ECEditorModule::ShowDocumentation(QString symbol)
+void ECEditorModule::ShowDocumentation(const QString &symbol)
 {
     QUrl styleSheetPath;
     QString documentation;
@@ -143,16 +129,16 @@ void ECEditorModule::CreateXmlEditor(EntityPtr entity)
 
 QObjectList ECEditorModule::GetSelectedComponents() const
 {
-    if (active_editor_)
-        return active_editor_->GetSelectedComponents();
+    if (activeEditor)
+        return activeEditor->GetSelectedComponents();
     return QObjectList();
 }
 
 QVariantList ECEditorModule::GetSelectedEntities() const
 {
-    if (active_editor_)
+    if (activeEditor)
     {
-        QList<EntityPtr> entities = active_editor_->GetSelectedEntities();
+        QList<EntityPtr> entities = activeEditor->GetSelectedEntities();
         QVariantList retEntities;
         for(uint i = 0; i < (uint)entities.size(); ++i)
             retEntities.push_back(QVariant(entities[i]->GetId()));
@@ -163,20 +149,19 @@ QVariantList ECEditorModule::GetSelectedEntities() const
 
 void ECEditorModule::CreateXmlEditor(const QList<EntityPtr> &entities)
 {
-    UiAPI *ui = GetFramework()->Ui();
+    if (framework_->IsHeadless())
+        return;
     if (entities.empty())
         return;
 
-    if (!xmlEditor_)
+    if (!xmlEditor)
     {
-        xmlEditor_ = new EcXmlEditorWidget(framework_);
-        xmlEditor_->setParent(ui->MainWindow());
-        xmlEditor_->setWindowFlags(Qt::Tool);
-        //ui->AddWidgetToScene(xmlEditor_);
+        xmlEditor = new EcXmlEditorWidget(framework_);
+        xmlEditor->setParent(GetFramework()->Ui()->MainWindow());
+        xmlEditor->setWindowFlags(Qt::Tool);
     }
 
-    xmlEditor_->SetEntity(entities);
-    //ui->BringWidgetToFront(xmlEditor_);
+    xmlEditor->SetEntity(entities);
 }
 
 void ECEditorModule::CreateXmlEditor(ComponentPtr component)
@@ -188,20 +173,19 @@ void ECEditorModule::CreateXmlEditor(ComponentPtr component)
 
 void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
 {
-    UiAPI *ui = GetFramework()->Ui();
+    if (framework_->IsHeadless())
+        return;
     if (!components.empty())
         return;
 
-    if (!xmlEditor_)
+    if (!xmlEditor)
     {
-        xmlEditor_ = new EcXmlEditorWidget(framework_);
-        xmlEditor_->setParent(ui->MainWindow());
-        xmlEditor_->setWindowFlags(Qt::Tool);
-        //ui->AddWidgetToScene(xmlEditor_);
+        xmlEditor = new EcXmlEditorWidget(framework_);
+        xmlEditor->setParent(GetFramework()->Ui()->MainWindow());
+        xmlEditor->setWindowFlags(Qt::Tool);
     }
 
-    xmlEditor_->SetComponent(components);
-    //ui->BringWidgetToFront(xmlEditor_);
+    xmlEditor->SetComponent(components);
 }
 
 void ECEditorModule::HandleKeyPressed(KeyEvent *e)
@@ -212,31 +196,13 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
     const QKeySequence showEcEditor = framework_->Input()->KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
     if (QKeySequence(e->keyCode | e->modifiers) == showEcEditor)
     {
-        if (!active_editor_)
-        {
-            AddEditorWindowToUI();
-            active_editor_->show();
-        }
-        else
-            active_editor_->setVisible(!active_editor_->isVisible());
+        ShowEditorWindow();
         e->handled = true;
     }
 }
 
 void ECEditorModule::ActiveECEditorDestroyed(QObject *obj)
 {
-    if (active_editor_ == obj)
-        active_editor_ = 0;
-}
-
-bool ECEditorModule::IsECEditorWindowVisible() const
-{
-    if (active_editor_)
-    {
-        return active_editor_->isVisible();
-    }
-    else
-    {
-        return false;
-    }
+    if (activeEditor == obj)
+        activeEditor = 0;
 }

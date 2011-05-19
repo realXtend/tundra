@@ -108,6 +108,12 @@ EC_TransformGizmo::~EC_TransformGizmo()
     input.reset();
 }
 
+void EC_TransformGizmo::SetPosition(const Vector3df &pos)
+{
+    if (placeable)
+        placeable->SetPosition(pos);
+}
+
 void EC_TransformGizmo::SetCurrentGizmoType(GizmoType type)
 {
     if (gizmoType == type)

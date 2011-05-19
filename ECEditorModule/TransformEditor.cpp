@@ -18,6 +18,7 @@
 TransformEditor::TransformEditor(const ScenePtr &scene)
 {
     this->scene = scene;
+    CreateGizmo();
 }
 
 void TransformEditor::SetSelection(const QList<EntityPtr> &entities)
@@ -63,7 +64,7 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
     Vector3df minPos(1e9f, 1e9f, 1e9f);
     Vector3df maxPos(-1e9f, -1e9f, -1e9f);
 
-    foreach(const AttributeWeakPtr attr, targets)
+    foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
@@ -79,14 +80,12 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
     }
 
     // We assume that world's up axis is Y-coordinate axis.
-    Vector3df importPivotPos = Vector3df((minPos.x + maxPos.x) / 2, minPos.y, (minPos.z + maxPos.z) / 2);
+    Vector3df pivotPos = Vector3df((minPos.x + maxPos.x) / 2, minPos.y, (minPos.z + maxPos.z) / 2);
     if (gizmo)
     {
         EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
         if (tg)
-        {
-            //tg->SetPivot(importPivotPos)
-        }
+            tg->SetPosition(pivotPos);
     }
 }
 
@@ -100,14 +99,14 @@ void TransformEditor::CreateGizmo()
     gizmo = s->CreateEntity(s->GetNextFreeIdLocal(), QStringList(QStringList() << EC_TransformGizmo::TypeNameStatic()));
     if (!gizmo)
     {
-        //LogError("");
+        LogError("!gizmo");
         return;
     }
 
     EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
     if (!tg)
     {
-        //LogError("");
+        LogError("!tg");
         return;
     }
 

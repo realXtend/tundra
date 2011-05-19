@@ -173,8 +173,8 @@ void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select
     {
         QString entity_name = QString::number(id);
         EntityPtr entity = framework_->Scene()->GetDefaultScene()->GetEntity(id);
-        if (entity && entity->GetComponent("EC_Name"))
-            entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
+        if (entity && entity->GetComponent<EC_Name>())
+            entity_name = entity->GetName();
 
         int row = AddUniqueListItem(entity.get(), entity_list_, entity_name);
         QListWidgetItem *item = entity_list_->item(row);
@@ -567,6 +567,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     browser_->UpdateBrowser();
 
     transformEditor->SetSelection(entities);
+    transformEditor->FocusGizmoPivotToAabbBottomCenter();
 }
 
 void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
