@@ -155,6 +155,11 @@ void EC_TransformGizmo::SetVisible(bool visible)
     }
 }
 
+bool EC_TransformGizmo::IsVisible() const
+{
+    return placeable ? placeable->visible.Get() : false;
+}
+
 void EC_TransformGizmo::Initialize()
 {
     assert(GetParentEntity());
@@ -234,6 +239,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
         mouseDown = false;
     bool mouseDrag = e->eventType == MouseEvent::MouseMove && mouseDown;
 
+    Ogre::Ray xRay, yRay, zRay;
     // If moving, ignore gizmo's placeable
     if ((e->eventType == MouseEvent::MousePressed && e->button == MouseEvent::LeftButton) ||
         (e->eventType == MouseEvent::MouseMove && e->otherButtons == 0))
@@ -245,7 +251,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 
     float relX = (float)e->x/GetFramework()->Ui()->GraphicsView()->size().width();
     float relY = (float)e->y/GetFramework()->Ui()->GraphicsView()->size().height();
-    mouseRay = cam->GetMouseRay(relX, relY);
+    Ogre::Ray mouseRay = cam->GetMouseRay(relX, relY);
 
     QList<GizmoAxis> hits;
     //if (activeAxes.empty())
@@ -263,8 +269,8 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
         }
 */
         float offsetX, offsetY, offsetZ;
-        /*Ogre::Vector3 pointOnX = */ClosestPointOnLineAToLineB(xRay, mouseRay, &offsetX);
-        if ((distanceX < cClickDistanceThreshold && fabs(offsetX) < cClickOffsetThreshold) /*|| (hit && result->submesh == GizmoAxis::X)*/)
+        ClosestPointOnLineAToLineB(xRay, mouseRay, &offsetX);
+        if ((distanceX < cClickDistanceThreshold && offsetX > 0 && offsetX < cClickOffsetThreshold) /*|| (hit && result->submesh == GizmoAxis::X)*/)
         {
             mouseOnTop = true;
             if (state != Active)
@@ -277,8 +283,8 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
             }
         }
 
-        /*Ogre::Vector3 pointOnY = */ClosestPointOnLineAToLineB(yRay, mouseRay, &offsetY);
-        if ((distanceY < cClickDistanceThreshold && fabs(offsetY) < cClickOffsetThreshold) /*|| (hit && result->submesh == GizmoAxis::Y)*/)
+        ClosestPointOnLineAToLineB(yRay, mouseRay, &offsetY);
+        if ((distanceY < cClickDistanceThreshold && offsetY > 0 && offsetY < cClickOffsetThreshold) /*|| (hit && result->submesh == GizmoAxis::Y)*/)
         {
             mouseOnTop = true;
             if (state != Active)
@@ -291,8 +297,8 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
             }
         }
 
-        /*Ogre::Vector3 pointOnZ = */ClosestPointOnLineAToLineB(zRay, mouseRay, &offsetZ);
-        if ((distanceZ < cClickDistanceThreshold && fabs(offsetZ) < cClickOffsetThreshold) /*|| (hit && result->submesh == GizmoAxis::Z)*/)
+        ClosestPointOnLineAToLineB(zRay, mouseRay, &offsetZ);
+        if ((distanceZ < cClickDistanceThreshold && offsetZ > 0 && offsetZ < cClickOffsetThreshold) /*|| (hit && result->submesh == GizmoAxis::Z)*/)
         {
             mouseOnTop = true;
             if (state != Active)
@@ -352,7 +358,19 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
             if (hits.size())
             {
                 activeAxes = hits;
-                prevPoint = ClosestPointOnLineAToLineB(activeAxes.first().ray, mouseRay, 0);
+                if (activeAxes.size() == 1)
+                    prevPoint = ClosestPointOnLineAToLineB(activeAxes.first().ray, mouseRay, 0);
+                if (activeAxes.size() == 2)
+                {
+                    Ogre::Vector3 planeNormal = activeAxes[0].ray.getDirection().crossProduct(activeAxes[1].ray.getDirection());
+                    planeNormal.normalise();
+                    Ogre::Plane plane(planeNormal, activeAxes[0].ray.getOrigin());
+                    std::pair<bool, Ogre::Real> p = mouseRay.intersects(plane);
+                    if (fabs(p.second) < 1e-5f && p.first == false)
+                        ;
+                    else
+                        prevPoint = mouseRay.getPoint(p.second);
+                }
             }
 
             foreach(GizmoAxis a, activeAxes)
@@ -362,30 +380,37 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
             if (mouseDrag)
             {
                 if (activeAxes.size() == 1)
+                {
                     curPoint = ClosestPointOnLineAToLineB(activeAxes.first().ray, mouseRay, 0);
+                }
                 else if (activeAxes.size() == 2)
                 {
-                    //std::pair<bool, Ogre::Real> p = mouseRay.intersects(Ogre::Plane(normal, point));
+                    Ogre::Vector3 planeNormal = activeAxes[0].ray.getDirection().crossProduct(activeAxes[1].ray.getDirection());
+                    planeNormal.normalise();
+                    Ogre::Plane plane(planeNormal, activeAxes[0].ray.getOrigin());
+                    std::pair<bool, Ogre::Real> p = mouseRay.intersects(plane);
+                    if (fabs(p.second) < 1e-5f && p.first == false)
+                        ;
+                    else
+                        curPoint = mouseRay.getPoint(p.second);
                 }
 
+                std::stringstream ss;
+                ss << ToCoreVector(curPoint-prevPoint);
                 switch(gizmoType)
                 {
                 case EC_TransformGizmo::Translate:
-                {
-                    std::stringstream ss;
-                    ss << ToCoreVector(curPoint-prevPoint);
-                    LogInfo("Emitting Translated(" + ss.str() + ")");
+                    //LogInfo("Emitting Translated(" + ss.str() + ")");
                     emit Translated(ToCoreVector(curPoint-prevPoint));
                     prevPoint = curPoint;
                     break;
-                }
                 case EC_TransformGizmo::Rotate:
-                    LogInfo("Emitting Rotated()");
                     emit Rotated(Quaternion());
                     break;
                 case EC_TransformGizmo::Scale:
-                    LogInfo("Emitting Scaled()");
-                    emit Scaled(Vector3df());
+                    //LogInfo("Emitting Scaled(" + ss.str() + ")");
+                    emit Scaled(Vector3df(ToCoreVector(curPoint-prevPoint)));
+                    prevPoint = curPoint;
                     break;
                 }
             }

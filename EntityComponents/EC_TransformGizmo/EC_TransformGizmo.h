@@ -28,7 +28,13 @@ class Quaternion;
 
     <b>Exposes the following scriptable functions:</b>
     <ul>
-    <li>"Foo": 
+    <li>"SetPosition": Sets position of the gizmo.
+    <li>"CurrentGizmoType":  Returns current type of the gizmo.
+    <li>"SetCurrentGizmoType": Sets the type of the gizmo.
+    <li>"Show": Shows the gizmo.
+    <li>"Hide": Hides the gizmo.
+    <li>"SetVisible": Sets visiblity of the gizmo.
+    <li>"IsVisible": Returns visiblity of the gizmo.
     </ul>
 
     Doesn't react on any actions.
@@ -50,24 +56,26 @@ public:
     EC_TransformGizmo(Framework *fw);
     ~EC_TransformGizmo();
 
-    ///
+    /// Possible types of a gizmo.
     enum GizmoType
     {
-        Translate, ///<
-        Rotate, ///<
-        Scale ///<
+        Translate, ///< Translates, i.e. moves, an object.
+        Rotate, ///< Rotates an object.
+        Scale ///< Scales an object.
     };
 
 public slots:
-    ///
+    ///\todo implement SetPivot
     //void SetPivot(float3x4 tm)
 
+    /// Sets position of the gizmo.
+    /** @param pos New position. */
     void SetPosition(const Vector3df &pos);
 
     /// Returns current type of the gizmo.
     GizmoType CurrentGizmoType() const { return gizmoType; }
 
-    /// Sets the type of the gizmo
+    /// Sets the type of the gizmo.
     /** @type Type of the gizmo. */
     void SetCurrentGizmoType(GizmoType type);
 
@@ -81,65 +89,59 @@ public slots:
     /** @param visible Visibility of the gizmo. */
     void SetVisible(bool visibile);
 
-    ///
-//  bool IsVisible() const;
+    /// Returns visibility of the gizmo.
+    bool IsVisible() const;
 
 signals:
-    /// Emitted when 
+    /// Emitted when gizmo is active in Translate mode.
     /** @param offset New offset. */
     void Translated(const Vector3df &offset);
 
-    /// Emitted when 
+    /// Emitted when the gizmo is active in Rotate mode.
     /** @param delta Change in rotation. */
     void Rotated(const Quaternion &delta);
 
-    /// Emitted when 
+    /// Emitted when the gizmo is active in Translate mode.
     /** @param offset New offset. */
     void Scaled(const Vector3df &offset);
 
 private:
+    /// Represents axis of the gizmo.
+    struct GizmoAxis
+    {
+        ///\todo Gizmo mesh must be re-authored so that x=0, y=1, z=2. Currently x=1, y=0, z=2.
+        static const uint X = 1; ///< Submesh index of the gizmo's x axis.
+        static const uint Y = 0; ///< Submesh index of the gizmo's y axis.
+        static const uint Z = 2; ///< Submesh index of the gizmo's z axis.
+        uint axis; ///< Represented coordinate axis.
+        Ogre::Ray ray; ///< Corresponding ray for the represented coordinate axis.
+        AssetReference material; ///< Currently used material for the axis' submesh.
+    };
+
+    /// Internal states of gizmo.
+    enum GizmoState
+    {
+        Inactive, ///< Mouse is not above gizmo.
+        Hovering, ///< We're hovering mouse above gizmo.
+        Active, ///< Mouse was pressed above gizmo, and is currently held down (might or might not be above the gizmo).
+    };
+
     InputContextPtr input; ///< Input context for the gizmo.
     boost::shared_ptr<EC_Placeable> placeable; ///< Placeable component.
     boost::shared_ptr<EC_Mesh> mesh; ///< Mesh component.
     GizmoType gizmoType; ///< Current gizmo type.
     OgreRenderer::RendererWeakPtr renderer; ///< Renderer.
-    Ogre::Vector3 prevPoint;
-    Ogre::Vector3 curPoint;
-    // Rays currently as memvars for debugging purposes only.
-    Ogre::Ray mouseRay;
-    Ogre::Ray xRay, yRay, zRay;
-    Ogre::Ray prevMouseRay;
-
-    /// 
-    struct GizmoAxis
-    {
-        static const uint X = 1; ///< Submesh index of the gizmo's x axis.
-        static const uint Y = 0; ///< Submesh index of the gizmo's y axis.
-        static const uint Z = 2; ///< Submesh index of the gizmo's z axis.
-        uint axis; ///< \todo Gizmo mesh must be re-authored so that x=0, y=1, z=2. Currently x=1, y=0, z=2.
-        Ogre::Ray ray; ///< 
-        AssetReference material; ///<
-    };
-
-    QList<GizmoAxis> activeAxes;
-
-    ///
-    enum GizmoState
-    {
-        Inactive, ///< Mouse is not above gizmo.
-        Hovering, ///< We're hovering mouse above gizmo.
-        Active, ///< Mouse was pressed above gizmo, but currently it might or might not be above the gizmo.
-    };
-
+    Ogre::Vector3 prevPoint; ///< Previous nearest projected point on the gizmo's coordinate axes.
+    Ogre::Vector3 curPoint; ///< Current nearest projected point on the gizmo's coordinate axes.
     GizmoState state; ///< Current state of the gizmo.
+    QList<GizmoAxis> activeAxes; ///< Currently active axes.
 
 private slots:
     /// Initializes the gizmo when parent entity is set.
     void Initialize();
 
     /// Handles mouse events.
-    /** @param e Mouse event.
-    */
+    /** @param e Mouse event. */
     void HandleMouseEvent(MouseEvent *e);
 
 //    void DrawDebug();

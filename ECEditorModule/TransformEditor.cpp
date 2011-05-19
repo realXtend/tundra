@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   TransformEditor.cpp
- *  @brief  Controls EC_TransformGizmos.
+ *  @brief  Controls Transform attributes for groups of entities.
  */
 
 #include "StableHeaders.h"
@@ -49,6 +49,12 @@ void TransformEditor::AppendSelection(const EntityPtr &entity)
 
 void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
 {
+    foreach(const EntityPtr &e, entities)
+    {
+        boost::shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
+        if (p)
+            targets.removeOne(AttributeWeakPtr(p, p->GetAttribute(p->transform.GetName())));
+    }
 }
 
 void TransformEditor::RemoveFromSelection(const EntityPtr &entity)
@@ -115,7 +121,7 @@ void TransformEditor::SetGizmoVisible(bool show)
 
 void TransformEditor::TranslateTargets(const Vector3df &offset)
 {
-    foreach(const AttributeWeakPtr attr, targets)
+    foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
@@ -131,7 +137,7 @@ void TransformEditor::TranslateTargets(const Vector3df &offset)
 
 void TransformEditor::RotateTargets(const Quaternion &delta)
 {
-    foreach(const AttributeWeakPtr attr, targets)
+    foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
@@ -144,11 +150,14 @@ void TransformEditor::RotateTargets(const Quaternion &delta)
 
 void TransformEditor::ScaleTargets(const Vector3df &offset)
 {
-    foreach(const AttributeWeakPtr attr, targets)
+    foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
         {
+            Transform t = transform->Get();
+            t.scale += offset;
+            transform->Set(t, AttributeChange::Default);
         }
     }
 
@@ -165,14 +174,14 @@ void TransformEditor::CreateGizmo()
     gizmo = s->CreateEntity(s->GetNextFreeIdLocal(), QStringList(QStringList() << EC_TransformGizmo::TypeNameStatic()));
     if (!gizmo)
     {
-        LogError("!gizmo");
+        LogError("TransformEditor: could not create gizmo entity.");
         return;
     }
 
     EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
     if (!tg)
     {
-        LogError("!tg");
+        LogError("TransformEditor: could not acquire EC_TransformGizmo.");
         return;
     }
 
