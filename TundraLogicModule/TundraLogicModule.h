@@ -47,7 +47,7 @@ public:
     bool IsServer() const;
     
     /// Return pointer to KristalliProtocolModule for convenience
-    const boost::shared_ptr<KristalliProtocol::KristalliProtocolModule>& GetKristalliModule() const { return kristalliModule_; }
+    KristalliProtocol::KristalliProtocolModule *GetKristalliModule() const { return kristalliModule_; }
     
     /// Return syncmanager
     const boost::shared_ptr<SyncManager>& GetSyncManager() const { return syncManager_; }
@@ -105,7 +105,7 @@ private:
     boost::shared_ptr<Server> server_;
         
     /// KristalliProtocolModule pointer
-    boost::shared_ptr<KristalliProtocol::KristalliProtocolModule> kristalliModule_;
+    KristalliProtocol::KristalliProtocolModule *kristalliModule_;
         
     /// Whether to autostart the server
     bool autostartserver_;
