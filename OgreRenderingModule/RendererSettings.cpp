@@ -46,6 +46,8 @@ RendererSettingsWindow::RendererSettingsWindow(Framework* fw, QWidget *parent) :
     layout->setContentsMargins(0,0,0,0);
     setLayout(layout);
 
+    setWindowTitle(tr("Renderer Settings"));
+
     QDoubleSpinBox* spin = settings_widget_->findChild<QDoubleSpinBox*>("spinbox_viewdistance");
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!spin || !renderer)
@@ -102,7 +104,7 @@ void RendererSettingsWindow::ViewDistanceChanged(double value)
 {
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (renderer)
-        renderer->SetViewDistance(value);
+        renderer->SetViewDistance((float)value);
 }
 
 void RendererSettingsWindow::SetFullScreenMode(bool value)
