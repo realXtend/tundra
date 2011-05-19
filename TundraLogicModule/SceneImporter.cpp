@@ -16,7 +16,6 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_Name.h"
-#include "ServiceManager.h"
 #include "Renderer.h"
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
@@ -24,13 +23,12 @@
 #include "OgreRenderingModule.h"
 #include "CoreException.h"
 
+#include <boost/filesystem.hpp>
 #include <Ogre.h>
 
 #include <QDomDocument>
 #include <QFile>
 #include <QDir>
-
-namespace fs = boost::filesystem;
 
 namespace TundraLogic
 {
@@ -341,8 +339,8 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     sceneDesc.type = SceneDesc::OgreMesh;
     sceneDesc.filename = filename;
 
-    QString path(fs::path(filename.toStdString()).branch_path().string().c_str());
-    QString meshleafname = fs::path(filename.toStdString()).leaf().c_str();
+    QString path(boost::filesystem::path(filename.toStdString()).branch_path().string().c_str());
+    QString meshleafname = boost::filesystem::path(filename.toStdString()).leaf().c_str();
 
     QStringList materialNames;
     QStringList skeletons;
@@ -546,7 +544,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
         return sceneDesc;
     }
 
-    QString path(fs::path(filename.toStdString()).branch_path().string().c_str());
+    QString path(boost::filesystem::path(filename.toStdString()).branch_path().string().c_str());
 
     // By default, assume the material file is scenename.material if scene is scenename.scene.
     // However, if an external reference exists, use that.
@@ -938,9 +936,9 @@ QStringList SceneImporter::GetMaterialFiles(const std::string &dir) const
 {
     QStringList files;
 
-    fs::recursive_directory_iterator iter(dir), end_iter;
+    boost::filesystem::recursive_directory_iterator iter(dir), end_iter;
     for(; iter != end_iter; ++iter)
-        if (fs::is_regular_file(iter->status()))
+        if (boost::filesystem::is_regular_file(iter->status()))
         {
             QString ext(iter->path().extension().c_str());
             if (ext.contains(".material", Qt::CaseInsensitive))
@@ -1392,7 +1390,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         ad.source = filename;
         ad.dataInMemory = false;
         ad.typeName = "mesh";
-        ad.destinationName = fs::path(filename.toStdString()).leaf().c_str();//meshAssetDesc.source;
+        ad.destinationName = boost::filesystem::path(filename.toStdString()).leaf().c_str();//meshAssetDesc.source;
         desc.assets[qMakePair(ad.source, ad.subname)] = ad;
     }
 

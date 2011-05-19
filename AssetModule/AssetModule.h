@@ -24,16 +24,7 @@ namespace kNet
 
 namespace Asset
 {
-    /** \defgroup AssetModuleClient AssetModule Client Interface
-        This page lists the public interface of the AssetModule,
-        which consists of implementing AssetServiceInterface and
-        AssetInterface
-
-        For details on how to use the public interface, see \ref AssetModule "Using the asset module".
-    */
-
-    /// Asset module.
-    class ASSET_MODULE_API AssetModule : public QObject, public IModule
+    class ASSET_MODULE_API AssetModule : public IModule
     {
         Q_OBJECT
 

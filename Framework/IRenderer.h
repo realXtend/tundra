@@ -1,9 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Framework_RenderServiceInterface_h
-#define incl_Framework_RenderServiceInterface_h
+#pragma once
 
-#include "IService.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 
@@ -12,9 +10,6 @@
 #include <set>
 
 class QRect;
-
-class LogListener;
-typedef boost::shared_ptr<LogListener> LogListenerPtr;
 
 class Entity;
 
@@ -48,13 +43,8 @@ public:
     float v;
 };
 
-/// Render service interface.
-/**
-    \ingroup Services_group
-    Manages the rendering window, handles scene rendering, and manages renderer related resources.
-    Implemented by the \ref OgreRenderingModule.
-*/
-class IRenderer : public IService
+/// Describes the system renderer.
+class IRenderer
 {
 public:
     IRenderer() {}
@@ -114,5 +104,3 @@ public:
     
     virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
 };
-
-#endif

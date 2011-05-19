@@ -4,6 +4,7 @@
 #define incl_Scene_EntityReference_h
 
 #include "SceneFwd.h"
+#include "CoreTypes.h"
 
 #include <QString>
 #include <QMetaType>
@@ -13,9 +14,9 @@ struct EntityReference
 {
     EntityReference() {}
     
-    EntityReference(const QString &entityName) : ref(entityName.trimmed()) {}
+    explicit EntityReference(const QString &entityName) : ref(entityName.trimmed()) {}
 
-    EntityReference(entity_id_t id) : ref(QString::number(id)) {}
+    explicit EntityReference(entity_id_t id) : ref(QString::number(id)) {}
 
     /// Set from an entity. If the name is unique within its parent scene, the name will be set, otherwise ID.
     void Set(EntityPtr entity);

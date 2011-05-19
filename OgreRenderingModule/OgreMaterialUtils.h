@@ -9,7 +9,7 @@
 #define incl_OgreRenderingModule_OgreMaterialUtils_h
 
 #include <OgreMaterial.h>
-
+#include "CoreTypes.h"
 #include "OgreModuleApi.h"
 
 namespace OgreRenderer

@@ -8,7 +8,6 @@
 #include "BinaryAsset.h"
 #include "Renderer.h"
 #include "IModule.h"
-#include "ServiceManager.h"
 #include "Entity.h"
 #include "SceneManager.h"
 #include "EC_Placeable.h"

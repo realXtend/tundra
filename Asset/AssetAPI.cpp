@@ -5,6 +5,7 @@
 #include <boost/algorithm/string.hpp>
 #include <QList>
 #include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
 #include <QMap>
 #include "MemoryLeakCheck.h"
 #include "AssetAPI.h"
@@ -20,6 +21,7 @@
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
 #include "AssetCache.h"
+#include "Profiler.h"
 #include <QDir>
 #include <QFileSystemWatcher>
 #include "MemoryLeakCheck.h"
@@ -404,7 +406,7 @@ QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
         for(; iter != end_iter; ++iter)
         {
             QDir dir(GuaranteeTrailingSlash(iter->path().string().c_str()) + filename);
-            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
+            if (!boost::filesystem::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
                 return dir.absolutePath();
         }
     }
@@ -1019,6 +1021,8 @@ AssetPtr AssetAPI::GetAsset(QString assetRef)
 
 void AssetAPI::Update(f64 frametime)
 {
+    PROFILE(AssetAPI_Update);
+
     for(size_t i = 0; i < providers.size(); ++i)
         providers[i]->Update(frametime);
 

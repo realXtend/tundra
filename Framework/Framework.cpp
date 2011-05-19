@@ -5,8 +5,6 @@
 
 #include "Framework.h"
 #include "Profiler.h"
-#include "ModuleManager.h"
-#include "ServiceManager.h"
 #include "IRenderer.h"
 #include "CoreException.h"
 
@@ -17,13 +15,13 @@
 #include "AssetAPI.h"
 #include "AudioAPI.h"
 #include "ConsoleAPI.h"
-#include "DebugAPI.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
 #include "PluginAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
-
+#include "LoggingFunctions.h"
+#include "IModule.h"
 #include <iostream>
 
 #include "MemoryLeakCheck.h"
@@ -34,20 +32,19 @@ Framework::Framework(int argc, char** argv) :
     exit_signal_(false),
     argc_(argc),
     argv_(argv),
-    initialized_(false),
     headless_(false),
     application(0),
     frame(new FrameAPI(this)),
     console(0),
-    debug(new DebugAPI(this)),
     scene(new SceneAPI(this)),
     input(0),
     asset(0),
     audio(0),
     plugin(0),
     ui(0),
-    connection(0),
-    server(0)
+//    connection(0),
+//    server(0),
+    renderer(0)
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
@@ -71,12 +68,11 @@ Framework::Framework(int argc, char** argv) :
             headless_ = true;
 #ifdef PROFILING
         profiler = new Profiler();
-#endif
         PROFILE(FW_Startup);
+#endif
 
         // Create QApplication
         application = new Application(this, argc_, argv_);
-        initialized_ = true;
 
         // Create ConfigAPI and pass application data.
         config = new ConfigAPI(this);
@@ -84,10 +80,6 @@ Framework::Framework(int argc, char** argv) :
 
         // Prepare ConfigAPIs working directory
         config->PrepareDataFolder("configuration");
-
-        // Create managers
-        module_manager_ = ModuleManagerPtr(new ModuleManager(this));
-        service_manager_ = ServiceManagerPtr(new ServiceManager());
 
         // Create core APIs
         asset = new AssetAPI(this, headless_);
@@ -108,16 +100,12 @@ Framework::Framework(int argc, char** argv) :
         RegisterDynamicObject("console", console);
         RegisterDynamicObject("asset", asset);
         RegisterDynamicObject("audio", audio);
-        RegisterDynamicObject("debug", debug);
         RegisterDynamicObject("application", application);
     }
 }
 
 Framework::~Framework()
 {
-    service_manager_.reset();
-    module_manager_.reset();
-
     // Delete the QObjects that don't have a parent.
     delete input;
     delete asset;
@@ -164,25 +152,13 @@ void Framework::ParseProgramOptions()
     po::notify(commandLineVariables);
 }
 
-void Framework::PostInitialize()
-{
-    PROFILE(FW_PostInitialize);
-
-    srand(time(0));
-
-    plugin->LoadPluginsFromXML(plugin->ConfigurationFile());
-
-    LoadModules();
-
-    // PostInitialize SceneAPI.
-    scene->PostInitialize();
-
-    // commands must be registered after modules are loaded and initialized
-    RegisterConsoleCommands();
-}
-
 void Framework::ProcessOneFrame()
 {
+    if (exit_signal_ == true)
+        return; // We've accidentally ended up to update a frame, but we're actually quitting.
+
+    PROFILE(Framework_ProcessOneFrame);
+
     static tick_t clock_freq;
     static tick_t last_clocktime;
 
@@ -192,71 +168,67 @@ void Framework::ProcessOneFrame()
     if (!clock_freq)
         clock_freq = GetCurrentClockFreq();
 
-    if (exit_signal_ == true)
-        return; // We've accidentally ended up to update a frame, but we're actually quitting.
+    tick_t curr_clocktime = GetCurrentClockTime();
+    double frametime = ((double)curr_clocktime - (double)last_clocktime) / (double) clock_freq;
+    last_clocktime = curr_clocktime;
 
+    for(size_t i = 0; i < modules.size(); ++i)
     {
-        PROFILE(FW_MainLoop);
-
-        tick_t curr_clocktime = GetCurrentClockTime();
-        double frametime = ((double)curr_clocktime - (double)last_clocktime) / (double) clock_freq;
-        last_clocktime = curr_clocktime;
-
+        try
         {
-            PROFILE(FW_UpdateModules);
-            module_manager_->UpdateModules(frametime);
+#ifdef PROFILING
+            ProfilerSection ps(("Module_" + modules[i]->Name() + "_Update").c_str());
+#endif
+            modules[i]->Update(frametime);
         }
-
-        // Process the asset API updates.
+        catch(const std::exception &e)
         {
-            PROFILE(Asset_Update);
-            asset->Update(frametime);
+            std::cout << "UpdateModules caught an exception while updating module " << modules[i]->Name()
+                << ": " << (e.what() ? e.what() : "(null)") << std::endl;
+            LogCritical(std::string("UpdateModules caught an exception while updating module " + modules[i]->Name()
+                + ": " + (e.what() ? e.what() : "(null)")));
         }
-
-        // Process all keyboard input.
+        catch(...)
         {
-            PROFILE(Input_Update);
-            input->Update(frametime);
-        }
-
-        // Process all audio playback.
-        {
-            PROFILE(Audio_Update);
-            audio->Update(frametime);
-        }
-
-        // Process frame update now. Scripts handling the frame tick will be run at this point, and will have up-to-date 
-        // information after for example network updates, that have been performed by the modules.
-        {
-            PROFILE(Frame_Update);
-            frame->Update(frametime);
-        }
-
-        {
-            PROFILE(Console_Update);
-            console->Update(frametime);
-        }
-
-        if (!IsHeadless()) // Skip render if in headless mode.
-        {
-            // if we have a renderer service, render now
-            boost::weak_ptr<IRenderer> renderer = service_manager_->GetService<IRenderer>();
-            if (renderer.expired() == false)
-            {
-                PROFILE(FW_Render);
-                renderer.lock()->Render();
-            }
+            std::cout << "UpdateModules caught an unknown exception while updating module " << modules[i]->Name() << std::endl;
+            LogCritical(std::string("UpdateModules caught an unknown exception while updating module " + modules[i]->Name()));
         }
     }
+
+    asset->Update(frametime);
+    input->Update(frametime);
+    audio->Update(frametime);
+    console->Update(frametime);
+    frame->Update(frametime);
+
+    if (renderer)
+        renderer->Render();
 }
 
 void Framework::Go()
 {
+    srand(time(0));
+
+    plugin->LoadPluginsFromXML(plugin->ConfigurationFile());
+
+    for(size_t i = 0; i < modules.size(); ++i)
     {
-        PROFILE(FW_PostInitialize);
-        PostInitialize();
+        LogDebug("Preinitializing module " + modules[i]->Name());
+        modules[i]->PreInitialize();
     }
-    
+
+    for(size_t i = 0; i < modules.size(); ++i)
+    {
+        LogDebug("Initializing module " + modules[i]->Name());
+        modules[i]->Initialize();
+    }
+
+    for(size_t i = 0; i < modules.size(); ++i)
+    {
+        LogDebug("PostInitializing module " + modules[i]->Name());
+        modules[i]->PostInitialize();
+    }
+
     // Run our QApplication subclass.
     application->Go();
 
@@ -266,8 +238,17 @@ void Framework::Go()
     // Reset SceneAPI.
     scene->Reset();
 
-    // Unload modules
-    UnloadModules();
+    for(size_t i = 0; i < modules.size(); ++i)
+    {
+        LogDebug("Uninitializing module " + modules[i]->Name());
+        modules[i]->Uninitialize();
+    }
+
+    for(size_t i = 0; i < modules.size(); ++i)
+    {
+        LogDebug("Unloading module " + modules[i]->Name());
+        modules[i]->Unload();
+    }
 }
 
 void Framework::Exit()
@@ -294,37 +275,11 @@ void Framework::CancelExit()
         application->UpdateFrame();
 }
 
-void Framework::LoadModules()
-{
-    module_manager_->InitializeModules();
-}
-
-void Framework::UnloadModules()
-{
-    module_manager_->UninitializeModules();
-    ///\todo Horrible uninit call here now due to console refactoring
-//    console->Uninitialize();
-    module_manager_->UnloadModules();
-}
-
 Application *Framework::GetApplication() const
 {
     return application;
 }
-/*
-ConsoleCommandResult Framework::ConsoleListModules(const StringVector &params)
-{
-    if (console)
-    {
-        console->Print("Loaded modules:");
-        const ModuleManager::ModuleVector &modules = module_manager_->GetModuleList();
-        for(size_t i = 0 ; i < modules.size() ; ++i)
-            console->Print(modules[i].module_->Name().c_str());
-    }
 
-    return ConsoleResultSuccess();
-}
-*/
 static std::string FormatTime(double time)
 {
     char str[128];
@@ -342,116 +297,12 @@ static std::string FormatTime(double time)
     return std::string(str);
 }
 
-/// Outputs a hierarchical list of all PROFILE() blocks onto the given console.
-/// @param node The root node where to start the printing.
-/// @param showUnused If true, even blocks that haven't been called will be included. If false, only
-///        the blocks that were actually recently called are included. 
-void PrintTimingsToConsole(ConsoleAPI *console, ProfilerNodeTree *node, bool showUnused)
-{
-    const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
-
-    // Controls whether we will recursively call self to also print all child nodes.
-    bool recurseToChildren = true;
-
-    static int level = -2;
-
-    if (timings_node)
-    {
-        level += 2;
-        assert (level >= 0);
-
-        double average = timings_node->num_called_total_ == 0 ? 0.0 : timings_node->total_ / timings_node->num_called_total_;
-
-        if (timings_node->num_called_ == 0 && !showUnused)
-            recurseToChildren = false;
-        else
-        {
-            char str[512];
-            
-            sprintf(str, "%s: called total: %lu, elapsed total: %s, called: %lu, elapsed: %s, avg: %s",
-                timings_node->Name().c_str(), timings_node->num_called_total_,
-                FormatTime(timings_node->total_).c_str(), timings_node->num_called_,
-                FormatTime(timings_node->elapsed_).c_str(), FormatTime(average).c_str());
-
-/*
-            timings += timings_node->Name();
-            timings += ": called total " + ToString(timings_node->num_called_total_);
-            timings += ", elapsed total " + ToString(timings_node->total_);
-            timings += ", called " + ToString(timings_node->num_called_);
-            timings += ", elapsed " + ToString(timings_node->elapsed_);
-            timings += ", average " + ToString(average);
-*/
-
-            std::string timings;
-            for(int i = 0; i < level; ++i)
-                timings.append("&nbsp;");
-            timings += str;
-
-            console->Print(timings.c_str());
-        }
-    }
-
-    if (recurseToChildren)
-    {
-        const ProfilerNodeTree::NodeList &children = node->GetChildren();
-        for(ProfilerNodeTree::NodeList::const_iterator it = children.begin(); it != children.end() ; ++it)
-            PrintTimingsToConsole(console, (*it).get(), showUnused);
-    }
-
-    if (timings_node)
-        level -= 2;
-}
-/*
-ConsoleCommandResult Framework::ConsoleProfile(const StringVector &params)
-{
-#ifdef PROFILING
-    if (console)
-    {
-        Profiler &profiler = GetProfiler();
-//            ProfilerNodeTree *node = profiler.Lock().get();
-        ProfilerNodeTree *node = profiler.GetRoot();
-        if (params.size() > 0 && params.front() == "all")
-            PrintTimingsToConsole(console, node, true);
-        else
-            PrintTimingsToConsole(console, node, false);
-        console->Print(" ");
-//            profiler.Release();
-    }
-#endif
-    return ConsoleResultSuccess();
-}
-*/
-void Framework::RegisterConsoleCommands()
-{
-    ///\todo Regression. Reimplement. -jj.
-/*
-    console->RegisterCommand(CreateConsoleCommand("ListModules",
-        "Lists all loaded modules.", 
-        ConsoleBind(this, &Framework::ConsoleListModules)));
-
-#ifdef PROFILING
-    console->RegisterCommand(CreateConsoleCommand("Profile", 
-        "Outputs profiling data. Usage: Profile() for full, or Profile(name) for specific profiling block",
-        ConsoleBind(this, &Framework::ConsoleProfile)));
-#endif*/
-}
-
 #ifdef PROFILING
 Profiler *Framework::GetProfiler()
 {
     return profiler;
 }
 #endif
-
-ModuleManagerPtr Framework::GetModuleManager() const
-{
-    return module_manager_;
-}
-
-ServiceManagerPtr Framework::GetServiceManager() const
-{
-    return service_manager_;
-}
 
 FrameAPI *Framework::Frame() const
 {
@@ -483,11 +334,6 @@ AssetAPI *Framework::Asset() const
     return asset;
 }
 
-DebugAPI *Framework::Debug() const
-{
-    return debug;
-}
-
 SceneAPI *Framework::Scene() const
 {
     return scene;
@@ -497,7 +343,7 @@ ConfigAPI *Framework::Config() const
 {
     return config;
 }
-
+/*
 ConnectionAPI *Framework::Connection() const
 {
     return connection;
@@ -507,16 +353,38 @@ ServerAPI *Framework::Server() const
 {
     return server;
 }
-
+*/
 PluginAPI *Framework::Plugins() const
 {
     return plugin;
 }
 
-QObject *Framework::GetModuleQObj(const QString &name)
+IRenderer *Framework::GetRenderer() const
 {
-    ModuleWeakPtr module = GetModuleManager()->GetModule(name.toStdString());
-    return dynamic_cast<QObject*>(module.lock().get());
+    return renderer;
+}
+
+void Framework::RegisterRenderer(IRenderer *renderer_)
+{
+    renderer = renderer_;
+}
+
+void Framework::RegisterModule(IModule *module)
+{
+    module->SetFramework(this);
+    modules.push_back(boost::shared_ptr<IModule>(module));
+    LogInfo("Registered a new module " + module->Name());
+
+    module->Load();
+}
+
+IModule *Framework::GetModuleByName(const QString &name)
+{
+    for(size_t i = 0; i < modules.size(); ++i)
+        if (modules[i]->Name() == name.toStdString())
+            return modules[i].get();
+
+    return 0;
 }
 
 bool Framework::RegisterDynamicObject(QString name, QObject *object)

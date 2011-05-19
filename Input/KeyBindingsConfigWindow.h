@@ -47,7 +47,7 @@ private:
 
     QTreeWidget *configList;
 
-    /// In the UI, the user edits values in this structure. When apply or OK is pressed, we update the real values to the input service.
+    /// In the UI, the user edits values in this structure. When apply or OK is pressed, we update the real values to the input API.
     /// Edits are done here to allow Cancel to return without modifications having been done.
     std::map<std::string, QKeySequence> editedActions;
 

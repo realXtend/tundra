@@ -35,7 +35,7 @@ public:
     AssetWeakPtr asset;
 };
 
-class ASSET_EDITOR_MODULE_API OgreAssetEditorModule : public QObject, public IModule
+class ASSET_EDITOR_MODULE_API OgreAssetEditorModule : public IModule
 {
     Q_OBJECT
 

@@ -18,7 +18,7 @@
 #include "ConfigAPI.h"
 #include "IComponentFactory.h"
 #include "SceneManager.h"
-#include "ModuleManager.h"
+
 #include "KristalliProtocolModule.h"
 #include "CoreStringUtils.h"
 #include "AssetAPI.h"
@@ -103,6 +103,8 @@
 #include "EC_AnimationController.h"
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
+
+#include <boost/filesystem.hpp>
 
 namespace TundraLogic
 {
@@ -539,6 +541,6 @@ __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new TundraLogic::TundraLogicModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
+    fw->RegisterModule(module);
 }
 }

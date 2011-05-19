@@ -14,7 +14,7 @@
 #include "DebugOperatorNew.h"
 #include "FrameAPI.h"
 #include "HighPerfClock.h"
-
+#include "Profiler.h"
 #include <QTimer>
 
 #include "MemoryLeakCheck.h"
@@ -66,6 +66,8 @@ void FrameAPI::DelayedExecute(float time, const QObject *receiver, const char *m
 
 void FrameAPI::Update(float frametime)
 {
+    PROFILE(FrameAPI_Update);
+
     emit Updated(frametime);
 
     ++currentFrameNumber;

@@ -7,6 +7,7 @@
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
 
+#include <boost/filesystem.hpp>
 #include <QFileSystemWatcher>
 #include <QDir>
 #include <utility>
@@ -35,7 +36,7 @@ void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &s
             // Check the subdir
             for(; iter != end_iter; ++iter)
             {
-                if (fs::is_regular_file(iter->status()))
+                if (boost::filesystem::is_regular_file(iter->status()))
                 {
                     QString str = iter->path().string().c_str();
                     if (suffix == "" || str.endsWith(suffix))
@@ -55,7 +56,7 @@ void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &s
             // Check the subdir
             for(; iter != end_iter; ++iter)
             {
-                if (fs::is_regular_file(iter->status()))
+                if (boost::filesystem::is_regular_file(iter->status()))
                 {
                     QString str = iter->path().string().c_str();
                     if (suffix == "" || str.endsWith(suffix))
@@ -87,7 +88,7 @@ void LocalAssetStorage::RefreshAssetRefs()
             // Check the subdir
             for(; iter != end_iter; ++iter)
             {
-                if (fs::is_regular_file(iter->status()))
+                if (boost::filesystem::is_regular_file(iter->status()))
                 {
                     QString str = iter->path().string().c_str();
                     int lastSlash = str.lastIndexOf('/');
@@ -104,7 +105,7 @@ void LocalAssetStorage::RefreshAssetRefs()
             // Check the subdir
             for(; iter != end_iter; ++iter)
             {
-                if (fs::is_regular_file(iter->status()))
+                if (boost::filesystem::is_regular_file(iter->status()))
                 {
                     QString str = iter->path().string().c_str();
                     int lastSlash = str.lastIndexOf('/');
@@ -139,7 +140,7 @@ QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool re
         for(; iter != end_iter; ++iter)
         {
             QDir dir(GuaranteeTrailingSlash(iter->path().string().c_str()) + assetname);
-            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
+            if (!boost::filesystem::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
                 return iter->path().string().c_str();
         }
     }

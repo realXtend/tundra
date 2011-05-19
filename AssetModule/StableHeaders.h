@@ -4,6 +4,7 @@
 #define incl_AssetModule_StableHeaders_h__
 
 #include "CoreTypes.h"
+#include "LoggingFunctions.h"
 
 // If PCH is disabled, leave the contents of this whole file empty to avoid any compilation unit getting any unnecessary headers.
 ///\todo Refactor the above #include inside this #ifdef as well.

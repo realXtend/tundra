@@ -23,11 +23,11 @@
 #include "SceneImporter.h"
 #include "Transform.h"
 #include "LoggingFunctions.h"
+#include <boost/filesystem.hpp>
+
 #include "CoreException.h"
 
 #include "MemoryLeakCheck.h"
-
-namespace fs = boost::filesystem;
 
 typedef QMap<QString, QString> RefMap;
 
@@ -352,7 +352,7 @@ void AddContentWindow::AddFiles(const QStringList &fileNames)
         ad.dataInMemory = false;
         QString type = AssetAPI::GetResourceTypeFromAssetRef(file);
         ad.typeName = type.isEmpty() ? "Binary" : type;
-        ad.destinationName = fs::path(file.toStdString()).leaf().c_str();
+        ad.destinationName = boost::filesystem::path(file.toStdString()).leaf().c_str();
         desc.assets[qMakePair(ad.source, ad.subname)]= ad;
     }
 
@@ -416,7 +416,7 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
         assetTreeWidget->addTopLevelItem(aItem);
 
-        QString basePath(fs::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+        QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
         QString outFilePath;
         AssetAPI::FileQueryResult res = framework->Asset()->ResolveLocalAssetPath(a.source, basePath, outFilePath);
 
@@ -480,7 +480,7 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
 
 void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage)
 {
-    QString path(fs::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+    QString path(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
 
     QList<SceneDesc::AssetMapKey> keysWithSubname;
     foreach(SceneDesc::AssetMapKey key, sceneDesc.assets.keys())
@@ -792,7 +792,7 @@ void AddContentWindow::AddEntities()
         /*
         case SceneDesc::OgreMesh:
         {
-            fs::path path(newDesc.filename.toStdString());
+            boost::filesystem::path path(newDesc.filename.toStdString());
             std::string dirname = path.branch_path().string();
 
             TundraLogic::SceneImporter importer(destScene);
@@ -811,7 +811,7 @@ void AddContentWindow::AddEntities()
                 return;
             }
 
-            fs::path path(newDesc_.filename.toStdString());
+            boost::filesystem::path path(newDesc_.filename.toStdString());
             std::string dirname = path.branch_path().string();
 
             TundraLogic::SceneImporter importer(destScene);

@@ -64,9 +64,6 @@ public:
     /** @param Framework Framework pointer. */
     void Initialize(Framework *framework);
 
-    /// PostInitialize this object. Must be done after modules have been loaded. Called by SceneAPI.
-    void PostInitialize();
-
 signals:
     /// Emitted when scene was clicked and raycast hit an entity.
     /** @param entity Hit entity.
@@ -94,23 +91,22 @@ private:
     /** @return Result of the raycast. */
     RaycastResult* Raycast();
 
-    Framework *framework_; ///< Framework.
-    InputContextPtr input_; ///< Input context.
-    RendererServiceWeakPtr renderer_; ///< Renderer pointer.
-    int lastX_; ///< Last known mouse cursor's x position.
-    int lastY_; ///< Last known mouse cursor's y position.
-    bool itemUnderMouse_; ///< Was there widget under mouse in last known position.
-    EntityWeakPtr lastHitEntity_; ///< Last entity raycast has hit.
+    Framework *framework; ///< Framework.
+    InputContextPtr input; ///< Input context.
+    int lastX; ///< Last known mouse cursor's x position.
+    int lastY; ///< Last known mouse cursor's y position.
+    bool itemUnderMouse; ///< Was there widget under mouse in last known position.
+    EntityWeakPtr lastHitEntity; ///< Last entity raycast has hit.
 
 private slots:
     /// Executes "MouseHover" action each frame is raycast has hit and entity.
     void Update();
 
-    /// Handles key events from input service.
+    /// Handles key events from the input API.
     /** @param e Key event. */
     void HandleKeyEvent(KeyEvent *e);
 
-    /// Handles mouse events from input service.
+    /// Handles mouse events from the input API.
     /** @param e Mouse event. */
     void HandleMouseEvent(MouseEvent *e);
 };

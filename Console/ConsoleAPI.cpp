@@ -10,7 +10,7 @@
 
 #include "ConsoleAPI.h"
 #include "UiConsoleManager.h"
-
+#include "Profiler.h"
 #include "Framework.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
@@ -108,6 +108,8 @@ void ParseCommand(QString command, QString &commandName, QStringList &parameterL
 
 void ConsoleAPI::ExecuteCommand(const QString &command)
 {
+    PROFILE(ConsoleAPI_ExecuteCommand);
+
     QString commandName;
     QStringList parameterList;
     ParseCommand(command, commandName, parameterList);
@@ -138,6 +140,8 @@ void ConsoleAPI::ListCommands()
 
 void ConsoleAPI::Update(f64 frametime)
 {
+    PROFILE(ConsoleAPI_Update);
+
     std::string input = shellInputThread->GetLine();
     if (input.length() > 0)
         ExecuteCommand(input.c_str());

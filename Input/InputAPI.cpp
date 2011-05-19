@@ -3,14 +3,13 @@
 #include "DebugOperatorNew.h"
 #include "InputAPI.h"
 
-#include "ServiceManager.h"
 #include "Framework.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
 #include "CoreDefines.h"
 #include "ConfigAPI.h"
-
+#include "Profiler.h"
 #include <boost/thread.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/algorithm/string.hpp>
@@ -836,6 +835,8 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
 void InputAPI::Update(float frametime)
 {
+    PROFILE(InputAPI_Update);
+
     // If at any time we don't have main application window focus, release all input
     // so that keys don't get stuck when the window is reactivated. (The key release might be passed
     // to another window instead and our app keeps thinking that the key is being held down.)

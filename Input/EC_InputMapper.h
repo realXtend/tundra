@@ -167,13 +167,13 @@ private slots:
     */
     void HandleAttributeUpdated(IAttribute *, AttributeChange::Type change);
 
-    /// Handles key events from input service.
+    /// Handles key events from the input system.
     /** Performs entity action for for the parent entity if action mapping is registered for the key event.
         @param e Key event.
     */
     void HandleKeyEvent(KeyEvent *e);
 
-    /// Handles mouse events from input service.
+    /// Handles mouse events from the input system.
     /** Performs entity action for for the parent entity if action mapping is registered for the mouse event.
         @param e Mouse event.
     */

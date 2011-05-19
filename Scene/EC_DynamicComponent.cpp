@@ -6,7 +6,7 @@
 
 #include "SceneAPI.h"
 #include "IModule.h"
-#include "ModuleManager.h"
+
 #include "Entity.h"
 #include "LoggingFunctions.h"
 #include "SceneManager.h"

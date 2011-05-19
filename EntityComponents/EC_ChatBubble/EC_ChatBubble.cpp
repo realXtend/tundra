@@ -42,7 +42,7 @@ EC_ChatBubble::EC_ChatBubble(Framework *fw) :
     current_scale_(1.0f),
     default_z_pos_(1.9f)
 {
-    // Get renderer service
+    // Get renderer
     renderer_ = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
 
     // Pop timer init

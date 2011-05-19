@@ -12,14 +12,13 @@
 #include "EC_Fog.h"
 #include "EC_Sky.h"
 #include "EC_EnvironmentLight.h"
-#include "TerrainWeightEditor.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "Renderer.h"
 
 #include "SceneManager.h"
-#include "ModuleManager.h"
+
 #include "CompositionHandler.h"
 #include "EC_Name.h"
 #include "EC_Terrain.h"
@@ -29,8 +28,7 @@
 namespace Environment
 {
     EnvironmentModule::EnvironmentModule()
-    :IModule("Environment"),
-    terrainWeightEditor_(0)
+    :IModule("Environment")
     {
     }
 
@@ -60,27 +58,10 @@ namespace Environment
 
     void EnvironmentModule::Uninitialize()
     {
-        SAFE_DELETE(terrainWeightEditor_);
     }
 
     void EnvironmentModule::Update(f64 frametime)
     {
-    }
-
-    void EnvironmentModule::ShowTerrainWeightEditor()
-    {
-        if (framework_->IsHeadless())
-            return;
-
-        if (terrainWeightEditor_)
-        {
-            terrainWeightEditor_->show();
-            return;
-        }
-
-        terrainWeightEditor_ = new TerrainWeightEditor(framework_);
-        terrainWeightEditor_->setWindowFlags(Qt::Tool);
-        terrainWeightEditor_->show();
     }
 
 }
@@ -92,6 +73,6 @@ __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new Environment::EnvironmentModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
+    fw->RegisterModule(module);
 }
 }

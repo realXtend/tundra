@@ -8,7 +8,6 @@
 #include "HttpAssetStorage.h"
 #include "Framework.h"
 #include "Profiler.h"
-#include "ServiceManager.h"
 #include "CoreException.h"
 #include "AssetAPI.h"
 #include "LocalAssetStorage.h"
@@ -383,6 +382,6 @@ __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new Asset::AssetModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
+    fw->RegisterModule(module);
 }
 }

@@ -21,7 +21,7 @@ class QGraphicsView;
 class Framework;
 
 /// The Input API provides other modules with different methods of acquiring keyboard and mouse input.
-/** The input service works with the notion of 'input contexts', which are objects that modules acquire
+/** The Input API works with the notion of 'input contexts', which are objects that modules acquire
     to receive input events. The contexts have a priority that determine the order in which the input 
     events are posted.
 
@@ -51,7 +51,7 @@ class InputAPI : public QObject
     Q_OBJECT
 
 public:
-    /// Initializes the service and hooks it into the main application window.
+    /// Initializes the API and hooks it into the main application window.
     explicit InputAPI(Framework *owner);
 
     /// The dtor saves the settings to QSettings.
@@ -82,7 +82,7 @@ public slots:
     /// @return True if we are in absolute movement mode, and false if we are in relative mouse movement mode.
     bool IsMouseCursorVisible() const;
 
-    /// Returns true if the given key is physically held down (to the best knowledge of the input service, which may
+    /// Returns true if the given key is physically held down (to the best knowledge of the input API, which may
     /// be wrong depending on whether Qt has managed to successfully deliver the information). This ignores all
     /// the grabs and contexts, e.g. you will get true even if a text edit has focus in a Qt widget.
     /// @param keyCode The Qt::Key to test, http://doc.trolltech.com/4.6/qt.html#Key-enum

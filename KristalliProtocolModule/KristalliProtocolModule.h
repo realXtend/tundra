@@ -17,7 +17,7 @@ namespace KristalliProtocol
 {
     //  warning C4275: non dll-interface class 'IMessageHandler' used as base for dll-interface class 'KristalliProtocolModule'
     // Tämän voi ignoroida, koska base classiin ei tarvitse kajota ulkopuolelta - restrukturoin jos/kun on tarvetta.
-    class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public QObject, public IModule, public kNet::IMessageHandler, public kNet::INetworkServerListener
+    class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public IModule, public kNet::IMessageHandler, public kNet::INetworkServerListener
     {
         Q_OBJECT
 

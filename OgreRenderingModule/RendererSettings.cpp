@@ -6,7 +6,6 @@
 #include "RendererSettings.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
-#include "ModuleManager.h"
 #include "Framework.h"
 #include "Application.h"
 #include "InputAPI.h"
@@ -48,7 +47,7 @@ RendererSettingsWindow::RendererSettingsWindow(Framework* fw, QWidget *parent) :
     setLayout(layout);
 
     QDoubleSpinBox* spin = settings_widget_->findChild<QDoubleSpinBox*>("spinbox_viewdistance");
-    boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Service::ST_Renderer).lock();
+    OgreRenderer::Renderer *renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>();
     if (!spin || !renderer)
         return;
     spin->setValue(renderer->GetViewDistance());
@@ -87,7 +86,7 @@ RendererSettingsWindow::~RendererSettingsWindow()
 
 void RendererSettingsWindow::KeyPressed(KeyEvent* e)
 {
-    Renderer *renderer = framework_->GetService<Renderer>();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
     if(e->HasCtrlModifier() && e->KeyCode() == Qt::Key_F)
@@ -101,14 +100,14 @@ void RendererSettingsWindow::KeyPressed(KeyEvent* e)
 
 void RendererSettingsWindow::ViewDistanceChanged(double value)
 {
-    Renderer *renderer = framework_->GetService<Renderer>();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (renderer)
         renderer->SetViewDistance(value);
 }
 
 void RendererSettingsWindow::SetFullScreenMode(bool value)
 {
-     Renderer *renderer = framework_->GetService<Renderer>();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (renderer)
         renderer->SetFullScreen(value);
 }
@@ -118,7 +117,7 @@ void RendererSettingsWindow::ShadowQualityChanged(int value)
     if ((value < 0) || (value > 2))
         return;
         
-    Renderer *renderer = framework_->GetService<Renderer>();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
     renderer->SetShadowQuality((ShadowQuality)value);
@@ -132,7 +131,7 @@ void RendererSettingsWindow::TextureQualityChanged(int value)
     if ((value < 0) || (value > 1))
         return;
         
-    Renderer *renderer = framework_->GetService<Renderer>();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return;
     renderer->SetTextureQuality((TextureQuality)value);

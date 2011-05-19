@@ -30,7 +30,7 @@ struct ConvexHullSet;
 class PhysicsWorld;
 class DebugLines;
 
-class PHYSICS_MODULE_API PhysicsModule : public QObject, public IModule, public btIDebugDraw
+class PHYSICS_MODULE_API PhysicsModule : public IModule, public btIDebugDraw
 {
     Q_OBJECT
 

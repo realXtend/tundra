@@ -3,7 +3,7 @@
  *
  *  @file   EC_SoundListener.cpp
  *  @brief  Entity-component which provides sound listener position for in-world 3D audio.
- *          Updates parent entity's placeable component's position to the sound service each frame.
+ *          Updates parent entity's placeable component's position to the sound system each frame.
  *  @note   Only one entity can have active sound listener at a time.
  */
 

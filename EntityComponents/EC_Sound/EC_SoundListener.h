@@ -3,7 +3,7 @@
  *
  *  @file   EC_SoundListener.h
  *  @brief  Entity-component which provides sound listener position for in-world 3D audio.
- *          Updates parent entity's placeable component's position to the sound service each frame.
+ *          Updates parent entity's placeable component's position to the sound system each frame.
  *  @note   Only one entity can have active sound listener at a time.
  */
 
@@ -21,7 +21,7 @@ class EC_Placeable;
 <td>
 <h2>SoundListener</h2>
 Entity-component which provides sound listener position for in-world 3D audio.
-Updates parent entity's placeable component's position to the sound service each frame.
+Updates parent entity's placeable component's position to the sound system each frame.
 @note   Only one entity can have active sound listener at a time.
 @todo   EC_SoundListener is currently only working with avatar and freecamera. In future, there
         should be an option to apply a sound listener component to any entity that owns a
@@ -74,7 +74,7 @@ private slots:
     /// Retrieves placeable component when parent entity is set.
     void RetrievePlaceable();
 
-    /// Updates listeners position for sound service, is this listener is active. Called each frame.
+    /// Updates listeners position for sound system, is this listener is active. Called each frame.
     void Update();
 
     /// Called when component changes.

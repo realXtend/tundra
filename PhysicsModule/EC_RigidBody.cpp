@@ -14,7 +14,6 @@
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
 #include "EC_Terrain.h"
-#include "ServiceManager.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "AttributeMetadata.h"

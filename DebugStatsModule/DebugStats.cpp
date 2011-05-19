@@ -14,8 +14,7 @@
 
 #include "Framework.h"
 #include "UiAPI.h"
-#include "ModuleManager.h"
-
+#include "LoggingFunctions.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "Entity.h"
@@ -187,6 +186,6 @@ __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new DebugStats::DebugStatsModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
+    fw->RegisterModule(module);
 }
 }

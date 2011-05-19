@@ -16,7 +16,7 @@
 #include "SceneManager.h"
 #include "IComponent.h"
 #include "Entity.h"
-
+#include "LoggingFunctions.h"
 #include <QDomDocument>
 
 #include "MemoryLeakCheck.h"

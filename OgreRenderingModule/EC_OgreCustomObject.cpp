@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "Entity.h"
@@ -10,6 +9,7 @@
 #include "EC_OgreCustomObject.h"
 
 #include <Ogre.h>
+#include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 

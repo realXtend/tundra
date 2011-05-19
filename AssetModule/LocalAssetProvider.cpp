@@ -8,7 +8,6 @@
 #include "CoreTypes.h"
 #include "LocalAssetProvider.h"
 #include "Framework.h"
-#include "ServiceManager.h"
 #include "LocalAssetStorage.h"
 #include "IAssetUploadTransfer.h"
 #include "IAssetTransfer.h"

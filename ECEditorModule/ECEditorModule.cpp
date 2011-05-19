@@ -11,7 +11,7 @@
 
 #include "SceneAPI.h"
 #include "SceneManager.h"
-#include "ModuleManager.h"
+
 #include "EC_DynamicComponent.h"
 #include "InputAPI.h"
 #include "UiAPI.h"

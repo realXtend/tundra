@@ -22,9 +22,10 @@
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "UiGraphicsView.h"
-
+#include "LoggingFunctions.h"
 #include "ConfigAPI.h"
 
+#include <boost/filesystem.hpp>
 #include <Ogre.h>
 
 #ifdef USE_D3D9_SUBSURFACE_BLIT
@@ -92,39 +93,6 @@ namespace OgreRenderer
         Renderer* renderer_;
     };
 
-    /// Ogre log listener, for passing ogre log messages
-    class LogListener : public Ogre::LogListener
-    {
-    public:
-        LogListener() : Ogre::LogListener() {}
-        virtual ~LogListener() {}
-
-        /// Subscribe new listener for ogre log messages
-        void SubscribeListener(const LogListenerPtr &listener)
-        {
-            listeners_.push_back(listener);
-        }
-
-        /// Unsubscribe listener for ogre log messages
-        void UnsubscribeListener(const LogListenerPtr &listener)
-        {
-            listeners_.remove(listener);
-        }
-
-        void messageLogged(const std::string& message, Ogre::LogMessageLevel lml, bool maskDebug, const std::string &logName)
-        {
-            ///\todo Poco/Console regression.
-//            for(ListenerList::iterator it = listeners_.begin(); it != listeners_.end(); ++it)
-//                (*it)->LogMessage(message);
-        }
-
-    private:
-        typedef std::list<LogListenerPtr> ListenerList;
-
-        /// list of subscribed listeners
-        ListenerList listeners_;
-    };
-
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
         framework_(framework),
@@ -156,8 +124,6 @@ namespace OgreRenderer
 
     Renderer::~Renderer()
     {
-        RemoveLogListener();
-
         if ((scenemanager_) && (scenemanager_->getRenderQueue()))
             scenemanager_->getRenderQueue()->setRenderableListener(0);
 
@@ -178,15 +144,6 @@ namespace OgreRenderer
         root_.reset();
         SAFE_DELETE(c_handler_);
         SAFE_DELETE(renderWindow);
-    }
-
-    void Renderer::RemoveLogListener()
-    {
-        if (log_listener_)
-        {
-            Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
-            log_listener_.reset();
-        }
     }
 
     void Renderer::PrepareConfig()
@@ -249,11 +206,6 @@ namespace OgreRenderer
 #endif
 
 #include "EnableMemoryLeakCheck.h"
-
-        // Setup Ogre logger (use LL_NORMAL for more prints of init)
-        Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
-        log_listener_ = OgreLogListenerPtr(new LogListener);
-        Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
 
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
         view_distance_ = framework_->Config()->Get(configData, "view distance").toFloat();
@@ -497,16 +449,6 @@ namespace OgreRenderer
         return 0;
     }
 
-    void Renderer::SubscribeLogListener(const LogListenerPtr &listener)
-    {
-        log_listener_->SubscribeListener(listener);
-    }
-
-    void Renderer::UnsubscribeLogListener(const LogListenerPtr &listener)
-    {
-        log_listener_->UnsubscribeListener(listener);
-    }
-    
     void Renderer::Update(f64 frametime)
     {
     }
@@ -1149,7 +1091,7 @@ namespace OgreRenderer
     {
         return prefix + "_" + ToString<uint>(object_id_++);
     }
-
+/*
     void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
     {
         if (renderWindow)
@@ -1271,7 +1213,7 @@ namespace OgreRenderer
             LogError("Capturing render texture to a image failed");
         return image;
     }
-
+*/
     void Renderer::AddResourceDirectory(const QString &qdirectory)
     {
         std::string directory = qdirectory.toStdString();

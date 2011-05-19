@@ -11,14 +11,19 @@
 
 class Framework;
 class Profiler;
-class ModuleManager;
-class ServiceManager;
-class RenderServiceInterface;
 class RaycastResult;
 
-typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
-typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
 class IRenderer;
-typedef boost::shared_ptr<IRenderer> RendererServicePtr;
-typedef boost::weak_ptr<IRenderer> RendererServiceWeakPtr;
 
+class UiAPI;
+class FrameAPI;
+class InputAPI;
+class AudioAPI;
+class AssetAPI;
+class ConsoleAPI;
+class SceneAPI;
+class ConfigAPI;
+class PluginAPI;
+class Application;
+class Profiler;
+class IModule;

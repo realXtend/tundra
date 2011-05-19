@@ -96,15 +96,15 @@ namespace OgreRenderer
         void SetFullScreen(bool value);
 
         /// Render current main window content to texture
-        virtual QPixmap RenderImage(bool use_main_camera = true);
+//        virtual QPixmap RenderImage(bool use_main_camera = true);
 
         /// Prepapres the texture and entities used in texture rendering
-        void PrepareImageRendering(int width, int height);
+//        void PrepareImageRendering(int width, int height);
 
         /// Reset the texture
-        void ResetImageRendering();
+//        void ResetImageRendering();
 
-        QImage CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height);
+//        QImage CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height);
 
         /// Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
         void DoFullUIRedraw();
@@ -125,12 +125,6 @@ namespace OgreRenderer
         /// Destructor
         virtual ~Renderer();
 
-        /// Subscribe a listener to renderer log. Can be used before renderer is initialized.
-        virtual void SubscribeLogListener(const LogListenerPtr &listener);
-
-        /// Unsubsribe a listener to renderer log. Can be used before renderer is initialized.
-        virtual void UnsubscribeLogListener(const LogListenerPtr &listener);
-
         /// set maximum view distance
         virtual void SetViewDistance(float distance);
 
@@ -149,7 +143,7 @@ namespace OgreRenderer
         /// Takes a screenshot and saves it to a file.
         /// @param filePath File path.
         /// @param fileName File name.
-        virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
+//        virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
 
         /// Returns framework
         Framework* GetFramework() const { return framework_; }
@@ -181,9 +175,6 @@ namespace OgreRenderer
         /// Returns an unique name to create Ogre objects that require a mandatory name
         /** @param prefix Prefix for the name. */
         std::string GetUniqueObjectName(const std::string &prefix);
-
-        /// Removes log listener
-        void RemoveLogListener();
 
         /// Initializes renderer. Called by OgreRenderingModule
         /** Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before.
@@ -271,9 +262,6 @@ namespace OgreRenderer
         /// Framework we belong to
         Framework* framework_;
 
-        /// Ogre log listener
-        OgreLogListenerPtr log_listener_;
-
         /// Ogre renderable listener
         RenderableListenerPtr renderable_listener_;
 
@@ -324,11 +312,6 @@ namespace OgreRenderer
 
         /// Soft shadow gaussian listeners
         std::list<GaussianListener *> gaussianListeners_;
-
-        /// RenderImage() services texture
-        std::string image_rendering_texture_name_;
-
-        EntityPtr texture_rendering_cam_entity_;
 
         /// Pixel buffer used with screen captures
         Ogre::uchar *capture_screen_pixel_data_;

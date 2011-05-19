@@ -12,6 +12,7 @@
 #include "SoundChannel.h"
 #include "LoggingFunctions.h"
 #include "Framework.h"
+#include "Profiler.h"
 
 #ifndef Q_WS_MAC
 #include <AL/al.h>
@@ -206,7 +207,9 @@ void AudioAPI::Update(f64 frametime)
 {   
     if (!impl || !impl->initialized)
         return;
-        
+    
+    PROFILE(AudioAPI_Update);
+
 //        mutex.lock();
     std::vector<SoundChannelMap::iterator> channelsToDelete;
 

@@ -11,7 +11,7 @@
 
 #include "MaterialWizard.h"
 #include "OgreAssetEditorModule.h"
-
+#include "LoggingFunctions.h"
 #include "Application.h"
 
 #include <QUiLoader>

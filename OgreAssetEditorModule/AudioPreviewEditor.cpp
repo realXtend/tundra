@@ -10,7 +10,7 @@
 #include "Framework.h"
 #include "Application.h"
 #include "UiProxyWidget.h"
-#include "ModuleManager.h"
+
 #include "AudioAPI.h"
 
 #include <QUiLoader>
@@ -33,7 +33,7 @@ AudioPreviewEditor::AudioPreviewEditor(Framework *framework, const QString &name
     // Get ui service and create canvas
     ///\todo Use UiAPI
 /*
-    UiServiceInterface *ui= framework_->GetService<UiServiceInterface>();
+    UiServiceInterface *ui= framework_->Get Service<UiServiceInterface>();
     if (!ui)
         return;
 
@@ -78,7 +78,7 @@ AudioPreviewEditor::~AudioPreviewEditor()
     /*
 void AudioPreviewEditor::HandleAssetReady(AssetInterfacePtr asset)
 {
-    ServiceManagerPtr service_manager = framework_->Get ServiceManager();
+    Service ManagerPtr service_manager = framework_->Get ServiceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Sound))
@@ -153,7 +153,7 @@ void AudioPreviewEditor::PlaySound()
     if(assetId_.size() <= 0)
         return;
 
-    ServiceManagerPtr service_manager = framework_->Get ServiceManager();
+    Service ManagerPtr service_manager = framework_->Get ServiceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Sound))
@@ -206,7 +206,7 @@ void AudioPreviewEditor::TimerTimeout()
     if(assetId_.size() <= 0 || soundId_ == 0)
         return;
 
-    ServiceManagerPtr service_manager = framework_->Get ServiceManager();
+    Service ManagerPtr service_manager = framework_->Get ServiceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Sound))

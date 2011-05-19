@@ -40,7 +40,7 @@ struct SceneMaterialDropData
 
 /// Provides Scene Structure and Assets windows and raycast drag-and-drop import of
 /// various content file formats to the main window.
-class SceneStructureModule : public QObject, public IModule
+class SceneStructureModule : public IModule
 {
     Q_OBJECT
 

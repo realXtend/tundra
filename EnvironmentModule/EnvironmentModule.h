@@ -21,9 +21,7 @@ namespace Caelum
 
 namespace Environment
 {
-    class TerrainWeightEditor;
-
-    class ENVIRONMENT_MODULE_API EnvironmentModule : public QObject, public IModule
+    class ENVIRONMENT_MODULE_API EnvironmentModule : public IModule
     {
         Q_OBJECT
 
@@ -40,15 +38,8 @@ namespace Environment
         void Uninitialize();
         void Update(f64 frametime);
 
-    public slots:
-        /// Shows terrain texture editor.
-        void ShowTerrainWeightEditor();
-
     private:
         Q_DISABLE_COPY(EnvironmentModule);
-
-        /// Editor for terrain texture weights
-        TerrainWeightEditor* terrainWeightEditor_;
     };
 }
 

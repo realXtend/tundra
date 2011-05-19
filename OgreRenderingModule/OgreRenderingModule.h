@@ -18,7 +18,7 @@ namespace OgreRenderer
 
         \bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton.
     */
-    class OGRE_MODULE_API OgreRenderingModule : public QObject, public IModule
+    class OGRE_MODULE_API OgreRenderingModule : public IModule
     {
         Q_OBJECT
 

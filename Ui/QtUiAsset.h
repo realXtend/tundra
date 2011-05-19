@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiServiceModule_QtUiAsset_h
-#define incl_UiServiceModule_QtUiAsset_h
+#pragma once
 
 #include "AssetFwd.h"
 #include "IAsset.h"
@@ -63,5 +62,3 @@ private:
     /// Stores the original asset data. This data doesn't have the asset refs rewritten.
     std::vector<u8> originalData;
 };
-
-#endif

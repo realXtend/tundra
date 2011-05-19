@@ -18,7 +18,6 @@
 #include "SceneAPI.h"
 #include "Framework.h"
 #include "SceneManager.h"
-#include "ServiceManager.h"
 #include "Profiler.h"
 #include "Renderer.h"
 #include "ConsoleAPI.h"
@@ -369,6 +368,6 @@ __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new Physics::PhysicsModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
+    fw->RegisterModule(module);
 }
 }

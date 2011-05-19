@@ -43,11 +43,6 @@ void SceneAPI::Initialise()
     sceneInteract->Initialize(framework_);
 }
 
-void SceneAPI::PostInitialize()
-{
-    sceneInteract->PostInitialize();
-}
-
 SceneInteract *SceneAPI::GetSceneInteract() const
 {
     return sceneInteract;

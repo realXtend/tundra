@@ -21,7 +21,7 @@ typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
 /** @defgroup ECEditorModuleClient ECEditorModule Client interface.
     EC Editor implements a way of adding arbitrary EC's to world entities.
 */
-class ECEDITOR_MODULE_API ECEditorModule : public QObject, public IModule
+class ECEDITOR_MODULE_API ECEditorModule : public IModule
 {
     Q_OBJECT
 

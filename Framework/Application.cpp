@@ -7,7 +7,8 @@
 #include "Framework.h"
 #include "Profiler.h"
 #include "CoreStringUtils.h"
-
+#include "LoggingFunctions.h"
+#include <boost/filesystem.hpp>
 #include <iostream>
 #include <utility>
 #include <QDir>

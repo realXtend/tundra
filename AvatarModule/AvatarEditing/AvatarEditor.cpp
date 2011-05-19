@@ -10,11 +10,11 @@
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
-#include "ModuleManager.h"
+
 #include "Entity.h"
 
 #include "ConfigAPI.h"
-
+#include <boost/filesystem.hpp>
 #include <QUiLoader>
 #include <QFile>
 #include <QLineEdit>

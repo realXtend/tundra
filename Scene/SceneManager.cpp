@@ -27,6 +27,7 @@
 #include <kNet/DataSerializer.h>
 
 #include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
 
 #include <utility>
 #include "MemoryLeakCheck.h"

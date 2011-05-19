@@ -45,8 +45,6 @@ typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned long ulong;
 
-typedef int service_type_t;
-
 typedef unsigned int entity_id_t;
 
 typedef std::vector<std::string> StringVector;

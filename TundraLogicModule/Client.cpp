@@ -5,7 +5,7 @@
 
 #include "Client.h"
 #include "TundraLogicModule.h"
-#include "ModuleManager.h"
+
 #include "KristalliProtocolModule.h"
 #include "CoreStringUtils.h"
 #include "SyncManager.h"

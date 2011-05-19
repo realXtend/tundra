@@ -17,27 +17,16 @@
 
 #include "CoreTypes.h"
 #include "FrameworkFwd.h"
-
-///\todo Delete this.
-/// Possible module states 
-/** @ingroup Module_group
-*/
-enum ModuleState
-{
-    MS_Unloaded = 0, ///< Module has been unloaded from memory
-    MS_Loaded, ///< Module is loaded into memory, but not yet initialized (and probably not yet usable)
-    MS_Initialized, ///< Module is initialized and ready for use
-    MS_Unknown ///< Module state is unkown
-};
+#include <boost/enable_shared_from_this.hpp>
 
 /// Interface for modules. When creating new modules, inherit from this class.
 /** See @ref ModuleArchitecture for details.
     @ingroup Foundation_group
     @ingroup Module_group
 */
-class IModule
+class IModule : public QObject, public boost::enable_shared_from_this<IModule>
 {
-    friend class ModuleManager;
+    Q_OBJECT
 
 public:
     /// Constructor. Creates logger for the module.
@@ -86,9 +75,6 @@ public:
     /// Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
     const std::string &Name() const { return name; }
 
-    /// Returns the state of the module.
-    ModuleState State() const { return state_; }
-
     /// Returns parent framework.
     Framework *GetFramework() const;
 
@@ -103,31 +89,10 @@ private:
     /// Only for internal use.
     void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
 
-    /// Called when module is loaded. For internal use.
-    void LoadInternal() { assert(state_ == MS_Unloaded); Load(); state_ = MS_Loaded; }
-
-    /// Called when module is unloaded. For internal use.
-    void UnloadInternal() { assert(state_ == MS_Loaded); Unload(); state_ = MS_Unloaded; }
-
-    /// PreInitializes the module. Unused
-    void PreInitializeInternal() { PreInitialize(); }
-
-    /// Initializes the module. Called when module is taken in use. For internal use.
-    /// Registers all declared components
-    void InitializeInternal();
-
-    /// PostInitializes the module. Sets internal state to "initialized"
-    void PostInitializeInternal() { PostInitialize(); state_ = MS_Initialized; }
-
-    /// Uninitialize the module. Called when module is removed from use. For internal use.
-    /// Unregisters all declared components
-    void UninitializeInternal();
-
     /// name of the module
     const std::string name;
 
-    /// Current state of the module
-    ModuleState state_;
+    friend class Framework;
 };
 
 #ifdef _MSC_VER

@@ -120,7 +120,7 @@ void OgreRenderingModule::Initialize()
     // Restore the original cwd to not disturb the enviroment we are running in.
     Application::SetCurrentWorkingDirectory(cwd);
 
-    framework_->GetServiceManager()->RegisterService(Service::ST_Renderer, renderer);
+        framework_->RegisterRenderer(renderer_.get());
 
     framework_->RegisterDynamicObject("renderer", renderer.get());
 }
@@ -143,13 +143,8 @@ void OgreRenderingModule::Uninitialize()
 
     framework_->GetServiceManager()->UnregisterService(renderer);
 
-    // Explicitly remove log listener now, because the service has been
-    // unregistered now, and no-one can get at the renderer to remove themselves
-    if (renderer)
-        renderer->RemoveLogListener();
-
-    renderer.reset();
-}
+        // Clear up the renderer object, so that it will not be left dangling.
+        framework_->RegisterRenderer(0);
 
 void OgreRenderingModule::Update(f64 frametime)
 {
@@ -227,6 +222,6 @@ __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new OgreRenderer::OgreRenderingModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
+    fw->RegisterModule(module);
 }
 }

@@ -26,7 +26,7 @@ namespace Avatar
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
             
-    class AV_MODULE_API AvatarModule : public QObject, public IModule
+    class AV_MODULE_API AvatarModule : public IModule
     {
 
     Q_OBJECT

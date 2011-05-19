@@ -21,6 +21,7 @@
 #include "AssetCache.h"
 #include "QtUtils.h"
 #include "UiAPI.h"
+#include <boost/filesystem.hpp>
 
 #ifdef _WINDOWS
 #include <WinSock2.h>

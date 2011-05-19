@@ -34,7 +34,7 @@ UpdateSoundSettings() to apply those changes into the Audio API.
 <b>Attributes</b>:
 <ul>
 <li>AssetReference: soundRef
-<div>Sound asset reference that is used to request a sound from sound service.</div> 
+<div>Sound asset reference that is used to request a sound from the AssetAPI.</div> 
 <li>float: soundInnerRadius
 <div>Sound inner radius tell the distance where sound gain value is in it's maximum.</div> 
 <li>float: soundOuterRadius
@@ -53,7 +53,7 @@ the sound is played back as a nonspatial audio clip.</div>
 <ul>
 <li>"PlaySound": Starts playing the sound.
 <li>"StopSound": Stops playing the sound.
-<li>"UpdateSoundSettings": Get each attribute value and send them over to sound service.
+<li>"UpdateSoundSettings": Refreshes all sound attributes.
 </ul>
 
 <b>Reacts on the following actions:</b>
@@ -120,7 +120,7 @@ public slots:
     /// Stops playing the sound.
     void StopSound();
 
-    /// Get each attribute value and send them over to sound service.
+    /// Updates all sound attributes.
     void UpdateSoundSettings();
 
     /// Finds from the current scene the SoundListener that is currently active, or null if no SoundListener is active.

@@ -2,15 +2,15 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "OgreConversionUtils.h"
 #include "OgreParticleAsset.h"
 #include "OgreRenderingModule.h"
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "AssetAPI.h"
-
+#include "LoggingFunctions.h"
 #include <Ogre.h>
+#include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 

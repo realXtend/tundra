@@ -27,7 +27,7 @@ class Client;
 class Server;
 class SyncManager;
 
-class TUNDRALOGIC_MODULE_API TundraLogicModule : public QObject, public IModule
+class TUNDRALOGIC_MODULE_API TundraLogicModule : public IModule
 {
 
 Q_OBJECT

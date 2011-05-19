@@ -123,10 +123,7 @@ int run (int argc, char **argv)
 #endif
     {
         Framework fw(argc, argv);
-        if (fw.Initialized())
-        {
-            fw.Go();
-        }
+        fw.Go();
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch(std::exception& e)

@@ -39,7 +39,7 @@ public:
 
     ~InputContext();
 
-    /// Updates the buffered key presses. Called by the input service to proceed on to the next input frame.
+    /// Updates the buffered key presses. Called by the input API to proceed on to the next input frame.
     void UpdateFrame();
 
 signals:

@@ -71,7 +71,7 @@ void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
 {
     ///\todo Regression. Reimplement using the new Asset API. -jj.
 /*
-    ServiceManagerPtr service_manager = framework_->GetSer vi ceManager();
+    Service ManagerPtr service_manager = framework_->GetSer vi ceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Texture))

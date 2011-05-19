@@ -1,54 +1,29 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Framework_Framework_h
-#define incl_Framework_Framework_h
+#pragma once
 
-#include "ModuleManager.h"
-#include "ServiceManager.h"
+#include <QObject>
+#include <QString>
 
 #include <boost/smart_ptr.hpp>
 #include <boost/program_options.hpp>
 
-class UiAPI;
-class FrameAPI;
-class InputAPI;
-class AudioAPI;
-class AssetAPI;
-class ConsoleAPI;
-class DebugAPI;
-class SceneAPI;
-class ConfigAPI;
-class PluginAPI;
-class Application;
-class ConnectionAPI;
-class ServerAPI;
+#include "FrameworkFwd.h"
+//class ConnectionAPI;
+//class ServerAPI;
 
-/// Contains entry point for the framework.
-/** Allows access to the core API objects, various managers and services. The standard way of using
-    the framework is by first creating the framework and then calling Framework::Go()
-    which will then load / initialize all modules and enters the main loop which
-    automatically updates all loaded modules.
-
-    There are other ways of using the framework. To f.ex. run without the main loop,
-    see Framework::PostInitialize(). All the modules need to be updated manually then.
-
-    The constructor initializes the framework. Config or logging should not be used
-    usually without first initializing the framework.
-
-    \ingroup Foundation_group
-*/
+/// The system root access object.
 class Framework : public QObject
 {
     Q_OBJECT
 
 public:
     /// Constructs and initializes the framework.
-    /** @param arcc Command line argument count as provided by the operating system.
-        @param arcv Command line arguments as provided by the operating system.
+    /** @param argc Command line argument count as provided by the operating system.
+        @param argv Command line arguments as provided by the operating system.
     */
     Framework(int argc, char** argv);
 
-    /// destructor
     ~Framework();
 
     /// Parse program options from command line arguments
@@ -60,16 +35,7 @@ public:
     /// Returns the command line options specified as command-line options when starting up.
     boost::program_options::variables_map &ProgramOptions() { return commandLineVariables; }
 
-    /// Do post-initialization steps. No need to call if using Framework::Go().
-    /** This function can be used if you wish to use the framework without main loop.
-        It does
-        In that case the correct order is:
-            Framework fw;                  // create the framework
-            fw.GetModuleManager()->ExcludeModule(...)  // optional step for excluding certain modules
-            ...                                        // other initialization steps
-            fw.PostInitialize()
-            ...                                        // continue program execution without framework's main loop
-    */
+    /// Performs the module post-initialization steps.
     void PostInitialize();
 
     /// Entry point for the framework.
@@ -77,12 +43,6 @@ public:
 
     /// Runs through a single frame of logic update and rendering.
     void ProcessOneFrame();
-
-    /// Returns module manager.
-    ModuleManagerPtr GetModuleManager() const;
-
-    /// Returns service manager.
-    ServiceManagerPtr GetServiceManager() const;
 
     /// Cancel a pending exit
     void CancelExit();
@@ -92,17 +52,6 @@ public:
 
     /// Returns true if framework is in the process of exiting (will exit at next possible opportunity)
     bool IsExiting() const { return exit_signal_; }
-
-    /// Returns true if framework is properly initialized and Go() can be called.
-    bool Initialized() const { return initialized_; }
-
-    /// Shortcut for retrieving a service. See ServiceManager::GetService() for more info
-    template <class T>
-    __inline boost::weak_ptr<T> GetService(service_type_t type) { return service_manager_->GetService<T>(type); }
-
-    /// Shortcut for retrieving a service. See ServiceManager::GetService() for more info
-    template <class T>
-    __inline const boost::weak_ptr<T> GetService(service_type_t type) const { return service_manager_->GetService<T>(type); }
 
 #ifdef PROFILING
     /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
@@ -130,18 +79,9 @@ public:
     /// Returns module by class T.
     /** @param T class type of the module.
         @return The module, or null if the module doesn't exist. Always remember to check for null pointer.
-        @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
-     */
+        @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it. */
     template <class T>
-    T *GetModule() { return GetModuleManager()->GetModule<T>().get(); }
-
-    /// Returns service by class T.
-    /** @param T class type of the service.
-        @return The service, or null if the service doesn't exist. Always remember to check for null pointer.
-        @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
-     */
-    template <class T>
-    T *GetService() { return GetServiceManager()->GetService<T>().lock().get(); }
+    T *GetModule();
 
 public slots:
     /// Returns the core API UI object.
@@ -163,9 +103,6 @@ public slots:
     /// Returns core API Asset object.
     AssetAPI *Asset() const;
 
-    /// Returns core API Debug object.
-    DebugAPI *Debug() const;
-
     /// Returns core API Scene object.
     SceneAPI *Scene() const;
 
@@ -173,22 +110,33 @@ public slots:
     ConfigAPI *Config() const;
 
     /// Returns core API Connection object.
-    ConnectionAPI *Connection() const;
+//    ConnectionAPI *Connection() const;
 
     /// Returns core API Server object if we're acting as a network server.
-    ServerAPI *Server() const;
+//    ServerAPI *Server() const;
 
     PluginAPI *Plugins() const;
 
+    IRenderer *GetRenderer() const;
+
+    /// Returns the global Framework instance.
+    /// @note DO NOT CALL THIS FUNCTION. Every point where this function is called
+    ///       will cause a serious portability issue when we intend to run multiple instances inside a single process (inside a browser memory space).
+    ///       This function is intended to serve only for carefully crafted re-entrant code (currently only logging and profiling).
     static Framework *GetInstance() { return instance; }
 
+    /// Stores the Framework instance. Call this inside each plugin DLL main function that will have a copy of the static instance pointer.
     static void SetInstance(Framework *fw) { instance = fw; }
+
+    /// Registers a new module into the Framework. Framework will take ownership of the module pointer, so it is safe to pass in a raw pointer.
+    void RegisterModule(IModule *module);
+
+    void RegisterRenderer(IRenderer *renderer);
+
+    IModule *GetModuleByName(const QString &name);
 
     /// Returns if we're running the application in headless or not.
     bool IsHeadless() const { return headless_; }
-
-    /// Returns the given module, if it is loaded into the system, and if it derives from QObject.
-    QObject *GetModuleQObj(const QString &name);
 
     /// Stores the given QObject as a dynamic property into the Framework.
     /** This is done to implement easier script access for QObject-based interface objects.
@@ -207,12 +155,7 @@ public slots:
 private:
     Q_DISABLE_COPY(Framework)
 
-    /// Registers framework specific console commands
-    /// Should be called after modules are loaded and initialized
-    void RegisterConsoleCommands();
-
-    ModuleManagerPtr module_manager_; ///< Module manager.
-    ServiceManagerPtr service_manager_; ///< Service manager.
+    void UpdateModules();
     
     bool exit_signal_; ///< If true, exit application.
 #ifdef PROFILING
@@ -220,7 +163,6 @@ private:
 #endif
     boost::program_options::variables_map commandLineVariables; ///< program options
     boost::program_options::options_description commandLineDescriptions; ///< program option descriptions
-    bool initialized_; ///< Is the framework is properly initialized.
     bool headless_; ///< Are we running in the headless mode.
     
     Application *application; ///< The main QApplication object.
@@ -230,16 +172,31 @@ private:
     InputAPI *input; ///< The Input API.
     AssetAPI *asset; ///< The Asset API.
     AudioAPI *audio; ///< The Audio API.
-    DebugAPI *debug; ///< The Debug API.
     SceneAPI *scene; ///< The Scene API.
     ConfigAPI *config; ///< The Config API.
     PluginAPI *plugin;
-    ConnectionAPI *connection; ///< The Connection API.
-    ServerAPI *server; ///< The Server API, null if we're not operating as a server.
+    IRenderer *renderer;
+//    ConnectionAPI *connection; ///< The Connection API.
+//    ServerAPI *server; ///< The Server API, null if we're not operating as a server.
+
+    /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.
+    std::vector<boost::shared_ptr<IModule> > modules;
 
     static Framework *instance;
     int argc_; ///< Command line argument count as supplied by the operating system.
     char **argv_; ///< Command line arguments as supplied by the operating system.
 };
 
-#endif
+template <class T>
+T *Framework::GetModule()
+{ 
+    for(size_t i = 0; i < modules.size(); ++i)
+    {
+        T *module = dynamic_cast<T*>(modules[i].get());
+        if (module)
+            return module;
+    }
+
+    return 0;
+}
+

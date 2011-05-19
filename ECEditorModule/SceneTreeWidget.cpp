@@ -17,7 +17,7 @@
 #include "QtUtils.h"
 #include "LoggingFunctions.h"
 #include "SceneImporter.h"
-#include "ModuleManager.h"
+
 #include "ConfigAPI.h"
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"

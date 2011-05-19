@@ -1,6 +1,5 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "OgreMaterialAsset.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
@@ -12,6 +11,7 @@
 #include "XMLUtilities.h"
 
 #include "LoggingFunctions.h"
+#include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 

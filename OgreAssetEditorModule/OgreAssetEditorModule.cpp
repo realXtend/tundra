@@ -16,9 +16,9 @@
 #include "AudioPreviewEditor.h"
 #include "MeshPreviewEditor.h"
 #include "MaterialWizard.h"
-
+#include "LoggingFunctions.h"
 #include "Framework.h"
-#include "ModuleManager.h"
+
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "UiProxyWidget.h"
@@ -56,7 +56,7 @@ void OgreAssetEditorModule::PostInitialize()
     connect(materialWizard, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
 
-    uiService_ = framework_->Get ServiceManager()->Ge  tS ervice<UiServiceInterface>(Service::ST_Gui);
+    uiService_ = framework_->Get Service Manager()->Ge  tS ervice<UiServiceInterface>(Service::ST_Gui);
     if (!uiService_.expired())
     {
         UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_);
@@ -164,6 +164,6 @@ extern "C"
 __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     IModule *module = new OgreAssetEditorModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
+    fw->RegisterModule(module);
 }
 }

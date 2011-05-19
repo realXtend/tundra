@@ -17,7 +17,6 @@ class Framework;
 #undef PlaySound
 #endif
 
-/// Sound service implementation. Owned by OpenALAudioModule.
 class AUDIO_API AudioAPI : public QObject
 {
     Q_OBJECT;

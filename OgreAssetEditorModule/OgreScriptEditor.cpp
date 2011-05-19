@@ -13,7 +13,7 @@
 #include "OgreAssetEditorModule.h"
 #include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
-
+#include "LoggingFunctions.h"
 #include "Application.h"
 
 #include <QUiLoader>

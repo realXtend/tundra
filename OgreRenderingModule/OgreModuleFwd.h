@@ -39,7 +39,6 @@ namespace OgreRenderer
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
     class OgreRenderingModule;
-    class LogListener;
     class ResourceHandler;
     class RenderableListener;
 
@@ -47,7 +46,6 @@ namespace OgreRenderer
     class GaussianListener;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
-    typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
     typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
     typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
 }

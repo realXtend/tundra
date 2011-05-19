@@ -1,23 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_IAssetProvider_h
-#define incl_Asset_IAssetProvider_h
+#pragma once
 
 #include "AssetFwd.h"
 #include "CoreTypes.h"
 
 #include <QString>
 
-/** Asset provider. Can be registered to the AssetService to add possibility of downloading assets by different
-    means (legacy UDP, http etc.)
-    
-    Asset providers receive asset download requests through the RequestAsset() function. It should
+/** Asset providers receive asset download requests through the RequestAsset() function. It should
     return true if the asset id was of such format that the request can be handled (for example
     a valid UUID for legacy UDP assets), false if it could not be handled.
-    
-    When an asset download is ready, the asset provider has the responsibility of storing it to the asset cache
-    by calling StoreAsset() function in the AssetService.
-    
+        
     Additionally, the asset provider can post events of the progress of an asset download.
  */
 class IAssetProvider
@@ -37,7 +30,7 @@ public:
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType) = 0;
 
     /// Performs time-based update of asset provider, to for example handle timeouts.
-    /** The asset service will call this periodically for all registered asset providers, so
+    /** The system will call this periodically for all registered asset providers, so
         it does not need to be called manually.
         \param frametime Seconds since last frame */
     virtual void Update(f64 frametime) {}
@@ -67,6 +60,3 @@ public:
     /// Returns a pointer to the newly created storage, or 0 if the storage string is not of the type of this asset provider.
     virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage) = 0;
 };
-
-
-#endif
