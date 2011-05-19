@@ -80,9 +80,9 @@ namespace Foundation
     {
         ParseProgramOptions();
 
-        /// \note Major becomes 1 when we stop breaking the API, which is still planned after 1.0.6 which is kind of an alpha of 1.0 still.
-        api_versioninfo_ = new ApiVersionInfo(this, 0, 6, 0, 0);
-        application_versioninfo_ = new ApplicationVersionInfo(this, 1, 0, 6, 0, "realXtend", "Tundra");
+        /// \note ApiVersionInfo major becomes 1.0 when we stop breaking the API.
+        api_versioninfo_ = new ApiVersionInfo(this, 0, 7, 0, 0);
+        application_versioninfo_ = new ApplicationVersionInfo(this, 1, 0, 7, 0, "realXtend", "Tundra");
 
         if (commandLineVariables.count("help")) 
         {
