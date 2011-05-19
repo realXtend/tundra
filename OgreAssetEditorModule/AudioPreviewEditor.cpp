@@ -78,7 +78,7 @@ AudioPreviewEditor::~AudioPreviewEditor()
     /*
 void AudioPreviewEditor::HandleAssetReady(AssetInterfacePtr asset)
 {
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->Get ServiceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Sound))
@@ -153,7 +153,7 @@ void AudioPreviewEditor::PlaySound()
     if(assetId_.size() <= 0)
         return;
 
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->Get ServiceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Sound))
@@ -206,7 +206,7 @@ void AudioPreviewEditor::TimerTimeout()
     if(assetId_.size() <= 0 || soundId_ == 0)
         return;
 
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->Get ServiceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Sound))

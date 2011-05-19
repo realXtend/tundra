@@ -1362,7 +1362,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
 /*     /// \todo Regression. Reimplement using the Asset API. -jj.
 
     boost::shared_ptr<AssetServiceInterface> asset_service = 
-        framework_->GetS erviceM anager()->GetService<AssetServiceInterface>(Service::ST_Asset).lock();
+        framework_->GetS erviceM anager()->Get Service<AssetServiceInterface>(Service::ST_Asset).lock();
     if (!asset_service)
         return;
         
