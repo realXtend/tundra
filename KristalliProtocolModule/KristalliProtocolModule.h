@@ -77,6 +77,8 @@ namespace KristalliProtocol
         /// Return server, for use by other modules (null if not running)
         kNet::NetworkServer* GetServer() const { return server; }
         
+        kNet::Network *GetNetwork() { return &network; }
+
         /// Return whether we are a server
         bool IsServer() const { return server != 0; }
         
