@@ -389,9 +389,9 @@ void Application::UpdateFrame()
         if (!frameUpdateTimer.isActive())
         {
             if (appActivated || framework->IsHeadless())
-                frameUpdateTimer.start(msecsToSleep); 
+                frameUpdateTimer.start((int)msecsToSleep); 
             else 
-                frameUpdateTimer.start(msecsToSleep + msecsPerFrame); // Proceed at half FPS speed when unfocused (but never at half FPS when running a headless server).
+                frameUpdateTimer.start((int)(msecsToSleep + msecsPerFrame)); // Proceed at half FPS speed when unfocused (but never at half FPS when running a headless server).
         }
     }
     catch(const std::exception &e)

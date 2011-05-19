@@ -103,14 +103,14 @@ public:
     /// Returns elapsed time in microseconds
     boost::int64_t ElapsedTimeMicroSeconds()
     {
-        if (supported_) {
+        if (supported_)
+        {
             time_elapsed_ = end_time_ - start_time_;
             boost::int64_t elapsed_us = static_cast<boost::int64_t>(time_elapsed_ * 1000000) / GetCurrentClockFreq();
             return (elapsed_us < 0 ? 0 : (boost::int64_t)0);
-        } else {
-            return 0.0;
         }
-        
+        else
+            return 0;
     }
 
 private:

@@ -194,7 +194,7 @@ void RenderWindow::Resize(int width, int height)
         // resize the container
  //       overlayContainer->setDimensions(width, height);
   //      overlayContainer->setPosition(left, top);
-        overlayContainer->setDimensions(width, height);
+        overlayContainer->setDimensions((Ogre::Real)width, (Ogre::Real)height);
         overlayContainer->setPosition(0,0);
 
         // resize the backing texture

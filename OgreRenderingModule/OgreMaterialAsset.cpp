@@ -402,7 +402,7 @@ void OgreMaterialAsset::CopyContent(AssetPtr source)
     ogreMaterial->setReceiveShadows(sourceOgreMat->getReceiveShadows());
     ogreMaterial->setTransparencyCastsShadows(sourceOgreMat->getTransparencyCastsShadows());
     ogreMaterial->removeAllTechniques();
-    for (unsigned i = 0; i < sourceOgreMat->getNumTechniques(); ++i)
+    for (unsigned short i = 0; i < sourceOgreMat->getNumTechniques(); ++i)
     {
         Ogre::Technique* sourceTech = sourceOgreMat->getTechnique(i);
         if (sourceTech)
