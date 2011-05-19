@@ -363,15 +363,11 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
             {
                 if (activeAxes.size() == 1)
                     curPoint = ClosestPointOnLineAToLineB(activeAxes.first().ray, mouseRay, 0);
-    /*
                 else if (activeAxes.size() == 2)
                 {
-                    std::pair<bool, Ogre::Real> p = mouseRay.intersects(Ogre::Plane(normal, point));
+                    //std::pair<bool, Ogre::Real> p = mouseRay.intersects(Ogre::Plane(normal, point));
                 }
-    /*            ;// plane
-            else if (activeAxes.size() == 3)
-                ;///pivot selected, free move;
-    */
+
                 switch(gizmoType)
                 {
                 case EC_TransformGizmo::Translate:

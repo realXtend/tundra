@@ -127,7 +127,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw) :
     SceneManager *scene = framework_->Scene()->GetDefaultScene().get();
     if (scene)
     {
-        connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), 
+        connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)),
             SLOT(EntityRemoved(Entity*)), Qt::UniqueConnection);
         connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
                 SLOT(ActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);

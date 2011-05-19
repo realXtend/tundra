@@ -63,6 +63,7 @@ void TransformEditor::ClearSelection()
 
 void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
 {
+#ifdef EC_TransformGizmo_ENABLED
     if (targets.isEmpty())
         return;
 
@@ -92,10 +93,12 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
         if (tg)
             tg->SetPosition(pivotPos);
     }
+#endif
 }
 
 void TransformEditor::SetGizmoVisible(bool show)
 {
+#ifdef EC_TransformGizmo_ENABLED
     if (gizmo)
     {
         EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
@@ -107,6 +110,7 @@ void TransformEditor::SetGizmoVisible(bool show)
                 tg->Hide();
         }
     }
+#endif
 }
 
 void TransformEditor::TranslateTargets(const Vector3df &offset)
