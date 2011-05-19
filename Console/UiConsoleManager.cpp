@@ -7,7 +7,6 @@
 #include "ui_ConsoleWidget.h"
 #include "ConsoleProxyWidget.h"
 #include "ConsoleAPI.h"
-//#include "CommandManager.h"
 
 #include "UiAPI.h"
 #include "UiProxyWidget.h"
@@ -21,8 +20,7 @@
 
 #include "MemoryLeakCheck.h"
 
-UiConsoleManager::UiConsoleManager(/*CommandManager* mgr, */Framework *fw) :
-//    commandManager(mgr),
+UiConsoleManager::UiConsoleManager(Framework *fw) :
     framework(fw),
     graphicsView(fw->Ui()->GraphicsView()),
     consoleUi(0),

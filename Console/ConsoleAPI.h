@@ -123,40 +123,15 @@ private:
     InputContextPtr inputContext;
     boost::shared_ptr<UiConsoleManager> uiConsoleManager;
 
-// START FROM CONSOLEMANAGER
 public:
     void Update(f64 frametime);
 private:
-//    void UnsubscribeLogListener();
-//    CommandManager *commandManager; ///< Command manager.
-//    boost::shared_ptr<LogListener> logListener; ///< Listener to get logs from renderer 
-// END FROM CONSOLEMANAGER
 
     boost::shared_ptr<ShellInputThread> shellInputThread;
 private slots:
-    /// Checks if we have executed console command object stored. If we have, we invoke it.
-    /** @param name Name of the command.
-        @param params List of parameters, if provided.
-    */
-//    void InvokeCommand(const QString &name, const QStringList &params) const;
 
     void HandleKeyEvent(KeyEvent *e);
     void ToggleConsole();
 };
-/*
-// START FROM CONSOLEMANAGER
-/// loglistener is used to listen log messages from renderer
-class LogListener
-{
-    LogListener();
 
-public:
-    explicit LogListener(ConsoleAPI *c): console(c) {}
-    virtual ~LogListener() {}
-
-    virtual void LogMessage(const std::string &message){ console->Print(message.c_str()); }
-    ConsoleAPI *console;
-};
-*/
-// END FROM CONSOLEMANAGER
 #endif

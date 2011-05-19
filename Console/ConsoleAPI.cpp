@@ -73,16 +73,6 @@ ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &
     boost::shared_ptr<ConsoleCommand> command = boost::shared_ptr<ConsoleCommand>(new ConsoleCommand(name, desc, 0, ""));
     commands[name] = command;
     return command.get();
-/*
-    ConsoleCommandStruct cmd = { name.toStdString(), desc.toStdString(), ConsoleCallbackPtr(), false };
-    commandManager->RegisterCommand(cmd);
-
-    // Use UniqueConnection so that we don't have duplicate connections.
-    connect(commandManager, SIGNAL(CommandInvoked(const QString &, const QStringList &)),
-        SLOT(InvokeCommand(const QString &, const QStringList &)), Qt::UniqueConnection);
-
-    return command;
-*/
 }
 
 void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, QObject *receiver, const char *memberSlot)
@@ -95,17 +85,6 @@ void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, QObje
 
     boost::shared_ptr<ConsoleCommand> command = boost::shared_ptr<ConsoleCommand>(new ConsoleCommand(name, desc, receiver, memberSlot+1));
     commands[name] = command;
-    /*
-//    connect(command, SIGNAL(Invoked(const QStringList &)), receiver, member);
-
-    ConsoleCommandStruct cmd = { name.toStdString(), desc.toStdString(), ConsoleCallbackPtr(), false };
-    commandManager->RegisterCommand(cmd);
-
-        // Use UniqueConnection so that we don't have duplicate connections.
-        connect(commandManager, SIGNAL(CommandInvoked(const QString &, const QStringList &)),
-            SLOT(InvokeCommand(const QString &, const QStringList &)), Qt::UniqueConnection);
-    }
-    */
 }
 
 /// Splits a string of form "MyFunctionName(param1, param2, param3, ...)" into
@@ -143,8 +122,6 @@ void ConsoleAPI::ExecuteCommand(const QString &command)
     }
 
     iter->second->Invoke(parameterList);
-
-//    commandManager->ExecuteCommand(command.toStdString());
 }
 
 void ConsoleAPI::Print(const QString &message)
@@ -159,38 +136,12 @@ void ConsoleAPI::ListCommands()
         Print(iter->first + " - " + iter->second->Description());
 }
 
-/*
-void ConsoleAPI::RegisterCommand(const ConsoleCommandStruct &command)
-{
-    commandManager->RegisterCommand(command);
-}
-*/
-
-//START FROM CONSOLEMANAGER
 void ConsoleAPI::Update(f64 frametime)
 {
-//    commandManager->Update();
-
     std::string input = shellInputThread->GetLine();
     if (input.length() > 0)
         ExecuteCommand(input.c_str());
 }
-/*
-void ConsoleAPI::UnsubscribeLogListener()
-{
-
-    RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
-    if (renderer)
-        renderer->UnsubscribeLogListener(logListener);
-
-//        else
-//            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't unsubscribe renderer log listener.");
-
-    ///\todo Poco regression.
-//    framework_->RemoveLogChannel(consoleChannel.get());
-}
-*/
-//END FROM CONSOLEMANAGER
 
 void ConsoleAPI::ToggleConsole()
 {
@@ -204,13 +155,3 @@ void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
     if (e->sequence == toggleConsole)
         ToggleConsole();
 }
-
-/*
-void ConsoleAPI::InvokeCommand(const QString &name, const QStringList &params) const
-{
-    QMap<QString, ConsoleCommand *>::const_iterator i = commands.find(name);
-    if (i != commands.end())
-        i.value()->Invoke(params);
-}
-
-*/
