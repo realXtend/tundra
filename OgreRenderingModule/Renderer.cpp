@@ -509,8 +509,6 @@ namespace OgreRenderer
     
     void Renderer::Update(f64 frametime)
     {
-        PROFILE(Ogre_WindowEventUtilities_messagePump);
-//        Ogre::WindowEventUtilities::messagePump();
     }
     
     void Renderer::SetViewDistance(float distance)
@@ -537,7 +535,7 @@ namespace OgreRenderer
         if (framework_->IsHeadless())
             return;
             
-        PROFILE(Renderer_Render_QtBlit);
+        PROFILE(Renderer_DoFullUIRedraw);
 
         UiGraphicsView *view = framework_->Ui()->GraphicsView();
 
@@ -553,11 +551,17 @@ namespace OgreRenderer
         QSize mainwindowSize(framework_->Ui()->MainWindow()->size());
         QSize renderWindowSize(renderWindow->OgreRenderWindow()->getWidth(), renderWindow->OgreRenderWindow()->getHeight());
 
-        backBuffer->fill(Qt::transparent);
+        {
+            PROFILE(Renderer_DoFullUIRedraw_backbufferfill);
+            backBuffer->fill(Qt::transparent);
+        }
 
         // Paint ui view into buffer
-        QPainter painter(backBuffer);
-        view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+        {
+            PROFILE(Renderer_DoFullUIRedraw_GraphicsViewPaint);
+            QPainter painter(backBuffer);
+            view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+        }
 
         renderWindow->UpdateOverlayImage(*backBuffer);
     }
@@ -745,6 +749,7 @@ namespace OgreRenderer
 
         try
         {
+            PROFILE(Renderer_Render_OgreRoot_renderOneFrame);
             root_->renderOneFrame();
         } catch(const std::exception &e)
         {
@@ -948,6 +953,8 @@ namespace OgreRenderer
     
     RaycastResult* Renderer::Raycast(int x, int y, unsigned layerMask)
     {
+        PROFILE(Renderer_Raycast);
+
         static RaycastResult result;
         
         result.entity = 0; 
@@ -1069,6 +1076,8 @@ namespace OgreRenderer
     //qt wrapper / upcoming replacement for the one above
     QList<Entity*> Renderer::FrustumQuery(QRect &viewrect)
     {
+        PROFILE(Renderer_FrustumQuery);
+
         QList<Entity*>l;
         float w= (float)renderWindow->OgreRenderWindow()->getWidth();
         float h= (float)renderWindow->OgreRenderWindow()->getHeight();
