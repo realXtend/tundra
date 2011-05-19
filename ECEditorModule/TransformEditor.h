@@ -85,6 +85,7 @@ public:
     /// Sets visibility of the gizmo (if used).
     void SetGizmoVisible(bool show);
 
+public slots:
     /// Translates current target transforms.
     /** @param offset Offset to be applied. */
     void TranslateTargets(const Vector3df &offset);
