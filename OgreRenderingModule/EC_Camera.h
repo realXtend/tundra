@@ -130,7 +130,7 @@ public slots:
     /** @note Use with caution. Never set the position of the camera directly, use the placeable component for that. */
     Ogre::Camera* GetCamera() const { return camera_; }
 
-/* The following functions moved here from RenderServiceInterface. Reimplement them:
+/* The following functions moved here from IRenderer. Reimplement them:
 
     /// take sceenshot to a location
     /// @param filePath File path.

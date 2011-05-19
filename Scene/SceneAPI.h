@@ -168,8 +168,8 @@ private:
     /// \note This function is called by our fried class Framework when InputAPI is ready.
     void Initialise();
 
-    /// PostInitialize the scene interact object as RenderServiceInterface is now available.
-    /// \note This function is called by our fried class Framework when modules have loaded and RenderServiceInterface is ready.
+    /// PostInitialize the scene interact object as IRenderer is now available.
+    /// \note This function is called by our fried class Framework when modules have loaded and IRenderer is ready.
     void PostInitialize();
 
     ComponentFactoryPtr GetFactory(const QString &typeName);

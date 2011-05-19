@@ -18,6 +18,7 @@ class RaycastResult;
 
 typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
 typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
-typedef boost::shared_ptr<RenderServiceInterface> RendererServicePtr;
-typedef boost::weak_ptr<RenderServiceInterface> RendererServiceWeakPtr;
+class IRenderer;
+typedef boost::shared_ptr<IRenderer> RendererServicePtr;
+typedef boost::weak_ptr<IRenderer> RendererServiceWeakPtr;
 

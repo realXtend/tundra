@@ -26,7 +26,7 @@
 #include "AudioAPI.h"
 #include "SoundChannel.h"
 #include "InputContext.h"
-#include "RenderServiceInterface.h"
+#include "IRenderer.h"
 #include "UiMainWindow.h"
 #include "UiGraphicsView.h"
 #include "EntityAction.h"

@@ -12,7 +12,7 @@
 #include "Framework.h"
 #include "FrameAPI.h"
 #include "InputAPI.h"
-#include "RenderServiceInterface.h"
+#include "IRenderer.h"
 #include "Entity.h"
 
 SceneInteract::SceneInteract() :
@@ -40,7 +40,7 @@ void SceneInteract::Initialize(Framework *framework)
 
 void SceneInteract::PostInitialize()
 {
-    renderer_ = framework_->GetServiceManager()->GetService<RenderServiceInterface>(Service::ST_Renderer);
+    renderer_ = framework_->GetServiceManager()->GetService<IRenderer>(Service::ST_Renderer);
 
     ///\todo Want to do this:
     // renderer_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();

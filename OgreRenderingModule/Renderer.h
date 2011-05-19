@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_Renderer_h
 #define incl_OgreRenderer_Renderer_h
 
-#include "RenderServiceInterface.h"
+#include "IRenderer.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "SceneFwd.h"
@@ -39,10 +39,10 @@ namespace OgreRenderer
     };
 
     /// Ogre renderer
-    /** Created by OgreRenderingModule. Implements the RenderServiceInterface.
+    /** Created by OgreRenderingModule. Implements the IRenderer.
         \ingroup OgreRenderingModuleClient
     */
-    class OGRE_MODULE_API Renderer : public QObject, public RenderServiceInterface
+    class OGRE_MODULE_API Renderer : public QObject, public IRenderer
     {
         friend class RenderableListener;
 

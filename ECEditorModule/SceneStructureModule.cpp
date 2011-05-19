@@ -25,7 +25,7 @@
 #include "InputAPI.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "RenderServiceInterface.h"
+#include "IRenderer.h"
 #include "SceneImporter.h"
 #include "EC_Camera.h"
 #include "EC_Placeable.h"

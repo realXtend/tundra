@@ -57,16 +57,15 @@ public:
 class IRenderer : public IService
 {
 public:
-    /// Default constructor
     IRenderer() {}
 
-    /// Destructor.
     virtual ~IRenderer() {}
 
     /// Renders the scene
     virtual void Render() = 0;
 
     /// Do raycast into the world from viewport coordinates, using all selection layers
+    /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** The coordinates are a position in the render window, not scaled to [0,1].
         \param x Horizontal position for the origin of the ray
         \param y Vertical position for the origin of the ray
@@ -75,6 +74,7 @@ public:
     virtual RaycastResult* Raycast(int x, int y) = 0;
 
     /// Do raycast into the world from viewport coordinates, using specific selection layer(s)
+    /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** The coordinates are a position in the render window, not scaled to [0,1].
         \param x Horizontal position for the origin of the ray
         \param y Vertical position for the origin of the ray
@@ -84,27 +84,20 @@ public:
     virtual RaycastResult* Raycast(int x, int y, unsigned layerMask) = 0;
     
     /// Do a frustum query to the world from viewport coordinates.
+    /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** Returns the found entities as a QVariantList so that
         Python and Javascript can get the result directly from here.
         \param viewrect The query rectangle in 2d window coords.
     */
     virtual QList<Entity*> FrustumQuery(QRect &viewrect) = 0;
 
-    /// Returns the backbuffer image that contains the UI layer of the application screen.
-    /// Used to perform alpha-keying based input.
-//        virtual QImage &GetBackBuffer() = 0;
-
     /// Returns render window width, or 0 if no window is opened
+    /// \todo This function will be removed.
     virtual int GetWindowWidth() const = 0;
 
     /// Returns render window height, or 0 if no window is opened
+    /// \todo This function will be removed.
     virtual int GetWindowHeight() const = 0;
-
-    /// subscribe a listener to renderer log
-    virtual void SubscribeLogListener(const LogListenerPtr &listener) = 0;
-
-    /// unsubsribe a listener to renderer log
-    virtual void UnsubscribeLogListener(const LogListenerPtr &listener) = 0;
 
     /// set maximum view distance
     virtual void SetViewDistance(float distance) = 0;
@@ -113,6 +106,7 @@ public:
     virtual float GetViewDistance() const = 0;
 
     /// force UI repaint
+    /// \todo This function will be removed.
     virtual void RepaintUi() = 0;
 
     /// get visible entities last frame

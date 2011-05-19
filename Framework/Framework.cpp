@@ -7,7 +7,7 @@
 #include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "RenderServiceInterface.h"
+#include "IRenderer.h"
 #include "CoreException.h"
 
 #include "Application.h"
@@ -240,7 +240,7 @@ void Framework::ProcessOneFrame()
         if (!IsHeadless()) // Skip render if in headless mode.
         {
             // if we have a renderer service, render now
-            boost::weak_ptr<RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
+            boost::weak_ptr<IRenderer> renderer = service_manager_->GetService<IRenderer>();
             if (renderer.expired() == false)
             {
                 PROFILE(FW_Render);
