@@ -4,7 +4,6 @@
 #define incl_Framework_RenderServiceInterface_h
 
 #include "IService.h"
-#include "CoreModuleApi.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 
@@ -55,7 +54,7 @@ public:
     Manages the rendering window, handles scene rendering, and manages renderer related resources.
     Implemented by the \ref OgreRenderingModule.
 */
-class MODULE_API RenderServiceInterface : public IService
+class RenderServiceInterface : public IService
 {
 public:
     /// Default constructor

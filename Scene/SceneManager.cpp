@@ -28,7 +28,15 @@
 
 #include <boost/regex.hpp>
 
+#include <utility>
 #include "MemoryLeakCheck.h"
+
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 using namespace kNet;
 
@@ -687,7 +695,7 @@ QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numB
             EntityPtr entity = CreateEntity(id);
             if (!entity)
             {
-                std::cout << "Failed to create entity, stopping scene load" << std::endl;
+                LogError("Failed to create entity, stopping scene load!");
                 return ret; // If entity creation fails, stream desync is more than likely so stop right here
             }
             

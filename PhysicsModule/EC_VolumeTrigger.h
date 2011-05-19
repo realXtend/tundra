@@ -4,7 +4,8 @@
 #define incl_Physics_EC_VolumeTrigger_h
 
 #include "IComponent.h"
-#include "Core.h"
+#include "CoreDefines.h"
+#include "Vector3D.h"
 
 // forward declares
 namespace Physics { class PhysicsModule; class PhysicsWorld; }

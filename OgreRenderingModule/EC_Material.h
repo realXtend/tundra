@@ -5,7 +5,7 @@
 
 #include "StableHeaders.h"
 #include "IComponent.h"
-#include "Core.h"
+#include "CoreDefines.h"
 #include "OgreModuleApi.h"
 #include "AssetRefListener.h"
 

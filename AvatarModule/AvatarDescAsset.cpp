@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "AvatarDescAsset.h"
 #include "AvatarModule.h"
 #include "AssetAPI.h"
@@ -11,6 +10,7 @@
 
 #include <QDomDocument>
 #include <cstring>
+#include "MemoryLeakCheck.h"
 
 using namespace Avatar;
 

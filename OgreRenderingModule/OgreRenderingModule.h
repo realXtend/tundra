@@ -26,8 +26,10 @@ namespace OgreRenderer
     */
 
     /// A renderer module using Ogre
-    class OGRE_MODULE_API OgreRenderingModule : public IModule
+    class OGRE_MODULE_API OgreRenderingModule : public QObject, public IModule
     {
+        Q_OBJECT
+
     public:
         OgreRenderingModule();
         virtual ~OgreRenderingModule();
@@ -42,11 +44,12 @@ namespace OgreRenderer
         /// returns renderer
         RendererPtr GetRenderer() const { return renderer_; }
 
+    public slots:
         /// callback for console command
-        ConsoleCommandResult ConsoleStats(const StringVector &params);
+        void ConsoleStats();
 
         /// callback for console command
-        ConsoleCommandResult SetMaterialAttribute(const StringVector &params);
+        void SetMaterialAttribute(const StringVector &params);
 
     private:
         /// renderer

@@ -480,7 +480,7 @@ void ECEditorWindow::FunctionDialogFinished(int result)
             QString errorMsg;
             QVariant ret;
             FunctionInvoker invoker;
-            invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
+            invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
 
             if (errorMsg.isEmpty())
                 dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());

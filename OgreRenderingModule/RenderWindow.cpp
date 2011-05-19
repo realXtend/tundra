@@ -5,6 +5,7 @@
 #include "Profiler.h"
 
 #include "RenderWindow.h"
+#include "CoreStringUtils.h"
 
 #include <QWidget>
 #include <QImage>

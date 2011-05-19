@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "AvatarModule.h"
 #include "AvatarEditing/AvatarEditor.h"
-#include "ConsoleCommandUtils.h"
 #include "InputAPI.h"
 #include "SceneManager.h"
 #include "SceneAPI.h"
@@ -55,9 +54,9 @@ namespace Avatar
             connect(avatar_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), SLOT(KeyReleased(KeyEvent*)));
         }
 
-        framework_->Console()->RegisterCommand(CreateConsoleCommand("editavatar",
+        framework_->Console()->RegisterCommand("editavatar",
             "Edits the avatar in a specific entity. Usage: editavatar(entityname)",
-            ConsoleBind(this, &AvatarModule::EditAvatar)));
+            this, SLOT(EditAvatar(const QString &)));
     }
 
     void AvatarModule::Uninitialize()
@@ -80,18 +79,14 @@ namespace Avatar
     
     }
     
-    ConsoleCommandResult AvatarModule::EditAvatar(const StringVector &params)
+    void AvatarModule::EditAvatar(const QString &entityName)
     {
-        if (params.size() < 1)
-            return ConsoleResultFailure("No entity name given");
-        
-        QString name = QString::fromStdString(params[0]);
         ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
-            return ConsoleResultFailure("No scene");
-        EntityPtr entity = scene->GetEntityByName(name);
+            return;// ConsoleResultFailure("No scene");
+        EntityPtr entity = scene->GetEntityByName(entityName);
         if (!entity)
-            return ConsoleResultFailure("No such entity " + params[0]);
+            return;// ConsoleResultFailure("No such entity " + entityName.toStdString());
         
         /// \todo Clone the avatar asset for editing
         /// \todo Allow avatar asset editing without an avatar entity in the scene
@@ -99,8 +94,6 @@ namespace Avatar
         
         if (avatar_editor_)
             avatar_editor_->show();
-        
-        return ConsoleResultSuccess();
     }
 }
 

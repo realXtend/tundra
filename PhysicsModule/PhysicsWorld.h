@@ -3,9 +3,11 @@
 #ifndef incl_Physics_PhysicsWorld_h
 #define incl_Physics_PhysicsWorld_h
 
-#include "Core.h"
+#include "CoreDefines.h"
+#include "CoreTypes.h"
 #include "SceneFwd.h"
 #include "PhysicsModuleApi.h"
+#include "Vector3D.h"
 
 #include <set>
 #include <QObject>

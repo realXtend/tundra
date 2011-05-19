@@ -43,9 +43,9 @@ public:
     void RunScript(const QString &scriptname);
     void RunString(const QString &codestr, const QVariantMap &context = QVariantMap());
 
-    ConsoleCommandResult ConsoleRunString(const StringVector &params);
-    ConsoleCommandResult ConsoleRunFile(const StringVector &params);
-    ConsoleCommandResult ConsoleReloadScripts(const StringVector &params);
+    void ConsoleRunString(const StringVector &params);
+    void ConsoleRunFile(const StringVector &params);
+    void ConsoleReloadScripts();
 
     /// Prepares script instance by registering all needed services to it.
     /** If script is part of the scene, i.e. EC_Script component is present, we add some special services.

@@ -7,7 +7,7 @@
 #include "ui_ConsoleWidget.h"
 #include "ConsoleProxyWidget.h"
 #include "ConsoleAPI.h"
-#include "CommandManager.h"
+//#include "CommandManager.h"
 
 #include "UiAPI.h"
 #include "UiProxyWidget.h"
@@ -21,8 +21,8 @@
 
 #include "MemoryLeakCheck.h"
 
-UiConsoleManager::UiConsoleManager(CommandManager* mgr, Framework *fw) :
-    commandManager(mgr),
+UiConsoleManager::UiConsoleManager(/*CommandManager* mgr, */Framework *fw) :
+//    commandManager(mgr),
     framework(fw),
     graphicsView(fw->Ui()->GraphicsView()),
     consoleUi(0),
@@ -174,14 +174,15 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
                     }
 
                     QStringList suggestions;
-                    std::pair<std::string, ConsoleCommandStruct> p;
+//                    std::pair<std::string, ConsoleCommandStruct> p;
+/* ///\todo Regression, reimplement. -jj.
                     foreach(p, commandManager->Commands())
                     {
                         QString cmd(p.first.c_str());
                         if (cmd.startsWith(commandStub))
                             suggestions.push_back(cmd);
                     }
-
+*/
                     if (!prevSuggestions.isEmpty() && suggestions == prevSuggestions)
                         prevSuggestions.clear(); // Clear previous suggestion so that we can "start over".
 

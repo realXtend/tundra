@@ -42,30 +42,6 @@ public:
     void PostInitialize();
     void Uninitialize();
     void Update(f64 frametime);
-
-    /// Starts a server (console command)
-    ConsoleCommandResult ConsoleStartServer(const StringVector &params);
-    
-    /// Stops a server (console command)
-    ConsoleCommandResult ConsoleStopServer(const StringVector &params);
-    
-    /// Connects to server (console command)
-    ConsoleCommandResult ConsoleConnect(const StringVector &params);
-    
-    /// Disconnects from server (console command)
-    ConsoleCommandResult ConsoleDisconnect(const StringVector &params);
-
-    /// Saves scene to an XML file
-    ConsoleCommandResult ConsoleSaveScene(const StringVector &params);
-
-    /// Loads scene from an XML file.
-    ConsoleCommandResult ConsoleLoadScene(const StringVector &params);
-    
-    /// Imports a dotscene
-    ConsoleCommandResult ConsoleImportScene(const StringVector& params);
-    
-    /// Imports one mesh as a new entity
-    ConsoleCommandResult ConsoleImportMesh(const StringVector& params);
     
     /// Check whether we are a server
     bool IsServer() const;
@@ -81,7 +57,35 @@ public:
     
     /// Return server
     const boost::shared_ptr<Server>& GetServer() const { return server_; }
+
+public slots:
+
+    /// Starts the server (console command)
+    ///\todo Add protocol choice, TCP or UDP.
+    void ConsoleStartServer(int port);
     
+    /// Stops the server (console command)
+    void ConsoleStopServer();
+    
+    /// Connects to server (console command)
+    void ConsoleConnect(QString address, int port, QString username, QString password);
+    
+    /// Disconnects from server (console command)
+    void ConsoleDisconnect();
+
+    /// Saves scene to an XML file
+    /// @param asBinary If true, saves as .tbin. Otherwise saves as .txml.
+    void ConsoleSaveScene(QString filename, bool asBinary = false, bool saveTemporaryEntities = false, bool saveLocalEntities = true);
+
+    /// Loads scene from an XML file.
+    void ConsoleLoadScene(QString filename, bool clearScene = true, bool useEntityIDsFromFile = true);
+    
+    /// Imports a dotscene
+    void ConsoleImportScene(QString filename, bool clearScene = true, bool replace = true);
+    
+    /// Imports one mesh as a new entity
+    void ConsoleImportMesh(QString filename, float tx = 0.f, float ty = 0.f, float tz = 0.f, float rx = 0.f, float ry = 0.f, float rz = 0.f, float sx = 1.f, float sy = 1.f, float sz = 1.f, bool inspect = true);
+
 private slots:
     void StartupSceneLoaded(AssetPtr asset);
     void StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason);

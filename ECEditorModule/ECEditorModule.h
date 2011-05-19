@@ -43,22 +43,6 @@ public:
     void Uninitialize();
     void Update(f64 frametime);
 
-    /// Show EC editor window.
-    //ConsoleCommandResult ShowWindow(const StringVector &params);
-
-    ConsoleCommandResult ShowDocumentation(const StringVector &params);
-
-    /// Added for testing EC_DynamicComponent.
-    /** @param params Params should be following:
-     *  0 = entity id.
-     *  1 = operation (add or rem)
-     *  2 = component type.(ec. EC_DynamicComponent)
-     *  3 = attribute name.
-     *  4 = attribute type. !Only rem dont use in rem operation.
-     *  5 = attribute value. !Only rem dont use in rem operation.
-     */
-    ConsoleCommandResult EditDynamicComponent(const StringVector &params);
-
     ECEditorWindow *GetActiveECEditor() const;
 
     /// Return Tree widget item expand memory pointer, which keeps track of which items in EC editor are expanded.
@@ -68,6 +52,9 @@ public:
     ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
 
 public slots:
+
+    void ShowDocumentation(QString symbolName);
+
     /// ECEditor has gained a focus event and need to set as active editor.
     /// @param editor editor that has focus.
     void ECEditorFocusChanged(ECEditorWindow *editor);

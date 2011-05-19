@@ -3,6 +3,8 @@
 #include "StableHeaders.h"
 #include "CoreStringUtils.h"
 
+#include <boost/algorithm/string.hpp>
+
 QString QStringfromWCharArray(const wchar_t *string, int size)
 {
     QString qstr;

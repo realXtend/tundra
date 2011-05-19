@@ -6,7 +6,6 @@
 #include "IModule.h"
 
 #include <QObject>
-#include "ConsoleCommandUtils.h"
 
 #include "IAssetProvider.h"
 #include "AssetModuleApi.h"
@@ -45,16 +44,15 @@ namespace Asset
         virtual void Initialize();
         virtual void PostInitialize();
 
-        /// callback for console command
-        ConsoleCommandResult ConsoleRequestAsset(const StringVector &params);
-
-        ConsoleCommandResult AddAssetStorage(const StringVector &params);
-
-        ConsoleCommandResult ListAssetStorages(const StringVector &params);
-
-        ConsoleCommandResult ConsoleRefreshHttpStorages(const StringVector &params);
-
     public slots:
+        void ConsoleRequestAsset(const QString &assetRef, const QString &assetType);
+
+        void AddAssetStorage(const QString &storageString);
+
+        void ListAssetStorages();
+
+        void ConsoleRefreshHttpStorages();
+
         /// Loads from all the registered local storages all assets that have the given suffix.
         /// Type can also be optionally specified
         /// \todo Will be replaced with AssetStorage's GetAllAssetsRefs / GetAllAssets functionality

@@ -15,7 +15,6 @@
 #include "Framework.h"
 #include "UiAPI.h"
 #include "ModuleManager.h"
-#include "ConsoleCommandUtils.h"
 
 #include "SceneAPI.h"
 #include "SceneManager.h"
@@ -59,12 +58,12 @@ void DebugStatsModule::PostInitialize()
 
 #ifdef PROFILING
     framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
-
 #endif
 
-    framework_->Console()->RegisterCommand(CreateConsoleCommand("exec",
-        "Invokes action execution in entity",
-        ConsoleBind(this, &DebugStatsModule::Exec)));
+    ///\todo Regression. The following command cannot be actuall executed, since StringVector is not known by FunctionInvoker.
+    framework_->Console()->RegisterCommand("exec",
+        "Invokes an Entity Action on an entity (debugging).",
+        this, SLOT(Exec(const StringVector &)));
 
     inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -118,19 +117,11 @@ void DebugStatsModule::StartProfiling(bool visible)
 
 void DebugStatsModule::ShowProfilingWindow()
 {
-    ShowProfilingWindowCommand();
-}
-
-ConsoleCommandResult DebugStatsModule::ShowProfilingWindowCommand()
-{
     // If the window is already created, bring it to front.
     if (profilerWindow_)
-    {
         framework_->Ui()->BringWidgetToFront(profilerWindow_);
-        return ConsoleResultSuccess();
-    }
     else
-        return ConsoleResultFailure("Profiler window has not been initialized, something went wrong on startup!");
+        LogError("Profiler window has not been initialized, something went wrong on startup!");
 }
 
 void DebugStatsModule::Update(f64 frametime)
@@ -156,22 +147,22 @@ void DebugStatsModule::Update(f64 frametime)
 #endif
 }
 
-ConsoleCommandResult DebugStatsModule::Exec(const StringVector &params)
+void DebugStatsModule::Exec(const StringVector &params)
 {
     if (params.size() < 2)
-        return ConsoleResultFailure("Not enough parameters.");
+        return;// ConsoleResultFailure("Not enough parameters.");
 
     int id = ParseString<int>(params[0], 0);
     if (id == 0)
-        return ConsoleResultFailure("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
+        return;// ConsoleResultFailure("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
 
     ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return ConsoleResultFailure("No active scene.");
+        return;// ConsoleResultFailure("No active scene.");
 
     EntityPtr entity = scene->GetEntity(id);
     if (!entity)
-        return ConsoleResultFailure("No entity found for entity ID " + params[0]);
+        return;// ConsoleResultFailure("No entity found for entity ID " + params[0]);
 
     QStringList execParameters;
     
@@ -186,8 +177,6 @@ ConsoleCommandResult DebugStatsModule::Exec(const StringVector &params)
     }
     else
         entity->Exec(EntityAction::Local, params[1].c_str(), execParameters);
-
-    return ConsoleResultSuccess();
 }
 
 }

@@ -33,10 +33,6 @@ namespace KristalliProtocol
         void Uninitialize();
         void Update(f64 frametime);
 
-#ifdef KNET_USE_QT
-        ConsoleCommandResult OpenKNetLogWindow(const StringVector &);
-#endif
-
         /// Connects to the Kristalli server at the given address.
         void Connect(const char *ip, unsigned short port, kNet::SocketTransportLayer transport);
 
@@ -81,6 +77,11 @@ namespace KristalliProtocol
 
         /// What trasport layer to use. Read on startup from --protocol udp/tcp. Defaults to TCP if no start param was given.
         kNet::SocketTransportLayer defaultTransport;
+
+#ifdef KNET_USE_QT
+public slots:
+        void OpenKNetLogWindow();
+#endif
 
     signals:
         /// Triggered whenever a new message is received rom the network.

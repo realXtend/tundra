@@ -24,6 +24,8 @@
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 
+#include <iostream>
+
 #include "MemoryLeakCheck.h"
 
 Framework *Framework::instance = 0;
@@ -95,6 +97,7 @@ Framework::Framework(int argc, char** argv) :
         input = new InputAPI(this);
         plugin = new PluginAPI(this);
         console = new ConsoleAPI(this);
+        console->RegisterCommand("exit", "Shuts down gracefully.", this, SLOT(Exit()));
 
         // Initialize SceneAPI.
         scene->Initialise();
@@ -300,7 +303,7 @@ void Framework::UnloadModules()
 {
     module_manager_->UninitializeModules();
     ///\todo Horrible uninit call here now due to console refactoring
-    console->Uninitialize();
+//    console->Uninitialize();
     module_manager_->UnloadModules();
 }
 
@@ -420,6 +423,7 @@ ConsoleCommandResult Framework::ConsoleProfile(const StringVector &params)
 */
 void Framework::RegisterConsoleCommands()
 {
+    ///\todo Regression. Reimplement. -jj.
 /*
     console->RegisterCommand(CreateConsoleCommand("ListModules",
         "Lists all loaded modules.", 

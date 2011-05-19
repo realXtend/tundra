@@ -3,7 +3,8 @@
 #ifndef incl_TundraLogicModule_Server_h
 #define incl_TundraLogicModule_Server_h
 
-#include "Core.h"
+#include "CoreDefines.h"
+#include "CoreTypes.h"
 #include "TundraLogicModuleApi.h"
 #include "UserConnectedResponseData.h"
 

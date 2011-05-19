@@ -9,6 +9,7 @@
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 #include "InvokeItem.h"
+#include "CoreException.h"
 
 InvokeItem::InvokeItem() : type(Unknown), execTypes(EntityAction::Invalid), mruOrder(0)
 {

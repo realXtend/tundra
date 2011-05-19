@@ -3,7 +3,9 @@
 #ifndef incl_Physics_PhysicsUtils_h
 #define incl_Physics_PhysicsUtils_h
 
-#include "Core.h"
+#include "CoreDefines.h"
+#include "Vector3D.h"
+#include "Quaternion.h"
 #include "LinearMath/btQuaternion.h"
 #include "LinearMath/btVector3.h"
 #include <BulletDynamics/Dynamics/btRigidBody.h>

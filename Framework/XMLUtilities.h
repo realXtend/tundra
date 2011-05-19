@@ -2,7 +2,12 @@
 #ifndef incl_XMLUtilities_h
 #define incl_XMLUtilities_h
 
-#include "Core.h"
+#include "CoreDefines.h"
+#include "Color.h"
+#include "Vector3D.h"
+#include "Quaternion.h"
+
+#include <string>
 
 class QDomElement;
 

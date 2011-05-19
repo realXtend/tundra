@@ -3,12 +3,13 @@
 #ifndef incl_Physics_EC_RigidBody_h
 #define incl_Physics_EC_RigidBody_h
 
-#include "Core.h"
+#include "CoreDefines.h"
 #include "IComponent.h"
 #include "LinearMath/btMotionState.h"
 #include "AssetReference.h"
 #include "AssetFwd.h"
 
+#include "Vector3D.h"
 #include "PhysicsModuleApi.h"
 
 #include <QVector>

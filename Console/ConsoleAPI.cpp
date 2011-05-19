@@ -9,40 +9,71 @@
 #include "DebugOperatorNew.h"
 
 #include "ConsoleAPI.h"
-#include "CommandManager.h"
 #include "UiConsoleManager.h"
-#include "ConsoleCommandUtils.h"
 
 #include "Framework.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
-//#include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
+#include "FunctionInvoker.h"
+#include "ShellInputThread.h"
 
 #include "MemoryLeakCheck.h"
 
-void ConsoleCommand::Invoke(const QStringList &params)
+ConsoleAPI::ConsoleAPI(Framework *fw)
+:QObject(fw),
+framework_(fw)
 {
+    if (!fw->IsHeadless())
+        uiConsoleManager = boost::shared_ptr<UiConsoleManager>(new UiConsoleManager(framework_));
+
+    inputContext = framework_->Input()->RegisterInputContext("Console", 100);
+    inputContext->SetTakeKeyboardEventsOverQt(true);
+    connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+
+    RegisterCommand("help", "Lists all registered commands.",
+        this, SLOT(ListCommands()));
+
+    shellInputThread = boost::shared_ptr<ShellInputThread>(new ShellInputThread);
+}
+
+QVariant ConsoleCommand::Invoke(const QStringList &params)
+{
+    QVariant returnValue;
+
+    // If we have a target QObject, invoke it.
+    if (target)
+    {
+        FunctionInvoker fi;
+        QString errorMessage;
+        fi.Invoke(target, functionName, params, &returnValue, &errorMessage);
+        if (!errorMessage.isEmpty())
+            LogError("ConsoleCommand::Invoke returned an error: " + errorMessage);
+    }
+
+    // Also, there may exist a script-registered handler that implements this console command - invoke it.
     emit Invoked(params);
+
+    return returnValue;
 }
 
 ConsoleAPI::~ConsoleAPI()
 {
-    qDeleteAll(commands_);
 }
 
 ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &desc)
 {
-    if(commands_.contains(name))
+    if (commands.find(name) != commands.end())
     {
-        LogWarning("Command " + name.toStdString() + " is already registered.");
-        return commands_[name];
+        LogWarning("ConsoleAPI: Command " + name + " is already registered.");
+        return commands[name].get();
     }
 
-    ConsoleCommand *command = new ConsoleCommand(name);
-    commands_.insert(name, command);
-
+    boost::shared_ptr<ConsoleCommand> command = boost::shared_ptr<ConsoleCommand>(new ConsoleCommand(name, desc, 0, ""));
+    commands[name] = command;
+    return command.get();
+/*
     ConsoleCommandStruct cmd = { name.toStdString(), desc.toStdString(), ConsoleCallbackPtr(), false };
     commandManager->RegisterCommand(cmd);
 
@@ -51,102 +82,114 @@ ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &
         SLOT(InvokeCommand(const QString &, const QStringList &)), Qt::UniqueConnection);
 
     return command;
+*/
 }
 
-void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, const QObject *receiver, const char *member)
+void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, QObject *receiver, const char *memberSlot)
 {
-    if (!commands_.contains(name))
+    if (commands.find(name) != commands.end())
     {
-        ConsoleCommand *command = new ConsoleCommand(name);
-        commands_.insert(name, command);
-        connect(command, SIGNAL(Invoked(const QStringList &)), receiver, member);
+        LogWarning("ConsoleAPI: Command " + name + " is already registered.");
+        return;
+    }
 
-        ConsoleCommandStruct cmd = { name.toStdString(), desc.toStdString(), ConsoleCallbackPtr(), false };
-        commandManager->RegisterCommand(cmd);
+    boost::shared_ptr<ConsoleCommand> command = boost::shared_ptr<ConsoleCommand>(new ConsoleCommand(name, desc, receiver, memberSlot+1));
+    commands[name] = command;
+    /*
+//    connect(command, SIGNAL(Invoked(const QStringList &)), receiver, member);
+
+    ConsoleCommandStruct cmd = { name.toStdString(), desc.toStdString(), ConsoleCallbackPtr(), false };
+    commandManager->RegisterCommand(cmd);
 
         // Use UniqueConnection so that we don't have duplicate connections.
         connect(commandManager, SIGNAL(CommandInvoked(const QString &, const QStringList &)),
             SLOT(InvokeCommand(const QString &, const QStringList &)), Qt::UniqueConnection);
     }
+    */
+}
+
+/// Splits a string of form "MyFunctionName(param1, param2, param3, ...)" into
+/// a commandName = "MyFunctionName" and a list of parameters as a StringList.
+void ParseCommand(QString command, QString &commandName, QStringList &parameterList)
+{
+    command = command.trimmed();
+    if (command.isEmpty())
+        return;
+
+    int split = command.indexOf("(");
+    if (split == -1)
+    {
+        commandName = command;
+        return;
+    }
+
+    commandName = command.left(split).trimmed();
+    parameterList = command.mid(split+1).split(",");
 }
 
 void ConsoleAPI::ExecuteCommand(const QString &command)
 {
-    commandManager->ExecuteCommand(command.toStdString());
+    QString commandName;
+    QStringList parameterList;
+    ParseCommand(command, commandName, parameterList);
+    if (commandName.isEmpty())
+        return;
+
+    CommandMap::iterator iter = commands.find(commandName);
+    if (iter == commands.end())
+    {
+        LogError("Cannot find a console command \"" + commandName + "\"!");
+        return;
+    }
+
+    iter->second->Invoke(parameterList);
+
+//    commandManager->ExecuteCommand(command.toStdString());
 }
 
 void ConsoleAPI::Print(const QString &message)
 {
-    Print_(message.toStdString());
+    if (uiConsoleManager)
+        uiConsoleManager->PrintToConsole(message.toStdString().c_str());
 }
 
+void ConsoleAPI::ListCommands()
+{
+    for(CommandMap::iterator iter = commands.begin(); iter != commands.end(); ++iter)
+        Print(iter->first + " - " + iter->second->Description());
+}
+
+/*
 void ConsoleAPI::RegisterCommand(const ConsoleCommandStruct &command)
 {
     commandManager->RegisterCommand(command);
 }
-
-ConsoleAPI::ConsoleAPI(Framework *fw) :
-    QObject(fw),
-    framework_(fw),
-    uiConsoleManager(0),
-    commandManager(new CommandManager(this, framework_)),
-//START FROM CONSOLEMANAGER
-    logListener(new LogListener(this))
-//END FROM CONSOLEMANAGER
-{
-    if (!fw->IsHeadless())
-    {
-        uiConsoleManager = new UiConsoleManager(commandManager, framework_);
-        for(unsigned i=0; i<earlyMessages.size();i++)
-            Print(earlyMessages.at(i).c_str());
-        earlyMessages.clear();
-    }
-
-    inputContext = framework_->Input()->RegisterInputContext("Console", 100);
-    inputContext->SetTakeKeyboardEventsOverQt(true);
-    connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-
-//START FROM CONSOLEMANAGER
-    ///\todo Poco Regression.
-///    framework_->AddLogChannel(consoleChannel.get());
-/*
-    RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
-    if (renderer)
-        renderer->SubscribeLogListener(logListener);
 */
-//        else
-//            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't subscribe to renderer log listener.");
-//END FROM CONSOLEMANAGER
-}
 
 //START FROM CONSOLEMANAGER
 void ConsoleAPI::Update(f64 frametime)
 {
-    commandManager->Update();
-}
+//    commandManager->Update();
 
-void ConsoleAPI::Print_(const std::string &text)
-{
-    if (uiConsoleManager)
-        uiConsoleManager->PrintToConsole(text.c_str());
-    else
-        earlyMessages.push_back(text);
+    std::string input = shellInputThread->GetLine();
+    if (input.length() > 0)
+        ExecuteCommand(input.c_str());
 }
-
+/*
 void ConsoleAPI::UnsubscribeLogListener()
 {
-/*
+
     RenderServiceInterface *renderer = framework_->GetService<RenderServiceInterface>();
     if (renderer)
         renderer->UnsubscribeLogListener(logListener);
-*/
+
 //        else
 //            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't unsubscribe renderer log listener.");
 
     ///\todo Poco regression.
 //    framework_->RemoveLogChannel(consoleChannel.get());
 }
-
+*/
 //END FROM CONSOLEMANAGER
 
 void ConsoleAPI::ToggleConsole()
@@ -162,16 +205,12 @@ void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
         ToggleConsole();
 }
 
-void ConsoleAPI::Uninitialize()
-{
-    SAFE_DELETE(uiConsoleManager);
-    UnsubscribeLogListener();
-}
-
+/*
 void ConsoleAPI::InvokeCommand(const QString &name, const QStringList &params) const
 {
-    QMap<QString, ConsoleCommand *>::const_iterator i = commands_.find(name);
-    if (i != commands_.end())
+    QMap<QString, ConsoleCommand *>::const_iterator i = commands.find(name);
+    if (i != commands.end())
         i.value()->Invoke(params);
 }
 
+*/

@@ -27,11 +27,11 @@
 #include "FrameAPI.h"
 #include "PluginAPI.h"
 #include "ConsoleAPI.h"
-#include "ConsoleCommandUtils.h"
 #include "IComponentFactory.h"
 
 #include "ScriptAsset.h"
 
+#include <boost/algorithm/string.hpp>
 #include <QtScript>
 #include <QDomElement>
 
@@ -71,19 +71,22 @@ void JavascriptModule::Initialize()
 void JavascriptModule::PostInitialize()
 {
     RegisterCoreMetaTypes();
-    
-    framework_->Console()->RegisterCommand(CreateConsoleCommand(
-        "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
-        ConsoleBind(this, &JavascriptModule::ConsoleRunString)));
+    ///\todo Regression. Reimplement. -jj.
 
-    framework_->Console()->RegisterCommand(CreateConsoleCommand(
+/*     ///\todo
+    
+    framework_->Console()->RegisterCommand(
+        "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
+        this, SLOT(ConsoleRunString()));
+
+    framework_->Console()->RegisterCommand(
         "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",
-        ConsoleBind(this, &JavascriptModule::ConsoleRunFile)));
+        this, SLOT(ConsoleRunFile()));
     
-    framework_->Console()->RegisterCommand(CreateConsoleCommand(
+    framework_->Console()->RegisterCommand(
         "JsReloadScripts", "Reloads and re-executes startup scripts.",
-        ConsoleBind(this, &JavascriptModule::ConsoleReloadScripts)));
-    
+        this, SLOT(ConsoleReloadScripts()));
+*/    
     // Initialize startup scripts
     LoadStartupScripts();
 
@@ -108,30 +111,31 @@ void JavascriptModule::Update(f64 frametime)
 {
 }
 
-ConsoleCommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
+void JavascriptModule::ConsoleRunString(const StringVector &params)
 {
     if (params.size() != 1)
-        return ConsoleResultFailure("Usage: JsExec(print 1 + 1)");
+    {
+        LogError("Usage: JsExec(print 1 + 1)");
+        return;
+    }
 
     JavascriptModule::RunString(QString::fromStdString(params[0]));
-    return ConsoleResultSuccess();
 }
 
-ConsoleCommandResult JavascriptModule::ConsoleRunFile(const StringVector &params)
+void JavascriptModule::ConsoleRunFile(const StringVector &params)
 {
     if (params.size() != 1)
-        return ConsoleResultFailure("Usage: JsLoad(myfile.js)");
+    {
+        LogError("Usage: JsLoad(myfile.js)");
+        return;
+    }
 
     JavascriptModule::RunScript(QString::fromStdString(params[0]));
-
-    return ConsoleResultSuccess();
 }
 
-ConsoleCommandResult JavascriptModule::ConsoleReloadScripts(const StringVector &params)
+void JavascriptModule::ConsoleReloadScripts()
 {
     LoadStartupScripts();
-
-    return ConsoleResultSuccess();
 }
 
 JavascriptModule *JavascriptModule::GetInstance()
@@ -356,7 +360,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
 
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
 {
-    std::cout << "{QtScript} " << context->argument(0).toString().toStdString() << "\n";
+    LogInfo("{QtScript} " + context->argument(0).toString());
     return QScriptValue();
 }
 

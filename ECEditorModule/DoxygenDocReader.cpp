@@ -8,6 +8,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
+#include "LoggingFunctions.h"
 
 #include "DoxygenDocReader.h"
 
@@ -105,7 +106,7 @@ bool DoxygenDocReader::GetSymbolDocumentation(QString doxygenDocDirectory, QStri
 
     ///\todo proper cross-platform path lookup.
     QFile file(doxygenDocDirectory + "/" + GuessFunctionDocumentationFilename(functionName));
-    std::cout << ("Trying to open file: " + doxygenDocDirectory + "/" + GuessFunctionDocumentationFilename(functionName)).toStdString() << std::endl;;
+    LogDebug("Trying to open file: " + doxygenDocDirectory + "/" + GuessFunctionDocumentationFilename(functionName));
 
     if (!file.open(QIODevice::ReadOnly))
     {

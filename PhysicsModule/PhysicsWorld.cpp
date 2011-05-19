@@ -3,13 +3,12 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "btBulletDynamicsCommon.h"
-#include "MemoryLeakCheck.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
 #include "Profiler.h"
 #include "EC_RigidBody.h"
-
+#include "MemoryLeakCheck.h"
 
 namespace Physics
 {

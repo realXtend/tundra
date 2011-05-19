@@ -3,13 +3,13 @@
 #ifndef incl_OgreAssetEditorModule_StableHeaders_h
 #define incl_OgreAssetEditorModule_StableHeaders_h
 
-#include "CoreStdIncludes.h"
+#include "CoreDefines.h"
 
 // If PCH is disabled, leave the contents of this whole file empty to avoid any compilation unit getting any unnecessary headers.
 ///\todo Refactor the above #include inside this #ifdef as well.
 #ifdef PCH_ENABLED
 
-#include "Core.h"
+#include "CoreDefines.h"
 
 #include "Framework.h"
 

@@ -22,6 +22,7 @@
 #include "LoggingFunctions.h"
 #include "SceneAPI.h"
 #include "OgreRenderingModule.h"
+#include "CoreException.h"
 
 #include <Ogre.h>
 

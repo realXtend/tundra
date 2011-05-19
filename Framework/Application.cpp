@@ -8,6 +8,8 @@
 #include "Profiler.h"
 #include "CoreStringUtils.h"
 
+#include <iostream>
+#include <utility>
 #include <QDir>
 #include <QGraphicsView>
 #include <QTranslator>
@@ -28,6 +30,8 @@
 #include <WinSock2.h>
 #include <windows.h>
 #include <shlobj.h>
+#undef min
+#undef max
 #endif
 
 #include "MemoryLeakCheck.h"

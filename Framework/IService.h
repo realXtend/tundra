@@ -3,7 +3,6 @@
 #ifndef incl_Framework_IService_h
 #define incl_Framework_IService_h
 
-#include "CoreModuleApi.h"
 #include "boost/shared_ptr.hpp"
 
 /// Common interface for all services
@@ -11,7 +10,7 @@
     \ingroup Foundation_group
     \ingroup Services_group
 */
-class MODULE_API IService
+class IService
 {
 public:
     IService() {}

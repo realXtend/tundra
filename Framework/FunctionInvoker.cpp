@@ -9,6 +9,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "CoreException.h"
 #include "FunctionInvoker.h"
 #include "ArgumentType.h"
 
@@ -16,9 +17,11 @@
 
 #include "MemoryLeakCheck.h"
 
-void FunctionInvoker::Invoke(QObject *obj, const QString &function, QVariant *ret, const QVariantList &params, QString *errorMsg)
+void FunctionInvoker::Invoke(QObject *obj, const QString &function, const QVariantList &params, 
+                             QVariant *ret, QString *errorMsg)
 {
-    QList<QGenericArgument> args;
+    QList<IArgumentType *> args;
+
     foreach(QVariant p, params)
     {
         IArgumentType *arg = CreateArgumentType(p.typeName());
@@ -30,8 +33,18 @@ void FunctionInvoker::Invoke(QObject *obj, const QString &function, QVariant *re
         }
 
         arg->FromQVariant(p);
-        args.push_back(arg->Value());
+        args.push_back(arg);
     }
+
+    Invoke(obj, function, args, ret, errorMsg);
+}
+
+void FunctionInvoker::Invoke(QObject *obj, const QString &function, QList<IArgumentType *> &arguments, 
+                             QVariant *ret, QString *errorMsg)
+{
+    QList<QGenericArgument> args;
+    foreach(IArgumentType *arg, arguments)
+        args.push_back(arg->Value());
 
     while(args.size() < 10)
         args.push_back(QGenericArgument());
@@ -75,9 +88,23 @@ void FunctionInvoker::Invoke(QObject *obj, const QString &function, QVariant *re
     }
 }
 
-void FunctionInvoker::Invoke(QObject *obj, const QString &function, const QVariantList &params, QString *errorMsg)
+void FunctionInvoker::Invoke(QObject *obj, const QString &functionSignature, const QStringList &params, 
+                             QVariant *ret, QString *errorMsg)
 {
-    Invoke(obj, function, 0, params, errorMsg);
+    QList<IArgumentType *> args = CreateArgumentList(obj, functionSignature);
+
+    if (args.size() != params.size())
+    {
+        LogError("FunctionInvoker::Invoke: Parameter number mismatch!");
+        return;
+    }
+
+    for(int i = 0; i < args.size(); ++i)
+        args[i]->FromString(params[i]);
+
+    int idx = functionSignature.indexOf("(");
+    QString functionBasename = idx != -1 ? functionSignature.left(idx) : functionSignature;
+    Invoke(obj, functionBasename, args, ret, errorMsg);
 }
 
 QList<IArgumentType *> FunctionInvoker::CreateArgumentList(const QObject *obj, const QString &signature)
@@ -94,6 +121,8 @@ QList<IArgumentType *> FunctionInvoker::CreateArgumentList(const QObject *obj, c
                 IArgumentType *arg = CreateArgumentType(QString(param));
                 if (arg)
                     args.append(arg);
+                else
+                    return QList<IArgumentType*>(); // We failed to create some argument - can't call this function!
             }
     }
 

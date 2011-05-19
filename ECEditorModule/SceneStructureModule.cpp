@@ -66,8 +66,10 @@ SceneStructureModule::~SceneStructureModule()
 
 void SceneStructureModule::PostInitialize()
 {
-    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", this, SLOT(ToggleSceneStructureWindow()));
-    framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", this, SLOT(ToggleAssetsWindow()));
+    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", 
+        this, SLOT(ToggleSceneStructureWindow()));
+    framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", 
+        this, SLOT(ToggleAssetsWindow()));
 
     // Don't allocate the widget memory for nothing if we are headless.
     if (!framework_->IsHeadless())

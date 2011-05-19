@@ -11,6 +11,9 @@
 #include "EntityReference.h"
 #include "SceneInteract.h"
 
+#include "Color.h"
+#include "Quaternion.h"
+#include "Transform.h"
 #include "MemoryLeakCheck.h"
 
 SceneAPI::SceneAPI(Framework *framework) :

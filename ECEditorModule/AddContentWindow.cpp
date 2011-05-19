@@ -23,6 +23,7 @@
 #include "SceneImporter.h"
 #include "Transform.h"
 #include "LoggingFunctions.h"
+#include "CoreException.h"
 
 #include "MemoryLeakCheck.h"
 

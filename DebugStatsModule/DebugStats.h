@@ -38,9 +38,6 @@ namespace DebugStats
         void PostInitialize();
         void Update(f64 frametime);
 
-        /// Creates and shows the profiling window.
-        ConsoleCommandResult ShowProfilingWindowCommand();
-
     public slots:
         /// Creates and shows the profiling window.
         void ShowProfilingWindow();
@@ -58,7 +55,7 @@ namespace DebugStats
         Q_DISABLE_COPY(DebugStatsModule);
 
         /// Invokes action in entity.
-        ConsoleCommandResult Exec(const StringVector &params);
+        void Exec(const StringVector &params);
 
         /// A history of estimated frame times.
         std::vector<std::pair<u64, double> > frameTimes;

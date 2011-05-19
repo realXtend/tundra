@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_Terrain.h"
-
+#include "CoreException.h"
 #include "BinaryAsset.h"
 #include "Renderer.h"
 #include "IModule.h"

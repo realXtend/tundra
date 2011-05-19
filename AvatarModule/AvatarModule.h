@@ -52,9 +52,10 @@ namespace Avatar
         AvatarEditorPtr GetAvatarEditor() { return avatar_editor_; }
         AvatarControllablePtr GetAvatarControllable() { return avatar_controllable_; }
 
-    private:
         /// Console command: start editing a specific entity's avatar
-        ConsoleCommandResult EditAvatar(const StringVector &params);
+        void EditAvatar(const QString &entityName);
+
+    private:
 
         /// AvatarModules input context
         InputContextPtr avatar_context_;

@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "AssetModule.h"
 #include "LocalAssetProvider.h"
 #include "HttpAssetProvider.h"
@@ -30,6 +29,7 @@
 #include "kNet/MessageConnection.h"
 
 #include <QDir>
+#include "MemoryLeakCheck.h"
 
 namespace Asset
 {
@@ -65,25 +65,23 @@ namespace Asset
         framework_->RegisterDynamicObject("assetModule", this);
     }
 
-    static const std::string addAssetStorageHelp = "Usage: AddAssetStorage(storage string). For example: AddAssetStorage(name=MyAssets;type=HttpAssetStorage;src=http://www.myserver.com/;default;)";
-
     void AssetModule::PostInitialize()
     {
-        framework_->Console()->RegisterCommand(CreateConsoleCommand(
+        framework_->Console()->RegisterCommand(
             "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
-            ConsoleBind(this, &AssetModule::ConsoleRequestAsset)));
+            this, SLOT(ConsoleRequestAsset(const QString &, const QString &)));
 
-        framework_->Console()->RegisterCommand(CreateConsoleCommand(
-            "AddAssetStorage", addAssetStorageHelp, 
-            ConsoleBind(this, &AssetModule::AddAssetStorage)));
+        framework_->Console()->RegisterCommand(
+            "AddAssetStorage", "Usage: AddAssetStorage(storage string). For example: AddAssetStorage(name=MyAssets;type=HttpAssetStorage;src=http://www.myserver.com/;default;)", 
+            this, SLOT(AddAssetStorage(const QString &)));
 
-        framework_->Console()->RegisterCommand(CreateConsoleCommand(
+        framework_->Console()->RegisterCommand(
             "ListAssetStorages", "Serializes all currently registered asset storages to the console output log.", 
-            ConsoleBind(this, &AssetModule::ListAssetStorages)));
+            this, SLOT(ListAssetStorages()));
 
-        framework_->Console()->RegisterCommand(CreateConsoleCommand(
+        framework_->Console()->RegisterCommand(
             "RefreshHttpStorages", "Refreshes known assetrefs for all http asset storages", 
-            ConsoleBind(this, &AssetModule::ConsoleRefreshHttpStorages)));
+            this, SLOT(ConsoleRefreshHttpStorages()));
             
         ProcessCommandLineOptions();
 
@@ -123,37 +121,22 @@ namespace Asset
         }
     }
 
-    ConsoleCommandResult AssetModule::ConsoleRefreshHttpStorages(const StringVector &params)
+    void AssetModule::ConsoleRefreshHttpStorages()
     {
         RefreshHttpStorages();
-        return ConsoleResultSuccess();
     }
     
-    ConsoleCommandResult AssetModule::ConsoleRequestAsset(const StringVector &params)
+    void AssetModule::ConsoleRequestAsset(const QString &assetRef, const QString &assetType)
     {
-        if (params.size() != 2)
-            return ConsoleResultFailure("Usage: RequestAsset(uuid,assettype)");
-
-        AssetTransferPtr transfer = framework_->Asset()->RequestAsset(params[0].c_str(), params[1].c_str());
-        if (transfer)
-            return ConsoleResultSuccess();
-        else
-            return ConsoleResultFailure();
+        AssetTransferPtr transfer = framework_->Asset()->RequestAsset(assetRef, assetType);
     }
 
-    ConsoleCommandResult AssetModule::AddAssetStorage(const StringVector &params)
+    void AssetModule::AddAssetStorage(const QString &storageString)
     {
-        if (params.size() != 1)
-            return ConsoleResultFailure("Invalid number of parameters! " + addAssetStorageHelp);
-        
-        AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(params[0].c_str());
-        if (storage)
-            return ConsoleResultSuccess();
-        else
-            return ConsoleResultFailure();
+        AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(storageString);
     }
 
-    ConsoleCommandResult AssetModule::ListAssetStorages(const StringVector &params)
+    void AssetModule::ListAssetStorages()
     {
         AssetStorageVector storages = framework_->Asset()->GetAssetStorages();
         LogInfo("Registered storages: ");
@@ -164,8 +147,6 @@ namespace Asset
                 storageString += ";default";
             LogInfo(storageString.toStdString());
         }
-
-        return ConsoleResultSuccess();
     }
 
     void AssetModule::LoadAllLocalAssetsWithSuffix(const QString &suffix, const QString &assetType)

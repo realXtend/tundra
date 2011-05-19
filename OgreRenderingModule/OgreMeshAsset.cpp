@@ -1,6 +1,5 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "OgreMeshAsset.h"
 #include "OgreConversionUtils.h"
 #include "OgreRenderingModule.h"
@@ -11,6 +10,7 @@
 #include <Ogre.h>
 
 #include "LoggingFunctions.h"
+#include "MemoryLeakCheck.h"
 
 OgreMeshAsset::~OgreMeshAsset()
 {

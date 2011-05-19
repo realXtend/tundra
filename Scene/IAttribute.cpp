@@ -11,12 +11,15 @@
 
 #include "IAttribute.h"
 #include "IComponent.h"
-#include "Core.h"
-#include "CoreStdIncludes.h"
+#include "CoreTypes.h"
+#include "CoreDefines.h"
 #include "Transform.h"
 #include "AssetReference.h"
 #include "EntityReference.h"
+#include "Color.h"
+#include "Quaternion.h"
 
+#include <boost/algorithm/string.hpp>
 #include <QVector3D>
 #include <QVariant>
 #include <QStringList>

@@ -45,19 +45,7 @@ public:
     void PostInitialize();
     void Update(f64 frametime);
     void Uninitialize();
-    
-    /// Toggles physics debug geometry
-    ConsoleCommandResult ConsoleToggleDebugGeometry(const StringVector& params);
-
-    /// Stops physics
-    ConsoleCommandResult ConsoleStopPhysics(const StringVector& params);
-    
-    /// Starts physics
-    ConsoleCommandResult ConsoleStartPhysics(const StringVector& params);
-    
-    /// Autoassigns static rigid bodies with collision meshes to visible meshes
-    ConsoleCommandResult ConsoleAutoCollisionMesh(const StringVector& params);
-    
+        
     /// IDebugDraw override
     virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
     
@@ -99,6 +87,19 @@ public:
     Physics::PhysicsWorld* GetPhysicsWorldForScene(SceneManager* sceneraw);
     
 public slots:
+
+    /// Toggles physics debug geometry
+    void ConsoleToggleDebugGeometry();
+
+    /// Stops physics
+    void ConsoleStopPhysics();
+    
+    /// Starts physics
+    void ConsoleStartPhysics();
+    
+    /// Autoassigns static rigid bodies with collision meshes to visible meshes
+    void ConsoleAutoCollisionMesh();
+
     /// Get a physics world for a scene. This version meant for scripts
     /** Note: the parameter is a QObject*, because typically the scriptengine's dynamic property scene is used to query for physicsobject.
         But it seems to lose its knowledge of actually being a SceneManager*, and returns null. This version will dynamic cast

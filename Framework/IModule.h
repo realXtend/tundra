@@ -17,7 +17,6 @@
 
 #include "CoreTypes.h"
 #include "FrameworkFwd.h"
-#include "CoreModuleApi.h"
 
 ///\todo Delete this.
 /// Possible module states 

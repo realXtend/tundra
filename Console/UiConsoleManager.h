@@ -22,7 +22,7 @@ class UiConsoleManager: public QObject
     Q_OBJECT
 
 public:
-    UiConsoleManager(CommandManager* mgr, Framework *fw);
+    explicit UiConsoleManager(/*CommandManager* mgr, */Framework *fw);
     virtual ~UiConsoleManager();
 
 public slots:
@@ -57,7 +57,7 @@ private:
     void DecorateString(QString &str);
     bool visible; ///< Is the console UI visible.
     Framework* framework; ///< Framework pointer
-    CommandManager *commandManager; ///< Command manager.
+//    CommandManager *commandManager; ///< Command manager.
     QGraphicsView *graphicsView; ///< View to the scene
     Ui_ConsoleWidget* consoleUi; ///< UI
     QWidget * consoleWidget; ///< Widget in UI

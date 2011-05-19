@@ -3,6 +3,8 @@
 #ifndef incl_CoreDefines_h
 #define incl_CoreDefines_h
 
+#include <cassert>
+
 // useful defines
 
 #define SAFE_DELETE(p) { delete p; p=0; }

@@ -7,17 +7,24 @@
 #include "KristalliProtocolModule.h"
 #include "Profiler.h"
 #include "CoreStringUtils.h"
-#include "ConsoleCommandUtils.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "ConsoleAPI.h"
 #include "LoggingFunctions.h"
+#include "CoreException.h"
 
 #include <kNet.h>
 #include <kNet/qt/NetworkDialog.h>
 #include <kNet/UDPMessageConnection.h>
 
 #include <algorithm>
+#include <utility>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 using namespace kNet;
 
@@ -127,9 +134,9 @@ void KristalliProtocolModule::Initialize()
 void KristalliProtocolModule::PostInitialize()
 {
 #ifdef KNET_USE_QT
-    framework_->Console()->RegisterCommand(CreateConsoleCommand(
+    framework_->Console()->RegisterCommand(
             "kNet", "Shows the kNet statistics window.", 
-            ConsoleBind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
+            this, SLOT(OpenKNetLogWindow()));
 #endif
 }
 
@@ -139,13 +146,13 @@ void KristalliProtocolModule::Uninitialize()
 }
 
 #ifdef KNET_USE_QT
-ConsoleCommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
+void KristalliProtocolModule::OpenKNetLogWindow()
 {
     NetworkDialog *networkDialog = new NetworkDialog(0, &network);
     networkDialog->setAttribute(Qt::WA_DeleteOnClose);
     networkDialog->show();
 
-    return ConsoleResultSuccess();
+    return;
 }
 #endif
 

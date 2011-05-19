@@ -3,8 +3,9 @@
 #ifndef incl_Physics_CollisionShapeUtils_h
 #define incl_Physics_CollisionShapeUtils_h
 
-#include "Core.h"
+#include "CoreDefines.h"
 #include "PhysicsModuleApi.h"
+#include "Vector3D.h"
 
 class btConvexHullShape;
 class btTriangleMesh;

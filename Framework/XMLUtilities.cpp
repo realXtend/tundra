@@ -7,6 +7,7 @@
 #include <QList>
 #include "MemoryLeakCheck.h"
 #include "XMLUtilities.h"
+#include "CoreStringUtils.h"
 
 #include <QDomElement>
 

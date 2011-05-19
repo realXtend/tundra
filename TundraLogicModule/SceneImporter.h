@@ -6,7 +6,8 @@
 #include "TundraLogicModuleApi.h"
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
-
+#include "Vector3D.h"
+#include "Quaternion.h"
 #include <QPair>
 #include <QUrl>
 

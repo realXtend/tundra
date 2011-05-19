@@ -4,7 +4,7 @@
 #define incl_OgreRenderer_EC_OgreCompositor_h
 
 #include "IComponent.h"
-#include "Core.h"
+#include "CoreDefines.h"
 #include "OgreModuleApi.h"
 
 namespace OgreRenderer { class OgreRenderingModule; class CompositionHandler; };

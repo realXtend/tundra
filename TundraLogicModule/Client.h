@@ -3,13 +3,16 @@
 #ifndef incl_TundraLogicModule_Client_h
 #define incl_TundraLogicModule_Client_h
 
-#include "Core.h"
+#include "CoreDefines.h"
+#include "CoreTypes.h"
 #include "TundraLogicModuleApi.h"
 #include "UserConnectedResponseData.h"
 
 #include <kNet/Socket.h>
 
+#include <map>
 #include <QObject>
+#include <QUrl>
 
 struct MsgLogin;
 struct MsgLoginReply;

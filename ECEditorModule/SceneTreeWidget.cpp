@@ -12,7 +12,7 @@
 #include "SceneTreeWidgetItems.h"
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
-
+#include "CoreException.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
 #include "LoggingFunctions.h"
@@ -1098,7 +1098,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             QString errorMsg;
             QVariant ret;
             FunctionInvoker invoker;
-            invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
+            invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
 
             QString retValStr;
             ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.
@@ -1455,7 +1455,7 @@ void SceneTreeWidget::InvokeActionTriggered()
             foreach(QObject *obj, objects)
             {
                 QVariant retVal;
-                invoker.Invoke(obj, invokedItem->name, &retVal, invokedItem->parameters);
+                invoker.Invoke(obj, invokedItem->name, invokedItem->parameters, &retVal);
                 LogInfo("Invoked function returned " + retVal.toString().toStdString());
             }
         }
