@@ -49,6 +49,12 @@ void TransformEditor::AppendSelection(const EntityPtr &entity)
 
 void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
 {
+    foreach(const EntityPtr &e, entities)
+    {
+        boost::shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
+        if (p)
+            targets.removeOne(AttributeWeakPtr(p, p->GetAttribute(p->transform.GetName())));
+    }
 }
 
 void TransformEditor::RemoveFromSelection(const EntityPtr &entity)

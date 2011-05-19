@@ -27,71 +27,84 @@ struct AttributeWeakPtr
     /// Returns pointer to the attribute or null if the owner component doens't exist anymore.
     IAttribute *Get() const { return owner.lock() ? attribute : 0; }
 
+    bool operator ==(const AttributeWeakPtr &rhs) const
+    {
+        ComponentPtr ownerPtr = owner.lock();
+        return rhs.owner.lock() == ownerPtr && (rhs.attribute == attribute || !ownerPtr);
+    }
+
+    bool operator !=(const AttributeWeakPtr &rhs) const { return !(*this == rhs); }
+
     ComponentWeakPtr owner; ///< Owner component.
     IAttribute *attribute; ///< The actual attribute.
 };
 
 /// Controls Transform attributes for groups of entities.
+/** Can be used to alter transforms of entities even without the visual gizmo (EC_TransformGizmo).*/
 class ECEDITOR_MODULE_API TransformEditor : public QObject
 {
     Q_OBJECT
 
 public:
-    ///
-    /** */
+    /// Constructs the editor.
+    /** Creates EC_TransformGizmo if it is available.
+        @scene Scene in which the edited entities reside.
+    */
     TransformEditor(const ScenePtr &scene);
+
+    /// Destroys the editor.
+    /** Destroys the EC_TransformGizmo if it was created. */
     ~TransformEditor();
 
-    ///
-    /** @param entities */
+    /// Sets new selection of entities, clears possible previous selection.
+    /** @param entities Entities to be added. */
     void SetSelection(const QList<EntityPtr> &entities);
 
-    ///
-    /** @param entities */
+    /// Appends selection with new entities.
+    /** @param entities Entities to be added. */
     void AppendSelection(const QList<EntityPtr> &entities);
 
     /// This is an overloaded function.
-    /** @param entity */
+    /** @param entity Entity to be added. */
     void AppendSelection(const EntityPtr &entity);
 
-    ///
-    /** @param */
+    /// Removes entities from selection.
+    /** @param entities Entities to be removed. */
     void RemoveFromSelection(const QList<EntityPtr> &entities);
 
     /// This is an overloaded function.
-    /** @param */
+    /** @param entity Entity to be removed. */
     void RemoveFromSelection(const EntityPtr &entity);
 
-    ///
+    /// Clears the selection.
     void ClearSelection();
 
-    ///
+    /// Focuses the position of gizmo (if used) to bottom center of AABB
     void FocusGizmoPivotToAabbBottomCenter();
 
-public slots:
-    /// 
+    /// Sets visibility of the gizmo (if used).
     void SetGizmoVisible(bool show);
 
-    ///
-    /** @param */
+    /// Translates current target transforms.
+    /** @param offset Offset to be applied. */
     void TranslateTargets(const Vector3df &offset);
 
-    ///
-    /** @param */
+    /// Rotates current target transforms.
+    /** @param delta Change to be applied. */
     void RotateTargets(const Quaternion &delta);
 
-    ///
-    /** @param */
+    /// Scales current target transforms.
+    /** @param offset Offset to be applied. */
     void ScaleTargets(const Vector3df &offset);
 
 private:
     /// Creates transform gizmo for the editor.
     void CreateGizmo();
 
-    /// Destroyes editor's transform gizmo.
+    /// Destroys editor's transform gizmo.
     void DeleteGizmo();
 
-    SceneWeakPtr scene;
-    EntityPtr gizmo;
-    QList<AttributeWeakPtr> targets;
+    SceneWeakPtr scene; ///< Scene in which the edited entities reside.
+    EntityPtr gizmo; ///< Gizmo entity.
+    QList<AttributeWeakPtr> targets; ///< Current target transform attributes.
 };
