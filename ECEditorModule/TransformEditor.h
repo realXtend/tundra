@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   TransformEditor.h
- *  @brief  Controls EC_TransformGizmos.
+ *  @brief  Controls Transform attributes for groups of entities.
  */
 
 #pragma once
@@ -31,7 +31,7 @@ struct AttributeWeakPtr
     IAttribute *attribute; ///< The actual attribute.
 };
 
-///
+/// Controls Transform attributes for groups of entities.
 class ECEDITOR_MODULE_API TransformEditor : public QObject
 {
     Q_OBJECT
