@@ -8,6 +8,15 @@
 #include "CoreStringUtils.h"
 #include "HighPerfClock.h"
 #include "MemoryLeakCheck.h"
+#include <iostream>
+#include <utility>
+
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 bool ProfilerBlock::supported_ = false;
 
