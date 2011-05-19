@@ -25,26 +25,27 @@
 namespace OgreRenderer
 {
 
-RendererSettings::RendererSettings(Framework* fw) :
-    framework_(framework),
-    settings_widget_(0)
+RendererSettingsWindow::RendererSettingsWindow(Framework* fw, QWidget *parent) :
+    QWidget(parent),
+    framework_(fw)
 {
-    return;
-/*
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/renderersettings.ui");
-
     if (!file.exists())
     {
         LogError("Cannot find renderer settings .ui file.");
         return;
     }
 
-    settings_widget_ = loader.load(&file); 
+    settings_widget_ = loader.load(&file, this);
     if (!settings_widget_)
         return;
+    file.close();
 
-    ui->AddSettingsWidget(settings_widget_, "Rendering");
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->addWidget(settings_widget_);
+    layout->setContentsMargins(0,0,0,0);
+    setLayout(layout);
 
     QDoubleSpinBox* spin = settings_widget_->findChild<QDoubleSpinBox*>("spinbox_viewdistance");
     boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Service::ST_Renderer).lock();
@@ -72,20 +73,19 @@ RendererSettings::RendererSettings(Framework* fw) :
         combo->setCurrentIndex((int)renderer->GetTextureQuality());
         connect(combo, SIGNAL(currentIndexChanged(int)), this, SLOT(TextureQualityChanged(int)));
     }
-    
+
     //fullscreen shortcut key
     input_context_ = framework_->Input()->RegisterInputContext("Renderer", 90);
     if (input_context_)
         connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
-*/
 }
 
-RendererSettings::~RendererSettings()
+RendererSettingsWindow::~RendererSettingsWindow()
 {
     SAFE_DELETE(settings_widget_);
 }
 
-void RendererSettings::KeyPressed(KeyEvent* e)
+void RendererSettingsWindow::KeyPressed(KeyEvent* e)
 {
     Renderer *renderer = framework_->GetService<Renderer>();
     if (!renderer)
@@ -99,21 +99,21 @@ void RendererSettings::KeyPressed(KeyEvent* e)
     }
 }
 
-void RendererSettings::ViewDistanceChanged(double value)
+void RendererSettingsWindow::ViewDistanceChanged(double value)
 {
     Renderer *renderer = framework_->GetService<Renderer>();
     if (renderer)
         renderer->SetViewDistance(value);
 }
 
-void RendererSettings::SetFullScreenMode(bool value)
+void RendererSettingsWindow::SetFullScreenMode(bool value)
 {
      Renderer *renderer = framework_->GetService<Renderer>();
     if (renderer)
         renderer->SetFullScreen(value);
 }
 
-void RendererSettings::ShadowQualityChanged(int value)
+void RendererSettingsWindow::ShadowQualityChanged(int value)
 {
     if ((value < 0) || (value > 2))
         return;
@@ -127,7 +127,7 @@ void RendererSettings::ShadowQualityChanged(int value)
         restart_text->setText(tr("Setting will take effect after viewer restart."));
 }
 
-void RendererSettings::TextureQualityChanged(int value)
+void RendererSettingsWindow::TextureQualityChanged(int value)
 {
     if ((value < 0) || (value > 1))
         return;

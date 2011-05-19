@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_StableHeaders_h__
-#define incl_OgreRenderer_StableHeaders_h__
+#pragma once
 
 #include "CoreDefines.h"
 
@@ -10,8 +9,10 @@
 #ifdef PCH_ENABLED
 
 #include "CoreDefines.h"
-
 #include "Framework.h"
+
+#include <QtCore>
+#include <QtGui>
 
 // The following file is a 'include-it-all' convenience utility. Perfect for including it here in the PCH.
 #include <Ogre.h>
@@ -30,7 +31,5 @@
 #include <OgreViewport.h>
 #include <OgreTexture.h>
 #include <OgreOverlay.h>
-
-#endif
 
 #endif

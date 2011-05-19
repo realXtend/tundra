@@ -225,12 +225,12 @@ namespace OgreRenderer
     {
         assert (material.get());
         material->load();
-        for(int t=0 ; t<material->getNumTechniques() ; ++t)
+        for(ushort t=0 ; t<material->getNumTechniques() ; ++t)
         {
             Ogre::Technique *technique = material->getTechnique(t);
             if (technique)
             {
-                for(int p=0 ; p<technique->getNumPasses() ; ++p)
+                for(ushort p=0 ; p<technique->getNumPasses() ; ++p)
                 {
                     Ogre::Pass *pass = technique->getPass(p);
                     if (pass)
@@ -308,7 +308,7 @@ namespace OgreRenderer
                 for(int i = 1; i < 8; ++i)
                 {
                     mBloomTexWeights[i][0] = mBloomTexWeights[i][1] =
-                        mBloomTexWeights[i][2] = 1.25f * Ogre::Math::gaussianDistribution(i, 0, deviation);
+                        mBloomTexWeights[i][2] = 1.25f * Ogre::Math::gaussianDistribution((Ogre::Real)i, 0, deviation);
                     mBloomTexWeights[i][3] = 1.0f;
                     mBloomTexOffsetsHorz[i][0] = i * texelSize;
                     mBloomTexOffsetsHorz[i][1] = 0.0f;
@@ -404,7 +404,7 @@ namespace OgreRenderer
         for(int i = 1; i < 8; ++i)
         {
             mBloomTexWeights[i][0] = mBloomTexWeights[i][1] =
-                mBloomTexWeights[i][2] = Ogre::Math::gaussianDistribution(i, 0, deviation);
+                mBloomTexWeights[i][2] = Ogre::Math::gaussianDistribution((Ogre::Real)i, 0, deviation);
             mBloomTexWeights[i][3] = 1.0f;
             mBloomTexOffsetsHorz[i][0] = i * texelSize;
             mBloomTexOffsetsHorz[i][1] = 0.0f;

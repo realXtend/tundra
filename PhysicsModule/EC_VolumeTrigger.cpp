@@ -130,8 +130,8 @@ bool EC_VolumeTrigger::IsPivotInside(Entity *entity) const
         const Transform& trans = placeable->transform.Get();
         const Vector3df& pivot = trans.position;
 
-        return ( RayTestSingle(Vector3df(pivot.x, pivot.y - 1e7, pivot.z), pivot, rigidbody->GetRigidBody()) &&
-                 RayTestSingle(Vector3df(pivot.x, pivot.y + 1e7, pivot.z), pivot, rigidbody->GetRigidBody()) );
+        return ( RayTestSingle(Vector3df(pivot.x, pivot.y - 1e7f, pivot.z), pivot, rigidbody->GetRigidBody()) &&
+                 RayTestSingle(Vector3df(pivot.x, pivot.y + 1e7f, pivot.z), pivot, rigidbody->GetRigidBody()) );
     }
     LogWarning("EC_VolumeTrigger::IsPivotInside(): entity has no EC_Placeable or volume has no EC_RigidBody.");
     return false;
@@ -146,8 +146,8 @@ bool EC_VolumeTrigger::IsInsideVolume(const Vector3df& point) const
         return false;
     }
 
-    return RayTestSingle(Vector3df(point.x, point.y - 1e7, point.z), point, rigidbody->GetRigidBody()) &&
-           RayTestSingle(Vector3df(point.x, point.y + 1e7, point.z), point, rigidbody->GetRigidBody());
+    return RayTestSingle(Vector3df(point.x, point.y - 1e7f, point.z), point, rigidbody->GetRigidBody()) &&
+           RayTestSingle(Vector3df(point.x, point.y + 1e7f, point.z), point, rigidbody->GetRigidBody());
 }
 
 void EC_VolumeTrigger::OnAttributeUpdated(IAttribute* attribute)

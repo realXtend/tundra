@@ -222,7 +222,7 @@ public slots:
     Quaternion GetOrientation() const;
 
     /// LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
-    void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
+    void LookAt(const QVector3D look_at) { LookAt(Vector3df((f32)look_at.x(), (f32)look_at.y(), (f32)look_at.z())); }
     
     /// Translates the placeable. Modifies the transform attribute using Default changetype.
     void Translate(const Vector3df& translation);

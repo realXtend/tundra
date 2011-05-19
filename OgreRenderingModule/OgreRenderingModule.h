@@ -1,31 +1,23 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderingModule_OgreRenderingModule_h
-#define incl_OgreRenderingModule_OgreRenderingModule_h
+#pragma once
 
 #include "IModule.h"
-
 #include "OgreModuleApi.h"
-
-class Framework;
-struct ConsoleCommandResult;
+#include "OgreModuleFwd.h"
 
 namespace OgreRenderer
 {
-    class Renderer;
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    class RendererSettings;
-    typedef boost::shared_ptr<RendererSettings> RendererSettingsPtr;
+    class RendererSettingsWindow;
 
-    /// \bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton.
-    
+    /// A renderer module using Ogre
     /** \defgroup OgreRenderingModuleClient OgreRenderingModule Client Interface
         This page lists the public interface of the OgreRenderingModule.
 
         For details on how to use the public interface, see \ref OgreRenderingModule "Using the Ogre renderer module"
-    */
 
-    /// A renderer module using Ogre
+        \bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton.
+    */
     class OGRE_MODULE_API OgreRenderingModule : public QObject, public IModule
     {
         Q_OBJECT
@@ -41,23 +33,21 @@ namespace OgreRenderer
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
 
-        /// returns renderer
-        RendererPtr GetRenderer() const { return renderer_; }
+        /// Returns the renderer.
+        RendererPtr GetRenderer() const { return renderer; }
 
     public slots:
-        /// callback for console command
+        /// Shows renderer settings window.
+        void ShowSettingsWindow();
+
+        /// Prints renderer stats to console.
         void ConsoleStats();
 
-        /// callback for console command
+        /// Sets attribute value for material.
         void SetMaterialAttribute(const StringVector &params);
 
     private:
-        /// renderer
-        RendererPtr renderer_;
-
-        /// renderer settings
-        RendererSettingsPtr renderer_settings_;
+        RendererPtr renderer;  ///< Renderer
+        RendererSettingsWindow *settingsWindow; ///< Renderer settings window.
     };
 }
-
-#endif

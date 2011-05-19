@@ -64,6 +64,12 @@ ECEditorWindow::ECEditorWindow(Framework* fw) :
     loader.setLanguageChangeEnabled(true);
     QFile file(Application::InstallationDirectory() + "data/ui/eceditor.ui");
     file.open(QFile::ReadOnly);
+    if (!file.exists())
+    {
+        LogError("Cannot find " + Application::InstallationDirectory() + "data/ui/eceditor.ui file.");
+        return;
+    }
+
     QWidget *contents = loader.load(&file, this);
     if (!contents)
     {

@@ -30,9 +30,7 @@ if (!framework.IsHeadless())
     }
 
     if (framework.GetModuleQObj("Console"))
-    {
         viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
-    }
 
     //var eceditorAction = viewMenu.addAction("EC Editor");
 
@@ -47,10 +45,13 @@ if (!framework.IsHeadless())
 
     if (framework.GetModuleQObj("PythonScript"))
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
-		
-	if (framework.GetModuleQObj("MumbleVoip"))
-		viewMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
-        
+
+    if (framework.GetModuleQObj("MumbleVoip"))
+        viewMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
+
+    if (framework.GetModuleQObj("OgreRendering"))
+        viewMenu.addAction("Renderer Settings").triggered.connect(OpenRendererSettings);
+
     var helpMenu = menu.addMenu("&Help");
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
@@ -120,10 +121,10 @@ if (!framework.IsHeadless())
     function OpenPythonConsole() {
         console.ExecuteCommand("pythonconsole");
     }
-	
-	function OpenVoiceSettings() {
-		framework.GetModuleQObj("MumbleVoip").ToggleSettingsWidget();
-	}
+
+    function OpenVoiceSettings() {
+        framework.GetModuleQObj("MumbleVoip").ToggleSettingsWidget();
+    }
 
     function OpenConsoleWindow() {
         framework.GetModuleQObj("Console").ToggleConsole();
@@ -135,5 +136,9 @@ if (!framework.IsHeadless())
 
     function OpenCaveWindow() {
         framework.GetModuleQObj("CAVEStereo").ShowCaveWindow();
+    }
+
+    function OpenRendererSettings() {
+        framework.GetModuleQObj("OgreRendering").ShowSettingsWindow();
     }
 }

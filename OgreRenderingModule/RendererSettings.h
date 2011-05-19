@@ -3,20 +3,21 @@
 #pragma once
 
 #include "InputFwd.h"
-#include <QObject>
+
+#include <QWidget>
 
 class Framework;
 
 namespace OgreRenderer
 {
     /// Widget for renderer settings
-    class RendererSettings : public QObject
+    class RendererSettingsWindow : public QWidget
     {
         Q_OBJECT
 
     public:
-        RendererSettings(Framework* fw);
-        ~RendererSettings();
+        explicit RendererSettingsWindow(Framework* fw, QWidget *parent = 0);
+        ~RendererSettingsWindow();
 
     public slots:
         void ViewDistanceChanged(double value);
