@@ -118,8 +118,9 @@ endif()
 # C4127 conditional expression is constant
 # C4512 'class' : assignment operator could not be generated 
 # C4505 'function' : unreferenced local function has been removed
+# C4251 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
 if (MSVC)
-    add_definitions (/W4 /wd4100 /wd4127 /wd4512 /wd4505)
+    add_definitions (/W4 /wd4100 /wd4127 /wd4512 /wd4505 /wd4251)
 else ()
     add_definitions (-Wall -Wextra -Wno-unknown-pragmas -Wno-unused -Wno-reorder -Wno-switch -Wno-write-strings)
 endif()
