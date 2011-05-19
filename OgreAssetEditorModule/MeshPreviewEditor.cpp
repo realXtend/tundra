@@ -9,7 +9,7 @@
 #include "Application.h"
 #include "Renderer.h"
 #include "CoreMath.h"
-//#include "OgreRenderingModule.h"
+#include "OgreRenderingModule.h"
 #include "RenderWindow.h"
 
 #include <QUiLoader>
@@ -213,7 +213,7 @@ void MeshPreviewEditor::AdjustScene()
 
 void MeshPreviewEditor::CreateRenderTexture()
 {
-    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
+    renderer_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
 
     // Create scene node and attach camera to it
     OgreRenderer::OgreRootPtr root = renderer_->GetRoot();

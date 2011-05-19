@@ -59,7 +59,7 @@ TexturePreviewEditor::TexturePreviewEditor(QWidget* parent) :
 
 void TexturePreviewEditor::Close()
 {
-//    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
+//    UiServiceInterface* ui= framework_->G et Service<UiServiceInterface>();
 //    if (!ui)
 //        return
 //    ui->RemoveWidgetFromScene(this);
@@ -71,13 +71,13 @@ void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
 {
     ///\todo Regression. Reimplement using the new Asset API. -jj.
 /*
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->GetSer vi ceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Texture))
         {
             boost::shared_ptr<TextureServiceInterface> texture_service = 
-                service_manager->GetService<TextureServiceInterface>(Service::ST_Texture).lock();
+                service_manager->G et Service<TextureServiceInterface>(Service::ST_Texture).lock();
             if(!texture_service)
                 return;
             // Request texture assets.
@@ -180,10 +180,6 @@ void TexturePreviewEditor::resizeEvent(QResizeEvent *ev)
 
 void TexturePreviewEditor::Initialize()
 {
-//    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
-//    if (!ui)
-//        return;
-
     // Create widget from ui file
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/texture_preview.ui");

@@ -49,7 +49,7 @@ void AudioPreviewEditor::HandleAssetReady(AssetInterfacePtr asset)
         if(service_manager->IsRegistered(Service::ST_Sound))
         {
             boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
+                service_manager->G etS ervice<ISoundService>(Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 
@@ -130,7 +130,7 @@ void AudioPreviewEditor::PlaySound()
         if(service_manager->IsRegistered(Service::ST_Sound))
         {
             boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
+                service_manager->G et Service<ISoundService>(Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 
@@ -183,7 +183,7 @@ void AudioPreviewEditor::TimerTimeout()
         if(service_manager->IsRegistered(Service::ST_Sound))
         {
             boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
+                service_manager->G et Service<ISoundService>(Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 

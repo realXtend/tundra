@@ -7,7 +7,6 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "SceneFwd.h"
-#include "RenderServiceInterface.h"
 #include "HighPerfClock.h"
 
 #include <QObject>

@@ -246,7 +246,7 @@ void PhysicsModule::SetRunPhysics(bool enable)
 
 void PhysicsModule::SetDrawDebugGeometry(bool enable)
 {
-    if ((!framework_) || (framework_->IsHeadless()) || (!framework_->GetServiceManager()) || (drawDebugGeometry_ == enable))
+    if (!framework_ || framework_->IsHeadless() || drawDebugGeometry_ == enable)
         return;
 
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
