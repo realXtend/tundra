@@ -169,6 +169,8 @@ else
     test -f $zip || wget -O $zip http://downloads.sourceforge.net/project/pythonqt/pythonqt/$what-$ver/$what$ver.zip
     unzip $zip
     cd $what$ver
+    pyver=$(python -c 'import sys; print sys.version[:3]')
+    sed -i "s/PYTHON_VERSION=.*/PYTHON_VERSION=$pyver/" build/python.prf
     fn=generated_cpp/com_trolltech_qt_core/com_trolltech_qt_core0.h
     sed 's/CocoaRequestModal = QEvent::CocoaRequestModal,//' < $fn > x
     mv x $fn
