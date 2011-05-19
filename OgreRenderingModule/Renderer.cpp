@@ -922,6 +922,7 @@ namespace OgreRenderer
 
     RaycastResult* Renderer::Raycast(int x, int y)
     {
+        PROFILE(Renderer_Raycast);
         static RaycastResult result;
         
         result.entity_ = 0; 
@@ -1099,6 +1100,8 @@ namespace OgreRenderer
     //qt wrapper / upcoming replacement for the one above
     QList<Scene::Entity*> Renderer::FrustumQuery(QRect &viewrect)
     {
+        PROFILE(Renderer_FrustumQuery);
+
         QList<Scene::Entity*>l;
         float w= (float)renderWindow->OgreRenderWindow()->getWidth();
         float h= (float)renderWindow->OgreRenderWindow()->getHeight();
