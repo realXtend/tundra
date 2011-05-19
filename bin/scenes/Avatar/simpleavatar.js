@@ -805,11 +805,18 @@ function ClientHandleMouseMove(mouseevent)
     
     if (!first_person)
     {
-        //\ note: Right click look also hides/shows cursor, so this is to ensure that the cursor is visible in non-fps mode
-        //\       This may be kinda bad if the stack contains more cursors
+        // \note Right click look also hides/shows cursor, so this is to ensure that the cursor is visible in non-fps mode
         if (!crosshair.isUsingLabel)
+        {
             if (input.IsMouseCursorVisible())
-                QApplication.restoreOverrideCursor();
+            {
+                var cursor = QApplication.overrideCursor;
+                if (cursor == null)
+                    return;
+                if (crosshair.cursor.pixmap() == cursor.pixmap())
+                    QApplication.restoreOverrideCursor();
+            }
+        }
         return;
     }
 
