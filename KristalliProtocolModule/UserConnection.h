@@ -28,6 +28,9 @@ class KRISTALLIPROTOCOL_MODULE_API UserConnection : public QObject
     Q_OBJECT
     
 public:
+    /// Connection ID property
+    Q_PROPERTY (int id READ GetConnectionID)
+    
     UserConnection() :
         userID(0)
     {

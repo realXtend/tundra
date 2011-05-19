@@ -6,8 +6,8 @@
 
 var avatar_area_size = 10;
 var avatar_area_x = 0;
-var avatar_area_y = 0;
-var avatar_area_z = 20;
+var avatar_area_y = 5;
+var avatar_area_z = 0;
 
 var isserver = server.IsRunning();
 
@@ -106,8 +106,8 @@ function ServerHandleUserConnected(connectionID, user) {
     var placeable = avatarEntity.placeable;
     var transform = placeable.transform;
     transform.pos.x = (Math.random() - 0.5) * avatar_area_size + avatar_area_x;
-    transform.pos.y = (Math.random() - 0.5) * avatar_area_size + avatar_area_y;
-    transform.pos.z = avatar_area_z;
+    transform.pos.y = avatar_area_y;
+    transform.pos.z = (Math.random() - 0.5) * avatar_area_size + avatar_area_z;
     placeable.transform = transform;
 
     scene.EmitEntityCreatedRaw(avatarEntity);
