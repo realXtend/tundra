@@ -73,13 +73,14 @@ Note: do not use the properties (Position, Scale, Orientation) below. They are d
 class OGRE_MODULE_API EC_Placeable : public IComponent
 {
     Q_OBJECT
-    
+    COMPONENT_NAME("EC_Placeable", 20)
+
     friend class BoneAttachmentListener;
     friend class CustomTagPoint;
-    
-public:
-    explicit EC_Placeable(Framework *fw);
 
+public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Placeable(Framework *fw);
     virtual ~EC_Placeable();
 
     /// position property
@@ -190,10 +191,8 @@ public:
     /// get node scale
     void SetQScale(QVector3D newscale);
 
-    COMPONENT_NAME("EC_Placeable", 20)
 public slots:
-
-    // sets position
+    /// Sets position
     /** \param position new position
      */
     void SetPosition(const Vector3df& position);
@@ -240,11 +239,11 @@ public slots:
     /// Shows the Entity
     void Show();
 
-	/// Hides the Entity
-	void Hide();
+    /// Hides the Entity
+    void Hide();
 
-	/// Toggle Visibility
-	void ToggleVisibility();
+    /// Toggle Visibility
+    void ToggleVisibility();
 
 signals:
     /// emitted when position has changed.
@@ -258,7 +257,7 @@ signals:
 
     /// Emitted when about to be destroyed
     void AboutToBeDestroyed();
-    
+
 private slots:
     /// Handle attributechange
     /** \param attribute Attribute that changed.
@@ -267,7 +266,7 @@ private slots:
     void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     /// Registers the action this EC provides to the parent entity, when it's set.
-	void RegisterActions();
+    void RegisterActions();
 
     /// Handle destruction of the parent placeable
     void OnParentPlaceableDestroyed();
@@ -283,9 +282,8 @@ private slots:
     
     /// Handle a component being added to the parent entity, in case it is the missing component we need
     void OnComponentAdded(IComponent* component, AttributeChange::Type change);
-    
+
 private:
-    
     /// attaches scenenode to parent
     void AttachNode();
     

@@ -618,7 +618,7 @@ void EC_Placeable::Show()
 void EC_Placeable::Hide()
 {
     if (!sceneNode_)
-        return;	
+        return;
 
     sceneNode_->setVisible(false);
 }
@@ -644,7 +644,6 @@ void EC_Placeable::RegisterActions()
     }
 }
 
-
 void EC_Placeable::Translate(const Vector3df& translation)
 {
     Transform newTrans = transform.Get();
@@ -663,7 +662,6 @@ Vector3df EC_Placeable::GetRelativeVector(const Vector3df& vec)
 {
     return GetOrientation() * vec;
 }
-
 
 void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
