@@ -257,6 +257,9 @@ public slots:
     //! Force the body to activate (wake up)
     void Activate();
     
+    /// Keep the body awake. Used by VolumeTrigger to avoid bugs.
+    void KeepActive();
+
     //! Check whether body is active
     bool IsActive();
     

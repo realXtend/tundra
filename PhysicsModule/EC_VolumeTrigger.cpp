@@ -237,6 +237,11 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
 
     Scene::EntityPtr entity = otherEntity->shared_from_this();
 
+    // Forcibly keep the other rigidbody awake while inside the trigger, because otherwise the trigger will bug once the body goes to rest
+    EC_RigidBody* rb = entity->GetComponent<EC_RigidBody>().get();
+    if (rb)
+        rb->KeepActive();
+    
     if (byPivot.Get())
     {
         if (IsPivotInside(entity.get()))

@@ -209,6 +209,12 @@ void EC_RigidBody::Activate()
         body_->activate();
 }
 
+void EC_RigidBody::KeepActive()
+{
+    if (body_)
+        body_->activate(true);
+}
+
 bool EC_RigidBody::IsActive()
 {
     if (body_)
