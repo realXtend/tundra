@@ -178,6 +178,7 @@ void EC_TransformGizmo::Initialize()
 
     placeable->SetTemporary(true);
     placeable->selectionLayer.Set(0, AttributeChange::Default);
+    placeable->Hide();
 
     mesh = boost::dynamic_pointer_cast<EC_Mesh>(GetParentEntity()->CreateComponent(
         EC_Mesh::TypeNameStatic(), "TransformGizmoMesh", AttributeChange::Default, false));
@@ -216,6 +217,8 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 {
     using namespace OgreRenderer;
     if (!mesh || !placeable)
+        return;
+    if (!IsVisible())
         return;
     if (renderer.expired())
         return;
@@ -405,6 +408,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     prevPoint = curPoint;
                     break;
                 case EC_TransformGizmo::Rotate:
+                    //LogInfo("Emitting Rotated(" + ss.str() + ")");
                     emit Rotated(Quaternion());
                     break;
                 case EC_TransformGizmo::Scale:
