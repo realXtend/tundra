@@ -687,9 +687,21 @@ void EC_Placeable::TranslateRelative(const Vector3df& translation)
     transform.Set(newTrans, AttributeChange::Default);
 }
 
+void EC_Placeable::TranslateWorldRelative(const Vector3df& translation)
+{
+    Transform newTrans = transform.Get();
+    newTrans.position += GetWorldOrientation() * translation;
+    transform.Set(newTrans, AttributeChange::Default);
+}
+
 Vector3df EC_Placeable::GetRelativeVector(const Vector3df& vec)
 {
     return GetOrientation() * vec;
+}
+
+Vector3df EC_Placeable::GetWorldRelativeVector(const Vector3df& vec)
+{
+    return GetWorldOrientation() * vec;
 }
 
 void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
