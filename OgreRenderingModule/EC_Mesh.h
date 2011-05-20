@@ -373,6 +373,9 @@ public slots:
     /// Return Ogre bone safely
     Ogre::Bone* GetBone(const QString& bone_name);
     
+    /// Return names of all bones. If no entity or skeleton, returns empty list
+    QStringList GetAvailableBones() const;
+    
 signals:
     /// Emitted before the Ogre mesh entity is about to be destroyed
     void MeshAboutToBeDestroyed();

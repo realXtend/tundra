@@ -227,15 +227,33 @@ public slots:
     /// Translates the placeable. Modifies the transform attribute using Default changetype.
     void Translate(const Vector3df& translation);
     
-    /// Translates the placeable relative to orientation. Modifies the transform attribute using Default changetype.
+    /// Translates the placeable relative to local orientation. Modifies the transform attribute using Default changetype.
     void TranslateRelative(const Vector3df& translation);
     
-    /// Transforms a vector by the placeable's orientation
+    /// Transforms a vector by the placeable's local orientation
     Vector3df GetRelativeVector(const Vector3df& vec);
+    
+    /// Translates the placeable relative to world orientation. Modifies the transform attribute using Default changetype.
+    void TranslateWorldRelative(const Vector3df& translation);
+    
+    /// Transforms a vector by the placeable's world orientation
+    Vector3df GetWorldRelativeVector(const Vector3df& vec);
     
     /// Calculates rotation
     Vector3df GetRotationFromTo(const Vector3df& from, const Vector3df& to);
 
+    /// Return world-derived position from the scene node
+    Vector3df GetWorldPosition() const;
+    
+    /// Return world-derived orientation from the scene node
+    Quaternion GetWorldOrientation() const;
+    
+    /// Return world-derived orientation as euler degrees from the scene node
+    Vector3df GetWorldOrientationEuler() const;
+    
+    /// Return world-derived scale from the scene node
+    Vector3df GetWorldScale() const;
+    
     /// Shows the Entity
     void Show();
 

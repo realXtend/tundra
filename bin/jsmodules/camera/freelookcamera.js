@@ -7,9 +7,6 @@ var motion_z = 0;
 var motion_y = 0;
 var motion_x = 0;
 
-var yaw = 0;
-var pitch = 0;
-
 if (!me.GetComponent("EC_Camera"))
 {
     // Create components & setup default position/lookat for the camera
@@ -154,14 +151,10 @@ function HandleMouseLookX(param)
     var placeable = me.GetComponent("EC_Placeable");
 
     var move = parseInt(param);
-    yaw -= rotate_sensitivity * move;
-
-    var rotvec = new Vector3df();
-    rotvec.x = pitch;
-    rotvec.y = yaw;
-
+    
     var transform = me.placeable.transform;
-    transform.rot = me.camera.GetAdjustedRotation(rotvec);
+    transform.rot.y -= rotate_sensitivity * move;
+    
     me.placeable.transform = transform;
 }
 
@@ -171,18 +164,14 @@ function HandleMouseLookY(param)
         return;
 
     var move = parseInt(param);
-    pitch -= rotate_sensitivity * move;
-    if (pitch > 90.0)
-        pitch = 90.0;
-    if (pitch < -90.0)
-        pitch = -90.0;
-
-    var rotvec = new Vector3df();
-    rotvec.x = pitch;
-    rotvec.y = yaw;
-
+    
     var transform = me.placeable.transform;
-    transform.rot = me.camera.GetAdjustedRotation(rotvec);
+    transform.rot.x -= rotate_sensitivity * move;
+    if (transform.rot.x > 90.0)
+        transform.rot.x = 90.0;
+    if (transform.rot.x < -90.0)
+        transform.rot.x = -90.0;
+
     me.placeable.transform = transform;
 }
 

@@ -607,6 +607,35 @@ Vector3df EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df
     return result;
 }
 
+Vector3df EC_Placeable::GetWorldPosition() const
+{
+    const Ogre::Vector3& pos = sceneNode_->_getDerivedPosition();
+    return Vector3df(pos.x, pos.y, pos.z);
+}
+
+Quaternion EC_Placeable::GetWorldOrientation() const
+{
+    const Ogre::Quaternion& orientation = sceneNode_->_getDerivedOrientation();
+    return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
+}
+
+Vector3df EC_Placeable::GetWorldOrientationEuler() const
+{
+    const Ogre::Quaternion& orientation = sceneNode_->_getDerivedOrientation();
+    Quaternion q(orientation.x, orientation.y, orientation.z, orientation.w);
+    Vector3df eulers;
+    q.toEuler(eulers);
+    eulers *= RADTODEG;
+    return eulers;
+}
+
+Vector3df EC_Placeable::GetWorldScale() const
+{
+    const Ogre::Vector3& pos = sceneNode_->_getDerivedScale();
+    return Vector3df(pos.x, pos.y, pos.z);
+}
+
+
 void EC_Placeable::Show()
 {
     if (!sceneNode_)
@@ -658,9 +687,21 @@ void EC_Placeable::TranslateRelative(const Vector3df& translation)
     transform.Set(newTrans, AttributeChange::Default);
 }
 
+void EC_Placeable::TranslateWorldRelative(const Vector3df& translation)
+{
+    Transform newTrans = transform.Get();
+    newTrans.position += GetWorldOrientation() * translation;
+    transform.Set(newTrans, AttributeChange::Default);
+}
+
 Vector3df EC_Placeable::GetRelativeVector(const Vector3df& vec)
 {
     return GetOrientation() * vec;
+}
+
+Vector3df EC_Placeable::GetWorldRelativeVector(const Vector3df& vec)
+{
+    return GetWorldOrientation() * vec;
 }
 
 void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)

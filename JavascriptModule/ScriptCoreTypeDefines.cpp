@@ -85,6 +85,8 @@ QScriptValue Color_prototype_FromString(QScriptContext *ctx, QScriptEngine *engi
 
 QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_add(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_sub(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_rotToDir(QScriptContext *ctx, QScriptEngine *engine);
@@ -99,6 +101,8 @@ void createVector3Functions(QScriptValue &value, QScriptEngine *engine)
     // Expose native functions to script value.
     value.setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
     value.setProperty("length", engine->newFunction(Vector3df_prototype_getLength));
+    value.setProperty("add", engine->newFunction(Vector3df_prototype_add));
+    value.setProperty("sub", engine->newFunction(Vector3df_prototype_sub));
     value.setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
     value.setProperty("lerp", engine->newFunction(Vector3df_prototype_inter));
     value.setProperty("rotToDir", engine->newFunction(Vector3df_prototype_rotToDir));
@@ -163,6 +167,38 @@ QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine)
         return toScriptValueVector3(engine, vec * vec2);
     }
     return ctx->throwError(QScriptContext::TypeError, "Vector3df mul(): argument is not a number or vector3df");
+}
+
+QScriptValue Vector3df_prototype_add(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError("Vector3df add() takes a single number argument.");
+    //if (!ctx->argument(0).isNumber())
+    //    return ctx->throwError(QScriptContext::TypeError, "Vector3df add(): argument is not a number");
+    Vector3df vec;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+    if(ctx->argument(0).isObject())
+    {
+        Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+        return toScriptValueVector3(engine, vec + vec2);
+    }
+    return ctx->throwError(QScriptContext::TypeError, "Vector3df add(): argument is not a vector3df");
+}
+
+QScriptValue Vector3df_prototype_sub(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError("Vector3df sub() takes a single number argument.");
+    //if (!ctx->argument(0).isNumber())
+    //    return ctx->throwError(QScriptContext::TypeError, "Vector3df sub(): argument is not a number");
+    Vector3df vec;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+    if(ctx->argument(0).isObject())
+    {
+        Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+        return toScriptValueVector3(engine, vec - vec2);
+    }
+    return ctx->throwError(QScriptContext::TypeError, "Vector3df sub(): argument is not a vector3df");
 }
 
 QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engine)
