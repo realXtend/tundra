@@ -461,20 +461,25 @@ function ClientCreateInputMapper() {
     inputmapper.RegisterMapping("Right", "StopRotate(right))", 3);
 }
 
-function ClientCreateAvatarCamera() {
-    if (scene.GetEntityByName("AvatarCamera") != null) {
-        return;
+function ClientCreateAvatarCamera() 
+{
+    var cameraentity = scene.GetEntityByName("AvatarCamera");
+    if (cameraentity == null)
+    {
+        cameraentity = scene.CreateEntity(scene.NextFreeIdLocal());
+        cameraentity.SetName("AvatarCamera");
+        cameraentity.SetTemporary(true);
     }
-
-    var cameraentity = scene.CreateEntity(scene.NextFreeIdLocal());
-    cameraentity.SetName("AvatarCamera");
-    cameraentity.SetTemporary(true);
 
     var camera = cameraentity.GetOrCreateComponent("EC_Camera");
     var placeable = cameraentity.GetOrCreateComponent("EC_Placeable");
 
     camera.AutoSetPlaceable();
     camera.SetActive();
+    
+    var parentRef = placeable.parentRef;
+    parentRef.ref = me; // Parent camera to avatar, always
+    placeable.parentRef = parentRef;
 
     // Set initial position
     ClientUpdateAvatarCamera();
@@ -636,26 +641,12 @@ function ClientUpdateAvatarCamera() {
     if (cameraentity == null)
         return;
     var cameraplaceable = cameraentity.placeable;
-    var avatarplaceable = me.placeable;
 
-    // First modify the rotation so that the camera can tell us a rotated offset vector
     if (!first_person)
         pitch = 0;
     var cameratransform = cameraplaceable.transform;
-    cameratransform.rot.x = pitch;
-    cameratransform.rot.y = yaw;
-    cameratransform.rot.z = 0;
-
-    cameraplaceable.transform = cameratransform;
-
-    var avatartransform = avatarplaceable.transform;
-    var offsetVec = new Vector3df();
-    offsetVec.z = avatar_camera_distance;
-    offsetVec.y = avatar_camera_height;
-    offsetVec = cameraplaceable.GetRelativeVector(offsetVec);
-    cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
-    cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
-    cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
+    cameratransform.rot = new Vector3df(pitch, 0, 0);
+    cameratransform.pos = new Vector3df(0, avatar_camera_height, avatar_camera_distance);
     cameraplaceable.transform = cameratransform;
 }
 

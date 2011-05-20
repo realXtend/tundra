@@ -50,7 +50,10 @@ function ClientHandleToggleCamera() {
     var avatarcamera = avatarcameraentity.camera;
 
     if (avatarcamera.IsActive()) {
-        freelookcameraentity.placeable.transform = avatarcameraentity.placeable.transform;
+        var trans = freelookcameraentity.placeable.transform;
+        trans.pos = avatarcameraentity.placeable.GetWorldPosition();
+        trans.rot = avatarcameraentity.placeable.GetWorldOrientationEuler();
+        freelookcameraentity.placeable.transform = trans;
         freelookcamera.SetActive();
         freecameralistener.active = true;
         avatarlistener.active = false;
