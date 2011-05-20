@@ -371,7 +371,7 @@ QScriptValue Quaternion_prototype_Slerp(QScriptContext *ctx, QScriptEngine *engi
 
     return toScriptValueQuaternion(engine, result);
 }
-
+void createTransfromFunctions(QScriptValue& value, QScriptEngine* engine);
 //! @todo This code is copy pasted from IAttribute.cpp. There should be a funtion that both could call.
 QScriptValue Quaternion_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
 {
@@ -432,11 +432,30 @@ QScriptValue toScriptValueTransform(QScriptEngine *engine, const Transform &s)
     obj.setProperty("pos", toScriptValueVector3(engine, s.position));
     obj.setProperty("rot", toScriptValueVector3(engine, s.rotation));
     obj.setProperty("scale", toScriptValueVector3(engine, s.scale));
-    createTransformFunctions(obj, engine);
+    createTransfromFunctions(obj,engine);
+
     return obj;
 }
 
-void fromScriptValueTransform(const QScriptValue &obj, Transform &s) 
+QScriptValue Transform_prototype_multiply(QScriptContext *ctx, QScriptEngine *engine);
+void createTransfromFunctions(QScriptValue& value, QScriptEngine* engine)
+{
+      value.setProperty("multiply", engine->newFunction(Transform_prototype_multiply));
+}
+
+QScriptValue Transform_prototype_multiply(QScriptContext *ctx, QScriptEngine *engine)
+{
+     if (ctx->argumentCount() != 1)
+        return ctx->throwError(QScriptContext::TypeError, "Transfrom multiply() : invalid number of arguments.");
+
+    Transform t1 = engine->fromScriptValue<Transform>(ctx->thisObject());
+    Transform t2 = engine->fromScriptValue<Transform>(ctx->argument(0));
+
+    return toScriptValueTransform(engine, t1.Multiply(t2));
+}
+
+
+void fromScriptValueTransform(const QScriptValue &obj, Transform &s)
 {
     fromScriptValueVector3(obj.property("pos"), s.position);
     fromScriptValueVector3(obj.property("rot"), s.rotation);

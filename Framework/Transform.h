@@ -67,7 +67,35 @@ public:
         scaleMat.setScale(scale);
 
         dst = scaleMat * rotate * translate;        
+        // OGRE convention. 
+        //dst = translate * rotate * scaleMat;
     }
+
+    Transform Multiply(const Transform& right) const
+    {
+        Matrix4 mLeft, mRight;
+
+        this->ToMatrix4(mLeft);
+        right.ToMatrix4(mRight);
+       
+        Matrix4 mRes =  mLeft.getTransposed() * mRight.getTransposed();
+        mRes = mRes.getTransposed();
+
+        // Decompose
+        Vector3D<f32> rot = mRes.getRotationDegrees();
+        Vector3D<f32> scale = mRes.getScale();
+        Vector3D<f32> trans = mRes.getTranslation();
+        
+        Transform res;
+
+        res.position.x = trans.x, res.position.y = trans.y, res.position.z = trans.z;
+        res.rotation.x = rot.x, res.rotation.y = rot.y, res.rotation.z = rot.z;
+        res.scale.x = scale.x, res.scale.y = scale.y, res.scale.z = scale.z;
+        
+        return res;
+    }
+
+    
 
     bool operator == (const Transform& rhs) const
     {
