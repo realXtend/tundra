@@ -12,6 +12,7 @@
 
 #include "SceneAPI.h"
 #include "Entity.h"
+#include "IModule.h"
 #include "IAssetTransfer.h"
 #include "IAssetUploadTransfer.h"
 #include "IAssetStorage.h"
@@ -117,6 +118,7 @@ Q_DECLARE_METATYPE(AttributeChange::Type);
 
 /// Frame, Console and Debug API object defines.
 Q_DECLARE_METATYPE(Framework*);
+Q_DECLARE_METATYPE(IModule*);
 Q_DECLARE_METATYPE(FrameAPI*);
 Q_DECLARE_METATYPE(ConsoleAPI*);
 Q_DECLARE_METATYPE(ConsoleCommand*);
@@ -227,6 +229,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     // Framework metatype
     qScriptRegisterQObjectMetaType<Framework*>(engine);
+    qScriptRegisterQObjectMetaType<IModule*>(engine);
     
     // Console metatypes.
     qScriptRegisterQObjectMetaType<ConsoleAPI*>(engine);
