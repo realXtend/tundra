@@ -31,6 +31,9 @@ public slots:
     /// Returns the full URL of an asset with the name 'localName' if it were stored in this asset storage.
     virtual QString GetFullAssetURL(const QString &localName) { return GuaranteeTrailingSlash(baseAddress) + localName; }
 
+    /// Returns the type of this storage: "HttpAssetStorage".
+    virtual QString Type() const;
+
     /// Returns a human-readable name for this storage. This name is not used as an ID, and may be an empty string.
     virtual QString Name() const { return storageName; }
 

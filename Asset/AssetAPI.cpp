@@ -1560,7 +1560,6 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
     if (IsFileOfType(file, openDocFileTypes, NUMELEMS(openDocFileTypes)))
         return "DocAsset";
 
-
     if (file.endsWith(".xml", Qt::CaseInsensitive) || file.endsWith(".txml", Qt::CaseInsensitive) || file.endsWith(".tbin", Qt::CaseInsensitive)) 
         return "Binary";
 
