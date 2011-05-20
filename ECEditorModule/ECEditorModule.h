@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ECEditorModule_ECEditorModule_h
-#define incl_ECEditorModule_ECEditorModule_h
+#pragma once
 
 #include "IModule.h"
 #include "ECEditorModuleApi.h"
@@ -44,8 +43,7 @@ public slots:
 
     /// Return Tree widget item expand memory pointer, which keeps track of which items in EC editor are expanded.
     /** When constructing new EC editor windows use this if you want to keep all editor windows' expanded and 
-        collapsed items similar.
-    */
+        collapsed items similar. */
     ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
 
     /// Shows Doxygen documentation for symbol in external window.
@@ -53,27 +51,27 @@ public slots:
     void ShowDocumentation(const QString &symbolName);
 
     /// ECEditor has gained a focus event and need to set as active editor.
-    /// @param editor editor that has focus.
+    /** @param editor editor that has focus. */
     void ECEditorFocusChanged(ECEditorWindow *editor);
 
-    /// Creates EC attribute XML editor widget for entity.
-    /// @param entity Entity pointer.
-    void CreateXmlEditor(EntityPtr entity);
-
-    /// Creates EC attribute XML editor widget for entity.
-    /// @param entities List of entity pointers.
+    /// Creates EC attribute XML editor widget for entities and components.
+    /** @param entities List of entity pointers. */
     void CreateXmlEditor(const QList<EntityPtr> &entities);
 
-    /// Creates EC attribute XML editor widget for component.
-    /// @param component Component pointer.
+    /// This is an overloaded function.
+    /** @param entity Entity pointer. */
+    void CreateXmlEditor(EntityPtr entity);
+
+    /// This is an overloaded function.
+    /** @param component Component pointer. */
     void CreateXmlEditor(ComponentPtr component);
 
-    /// Creates EC attribute XML editor widget for component.
-    /// @param components List of component pointers.
+    /// This is an overloaded function.
+    /** @param components List of component pointers. */
     void CreateXmlEditor(const QList<ComponentPtr> &components);
 
-    /// Return selected components from the active ECEditorWindow.
-    /// If editor isn't initialized or any components aren't selected from the editor, method will return emtpy list.
+    /// Returns Selected components from the active ECEditorWindow.
+    /** @return If editor isn't initialized or any components aren't selected from the editor, method will return an empty list. */
     QObjectList GetSelectedComponents() const;
 
     /// Return selected entity ids as QVariantList from the active ECEditorWindow.
@@ -81,38 +79,22 @@ public slots:
 
 signals:
     /// Signal is emitted when active ECEditorWindow's selection has changed.
-    /** @param compType selected item's component type name.
-        @param compName selected item's component name.
-        @param attrType selected item's attribute type name (Empty if attribute isn't selected).
-        @param attrName selected item's attribute name (Empty if attribute isn't selected).
+    /** @param compType Selected item's component type name.
+        @param compName Selected item's component name.
+        @param attrType Selected item's attribute type name (Empty if attribute isn't selected).
+        @param attrName Selected item's attribute name (Empty if attribute isn't selected).
     */
     void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
 
 private:
-    /// EC XML editor window
-    QPointer<EcXmlEditorWidget> xmlEditor;
-
-    /// Input context.
-    boost::shared_ptr<InputContext> inputContext;
-
-    /// Tree widget item expand memory keeps track of which items in EC editor are expanded.
-    ExpandMemoryPtr expandMemory;
-
-    /// Currently active ECEditorWindow.
-    QPointer<ECEditorWindow> activeEditor;
-
-    /// ECEditorModule will create it's own ECEditorWindow instance while it's initializing.
-    /// To avoid a memory leak, we store that pointer.
-    QPointer<ECEditorWindow> commonEditor;
+    QPointer<EcXmlEditorWidget> xmlEditor; ///< EC XML editor window
+    boost::shared_ptr<InputContext> inputContext; ///< Input context.
+    ExpandMemoryPtr expandMemory; ///< Keeps track which items in EC editor are expanded and collapsed.
+    QPointer<ECEditorWindow> activeEditor; ///< Currently active ECEditorWindow.
+    QPointer<ECEditorWindow> commonEditor; ///< ECEditorModule has one common editor for all parties to use.
 
 private slots:
     /// Handles KeyPressed() signal from input context.
-    /** @param e Key event.
-    */
+    /** @param e Key event. */
     void HandleKeyPressed(KeyEvent *e);
-
-    // When active_editor is destroyed we need to set it's pointer back to null.
-    void ActiveECEditorDestroyed(QObject *obj = 0);
 };
-
-#endif

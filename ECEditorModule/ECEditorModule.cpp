@@ -11,7 +11,6 @@
 
 #include "SceneAPI.h"
 #include "SceneManager.h"
-
 #include "EC_DynamicComponent.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
@@ -22,9 +21,7 @@
 
 #include <QWebView>
 
-ECEditorModule::ECEditorModule()
-:IModule("ECEditor"),
-xmlEditor(0)
+ECEditorModule::ECEditorModule() : IModule("ECEditor"), xmlEditor(0)
 {
 }
 
@@ -72,16 +69,14 @@ void ECEditorModule::ECEditorFocusChanged(ECEditorWindow *editor)
     if (activeEditor)
     {
         activeEditor->SetFocus(false);
-        disconnect(activeEditor, SIGNAL(destroyed(QObject*)), this, SLOT(ActiveECEditorDestroyed(QObject*)));
         disconnect(activeEditor, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
-                   this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)));
+            this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)));
     }
 
     activeEditor = editor;
     activeEditor->SetFocus(true);
-    connect(activeEditor, SIGNAL(destroyed(QObject*)), SLOT(ActiveECEditorDestroyed(QObject*)), Qt::UniqueConnection);
     connect(activeEditor, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
-            this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
+        this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
 }
 
 void ECEditorModule::ShowEditorWindow()
@@ -115,16 +110,14 @@ void ECEditorModule::ShowDocumentation(const QString &symbol)
     }
 
     QWebView *webview = new QWebView();
+    webview->setAttribute(Qt::WA_DeleteOnClose);
     webview->setHtml(documentation, styleSheetPath);
     webview->show();
-    webview->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void ECEditorModule::CreateXmlEditor(EntityPtr entity)
 {
-    QList<EntityPtr> entities;
-    entities << entity;
-    CreateXmlEditor(entities);
+    CreateXmlEditor(QList<EntityPtr>(QList<EntityPtr>() << entity));
 }
 
 QObjectList ECEditorModule::GetSelectedComponents() const
@@ -175,7 +168,7 @@ void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
 {
     if (framework_->IsHeadless())
         return;
-    if (!components.empty())
+    if (components.empty())
         return;
 
     if (!xmlEditor)
@@ -194,15 +187,9 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
         return;
 
     const QKeySequence showEcEditor = framework_->Input()->KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
-    if (QKeySequence(e->keyCode | e->modifiers) == showEcEditor)
+    if (e->sequence == showEcEditor)
     {
         ShowEditorWindow();
         e->handled = true;
     }
-}
-
-void ECEditorModule::ActiveECEditorDestroyed(QObject *obj)
-{
-    if (activeEditor == obj)
-        activeEditor = 0;
 }

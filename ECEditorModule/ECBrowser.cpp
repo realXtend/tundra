@@ -540,7 +540,7 @@ void ECBrowser::OpenComponentXmlEditor()
             return;
         ComponentPtr pointer = (*iter)->components_[0].lock();
         if (pointer)
-            emit ShowXmlEditorForComponent(pointer->TypeName().toStdString());
+            emit ShowXmlEditorForComponent(pointer->TypeName());
     }
 }
 

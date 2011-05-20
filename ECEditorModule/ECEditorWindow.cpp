@@ -27,18 +27,23 @@
 #include "EC_Placeable.h"
 #include "InputAPI.h"
 #include "LoggingFunctions.h"
+#ifdef EC_Highlight_ENABLED
+#include "EC_Highlight.h"
+#endif
 
 #include <QUiLoader>
 #include <QDomDocument>
 
 #include "MemoryLeakCheck.h"
 
+const QString cEcEditorHighlight("EcEditorHighlight");
+
 uint AddUniqueListItem(Entity *entity, QListWidget* list, const QString& name)
 {
     for(int i = 0; i < list->count(); ++i)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(list->item(i));
-        if (item && !item->GetEntity().isNull() && item->GetEntity().data() == entity)
+        if (item && item->GetEntity() && item->GetEntity().get() == entity)
             return i;
     }
 
@@ -93,7 +98,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw) :
         entity_widget->hide();
 
     QWidget *browserWidget = findChild<QWidget*>("browser_widget");
-    if(browserWidget)
+    if (browserWidget)
     {
         ecBrowser = new ECBrowser(framework, browserWidget);
         ecBrowser->setMinimumWidth(100);
@@ -102,14 +107,15 @@ ECEditorWindow::ECEditorWindow(Framework* fw) :
             property_layout->addWidget(ecBrowser);
     }
 
-    if(ecBrowser)
+    if (ecBrowser)
     {
         // signals from attribute browser to editor window.
-        connect(ecBrowser, SIGNAL(ShowXmlEditorForComponent(const std::string &)), SLOT(ShowXmlEditorForComponent(const std::string &)));
+        connect(ecBrowser, SIGNAL(ShowXmlEditorForComponent(const QString &)), SLOT(ShowXmlEditorForComponent(const QString &)));
         connect(ecBrowser, SIGNAL(CreateNewComponent()), SLOT(CreateComponent()));
         connect(ecBrowser, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)), SLOT(HighlightEntities(const QString&, const QString&)));
         connect(ecBrowser, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)),
                 SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
+
         ecBrowser->SetItemExpandMemory(framework->GetModule<ECEditorModule>()->ExpandMemory());
     }
 
@@ -124,7 +130,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw) :
         connect(toggleEntitiesButton, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
 
     // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
-    connect(framework->Scene(), SIGNAL(DefaultWorldSceneChanged(SceneManager *)), SLOT(DefaultSceneChanged(SceneManager *)));
+    connect(framework->Scene(), SIGNAL(DefaultWorldSceneChanged(SceneManager *)), SLOT(OnDefaultSceneChanged(SceneManager *)));
 
     ECEditorModule *module = framework->GetModule<ECEditorModule>();
     if (module)
@@ -133,20 +139,21 @@ ECEditorWindow::ECEditorWindow(Framework* fw) :
     SceneManager *scene = framework->Scene()->GetDefaultScene().get();
     if (scene)
     {
-        connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)),
-            SLOT(EntityRemoved(Entity*)), Qt::UniqueConnection);
+        connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
         connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
-                SLOT(ActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
+            SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
     }
 }
 
 ECEditorWindow::~ECEditorWindow()
 {
     SAFE_DELETE(transformEditor);
+    //DeselectAllEntities(); the list is already cleared here
 }
 
-void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
+EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
 {
+    EntityListWidgetItem *item = 0;
     PROFILE(AddEntity);
     if (entityList)
     {
@@ -157,38 +164,32 @@ void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
         if (entity && entity->GetComponent<EC_Name>())
             entity_name = entity->GetName();
 
-        /// @todo This will now work if we loose windows focus and previous key state stays, replace this with InputContext.
-        if(!framework->Input()->IsKeyDown(Qt::Key_Control))
-            entityList->clearSelection();
-
         int row = AddUniqueListItem(entity.get(), entityList, entity_name);
-        QListWidgetItem *item = entityList->item(row);
-        // Toggle selection.
-        item->setSelected(!item->isSelected());
+        item = dynamic_cast<EntityListWidgetItem *>(entityList->item(row));
+        assert(item);
+
         entityList->blockSignals(false);
     }
 
     if (udpate_ui)
         RefreshPropertyBrowser();
+
+    return item;
 }
 
 void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select_all)
 {
-    entityList->blockSignals(true);
     ClearEntities();
+
+    // SetEntitySelected() will block entity list's signals, no need to do it here.
+
     foreach(entity_id_t id, entities)
     {
-        QString entity_name = QString::number(id);
-        EntityPtr entity = framework->Scene()->GetDefaultScene()->GetEntity(id);
-        if (entity && entity->GetComponent<EC_Name>())
-            entity_name = entity->GetName();
-
-        int row = AddUniqueListItem(entity.get(), entityList, entity_name);
-        QListWidgetItem *item = entityList->item(row);
+        EntityListWidgetItem *item = AddEntity(id);
         if (select_all)
-            item->setSelected(true);
+            SetEntitySelected(item, true);
     }
-    entityList->blockSignals(false);
+
     RefreshPropertyBrowser();
 }
 
@@ -209,13 +210,14 @@ void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
     for(uint i = 0; i < (uint)entityList->count(); i++)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
-        if (item && item->GetEntity() && item->GetEntity().data() == entity.get())
+        if (item && item->GetEntity() && item->GetEntity().get() == entity.get())
         {
             entityList->removeItemWidget(item);
             SAFE_DELETE(item)
             break;
         }
     }
+
     entityList->blockSignals(false);
     if (udpate_ui)
         RefreshPropertyBrowser();
@@ -245,6 +247,7 @@ void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
 
 void ECEditorWindow::ClearEntities()
 {
+    DeselectAllEntities();
     if (entityList)
         entityList->clear();
     RefreshPropertyBrowser();
@@ -257,9 +260,79 @@ QObjectList ECEditorWindow::GetSelectedComponents() const
     return QObjectList();
 }
 
+QList<EntityPtr> ECEditorWindow::GetSelectedEntities() const
+{
+    QList<EntityPtr> ret;
+
+    if (!entityList)
+        return ret;
+
+    ScenePtr scene = framework->Scene()->GetDefaultScene();
+    if (!scene)
+        return ret;
+
+    for(uint i = 0; i < (uint)entityList->count(); ++i)
+    {
+        EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
+        if (item && item->GetEntity() && item->isSelected())
+        {
+            EntityPtr entity = scene->GetEntity(item->GetEntity()->GetId());
+            if (entity)
+                ret.push_back(entity);
+        }
+    }
+    return ret;
+}
+
+void ECEditorWindow::SetEntitySelected(EntityListWidgetItem *item, bool select)
+{
+    entityList->blockSignals(true);
+    item->setSelected(select);
+    entityList->blockSignals(false);
+
+#ifdef EC_Highlight_ENABLED
+    EntityPtr entity = item->GetEntity();
+    if (entity)
+    {
+        if (select)
+        {
+            EC_Highlight *hl = dynamic_cast<EC_Highlight *>(entity->GetOrCreateComponent(
+                EC_Highlight::TypeNameStatic(), cEcEditorHighlight).get());
+            if (hl)
+            {
+                LogInfo("EC_Highlight added.");
+                hl->SetTemporary(true);
+                hl->visible.Set(true, AttributeChange::Default);
+            }
+        }
+        else
+        {
+            ComponentPtr c = entity->GetComponent(EC_Highlight::TypeNameStatic(), cEcEditorHighlight);
+            if (c)
+            {
+                LogInfo("EC_Highlight removed.");
+                entity->RemoveComponent(c);
+            }
+        }
+    }
+#endif
+}
+
+EntityListWidgetItem *ECEditorWindow::FindItem(entity_id_t id) const
+{
+    for(uint i = 0; i < (uint)entityList->count(); i++)
+    {
+        EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
+        if (item && item->GetEntity() && item->GetEntity()->GetId() == id)
+            return item;
+    }
+
+    return 0;
+}
+
 void ECEditorWindow::DeleteEntitiesFromList()
 {
-    if ((entityList) && (entityList->hasFocus()))
+    if (entityList && entityList->hasFocus())
         for(int i = entityList->count() - 1; i >= 0; --i)
             if (entityList->item(i)->isSelected())
             {
@@ -273,7 +346,7 @@ void ECEditorWindow::DeleteComponent(const QString &componentType, const QString
     if(componentType.isEmpty())
         return;
 
-    foreach(EntityPtr entity, GetSelectedEntities())
+    foreach(const EntityPtr &entity, GetSelectedEntities())
     {
         ComponentPtr component = entity->GetComponent(componentType, name);
         if (component)
@@ -296,13 +369,92 @@ void ECEditorWindow::CreateComponent()
     }
 }
 
-void ECEditorWindow::ActionTriggered(Entity *entity, const QString &action, const QStringList &params)
+void ECEditorWindow::EntityActionDialogFinished(int result)
 {
-    if (params.size() && action == "MousePress")
+    EntityActionDialog *dialog = qobject_cast<EntityActionDialog *>(sender());
+    if (!dialog)
+        return;
+
+    if (result == QDialog::Rejected)
+        return;
+
+    foreach(const EntityWeakPtr &e, dialog->Entities())
+        if (e.lock())
+            e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
+}
+
+void ECEditorWindow::FunctionDialogFinished(int result)
+{
+    FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
+    if (!dialog)
+        return;
+
+    if (result == QDialog::Rejected)
+        return;
+
+    // Get the list of parameters we will pass to the function we are invoking,
+    // and update the latest values to them from the editor widgets the user inputted.
+    QVariantList params;
+    foreach(IArgumentType *arg, dialog->Arguments())
     {
-        MouseEvent::MouseButton mouse_event = static_cast<MouseEvent::MouseButton>(params[0].toUInt());
-        if (hasFocus && isVisible() && mouse_event == MouseEvent::LeftButton)
-            AddEntity(entity->GetId());
+        arg->UpdateValueFromEditor();
+        params << arg->ToQVariant();
+    }
+
+    // Clear old return value from the dialog.
+    dialog->SetReturnValueText("");
+
+    foreach(const QObjectWeakPtr &o, dialog->Objects())
+        if (o.lock())
+        {
+            QObject *obj = o.lock().get();
+
+            QString objName = obj->metaObject()->className();
+            QString objNameWithId = objName;
+            {
+                Entity *e = dynamic_cast<Entity *>(obj);
+                IComponent *c = dynamic_cast<IComponent *>(obj);
+                if (e)
+                    objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
+                else if (c)
+                    objNameWithId.append('(' + c->Name() + ')');
+            }
+
+            QString errorMsg;
+            QVariant ret;
+            FunctionInvoker invoker;
+            invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
+
+            if (errorMsg.isEmpty())
+                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+            else
+                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+        }
+}
+
+void ECEditorWindow::OnActionTriggered(Entity *entity, const QString &action, const QStringList &params)
+{
+    if (action == "MousePress" && params.size())
+    {
+        MouseEvent::MouseButton button = static_cast<MouseEvent::MouseButton>(params[0].toUInt());
+        if (hasFocus && isVisible() && button == MouseEvent::LeftButton)
+        {
+            /// @todo This will now work if we lose windows focus and previous key state stays, replace this with InputContext.
+            // If Ctrl is down, we're appending selection. If not, clear the old selection completely.
+            if (!framework->Input()->IsKeyDown(Qt::Key_Control))
+                DeselectAllEntities();
+
+            EntityListWidgetItem *item = FindItem(entity->GetId());
+            if (item && item->isSelected())
+                SetEntitySelected(item, false);
+            else
+            {
+                item = AddEntity(entity->GetId());
+                SetEntitySelected(item, true);
+            }
+        }
+
+        RefreshPropertyBrowser();
     }
 }
 
@@ -419,20 +571,6 @@ void ECEditorWindow::OpenEntityActionDialog()
     }
 }
 
-void ECEditorWindow::EntityActionDialogFinished(int result)
-{
-    EntityActionDialog *dialog = qobject_cast<EntityActionDialog *>(sender());
-    if (!dialog)
-        return;
-
-    if (result == QDialog::Rejected)
-        return;
-
-    foreach(EntityWeakPtr e, dialog->Entities())
-        if (e.lock())
-            e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
-}
-
 void ECEditorWindow::OpenFunctionDialog()
 {
     QObjectWeakPtrList objs;
@@ -445,55 +583,6 @@ void ECEditorWindow::OpenFunctionDialog()
         connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogFinished(int)));
         d->show();
     }
-}
-
-void ECEditorWindow::FunctionDialogFinished(int result)
-{
-    FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
-    if (!dialog)
-        return;
-
-    if (result == QDialog::Rejected)
-        return;
-
-    // Get the list of parameters we will pass to the function we are invoking,
-    // and update the latest values to them from the editor widgets the user inputted.
-    QVariantList params;
-    foreach(IArgumentType *arg, dialog->Arguments())
-    {
-        arg->UpdateValueFromEditor();
-        params << arg->ToQVariant();
-    }
-
-    // Clear old return value from the dialog.
-    dialog->SetReturnValueText("");
-
-    foreach(QObjectWeakPtr o, dialog->Objects())
-        if (o.lock())
-        {
-            QObject *obj = o.lock().get();
-
-            QString objName = obj->metaObject()->className();
-            QString objNameWithId = objName;
-            {
-                Entity *e = dynamic_cast<Entity *>(obj);
-                IComponent *c = dynamic_cast<IComponent *>(obj);
-                if (e)
-                    objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
-                else if (c)
-                    objNameWithId.append('(' + c->Name() + ')');
-            }
-
-            QString errorMsg;
-            QVariant ret;
-            FunctionInvoker invoker;
-            invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
-
-            if (errorMsg.isEmpty())
-                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
-            else
-                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
-        }
 }
 
 void ECEditorWindow::HighlightEntities(const QString &type, const QString &name)
@@ -518,8 +607,8 @@ void ECEditorWindow::RefreshPropertyBrowser()
         return;
     }
 
-    QSet<entity_id_t> emptyList;
-    BoldEntityListItems(emptyList);
+    // Unbold all items for starters.
+    BoldEntityListItems(QSet<entity_id_t>());
 
     QList<EntityPtr> entities = GetSelectedEntities();
     // If any of entities was not selected clear the browser window.
@@ -533,6 +622,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     QList<EntityPtr> old_entities = ecBrowser->GetEntities();
     qStableSort(entities.begin(), entities.end(), CmpEntityById);
     qStableSort(old_entities.begin(), old_entities.end(), CmpEntityById);
+
     // Check what entities need to get removed/added to browser.
     QList<EntityPtr>::iterator iter1 = old_entities.begin(), iter2 = entities.begin();
     while(iter1 != old_entities.end() || iter2 != entities.end())
@@ -571,6 +661,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
             iter1++;
         }
     }
+
     ecBrowser->UpdateBrowser();
 
     transformEditor->SetSelection(entities);
@@ -639,7 +730,7 @@ void ECEditorWindow::ShowXmlEditorForEntity()
     emit EditEntityXml(ents);
 }
 
-void ECEditorWindow::ShowXmlEditorForComponent(std::vector<ComponentPtr> components)
+void ECEditorWindow::ShowXmlEditorForComponent(const std::vector<ComponentPtr> &components)
 {
     if(!components.size())
         return;
@@ -651,14 +742,14 @@ void ECEditorWindow::ShowXmlEditorForComponent(std::vector<ComponentPtr> compone
     emit EditComponentXml(comps);
 }
 
-void ECEditorWindow::ShowXmlEditorForComponent(const std::string &componentType)
+void ECEditorWindow::ShowXmlEditorForComponent(const QString &componentType)
 {
-    if(componentType.empty())
+    if (componentType.isEmpty())
         return;
 
-    foreach(EntityPtr entity, GetSelectedEntities())
+    foreach(const EntityPtr &e, GetSelectedEntities())
     {
-        ComponentPtr component = entity->GetComponent(QString::fromStdString(componentType));
+        ComponentPtr component = e->GetComponent(componentType);
         if (component)
             emit EditComponentXml(component);
     }
@@ -686,12 +777,12 @@ void ECEditorWindow::ToggleEntityList()
     }
 }
 
-void ECEditorWindow::EntityRemoved(Entity* entity)
+void ECEditorWindow::OnEntityRemoved(Entity* entity)
 {
     for(uint i = 0; i < (uint)entityList->count(); i++)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
-        if (item->GetEntity().data() == entity)
+        if (item->GetEntity().get() == entity)
         {
             SAFE_DELETE(item);
             break;
@@ -711,43 +802,50 @@ void ECEditorWindow::setVisible(bool visible)
         emit FocusChanged(this);
 }
 
-void ECEditorWindow::hideEvent(QHideEvent* hide_event)
+void ECEditorWindow::DeselectAllEntities()
+{
+    for(uint i = 0; i < (uint)entityList->count(); i++)
+    {
+        EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
+        if (item)
+            SetEntitySelected(item, false);
+    }
+}
+
+void ECEditorWindow::hideEvent(QHideEvent* e)
 {
     ClearEntities();
     if(ecBrowser)
         ecBrowser->clear();
-    QWidget::hideEvent(hide_event);
-} 
+    QWidget::hideEvent(e);
+}
 
 void ECEditorWindow::changeEvent(QEvent *e)
 {
     if (e->type() == QEvent::LanguageChange)
-        setWindowTitle(QApplication::translate("ECEditor", "Entity-Component Editor"));
+        setWindowTitle(tr("Entity-Component Editor"));
     else
        QWidget::changeEvent(e);
 }
 
-bool ECEditorWindow::eventFilter(QObject *obj, QEvent *event)
+bool ECEditorWindow::eventFilter(QObject *obj, QEvent *e)
 {
-    QEvent::Type type = event->type();
-    if (type == QEvent::WindowActivate)
+    if (e->type() == QEvent::WindowActivate)
         emit FocusChanged(this);
-    return QWidget::eventFilter(obj, event);
+    return QWidget::eventFilter(obj, e);
 }
 
 void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entities)
 {
     PROFILE(BoldEntityListItems);
-    QSet<entity_id_t> old_enitities;
-    EntityListWidgetItem *item = 0;
     for(uint i = 0; i < (uint)entityList->count(); ++i)
     {
-        item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
+        EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
         if (item)
         {
-            QPointer<Entity> ent = item->GetEntity();
+            EntityPtr ent = item->GetEntity();
             QFont font = item->font();
-            if (!ent.isNull() && bolded_entities.contains(ent.data()->GetId()))
+            if (ent && bolded_entities.contains(ent->GetId()))
             {
                 font.setBold(true);
                 item->setFont(font);
@@ -761,16 +859,16 @@ void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entitie
     }
 }
 
-void ECEditorWindow::DefaultSceneChanged(SceneManager *scene)
+void ECEditorWindow::OnDefaultSceneChanged(SceneManager *scene)
 {
     if (!scene)
         return;
 
     /// todo disconnect previous scene connection.
-    connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), 
-            SLOT(EntityRemoved(Entity*)), Qt::UniqueConnection);
+    connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)),
+        SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
     connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
-            SLOT(ActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
+        SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
 }
 
 void ECEditorWindow::ComponentDialogFinished(int result)
@@ -817,26 +915,3 @@ void ECEditorWindow::ComponentDialogFinished(int result)
     }
 }
 
-QList<EntityPtr> ECEditorWindow::GetSelectedEntities() const
-{
-    QList<EntityPtr> ret;
-
-    if (!entityList)
-        return ret;
-
-    ScenePtr scene = framework->Scene()->GetDefaultScene();
-    if (!scene)
-        return ret;
-
-    for(uint i = 0; i < (uint)entityList->count(); ++i)
-    {
-        EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
-        if (item && item->GetEntity() && item->isSelected())
-        {
-            EntityPtr entity = scene->GetEntity(item->GetEntity()->GetId());
-            if (entity)
-                ret.push_back(entity);
-        }
-    }
-    return ret;
-}

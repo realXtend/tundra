@@ -14,8 +14,8 @@
 
 #include <QTreeWidget>
 
-TreeWidgetItemExpandMemory::TreeWidgetItemExpandMemory(const char *group, Framework *framework) :
-    framework_(framework),
+TreeWidgetItemExpandMemory::TreeWidgetItemExpandMemory(const char *group, Framework *fw) :
+    framework(fw),
     groupName(group)
 {
     Load();
@@ -61,7 +61,7 @@ QString TreeWidgetItemExpandMemory::GetIndentifierText(const QTreeWidgetItem *it
 
 void TreeWidgetItemExpandMemory::Load()
 {
-    QStringList setting = framework_->Config()->Get("uimemory", "tree state", "expanded").toString().split("|");
+    QStringList setting = framework->Config()->Get("uimemory", "tree state", "expanded").toString().split("|");
     foreach(QString s, setting)
         if (!s.isEmpty())
             items.insert(s);
@@ -71,7 +71,7 @@ void TreeWidgetItemExpandMemory::Save()
 {
     QString state = QString::fromStdString(ToString());
     if (!state.isEmpty())
-        framework_->Config()->Set("uimemory", "tree state", "expanded", state);
+        framework->Config()->Set("uimemory", "tree state", "expanded", state);
 }
 
 void TreeWidgetItemExpandMemory::HandleItemExpanded(QTreeWidgetItem *item)

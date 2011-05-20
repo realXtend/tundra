@@ -5,8 +5,7 @@
  *  @brief  Utility class for keeping track of expanded items at a tree widget.
  */
 
-#ifndef incl_ECEditorModule_TreeWidgetItemExpandMemory_h
-#define incl_ECEditorModule_TreeWidgetItemExpandMemory_h
+#pragma once
 
 #include <QObject>
 #include <QSet>
@@ -19,7 +18,7 @@ class QTreeWidgetItem;
 /** Usage example:
     @code
         QTreeWidget *treeWidget = new QTreeWidget;
-        TreeWidgetItemExpandMemory *mem = new TreeWidgetItemExpandMemory("GroupIdName", frawework->GetDefaultConfig());
+        TreeWidgetItemExpandMemory *mem = new TreeWidgetItemExpandMemory("GroupIdName", GetFramework());
 
         connect(treeWidget, SIGNAL(itemExpanded(QTreeWidgetItem *)),
             mem, SLOT(HandleItemExpanded(QTreeWidgetItem *)), Qt::UniqueConnection);
@@ -34,11 +33,11 @@ class TreeWidgetItemExpandMemory : public QObject
 public:
     /// Constructs the object and loads information about expanded items from config file.
     /** @param group Group name identifier.
-        @param mgr Config manager.
+        @param fw Framework.
     */
-    TreeWidgetItemExpandMemory(const char *group, Framework *framework);
+    TreeWidgetItemExpandMemory(const char *group, Framework *fw);
 
-    /// Destroyes the object and saves information about currently expanded items to config file.
+    /// Destroys the object and saves information about currently expanded items to config file.
     ~TreeWidgetItemExpandMemory();
 
     /// Expands @c item in the @c treeWidget if expand memory contains idenfitier for the @c item or
@@ -78,8 +77,6 @@ private:
     std::string ToString() const;
 
     QSet<QString> items; ///< Set of item identifier texts.
-    Framework *framework_; ///< Framework.
+    Framework *framework; ///< Framework.
     std::string groupName; ///< Setting group name.
 };
-
-#endif

@@ -41,7 +41,7 @@ link_package (QT_PROPERTY_BROWSER)
 link_modules (Framework Scene Input Console Ui OgreRenderingModule TundraLogicModule AssetModule)
 
 LinkEntityComponent(EntityComponents/EC_TransformGizmo EC_TransformGizmo)
-LinkEntityComponent(EntityComponents/EC_HighLight EC_HighLight)
+LinkEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 
 SetupCompileFlagsWithPCH()
 
