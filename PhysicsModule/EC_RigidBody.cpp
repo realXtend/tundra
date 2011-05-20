@@ -10,6 +10,7 @@
 #include "PhysicsWorld.h"
 
 #include "OgreMeshAsset.h"
+#include "OgreConversionUtils.h"
 #include "Entity.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
@@ -23,6 +24,8 @@
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 #include <set>
+
+#include <OgreSceneNode.h>
 
 using namespace Physics;
 
@@ -246,6 +249,8 @@ void EC_RigidBody::UpdateSignals()
     
     SceneManager* scene = parent->GetScene();
     world_ = owner_->GetPhysicsWorldForScene(scene);
+    if (world_)
+        connect(world_, SIGNAL(AboutToUpdate(float)), this, SLOT(OnAboutToUpdate()));
 }
 
 void EC_RigidBody::CheckForPlaceableAndTerrain()
@@ -397,9 +402,8 @@ void EC_RigidBody::getWorldTransform(btTransform &worldTrans) const
     if (!placeable)
         return;
         
-    const Transform& trans = placeable->transform.Get();
-    const Vector3df& position = trans.position;
-    Quaternion orientation(DEGTORAD * trans.rotation.x, DEGTORAD * trans.rotation.y, DEGTORAD * trans.rotation.z);
+    Vector3df position = placeable->GetWorldPosition();
+    Quaternion orientation = placeable->GetWorldOrientation();
     
     worldTrans.setOrigin(ToBtVector3(position));
     worldTrans.setRotation(ToBtQuaternion(orientation));
@@ -421,13 +425,35 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     // Set transform
     Vector3df position = ToVector3(worldTrans.getOrigin());
     Quaternion orientation = ToQuaternion(worldTrans.getRotation());
-    Transform newTrans = placeable->transform.Get();
-    Vector3df euler;
-    orientation.toEuler(euler);
-    newTrans.SetPos(position.x, position.y, position.z);
-    newTrans.SetRot(euler.x * RADTODEG, euler.y * RADTODEG, euler.z * RADTODEG);
-    placeable->transform.Set(newTrans, AttributeChange::Default);
     
+    // Non-parented case
+    if (placeable->parentRef.Get().IsEmpty())
+    {
+        Transform newTrans = placeable->transform.Get();
+        Vector3df euler;
+        orientation.toEuler(euler);
+        newTrans.SetPos(position.x, position.y, position.z);
+        newTrans.SetRot(euler.x * RADTODEG, euler.y * RADTODEG, euler.z * RADTODEG);
+        placeable->transform.Set(newTrans, AttributeChange::Default);
+    }
+    else
+    // The placeable has a parent itself
+    {
+        if (placeable->IsAttached())
+        {
+            /// \todo Use a Placeable utility function for this
+            position = OgreRenderer::ToCoreVector(placeable->GetSceneNode()->convertWorldToLocalPosition(OgreRenderer::ToOgreVector3(position)));
+            Ogre::Quaternion ogreQuat = placeable->GetSceneNode()->convertWorldToLocalOrientation(OgreRenderer::ToOgreQuaternion(orientation));
+            orientation = Quaternion(ogreQuat.x, ogreQuat.y, ogreQuat.z, ogreQuat.w);
+            
+            Transform newTrans = placeable->transform.Get();
+            Vector3df euler;
+            orientation.toEuler(euler);
+            newTrans.SetPos(position.x, position.y, position.z);
+            newTrans.SetRot(euler.x * RADTODEG, euler.y * RADTODEG, euler.z * RADTODEG);
+            placeable->transform.Set(newTrans, AttributeChange::Default);
+        }
+    }
     // Set linear & angular velocity
     if (body_)
     {
@@ -566,27 +592,27 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
     if ((disconnected_) || (!body_))
         return;
     
-    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(sender());
+    EC_Placeable* placeable = placeable_.lock().get();
+    if (!placeable)
+        return;
+        
     if (attribute == &placeable->transform)
     {
-        const Transform& trans = placeable->transform.Get();
-        const Vector3df& position = trans.position;
-        Quaternion orientation(DEGTORAD * trans.rotation.x, DEGTORAD * trans.rotation.y, DEGTORAD * trans.rotation.z);
-        
-        btTransform& worldTrans = body_->getWorldTransform();
-        worldTrans.setOrigin(ToBtVector3(position));
-        worldTrans.setRotation(ToBtQuaternion(orientation));
-        
-        // When we forcibly set the physics transform, also set the interpolation transform to prevent jerky motion
-        btTransform interpTrans = body_->getInterpolationWorldTransform();
-        interpTrans.setOrigin(worldTrans.getOrigin());
-        interpTrans.setRotation(worldTrans.getRotation());
-        body_->setInterpolationWorldTransform(interpTrans);
-        
-        body_->activate();
-        
+        // Important: when changing both transform and parent, always set parentref first, then transform
+        // Otherwise the physics simulation may interpret things wrong and the object ends up
+        // in an unintended location
+        UpdatePosRotFromPlaceable();
         UpdateScale();
     }
+}
+
+void EC_RigidBody::OnAboutToUpdate()
+{
+    // If the placeable is parented, we forcibly update world transform from it before each simulation step
+    // However, we do not update scale, as that is expensive
+    EC_Placeable* placeable = placeable_.lock().get();
+    if (placeable && !placeable->parentRef.Get().IsEmpty() && placeable->IsAttached())
+        UpdatePosRotFromPlaceable();
 }
 
 void EC_RigidBody::SetRotation(const Vector3df& rotation)
@@ -728,12 +754,13 @@ void EC_RigidBody::UpdateScale()
     EC_Placeable* placeable = placeable_.lock().get();
     if ((placeable) && (shape_))
     {
-        const Transform& trans = placeable->transform.Get();
+        // Note: for now, world scale is purposefully NOT used, because it would be problematic to change the scale when a parenting change occurs
+        const Vector3df& scale = placeable->transform.Get().scale;
         // Trianglemesh does not have scaling of its own, so use the size
         if ((!triangleMesh_) || (shapeType.Get() != Shape_TriMesh))
-            shape_->setLocalScaling(btVector3(trans.scale.x, trans.scale.y, trans.scale.z));
+            shape_->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
         else
-            shape_->setLocalScaling(btVector3(sizeVec.x * trans.scale.x, sizeVec.y * trans.scale.y, sizeVec.z * trans.scale.z));
+            shape_->setLocalScaling(btVector3(sizeVec.x * scale.x, sizeVec.y * scale.y, sizeVec.z * scale.z));
     }
 }
 
@@ -825,6 +852,28 @@ void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisi
         collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
     if (!drawDebug.Get())
         collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
+}
+
+void EC_RigidBody::UpdatePosRotFromPlaceable()
+{
+    EC_Placeable* placeable = placeable_.lock().get();
+    if (!placeable || !body_)
+        return;
+    
+    Vector3df position = placeable->GetWorldPosition();
+    Quaternion orientation = placeable->GetWorldOrientation();
+
+    btTransform& worldTrans = body_->getWorldTransform();
+    worldTrans.setOrigin(ToBtVector3(position));
+    worldTrans.setRotation(ToBtQuaternion(orientation));
+    
+    // When we forcibly set the physics transform, also set the interpolation transform to prevent jerky motion
+    btTransform interpTrans = body_->getInterpolationWorldTransform();
+    interpTrans.setOrigin(worldTrans.getOrigin());
+    interpTrans.setRotation(worldTrans.getRotation());
+    body_->setInterpolationWorldTransform(interpTrans);
+    
+    body_->activate();
 }
 
 void EC_RigidBody::EmitPhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)

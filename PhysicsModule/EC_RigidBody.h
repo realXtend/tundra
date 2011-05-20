@@ -317,6 +317,9 @@ private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
     
+    /// Called when the simulation is about to be stepped
+    void OnAboutToUpdate();
+    
     /// Called when some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute *attribute);
     
@@ -361,6 +364,9 @@ private:
     
     /// Update scale from placeable & own size setting
     void UpdateScale();
+    
+    /// Update position & rotation from placeable
+    void UpdatePosRotFromPlaceable();
     
     /// Request mesh resource (for trimesh & convexhull shapes)
     void RequestMesh();

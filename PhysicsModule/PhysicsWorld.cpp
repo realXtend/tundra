@@ -84,6 +84,8 @@ void PhysicsWorld::Simulate(f64 frametime)
 {
     PROFILE(PhysicsWorld_Simulate);
     
+    emit AboutToUpdate((float)frametime);
+    
     int maxSubSteps = (int)((1.0f / physicsUpdatePeriod_) / cMinFps);
     world_->stepSimulation((float)frametime, maxSubSteps, physicsUpdatePeriod_);
 }

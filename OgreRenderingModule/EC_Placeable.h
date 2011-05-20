@@ -260,14 +260,17 @@ public slots:
     /// Return world-derived scale from the scene node
     Vector3df GetWorldScale() const;
     
-    /// Shows the Entity
+    /// Shows the entity
     void Show();
 
-    /// Hides the Entity
+    /// Hides the entity
     void Hide();
 
-    /// Toggle Visibility
+    /// Toggle visibility
     void ToggleVisibility();
+    
+    /// Return whether is attached to the Ogre scene node hierarchy
+    bool IsAttached() const { return attached_; }
 
 signals:
     /// emitted when position has changed.

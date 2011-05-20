@@ -107,6 +107,11 @@ signals:
      */
     void PhysicsCollision(Entity* entityA, Entity* entityB, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
     
+    /// Emitted before the simulation steps. Note: emitted only once per frame, not before each substep.
+    /** \param frametime Length of simulation steps
+     */
+    void AboutToUpdate(float frametime);
+    
     /// Emitted after each simulation step
     /** \param frametime Length of simulation step
      */
