@@ -95,7 +95,7 @@ void AssetTreeWidget::dragEnterEvent(QDragEnterEvent *e)
                 e->acceptProposedAction();
     }
     else
-        QTreeWidget::dropEvent(e);
+        QTreeWidget::dragEnterEvent(e);
 }
 
 void AssetTreeWidget::dragMoveEvent(QDragMoveEvent *e)
