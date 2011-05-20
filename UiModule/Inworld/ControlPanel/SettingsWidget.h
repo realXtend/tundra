@@ -12,46 +12,41 @@
 class QPropertyAnimation;
 class QGraphicsScene;
 
+namespace UiServices
+{
+    class UiModule;
+}
+
 namespace CoreUi
 {
     class ControlPanelManager;
 
-    class SettingsWidget : public QGraphicsProxyWidget, private Ui::SettingsWidget
+    class SettingsWidget : public QWidget, public Ui::SettingsWidget
     {
         
     Q_OBJECT
 
     public:
-        SettingsWidget(QGraphicsScene *scene, ControlPanelManager *conrol_panel_manager);
-		// $ BEGIN_MOD $
-		QWidget *GetInternalWidget() { return internal_widget_; }
-		// $ END_MOD $
+        SettingsWidget(QGraphicsScene *scene, UiServices::UiModule *ui_module);
 
     public slots:
         void AddWidget(QWidget *widget, const QString &tab_name) const;
-        void AnimatedHide();
+        void ToggleVisibility();
 
-    protected:
-        void showEvent(QShowEvent *show_event);
 
     private slots:
         void SaveSettings();
         void Canceled();
-        void AnimationsFinished();
 
-        void SceneRectChanged(const QRectF &scene_rect);
         void OpacitySliderChanged(int new_value);
 
     private:
-        QWidget *internal_widget_;
         QPropertyAnimation *visibility_animation_;
-
-        ControlPanelManager *panel_;
+        UiServices::UiModule *ui_module_;
 
     signals:
         void SaveSettingsClicked();
         void CancelClicked();
-        void Hidden();
         void NewUserInterfaceSettingsApplied(int new_opacity, int new_animation_speed);
 
     };

@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "InworldSceneController.h"
-#include "ControlPanelManager.h"
+#include "UiAPI.h"
 #include "Common/AnchorLayoutManager.h"
 #include "Menus/MenuManager.h"
 #include "Inworld/ControlPanel/SettingsWidget.h"
@@ -36,22 +36,19 @@ namespace UiServices
 
         // Init layout manager with scene
         layout_manager_ = new CoreUi::AnchorLayoutManager(this, inworld_scene_);
+        connect(framework->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int, int)), layout_manager_, SLOT(AdjustLayoutContainer(int, int)));
 		boost::shared_ptr<TundraLogic::Client> client=framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient();
 		connect(client.get(), SIGNAL(Disconnected()), SLOT(worldDisconnected()));
 
         // Init UI managers with layout manager
-        control_panel_manager_ = new CoreUi::ControlPanelManager(this, layout_manager_);
+        //control_panel_manager_ = new CoreUi::ControlPanelManager(this, layout_manager_);
         menu_manager_ = new CoreUi::MenuManager(this, layout_manager_);
                 
         // Connect settings widget
-        connect(control_panel_manager_->GetSettingsWidget(), SIGNAL(NewUserInterfaceSettingsApplied(int, int)), SLOT(ApplyNewProxySettings(int, int)));
+        //connect(control_panel_manager_->GetSettingsWidget(), SIGNAL(NewUserInterfaceSettingsApplied(int, int)), SLOT(ApplyNewProxySettings(int, int)));
         
         // Apply new positions to active widgets when the inworld_scene_ is resized
         connect(inworld_scene_, SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
-		//OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
-		boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
-		if(renderer)
-			connect(renderer.get(),SIGNAL(resizeWindow()),this,SLOT(AddInternalWidgets()));
 	}
 
     InworldSceneController::~InworldSceneController()
@@ -119,13 +116,9 @@ namespace UiServices
         return true;
     }
 
-	bool InworldSceneController::AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence) 
-	{
-		//Create the QGraphicsProxyWidget
-		QGraphicsProxyWidget *qgrap = new QGraphicsProxyWidget(0, Qt::Widget);
-		qgrap->setWidget(widget);
-
-		//Add to non_priority list if not persistent between worlds
+    bool InworldSceneController::AddAnchoredWidgetToScene(QGraphicsProxyWidget *qgrap, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence)
+    {
+        //Add to non_priority list if not persistent between worlds
 		if (!persistence)
 			non_persistent_widgets.append(qgrap);
 
@@ -270,7 +263,119 @@ namespace UiServices
 		}
 		AddInternalWidgets();
 		return true;
+
+    }
+
+	bool InworldSceneController::AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence) 
+	{
+		//Create the QGraphicsProxyWidget
+		QGraphicsProxyWidget *qgrap = new QGraphicsProxyWidget(0, Qt::Widget);
+		qgrap->setWidget(widget);
+        return AddAnchoredWidgetToScene(qgrap, corner, orientation, priority, persistence);
 	}
+
+    bool InworldSceneController::RemoveAnchoredWidgetFromScene(QWidget *widget) 
+    { 
+        QGraphicsProxyWidget *qgrap = widget->graphicsProxyWidget();
+        if(qgrap)
+            return RemoveAnchoredWidgetFromScene(qgrap);
+        else
+            return false;
+    }
+
+    bool InworldSceneController::RemoveAnchoredWidgetFromScene(QGraphicsProxyWidget *qgrap) 
+	{
+        //Clean lists
+        int i = 0;
+		while(i<bottomleft_horiz_.size())
+        {
+            if (bottomleft_horiz_.at(i).first == qgrap) {
+				bottomleft_horiz_.removeAt(i);
+                AddInternalWidgets();
+                return true;
+            }
+			i++;
+        }
+		//bottomleft_vert_
+		i = 0;
+        while(i<bottomleft_vert_.size())
+        {
+            if (bottomleft_vert_.at(i).first == qgrap) {
+				bottomleft_vert_.removeAt(i);
+                AddInternalWidgets();
+                return true;
+            }
+			i++;
+        }
+		//bottomright_horiz_
+		i = 0;
+        while(i<bottomright_horiz_.size())
+        {
+            if (bottomright_horiz_.at(i).first == qgrap) {
+				bottomright_horiz_.removeAt(i);
+                AddInternalWidgets();
+                return true;
+            }
+			i++;
+        }		
+		//bottomright_vert_
+        i = 0;
+		while(i<bottomright_vert_.size())
+        {
+            if (bottomright_vert_.at(i).first == qgrap) {
+				bottomright_vert_.removeAt(i);
+                AddInternalWidgets();
+                return true;
+            }
+			i++;
+        }
+		//topleft_horiz_
+		i = 0;
+		while(i<topleft_horiz_.size())
+        {
+            if (topleft_horiz_.at(i).first == qgrap) {
+				topleft_horiz_.removeAt(i);
+                AddInternalWidgets();
+                return true;
+            }
+			i++;
+        }
+		//topleft_vert_
+		i = 0;
+		while(i<topleft_vert_.size())
+        {
+            if (topleft_vert_.at(i).first == qgrap) {
+				topleft_vert_.removeAt(i);
+                AddInternalWidgets();
+                return true;
+            }
+			i++;
+        }
+		//topright_horiz_
+		i = 0;
+		while(i<topright_horiz_.size())
+        {
+            if (topright_horiz_.at(i).first == qgrap) {
+				topright_horiz_.removeAt(i);
+                AddInternalWidgets();
+                return true;
+            }
+			i++;
+        }
+		//topright_vert_
+		i = 0;
+		while(i<topright_vert_.size())
+        {
+            if (topright_vert_.at(i).first == qgrap) {
+				topright_vert_.removeAt(i);
+                AddInternalWidgets();
+                return true;
+            }
+			i++;
+        }		
+        return false;
+	}
+
 	void InworldSceneController::worldDisconnected()
 	{
 		//Clean lists
@@ -301,24 +406,28 @@ namespace UiServices
 				bottomright_vert_.removeAt(i);
 			else
 				i++;
+        i = 0;
 		//topleft_horiz_
 		while(i<topleft_horiz_.size())
 			if (non_persistent_widgets.contains(topleft_horiz_.at(i).first))
 				topleft_horiz_.removeAt(i);
 			else
 				i++;
+        i = 0;
 		//topleft_vert_
 		while(i<topleft_vert_.size())
 			if (non_persistent_widgets.contains(topleft_vert_.at(i).first))
 				topleft_vert_.removeAt(i);
 			else
 				i++;
+        i = 0;
 		//topleft_vert_
 		while(i<topright_horiz_.size())
 			if (non_persistent_widgets.contains(topright_horiz_.at(i).first))
 				topright_horiz_.removeAt(i);
 			else
 				i++;
+        i = 0;
 		//topleft_vert_
 		while(i<topright_vert_.size())
 			if (non_persistent_widgets.contains(topright_vert_.at(i).first))
@@ -340,13 +449,13 @@ namespace UiServices
 			layout_manager_->AddCornerAnchor(bottomleft_horiz_.at(0).first, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
 			if (bottomleft_horiz_.size() > 1)
 				for(int i = 1; i<bottomleft_horiz_.size(); i++)
-					layout_manager_->AnchorWidgetsHorizontally(bottomleft_horiz_.at(i).first, bottomleft_horiz_.at(i-1).first);
+					layout_manager_->AnchorWidgetsHorizontally(bottomleft_horiz_.at(i).first, bottomleft_horiz_.at(i-1).first, false);
 
 			//bottomleft_vert_
 			if (!bottomleft_vert_.empty()){
-				layout_manager_->AnchorWidgetsVertically(bottomleft_horiz_.at(0).first, bottomleft_vert_.at(0).first);
+				layout_manager_->AnchorWidgetsVertically(bottomleft_horiz_.at(0).first, bottomleft_vert_.at(0).first, true);
 				for(int i = 1; i<bottomleft_vert_.size(); i++)
-					layout_manager_->AnchorWidgetsVertically(bottomleft_vert_.at(i-1).first, bottomleft_vert_.at(i).first);
+					layout_manager_->AnchorWidgetsVertically(bottomleft_vert_.at(i-1).first, bottomleft_vert_.at(i).first, true);
 			}
 		}
 
@@ -356,13 +465,13 @@ namespace UiServices
 			layout_manager_->AddCornerAnchor(bottomright_horiz_.at(0).first, Qt::BottomRightCorner, Qt::BottomRightCorner);
 			if (bottomright_horiz_.size() > 1)
 				for(int i = 1; i<bottomright_horiz_.size(); i++)
-					layout_manager_->AnchorWidgetsHorizontally(bottomright_horiz_.at(i-1).first, bottomright_horiz_.at(i).first);
+					layout_manager_->AnchorWidgetsHorizontally(bottomright_horiz_.at(i-1).first, bottomright_horiz_.at(i).first, false);
 
 			//bottomright_vert_
 			if (!bottomright_vert_.empty()){
-				layout_manager_->AnchorWidgetsVertically(bottomright_horiz_.at(0).first, bottomright_vert_.at(0).first);
+				layout_manager_->AnchorWidgetsVertically(bottomright_horiz_.at(0).first, bottomright_vert_.at(0).first, false);
 				for(int i = 1; i<bottomright_vert_.size(); i++)
-					layout_manager_->AnchorWidgetsVertically(bottomright_vert_.at(i-1).first, bottomright_vert_.at(i).first);
+					layout_manager_->AnchorWidgetsVertically(bottomright_vert_.at(i-1).first, bottomright_vert_.at(i).first, false);
 			}
 		}
 
@@ -372,13 +481,13 @@ namespace UiServices
 			layout_manager_->AddCornerAnchor(topleft_horiz_.at(0).first, Qt::TopLeftCorner, Qt::TopLeftCorner);
 			if (topleft_horiz_.size() > 1)
 				for(int i = 1; i<topleft_horiz_.size(); i++)
-					layout_manager_->AnchorWidgetsHorizontally(topleft_horiz_.at(i).first, topleft_horiz_.at(i-1).first);
+					layout_manager_->AnchorWidgetsHorizontally(topleft_horiz_.at(i).first, topleft_horiz_.at(i-1).first, true);
 
 			//topleft_vert_
 			if (!topleft_vert_.empty()){
-				layout_manager_->AnchorWidgetsVertically(topleft_vert_.at(0).first, topleft_horiz_.at(0).first);
+				layout_manager_->AnchorWidgetsVertically(topleft_vert_.at(0).first, topleft_horiz_.at(0).first, true);
 				for(int i = 1; i<topleft_vert_.size(); i++)
-					layout_manager_->AnchorWidgetsVertically(topleft_vert_.at(i).first, topleft_vert_.at(i-1).first);
+					layout_manager_->AnchorWidgetsVertically(topleft_vert_.at(i).first, topleft_vert_.at(i-1).first, true);
 			}
 		}
 
@@ -388,13 +497,13 @@ namespace UiServices
 			layout_manager_->AddCornerAnchor(topright_horiz_.at(0).first, Qt::TopRightCorner, Qt::TopRightCorner);
 			if (topright_horiz_.size() > 1)
 				for(int i = 1; i<topright_horiz_.size(); i++)
-					layout_manager_->AnchorWidgetsHorizontally(topright_horiz_.at(i-1).first, topright_horiz_.at(i).first);
+					layout_manager_->AnchorWidgetsHorizontally(topright_horiz_.at(i-1).first, topright_horiz_.at(i).first, true);
 
 			//topright_vert_
 			if (!topright_vert_.empty()){
-				layout_manager_->AnchorWidgetsVertically(topright_vert_.at(0).first, topright_horiz_.at(0).first);
+				layout_manager_->AnchorWidgetsVertically(topright_vert_.at(0).first, topright_horiz_.at(0).first, false);
 				for(int i = 1; i<topright_vert_.size(); i++)
-					layout_manager_->AnchorWidgetsVertically(topright_vert_.at(i).first, topright_vert_.at(i-1).first);
+					layout_manager_->AnchorWidgetsVertically(topright_vert_.at(i).first, topright_vert_.at(i-1).first, false);
 			}
 		}
 	}
@@ -453,14 +562,14 @@ namespace UiServices
 
     bool InworldSceneController::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const
     {
-        control_panel_manager_->GetSettingsWidget()->AddWidget(settings_widget, tab_name);
+        //control_panel_manager_->GetSettingsWidget()->AddWidget(settings_widget, tab_name);
         return true;
     }
 
-    QObject *InworldSceneController::GetSettingsObject() const
+   /* QObject *InworldSceneController::GetSettingsObject() const
     {
-        return dynamic_cast<QObject *>(control_panel_manager_->GetSettingsWidget());
-    }
+        //return dynamic_cast<QObject *>(control_panel_manager_->GetSettingsWidget());
+    }*/
 
     void InworldSceneController::ApplyNewProxySettings(int new_opacity, int new_animation_speed)
     {

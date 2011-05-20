@@ -97,12 +97,14 @@ namespace UiServices
     private slots:
 
 		void ActionNodeClicked();
+		void CheckMenuAction(bool vis);
 
 
     private:
 
         //! Track maps
         QMap<QString, QToolBar*> controller_toolbar_;
+		QMap<QString, QAction*> actionsOfToolBars_;
 
         //! Pointer to the main menu Bar
 		QMainWindow *main_window_;

@@ -6,6 +6,7 @@
 
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
+#include "Inworld/ControlPanel/SettingsWidget.h"
 
 #include "UiModuleApi.h"
 #include "UiModuleFwd.h"
@@ -76,12 +77,15 @@ namespace UiServices
         InworldSceneController *GetInworldSceneController() const { return inworld_scene_controller_; }
         NotificationManager *GetNotificationManager() const { return inworld_notification_manager_; }
         CoreUi::UiStateMachine *GetUiStateMachine() const { return ui_state_machine_; }
+        UiSceneServicePtr GetUiSceneService() const { return ui_scene_service_; }
 
 		//!Get Managers of the module
 		ExternalMenuManager *GetExternalMenuManager() const { return external_menu_manager_; }
 		ExternalPanelManager *GetExternalPanelManager() const { return external_panel_manager_; }
 		ExternalToolBarManager *GetExternalToolBarManager() const { return external_toolbar_manager_;}
+        CoreUi::SettingsWidget *GetSettingsPanel() const { return settings_widget_;}
 		bool HasBeenPostinitializaded() const { return win_restored_; }
+        bool HasBeenUninitializaded() const { return win_uninitialized_;}
 
         //! Logging
         MODULE_LOGGING_FUNCTIONS;
@@ -110,6 +114,7 @@ namespace UiServices
 		ExternalMenuManager *external_menu_manager_;
 		ExternalPanelManager *external_panel_manager_;
 		ExternalToolBarManager *external_toolbar_manager_;
+        CoreUi::SettingsWidget *settings_widget_;
 
         //! Current query categories
         QStringList event_query_categories_;
@@ -145,6 +150,7 @@ namespace UiServices
         boost::shared_ptr<InputContext> input;
 
 		bool win_restored_;
+        bool win_uninitialized_;
 
     };
 

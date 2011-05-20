@@ -91,7 +91,7 @@ namespace Ether
             int top_menu_visible_items_;
             int bottom_menu_visible_items_;
 			//To know if it has been disconnected or kicked out
-			bool has_been_connected_;
+			bool is_user_connecting_;
         };
     }
 }

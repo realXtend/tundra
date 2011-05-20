@@ -71,7 +71,14 @@ public slots:
 	*
 	* @return true if evertything allright
 	*/
-	virtual bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence) = 0;
+	virtual bool AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence) = 0;
+
+    /* Removes a widget from layout in the scene 
+	* @param widget widget to be removed in the layout
+	*
+	* @return true if evertything allright
+	*/
+    virtual bool RemoveAnchoredWidgetFromScene(QWidget *widget) = 0;
 
     /** Adds widget to menu without any spesific properties: adds entry to the root menu,
      *  takes name from the window title and uses default icon.
@@ -79,7 +86,7 @@ public slots:
      *
      *  @note Doesn't add the widget to the scene.
      */
-    virtual void AddWidgetToMenu(QWidget *widget) = 0;
+    virtual void AddWidgetToMenu(QWidget *widget, int priority = 50) = 0;
 
     /** Adds widget to menu.
      *  @param widget Widget.
@@ -89,7 +96,7 @@ public slots:
      *
      *  @note Doesn't add the widget to the scene.
      */
-    virtual void AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu = "", const QString &icon = "") = 0;
+    virtual void AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu = "", const QString &icon = "", int priority = 50) = 0;
 
     /** This is an overloaded function.
      *  @param widget Proxy widget.
@@ -99,17 +106,25 @@ public slots:
      *
      *  @note Doesn't add the widget to the scene.
      */
-    virtual void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu = "", const QString &icon = "") = 0;
+    virtual void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu = "", const QString &icon = "", int priority = 50) = 0;
 
-	/*! \brief	Insert the given meu in the Menu of the main window
-         *  \param  action menu
-         *  \param  name Name of the menu
+	/*! \brief	Insert the given meu inside another menu of the main window
+         *  \param  new_menu new menu to be added
 		 *	\param	menu name of the Menu to put the menu inside it
 		 *	\param	icon Icon of the menu
+		 *  \param  priority priority to be placed
          *         
          *  \return true if everything is ok (action addded)
          */
-	virtual bool AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon = 0) = 0;
+	virtual bool AddExternalMenuToMenu(QMenu *new_menu, const QString &menu, const QString &icon = 0, int priority = 50) = 0;
+
+	/*! \brief	Insert the given menu in the Menu of the main window
+         *  \param  name Name of the menu
+		 *	\param	priority priority to be placed
+         *         
+         *  \return true if everything is ok (action addded)
+         */
+	virtual bool AddExternalMenu(const QString &menu, int priority = 50) = 0;
 
     /** Removes widget from the scene.
      *  @param widget Widget.
@@ -227,7 +242,7 @@ public slots:
     virtual void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) = 0;
 
 	virtual void ShowNotification(int hide_in_msec, const QString &message) = 0;
-
+    
 
 //$ BEGIN_MOD $
 
@@ -236,10 +251,16 @@ public slots:
          *  \param  name Name of the Action
 		 *	\param	menu name of the Menu to put the action inside it
 		 *	\param	icon Icon of the action
-         *         
+         *  \param  ischeckable, set action as checkable or not
          *  \return true if everything is ok (action addded)
          */
-	virtual bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0) = 0;
+	virtual bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0, int priority = 50, bool ischeckable = false) = 0;
+
+	/*! \brief	Removes the given action from QMainWindow
+         *  \param  action Action
+         *  \return true if everything is ok (action removed)
+         */
+	virtual bool RemoveExternalMenuAction(QAction *action) = 0;
 
     /*! Toggle the selected widget in/out of scene
      *	\param widgetToChange name of the widget to change

@@ -62,15 +62,24 @@ namespace UiServices
          */
         bool AddProxyWidget(UiProxyWidget *widget);
 
-	/* Adds a widget in a layout in the scene in the position and orientation selected
-	* @param widget widget to be placed in the layout
-	* @param corner Corner of the screen: Could be enumCorner { TopLeftCorner, TopRightCorner, BottomLeftCorner, BottomRightCorner }
-	* @param orientation orientation arround the corner, could be { Horizontal, Vertical }
-	* @param priority higher priority means closer to the corner selected
-	*
-	* @return true if evertything allright
-	*/
-		bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority = 0, bool persistence = true);
+	    /* Adds a widget in a layout in the scene in the position and orientation selected
+	    * @param widget widget to be placed in the layout
+	    * @param corner Corner of the screen: Could be enumCorner { TopLeftCorner, TopRightCorner, BottomLeftCorner, BottomRightCorner }
+	    * @param orientation orientation arround the corner, could be { Horizontal, Vertical }
+	    * @param priority higher priority means closer to the corner selected
+	    *
+	    * @return true if evertything allright
+	    */
+		bool AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority = 0, bool persistence = true);
+        bool AddAnchoredWidgetToScene(QGraphicsProxyWidget *qgrap, Qt::Corner corner, Qt::Orientation orientation, int priority = 0, bool persistence = 0);
+        
+        /* Removes a widget from layout in the scene 
+	    * @param widget widget to be removed in the layout
+    	*
+	    * @return true if evertything allright
+	    */
+        bool RemoveAnchoredWidgetFromScene(QWidget *widget);
+        bool RemoveAnchoredWidgetFromScene(QGraphicsProxyWidget *qgrap) ;
 
         //! Adds widget to menu.
         /*! \param widget Widget.
@@ -121,7 +130,7 @@ namespace UiServices
         bool AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const;
 
         //! Get SettingsWidget QObject pointer to make save/cancel connections outside UiModule
-        QObject *GetSettingsObject() const;
+        //QObject *GetSettingsObject() const;
 
         //! Get the inworld ui scene
         QGraphicsScene *GetInworldScene() const { return inworld_scene_; }

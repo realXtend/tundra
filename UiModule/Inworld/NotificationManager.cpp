@@ -6,13 +6,12 @@
 #include "NotificationManager.h"
 #include "InworldSceneController.h"
 
-#include "Inworld/ControlPanelManager.h"
+//#include "Inworld/ControlPanelManager.h"
 #include "Inworld/Notifications/NotificationBaseWidget.h"
 #include "Inworld/Notifications/NotificationBrowserWidget.h"
 
-#include "Inworld/ControlPanel/ControlPanelButton.h"
-
-#include "Common/ControlButtonAction.h"
+//#include "Common/ControlButtonAction.h"
+#include <QPushButton>
 
 #include <QGraphicsScene>
 #include <QDebug>
@@ -24,11 +23,9 @@ namespace UiServices
     NotificationManager::NotificationManager(InworldSceneController *inworld_scene_controller) : 
         QObject(),
         inworld_scene_controller_(inworld_scene_controller),
-        scene_(inworld_scene_controller->GetInworldScene()),
         notice_max_width_(200),
         notice_start_pos_(QPointF()),
-        browser_widget_(new CoreUi::NotificationBrowserWidget()),
-        panel_(inworld_scene_controller_->GetControlPanelManager())
+        browser_widget_(new CoreUi::NotificationBrowserWidget())
     {
         InitSelf();
     }
@@ -44,56 +41,23 @@ namespace UiServices
 
     void NotificationManager::InitSelf()
     {
+        //Create and manage button to manage visibility in scene
+        QPushButton *nottif_button = new QPushButton("Notifications");
+        connect(nottif_button, SIGNAL(clicked()),SLOT(ToggleNotificationBrowser()));
+        inworld_scene_controller_->AddAnchoredWidgetToScene(nottif_button, Qt::TopRightCorner, Qt::Horizontal, 50, true);
+
+        //Add widget
         browser_widget_->hide();
-        scene_->addItem(browser_widget_);
-
-        CoreUi::ControlPanelButton *button = inworld_scene_controller_->GetControlPanelManager()->GetButtonForType(Notifications);
-        if (button)
-        {
-            CoreUi::ControlButtonAction *notification_action = new CoreUi::ControlButtonAction(button, browser_widget_, this);
-            inworld_scene_controller_->GetControlPanelManager()->SetHandler(Notifications, notification_action);
-            
-            connect(notification_action, SIGNAL(toggled(bool)), SLOT(ToggleNotificationBrowser()));
-            connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(UpdatePosition(const QRectF &)));
-        }
-    }
-
-    void NotificationManager::UpdatePosition(const QRectF &scene_rect)
-    {
-        notice_start_pos_.setY(panel_->GetContentHeight());
-        notice_start_pos_.setX(scene_rect.right()-notice_max_width_);
-        
-        if (browser_widget_->isVisible())
-        {
-            qreal padding = 10;
-            browser_widget_->setPos(scene_->sceneRect().right() - browser_widget_->size().width() - padding, 
-                                    panel_->GetContentHeight() + padding);
-        }
-        else
-            UpdateStack();
-    }
-
-    void NotificationManager::UpdateStack()
-    {
-        if (visible_notifications_.isEmpty())
-            return;
-
-        // Iterate from start of stack and animate all items to correct positions
-        QPointF next_position = notice_start_pos_;
-        foreach(CoreUi::NotificationBaseWidget *notification, visible_notifications_)
-        {
-            notification->AnimateToPosition(next_position);
-            next_position.setY(next_position.y()+notification->size().height());
-        }
+        inworld_scene_controller_->AddAnchoredWidgetToScene(browser_widget_, Qt::TopRightCorner, Qt::Vertical, 75, true);
     }
 
     void NotificationManager::NotificationHideHandler(CoreUi::NotificationBaseWidget *completed_notification)
     {
         if (visible_notifications_.contains(completed_notification))
-        {
             visible_notifications_.removeOne(completed_notification);
-            UpdateStack();
-        }
+
+        //Remove it from AnchorLayout
+        inworld_scene_controller_->RemoveAnchoredWidgetFromScene(completed_notification);
     }
 
     void NotificationManager::ToggleNotificationBrowser()
@@ -106,9 +70,6 @@ namespace UiServices
             visible_notifications_.clear();
 
             // Pass history to browser and clear local list
-            qreal padding = 10;
-            browser_widget_->resize(panel_->GetContentWidth(), browser_widget_->size().height());
-            browser_widget_->setPos(scene_->sceneRect().right() - browser_widget_->size().width() - padding, panel_->GetContentHeight() + padding);
             browser_widget_->ShowNotifications(notifications_history_);
             notifications_history_.clear();
         }
@@ -133,28 +94,14 @@ namespace UiServices
     void NotificationManager::ShowNotification(CoreUi::NotificationBaseWidget *notification_widget)
     {
         if (browser_widget_->isVisible())
-        {
             browser_widget_->InsertNotifications(notification_widget);
-        }
         else
         {
             // Don't show same item twice before first is hidden
             if (visible_notifications_.contains(notification_widget))
                 return;
 
-            UpdatePosition(scene_->sceneRect());
-            QPointF add_position = notice_start_pos_;
-
-            // Get stacks last notifications y position
-            if (!visible_notifications_.isEmpty())
-            {
-                CoreUi::NotificationBaseWidget *last_notification = visible_notifications_.last();
-                add_position.setY(last_notification->mapRectToScene(last_notification->rect()).bottom());
-            }
-
-            // Set position and add to scene
-            notification_widget->setPos(add_position);
-            scene_->addItem(notification_widget);
+            inworld_scene_controller_->AddAnchoredWidgetToScene(notification_widget, Qt::TopRightCorner, Qt::Vertical, 80, true);
 
             // Connect completed (hide) signal to managers handler
             connect(notification_widget, SIGNAL(Completed(CoreUi::NotificationBaseWidget *)),

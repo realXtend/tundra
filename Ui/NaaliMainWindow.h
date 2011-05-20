@@ -35,7 +35,9 @@ public:
     /// Returns the whole desktop height, taking into account multiple displays.
     static int DesktopHeight();
 
-	QMainWindow *parentWin_;
+public slots:
+
+    void SizeOfCentralWidgetChanged();
 
 signals:
     /// Emitted when the main window is resized.

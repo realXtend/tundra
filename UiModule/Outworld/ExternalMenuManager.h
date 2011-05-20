@@ -8,6 +8,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <QPair>
 #include <QDockWidget>
 #include <QWidget>
 #include <QMenuBar>
@@ -36,7 +37,18 @@ namespace UiServices
         //! Destructor.
         ~ExternalMenuManager();
 
+		typedef QPair<QString, QAction *> menu_action_pair_;
+
     public slots:
+
+		/*! \brief	Insert the given menu in the Menu of the main window
+         *  \param  name Name of the menu
+		 *	\param	priority priority to be placed
+         *         
+         *  \return true if everything is ok (action addded)
+         */
+		bool AddExternalMenu(const QString &menu, int priority = 50);
+
         /*! Adds new menu item.
          *  \param widget Controlled widget.
          *  \param name Name of the menu entry.
@@ -45,7 +57,7 @@ namespace UiServices
 		 *
 		 *	\note: a new action is created and connected to the given widget
          */
-        bool AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu);
+        bool AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, int priority = 50);
 
 		/*! \brief	Insert the given meu in the Menu of the main window
          *  \param  action menu
@@ -55,7 +67,7 @@ namespace UiServices
          *         
          *  \return true if everything is ok (action addded)
          */
-		bool AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon);
+		bool AddExternalMenuToMenu(QMenu *new_menu, const QString &menu, const QString &icon, int priority = 50);
 
         /*! Removes menu item.
          *  \param widget Controlled widget.
@@ -70,7 +82,13 @@ namespace UiServices
 		 *
 		 *	\note There isn't any management of the given action
          */
-		bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0);
+		bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0, int priority = 50, bool ischeckable = false);
+
+		/*! \brief	Removes the given action from QMainWindow
+         *  \param  action Action
+         *  \return true if everything is ok (action removed)
+         */
+		bool RemoveExternalMenuAction(QAction *action);
 
 		/*! Enable Menu "Panels" in the Menu Bar
 		 */
@@ -83,30 +101,18 @@ namespace UiServices
 		void ModifyPanelVisibility(bool vis);
 
     private slots:
-
-		/*! Adds a new Menu in the Main MenuBar
-		 *	\param name name of the new menu
-		 *	\param icon icon (optional)
-		 */
-        void AddMenu(const QString &name, const QString &icon = defaultGroupIcon);
-
 		/*! Private Slot to manage the action clicked
 		*/
-        void ActionNodeClicked();	
+        void ActionNodeClicked();
 
-		/*! Private Slot to manage the action clicked
-		
-        void ActionNodeClickedInside();	
-
-		/*! Private Slot to manage the action clicked
-		
-        void ActionNodeClickedOutside();*/
+		void SortMenus();
 
     private:
 
         //! Track maps
-        QMap<QString, QWidget*> controller_panels_;
-		QMap<QString, QAction*> controller_actions_;
+		QMap<QString, menu_action_pair_> all_actions_; //Qobject means qmenu and qaction
+		QMap<QString, QString> all_menus_;
+
         QMap<QString, QMenu*> category_menu_;
 		QMap<QString, bool> controller_panels_visibility_;
 

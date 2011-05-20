@@ -5,13 +5,11 @@
 #include "NaaliMainWindow.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
-
 #include <QCloseEvent>
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QIcon>
 #include <QMenuBar>
-
 #include <utility>
 #include <iostream>
 
@@ -19,14 +17,36 @@
 
 using namespace std;
 
+class NewCentralWid : public QWidget 
+{
+public:
+    NewCentralWid(NaaliMainWindow *parent = 0, Qt::WindowFlags f = 0);
+    virtual ~NewCentralWid() {}
+
+protected:
+    /// Overridden to trigger WindowResizeEvent signal.
+    void resizeEvent(QResizeEvent *e);
+    NaaliMainWindow *parent_;
+
+};
+
+NewCentralWid::NewCentralWid(NaaliMainWindow *parent, Qt::WindowFlags f)
+: QWidget(parent, f),
+parent_(parent)
+{
+}
+
+void NewCentralWid::resizeEvent(QResizeEvent *e)
+{
+    parent_->SizeOfCentralWidgetChanged();
+}
+
 
 NaaliMainWindow::NaaliMainWindow(Foundation::Framework *owner_)
 :owner(owner_)
 {
     setAcceptDrops(true);
-
-	parentWin_ = new QMainWindow();
-	parentWin_->setCentralWidget(this);
+    setCentralWidget(new NewCentralWid(this));
 }
 
 int NaaliMainWindow::DesktopWidth()
@@ -89,22 +109,20 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 		
 
 		//Assign parameters to our window
-		//setWindowTitle("Tundra 1.0.3");
-		parentWin_->setWindowTitle("Tundra 1.0.5");
-		//parentWin_->setMinimumSize(width,height);		
-		parentWin_->setDockNestingEnabled(true);
+		setWindowTitle("Tundra 1.0.3");
+		setDockNestingEnabled(true);
 
 		//Menu bar for Qwin this Mac support
-		QMenuBar *menuBar = new QMenuBar(parentWin_);
+		QMenuBar *menuBar = new QMenuBar(this);
 		menuBar->heightForWidth(500);
-		parentWin_->setMenuBar(menuBar);
+		setMenuBar(menuBar);
 
-		parentWin_->resize(win_width,win_height);
+		resize(win_width,win_height);
 
 		if (window_fullscreen)
-			parentWin_->showFullScreen();
+			showFullScreen();
 		else
-			parentWin_->move(pos);
+			move(pos);
 }
 
 void NaaliMainWindow::SaveWindowSettingsToFile()
@@ -122,3 +140,8 @@ void NaaliMainWindow::resizeEvent(QResizeEvent *e)
 {
     emit WindowResizeEvent(centralWidget()->width(), centralWidget()->height());
 }
+
+void NaaliMainWindow::SizeOfCentralWidgetChanged(){
+    emit WindowResizeEvent(centralWidget()->width(), centralWidget()->height());
+}
+

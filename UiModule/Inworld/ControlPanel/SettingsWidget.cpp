@@ -5,40 +5,38 @@
 #include "DebugOperatorNew.h"
 
 #include "SettingsWidget.h"
-#include "Inworld/ControlPanelManager.h"
+#include "../../UiModule.h"
+#include "../../UiSceneService.h"
+#include "../InworldSceneController.h"
 
 #include <QPropertyAnimation>
 #include <QGraphicsScene>
+#include <QPushButton>
 
 #include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {
-    SettingsWidget::SettingsWidget(QGraphicsScene *scene, ControlPanelManager *control_panel_manager) : 
-        QGraphicsProxyWidget(0, Qt::Widget),
-        internal_widget_(new QWidget()),
-        panel_(control_panel_manager)
+    SettingsWidget::SettingsWidget(QGraphicsScene *scene, UiServices::UiModule *ui_module) : 
+        QWidget(),
+        ui_module_(ui_module)
     {
-        setupUi(internal_widget_);
-		internal_widget_->setObjectName("Naali Settings");
-
-        QFont titleFont("facetextrabold", 10, 25, false);
-        titleFont.setCapitalization(QFont::AllUppercase);
-        titleFont.setStyleStrategy(QFont::PreferAntialias);
-        titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 1);
-        titleLabel->setFont(titleFont);
-
-        setZValue(100);
-        visibility_animation_ = new QPropertyAnimation(this, "opacity", this);
-        visibility_animation_->setDuration(500);
-        visibility_animation_->setEasingCurve(QEasingCurve::InOutSine);
-        visibility_animation_->setStartValue(0);
-        visibility_animation_->setEndValue(1);
+        setupUi(this);
+		setObjectName("Naali Settings");
+        this->setWindowTitle("Naali Settings");
 
         connect(opacitySlider, SIGNAL(valueChanged(int)), SLOT(OpacitySliderChanged(int)));
         connect(savePushButton, SIGNAL(clicked()), SLOT(SaveSettings()));
         connect(cancelPushButton, SIGNAL(clicked()), SLOT(Canceled()));
-        connect(scene, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(SceneRectChanged(const QRectF&)));
+
+        if (ui_module_->GetFramework()->IsEditionless())
+            ui_module->GetUiSceneService()->AddWidgetToScene(this, true , false);
+        else
+            ui_module->GetUiSceneService()->AddWidgetToScene(this, true , true);
+
+        QPushButton *sett_button = new QPushButton("Settings");
+        connect(sett_button, SIGNAL(clicked()),SLOT(ToggleVisibility()));
+        ui_module->GetInworldSceneController()->AddAnchoredWidgetToScene(sett_button, Qt::TopRightCorner, Qt::Horizontal, 50, true);
     }
 
     // Public
@@ -48,42 +46,15 @@ namespace CoreUi
         settingsTabWidget->addTab(widget, tab_name);
     }
 
-    void SettingsWidget::AnimatedHide()
+    void SettingsWidget::ToggleVisibility()
     {
-        internal_widget_->hide();
-    }
-
-    // Protected
-
-    void SettingsWidget::showEvent(QShowEvent *show_event)
-    {
-        if (!scene())
-            return;
-        if (!widget())
-            return;
-		internal_widget_->show();
-    }
-
-    void SettingsWidget::AnimationsFinished()
-    {
-        if (visibility_animation_->direction() == QAbstractAnimation::Backward)
-        {
-            //hide();
-            emit Hidden();
-        }
+        if (this->isVisible())
+           ui_module_->GetUiSceneService()->HideWidget(this);
+       else
+           ui_module_->GetUiSceneService()->ShowWidget(this);
     }
 
     // Private
-
-    void SettingsWidget::SceneRectChanged(const QRectF &scene_rect)
-    {
-        if (scene() && widget())
-        {        
-            qreal padding = 10;
-            setPos(scene()->sceneRect().right() - widget()->size().width() - padding, panel_->GetContentHeight() + padding);
-        }
-    }
-
     void SettingsWidget::OpacitySliderChanged(int new_value)
     {
         opacityValueLabel->setText(QString("%1 %").arg(QString::number(new_value)));
@@ -91,18 +62,11 @@ namespace CoreUi
 
     void SettingsWidget::SaveSettings()
     {
-        // Emit extra params for InworldSceneManager
-        int new_animation_speed = showAnimationSpinBox->value();
-        UNREFERENCED_PARAM(new_animation_speed);
-        if (animationEnabledCheckBox->checkState() == Qt::Unchecked)
-            emit NewUserInterfaceSettingsApplied(opacitySlider->value(), 0);
-        else
-            emit NewUserInterfaceSettingsApplied(opacitySlider->value(), showAnimationSpinBox->value());
         emit SaveSettingsClicked();
     }
 
     void SettingsWidget::Canceled()
     {
-		panel_->ToggleSettingsVisibility(true);
+		ToggleVisibility();
     }
 }

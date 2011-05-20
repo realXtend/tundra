@@ -6,7 +6,6 @@
 #include "NaaliMainWindow.h"
 #include "NaaliGraphicsView.h"
 #include "Framework.h"
-//#include "UiProxyWidget.h"
 #include "AssetAPI.h"
 #include "QtUiAsset.h"
 #include "GenericAssetFactory.h"
@@ -75,9 +74,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
         return;
     
     mainWindow = new NaaliMainWindow(owner);
-	mainWindow->setCentralWidget(new QWidget(mainWindow));
 	mainWindow->centralWidget()->setAutoFillBackground(false);
-    //mainWindow->setUpdatesEnabled(false);
 
     // Apply the Naali main window icon. 
     // Note: this will only affect to a icon at main window left top corner.
@@ -135,7 +132,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     graphicsView->Resize(mainWindow->centralWidget()->width(), mainWindow->centralWidget()->height());
 
     graphicsView->show();
-	mainWindow->parentWidget()->show();
+	mainWindow->show();
     viewportWidget->show();
 
     /// Do a full repaint of the view now that we've shown it.
@@ -155,7 +152,7 @@ QMainWindow *UiAPI::MainWindow() const
 	if (owner->IsHeadless())
         return 0;
 	else
-		return dynamic_cast<QMainWindow *>(mainWindow->parentWidget());
+		return mainWindow;
 }
 
 NaaliGraphicsView *UiAPI::GraphicsView() const
