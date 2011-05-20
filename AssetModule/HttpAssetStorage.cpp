@@ -10,6 +10,11 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("HttpAssetStorage")
 
+QString HttpAssetStorage::Type() const
+{
+    return "HttpAssetStorage";
+}
+
 void HttpAssetStorage::RefreshAssetRefs()
 {
     // If searches already ongoing, let them finish and don't start a new refresh
@@ -32,7 +37,7 @@ void HttpAssetStorage::RefreshAssetRefs()
 
 QString HttpAssetStorage::SerializeToString() const
 {
-    return "type=HttpAssetStorage;name=" + storageName + ";src=" + baseAddress;
+    return "type=" + Type() + ";name=" + storageName + ";src=" + baseAddress;
 }
 
 void HttpAssetStorage::PerformSearch(QString path)

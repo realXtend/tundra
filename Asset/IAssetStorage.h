@@ -37,6 +37,9 @@ public slots:
     /// Returns the full URL of an asset with the name 'localName' if it were stored in this asset storage.
     virtual QString GetFullAssetURL(const QString &localName) { return ""; }
 
+    /// Returns the type identifier for this storage type, e.g. "LocalAssetStorage" or "HttpAssetStorage".
+    virtual QString Type() const = 0;
+
     /// Returns a human-readable name for this storage. This name is not used as an ID, and may be an empty string.
     virtual QString Name() const { return ""; }
 
@@ -47,7 +50,6 @@ public slots:
     virtual QString ToString() const { return Name() + " (" + BaseURL() + ")"; }
     /// Serializes this storage to a string for machine transfer.
     virtual QString SerializeToString() const = 0;
-
 signals:
     /// Asset refs have changed, either as a result of refresh, or upload / delete
     void AssetRefsChanged();

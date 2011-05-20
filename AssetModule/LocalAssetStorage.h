@@ -53,6 +53,9 @@ public slots:
     /// \note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "local://my.mesh".
     QString GetFullAssetURL(const QString &localName);
 
+    /// Returns the type of this storage: "LocalAssetStorage".
+    virtual QString Type() const;
+
     /// Returns all assetrefs currently known in this asset storage. Does not load the assets
     virtual QStringList GetAllAssetRefs() { return assetRefs; }
     
