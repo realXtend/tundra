@@ -61,6 +61,7 @@ Framework::Framework(int argc, char** argv) :
     {
         std::cout << "Supported command line arguments: " << std::endl;
         std::cout << commandLineDescriptions << std::endl;
+        Exit();
     }
     else
     {
@@ -207,6 +208,10 @@ void Framework::ProcessOneFrame()
 
 void Framework::Go()
 {
+    // Check if we were never supposed to run
+    if (exit_signal_)
+        return;
+    
     srand(time(0));
 
     plugin->LoadPluginsFromXML(plugin->ConfigurationFile());
@@ -232,7 +237,7 @@ void Framework::Go()
     // Run our QApplication subclass.
     application->Go();
 
-    // Qt main loop execution has ended, we are existing.
+    // Qt main loop execution has ended, we are exiting.
     exit_signal_ = true;
 
     // Reset SceneAPI.
