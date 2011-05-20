@@ -22,6 +22,7 @@ class QDomDocument;
 struct AttributeInterpolation
 {
     AttributeInterpolation() : dest(0), start(0), end(0), time(0.0f), length(0.0f) {}
+    ///\todo The raw IAttribute pointers are unsafe.
     IAttribute* dest;
     IAttribute* start;
     IAttribute* end;
@@ -43,8 +44,8 @@ struct AttributeInterpolation
 class SceneManager : public QObject, public boost::enable_shared_from_this<SceneManager>
 {
     Q_OBJECT
-    Q_PROPERTY(QString Name READ Name)
-    Q_PROPERTY(bool viewenabled READ ViewEnabled)
+    Q_PROPERTY(QString name READ Name)
+    Q_PROPERTY(bool viewEnabled READ ViewEnabled)
 
 public:
     ~SceneManager();
@@ -173,8 +174,10 @@ public slots:
 
     /// Returns scene up vector. For now it is a compile-time constant
     Vector3df GetUpVector() const;
+
     /// Returns scene right vector. For now it is a compile-time constant
     Vector3df GetRightVector() const;
+
     /// Returns scene forward vector. For now it is a compile-time constant
     Vector3df GetForwardVector() const;
 
@@ -218,7 +221,7 @@ public slots:
     /** @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
         to avoid dangling references that prevent entities from being properly destroyed. */
     EntityPtr GetEntity(entity_id_t id) const;
-    
+
     /// Returns entity with the specified name.
     /** @note The name of the entity is stored in a component EC_Name. If this component is not present in the entity, it has no name.
         @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
@@ -241,22 +244,22 @@ public slots:
     /// Remove all entities
     /** The entities may not get deleted if dangling references to a pointer to them exist.
         @param send_events whether to send events & signals of each delete
-     */
+    */
     void RemoveAllEntities(bool send_events = true, AttributeChange::Type change = AttributeChange::Default);
 
     /// Get the next free entity id. Can be used with CreateEntity(). 
-    /* These will be for networked entities, and should be assigned only by a point of authority (server)
-    */
+    /* These will be for networked entities, and should be assigned only by a point of authority (server) */
     entity_id_t GetNextFreeId();
 
     /// Get the next free local entity id. Can be used with CreateEntity().
-    /* As local entities will not be network synced, there should be no conflicts in assignment
-    */
+    /* As local entities will not be network synced, there should be no conflicts in assignment. */
     entity_id_t GetNextFreeIdLocal();
 
     /// Return list of entities with a specific component present.
-    /// @param type_name Type name of the component
-    EntityList GetEntitiesWithComponent(const QString &type_name) const;
+    /** @param typeName Type name of the component
+        @param name Name of the component, optional.
+    */
+    EntityList GetEntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
     /// Emit notification of an attribute changing. Called by IComponent.
     /** @param comp Component pointer

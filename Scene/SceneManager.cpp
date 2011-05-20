@@ -248,14 +248,14 @@ void SceneManager::RemoveAllEntities(bool send_events, AttributeChange::Type cha
         emit SceneCleared(this);
 }
 
-EntityList SceneManager::GetEntitiesWithComponent(const QString &type_name) const
+EntityList SceneManager::GetEntitiesWithComponent(const QString &typeName, const QString &name) const
 {
     std::list<EntityPtr> entities;
     EntityMap::const_iterator it = entities_.begin();
     while(it != entities_.end())
     {
         EntityPtr entity = it->second;
-        if (entity->GetComponent(type_name))
+        if ((name.isEmpty() && entity->GetComponent(typeName)) || entity->GetComponent(name))
             entities.push_back(entity);
         ++it;
     }
