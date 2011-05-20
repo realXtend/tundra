@@ -29,7 +29,7 @@
 		THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------*/
 
-// Modified for Tundra to use a namespace
+// Modified for Tundra to use a namespace to not clash with elsewhere defined math types
 
 namespace StanHull
 {
