@@ -8,6 +8,7 @@
 #include "EC_Placeable.h"
 #include "OgreParticleAsset.h"
 #include "OgreConversionUtils.h"
+#include "OgreRenderingModule.h"
 #include "SceneManager.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
@@ -32,7 +33,6 @@ EC_ParticleSystem::EC_ParticleSystem(Framework *fw):
     particleRefMetadata.buttons = particleRefButtons;
     particleRef.SetMetadata(&particleRefMetadata);
 
-    renderer_ = GetFramework()->GetServiceManager()->GetService<Renderer>();
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(OnAttributeUpdated(IAttribute*)));
     
@@ -55,9 +55,9 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
 {
     if (!ViewEnabled())
         return;
-    if (renderer_.expired())
+    RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+    if (!renderer)
         return;
-    RendererPtr renderer = renderer_.lock();
 
     try
     {
@@ -89,9 +89,9 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
 
 void EC_ParticleSystem::DeleteParticleSystems()
 {
-    if (renderer_.expired())
+    RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+    if (!renderer)
         return;
-    RendererPtr renderer = renderer_.lock();
 
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     if (!scene_mgr)

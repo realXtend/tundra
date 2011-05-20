@@ -117,6 +117,10 @@ public slots:
 
     PluginAPI *Plugins() const;
 
+    /// Returns the system Renderer object.
+    /// @note Please don't use this function. It exists for dependency inversion purposes only.
+    /// Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer(); to directly obtain the renderer,
+    /// as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation.
     IRenderer *GetRenderer() const;
 
     /// Returns the global Framework instance.

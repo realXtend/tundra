@@ -89,7 +89,6 @@ private slots:
 private:
     ComponentPtr FindPlaceable() const;
 
-    OgreRenderer::RendererWeakPtr renderer_;
     std::vector<Ogre::ParticleSystem*> particleSystems_;
 
     /// Asset ref listener for the particle asset
