@@ -191,6 +191,15 @@ public:
     /// get node scale
     void SetQScale(QVector3D newscale);
 
+    /// Return world-derived position from the scene node
+    Vector3df GetWorldPosition() const;
+    /// Return world-derived orientation from the scene node
+    Quaternion GetWorldOrientation() const;
+    /// Return world-derived orientation as euler degrees from the scene node
+    Vector3df GetWorldOrientationEuler() const;
+    /// Return world-derived scale from the scene node
+    Vector3df GetWorldScale() const;
+    
 public slots:
     /// Sets position
     /** \param position new position

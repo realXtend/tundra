@@ -1122,6 +1122,26 @@ Ogre::Bone* EC_Mesh::GetBone(const QString& bone_name)
         return 0;
 }
 
+QStringList EC_Mesh::GetAvailableBones() const
+{
+    QStringList ret;
+    
+    if (!entity_)
+        return ret;
+    Ogre::Skeleton* skel = entity_->getSkeleton();
+    if (!skel)
+        return ret;
+    Ogre::Skeleton::BoneIterator it = skel->getBoneIterator();
+    while (it.hasMoreElements())
+    {
+        Ogre::Bone* bone = it.getNext();
+        ret.push_back(QString::fromStdString(bone->getName()));
+    }
+    
+    return ret;
+}
+
+
 bool EC_Mesh::HasMaterialsChanged() const
 {
     if(!entity_ || !meshMaterial.Get().Size())
