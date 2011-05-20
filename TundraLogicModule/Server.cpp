@@ -118,7 +118,7 @@ bool Server::Start(unsigned short port)
 
 void Server::Stop()
 {
-    if (!owner_->IsServer())
+    if (owner_->IsServer())
     {
         owner_->GetKristalliModule()->StopServer();
         framework_->Scene()->RemoveScene("TundraServer");
