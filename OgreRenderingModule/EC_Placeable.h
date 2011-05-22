@@ -192,6 +192,12 @@ public:
     void SetQScale(QVector3D newscale);
 
 public slots:
+
+    /// Convers placeable transformation to given EC_Placeable space.
+    /// @todo Add scale conversion. This method wont change scale related to it's parent (only position and rotation are converted).
+    /// \param comp EC_Placeable component that we are converting our transformation to.
+    void ConvertToObjectSpace(IComponent *comp);
+
     /// Sets position
     /** \param position new position
      */

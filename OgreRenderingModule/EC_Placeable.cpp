@@ -269,6 +269,32 @@ QVector3D EC_Placeable::GetQLocalZAxis() const
     return QVector3D(zaxis.x, zaxis.y, zaxis.z);
 }
 
+void EC_Placeable::ConvertToObjectSpace(IComponent *comp)
+{
+    if (comp && comp != this)
+    {
+        EC_Placeable *parentPlaceable = dynamic_cast<EC_Placeable*>(comp);
+        if (!parentPlaceable)
+        {
+            LogError("ConvertToObjectSpace(): failed to dynamic cast given component into EC_Placeable.");
+            return;
+        }
+
+        Ogre::SceneNode *parentNode = parentPlaceable->GetSceneNode();//ent->GetComponent("EC_Placeable").get())->GetSceneNode();
+        Ogre::Vector3 resultPos = parentNode->convertWorldToLocalPosition(GetSceneNode()->getPosition());
+        Ogre::Quaternion resultRot = parentNode->convertWorldToLocalOrientation(GetSceneNode()->getOrientation());
+        //Ogre::Vector3 invScale = Ogre::Vector3(1.0,1.0,1.0) / parentNode->getScale();
+        //Ogre::Vector3 resultScale = invScale * GetSceneNode()->getScale();
+
+        Transform newTransform = transform.Get();
+        newTransform.position = Vector3df(resultPos.x, resultPos.y, resultPos.z);
+        //newTransform.scale = Vector3df(resultScale.x, resultScale.y, resultScale.z);
+        //Quaternion(resultRot.x, resultRot.y, resultRot.z, resultRot.w).toEuler(newTransform.rotation);
+        transform.Set(newTransform, AttributeChange::Default);
+        SetOrientation(Quaternion(resultRot.x, resultRot.y, resultRot.z, resultRot.w));
+    }
+}
+
 void EC_Placeable::SetPosition(const Vector3df &pos)
 {
    if (!pos.IsFinite())
