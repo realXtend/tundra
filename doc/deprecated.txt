@@ -1,6 +1,0 @@
-The following modules are deprecated, and exist in the source as an active 
-reference, or reminder to replace regressed functionality:
-
-* QtModule
-* OISInputModule
-* UnitTests
