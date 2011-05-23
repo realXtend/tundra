@@ -4,8 +4,6 @@
 #include "DebugOperatorNew.h"
 
 #include "UiConsoleManager.h"
-#include "ui_ConsoleWidget.h"
-#include "ConsoleProxyWidget.h"
 #include "ConsoleAPI.h"
 
 #include "UiAPI.h"
@@ -13,32 +11,50 @@
 #include "UiGraphicsView.h"
 #include "Framework.h"
 
+#include <QPlainTextEdit>
 #include <QGraphicsView>
 #include <QString>
 #include <QRegExp>
 #include <QRectF>
+#include <QPropertyAnimation>
 
 #include "MemoryLeakCheck.h"
 
-UiConsoleManager::UiConsoleManager(Framework *fw) :
+ConsoleWidget::ConsoleWidget(Framework *fw) :
     framework(fw),
     graphicsView(fw->Ui()->GraphicsView()),
-    consoleUi(0),
-    consoleWidget(0),
     proxyWidget(0),
     visible(false),
     commandHistoryIndex(-1)
 {
-    if (framework->IsHeadless())
-        return;
+    setStyleSheet(
+        "QPlainTextEdit {"
+            "border: 0px;"
+            "padding: 0px;"
+            "background-color: rgb(0,0,0);"
+            "font-size: 12px;"
+            "color: #33CC00;"
+            "margin: 0px;"
+        "}"
+        "QLineEdit {"
+            "border: 0px;"
+            "border-top: 1px solid rgba(255,255,255,100);"
+            "border-bottom: 1px rgba(255,255,255,100);"
+            "padding: 0px;"
+            "padding-left: 3px;"
+            "background-color: rgb(0,0,0);"
+            "font-size: 12px;"
+            "color:#33CC00;"
+        "}"
+        "QScrollBar{"
+            "background-color: rgb(0,0,0);"
+        "}");
 
-    consoleUi = new Ui::ConsoleWidget();
-    consoleWidget = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    setLayout(layout);
 
-    // Init internals
-    consoleUi->setupUi(consoleWidget);
-
-    proxyWidget = framework->Ui()->AddWidgetToScene(consoleWidget);
+    proxyWidget = framework->Ui()->AddWidgetToScene(this);
     proxyWidget->setMinimumHeight(0);
     proxyWidget->setGeometry(QRect(0, 0, graphicsView->width(), 0));
     /// \todo Opacity has no effect atm.
@@ -48,32 +64,36 @@ UiConsoleManager::UiConsoleManager(Framework *fw) :
     connect(framework->Ui()->GraphicsScene(), SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
 
     // Init animation
-    slideAnimation.setTargetObject(proxyWidget);
-    slideAnimation.setPropertyName("geometry");
-    slideAnimation.setDuration(300);  ///<\todo Read animation speed from config?
+    slideAnimation = new QPropertyAnimation(this);
+    slideAnimation->setTargetObject(proxyWidget);
+    slideAnimation->setPropertyName("geometry");
+    slideAnimation->setDuration(300);  ///<\todo Read animation speed from config?
 
-    connect(consoleUi->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
+    textEdit = new QPlainTextEdit(this);
+    lineEdit = new QLineEdit(this);
+    connect(lineEdit, SIGNAL(returnPressed()), SLOT(HandleInput()));
 
-    consoleUi->ConsoleInputArea->installEventFilter(this);
+    lineEdit->installEventFilter(this);
+
+    layout->addWidget(lineEdit);
+    layout->addWidget(textEdit);
 }
 
-UiConsoleManager::~UiConsoleManager()
+ConsoleWidget::~ConsoleWidget()
 {
     // consoleWidget gets deleted by the scene it is in currently
-    if (consoleUi)
-        SAFE_DELETE(consoleUi);
 }
 
-void UiConsoleManager::PrintToConsole(const QString &text)
+void ConsoleWidget::PrintToConsole(const QString &text)
 {
     if (framework->IsHeadless())
         return;
     QString html = Qt::escape(text);
     DecorateString(html);
-    consoleUi->ConsoleTextArea->appendHtml(html);
+    textEdit->appendHtml(html);
 }
 
-void UiConsoleManager::ToggleConsole()
+void ConsoleWidget::ToggleConsole()
 {
     if (framework->IsHeadless())
         return;
@@ -88,37 +108,37 @@ void UiConsoleManager::ToggleConsole()
     int current_height = graphicsView->height()*0.5;
     if (visible)
     {
-        slideAnimation.setStartValue(QRect(0, 0, graphicsView->width(), 0));
-        slideAnimation.setEndValue(QRect(0, 0, graphicsView->width(), current_height));
+        slideAnimation->setStartValue(QRect(0, 0, graphicsView->width(), 0));
+        slideAnimation->setEndValue(QRect(0, 0, graphicsView->width(), current_height));
         // Not bringing to front, works in UiProxyWidgets, hmm...
         current_scene->setActiveWindow(proxyWidget);
         current_scene->setFocusItem(proxyWidget, Qt::ActiveWindowFocusReason);
-        consoleUi->ConsoleInputArea->setFocus(Qt::MouseFocusReason);
+        lineEdit->setFocus(Qt::MouseFocusReason);
         proxyWidget->show();
     }
     else
     {
-        slideAnimation.setStartValue(QRect(0, 0, graphicsView->width(), current_height));
-        slideAnimation.setEndValue(QRect(0, 0, graphicsView->width(), 0));
+        slideAnimation->setStartValue(QRect(0, 0, graphicsView->width(), current_height));
+        slideAnimation->setEndValue(QRect(0, 0, graphicsView->width(), 0));
         proxyWidget->hide();
     }
 
-    slideAnimation.start();
+    slideAnimation->start();
 }
 
-void UiConsoleManager::HandleInput()
+void ConsoleWidget::HandleInput()
 {
     if (framework->IsHeadless())
         return;
 
-    QString cmd = consoleUi->ConsoleInputArea->text();
+    QString cmd = lineEdit->text();
     framework->Console()->ExecuteCommand(cmd);
-    consoleUi->ConsoleInputArea->clear();
+    lineEdit->clear();
     commandStub.clear();
     commandHistory.push_front(cmd);
 }
 
-void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
+void ConsoleWidget::AdjustToSceneRect(const QRectF& rect)
 {
     if (visible)
     {
@@ -132,9 +152,9 @@ void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
     }
 }
 
-bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
+bool ConsoleWidget::eventFilter(QObject *obj, QEvent *e)
 {
-    if (obj == consoleUi->ConsoleInputArea && e->type() == QEvent::KeyPress)
+    if (obj == lineEdit && e->type() == QEvent::KeyPress)
     {
         QKeyEvent *keyEvent = dynamic_cast<QKeyEvent*>(e);
         if (keyEvent)
@@ -143,7 +163,7 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
             {
             case Qt::Key_Up:
                 if (commandHistoryIndex+1 < commandHistory.size())
-                    consoleUi->ConsoleInputArea->setText(commandHistory[++commandHistoryIndex]);
+                    lineEdit->setText(commandHistory[++commandHistoryIndex]);
                 return true;
             case Qt::Key_Down:
                 --commandHistoryIndex;
@@ -152,13 +172,13 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
 
                 if (commandHistoryIndex == -1)
                     // Irssi-like behavior: clear line edit if not browsing history and down is pressed
-                    consoleUi->ConsoleInputArea->clear();
+                    lineEdit->clear();
                 else if (commandHistoryIndex > -1 && commandHistoryIndex < commandHistory.size()-1)
-                        consoleUi->ConsoleInputArea->setText(commandHistory[commandHistoryIndex]);
+                        lineEdit->setText(commandHistory[commandHistoryIndex]);
                 return true;
             case Qt::Key_Tab:
             {
-                QString text = consoleUi->ConsoleInputArea->text().trimmed().toLower();
+                QString text = lineEdit->text().trimmed().toLower();
                 if (!text.isEmpty())
                 {
                     if (text != commandStub && !prevSuggestions.contains(text))
@@ -179,7 +199,7 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
                     foreach(const QString &cmd, suggestions)
                         if (!prevSuggestions.contains(cmd))
                         {
-                            consoleUi->ConsoleInputArea->setText(cmd);
+                            lineEdit->setText(cmd);
                             prevSuggestions.push_back(cmd);
                             break;
                         }
@@ -196,7 +216,7 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
     return QObject::eventFilter(obj, e);
 }
 
-void UiConsoleManager::DecorateString(QString &str)
+void ConsoleWidget::DecorateString(QString &str)
 {
     // Make all timestamp + module name blocks white
     int block_end_index = str.indexOf("]");

@@ -16,7 +16,7 @@
 
 class Framework;
 
-class UiConsoleManager;
+class ConsoleWidget;
 class ShellInputThread;
 
 /// This structure represents a registered console command.
@@ -117,7 +117,7 @@ private:
     Framework *framework_;
     CommandMap commands; ///< Stores all the registered console commands.
     InputContextPtr inputContext;
-    boost::shared_ptr<UiConsoleManager> uiConsoleManager;
+    boost::shared_ptr<ConsoleWidget> consoleWidget;
     boost::shared_ptr<ShellInputThread> shellInputThread;
 
 private slots:

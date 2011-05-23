@@ -10,8 +10,10 @@
 #ifdef PCH_ENABLED
 
 #include "CoreDefines.h"
-
 #include "Framework.h"
+
+#include <QtCore>
+#include <QtGui>
 
 #endif
 

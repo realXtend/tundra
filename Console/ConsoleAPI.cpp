@@ -21,12 +21,12 @@
 
 #include "MemoryLeakCheck.h"
 
-ConsoleAPI::ConsoleAPI(Framework *fw)
-:QObject(fw),
-framework_(fw)
+ConsoleAPI::ConsoleAPI(Framework *fw) :
+    QObject(fw),
+    framework_(fw)
 {
     if (!fw->IsHeadless())
-        uiConsoleManager = boost::shared_ptr<UiConsoleManager>(new UiConsoleManager(framework_));
+        consoleWidget = boost::shared_ptr<ConsoleWidget>(new ConsoleWidget(framework_));
 
     inputContext = framework_->Input()->RegisterInputContext("Console", 100);
     inputContext->SetTakeKeyboardEventsOverQt(true);
@@ -128,8 +128,8 @@ void ConsoleAPI::ExecuteCommand(const QString &command)
 
 void ConsoleAPI::Print(const QString &message)
 {
-    if (uiConsoleManager)
-        uiConsoleManager->PrintToConsole(message.toStdString().c_str());
+    if (consoleWidget)
+        consoleWidget->PrintToConsole(message.toStdString().c_str());
 }
 
 void ConsoleAPI::ListCommands()
@@ -149,8 +149,8 @@ void ConsoleAPI::Update(f64 frametime)
 
 void ConsoleAPI::ToggleConsole()
 {
-    if (uiConsoleManager)
-        uiConsoleManager->ToggleConsole();
+    if (consoleWidget)
+        consoleWidget->ToggleConsole();
 }
 
 void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
