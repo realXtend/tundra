@@ -5,6 +5,8 @@
    TODO
    * Add a help text
    * Path finding so that we won't go through things
+   * Store slide show information (like the slide you are looking at)
+     in a dynamic component
 
 */
 
@@ -250,6 +252,14 @@ function animationUpdate(dt) {
 function reset() {
     viewScreen(entities[currentIndex]);
     targets = [];
+    lookAtTargets = [];
+}
+
+function updateSettings() {
+    var dyn = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleSettings");
+    infront = dyn.GetAttribute('infront');
+    close = dyn.GetAttribute('close');
+    far = dyn.GetAttribute('far');
 }
 
 // We look for anything that has a EC_WebView and circulate between them
@@ -261,22 +271,27 @@ var endIndex = entities.length;
 var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
 var camera = scene.GetEntityByNameRaw("FreeLookCamera");
 //Handy for debug
-//var camera = scene.GetEntityByName("Monkey");
+var camera = scene.GetEntityByName("Monkey");
 
 inputmapper.RegisterMapping('n', "GotoNext", 1);
 inputmapper.RegisterMapping('p', "GotoPrev", 1);
-//inputmapper.RegisterMapping('r', "ResetShow", 1);
+inputmapper.RegisterMapping('r', "ResetShow", 1);
 
-// variables for viewpoint
-// infront is the distance where you want to end up (and leave)
-// close is the distance to which you back up still looking at the screen
-// two points are counted for Bezier cureves.
+// variables for viewpoint infront is the distance where you want to
+// end up (and leave) close is the distance to which you back up still
+// looking at the screen two points are counted for Bezier
+// cureves. These distances are read from the dynamic component
 
-var infront = 4;
-var close = 6;
-var far = 15;
+var dyn = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleSettings");
+dyn.AttributeChanged.connect(updateSettings);
+
+var infront = dyn.GetAttribute('infront');
+var close = dyn.GetAttribute('close');
+var far = dyn.GetAttribute('far');
+
 var tolerance = 3;
 var max_ratio = 1.5;
+var speed = 100
 
 var prev_r = 360;
 var curveposition;

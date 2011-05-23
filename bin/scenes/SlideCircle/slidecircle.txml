@@ -7,7 +7,7 @@
    <attribute value="local://slidecircleapplication.js" name="Script ref"/>
   </component>
   <component type="EC_Name" sync="1">
-   <attribute value="SlideCircleScript" name="name"/>
+   <attribute value="SlideCircle" name="name"/>
    <attribute value="" name="description"/>
    <attribute value="false" name="user-defined"/>
   </component>
@@ -21,6 +21,11 @@
    <attribute value="1" name="Key modifiers enable"/>
    <attribute value="true" name="Enable actions"/>
    <attribute value="true" name="Trigger on keyrepeats"/>
+  </component>
+  <component type="EC_DynamicComponent" sync="1" name="SlideCircleSettings">
+    <attribute value="4.0" type="real" name="infront"/>
+    <attribute value="6.0" type="real" name="close"/>
+    <attribute value="15.0" type="real" name="far"/>
   </component>
  </entity>
  <entity id="2">
