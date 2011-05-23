@@ -132,27 +132,10 @@ void EC_TransformGizmo::SetCurrentGizmoType(GizmoType type)
         mesh->meshRef.Set(ref, AttributeChange::Default);
 }
 
-void EC_TransformGizmo::Show()
-{
-    if (placeable)
-        placeable->Show();
-}
-
-void EC_TransformGizmo::Hide()
-{
-    if (placeable)
-        placeable->Hide();
-}
-
 void EC_TransformGizmo::SetVisible(bool visible)
 {
     if (placeable)
-    {
-        if (visible)
-            placeable->Show();
-        else
-            placeable->Hide();
-    }
+        placeable->visible.Set(visible, AttributeChange::Default);
 }
 
 bool EC_TransformGizmo::IsVisible() const

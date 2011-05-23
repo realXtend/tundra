@@ -79,12 +79,6 @@ public slots:
     /** @type Type of the gizmo. */
     void SetCurrentGizmoType(GizmoType type);
 
-    /// Shows the gizmo.
-    void Show();
-
-    /// Hides the gizmo.
-    void Hide();
-
     /// Sets visiblity of the gizmo.
     /** @param visible Visibility of the gizmo. */
     void SetVisible(bool visibile);

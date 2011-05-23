@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_EC_Placeable_h
-#define incl_OgreRenderer_EC_Placeable_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -131,19 +130,22 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(QString, parentBone);
 
     /// orients to look at a point in space
-    /** \param look_at point to look at
+    /** @param look_at point to look at
      */
     void LookAt(const Vector3df& look_at);
+
     /// yaws the node
-    /** \param radians how many radians to yaw
+    /** @param radians how many radians to yaw
      */
     void SetYaw(float radians);
+
     /// pitches the node
-    /** \param radians how many radians to pitch
+    /** @param radians how many radians to pitch
      */
     void SetPitch(float radians);
+
     /// rolls the node
-    /** \param radians how many radians to roll
+    /** @param radians how many radians to roll
      */
     void SetRoll(float radians);
 
@@ -166,10 +168,9 @@ public:
     QVector3D GetQLocalYAxis() const;
     /// Get the local Z axis from the node orientation
     QVector3D GetQLocalZAxis() const;
-    
-    /// returns Ogre scenenode for attaching geometry.
-    /** Do not manipulate the pos/orientation/scale of this node directly
-     */
+
+    /// Returns Ogre scene node for attaching geometry.
+    /** Do not manipulate the pos/orientation/scale of this node directly. */
     Ogre::SceneNode* GetSceneNode() const { return sceneNode_; }
     
     /// get node position
@@ -192,14 +193,13 @@ public:
     void SetQScale(QVector3D newscale);
 
 public slots:
-
     /// Convers placeable transformation to given EC_Placeable space.
     /// @todo Add scale conversion. This method wont change scale related to it's parent (only position and rotation are converted).
-    /// \param comp EC_Placeable component that we are converting our transformation to.
+    /// @param comp EC_Placeable component that we are converting our transformation to.
     void ConvertToObjectSpace(IComponent *comp);
 
     /// Sets position
-    /** \param position new position
+    /** @param position new position
      */
     void SetPosition(const Vector3df& position);
 
@@ -207,7 +207,7 @@ public slots:
     Vector3df GetPosition() const;
 
     /// sets scale
-    /** \param scale new scale
+    /** @param scale new scale
      */
     void SetScale(const Vector3df& scale);
 
@@ -215,12 +215,12 @@ public slots:
     Vector3df GetScale() const;
 
     /// sets orientation
-    /** \param orientation new orientation
+    /** @param orientation new orientation
      */
     void SetOrientation(const Quaternion& orientation);
 
     /// sets orientation using euler angles. 
-    /** \param eulerVec euler rotations.
+    /** @param eulerVec euler rotations.
      */
     void SetOrientation(const Vector3df& euler);
 
@@ -259,16 +259,19 @@ public slots:
     
     /// Return world-derived scale from the scene node
     Vector3df GetWorldScale() const;
-    
+
     /// Shows the entity
+    /** @note Doesn't alter the component's attribute. */
     void Show();
 
-    /// Hides the entity
+    /// Hides the entity.
+    /** @note Doesn't alter the component's visible" attribute. */
     void Hide();
 
-    /// Toggle visibility
+    /// Toggles visibility.
+    /** @note Doesn't alter the component's attribute. */
     void ToggleVisibility();
-    
+
     /// Return whether is attached to the Ogre scene node hierarchy
     bool IsAttached() const { return attached_; }
 
@@ -287,8 +290,8 @@ signals:
 
 private slots:
     /// Handle attributechange
-    /** \param attribute Attribute that changed.
-        \param change Change type.
+    /** @param attribute Attribute that changed.
+        @param change Change type.
      */
     void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
@@ -338,5 +341,3 @@ private:
     /// attached to scene hierarchy-flag
     bool attached_;
 };
-
-#endif

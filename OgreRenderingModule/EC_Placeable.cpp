@@ -661,7 +661,6 @@ Vector3df EC_Placeable::GetWorldScale() const
     return Vector3df(pos.x, pos.y, pos.z);
 }
 
-
 void EC_Placeable::Show()
 {
     if (!sceneNode_)

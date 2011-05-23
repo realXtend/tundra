@@ -109,12 +109,7 @@ void TransformEditor::SetGizmoVisible(bool show)
     {
         EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
         if (tg)
-        {
-            if (show)
-                tg->Show();
-            else
-                tg->Hide();
-        }
+            tg->SetVisible(show);
     }
 #endif
 }
