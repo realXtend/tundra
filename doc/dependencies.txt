@@ -18,8 +18,6 @@ And the following optional dependencies:
 
 - Python 2.6 or newer (but not 3.* currently): http://www.python.org/
 
-- Caelum OGRE Add-on 0.5: http://www.ogre3d.org/wiki/index.php/Caelum. Used for the dynamic environmental lightning.
-
 - PythonQt, 2.0.1, http://pythonqt.sourceforge.net/
 
 - Open Asset Import Library 1.1: http://assimp.sourceforge.net/
