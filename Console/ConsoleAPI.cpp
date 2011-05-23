@@ -24,12 +24,12 @@
 
 ConsoleAPI::ConsoleAPI(Framework *fw) :
     QObject(fw),
-    framework_(fw)
+    framework(fw)
 {
     if (!fw->IsHeadless())
-        consoleWidget = boost::shared_ptr<ConsoleWidget>(new ConsoleWidget(framework_));
+        consoleWidget = new ConsoleWidget(framework);
 
-    inputContext = framework_->Input()->RegisterInputContext("Console", 100);
+    inputContext = framework->Input()->RegisterInputContext("Console", 100);
     inputContext->SetTakeKeyboardEventsOverQt(true);
     connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
@@ -61,6 +61,7 @@ QVariant ConsoleCommand::Invoke(const QStringList &params)
 
 ConsoleAPI::~ConsoleAPI()
 {
+    // note: consoleWidget is already deleted here by its parent graphics scene/view.
 }
 
 ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &desc)
@@ -156,7 +157,7 @@ void ConsoleAPI::ToggleConsole()
 
 void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
 {
-    const QKeySequence &toggleConsole = framework_->Input()->KeyBinding("ToggleConsole", QKeySequence(Qt::Key_F1));
+    const QKeySequence &toggleConsole = framework->Input()->KeyBinding("ToggleConsole", QKeySequence(Qt::Key_F1));
     if (e->sequence == toggleConsole)
         ToggleConsole();
 }

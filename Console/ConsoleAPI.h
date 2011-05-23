@@ -114,10 +114,10 @@ public slots:
     void ListCommands();
 
 private:
-    Framework *framework_;
+    Framework *framework;
     CommandMap commands; ///< Stores all the registered console commands.
     InputContextPtr inputContext;
-    boost::shared_ptr<ConsoleWidget> consoleWidget;
+    QPointer<ConsoleWidget> consoleWidget;
     boost::shared_ptr<ShellInputThread> shellInputThread;
 
 private slots:
