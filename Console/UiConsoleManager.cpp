@@ -134,7 +134,7 @@ void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
 
 bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
 {
-    if (e->type() == QEvent::KeyPress)
+    if (obj == consoleUi->ConsoleInputArea && e->type() == QEvent::KeyPress)
     {
         QKeyEvent *keyEvent = dynamic_cast<QKeyEvent*>(e);
         if (keyEvent)
@@ -142,13 +142,10 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
             switch(keyEvent->key())
             {
             case Qt::Key_Up:
-            {
                 if (commandHistoryIndex+1 < commandHistory.size())
                     consoleUi->ConsoleInputArea->setText(commandHistory[++commandHistoryIndex]);
                 return true;
-            }
             case Qt::Key_Down:
-            {
                 --commandHistoryIndex;
                 if (commandHistoryIndex < 0)
                     commandHistoryIndex = -1;
@@ -159,7 +156,6 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
                 else if (commandHistoryIndex > -1 && commandHistoryIndex < commandHistory.size()-1)
                         consoleUi->ConsoleInputArea->setText(commandHistory[commandHistoryIndex]);
                 return true;
-            }
             case Qt::Key_Tab:
             {
                 QString text = consoleUi->ConsoleInputArea->text().trimmed().toLower();
@@ -172,15 +168,11 @@ bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
                     }
 
                     QStringList suggestions;
-//                    std::pair<std::string, ConsoleCommandStruct> p;
-/* ///\todo Regression, reimplement. -jj.
-                    foreach(p, commandManager->Commands())
-                    {
-                        QString cmd(p.first.c_str());
-                        if (cmd.startsWith(commandStub))
-                            suggestions.push_back(cmd);
-                    }
-*/
+                    std::pair<QString, boost::shared_ptr<ConsoleCommand> > p;
+                    foreach(p, framework->Console()->Commands())
+                        if (p.first.toLower().startsWith(commandStub))
+                            suggestions.push_back(p.first.toLower());
+
                     if (!prevSuggestions.isEmpty() && suggestions == prevSuggestions)
                         prevSuggestions.clear(); // Clear previous suggestion so that we can "start over".
 

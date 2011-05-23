@@ -5,8 +5,7 @@
  *  @brief  Console core API.
  */
 
-#ifndef incl_Console_ConsoleAPI
-#define incl_Console_ConsoleAPI
+#pragma once
 
 #include "CoreTypes.h"
 #include "CoreStringUtils.h"
@@ -18,7 +17,6 @@
 class Framework;
 
 class UiConsoleManager;
-
 class ShellInputThread;
 
 /// This structure represents a registered console command.
@@ -27,12 +25,13 @@ class ConsoleCommand : public QObject
     Q_OBJECT
 
 public:
-    explicit ConsoleCommand(const QString &name_, const QString &desc_, QObject *target_, QString functionName_)
-    :name(name_),
-    description(desc_),
-    target(target_),
-    functionName(functionName_)
-    {}
+    ConsoleCommand(const QString &name_, const QString &desc_, QObject *target_, QString functionName_) :
+        name(name_),
+        description(desc_),
+        target(target_),
+        functionName(functionName_)
+    {
+    }
 
     /// Returns the name of this command.
     QString Name() const { return name; }
@@ -52,36 +51,36 @@ public:
     QVariant Invoke(const QStringList &params);
 
 signals:
-    /// Emitted when this command is invoked. Hook onto this signal in QtScript to implement custom QtScript-based
-    /// console commands.
-    /// @param params The list of parameters passed as an input to this command. May be an empty list.
+    /// Emitted when this command is invoked.
+    /** Hook onto this signal in QtScript to implement custom QtScript-based console commands.
+        @param params The list of parameters passed as an input to this command. May be an empty list. */
     void Invoked(const QStringList &params);
 
 private:
     /// Name of the command.
     QString name;
-
     QString description;
-
     QPointer<QObject> target;
-
     QString functionName;
 };
 
 /// Console core API.
-/** Allows printing text to console, executing console commands programmatically
-    and registering new console commands. */
+/** Allows printing text to console, executing console commands programmatically and registering new console commands. */
 class ConsoleAPI : public QObject
 {
     Q_OBJECT
 
 public:
     explicit ConsoleAPI(Framework *fw);
-
     ~ConsoleAPI();
 
-    ///\todo Temporary function due to ongoing refactoring. Remove.
-//    void Uninitialize();
+    /// Called by Framework, do not call from elsewhere.
+    void Update(f64 frametime);
+
+    typedef std::map<QString, boost::shared_ptr<ConsoleCommand>, QStringLessThanNoCase> CommandMap;
+
+    /// Returns all command for introspection purposes.
+    const CommandMap &Commands() const { return commands; }
 
 public slots:
     /// Registers a new console command which invokes a slot on the specified QObject.
@@ -116,22 +115,12 @@ public slots:
 
 private:
     Framework *framework_;
-
-    typedef std::map<QString, boost::shared_ptr<ConsoleCommand>, QStringLessThanNoCase> CommandMap;
-
     CommandMap commands; ///< Stores all the registered console commands.
     InputContextPtr inputContext;
     boost::shared_ptr<UiConsoleManager> uiConsoleManager;
-
-public:
-    void Update(f64 frametime);
-private:
-
     boost::shared_ptr<ShellInputThread> shellInputThread;
-private slots:
 
+private slots:
     void HandleKeyEvent(KeyEvent *e);
     void ToggleConsole();
 };
-
-#endif
