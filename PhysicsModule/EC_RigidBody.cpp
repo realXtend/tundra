@@ -48,6 +48,7 @@ EC_RigidBody::EC_RigidBody(Framework *fw) :
     linearVelocity(this, "Linear velocity", Vector3df(0,0,0)),
     angularVelocity(this, "Angular velocity", Vector3df(0,0,0)),
     phantom(this, "Phantom", false),
+    kinematic(this, "Kinematic", false),
     drawDebug(this, "Draw Debug", false),
     collisionLayer(this, "Collision Layer", -1),
     collisionMask(this, "Collision Mask", -1),
@@ -548,8 +549,8 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
     if ((attribute == &collisionMeshRef) && ((shapeType.Get() == Shape_TriMesh) || (shapeType.Get() == Shape_ConvexHull)))
         RequestMesh();
     
-    if (attribute == &phantom)
-        // Readd body to the world in case phantom classification changed
+    if (attribute == &phantom || attribute == &kinematic)
+        // Readd body to the world in case phantom or kinematic classification changed
         ReaddBody();
     
     if (attribute == &drawDebug)
@@ -845,9 +846,12 @@ void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisi
     
     bool isDynamic = m > 0.0f;
     bool isPhantom = phantom.Get();
+    bool isKinematic = kinematic.Get();
     collisionFlags = 0;
     if (!isDynamic)
         collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
+    if (isKinematic)
+        collisionFlags |= btCollisionObject::CF_KINEMATIC_OBJECT;
     if (isPhantom)
         collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
     if (!drawDebug.Get())
@@ -873,7 +877,7 @@ void EC_RigidBody::UpdatePosRotFromPlaceable()
     interpTrans.setRotation(worldTrans.getRotation());
     body_->setInterpolationWorldTransform(interpTrans);
     
-    body_->activate();
+    KeepActive();
 }
 
 void EC_RigidBody::EmitPhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)
