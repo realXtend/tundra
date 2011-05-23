@@ -9,7 +9,9 @@
 #include "DebugOperatorNew.h"
 
 #include "ConsoleAPI.h"
-#include "UiConsoleManager.h"
+#include "ConsoleWidget.h"
+#include "ShellInputThread.h"
+
 #include "Profiler.h"
 #include "Framework.h"
 #include "InputAPI.h"
@@ -17,7 +19,6 @@
 #include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
 #include "FunctionInvoker.h"
-#include "ShellInputThread.h"
 
 #include "MemoryLeakCheck.h"
 

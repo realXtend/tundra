@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "UiConsoleManager.h"
+#include "ConsoleWidget.h"
 #include "ConsoleAPI.h"
 
 #include "UiAPI.h"
@@ -75,8 +75,8 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
 
     lineEdit->installEventFilter(this);
 
-    layout->addWidget(lineEdit);
     layout->addWidget(textEdit);
+    layout->addWidget(lineEdit);
 }
 
 ConsoleWidget::~ConsoleWidget()
@@ -86,8 +86,6 @@ ConsoleWidget::~ConsoleWidget()
 
 void ConsoleWidget::PrintToConsole(const QString &text)
 {
-    if (framework->IsHeadless())
-        return;
     QString html = Qt::escape(text);
     DecorateString(html);
     textEdit->appendHtml(html);
@@ -95,8 +93,6 @@ void ConsoleWidget::PrintToConsole(const QString &text)
 
 void ConsoleWidget::ToggleConsole()
 {
-    if (framework->IsHeadless())
-        return;
     if (!graphicsView)
         return;
 

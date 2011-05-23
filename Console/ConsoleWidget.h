@@ -15,7 +15,7 @@ class QPropertyAnimation;
 class QPlainTextEdit;
 class QLineEdit;
 
-// 
+// UI for the console.
 class ConsoleWidget: public QWidget
 {
     Q_OBJECT
