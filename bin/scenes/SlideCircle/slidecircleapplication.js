@@ -4,7 +4,6 @@
 
    TODO
    * Add a help text
-   * Fix voodoo magic camera panning code
    * Path finding so that we won't go through things
 
 */
@@ -104,32 +103,27 @@ function getNormal(entity, distance) {
 
 /* Goes in front of given entity*/
 function viewScreen(screen) {
-
-    var pos = getNormal(screen, close);
-
-    var p = camera.placeable.position;
-
-    p.setX(pos.x());
-    p.setY(pos.y());
-    p.setZ(pos.z());
-
-    camera.placeable.position = p;
-
+    var pos = getNormal(screen, infront);
+    camera.placeable.position = pos;
     camera.placeable.LookAt(screen.placeable.position);
 }
 
-
 /* calculates to point to move and look */
 function getPoints(from, to) {
-    orig_target = from.placeable.position;
+    curveposition = 0;
+    prev_r = 360;
     targets = [];
+    targets.push(getNormal(from, close));
+    targets.push(getNormal(from, close));
     targets.push(getNormal(from, far));
     targets.push(getNormal(to, far));
     targets.push(getNormal(to, close));
+    targets.push(getNormal(to, infront));
+
     lookAtTargets = [];
-    lookAtTargets.push(getNormal(from, close));
-    lookAtTargets.push(getNormal(to, far));
-    lookAtTargets.push(getNormal(to, close));
+    lookAtTargets.push(from.placeable.position);
+    lookAtTargets.push(to.placeable.position);
+    
 }
 
 function HandleGotoNext() {
@@ -150,46 +144,60 @@ function HandleGotoPrev() {
     currentIndex = newIndex;
 }
 
-function animationUpdate(dt) {
+function getBezier(t) {
+    if (t <= 0) {
+	return targets[0];
+    }
+    if (t >= 1) {
+	targets.splice(0,4);
+	return;
+    }
     
+    var p0 = targets[0];
+    var p1 = targets[1];
+    var p2 = targets[2];
+    var p3 = targets[3];
+
+    return vadd(vadd(vadd(smul(p0, Math.pow(1 - t, 3)), smul(p1, 3 * Math.pow(1 - t, 2) * t)), smul(p2, 3 * (1 - t) * Math.pow(t , 2))), smul(p3, Math.pow(t, 3)));
+}
+
+
+function animationUpdate(dt) {
     if (targets.length == 0) {
 	return;
     }
-    var target = targets[0];
-    var pos = camera.placeable.position;
-    var dist = distance(pos, target);
- 
-    var orig_dist = distance(target, orig_target);
-    
-    // If we're there change targets for moving and looking.
-    if (dist <= 0.1) {
-	orig_target = targets.splice(0, 1)[0];
-	lookAtTargets.splice(0, 1);
+    //backing from front and closing to front also, yes
+    if (targets.length == 6 || targets.length == 1) {
+	if (targets.length == 6) {
+	    var target = targets[0];
+	    curveposition = -dt / 3;
+	} else {
+	    var target = targets[0];
+	}
+	var pos = camera.placeable.position
+
+	var dist = distance(pos, target);
+	camera.placeable.LookAt(lookAtTargets[0]);
+	// If we're there change targets for moving and looking.
+	if (dist <= 0.1) {
+	    targets.splice(0, 1);
+	    lookAtTargets.splice(0, 1);
+	    return;
+	}
+	
+	var direction = vsubb(target, pos);
+	direction = normalize(direction);
+	
+	var newPos = vadd(pos, smul(direction, dt * 5));
+	camera.placeable.position = newPos;
 	return;
     }
-
-    var direction = vsubb(target, pos);
-    direction = normalize(direction);
-
-    var newPos = vadd(pos, smul(direction, dt * 5));
-
-    pos.setX(newPos.x());
-    pos.setY(newPos.y());
-    pos.setZ(newPos.z());
-
-    camera.placeable.position = pos;
-
-    // camera panning
+	     
+    curveposition += dt / 3;
     
-    if (lookAtTargets.length == 0) {
-	return;
-    }
-
-    //Transform's orientation is a Vector3df so we can't call our
-    //vector math function since QVector3D has setX instead of setx
-    //etc.
-
-    // Get current rotation
+    camera.placeable.position = getBezier(curveposition);
+    
+     // Get current rotation
     var oldtransform = camera.placeable.transform;
     var currentRotation = oldtransform.rot;
     
@@ -208,10 +216,20 @@ function animationUpdate(dt) {
     var r = Math.sqrt(a + b + c);
 
     // If we're close enough we won't turn
-    if ((r <= 2) || (r >= 358)) {
+    if ((r <= tolerance) || (r >= 360 - tolerance)) {
+	camera.placeable.LookAt(lookAtTargets[0]);
 	return;
     }
 
+    // Don't turn back
+    if (r > prev_r + tolerance) {
+	
+	camera.placeable.LookAt(lookAtTargets[0]);
+	prev_r = r;
+	return;
+    }
+    prev_r = r;
+	
     var drotx = targetRotation.x - currentRotation.x;
     var droty = targetRotation.y - currentRotation.y;
     var drotz = targetRotation.z - currentRotation.z;
@@ -219,13 +237,14 @@ function animationUpdate(dt) {
     // Count magnitude
     var magnitude = Math.sqrt(Math.pow(drotx, 2) + Math.pow(droty, 2) + Math.pow(drotz, 2));
 
-    var ratio = Math.min(orig_dist / dist, 5);
+    var ratio = Math.max(Math.min(1 / curveposition * 3, max_ratio), 0);
 
     newtransform.rot.x = (currentRotation.x + drotx / magnitude * ratio) % 360;
     newtransform.rot.y = (currentRotation.y + droty / magnitude * ratio) % 360;
     newtransform.rot.z = (currentRotation.z + drotz / magnitude * ratio) % 360;
     
     camera.placeable.transform = newtransform;
+
 }
 
 function reset() {
@@ -241,22 +260,32 @@ var endIndex = entities.length;
 
 var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
 var camera = scene.GetEntityByNameRaw("FreeLookCamera");
+//Handy for debug
 //var camera = scene.GetEntityByName("Monkey");
 
 inputmapper.RegisterMapping('n', "GotoNext", 1);
 inputmapper.RegisterMapping('p', "GotoPrev", 1);
-inputmapper.RegisterMapping('r', "ResetShow", 1);
+//inputmapper.RegisterMapping('r', "ResetShow", 1);
 
-var close = 5;
+// variables for viewpoint
+// infront is the distance where you want to end up (and leave)
+// close is the distance to which you back up still looking at the screen
+// two points are counted for Bezier cureves.
+
+var infront = 4;
+var close = 6;
 var far = 15;
+var tolerance = 3;
+var max_ratio = 1.5;
+
+var prev_r = 360;
+var curveposition;
 
 me.Action("GotoNext").Triggered.connect(HandleGotoNext);
 me.Action("GotoPrev").Triggered.connect(HandleGotoPrev);
 me.Action("ResetShow").Triggered.connect(reset);
 
-var orig_target;
 var targets = [];
-var lookAtTargets = [];
 print(targets);
 
 print('..');
