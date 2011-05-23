@@ -34,21 +34,27 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_LaserPointer");
 
 EC_LaserPointer::EC_LaserPointer(IModule *module) :
     IComponent(module->GetFramework()),
-    startPos_(this, "startPosition"),
-    endPos_(this, "endPosition"),
-    color_(this, "color", Color(1.0f,0.0f,0.0f,1.0f)),
-    enabled_(this, "enabled", false),
+    startPos(this, "startPosition"),
+    endPos(this, "endPosition"),
+    color(this, "color", Color(1.0f,0.0f,0.0f,1.0f)),
+    enabled(this, "enabled", false),
+    tracking(false),
     laserObject_(0),
     canUpdate_(true),
     updateInterval_(20),
-    id_()
+    id_("")
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 
-    AttributeMetadata *meta = new AttributeMetadata();
-    meta->designable = false;
-    startPos_.SetMetadata(meta);
-    endPos_.SetMetadata(meta);
+    static AttributeMetadata nonDesignableAttrData;
+    static bool metadataInitialized = false;
+    if(!metadataInitialized)
+    {
+        nonDesignableAttrData.designable = false;
+        metadataInitialized = true;
+    }
+    startPos.SetMetadata(&nonDesignableAttrData);
+    endPos.SetMetadata(&nonDesignableAttrData);
 
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(CreateLaser()));
 }
@@ -146,8 +152,10 @@ void EC_LaserPointer::Update(MouseEvent *e)
 {
     if (!GetParentEntity())
         return;
+    if (!gettracking())
+        return;
 
-    if (IsEnabled() && !GetFramework()->IsHeadless())
+    if (getenabled() && !GetFramework()->IsHeadless())
     {
         if (canUpdate_)
         {
@@ -166,7 +174,7 @@ void EC_LaserPointer::Update(MouseEvent *e)
                 if (placeable)
                 {
                     Vector3df position = placeable->gettransform().position;
-                    if (position != startPos_.Get())
+                    if (position != startPos.Get())
                         SetStartPos(position);
                 }
                 SetEndPos(result->getpos());
@@ -187,7 +195,7 @@ void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChan
     if (GetFramework()->IsHeadless())
         return;
 
-    if (QString::fromStdString(attribute->GetNameString()) == QString::fromStdString(color_.GetNameString()))
+    if (attribute == &color)
     {
         UpdateColor();
         return;
@@ -196,22 +204,25 @@ void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChan
     if (!laserObject_)
         return;
 
-    if (IsEnabled())
+    if (attribute == &startPos || attribute == &endPos || attribute == &enabled)
     {
-        laserObject_->clear();
-        laserObject_->begin("laser" + id_ + "Material", Ogre::RenderOperation::OT_LINE_LIST);
-        // start position
-        laserObject_->position((Ogre::Real)GetStartPos().x, 
-                               (Ogre::Real)GetStartPos().y,
-                               (Ogre::Real)(GetStartPos().z + 0.6)); 
-        // end position
-        laserObject_->position((Ogre::Real)GetEndPos().x,
-                               (Ogre::Real)GetEndPos().y,
-                               (Ogre::Real)GetEndPos().z);
-        laserObject_->end();
+        if (getenabled())
+        {
+            laserObject_->clear();
+            laserObject_->begin("laser" + id_ + "Material", Ogre::RenderOperation::OT_LINE_LIST);
+            // start position
+            laserObject_->position((Ogre::Real)GetStartPos().x, 
+                                   (Ogre::Real)GetStartPos().y,
+                                   (Ogre::Real)(GetStartPos().z + 0.6)); 
+            // end position
+            laserObject_->position((Ogre::Real)GetEndPos().x,
+                                   (Ogre::Real)GetEndPos().y,
+                                   (Ogre::Real)GetEndPos().z);
+            laserObject_->end();
+        }
+        else
+            laserObject_->clear();
     }
-    else
-        laserObject_->clear();
 }
 
 void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, AttributeChange::Type change)
@@ -220,7 +231,7 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
     {
         if (!ViewEnabled())
             return;
-        if (!IsEnabled())
+        if (!gettracking() || !getenabled())
             return;
         if (!canUpdate_)
             return;
@@ -231,8 +242,8 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
             return;
 
         Vector3df position = placeable->gettransform().position;
-        if (position != startPos_.Get())
-            startPos_.Set(position, AttributeChange::Default);
+        if (position != startPos.Get())
+            startPos.Set(position, AttributeChange::Default);
 
         // See if we are inside the main window or there is a graphics item under the mouse
         if (!IsMouseInsideWindow() || IsItemUnderMouse())
@@ -259,7 +270,7 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
 
 void EC_LaserPointer::Enable()
 {
-    enabled_.Set(true, AttributeChange::Default);
+    enabled.Set(true, AttributeChange::Default);
 }
 
 void EC_LaserPointer::EnableUpdate()
@@ -270,7 +281,7 @@ void EC_LaserPointer::EnableUpdate()
 void EC_LaserPointer::Disable()
 {
     laserObject_->clear();
-    enabled_.Set(false, AttributeChange::Default);
+    enabled.Set(false, AttributeChange::Default);
 }
 
 void EC_LaserPointer::DisableUpdate()
@@ -281,37 +292,32 @@ void EC_LaserPointer::DisableUpdate()
 
 void EC_LaserPointer::SetStartPos(const Vector3df pos)
 {
-    startPos_.Set(pos, AttributeChange::Default);
+    startPos.Set(pos, AttributeChange::Default);
 }
 
 void EC_LaserPointer::SetEndPos(const Vector3df pos)
 {
-    endPos_.Set(pos, AttributeChange::Default);
+    endPos.Set(pos, AttributeChange::Default);
 }
 
 Vector3df EC_LaserPointer::GetStartPos() const
 {
-    return startPos_.Get();
+    return startPos.Get();
 }
 
 Vector3df EC_LaserPointer::GetEndPos() const
 {
-    return endPos_.Get();
+    return endPos.Get();
 }
 
-bool EC_LaserPointer::IsEnabled()
+void EC_LaserPointer::SetQColor(const QColor & c)
 {
-    return enabled_.Get();
-}
+    Color col = Color((float)c.redF(),
+                      (float)c.greenF(),
+                      (float)c.blueF(),
+                      (float)c.alphaF());
 
-void EC_LaserPointer::SetQColor(const QColor & color)
-{
-    Color col = Color((float)color.redF(),
-                      (float)color.greenF(),
-                      (float)color.blueF(),
-                      (float)color.alphaF());
-
-    color_.Set(col, AttributeChange::Default);
+    color.Set(col, AttributeChange::Default);
 }
 
 void EC_LaserPointer::SetColor(int red, int green, int blue, int alpha = 255)
@@ -322,14 +328,14 @@ void EC_LaserPointer::SetColor(int red, int green, int blue, int alpha = 255)
 
 Color EC_LaserPointer::GetColor() const
 {
-    return color_.Get();
+    return color.Get();
 }
 
 QColor EC_LaserPointer::GetQColor() const
 {
-    Color color = GetColor();
+    Color c = GetColor();
     QColor newcolor;
-    newcolor.setRgbF(color.r, color.g, color.b, color.a);
+    newcolor.setRgbF(c.r, c.g, c.b, c.a);
     return newcolor;
 }
 
@@ -344,10 +350,10 @@ void EC_LaserPointer::UpdateColor()
     if (laserMaterial_.isNull())
         return;
 
-    Color color = GetColor();
-    laserMaterial_->getTechnique(0)->getPass(0)->setDiffuse(color.r,color.g,color.b,color.a);
-    laserMaterial_->getTechnique(0)->getPass(0)->setAmbient(color.r,color.g,color.b);
-    laserMaterial_->getTechnique(0)->getPass(0)->setSelfIllumination(color.r,color.g,color.b);
+    Color c = GetColor();
+    laserMaterial_->getTechnique(0)->getPass(0)->setDiffuse(c.r, c.g, c.b, c.a);
+    laserMaterial_->getTechnique(0)->getPass(0)->setAmbient(c.r, c.g, c.b);
+    laserMaterial_->getTechnique(0)->getPass(0)->setSelfIllumination(c.r, c.g, c.b);
 }
 
 bool EC_LaserPointer::IsMouseInsideWindow()

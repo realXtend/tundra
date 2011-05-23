@@ -28,16 +28,78 @@ class EC_LaserPointer : public IComponent
     DECLARE_EC(EC_LaserPointer);
 
     //! Laser start point (tied to EC_Placeable position attribute)
-    Attribute<Vector3df> startPos_;
+    Q_PROPERTY(Vector3df startPos READ getstartPos WRITE setstartPos)
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, startPos);
 
     //! Laser end point 
-    Attribute<Vector3df> endPos_;
+    Q_PROPERTY(Vector3df endPos READ getendPos WRITE setendPos)
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, endPos);
 
-    //! Laser color (default is red)
-    Attribute<Color> color_;
+    //! Laser color
+    Q_PROPERTY(Color color READ getcolor WRITE setcolor)
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, color);
 
-    //! Enable/Disable toggle
-    Attribute<bool> enabled_;
+    //! If laser drawing is enabled
+    Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
+
+    //! Track placeable and mouse, this is not synced over network
+    Q_PROPERTY(bool tracking READ gettracking WRITE settracking)
+
+public slots:
+    //! Tracking getter/setter
+    bool gettracking() { return tracking; }
+    void settracking(bool t) { tracking = t; }
+
+    //! Is painting enabled
+    bool IsEnabled() { return enabled.Get(); }
+
+    //! Creates laser object and laser (child) node
+    void CreateLaser();
+
+    //! Destroys the laser and laser node
+    void DestroyLaser();
+
+    //! Convenience function to enable laser pointer
+    void Enable();
+
+    //! Convenience function to disable laser pointer
+    void Disable();
+
+    //! Sets the start point of the laser line
+    //! @param New starting position
+    void SetStartPos(const Vector3df);
+
+    //! Sets the end point of the laser line
+    //! @param New ending position
+    void SetEndPos(const Vector3df);
+
+    //! Gets the current start position
+    //! @returns current start position
+    Vector3df GetStartPos() const;
+
+    //! Gets the current end position
+    //! @returns current end position
+    Vector3df GetEndPos() const;
+
+    //! Sets laser color
+    //! @param new color : QColor
+    void SetQColor(const QColor &);
+
+    //! Sets laser color
+    //! @param red - red amount
+    //! @param green - green amount
+    //! @param blue - blue amount
+    //! @param alpha - alpha ammount
+    void SetColor(int, int, int, int);
+
+    //! Gets current color
+    //! @returns current color : Color
+    Color GetColor() const;
+
+    //! Gets current color
+    //! @returns current color : QColor
+    QColor GetQColor() const;
 
 private:
     //! Constructor
@@ -55,6 +117,9 @@ private:
 
     //! Update limiter so that we do not overload the server
     bool canUpdate_;
+
+    //! Tracking boolean
+    bool tracking;
 
     //! Update interval (default is 20ms)
     int updateInterval_;
@@ -89,46 +154,6 @@ public:
     //! Destructor
     ~EC_LaserPointer();
     virtual bool IsSerializable() const { return true; }
-
-public slots:
-    //! Creates laser object and laser (child) node
-    void CreateLaser();
-    //! Destroys the laser and laser node
-    void DestroyLaser();
-    //! Convenience function to enable laser pointer
-    void Enable();
-    //! Convenience function to disable laser pointer
-    void Disable();
-    //! Sets the start point of the laser line
-    //! @param New starting position
-    void SetStartPos(const Vector3df);
-    //! Sets the end point of the laser line
-    //! @param New ending position
-    void SetEndPos(const Vector3df);
-    //! Gets the current start position
-    //! @returns current start position
-    Vector3df GetStartPos() const;
-    //! Gets the current end position
-    //! @returns current end position
-    Vector3df GetEndPos() const;
-    //! Sets laser color
-    //! @param new color : QColor
-    void SetQColor(const QColor &);
-    //! Sets laser color
-    //! @param red - red amount
-    //! @param green - green amount
-    //! @param blue - blue amount
-    //! @param alpha - alpha ammount
-    void SetColor(int, int, int, int);
-    //! Gets current color
-    //! @returns current color : Color
-    Color GetColor() const;
-    //! Gets current color
-    //! @returns current color : QColor
-    QColor GetQColor() const;
-    //! Check function if laser is enabled
-    //! @returns current enabled state
-    bool IsEnabled();
 };
 
 #endif
