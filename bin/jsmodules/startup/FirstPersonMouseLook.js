@@ -4,9 +4,17 @@ inputContext.MouseEventReceived.connect(MouseEvent);
 
 function MouseEvent(event)
 {
-  if (event.IsRightButtonDown() && input.IsMouseCursorVisible())
-    input.SetMouseCursorVisible(false);
-  else if (!event.IsRightButtonDown() && !input.IsMouseCursorVisible())
-    input.SetMouseCursorVisible(true);
+    // Press RMB
+    if (event.GetEventType() == 3 && event.GetMouseButton() == 2)
+    {
+        if (input.IsMouseCursorVisible())
+            input.SetMouseCursorVisible(false);
+    }
+    // Release RMB
+    if (event.GetEventType() == 4 && event.GetMouseButton() == 2)
+    {
+        if (!input.IsMouseCursorVisible())
+            input.SetMouseCursorVisible(true);
+    }
 }
 

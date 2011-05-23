@@ -14,7 +14,7 @@ class KeyEvent : public QObject
 {
     Q_OBJECT
     Q_ENUMS(EventType)
-
+    
 public:
     KeyEvent()
     :keyCode((Qt::Key)0),
@@ -76,6 +76,8 @@ public:
     ///\todo Add hold duration if this is a release/repeated press.
 
 public slots:
+    EventType GetEventType() const { return eventType; }
+    
     /// Marks this event as having been handled already, which will suppress this event from
     /// going on to lower input context levels.
     void Suppress() { handled = true; }
