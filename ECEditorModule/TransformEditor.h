@@ -9,6 +9,7 @@
 
 #include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
+#include "InputFwd.h"
 #include "Vector3D.h"
 
 #include <QObject>
@@ -108,4 +109,10 @@ private:
     SceneWeakPtr scene; ///< Scene in which the edited entities reside.
     EntityPtr gizmo; ///< Gizmo entity.
     QList<AttributeWeakPtr> targets; ///< Current target transform attributes.
+    InputContextPtr input; ///< Input context for controlling gizmo mode.
+
+private slots:
+    /// Handles KeyEvents and changes gizmo's mode.
+    /** @param e Key event. */
+    void HandleKeyEvent(KeyEvent *e);
 };

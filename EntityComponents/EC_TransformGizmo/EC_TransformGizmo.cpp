@@ -160,7 +160,7 @@ void EC_TransformGizmo::Initialize()
     }
 
     placeable->SetTemporary(true);
-    placeable->selectionLayer.Set(0, AttributeChange::Default); // ignore raycast
+//    placeable->selectionLayer.Set(0, AttributeChange::Default); // ignore raycast
     placeable->visible.Set(false, AttributeChange::Default);
 
     mesh = boost::dynamic_pointer_cast<EC_Mesh>(GetParentEntity()->CreateComponent(
@@ -181,8 +181,8 @@ void EC_TransformGizmo::Initialize()
     mesh->meshMaterial.Set(materials, AttributeChange::Default);
 }
 
-const float cClickDistanceThreshold = 0.25f;
-const float cClickOffsetThreshold = 2.5f;//10.f;
+const float cClickDistanceThreshold = 0.125f;
+const float cClickOffsetThreshold = 2.5f;
 
 void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 {
@@ -196,16 +196,6 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     boost::shared_ptr<EC_Camera> cam = renderer.lock()->GetActiveCamera();
     if (!cam)
         return;
-
-    // just temp test code
-    if (e->eventType == MouseEvent::MouseScroll)
-    {
-        uint t = (uint)gizmoType;
-        ++t;
-        if (t > 2)
-            t = 0;
-        SetCurrentGizmoType((GizmoType)t);
-    }
 
     bool mouseOnTop = false;
     bool mouseDown = e->IsLeftButtonDown();
@@ -228,61 +218,59 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     Ogre::Ray mouseRay = cam->GetMouseRay(relX, relY);
 
     QList<GizmoAxis> hits;
-    //if (activeAxes.empty())
+
+    float distanceX = DistanceBetweenTwoLines(mouseRay, xRay);
+    float distanceY = DistanceBetweenTwoLines(mouseRay, yRay);
+    float distanceZ = DistanceBetweenTwoLines(mouseRay, zRay);
+
+    bool hit = false;
+    RaycastResult *result = renderer.lock()->Raycast(e->x, e->y);
+    if (result->entity && result->entity->GetComponent<EC_TransformGizmo>().get() == this)
+        hit = true;
+
+    float offsetX, offsetY, offsetZ;
+    ClosestPointOnLineAToLineB(xRay, mouseRay, &offsetX);
+    if ((distanceX < cClickDistanceThreshold && offsetX > 0 && offsetX < cClickOffsetThreshold) ||
+        (hit && result->submesh == GizmoAxis::X))
     {
-        float distanceX = DistanceBetweenTwoLines(mouseRay, xRay);
-        float distanceY = DistanceBetweenTwoLines(mouseRay, yRay);
-        float distanceZ = DistanceBetweenTwoLines(mouseRay, zRay);
-/*
-        bool hit = false;
-        RaycastResult *result = renderer.lock()->Raycast(e->x, e->y);
-        if (result->entity && result->entity->GetComponent<EC_TransformGizmo>().get() == this)
+        mouseOnTop = true;
+        if (state != Active)
         {
-            LogInfo("RaycastResult: " + ToString(result->submesh));
-              hit = true;
+            GizmoAxis x;
+            x.axis = GizmoAxis::X;
+            x.material = mouseDown ? cAxisWhite : cAxisRedHi;
+            x.ray = xRay;
+            hits.append(x);
         }
-*/
-        float offsetX, offsetY, offsetZ;
-        ClosestPointOnLineAToLineB(xRay, mouseRay, &offsetX);
-        if ((distanceX < cClickDistanceThreshold && offsetX > 0 && offsetX < cClickOffsetThreshold) /*|| (hit && result->submesh == GizmoAxis::X)*/)
-        {
-            mouseOnTop = true;
-            if (state != Active)
-            {
-                GizmoAxis x;
-                x.axis = GizmoAxis::X;
-                x.material = mouseDown ? cAxisWhite : cAxisRedHi;
-                x.ray = xRay;
-                hits.append(x);
-            }
-        }
+    }
 
-        ClosestPointOnLineAToLineB(yRay, mouseRay, &offsetY);
-        if ((distanceY < cClickDistanceThreshold && offsetY > 0 && offsetY < cClickOffsetThreshold) /*|| (hit && result->submesh == GizmoAxis::Y)*/)
+    ClosestPointOnLineAToLineB(yRay, mouseRay, &offsetY);
+    if ((distanceY < cClickDistanceThreshold && offsetY > 0 && offsetY < cClickOffsetThreshold) ||
+        (hit && result->submesh == GizmoAxis::Y))
+    {
+        mouseOnTop = true;
+        if (state != Active)
         {
-            mouseOnTop = true;
-            if (state != Active)
-            {
-                GizmoAxis y;
-                y.axis = GizmoAxis::Y;
-                y.material = mouseDown ? cAxisWhite : cAxisGreenHi;
-                y.ray = yRay;
-                hits.append(y);
-            }
+            GizmoAxis y;
+            y.axis = GizmoAxis::Y;
+            y.material = mouseDown ? cAxisWhite : cAxisGreenHi;
+            y.ray = yRay;
+            hits.append(y);
         }
+    }
 
-        ClosestPointOnLineAToLineB(zRay, mouseRay, &offsetZ);
-        if ((distanceZ < cClickDistanceThreshold && offsetZ > 0 && offsetZ < cClickOffsetThreshold) /*|| (hit && result->submesh == GizmoAxis::Z)*/)
+    ClosestPointOnLineAToLineB(zRay, mouseRay, &offsetZ);
+    if ((distanceZ < cClickDistanceThreshold && offsetZ > 0 && offsetZ < cClickOffsetThreshold) ||
+        (hit && result->submesh == GizmoAxis::Z))
+    {
+        mouseOnTop = true;
+        if (state != Active)
         {
-            mouseOnTop = true;
-            if (state != Active)
-            {
-                GizmoAxis z;
-                z.axis = GizmoAxis::Z;
-                z.material = mouseDown ? cAxisWhite : cAxisBlueHi;
-                z.ray = zRay;
-                hits.append(z);
-            }
+            GizmoAxis z;
+            z.axis = GizmoAxis::Z;
+            z.material = mouseDown ? cAxisWhite : cAxisBlueHi;
+            z.ray = zRay;
+            hits.append(z);
         }
     }
 
@@ -372,19 +360,20 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                 }
 
                 std::stringstream ss;
-                ss << ToCoreVector(curPoint-prevPoint);
                 switch(gizmoType)
                 {
                 case EC_TransformGizmo::Translate:
+                    //ss << ToCoreVector(curPoint-prevPoint);
                     //LogInfo("Emitting Translated(" + ss.str() + ")");
                     emit Translated(ToCoreVector(curPoint-prevPoint));
                     prevPoint = curPoint;
                     break;
                 case EC_TransformGizmo::Rotate:
-                    //LogInfo("Emitting Rotated(" + ss.str() + ")");
-                    emit Rotated(Quaternion());
+//                        LogInfo("Emitting Rotated(" + ss.str() + ")");
+                        emit Rotated(Quaternion());
                     break;
                 case EC_TransformGizmo::Scale:
+                    //ss << ToCoreVector(curPoint-prevPoint);
                     //LogInfo("Emitting Scaled(" + ss.str() + ")");
                     emit Scaled(Vector3df(ToCoreVector(curPoint-prevPoint)));
                     prevPoint = curPoint;

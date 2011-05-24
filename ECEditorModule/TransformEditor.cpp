@@ -11,14 +11,22 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
+#include "InputAPI.h"
+#include "AssetAPI.h"
 #ifdef EC_TransformGizmo_ENABLED
 #include "EC_TransformGizmo.h"
 #endif
 
 TransformEditor::TransformEditor(const ScenePtr &scene)
 {
-    this->scene = scene;
-    CreateGizmo();
+    if (scene)
+    {
+        this->scene = scene;
+        QString uniqueName("TransformEditor" + scene->GetFramework()->Asset()->GenerateUniqueAssetName("",""));
+        input = scene->GetFramework()->Input()->RegisterInputContext(uniqueName, 100);
+        connect(input.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+        CreateGizmo();
+    }
 }
 
 TransformEditor::~TransformEditor()
@@ -137,6 +145,7 @@ void TransformEditor::RotateTargets(const Quaternion &delta)
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
         {
+            ///\todo Implement!
         }
     }
 
@@ -191,4 +200,29 @@ void TransformEditor::DeleteGizmo()
     ScenePtr s = scene.lock();
     if (s && gizmo)
         s->RemoveEntity(gizmo->GetId());
+}
+
+void TransformEditor::HandleKeyEvent(KeyEvent *e)
+{
+#ifdef EC_TransformGizmo_ENABLED
+    ScenePtr scn = scene.lock();
+    EC_TransformGizmo *tg = 0;
+    if (gizmo && scn)
+    {
+        tg = gizmo->GetComponent<EC_TransformGizmo>().get();
+        if (!tg)
+            return;
+    }
+
+    InputAPI *inputApi = scn->GetFramework()->Input();
+    const QKeySequence &translate= inputApi->KeyBinding("SetTranslateGizmo", QKeySequence(Qt::Key_1));
+    const QKeySequence &rotate = inputApi->KeyBinding("SetRotateGizmo", QKeySequence(Qt::Key_2));
+    const QKeySequence &scale = inputApi->KeyBinding("SetScaleGizmo", QKeySequence(Qt::Key_3));
+    if (e->sequence == translate)
+        tg->SetCurrentGizmoType(EC_TransformGizmo::Translate);
+    if (e->sequence == rotate)
+        tg->SetCurrentGizmoType(EC_TransformGizmo::Rotate);
+    if (e->sequence == scale)
+        tg->SetCurrentGizmoType(EC_TransformGizmo::Scale);
+#endif
 }
