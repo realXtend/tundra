@@ -775,9 +775,9 @@ void ECEditorWindow::RemoveEntity(Entity* entity)
 void ECEditorWindow::SetFocus(bool focus)
 {
     hasFocus = focus;
-    LogInfo("ECEditorWindow::SetFocus: " + ToString(focus));
+//    LogInfo("ECEditorWindow::SetFocus: " + ToString(focus));
     bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
-    LogInfo("SetFocus: showGizmo: " + ToString(showGizmo));
+//    LogInfo("SetFocus: showGizmo: " + ToString(showGizmo));
     transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && hasFocus);
 
     for(uint i = 0; i < (uint)entityList->count(); i++)
@@ -795,7 +795,7 @@ void ECEditorWindow::setVisible(bool visible)
         emit FocusChanged(this);
 
     bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
-    LogInfo("ECEditorWindow::setVisible: showGizmo: " + ToString(showGizmo));
+//    LogInfo("ECEditorWindow::setVisible: showGizmo: " + ToString(showGizmo));
     transformEditor->SetGizmoVisible(showGizmo);
 
     for(uint i = 0; i < (uint)entityList->count(); i++)
