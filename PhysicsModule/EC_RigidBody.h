@@ -377,6 +377,8 @@ private:
     
     //! Bullet collision shape
     btCollisionShape* shape_;
+    //! Bullet collision child shape. This is needed to use btScaledBvhTriangleMeshShape
+    btCollisionShape* childShape_;
     
     //! Physics world. May be 0 if the scene does not have a physics world. In that case most of EC_RigidBody's functionality is a no-op
     Physics::PhysicsWorld* world_;
