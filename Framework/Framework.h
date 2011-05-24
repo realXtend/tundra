@@ -57,16 +57,6 @@ public:
     /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
     Profiler *GetProfiler();
 #endif
-    /*
-    /// List all loaded modules
-    ConsoleCommandResult ConsoleListModules(const StringVector &params);
-
-    /// Output profiling data
-    ConsoleCommandResult ConsoleProfile(const StringVector &params);
-
-    /// limit frames
-    ConsoleCommandResult ConsoleLimitFrames(const StringVector &params);
-*/
     /// Loads all available modules. Do not call normally.
     void LoadModules();
 

@@ -59,10 +59,9 @@ void DebugStatsModule::PostInitialize()
     framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
 #endif
 
-    ///\todo Regression. The following command cannot be actuall executed, since StringVector is not known by FunctionInvoker.
     framework_->Console()->RegisterCommand("exec",
         "Invokes an Entity Action on an entity (debugging).",
-        this, SLOT(Exec(const StringVector &)));
+        this, SLOT(Exec(const QStringList &)));
 
     inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -146,39 +145,56 @@ void DebugStatsModule::Update(f64 frametime)
 #endif
 }
 
-void DebugStatsModule::Exec(const StringVector &params)
+void DebugStatsModule::Exec(const QStringList &params)
 {
     if (params.size() < 2)
-        return;// ConsoleResultFailure("Not enough parameters.");
+    {
+        LogError("Not enough parameters.");
+        return;
+    }
 
-    int id = ParseString<int>(params[0], 0);
-    if (id == 0)
-        return;// ConsoleResultFailure("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
+    bool ok;
+    int id = params[0].toInt(&ok);
+    if (!ok)
+    {
+        LogError("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
+        return;
+    }
 
     ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return;// ConsoleResultFailure("No active scene.");
+    {
+        LogError("No active scene.");
+        return;
+    }
 
     EntityPtr entity = scene->GetEntity(id);
     if (!entity)
-        return;// ConsoleResultFailure("No entity found for entity ID " + params[0]);
+    {
+        LogError("No entity found for entity ID " + params[0]);
+        return;
+    }
 
     QStringList execParameters;
-    
     if (params.size() >= 3)
     {
-        int type = ParseString<int>(params[2], 0);
-        for(size_t i = 3; i < params.size(); ++i)
-            execParameters << params[i].c_str();
-        
-        if (id != 0)
-            entity->Exec((EntityAction::ExecutionType)type, params[1].c_str(), execParameters);
+        int type = params[2].toInt(&ok);
+        if (!ok)
+        {
+            LogError("Invalid execution type: must be 0-7");
+            return;
+        }
+
+        for(size_t i = 3; i < (size_t)params.size(); ++i)
+            execParameters << params[i];
+
+        entity->Exec((EntityAction::ExecutionType)type, params[1], execParameters);
     }
     else
-        entity->Exec(EntityAction::Local, params[1].c_str(), execParameters);
+        entity->Exec(EntityAction::Local, params[1], execParameters);
 }
 
-}
+} //~namespace TundraLogic
 
 extern "C"
 {

@@ -21,7 +21,6 @@ class btVector3;
 class btTriangleMesh;
 class QScriptEngine;
 class EC_RigidBody;
-struct ConsoleCommandResult;
 
 namespace Physics
 {
@@ -85,26 +84,24 @@ public:
     
     /// Return the physics world for a scene if it exists
     Physics::PhysicsWorld* GetPhysicsWorldForScene(SceneManager* sceneraw);
-    
-public slots:
 
+public slots:
     /// Toggles physics debug geometry
-    void ConsoleToggleDebugGeometry();
+    void ToggleDebugGeometry();
 
     /// Stops physics
-    void ConsoleStopPhysics();
-    
+    void StopPhysics();
+
     /// Starts physics
-    void ConsoleStartPhysics();
-    
+    void StartPhysics();
+
     /// Autoassigns static rigid bodies with collision meshes to visible meshes
-    void ConsoleAutoCollisionMesh();
+    void AutoCollisionMesh();
 
     /// Get a physics world for a scene. This version meant for scripts
-    /** Note: the parameter is a QObject*, because typically the scriptengine's dynamic property scene is used to query for physicsobject.
+    /** @note The parameter is a QObject*, because typically the scriptengine's dynamic property scene is used to query for physicsobject.
         But it seems to lose its knowledge of actually being a SceneManager*, and returns null. This version will dynamic cast
-        to SceneManager*
-     */ 
+        to SceneManager*. */ 
     Physics::PhysicsWorld* GetPhysicsWorld(QObject* scene);
     
     /// Enable/disable physics simulation
@@ -118,11 +115,11 @@ public slots:
     
     /// Initialize physics datatypes for a script engine
     void OnScriptEngineCreated(QScriptEngine* engine);
-    
+
 private slots:
     /// Scene has been removed, so delete also the physics world (if exists)
     void OnSceneRemoved(SceneManager* scene);
-    
+
 private:
     /// Update debug geometry manual object, if physics debug drawing is on
     void UpdateDebugGeometry();

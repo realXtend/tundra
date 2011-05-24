@@ -20,8 +20,6 @@
 #include <QString>
 #include <QVariantMap>
 
-struct ConsoleCommandResult;
-
 /// Enables Javascript execution and scripting by using QtScript.
 class JavascriptModule : public IModule
 {
@@ -42,10 +40,6 @@ public:
 
     void RunScript(const QString &scriptname);
     void RunString(const QString &codestr, const QVariantMap &context = QVariantMap());
-
-    void ConsoleRunString(const StringVector &params);
-    void ConsoleRunFile(const StringVector &params);
-    void ConsoleReloadScripts();
 
     /// Prepares script instance by registering all needed services to it.
     /** If script is part of the scene, i.e. EC_Script component is present, we add some special services.
@@ -93,6 +87,11 @@ private:
 
     /// Additional startupscript defined from command line
     std::string commandLineStartupScript_;
+
+private slots:
+    void ConsoleRunString(const QStringList &params);
+    void ConsoleRunFile(const QStringList &params);
+    void ConsoleReloadScripts();
 };
 
 // API things

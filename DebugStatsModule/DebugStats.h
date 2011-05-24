@@ -20,7 +20,6 @@
 #include <Windows.h>
 
 class EC_Placeable;
-struct ConsoleCommandResult;
 
 namespace DebugStats
 {
@@ -51,11 +50,11 @@ namespace DebugStats
 
         void HandleKeyPressed(KeyEvent *e);
 
+        /// Invokes action in entity.
+        void Exec(const QStringList &params);
+
     private:
         Q_DISABLE_COPY(DebugStatsModule);
-
-        /// Invokes action in entity.
-        void Exec(const StringVector &params);
 
         /// A history of estimated frame times.
         std::vector<std::pair<u64, double> > frameTimes;

@@ -52,6 +52,7 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     setLayout(layout);
 
     proxyWidget = framework->Ui()->AddWidgetToScene(this);
@@ -70,6 +71,7 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
     slideAnimation->setDuration(300);  ///<\todo Read animation speed from config?
 
     textEdit = new QPlainTextEdit(this);
+    textEdit->setTextInteractionFlags(Qt::TextSelectableByMouse);
     lineEdit = new QLineEdit(this);
     connect(lineEdit, SIGNAL(returnPressed()), SLOT(HandleInput()));
 

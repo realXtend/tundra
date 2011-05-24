@@ -111,23 +111,23 @@ void PhysicsModule::Uninitialize()
     SetDrawDebugGeometry(false);
 }
 
-void PhysicsModule::ConsoleToggleDebugGeometry()
+void PhysicsModule::ToggleDebugGeometry()
 {
     SetDrawDebugGeometry(!drawDebugGeometry_);
     drawDebugManuallySet_ = true; // Disable automatic debugdraw state change
 }
 
-void PhysicsModule::ConsoleStopPhysics()
+void PhysicsModule::StopPhysics()
 {
     SetRunPhysics(false);
 }
 
-void PhysicsModule::ConsoleStartPhysics()
+void PhysicsModule::StartPhysics()
 {
     SetRunPhysics(true);
 }
 
-void PhysicsModule::ConsoleAutoCollisionMesh()
+void PhysicsModule::AutoCollisionMesh()
 {
     ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)

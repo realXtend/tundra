@@ -11,8 +11,6 @@
 
 #include <QObject>
 
-struct ConsoleCommandResult;
-
 namespace KristalliProtocol
 {
     //  warning C4275: non dll-interface class 'IMessageHandler' used as base for dll-interface class 'KristalliProtocolModule'

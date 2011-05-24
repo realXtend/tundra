@@ -13,7 +13,6 @@
 struct MsgAssetDiscovery;
 struct MsgAssetDeleted;
 struct UserConnectedResponseData;
-struct ConsoleCommandResult;
 class UserConnection;
 
 namespace kNet

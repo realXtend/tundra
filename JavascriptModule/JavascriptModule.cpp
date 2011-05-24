@@ -71,10 +71,7 @@ void JavascriptModule::Initialize()
 void JavascriptModule::PostInitialize()
 {
     RegisterCoreMetaTypes();
-    ///\todo Regression. Reimplement. -jj.
 
-/*     ///\todo
-    
     framework_->Console()->RegisterCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
         this, SLOT(ConsoleRunString()));
@@ -86,7 +83,7 @@ void JavascriptModule::PostInitialize()
     framework_->Console()->RegisterCommand(
         "JsReloadScripts", "Reloads and re-executes startup scripts.",
         this, SLOT(ConsoleReloadScripts()));
-*/    
+
     // Initialize startup scripts
     LoadStartupScripts();
 
@@ -109,33 +106,6 @@ void JavascriptModule::Uninitialize()
 
 void JavascriptModule::Update(f64 frametime)
 {
-}
-
-void JavascriptModule::ConsoleRunString(const StringVector &params)
-{
-    if (params.size() != 1)
-    {
-        LogError("Usage: JsExec(print 1 + 1)");
-        return;
-    }
-
-    JavascriptModule::RunString(QString::fromStdString(params[0]));
-}
-
-void JavascriptModule::ConsoleRunFile(const StringVector &params)
-{
-    if (params.size() != 1)
-    {
-        LogError("Usage: JsLoad(myfile.js)");
-        return;
-    }
-
-    JavascriptModule::RunScript(QString::fromStdString(params[0]));
-}
-
-void JavascriptModule::ConsoleReloadScripts()
-{
-    LoadStartupScripts();
 }
 
 JavascriptModule *JavascriptModule::GetInstance()
@@ -356,6 +326,33 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     }
 
     emit ScriptEngineCreated(instance->GetEngine());
+}
+
+void JavascriptModule::ConsoleRunString(const QStringList &params)
+{
+    if (params.size() != 1)
+    {
+        LogError("Usage: JsExec(print 1 + 1)");
+        return;
+    }
+
+    JavascriptModule::RunString(params[0]);
+}
+
+void JavascriptModule::ConsoleRunFile(const QStringList &params)
+{
+    if (params.size() != 1)
+    {
+        LogError("Usage: JsLoad(myfile.js)");
+        return;
+    }
+
+    JavascriptModule::RunScript(params[0]);
+}
+
+void JavascriptModule::ConsoleReloadScripts()
+{
+    LoadStartupScripts();
 }
 
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine)

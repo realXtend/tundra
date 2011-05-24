@@ -13,8 +13,6 @@
 #include <QList>
 #include <QMap>
 
-struct ConsoleCommandResult;
-
 namespace Avatar
 {
     class AvatarSceneManager;
@@ -25,12 +23,11 @@ namespace Avatar
     typedef boost::shared_ptr<AvatarHandler> AvatarHandlerPtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
-            
+
     class AV_MODULE_API AvatarModule : public IModule
     {
+        Q_OBJECT
 
-    Q_OBJECT
-    
     public:
         AvatarModule();
         virtual ~AvatarModule();
@@ -40,11 +37,6 @@ namespace Avatar
         void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
-    
-    private slots:
-        /// Handle our key context input
-        void KeyPressed(KeyEvent *key);
-        void KeyReleased(KeyEvent *key);
 
     public slots:
 
@@ -55,8 +47,12 @@ namespace Avatar
         /// Console command: start editing a specific entity's avatar
         void EditAvatar(const QString &entityName);
 
-    private:
+    private slots:
+        /// Handle our key context input
+        void KeyPressed(KeyEvent *key);
+        void KeyReleased(KeyEvent *key);
 
+    private:
         /// AvatarModules input context
         InputContextPtr avatar_context_;
 

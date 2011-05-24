@@ -7,21 +7,21 @@
 #include "Profiler.h"
 #include "IRenderer.h"
 #include "CoreException.h"
-
 #include "Application.h"
+#include "ConfigAPI.h"
+#include "PluginAPI.h"
+#include "LoggingFunctions.h"
+#include "IModule.h"
+#include "FrameAPI.h"
 
 #include "InputAPI.h"
-#include "FrameAPI.h"
 #include "AssetAPI.h"
 #include "AudioAPI.h"
 #include "ConsoleAPI.h"
 #include "SceneAPI.h"
-#include "ConfigAPI.h"
-#include "PluginAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
-#include "LoggingFunctions.h"
-#include "IModule.h"
+
 #include <iostream>
 
 #include "MemoryLeakCheck.h"

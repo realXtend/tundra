@@ -189,7 +189,6 @@ void TundraLogicModule::Load()
 #ifdef EC_TransformGizmo_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_TransformGizmo>));
 #endif
-
 }
 
 void TundraLogicModule::Initialize()
@@ -204,38 +203,34 @@ void TundraLogicModule::Initialize()
 
 void TundraLogicModule::PostInitialize()
 {
-    ///\todo Regression. Reimplement. -jj.
-    /*
-    framework_->Console()->RegisterCommand(CreateConsoleCommand("startserver", 
-        "Starts a server. Usage: startserver(port)",
-        ConsoleBind(this, &TundraLogicModule::ConsoleStartServer)));
-    framework_->Console()->RegisterCommand(CreateConsoleCommand("stopserver", 
-        "Stops the server",
-        ConsoleBind(this, &TundraLogicModule::ConsoleStopServer)));
-    framework_->Console()->RegisterCommand(CreateConsoleCommand("connect", 
-        "Connects to a server. Usage: connect(address,port,username,password)",
-        ConsoleBind(this, &TundraLogicModule::ConsoleConnect)));
-    framework_->Console()->RegisterCommand(CreateConsoleCommand("disconnect", 
-        "Disconnects from a server.",
-        ConsoleBind(this, &TundraLogicModule::ConsoleDisconnect)));
-    
-    framework_->Console()->RegisterCommand(CreateConsoleCommand("savescene",
-        "Saves scene into XML or binary. Usage: savescene(filename,binary)",
-        ConsoleBind(this, &TundraLogicModule::ConsoleSaveScene)));
-    framework_->Console()->RegisterCommand(CreateConsoleCommand("loadscene",
-        "Loads scene from XML or binary. Usage: loadscene(filename,binary)",
-        ConsoleBind(this, &TundraLogicModule::ConsoleLoadScene)));
-    
-    framework_->Console()->RegisterCommand(CreateConsoleCommand("importscene",
+    framework_->Console()->RegisterCommand("startserver", "Starts a server. Usage: startserver(port)",
+        this, SLOT(StartServer(int)));
+
+    framework_->Console()->RegisterCommand("stopserver", "Stops the server",
+        this, SLOT(StopServer()));
+
+    framework_->Console()->RegisterCommand("connect", "Connects to a server. Usage: connect(address,port,username,password)",
+        this, SLOT(Connect(QString,int,QString,QString)));
+
+    framework_->Console()->RegisterCommand("disconnect", "Disconnects from a server.",
+        this, SLOT(Disconnect()));
+
+    framework_->Console()->RegisterCommand("savescene", "Saves scene into XML or binary. Usage: savescene(filename,binary)",
+        this, SLOT(SaveScene(QString, bool, bool, bool)));
+
+    framework_->Console()->RegisterCommand("loadscene", "Loads scene from XML or binary. Usage: loadscene(filename,binary)",
+        this, SLOT(ConsoleLoadSceneLoadScene(QString, bool, bool)));
+
+    framework_->Console()->RegisterCommand("importscene",
         "Loads scene from a dotscene file. Optionally clears the existing scene."
         "Replace-mode can be optionally disabled. Usage: importscene(filename,clearscene=false,replace=true)",
-        ConsoleBind(this, &TundraLogicModule::ConsoleImportScene)));
-    
-    framework_->Console()->RegisterCommand(CreateConsoleCommand("importmesh",
+        this, SLOT(ImportScene(QString, bool, bool)));
+
+    framework_->Console()->RegisterCommand("importmesh",
         "Imports a single mesh as a new entity. Position can be specified optionally."
         "Usage: importmesh(filename,x,y,z,xrot,yrot,zrot,xscale,yscale,zscale)",
-        ConsoleBind(this, &TundraLogicModule::ConsoleImportMesh)));
-      */  
+        this, SLOT(ImportMesh(QString, float, float, float, float, float, float, float, float, float, bool)));
+
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
     if (!kristalliModule_)
@@ -401,27 +396,27 @@ void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QSt
     LogError("Failed to load startup scene from " + transfer->GetSourceUrl().toStdString() + " reason: " + reason.toStdString());
 }
 
-void TundraLogicModule::ConsoleStartServer(int port)
+void TundraLogicModule::StartServer(int port)
 {
     server_->Start(port);
 }
 
-void TundraLogicModule::ConsoleStopServer()
+void TundraLogicModule::StopServer()
 {
     server_->Stop();
 }
 
-void TundraLogicModule::ConsoleConnect(QString address, int port, QString username, QString password)
+void TundraLogicModule::Connect(QString address, int port, QString username, QString password)
 {
     client_->Login(address, port, username, password);
 }
 
-void TundraLogicModule::ConsoleDisconnect()
+void TundraLogicModule::Disconnect()
 {
     client_->Logout(false);
 }
 
-void TundraLogicModule::ConsoleSaveScene(QString filename, bool asBinary, bool saveTemporaryEntities, bool saveLocalEntities)
+void TundraLogicModule::SaveScene(QString filename, bool asBinary, bool saveTemporaryEntities, bool saveLocalEntities)
 {
     ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
@@ -446,7 +441,7 @@ void TundraLogicModule::ConsoleSaveScene(QString filename, bool asBinary, bool s
         LogError("SaveScene failed!");
 }
 
-void TundraLogicModule::ConsoleLoadScene(QString filename, bool clearScene, bool useEntityIDsFromFile)
+void TundraLogicModule::LoadScene(QString filename, bool clearScene, bool useEntityIDsFromFile)
 {
     ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
@@ -474,7 +469,7 @@ void TundraLogicModule::ConsoleLoadScene(QString filename, bool clearScene, bool
     LogInfo("Loaded " + QString::number(entities.size()) + " entities.");
 }
 
-void TundraLogicModule::ConsoleImportScene(QString filename, bool clearScene, bool replace)
+void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool replace)
 {
     ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
@@ -500,7 +495,7 @@ void TundraLogicModule::ConsoleImportScene(QString filename, bool clearScene, bo
     LogInfo("Imported " + QString::number(entities.size()) + " entities.");
 }
 
-void TundraLogicModule::ConsoleImportMesh(QString filename, float tx, float ty, float tz, float rx, float ry, float rz, float sx, float sy, float sz, bool inspect)
+void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float tz, float rx, float ry, float rz, float sx, float sy, float sz, bool inspect)
 {
     ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
