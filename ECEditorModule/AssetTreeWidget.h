@@ -15,25 +15,8 @@
 class QMenu;
 class Framework;
 
-/// Item representing asset in the tree widget.
-class AssetItem : public QTreeWidgetItem
-{
-public:
-    /// Constructor.
-    /** @param asset Asset pointer.
-        @param parent Parent tree widget item. */
-    AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent = 0);
-
-    /// Returns shared pointer to the asset. Always remember to check that the pointer is not null.
-    AssetPtr Asset() const;
-
-    /// Appends information text to the item that the asset is unloaded.
-    /** @param value. If true, "(Unloaded)" is appended to the item text. If false, the aforementiond text is removed. */
-    void MarkUnloaded(bool value);
-
-private:
-    AssetWeakPtr assetPtr; ///< Weak pointer to the asset.
-};
+class AssetItem;
+class AssetStorageItem;
 
 /// Tree widget showing all available assets.
 class AssetTreeWidget : public QTreeWidget

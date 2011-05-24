@@ -2,16 +2,20 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneTreeWidgetItems.h
- *  @brief  Tree widget utility classes and functions used in the @c SceneTreeWidget and @c AssetTreeWidget.
+ *  @brief  Tree widget -related classes used in @c SceneTreeWidget and @c AssetTreeWidget.
  */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "SceneTreeWidgetItems.h"
 
 #include "Entity.h"
 #include "AssetReference.h"
+#include "IAsset.h"
+#include "IAssetStorage.h"
+
+#include "MemoryLeakCheck.h"
 
 // EntityItem
 
@@ -136,4 +140,59 @@ QList<entity_id_t> Selection::EntityIds() const
         ids.insert(c->Parent()->Id());
 
     return ids.toList();
+}
+
+// AssetItem
+
+AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
+    QTreeWidgetItem(parent),
+    assetPtr(asset)
+{
+    setText(0, asset->Name());
+    MarkUnloaded(!asset->IsLoaded());
+}
+
+AssetPtr AssetItem::Asset() const
+{
+    return assetPtr.lock();
+}
+
+void AssetItem::MarkUnloaded(bool value)
+{
+    QString unloaded = QApplication::translate("AssetItem", " (Unloaded)");
+    if (value)
+        setText(0, text(0) + unloaded);
+    else
+        setText(0, text(0).remove(unloaded));
+}
+
+// AssetStorageItem
+
+AssetStorageItem::AssetStorageItem(const AssetStoragePtr &storage, QTreeWidgetItem *parent) :
+    QTreeWidgetItem(parent),
+    assetStorage(storage)
+{
+    setText(0, storage->Name());
+}
+
+AssetStoragePtr AssetStorageItem::Storage() const
+{
+    return assetStorage.lock();
+}
+
+// AssetSelection
+
+bool AssetSelection::IsEmpty() const
+{
+    return assets.isEmpty() && storages.isEmpty();
+}
+
+bool AssetSelection::HasAssets() const
+{
+    return !assets.isEmpty();
+}
+
+bool AssetSelection::HasStorages() const
+{
+    return !storages.isEmpty();
 }

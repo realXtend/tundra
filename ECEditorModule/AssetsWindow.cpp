@@ -11,6 +11,7 @@
 #include "AssetsWindow.h"
 #include "AssetTreeWidget.h"
 #include "TreeWidgetUtils.h"
+#include "SceneTreeWidgetItems.h"
 
 #include "Framework.h"
 #include "AssetAPI.h"

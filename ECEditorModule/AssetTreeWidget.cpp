@@ -9,6 +9,7 @@
 #include "DebugOperatorNew.h"
 
 #include "AssetTreeWidget.h"
+#include "SceneTreeWidgetItems.h"
 #include "AddContentWindow.h"
 #include "SupportedFileTypes.h"
 #include "RequestNewAssetDialog.h"
@@ -19,6 +20,7 @@
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
+#include "IAssetStorage.h"
 #include "AssetCache.h"
 #include "QtUtils.h"
 #include "UiAPI.h"
@@ -33,32 +35,6 @@
 #endif
 
 #include "MemoryLeakCheck.h"
-
-// AssetItem
-
-AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
-    QTreeWidgetItem(parent),
-    assetPtr(asset)
-{
-    setText(0, asset->Name());
-    MarkUnloaded(!asset->IsLoaded());
-}
-
-AssetPtr AssetItem::Asset() const
-{
-    return assetPtr.lock();
-}
-
-void AssetItem::MarkUnloaded(bool value)
-{
-    QString unloaded = QApplication::translate("AssetItem", " (Unloaded)");
-    if (value)
-        setText(0, text(0) + unloaded);
-    else
-        setText(0, text(0).remove(unloaded));
-}
-
-// AssetTreeWidget
 
 AssetTreeWidget::AssetTreeWidget(Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
