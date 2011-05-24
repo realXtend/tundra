@@ -132,7 +132,7 @@ function ServerHandleCollision(ent, pos, normal, distance, impulse, newCollision
 }
 
 function ServerUpdatePhysics(frametime) {
-     var placeable = me.placeable;
+    var placeable = me.placeable;
     var rigidbody = me.rigidbody;
 
     if (!flying) {
@@ -257,6 +257,11 @@ function ServerHandleStop(param) {
     if ((param == "down") && (motion_z == -1)) {
         motion_z = 0;
     }
+    if (param == "all") {
+        motion_x = 0;
+        motion_y = 0;
+        motion_z = 0;
+    }
 
     ServerSetAnimationState();
 }
@@ -304,6 +309,9 @@ function ServerHandleStopRotate(param) {
         rotate = 0;
     }
     if ((param == "right") && (rotate == 1)) {
+        rotate = 0;
+    }
+    if (param == "all") {
         rotate = 0;
     }
 }
@@ -490,7 +498,14 @@ function ClientUpdate(frametime)
             var active = avatarcameraentity.ogrecamera.IsActive();
             if (inputmapper.enabled != active) {
                 inputmapper.enabled = active;
-        }
+                // If we went offline, stop all movement/rotation
+                // so eg if you have W down you donw continue walking forward
+                // without the release for W being ever sent (as we disable the mapper right here)
+                if (!active) {
+                    me.Exec(2, "Stop", "all");
+                    me.Exec(2, "StopRotate", "all");
+                }
+            }
         }
         ClientUpdateAvatarCamera(frametime);
     }
