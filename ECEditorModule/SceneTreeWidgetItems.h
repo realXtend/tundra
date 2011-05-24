@@ -149,7 +149,7 @@ private:
 };
 
 /// Represents selection of AssetTreeWidget items.
-struct AssetSelection
+struct AssetTreeWidgetSelection
 {
     /// Returns true if no entity or component items selected.
     bool IsEmpty() const;

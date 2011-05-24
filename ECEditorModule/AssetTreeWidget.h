@@ -5,8 +5,7 @@
  *  @brief  Tree widget showing all available assets.
  */
 
-#ifndef incl_SceneStructureModule_AssetTreeWidget_h
-#define incl_SceneStructureModule_AssetTreeWidget_h
+#pragma once
 
 #include <QTreeWidget>
 
@@ -17,6 +16,7 @@ class Framework;
 
 class AssetItem;
 class AssetStorageItem;
+struct AssetTreeWidgetSelection;
 
 /// Tree widget showing all available assets.
 class AssetTreeWidget : public QTreeWidget
@@ -47,8 +47,8 @@ private:
     /** @param menu Context menu. */
     void AddAvailableActions(QMenu *menu);
 
-    /// Returns list of selected asset items.
-    QList<AssetItem *> GetSelection() const;
+    /// Returns list of selected asset and storage items.
+    AssetTreeWidgetSelection GetSelection() const;
 
     Framework *framework; ///< Framework.
     QMenu *contextMenu; ///< Right-click context menu.
@@ -120,5 +120,3 @@ private slots:
     /** @param result Result of finished. Close is 0, Execute and Close is 1, Execute is 2. */
     void FunctionDialogFinished(int result);
 };
-
-#endif

@@ -94,13 +94,12 @@ void AssetsWindow::PopulateTreeWidget()
 
     AssetStoragePtr defaultStorage = framework->Asset()->GetDefaultAssetStorage();
 
-    foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
+    foreach(const AssetStoragePtr &storage, framework->Asset()->GetAssetStorages())
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem;
-        item->setText(0, storage->ToString());
+        AssetStorageItem *item = new AssetStorageItem(storage);
+        //item->setText(0, storage->ToString());
         treeWidget->addTopLevelItem(item);
-
-        item->setData(0, Qt::UserRole, QVariant(storage->Name()));
+//        item->setData(0, Qt::UserRole, QVariant(storage->Name()));
 
         // The current default storage is bolded.
         if (storage == defaultStorage)

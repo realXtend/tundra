@@ -172,7 +172,7 @@ AssetStorageItem::AssetStorageItem(const AssetStoragePtr &storage, QTreeWidgetIt
     QTreeWidgetItem(parent),
     assetStorage(storage)
 {
-    setText(0, storage->Name());
+    setText(0, storage->ToString());//Name());
 }
 
 AssetStoragePtr AssetStorageItem::Storage() const
@@ -182,17 +182,17 @@ AssetStoragePtr AssetStorageItem::Storage() const
 
 // AssetSelection
 
-bool AssetSelection::IsEmpty() const
+bool AssetTreeWidgetSelection::IsEmpty() const
 {
     return assets.isEmpty() && storages.isEmpty();
 }
 
-bool AssetSelection::HasAssets() const
+bool AssetTreeWidgetSelection::HasAssets() const
 {
     return !assets.isEmpty();
 }
 
-bool AssetSelection::HasStorages() const
+bool AssetTreeWidgetSelection::HasStorages() const
 {
     return !storages.isEmpty();
 }
