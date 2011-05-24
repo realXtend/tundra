@@ -181,20 +181,8 @@ void EC_TransformGizmo::Initialize()
     mesh->meshMaterial.Set(materials, AttributeChange::Default);
 }
 
-/*
-AssetReferenceList GetMaterials(const &QList<GizmoAxis> activeAxes = QList<GizmoAxis>())
-{
-    AssetReferenceList materials;
-    materials.Append(cAxisGreen);
-    materials.Append(cAxisRed);
-    materials.Append(cAxisBlue);
-    if (activeAxes.empty())
-        return materials;
-}
-*/
-
 const float cClickDistanceThreshold = 0.25f;
-const float cClickOffsetThreshold = 5.f;//10.f;
+const float cClickOffsetThreshold = 2.5f;//10.f;
 
 void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 {
@@ -319,6 +307,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
         else
             break;
     case Hovering:
+        e->Suppress();
         //LogInfo("Hovering");
         if (mouseOnTop)
         {
@@ -337,6 +326,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
             break;
         }
     case Active:
+        e->Suppress();
         //LogInfo("Active");
         // If mouse released, fall through to default case.
         if (mouseDown)
@@ -431,8 +421,6 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     }
 
     mesh->meshMaterial.Set(materials, AttributeChange::Default);
-
-    e->Suppress();
 }
 
 /*
