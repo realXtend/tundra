@@ -785,7 +785,7 @@ void AddContentWindow::AddEntities()
         QList<Entity *> entities;
         switch(newDesc_.type)
         {
-        case SceneDesc::Naali:
+        case SceneDesc::Tundra:
         case SceneDesc::OgreMesh:
             entities = destScene->CreateContentFromSceneDesc(newDesc_, false, AttributeChange::Default);
             break;

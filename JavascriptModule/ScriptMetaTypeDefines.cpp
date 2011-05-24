@@ -100,7 +100,7 @@ void qScriptValueToAssetStoragePtrVector(const QScriptValue &value, AssetStorage
 {
 }
 
-/// Naali Ui defines
+/// Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
 Q_DECLARE_METATYPE(UiMainWindow*);
 Q_DECLARE_METATYPE(UiGraphicsView*);

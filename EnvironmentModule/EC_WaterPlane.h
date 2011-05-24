@@ -26,13 +26,6 @@ namespace Environment
 Water plane component creates a cubic water plane. Inside the water cube scene fog is overridden by underwater fog properties.
 Despite the cubic nature, water plane is visible for the outside viewer only as a plane.
 
-<h3> Using component to synchronize ocean in Taiga </h3>
-
-Currently (not in Tundra) EC_WaterPlane component can be used to synchronize Ocean in Taiga worlds. This can be done
-so that user creates entity and sets entity EC_Name-component. If this component name is set as "WaterEnvironment" our current implementation
-will create automatically a EC_WaterPlane-component on it. This component is now usable for every users and all changes on it will be transfered 
-to all users. This synchronized water plane component can also edit through environment editor (in world tools).
-
 Registered by Enviroment::EnvironmentModule.
 
 <b>Attributes</b>:

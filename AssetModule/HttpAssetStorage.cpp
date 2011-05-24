@@ -51,7 +51,7 @@ void HttpAssetStorage::PerformSearch(QString path)
     
     QNetworkRequest request;
     request.setUrl(searchUrl);
-    request.setRawHeader("User-Agent", "realXtend Naali");
+    request.setRawHeader("User-Agent", "realXtend Tundra");
     request.setRawHeader("Depth", "1");
     
     SearchRequest newSearch;

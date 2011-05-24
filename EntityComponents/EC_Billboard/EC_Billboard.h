@@ -31,7 +31,7 @@ namespace Ogre
 Billboard shows a billboard (3D sprite) that is attached to an entity.
 
 
-Registered by Naali::InWorldChatModule.
+Registered by TundraLogicModule.
 
 <b>Attributes</b>:
 <ul>

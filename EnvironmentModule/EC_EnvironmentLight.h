@@ -32,13 +32,6 @@ such as sunlight, ambient light. On default component uses Caelum and because of
 does not work until user disables Caelum (by setting useCaelum attribute to false). Use can also override server time by setting useFixedTime true, if that and useCaelum is set 
 false user can totally control scene "global" lights.   
 
-<h3> Using component to syncronize environment in Taiga </h3>
-
-Currently (not in Tundra) EC_EnvironmentLight component can be used to syncronize lights in Taiga worlds. This can be done
-so that user creates entity and sets entity EC_Name-component. If this component name is set as "LightEnvironment" our current implementation
-will create automagically a EC_EnvironmentLight-component on it. This component is now usable for every users and all changes on it will be transfered 
-to all users.  
-
 <b>Attributes</b>:
 <ul>
 <li> Color : sunColorAttr.

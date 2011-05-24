@@ -827,7 +827,7 @@ SceneDesc SceneManager::GetSceneDescFromXml(const QString &filename) const
         return sceneDesc;
     }
 
-    sceneDesc.type = SceneDesc::Naali;
+    sceneDesc.type = SceneDesc::Tundra;
     sceneDesc.filename = filename;
 
     QFile file(filename);
@@ -1021,7 +1021,7 @@ SceneDesc SceneManager::GetSceneDescFromBinary(const QString &filename) const
         return sceneDesc;
     }
 
-    sceneDesc.type = SceneDesc::Naali;
+    sceneDesc.type = SceneDesc::Tundra;
     sceneDesc.filename = filename;
 
     ///\todo Use Latin 1 encoding?

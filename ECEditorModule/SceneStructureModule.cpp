@@ -787,7 +787,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
 
     // Init description
     SceneDesc sceneDesc;
-    sceneDesc.type = SceneDesc::Naali;
+    sceneDesc.type = SceneDesc::Tundra;
     sceneDesc.filename = asset->Name();
 
     // Get data

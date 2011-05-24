@@ -121,7 +121,7 @@ struct SceneDesc
     /// Origin file type. \todo Delete this enumeration; SceneDesc should be source agnostic.
     enum Type
     {
-        Naali, ///< Naali XML or binary scene
+        Tundra, ///< Tundra XML or binary scene
         OgreScene, ///< OGRE .scene
         OgreMesh, ///< OGRE .mesh
         OpenAsset, ///< OpenAsset

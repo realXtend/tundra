@@ -12,25 +12,14 @@
 
 namespace Environment
 {
-/// Makes the entity a SkyBox
+/// Makes the entity a sky.
 /**
 <table class="header">
 <tr>
 <td>
-<h2>SkyBox plane</h2>
+<h2>Makes the entity a sky.</h2>
 
 Registered by Enviroment::EnvironmentModule. 
-
-<h3> Using component to synchronize sky in Taiga </h3>
-
-Currently (not in Tundra) EC_Sky component can be used to synchronize sky in Taiga worlds.
-This can be done so that user creates entity and sets entity EC_Name-component.
-
-If this component name is set as "SkyEnvironment" our current implementation will create automatically
-a EC_Sky-component on it. This component is now usable for every user and all changes on it will be replicated.
-This synchronized sky plane component can also be edited by using environment editor (in world tools).
-
-Currently Caelum must be disabled before these features can be used.
 
 <b>Attributes</b>:
 <ul>
