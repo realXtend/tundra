@@ -431,6 +431,8 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     }
 
     mesh->meshMaterial.Set(materials, AttributeChange::Default);
+
+    e->Suppress();
 }
 
 /*
