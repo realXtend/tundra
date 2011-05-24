@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   FuntionInvoker.cpp
- *  @brief  Utility class which wraps QMetaObject::invokeMethod() functionality
- *          with more user-friendly and script-accessible API
+ *  @brief  Utility class which wraps QMetaObject::invokeMethod() functionality with more user-friendly API.
  */
 
 #include "StableHeaders.h"
@@ -12,7 +11,6 @@
 #include "CoreException.h"
 #include "FunctionInvoker.h"
 #include "ArgumentType.h"
-
 #include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
@@ -110,13 +108,13 @@ void FunctionInvoker::Invoke(QObject *obj, const QString &functionSignature, con
 QList<IArgumentType *> FunctionInvoker::CreateArgumentList(const QObject *obj, const QString &signature)
 {
     QList<IArgumentType *> args;
-
+    QByteArray normalizedSignature = QMetaObject::normalizedSignature(signature.toStdString().c_str());
     const QMetaObject *mo = obj->metaObject();
     for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
     {
         const QMetaMethod &mm = mo->method(i);
-        if (signature == QString(mm.signature()))
-            foreach(QByteArray param, mm.parameterTypes())
+        if (normalizedSignature == QByteArray(mm.signature()))
+            foreach(const QByteArray &param, mm.parameterTypes())
             {
                 IArgumentType *arg = CreateArgumentType(QString(param));
                 if (arg)

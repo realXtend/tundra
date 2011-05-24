@@ -2,16 +2,14 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   FunctionInvoker.h
- *  @brief  Utility class which wraps QMetaObject::invokeMethod() functionality
- *          with more user-friendly and script-accessible API
+ *  @brief  Utility class which wraps QMetaObject::invokeMethod() functionality with more user-friendly API.
  */
 
 #pragma once
 
 class IArgumentType;
 
-/// Utility class which wraps QMetaObject::invokeMethod() functionality 
-/// with more user-friendly and script-accessible API
+/// Utility class which wraps QMetaObject::invokeMethod() functionality with more user-friendly API.
 class FunctionInvoker
 {
 public:
@@ -27,6 +25,7 @@ public:
         @param errorMsg [out] Pointer to error message. */
     void Invoke(QObject *obj, const QString &function, const QVariantList &params, QVariant *ret = 0, QString *errorMsg = 0);
 
+    /// This is an overloaded function.
     void Invoke(QObject *obj, const QString &function, const QStringList &params, QVariant *ret = 0, QString *errorMsg = 0);
 
     /// Creates argument type list for function of object.@c obj.with the signature @c signature.
