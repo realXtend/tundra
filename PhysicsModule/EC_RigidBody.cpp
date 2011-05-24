@@ -21,6 +21,7 @@
 #include "LoggingFunctions.h"
 
 #include <btBulletDynamicsCommon.h>
+#include <BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 #include <set>
@@ -55,6 +56,7 @@ EC_RigidBody::EC_RigidBody(Framework *fw) :
     body_(0),
     world_(0),
     shape_(0),
+    childShape_(0),
     heightField_(0),
     disconnected_(false),
     cachedShapeType_(-1)
@@ -311,7 +313,12 @@ void EC_RigidBody::CreateCollisionShape()
         break;
     case Shape_TriMesh:
         if (triangleMesh_)
-            shape_ = new btBvhTriangleMeshShape(triangleMesh_.get(), true, true);
+        {
+            // Need to first create a bvhTriangleMeshShape, then a scaled version of it to allow for individual scaling.
+            childShape_ = new btBvhTriangleMeshShape(triangleMesh_.get(), true, true);
+            shape_ = new btScaledBvhTriangleMeshShape(static_cast<btBvhTriangleMeshShape*>(childShape_), btVector3(1.0f, 1.0f, 1.0f));
+        }
+        break;
     case Shape_HeightField:
         CreateHeightFieldFromTerrain();
         break;
@@ -334,6 +341,11 @@ void EC_RigidBody::RemoveCollisionShape()
             body_->setCollisionShape(0);
         delete shape_;
         shape_ = 0;
+    }
+    if (childShape_)
+    {
+        delete childShape_;
+        childShape_ = 0;
     }
     if (heightField_)
     {
@@ -757,8 +769,8 @@ void EC_RigidBody::UpdateScale()
     {
         // Note: for now, world scale is purposefully NOT used, because it would be problematic to change the scale when a parenting change occurs
         const Vector3df& scale = placeable->transform.Get().scale;
-        // Trianglemesh does not have scaling of its own, so use the size
-        if ((!triangleMesh_) || (shapeType.Get() != Shape_TriMesh))
+        // Trianglemesh or convexhull does not have scaling of its own in the shape, so multiply with the size
+        if ((shapeType.Get() != Shape_TriMesh) && (shapeType.Get() != Shape_ConvexHull))
             shape_->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
         else
             shape_->setLocalScaling(btVector3(sizeVec.x * scale.x, sizeVec.y * scale.y, sizeVec.z * scale.z));
@@ -822,10 +834,21 @@ void EC_RigidBody::CreateConvexHullSetShape()
 {
     if (!convexHullSet_)
         return;
-    btCompoundShape* compound = new btCompoundShape();
-    shape_ = compound;
-    for(uint i = 0; i < convexHullSet_->hulls_.size(); ++i)
-        compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(convexHullSet_->hulls_[i].position_)), convexHullSet_->hulls_[i].hull_.get());
+    
+    // Avoid creating a compound shape if only 1 hull in the set
+    if (convexHullSet_->hulls_.size() > 1)
+    {
+        btCompoundShape* compound = new btCompoundShape();
+        shape_ = compound;
+        for (uint i = 0; i < convexHullSet_->hulls_.size(); ++i)
+            compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(convexHullSet_->hulls_[i].position_)), convexHullSet_->hulls_[i].hull_.get());
+    }
+    else if (convexHullSet_->hulls_.size() == 1)
+    {
+        btConvexHullShape* original = convexHullSet_->hulls_[0].hull_.get();
+        btConvexHullShape* convex = new btConvexHullShape(reinterpret_cast<const btScalar*>(original->getUnscaledPoints()), original->getNumVertices());
+        shape_ = convex;
+    }
 }
 
 void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisionFlags)
