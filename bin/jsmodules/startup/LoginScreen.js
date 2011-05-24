@@ -3,6 +3,7 @@
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 
+var localhost = "127.0.0.1";
 var widget;
 var serverAddressLineEdit;
 var usernameLineEdit;
@@ -11,6 +12,12 @@ var loginButton;
 var exitButton;
 var tcpButton;
 var udpButton;
+
+var configFile = "tundra";
+var configSection = "client";
+var configServer = null;
+var configUsername = null;
+var configProtocol = null;
 
 // Only show login window if we are using a viewer.
 if (!server.IsAboutToStart())
@@ -44,7 +51,39 @@ function SetupLoginScreen() {
     logoLabel.pixmap = new QPixmap("./data/ui/images/realxtend_logo.png");
 
     client.Connected.connect(HideLoginScreen);
+    client.Connected.connect(WriteConfigFromUi);
     client.Disconnected.connect(ShowLoginScreen);
+
+    ReadConfigToUi();
+}
+
+function ReadConfigToUi() {
+    // Make double sure with "" default value and null 
+    // checks that we can in any case insert var to ui
+    configServer = framework.Config().Get(configFile, configSection, "login_server", "");
+    if (configServer == null)
+        configServer = "";
+    configUsername = framework.Config().Get(configFile, configSection, "login_username", "");
+    if (configUsername == null)
+        configUsername = "";
+    configProtocol = framework.Config().Get(configFile, configSection, "login_protocol", "");
+    if (configProtocol == null)
+        configProtocol = "";
+
+    serverAddressLineEdit.text = configServer;
+    usernameLineEdit.text = configUsername;
+    if (configProtocol == "tcp")
+        tcpButton.checked = true;
+    else if (configProtocol == "udp")
+        udpButton.checked = true;
+}
+
+function WriteConfigFromUi() {
+    // Downside of this is that user may do something to the UI elements while loggin in.
+    // In Tundra its so fast that doubt that will happen. Can be fixed to read in to configX values in LoginPresse()
+    framework.Config().Set(configFile, configSection, "login_server", TrimField(serverAddressLineEdit.text));
+    framework.Config().Set(configFile, configSection, "login_username", TrimField(usernameLineEdit.text));
+    framework.Config().Set(configFile, configSection, "login_protocol", GetProtocol());
 }
 
 function TrimField(txt) {
@@ -66,6 +105,12 @@ function LoginPressed() {
     var strings = TrimField(serverAddressLineEdit.text).split(':');
     if (strings.length > 1)
         port = parseInt(strings[1]);
+
+    if (strings[0] == "")
+    {
+        serverAddressLineEdit.text = localhost;
+        strings[0] = localhost;
+    }
 
     client.Login(strings[0], port, username, password, protocol);
 }
