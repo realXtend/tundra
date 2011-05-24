@@ -85,6 +85,7 @@ AddEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
 AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
 AddEntityComponent(EntityComponents/EC_QmlApp EC_QmlApp)
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)
+AddEntityComponent(EntityComponents/EC_TransformGizmo EC_TransformGizmo)
 
 #AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
 #AddEntityComponent(EntityComponents/EC_3DCanvasSource EC_3DCanvasSource)
@@ -99,8 +100,7 @@ AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)
 #AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
 #AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
 
-
-# The following two are declared by both PythonScriptModule and JavascriptModule. They are optional.
+# The following is by both PythonScriptModule and JavascriptModule. It is optional.
 AddEntityComponent(EntityComponents/EC_Script EC_Script)
 
 add_subdirectory(TundraLogicModule)
