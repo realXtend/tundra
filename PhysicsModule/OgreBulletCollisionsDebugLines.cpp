@@ -57,8 +57,15 @@ DebugLines::DebugLines() : SimpleRenderable()
 
 //------------------------------------------------------------------------------------------------
 void DebugLines::clear()
-{
-    _lines.clear();
+{ 
+    try
+    {
+        _lines.clear();
+    }
+    catch(std::exception &e)
+    {
+        std::cerr << "[Physics::DebugLines::clear()] Caught expection while clearing lines from a std::vector, " << e.what();
+    }
 }
 
 //------------------------------------------------------------------------------------------------
@@ -71,114 +78,122 @@ DebugLines::~DebugLines(void)
 //------------------------------------------------------------------------------------------------
 void DebugLines::draw()
 {
-    if (_lines.empty())
+    try
     {
-        mRenderOp.vertexData->vertexCount = 0;
-        return;
-    }
-    
-    // Initialization stuff
-    mRenderOp.vertexData->vertexCount = _lines.size() * 2;
+        if (_lines.empty())
+        {
+            mRenderOp.vertexData->vertexCount = 0;
+            return;
+        }
+        
+        // Initialization stuff
+        mRenderOp.vertexData->vertexCount = _lines.size() * 2;
 
-    Ogre::VertexDeclaration *decl = mRenderOp.vertexData->vertexDeclaration;
-    Ogre::VertexBufferBinding *bind = mRenderOp.vertexData->vertexBufferBinding;
+        Ogre::VertexDeclaration *decl = mRenderOp.vertexData->vertexDeclaration;
+        Ogre::VertexBufferBinding *bind = mRenderOp.vertexData->vertexBufferBinding;
 
-	if (_vbuf.isNull())
-	{
-		decl->addElement(0, 0, VET_FLOAT3, VES_POSITION);
-		decl->addElement(0, 12, VET_COLOUR, VES_DIFFUSE);
-
-		_vbuf = HardwareBufferManager::getSingleton().createVertexBuffer(
-			decl->getVertexSize(0),
-			mRenderOp.vertexData->vertexCount,
-			HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
-
-		bind->setBinding(0, _vbuf);
-	}
-	else
-	{
-	    if (_vbuf->getNumVertices() != mRenderOp.vertexData->vertexCount)
+	    if (_vbuf.isNull())
 	    {
-		    bind->unsetAllBindings();
+		    decl->addElement(0, 0, VET_FLOAT3, VES_POSITION);
+		    decl->addElement(0, 12, VET_COLOUR, VES_DIFFUSE);
 
 		    _vbuf = HardwareBufferManager::getSingleton().createVertexBuffer(
-		    	decl->getVertexSize(0),
-		    	mRenderOp.vertexData->vertexCount,
-		    	HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+			    decl->getVertexSize(0),
+			    mRenderOp.vertexData->vertexCount,
+			    HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-    		bind->setBinding(0, _vbuf);
-    	}
-	}
+		    bind->setBinding(0, _vbuf);
+	    }
+	    else
+	    {
+	        if (_vbuf->getNumVertices() != mRenderOp.vertexData->vertexCount)
+	        {
+		        bind->unsetAllBindings();
 
-    // Drawing stuff
-    unsigned int size = (unsigned int)_lines.size();
-    Ogre::Vector3 vaabMin = _lines[0]._start;
-    Ogre::Vector3 vaabMax = _lines[0]._start;
+		        _vbuf = HardwareBufferManager::getSingleton().createVertexBuffer(
+		    	    decl->getVertexSize(0),
+		    	    mRenderOp.vertexData->vertexCount,
+		    	    HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-    float *prPos = static_cast<float*>(_vbuf->lock(HardwareBuffer::HBL_DISCARD));
+    		    bind->setBinding(0, _vbuf);
+    	    }
+	    }
 
-    Ogre::RenderSystem* rs = Root::getSingleton().getRenderSystem();
-    Ogre::VertexElementType vet = VET_COLOUR_ARGB;
-    if (rs)
-        vet = rs->getColourVertexElementType();
+        // Drawing stuff
+        unsigned int size = (unsigned int)_lines.size();
+        Ogre::Vector3 vaabMin = _lines[0]._start;
+        Ogre::Vector3 vaabMax = _lines[0]._start;
 
-    for(unsigned int i = 0; i < size; i++)
-    {
-        const Line& line = _lines[i];
-        uint32 packedColor;
-        if (vet == VET_COLOUR_ARGB)
-            packedColor = line._color.getAsARGB();
-        else
-            packedColor = line._color.getAsABGR();
-        
-        *prPos++ = line._start.x;
-        *prPos++ = line._start.y;
-        *prPos++ = line._start.z;
-        *((uint32*)prPos) = packedColor;
-        prPos++;
-        *prPos++ = line._end.x;
-        *prPos++ = line._end.y;
-        *prPos++ = line._end.z;
-        *((uint32*)prPos) = packedColor;
-        prPos++;
-        
-        if (line._start.x < vaabMin.x)
-			vaabMin.x = line._start.x;
-		else if (line._start.x > vaabMax.x)
-			vaabMax.x = line._start.x;
+        float *prPos = static_cast<float*>(_vbuf->lock(HardwareBuffer::HBL_DISCARD));
 
-        if (line._start.y < vaabMin.y)
-			vaabMin.y = line._start.y;
-		else if (line._start.y > vaabMax.y)
-			vaabMax.y = line._start.y;
+        Ogre::RenderSystem* rs = Root::getSingleton().getRenderSystem();
+        Ogre::VertexElementType vet = VET_COLOUR_ARGB;
+        if (rs)
+            vet = rs->getColourVertexElementType();
 
-        if (line._start.z < vaabMin.z)
-			vaabMin.z = line._start.z;
-		else if (line._start.z > vaabMax.z)
-			vaabMax.z = line._start.z;
-		
-        if (line._end.x < vaabMin.x)
-			vaabMin.x = line._end.x;
-		else if (line._end.x > vaabMax.x)
-			vaabMax.x = line._end.x;
+        for(unsigned int i = 0; i < size; i++)
+        {
+            const Line& line = _lines[i];
+            uint32 packedColor;
+            if (vet == VET_COLOUR_ARGB)
+                packedColor = line._color.getAsARGB();
+            else
+                packedColor = line._color.getAsABGR();
+            
+            *prPos++ = line._start.x;
+            *prPos++ = line._start.y;
+            *prPos++ = line._start.z;
+            *((uint32*)prPos) = packedColor;
+            prPos++;
+            *prPos++ = line._end.x;
+            *prPos++ = line._end.y;
+            *prPos++ = line._end.z;
+            *((uint32*)prPos) = packedColor;
+            prPos++;
+            
+            if (line._start.x < vaabMin.x)
+			    vaabMin.x = line._start.x;
+		    else if (line._start.x > vaabMax.x)
+			    vaabMax.x = line._start.x;
 
-        if (line._end.y < vaabMin.y)
-			vaabMin.y = line._end.y;
-		else if (line._end.y > vaabMax.y)
-			vaabMax.y = line._end.y;
+            if (line._start.y < vaabMin.y)
+			    vaabMin.y = line._start.y;
+		    else if (line._start.y > vaabMax.y)
+			    vaabMax.y = line._start.y;
 
-        if (line._end.z < vaabMin.z)
-			vaabMin.z = line._end.z;
-		else if (line._end.z > vaabMax.z)
-			vaabMax.z = line._end.z;
+            if (line._start.z < vaabMin.z)
+			    vaabMin.z = line._start.z;
+		    else if (line._start.z > vaabMax.z)
+			    vaabMax.z = line._start.z;
+    		
+            if (line._end.x < vaabMin.x)
+			    vaabMin.x = line._end.x;
+		    else if (line._end.x > vaabMax.x)
+			    vaabMax.x = line._end.x;
+
+            if (line._end.y < vaabMin.y)
+			    vaabMin.y = line._end.y;
+		    else if (line._end.y > vaabMax.y)
+			    vaabMax.y = line._end.y;
+
+            if (line._end.z < vaabMin.z)
+			    vaabMin.z = line._end.z;
+		    else if (line._end.z > vaabMax.z)
+			    vaabMax.z = line._end.z;
+        }
+
+        _vbuf->unlock();
+
+        mBox.setInfinite();
+	    //mBox.Extents(vaabMin, vaabMax);
+    	
+	    clear();
     }
-
-    _vbuf->unlock();
-
-    mBox.setInfinite();
-	//mBox.Extents(vaabMin, vaabMax);
-	
-	clear();
+    catch(Ogre::Exception &e)
+    {
+        std::cerr << "[Physics::DebugLines::draw()] Exception caught on trying to draw debug physics lines, " << e.what();
+        clear();
+    }
 }
 //------------------------------------------------------------------------------------------------
 Real DebugLines::getSquaredViewDepth(const Camera *cam) const
