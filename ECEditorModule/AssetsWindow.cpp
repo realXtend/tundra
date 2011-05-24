@@ -276,7 +276,9 @@ void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
 
 void AssetsWindow::ExpandOrCollapseAll()
 {
+    treeWidget->blockSignals(true);
     bool treeExpanded = TreeWidgetExpandOrCollapseAll(treeWidget);
+    treeWidget->blockSignals(false);
     expandAndCollapseButton->setText(treeExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 

@@ -721,7 +721,9 @@ void SceneStructureWindow::Search(const QString &filter)
 
 void SceneStructureWindow::ExpandOrCollapseAll()
 {
+    treeWidget->blockSignals(true);
     bool treeExpanded = TreeWidgetExpandOrCollapseAll(treeWidget);
+    treeWidget->blockSignals(false);
     expandAndCollapseButton->setText(treeExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 
