@@ -47,8 +47,7 @@ void ECEditorModule::PostInitialize()
 
 void ECEditorModule::Uninitialize()
 {
-    if (commonEditor)
-        SAFE_DELETE(commonEditor);
+    SAFE_DELETE(commonEditor);
     SAFE_DELETE_LATER(xmlEditor);
 }
 

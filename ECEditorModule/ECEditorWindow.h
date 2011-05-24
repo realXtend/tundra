@@ -141,8 +141,8 @@ public slots:
     /// Show/Hide entity list.
     void ToggleEntityList();
 
-    /// Checks if deleted entity is located in editor's list and if so remove it from the editor.
-    void OnEntityRemoved(Entity* entity);
+    /// Removes entity item from the editor's list.
+    void RemoveEntity(Entity* entity);
 
     /// Set focus to this editor window.
     /** When window has focus it should accept entity select actions and add clicked entities from the scene.

@@ -141,9 +141,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
     connect(framework->Scene(), SIGNAL(DefaultWorldSceneChanged(SceneManager *)), SLOT(OnDefaultSceneChanged(SceneManager *)));
 
-    ECEditorModule *module = framework->GetModule<ECEditorModule>();
-    if (module)
-        connect(this, SIGNAL(FocusChanged(ECEditorWindow *)), module, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
+    connect(this, SIGNAL(FocusChanged(ECEditorWindow *)), framework->GetModule<ECEditorModule>(), SLOT(ECEditorFocusChanged(ECEditorWindow*)));
 
     SceneManager *scene = framework->Scene()->GetDefaultScene().get();
     if (scene)
@@ -648,7 +646,8 @@ void ECEditorWindow::RefreshPropertyBrowser()
     {
         transformEditor->SetSelection(entities);
         transformEditor->FocusGizmoPivotToAabbBottomCenter();
-        transformEditor->SetGizmoVisible(true);
+        // Shows gizmo only if we have focus.
+        transformEditor->SetGizmoVisible(hasFocus);
     }
 }
 
@@ -760,7 +759,7 @@ void ECEditorWindow::ToggleEntityList()
     }
 }
 
-void ECEditorWindow::OnEntityRemoved(Entity* entity)
+void ECEditorWindow::RemoveEntity(Entity* entity)
 {
     for(uint i = 0; i < (uint)entityList->count(); i++)
     {
@@ -776,7 +775,9 @@ void ECEditorWindow::OnEntityRemoved(Entity* entity)
 void ECEditorWindow::SetFocus(bool focus)
 {
     hasFocus = focus;
-    LogInfo("Focus: " + ToString(focus));
+    LogInfo("ECEditorWindow::SetFocus: " + ToString(focus));
+    bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
+    LogInfo("SetFocus: showGizmo: " + ToString(showGizmo));
     transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && hasFocus);
 
     for(uint i = 0; i < (uint)entityList->count(); i++)
@@ -793,7 +794,9 @@ void ECEditorWindow::setVisible(bool visible)
     if (visible)
         emit FocusChanged(this);
 
-    transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && visible);
+    bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
+    LogInfo("ECEditorWindow::setVisible: showGizmo: " + ToString(showGizmo));
+    transformEditor->SetGizmoVisible(showGizmo);
 
     for(uint i = 0; i < (uint)entityList->count(); i++)
     {
@@ -824,7 +827,6 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
                 EC_Highlight::TypeNameStatic(), cEcEditorHighlight).get());
             if (hl)
             {
-                LogInfo("EC_Highlight added.");
                 hl->SetTemporary(true);
                 hl->visible.Set(true, AttributeChange::Default);
             }
@@ -833,10 +835,7 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
         {
             ComponentPtr c = entity->GetComponent(EC_Highlight::TypeNameStatic(), cEcEditorHighlight);
             if (c)
-            {
-                LogInfo("EC_Highlight removed.");
                 entity->RemoveComponent(c);
-            }
         }
     }
 #else
@@ -900,7 +899,7 @@ void ECEditorWindow::OnDefaultSceneChanged(SceneManager *scene)
 
     /// todo disconnect previous scene connection.
     connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)),
-        SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
+        SLOT(RemoveEntity(Entity*)), Qt::UniqueConnection);
     connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
         SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
 }
