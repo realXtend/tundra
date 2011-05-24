@@ -647,6 +647,17 @@ function ClientUpdateAvatarCamera() {
     var cameratransform = cameraplaceable.transform;
     cameratransform.rot = new Vector3df(pitch, 0, 0);
     cameratransform.pos = new Vector3df(0, avatar_camera_height, avatar_camera_distance);
+
+    // Track the head bone in 1st person
+    if ((first_person) && (me.mesh != null))
+    {
+        me.mesh.ForceSkeletonUpdate();
+        var headPos = me.mesh.GetBoneDerivedPosition("Bip01_Head");
+        headPos.z -= 0.5;
+        headPos.y -= 0.7;
+        cameratransform.pos = headPos;
+    }
+
     cameraplaceable.transform = cameratransform;
 }
 

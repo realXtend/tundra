@@ -376,6 +376,21 @@ public slots:
     /// Return names of all bones. If no entity or skeleton, returns empty list
     QStringList GetAvailableBones() const;
     
+    /// Force a skeleton update. Call this before GetBonePosition()... to make sure bones have updated positions, even if the mesh is currently invisible
+    void ForceSkeletonUpdate();
+    /// Return bone's local position
+    Vector3df GetBonePosition(const QString& bone_name);
+    /// Return bone's root-derived position. Note: these are not world coordinates, but relative to the mesh root
+    Vector3df GetBoneDerivedPosition(const QString& bone_name);
+    /// Return bone's local orientation
+    Quaternion GetBoneOrientation(const QString& bone_name);
+    /// Return bone's root-derived orientation
+    Quaternion GetBoneDerivedOrientation(const QString& bone_name);
+    /// Return bone's local orientation as Euler degrees
+    Vector3df GetBoneOrientationEuler(const QString& bone_name);
+    /// Return bone's root-derived orientation as Euler degrees
+    Vector3df GetBoneDerivedOrientationEuler(const QString& bone_name);
+    
 signals:
     /// Emitted before the Ogre mesh entity is about to be destroyed
     void MeshAboutToBeDestroyed();

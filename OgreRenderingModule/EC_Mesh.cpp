@@ -1141,6 +1141,94 @@ QStringList EC_Mesh::GetAvailableBones() const
     return ret;
 }
 
+void EC_Mesh::ForceSkeletonUpdate()
+{
+    if (!entity_)
+        return;
+    Ogre::Skeleton* skel = entity_->getSkeleton();
+    if (!skel)
+        return;
+    if (entity_->getAllAnimationStates())
+        skel->setAnimationState(*entity_->getAllAnimationStates());
+}
+
+Vector3df EC_Mesh::GetBonePosition(const QString& bone_name)
+{
+    Ogre::Bone* bone = GetBone(bone_name);
+    if (bone)
+    {
+        const Ogre::Vector3& pos = bone->getPosition();
+        return Vector3df(pos.x, pos.y, pos.z);
+    }
+    else
+        return Vector3df::ZERO;
+}
+
+Vector3df EC_Mesh::GetBoneDerivedPosition(const QString& bone_name)
+{
+    Ogre::Bone* bone = GetBone(bone_name);
+    if (bone)
+    {
+        Ogre::Vector3 pos = bone->_getDerivedPosition();
+        return Vector3df(pos.x, pos.y, pos.z);
+    }
+    else
+        return Vector3df::ZERO;
+}
+
+Quaternion EC_Mesh::GetBoneOrientation(const QString& bone_name)
+{
+    Ogre::Bone* bone = GetBone(bone_name);
+    if (bone)
+    {
+        const Ogre::Quaternion& quat = bone->getOrientation();
+        return Quaternion(quat.x, quat.y, quat.z, quat.w);
+    }
+    else
+        return Quaternion::IDENTITY;
+}
+
+Quaternion EC_Mesh::GetBoneDerivedOrientation(const QString& bone_name)
+{
+    Ogre::Bone* bone = GetBone(bone_name);
+    if (bone)
+    {
+        const Ogre::Quaternion& quat = bone->_getDerivedOrientation();
+        return Quaternion(quat.x, quat.y, quat.z, quat.w);
+    }
+    else
+        return Quaternion::IDENTITY;
+}
+
+Vector3df EC_Mesh::GetBoneOrientationEuler(const QString& bone_name)
+{
+    Ogre::Bone* bone = GetBone(bone_name);
+    if (bone)
+    {
+        const Ogre::Quaternion& quat = bone->getOrientation();
+        Quaternion q(quat.x, quat.y, quat.z, quat.w);
+        Vector3df euler;
+        q.toEuler(euler);
+        return euler * RADTODEG;
+    }
+    else
+        return Vector3df::ZERO;
+}
+
+Vector3df EC_Mesh::GetBoneDerivedOrientationEuler(const QString& bone_name)
+{
+    Ogre::Bone* bone = GetBone(bone_name);
+    if (bone)
+    {
+        const Ogre::Quaternion& quat = bone->_getDerivedOrientation();
+        Quaternion q(quat.x, quat.y, quat.z, quat.w);
+        Vector3df euler;
+        q.toEuler(euler);
+        return euler * RADTODEG;
+    }
+    else
+        return Vector3df::ZERO;
+}
 
 bool EC_Mesh::HasMaterialsChanged() const
 {
