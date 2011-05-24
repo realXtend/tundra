@@ -13,6 +13,7 @@
 #include "SupportedFileTypes.h"
 #include "RequestNewAssetDialog.h"
 #include "CloneAssetDialog.h"
+#include "FunctionDialog.h"
 
 #include "AssetsWindow.h"
 #include "SceneAPI.h"
@@ -21,6 +22,9 @@
 #include "AssetCache.h"
 #include "QtUtils.h"
 #include "UiAPI.h"
+#include "FunctionInvoker.h"
+#include "ArgumentType.h"
+
 #include <boost/filesystem.hpp>
 
 #ifdef _WINDOWS
@@ -198,6 +202,10 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         menu->addAction(exportAction);
         connect(exportAction, SIGNAL(triggered()), SLOT(Export()));
     }
+
+    QAction *functionsAction = new QAction(tr("Functions..."), menu);
+    connect(functionsAction, SIGNAL(triggered()), this, SLOT(OpenFunctionDialog()));
+    menu->addAction(functionsAction);
 
     QAction *importAction = new QAction(tr("Import..."), menu);
     connect(importAction, SIGNAL(triggered()), SLOT(Import()));
@@ -500,3 +508,62 @@ void AssetTreeWidget::OpenFileLocation()
 #endif
     }
 }
+
+void AssetTreeWidget::OpenFunctionDialog()
+{
+    QObjectWeakPtrList objs;
+    foreach(AssetItem *item, GetSelection())
+        objs << boost::dynamic_pointer_cast<QObject>(item->Asset());
+
+    if (objs.size())
+    {
+        FunctionDialog *d = new FunctionDialog(objs, this);
+        connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogFinished(int)));
+        d->show();
+    }
+}
+
+void AssetTreeWidget::FunctionDialogFinished(int result)
+{
+    FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
+    if (!dialog)
+        return;
+
+    if (result == QDialog::Rejected)
+        return;
+
+    // Get the list of parameters we will pass to the function we are invoking,
+    // and update the latest values to them from the editor widgets the user inputted.
+    QVariantList params;
+    foreach(IArgumentType *arg, dialog->Arguments())
+    {
+        arg->UpdateValueFromEditor();
+        params << arg->ToQVariant();
+    }
+
+    // Clear old return value from the dialog.
+    dialog->SetReturnValueText("");
+
+    foreach(const QObjectWeakPtr &o, dialog->Objects())
+        if (o.lock())
+        {
+            QObject *obj = o.lock().get();
+
+            QString objName = obj->metaObject()->className();
+            QString objNameWithId = objName;
+            IAsset *asset = dynamic_cast<IAsset *>(obj);
+            if (asset)
+                objNameWithId.append('(' + asset->Name() + ')');
+
+            QString errorMsg;
+            QVariant ret;
+            FunctionInvoker invoker;
+            invoker.Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
+
+            if (errorMsg.isEmpty())
+                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+            else
+                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+        }
+}
+

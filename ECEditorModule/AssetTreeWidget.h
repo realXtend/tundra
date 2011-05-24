@@ -21,16 +21,14 @@ class AssetItem : public QTreeWidgetItem
 public:
     /// Constructor.
     /** @param asset Asset pointer.
-        @param parent Parent tree widget item.
-    */
+        @param parent Parent tree widget item. */
     AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent = 0);
 
     /// Returns shared pointer to the asset. Always remember to check that the pointer is not null.
     AssetPtr Asset() const;
 
     /// Appends information text to the item that the asset is unloaded.
-    /** @param value. If true "(Unloaded)" is appended to the item text. If false the text is removed.
-    */
+    /** @param value. If true, "(Unloaded)" is appended to the item text. If false, the aforementiond text is removed. */
     void MarkUnloaded(bool value);
 
 private:
@@ -45,8 +43,7 @@ class AssetTreeWidget : public QTreeWidget
 public:
     /// Constructor.
     /** @param fw Framework pointer.
-        @param parent Parent widget.
-    */
+        @param parent Parent widget. */
     AssetTreeWidget(Framework *fw, QWidget *parent = 0);
 
 protected:
@@ -64,8 +61,7 @@ protected:
 
 private:
     /// Creates and adds applicable actions to the right-click context menu.
-    /** @param menu Context menu.
-    */
+    /** @param menu Context menu. */
     void AddAvailableActions(QMenu *menu);
 
     /// Returns list of selected asset items.
@@ -97,8 +93,7 @@ private slots:
     void Import();
 
     /// Called by open file dialog when it's closed.
-    /** @param result Result of dialog closure. Open is 1, Cancel is 0.
-    */
+    /** @param result Result of dialog closure. Open is 1, Cancel is 0. */
     void OpenFileDialogClosed(int result);
 
     /// Opens Request New Asset dialog.
@@ -111,8 +106,7 @@ private slots:
     void RemoveStorage();
 
     /// Called by Request New Asset dialog when it's closed.
-    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
-    */
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0. */
     void RequestNewAssetDialogClosed(int result);
 
     /// Exports selected asset(s).
@@ -122,22 +116,26 @@ private slots:
     void Clone();
 
     /// Called by CloneAssetDialog when it's closed.
-    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
-    */
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0. */
     void CloneAssetDialogClosed(int result);
 
     /// Called by SaveAssetAs save file dialog when it's closed.
-    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
-    */
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0. */
     void SaveAssetDialogClosed(int result);
 
     /// Opens Add Content window with the provided @files added to it.
-    /** @param files List of filenames.
-    */
+    /** @param files List of filenames. */
     void Upload(const QStringList &files);
 
     /// Opens the location folder of an asset in operating system's file explorer.
     void OpenFileLocation();
+
+    /// Shows dialog for invoking functions for currently selected assets.
+    void OpenFunctionDialog();
+
+    /// Called by function dialog when it's finished.
+    /** @param result Result of finished. Close is 0, Execute and Close is 1, Execute is 2. */
+    void FunctionDialogFinished(int result);
 };
 
 #endif

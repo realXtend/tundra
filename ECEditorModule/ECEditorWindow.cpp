@@ -776,7 +776,7 @@ void ECEditorWindow::SetFocus(bool focus)
 {
     hasFocus = focus;
 //    LogInfo("ECEditorWindow::SetFocus: " + ToString(focus));
-    bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
+//    bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
 //    LogInfo("SetFocus: showGizmo: " + ToString(showGizmo));
     transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && hasFocus);
 
