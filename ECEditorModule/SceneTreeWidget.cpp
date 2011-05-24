@@ -18,6 +18,7 @@
 #include "LoggingFunctions.h"
 #include "SceneImporter.h"
 
+#include "Entity.h"
 #include "ConfigAPI.h"
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"
@@ -563,10 +564,7 @@ void SceneTreeWidget::Edit()
             ecEditor->AddEntity(id, false);
         ecEditor->SetSelectedEntities(selection.EntityIds());*/
 
-        UiAPI *ui = framework->Ui();
-        if (!ui)
-            return;
-        editor->setParent(ui->MainWindow());
+        editor->setParent(framework->Ui()->MainWindow());
         editor->setWindowFlags(Qt::Tool);
         if (!editor->isVisible())
             editor->show();
@@ -615,10 +613,7 @@ void SceneTreeWidget::EditInNew()
         editor->AddEntity(id);
     editor->SetSelectedEntities(selection.EntityIds());*/
 
-    UiAPI *ui = framework->Ui();
-    if (!ui)
-        return;
-    editor->setParent(ui->MainWindow());
+    editor->setParent(framework->Ui()->MainWindow());
     editor->setWindowFlags(Qt::Tool);
     editor->show();
 
@@ -626,7 +621,6 @@ void SceneTreeWidget::EditInNew()
     /*if (!ecEditor)
         ecEditor = editor;*/
 
-    
     /*ui->AddWidgetToScene(editor); 
     ui->ShowWidget(editor);
     ui->BringWidgetToFront(editor);*/

@@ -19,6 +19,8 @@
 #include "ECEditorModule.h"
 #include "TransformEditor.h"
 
+#include "SceneManager.h"
+#include "Entity.h"
 #include "Application.h"
 #include "Profiler.h"
 #include "SceneAPI.h"
@@ -37,6 +39,12 @@
 #include "MemoryLeakCheck.h"
 
 const QString cEcEditorHighlight("EcEditorHighlight");
+
+EntityListWidgetItem::EntityListWidgetItem(const QString &name, QListWidget *list, Entity *entity):
+    QListWidgetItem(name, list),
+    entity(entity->shared_from_this())
+{
+}
 
 uint AddUniqueListItem(Entity *entity, QListWidget* list, const QString& name)
 {
@@ -57,7 +65,8 @@ bool CmpEntityById(EntityPtr a, EntityPtr b)
     return a->GetId() < b->GetId();
 }
 
-ECEditorWindow::ECEditorWindow(Framework* fw) :
+ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
+    QWidget(parent),
     framework(fw),
     toggleEntitiesButton(0),
     entityList(0),
@@ -289,33 +298,7 @@ void ECEditorWindow::SetEntitySelected(EntityListWidgetItem *item, bool select)
     entityList->blockSignals(true);
     item->setSelected(select);
     entityList->blockSignals(false);
-
-#ifdef EC_Highlight_ENABLED
-    EntityPtr entity = item->GetEntity();
-    if (entity)
-    {
-        if (select)
-        {
-            EC_Highlight *hl = dynamic_cast<EC_Highlight *>(entity->GetOrCreateComponent(
-                EC_Highlight::TypeNameStatic(), cEcEditorHighlight).get());
-            if (hl)
-            {
-                LogInfo("EC_Highlight added.");
-                hl->SetTemporary(true);
-                hl->visible.Set(true, AttributeChange::Default);
-            }
-        }
-        else
-        {
-            ComponentPtr c = entity->GetComponent(EC_Highlight::TypeNameStatic(), cEcEditorHighlight);
-            if (c)
-            {
-                LogInfo("EC_Highlight removed.");
-                entity->RemoveComponent(c);
-            }
-        }
-    }
-#endif
+    HighlightEntity(item->GetEntity(), select);
 }
 
 EntityListWidgetItem *ECEditorWindow::FindItem(entity_id_t id) const
@@ -364,7 +347,7 @@ void ECEditorWindow::CreateComponent()
     {
         AddComponentDialog *dialog = new AddComponentDialog(framework, ids, NULL);
         dialog->SetComponentList(framework->Scene()->GetComponentTypes());
-        connect(dialog, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinished(int)));
+        connect(dialog, SIGNAL(finished(int)), this, SLOT(AddComponentDialogFinished(int)));
         dialog->show();
     }
 }
@@ -475,10 +458,8 @@ void ECEditorWindow::CopyEntity()
     /// should we support multi entity copy and paste functionality.
     QDomDocument temp_doc;
 
-    foreach(EntityPtr entity, GetSelectedEntities())
-    {
-        Entity *e = entity.get();
-        if (e)
+    foreach(const EntityPtr &entity, GetSelectedEntities())
+        if (entity)
         {
             QDomElement entity_elem = temp_doc.createElement("entity");
             entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
@@ -488,7 +469,6 @@ void ECEditorWindow::CopyEntity()
 
             temp_doc.appendChild(entity_elem);
         }
-    }
 
     QApplication::clipboard()->setText(temp_doc.toString());
 }
@@ -664,9 +644,12 @@ void ECEditorWindow::RefreshPropertyBrowser()
 
     ecBrowser->UpdateBrowser();
 
-    transformEditor->SetSelection(entities);
-    transformEditor->FocusGizmoPivotToAabbBottomCenter();
-    transformEditor->SetGizmoVisible(true);
+    if (!GetSelectedEntities().isEmpty())
+    {
+        transformEditor->SetSelection(entities);
+        transformEditor->FocusGizmoPivotToAabbBottomCenter();
+        transformEditor->SetGizmoVisible(true);
+    }
 }
 
 void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
@@ -793,6 +776,15 @@ void ECEditorWindow::OnEntityRemoved(Entity* entity)
 void ECEditorWindow::SetFocus(bool focus)
 {
     hasFocus = focus;
+    LogInfo("Focus: " + ToString(focus));
+    transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && hasFocus);
+
+    for(uint i = 0; i < (uint)entityList->count(); i++)
+    {
+        EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
+        if (item && item->isSelected())
+            HighlightEntity(item->GetEntity(), hasFocus);
+    }
 }
 
 void ECEditorWindow::setVisible(bool visible)
@@ -800,6 +792,15 @@ void ECEditorWindow::setVisible(bool visible)
     QWidget::setVisible(visible);
     if (visible)
         emit FocusChanged(this);
+
+    transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && visible);
+
+    for(uint i = 0; i < (uint)entityList->count(); i++)
+    {
+        EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
+        if (item && item->isSelected())
+            HighlightEntity(item->GetEntity(), hasFocus);
+    }
 }
 
 void ECEditorWindow::DeselectAllEntities()
@@ -812,11 +813,44 @@ void ECEditorWindow::DeselectAllEntities()
     }
 }
 
+void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
+{
+#ifdef EC_Highlight_ENABLED
+    if (entity)
+    {
+        if (highlight)
+        {
+            EC_Highlight *hl = dynamic_cast<EC_Highlight *>(entity->GetOrCreateComponent(
+                EC_Highlight::TypeNameStatic(), cEcEditorHighlight).get());
+            if (hl)
+            {
+                LogInfo("EC_Highlight added.");
+                hl->SetTemporary(true);
+                hl->visible.Set(true, AttributeChange::Default);
+            }
+        }
+        else
+        {
+            ComponentPtr c = entity->GetComponent(EC_Highlight::TypeNameStatic(), cEcEditorHighlight);
+            if (c)
+            {
+                LogInfo("EC_Highlight removed.");
+                entity->RemoveComponent(c);
+            }
+        }
+    }
+#else
+    LogInfo("ECEditorWindow::HighlightEntity: EC_Highlight not included in the build.");
+#endif
+}
+
 void ECEditorWindow::hideEvent(QHideEvent* e)
 {
     ClearEntities();
-    if(ecBrowser)
+    if (ecBrowser)
         ecBrowser->clear();
+    transformEditor->SetGizmoVisible(false);
+
     QWidget::hideEvent(e);
 }
 
@@ -871,7 +905,7 @@ void ECEditorWindow::OnDefaultSceneChanged(SceneManager *scene)
         SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
 }
 
-void ECEditorWindow::ComponentDialogFinished(int result)
+void ECEditorWindow::AddComponentDialogFinished(int result)
 {
     AddComponentDialog *dialog = qobject_cast<AddComponentDialog*>(sender());
     if (!dialog)

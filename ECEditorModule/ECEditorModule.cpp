@@ -11,6 +11,7 @@
 
 #include "SceneAPI.h"
 #include "SceneManager.h"
+#include "Entity.h"
 #include "EC_DynamicComponent.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
@@ -90,9 +91,8 @@ void ECEditorModule::ShowEditorWindow()
         return;
     }
 
-    activeEditor = new ECEditorWindow(GetFramework());
+    activeEditor = new ECEditorWindow(GetFramework(), framework_->Ui()->MainWindow());
     commonEditor = activeEditor;
-    activeEditor->setParent(framework_->Ui()->MainWindow());
     activeEditor->setWindowFlags(Qt::Tool);
     activeEditor->setAttribute(Qt::WA_DeleteOnClose);
     activeEditor->show();

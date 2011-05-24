@@ -9,7 +9,7 @@
 
 #include "ECEditorModuleApi.h"
 #include "CoreTypes.h"
-#include "Entity.h"
+#include "SceneFwd.h"
 
 #include <QMap>
 #include <QSet>
@@ -28,6 +28,7 @@ struct EntityComponentSelection
     std::vector<ComponentPtr> components;
 };
 
+class Framework;
 class ECBrowser;
 class TransformEditor;
 
@@ -36,11 +37,7 @@ class TransformEditor;
 class EntityListWidgetItem: public QListWidgetItem
 {
 public:
-    EntityListWidgetItem(const QString &name, QListWidget *list, Entity *entity):
-        QListWidgetItem(name, list),
-        entity(entity->shared_from_this())
-    {
-    }
+    EntityListWidgetItem(const QString &name, QListWidget *list, Entity *entity);
 
     // Returns shared pointer of the entity that this item is presenting.
     EntityPtr GetEntity() const { return entity.lock(); }
@@ -60,7 +57,7 @@ class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
 public:
     /// Constructor
     /** @param fw Framework. */
-    explicit ECEditorWindow(Framework* fw);
+    explicit ECEditorWindow(Framework* fw, QWidget *parent = 0);
 
     /// Destructor.
     ~ECEditorWindow();
@@ -103,7 +100,7 @@ public:
     */
     void SetEntitySelected(EntityListWidgetItem *item, bool select);
 
-    /// Return EntityListWidgetItem for specific entity.
+    /// Returns list item for specific entity.
     /** @param id Entity ID. */
     EntityListWidgetItem *FindItem(entity_id_t id) const;
 
@@ -148,7 +145,8 @@ public slots:
     void OnEntityRemoved(Entity* entity);
 
     /// Set focus to this editor window.
-    /** When window has focus it should accept entity select actions and add clicked entities from the scene. */
+    /** When window has focus it should accept entity select actions and add clicked entities from the scene.
+        Also when windows if unfocues, its transform gizmo (if applicable) is hidden. */
     void SetFocus(bool focus);
 
     /// QWidget override.
@@ -156,6 +154,13 @@ public slots:
 
     /// Deselects all entities in the list.
     void DeselectAllEntities();
+
+    /// Highlights an entity.
+    /** @note No-op if EC_Highlight is not included in the build.
+        @param entity Entity to be highlighted.
+        @param highlight Do we want to show highlight or hide it.
+    */
+    void HighlightEntity(const EntityPtr &entity, bool highlight);
 
 signals:
     /// Emitted user wants to edit entity's EC attributes in XML editor.
@@ -212,12 +217,12 @@ private slots:
     /// Highlights all entities from the entities_list that own an instance of given component.
     void HighlightEntities(const QString &type, const QString &name);
 
-    /// Listenes when default world scene has changed and clear the editor window.
+    /// Listens when default world scene changes and clears the editor window.
     /** @param scene new default world scene. */
     void OnDefaultSceneChanged(SceneManager *scene);
 
-    //When user have pressed ok or cancel button in component dialog this mehtod is called.
-    void ComponentDialogFinished(int result);
+    /// Called by add component dialog when it's finished.
+    void AddComponentDialogFinished(int result);
 
 private:
     /// Bold all given entities from the entity_list_ QListWidget object.
