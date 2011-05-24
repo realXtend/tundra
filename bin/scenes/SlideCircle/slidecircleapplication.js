@@ -271,7 +271,7 @@ var endIndex = entities.length;
 var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
 var camera = scene.GetEntityByNameRaw("FreeLookCamera");
 //Handy for debug
-var camera = scene.GetEntityByName("Monkey");
+//var camera = scene.GetEntityByName("Monkey");
 
 inputmapper.RegisterMapping('n', "GotoNext", 1);
 inputmapper.RegisterMapping('p', "GotoPrev", 1);
