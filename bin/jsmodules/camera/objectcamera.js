@@ -3,7 +3,7 @@ engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 
 var camera_distance = 7.0;
-var last_clicked = null;
+var last_clicked_pos = new Vector3df();
 var zooming = false;
 var global_transform;
 
@@ -104,7 +104,7 @@ function mouseLeftPress(event)
             var raycastResult = renderer.Raycast(event.x, event.y);
             if (raycastResult.entity !== null)
             {
-                var entityclicked = scene.GetEntityRaw(raycastResult.entity.id);
+                last_clicked_pos = raycastResult.pos;
                 objectcameraentity = scene.GetEntityByNameRaw("ObjectCamera");
 
                 if (objectcameraentity == null)
@@ -129,7 +129,6 @@ function mouseLeftPress(event)
                 }
 
                 objectcamera_mode = true;
-                last_clicked = entityclicked;
             }
         }
     }
@@ -150,7 +149,7 @@ function mouseScroll(event)
         pos.y = transform.pos.y;
         pos.z = transform.pos.z;
 
-        var pivot = last_clicked.placeable.transform.pos;
+        var pivot = last_clicked_pos;
 
         var dir = new Vector3df();
         dir.x = pivot.x - pos.x;
@@ -250,7 +249,7 @@ function mouseMove(event)
         pos.y = transform.pos.y;
         pos.z = transform.pos.z;
 
-        var pivot = last_clicked.placeable.transform.pos;
+        var pivot = last_clicked_pos;
 
         var dir = new Vector3df();
         dir.x = pos.x - pivot.x;
