@@ -121,15 +121,14 @@ private:
     QPointer<Menu> contextMenu; ///< Context menu.
 
     /// Used when saving multiple assets, can be used to retrieve a matching filename where to save asset data from asset transfer.
-    QMap<QString, QString> filesaves_;
+    QMap<QString, QString> fileSaves;
 
     /// Used by 'Export all', a list of assets that have already been saved, so assets are not saved multiple times.
     /** Multiple assets can reference reference another asset, so each asset must be saved only once.
-        This must be cleared before starting any assets saving operations.
-    */
-    QSet<QString> saved_assets_;
+        This must be cleared before starting any assets saving operations. */
+    QSet<QString> savedAssets;
 
-    bool fetch_references_; ///< if true, when saving assets, also saves references
+    bool fetchReferences; ///< if true, when saving assets, also saves references
 
 private slots:
     /// Opens selected entities in EC editor window. An existing editor window is used if possible.
@@ -142,8 +141,7 @@ private slots:
     void Rename();
 
     /// Sets new name for item (entity or component) when it's renamed.
-    /** @item The item which was renamed.
-    */
+    /** @item The item which was renamed. */
     void OnItemEdited(QTreeWidgetItem *item, int);
 
 //    void CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *);
@@ -155,8 +153,7 @@ private slots:
     void NewComponent();
 
     /// Called by Add Component dialog when it's closed.
-    /** @param result Result of dialog closure. OK is 1, Cancel is 0.
-    */
+    /** @param result Result of dialog closure. OK is 1, Cancel is 0. */
     void ComponentDialogFinished(int result);
 
     /// Deletes an existing entity or component.
@@ -235,4 +232,8 @@ private slots:
 
     /// Creates copy from a local entity as new replicated entity and destroys the original.
     void ConvertEntityToReplicated();
+
+    /// Sets currently selected entities' temporary property.
+    /** @param bool temporary Do we want to set or unset the temporary property. */
+    void SetAsTemporary(bool temporary);
 };

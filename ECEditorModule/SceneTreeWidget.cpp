@@ -78,7 +78,7 @@ SceneTreeWidget::SceneTreeWidget(Framework *fw, QWidget *parent) :
     showComponents(false),
     historyMaxItemCount(100),
     numberOfInvokeItemsVisible(5),
-    fetch_references_(false)
+    fetchReferences(false)
 {
     setEditTriggers(/*QAbstractItemView::EditKeyPressed*/QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
     setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
@@ -281,10 +281,10 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     }
 
     // "Edit", "Edit in new", "New component...", "Delete", "Copy", "Actions..." and "Functions..."
-    // "Convert to local", and "Convert to replicated" actions are available only if we have selection.
+    // "Convert to local", "Convert to replicated", and "Temporary" actions are available only if we have selection.
     QAction *editAction = 0, *editInNewAction = 0, *newComponentAction = 0, *deleteAction = 0,
         *renameAction = 0, *copyAction = 0, *saveAsAction = 0, *actionsAction = 0, *functionsAction = 0,
-        *toLocalAction = 0, *toReplicatedAction = 0;
+        *toLocalAction = 0, *toReplicatedAction = 0, *temporaryAction = 0;
 
     bool hasSelection = !selectionModel()->selection().isEmpty();
     if (hasSelection)
@@ -296,6 +296,9 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         copyAction = new QAction(tr("Copy"), menu);
         toLocalAction = new QAction(tr("Convert to local"), menu);
         toReplicatedAction = new QAction(tr("Convert to replicated"), menu);
+        temporaryAction = new QAction(tr("Temporary"), menu);
+        temporaryAction->setCheckable(true);
+        temporaryAction->setChecked(false);
         saveAsAction = new QAction(tr("Save as..."), menu);
         actionsAction = new QAction(tr("Actions..."), menu);
         functionsAction = new QAction(tr("Functions..."), menu);
@@ -310,6 +313,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         connect(functionsAction, SIGNAL(triggered()), SLOT(OpenFunctionDialog()));
         connect(toLocalAction, SIGNAL(triggered()), SLOT(ConvertEntityToLocal()));
         connect(toReplicatedAction, SIGNAL(triggered()), SLOT(ConvertEntityToReplicated()));
+        connect(temporaryAction, SIGNAL(toggled(bool)), SLOT(SetAsTemporary(bool)));
     }
 
     // "Rename" action is possible only if have one entity selected.
@@ -332,6 +336,8 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
 
     menu->addAction(newEntityAction);
 
+    Selection sel = GetSelection();
+
     if (hasSelection)
     {
         menu->addAction(newComponentAction);
@@ -339,6 +345,28 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         menu->addAction(copyAction);
         menu->addAction(toLocalAction);
         menu->addAction(toReplicatedAction);
+        menu->addAction(temporaryAction);
+
+        // (Un)setting temporary property only possible if have only entities selected
+        // and if all the entites have currently the same state.
+        if (!sel.HasComponents() && sel.HasEntities() && sel.entities.first()->Entity())
+        {
+            bool firstState = sel.entities.first()->Entity()->IsTemporary();
+            if (sel.entities.size() > 1)
+                for(uint i = 1; i < (uint)sel.entities.size(); ++i)
+                    if (sel.entities[i]->Entity())
+                        if (firstState != sel.entities[i]->Entity()->IsTemporary())
+                        {
+                            temporaryAction->setDisabled(true);
+                            break;
+                        }
+
+            temporaryAction->setChecked(firstState);
+        }
+        else
+        {
+            temporaryAction->setDisabled(true);
+        }
     }
 
     if (pastePossible)
@@ -363,8 +391,6 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         menu->addSeparator();
         menu->addAction(actionsAction);
         menu->addAction(functionsAction);
-
-        Selection sel = GetSelection();
 
         // "Functions..." is disabled if we have both entities and components selected simultaneously.
         if (sel.HasEntities() && sel.HasComponents())
@@ -1283,8 +1309,8 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
             assets.unite(GetAssetRefs(eItem));
     }
 
-    saved_assets_.clear();
-    fetch_references_ = true;
+    savedAssets.clear();
+    fetchReferences = true;
     /// \todo This is in theory a better way to get all assets in a sceene, but not all assets are currently available with this method
     ///       Once all assets are properly shown in this widget, it would be better to do it this way -cm
 /*
@@ -1308,7 +1334,7 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
         QString assetName = AssetAPI::ExtractFilenameFromAssetRef(assetid);
         filename += "/" + assetName;
 
-        filesaves_.insert(transfer->source.ref, filename);
+        fileSaves.insert(transfer->source.ref, filename);
         connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
     }
 }
@@ -1501,8 +1527,8 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
         return;
     }
 
-    saved_assets_.clear();
-    fetch_references_ = false;
+    savedAssets.clear();
+    fetchReferences = false;
     foreach(AssetRefItem *aItem, sel.assets)
     {
         AssetTransferPtr transfer = framework->Asset()->RequestAsset(aItem->id);
@@ -1515,7 +1541,7 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
             filename += "/" + assetName;
         }
 
-        filesaves_.insert(transfer->source.ref, filename);
+        fileSaves.insert(transfer->source.ref, filename);
         connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
     }
 }
@@ -1529,10 +1555,10 @@ void SceneTreeWidget::AssetLoaded(AssetPtr asset)
         return;
     }
 
-    QString filename = filesaves_.take(asset->Name());
-    if (!saved_assets_.contains(filename))
+    QString filename = fileSaves.take(asset->Name());
+    if (!savedAssets.contains(filename))
     {
-        saved_assets_.insert(filename);
+        savedAssets.insert(filename);
 
         QString param;
         if (asset->Type().contains("texture", Qt::CaseInsensitive))
@@ -1545,9 +1571,9 @@ void SceneTreeWidget::AssetLoaded(AssetPtr asset)
             box.exec();
         }
 
-        if (fetch_references_)
+        if (fetchReferences)
             foreach(AssetReference ref, asset->FindReferences())
-                if (!saved_assets_.contains(ref.ref))
+                if (!savedAssets.contains(ref.ref))
                 {
                     AssetTransferPtr transfer = framework->Asset()->RequestAsset(ref.ref);
                     connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
@@ -1555,7 +1581,7 @@ void SceneTreeWidget::AssetLoaded(AssetPtr asset)
                     QString oldAssetName = AssetAPI::ExtractFilenameFromAssetRef(filename);
                     QString newAssetName = AssetAPI::ExtractFilenameFromAssetRef(ref.ref);
                     filename.replace(oldAssetName, newAssetName);
-                    filesaves_.insert(transfer->source.ref, filename);
+                    fileSaves.insert(transfer->source.ref, filename);
                 }
     }
 }
@@ -1604,4 +1630,11 @@ void SceneTreeWidget::ConvertEntityToReplicated()
                     scn->RemoveEntity(orgEntity->GetId()); // Creation successful, remove the original.
             }
         }
+}
+
+void SceneTreeWidget::SetAsTemporary(bool temporary)
+{
+    foreach(EntityItem *item, GetSelection().entities)
+        if (item->Entity())
+            item->Entity()->SetTemporary(temporary);
 }
