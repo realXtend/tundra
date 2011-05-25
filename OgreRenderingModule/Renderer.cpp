@@ -870,10 +870,3 @@ namespace OgreRenderer
         added_resource_directories_.push_back(directory);
     }
 
-    void Renderer::RepaintUi()
-    {
-        if (resized_dirty_ < 1)
-            resized_dirty_  = 1;
-    }
-    
-}

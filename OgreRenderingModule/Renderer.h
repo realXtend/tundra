@@ -140,9 +140,6 @@ namespace OgreRenderer
         /// get maximum view distance
         virtual float GetViewDistance()const { return view_distance_; }
 
-        /// force UI repaint
-        virtual void RepaintUi();
-
         ///Is window fullscreen?
         bool IsFullScreen() const;
 

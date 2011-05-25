@@ -96,10 +96,6 @@ public:
     /// get maximum view distance
     virtual float GetViewDistance() const = 0;
 
-    /// force UI repaint
-    /// \todo This function will be removed.
-    virtual void RepaintUi() = 0;
-
     /// get visible entities last frame
     virtual const std::set<entity_id_t>& GetVisibleEntities() = 0;
     
