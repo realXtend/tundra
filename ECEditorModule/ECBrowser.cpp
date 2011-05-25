@@ -172,14 +172,14 @@ void ECBrowser::UpdateBrowser()
             AddNewComponentToGroup(components[i]);
     }
 
-    treeWidget_->setSortingEnabled(true);
-
     for(TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.begin();
         iter != itemToComponentGroups_.end();
         iter++)
     {
         (*iter)->editor_->UpdateUi();
     }
+
+    treeWidget_->setSortingEnabled(true);
 }
 
 void ECBrowser::dragEnterEvent(QDragEnterEvent *event)
