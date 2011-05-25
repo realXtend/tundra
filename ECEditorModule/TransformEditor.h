@@ -9,8 +9,9 @@
 
 #include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
+#include "Math/float3.h"
+#include "Math/Quat.h"
 #include "InputFwd.h"
-#include "Vector3D.h"
 
 #include <QObject>
 
@@ -86,18 +87,20 @@ public:
     /// Sets visibility of the gizmo (if used).
     void SetGizmoVisible(bool show);
 
+    float3 GetGizmoPos() const;
+
 public slots:
     /// Translates current target transforms.
     /** @param offset Offset to be applied. */
-    void TranslateTargets(const Vector3df &offset);
+    void TranslateTargets(const float3 &offset);
 
     /// Rotates current target transforms.
     /** @param delta Change to be applied. */
-    void RotateTargets(const Quaternion &delta);
+    void RotateTargets(const Quat &delta);
 
     /// Scales current target transforms.
     /** @param offset Offset to be applied. */
-    void ScaleTargets(const Vector3df &offset);
+    void ScaleTargets(const float3 &offset);
 
 private:
     /// Creates transform gizmo for the editor.

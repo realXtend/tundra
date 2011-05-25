@@ -192,6 +192,11 @@ if (NOT EXISTS CMakeBuildConfig.txt)
         ${CMAKE_CURRENT_SOURCE_DIR}/CMakeBuildConfig.txt)
 endif ()
 
+# The following two defines are required to compile.
+# These enable implicit conversions of common math types between different libraries and our internal math library.
+add_definitions(-DQT_INTEROP)
+add_definitions(-DIRRLICHT_INTEROP)
+
 # Read the set of optional modules from another file
 # that is kept outside the source control. 
 # To configure the set of optional modules to add to the build,

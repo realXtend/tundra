@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#define OGRE_INTEROP 
 #include "EC_RigidBody.h"
 #include "ConvexHull.h"
 #include "PhysicsModule.h"
@@ -437,7 +438,7 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     disconnected_ = true;
     
     // Set transform
-    Vector3df position = ToVector3(worldTrans.getOrigin());
+    float3 position = worldTrans.getOrigin();
     Quaternion orientation = ToQuaternion(worldTrans.getRotation());
     
     // Non-parented case
@@ -456,7 +457,7 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
         if (placeable->IsAttached())
         {
             /// \todo Use a Placeable utility function for this
-            position = OgreRenderer::ToCoreVector(placeable->GetSceneNode()->convertWorldToLocalPosition(OgreRenderer::ToOgreVector3(position)));
+            position = placeable->GetSceneNode()->convertWorldToLocalPosition(OgreRenderer::ToOgreVector3(position));
             Ogre::Quaternion ogreQuat = placeable->GetSceneNode()->convertWorldToLocalOrientation(OgreRenderer::ToOgreQuaternion(orientation));
             orientation = Quaternion(ogreQuat.x, ogreQuat.y, ogreQuat.z, ogreQuat.w);
             

@@ -12,8 +12,9 @@
 #include "Vector3D.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
-
-#include <OgreRay.h>
+#include "Math/Ray.h"
+#include "Math/float3.h"
+#include "Math/Quat.h"
 
 class Quaternion;
 
@@ -70,7 +71,7 @@ public slots:
 
     /// Sets position of the gizmo.
     /** @param pos New position. */
-    void SetPosition(const Vector3df &pos);
+    void SetPosition(const float3 &pos);
 
     /// Returns current type of the gizmo.
     GizmoType CurrentGizmoType() const { return gizmoType; }
@@ -89,15 +90,15 @@ public slots:
 signals:
     /// Emitted when gizmo is active in Translate mode.
     /** @param offset New offset. */
-    void Translated(const Vector3df &offset);
+    void Translated(const float3 &offset);
 
     /// Emitted when the gizmo is active in Rotate mode.
     /** @param delta Change in rotation. */
-    void Rotated(const Quaternion &delta);
+    void Rotated(const Quat &delta);
 
     /// Emitted when the gizmo is active in Translate mode.
     /** @param offset New offset. */
-    void Scaled(const Vector3df &offset);
+    void Scaled(const float3 &offset);
 
 private:
     /// Represents axis of the gizmo.
@@ -108,7 +109,7 @@ private:
         static const uint Y = 0; ///< Submesh index of the gizmo's y axis.
         static const uint Z = 2; ///< Submesh index of the gizmo's z axis.
         uint axis; ///< Represented coordinate axis.
-        Ogre::Ray ray; ///< Corresponding ray for the represented coordinate axis.
+        Ray ray; ///< Corresponding ray for the represented coordinate axis.
         AssetReference material; ///< Currently used material for the axis' submesh.
     };
 
@@ -125,8 +126,8 @@ private:
     boost::shared_ptr<EC_Mesh> mesh; ///< Mesh component.
     GizmoType gizmoType; ///< Current gizmo type.
     OgreWorldWeakPtr ogreWorld; ///< OgreWorld.
-    Ogre::Vector3 prevPoint; ///< Previous nearest projected point on the gizmo's coordinate axes.
-    Ogre::Vector3 curPoint; ///< Current nearest projected point on the gizmo's coordinate axes.
+    float3 prevPoint; ///< Previous nearest projected point on the gizmo's coordinate axes.
+    float3 curPoint; ///< Current nearest projected point on the gizmo's coordinate axes.
     GizmoState state; ///< Current state of the gizmo.
     QList<GizmoAxis> activeAxes; ///< Currently active axes.
 

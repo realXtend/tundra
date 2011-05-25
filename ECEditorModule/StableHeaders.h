@@ -3,6 +3,8 @@
 #ifndef incl_ECEditorModule_StableHeaders_h
 #define incl_ECEditorModule_StableHeaders_h
 
+#define OGRE_INTEROP
+
 #include "CoreTypes.h"
 #include "LoggingFunctions.h"
 

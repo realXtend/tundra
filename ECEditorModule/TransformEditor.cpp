@@ -81,26 +81,21 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
     if (targets.isEmpty())
         return;
 
-    Vector3df minPos(1e9f, 1e9f, 1e9f);
-    Vector3df maxPos(-1e9f, -1e9f, -1e9f);
+    float3 minPos(1e9f, 1e9f, 1e9f);
+    float3 maxPos(-1e9f, -1e9f, -1e9f);
 
     foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
         {
-            Vector3df pos = transform->Get().position;
-            minPos.x = std::min(minPos.x, pos.x);
-            minPos.y = std::min(minPos.y, pos.y);
-            minPos.z = std::min(minPos.z, pos.z);
-            maxPos.x = std::max(maxPos.x, pos.x);
-            maxPos.y = std::max(maxPos.y, pos.y);
-            maxPos.z = std::max(maxPos.z, pos.z);
+            minPos = Min(minPos, transform->Get().position);
+            maxPos = Max(maxPos, transform->Get().position);
         }
     }
 
     // We assume that world's up axis is Y-coordinate axis.
-    Vector3df pivotPos = Vector3df((minPos.x + maxPos.x) / 2, minPos.y, (minPos.z + maxPos.z) / 2);
+    float3 pivotPos = float3((minPos.x + maxPos.x) / 2, minPos.y, (minPos.z + maxPos.z) / 2);
     if (gizmo)
     {
         EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
@@ -122,7 +117,7 @@ void TransformEditor::SetGizmoVisible(bool show)
 #endif
 }
 
-void TransformEditor::TranslateTargets(const Vector3df &offset)
+void TransformEditor::TranslateTargets(const float3 &offset)
 {
     foreach(const AttributeWeakPtr &attr, targets)
     {
@@ -138,21 +133,45 @@ void TransformEditor::TranslateTargets(const Vector3df &offset)
     FocusGizmoPivotToAabbBottomCenter();
 }
 
-void TransformEditor::RotateTargets(const Quaternion &delta)
+float3 TransformEditor::GetGizmoPos() const
 {
+    if (!gizmo)
+        return float3(0,0,0);
+    boost::shared_ptr<EC_Placeable> placeable = gizmo->GetComponent<EC_Placeable>();
+    if (!placeable)
+        return float3(0,0,0);
+    return placeable->transform.Get().position;
+}
+
+void TransformEditor::RotateTargets(const Quat &delta)
+{
+    float3 gizmoPos = GetGizmoPos();
+    float3x4 rotation = float3x4::Translate(gizmoPos) * float3x4(delta) * float3x4::Translate(-gizmoPos);
     foreach(const AttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
         {
-            ///\todo Implement!
+            Transform t = transform->Get();
+            float3x4 f = t.ToFloat3x4();
+            Transform q;
+            q.FromFloat3x4(f);
+            float4x4 g = t.ToFloat4x4();
+            Transform w;
+            w.FromFloat4x4(g);
+//            std::cout << "Org: " << t.ToQString().toStdString() << std::endl;
+            t.FromFloat3x4(rotation * t.ToFloat3x4());
+//            std::cout << "TMed: " << t.ToQString().toStdString() << std::endl;
+
+//            t.FromFloat3x4(rotation * t.ToFloat3x4());
+            transform->Set(t, AttributeChange::Default);
         }
     }
 
     FocusGizmoPivotToAabbBottomCenter();
 }
 
-void TransformEditor::ScaleTargets(const Vector3df &offset)
+void TransformEditor::ScaleTargets(const float3 &offset)
 {
     foreach(const AttributeWeakPtr &attr, targets)
     {
@@ -189,9 +208,9 @@ void TransformEditor::CreateGizmo()
         return;
     }
 
-    connect(tg, SIGNAL(Translated(const Vector3df &)), SLOT(TranslateTargets(const Vector3df &)));
-    connect(tg, SIGNAL(Rotated(const Quaternion &)), SLOT(RotateTargets(const Quaternion &)));
-    connect(tg, SIGNAL(Scaled(const Vector3df &)), SLOT(ScaleTargets(const Vector3df &)));
+    connect(tg, SIGNAL(Translated(const float3 &)), SLOT(TranslateTargets(const float3 &)));
+    connect(tg, SIGNAL(Rotated(const Quat &)), SLOT(RotateTargets(const Quat &)));
+    connect(tg, SIGNAL(Scaled(const float3 &)), SLOT(ScaleTargets(const float3 &)));
 #endif
 }
 
