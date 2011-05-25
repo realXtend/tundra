@@ -17,6 +17,8 @@
 #include "Framework.h"
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
+#include "SceneManager.h"
+#include "OgreWorld.h"
 
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
@@ -30,8 +32,8 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_ChatBubble::EC_ChatBubble(Framework *fw) :
-    IComponent(fw),
+EC_ChatBubble::EC_ChatBubble(SceneManager* scene):
+    IComponent(scene),
     font_(QFont("Arial", 50)),
     bubbleColor_(QColor(48, 113, 255, 255)),
     textColor_(Qt::white),
@@ -43,7 +45,7 @@ EC_ChatBubble::EC_ChatBubble(Framework *fw) :
     default_z_pos_(1.9f)
 {
     // Get renderer
-    renderer_ = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+    renderer_ = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
 
     // Pop timer init
     pop_timer_->setSingleShot(true);
@@ -269,7 +271,7 @@ void EC_ChatBubble::Update()
     if (renderer_.expired())
         return;
 
-    Ogre::SceneManager *scene = renderer_.lock()->GetSceneManager();
+    boost::shared_ptr<OgreWorld> scene = GetParentScene()->GetWorld<OgreWorld>();
     assert(scene);
     if (!scene)
         return;
@@ -292,7 +294,7 @@ void EC_ChatBubble::Update()
     if (!billboardSet_ && !billboard_)
     {
         // Create billboardset and billboard
-        billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName("EC_ChatBubble"), 1);
+        billboardSet_ = scene->GetSceneManager()->createBillboardSet(renderer_.lock()->GetUniqueObjectName("EC_ChatBubble"), 1);
         assert(billboardSet_);
 
         billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, default_z_pos_));

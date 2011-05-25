@@ -71,7 +71,7 @@ class EC_ChatBubble : public IComponent
 
 private:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_ChatBubble(Framework *fw);
+    explicit EC_ChatBubble(SceneManager *scene);
 
 public:
     /// Destructor.
