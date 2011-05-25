@@ -6,7 +6,6 @@
 #include "Quaternion.h"
 #include "Transform.h"
 #include "Vector3D.h"
-#include "Matrix4.h"
 #include "IAttribute.h"
 #include "AssetReference.h"
 #include "EntityReference.h"
@@ -487,7 +486,7 @@ QScriptValue Transform_prototype_multiply(QScriptContext *ctx, QScriptEngine *en
     Transform t1 = engine->fromScriptValue<Transform>(ctx->thisObject());
     Transform t2 = engine->fromScriptValue<Transform>(ctx->argument(0));
 
-    return toScriptValueTransform(engine, t1.Multiply(t2));
+    return toScriptValueTransform(engine, t1.Mul(t2));
 }
 
 

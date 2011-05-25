@@ -18,7 +18,6 @@
 
 #include "CoreMath.h"
 #include "Vector3D.h"
-#include "Matrix4.h"
 
 #include <QMetaType>
 
@@ -42,7 +41,7 @@ class Quaternion
         Quaternion(const Vector3df& vec);
 
         /// Constructor which converts a matrix to a Quaternion
-        Quaternion(const Matrix4& mat);
+//        Quaternion(const Matrix4& mat);
 
         /// Constructor which creates quaternion from rotation angle and rotation axis.
         /** Axis must be unit length.
@@ -73,7 +72,7 @@ class Quaternion
         inline Quaternion& operator=(const Quaternion& other);
 
         /// Matrix assignment operator
-        inline Quaternion& operator=(const Matrix4& other);
+//        inline Quaternion& operator=(const Matrix4& other);
 
         /// Add operator
         Quaternion operator+(const Quaternion& other) const;
@@ -109,13 +108,13 @@ class Quaternion
         inline Quaternion& normalize();
 
         /// Creates a matrix from this Quaternion
-        Matrix4 getMatrix() const;
+//        Matrix4 getMatrix() const;
 
         /// Creates a matrix from this Quaternion
-        void getMatrix( Matrix4 &dest ) const;
+//        void getMatrix( Matrix4 &dest ) const;
 
         /// Creates a matrix from this Quaternion
-        inline void getMatrix_transposed( Matrix4 &dest ) const;
+//        inline void getMatrix_transposed( Matrix4 &dest ) const;
 
         /// Inverts this Quaternion
         Quaternion& makeInverse();
@@ -181,13 +180,13 @@ inline Quaternion::Quaternion(const Vector3df& vec)
     set(vec.x,vec.y,vec.z);
 }
 
-
+/*
 // Constructor which converts a matrix to a Quaternion
 inline Quaternion::Quaternion(const Matrix4& mat)
 {
     (*this) = mat;
 }
-
+*/
 
 // equal operator
 inline bool Quaternion::operator==(const Quaternion& other) const
@@ -213,7 +212,7 @@ inline Quaternion& Quaternion::operator=(const Quaternion& other)
     return *this;
 }
 
-
+/*
 // matrix assignment operator
 inline Quaternion& Quaternion::operator=(const Matrix4& m)
 {
@@ -271,7 +270,7 @@ inline Quaternion& Quaternion::operator=(const Matrix4& m)
 
     return normalize();
 }
-
+*/
 
 // multiplication operator
 inline Quaternion Quaternion::operator*(const Quaternion& other) const
@@ -315,7 +314,7 @@ inline Quaternion Quaternion::operator+(const Quaternion& b) const
     return Quaternion(x+b.x, y+b.y, z+b.z, w+b.w);
 }
 
-
+/*
 // Creates a matrix from this Quaternion
 inline Matrix4 Quaternion::getMatrix() const
 {
@@ -372,7 +371,7 @@ inline void Quaternion::getMatrix_transposed( Matrix4 &dest ) const
     dest[11] = 0.f;
     dest[15] = 1.f;
 }
-
+*/
 
 
 // Inverts this Quaternion

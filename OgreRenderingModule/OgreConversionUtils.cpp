@@ -24,15 +24,6 @@ Color ToCoreColor(const Ogre::ColourValue& color)
    return Color(color.r, color.g, color.b, color.a);
 }
 
-Ogre::Matrix4 ToOgreMatrix4(const Matrix4 &matrix)
-{
-    return Ogre::Matrix4(
-        matrix[0], matrix[4], matrix[8], matrix[12],
-        matrix[1], matrix[5], matrix[9], matrix[13],
-        matrix[2], matrix[6], matrix[10], matrix[14],
-        matrix[3], matrix[7], matrix[11], matrix[15]);
-}
-
 Ogre::Vector3 ToOgreVector3(const Vector3df &vector)
 {
     return Ogre::Vector3(vector.x, vector.y, vector.z);
