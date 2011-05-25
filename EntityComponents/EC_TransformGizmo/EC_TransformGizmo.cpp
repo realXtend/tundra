@@ -15,6 +15,8 @@
 #include "EC_Mesh.h"
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
+#include "SceneManager.h"
 #include "Renderer.h"
 #include "EC_Camera.h"
 #include "OgreConversionUtils.h"
@@ -86,21 +88,19 @@ const AssetReference cAxisBlue("AxisBlue.material");
 const AssetReference cAxisBlueHi("AxisBlueHi.material");
 const AssetReference cAxisWhite("AxisWhite.material");
 
-EC_TransformGizmo::EC_TransformGizmo(Framework *fw) :
-    IComponent(fw),
+EC_TransformGizmo::EC_TransformGizmo(SceneManager *scene) :
+    IComponent(scene),
     gizmoType(Translate),
     state(Inactive)
 {
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
 
 //    connect(fw->Frame(), SIGNAL(Updated(float)), SLOT(DrawDebug()));
-    QString uniqueName("EC_TransformGizmo_" + fw->Asset()->GenerateUniqueAssetName("",""));
-    input = fw->Input()->RegisterInputContext(uniqueName, 100);
+    QString uniqueName("EC_TransformGizmo_" + framework_->Asset()->GenerateUniqueAssetName("",""));
+    input = framework_->Input()->RegisterInputContext(uniqueName, 100);
     connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 
-    OgreRenderer::OgreRenderingModule *module = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>();
-    if (module)
-        renderer = module->GetRenderer();
+    ogreWorld = scene->GetWorld<OgreWorld>();
 }
 
 EC_TransformGizmo::~EC_TransformGizmo()
@@ -191,9 +191,10 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
         return;
     if (!IsVisible())
         return;
-    if (renderer.expired())
+    if (ogreWorld.expired())
         return;
-    boost::shared_ptr<EC_Camera> cam = renderer.lock()->GetActiveCamera();
+    OgreWorldPtr world = ogreWorld.lock();
+    EC_Camera* cam = checked_static_cast<EC_Camera*>(world->GetRenderer()->GetActiveCamera());
     if (!cam)
         return;
 
@@ -224,7 +225,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     float distanceZ = DistanceBetweenTwoLines(mouseRay, zRay);
 
     bool hit = false;
-    RaycastResult *result = renderer.lock()->Raycast(e->x, e->y);
+    RaycastResult *result = world->Raycast(e->x, e->y);
     if (result->entity && result->entity->GetComponent<EC_TransformGizmo>().get() == this)
         hit = true;
 

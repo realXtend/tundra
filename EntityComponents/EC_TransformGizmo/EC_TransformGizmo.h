@@ -53,7 +53,7 @@ class EC_TransformGizmo : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    EC_TransformGizmo(Framework *fw);
+    EC_TransformGizmo(SceneManager* scene);
     ~EC_TransformGizmo();
 
     /// Possible types of a gizmo.
@@ -124,7 +124,7 @@ private:
     boost::shared_ptr<EC_Placeable> placeable; ///< Placeable component.
     boost::shared_ptr<EC_Mesh> mesh; ///< Mesh component.
     GizmoType gizmoType; ///< Current gizmo type.
-    OgreRenderer::RendererWeakPtr renderer; ///< Renderer.
+    OgreWorldWeakPtr ogreWorld; ///< OgreWorld.
     Ogre::Vector3 prevPoint; ///< Previous nearest projected point on the gizmo's coordinate axes.
     Ogre::Vector3 curPoint; ///< Current nearest projected point on the gizmo's coordinate axes.
     GizmoState state; ///< Current state of the gizmo.
