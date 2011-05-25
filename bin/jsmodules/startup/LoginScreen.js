@@ -90,16 +90,22 @@ function TrimField(txt) {
     return txt.replace(/^\s+|\s+$/g,"");
 }
 
+function GetProtocol() {
+    if (tcpButton.checked)
+        return "tcp";
+    else if (udpButton.checked)
+        return "udp";
+    return "";
+}
+
 function LoginPressed() {
     client.ClearLoginProperties();
 
     var username = TrimField(usernameLineEdit.text);
     var password = TrimField(passwordLineEdit.text);
-    var protocol = "";
-    if (tcpButton.checked)
-        protocol = "tcp";
-    else if (udpButton.checked)
-        protocol = "udp";
+    var protocol = GetProtocol();
+    if (protocol == "")
+        return;
 
     var port = 2345;
     var strings = TrimField(serverAddressLineEdit.text).split(':');
