@@ -53,7 +53,7 @@ class EC_ParticleSystem : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_ParticleSystem(Framework *fw);
+    explicit EC_ParticleSystem(SceneManager* scene);
 
     ~EC_ParticleSystem();
 
@@ -90,6 +90,8 @@ private:
     ComponentPtr FindPlaceable() const;
 
     std::vector<Ogre::ParticleSystem*> particleSystems_;
+
+    OgreWorldWeakPtr world_;
 
     /// Asset ref listener for the particle asset
     AssetRefListenerPtr particleAsset_;

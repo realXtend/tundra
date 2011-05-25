@@ -3,16 +3,17 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
-#include "EC_RttTarget.h"
 #include "OgreRenderingModule.h"
+#include "SceneManager.h"
+#include "EC_RttTarget.h"
 #include "EC_Camera.h"
 #include "OgreMaterialUtils.h"
 #include "FrameAPI.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
 
-EC_RttTarget::EC_RttTarget(Framework *fw) :
-    IComponent(fw),
+EC_RttTarget::EC_RttTarget(SceneManager* scene) :
+    IComponent(scene),
     targettexture(this, "Target texture", "RttTex"),
     size_x(this, "Texture size x", 400),
     size_y(this, "Texture size y", 300)

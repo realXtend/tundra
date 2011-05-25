@@ -6,6 +6,7 @@
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 #include "Renderer.h"
 
 #include "AttributeMetadata.h"
@@ -145,8 +146,8 @@ void SetShowBoundingBoxRecursive(Ogre::SceneNode* node, bool enable)
     }
 }
 
-EC_Placeable::EC_Placeable(Framework *fw) :
-    IComponent(fw),
+EC_Placeable::EC_Placeable(SceneManager* scene) :
+    IComponent(scene),
     sceneNode_(0),
     boneAttachmentNode_(0),
     parentBone_(0),
@@ -160,7 +161,9 @@ EC_Placeable::EC_Placeable(Framework *fw) :
     parentRef(this, "Parent entity ref", EntityReference()),
     parentBone(this, "Parent bone name", "")
 {
-    renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
+    
     // Enable network interpolation for the transform
     static AttributeMetadata transAttrData;
     static AttributeMetadata nonDesignableAttrData;
@@ -173,44 +176,47 @@ EC_Placeable::EC_Placeable(Framework *fw) :
     }
     transform.SetMetadata(&transAttrData);
 
-    RendererPtr renderer = renderer_.lock();
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    sceneNode_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Placeable_SceneNode"));
+    OgreWorldPtr world = world_.lock();
+    if (world)
+    {
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        sceneNode_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Placeable_SceneNode"));
     
-    // In case the placeable is used for camera control, set fixed yaw axis
-    //sceneNode_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
+        // In case the placeable is used for camera control, set fixed yaw axis
+        //sceneNode_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
 
-    // Hook the transform attribute change
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
-        SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
+        // Hook the transform attribute change
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+            SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
 
-    connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
+        connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
     
-    AttachNode();
+        AttachNode();
+    }
 }
 
 EC_Placeable::~EC_Placeable()
 {
-    if (renderer_.expired())
+    if (world_.expired())
         return;
     
     emit AboutToBeDestroyed();
     
-    RendererPtr renderer = renderer_.lock();
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+    OgreWorldPtr world = world_.lock();
+    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
     
     if (sceneNode_)
     {
         DetachNode();
         
-        scene_mgr->destroySceneNode(sceneNode_);
+        sceneMgr->destroySceneNode(sceneNode_);
         sceneNode_ = 0;
     }
     // Destroy the attachment node if it was created
     if (boneAttachmentNode_)
     {
-        scene_mgr->getRootSceneNode()->removeChild(boneAttachmentNode_);
-        scene_mgr->destroySceneNode(boneAttachmentNode_);
+        sceneMgr->getRootSceneNode()->removeChild(boneAttachmentNode_);
+        sceneMgr->destroySceneNode(boneAttachmentNode_);
         boneAttachmentNode_ = 0;
     }
 }
@@ -371,12 +377,12 @@ void EC_Placeable::SetScale(const Vector3df& newscale)
 
 void EC_Placeable::AttachNode()
 {
-    if (renderer_.expired())
+    if (world_.expired())
     {
-        LogError("EC_Placeable::AttachNode: No renderer available to call this function!");
+        LogError("EC_Placeable::AttachNode: No OgreWorld available to call this function!");
         return;
     }
-    RendererPtr renderer = renderer_.lock();
+    OgreWorldPtr world = world_.lock();
     
     try
     {
@@ -384,8 +390,8 @@ void EC_Placeable::AttachNode()
         if (attached_)
             DetachNode();
         
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        Ogre::SceneNode* root_node = scene_mgr->getRootSceneNode();
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneNode* root_node = sceneMgr->getRootSceneNode();
         
         // Three possible cases
         // 1) attach to scene root node
@@ -433,7 +439,7 @@ void EC_Placeable::AttachNode()
                             // Create the node for bone attachment if it did not exist already
                             if (!boneAttachmentNode_)
                             {
-                                boneAttachmentNode_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Placeable_BoneAttachmentNode"));
+                                boneAttachmentNode_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Placeable_BoneAttachmentNode"));
                                 root_node->addChild(boneAttachmentNode_);
                             }
                             
@@ -500,20 +506,20 @@ void EC_Placeable::AttachNode()
 
 void EC_Placeable::DetachNode()
 {
-    if (renderer_.expired())
+    if (world_.expired())
     {
-        LogError("EC_Placeable::DetachNode: No renderer available to call this function!");
+        LogError("EC_Placeable::DetachNode: No OgreWorld available to call this function!");
         return;
     }
-    RendererPtr renderer = renderer_.lock();
+    OgreWorldPtr world = world_.lock();
     
     if (!attached_)
         return;
     
     try
     {
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        Ogre::SceneNode* root_node = scene_mgr->getRootSceneNode();
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::SceneNode* root_node = sceneMgr->getRootSceneNode();
         
         // Three possible cases
         // 1) attached to scene root node

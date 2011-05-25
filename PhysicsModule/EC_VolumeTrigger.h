@@ -74,7 +74,7 @@ class EC_VolumeTrigger : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_VolumeTrigger(Framework *fw);
+    explicit EC_VolumeTrigger(SceneManager* scene);
 
     virtual ~EC_VolumeTrigger();
 
@@ -187,9 +187,6 @@ private:
         this volume or if it left the volume during last physics update.
     */
     QMap<EntityWeakPtr, bool> entities_;
-
-    /// Owner module of this component
-    Physics::PhysicsModule *owner_;
 };
 
 #endif

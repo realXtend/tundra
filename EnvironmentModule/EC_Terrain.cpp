@@ -22,6 +22,7 @@
 #include "AttributeMetadata.h"
 #include "Profiler.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 #include <Ogre.h>
 #include <utility>
 
@@ -38,8 +39,8 @@ typedef boost::shared_ptr<Renderer> RendererPtr;
 namespace Environment
 {
 
-EC_Terrain::EC_Terrain(Framework *fw) :
-    IComponent(fw),
+EC_Terrain::EC_Terrain(SceneManager* scene) :
+    IComponent(scene),
     nodeTransformation(this, "Transform"),
     xPatches(this, "Grid Width"),
     yPatches(this, "Grid Height"),
@@ -56,6 +57,9 @@ EC_Terrain::EC_Terrain(Framework *fw) :
     patchHeight(1),
     rootNode(0)
 {
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
+    
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 
     static AttributeMetadata heightRefMetadata;
@@ -369,14 +373,10 @@ void EC_Terrain::DestroyPatch(int x, int y)
     if (!GetFramework())
         return;
 
-    OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
+    if (world_.expired()) // Oops! Already destroyed
         return;
-
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    if (!sceneMgr) // Oops! Same as above.
-        return;
-
+    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
+    
     EC_Terrain::Patch &patch = GetPatch(x, y);
 
     if (patch.node)
@@ -413,13 +413,9 @@ void EC_Terrain::Destroy()
     if (!GetFramework())
         return;
 
-    OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
+    if (world_.expired()) // Oops! Already destroyed
         return;
-
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    if (!sceneMgr) // Oops! Same as above.
-        return;
+    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
 
     if (rootNode)
     {
@@ -1329,13 +1325,9 @@ void EC_Terrain::AttachTerrainRootNode()
     if (!rootNode)
         CreateRootNode();
 
-    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer)
+    if (world_.expired()) 
         return;
-
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    if (!sceneMgr)
-        return;
+    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
 
     // Detach the terrain root node from any previous EC_Placeable scenenode.
     if (rootNode->getParentSceneNode())
@@ -1364,11 +1356,12 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
 
     EC_Terrain::Patch &patch = GetPatch(patchX, patchY);
 
-    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer)
-        return;
     if (!ViewEnabled())
         return;
+    if (world_.expired())
+        return;
+    OgreWorldPtr world = world_.lock();
+    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
 
     Ogre::SceneNode *node = patch.node;
     bool firstTimeFill = (node == 0);
@@ -1384,8 +1377,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     if (!terrainMaterial.get()) // If we could not find the material we were supposed to use, just use the default system terrain material.
         terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial("Rex/TerrainPCF");
 
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName("EC_Terrain_manual"));
+    Ogre::ManualObject *manual = sceneMgr->createManualObject(world->GetUniqueObjectName("EC_Terrain_manual"));
     manual->setCastShadows(false);
 
     manual->clear();
@@ -1492,14 +1484,14 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
         catch(...) {}
     }
 
-    patch.meshGeometryName = renderer->GetUniqueObjectName("EC_Terrain_patchmesh");
+    patch.meshGeometryName = world->GetUniqueObjectName("EC_Terrain_patchmesh");
     Ogre::MeshPtr terrainMesh = manual->convertToMesh(patch.meshGeometryName);
 
     // Odd: destroyManualObject seems to leave behind a memory leak if we don't call manualObject->clear first.
     manual->clear();
     sceneMgr->destroyManualObject(manual);
 
-    patch.entity = sceneMgr->createEntity(renderer->GetUniqueObjectName("EC_Terrain_patchentity"), patch.meshGeometryName);
+    patch.entity = sceneMgr->createEntity(world->GetUniqueObjectName("EC_Terrain_patchentity"), patch.meshGeometryName);
     patch.entity->setUserAny(Ogre::Any(parent_entity_));
     patch.entity->setCastShadows(false);
     // Set UserAny also on subentities
@@ -1526,15 +1518,12 @@ void EC_Terrain::CreateRootNode()
     if (rootNode)
         return;
 
-    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer)
+    if (world_.expired())
         return;
+    OgreWorldPtr world = world_.lock();
+    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
 
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    if (!sceneMgr)
-        return;
-
-    rootNode = sceneMgr->createSceneNode(renderer->GetUniqueObjectName("EC_Terrain_RootNode"));
+    rootNode = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Terrain_RootNode"));
 
     // Add the newly created node to scene or to a parent EC_Placeable.
     AttachTerrainRootNode();
@@ -1544,11 +1533,11 @@ void EC_Terrain::CreateRootNode()
 
 void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
 {
-    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer)
+    if (world_.expired())
         return;
-
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+    OgreWorldPtr world = world_.lock();
+    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+    
     if (!sceneMgr || !sceneMgr->getRootSceneNode())
         return;
 
@@ -1556,7 +1545,7 @@ void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, 
         CreateRootNode();
 
     QString name = QString("EC_Terrain_Patch_") + QString::number(patchX) + "_" + QString::number(patchY);
-    node = sceneMgr->createSceneNode(renderer->GetUniqueObjectName(name.toStdString()));
+    node = sceneMgr->createSceneNode(world->GetUniqueObjectName(name.toStdString()));
     if (!node)
         return;
 

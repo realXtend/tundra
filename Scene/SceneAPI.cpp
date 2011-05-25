@@ -90,12 +90,12 @@ ScenePtr SceneAPI::GetScene(const QString &name) const
     return ScenePtr();
 }
 
-ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled)
+ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled, bool authority)
 {
     if (HasScene(name))
         return ScenePtr();
 
-    ScenePtr newScene = ScenePtr(new SceneManager(name, framework_, viewenabled));
+    ScenePtr newScene = ScenePtr(new SceneManager(name, framework_, viewenabled, authority));
     if (newScene.get())
     {
         scenes_[name] = newScene;
@@ -111,13 +111,16 @@ void SceneAPI::RemoveScene(const QString &name)
     SceneMap::iterator sceneIter = scenes_.find(name);
     if (sceneIter != scenes_.end())
     {
+        // Remove entities before the scene subsystems or worlds are erased by various modules
+        sceneIter->second->RemoveAllEntities(false);
+        
+        // Emit signal about removed scene
+        emit SceneRemoved(name);
+        
         // If default scene is being removed. Reset our ref so it does not keep ref count alive.
         if (defaultScene_ == sceneIter->second)
             defaultScene_.reset();
         scenes_.erase(sceneIter);
-
-        // Emit signal about removed scene
-        emit SceneRemoved(name);
     }
 }
 
@@ -150,7 +153,7 @@ void SceneAPI::RegisterComponentFactory(ComponentFactoryPtr factory)
     componentFactoriesByTypeid[factory->TypeId()] = factory;
 }
 
-ComponentPtr SceneAPI::CreateComponentByName(const QString &componentTypename, const QString &newComponentName)
+ComponentPtr SceneAPI::CreateComponentByName(SceneManager* scene, const QString &componentTypename, const QString &newComponentName)
 {
     ComponentFactoryPtr factory = GetFactory(componentTypename);
     if (!factory)
@@ -158,10 +161,10 @@ ComponentPtr SceneAPI::CreateComponentByName(const QString &componentTypename, c
         LogError("Cannot create component for type \"" + componentTypename + "\" - no factory exists!");
         return ComponentPtr();
     }
-    return factory->Create(newComponentName, framework_);
+    return factory->Create(scene, newComponentName);
 }
 
-ComponentPtr SceneAPI::CreateComponentById(u32 componentTypeid, const QString &newComponentName)
+ComponentPtr SceneAPI::CreateComponentById(SceneManager* scene, u32 componentTypeid, const QString &newComponentName)
 {
     ComponentFactoryPtr factory = GetFactory(componentTypeid);
     if (!factory)
@@ -169,7 +172,7 @@ ComponentPtr SceneAPI::CreateComponentById(u32 componentTypeid, const QString &n
         LogError("Cannot create component for typeid \"" + QString::number(componentTypeid) + "\" - no factory exists!");
         return ComponentPtr();
     }
-    return factory->Create(newComponentName, framework_);
+    return factory->Create(scene, newComponentName);
 }
 
 QString SceneAPI::GetComponentTypeName(u32 componentTypeid)

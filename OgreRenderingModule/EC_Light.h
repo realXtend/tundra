@@ -7,6 +7,7 @@
 #include "IAttribute.h"
 #include "Vector3D.h"
 #include "Color.h"
+#include "OgreModuleFwd.h"
 
 namespace Ogre
 {
@@ -75,7 +76,7 @@ class EC_Light : public IComponent
     
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Light(Framework *fw);
+    explicit EC_Light(SceneManager* scene);
 
     virtual ~EC_Light();
 
@@ -157,6 +158,9 @@ private:
     
     /// Placeable component, optional
     ComponentPtr placeable_;
+    
+    /// Ogre world ptr
+    OgreWorldWeakPtr world_;
     
     /// Ogre light
     Ogre::Light* light_;

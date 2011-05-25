@@ -13,6 +13,7 @@
 #include "Vector3D.h"
 #include "AssetReference.h"
 #include "AssetRefListener.h"
+#include "OgreModuleFwd.h"
 
 class EC_Placeable;
 
@@ -76,7 +77,7 @@ class EC_Billboard : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Billboard(Framework *fw);
+    explicit EC_Billboard(SceneManager* scene);
 
     /// Destructor.
     ~EC_Billboard();
@@ -152,6 +153,9 @@ private:
     /// Detach billboardset from the placeable's scene node
     void DetachBillboard();
 
+    /// Ogre world ptr
+    OgreWorldWeakPtr world_;
+    
     /// Ogre billboard set.
     Ogre::BillboardSet *billboardSet_;
 

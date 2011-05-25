@@ -21,9 +21,9 @@
 
 #include "MemoryLeakCheck.h"
 
-IComponent::IComponent(Framework* framework) :
+IComponent::IComponent(SceneManager* scene) :
     parent_entity_(0),
-    framework_(framework),
+    framework_(scene ? scene->GetFramework() : 0),
     network_sync_(true),
     updatemode_(AttributeChange::Replicate),
     temporary_(false)

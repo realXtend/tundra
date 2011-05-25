@@ -7,8 +7,14 @@
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
 #include "Profiler.h"
+#include "SceneManager.h"
+#include "OgreWorld.h"
+#include "OgreBulletCollisionsDebugLines.h"
 #include "EC_RigidBody.h"
 #include "MemoryLeakCheck.h"
+#include "LoggingFunctions.h"
+
+#include <Ogre.h>
 
 namespace Physics
 {
@@ -21,21 +27,27 @@ void TickCallback(btDynamicsWorld *world, btScalar timeStep)
     static_cast<Physics::PhysicsWorld*>(world->getWorldUserInfo())->ProcessPostTick(timeStep);
 }
 
-PhysicsWorld::PhysicsWorld(PhysicsModule* owner, bool isClient) :
+PhysicsWorld::PhysicsWorld(ScenePtr scene, bool isClient) :
+    scene_(scene),
     collisionConfiguration_(0),
     collisionDispatcher_(0),
     broadphase_(0),
     solver_(0),
     world_(0),
     physicsUpdatePeriod_(1.0f / 60.0f),
-    isClient_(isClient)
+    isClient_(isClient),
+    runPhysics_(true),
+    drawDebugGeometry_(false),
+    drawDebugManuallySet_(false),
+    debugGeometryObject_(0),
+    debugDrawMode_(0)
 {
     collisionConfiguration_ = new btDefaultCollisionConfiguration();
     collisionDispatcher_ = new btCollisionDispatcher(collisionConfiguration_);
     broadphase_ = new btDbvtBroadphase();
     solver_ = new btSequentialImpulseConstraintSolver();
     world_ = new btDiscreteDynamicsWorld(collisionDispatcher_, broadphase_, solver_, collisionConfiguration_);
-    world_->setDebugDrawer(owner);
+    world_->setDebugDrawer(this);
     world_->setInternalTickCallback(TickCallback, (void*)this, false);
 }
 
@@ -82,12 +94,29 @@ btDiscreteDynamicsWorld* PhysicsWorld::GetWorld() const
 
 void PhysicsWorld::Simulate(f64 frametime)
 {
+    if (!runPhysics_)
+        return;
+    
     PROFILE(PhysicsWorld_Simulate);
     
     emit AboutToUpdate((float)frametime);
     
     int maxSubSteps = (int)((1.0f / physicsUpdatePeriod_) / cMinFps);
     world_->stepSimulation((float)frametime, maxSubSteps, physicsUpdatePeriod_);
+    
+        
+    // Automatically enable debug geometry if at least one debug-enabled rigidbody. Automatically disable if no debug-enabled rigidbodies
+    // However, do not do this if user has used the physicsdebug console command
+    if (!drawDebugManuallySet_)
+    {
+        if ((!drawDebugGeometry_) && (!debugRigidBodies_.empty()))
+            SetDrawDebugGeometry(true);
+        if ((drawDebugGeometry_) && (debugRigidBodies_.empty()))
+            SetDrawDebugGeometry(false);
+    }
+    
+    if (drawDebugGeometry_)
+        UpdateDebugGeometry();
 }
 
 void PhysicsWorld::ProcessPostTick(float substeptime)
@@ -192,6 +221,73 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const Vector3df& origin, const Vecto
     }
     
     return &result;
+}
+
+void PhysicsWorld::SetDrawDebugGeometry(bool enable)
+{
+    if (scene_.expired() || !scene_.lock()->ViewEnabled() || drawDebugGeometry_ == enable)
+        return;
+    OgreWorldPtr ogreWorld = scene_.lock()->GetWorld<OgreWorld>();
+    if (!ogreWorld)
+        return;
+    Ogre::SceneManager* scenemgr = ogreWorld->GetSceneManager();
+    
+    drawDebugGeometry_ = enable;
+    if (!enable)
+    {
+        setDebugMode(0);
+        
+        if (debugGeometryObject_)
+        {
+            scenemgr->getRootSceneNode()->detachObject(debugGeometryObject_);
+            delete debugGeometryObject_;
+            debugGeometryObject_ = 0;
+        }
+    }
+    else
+    {
+        setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+        
+        if (!debugGeometryObject_)
+        {
+#include "DisableMemoryLeakCheck.h"
+            debugGeometryObject_ = new DebugLines();
+#include "EnableMemoryLeakCheck.h"
+            scenemgr->getRootSceneNode()->attachObject(debugGeometryObject_);
+        }
+    }
+}
+
+void PhysicsWorld::UpdateDebugGeometry()
+{
+    if ((!drawDebugGeometry_) || (!debugGeometryObject_))
+        return;
+
+    PROFILE(PhysicsModule_UpdateDebugGeometry);
+    
+    // Draw debug only for the active (visible) scene
+    OgreWorldPtr ogreWorld = scene_.lock()->GetWorld<OgreWorld>();
+    if (!ogreWorld)
+        return;
+    if (!ogreWorld->IsActive())
+        return;
+    
+    // Get all lines of the physics world
+    world_->debugDrawWorld();
+    
+    // Build the debug vertex buffer. Note: this is a no-op if there is no debug objects to draw
+    debugGeometryObject_->draw();
+}
+
+void PhysicsWorld::reportErrorWarning(const char* warningString)
+{
+    LogWarning("Physics: " + std::string(warningString));
+}
+
+void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
+{
+    if ((drawDebugGeometry_) && (debugGeometryObject_))
+        debugGeometryObject_->addLine(from, to, color);
 }
 
 }

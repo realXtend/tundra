@@ -54,8 +54,8 @@ bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
     return a.name_ < b.name_;
 }
 
-EC_DynamicComponent::EC_DynamicComponent(Framework *fw):
-    IComponent(fw)
+EC_DynamicComponent::EC_DynamicComponent(SceneManager* scene):
+    IComponent(scene)
 {
 }
 

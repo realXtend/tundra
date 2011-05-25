@@ -17,7 +17,9 @@
 #include "EC_SelectionBox.h"
 #include "EC_Material.h"
 #include "Entity.h"
+#include "SceneManager.h"
 #include "RendererSettings.h"
+#include "OgreWorld.h"
 #include "OgreMeshAsset.h"
 #include "OgreParticleAsset.h"
 #include "OgreSkeletonAsset.h"
@@ -122,6 +124,9 @@ void OgreRenderingModule::Initialize()
 
     framework_->RegisterRenderer(renderer.get());
     framework_->RegisterDynamicObject("renderer", renderer.get());
+    
+    connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
+    connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
 }
 
 void OgreRenderingModule::PostInitialize()
@@ -182,6 +187,39 @@ void OgreRenderingModule::ConsoleStats()
     }
     else
         LogError("No renderer found!");
+}
+
+void OgreRenderingModule::OnSceneAdded(const QString& name)
+{
+    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
+    if (!scene)
+    {
+        LogError("Could not find created scene");
+        return;
+    }
+    
+    // Add an OgreWorld to the scene
+    OgreWorldPtr newWorld(new OgreWorld(renderer.get(), scene));
+    renderer->ogreWorlds_[scene.get()] = newWorld;
+    scene->setProperty(OgreWorld::PropertyNameStatic(), QVariant::fromValue<QObject*>(newWorld.get()));
+}
+
+void OgreRenderingModule::OnSceneRemoved(const QString& name)
+{
+    // Remove the OgreWorld from the scene
+    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
+    if (!scene)
+    {
+        LogError("Could not find scene about to be removed");
+        return;
+    }
+    
+    OgreWorld* worldPtr = scene->GetWorld<OgreWorld>().get();
+    if (worldPtr)
+    {
+        scene->setProperty(OgreWorld::PropertyNameStatic(), QVariant());
+        renderer->ogreWorlds_.erase(scene.get());
+    }
 }
 
 void OgreRenderingModule::SetMaterialAttribute(const StringVector &params)

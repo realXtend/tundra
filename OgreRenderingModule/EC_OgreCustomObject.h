@@ -49,7 +49,7 @@ class OGRE_MODULE_API EC_OgreCustomObject : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_OgreCustomObject(Framework *fw);
+    explicit EC_OgreCustomObject(SceneManager* scene);
 
     virtual ~EC_OgreCustomObject();
 
@@ -116,8 +116,8 @@ private:
     /// placeable component 
     ComponentPtr placeable_;
     
-    /// renderer
-    OgreRenderer::RendererWeakPtr renderer_;
+    /// Ogre world ptr
+    OgreWorldWeakPtr world_;
     
     /// Ogre mesh entity (converted from the manual object on commit)
     Ogre::Entity* entity_;

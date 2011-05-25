@@ -3,8 +3,10 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 #include "Renderer.h"
 #include "Entity.h"
+#include "SceneManager.h"
 #include "EC_Placeable.h"
 #include "EC_OgreCustomObject.h"
 
@@ -13,19 +15,20 @@
 
 using namespace OgreRenderer;
 
-EC_OgreCustomObject::EC_OgreCustomObject(Framework *fw) :
-    IComponent(fw),
+EC_OgreCustomObject::EC_OgreCustomObject(SceneManager* scene) :
+    IComponent(scene),
     entity_(0),
     attached_(false),
     cast_shadows_(false),
     draw_distance_(0.0f)
 {
-    renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
 }
 
 EC_OgreCustomObject::~EC_OgreCustomObject()
 {
-    if (renderer_.expired())
+    if (world_.expired())
         return;
 
     DestroyEntity();
@@ -49,10 +52,10 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
     if (!object)
         return false;
     
-    if (renderer_.expired())
+    if (world_.expired())
         return false;
-    RendererPtr renderer = renderer_.lock();
-            
+    OgreWorldPtr world = world_.lock();
+    
     DestroyEntity();
     
     // If placeable is not set yet, set it manually by searching it from the parent entity
@@ -72,13 +75,13 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
         
     try
     {
-        std::string mesh_name = renderer->GetUniqueObjectName("EC_OgreCustomObject_mesh");
+        std::string mesh_name = world->GetUniqueObjectName("EC_OgreCustomObject_mesh");
         object->convertToMesh(mesh_name);
         object->clear();
     
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
 
-        entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName("EC_OgreCustomObject_entity"), mesh_name);
+        entity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EC_OgreCustomObject_entity"), mesh_name);
         if (entity_)
         {
             AttachEntity();
@@ -187,17 +190,17 @@ void EC_OgreCustomObject::DetachEntity()
 
 void EC_OgreCustomObject::DestroyEntity()
 {
-    if (renderer_.expired())
+    if (world_.expired())
         return;
-    RendererPtr renderer = renderer_.lock();
-            
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+    OgreWorldPtr world = world_.lock();
+    
+    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
     
     if (entity_)
     {
         DetachEntity();
         std::string mesh_name = entity_->getMesh()->getName();
-        scene_mgr->destroyEntity(entity_);
+        sceneMgr->destroyEntity(entity_);
         entity_ = 0;
         try
         {

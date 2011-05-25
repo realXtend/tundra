@@ -6,7 +6,9 @@
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
+#include "SceneManager.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 #include "Renderer.h"
 
 #include <Ogre.h>
@@ -15,30 +17,33 @@
 
 using namespace OgreRenderer;
 
-EC_Camera::EC_Camera(Framework *fw) :
-    IComponent(fw),
+EC_Camera::EC_Camera(SceneManager* scene) :
+    IComponent(scene),
     attached_(false),
     camera_(0),
     upVector(this, "Up vector", Vector3df::UNIT_Y)
 {
-    renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
 }
 
 EC_Camera::~EC_Camera()
 {
-    if (renderer_.expired())
+    if (world_.expired())
         return;
 
+    OgreWorldPtr world = world_.lock();
+    
     DetachCamera();
 
     if (camera_)
     {
-        RendererPtr renderer = renderer_.lock();
-        if (renderer->GetCurrentCamera() == camera_)
-            renderer->SetCurrentCamera(0);
-        renderer->GetSceneManager()->destroyCamera(camera_);
+        Renderer* renderer = world->GetRenderer();
+        if (renderer->GetActiveCamera() == this)
+            renderer->SetActiveCamera(0);
+        world->GetSceneManager()->destroyCamera(camera_);
         camera_ = 0;
     }
 }
@@ -114,11 +119,12 @@ void EC_Camera::SetFarClip(float farclip)
 {
     if (!camera_)
         return;
-    if (renderer_.expired())
+    if (world_.expired())
         return;
 
     // Enforce that farclip doesn't go past renderer's view distance
-    Renderer* renderer = renderer_.lock().get();
+    OgreWorldPtr world = world_.lock();
+    Renderer* renderer = world->GetRenderer();
     if (farclip > renderer->GetViewDistance())
         farclip = renderer->GetViewDistance();
     camera_->setFarClipDistance(farclip);
@@ -136,10 +142,10 @@ void EC_Camera::SetActive()
 {
     if (!camera_)
         return;
-    if (renderer_.expired())
+    if (world_.expired())
         return;
 
-    renderer_.lock()->SetCurrentCamera(camera_);
+    world_.lock()->GetRenderer()->SetActiveCamera(this);
 }
 
 float EC_Camera::GetNearClip() const
@@ -170,10 +176,10 @@ bool EC_Camera::IsActive() const
 {
     if (!camera_)
         return false;
-    if (renderer_.expired())
+    if (world_.expired())
         return false;
 
-    return renderer_.lock()->GetCurrentCamera() == camera_;
+    return world_.lock()->GetRenderer()->GetActiveCamera() == this;
 }
 
 void EC_Camera::DetachCamera()
@@ -224,11 +230,11 @@ void EC_Camera::UpdateSignals()
         // Create camera now if not yet created
         if (!camera_)
         {
-            RendererPtr renderer = renderer_.lock();
-            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-            Ogre::Viewport* viewport = renderer->GetViewport();
+            OgreWorldPtr world = world_.lock();
+            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+            Ogre::Viewport* viewport = world->GetRenderer()->GetViewport();
             
-            camera_ = scene_mgr->createCamera(renderer->GetUniqueObjectName("EC_Camera"));
+            camera_ = sceneMgr->createCamera(world->GetUniqueObjectName("EC_Camera"));
             
             // Set default values for the camera
             camera_->setNearClipDistance(0.1f);

@@ -48,7 +48,7 @@ class OGRE_MODULE_API EC_RttTarget : public IComponent
     
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_RttTarget(Framework *fw);
+    explicit EC_RttTarget(SceneManager* scene);
 
     virtual ~EC_RttTarget();
 

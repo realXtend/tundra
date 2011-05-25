@@ -79,7 +79,7 @@ class OGRE_MODULE_API EC_Placeable : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Placeable(Framework *fw);
+    explicit EC_Placeable(SceneManager* scene);
     virtual ~EC_Placeable();
 
     /// position property
@@ -320,8 +320,8 @@ private:
     /// detaches scenenode from parent
     void DetachNode();
     
-    /// renderer
-    OgreRenderer::RendererWeakPtr renderer_;
+    /// Ogre world ptr
+    OgreWorldWeakPtr world_;
     
     /// Ogre scene node for geometry. This always exists as long as the EC_Placeable is alive
     Ogre::SceneNode* sceneNode_;

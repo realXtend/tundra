@@ -58,7 +58,7 @@ class EC_EnvironmentLight : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_EnvironmentLight(Framework *fw);
+    explicit EC_EnvironmentLight(SceneManager* scene);
 
     virtual ~EC_EnvironmentLight();
 
@@ -122,7 +122,7 @@ private:
      * Helper function which is used to update environment light. 
      */
     void ChangeEnvironmentLight(IAttribute* attribute);
-    OgreRenderer::RendererWeakPtr renderer_;
+    OgreWorldWeakPtr world_;
 
      /// Sunlight which is used if there does not exist caelum
     Ogre::Light* sunLight_;

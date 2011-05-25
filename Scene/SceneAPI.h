@@ -49,9 +49,9 @@ public:
     /** @param newComponentName Name for the component (optional).
     */
     template<typename T>
-    boost::shared_ptr<T> CreateComponent(const QString &newComponentName = "")
+    boost::shared_ptr<T> CreateComponent(SceneManager* parentScene, const QString &newComponentName = "")
     {
-        return boost::dynamic_pointer_cast<T>(CreateComponentById(T::TypeIdStatic(), newComponentName));
+        return boost::dynamic_pointer_cast<T>(CreateComponentById(parentScene, T::TypeIdStatic(), newComponentName));
     }
 
 signals:
@@ -109,9 +109,10 @@ public slots:
     /// Creates new empty scene.
     /** @param name name of the new scene
         @param viewEnabled Whether the scene is view enabled
+        @param authority True for server & standalone scenes, false for network client scenes
         @return The new scene, or empty pointer if scene with the specified name already exists.
     */
-    ScenePtr CreateScene(const QString &name, bool viewEnabled);
+    ScenePtr CreateScene(const QString &name, bool viewEnabled, bool authority);
 
     /// Removes a scene with the specified name.
     /** The scene may not get deleted since there may be dangling references to it.
@@ -130,11 +131,11 @@ public slots:
     /// Registers a new factory to create new components of type 'componentTypename' and id 'componentTypeid'.
     void RegisterComponentFactory(ComponentFactoryPtr factory);
 
-    /// Creates a new component instance by specifying the typename of the new component to create.
-    ComponentPtr CreateComponentByName(const QString &componentTypename, const QString &newComponentName = "");
+    /// Creates a new component instance by specifying the typename of the new component to create, and the scene where to create.
+    ComponentPtr CreateComponentByName(SceneManager* scene, const QString &componentTypename, const QString &newComponentName = "");
 
-    /// Creates a new component instance by specifying the typeid of the new component to create.
-    ComponentPtr CreateComponentById(u32 componentTypeid, const QString &newComponentName = "");
+    /// Creates a new component instance by specifying the typeid of the new component to create, and the scene where to create.
+    ComponentPtr CreateComponentById(SceneManager* scene, u32 componentTypeid, const QString &newComponentName = "");
 
     /// Looks up the given type id and returns the type name string for that id.
     QString GetComponentTypeName(u32 componentTypeid);

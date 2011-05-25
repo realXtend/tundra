@@ -53,6 +53,9 @@ RaycastResult* SceneInteract::Raycast()
         return 0;
 
     RaycastResult *result = renderer->Raycast(lastX, lastY);
+    if (!result)
+        return 0;
+    
     if (!result->entity || itemUnderMouse)
     {
         if (!lastHitEntity.expired())

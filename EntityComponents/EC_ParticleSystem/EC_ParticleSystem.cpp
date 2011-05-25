@@ -9,6 +9,7 @@
 #include "OgreParticleAsset.h"
 #include "OgreConversionUtils.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 #include "SceneManager.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
@@ -21,12 +22,15 @@
 
 using namespace OgreRenderer;
 
-EC_ParticleSystem::EC_ParticleSystem(Framework *fw):
-    IComponent(fw),
+EC_ParticleSystem::EC_ParticleSystem(SceneManager* scene):
+    IComponent(scene),
     particleRef(this, "Particle ref" ),
     castShadows(this, "Cast shadows", false),
     renderingDistance(this, "Rendering distance", 0.0f)
 {
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
+    
     static AttributeMetadata particleRefMetadata;
     AttributeMetadata::ButtonInfoList particleRefButtons;
     particleRefButtons.push_back(AttributeMetadata::ButtonInfo(particleRef.GetName(), "V", "View"));
@@ -55,8 +59,8 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
 {
     if (!ViewEnabled())
         return;
-    RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer)
+    OgreWorldPtr world = world_.lock();
+    if (!world)
         return;
 
     try
@@ -68,8 +72,8 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
             return;
         }
 
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        Ogre::ParticleSystem* system = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName("EC_Particlesystem"), SanitateAssetIdForOgre(systemName.toStdString()));
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::ParticleSystem* system = sceneMgr->createParticleSystem(world->GetUniqueObjectName("EC_Particlesystem"), SanitateAssetIdForOgre(systemName.toStdString()));
         if (system)
         {
             placeable->GetSceneNode()->attachObject(system);
@@ -89,12 +93,12 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
 
 void EC_ParticleSystem::DeleteParticleSystems()
 {
-    RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer)
+    OgreWorldPtr world = world_.lock();
+    if (!world)
         return;
 
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    if (!scene_mgr)
+    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    if (!sceneMgr)
         return;
 
     try
@@ -109,7 +113,7 @@ void EC_ParticleSystem::DeleteParticleSystems()
                 node->detachObject(particleSystems_[i]);
         }
         for(unsigned i = 0; i < particleSystems_.size(); ++i)
-            scene_mgr->destroyParticleSystem(particleSystems_[i]);
+            sceneMgr->destroyParticleSystem(particleSystems_[i]);
     }
     catch(Ogre::Exception& /*e*/)
     {

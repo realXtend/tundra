@@ -46,6 +46,12 @@ namespace OgreRenderer
         /// Sets attribute value for material.
         void SetMaterialAttribute(const StringVector &params);
 
+    private slots:
+        /// New scene has been created
+        void OnSceneAdded(const QString &name);
+        /// Scene is about to be removed
+        void OnSceneRemoved(const QString &name);
+    
     private:
         RendererPtr renderer;  ///< Renderer
         RendererSettingsWindow *settingsWindow; ///< Renderer settings window.

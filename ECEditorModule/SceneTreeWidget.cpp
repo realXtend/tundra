@@ -792,7 +792,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
             continue;
         }
 
-        comp = framework->Scene()->CreateComponentByName(dialog->GetTypeName(), dialog->GetName());
+        comp = framework->Scene()->CreateComponentByName(scene.lock().get(), dialog->GetTypeName(), dialog->GetName());
         assert(comp);
         if (comp)
         {
@@ -877,7 +877,7 @@ void SceneTreeWidget::Paste()
                         if (entity->GetComponent(type, name))
                             name.append("_copy");
 
-                        ComponentPtr component = framework->Scene()->CreateComponentByName(type, name);
+                        ComponentPtr component = framework->Scene()->CreateComponentByName(scene.lock().get(), type, name);
                         if (component)
                         {
                             entity->AddComponent(component);

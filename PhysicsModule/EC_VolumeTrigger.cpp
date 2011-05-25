@@ -9,6 +9,7 @@
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
+#include "SceneManager.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
@@ -16,13 +17,13 @@
 
 #include "LoggingFunctions.h"
 
-EC_VolumeTrigger::EC_VolumeTrigger(Framework *fw) :
-    IComponent(fw),
+using namespace Physics;
+
+EC_VolumeTrigger::EC_VolumeTrigger(SceneManager* scene) :
+    IComponent(scene),
     byPivot(this, "By Pivot", false),
     entities(this, "Entities")
 {
-    owner_ = fw->GetModule<Physics::PhysicsModule>();
-
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
@@ -167,7 +168,7 @@ void EC_VolumeTrigger::UpdateSignals()
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForRigidBody()));
 
     SceneManager* scene = parent->GetScene();
-    Physics::PhysicsWorld* world = owner_->GetPhysicsWorldForScene(scene);
+    PhysicsWorld* world = scene->GetWorld<PhysicsWorld>().get();
     if (world)
         connect(world, SIGNAL(Updated(float)), this, SLOT(OnPhysicsUpdate()));
 }

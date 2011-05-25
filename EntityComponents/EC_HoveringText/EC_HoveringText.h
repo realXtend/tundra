@@ -97,7 +97,7 @@ class EC_HoveringText : public IComponent
 
 public:
     
-    explicit EC_HoveringText(Framework *fw);
+    explicit EC_HoveringText(SceneManager* scene);
 
     /// Destructor.
     ~EC_HoveringText();
@@ -217,9 +217,9 @@ private slots:
 
 private:
     
-    /// Renderer pointer.
-    OgreRenderer::RendererWeakPtr renderer_;
-
+    /// Ogre world pointer.
+    OgreWorldWeakPtr world_;
+    
     /// Ogre billboard set.
     Ogre::BillboardSet *billboardSet_;
 

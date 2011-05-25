@@ -9,9 +9,13 @@
 #include "PhysicsModuleApi.h"
 #include "Vector3D.h"
 
+#include <LinearMath/btIDebugDraw.h>
+
 #include <set>
 #include <QObject>
 #include <QVector>
+
+#include <boost/enable_shared_from_this.hpp>
 
 class btCollisionConfiguration;
 class btBroadphaseInterface;
@@ -19,6 +23,9 @@ class btConstraintSolver;
 class btDiscreteDynamicsWorld;
 class btDispatcher;
 class btCollisionObject;
+class EC_RigidBody;
+
+class DebugLines;
 
 class PhysicsRaycastResult : public QObject
 {
@@ -46,12 +53,15 @@ namespace Physics
 class PhysicsModule;
 
 /// A physics world that encapsulates a Bullet physics world
-class PHYSICS_MODULE_API PhysicsWorld : public QObject
+class PHYSICS_MODULE_API PhysicsWorld : public QObject, public btIDebugDraw, public boost::enable_shared_from_this<PhysicsWorld>
 {
     Q_OBJECT
     
+    friend class PhysicsModule;
+    friend class EC_RigidBody;
+    
 public:
-    PhysicsWorld(PhysicsModule* owner, bool isClient);
+    PhysicsWorld(ScenePtr scene, bool isClient);
     virtual ~PhysicsWorld();
     
     /// Step the physics world. May trigger several internal simulation substeps, according to the deltatime given.
@@ -59,6 +69,30 @@ public:
     
     /// Process collision from an internal sub-step (Bullet post-tick callback)
     void ProcessPostTick(float substeptime);
+    
+    /// Dynamic scene property name
+    static const char* PropertyNameStatic()
+    {
+        return "physics";
+    }
+    
+    /// IDebugDraw override
+    virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
+    
+    /// IDebugDraw override
+    virtual void reportErrorWarning(const char* warningString);
+    
+    /// IDebugDraw override
+    virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color) {}
+    
+    /// IDebugDraw override
+    virtual void draw3dText(const btVector3& location,const char* textString) {}
+    
+    /// IDebugDraw override
+    virtual void setDebugMode(int debugMode) { debugDrawMode_ = debugMode; }
+    
+    /// IDebugDraw override
+    virtual int getDebugMode() const { return debugDrawMode_; }
     
 public slots:
     /// Set physics update period (= length of each simulation step.) By default 1/60th of a second.
@@ -92,6 +126,18 @@ public slots:
     
     /// Return whether the physics world is for a client scene. Client scenes only simulate local entities' motion on their own.
     bool IsClient() const { return isClient_; }
+    
+    /// Enable/disable debug geometry
+    void SetDrawDebugGeometry(bool enable);
+    
+    /// Get debug geometry enabled status
+    bool GetDrawDebugGeometry() const { return drawDebugGeometry_; }
+    
+    /// Enable/disable physics simulation
+    void SetRunPhysics(bool enable) { runPhysics_ = enable; }
+    
+    /// Return whether simulation is on
+    bool GetRunPhysics() const { return runPhysics_; }
     
 signals:
     /// A physics collision has happened between two entities. 
@@ -135,8 +181,32 @@ private:
     /// Client scene flag
     bool isClient_;
     
+    /// Parent scene
+    SceneWeakPtr scene_;
+    
     /// Previous frame's collisions. We store these to know whether the collision was new or "ongoing"
     std::set<std::pair<btCollisionObject*, btCollisionObject*> > previousCollisions_;
+    
+    /// Update debug geometry manual object, if physics debug drawing is on
+    void UpdateDebugGeometry();
+    
+    /// Debug geometry enabled flag
+    bool drawDebugGeometry_;
+    
+    /// Debug geometry manually enabled/disabled (with physicsdebug console command). If true, do not automatically enable/disable debug geometry anymore
+    bool drawDebugManuallySet_;
+    
+    /// Lines object for the debug geometry
+    DebugLines* debugGeometryObject_;
+    
+    /// Whether should run physics. Default true
+    bool runPhysics_;
+    
+    /// Bullet debug draw / debug behaviour flags
+    int debugDrawMode_;
+    
+    /// Debug draw-enabled rigidbodies. Note: these pointers are never dereferenced, it is just used for counting
+    std::set<EC_RigidBody*> debugRigidBodies_;
 };
 
 }

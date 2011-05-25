@@ -10,6 +10,7 @@
 #include "AssetReference.h"
 #include "AssetFwd.h"
 #include "AssetRefListener.h"
+#include "OgreModuleFwd.h"
 
 namespace Ogre
 {
@@ -71,7 +72,7 @@ class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Terrain(Framework *fw);
+    explicit EC_Terrain(SceneManager* scene);
     virtual ~EC_Terrain();
 
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
@@ -438,6 +439,9 @@ private:
 
     /// Stores the actual height patches.
     std::vector<Patch> patches;
+    
+    /// Ogre world for referring to the Ogre scene manager
+    OgreWorldWeakPtr world_;
 };
 }
 

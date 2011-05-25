@@ -9,7 +9,6 @@
 #include "ConvexHull.h"
 #include "EC_RigidBody.h"
 #include "EC_VolumeTrigger.h"
-#include "OgreBulletCollisionsDebugLines.h"
 #include "OgreRenderingModule.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
@@ -65,12 +64,7 @@ namespace Physics
 {
 
 PhysicsModule::PhysicsModule()
-:IModule("Physics"),
-drawDebugGeometry_(false),
-drawDebugManuallySet_(false),
-runPhysics_(true),
-debugGeometryObject_(0),
-debugDrawMode_(0)
+:IModule("Physics")
 {
 }
 
@@ -87,6 +81,9 @@ void PhysicsModule::Load()
 void PhysicsModule::Initialize()
 {
     framework_->RegisterDynamicObject("physics", this);
+    
+    connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
+    connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
 }
 
 void PhysicsModule::PostInitialize()
@@ -107,14 +104,15 @@ void PhysicsModule::PostInitialize()
 
 void PhysicsModule::Uninitialize()
 {
-    // Delete the physics debug object if it exists
-    SetDrawDebugGeometry(false);
 }
 
 void PhysicsModule::ToggleDebugGeometry()
 {
-    SetDrawDebugGeometry(!drawDebugGeometry_);
-    drawDebugManuallySet_ = true; // Disable automatic debugdraw state change
+    for (PhysicsWorldMap::iterator i = physicsWorlds_.begin(); i != physicsWorlds_.end(); ++i)
+    {
+        i->second->SetDrawDebugGeometry(!i->second->GetDrawDebugGeometry());
+        i->second->drawDebugManuallySet_ = true; // Disable automatic debugdraw state change
+    }
 }
 
 void PhysicsModule::StopPhysics()
@@ -156,127 +154,53 @@ void PhysicsModule::AutoCollisionMesh()
 
 void PhysicsModule::Update(f64 frametime)
 {
-    if (runPhysics_)
+    PROFILE(PhysicsModule_Update);
+    // Loop all the physics worlds and update them.
+    PhysicsWorldMap::iterator i = physicsWorlds_.begin();
+    while(i != physicsWorlds_.end())
     {
-        PROFILE(PhysicsModule_Update);
-        // Loop all the physics worlds and update them.
-        PhysicsWorldMap::iterator i = physicsWorlds_.begin();
-        while(i != physicsWorlds_.end())
-        {
-            i->second->Simulate(frametime);
-            ++i;
-        }
-        
-        // Automatically enable debug geometry if at least one debug-enabled rigidbody. Automatically disable if no debug-enabled rigidbodies
-        // However, do not do this if user has used the physicsdebug console command
-        if (!drawDebugManuallySet_)
-        {
-            if ((!drawDebugGeometry_) && (!debugRigidBodies_.empty()))
-                SetDrawDebugGeometry(true);
-            if ((drawDebugGeometry_) && (debugRigidBodies_.empty()))
-                SetDrawDebugGeometry(false);
-        }
-        
-        if (drawDebugGeometry_)
-            UpdateDebugGeometry();
+        i->second->Simulate(frametime);
+        ++i;
     }
-    
 }
 
-Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(ScenePtr scene, bool isClient)
+void PhysicsModule::OnSceneAdded(const QString& name)
 {
+    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
     if (!scene)
-        return 0;
-    
-    PhysicsWorld* old = GetPhysicsWorldForScene(scene);
-    if (old)
     {
-        LogWarning("Physics world already exists for scene");
-        return old;
+        LogError("Could not find created scene");
+        return;
     }
     
-    SceneManager* ptr = scene.get();
-    boost::shared_ptr<PhysicsWorld> new_world(new PhysicsWorld(this, isClient));
-    new_world->SetGravity(scene->GetUpVector() * -9.81f);
-    
-    physicsWorlds_[ptr] = new_world;
-    QObject::connect(ptr, SIGNAL(Removed(SceneManager*)), this, SLOT(OnSceneRemoved(SceneManager*)));
-    
-    LogDebug("Created new physics world");
-    
-    return new_world.get();
+    boost::shared_ptr<PhysicsWorld> newWorld(new PhysicsWorld(scene, !scene->IsAuthority()));
+    newWorld->SetGravity(scene->GetUpVector() * -9.81f);
+    physicsWorlds_[scene.get()] = newWorld;
+    scene->setProperty(PhysicsWorld::PropertyNameStatic(), QVariant::fromValue<QObject*>(newWorld.get()));
 }
 
-Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(SceneManager* sceneraw)
+void PhysicsModule::OnSceneRemoved(const QString& name)
 {
-    if (!sceneraw)
-        return 0;
-    
-    PhysicsWorldMap::iterator i = physicsWorlds_.find(sceneraw);
-    if (i == physicsWorlds_.end())
-        return 0;
-    return i->second.get();
-}
-
-Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(ScenePtr scene)
-{
-    return GetPhysicsWorldForScene(scene.get());
-}
-
-Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorld(QObject* scene)
-{
-    return GetPhysicsWorldForScene(dynamic_cast<SceneManager*>(scene));
-}
-
-void PhysicsModule::OnSceneRemoved(SceneManager* scene)
-{
-    PhysicsWorldMap::iterator i = physicsWorlds_.find(scene);
-    if (i != physicsWorlds_.end())
+    // Remove the PhysicsWorld from the scene
+    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
+    if (!scene)
     {
-        LogInfo("Scene removed, removing physics world");
-        physicsWorlds_.erase(i);
+        LogError("Could not find scene about to be removed");
+        return;
+    }
+    
+    PhysicsWorld* worldPtr = scene->GetWorld<PhysicsWorld>().get();
+    if (worldPtr)
+    {
+        scene->setProperty(PhysicsWorld::PropertyNameStatic(), QVariant());
+        physicsWorlds_.erase(scene.get());
     }
 }
 
 void PhysicsModule::SetRunPhysics(bool enable)
 {
-    runPhysics_ = enable;
-}
-
-void PhysicsModule::SetDrawDebugGeometry(bool enable)
-{
-    if (!framework_ || framework_->IsHeadless() || drawDebugGeometry_ == enable)
-        return;
-
-    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer)
-        return;
-    Ogre::SceneManager* scenemgr = renderer->GetSceneManager();
-    
-    drawDebugGeometry_ = enable;
-    if (!enable)
-    {
-        setDebugMode(0);
-        
-        if (debugGeometryObject_)
-        {
-            scenemgr->getRootSceneNode()->detachObject(debugGeometryObject_);
-            delete debugGeometryObject_;
-            debugGeometryObject_ = 0;
-        }
-    }
-    else
-    {
-        setDebugMode(btIDebugDraw::DBG_DrawWireframe);
-        
-        if (!debugGeometryObject_)
-        {
-#include "DisableMemoryLeakCheck.h"
-            debugGeometryObject_ = new DebugLines();
-#include "EnableMemoryLeakCheck.h"
-            scenemgr->getRootSceneNode()->attachObject(debugGeometryObject_);
-        }
-    }
+    for (PhysicsWorldMap::iterator i = physicsWorlds_.begin(); i != physicsWorlds_.end(); ++i)
+        i->second->SetRunPhysics(enable);
 }
 
 void PhysicsModule::OnScriptEngineCreated(QScriptEngine* engine)
@@ -284,36 +208,6 @@ void PhysicsModule::OnScriptEngineCreated(QScriptEngine* engine)
     qScriptRegisterQObjectMetaType<Physics::PhysicsModule*>(engine);
     qScriptRegisterQObjectMetaType<Physics::PhysicsWorld*>(engine);
     qScriptRegisterQObjectMetaType<PhysicsRaycastResult*>(engine);
-}
-
-void PhysicsModule::UpdateDebugGeometry()
-{
-    if ((!drawDebugGeometry_) || (!debugGeometryObject_))
-        return;
-
-    PROFILE(PhysicsModule_UpdateDebugGeometry);
-
-    // Draw debug only for the active scene
-    PhysicsWorld* world = GetPhysicsWorldForScene(GetFramework()->Scene()->GetDefaultScene());
-    if (!world)
-        return;
-    
-    // Get all lines of the physics world
-    world->GetWorld()->debugDrawWorld();
-    
-    // Build the debug vertex buffer. Note: this is a no-op if there is no debug objects to draw
-    debugGeometryObject_->draw();
-}
-
-void PhysicsModule::reportErrorWarning(const char* warningString)
-{
-    LogWarning("Physics: " + std::string(warningString));
-}
-
-void PhysicsModule::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
-{
-    if ((drawDebugGeometry_) && (debugGeometryObject_))
-        debugGeometryObject_->addLine(from, to, color);
 }
 
 boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogre::Mesh* mesh)

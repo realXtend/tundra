@@ -14,6 +14,7 @@
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 #include <Ogre.h>
 #include <OgreQuaternion.h>
 #include <OgreColourValue.h>
@@ -27,8 +28,8 @@
 
 namespace Environment
 {
-    EC_EnvironmentLight::EC_EnvironmentLight(Framework *fw)
-        : IComponent(fw),
+    EC_EnvironmentLight::EC_EnvironmentLight(SceneManager* scene)
+        : IComponent(scene),
        sunColorAttr(this, "Sun color", Color(0.639f,0.639f,0.639f)),
        ambientColorAttr(this, "Ambient color", Color(0.364f, 0.364f, 0.364f, 1)),
        sunDiffuseColorAttr(this, "Sun diffuse color", Color(0.93f, 0.93f, 0.93f, 1)),
@@ -42,7 +43,8 @@ namespace Environment
        ,caelumSystem_(0)
 #endif
     {
-        renderer_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+        if (scene)
+            world_ = scene->GetWorld<OgreWorld>();
 #ifdef CAELUM
        caelumSystem_ =  framework_->GetModule<EnvironmentModule >()->GetCaelum();
 #endif 
@@ -59,10 +61,10 @@ namespace Environment
     
     EC_EnvironmentLight::~EC_EnvironmentLight()
     {
-        if (renderer_.expired())
+        if (world_.expired())
             return;
         
-        OgreRenderer::RendererPtr renderer = renderer_.lock();
+        OgreWorldPtr world = world_.lock();
        
         RemoveSun();
 #ifdef CAELUM
@@ -73,9 +75,9 @@ namespace Environment
 
     void EC_EnvironmentLight::UpdateSun()
     {
-        if (renderer_.lock() != 0) 
+        if (world_.lock() != 0)
         {
-            Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
+            Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
             assert(sceneMgr);
             UNREFERENCED_PARAM(sceneMgr);
 #ifdef CAELUM 
@@ -103,13 +105,13 @@ namespace Environment
     {
         // Remove Sun
         
-        if (renderer_.expired() )
+        if (world_.expired() )
             return;
         
-        OgreRenderer::RendererPtr renderer = renderer_.lock();
+        OgreWorldPtr world = world_.lock();
         if (sunLight_ != 0)
         {
-            Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
+            Ogre::SceneManager *sceneManager = world->GetSceneManager();
             sceneManager->destroyLight(sunLight_);
             sunLight_ = 0;
         }
@@ -119,13 +121,13 @@ namespace Environment
     
     void EC_EnvironmentLight::CreateOgreLight()
     {
-        if (renderer_.expired())
+        if (world_.expired())
             return;
     
-        OgreRenderer::RendererPtr renderer = renderer_.lock();
+        OgreWorldPtr world = world_.lock();
     
-        Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
-        sunLight_ = sceneManager->createLight(renderer->GetUniqueObjectName("EC_Environment_ogresunlight"));
+        Ogre::SceneManager* sceneManager = world->GetSceneManager();
+        sunLight_ = sceneManager->createLight(world->GetUniqueObjectName("EC_Environment_ogresunlight"));
         
         sunLight_->setType(Ogre::Light::LT_DIRECTIONAL);
         
@@ -148,9 +150,9 @@ namespace Environment
 
     void EC_EnvironmentLight::UpdateAmbientLight()
     {
-        if (renderer_.lock() != 0) 
+        if (world_.lock() != 0) 
         {
-            Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
+            Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
             assert(sceneMgr);
             
             sceneMgr->setAmbientLight(OgreRenderer::ToOgreColor(ambientColorAttr.Get()));
@@ -169,15 +171,16 @@ namespace Environment
           }
 
 #ifdef CAELUM
-        if (renderer_.expired())
+        if (world_.expired())
             return;
 
         if (caelumSystem_ == 0)
             return;
 
-        OgreRenderer::RendererPtr renderer = renderer_.lock();
+        OgreWorldPtr world = world_.lock();
+        OgreRenderer::Renderer* renderer = world->GetRenderer();
         Ogre::Camera *camera = renderer->GetCurrentCamera();
-        Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
+        Ogre::SceneManager *sceneManager = world->GetSceneManager();
 
         float sunColorMultiplier = 1.5f;
         float MAX_SUNLIGHT_MULTIPLIER = 1.5f;

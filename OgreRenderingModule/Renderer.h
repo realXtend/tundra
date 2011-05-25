@@ -17,9 +17,12 @@
 #include <QImage>
 #include <OgrePrerequisites.h>
 
-class RenderWindow;
+#include <boost/enable_shared_from_this.hpp>
 
+class RenderWindow;
+class OgreWorld;
 class Framework;
+class EC_Camera;
 
 namespace OgreRenderer
 {
@@ -44,7 +47,7 @@ namespace OgreRenderer
     */
     class OGRE_MODULE_API Renderer : public QObject, public IRenderer
     {
-        friend class RenderableListener;
+        friend class OgreRenderingModule;
 
         Q_OBJECT
 
@@ -52,31 +55,6 @@ namespace OgreRenderer
         /// Renders the screen.
         //as a slot for webserver plugin to render when needed
         virtual void Render();
-
-        /// Returns true if the given entity id is in the list of visible entities for this frame.
-        /** We could also expose the whole set of visible ents, and it may be useful later, 
-            but this is for fastest possible visibility check of a single entity (for RTT display control use) */
-        bool IsEntityVisible(uint ent_id);
-
-        /// Do a frustum query to the world from viewport coordinates.
-        virtual QList<Entity*> FrustumQuery(QRect &viewrect);
-
-        /// Do raycast into the world from viewport coordinates, using all selection layers
-        /** The coordinates are a position in the render window, not scaled to [0,1].
-            @param x Horizontal position for the origin of the ray
-            @param y Vertical position for the origin of the ray
-            @return Raycast result structure
-        */
-        virtual RaycastResult* Raycast(int x, int y);
-
-        /// Do raycast into the world from viewport coordinates, using specific selection layer(s)
-        /** The coordinates are a position in the render window, not scaled to [0,1].
-            @param x Horizontal position for the origin of the ray
-            @param y Vertical position for the origin of the ray
-            @param layerMask Which selection layer(s) to use (bitmask)
-            @return Raycast result structure
-        */
-        virtual RaycastResult* Raycast(int x, int y, unsigned layerMask);
 
         /// Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
@@ -109,6 +87,37 @@ namespace OgreRenderer
         /// Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
         void DoFullUIRedraw();
 
+        /// Do raycast into the currently active world from viewport coordinates, using all selection layers
+        /// \todo This function will be removed and replaced with a function Scene::Intersect.
+        /** The coordinates are a position in the render window, not scaled to [0,1].
+            \param x Horizontal position for the origin of the ray
+            \param y Vertical position for the origin of the ray
+            \return Raycast result structure
+        */
+        virtual RaycastResult* Raycast(int x, int y);
+
+        /// Do raycast into the currently active world from viewport coordinates, using specific selection layer(s)
+        /// \todo This function will be removed and replaced with a function Scene::Intersect.
+        /** The coordinates are a position in the render window, not scaled to [0,1].
+            \param x Horizontal position for the origin of the ray
+            \param y Vertical position for the origin of the ray
+            \param layerMask Which selection layer(s) to use (bitmask)
+            \return Raycast result structure
+        */
+        virtual RaycastResult* Raycast(int x, int y, unsigned layerMask);
+        
+        /// Do a frustum query to the currently active world from viewport coordinates.
+        /// \todo This function will be removed and replaced with a function Scene::Intersect.
+        /** Returns the found entities as a QVariantList so that
+            Python and Javascript can get the result directly from here.
+            \param viewrect The query rectangle in 2d window coords.
+        */
+        virtual QList<Entity*> FrustumQuery(QRect &viewrect);
+        
+        /// Returns currently active camera component. Returned as IComponent* for scripting convenience.
+        IComponent* GetActiveCamera() const;
+        
+        
     public:
         /// Constructor
         /** @param framework Framework pointer.
@@ -153,25 +162,21 @@ namespace OgreRenderer
 
         /// Returns Ogre root
         OgreRootPtr GetRoot() const { return root_; }
-
-        /// Returns Ogre scenemanager
-        Ogre::SceneManager* GetSceneManager() const { return scenemanager_; }
-
+        
         /// Returns Ogre viewport
         Ogre::Viewport* GetViewport() const { return viewport_; }
-
-        /// Returns active camera
-        /** @note Use with care. Never set the position of the camera, but query rather the camera entity from scene,
-            and use the EC_Camera entity component + its placeable.
-        */
-        Ogre::Camera* GetCurrentCamera() const { return camera_; }
-
-        /// Returns currently active camera component.
-        boost::shared_ptr<EC_Camera> GetActiveCamera() const;
 
         /// Returns current render window
         Ogre::RenderWindow* GetCurrentRenderWindow() const;
 
+        /// Returns currently active Ogre camera
+        /** Note: in case there is no active camera, will not return the default (dummy) camera, but 0
+         */
+        Ogre::Camera* GetActiveOgreCamera() const;
+        
+        /// Returns the OgreWorld of the currently active camera
+        OgreWorldPtr GetActiveOgreWorld() const;
+        
         /// Returns an unique name to create Ogre objects that require a mandatory name
         /** @param prefix Prefix for the name. */
         std::string GetUniqueObjectName(const std::string &prefix);
@@ -187,13 +192,13 @@ namespace OgreRenderer
         void PostInitialize();
 
         /// Performs update. Called by OgreRenderingModule
-        /** Pumps Ogre window events.
-        */
+        /** Currently a no-op
+         */
         void Update(f64 frametime);
 
-        /// Sets current camera used for rendering the main viewport
+        /// Sets current camera component used for rendering the main viewport
         /** Called by EC_Camera when activating. Null will default to the default camera, so that we don't crash when rendering. */
-        void SetCurrentCamera(Ogre::Camera* camera);
+        void SetActiveCamera(EC_Camera* camera);
 
         /// returns the composition handler responsible of the post-processing effects
         CompositionHandler *GetCompositionHandler() const { return c_handler_; }
@@ -224,12 +229,6 @@ namespace OgreRenderer
         /// Sets up Ogre resources based on resources.cfg
         void SetupResources();
 
-        /// Creates scenemanager & camera
-        void SetupScene();
-
-        /// Initializes shadows. Called by SetupScene().
-        void InitShadows();
-
         /// Prepare the config with needed default values if they are not there.
         void PrepareConfig();
 
@@ -239,20 +238,22 @@ namespace OgreRenderer
         /// Ogre root object
         OgreRootPtr root_;
 
-        /// Scene manager
-        Ogre::SceneManager* scenemanager_;
-
         /// Default hardware buffer manager for headless mode
         Ogre::DefaultHardwareBufferManager* buffermanager_;
         
-        /// Default camera, used when no other camera exists
-        Ogre::Camera* default_camera_;
-
-        /// Current camera
-        Ogre::Camera* camera_;
+        /// All created OgreWorlds (scene managers)
+        std::map<SceneManager*, OgreWorldPtr> ogreWorlds_;
+        
+        /// Currently active camera component
+        EC_Camera* cameraComponent_;
 
         /// Maximum view distance
         float view_distance_;
+
+        /// Dummy scenemanager when we have no scene
+        Ogre::SceneManager* defaultSceneManager_;
+        /// Dummy camera when we have no scene / no active camera
+        Ogre::Camera* defaultCamera_;
 
         /// Viewport
         Ogre::Viewport* viewport_;
@@ -261,9 +262,6 @@ namespace OgreRenderer
 
         /// Framework we belong to
         Framework* framework_;
-
-        /// Ogre renderable listener
-        RenderableListenerPtr renderable_listener_;
 
         /// Counter for unique name creation
         uint object_id_;
@@ -276,9 +274,6 @@ namespace OgreRenderer
 
         /// filename for the Ogre3D plugins file
         std::string plugins_filename_;
-
-        /// ray for raycasting, reusable
-        Ogre::RaySceneQuery *ray_query_;
 
         /// window title to be used when creating renderwindow
         std::string window_title_;
@@ -309,10 +304,7 @@ namespace OgreRenderer
 
         /// Texture quality
         TextureQuality texturequality_;
-
-        /// Soft shadow gaussian listeners
-        std::list<GaussianListener *> gaussianListeners_;
-
+        
         /// Pixel buffer used with screen captures
         Ogre::uchar *capture_screen_pixel_data_;
         

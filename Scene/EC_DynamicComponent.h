@@ -77,7 +77,7 @@ class EC_DynamicComponent : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_DynamicComponent(Framework *fw);
+    explicit EC_DynamicComponent(SceneManager* scene);
 
     ~EC_DynamicComponent();
 

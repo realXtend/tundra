@@ -937,7 +937,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
             continue;
         }
 
-        comp = framework->Scene()->CreateComponentByName(dialog->GetTypeName(), dialog->GetName());
+        comp = framework->Scene()->CreateComponentByName(scene.get(), dialog->GetTypeName(), dialog->GetName());
         assert(comp);
         if (comp)
         {

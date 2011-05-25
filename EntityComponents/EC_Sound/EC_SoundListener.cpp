@@ -20,15 +20,15 @@
 #include "Framework.h"
 #include "MemoryLeakCheck.h"
 
-EC_SoundListener::EC_SoundListener(Framework *fw):
-    IComponent(fw),
+EC_SoundListener::EC_SoundListener(SceneManager* scene):
+    IComponent(scene),
     active(this, "active", false)
 {
     // By default, this component is NOT network-serialized
     SetNetworkSyncEnabled(false);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
-    connect(fw->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
+    connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnActiveChanged()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }

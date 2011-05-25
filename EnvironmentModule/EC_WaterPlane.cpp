@@ -13,6 +13,7 @@
 #include "SceneManager.h"
 #include "OgreMaterialUtils.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
@@ -25,8 +26,8 @@
 
 namespace Environment
 {
-    EC_WaterPlane::EC_WaterPlane(Framework *fw) :
-        IComponent(fw),
+    EC_WaterPlane::EC_WaterPlane(SceneManager* scene) :
+        IComponent(scene),
         xSize(this, "x-size", 5000),
         ySize(this, "y-size", 5000),
         depth(this, "Depth", 20),
@@ -61,11 +62,13 @@ namespace Environment
 
         fogMode.SetMetadata(&metadata);
 
-        renderer_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-        if (renderer_.lock())
+        if (scene)
+            world_ = scene->GetWorld<OgreWorld>();
+        OgreWorldPtr world = world_.lock();
+        if (world)
         {
-            Ogre::SceneManager *scene_mgr = renderer_.lock()->GetSceneManager();
-            node_ = scene_mgr->createSceneNode(renderer_.lock()->GetUniqueObjectName("EC_WaterPlane_Root"));
+            Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+            node_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_WaterPlane_Root"));
         }
 
         QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
@@ -94,16 +97,16 @@ namespace Environment
 
     EC_WaterPlane::~EC_WaterPlane()
     {
-       if (renderer_.expired())
+       if (world_.expired())
         return;
         
-       OgreRenderer::RendererPtr renderer = renderer_.lock();
+       OgreWorldPtr world = world_.lock();
        RemoveWaterPlane();
 
         if (node_ != 0)
         {
-            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-            scene_mgr->destroySceneNode(node_);
+            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+            sceneMgr->destroySceneNode(node_);
             node_ = 0;
         }
     }
@@ -159,17 +162,20 @@ namespace Environment
 
     void EC_WaterPlane::ComponentRemoved(IComponent* component, AttributeChange::Type type)
     {
+        if (world_.expired())
+            return;
+        
         if (component->TypeName() == EC_Placeable::TypeNameStatic() )
         {
             DetachEntity();
 
             // Attach entity directly to Ogre root.
-            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
-            if (scene_mgr == 0)
+            Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
+            if (sceneMgr == 0)
                 return;
 
             node_->attachObject(entity_);
-            scene_mgr->getRootSceneNode()->addChild(node_);
+            sceneMgr->getRootSceneNode()->addChild(node_);
             node_->setVisible(true);
             attachedToRoot_ = true;
             attached_ = true;
@@ -253,7 +259,9 @@ namespace Environment
         if (entity_ == 0)
             return false;
 
-        Ogre::Camera *camera = renderer_.lock()->GetCurrentCamera();
+        Ogre::Camera *camera = world_.lock()->GetRenderer()->GetActiveOgreCamera();
+        if (!camera)
+            return false;
         Ogre::Vector3 posCamera = camera->getDerivedPosition();
 
         if (IsTopOrBelowWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z)))
@@ -274,10 +282,11 @@ namespace Environment
         if (entity_)
             RemoveWaterPlane();
         
+        OgreWorldPtr world = world_.lock();
         // Create water plane
-        if (renderer_.lock() != 0) 
+        if (world)
         {
-            Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
+            Ogre::SceneManager *sceneMgr = world->GetSceneManager();
             assert(sceneMgr);
 
             if (node_ != 0)
@@ -291,7 +300,7 @@ namespace Environment
                     Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::Plane(Ogre::Vector3::UNIT_Y, 0),
                     x, y, xSegments.Get(), ySegments.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
                 
-                entity_ = sceneMgr->createEntity(renderer_.lock()->GetUniqueObjectName("EC_WaterPlane_entity"), name_.toStdString().c_str());
+                entity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EC_WaterPlane_entity"), name_.toStdString().c_str());
                 entity_->setMaterialName(materialName.Get().toStdString().c_str());
                 entity_->setCastShadows(false);
                 // Tries to attach entity, if there is not EC_Placeable availible, it will not attach object
@@ -303,15 +312,13 @@ namespace Environment
     void EC_WaterPlane::RemoveWaterPlane()
     {
         // Remove waterplane
-        if (renderer_.expired() || !entity_)
+        if (world_.expired() || !entity_)
             return;
-
-        OgreRenderer::RendererPtr renderer = renderer_.lock();
 
         DetachEntity();
 
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        scene_mgr->destroyEntity(entity_);
+        Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
+        sceneMgr->destroyEntity(entity_);
         entity_ = 0;
         
         Ogre::MeshManager::getSingleton().remove(name_.toStdString().c_str());
@@ -476,9 +483,9 @@ namespace Environment
         else
         {
             // There is no placeable attacht entity to OgreSceneRoot 
-            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
+            Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
             node_->attachObject(entity_);
-            scene_mgr->getRootSceneNode()->addChild(node_);
+            sceneMgr->getRootSceneNode()->addChild(node_);
             node_->setVisible(true);
             attachedToRoot_ = true;
         }
@@ -504,9 +511,9 @@ namespace Environment
             // Sanity check..
             if (entity_->isAttached() )
             {
-                Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
+                Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
                 node_->detachObject(entity_);
-                scene_mgr->getRootSceneNode()->removeChild(node_);
+                sceneMgr->getRootSceneNode()->removeChild(node_);
                 attachedToRoot_ = false;
             }
         }

@@ -46,16 +46,18 @@ SceneManager::SceneManager() :
     gid_(1),
     gid_local_(LocalEntity + 1),
     viewEnabled_(true),
+    authority_(true),
     interpolating_(false)
 {
 }
 
-SceneManager::SceneManager(const QString &name, Framework *framework, bool viewEnabled) :
+SceneManager::SceneManager(const QString &name, Framework *framework, bool viewEnabled, bool authority) :
     name_(name),
     framework_(framework),
     gid_(1),
     gid_local_(LocalEntity + 1),
-    interpolating_(false)
+    interpolating_(false),
+    authority_(authority)
 {
     // In headless mode only view disabled-scenes can be created
     viewEnabled_ = framework->IsHeadless() ? false : viewEnabled_ = viewEnabled;
@@ -96,7 +98,7 @@ EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &componen
     EntityPtr entity = EntityPtr(new Entity(framework_, newentityid, this));
     for(size_t i=0 ; i<(size_t)components.size() ; ++i)
     {
-        ComponentPtr newComp = framework_->Scene()->CreateComponentByName(components[i]);
+        ComponentPtr newComp = framework_->Scene()->CreateComponentByName(this, components[i]);
         if (newComp)
         {
             if (!defaultNetworkSync)
@@ -886,14 +888,14 @@ SceneDesc SceneManager::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDe
                 // A bit of a hack to get the name from EC_Name.
                 if (entityDesc.name.isEmpty() && type_name == EC_Name::TypeNameStatic())
                 {
-                    ComponentPtr comp = framework_->Scene()->CreateComponentByName(type_name, name);
+                    ComponentPtr comp = framework_->Scene()->CreateComponentByName(const_cast<SceneManager*>(this), type_name, name);
                     EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
                     ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                     entityDesc.name = ecName->name.Get();
                 }
 
                 // Find asset references.
-                ComponentPtr comp = framework_->Scene()->CreateComponentByName(type_name, name);
+                ComponentPtr comp = framework_->Scene()->CreateComponentByName(const_cast<SceneManager*>(this), type_name, name);
                 if (!comp.get()) // Move to next element if component creation fails.
                 {
                     comp_elem = comp_elem.nextSiblingElement("component");
@@ -1079,7 +1081,7 @@ SceneDesc SceneManager::GetSceneDescFromBinary(QByteArray &data, SceneDesc &scen
 
                 try
                 {
-                    ComponentPtr comp = sceneAPI->CreateComponentById(typeId, compDesc.name);
+                    ComponentPtr comp = sceneAPI->CreateComponentById(const_cast<SceneManager*>(this), typeId, compDesc.name);
                     if (comp)
                     {
                         if (data_size)

@@ -8,6 +8,7 @@
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
+#include "OgreWorld.h"
 #include "Renderer.h"
 #include "InputAPI.h"
 #include "EC_Mesh.h"
@@ -28,7 +29,8 @@ EntityPlacer::EntityPlacer(Framework *framework, entity_id_t entityId, QObject *
     static const std::string customMeshName("Selection.mesh");
     input_ = framework_->Input()->RegisterInputContext("EntityPlacement", 110);
     
-    entity_ = framework_->Scene()->GetDefaultScene()->GetEntity(entityId);
+    SceneManager* scene = framework_->Scene()->GetDefaultScene().get();
+    entity_ = scene->GetEntity(entityId);
     if(!entity_.expired())
     {
         Entity *entity = entity_.lock().get();
@@ -40,16 +42,14 @@ EntityPlacer::EntityPlacer(Framework *framework, entity_id_t entityId, QObject *
         if (!entity->GetComponent("EC_Mesh"))
         {
             useCustomMesh_ = true;
-            OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModule<OgreRenderer::OgreRenderingModule>();
-            if(!rendererModule)
-                return;
 
-            renderer_ = rendererModule->GetRenderer();
-            if(renderer_.expired())
+            world_ = scene->GetWorld<OgreWorld>();
+            if (world_.expired())
                 return;
-
-            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
-            meshEntity_ = scene_mgr->createEntity(renderer_.lock()->GetUniqueObjectName("EntityPlacer"), customMeshName);
+            OgreWorldPtr world = world_.lock();
+            
+            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+            meshEntity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EntityPlacer"), customMeshName);
             meshEntity_->getSubEntity(0)->setMaterialName("Clone");
             meshEntity_->setCastShadows(false);
             placeable_->GetSceneNode()->attachObject(meshEntity_);
@@ -66,14 +66,11 @@ EntityPlacer::~EntityPlacer()
 {
     if(useCustomMesh_)
     {
-        if (renderer_.expired())
+        if (world_.expired())
             return;
-        OgreRenderer::RendererPtr renderer = renderer_.lock();
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-
         if(meshEntity_)
         {
-            scene_mgr->destroyEntity(meshEntity_);
+            world_.lock()->GetSceneManager()->destroyEntity(meshEntity_);
             meshEntity_ = 0;
         }
     }

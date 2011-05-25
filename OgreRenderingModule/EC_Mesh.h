@@ -143,7 +143,7 @@ class OGRE_MODULE_API EC_Mesh : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Mesh(Framework *fw);
+    explicit EC_Mesh(SceneManager* scene);
 
     virtual ~EC_Mesh();
 
@@ -446,8 +446,8 @@ private:
     /// placeable component 
     ComponentPtr placeable_;
     
-    /// renderer
-    OgreRenderer::RendererWeakPtr renderer_;
+    /// Ogre world ptr
+    OgreWorldWeakPtr world_;
     
     /// Ogre mesh entity
     Ogre::Entity* entity_;

@@ -56,7 +56,7 @@ class EC_SoundListener : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_SoundListener(Framework *fw);
+    explicit EC_SoundListener(SceneManager* scene);
 
     /// Destructor. Detaches placeable component from this entity.
     ~EC_SoundListener();

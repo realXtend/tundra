@@ -381,7 +381,10 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
         materials.Append(AssetReference(path + "/" + matName + ".material"));
 
     // Mesh  
-    boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>();
+    
+    /// \todo This creates dummy components, specifying a null scene during creation
+    
+    boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>(0);
     if (mesh)
     {
         mesh->meshRef.Set(AssetReference(path + "/" + meshleafname), AttributeChange::Disconnected);
@@ -396,7 +399,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
         }
     }
 
-    boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>();
+    boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>(0);
     if (placeable)
         foreach(IAttribute *a, placeable->GetAttributes())
         {
@@ -405,7 +408,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
         }
 
     // Name
-    boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>();
+    boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>(0);
     if (name)
     {
         name->name.Set(meshEntityName, AttributeChange::Disconnected);
@@ -459,7 +462,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
     SceneAPI *sceneAPI = scene_->GetFramework()->Scene();
 
     // Mesh
-    boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>();
+    boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>(0);
     if (mesh)
     {
         mesh->meshRef.Set(AssetReference(meshUrl.toString()), AttributeChange::Disconnected);
@@ -471,7 +474,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
     }
 
     // Placeable
-    boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>();
+    boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>(0);
     if (placeable)
     {
         foreach(IAttribute *a, placeable->GetAttributes())
@@ -482,7 +485,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
     }
 
     // Name
-    boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>();
+    boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>(0);
     if (name)
     {
         name->name.Set(meshEntityName, AttributeChange::Disconnected);
@@ -601,7 +604,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
             //AssetAPI::ResolveLocalAssetPath();
 
             /// Create dummy placeable desc.
-            ComponentPtr placeable = scene_->GetFramework()->Scene()->CreateComponent<EC_Placeable>();
+            ComponentPtr placeable = scene_->GetFramework()->Scene()->CreateComponent<EC_Placeable>(0);
             if (placeable)
             {
                 ComponentDesc placeableDesc;

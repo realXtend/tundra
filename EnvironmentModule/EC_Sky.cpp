@@ -7,6 +7,7 @@
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "OgreMaterialUtils.h"
+#include "OgreWorld.h"
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
 #include "TextureAsset.h"
@@ -22,8 +23,8 @@ namespace Environment
 {
 
 /// \todo Use Asset API for fetching sky resources.
-EC_Sky::EC_Sky(Framework *fw) :
-    IComponent(fw),
+EC_Sky::EC_Sky(SceneManager* scene) :
+    IComponent(scene),
     materialRef(this, "Material", AssetReference("RexSkyBox")), ///< \todo Add "ogre://" when AssetAPI can handle it.
     textureRefs(this, "Texture", AssetReferenceList("Texture")),
     orientation(this, "Orientation", Quaternion()),
@@ -39,7 +40,8 @@ EC_Sky::EC_Sky(Framework *fw) :
     materialRef.SetMetadata(&materialRefMetadata);
 
     // Find out default textures.
-    renderer_ = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
 
     StringVector names;
     Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
@@ -90,7 +92,6 @@ EC_Sky::EC_Sky(Framework *fw) :
 EC_Sky::~EC_Sky()
 {
     DisableSky();
-    renderer_.reset();
 
     while(textureAssets.size() > cSkyBoxTextureCount)
         textureAssets.pop_back();
@@ -101,7 +102,7 @@ void EC_Sky::CreateSky()
     if (!ViewEnabled())
         return;
 
-    if (renderer_.expired())
+    if (world_.expired())
         return;
 
     QString currentMaterial = materialRef.Get().ref;
@@ -121,7 +122,7 @@ void EC_Sky::CreateSky()
         //Vector3df v = angleAxisAttr.Get();
         //Ogre::Quaternion rotation(Ogre::Degree(90.0), Ogre::Vector3(1, 0, 0));
         Quaternion o = orientation.Get();
-        renderer_.lock()->GetSceneManager()->setSkyBox(true, currentMaterial.toStdString().c_str(), distance.Get(),
+        world_.lock()->GetSceneManager()->setSkyBox(true, currentMaterial.toStdString().c_str(), distance.Get(),
             drawFirst.Get(), Ogre::Quaternion(o.w, o.x, o.y, o.z));
     }
     catch(Ogre::Exception& e)
@@ -257,8 +258,8 @@ void EC_Sky::DisableSky()
     if (!ViewEnabled())
         return;
 
-    if (!renderer_.expired())
-        renderer_.lock()->GetSceneManager()->setSkyBox(false, "");
+    if (!world_.expired())
+        world_.lock()->GetSceneManager()->setSkyBox(false, "");
 }
 
 }

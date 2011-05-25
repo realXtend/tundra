@@ -298,11 +298,9 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)
         {
-            ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true);
-            // Create physics world in client (non-authoritative) mode
-            Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
-            physics->CreatePhysicsWorldForScene(scene, true);
-            
+            // Create a non-authoritative scene for the client
+            ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true, false);
+
             framework_->Scene()->SetDefaultScene(scene);
             owner_->GetSyncManager()->RegisterToScene(scene);
                         

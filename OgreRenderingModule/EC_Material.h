@@ -55,7 +55,7 @@ class OGRE_MODULE_API EC_Material : public IComponent
     
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Material(Framework *fw);
+    explicit EC_Material(SceneManager* scene);
 
     virtual ~EC_Material();
 

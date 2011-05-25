@@ -36,49 +36,47 @@ THE SOFTWARE.
 #include <Ogre.h>
 #include "LinearMath/btIDebugDraw.h"
 
-namespace Physics
+struct Line
 {
-    struct Line
+    Ogre::Vector3 _start;
+    Ogre::Vector3 _end;
+    Ogre::ColourValue _color;
+};
+
+//------------------------------------------------------------------------------------------------
+class DebugLines:public Ogre::SimpleRenderable
+{
+public:
+    DebugLines(void);
+    ~DebugLines(void);
+
+    void addLine (const btVector3& from, const btVector3& to, const btVector3& color)
     {
-        Ogre::Vector3 _start;
-        Ogre::Vector3 _end;
-        Ogre::ColourValue _color;
-    };
-    
-    //------------------------------------------------------------------------------------------------
-    class  DebugLines:public Ogre::SimpleRenderable
-    {
-    public:
-        DebugLines(void);
-        ~DebugLines(void);
+        Line newLine;
+        newLine._start.x = from.x();
+        newLine._start.y = from.y();
+        newLine._start.z = from.z();
+        newLine._end.x = to.x();
+        newLine._end.y = to.y();
+        newLine._end.z = to.z();
+        newLine._color.r = color.x();
+        newLine._color.g = color.y();
+        newLine._color.b = color.z();
+        newLine._color.a = 1.0f;
+        _lines.push_back(newLine);
+    }
 
-        void addLine (const btVector3& from, const btVector3& to, const btVector3& color)
-        {
-            Line newLine;
-            newLine._start.x = from.x();
-            newLine._start.y = from.y();
-            newLine._start.z = from.z();
-            newLine._end.x = to.x();
-            newLine._end.y = to.y();
-            newLine._end.z = to.z();
-            newLine._color.r = color.x();
-            newLine._color.g = color.y();
-            newLine._color.b = color.z();
-            newLine._color.a = 1.0f;
-            _lines.push_back(newLine);
-        }
+    void draw ();
+    void clear ();
 
-        void draw ();
-        void clear ();
+    Ogre::Real getSquaredViewDepth (const Ogre::Camera *cam) const;
+    Ogre::Real getBoundingRadius (void) const;
 
-        Ogre::Real getSquaredViewDepth (const Ogre::Camera *cam) const;
-        Ogre::Real getBoundingRadius (void) const;
+protected:
 
-    protected:
+    std::vector<Line> _lines;
+    Ogre::HardwareVertexBufferSharedPtr _vbuf;
+};
 
-        std::vector<Line> _lines;
-        Ogre::HardwareVertexBufferSharedPtr _vbuf;
-    };
-}
 #endif //_OgreBulletCollisions_DEBUGLines_H_
 

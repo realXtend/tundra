@@ -88,7 +88,7 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
 
 public:
     /// Constructor.
-    explicit IComponent(Framework* framework);
+    explicit IComponent(SceneManager* scene);
 
     /// Copy-constructor.
     IComponent(const IComponent& rhs);

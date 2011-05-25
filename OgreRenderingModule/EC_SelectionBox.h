@@ -41,7 +41,7 @@ class OGRE_MODULE_API EC_SelectionBox : public IComponent
     
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_SelectionBox(Framework *fw);
+    explicit EC_SelectionBox(SceneManager* scene);
     
     virtual ~EC_SelectionBox();
 
@@ -62,8 +62,8 @@ private:
     /// The object to draw selection box with
     Ogre::ManualObject *selectionBox_;
     
-    /// renderer
-    OgreRenderer::RendererWeakPtr renderer_;
+    /// Ogre world ptr
+    OgreWorldWeakPtr world_;
     
 };
 

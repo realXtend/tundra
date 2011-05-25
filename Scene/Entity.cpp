@@ -163,7 +163,7 @@ ComponentPtr Entity::GetOrCreateComponent(u32 typeId, const QString &name, Attri
 
 ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
 {
-    ComponentPtr new_comp = framework_->Scene()->CreateComponentByName(type_name);
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentByName(scene_, type_name);
     if (!new_comp)
     {
         LogError("Failed to create a component of type \"" + type_name + "\" to " + ToString());
@@ -177,7 +177,7 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::
 
 ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
 {
-    ComponentPtr new_comp = framework_->Scene()->CreateComponentByName(type_name, name);
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentByName(scene_, type_name, name);
     if (!new_comp)
     {
         LogError("Failed to create a component of type \"" + type_name + "\" and name \"" + name + "\" to " + ToString());
@@ -191,7 +191,7 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &na
 
 ComponentPtr Entity::CreateComponent(u32 typeId, AttributeChange::Type change)
 {
-    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(typeId);
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(scene_, typeId);
     if (!new_comp)
     {
         LogError("Failed to create a component of type id " + QString::number(typeId) + " to " + ToString());
@@ -204,7 +204,7 @@ ComponentPtr Entity::CreateComponent(u32 typeId, AttributeChange::Type change)
 
 ComponentPtr Entity::CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change)
 {
-    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(typeId, name);
+    ComponentPtr new_comp = framework_->Scene()->CreateComponentById(scene_, typeId, name);
     if (!new_comp)
     {
         LogError("Failed to create a component of type id " + QString::number(typeId) + " and name \"" + name + "\" to " + ToString());

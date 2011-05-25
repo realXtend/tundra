@@ -50,6 +50,7 @@ namespace OgreRenderer
     typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
 }
 
+class OgreWorld;
 class OgreMaterialAsset;
 
 class EC_AnimationController;
@@ -57,5 +58,8 @@ class EC_Camera;
 class EC_Light;
 class EC_Mesh;
 class EC_Placeable;
+
+typedef boost::shared_ptr<OgreWorld> OgreWorldPtr;
+typedef boost::weak_ptr<OgreWorld> OgreWorldWeakPtr;
 
 #endif

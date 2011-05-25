@@ -55,7 +55,7 @@ class EC_Script: public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Script(Framework *fw);
+    explicit EC_Script(SceneManager* scene);
 
     ~EC_Script();
 

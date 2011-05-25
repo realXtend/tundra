@@ -59,8 +59,8 @@ void EC_InputMapper::RemoveMapping(const QString &keySeq, int eventType)
         mappings_.erase(it);
 }
 
-EC_InputMapper::EC_InputMapper(Framework *fw):
-    IComponent(fw),
+EC_InputMapper::EC_InputMapper(SceneManager* scene):
+    IComponent(scene),
     contextName(this, "Input context name", "EC_InputMapper"),
     contextPriority(this, "Input context priority", 90),
     takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", false),

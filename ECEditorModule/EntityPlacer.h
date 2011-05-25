@@ -46,7 +46,7 @@ private:
     Framework *framework_;
     EntityWeakPtr entity_;
     Ogre::Entity *meshEntity_;
-    OgreRenderer::RendererWeakPtr renderer_;
+    OgreWorldWeakPtr world_;
     int previousScrollValue_;
     bool finished_;
     bool useCustomMesh_;

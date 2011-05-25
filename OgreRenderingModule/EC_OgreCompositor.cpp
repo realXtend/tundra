@@ -12,8 +12,8 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_OgreCompositor::EC_OgreCompositor(Framework *fw) :
-    IComponent(fw),
+EC_OgreCompositor::EC_OgreCompositor(SceneManager* scene) :
+    IComponent(scene),
     enabled(this, "Enabled", true),
     compositorref(this, "Compositor ref", ""),
     priority(this, "Priority", -1),
@@ -21,7 +21,7 @@ EC_OgreCompositor::EC_OgreCompositor(Framework *fw) :
     owner_(0),
     handler_(0)
 {
-    owner_ = fw->GetModule<OgreRenderer::OgreRenderingModule>();
+    owner_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>();
     assert(owner_ && "No OgrerenderingModule.");
     handler_ = owner_->GetRenderer()->GetCompositionHandler();
     assert (handler_ && "No CompositionHandler.");

@@ -70,7 +70,7 @@ class OGRE_MODULE_API EC_Camera : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Camera(Framework *fw);
+    explicit EC_Camera(SceneManager* scene);
     virtual ~EC_Camera();
 
     /// Camera up vector. Defines the yaw axis
@@ -166,8 +166,8 @@ private:
     /// attached to placeable -flag
     bool attached_;
 
-    /// renderer ptr
-    OgreRenderer::RendererWeakPtr renderer_;
+    /// Ogre world ptr
+    OgreWorldWeakPtr world_;
 
     /// Ogre camera
     Ogre::Camera* camera_;

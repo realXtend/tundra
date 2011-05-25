@@ -77,7 +77,7 @@ class EC_WaterPlane : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_WaterPlane(Framework *fw);
+    explicit EC_WaterPlane(SceneManager* scene);
 
     virtual ~EC_WaterPlane();
 
@@ -214,7 +214,7 @@ private:
     */
     void SetOrientation();
 
-    OgreRenderer::RendererWeakPtr renderer_;
+    OgreWorldWeakPtr world_;
     Ogre::Entity* entity_;
     Ogre::SceneNode* node_;
 

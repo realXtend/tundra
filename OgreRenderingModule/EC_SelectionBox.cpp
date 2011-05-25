@@ -4,49 +4,53 @@
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
+#include "SceneManager.h"
 #include "EC_SelectionBox.h"
 #include "LoggingFunctions.h"
 #include "OgreConversionUtils.h"
+#include "OgreWorld.h"
 #include <Ogre.h>
 
 using namespace OgreRenderer;
 
 #include "MemoryLeakCheck.h"
 
-EC_SelectionBox::EC_SelectionBox(Framework *fw) :
-    IComponent(fw),
+EC_SelectionBox::EC_SelectionBox(SceneManager* scene) :
+    IComponent(scene),
     selectionBox_(0)
 {
-    renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
-    RendererPtr renderer = renderer_.lock();
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    selectionBox_ = scene_mgr->createManualObject(renderer->GetUniqueObjectName("EC_Selected"));
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
+    OgreWorldPtr world = world_.lock();
+    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    selectionBox_ = sceneMgr->createManualObject(world->GetUniqueObjectName("EC_Selected"));
     selectionBox_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY);
     selectionBox_->setUseIdentityProjection(true);
     selectionBox_->setUseIdentityView(true);
     selectionBox_->setQueryFlags(0);
-    scene_mgr->getRootSceneNode()->createChildSceneNode()->attachObject(selectionBox_);
+    sceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(selectionBox_);
 }
 
 EC_SelectionBox::~EC_SelectionBox()
 {
-    if (renderer_.expired())
-        return;
-    RendererPtr renderer = renderer_.lock();
-    
     if (selectionBox_)
     {
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        scene_mgr->destroyManualObject(selectionBox_);
-        selectionBox_ = 0;
+        OgreWorldPtr world = world_.lock();
+        if (world)
+        {
+            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+            sceneMgr->destroyManualObject(selectionBox_);
+            selectionBox_ = 0;
+        }
     }
 }
 
 void EC_SelectionBox::SetBoundingBox(QRect &view)
 {
-    if (renderer_.expired())
+    if (world_.expired())
         return;
-    RendererPtr renderer = renderer_.lock();
+    OgreWorldPtr world = world_.lock();
+    Renderer* renderer = world->GetRenderer();
     Ogre::RenderWindow *renderWindow = renderer->GetCurrentRenderWindow();
     float w= (float)renderWindow->getWidth();
     float h= (float)renderWindow->getHeight();
@@ -93,5 +97,3 @@ void EC_SelectionBox::Hide()
     selectionBox_->clear();
     selectionBox_->setVisible(false);
 }
-
-

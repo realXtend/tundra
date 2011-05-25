@@ -328,12 +328,8 @@ void TundraLogicModule::LoadStartupScene()
     ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
-        scene = framework_->Scene()->CreateScene("TundraServer", true);
+        scene = framework_->Scene()->CreateScene("TundraServer", true, true);
 
-        // Create physics world for the startup scene
-        Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
-        physics->CreatePhysicsWorldForScene(scene, false);
-        
         framework_->Scene()->SetDefaultScene(scene);
     }
     

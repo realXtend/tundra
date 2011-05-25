@@ -3,8 +3,10 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 #include "Renderer.h"
 #include "Entity.h"
+#include "SceneManager.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "OgreConversionUtils.h"
@@ -24,8 +26,8 @@
 
 using namespace OgreRenderer;
 
-EC_Mesh::EC_Mesh(Framework *fw) :
-    IComponent(fw),
+EC_Mesh::EC_Mesh(SceneManager* scene) :
+    IComponent(scene),
     nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(0,0,0),Vector3df(1,1,1))),
     meshRef(this, "Mesh ref"),
     skeletonRef(this, "Skeleton ref"),
@@ -35,7 +37,8 @@ EC_Mesh::EC_Mesh(Framework *fw) :
     entity_(0),
     attached_(false)
 {
-    renderer_ = fw->GetModule<OgreRenderingModule>()->GetRenderer();
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
 
     static AttributeMetadata drawDistanceData("", "0", "10000");
     drawDistance.SetMetadata(&drawDistanceData);
@@ -50,34 +53,37 @@ EC_Mesh::EC_Mesh(Framework *fw) :
     meshRefMetadata.buttons = meshRefButtons;
     meshRef.SetMetadata(&meshRefMetadata);
 
-    RendererPtr renderer = renderer_.lock();
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    adjustment_node_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Mesh_adjustment_node"));
-
-    connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
-
     meshAsset = AssetRefListenerPtr(new AssetRefListener());
-    connect(meshAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     skeletonAsset = AssetRefListenerPtr(new AssetRefListener());
-    connect(skeletonAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+    
+    OgreWorldPtr world = world_.lock();
+    if (world)
+    {
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        adjustment_node_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Mesh_adjustment_node"));
+
+        connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+        connect(meshAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+        connect(skeletonAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+    }
 }
 
 EC_Mesh::~EC_Mesh()
 {
-    if (renderer_.expired())
+    if (world_.expired())
     {
-        LogError("EC_Mesh::~EC_Mesh: No renderer available to call this function!");
+        LogError("EC_Mesh::~EC_Mesh: World has expired, skipping uninitialization!");
         return;
     }
-    RendererPtr renderer = renderer_.lock();
+    OgreWorldPtr world = world_.lock();
 
     RemoveMesh();
 
     if (adjustment_node_)
     {
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        scene_mgr->destroySceneNode(adjustment_node_);
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        sceneMgr->destroySceneNode(adjustment_node_);
         adjustment_node_ = 0;
     }
 }
@@ -222,7 +228,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
     if (!ViewEnabled())
         return false;
     
-    RendererPtr renderer = renderer_.lock();
+    OgreWorldPtr world = world_.lock();
 
     std::string mesh_name = meshResourceName.trimmed().toStdString();
 
@@ -240,7 +246,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         }
     }
     
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
     
     Ogre::Mesh* mesh = PrepareMesh(mesh_name, clone);
     if (!mesh)
@@ -248,7 +254,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
     
     try
     {
-        entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName("EC_Mesh_entity"), mesh->getName());
+        entity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EC_Mesh_entity"), mesh->getName());
         if (!entity_)
         {
             LogError("Could not set mesh " + mesh_name);
@@ -307,7 +313,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
 {
     if (!ViewEnabled())
         return false;
-    RendererPtr renderer = renderer_.lock();
+    OgreWorldPtr world = world_.lock();
 
     Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(SanitateAssetIdForOgre(skeleton_name));
     if (skel.isNull())
@@ -318,7 +324,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     
     RemoveMesh();
 
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
     
     Ogre::Mesh* mesh = PrepareMesh(mesh_name, clone);
     if (!mesh)
@@ -337,7 +343,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     
     try
     {
-        entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName("EC_Mesh_entwithskel"), mesh->getName());
+        entity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EC_Mesh_entwithskel"), mesh->getName());
         if (!entity_)
         {
             LogError("Could not set mesh " + mesh_name);
@@ -374,7 +380,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
 
 void EC_Mesh::RemoveMesh()
 {
-    RendererPtr renderer = renderer_.lock();
+    OgreWorldPtr world = world_.lock();
 
     if (entity_)
     {
@@ -383,8 +389,8 @@ void EC_Mesh::RemoveMesh()
         RemoveAllAttachments();
         DetachEntity();
         
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        scene_mgr->destroyEntity(entity_);
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        sceneMgr->destroyEntity(entity_);
         
         entity_ = 0;
     }
@@ -408,7 +414,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
 {
     if (!ViewEnabled())
         return false;
-    RendererPtr renderer = renderer_.lock();
+    OgreWorldPtr world = world_.lock();
 
     if (!entity_)
     {
@@ -416,7 +422,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         return false;
     }
     
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
     
     size_t oldsize = attachment_entities_.size();
     size_t newsize = index + 1;
@@ -462,7 +468,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
     try
     {
         QString entityName = QString("EC_Mesh_attach") + QString::number(index);
-        attachment_entities_[index] = scene_mgr->createEntity(renderer->GetUniqueObjectName(entityName.toStdString()), mesh->getName());
+        attachment_entities_[index] = sceneMgr->createEntity(world->GetUniqueObjectName(entityName.toStdString()), mesh->getName());
         if (!attachment_entities_[index])
         {
             LogError("Could not set attachment mesh " + mesh_name);
@@ -491,7 +497,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         else
         {
             QString nodeName = QString("EC_Mesh_attachment_") + QString::number(index);
-            Ogre::SceneNode* node = scene_mgr->createSceneNode(renderer->GetUniqueObjectName(nodeName.toStdString()));
+            Ogre::SceneNode* node = sceneMgr->createSceneNode(world->GetUniqueObjectName(nodeName.toStdString()));
             node->attachObject(attachment_entities_[index]);
             adjustment_node_->addChild(node);
             attachment_nodes_[index] = node;
@@ -512,7 +518,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
 
 void EC_Mesh::RemoveAttachmentMesh(uint index)
 {
-    RendererPtr renderer = renderer_.lock();   
+    OgreWorldPtr world = world_.lock();
     
     if (!entity_)
         return;
@@ -520,7 +526,7 @@ void EC_Mesh::RemoveAttachmentMesh(uint index)
     if (index >= attachment_entities_.size())
         return;
     
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
     
     if (attachment_entities_[index] && attachment_nodes_[index])
     {
@@ -536,7 +542,7 @@ void EC_Mesh::RemoveAttachmentMesh(uint index)
             if (scenenode)
             {
                 scenenode->detachObject(attachment_entities_[index]);
-                scene_mgr->destroySceneNode(scenenode);
+                sceneMgr->destroySceneNode(scenenode);
             }
         }
         
@@ -546,7 +552,7 @@ void EC_Mesh::RemoveAttachmentMesh(uint index)
     {
         if (attachment_entities_[index]->sharesSkeletonInstance())
             attachment_entities_[index]->stopSharingSkeletonInstance();
-        scene_mgr->destroyEntity(attachment_entities_[index]);
+        sceneMgr->destroyEntity(attachment_entities_[index]);
         attachment_entities_[index] = 0;
     }
 }
@@ -793,8 +799,8 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
 {
     if (!ViewEnabled())
         return 0;
-    RendererPtr renderer = renderer_.lock();   
-        
+    OgreWorldPtr world = world_.lock();
+    
     Ogre::MeshManager& mesh_mgr = Ogre::MeshManager::getSingleton();
     Ogre::MeshPtr mesh = mesh_mgr.getByName(SanitateAssetIdForOgre(mesh_name));
     
@@ -824,7 +830,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
     {
         try
         {
-            mesh = mesh->clone(renderer->GetUniqueObjectName("EC_Mesh_clone"));
+            mesh = mesh->clone(world->GetUniqueObjectName("EC_Mesh_clone"));
             mesh->setAutoBuildEdgeLists(false);
             cloned_mesh_name_ = mesh->getName();
         }

@@ -13,8 +13,10 @@
 #include "Entity.h"
 #include "OgreMaterialAsset.h"
 #include "OgreConversionUtils.h"
+#include "OgreWorld.h"
 #include "Framework.h"
 #include "OgreRenderingModule.h"
+#include "SceneManager.h"
 #include "LoggingFunctions.h"
 
 #include <OgreBillboardSet.h>
@@ -27,8 +29,8 @@
 
 #include <QTimer>
 
-EC_Billboard::EC_Billboard(Framework *fw) :
-    IComponent(fw),
+EC_Billboard::EC_Billboard(SceneManager* scene) :
+    IComponent(scene),
     billboardSet_(0),
     billboard_(0),
     attached_(false),
@@ -40,6 +42,8 @@ EC_Billboard::EC_Billboard(Framework *fw) :
     show(this, "Show billboard", true),
     autoHideTime(this, "Auto-hide time", -1.0f)
 {
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
     materialAsset_ = AssetRefListenerPtr(new AssetRefListener());
     connect(materialAsset_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     connect(materialAsset_.get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
@@ -89,17 +93,15 @@ void EC_Billboard::CreateBillboard()
 {
     if (!ViewEnabled())
         return;
-    
-    OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    if (!renderer)
+    OgreWorldPtr world = world_.lock();
+    if (!world)
         return;
-
-    Ogre::SceneManager *scene = renderer->GetSceneManager();
+    Ogre::SceneManager* scene = world->GetSceneManager();
     if (!scene)
         return;
 
     if (!billboardSet_)
-        billboardSet_ = scene->createBillboardSet(renderer->GetUniqueObjectName("EC_Billboard"), 1);
+        billboardSet_ = scene->createBillboardSet(world->GetUniqueObjectName("EC_Billboard"), 1);
     
     // Remove old billboard if it existed
     if (billboard_)
@@ -134,15 +136,10 @@ void EC_Billboard::DestroyBillboard()
     }
     if (billboardSet_)
     {
-        OgreRenderer::RendererPtr renderer = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-        if (!renderer)
+        OgreWorldPtr world = world_.lock();
+        if (!world)
             return;
-        
-        Ogre::SceneManager *scene = renderer->GetSceneManager();
-        if (!scene)
-            return;
-        
-        scene->destroyBillboardSet(billboardSet_);
+        world->GetSceneManager()->destroyBillboardSet(billboardSet_);
         billboardSet_ = 0;
     }
 }

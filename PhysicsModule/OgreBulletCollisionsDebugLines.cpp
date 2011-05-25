@@ -37,9 +37,6 @@ THE SOFTWARE.
 
 using namespace Ogre;
 
-namespace Physics
-{
-
 //------------------------------------------------------------------------------------------------
 DebugLines::DebugLines() : SimpleRenderable()
 {
@@ -197,4 +194,3 @@ Real DebugLines::getBoundingRadius() const
     return Math::Sqrt(std::max(mBox.getMaximum().squaredLength(), mBox.getMinimum().squaredLength()));
 }
 
-}

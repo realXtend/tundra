@@ -12,6 +12,7 @@
 #include "OgreMeshAsset.h"
 #include "OgreConversionUtils.h"
 #include "Entity.h"
+#include "SceneManager.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
 #include "EC_Terrain.h"
@@ -34,8 +35,8 @@ static const float cForceThreshold = 0.0005f;
 static const float cImpulseThreshold = 0.0005f;
 static const float cTorqueThreshold = 0.0005f;
 
-EC_RigidBody::EC_RigidBody(Framework *fw) :
-    IComponent(fw),
+EC_RigidBody::EC_RigidBody(SceneManager* scene) :
+    IComponent(scene),
     mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
     size(this, "Size", Vector3df(1,1,1)),
@@ -61,7 +62,8 @@ EC_RigidBody::EC_RigidBody(Framework *fw) :
     disconnected_(false),
     cachedShapeType_(-1)
 {
-    owner_ = fw->GetModule<PhysicsModule>();
+    owner_ = framework_->GetModule<PhysicsModule>();
+    
     static AttributeMetadata shapemetadata;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
@@ -77,8 +79,6 @@ EC_RigidBody::EC_RigidBody(Framework *fw) :
     }
     shapeType.SetMetadata(&shapemetadata);
 
-    // Note: we cannot create the body yet because we are not in an entity/scene yet (and thus don't know what physics world we belong to)
-    // We will create the body when the scene is known.
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
@@ -87,7 +87,8 @@ EC_RigidBody::~EC_RigidBody()
 {
     RemoveBody();
     RemoveCollisionShape();
-    owner_->debugRigidBodies_.erase(this);
+    if (world_)
+        world_->debugRigidBodies_.erase(this);
 }
 
 bool EC_RigidBody::SetShapeFromVisibleMesh()
@@ -251,7 +252,7 @@ void EC_RigidBody::UpdateSignals()
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceableAndTerrain()));
     
     SceneManager* scene = parent->GetScene();
-    world_ = owner_->GetPhysicsWorldForScene(scene);
+    world_ = scene->GetWorld<PhysicsWorld>().get();
     if (world_)
         connect(world_, SIGNAL(AboutToUpdate(float)), this, SLOT(OnAboutToUpdate()));
 }
@@ -578,11 +579,14 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
             body_->setCollisionFlags(collisionFlags);
         }
         
-        // Refresh PhysicsModule's knowledge of debug-enabled rigidbodies
-        if (enable)
-            owner_->debugRigidBodies_.insert(this);
-        else
-            owner_->debugRigidBodies_.erase(this);
+        // Refresh PhysicsWorld's knowledge of debug-enabled rigidbodies
+        if (world_)
+        {
+            if (enable)
+                world_->debugRigidBodies_.insert(this);
+            else
+                world_->debugRigidBodies_.erase(this);
+        }
     }
     
     if (attribute == &linearVelocity)

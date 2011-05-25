@@ -78,6 +78,9 @@ public:
     /// Order by scene name
     bool operator < (const SceneManager &other) const { return Name() < other.Name(); }
 
+    /// Return a subsystem world (OgreWorld, PhysicsWorld)
+    template <class T> boost::shared_ptr<T> GetWorld() const { T* rawPtr = checked_static_cast<T*>(property(T::PropertyNameStatic()).value<QObject*>()); return rawPtr ? rawPtr->shared_from_this() : boost::shared_ptr<T>(); }
+
 public slots:
     /// Creates new entity that contains the specified components
     /** Entities should never be created directly, but instead created with this function.
@@ -214,6 +217,9 @@ public slots:
     /// Is scene view enabled (i.e. rendering-related components actually create stuff).
     bool ViewEnabled() const { return viewEnabled_; }
 
+    /// Is scene authoritative ie. a server or standalone scene
+    bool IsAuthority() const { return authority_; }
+    
     /// Returns name of the scene.
     const QString &Name() const { return name_; }
 
@@ -475,8 +481,9 @@ private:
     /** @param name Name of the scene.
         @param fw Framework Parent framework.
         @param viewEnabled Whether the scene is view enabled.
+        @param authority Whether the scene has authority ie. a singleuser or server scene, false for network client scenes
     */
-    SceneManager(const QString &name, Framework *fw, bool viewEnabled);
+    SceneManager(const QString &name, Framework *fw, bool viewEnabled, bool authority   );
 
     uint gid_; ///< Current global id for networked entities
     uint gid_local_; ///< Current id for local entities.
@@ -485,6 +492,7 @@ private:
     QString name_; ///< Name of the scene.
     bool viewEnabled_; ///< View enabled -flag.
     bool interpolating_; ///< Currently doing interpolation-flag.
+    bool authority_; ///< Authority -flag
     std::vector<AttributeInterpolation> interpolations_; ///< Running attribute interpolations.
 };
 

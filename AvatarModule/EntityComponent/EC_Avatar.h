@@ -49,7 +49,7 @@ class AV_MODULE_API EC_Avatar : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Avatar(Framework *fw);
+    explicit EC_Avatar(SceneManager* scene);
 
     /// Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
     Q_PROPERTY(AssetReference appearanceRef READ getappearanceRef WRITE setappearanceRef);

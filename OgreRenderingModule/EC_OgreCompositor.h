@@ -56,7 +56,7 @@ class OGRE_MODULE_API EC_OgreCompositor : public IComponent
     
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_OgreCompositor(Framework *fw);
+    explicit EC_OgreCompositor(SceneManager* scene);
 
     virtual ~EC_OgreCompositor();
 

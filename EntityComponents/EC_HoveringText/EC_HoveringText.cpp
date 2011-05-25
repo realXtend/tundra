@@ -13,17 +13,17 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
-#include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 #include "SceneManager.h"
 #include "Framework.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
+#include "OgreMaterialUtils.h"
 #include "AssetApi.h"
 #include "TextureAsset.h"
+
 #include <Ogre.h>
-#include <OgreBillboardSet.h>
-#include <OgreTextureManager.h>
-#include <OgreResource.h>
+
 #include <QFile>
 #include <QPainter>
 #include <QTimer>
@@ -31,8 +31,8 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_HoveringText::EC_HoveringText(Framework *fw) :
-    IComponent(fw),
+EC_HoveringText::EC_HoveringText(SceneManager* scene) :
+    IComponent(scene),
     font_(QFont("Arial", 100)),
     backgroundColor_(Qt::transparent),
     textColor_(Qt::black),
@@ -53,8 +53,8 @@ EC_HoveringText::EC_HoveringText(Framework *fw) :
     borderThickness(this, "Border Thickness", 0.0),
     overlayAlpha(this, "Overlay Alpha", 1.0)
 {
-  
-    renderer_ = fw->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
     visibility_animation_timeline_->setFrameRange(0,100);
     visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
     visibility_timer_->setSingleShot(true);
@@ -80,10 +80,10 @@ void EC_HoveringText::Destroy()
     if (!ViewEnabled())
         return;
 
-    OgreRenderer::RendererPtr renderer = renderer_.lock();
-    if (renderer)
+    if (!world_.expired())
     {
-      
+        Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
+        
         try{
         Ogre::MaterialManager::getSingleton().remove(materialName_);
         } catch(...)
@@ -99,9 +99,7 @@ void EC_HoveringText::Destroy()
         
         if (billboardSet_)
         {
-            Ogre::SceneManager *scene = renderer->GetSceneManager();
-            if (scene)
-                scene->destroyBillboardSet(billboardSet_);
+            sceneMgr->destroyBillboardSet(billboardSet_);
         }
 
         } catch(...)
@@ -260,14 +258,15 @@ void EC_HoveringText::ShowMessage(const QString &text)
 {
     if (!ViewEnabled())
         return;
-    if (renderer_.expired())
+    if (world_.expired())
         return;
     
     // Moved earlier to prevent gray opaque box artifact if text is empty. Original place was just before Redraw().
     if (text.isNull() || text.isEmpty())
         return;
     
-    Ogre::SceneManager *scene = renderer_.lock()->GetSceneManager();
+    OgreWorldPtr world = world_.lock();
+    Ogre::SceneManager *scene = world->GetSceneManager();
     assert(scene);
     if (!scene)
         return;
@@ -290,10 +289,10 @@ void EC_HoveringText::ShowMessage(const QString &text)
     // Create billboard if it doesn't exist.
     if (!billboardSet_ && !billboard_)
     {
-        billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName("EC_HoveringText"), 1);
+        billboardSet_ = scene->createBillboardSet(world->GetUniqueObjectName("EC_HoveringText"), 1);
         assert(billboardSet_);
 
-        materialName_ = renderer_.lock()->GetUniqueObjectName("EC_HoveringText_material");
+        materialName_ = world->GetUniqueObjectName("EC_HoveringText_material");
         OgreRenderer::CloneMaterial("HoveringText", materialName_);
         billboardSet_->setMaterialName(materialName_);
         billboardSet_->setCastShadows(false);
@@ -314,7 +313,7 @@ void EC_HoveringText::Redraw()
     if (!ViewEnabled())
         return;
 
-    if (renderer_.expired() || !billboardSet_ || !billboard_)
+    if (world_.expired() || !billboardSet_ || !billboard_)
         return;
 
     try

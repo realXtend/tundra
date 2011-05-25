@@ -29,8 +29,8 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_Highlight::EC_Highlight(Framework *fw) :
-    IComponent(fw),
+EC_Highlight::EC_Highlight(SceneManager* scene) :
+    IComponent(scene),
     visible(this, "Is visible", false),
     solidColor(this, "Solid color", Color(0.3f, 0.5f, 0.1f, 0.5f)),
     outlineColor(this, "Outline color", Color(1.0f, 1.0f, 1.0f, 0.5f)),
