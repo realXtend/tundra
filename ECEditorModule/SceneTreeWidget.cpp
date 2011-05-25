@@ -1583,23 +1583,9 @@ void SceneTreeWidget::ConvertEntityToLocal()
             EntityPtr orgEntity = item->Entity();
             if (orgEntity && !orgEntity->IsLocal())
             {
-                // Craft XML
-                QDomDocument doc("Scene");
-                QDomElement sceneElem = doc.createElement("scene");
-                QDomElement entityElem = doc.createElement("entity");
-                entityElem.setAttribute("id", QString::number((int)scn->GetNextFreeIdLocal()));
-                foreach(const ComponentPtr &c, orgEntity->Components())
-                    c->SerializeTo(doc, entityElem);
-                sceneElem.appendChild(entityElem);
-                doc.appendChild(sceneElem);
-
-                QList<Entity *> entities = scn->CreateContentFromXml(doc, true, AttributeChange::Default);
-                if (entities.size())
-                {
-                    // Creation successful, remove the original.
-                    entities.first()->SetTemporary(orgEntity->IsTemporary());
-                    scn->RemoveEntity(orgEntity->GetId());
-                }
+                EntityPtr newEntity = orgEntity->Clone(true, orgEntity->IsTemporary());
+                if (newEntity)
+                    scn->RemoveEntity(orgEntity->GetId()); // Creation successful, remove the original.
             }
         }
 }
@@ -1613,23 +1599,9 @@ void SceneTreeWidget::ConvertEntityToReplicated()
             EntityPtr orgEntity = item->Entity();
             if (orgEntity && orgEntity->IsLocal())
             {
-                // Craft XML
-                QDomDocument doc("Scene");
-                QDomElement sceneElem = doc.createElement("scene");
-                QDomElement entityElem = doc.createElement("entity");
-                entityElem.setAttribute("id", QString::number((int)scn->GetNextFreeId()));
-                foreach(const ComponentPtr &c, orgEntity->Components())
-                    c->SerializeTo(doc, entityElem);
-                sceneElem.appendChild(entityElem);
-                doc.appendChild(sceneElem);
-
-                QList<Entity *> entities = scn->CreateContentFromXml(doc, true, AttributeChange::Default);
-                if (entities.size())
-                {
-                    // Creation successful, remove the original.
-                    entities.first()->SetTemporary(orgEntity->IsTemporary());
-                    scn->RemoveEntity(orgEntity->GetId());
-                }
+                EntityPtr newEntity = orgEntity->Clone(false, orgEntity->IsTemporary());
+                if (newEntity)
+                    scn->RemoveEntity(orgEntity->GetId()); // Creation successful, remove the original.
             }
         }
 }

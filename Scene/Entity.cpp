@@ -372,6 +372,28 @@ AttributeVector Entity::GetAttributes(const std::string &name) const
     return ret;
 }
 
+EntityPtr Entity::Clone(bool local, bool temporary) const
+{
+    // Craft XML
+    QDomDocument doc("Scene");
+    QDomElement sceneElem = doc.createElement("scene");
+    QDomElement entityElem = doc.createElement("entity");
+    entityElem.setAttribute("id", QString::number((int) local ? scene_->GetNextFreeIdLocal() : scene_->GetNextFreeId()));
+    foreach(const ComponentPtr &c, Components())
+        c->SerializeTo(doc, entityElem);
+    sceneElem.appendChild(entityElem);
+    doc.appendChild(sceneElem);
+
+    QList<Entity *> entities = scene_->CreateContentFromXml(doc, true, AttributeChange::Default);
+    if (entities.size() && entities.first())
+    {
+        entities.first()->SetTemporary(temporary);
+        return entities.first()->shared_from_this();
+    }
+    else
+        return EntityPtr();
+}
+
 void Entity::SetName(const QString &name)
 {
     ComponentPtr comp = GetOrCreateComponent(EC_Name::TypeNameStatic(), AttributeChange::Default, true);

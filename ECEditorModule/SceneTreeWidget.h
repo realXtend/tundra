@@ -5,8 +5,7 @@
  *  @brief  Tree widget showing the scene structure.
  */
 
-#ifndef incl_SceneStructureModule_SceneTreeWidget_h
-#define incl_SceneStructureModule_SceneTreeWidget_h
+#pragma once
 
 #include "CoreTypes.h"
 #include "SceneFwd.h"
@@ -34,12 +33,10 @@ class Menu : public QMenu
 
 public:
     /// Constructor.
-    /** @param parent Parent widget.
-    */
+    /** @param parent Parent widget. */
     explicit Menu(QWidget *parent = 0);
 
-    /// Is shift currently held down.
-    bool shiftDown;
+    bool shiftDown; ///< Is shift currently held down.
 
 private:
     /// QWidget override. Checks if shift is pressed.
@@ -57,16 +54,14 @@ class SceneTreeWidget : public QTreeWidget
 public:
     /// Constructor.
     /** @param fw Framework pointer.
-        @param parent Parent widget.
-    */
+        @param parent Parent widget. */
     SceneTreeWidget(Framework *fw, QWidget *parent = 0);
 
     /// Destructor.
     virtual ~SceneTreeWidget();
 
     /// Sets new scene to be shown in the tree view.
-    /** @param scene Scene which contents we want to modify.
-    */
+    /** @param scene Scene which contents we want to modify. */
     void SetScene(const ScenePtr &scene);
 
     /// Do we show components in the tree widget or not.
@@ -87,18 +82,15 @@ protected:
 
 private:
     /// Creates and adds applicable actions to the right-click context menu.
-    /** @param menu Context menu.
-    */
+    /** @param menu Context menu. */
     void AddAvailableActions(QMenu *menu);
 
     /// Creates and adds applicable asset actions to the right-click context menu.
-    /** @param menu Context menu.
-    */
+    /** @param menu Context menu. */
     void AddAvailableAssetActions(QMenu *menu);
 
     /// Creates and adds applicable entity and component actions to the right-click context menu.
-    /** @param menu Context menu.
-    */
+    /** @param menu Context menu. */
     void AddAvailableEntityActions(QMenu *menu);
 
     /// Returns selected items as Selection struct, which contains both selected entities and components.
@@ -195,26 +187,22 @@ private slots:
     void OpenEntityActionDialog();
 
     /// Called by Entity Action dialog when it's finished.
-    /** @param result Result of finish. Close is 0, Execute and Close is 1, Execute is 2.
-    */
+    /** @param result Result of finish. Close is 0, Execute and Close is 1, Execute is 2. */
     void EntityActionDialogFinished(int result);
 
     /// Opens Function dialog.
     void OpenFunctionDialog();
 
     /// Called by Function dialog when it's finished.
-    /** @param result Result of dialog finish. Close is 0, Execute and Close is 1, Execute is 2.
-    */
+    /** @param result Result of dialog finish. Close is 0, Execute and Close is 1, Execute is 2. */
     void FunctionDialogFinished(int result);
 
     /// Called by "Save Selection" save file dialog when it's closed.
-    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
-    */
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0. */
     void SaveSelectionDialogClosed(int result);
 
     /// Called by "Save Scene" save file dialog when it's closed.
-    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
-    */
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0. */
     void SaveSceneDialogClosed(int result);
 
     /// Called by "Export all" file dialog when it's closed
@@ -234,8 +222,7 @@ private slots:
     void SaveAssetAs();
 
     /// Called by SaveAssetAs save file dialog when it's closed.
-    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
-    */
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0. */
     void SaveAssetDialogClosed(int result);
 
     void AssetLoaded(AssetPtr asset);
@@ -249,6 +236,3 @@ private slots:
     /// Creates copy from a local entity as new replicated entity and destroys the original.
     void ConvertEntityToReplicated();
 };
-
-
-#endif

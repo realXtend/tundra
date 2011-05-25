@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Scene_Entity_h
-#define incl_Scene_Entity_h
+#pragma once
 
 #include "CoreTypes.h"
 #include "SceneFwd.h"
@@ -19,9 +18,9 @@
 class QDomDocument;
 class QDomElement;
 
-
 /// Local entity ID flag (high bit).
-/// If this flag is set on an Entity or a Component, the changes to that Entity or Component only affect locally and are not synchronized to the network.
+/** If this flag is set on an Entity or a Component, the changes to that
+    Entity or Component only affect locally and are not synchronized to the network. */
 static const entity_id_t LocalEntity = 0x80000000;
 
 /// Represents an entity in the world.
@@ -73,10 +72,12 @@ public slots:
     /** If there are several components with the specified type, returns the first component found (arbitrary).
         @param type_name type of the component */
     ComponentPtr GetComponent(const QString &type_name) const;
+    /// This is an overloaded function.
+    /** @param typeId Unique type ID. */
     ComponentPtr GetComponent(u32 typeId) const;
+    /// This is an overloaded function.
     /** @param name Specifies the name of the component to fetch. This can be used to distinguish between multiple instances of components of same type. */
     ComponentPtr GetComponent(const QString &type_name, const QString &name) const;
-
     /// This is an overloaded function.
     /** @param typeId The type id of the component to get.
         @param name name of the component */
@@ -88,10 +89,14 @@ public slots:
         @param syncEnabled Whether new component will have network sync enabled
         @return Pointer to the component, or an empty pointer if the component could be retrieved or created. */
     ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+    /// This is an overloaded function.
     /** @param name If specified, the component having the given name is returned, or created if it doesn't exist. */
     ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+    /// This is an overloaded function.
     /** @param typeId Identifies the component type to create by the id of the type instead of the name. */
     ComponentPtr GetOrCreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default);
+    /// This is an overloaded function.
+    /** @param name name of the component */
     ComponentPtr GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Creates a new component and attaches it to this entity. 
@@ -101,8 +106,15 @@ public slots:
         @return Retuns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
         is that a component with the same (typename, name) pair exists, or that components of the given typename are not recognized by the system. */
     ComponentPtr CreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+    /// This is an overloaded function.
+    /** @param name name of the component */
     ComponentPtr CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+    /// This is an overloaded function.
+    /** @param typeId Unique type ID of the component. */
     ComponentPtr CreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default);
+    /// This is an overloaded function.
+    /** @param typeId Unique type ID of the component.
+        @param name name of the component */
     ComponentPtr CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Attachs an existing parentless component to this entity.
@@ -133,18 +145,6 @@ public slots:
     /// @param type_name type of the component
     ComponentVector GetComponents(const QString &type_name) const;
 
-    /// Returns the unique id of this entity
-    entity_id_t GetId() const { return id_; }
-
-    /// introspection for the entity, returns all components
-    const ComponentVector &Components() const { return components_; }
-
-    /// Returns framework
-    Framework *GetFramework() const { return framework_; }
-
-    /// Returns scene
-    SceneManager* GetScene() const { return scene_; }
-
     /// Returns attribute interface pointer to attribute with specific name.
     /** @param name Name of the attribute.
         @return IAttribute pointer to the attribute.
@@ -155,6 +155,12 @@ public slots:
     /** @param name Name of the attribute.
         @return List of attribute interface pointers, or empty list if no attributes are found. */
     AttributeVector GetAttributes(const std::string &name) const;
+
+    /// Creates clone of the entity.
+    /** @param local If true, the new entity will be local entity. If false, the entity will be replicated.
+        @param temporary Will the new entity be temporary.
+        @return Pointer to the new entity, or null pointer if the cloning fails. */
+    EntityPtr Clone(bool local, bool temporary) const;
 
     void SerializeToXML(QDomDocument& doc, QDomElement& base_element) const;
 //        void DeserializeFromXML(QDomElement& element, AttributeChange::Type change);
@@ -185,9 +191,6 @@ public slots:
 
     /// Return by name and type, 'cause can't call RemoveComponent with comp as shared_py
     void RemoveComponentRaw(QObject* comp);
-
-    /// Returns actions map for introspection/reflection.
-    const ActionMap &Actions() const { return actions_; }
 
     /// Creates and registers new action for this entity, or returns an existing action.
     /** Use this function from scripting languages.
@@ -243,6 +246,21 @@ public slots:
     /// Returns indentifier string for the entity.
     /** Syntax of the string: 'Entity ID <id>' or 'Entity "<name>" (ID: <id>)' if entity has a name. */
     QString ToString() const;
+
+    /// Returns the unique id of this entity
+    entity_id_t GetId() const { return id_; }
+
+    /// introspection for the entity, returns all components
+    const ComponentVector &Components() const { return components_; }
+
+    /// Returns framework
+    Framework *GetFramework() const { return framework_; }
+
+    /// Returns scene
+    SceneManager* GetScene() const { return scene_; }
+
+    /// Returns actions map for introspection/reflection.
+    const ActionMap &Actions() const { return actions_; }
 
 public:
     /// Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
@@ -321,11 +339,11 @@ public:
 
 signals:
     /// A component has been added to the entity
-    /** Note: when this signal is received on new entity creation, the attributes might not be filled yet! */ 
+    /** @note When this signal is received on new entity creation, the attributes might not be filled yet! */ 
     void ComponentAdded(IComponent* component, AttributeChange::Type change);
     
     /// A component has been removed from the entity
-    /** Note: when this signal is received on new entity creation, the attributes might not be filled yet! */ 
+    /** @note When this signal is received on new entity creation, the attributes might not be filled yet! */ 
     void ComponentRemoved(IComponent* component, AttributeChange::Type change);
 
     /// Signal when this entity is deleted
@@ -358,24 +376,10 @@ private:
     /// Emit a entity deletion signal. Called from SceneManager
     void EmitEntityRemoved(AttributeChange::Type change);
 
-    /// a list of all components
-    ComponentVector components_;
-
-    /// Unique id for this entity
-    entity_id_t id_;
-
-    /// Pointer to framework
-    Framework* framework_;
-
-    /// Pointer to scene
-    SceneManager* scene_;
-
-    /// Map of registered entity actions.
-    ActionMap actions_;
-
-    /// Temporary-flag
-    bool temporary_;
+    ComponentVector components_; ///< a list of all components
+    entity_id_t id_; ///< Unique id for this entity
+    Framework* framework_; ///< Pointer to framework
+    SceneManager* scene_; ///< Pointer to scene
+    ActionMap actions_; ///< Map of registered entity actions.
+    bool temporary_; ///< Temporary-flag
 };
-
-#endif
-
