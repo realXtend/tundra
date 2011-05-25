@@ -8,6 +8,8 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include <OgreHardwareBuffer.h>
+
 #include "ECEditorWindow.h"
 #include "ECBrowser.h"
 #include "EntityPlacer.h"
