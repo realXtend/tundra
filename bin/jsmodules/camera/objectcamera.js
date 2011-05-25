@@ -100,10 +100,13 @@ function mouseLeftPress(event)
         mouse_left_pressed = true;
         if (!objectcamera_mode)
         {
-            init_ui();
             var raycastResult = renderer.Raycast(event.x, event.y);
             if (raycastResult.entity !== null)
             {
+                if (raycastEntity.entity.HasComponent("EC_Selected"))
+                    return;
+
+                init_ui();
                 last_clicked_pos = raycastResult.pos;
                 objectcameraentity = scene.GetEntityByNameRaw("ObjectCamera");
 
@@ -240,8 +243,8 @@ function mouseMove(event)
         var width = renderer.GetWindowWidth();
         var height = renderer.GetWindowHeight();
 
-        var x = 2*Math.PI*event.relativeX/width;
-        var y = 2*Math.PI*event.relativeY/height;
+        var x = 4*Math.PI*event.relativeX/width;
+        var y = 4*Math.PI*event.relativeY/height;
 
         var transform = objectcameraentity.placeable.transform;       
         var pos = new Vector3df();
