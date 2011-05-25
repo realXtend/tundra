@@ -241,7 +241,13 @@ private slots:
     void AssetLoaded(AssetPtr asset);
 
     /// If editor is destoyed this method ensures that that object is erased from the list.
-    void ECEditorDestroyed(QObject *obj);
+    void HandleECEditorDestroyed(QObject *obj);
+
+    /// Creates copy from a replicated entity as new local entity and destroys the original.
+    void ConvertEntityToLocal();
+
+    /// Creates copy from a local entity as new replicated entity and destroys the original.
+    void ConvertEntityToReplicated();
 };
 
 

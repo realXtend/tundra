@@ -462,8 +462,8 @@ void ECEditorWindow::CopyEntity()
             QDomElement entity_elem = temp_doc.createElement("entity");
             entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
-            foreach(ComponentPtr component, entity->Components())
-                component->SerializeTo(temp_doc, entity_elem);
+            foreach(const ComponentPtr &comp, entity->Components())
+                comp->SerializeTo(temp_doc, entity_elem);
 
             temp_doc.appendChild(entity_elem);
         }

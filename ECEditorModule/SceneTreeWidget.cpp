@@ -267,7 +267,6 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         }
     }
 
-    
     // "Save scene as..." action is possible if we have at least one entity in the scene.
     bool saveSceneAsPossible = (topLevelItemCount() > 0);
     QAction *saveSceneAsAction = 0;
@@ -282,9 +281,10 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     }
 
     // "Edit", "Edit in new", "New component...", "Delete", "Copy", "Actions..." and "Functions..."
-    // actions are available only if we have selection.
+    // "Convert to local", and "Convert to replicated" actions are available only if we have selection.
     QAction *editAction = 0, *editInNewAction = 0, *newComponentAction = 0, *deleteAction = 0,
-        *renameAction = 0, *copyAction = 0, *saveAsAction = 0, *actionsAction = 0, *functionsAction = 0;
+        *renameAction = 0, *copyAction = 0, *saveAsAction = 0, *actionsAction = 0, *functionsAction = 0,
+        *toLocalAction = 0, *toReplicatedAction = 0;
 
     bool hasSelection = !selectionModel()->selection().isEmpty();
     if (hasSelection)
@@ -294,6 +294,8 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         newComponentAction = new QAction(tr("New component..."), menu);
         deleteAction = new QAction(tr("Delete"), menu);
         copyAction = new QAction(tr("Copy"), menu);
+        toLocalAction = new QAction(tr("Convert to local"), menu);
+        toReplicatedAction = new QAction(tr("Convert to replicated"), menu);
         saveAsAction = new QAction(tr("Save as..."), menu);
         actionsAction = new QAction(tr("Actions..."), menu);
         functionsAction = new QAction(tr("Functions..."), menu);
@@ -306,6 +308,8 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         connect(saveAsAction, SIGNAL(triggered()), SLOT(SaveAs()));
         connect(actionsAction, SIGNAL(triggered()), SLOT(OpenEntityActionDialog()));
         connect(functionsAction, SIGNAL(triggered()), SLOT(OpenFunctionDialog()));
+        connect(toLocalAction, SIGNAL(triggered()), SLOT(ConvertEntityToLocal()));
+        connect(toReplicatedAction, SIGNAL(triggered()), SLOT(ConvertEntityToReplicated()));
     }
 
     // "Rename" action is possible only if have one entity selected.
@@ -333,6 +337,8 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         menu->addAction(newComponentAction);
         menu->addAction(deleteAction);
         menu->addAction(copyAction);
+        menu->addAction(toLocalAction);
+        menu->addAction(toReplicatedAction);
     }
 
     if (pastePossible)
@@ -555,7 +561,7 @@ void SceneTreeWidget::Edit()
             ecEditors.push_back(editor);
         }
         // To ensure that destroyed editors will get erased from the ecEditors list.
-        connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
+        connect(editor, SIGNAL(destroyed(QObject *)), SLOT(HandleECEditorDestroyed(QObject *)), Qt::UniqueConnection);
 
         //ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
         //ecEditor->hide();
@@ -605,7 +611,7 @@ void SceneTreeWidget::EditInNew()
     // Create new editor instance every time, but if our "singleton" editor is not instantiated, create it.
     ECEditorWindow *editor = new ECEditorWindow(framework);
     editor->setAttribute(Qt::WA_DeleteOnClose);
-    connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
+    connect(editor, SIGNAL(destroyed(QObject *)), SLOT(HandleECEditorDestroyed(QObject *)), Qt::UniqueConnection);
     //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
     editor->hide();
     editor->AddEntities(selection.EntityIds(), true);
@@ -851,7 +857,7 @@ void SceneTreeWidget::Paste()
         QDomElement componentElem = sceneElem.firstChildElement("component");
         if (componentElem.isNull())
         {
-            LogError("");
+            LogError("SceneTreeWidget::Paste: no <entity> nor <component> element found from from XML data.");
             return;
         }
 
@@ -1554,7 +1560,7 @@ void SceneTreeWidget::AssetLoaded(AssetPtr asset)
     }
 }
 
-void SceneTreeWidget::ECEditorDestroyed(QObject *obj)
+void SceneTreeWidget::HandleECEditorDestroyed(QObject *obj)
 {
     QList<QPointer<ECEditorWindow> >::iterator iter = ecEditors.begin();
     while(iter != ecEditors.end())
@@ -1566,4 +1572,64 @@ void SceneTreeWidget::ECEditorDestroyed(QObject *obj)
         }
         ++iter;
     }
+}
+
+void SceneTreeWidget::ConvertEntityToLocal()
+{
+    ScenePtr scn = scene.lock();
+    if (scn)
+        foreach(EntityItem *item, GetSelection().entities)
+        {
+            EntityPtr orgEntity = item->Entity();
+            if (orgEntity && !orgEntity->IsLocal())
+            {
+                // Craft XML
+                QDomDocument doc("Scene");
+                QDomElement sceneElem = doc.createElement("scene");
+                QDomElement entityElem = doc.createElement("entity");
+                entityElem.setAttribute("id", QString::number((int)scn->GetNextFreeIdLocal()));
+                foreach(const ComponentPtr &c, orgEntity->Components())
+                    c->SerializeTo(doc, entityElem);
+                sceneElem.appendChild(entityElem);
+                doc.appendChild(sceneElem);
+
+                QList<Entity *> entities = scn->CreateContentFromXml(doc, true, AttributeChange::Default);
+                if (entities.size())
+                {
+                    // Creation successful, remove the original.
+                    entities.first()->SetTemporary(orgEntity->IsTemporary());
+                    scn->RemoveEntity(orgEntity->GetId());
+                }
+            }
+        }
+}
+
+void SceneTreeWidget::ConvertEntityToReplicated()
+{
+    ScenePtr scn = scene.lock();
+    if (scn)
+        foreach(EntityItem *item, GetSelection().entities)
+        {
+            EntityPtr orgEntity = item->Entity();
+            if (orgEntity && orgEntity->IsLocal())
+            {
+                // Craft XML
+                QDomDocument doc("Scene");
+                QDomElement sceneElem = doc.createElement("scene");
+                QDomElement entityElem = doc.createElement("entity");
+                entityElem.setAttribute("id", QString::number((int)scn->GetNextFreeId()));
+                foreach(const ComponentPtr &c, orgEntity->Components())
+                    c->SerializeTo(doc, entityElem);
+                sceneElem.appendChild(entityElem);
+                doc.appendChild(sceneElem);
+
+                QList<Entity *> entities = scn->CreateContentFromXml(doc, true, AttributeChange::Default);
+                if (entities.size())
+                {
+                    // Creation successful, remove the original.
+                    entities.first()->SetTemporary(orgEntity->IsTemporary());
+                    scn->RemoveEntity(orgEntity->GetId());
+                }
+            }
+        }
 }
