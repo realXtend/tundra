@@ -319,8 +319,15 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     emit Translated(curPoint-prevPoint);
                     break;
                 case EC_TransformGizmo::Rotate:
-//                        LogInfo("Emitting Rotated(" + ss.str() + ")");                        
-                    emit Rotated(Quat::RotateFromTo(prevPoint, curPoint));
+                    {
+                        float3 prevDir = prevPoint;
+                        float len = prevDir.Normalize();
+                        float3 curDir = curPoint;
+                        float len2 = curDir.Normalize();
+                        if (len > 0 && len2 > 0)
+                            emit Rotated(Quat::RotateFromTo(prevDir, curDir));
+//                        LogInfo("Emitting Rotated(" + ss.str() + ")");
+                    }
                     break;
                 case EC_TransformGizmo::Scale:
                     //ss << ToCoreVector(curPoint-prevPoint);
