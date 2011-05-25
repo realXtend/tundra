@@ -162,8 +162,9 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 
     Ray xRay, yRay, zRay;
     // If moving, ignore gizmo's placeable
-    if ((e->eventType == MouseEvent::MousePressed && e->button == MouseEvent::LeftButton) ||
-        (e->eventType == MouseEvent::MouseMove && e->otherButtons == 0))
+/// \todo Ali had to comment out the following lines to make gizmo work. Re-enable this. -jj.
+//    if ((e->eventType == MouseEvent::MousePressed && e->button == MouseEvent::LeftButton) ||
+//        (e->eventType == MouseEvent::MouseMove && e->otherButtons == 0))
     {
         xRay = Ray(placeable->transform.Get().position, placeable->GetOrientation()*Vector3df::UNIT_X);
         yRay = Ray(placeable->transform.Get().position, placeable->GetOrientation()*Vector3df::UNIT_Y);
