@@ -869,4 +869,4 @@ namespace OgreRenderer
 
         added_resource_directories_.push_back(directory);
     }
-
+}

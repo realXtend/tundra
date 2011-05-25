@@ -9,7 +9,7 @@
 
 #include <cstring>
 
-#include "Math/Util/BitOps.h"
+#include "Math/BitOps.h"
 
 u32 BinaryStringToValue(const char *str)
 {

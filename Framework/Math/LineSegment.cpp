@@ -7,6 +7,7 @@
 */
 #include "StableHeaders.h"
 
+#include "MathFunc.h"
 #include "LineSegment.h"
 #include "Ray.h"
 #include "Line.h"
