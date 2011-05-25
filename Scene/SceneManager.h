@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Scene_SceneManager_h
-#define incl_Scene_SceneManager_h
+#pragma once
 
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
@@ -424,31 +423,27 @@ public:
 
 signals:
     /// Signal when an attribute of a component has changed
-    /** Network synchronization managers should connect to this
-    */
+    /** Network synchronization managers should connect to this. */
     void AttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Signal when an attribute of a component has been added (dynamic structure components only)
-    /** Network synchronization managers should connect to this
-    */
+    /** Network synchronization managers should connect to this. */
     void AttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Signal when an attribute of a component has been added (dynamic structure components only)
-    /** Network synchronization managers should connect to this
-    */
+    /** Network synchronization managers should connect to this. */
     void AttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
-    /** Network synchronization managers should connect to this
-    */
+    /** Network synchronization managers should connect to this. */
     void ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Signal when a component is removed from an entity and should possibly be replicated (if the change originates from local)
-    /** Network synchronization managers should connect to this
-    */
+    /** Network synchronization managers should connect to this */
     void ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Signal when an entity created
+    /** @note Entity::IsTemporary() information might not accurate yet, as it depends on the method that was used to create the entity. */
     void EntityCreated(Entity* entity, AttributeChange::Type change);
 
     /// Signal when an entity deleted
@@ -474,7 +469,7 @@ private:
     Q_DISABLE_COPY(SceneManager);
     friend class ::SceneAPI;
 
-    /// default constructor
+    /// Default constructor, name will be empty string and authority-flag false.
     SceneManager();
 
     /// Constructor.
@@ -495,5 +490,3 @@ private:
     bool authority_; ///< Authority -flag
     std::vector<AttributeInterpolation> interpolations_; ///< Running attribute interpolations.
 };
-
-#endif
