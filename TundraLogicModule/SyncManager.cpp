@@ -105,8 +105,8 @@ void SyncManager::RegisterToScene(ScenePtr scene)
         SLOT( OnEntityCreated(Entity*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( EntityRemoved(Entity*, AttributeChange::Type) ),
         SLOT( OnEntityRemoved(Entity*, AttributeChange::Type) ));
-    connect(sceneptr, SIGNAL( ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType) ),
-        SLOT( OnActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)));
+    connect(sceneptr, SIGNAL( ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionTypeField) ),
+        SLOT( OnActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionTypeField)));
 }
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
@@ -365,7 +365,7 @@ void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
     }
 }
 
-void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type)
+void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionTypeField type)
 {
     //SceneManager* scene = scene_.lock().get();
     //assert(scene);

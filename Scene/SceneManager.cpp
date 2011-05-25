@@ -352,7 +352,7 @@ void SceneManager::EmitEntityRemoved(Entity* entity, AttributeChange::Type chang
     entity->EmitEntityRemoved(change);
 }
 
-void SceneManager::EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type)
+void SceneManager::EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionTypeField type)
 {
     emit ActionTriggered(entity, action, params, type);
 }

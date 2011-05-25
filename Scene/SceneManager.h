@@ -322,7 +322,7 @@ public slots:
         @param params Parameters
         @param type Execution type.
     */
-    void EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
+    void EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionTypeField type);
 
     /// Loads the scene from XML.
     /** @param filename File name
@@ -462,7 +462,7 @@ signals:
 
         @note Use case-insensitive comparison for checking name of the @c action !
     */
-    void ActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
+    void ActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionTypeField type);
 
     /// Emitted when being destroyed
     void Removed(SceneManager* scene);

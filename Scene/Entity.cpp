@@ -432,22 +432,21 @@ void Entity::ConnectAction(const QString &name, const QObject *receiver, const c
     connect(action, SIGNAL(Triggered(QString, QString, QString, QStringList)), receiver, member, Qt::UniqueConnection);
 }
 
-void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QString &p1, const QString &p2, const QString &p3)
+void Entity::Exec(EntityAction::ExecutionTypeField type, const QString &action, const QString &p1, const QString &p2, const QString &p3)
 {
     Exec(type, action, QStringList(QStringList() << p1 << p2 << p3));
 }
 
-void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QStringList &params)
+void Entity::Exec(EntityAction::ExecutionTypeField type, const QString &action, const QStringList &params)
 {
     EntityAction *act = Action(action);
     // Commented out to allow sending actions with receiver only on the server, for example
-    /*
+/*
     if (!HasReceivers(act))
         return;
-    */
-    
-    EntityAction::ExecutionType t = (EntityAction::ExecutionType)type;
-    if ((t & EntityAction::Local) != 0)
+*/
+
+    if ((type & EntityAction::Local) != 0)
     {
         if (params.size() == 0)
             act->Trigger();
@@ -462,10 +461,10 @@ void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &actio
     }
 
     if (GetScene())
-        GetScene()->EmitActionTriggered(this, action, params, t);
+        GetScene()->EmitActionTriggered(this, action, params, type);
 }
 
-void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QVariantList &params)
+void Entity::Exec(EntityAction::ExecutionTypeField type, const QString &action, const QVariantList &params)
 {
     QStringList stringParams;
     foreach(QVariant var, params)

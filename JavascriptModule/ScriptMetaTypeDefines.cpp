@@ -112,6 +112,7 @@ Q_DECLARE_METATYPE(SceneManager*);
 Q_DECLARE_METATYPE(Entity*);
 Q_DECLARE_METATYPE(EntityAction*);
 Q_DECLARE_METATYPE(EntityAction::ExecutionType);
+Q_DECLARE_METATYPE(EntityAction::ExecutionTypeField);
 Q_DECLARE_METATYPE(AttributeChange*);
 Q_DECLARE_METATYPE(IComponent*);
 Q_DECLARE_METATYPE(AttributeChange::Type);
@@ -205,8 +206,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<GestureEvent*>(engine);
     qScriptRegisterQObjectMetaType<InputContext*>(engine);
     qRegisterMetaType<InputContextPtr>("InputContextPtr");
-    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<InputContext>,
-                            qScriptValueToBoostSharedPtr<InputContext>);
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<InputContext>, qScriptValueToBoostSharedPtr<InputContext>);
     qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
     qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
     qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
@@ -223,6 +223,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueEnum<AttributeChange::Type>, fromScriptValueEnum<AttributeChange::Type>);
     //qRegisterMetaType<EntityAction::ExecutionType>("EntityAction::ExecutionType");
     qScriptRegisterMetaType(engine, toScriptValueEnum<EntityAction::ExecutionType>, fromScriptValueEnum<EntityAction::ExecutionType>);
+    qRegisterMetaType<entity_id_t>("EntityAction::ExecutionTypeField");
 
     qRegisterMetaType<entity_id_t>("entity_id_t");
     qScriptRegisterMetaType(engine, toScriptUInt<entity_id_t>, fromScriptUInt<entity_id_t>);
