@@ -7,6 +7,7 @@
 */
 #include "StableHeaders.h"
 
+#include "Math/MathFunc.h"
 #include "Math/float3.h"
 #include "Math/float4.h"
 #include "Math/float3x3.h"
@@ -14,7 +15,6 @@
 #include "Math/float4x4.h"
 #include "Math/Matrix.inl"
 #include "Math/Quat.h"
-#include "Math/MathFunc.h"
 #include "Math/TransformOps.h"
 
 float3x3::float3x3(float _00, float _01, float _02,
@@ -504,8 +504,7 @@ float3x3 float3x3::Adjugate() const
 */
 bool float3x3::Inverse()
 {
-    assume(false && "Not implemented!");
-    return false; ///\todo
+    return InverseMatrix(*this);
 }
 
 float3x3 float3x3::Inverted() const
@@ -686,6 +685,82 @@ float4 float3x3::operator *(const float4 &rhs) const
                   DOT3(v[1], rhs),
                   DOT3(v[2], rhs),
                   rhs.w);
+}
+
+float3x3 float3x3::operator *(float scalar) const
+{
+    float3x3 r = *this;
+    r *= scalar;
+    return r;
+}
+
+float3x3 float3x3::operator /(float scalar) const
+{
+    assume(!EqualAbs(scalar, 0));
+    float3x3 r = *this;
+    r /= scalar;
+    return r;
+}
+
+float3x3 float3x3::operator +(const float3x3 &rhs) const
+{
+    float3x3 r = *this;
+    r += rhs;
+    return r;
+}
+
+float3x3 float3x3::operator -(const float3x3 &rhs) const
+{
+    float3x3 r = *this;
+    r -= rhs;
+    return r;
+}
+
+float3x3 float3x3::operator -() const
+{
+    float3x3 r;
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            r[y][x] = -v[y][x];
+    return r;
+}
+
+float3x3 &float3x3::operator *=(float scalar)
+{
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] *= scalar;
+
+    return *this;
+}
+
+float3x3 &float3x3::operator /=(float scalar)
+{
+    assume(!EqualAbs(scalar, 0));
+    float invScalar = 1.f / scalar;
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] *= invScalar;
+
+    return *this;
+}
+
+float3x3 &float3x3::operator +=(const float3x3 &rhs)
+{
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] += rhs[y][x];
+
+    return *this;
+}
+
+float3x3 &float3x3::operator -=(const float3x3 &rhs)
+{
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] -= rhs[y][x];
+
+    return *this;
 }
 
 bool float3x3::IsFinite() const

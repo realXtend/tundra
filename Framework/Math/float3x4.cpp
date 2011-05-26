@@ -7,6 +7,7 @@
 */
 #include "StableHeaders.h"
 
+#include "Math/MathFunc.h"
 #include "Math/float3.h"
 #include "Math/float4.h"
 #include "Math/float3x3.h"
@@ -14,7 +15,6 @@
 #include "Math/float4x4.h"
 #include "Math/Matrix.inl"
 #include "Math/Quat.h"
-#include "Math/MathFunc.h"
 #include "Math/TransformOps.h"
 
 float3x4::float3x4(float _00, float _01, float _02, float _03,
@@ -694,7 +694,10 @@ float float3x4::Determinant() const
 
 bool float3x4::Inverse()
 {
-    return false; ///\todo
+    float4x4 temp(*this); ///\todo It is possible optimize to avoid copying here by writing the inverse function specifically for float3x4.
+    bool success = temp.Inverse();
+    *this = temp.Float3x4Part();
+    return success;
 }
 
 float3x4 float3x4::Inverted() const
@@ -924,6 +927,82 @@ float3x4 float3x4::operator *(const Quat &rhs) const
 float4 float3x4::operator *(const float4 &rhs) const
 {
     return Transform(rhs);
+}
+
+float3x4 float3x4::operator *(float scalar) const
+{
+    float3x4 r = *this;
+    r *= scalar;
+    return r;
+}
+
+float3x4 float3x4::operator /(float scalar) const
+{
+    assume(!EqualAbs(scalar, 0));
+    float3x4 r = *this;
+    r /= scalar;
+    return r;
+}
+
+float3x4 float3x4::operator +(const float3x4 &rhs) const
+{
+    float3x4 r = *this;
+    r += rhs;
+    return r;
+}
+
+float3x4 float3x4::operator -(const float3x4 &rhs) const
+{
+    float3x4 r = *this;
+    r -= rhs;
+    return r;
+}
+
+float3x4 float3x4::operator -() const
+{
+    float3x4 r;
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            r[y][x] = -v[y][x];
+    return r;
+}
+
+float3x4 &float3x4::operator *=(float scalar)
+{
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] *= scalar;
+
+    return *this;
+}
+
+float3x4 &float3x4::operator /=(float scalar)
+{
+    assume(!EqualAbs(scalar, 0));
+    float invScalar = 1.f / scalar;
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] *= invScalar;
+
+    return *this;
+}
+
+float3x4 &float3x4::operator +=(const float3x4 &rhs)
+{
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] += rhs[y][x];
+
+    return *this;
+}
+
+float3x4 &float3x4::operator -=(const float3x4 &rhs)
+{
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] -= rhs[y][x];
+
+    return *this;
 }
 
 bool float3x4::IsFinite() const

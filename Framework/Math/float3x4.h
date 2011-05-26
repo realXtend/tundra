@@ -496,6 +496,17 @@ public:
     /// The fourth element of the vector is preserved.
     float4 operator *(const float4 &rhs) const;
 
+    float3x4 operator *(float scalar) const;
+    float3x4 operator /(float scalar) const;
+    float3x4 operator +(const float3x4 &rhs) const;
+    float3x4 operator -(const float3x4 &rhs) const;
+    float3x4 operator -() const;
+
+    float3x4 &operator *=(float scalar);
+    float3x4 &operator /=(float scalar);
+    float3x4 &operator +=(const float3x4 &rhs);
+    float3x4 &operator -=(const float3x4 &rhs);
+
     /// Tests if this matrix does not contain any NaNs or infs.
     /** @return Returns true if the entries of this float3x4 are all finite, and do not contain NaN or infs. 
         [Category: Examine] */

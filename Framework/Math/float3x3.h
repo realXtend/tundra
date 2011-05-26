@@ -401,6 +401,18 @@ public:
     /// This function ignores the w component of the given input vector. This component is assumed to be either 0 or 1.
     float4 operator *(const float4 &rhs) const;
 
+    float3x3 operator *(float scalar) const;
+    float3x3 operator /(float scalar) const;
+    float3x3 operator +(const float3x3 &rhs) const;
+    float3x3 operator -(const float3x3 &rhs) const;
+    float3x3 operator -() const;
+
+    float3x3 &operator *=(float scalar);
+    float3x3 &operator /=(float scalar);
+    float3x3 &operator +=(const float3x3 &rhs);
+    float3x3 &operator -=(const float3x3 &rhs);
+
+
     /// Tests if this matrix does not contain any NaNs or infs.
     /** @return Returns true if the entries of this float3x3 are all finite, and do not contain NaN or infs. 
         [Category: Examine] */

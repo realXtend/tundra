@@ -226,6 +226,11 @@ public:
     static float4x4 MakeOrthographicProjectionXZ(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
     static float4x4 MakeOrthographicProjectionXY(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
 
+    /// Computes the complementary projection of this matrix.
+    /// If P is a matrix that projects from 3D space to 2D, then the complementary projection 
+    /// matrix projects from 3D to the normal vector of the 2D projection plane of the matrix P.
+    float4x4 ComplementaryProjection() const;
+
     /// Returns the given element.
     /** Returns a reference to the element at m[row][col] (or "m[y][x]").
         Remember that zero-based indexing is used, so m[0][0] is the upper-left element of this matrix.
@@ -293,6 +298,7 @@ public:
         \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]). */
     float3 TranslatePart() const;
 
+    /// Returns the top-left 3x3 part of this matrix. This stores the rotation part of this matrix (if this matrix represents a rotation).
     float3x3 RotatePart() const;
 
     // Returns the local right axis in the post-transformed coordinate space, according to the given convention.
@@ -523,6 +529,9 @@ public:
     /// \note This function does not remove reflection (-1 scale along some axis).
     void RemoveScale();
 
+    /// Reduces this matrix to its row-echelon form.
+    void Pivot();
+
     /// Transforms the given point vector by this matrix M , i.e. returns M * (x, y, z, 1).
     /** [Category: Transform] */
     float3 TransformPoint(const float3 &pointVector) const;
@@ -570,6 +579,17 @@ public:
     /// Transforms the given vector by this matrix (in the order M * v).
     float4 operator *(const float4 &rhs) const;
 
+    float4x4 operator *(float scalar) const;
+    float4x4 operator /(float scalar) const;
+    float4x4 operator +(const float4x4 &rhs) const;
+    float4x4 operator -(const float4x4 &rhs) const;
+    float4x4 operator -() const;
+
+    float4x4 &operator *=(float scalar);
+    float4x4 &operator /=(float scalar);
+    float4x4 &operator +=(const float4x4 &rhs);
+    float4x4 &operator -=(const float4x4 &rhs);
+
     /// Tests if this matrix does not contain any NaNs or infs.
     /** @return Returns true if the entries of this float4x4 are all finite, and do not contain NaN or infs. 
         [Category: Examine] */
@@ -599,6 +619,10 @@ public:
     /** The test compares the floating point elements of this matrix up to the given epsilon. A matrix M is skew-symmetric 
         the identity M=-M^T holds. */
     bool IsSkewSymmetric(float epsilon = 1e-3f) const;
+
+    /// Tests if this matrix is an idempotent matrix.
+    /// An idempotent matrix is one for which the equality M*M=M holds. Projection matrices are commonly idempotent. 
+    bool IsIdempotent(float epsilon = 1e-3f) const;
 
     /// Returns true if this matrix does not perform any scaling.
     /** A matrix does not do any scaling if the column vectors of this 

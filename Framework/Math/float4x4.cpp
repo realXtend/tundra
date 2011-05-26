@@ -6,6 +6,7 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
+#include "Math/MathFunc.h"
 #include "Math/float3.h"
 #include "Math/float4.h"
 #include "Math/float3x3.h"
@@ -13,7 +14,6 @@
 #include "Math/float4x4.h"
 #include "Math/Matrix.inl"
 #include "Math/Quat.h"
-#include "Math/MathFunc.h"
 #include "Math/TransformOps.h"
 
 float4x4::float4x4(float _00, float _01, float _02, float _03,
@@ -405,6 +405,13 @@ float4x4 float4x4::MakeOrthographicProjectionXY()
 {
     assume(false && "Not implemented!");
     return float4x4(); ///\todo
+}
+
+float4x4 float4x4::ComplementaryProjection() const
+{
+	assume(IsIdempotent()); 
+
+    return float4x4::identity - *this;
 }
 
 MatrixProxy<float4x4::Cols> &float4x4::operator[](int row)
@@ -862,8 +869,7 @@ float4x4 float4x4::Adjugate() const
 
 bool float4x4::Inverse()
 {
-    assume(false && "Not implemented!");
-    return false; ///\todo
+    return InverseMatrix(*this);
 }
 
 float4x4 float4x4::Inverted() const
@@ -970,6 +976,36 @@ void float4x4::RemoveScale()
     float y = Row3(1).Normalize();
     float z = Row3(2).Normalize();
     assume(x != 0 && y != 0 && z != 0 && "float4x4::RemoveScale failed!");
+}
+
+/// Algorithm from Eric Lengyel's Mathematics for 3D Game Programming & Computer Graphics, 2nd Ed.
+void float4x4::Pivot()
+{
+	int row = 0;
+
+	for(int col = 0; col < Cols; ++col)
+	{
+		int greatest = row;
+
+		// find the row k with k >= 1 for which Mkj has the largest absolute value.
+		for(int i = row; i < Rows; ++i)
+			if (Abs(v[i][col]) > Abs(v[greatest][col]))
+				greatest = i;
+
+		if (!EqualAbs(v[greatest][col], 0))
+		{
+			if (row != greatest)
+				SwapRows(row, greatest); // the greatest now in row
+
+			ScaleRow(row, 1.f/v[row][col]);
+
+			for(int r = 0; r < Rows; ++r)
+				if (r != row)
+                    SetRow(r, Row(r) - Row(row) * v[r][col]);
+
+			++row;
+		}
+	}
 }
 
 float3 float4x4::TransformPoint(const float3 &pointVector) const
@@ -1155,6 +1191,82 @@ float4 float4x4::operator *(const float4 &rhs) const
     return this->Transform(rhs);
 }
 
+float4x4 float4x4::operator *(float scalar) const
+{
+    float4x4 r = *this;
+    r *= scalar;
+    return r;
+}
+
+float4x4 float4x4::operator /(float scalar) const
+{
+    assume(!EqualAbs(scalar, 0));
+    float4x4 r = *this;
+    r /= scalar;
+    return r;
+}
+
+float4x4 float4x4::operator +(const float4x4 &rhs) const
+{
+    float4x4 r = *this;
+    r += rhs;
+    return r;
+}
+
+float4x4 float4x4::operator -(const float4x4 &rhs) const
+{
+    float4x4 r = *this;
+    r -= rhs;
+    return r;
+}
+
+float4x4 float4x4::operator -() const
+{
+    float4x4 r;
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            r[y][x] = -v[y][x];
+    return r;
+}
+
+float4x4 &float4x4::operator *=(float scalar)
+{
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] *= scalar;
+
+    return *this;
+}
+
+float4x4 &float4x4::operator /=(float scalar)
+{
+    assume(!EqualAbs(scalar, 0));
+    float invScalar = 1.f / scalar;
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] *= invScalar;
+
+    return *this;
+}
+
+float4x4 &float4x4::operator +=(const float4x4 &rhs)
+{
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] += rhs[y][x];
+
+    return *this;
+}
+
+float4x4 &float4x4::operator -=(const float4x4 &rhs)
+{
+    for(int y = 0; y < Rows; ++y)
+        for(int x = 0; x < Cols; ++x)
+            v[y][x] -= rhs[y][x];
+
+    return *this;
+}
+
 bool float4x4::IsFinite() const
 {
     for(int y = 0; y < Rows; ++y)
@@ -1217,6 +1329,12 @@ bool float4x4::IsSkewSymmetric(float epsilon) const
             if (!EqualAbs(v[y][x], -v[x][y], epsilon))
                 return false;
     return true;
+}
+
+bool float4x4::IsIdempotent(float epsilon) const
+{
+    float4x4 m2 = *this * *this;
+    return this->Equals(m2, epsilon);
 }
 
 bool float4x4::HasUnitaryScale(float epsilon) const

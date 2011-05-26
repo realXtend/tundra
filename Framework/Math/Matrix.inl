@@ -628,3 +628,47 @@ void InverseAffineMatrixNonuniformScale(Matrix &mat)
 	}
 	mat.SetTranslatePart(mat.TransformDir(-mat[0][3], -mat[1][3], -mat[2][3]));
 }
+
+template<typename Matrix>
+bool InverseMatrix(Matrix &mat)
+{
+    Matrix inversed = Matrix::identity; // will contain the inverse matrix
+
+    for(int column = 0; column < std::min<int>(Matrix::Rows, Matrix::Cols); ++column)
+	{
+		// find the row i with i >= j such that M has the largest absolute value.
+		int greatest = column;
+		for(int i = column; i < Matrix::Rows; i++)
+			if (fabs(mat[i][column]) > fabs(mat[greatest][column]))
+				greatest = i;
+
+		if (EqualAbs(mat[greatest][column], 0))
+		{
+			mat = inversed;
+			return false;
+		}
+
+		// exchange rows
+		if (greatest != column)
+		{
+            inversed.SwapRows(greatest, column);
+			mat.SwapRows(greatest, column);
+		}
+		
+		// multiply rows
+        assume(!EqualAbs(mat[column][column], 0.f));
+        inversed.ScaleRow(column, 1.f / mat[column][column]);
+        mat.ScaleRow(column, 1.f / mat[column][column]);
+        
+		// add rows
+		for(int i = 0; i < Matrix::Rows; i++)
+			if (i != column)
+			{
+                inversed.SetRow(i, inversed.Row(i) - inversed.Row(column) * mat[i][column]);
+                mat.SetRow(i, mat.Row(i) - mat.Row(column) * mat[i][column]);
+			}
+	}
+    mat = inversed;
+
+	return true;
+}
