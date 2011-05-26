@@ -672,3 +672,62 @@ bool InverseMatrix(Matrix &mat)
 
 	return true;
 }
+
+/** Computes the LU-decomposition on the given square matrix.
+	@return True if the decomposition was successful, false otherwise. If the return value is false, the 
+		contents of the output matrix are unspecified.*/
+template<typename Matrix>
+bool LUDecomposeMatrix(const Matrix &mat, Matrix &lower, Matrix &upper)
+{
+    lower = Matrix::identity;
+    upper = Matrix::zero;
+
+	for(int i = 0; i < Matrix::Rows; ++i)
+	{
+		for(int col = i; col < Matrix::Cols; ++col)
+		{
+			upper[i][col] = mat[i][col];
+			for(int k = 0; k < i; ++k)
+				upper[i][col] -= lower[i][k]*upper[k][col];
+		}
+		for(int row = i+1; row < Matrix::Rows; ++row)
+		{
+			lower[row][i] = mat[row][i];
+			for(int k = 0; k < i; ++k)
+				lower[row][i] -= lower[row][k]*upper[k][i];
+			if (EqualAbs(upper[i][i], 0.f))
+				return false;
+			lower[row][i] /= upper[i][i];
+		}
+	}
+	return true;
+}
+
+/** Computes the Cholesky decomposition on the given square matrix *on the real domain*.
+	@return True if succesful, false otherwise. If the return value is false, the contents of the output 
+		matrix are unspecified. */
+template<typename Matrix>
+bool CholeskyDecomposeMatrix(const Matrix &mat, Matrix &lower)
+{
+    lower = Matrix::zero;
+    for(int i = 0; i < Matrix::Rows; ++i)
+	{
+		for(int j = 0; j < i; ++j)
+		{
+			lower[i][j] = mat[i][j];
+			for(int k = 0; k < j; ++k)
+				lower[i][j] -= lower[i][k]*lower[j][k];
+			if (EqualAbs(lower[j][j], 0.f))
+				return false;
+			lower[i][j] /= lower[j][j];
+		}
+
+		lower[i][i] = mat[i][i];
+		if (lower[i][i])
+			return false;
+		for(int k = 0; k < i; ++k)
+			lower[i][i] -= lower[i][k]*lower[i][k];
+		lower[i][i] = Sqrt(lower[i][i]);
+	}
+	return true;
+}

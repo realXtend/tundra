@@ -888,6 +888,16 @@ float4x4 float4x4::Adjugate() const
     return a;
 }
 
+bool float4x4::CholeskyDecompose(float4x4 &outL) const
+{
+    return CholeskyDecomposeMatrix(*this, outL);
+}
+
+bool float4x4::LUDecompose(float4x4 &outLower, float4x4 &outUpper) const
+{
+    return LUDecomposeMatrix(*this, outLower, outUpper);
+}
+
 bool float4x4::Inverse()
 {
     return InverseMatrix(*this);

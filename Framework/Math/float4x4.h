@@ -460,6 +460,16 @@ public:
     /// Returns the adjugate of this matrix.
     float4x4 Adjugate() const;
 
+    /// Computes the Cholesky decomposition of this matrix.
+    /// The returned matrix L satisfies L * transpose(L) = this.
+    /// Returns true on success.
+    bool CholeskyDecompose(float4x4 &outL) const;
+
+    /// Computes the LU decomposition of this matrix.
+    /// This decomposition has the form 'this = L * U'.
+    /// Returns true on success.
+    bool LUDecompose(float4x4 &outLower, float4x4 &outUpper) const;
+
     /// Inverts this matrix using the generic Gauss's method.
     /// @return Returns true on success, false otherwise.
     bool Inverse();
