@@ -17,7 +17,7 @@
 #include "Framework.h"
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "OgreWorld.h"
 
 #include <Ogre.h>
@@ -32,7 +32,7 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_ChatBubble::EC_ChatBubble(SceneManager* scene):
+EC_ChatBubble::EC_ChatBubble(Scene* scene):
     IComponent(scene),
     font_(QFont("Arial", 50)),
     bubbleColor_(QColor(48, 113, 255, 255)),
