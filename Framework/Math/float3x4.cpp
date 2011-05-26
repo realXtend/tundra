@@ -174,68 +174,6 @@ float3x4 float3x4::FromTRS(const float3 &translate, const float3x4 &rotate, cons
     return float3x4::Translate(translate) * float3x4(rotate) * float3x4::Scale(scale);
 }
 
-/*
-float3x4 float3x4::FromEulerXYX(float x2, float y, float x)
-{
-    return float3x4::RotateX(x2) * float3x4::RotateY(y) * float3x4::RotateX(x);
-}
-
-float3x4 float3x4::FromEulerXZX(float x2, float z, float x)
-{
-    return float3x4::RotateX(x2) * float3x4::RotateZ(z) * float3x4::RotateX(x);
-}
-
-float3x4 float3x4::FromEulerYXY(float y2, float x, float y)
-{
-    return float3x4::RotateY(y2) * float3x4::RotateX(x) * float3x4::RotateY(y);
-}
-
-float3x4 float3x4::FromEulerYZY(float y2, float z, float y)
-{
-    return float3x4::RotateY(y2) * float3x4::RotateZ(z) * float3x4::RotateY(y);
-}
-
-float3x4 float3x4::FromEulerZXZ(float z2, float x, float z)
-{
-    return float3x4::RotateZ(z2) * float3x4::RotateX(x) * float3x4::RotateZ(z);
-}
-
-float3x4 float3x4::FromEulerZYZ(float ez, float ey, float ez2)
-{
-    return float3x4::RotateZ(ez) * float3x4::RotateY(ey) * float3x4::RotateZ(ez2);
-}
-
-float3x4 float3x4::FromEulerXYZ(float x, float y, float z)
-{
-    return float3x4::RotateX(x) * float3x4::RotateY(y) * float3x4::RotateX(z);
-}
-
-float3x4 float3x4::FromEulerXZY(float x, float z, float y)
-{
-    return float3x4::RotateX(x) * float3x4::RotateZ(z) * float3x4::RotateY(y);
-}
-
-float3x4 float3x4::FromEulerYXZ(float y, float x, float z)
-{
-    return float3x4::RotateY(y) * float3x4::RotateX(x) * float3x4::RotateZ(z);
-}
-
-float3x4 float3x4::FromEulerYZX(float y, float z, float x)
-{
-    return float3x4::RotateY(y) * float3x4::RotateZ(z) * float3x4::RotateX(x);
-}
-
-float3x4 float3x4::FromEulerZXY(float z, float x, float y)
-{
-    return float3x4::RotateZ(z) * float3x4::RotateX(x) * float3x4::RotateY(y);
-}
-
-float3x4 float3x4::FromEulerZYX(float z, float y, float x)
-{
-    return float3x4::RotateZ(z) * float3x4::RotateY(y) * float3x4::RotateX(x);
-}
-*/
-
 float3x4 float3x4::FromEulerXYX(float x2, float y, float x)
 {
     float3x4 r;
