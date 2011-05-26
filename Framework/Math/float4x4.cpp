@@ -799,6 +799,27 @@ float4x4 float4x4::LookAt(const float3 &localForward, const float3 &targetDirect
     return float4x4(); ///\todo
 }
 
+float4x4 &float4x4::operator =(const float3x3 &rhs)
+{
+    SetRotatePart(rhs);
+    SetTranslatePart(0,0,0);
+    SetRow(3, 0,0,0,1);
+    return *this;
+}
+
+float4x4 &float4x4::operator =(const float3x4 &rhs)
+{
+    Float3x4Part() = rhs;
+    SetRow(3, 0,0,0,1);
+    return *this;
+}
+
+float4x4 &float4x4::operator =(const float4x4 &rhs)
+{
+    memcpy(this, &rhs, sizeof(rhs));
+    return *this;
+}
+
 float float4x4::Determinant3() const
 {
     const float a = v[0][0];

@@ -454,6 +454,18 @@ void float3x3::SetRotatePart(const Quat &q)
     v[2][0] =     2*(x*z - y*w); v[2][1] =     2*(y*z + x*w); v[2][2] = 1 - 2*(x*x + y*y);
 }
 
+float3x3 &float3x3::operator =(const Quat &rhs)
+{
+    SetRotatePart(rhs);
+    return *this;
+}
+
+float3x3 &float3x3::operator =(const float3x3 &rhs)
+{
+    memcpy(this, &rhs, sizeof(rhs));
+    return *this;
+}
+
 float float3x3::Determinant() const
 {
     const float a = v[0][0];

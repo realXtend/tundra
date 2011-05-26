@@ -92,11 +92,11 @@ public:
 
     /// Constructs this float4x4 to represent the same transformation as the given float3x3.
     /** This function expands the last row and column of this matrix with the elements from the identity matrix. */
-    explicit float4x4(const float3x3 &other);
+    float4x4(const float3x3 &other);
 
     /// Constructs this float4x4 to represent the same transformation as the given float3x4.
     /** The last row is set to [0 0 0 1]. */
-    explicit float4x4(const float3x4 &other);
+    float4x4(const float3x4 &other);
 
     /// Constructs the matrix by explicitly specifying the four column vectors.
     /** @param col0 The first column. If this matrix represents a change-of-basis transformation, this parameter is the world-space
@@ -110,7 +110,7 @@ public:
     float4x4(const float4 &col0, const float4 &col1, const float4 &col2, const float4 &col3);
 
     /// Constructs this float4x4 from the given quaternion.
-    explicit float4x4(const Quat &orientation);
+    float4x4(const Quat &orientation);
 
     /// Creates a new transformation matrix that translates by the given offset.
     /** [Category: Create] */
@@ -426,10 +426,18 @@ public:
     static float4x4 LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp, bool rightHanded = true);
 
     /// Sets this float4x4 to represent the same transformation as the given float3x3.
-//    float4x4 &operator =(const float3x3 &rhs) const;
+    /// @important The remaining entries of this matrix are set to identity.
+    float4x4 &operator =(const float3x3 &rhs);
 
     /// Sets this float4x4 to represent the same transformation as the given float3x4.
-//    float4x4 &operator =(const float3x4 &rhs) const;
+    /// @important The remaining entries of this matrix are set to identity.
+    float4x4 &operator =(const float3x4 &rhs);
+
+    float4x4 &operator =(const float4x4 &rhs);
+
+    /// Sets this float4x4 to represent the same rotation as the given Quat.
+    /// @important The remaining entries of this matrix are set to identity.
+    float4x4 &operator =(const Quat &rhs);
 
     /// Computes the determinant of the upper-left 3x3 submatrix of this matrix.
     float Determinant3() const;

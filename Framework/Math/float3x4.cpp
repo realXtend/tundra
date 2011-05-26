@@ -677,6 +677,19 @@ void float3x4::LookAt(const float3 &localForward, const float3 &targetPosition, 
     assume(false && "Not implemented!"); ///\todo
 }
 
+float3x4 &float3x4::operator =(const float3x3 &rhs)
+{
+    SetRotatePart(rhs);
+    SetTranslatePart(0,0,0);
+    return *this;
+}
+
+float3x4 &float3x4::operator =(const float3x4 &rhs)
+{
+    memcpy(this, &rhs, sizeof(rhs));
+    return *this;
+}
+
 float float3x4::Determinant() const
 {
     const float a = v[0][0];

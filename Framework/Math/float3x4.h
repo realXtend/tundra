@@ -102,7 +102,7 @@ public:
     float3x4(const float3 &col0, const float3 &col1, const float3 &col2, const float3 &col3);
 
     /// Constructs this float3x4 from the given quaternion.
-    explicit float3x4(const Quat &orientation);
+    float3x4(const Quat &orientation);
 
     /// Creates a new transformation matrix that translates by the given offset.
     /** [Category: Create] */
@@ -378,10 +378,16 @@ public:
     void LookAt(const float3 &localForward, const float3 &targetPosition, const float3 &localUp, const float3 &worldUp);
 
     /// Sets this float3x4 to represent the same transformation as the given float3x3.
-    float3x4 &operator =(const float3x3 &rhs) const;
+    /// @important The translate part of this float3x4 is reset to zero.
+    float3x4 &operator =(const float3x3 &rhs);
+
+    /// Sets this float3x4 to represent the same rotation as the given Quat.
+    /// @important The translate part of this float3x4 is reset to zero.
+    float3x4 &operator =(const Quat &rhs);
 
     /// Sets this float3x4 to represent the same transformation as the given float3x4.
-    float3x4 &operator =(const float3x4 &rhs) const;
+    float3x4 &operator =(const float3x4 &rhs);
+
 
     /// Computes the determinant of this matrix. 
     /** If the determinant is nonzero, this matrix is invertible.

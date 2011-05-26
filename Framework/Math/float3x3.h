@@ -102,7 +102,7 @@ public:
     float3x3(const float3 &col0, const float3 &col1, const float3 &col2);
 
     /// Constructs this float3x3 from the given quaternion.
-    explicit float3x3(const Quat &orientation);
+    float3x3(const Quat &orientation);
 
     /// Creates a new float3x3 that rotates about one of the principal axes by the given angle. [indexTitle: RotateX/Y/Z]
     /** Calling RotateX, RotateY or RotateZ is slightly faster than calling the more generic RotateAxisAngle function. */
@@ -293,6 +293,9 @@ public:
     void SetRotatePart(const float3 &axisDirection, float angle);
     /// Sets this matrix to perform the rotation expressed by the given quaternion. 
     void SetRotatePart(const Quat &orientation);
+
+    float3x3 &operator =(const Quat &rhs);
+    float3x3 &operator =(const float3x3 &rhs);
 
     /// Computes the determinant of this matrix. 
     /** If the determinant is nonzero, this matrix is invertible.
