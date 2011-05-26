@@ -354,6 +354,12 @@ void float3::Decompose(const float3 &direction, float3 &outParallel, float3 &out
     outPerpendicular = *this - outParallel;
 }
 
+float3 float3::Lerp(const float3 &b, float t) const
+{
+    assume(0.f <= t && t <= 1.f);
+    return (1.f - t) * *this + t * b;
+}
+
 void float3::Orthogonalize(const float3 &a, float3 &b)
 {
     if (!a.IsZero())

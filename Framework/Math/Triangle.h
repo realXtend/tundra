@@ -26,3 +26,8 @@ public:
     /// Returns true if the given triangle defined by the three given points is degenerate (zero surface area).
     static bool IsDegenerate(const float3 &p1, const float3 &p2, const float3 &p3, float epsilon = 1e-3f);
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Triangle)
+Q_DECLARE_METATYPE(Triangle*)
+#endif

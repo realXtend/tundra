@@ -32,6 +32,12 @@ float3x4::float3x4(const float3x3 &other)
     SetTranslatePart(0, 0, 0);
 }
 
+float3x4::float3x4(const float3x3 &other, const float3 &translate)
+{
+    SetRotatePart(other);
+    SetTranslatePart(translate);
+}
+
 float3x4::float3x4(const float3 &col0, const float3 &col1, const float3 &col2, const float3 &col3)
 {
     SetCol(0, col0);
@@ -64,12 +70,28 @@ float3x4 float3x4::RotateX(float angle)
     return r;
 }
 
+float3x4 float3x4::RotateX(float angleRadians, const float3 &pointOnAxis)
+{
+    float3x4 r;
+    r.SetRotatePartX(angleRadians);
+    r.SetRow(3, 0, 0, 0, 1);
+    return float3x4::Translate(pointOnAxis) * r * float3x4::Translate(-pointOnAxis);
+}
+
 float3x4 float3x4::RotateY(float angle)
 {
     float3x4 r;
     r.SetRotatePartY(angle);
     r.SetTranslatePart(0, 0, 0);
     return r;
+}
+
+float3x4 float3x4::RotateY(float angleRadians, const float3 &pointOnAxis)
+{
+    float3x4 r;
+    r.SetRotatePartY(angleRadians);
+    r.SetRow(3, 0, 0, 0, 1);
+    return float3x4::Translate(pointOnAxis) * r * float3x4::Translate(-pointOnAxis);
 }
 
 float3x4 float3x4::RotateZ(float angle)
@@ -80,6 +102,14 @@ float3x4 float3x4::RotateZ(float angle)
     return r;
 }
 
+float3x4 float3x4::RotateZ(float angleRadians, const float3 &pointOnAxis)
+{
+    float3x4 r;
+    r.SetRotatePartZ(angleRadians);
+    r.SetRow(3, 0, 0, 0, 1);
+    return float3x4::Translate(pointOnAxis) * r * float3x4::Translate(-pointOnAxis);
+}
+
 float3x4 float3x4::RotateAxisAngle(const float3 &axisDirection, float angleRadians)
 {
     float3x4 r;
@@ -88,12 +118,32 @@ float3x4 float3x4::RotateAxisAngle(const float3 &axisDirection, float angleRadia
     return r;
 }
 
+float3x4 float3x4::RotateAxisAngle(const float3 &axisDirection, float angleRadians, const float3 &pointOnAxis)
+{
+    float3x4 r;
+    r.SetRotatePart(axisDirection, angleRadians);
+    r.SetRow(3, 0, 0, 0, 1);
+    return float3x4::Translate(pointOnAxis) * r * float3x4::Translate(-pointOnAxis);
+}
+
 float3x4 float3x4::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection)
 {
+    assume(sourceDirection.IsNormalized());
+    assume(targetDirection.IsNormalized());
     float3x4 r;
     r.SetRotatePart(Quat::RotateFromTo(sourceDirection, targetDirection));
     r.SetTranslatePart(0, 0, 0);
     return r;
+}
+
+float3x4 float3x4::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection, const float3 &centerPoint)
+{
+    assume(sourceDirection.IsNormalized());
+    assume(targetDirection.IsNormalized());
+    float3x4 r;
+    r.SetRotatePart(Quat::RotateFromTo(sourceDirection, targetDirection));
+    r.SetTranslatePart(0, 0, 0);
+    return float3x4::Translate(centerPoint) * r * float3x4::Translate(-centerPoint);
 }
 
 float3x4 float3x4::FromQuat(const Quat &orientation)
@@ -102,6 +152,11 @@ float3x4 float3x4::FromQuat(const Quat &orientation)
     r.SetRotatePart(orientation);
     r.SetTranslatePart(0, 0, 0);
     return r;
+}
+
+float3x4 float3x4::FromQuat(const Quat &orientation, const float3 &pointOnAxis)
+{
+    return float3x4::Translate(pointOnAxis) * float3x4::FromQuat(orientation) * float3x4::Translate(-pointOnAxis);
 }
 
 float3x4 float3x4::FromTRS(const float3 &translate, const Quat &rotate, const float3 &scale)
@@ -299,9 +354,19 @@ ScaleOp float3x4::Scale(const float3 &scale)
     return ScaleOp(scale);
 }
 
+float3x4 float3x4::Scale(const float3 &scale, const float3 &scaleCenter)
+{
+    return float3x4(float3x4::Translate(scaleCenter)) * float3x4::Scale(scale) * float3x4::Translate(-scaleCenter);
+}
+
 float3x4 float3x4::ScaleAlongAxis(const float3 &axis, float scalingFactor)
 {
     return Scale(axis * scalingFactor);
+}
+
+float3x4 float3x4::ScaleAlongAxis(const float3 &axis, float scalingFactor, const float3 &scaleCenter)
+{
+    return float3x4(float3x4::Translate(scaleCenter)) * float3x4::Scale(axis * scalingFactor) * float3x4::Translate(-scaleCenter);
 }
 
 ScaleOp float3x4::UniformScale(float uniformScale)
@@ -490,6 +555,14 @@ void float3x4::SetRow(int row, float x, float y, float z, float w)
     v[row][3] = w;
 }
 
+void float3x4::SetRow(int row, const float3 &rowVector, float w)
+{
+    v[row][0] = rowVector.x;
+    v[row][1] = rowVector.y;
+    v[row][2] = rowVector.z;
+    v[row][3] = w;
+}
+
 void float3x4::SetRow(int row, const float4 &rowVector)
 {
     v[row][0] = rowVector.x;
@@ -597,6 +670,11 @@ void float3x4::SetRotatePart(const Quat &q)
     v[0][0] = 1 - 2*(y*y + z*z); v[0][1] =     2*(x*y - z*w); v[0][2] =     2*(x*z + y*w);
     v[1][0] =     2*(x*y + z*w); v[1][1] = 1 - 2*(x*x + z*z); v[1][2] =     2*(y*z - x*w);
     v[2][0] =     2*(x*z - y*w); v[2][1] =     2*(y*z + x*w); v[2][2] = 1 - 2*(x*x + y*y);
+}
+
+void float3x4::LookAt(const float3 &localForward, const float3 &targetPosition, const float3 &localUp, const float3 &worldUp)
+{
+    assume(false && "Not implemented!"); ///\todo
 }
 
 float float3x4::Determinant() const
@@ -728,21 +806,26 @@ void float3x4::RemoveScale()
 
 float3 float3x4::TransformPoint(const float3 &pointVector) const
 {
-    return float3(DOT3(v[0], pointVector) + v[0][3],
-                  DOT3(v[1], pointVector) + v[1][3],
-                  DOT3(v[2], pointVector) + v[2][3]);
+    return TransformPoint(pointVector.x, pointVector.y, pointVector.z);
+}
+
+float3 float3x4::TransformPoint(float x, float y, float z) const
+{
+    return float3(DOT3_xyz(v[0], x,y,z) + v[0][3],
+                  DOT3_xyz(v[1], x,y,z) + v[1][3],
+                  DOT3_xyz(v[2], x,y,z) + v[2][3]);
 }
 
 float3 float3x4::TransformDir(const float3 &directionVector) const
 {
-    return float3(DOT3(v[0], directionVector),
-                  DOT3(v[1], directionVector),
-                  DOT3(v[2], directionVector));
+    return TransformDir(directionVector.x, directionVector.y, directionVector.z);
 }
 
 float3 float3x4::TransformDir(float x, float y, float z) const
 {
-    return TransformDir(float3(x,y,z));
+    return float3(DOT3_xyz(v[0], x,y,z),
+                  DOT3_xyz(v[1], x,y,z),
+                  DOT3_xyz(v[2], x,y,z));
 }
 
 float4 float3x4::Transform(const float4 &vector) const
@@ -1025,3 +1108,14 @@ float4 operator *(const float4 &lhs, const float3x4 &rhs)
                   DOT3STRIDED(lhs, rhs.ptr()+2, 4),
                   DOT3STRIDED(lhs, rhs.ptr()+3, 4) + lhs.w);
 }
+
+float3x4 float3x4::Mul(const float3x3 &rhs) const { return *this * rhs; }
+float3x4 float3x4::Mul(const float3x4 &rhs) const { return *this * rhs; }
+float4x4 float3x4::Mul(const float4x4 &rhs) const { return *this * rhs; }
+float3x4 float3x4::Mul(const Quat &rhs) const { return *this * rhs; }
+float3 float3x4::MulPoint(const float3 &pointVector) const { return this->TransformPoint(pointVector); }
+float3 float3x4::MulDir(const float3 &directionVector) const { return this->TransformDir(directionVector); }
+float4 float3x4::Mul(const float4 &vector) const { return *this * vector; }
+
+const float3x4 float3x4::zero     = float3x4(0,0,0,0, 0,0,0,0, 0,0,0,0);
+const float3x4 float3x4::identity = float3x4(1,0,0,0, 0,1,0,0, 0,0,1,0);

@@ -288,3 +288,8 @@ std::ostream &operator<<(std::ostream &out, const FixedPoint<T, F> &f)
 }
 
 } // ~math
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(FixedPoint)
+Q_DECLARE_METATYPE(FixedPoint*)
+#endif

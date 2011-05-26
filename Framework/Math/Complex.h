@@ -46,3 +46,8 @@ public:
     static const Complex unitOne;
     static const Complex unitI;
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Complex)
+Q_DECLARE_METATYPE(Complex*)
+#endif

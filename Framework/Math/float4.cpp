@@ -465,6 +465,13 @@ float4 float4::ProjectToNorm3(const float3 &target) const
     return float4(target * Dot(xyz(), target), w);
 }
 
+float4 float4::Lerp(const float4 &b, float t) const
+{
+    assume(EqualAbs(this->w, b.w));
+    assume(0.f <= t && t <= 1.f);
+    return (1.f - t) * *this + t * b;
+}
+
 float4 float4::FromScalar(float scalar)
 { 
     return float4(scalar, scalar, scalar, scalar);

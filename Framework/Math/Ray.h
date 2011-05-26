@@ -57,7 +57,7 @@ public:
     float3 ClosestPoint(const Ray &other, float *d = 0, float *d2 = 0) const;
     float3 ClosestPoint(const Line &other, float *d = 0, float *d2 = 0) const;
     float3 ClosestPoint(const LineSegment &other, float *d = 0, float *d2 = 0) const;
-
+/*
     bool Intersect(const Plane &plane) const;
     bool Intersect(const Plane &plane, float &outDistance) const;
 
@@ -79,15 +79,15 @@ public:
     bool Intersect(const Cylinder &cylinder) const;
     bool Intersect(const Cylinder &cylinder, float &outDistance) const;
 
-    bool Intersect(const Torus &torus) const;
-    bool Intersect(const Torus &torus, float &outDistance) const;
+//    bool Intersect(const Torus &torus) const;
+//    bool Intersect(const Torus &torus, float &outDistance) const;
 
     bool Intersect(const Frustum &frustum) const;
     bool Intersect(const Frustum &frustum, float &outDistance) const;
 
-    bool Intersect(const Polyhedron &polyhedron) const;
-    bool Intersect(const Polyhedron &polyhedron, float &outDistance) const;
-
+ //   bool Intersect(const Polyhedron &polyhedron) const;
+ //   bool Intersect(const Polyhedron &polyhedron, float &outDistance) const;
+*/
     Line ToLine() const;
     LineSegment ToLineSegment(float d) const;
 
@@ -102,3 +102,8 @@ Ray operator *(const float3x3 &transform, const Ray &ray);
 Ray operator *(const float3x4 &transform, const Ray &ray);
 Ray operator *(const float4x4 &transform, const Ray &ray);
 Ray operator *(const Quat &transform, const Ray &ray);
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Ray)
+Q_DECLARE_METATYPE(Ray*)
+#endif

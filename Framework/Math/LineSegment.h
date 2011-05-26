@@ -71,8 +71,8 @@ public:
     bool Intersect(const Frustum &frustum) const;
     bool Intersect(const Frustum &frustum, float &outDistance) const;
 
-    bool Intersect(const Polyhedron &polyhedron) const;
-    bool Intersect(const Polyhedron &polyhedron, float &outDistance) const;
+//    bool Intersect(const Polyhedron &polyhedron) const;
+//    bool Intersect(const Polyhedron &polyhedron, float &outDistance) const;
 
     Ray ToRay() const;
     Line ToLine() const;
@@ -83,3 +83,7 @@ LineSegment operator *(const float3x4 &transform, const LineSegment &line);
 LineSegment operator *(const float4x4 &transform, const LineSegment &line);
 LineSegment operator *(const Quat &transform, const LineSegment &line);
 
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(LineSegment)
+Q_DECLARE_METATYPE(LineSegment*)
+#endif

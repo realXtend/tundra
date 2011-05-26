@@ -54,7 +54,7 @@ public:
     enum { Cols = 4 };
 
     /// Stores the data in this matrix in row-major format.
-    /** [Category: Data] */
+    /** [Category: Data] [noscript] */
     float v[Rows][Cols];
 
     /// A constant matrix that has zeroes in all its entries.
@@ -142,8 +142,8 @@ public:
             rotates sourceDirection2 (which was transformed by 1.) to targetDirection2, but keeping the constraint that 
             sourceDirection must look at targetDirection.
             Rotation is performed around the specified centerPoint. */
-    static float3x4 RotateFromTo(const float3 &centerPoint, const float3 &sourceDirection, const float3 &targetDirection,
-        const float3 &sourceDirection2, const float3 &targetDirection2);
+//    static float3x4 RotateFromTo(const float3 &centerPoint, const float3 &sourceDirection, const float3 &targetDirection,
+//        const float3 &sourceDirection2, const float3 &targetDirection2);
 
     /// Creates a new float3x4 that performs the rotation expressed by the given quaternion.
     static float3x4 FromQuat(const Quat &orientation);
@@ -213,7 +213,7 @@ public:
     static float3x4 MakeOrthographicProjectionXZ(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
     static float3x4 MakeOrthographicProjectionXY(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
 
-    /// Returns the given element.
+    /// Returns the given element. [noscript]
     /** Returns a reference to the element at m[row][col] (or "m[y][x]").
         Remember that zero-based indexing is used, so m[0][0] is the upper-left element of this matrix.
         \note You can use the index notation to set elements of the matrix, e.g. m[0][1] = 5.f;
@@ -225,19 +225,19 @@ public:
     MatrixProxy<Cols> &operator[](int row);
     const MatrixProxy<Cols> &operator[](int row) const;
 
-    /// Returns the given element.
+    /// Returns the given element. [noscript]
     /** This function returns the element of this matrix at (row, col)==(i, j)==(y, x).
         If you have a non-const object, you can set values of this matrix through this 
         reference, using the notation m.At(row, col) = someValue; */
     float &At(int row, int col);
     const float At(int row, int col) const;
 
-    /// Returns the given row.
+    /// Returns the given row. [noscript]
     /** @param row The zero-based index [0, 2] of the row to get. */
     float4 &Row(int row);
     const float4 &Row(int row) const;
 
-    /// Returns the three first elements of the given row.
+    /// Returns the three first elements of the given row. [noscript]
     /** @param row The zero-based index [0, 2] of the row to get. */
     float3 &Row3(int row);
     const float3 &Row3(int row) const;
@@ -350,34 +350,19 @@ public:
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive X axis which passes through
     /// the origin. Leaves all other entries of this matrix untouched. [similarOverload: SetRotatePart] [hideIndex]
     void SetRotatePartX(float angle);
-    /// Sets the 3-by-3 part of this matrix to perform rotation about the positive X axis which passes through
-    /// the given point. Leaves all other entries of this matrix untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartX(const float3 &pointOnAxis, float angle);
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive Y axis. Leaves all other
     /// entries untouched. [similarOverload: SetRotatePart] [hideIndex]
     void SetRotatePartY(float angle);
-    /// Sets the 3-by-3 part of this matrix to perform rotation about the positive Y axis which passes through
-    /// the given point. Leaves all other entries of this matrix untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartY(const float3 &pointOnAxis, float angle);
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive Z axis. Leaves all other
     /// entries untouched. [similarOverload: SetRotatePart] [hideIndex]
     void SetRotatePartZ(float angle);
-    /// Sets the 3-by-3 part of this matrix to perform rotation about the positive Z axis which passes through
-    /// the given point. Leaves all other entries of this matrix untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartZ(const float3 &pointOnAxis, float angle);
 
     /// Sets the 3-by-3 part of this matrix to perform rotation about the given axis and angle. Leaves all other
     /// entries of this matrix untouched. [indexTitle: SetRotatePart/X/Y/Z]
     void SetRotatePart(const float3 &axisDirection, float angle);
-    /// Sets the 3-by-3 part of this matrix to perform rotation about the given axis around the given point.
-    /// Leaves all other entries of this matrix untouched.
-    void SetRotatePart(const float3 &pointOnAxis, const float3 &axisDirection, float angle);
     /// Sets the 3-by-3 part of this matrix to perform the rotation expressed by the given quaternion. 
     /// Leaves all other entries of this matrix untouched.
     void SetRotatePart(const Quat &orientation);
-    /// Sets the 3-by-3 part of this matrix to perform the rotation expressed by the given quaternion around the given point. 
-    /// Leaves all other entries of this matrix untouched.
-    void SetRotatePart(const float3 &pointOnAxis, const Quat &orientation);
     /// Sets the 3-by-3 part of this matrix.
     /// @note This is a convenience function which calls Set3x3Part.
     /// @note This function erases the previous top-left 3x3 part of this matrix (any previous rotation, scaling and shearing, etc.). Translation is unaffected.
@@ -621,6 +606,19 @@ public:
     void Decompose(float3 &translate, Quat &rotate, float3 &scale) const;
     void Decompose(float3 &translate, float3x3 &rotate, float3 &scale) const;
     void Decompose(float3 &translate, float3x4 &rotate, float3 &scale) const;
+
+    float3x4 Mul(const float3x3 &rhs) const;
+    float3x4 Mul(const float3x4 &rhs) const;
+    float4x4 Mul(const float4x4 &rhs) const;
+    float3x4 Mul(const Quat &rhs) const;
+    float3 MulPoint(const float3 &pointVector) const;
+    float3 MulDir(const float3 &directionVector) const;
+    float4 Mul(const float4 &vector) const;
+
+#ifdef QT_INTEROP
+    operator QString() const { return toString(); }
+    QString toString() const { return ToString().c_str(); }
+#endif
 };
 
 /// Prints this float3x4 to the given stream.
@@ -635,3 +633,8 @@ float3x4 operator *(const float3x3 &lhs, const float3x4 &rhs);
 /// of multiplication is against the convention of this math system. Please use the M * v notation instead.
 /// (Remember that M * v != v * M in general).
 float4 operator *(const float4 &lhs, const float3x4 &rhs);
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(float3x4)
+Q_DECLARE_METATYPE(float3x4*)
+#endif

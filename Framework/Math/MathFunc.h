@@ -28,6 +28,8 @@
 /// Computes the dot product of two 3D vectors, the elements are accessed using array notation.
 #define DOT3(v1, v2) ((v1)[0] * (v2)[0] + (v1)[1] * (v2)[1] + (v1)[2] * (v2)[2])
 
+#define DOT3_xyz(v1, x, y, z) ((v1)[0] * (x) + (v1)[1] * (y) + (v1)[2] * (z))
+
 #define DOT3STRIDED(v1, v2, stride) ((v1)[0] * (v2)[0] + (v1)[1] * (v2)[stride] + (v1)[2] * (v2)[2*stride])
 
 /// Computes the dot product of two 4D vectors, the elements are accessed using array notation.
@@ -38,8 +40,12 @@
 /// Computes the dot product of a 4D vector and a 3D position vector (w == 1).
 #define DOT4POS(vec4D, vecPos) ((vec4D)[0] * (vecPos)[0] + (vec4D)[1] * (vecPos)[1] + (vec4D)[2] * (vecPos)[2] + (vec4D)[3])
 
+#define DOT4POS_xyz(vec4D, x, y, z) ((vec4D)[0] * (x) + (vec4D)[1] * (y) + (vec4D)[2] * (z) + (vec4D)[3])
+
 /// Computes the dot product of a 4D vector and a 3D direction vector (w == 1). Provided for convenience, since this is identical to DOT3.
 #define DOT4DIR(vec4D, vecDir) ((vec4D)[0] * (vecDir)[0] + (vec4D)[1] * (vecDir)[1] + (vec4D)[2] * (vecDir)[2])
+
+#define DOT4DIR_xyz(vec4D, x, y, z) ((vec4D)[0] * (x) + (vec4D)[1] * (y) + (vec4D)[2] * (z))
 
 /// Returns the given amount of degrees in radians.
 /// 180 degrees equals pi, 360 degrees is a full circle, and equals 2pi.

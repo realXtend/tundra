@@ -80,3 +80,8 @@ public:
     /// Returns true if the quadrilateral defined by the four points is convex (and not concave or bowtie).
     static bool IsConvexQuad(const float3 &pointA, const float3 &pointB, const float3 &pointC, const float3 &pointD);
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Polygon)
+Q_DECLARE_METATYPE(Polygon*)
+#endif

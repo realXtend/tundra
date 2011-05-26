@@ -56,20 +56,19 @@ public:
         features of the polyhedron.
         @return If the given polyhedron is closed, this function succeeds and returns true. If the polyhedron is uncapped 
             (has infinite volume), this function does not modify this data structure, but returns false. */
-    bool SetFrom(const Polyhedron &polyhedron);
+//    bool SetFrom(const Polyhedron &polyhedron);
 
     /// Sets this AABB to enclose the given sphere.
     /** This function computes the smallest possible AABB (in terms of volume) that contains the given sphere, and stores the result in this structure. */
     void SetFrom(const Sphere &s);
 
-    /// Sets this AABB to enclose the given set of points.
+    /// Sets this AABB to enclose the given set of points. [noscript]
     void SetFrom(const float3 *pointArray, int numPoints);
 
     /// Converts this to a polyhedron.
     /** This function returns a polyhedron representation of this AABB. This conversion is exact, meaning that the returned
         polyhedron represents the same set of points than this AABB. */
-    Polyhedron ToPolyhedron() const;
-
+//    Polyhedron ToPolyhedron() const;
     /// Converts this to an oriented bounding box.
     /** This function returns an OBB representation of this AABB. This conversion is exact, meaning that the returned
         OBB represents the same set of points than this AABB. */
@@ -129,7 +128,7 @@ public:
     void GetFacePlanes(Plane *outPlaneArray) const;
 
     /// Generates an AABB that encloses the given point set.
-    /** This function finds the smallest AABB that contains the given set of points. */
+    /** This function finds the smallest AABB that contains the given set of points. [noscript] */
     static AABB MinimalEnclosingAABB(const float3 *pointArray, int numPoints);
 
     /// Returns the diameter vector of this AABB.
@@ -144,19 +143,19 @@ public:
 
     /// Generates a random point inside this AABB.
     /** The points are distributed uniformly. */
-    float3 RandomPointInside(LCG &rng) const;
+//    float3 RandomPointInside(LCG &rng) const;
 
     /// Generates a random point on a random face of this AABB.
     /** The points are distributed uniformly. */
-    float3 RandomPointOnSurface(LCG &rng) const;
+//    float3 RandomPointOnSurface(LCG &rng) const;
 
     /// Generates a random point on a random edge of this AABB.
     /** The points are distributed uniformly. */
-    float3 RandomPointOnEdge(LCG &rng) const;
+//    float3 RandomPointOnEdge(LCG &rng) const;
 
     /// Picks a random corner point of this AABB.
     /** The points are distributed uniformly. */
-    float3 RandomCornerPoint(LCG &rng) const;
+//    float3 RandomCornerPoint(LCG &rng) const;
 
     /// Translates this AABB in the world space.
     /** @param offset The amount of displacement to apply to this AABB, in world space coordinates. */
@@ -215,18 +214,18 @@ public:
     /** @param outClosestPointOther [out, optional] If not null, this parameter will receive the closest point to this AABB on the surface
             of the other object. This parameter may be left null, if the actual point is not important. The closest point 
             may not be unique, in which case an arbitrary point on the surface of the other object is returned.*/
-    float Distance(const AABB &aabb, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const OBB &obb, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Plane &plane, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Sphere &sphere, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Ellipsoid &ellipsoid, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Triangle &triangle, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Cylinder &cylinder, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Capsule &capsule, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Torus &torus, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Frustum &frustum, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Polygon &polygon, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Polyhedron &polyhedron, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+    float Distance(const AABB &aabb, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+    float Distance(const OBB &obb, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+    float Distance(const Plane &plane, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+    float Distance(const Sphere &sphere, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+    float Distance(const Ellipsoid &ellipsoid, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+    float Distance(const Triangle &triangle, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+    float Distance(const Cylinder &cylinder, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+//    float Distance(const Capsule &capsule, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+//    float Distance(const Torus &torus, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+    float Distance(const Frustum &frustum, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+//    float Distance(const Polygon &polygon, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+//    float Distance(const Polyhedron &polyhedron, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
 
     /// Tests if this AABB contains the given point.
     /** This function returns true if the given point lies inside this AABB, and false otherwise.
@@ -239,24 +238,24 @@ public:
         @param outDistance [out] For rays, lines and line segments, this parameter receives the distance along the ray
             that specifies the hit point.        
         @return The HitInfo structure that describes the details of the intersection that occurred. */
-    HitInfo Intersect(const Ray &ray, float *outDistance) const;
+    HitInfo Intersect(const Ray &ray, float *outDistance) const; ///< [noscript]
     /** @param maxDistance If specified, limits the maximum distance along the ray to which the intersection
         is checked. This effectively utilizes the ray as if it was a line segment. */
-    HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const;
-    HitInfo Intersect(const Line &line, float *outDistance) const;
-    HitInfo Intersect(const LineSegment &lineSegment, float *outDistance) const;
-    HitInfo Intersect(const AABB &aabb) const;
-    HitInfo Intersect(const OBB &obb) const;
-    HitInfo Intersect(const Plane &plane) const;
-    HitInfo Intersect(const Sphere &sphere) const;
-    HitInfo Intersect(const Ellipsoid &ellipsoid) const;
-    HitInfo Intersect(const Triangle &triangle) const;
-    HitInfo Intersect(const Cylinder &cylinder) const;
-    HitInfo Intersect(const Capsule &capsule) const;
-    HitInfo Intersect(const Torus &torus) const;
-    HitInfo Intersect(const Frustum &frustum) const;
-    HitInfo Intersect(const Polygon &polygon) const;
-    HitInfo Intersect(const Polyhedron &polyhedron) const;
+    HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const; ///< [noscript]
+    HitInfo Intersect(const Line &line, float *outDistance) const; ///< [noscript]
+    HitInfo Intersect(const LineSegment &lineSegment, float *outDistance) const; ///< [noscript]
+    HitInfo Intersect(const AABB &aabb) const; ///< [noscript]
+    HitInfo Intersect(const OBB &obb) const; ///< [noscript]
+    HitInfo Intersect(const Plane &plane) const; ///< [noscript]
+    HitInfo Intersect(const Sphere &sphere) const; ///< [noscript]
+    HitInfo Intersect(const Ellipsoid &ellipsoid) const; ///< [noscript]
+    HitInfo Intersect(const Triangle &triangle) const; ///< [noscript]
+    HitInfo Intersect(const Cylinder &cylinder) const; ///< [noscript]
+//    HitInfo Intersect(const Capsule &capsule) const; ///< [noscript]
+//    HitInfo Intersect(const Torus &torus) const; ///< [noscript]
+    HitInfo Intersect(const Frustum &frustum) const; ///< [noscript]
+//    HitInfo Intersect(const Polygon &polygon) const; ///< [noscript]
+//    HitInfo Intersect(const Polyhedron &polyhedron) const; ///< [noscript]
 
     /// Expands this AABB to enclose the given object.
     /** This function computes the AABB that encloses both this AOBB and the specified object, and stores the resulting
@@ -272,11 +271,12 @@ public:
     void Enclose(const Ellipsoid &ellipsoid);
     void Enclose(const Triangle &triangle);
     void Enclose(const Cylinder &cylinder);
-    void Enclose(const Capsule &capsule);
-    void Enclose(const Torus &torus);
+//    void Enclose(const Capsule &capsule);
+//    void Enclose(const Torus &torus);
     void Enclose(const Frustum &frustum);
-    void Enclose(const Polygon &polygon);
-    bool Enclose(const Polyhedron &polyhedron);
+//    void Enclose(const Polygon &polygon);
+//    bool Enclose(const Polyhedron &polyhedron);
+    /// [noscript]
     void Enclose(const float3 *pointArray, int numPoints);
 
     /// Returns a human-readable representation of this AABB. Most useful for debugging purposes.
@@ -290,10 +290,15 @@ public:
     /// Finds the set intersection of this AABB and the given OBB.
     /** @return This function returns a Polyhedron that represents the set of points that are contained in this AABB
         and the given OBB. */
-    Polyhedron Intersection(const OBB &obb) const;
+//    Polyhedron Intersection(const OBB &obb) const;
 
     /// Finds the set intersection of this AABB and the given Polyhedron.
     /** @return This function returns a Polyhedron that represents the set of points that are contained in this AABB
         and the given Polyhedron. */
-    Polyhedron Intersection(const Polyhedron &polyhedron) const;
+//    Polyhedron Intersection(const Polyhedron &polyhedron) const;
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(AABB)
+Q_DECLARE_METATYPE(AABB*)
+#endif

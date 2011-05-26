@@ -170,7 +170,7 @@ public:
         return !(*this == rhs);
     }
 
-    QString ToQString() const
+    QString toString() const
     {
         return "Pos: " + QString::number(position.x) + "," + QString::number(position.y) + "," + QString::number(position.z) + ", Rot: " +
             QString::number(rotation.x) + "," + QString::number(rotation.y) + "," + QString::number(rotation.z) + ", Scale: " +
@@ -180,5 +180,6 @@ public:
 };
 
 Q_DECLARE_METATYPE(Transform)
+Q_DECLARE_METATYPE(Transform*)
 
 #endif

@@ -225,13 +225,13 @@ bool Plane::Intersect(const Frustum &frustum) const
     assume(false && "Not implemented!"); ///\todo
     return false;
 }
-
+/*
 bool Plane::Intersect(const Polyhedron &polyhedron) const
 {
     assume(false && "Not implemented!"); ///\todo
     return false;
 }
-
+*/
 bool Plane::Clip(float3 &a, float3 &b) const
 {
     assume(false && "Not implemented!"); ///\todo

@@ -175,7 +175,7 @@ bool LineSegment::Intersect(const Frustum &frustum, float &outDistance) const
     assume(false && "Not implemented!");
     return false; ///\todo
 }
-
+/*
 bool LineSegment::Intersect(const Polyhedron &polyhedron) const
 {
     assume(false && "Not implemented!");
@@ -187,7 +187,7 @@ bool LineSegment::Intersect(const Polyhedron &polyhedron, float &outDistance) co
     assume(false && "Not implemented!");
     return false; ///\todo
 }
-
+*/
 Ray LineSegment::ToRay() const
 {
     return Ray(a, Dir());

@@ -605,9 +605,14 @@ void float3x3::RemoveScale()
 
 float3 float3x3::Transform(const float3 &vector) const
 {
-    return float3(DOT3(Row(0), vector),
-                  DOT3(Row(1), vector),
-                  DOT3(Row(2), vector));
+    return Transform(vector.x, vector.y, vector.z);
+}
+
+float3 float3x3::Transform(float x, float y, float z) const
+{
+    return float3(DOT3_xyz(Row(0), x,y,z),
+                  DOT3_xyz(Row(1), x,y,z),
+                  DOT3_xyz(Row(2), x,y,z));
 }
 
 float4 float3x3::Transform(const float4 &vector) const
@@ -831,3 +836,12 @@ void float3x3::Decompose(float3x3 &rotate, float3 &scale) const
     rotate.ScaleCol(1, 1.f / scale.y);
     rotate.ScaleCol(2, 1.f / scale.z);
 }
+
+float3x3 float3x3::Mul(const float3x3 &rhs) const { return *this * rhs; }
+float3x4 float3x3::Mul(const float3x4 &rhs) const { return *this * rhs; }
+float4x4 float3x3::Mul(const float4x4 &rhs) const { return *this * rhs; }
+float3x3 float3x3::Mul(const Quat &rhs) const { return *this * rhs; }
+float3 float3x3::Mul(const float3 &rhs) const { return *this * rhs; }
+
+const float3x3 float3x3::zero     = float3x3(0,0,0, 0,0,0, 0,0,0);
+const float3x3 float3x3::identity = float3x3(1,0,0, 0,1,0, 0,0,1);

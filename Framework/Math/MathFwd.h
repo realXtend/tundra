@@ -28,7 +28,7 @@ class Cone;
 class Cylinder;
 class Ellipsoid;
 class Frustum;
-class HitInfo;
+struct HitInfo;
 class Line;
 class LineSegment;
 class LCG;

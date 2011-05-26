@@ -7,6 +7,8 @@
 
     @brief A 4-by-4 matrix for affine and homogeneous operations in 3D space.
 */
+#pragma once
+
 #include "MathFwd.h"
 #include "float3.h"
 
@@ -19,6 +21,7 @@ public:
     float y;
     float z;
 
+    TranslateOp() {}
     explicit TranslateOp(const float3 &offset);
     TranslateOp(float x, float y, float z);
 
@@ -45,6 +48,7 @@ public:
     float y;
     float z;
 
+    ScaleOp() {}
     explicit ScaleOp(const float3 &scale);
     ScaleOp(float sx, float sy, float sz);
 
@@ -60,3 +64,10 @@ float3x4 operator *(const ScaleOp &lhs, const float3x4 &rhs);
 float3x4 operator *(const float3x4 &lhs, const ScaleOp &rhs);
 float4x4 operator *(const ScaleOp &lhs, const float4x4 &rhs);
 float4x4 operator *(const float4x4 &lhs, const ScaleOp &rhs);
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(TranslateOp)
+Q_DECLARE_METATYPE(TranslateOp*)
+Q_DECLARE_METATYPE(ScaleOp)
+Q_DECLARE_METATYPE(ScaleOp*)
+#endif

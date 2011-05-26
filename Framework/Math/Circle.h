@@ -16,6 +16,7 @@ class Circle
 public:
     /// The default ctor does not initialize the Circle to any value.
     Circle() {}
+    Circle(const float3 &center, const float3 &normal);
 
     float3 center;
     float3 normal;
@@ -24,3 +25,8 @@ public:
 
     bool Contains(const float3 &point) const;
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Circle)
+Q_DECLARE_METATYPE(Circle*)
+#endif

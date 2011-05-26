@@ -67,20 +67,20 @@ public:
     bool Intersect(const OBB &aabb) const;
     bool Intersect(const OBB &aabb, float &outDistance) const;
 
-    bool Intersect(const Triangle &triangle) const;
-    bool Intersect(const Triangle &triangle, float &outDistance) const;
+//    bool Intersect(const Triangle &triangle) const;
+//    bool Intersect(const Triangle &triangle, float &outDistance) const;
 
-    bool Intersect(const Cylinder &cylinder) const;
-    bool Intersect(const Cylinder &cylinder, float &outDistance) const;
+//    bool Intersect(const Cylinder &cylinder) const;
+//    bool Intersect(const Cylinder &cylinder, float &outDistance) const;
 
-    bool Intersect(const Torus &torus) const;
-    bool Intersect(const Torus &torus, float &outDistance) const;
+//    bool Intersect(const Torus &torus) const;
+//    bool Intersect(const Torus &torus, float &outDistance) const;
 
-    bool Intersect(const Frustum &frustum) const;
-    bool Intersect(const Frustum &frustum, float &outDistance) const;
+//    bool Intersect(const Frustum &frustum) const;
+//    bool Intersect(const Frustum &frustum, float &outDistance) const;
 
-    bool Intersect(const Polyhedron &polyhedron) const;
-    bool Intersect(const Polyhedron &polyhedron, float &outDistance) const;
+//    bool Intersect(const Polyhedron &polyhedron) const;
+//    bool Intersect(const Polyhedron &polyhedron, float &outDistance) const;
 
     Ray ToRay() const;
     LineSegment ToLineSegment(float d) const;
@@ -97,3 +97,8 @@ Line operator *(const Quat &transform, const Line &line);
 // Internal helper functions.
 float Dmnop(const float3 *v, int m, int n, int o, int p);
 float3 LineLine(float3 start0, float3 end0, float3 start1, float3 end1, float *d, float *d2);
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Line)
+Q_DECLARE_METATYPE(Line*)
+#endif

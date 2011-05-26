@@ -24,6 +24,17 @@ TranslateOp::TranslateOp(const float3 &trans)
 
 TranslateOp::operator float3x4() const
 {
+    return ToFloat3x4();
+}
+
+TranslateOp::operator float4x4() const
+{
+    return ToFloat4x4();
+}
+
+
+float3x4 TranslateOp::ToFloat3x4() const
+{
     float3x4 m;
     m.SetRow(0, 1, 0, 0, x);
     m.SetRow(1, 0, 1, 0, y);
@@ -31,7 +42,7 @@ TranslateOp::operator float3x4() const
     return m;
 }
 
-TranslateOp::operator float4x4() const
+float4x4 TranslateOp::ToFloat4x4() const
 {
     float4x4 m;
     m.SetRow(0, 1, 0, 0, x);

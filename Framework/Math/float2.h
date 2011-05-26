@@ -144,6 +144,12 @@ public:
     /// Breaks this vector down into parallel and perpendicular components with respect to the given direction.
     void Decompose(const float2 &direction, float2 &outParallel, float2 &outPerpendicular) const;
 
+    /// Linearly interpolates between this and the vector b.
+    /// @param t The interpolation weight, in the range [0, 1].
+    /// Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
+    /// Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on.
+    float2 Lerp(const float2 &b, float t) const;
+
     /// Makes the given vectors linearly independent.
     static void Orthogonalize(const float2 &a, float2 &b);
 
@@ -188,6 +194,12 @@ public:
 //    float2 &operator /=(const float2 &rhs);
     float2 &operator /=(float scalar);
 
+    float2 Add(const float2 &rhs) const { return *this + rhs; }
+    float2 Sub(const float2 &rhs) const { return *this - rhs; }
+    float2 Mul(float rhs) const { return *this * rhs; }
+    float2 Div(float rhs) const { return *this / rhs; }
+    float2 Neg() const { return -*this; }
+
     /// Specifies a compile-time constant float2 with value (0, 0).
     static const float2 zero;
     /// Specifies a compile-time constant float2 with value (1, 1).
@@ -205,6 +217,7 @@ public:
     float2(const QVector2D &other) { x = other.x(); y = other.y(); }
     operator QVector2D() const { return QVector2D(x, y); }
     operator QString() const { return "(" + QString::number(x) + "," + QString::number(y) + ")"; }
+    QString toString() const { return (QString)*this; }
 #endif
 };
 
@@ -220,3 +233,9 @@ inline float2 Max(const float2 &a, const float2 &b) { return a.Max(b); }
 inline float2 Clamp(const float2 &a, float floor, float ceil) { return a.Clamp(floor, ceil); }
 inline float2 Clamp(const float2 &a, const float2 &floor, const float2 &ceil) { return a.Clamp(floor, ceil); }
 inline float2 Clamp01(const float2 &a) { return a.Clamp01(); }
+inline float2 Lerp(const float2 &a, const float2 &b, float t) { return a.Lerp(b, t); }
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(float2)
+Q_DECLARE_METATYPE(float2*)
+#endif

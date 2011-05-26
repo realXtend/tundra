@@ -62,7 +62,7 @@ public:
     enum { Cols = 4 };
 
     /// Stores the data in this matrix in row-major format.
-    /** [Category: Data] */
+    /** [Category: Data] [noscript] */
     float v[Rows][Cols];
 
     /// A constant matrix that has zeroes in all its entries.
@@ -238,19 +238,19 @@ public:
     MatrixProxy<Cols> &operator[](int row);
     const MatrixProxy<Cols> &operator[](int row) const;
 
-    /// Returns the given element.
+    /// Returns the given element. [noscript]
     /** This function returns the element of this matrix at (row, col)==(i, j)==(y, x).
         If you have a non-const object, you can set values of this matrix through this 
         reference, using the notation m.At(row, col) = someValue; */
     float &At(int row, int col);
     const float At(int row, int col) const;
 
-    /// Returns the given row.
+    /// Returns the given row. [noscript]
     /** @param row The zero-based index [0, 3] of the row to get. */
     float4 &Row(int row);
     const float4 &Row(int row) const;
     /// Returns the three first entries of the given row. [similarOverload: Row] [hideIndex]
-    float3 &Row3(int row);
+    float3 &Row3(int row); ///< [noscript]
     const float3 &Row3(int row) const;
 
     /// Returns the given column.
@@ -280,7 +280,7 @@ public:
     /// Returns the upper-left 3-by-3 part.
     const float3x3 Float3x3Part() const;
 
-    /// Returns the upper-left 3-by-4 part.
+    /// Returns the upper-left 3-by-4 part. [noscript]
     /// @note The float3x4 and float4x4 are bit-compatible, so this function simply casts.
     float3x4 &Float3x4Part();
     const float3x4 &Float3x4Part() const;
@@ -691,8 +691,17 @@ public:
 #ifdef QT_INTEROP
     float4x4(const QMatrix4x4 &m) { Set(m(0,0), m(0,1), m(0,2), m(0,3), m(1,0), m(1,1), m(1,2), m(1,3), m(2,0), m(2,1), m(2,2), m(2,3), m(3,0), m(3,1), m(3,2), m(3,3)); }
     operator QMatrix4x4() { return QMatrix4x4(v[0][0], v[0][1], v[0][2], v[0][3], v[1][0], v[1][1], v[1][2], v[1][3], v[2][0], v[2][1], v[2][2], v[2][3], v[3][0], v[3][1], v[3][2], v[3][3]); }
+    operator QString() const { return toString(); }
+    QString toString() const { return ToString().c_str(); }
 #endif
 
+    float4x4 Mul(const float3x3 &rhs) const;
+    float4x4 Mul(const float3x4 &rhs) const;
+    float4x4 Mul(const float4x4 &rhs) const;
+    float4x4 Mul(const Quat &rhs) const;
+    float3 MulPoint(const float3 &pointVector) const;
+    float3 MulDir(const float3 &directionVector) const;
+    float4 Mul(const float4 &vector) const;
 };
 
 /// Prints this float4x4 to the given stream.
@@ -707,3 +716,8 @@ float4x4 operator *(const float3x3 &lhs, const float4x4 &rhs);
 /// of multiplication is against the convention of this math system. Please use the M * v notation instead.
 /// (Remember that M * v != v * M in general).
 float4 operator *(const float4 &lhs, const float4x4 &rhs);
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(float4x4)
+Q_DECLARE_METATYPE(float4x4*)
+#endif

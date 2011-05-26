@@ -80,3 +80,8 @@ public:
     void Enclose(const float3 &point);
     void Enclose(const float3 *pointArray, int numPoints);
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Sphere)
+Q_DECLARE_METATYPE(Sphere*)
+#endif

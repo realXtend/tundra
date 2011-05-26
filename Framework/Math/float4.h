@@ -146,6 +146,13 @@ public:
     /// Returns a vector that has floor <= this[i] <= ceil for each element.
     float4 Clamp(float floor, float ceil) const;
 
+    /// Linearly interpolates between this and the vector b.
+    /// This function assumes that the w components of this and the other vector are equal.
+    /// @param t The interpolation weight, in the range [0, 1].
+    /// Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
+    /// Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on.
+    float4 Lerp(const float4 &b, float t) const;
+
     /// Computes the squared distance between the (x, y, z) parts of this and the given float4. 
     /// \note This function ignores the w component of this and rhs vector (assumes w=0 or w=1 are the same for both vectors).
     float Distance3Sq(const float4 &rhs) const;
@@ -257,6 +264,12 @@ public:
     /// Specifies a compile-time constant float4 with value (0, 0, 0, 1).
     static const float4 unitW;
 
+    float4 Add(const float4 &rhs) const { return *this + rhs; }
+    float4 Sub(const float4 &rhs) const { return *this - rhs; }
+    float4 Mul(float rhs) const { return *this * rhs; }
+    float4 Div(float rhs) const { return *this / rhs; }
+    float4 Neg() const { return -*this; }
+
 #ifdef OGRE_INTEROP
     float4(const Ogre::Vector4 &other) { x = other.x; y = other.y; z = other.z; w = other.w; }
     float4 &operator =(const Ogre::Vector4 &other) { x = other.x; y = other.y; z = other.z; w = other.w; return *this; }
@@ -266,6 +279,7 @@ public:
     float4(const QVector4D &other) { x = other.x(); y = other.y(); z = other.z(); w = other.w(); }
     operator QVector4D() const { return QVector4D(x, y, z, w); }
     operator QString() const { return "(" + QString::number(x) + "," + QString::number(y) + "," + QString::number(z) + "," + QString::number(w) + ")"; }
+    QString toString() const { return (QString)*this; }
 #endif
 #ifdef BULLET_INTEROP
     // Bullet uses the same btVector3 class for both 3- and 4 -tuples (due to SSE).
@@ -291,3 +305,9 @@ inline float4 Max(const float4 &a, const float4 &b) { return a.Max(b); }
 inline float4 Clamp(const float4 &a, float floor, float ceil) { return a.Clamp(floor, ceil); }
 inline float4 Clamp(const float4 &a, const float4 &floor, const float4 &ceil) { return a.Clamp(floor, ceil); }
 inline float4 Clamp01(const float4 &a) { return a.Clamp01(); }
+inline float4 Lerp(const float4 &a, const float4 &b, float t) { return a.Lerp(b, t); }
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(float4)
+Q_DECLARE_METATYPE(float4*)
+#endif

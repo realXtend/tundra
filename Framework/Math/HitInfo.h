@@ -31,3 +31,8 @@ struct HitInfo
     /// Specifies the surface normal of the other object at the point of intersection.
     float3 normalB;
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(HitInfo)
+Q_DECLARE_METATYPE(HitInfo*)
+#endif

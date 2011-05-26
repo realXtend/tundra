@@ -112,7 +112,7 @@ public:
     bool Intersect(const OBB &aabb) const;
     bool Intersect(const Triangle &triangle) const;
     bool Intersect(const Frustum &frustum) const;
-    bool Intersect(const Polyhedron &polyhedron) const;
+//    bool Intersect(const Polyhedron &polyhedron) const;
 
     /// Clips a line segment against this plane.
     bool Clip(float3 &a, float3 &b) const;
@@ -152,3 +152,8 @@ Plane operator *(const float3x3 &transform, const Plane &plane);
 Plane operator *(const float3x4 &transform, const Plane &plane);
 Plane operator *(const float4x4 &transform, const Plane &plane);
 Plane operator *(const Quat &transform, const Plane &plane);
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Plane)
+Q_DECLARE_METATYPE(Plane*)
+#endif

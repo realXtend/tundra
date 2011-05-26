@@ -44,12 +44,12 @@ public:
 
     float3(const float2 &xy, float z);
 
-    /// Constructs this float3 from an array. The array must contain at least 3 elements.
+    /// Constructs this float3 from an array. The array must contain at least 3 elements. [noscript]
     float3(const float *data);
 
-    /// Returns a pointer to first float3 element. The data is contiguous in memory.
+    /// Returns a pointer to first float3 element. The data is contiguous in memory. [noscript]
     float *ptr();
-    /// Returns a pointer to first float3 element. The data is contiguous in memory.
+    /// Returns a pointer to first float3 element. The data is contiguous in memory. [noscript]
     const float *ptr() const;
 
     const float operator [](int index) const;
@@ -88,7 +88,7 @@ public:
     bool Equals(const float3 &rhs, float epsilon = 1e-3f) const;
     bool Equals(float x, float y, float z, float epsilon = 1e-3f) const;
 
-    /// Returns "(x, y, z)".
+    /// Returns "(x, y, z)". [noscript]
     std::string ToString() const;
 
     /// Returns x + y + z.
@@ -167,6 +167,12 @@ public:
     /// Breaks this vector down into parallel and perpendicular components with respect to the given direction.
     void Decompose(const float3 &direction, float3 &outParallel, float3 &outPerpendicular) const;
 
+    /// Linearly interpolates between this and the vector b.
+    /// @param t The interpolation weight, in the range [0, 1].
+    /// Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
+    /// Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on.
+    float3 Lerp(const float3 &b, float t) const;
+
     /// Makes the given vectors linearly independent.
     static void Orthogonalize(const float3 &a, float3 &b);
 
@@ -179,10 +185,10 @@ public:
     /// Makes the given vectors linearly independent and normalized in length.
     static void Orthonormalize(float3 &a, float3 &b, float3 &c);
 
-    /// Generates a new float3 by filling its entries by the given scalar .
+    /// Generates a new float3 by filling its entries by the given scalar.
     static float3 FromScalar(float scalar);
 
-    /// Fills each entry of this float3 by the given scalar .
+    /// Fills each entry of this float3 by the given scalar.
     void SetFromScalar(float scalar);
 
     void Set(float x, float y, float z);
@@ -209,6 +215,12 @@ public:
 //    float3 &operator /=(const float3 &rhs);
     float3 &operator /=(float scalar);
 
+    float3 Add(const float3 &rhs) const { return *this + rhs; }
+    float3 Sub(const float3 &rhs) const { return *this - rhs; }
+    float3 Mul(float rhs) const { return *this * rhs; }
+    float3 Div(float rhs) const { return *this / rhs; }
+    float3 Neg() const { return -*this; }
+
     /// Specifies a compile-time constant float3 with value (0, 0, 0).
     static const float3 zero;
     /// Specifies a compile-time constant float3 with value (1, 1, 1).
@@ -232,6 +244,7 @@ public:
     float3(const QVector3D &other) { x = other.x(); y = other.y(); z = other.z(); }
     operator QVector3D() const { return QVector3D(x, y, z); }
     operator QString() const { return "(" + QString::number(x) + "," + QString::number(y) + "," + QString::number(z) + ")"; }
+    QString toString() const { return (QString)*this; }
 #endif
 #ifdef BULLET_INTEROP
     float3(const btVector3 &other) { x = other.x(); y = other.y(); z = other.z(); }
@@ -252,3 +265,9 @@ inline float3 Max(const float3 &a, const float3 &b) { return a.Max(b); }
 inline float3 Clamp(const float3 &a, float floor, float ceil) { return a.Clamp(floor, ceil); }
 inline float3 Clamp(const float3 &a, const float3 &floor, const float3 &ceil) { return a.Clamp(floor, ceil); }
 inline float3 Clamp01(const float3 &a) { return a.Clamp01(); }
+inline float3 Lerp(const float3 &a, const float3 &b, float t) { return a.Lerp(b, t); }
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(float3)
+Q_DECLARE_METATYPE(float3*)
+#endif

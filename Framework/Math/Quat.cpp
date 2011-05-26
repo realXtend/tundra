@@ -401,7 +401,7 @@ float4x4 Quat::ToFloat4x4() const
     return float4x4(*this);
 }
 
-std::string Quat::ToString()
+std::string Quat::ToString() const
 {
     char str[256];
     sprintf(str, "(%.3f, %.3f, %.3f, %.3f)", x, y, z, w);
@@ -443,5 +443,9 @@ Quat Quat::operator /(const Quat &rhs) const
     Quat inverse = rhs.Inverted();
     return *this * inverse;
 }
+
+Quat Quat::Mul(const float3x3 &rhs) const { return *this * Quat(rhs); } 
+float3 Quat::Mul(const float3 &vector) const { return this->Transform(vector); }
+float4 Quat::Mul(const float4 &vector) const { return this->Transform(vector); }
 
 const Quat Quat::identity = Quat(0.f, 0.f, 0.f, 1.f);

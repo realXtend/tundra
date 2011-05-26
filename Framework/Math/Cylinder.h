@@ -20,3 +20,8 @@ public:
 
     bool Contains(const float3 &point) const;
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Cylinder)
+Q_DECLARE_METATYPE(Cylinder*)
+#endif

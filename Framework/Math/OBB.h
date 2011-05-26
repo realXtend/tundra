@@ -26,12 +26,13 @@ public:
     /// Stores half-sizes to (local) x, y and z directions.
     float3 halfDistances;
 
-    /// Specifies normalized direction vectors for the local axes (x, y and z).
+    /// Specifies normalized direction vectors for the local axes (x, y and z). [noscript]
     float3 axes[3];
 
     /// Constructs an uninitialized OBB.
     /// @note The default ctor does not initialize any member values.
     OBB() {}
+    OBB(const AABB &aabb);
 
     /// Sets this structure to a degenerate OBB that does not have any volume.
     void SetNegativeInfinity();
@@ -57,7 +58,7 @@ public:
         \note An OBB cannot generally exactly represent a polyhedron. Converting a polyhedron to an OBB loses some features of the polyhedron.
         @return If the given polyhedron is closed, this function succeeds and returns true. If the polyhedron is uncapped (has infinite volume), this function
           does not modify this data structure, but returns false. */
-    bool SetFrom(const Polyhedron &polyhedron);
+//    bool SetFrom(const Polyhedron &polyhedron);
 
     /// Sets this OBB to enclose the given point cloud.
     /** This functions uses principal component analysis to generate an approximation of the smallest OBB that encloses the
@@ -68,7 +69,7 @@ public:
     /// Converts this to a polyhedron.
     /** This function returns a polyhedron representation of this OBB. This conversion is exact, meaning that the returned
         polyhedron represents the same set of points than this OBB. */
-    Polyhedron ToPolyhedron() const;
+//    Polyhedron ToPolyhedron() const;
 
     /// Returns the smallest AABB that this OBB is inside of.
     /** This function computes the optimal minimum volume AABB that encloses this OBB. */
@@ -152,19 +153,19 @@ public:
 
     /// Generates a random point inside this OBB.
     /** The points are distributed uniformly. */
-    float3 RandomPointInside(LCG &rng) const;
+//    float3 RandomPointInside(LCG &rng) const;
 
     /// Generates a random point on a random face of this OBB.
     /** The points are distributed uniformly. */
-    float3 RandomPointOnSurface(LCG &rng) const;
+//    float3 RandomPointOnSurface(LCG &rng) const;
 
     /// Generates a random point on a random edge of this OBB.
     /** The points are distributed uniformly. */
-    float3 RandomPointOnEdge(LCG &rng) const;
+//    float3 RandomPointOnEdge(LCG &rng) const;
 
     /// Picks a random corner point of this OBB.
     /** The points are distributed uniformly. */
-    float3 RandomCornerPoint(LCG &rng) const;
+//    float3 RandomCornerPoint(LCG &rng) const;
 
     /// Translates this OBB in the world space.
     /** @param offset The amount of displacement to apply to this OBB, in world space coordinates. */
@@ -184,7 +185,7 @@ public:
         @param scaleFactor The non-uniform scale factors to apply to each world space axis. */
     void Scale(const float3 &centerPoint, const float3 &scaleFactor);
 
-    /// Applies a transformation to this OBB .
+    /// Applies a transformation to this OBB.
     /** @param transform The transformation to apply to this OBB. This transformation must be affine, and
         must contain an orthogonal set of column vectors (may not contain shear or projection). */
     void Transform(const float3x3 &transform);
@@ -211,7 +212,7 @@ public:
             may not be unique, in which case an arbitrary point on the surface of the other object is returned.*/
     float Distance(const AABB &aabb, float3 *outClosestPoint, float3 *outClosestPointOther) const;
     float Distance(const OBB &obb, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Plane &plane, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+    float Distance(const Plane &plane, float3 *outClosestPoint, float3 *outClosestPointOther) const;/*
     float Distance(const Sphere &sphere, float3 *outClosestPoint, float3 *outClosestPointOther) const;
     float Distance(const Ellipsoid &ellipsoid, float3 *outClosestPoint, float3 *outClosestPointOther) const;
     float Distance(const Triangle &triangle, float3 *outClosestPoint, float3 *outClosestPointOther) const;
@@ -219,8 +220,8 @@ public:
     float Distance(const Capsule &capsule, float3 *outClosestPoint, float3 *outClosestPointOther) const;
     float Distance(const Torus &torus, float3 *outClosestPoint, float3 *outClosestPointOther) const;
     float Distance(const Frustum &frustum, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Polygon &polygon, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-    float Distance(const Polyhedron &polyhedron, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+    float Distance(const Polygon &polygon, float3 *outClosestPoint, float3 *outClosestPointOther) const; */
+//    float Distance(const Polyhedron &polyhedron, float3 *outClosestPoint, float3 *outClosestPointOther) const;
 
     /// Tests if this OBB contains the given point.
     /** This function returns true if the given point lies inside this OBB, and false otherwise.
@@ -241,7 +242,7 @@ public:
     HitInfo Intersect(const LineSegment &lineSegment, float *outDistance) const;
     HitInfo Intersect(const AABB &aabb) const;
     HitInfo Intersect(const OBB &obb) const;
-    HitInfo Intersect(const Plane &plane) const;
+    HitInfo Intersect(const Plane &plane) const; /*
     HitInfo Intersect(const Sphere &sphere) const;
     HitInfo Intersect(const Ellipsoid &ellipsoid) const;
     HitInfo Intersect(const Triangle &triangle) const;
@@ -249,8 +250,8 @@ public:
     HitInfo Intersect(const Capsule &capsule) const;
     HitInfo Intersect(const Torus &torus) const;
     HitInfo Intersect(const Frustum &frustum) const;
-    HitInfo Intersect(const Polygon &polygon) const;
-    HitInfo Intersect(const Polyhedron &polyhedron) const;
+    HitInfo Intersect(const Polygon &polygon) const; */
+//    HitInfo Intersect(const Polyhedron &polyhedron) const;
 
     /// Expands this OBB to enclose the given object.
     /** This function computes the OBB that encloses both this OBB and the specified object, and stores the resulting
@@ -258,7 +259,7 @@ public:
         @return For the polyhedron case, this function returns true if the polyhedron is closed and computing the enclosure
             succeeded. If the polyhedron is not closed (it has infinite volume), this function returns false, and this OBB
             is not modified. For other object types, this function always succeeds, and does not return a value. */
-    void Enclose(const float3 &point);
+/*    void Enclose(const float3 &point);
     void Enclose(const LineSegment &lineSegment);
     void Enclose(const AABB &aabb);
     void Enclose(const OBB &obb);
@@ -271,7 +272,7 @@ public:
     void Enclose(const Frustum &frustum);
     void Enclose(const Polygon &polygon);
     bool Enclose(const Polyhedron &polyhedron);
-    void Enclose(const float3 *pointArray, int numPoints);
+    void Enclose(const float3 *pointArray, int numPoints);*/
 
     /// Returns a human-readable representation of this OBB. Most useful for debugging purposes.
     /** The returned string specifies the center point and the half-axes of this OBB. */
@@ -279,14 +280,19 @@ public:
 
     /// Finds the set intersection of this and the given OBB.
     /** @return This function returns the Polyhedron that is contained in both this and the given OBB. */
-    Polyhedron Intersection(const AABB &aabb) const;
+//    Polyhedron Intersection(const AABB &aabb) const;
 
     /// Finds the set intersection of this and the given OBB.
     /** @return This function returns the Polyhedron that is contained in both this and the given OBB. */
-    Polyhedron Intersection(const OBB &obb) const;
+//    Polyhedron Intersection(const OBB &obb) const;
 
     /// Finds the set intersection of this OBB and the given Polyhedron.
     /** @return This function returns a Polyhedron that represents the set of points that are contained in this OBB
         and the given Polyhedron. */
-    Polyhedron Intersection(const Polyhedron &polyhedron) const;
+//    Polyhedron Intersection(const Polyhedron &polyhedron) const;
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(OBB)
+Q_DECLARE_METATYPE(OBB*)
+#endif

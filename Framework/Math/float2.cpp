@@ -118,6 +118,16 @@ bool float2::IsPerpendicular(const float2 &other, float epsilon) const
     return fabs(Dot(other)) <= epsilon;
 }
 
+bool float2::Equals(const float2 &rhs, float epsilon) const
+{
+    return EqualAbs(x, rhs.x, epsilon) && EqualAbs(y, rhs.y, epsilon);
+}
+
+bool float2::Equals(float x_, float y_, float epsilon) const
+{
+    return EqualAbs(x, x_, epsilon) && EqualAbs(y, y_, epsilon);
+}
+
 std::string float2::ToString() const
 { 
     char str[256];
@@ -256,6 +266,12 @@ float float2::AngleBetweenNorm(const float2 &other) const
     assert(this->IsNormalized());
     assert(other.IsNormalized());
     return acos(Dot(other));
+}
+
+float2 float2::Lerp(const float2 &b, float t) const
+{
+    assume(0.f <= t && t <= 1.f);
+    return (1.f - t) * *this + t * b;
 }
 
 void float2::Decompose(const float2 &direction, float2 &outParallel, float2 &outPerpendicular) const

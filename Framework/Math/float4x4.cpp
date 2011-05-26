@@ -143,17 +143,20 @@ float4x4 float4x4::RotateAxisAngle(const float3 &axisDirection, float angleRadia
 
 float4x4 float4x4::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection)
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
 float4x4 float4x4::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection, const float3 &centerPoint)
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
 float4x4 float4x4::RotateFromTo(const float3 &centerPoint, const float3 &sourceDirection, const float3 &targetDirection,
     const float3 &sourceDirection2, const float3 &targetDirection2)
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
@@ -186,67 +189,6 @@ float4x4 float4x4::FromTRS(const float3 &translate, const float4x4 &rotate, cons
 {
     return float4x4::Translate(translate) * rotate * float4x4::Scale(scale);
 }
-/*
-float4x4 float4x4::FromEulerXYX(float x2, float y, float x)
-{
-    return float4x4::RotateX(x2) * float4x4::RotateY(y) * float4x4::RotateX(x);
-}
-
-float4x4 float4x4::FromEulerXZX(float x2, float z, float x)
-{
-    return float4x4::RotateX(x2) * float4x4::RotateZ(z) * float4x4::RotateX(x);
-}
-
-float4x4 float4x4::FromEulerYXY(float y2, float x, float y)
-{
-    return float4x4::RotateY(y2) * float4x4::RotateX(x) * float4x4::RotateY(y);
-}
-
-float4x4 float4x4::FromEulerYZY(float y2, float z, float y)
-{
-    return float4x4::RotateY(y2) * float4x4::RotateZ(z) * float4x4::RotateY(y);
-}
-
-float4x4 float4x4::FromEulerZXZ(float z2, float x, float z)
-{
-    return float4x4::RotateZ(z2) * float4x4::RotateX(x) * float4x4::RotateZ(z);
-}
-
-float4x4 float4x4::FromEulerZYZ(float ez, float ey, float ez2)
-{
-    return float4x4::RotateZ(ez) * float4x4::RotateY(ey) * float4x4::RotateZ(ez2);
-}
-
-float4x4 float4x4::FromEulerXYZ(float x, float y, float z)
-{
-    return float4x4::RotateX(x) * float4x4::RotateY(y) * float4x4::RotateX(z);
-}
-
-float4x4 float4x4::FromEulerXZY(float x, float z, float y)
-{
-    return float4x4::RotateX(x) * float4x4::RotateZ(z) * float4x4::RotateY(y);
-}
-
-float4x4 float4x4::FromEulerYXZ(float y, float x, float z)
-{
-    return float4x4::RotateY(y) * float4x4::RotateX(x) * float4x4::RotateZ(z);
-}
-
-float4x4 float4x4::FromEulerYZX(float y, float z, float x)
-{
-    return float4x4::RotateY(y) * float4x4::RotateZ(z) * float4x4::RotateX(x);
-}
-
-float4x4 float4x4::FromEulerZXY(float z, float x, float y)
-{
-    return float4x4::RotateZ(z) * float4x4::RotateX(x) * float4x4::RotateY(y);
-}
-
-float4x4 float4x4::FromEulerZYX(float z, float y, float x)
-{
-    return float4x4::RotateZ(z) * float4x4::RotateY(y) * float4x4::RotateX(x);
-}
-*/
 
 float4x4 float4x4::FromEulerXYX(float x2, float y, float x)
 {
@@ -425,36 +367,43 @@ float4x4 float4x4::ShearZ(float xFactor, float yFactor)
 
 float4x4 float4x4::Reflect(const Plane &p)
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
 float4x4 float4x4::MakePerspectiveProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalFov, float verticalFov)
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
 float4x4 float4x4::MakeOrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize)
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
 float4x4 float4x4::MakeOrthographicProjection(const Plane &target)
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
 float4x4 float4x4::MakeOrthographicProjectionYZ()
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
 float4x4 float4x4::MakeOrthographicProjectionXZ()
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
 float4x4 float4x4::MakeOrthographicProjectionXY()
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
@@ -839,6 +788,7 @@ void float4x4::SetRotatePart(const Quat &q)
 
 float4x4 float4x4::LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp, bool rightHanded)
 {
+    assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
@@ -912,6 +862,7 @@ float4x4 float4x4::Adjugate() const
 
 bool float4x4::Inverse()
 {
+    assume(false && "Not implemented!");
     return false; ///\todo
 }
 
@@ -1003,11 +954,13 @@ float float4x4::Trace() const
 
 void float4x4::Orthogonalize3(int firstColumn, int secondColumn, int thirdColumn)
 {
+    assume(false && "Not implemented!");
     ///\todo
 }
 
 void float4x4::Orthonormalize3(int firstColumn, int secondColumn, int thirdColumn)
 {
+    assume(false && "Not implemented!");
     ///\todo
 }
 
@@ -1021,23 +974,26 @@ void float4x4::RemoveScale()
 
 float3 float4x4::TransformPoint(const float3 &pointVector) const
 {
-    return float3(DOT4POS(Row(0), pointVector),
-                  DOT4POS(Row(1), pointVector),
-                  DOT4POS(Row(2), pointVector));
+    return TransformPoint(pointVector.x, pointVector.y, pointVector.z);
+}
+
+float3 float4x4::TransformPoint(float x, float y, float z) const
+{
+    return float3(DOT4POS_xyz(Row(0), x,y,z),
+                  DOT4POS_xyz(Row(1), x,y,z),
+                  DOT4POS_xyz(Row(2), x,y,z));
 }
 
 float3 float4x4::TransformDir(const float3 &directionVector) const
 {
-    return float3(DOT4DIR(Row(0), directionVector),
-                  DOT4DIR(Row(1), directionVector),
-                  DOT4DIR(Row(2), directionVector));
+    return TransformDir(directionVector.x, directionVector.y, directionVector.z);
 }
 
 float3 float4x4::TransformDir(float x, float y, float z) const
 {
-    return float3(v[0][0] * x + v[0][1] * y + v[0][2] * z,
-                  v[1][0] * x + v[1][1] * y + v[1][2] * z,
-                  v[2][0] * x + v[2][1] * y + v[2][2] * z);
+    return float3(DOT4DIR_xyz(Row(0), x,y,z),
+                  DOT4DIR_xyz(Row(1), x,y,z),
+                  DOT4DIR_xyz(Row(2), x,y,z));
 }
 
 float4 float4x4::Transform(const float4 &vector) const
@@ -1441,6 +1397,14 @@ float4 operator *(const float4 &lhs, const float4x4 &rhs)
                   DOT4STRIDED(lhs, rhs.ptr()+2, 4),
                   DOT4STRIDED(lhs, rhs.ptr()+3, 4));
 }
+
+float4x4 float4x4::Mul(const float3x3 &rhs) const { return *this * rhs; }
+float4x4 float4x4::Mul(const float3x4 &rhs) const { return *this * rhs; }
+float4x4 float4x4::Mul(const float4x4 &rhs) const { return *this * rhs; }
+float4x4 float4x4::Mul(const Quat &rhs) const { return *this * rhs; }
+float3 float4x4::MulPoint(const float3 &pointVector) const { return this->TransformPoint(pointVector); }
+float3 float4x4::MulDir(const float3 &directionVector) const { return this->TransformDir(directionVector); }
+float4 float4x4::Mul(const float4 &vector) const { return *this * vector; }
 
 const float4x4 float4x4::zero     = float4x4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
 const float4x4 float4x4::identity = float4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);

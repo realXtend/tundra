@@ -65,7 +65,7 @@ public:
     /// Specifies the width of this matrix.
     enum { Cols = 3 };
 
-    /// Stores the data in this matrix in row-major format.
+    /// Stores the data in this matrix in row-major format. [noscript]
     /** [Category: Data] */
     float v[Rows][Cols];
 
@@ -179,7 +179,7 @@ public:
     static float3x3 MakeOrthographicProjectionXZ(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
     static float3x3 MakeOrthographicProjectionXY(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
 
-    /// Returns the given element.
+    /// Returns the given element. [noscript]
     /** Returns a reference to the element at m[row][col] (or "m[y][x]").
         Remember that zero-based indexing is used, so m[0][0] is the upper-left element of this matrix.
         \note You can use the index notation to set elements of the matrix, e.g. m[0][1] = 5.f;
@@ -190,14 +190,14 @@ public:
     MatrixProxy<Cols> &operator[](int row);
     const MatrixProxy<Cols> &operator[](int row) const;
 
-    /// Returns the given element.
+    /// Returns the given element. [noscript]
     /** This function returns the element of this matrix at (row, col)==(i, j)==(y, x).
         If you have a non-const object, you can set values of this matrix through this 
         reference, using the notation m.At(row, col) = someValue; */
     float &At(int row, int col);
     const float At(int row, int col) const;
 
-    /// Returns the given row.
+    /// Returns the given row. [noscript]
     /** @param row The zero-based index [0, 3] of the row to get. */
     float3 &Row(int row);
     const float3 &Row(int row) const;
@@ -306,7 +306,7 @@ public:
 //    float2x2 SubMatrix(int i, int j) const;
 
     /// Returns the adjugate of this matrix.
-    float3x3 Adjugate() const;
+//    float3x3 Adjugate() const;
 
     /// Inverts this matrix using the generic Gauss's method.
     /// @return Returns true on success, false otherwise.
@@ -506,6 +506,12 @@ public:
     void Decompose(Quat &rotate, float3 &scale) const;
     void Decompose(float3x3 &rotate, float3 &scale) const;
 
+    float3x3 Mul(const float3x3 &rhs) const;
+    float3x4 Mul(const float3x4 &rhs) const;
+    float4x4 Mul(const float4x4 &rhs) const;
+    float3x3 Mul(const Quat &rhs) const;
+    float3 Mul(const float3 &rhs) const;
+
 #ifdef OGRE_INTEROP
     float3x3(const Ogre::Matrix3 &m) { Set(&m[0][0]); }
     operator Ogre::Matrix3() { return Ogre::Matrix3(v[0][0], v[0][1], v[0][2], v[1][0], v[1][1], v[1][2], v[2][0], v[2][1], v[2][2]); } 
@@ -514,6 +520,11 @@ public:
 #ifdef BULLET_INTEROP
     float3x3(const btMatrix3x3 &m) { Set(m[0][0], m[0][1], m[0][2], m[1][0], m[1][1], m[1][2], m[2][0], m[2][1], m[2][2]); }
     operator btMatrix3x3() { return btMatrix3x3(v[0][0], v[0][1], v[0][2], v[1][0], v[1][1], v[1][2], v[2][0], v[2][1], v[2][2]); }
+#endif
+
+#ifdef QT_INTEROP
+    operator QString() const { return toString(); }
+    QString toString() const { return ToString().c_str(); }
 #endif
 
 };
@@ -535,3 +546,8 @@ float3 operator *(const float3 &lhs, const float3x3 &rhs);
 /// (Remember that M * v != v * M in general).
 /// This function ignores the w component of the given input vector. This component is assumed to be either 0 or 1.
 float4 operator *(const float4 &lhs, const float3x3 &rhs);
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(float3x3)
+Q_DECLARE_METATYPE(float3x3*)
+#endif

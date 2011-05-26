@@ -93,3 +93,8 @@ public:
     bool Intersect(const Frustum &frustum) const;
     bool Intersect(const Polyhedron &polyhedron) const;
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Frustum)
+Q_DECLARE_METATYPE(Frustum*)
+#endif

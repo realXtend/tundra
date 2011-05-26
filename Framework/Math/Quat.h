@@ -121,7 +121,7 @@ public:
     float3 Transform(float x, float y, float z) const;
     float3 Transform(const float3 &vec) const;
 
-    /// Rotates the given vector by this quaternion. The w component of the vector is ignored.
+    /// Rotates the given vector by this quaternion. The w component of the vector is assumed to be zero or one.
     float4 Transform(const float4 &vec) const;
 
     Quat Lerp(const Quat &target, float t) const;
@@ -203,7 +203,7 @@ public:
     float3x4 ToFloat3x4() const;
     float4x4 ToFloat4x4() const;
 
-    std::string ToString();
+    std::string ToString() const;
 
     /// Multiplies two quaternions together.
     /// The product q1 * q2 returns a quaternion that concatenates the two orientation rotations. The rotation
@@ -228,12 +228,17 @@ public:
 #ifdef QT_INTEROP
     Quat(const QQuaternion &other) { w = other.scalar(); x = other.x(); y = other.y(); z = other.z(); }
     operator QQuaternion() const { return QQuaternion(w, x, y, z); }
-    operator QString() const { return "(" + QString::number(x) + "," + QString::number(y) + "," + QString::number(z) + "," + QString::number(w) + ")"; }
+    operator QString() const { return toString(); }
+    QString toString() const { return ToString().c_str(); }
 #endif
 #ifdef BULLET_INTEROP
     Quat(const btQuaternion &other) { w = other.w(); x = other.x(); y = other.y(); z = other.z(); }
     operator btQuaternion() const { return btQuaternion(x, y, z, w); }
 #endif
+
+    Quat Mul(const float3x3 &rhs) const;
+    float3 Mul(const float3 &vector) const;
+    float4 Mul(const float4 &vector) const;
 
 private: // Hide the unsafe operations from the user, so that he doesn't accidentally invoke an unintended operation.
 
@@ -259,3 +264,8 @@ private: // Hide the unsafe operations from the user, so that he doesn't acciden
 
 Quat Lerp(const Quat &a, const Quat &b, float t);
 Quat Slerp(const Quat &a, const Quat &b, float t);
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(Quat)
+Q_DECLARE_METATYPE(Quat*)
+#endif
