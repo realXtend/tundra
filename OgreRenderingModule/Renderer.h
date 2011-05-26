@@ -239,7 +239,7 @@ namespace OgreRenderer
         Ogre::DefaultHardwareBufferManager* buffermanager_;
         
         /// All created OgreWorlds (scene managers)
-        std::map<SceneManager*, OgreWorldPtr> ogreWorlds_;
+        std::map<Scene*, OgreWorldPtr> ogreWorlds_;
         
         /// Currently active camera component
         EC_Camera* cameraComponent_;
@@ -248,7 +248,7 @@ namespace OgreRenderer
         float view_distance_;
 
         /// Dummy scenemanager when we have no scene
-        Ogre::SceneManager* defaultSceneManager_;
+        Ogre::SceneManager* defaultScene_;
         /// Dummy camera when we have no scene / no active camera
         Ogre::Camera* defaultCamera_;
 

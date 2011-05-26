@@ -7,7 +7,7 @@
 #include "IModule.h"
 #include "Framework.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "AttributeMetadata.h"
 #include "AudioAPI.h"
 #include "AudioAsset.h"
@@ -20,7 +20,7 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_Sound::EC_Sound(SceneManager* scene):
+EC_Sound::EC_Sound(Scene* scene):
     IComponent(scene),
     soundRef(this, "Sound ref"),
     soundInnerRadius(this, "Sound radius inner", 0.0f),
@@ -225,7 +225,7 @@ void EC_Sound::UpdateSignals()
         LogError("Couldn't update signals cause component dont have parent entity set.");
         return;
     }
-    SceneManager *scene = GetParentEntity()->GetScene();
+    Scene *scene = GetParentEntity()->GetScene();
     if(!scene)
     {
         LogError("Fail to update signals cause parent entity's scene is null.");

@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "EntityPlacer.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
@@ -29,7 +29,7 @@ EntityPlacer::EntityPlacer(Framework *framework, entity_id_t entityId, QObject *
     static const std::string customMeshName("Selection.mesh");
     input_ = framework_->Input()->RegisterInputContext("EntityPlacement", 110);
     
-    SceneManager* scene = framework_->Scene()->GetDefaultScene().get();
+    Scene* scene = framework_->Scene()->GetDefaultScene().get();
     entity_ = scene->GetEntity(entityId);
     if(!entity_.expired())
     {

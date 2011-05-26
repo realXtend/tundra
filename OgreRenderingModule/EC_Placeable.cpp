@@ -11,7 +11,7 @@
 
 #include "AttributeMetadata.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
@@ -146,7 +146,7 @@ void SetShowBoundingBoxRecursive(Ogre::SceneNode* node, bool enable)
     }
 }
 
-EC_Placeable::EC_Placeable(SceneManager* scene) :
+EC_Placeable::EC_Placeable(Scene* scene) :
     IComponent(scene),
     sceneNode_(0),
     boneAttachmentNode_(0),
@@ -198,7 +198,11 @@ EC_Placeable::EC_Placeable(SceneManager* scene) :
 EC_Placeable::~EC_Placeable()
 {
     if (world_.expired())
+    {
+        if (sceneNode_)
+            LogError("EC_Placeable: World has expired, skipping uninitialization!");
         return;
+    }
     
     emit AboutToBeDestroyed();
     
@@ -411,7 +415,7 @@ void EC_Placeable::AttachNode()
             Entity* ownEntity = GetParentEntity();
             if (!ownEntity)
                 return;
-            SceneManager* scene = ownEntity->GetScene();
+            Scene* scene = ownEntity->GetScene();
             if (!scene)
                 return;
 

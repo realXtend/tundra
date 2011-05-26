@@ -10,7 +10,7 @@
 #include "IAttribute.h"
 #include "AttributeMetadata.h"
 #include "Renderer.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
@@ -28,7 +28,7 @@
 
 namespace Environment
 {
-    EC_EnvironmentLight::EC_EnvironmentLight(SceneManager* scene)
+    EC_EnvironmentLight::EC_EnvironmentLight(Scene* scene)
         : IComponent(scene),
        sunColorAttr(this, "Sun color", Color(0.639f,0.639f,0.639f)),
        ambientColorAttr(this, "Ambient color", Color(0.364f, 0.364f, 0.364f, 1)),

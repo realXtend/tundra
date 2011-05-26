@@ -85,7 +85,7 @@ private:
 
     // For mesh viewing
     OgreRenderer::RendererPtr renderer_;
-    Ogre::SceneManager*  manager_;
+    Ogre::SceneManager* manager_;
     Ogre::Camera* camera_;
     Ogre::Entity* entity_;
     Ogre::SceneNode* scene_;

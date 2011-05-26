@@ -9,7 +9,7 @@
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
@@ -19,7 +19,7 @@
 
 using namespace Physics;
 
-EC_VolumeTrigger::EC_VolumeTrigger(SceneManager* scene) :
+EC_VolumeTrigger::EC_VolumeTrigger(Scene* scene) :
     IComponent(scene),
     byPivot(this, "By Pivot", false),
     entities(this, "Entities")
@@ -167,7 +167,7 @@ void EC_VolumeTrigger::UpdateSignals()
     
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForRigidBody()));
 
-    SceneManager* scene = parent->GetScene();
+    Scene* scene = parent->GetScene();
     PhysicsWorld* world = scene->GetWorld<PhysicsWorld>().get();
     if (world)
         connect(world, SIGNAL(Updated(float)), this, SLOT(OnPhysicsUpdate()));

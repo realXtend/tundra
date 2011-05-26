@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "SceneAPI.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "SceneDesc.h"
 #include "IComponent.h"
@@ -41,7 +41,7 @@
 
 using namespace kNet;
 
-SceneManager::SceneManager() :
+Scene::Scene() :
     framework_(0),
     gid_(1),
     gid_local_(LocalEntity + 1),
@@ -51,7 +51,7 @@ SceneManager::SceneManager() :
 {
 }
 
-SceneManager::SceneManager(const QString &name, Framework *framework, bool viewEnabled, bool authority) :
+Scene::Scene(const QString &name, Framework *framework, bool viewEnabled, bool authority) :
     name_(name),
     framework_(framework),
     gid_(1),
@@ -63,7 +63,7 @@ SceneManager::SceneManager(const QString &name, Framework *framework, bool viewE
     viewEnabled_ = framework->IsHeadless() ? false : viewEnabled_ = viewEnabled;
 }
 
-SceneManager::~SceneManager()
+Scene::~Scene()
 {
     EndAllAttributeInterpolations();
     
@@ -73,12 +73,12 @@ SceneManager::~SceneManager()
     emit Removed(this);
 }
 
-EntityPtr SceneManager::CreateLocalEntity(const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
+EntityPtr Scene::CreateLocalEntity(const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
 {
     return CreateEntity(GetNextFreeIdLocal(), components, change, defaultNetworkSync);
 }
 
-EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
+EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
 {
     // Figure out new entity id
     entity_id_t newentityid = 0;
@@ -111,7 +111,7 @@ EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &componen
     return entity;
 }
 
-EntityPtr SceneManager::GetEntity(entity_id_t id) const
+EntityPtr Scene::GetEntity(entity_id_t id) const
 {
     EntityMap::const_iterator it = entities_.find(id);
     if (it != entities_.end())
@@ -120,7 +120,7 @@ EntityPtr SceneManager::GetEntity(entity_id_t id) const
     return EntityPtr();
 }
 
-EntityPtr SceneManager::GetEntityByName(const QString &name) const
+EntityPtr Scene::GetEntityByName(const QString &name) const
 {
     EntityMap::const_iterator it = entities_.begin();
     while(it != entities_.end())
@@ -133,7 +133,7 @@ EntityPtr SceneManager::GetEntityByName(const QString &name) const
     return EntityPtr();
 }
 
-bool SceneManager::IsUniqueName(const QString& name) const
+bool Scene::IsUniqueName(const QString& name) const
 {
     int count = 0;
     EntityMap::const_iterator it = entities_.begin();
@@ -149,7 +149,7 @@ bool SceneManager::IsUniqueName(const QString& name) const
     return true;
 }
 
-entity_id_t SceneManager::GetNextFreeId()
+entity_id_t Scene::GetNextFreeId()
 {
     // Find the largest non-local entity ID in the scene.
     // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
@@ -171,7 +171,7 @@ entity_id_t SceneManager::GetNextFreeId()
     return gid_;
 }
 
-entity_id_t SceneManager::GetNextFreeIdLocal()
+entity_id_t Scene::GetNextFreeIdLocal()
 {
     // Find the largest local entity ID in the scene.
     // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
@@ -193,7 +193,7 @@ entity_id_t SceneManager::GetNextFreeIdLocal()
     return gid_local_;
 }
 
-void SceneManager::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
+void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
 {
     if (old_id == new_id)
         return;
@@ -213,7 +213,7 @@ void SceneManager::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
     entities_[new_id] = old_entity;
 }
 
-void SceneManager::RemoveEntity(entity_id_t id, AttributeChange::Type change)
+void Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
 {
     EntityMap::iterator it = entities_.find(id);
     if (it != entities_.end())
@@ -229,9 +229,9 @@ void SceneManager::RemoveEntity(entity_id_t id, AttributeChange::Type change)
     }
 }
 
-void SceneManager::RemoveAllEntities(bool send_events, AttributeChange::Type change)
+void Scene::RemoveAllEntities(bool send_events, AttributeChange::Type change)
 {
-    ///\todo Rewrite this function to call SceneManager::RemoveEntity and not duplicate the logic here.
+    ///\todo Rewrite this function to call Scene::RemoveEntity and not duplicate the logic here.
 
     EntityMap::iterator it = entities_.begin();
     while(it != entities_.end())
@@ -250,7 +250,7 @@ void SceneManager::RemoveAllEntities(bool send_events, AttributeChange::Type cha
         emit SceneCleared(this);
 }
 
-EntityList SceneManager::GetEntitiesWithComponent(const QString &typeName, const QString &name) const
+EntityList Scene::GetEntitiesWithComponent(const QString &typeName, const QString &name) const
 {
     std::list<EntityPtr> entities;
     EntityMap::const_iterator it = entities_.begin();
@@ -265,7 +265,7 @@ EntityList SceneManager::GetEntitiesWithComponent(const QString &typeName, const
     return entities;
 }
 
-void SceneManager::EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
+void Scene::EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
         return;
@@ -274,7 +274,7 @@ void SceneManager::EmitComponentAdded(Entity* entity, IComponent* comp, Attribut
     emit ComponentAdded(entity, comp, change);
 }
 
-void SceneManager::EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change)
+void Scene::EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
         return;
@@ -283,7 +283,7 @@ void SceneManager::EmitComponentRemoved(Entity* entity, IComponent* comp, Attrib
     emit ComponentRemoved(entity, comp, change);
 }
 
-void SceneManager::EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
+void Scene::EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
     if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
         return;
@@ -292,7 +292,7 @@ void SceneManager::EmitAttributeChanged(IComponent* comp, IAttribute* attribute,
     emit AttributeChanged(comp, attribute, change);
 }
 
-void SceneManager::EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
+void Scene::EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
     if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
         return;
@@ -301,7 +301,7 @@ void SceneManager::EmitAttributeAdded(IComponent* comp, IAttribute* attribute, A
     emit AttributeAdded(comp, attribute, change);
 }
 
-void SceneManager::EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
+void Scene::EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
     if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
         return;
@@ -310,12 +310,12 @@ void SceneManager::EmitAttributeRemoved(IComponent* comp, IAttribute* attribute,
     emit AttributeRemoved(comp, attribute, change);
 }
 
-/*void SceneManager::EmitComponentInitialized(IComponent* comp)
+/*void Scene::EmitComponentInitialized(IComponent* comp)
 {
     emit ComponentInitialized(comp);
     }*/
 
-void SceneManager::EmitEntityCreated(Entity *entity, AttributeChange::Type change)
+void Scene::EmitEntityCreated(Entity *entity, AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
         return;
@@ -325,7 +325,7 @@ void SceneManager::EmitEntityCreated(Entity *entity, AttributeChange::Type chang
         emit EntityCreated(entity, change);
 }
 
-void SceneManager::EmitEntityCreated(EntityPtr entity, AttributeChange::Type change)
+void Scene::EmitEntityCreated(EntityPtr entity, AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
         return;
@@ -337,12 +337,12 @@ void SceneManager::EmitEntityCreated(EntityPtr entity, AttributeChange::Type cha
         emit EntityCreated(entity.get(), change);
 }
 
-void SceneManager::EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change)
+void Scene::EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change)
 {
     return EmitEntityCreated(dynamic_cast<Entity*>(entity), change);
 }
 
-void SceneManager::EmitEntityRemoved(Entity* entity, AttributeChange::Type change)
+void Scene::EmitEntityRemoved(Entity* entity, AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
         return;
@@ -352,12 +352,12 @@ void SceneManager::EmitEntityRemoved(Entity* entity, AttributeChange::Type chang
     entity->EmitEntityRemoved(change);
 }
 
-void SceneManager::EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionTypeField type)
+void Scene::EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionTypeField type)
 {
     emit ActionTriggered(entity, action, params, type);
 }
 
-QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name) const
+QVariantList Scene::GetEntityIdsWithComponent(const QString &type_name) const
 {
     QVariantList ret;
 
@@ -368,7 +368,7 @@ QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name) c
     return ret;
 }
 
-QList<Entity*> SceneManager::GetEntitiesWithComponentRaw(const QString &type_name) const
+QList<Entity*> Scene::GetEntitiesWithComponentRaw(const QString &type_name) const
 {
     QList<Entity*> ret;
 
@@ -379,7 +379,7 @@ QList<Entity*> SceneManager::GetEntitiesWithComponentRaw(const QString &type_nam
     return ret;
 }
 
-QVariantList SceneManager::LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
+QVariantList Scene::LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QVariantList ret;
     QList<Entity *> entities = LoadSceneXML(filename, clearScene, useEntityIDsFromFile, change);
@@ -390,7 +390,7 @@ QVariantList SceneManager::LoadSceneXMLRaw(const QString &filename, bool clearSc
     return ret;
 }
 
-QList<Entity *> SceneManager::LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
+QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QList<Entity *> ret;
 
@@ -419,7 +419,7 @@ QList<Entity *> SceneManager::LoadSceneXML(const QString& filename, bool clearSc
     return CreateContentFromXml(scene_doc, useEntityIDsFromFile, change);
 }
 
-QByteArray SceneManager::GetSceneXML(bool gettemporary, bool getlocal) const
+QByteArray Scene::GetSceneXML(bool gettemporary, bool getlocal) const
 {
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = scene_doc.createElement("scene");
@@ -456,7 +456,7 @@ QByteArray SceneManager::GetSceneXML(bool gettemporary, bool getlocal) const
     return scene_doc.toByteArray();
 }
 
-bool SceneManager::SaveSceneXML(const QString& filename, bool saveTemporary, bool saveLocal)
+bool Scene::SaveSceneXML(const QString& filename, bool saveTemporary, bool saveLocal)
 {
     QByteArray bytes = GetSceneXML(saveTemporary, saveLocal);
     QFile scenefile(filename);
@@ -473,7 +473,7 @@ bool SceneManager::SaveSceneXML(const QString& filename, bool saveTemporary, boo
     }
 }
 
-QList<Entity *> SceneManager::LoadSceneBinary(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
+QList<Entity *> Scene::LoadSceneBinary(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QList<Entity *> ret;
     QFile file(filename);
@@ -499,7 +499,7 @@ QList<Entity *> SceneManager::LoadSceneBinary(const QString& filename, bool clea
     return CreateContentFromBinary(bytes.data(), bytes.size(), useEntityIDsFromFile, change);
 }
 
-bool SceneManager::SaveSceneBinary(const QString& filename, bool getTemporary, bool getLocal)
+bool Scene::SaveSceneBinary(const QString& filename, bool getTemporary, bool getLocal)
 {
     QByteArray bytes;
     // Assume 4MB max for now
@@ -547,7 +547,7 @@ bool SceneManager::SaveSceneBinary(const QString& filename, bool getTemporary, b
     }
 }
 
-QList<Entity *> SceneManager::CreateContentFromXml(const QString &xml,  bool useEntityIDsFromFile, AttributeChange::Type change)
+QList<Entity *> Scene::CreateContentFromXml(const QString &xml,  bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QList<Entity *> ret;
     QString errorMsg;
@@ -561,7 +561,7 @@ QList<Entity *> SceneManager::CreateContentFromXml(const QString &xml,  bool use
     return CreateContentFromXml(scene_doc, useEntityIDsFromFile, change);
 }
 
-QList<Entity *> SceneManager::CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change)
+QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QList<Entity *> ret;
     // Check for existence of the scene element before we begin
@@ -582,7 +582,7 @@ QList<Entity *> SceneManager::CreateContentFromXml(const QDomDocument &xml, bool
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
         {
-            LogDebug("SceneManager::CreateContentFromXml: Destroying previous entity with id " + QString::number(id).toStdString() + " to avoid conflict with new created entity with the same id.");
+            LogDebug("Scene::CreateContentFromXml: Destroying previous entity with id " + QString::number(id).toStdString() + " to avoid conflict with new created entity with the same id.");
             LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id).toStdString() + "might not replicate properly!");
             RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
         }
@@ -606,7 +606,7 @@ QList<Entity *> SceneManager::CreateContentFromXml(const QDomDocument &xml, bool
         }
         else
         {
-            LogError("SceneManager::CreateContentFromXml: Failed to create entity with id " + QString::number(id).toStdString() + "!");
+            LogError("Scene::CreateContentFromXml: Failed to create entity with id " + QString::number(id).toStdString() + "!");
         }
 
         ent_elem = ent_elem.nextSiblingElement("entity");
@@ -626,7 +626,7 @@ QList<Entity *> SceneManager::CreateContentFromXml(const QDomDocument &xml, bool
     return ret;
 }
 
-QList<Entity *> SceneManager::CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change)
+QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QList<Entity *> ret;
     QFile file(filename);
@@ -648,7 +648,7 @@ QList<Entity *> SceneManager::CreateContentFromBinary(const QString &filename, b
     return CreateContentFromBinary(bytes.data(), bytes.size(), useEntityIDsFromFile, change);
 }
 
-QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change)
+QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QList<Entity *> ret;
     assert(data);
@@ -666,7 +666,7 @@ QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numB
 
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
             {
-                LogDebug("SceneManager::CreateContentFromBinary: Destroying previous entity with id " + QString::number(id).toStdString() + " to avoid conflict with new created entity with the same id.");
+                LogDebug("Scene::CreateContentFromBinary: Destroying previous entity with id " + QString::number(id).toStdString() + " to avoid conflict with new created entity with the same id.");
                 LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id).toStdString() + "might not replicate properly!");
                 RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
             }
@@ -736,7 +736,7 @@ QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numB
     return ret;
 }
 
-QList<Entity *> SceneManager::CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change)
+QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QList<Entity *> ret;
 
@@ -756,7 +756,7 @@ QList<Entity *> SceneManager::CreateContentFromSceneDesc(const SceneDesc &desc, 
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
         {
-            LogDebug("SceneManager::CreateContentFromSceneDescription: Destroying previous entity with id " + QString::number(id).toStdString() + " to avoid conflict with new created entity with the same id.");
+            LogDebug("Scene::CreateContentFromSceneDescription: Destroying previous entity with id " + QString::number(id).toStdString() + " to avoid conflict with new created entity with the same id.");
             LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id).toStdString() + " might not replicate properly!");
             RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
         }
@@ -817,7 +817,7 @@ QList<Entity *> SceneManager::CreateContentFromSceneDesc(const SceneDesc &desc, 
     return ret;
 }
 
-SceneDesc SceneManager::GetSceneDescFromXml(const QString &filename) const
+SceneDesc Scene::GetSceneDescFromXml(const QString &filename) const
 {
     SceneDesc sceneDesc;
     if (!filename.endsWith(".txml", Qt::CaseInsensitive))
@@ -845,7 +845,7 @@ SceneDesc SceneManager::GetSceneDescFromXml(const QString &filename) const
     return GetSceneDescFromXml(data, sceneDesc);
 }
 
-SceneDesc SceneManager::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const
+SceneDesc Scene::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const
 {
     // Set codec to ISO 8859-1 a.k.a. Latin 1
     QTextStream stream(&data);
@@ -888,14 +888,14 @@ SceneDesc SceneManager::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDe
                 // A bit of a hack to get the name from EC_Name.
                 if (entityDesc.name.isEmpty() && type_name == EC_Name::TypeNameStatic())
                 {
-                    ComponentPtr comp = framework_->Scene()->CreateComponentByName(const_cast<SceneManager*>(this), type_name, name);
+                    ComponentPtr comp = framework_->Scene()->CreateComponentByName(const_cast<Scene*>(this), type_name, name);
                     EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
                     ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                     entityDesc.name = ecName->name.Get();
                 }
 
                 // Find asset references.
-                ComponentPtr comp = framework_->Scene()->CreateComponentByName(const_cast<SceneManager*>(this), type_name, name);
+                ComponentPtr comp = framework_->Scene()->CreateComponentByName(const_cast<Scene*>(this), type_name, name);
                 if (!comp.get()) // Move to next element if component creation fails.
                 {
                     comp_elem = comp_elem.nextSiblingElement("component");
@@ -952,7 +952,7 @@ SceneDesc SceneManager::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDe
 }
 
 ///\todo This function is a redundant duplicate copy of void ScriptAsset::ParseReferences(). Delete this code. -jj.
-void SceneManager::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const
+void Scene::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const
 {
     if (!filePath.toLower().endsWith(".js"))
         return;
@@ -1010,7 +1010,7 @@ void SceneManager::SearchScriptAssetDependencies(const QString &filePath, SceneD
     }
 }
 
-SceneDesc SceneManager::GetSceneDescFromBinary(const QString &filename) const
+SceneDesc Scene::GetSceneDescFromBinary(const QString &filename) const
 {
     SceneDesc sceneDesc;
 
@@ -1040,7 +1040,7 @@ SceneDesc SceneManager::GetSceneDescFromBinary(const QString &filename) const
     return GetSceneDescFromBinary(bytes, sceneDesc);
 }
 
-SceneDesc SceneManager::GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const
+SceneDesc Scene::GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const
 {
     QByteArray bytes = data;
     if (!bytes.size())
@@ -1081,7 +1081,7 @@ SceneDesc SceneManager::GetSceneDescFromBinary(QByteArray &data, SceneDesc &scen
 
                 try
                 {
-                    ComponentPtr comp = sceneAPI->CreateComponentById(const_cast<SceneManager*>(this), typeId, compDesc.name);
+                    ComponentPtr comp = sceneAPI->CreateComponentById(const_cast<Scene*>(this), typeId, compDesc.name);
                     if (comp)
                     {
                         if (data_size)
@@ -1142,7 +1142,7 @@ SceneDesc SceneManager::GetSceneDescFromBinary(QByteArray &data, SceneDesc &scen
     return sceneDesc;
 }
 
-QByteArray SceneManager::GetEntityXml(Entity *entity)
+QByteArray Scene::GetEntityXml(Entity *entity)
 {
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = scene_doc.createElement("scene");
@@ -1167,29 +1167,29 @@ QByteArray SceneManager::GetEntityXml(Entity *entity)
     return scene_doc.toByteArray();
 }
 
-Vector3df SceneManager::GetUpVector() const
+Vector3df Scene::GetUpVector() const
 {
     return Vector3df::UNIT_Y;
 }
 
-Vector3df SceneManager::GetRightVector() const
+Vector3df Scene::GetRightVector() const
 {
     return Vector3df::UNIT_X;
 }
 
-Vector3df SceneManager::GetForwardVector() const
+Vector3df Scene::GetForwardVector() const
 {
     return -Vector3df::UNIT_Z;
 }
 
-bool SceneManager::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, float length)
+bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, float length)
 {
     if (!endvalue)
         return false;
     
     IComponent* comp = attr ? attr->GetOwner() : 0;
     Entity* entity = comp ? comp->GetParentEntity() : 0;
-    SceneManager* scene = entity ? entity->GetScene() : 0;
+    Scene* scene = entity ? entity->GetScene() : 0;
     
     if ((length <= 0.0f) || (!attr) || (!attr->HasMetadata()) || (attr->GetMetadata()->interpolation == AttributeMetadata::None) ||
         (!comp) || (comp->HasDynamicStructure()) || (!entity) || (!scene) || (scene != this))
@@ -1220,7 +1220,7 @@ bool SceneManager::StartAttributeInterpolation(IAttribute* attr, IAttribute* end
     return true;
 }
 
-bool SceneManager::EndAttributeInterpolation(IAttribute* attr)
+bool Scene::EndAttributeInterpolation(IAttribute* attr)
 {
     for(uint i = 0; i < interpolations_.size(); ++i)
     {
@@ -1236,7 +1236,7 @@ bool SceneManager::EndAttributeInterpolation(IAttribute* attr)
     return false;
 }
 
-void SceneManager::EndAllAttributeInterpolations()
+void Scene::EndAllAttributeInterpolations()
 {
     for(uint i = 0; i < interpolations_.size(); ++i)
     {
@@ -1248,7 +1248,7 @@ void SceneManager::EndAllAttributeInterpolations()
     interpolations_.clear();
 }
 
-void SceneManager::UpdateAttributeInterpolations(float frametime)
+void Scene::UpdateAttributeInterpolations(float frametime)
 {
     PROFILE(Scene_UpdateInterpolation);
     

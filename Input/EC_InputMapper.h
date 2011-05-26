@@ -77,7 +77,7 @@ class EC_InputMapper : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_InputMapper(SceneManager* scene);
+    explicit EC_InputMapper(Scene* scene);
     ~EC_InputMapper();
 
     /// This input mapper's input context priority.

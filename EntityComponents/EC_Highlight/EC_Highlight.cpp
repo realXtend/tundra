@@ -29,7 +29,7 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_Highlight::EC_Highlight(SceneManager* scene) :
+EC_Highlight::EC_Highlight(Scene* scene) :
     IComponent(scene),
     visible(this, "Is visible", false),
     solidColor(this, "Solid color", Color(0.3f, 0.5f, 0.1f, 0.5f)),

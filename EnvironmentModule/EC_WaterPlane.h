@@ -77,7 +77,7 @@ class EC_WaterPlane : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_WaterPlane(SceneManager* scene);
+    explicit EC_WaterPlane(Scene* scene);
 
     virtual ~EC_WaterPlane();
 

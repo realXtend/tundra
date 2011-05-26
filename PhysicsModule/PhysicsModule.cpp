@@ -16,7 +16,7 @@
 #include "Entity.h"
 #include "SceneAPI.h"
 #include "Framework.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Profiler.h"
 #include "Renderer.h"
 #include "ConsoleAPI.h"
@@ -134,7 +134,7 @@ void PhysicsModule::AutoCollisionMesh()
         return;
     }
     
-    for(SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         EntityPtr entity = iter->second;
         // Only assign to entities that don't have a rigidbody yet, but have a mesh and a placeable

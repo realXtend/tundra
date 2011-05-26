@@ -15,7 +15,6 @@
 
 namespace Avatar
 {
-    class AvatarSceneManager;
     class AvatarHandler;
     class AvatarControllable;
     class AvatarEditor;

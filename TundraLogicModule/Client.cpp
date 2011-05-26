@@ -13,7 +13,7 @@
 #include "PhysicsModule.h"
 
 #include "SceneAPI.h"
-#include "SceneManager.h"
+#include "Scene.h"
 
 #include "MsgLogin.h"
 #include "MsgLoginReply.h"

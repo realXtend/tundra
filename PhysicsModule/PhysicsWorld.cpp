@@ -7,7 +7,7 @@
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
 #include "Profiler.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "OgreWorld.h"
 #include "OgreBulletCollisionsDebugLines.h"
 #include "EC_RigidBody.h"

@@ -17,7 +17,7 @@
 #include "GenericAssetFactory.h"
 #include "Renderer.h"
 
-#include "SceneManager.h"
+#include "Scene.h"
 
 #include "CompositionHandler.h"
 #include "EC_Name.h"

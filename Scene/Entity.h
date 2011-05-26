@@ -26,7 +26,7 @@ static const entity_id_t LocalEntity = 0x80000000;
 /// Represents an entity in the world.
 /** An entity is just a collection of components, the components define what
     the entity is and what it does.
-    Entities should not be directly created, instead use SceneManager::CreateEntity().
+    Entities should not be directly created, instead use Scene::CreateEntity().
 
     Each component type that is added to this entity is registered as
     Q_PROPERTY as in following syntax EC_Light -> light, where EC_ is cutted off
@@ -257,7 +257,7 @@ public slots:
     Framework *GetFramework() const { return framework_; }
 
     /// Returns scene
-    SceneManager* GetScene() const { return scene_; }
+    Scene* GetScene() const { return scene_; }
 
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }
@@ -331,7 +331,7 @@ public:
 
     /// In the following, deserialization functions are now disabled since deserialization can't safely
     /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.
-    /// \todo Implement a deserialization flow that takes that into account. In the meanwhile, use SceneManager
+    /// \todo Implement a deserialization flow that takes that into account. In the meanwhile, use Scene
     /// functions for achieving the same.
 
     void SerializeToBinary(kNet::DataSerializer &dst) const;
@@ -350,36 +350,36 @@ signals:
     void EntityRemoved(Entity* entity, AttributeChange::Type change);
 
 private:
-    friend class SceneManager;
+    friend class Scene;
 
     /// Constructor
     /** @param framework Framework
         @param scene Scene this entity belongs to */
-    Entity(Framework* framework, SceneManager* scene);
+    Entity(Framework* framework, Scene* scene);
 
     /// Constructor that takes an id for the entity
     /** @param framework Framework
         @param id unique id for the entity.
         @param scene Scene this entity belongs to */
-    Entity(Framework* framework, entity_id_t id, SceneManager* scene);
+    Entity(Framework* framework, entity_id_t id, Scene* scene);
 
     /// Set new id
     void SetNewId(entity_id_t id) { id_ = id; }
 
     /// Set new scene
-    void SetScene(SceneManager* scene) { scene_ = scene; }
+    void SetScene(Scene* scene) { scene_ = scene; }
 
     /// Validates that the action has receivers. If not, deletes the action and removes it from the registered actions.
     /** @param action Action to be validated. */
     bool HasReceivers(EntityAction *action);
 
-    /// Emit a entity deletion signal. Called from SceneManager
+    /// Emit a entity deletion signal. Called from Scene
     void EmitEntityRemoved(AttributeChange::Type change);
 
     ComponentVector components_; ///< a list of all components
     entity_id_t id_; ///< Unique id for this entity
     Framework* framework_; ///< Pointer to framework
-    SceneManager* scene_; ///< Pointer to scene
+    Scene* scene_; ///< Pointer to scene
     ActionMap actions_; ///< Map of registered entity actions.
     bool temporary_; ///< Temporary-flag
 };

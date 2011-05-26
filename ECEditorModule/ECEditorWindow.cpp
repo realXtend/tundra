@@ -21,12 +21,12 @@
 #include "ECEditorModule.h"
 #include "TransformEditor.h"
 
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "Application.h"
 #include "Profiler.h"
 #include "SceneAPI.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "EC_Name.h"
 #include "EC_Placeable.h"
 #include "InputAPI.h"
@@ -141,11 +141,11 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
         connect(toggleEntitiesButton, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
 
     // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
-    connect(framework->Scene(), SIGNAL(DefaultWorldSceneChanged(SceneManager *)), SLOT(OnDefaultSceneChanged(SceneManager *)));
+    connect(framework->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene *)), SLOT(OnDefaultSceneChanged(Scene *)));
 
     connect(this, SIGNAL(FocusChanged(ECEditorWindow *)), framework->GetModule<ECEditorModule>(), SLOT(ECEditorFocusChanged(ECEditorWindow*)));
 
-    SceneManager *scene = framework->Scene()->GetDefaultScene().get();
+    Scene *scene = framework->Scene()->GetDefaultScene().get();
     if (scene)
     {
         connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
@@ -894,7 +894,7 @@ void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entitie
     }
 }
 
-void ECEditorWindow::OnDefaultSceneChanged(SceneManager *scene)
+void ECEditorWindow::OnDefaultSceneChanged(Scene *scene)
 {
     if (!scene)
         return;

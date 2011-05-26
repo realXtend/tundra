@@ -219,7 +219,7 @@ private slots:
 
     /// Listens when default world scene changes and clears the editor window.
     /** @param scene new default world scene. */
-    void OnDefaultSceneChanged(SceneManager *scene);
+    void OnDefaultSceneChanged(Scene *scene);
 
     /// Called by add component dialog when it's finished.
     void AddComponentDialogFinished(int result);

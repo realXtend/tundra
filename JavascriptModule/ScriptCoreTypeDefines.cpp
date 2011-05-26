@@ -11,7 +11,7 @@
 #include "EntityReference.h"
 #include "Entity.h"
 #include "ScriptMetaTypeDefines.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "LoggingFunctions.h"
 
 #include <QScriptEngine>
@@ -642,7 +642,7 @@ QScriptValue EntityReference_prototype_Lookup(QScriptContext *ctx, QScriptEngine
     if (!ctx->argument(0).isQObject())
         return ctx->throwError(QScriptContext::TypeError, "EntityReference Lookup(): Argument is not a QObject");
     
-    SceneManager* scene = dynamic_cast<SceneManager*>(ctx->argument(0).toQObject());
+    Scene* scene = dynamic_cast<Scene*>(ctx->argument(0).toQObject());
     
     EntityReference s;
     fromScriptValueEntityReference(ctx->thisObject(), s);
@@ -875,8 +875,8 @@ void ExposeCoreTypes(QScriptEngine *engine)
     
     int id = qRegisterMetaType<ScenePtr>("ScenePtr");
     qScriptRegisterMetaType_helper(
-        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(qScriptValueFromBoostSharedPtr<SceneManager>),
-        reinterpret_cast<QScriptEngine::DemarshalFunction>(qScriptValueToBoostSharedPtr<SceneManager>),
+        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(qScriptValueFromBoostSharedPtr<Scene>),
+        reinterpret_cast<QScriptEngine::DemarshalFunction>(qScriptValueToBoostSharedPtr<Scene>),
         QScriptValue());
 
     qScriptRegisterMetaType<ComponentPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);

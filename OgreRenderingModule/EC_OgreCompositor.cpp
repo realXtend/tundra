@@ -12,7 +12,7 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_OgreCompositor::EC_OgreCompositor(SceneManager* scene) :
+EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     IComponent(scene),
     enabled(this, "Enabled", true),
     compositorref(this, "Compositor ref", ""),

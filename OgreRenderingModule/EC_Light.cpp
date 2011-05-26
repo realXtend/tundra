@@ -10,7 +10,7 @@
 
 #include "IModule.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "XMLUtilities.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
@@ -28,7 +28,7 @@
 
 using namespace OgreRenderer;
 
-EC_Light::EC_Light(SceneManager* scene) :
+EC_Light::EC_Light(Scene* scene) :
     IComponent(scene),
     light_(0),
     attached_(false),
@@ -71,7 +71,11 @@ EC_Light::EC_Light(SceneManager* scene) :
 EC_Light::~EC_Light()
 {
     if (world_.expired())
+    {
+        if (light_)
+            LogError("EC_Light: World has expired, skipping uninitialization!");
         return;
+    }
     
     if (light_)
     {

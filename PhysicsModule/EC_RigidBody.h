@@ -130,7 +130,7 @@ class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState
     
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_RigidBody(SceneManager* scene);
+    explicit EC_RigidBody(Scene* scene);
 
     virtual ~EC_RigidBody();
 

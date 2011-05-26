@@ -6,7 +6,7 @@
 #include "OgreWorld.h"
 #include "Renderer.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "OgreConversionUtils.h"
@@ -26,7 +26,7 @@
 
 using namespace OgreRenderer;
 
-EC_Mesh::EC_Mesh(SceneManager* scene) :
+EC_Mesh::EC_Mesh(Scene* scene) :
     IComponent(scene),
     nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(0,0,0),Vector3df(1,1,1))),
     meshRef(this, "Mesh ref"),
@@ -73,7 +73,9 @@ EC_Mesh::~EC_Mesh()
 {
     if (world_.expired())
     {
-        LogError("EC_Mesh::~EC_Mesh: World has expired, skipping uninitialization!");
+        // Log error only if there was an Ogre object to be destroyed
+        if (entity_)
+            LogError("EC_Mesh: World has expired, skipping uninitialization!");
         return;
     }
     OgreWorldPtr world = world_.lock();

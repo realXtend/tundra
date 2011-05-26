@@ -58,7 +58,7 @@ class EC_Highlight : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Highlight(SceneManager* scene);
+    explicit EC_Highlight(Scene* scene);
 
     /// Destructor.
     ~EC_Highlight();

@@ -16,7 +16,7 @@
 #include "OgreWorld.h"
 #include "Framework.h"
 #include "OgreRenderingModule.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "LoggingFunctions.h"
 
 #include <OgreBillboardSet.h>
@@ -29,7 +29,7 @@
 
 #include <QTimer>
 
-EC_Billboard::EC_Billboard(SceneManager* scene) :
+EC_Billboard::EC_Billboard(Scene* scene) :
     IComponent(scene),
     billboardSet_(0),
     billboard_(0),
@@ -127,6 +127,14 @@ void EC_Billboard::UpdateBillboardProperties()
 
 void EC_Billboard::DestroyBillboard()
 {
+    OgreWorldPtr world = world_.lock();
+    if (!world)
+    {
+        if ((billboard_) || (billboardSet_))
+            LogError("EC_Billboard: World has expired, skipping uninitialization!");
+        return;
+    }
+    
     DetachBillboard();
     
     if ((billboard_) && (billboardSet_))
@@ -136,9 +144,6 @@ void EC_Billboard::DestroyBillboard()
     }
     if (billboardSet_)
     {
-        OgreWorldPtr world = world_.lock();
-        if (!world)
-            return;
         world->GetSceneManager()->destroyBillboardSet(billboardSet_);
         billboardSet_ = 0;
     }

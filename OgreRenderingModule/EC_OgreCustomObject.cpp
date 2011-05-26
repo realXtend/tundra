@@ -6,7 +6,7 @@
 #include "OgreWorld.h"
 #include "Renderer.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "EC_Placeable.h"
 #include "EC_OgreCustomObject.h"
 
@@ -15,7 +15,7 @@
 
 using namespace OgreRenderer;
 
-EC_OgreCustomObject::EC_OgreCustomObject(SceneManager* scene) :
+EC_OgreCustomObject::EC_OgreCustomObject(Scene* scene) :
     IComponent(scene),
     entity_(0),
     attached_(false),
@@ -29,8 +29,12 @@ EC_OgreCustomObject::EC_OgreCustomObject(SceneManager* scene) :
 EC_OgreCustomObject::~EC_OgreCustomObject()
 {
     if (world_.expired())
+    {
+        if (entity_)
+            LogError("EC_OgreCustomObject: World has expired, skipping uninitialization!");
         return;
-
+    }
+    
     DestroyEntity();
 }
 

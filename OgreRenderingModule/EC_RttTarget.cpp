@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 #include "OgreRenderingModule.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "EC_RttTarget.h"
 #include "EC_Camera.h"
 #include "OgreMaterialUtils.h"
@@ -12,7 +12,7 @@
 #include "Entity.h"
 #include "LoggingFunctions.h"
 
-EC_RttTarget::EC_RttTarget(SceneManager* scene) :
+EC_RttTarget::EC_RttTarget(Scene* scene) :
     IComponent(scene),
     targettexture(this, "Target texture", "RttTex"),
     size_x(this, "Texture size x", 400),

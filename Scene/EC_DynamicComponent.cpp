@@ -9,7 +9,7 @@
 
 #include "Entity.h"
 #include "LoggingFunctions.h"
-#include "SceneManager.h"
+#include "Scene.h"
 
 #include <QScriptEngine>
 #include <QScriptValueIterator>
@@ -54,7 +54,7 @@ bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
     return a.name_ < b.name_;
 }
 
-EC_DynamicComponent::EC_DynamicComponent(SceneManager* scene):
+EC_DynamicComponent::EC_DynamicComponent(Scene* scene):
     IComponent(scene)
 {
 }
@@ -182,7 +182,7 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     }
 
     // Trigger scenemanager signal
-    SceneManager* scene = GetParentScene();
+    Scene* scene = GetParentScene();
     if (scene)
         scene->EmitAttributeAdded(this, attribute, change);
     
@@ -199,7 +199,7 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
         if((*iter)->GetNameString() == name.toStdString())
         {
             // Trigger scenemanager signal
-            SceneManager* scene = GetParentScene();
+            Scene* scene = GetParentScene();
             if (scene)
                 scene->EmitAttributeRemoved(this, *iter, change);
             
@@ -218,7 +218,7 @@ void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
     for(unsigned i = attributes_.size() - 1; i < attributes_.size(); --i)
     {
         // Trigger scenemanager signal
-        SceneManager* scene = GetParentScene();
+        Scene* scene = GetParentScene();
         if (scene)
             scene->EmitAttributeRemoved(this, attributes_[i], change);
         

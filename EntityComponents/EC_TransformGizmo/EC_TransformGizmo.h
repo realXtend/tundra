@@ -54,7 +54,7 @@ class EC_TransformGizmo : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    EC_TransformGizmo(SceneManager* scene);
+    EC_TransformGizmo(Scene* scene);
     ~EC_TransformGizmo();
 
     /// Possible types of a gizmo.

@@ -9,7 +9,7 @@
 #include "Renderer.h"
 #include "IModule.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "AssetAPI.h"
@@ -39,7 +39,7 @@ typedef boost::shared_ptr<Renderer> RendererPtr;
 namespace Environment
 {
 
-EC_Terrain::EC_Terrain(SceneManager* scene) :
+EC_Terrain::EC_Terrain(Scene* scene) :
     IComponent(scene),
     nodeTransformation(this, "Transform"),
     xPatches(this, "Grid Width"),
@@ -1118,7 +1118,7 @@ void EC_Terrain::GenerateFromSceneEntity(QString entityName)
     if (!parentEntity)
         return;
 
-    SceneManager *scene = parentEntity->GetScene();
+    Scene *scene = parentEntity->GetScene();
     if (!scene)
         return;
 

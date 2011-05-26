@@ -17,7 +17,7 @@
 #include "EC_SelectionBox.h"
 #include "EC_Material.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "RendererSettings.h"
 #include "OgreWorld.h"
 #include "OgreMeshAsset.h"

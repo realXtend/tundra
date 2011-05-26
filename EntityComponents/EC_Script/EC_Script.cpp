@@ -65,7 +65,7 @@ void EC_Script::Unload(const QString &name)
     scriptInstance_->Unload();
 }
 
-EC_Script::EC_Script(SceneManager* scene):
+EC_Script::EC_Script(Scene* scene):
     IComponent(scene),
     scriptRef(this, "Script ref"),
     type(this, "Type"),

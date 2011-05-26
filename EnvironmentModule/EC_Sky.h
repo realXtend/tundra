@@ -43,7 +43,7 @@ Registered by Enviroment::EnvironmentModule.
 
     public:
         /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-        explicit EC_Sky(SceneManager* scene);
+        explicit EC_Sky(Scene* scene);
 
         virtual ~EC_Sky();
 

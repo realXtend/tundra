@@ -5,7 +5,7 @@
 
 #include "EntityReference.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "EC_Name.h"
 #include "SceneAPI.h"
 
@@ -30,7 +30,7 @@ void EntityReference::Set(Entity* entity)
     }
     
     QString name = entity->GetName();
-    SceneManager* scene = entity->GetScene();
+    Scene* scene = entity->GetScene();
     if (!scene)
     {
         // If entity is not in scene, set directly by ID
@@ -56,7 +56,7 @@ bool EntityReference::IsEmpty() const
     return false;
 }
 
-EntityPtr EntityReference::Lookup(SceneManager* scene) const
+EntityPtr EntityReference::Lookup(Scene* scene) const
 {
     if (!scene)
         return EntityPtr();

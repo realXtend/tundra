@@ -9,7 +9,7 @@
 #include "HighPerfClock.h"
 #include "Framework.h"
 #include "Application.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "OgreRenderingModule.h"
 
 #include "EC_Mesh.h"
@@ -1079,7 +1079,7 @@ void TimeProfilerWindow::RefreshOgreProfilingWindow()
     Ogre::ParticleSystemManager
 */
 //    Ogre::SceneManagerEnumerator::SceneManagerIterator iter = root->getSceneManagerIterator();
-    findChild<QLabel*>("labelNumSceneManagers")->setText(QString("%1").arg(CountSize(root->getSceneManagerIterator())));
+    findChild<QLabel*>("labelNumScenes")->setText(QString("%1").arg(CountSize(root->getSceneManagerIterator())));
     findChild<QLabel*>("labelNumArchives")->setText(QString("%1").arg(CountSize(Ogre::ArchiveManager::getSingleton().getArchiveIterator())));
 
     findChild<QLabel*>("labelTextureManager")->setText(ReadOgreManagerStatus(Ogre::TextureManager::getSingleton()).c_str());
@@ -1472,7 +1472,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     uint mesh_instances = 0;
     
     // Loop through entities to see mesh usage
-    for(SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Entity &entity = *iter->second;
         entities++;
@@ -2035,7 +2035,7 @@ void AddOgreSceneNode(QTreeWidgetItem *parent, Ogre::SceneNode *node)
 
 void AddOgreScene(QTreeWidgetItem *parent, Ogre::SceneManager *scene)
 {
-    QTreeWidgetItem *sceneItem = AddNewItem(parent, ("SceneManager: " + scene->getName()).c_str());
+    QTreeWidgetItem *sceneItem = AddNewItem(parent, ("Scene: " + scene->getName()).c_str());
     AddOgreSceneNode(sceneItem, scene->getRootSceneNode());    
 }
 

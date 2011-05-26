@@ -6,7 +6,7 @@
 #include "SceneImporter.h"
 #include "TundraLogicModule.h"
 
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "SceneDesc.h"
 #include "OgreMaterialUtils.h"
@@ -93,7 +93,7 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
     QDomElement ent_elem = prefab.firstChildElement("entity");
     if (!ent_elem.isNull())
     {
-        /// \todo this should possibly be a function in SceneManager
+        /// \todo this should possibly be a function in Scene
         QDomElement comp_elem = ent_elem.firstChildElement("component");
         while(!comp_elem.isNull())
         {

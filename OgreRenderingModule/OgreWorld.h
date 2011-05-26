@@ -24,7 +24,7 @@ namespace OgreRenderer
     class Renderer;
 }
 
-/// Contains the Ogre representation of a scene, ie. the Ogre SceneManager
+/// Contains the Ogre representation of a scene, ie. the Ogre Scene
 class OGRE_MODULE_API OgreWorld : public QObject, public Ogre::RenderQueue::RenderableListener, public boost::enable_shared_from_this<OgreWorld>
 {
     Q_OBJECT

@@ -19,7 +19,7 @@ public:
 
     virtual QString TypeName() = 0;
     virtual u32 TypeId() = 0;
-    virtual boost::shared_ptr<IComponent> Create(SceneManager* scene, const QString &newComponentName) = 0;
+    virtual boost::shared_ptr<IComponent> Create(Scene* scene, const QString &newComponentName) = 0;
 //    virtual boost::shared_ptr<IComponent> Clone(IComponent *existingComponent, const QString &newComponentName) = 0;
 };
 
@@ -30,7 +30,7 @@ public:
     QString TypeName() { return T::TypeNameStatic(); }
     u32 TypeId() { return T::TypeIdStatic(); }
 
-    boost::shared_ptr<IComponent> Create(SceneManager* scene, const QString &newComponentName)
+    boost::shared_ptr<IComponent> Create(Scene* scene, const QString &newComponentName)
     {
         boost::shared_ptr<IComponent> component = boost::make_shared<T>(scene);
         component->SetName(newComponentName);

@@ -13,7 +13,7 @@
 #include "AssetAPI.h"
 #include "AssetReference.h"
 
-EC_Material::EC_Material(SceneManager* scene) :
+EC_Material::EC_Material(Scene* scene) :
     IComponent(scene),
     parameters(this, "Parameters", QVariantList()),
     inputMat(this, "Input Material", ""),

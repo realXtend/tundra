@@ -97,7 +97,7 @@ class EC_HoveringText : public IComponent
 
 public:
     
-    explicit EC_HoveringText(SceneManager* scene);
+    explicit EC_HoveringText(Scene* scene);
 
     /// Destructor.
     ~EC_HoveringText();

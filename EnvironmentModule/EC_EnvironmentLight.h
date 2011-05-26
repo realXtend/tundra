@@ -58,7 +58,7 @@ class EC_EnvironmentLight : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_EnvironmentLight(SceneManager* scene);
+    explicit EC_EnvironmentLight(Scene* scene);
 
     virtual ~EC_EnvironmentLight();
 

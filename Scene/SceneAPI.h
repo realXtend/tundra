@@ -29,8 +29,8 @@ Owned by Framework.
 <div>Parameters: Added scenes name.</div>
 <li>SceneRemoved(const QString&); - Emitted when a scene is removed.
 <div>Parameters: Removed scenes name.</div>
-<li>DefaultWorldSceneChanged(SceneManager*); - Emitted when a new default world scene is set.
-<div>Parameters: The new default SceneManager ptr.</div>
+<li>DefaultWorldSceneChanged(Scene*); - Emitted when a new default world scene is set.
+<div>Parameters: The new default Scene ptr.</div>
 </ul>
 
 </td></tr></table>
@@ -49,7 +49,7 @@ public:
     /** @param newComponentName Name for the component (optional).
     */
     template<typename T>
-    boost::shared_ptr<T> CreateComponent(SceneManager* parentScene, const QString &newComponentName = "")
+    boost::shared_ptr<T> CreateComponent(Scene* parentScene, const QString &newComponentName = "")
     {
         return boost::dynamic_pointer_cast<T>(CreateComponentById(parentScene, T::TypeIdStatic(), newComponentName));
     }
@@ -66,7 +66,7 @@ signals:
     /// Emitted when default world scene changes.
     /// @param scene new default world scene object.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    void DefaultWorldSceneChanged(SceneManager *scene);
+    void DefaultWorldSceneChanged(Scene *scene);
 
 public slots:
     /// Get Scene Interact weak pointer.
@@ -85,13 +85,13 @@ public slots:
     void SetDefaultScene(const ScenePtr &scene);
     
     /// Returns the default scene shared ptr.
-    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<SceneManager> rename GetDefaultSceneRaw() to GetDefaultScene().
+    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene> rename GetDefaultSceneRaw() to GetDefaultScene().
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     const ScenePtr &GetDefaultScene() const;
 
     /// Returns the default scene ptr.
     ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    SceneManager* GetDefaultSceneRaw() const;
+    Scene* GetDefaultSceneRaw() const;
 
     /// Returns a pointer to a scene
     /** Manage the pointer carefully, as scenes may not get deleted properly if
@@ -103,7 +103,7 @@ public slots:
         @param name Name of the scene to return
         @return The scene, or empty pointer if the scene with the specified name could not be found 
     */
-    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<SceneManager> rename GetSceneRaw() to GetScene().
+    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene> rename GetSceneRaw() to GetScene().
     ScenePtr GetScene(const QString &name) const;
 
     /// Creates new empty scene.
@@ -132,10 +132,10 @@ public slots:
     void RegisterComponentFactory(ComponentFactoryPtr factory);
 
     /// Creates a new component instance by specifying the typename of the new component to create, and the scene where to create.
-    ComponentPtr CreateComponentByName(SceneManager* scene, const QString &componentTypename, const QString &newComponentName = "");
+    ComponentPtr CreateComponentByName(Scene* scene, const QString &componentTypename, const QString &newComponentName = "");
 
     /// Creates a new component instance by specifying the typeid of the new component to create, and the scene where to create.
-    ComponentPtr CreateComponentById(SceneManager* scene, u32 componentTypeid, const QString &newComponentName = "");
+    ComponentPtr CreateComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName = "");
 
     /// Looks up the given type id and returns the type name string for that id.
     QString GetComponentTypeName(u32 componentTypeid);

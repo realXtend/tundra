@@ -40,12 +40,12 @@ using namespace Ogre;
 //------------------------------------------------------------------------------------------------
 DebugLines::DebugLines() : SimpleRenderable()
 {
-	mRenderOp.vertexData = new Ogre::VertexData();
-	mRenderOp.indexData = 0;
-	mRenderOp.vertexData->vertexCount = 0;
-	mRenderOp.vertexData->vertexStart = 0;
-	mRenderOp.operationType = RenderOperation::OT_LINE_LIST;
-	mRenderOp.useIndexes = false;
+    mRenderOp.vertexData = new Ogre::VertexData();
+    mRenderOp.indexData = 0;
+    mRenderOp.vertexData->vertexCount = 0;
+    mRenderOp.vertexData->vertexStart = 0;
+    mRenderOp.operationType = RenderOperation::OT_LINE_LIST;
+    mRenderOp.useIndexes = false;
 
     setCastShadows (false);
     this->setMaterial("PhysicsDebug");
@@ -80,32 +80,32 @@ void DebugLines::draw()
     Ogre::VertexDeclaration *decl = mRenderOp.vertexData->vertexDeclaration;
     Ogre::VertexBufferBinding *bind = mRenderOp.vertexData->vertexBufferBinding;
 
-	if (_vbuf.isNull())
-	{
-		decl->addElement(0, 0, VET_FLOAT3, VES_POSITION);
-		decl->addElement(0, 12, VET_COLOUR, VES_DIFFUSE);
+    if (_vbuf.isNull())
+    {
+        decl->addElement(0, 0, VET_FLOAT3, VES_POSITION);
+        decl->addElement(0, 12, VET_COLOUR, VES_DIFFUSE);
 
-		_vbuf = HardwareBufferManager::getSingleton().createVertexBuffer(
-			decl->getVertexSize(0),
-			mRenderOp.vertexData->vertexCount,
-			HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+        _vbuf = HardwareBufferManager::getSingleton().createVertexBuffer(
+            decl->getVertexSize(0),
+            mRenderOp.vertexData->vertexCount,
+            HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-		bind->setBinding(0, _vbuf);
-	}
-	else
-	{
-	    if (_vbuf->getNumVertices() != mRenderOp.vertexData->vertexCount)
-	    {
-		    bind->unsetAllBindings();
+        bind->setBinding(0, _vbuf);
+    }
+    else
+    {
+        if (_vbuf->getNumVertices() != mRenderOp.vertexData->vertexCount)
+        {
+            bind->unsetAllBindings();
 
-		    _vbuf = HardwareBufferManager::getSingleton().createVertexBuffer(
-		    	decl->getVertexSize(0),
-		    	mRenderOp.vertexData->vertexCount,
-		    	HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+            _vbuf = HardwareBufferManager::getSingleton().createVertexBuffer(
+                decl->getVertexSize(0),
+                mRenderOp.vertexData->vertexCount,
+                HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-    		bind->setBinding(0, _vbuf);
-    	}
-	}
+            bind->setBinding(0, _vbuf);
+        }
+    }
 
     // Drawing stuff
     unsigned int size = (unsigned int)_lines.size();
@@ -140,42 +140,42 @@ void DebugLines::draw()
         prPos++;
         
         if (line._start.x < vaabMin.x)
-			vaabMin.x = line._start.x;
-		else if (line._start.x > vaabMax.x)
-			vaabMax.x = line._start.x;
+            vaabMin.x = line._start.x;
+        else if (line._start.x > vaabMax.x)
+            vaabMax.x = line._start.x;
 
         if (line._start.y < vaabMin.y)
-			vaabMin.y = line._start.y;
-		else if (line._start.y > vaabMax.y)
-			vaabMax.y = line._start.y;
+            vaabMin.y = line._start.y;
+        else if (line._start.y > vaabMax.y)
+            vaabMax.y = line._start.y;
 
         if (line._start.z < vaabMin.z)
-			vaabMin.z = line._start.z;
-		else if (line._start.z > vaabMax.z)
-			vaabMax.z = line._start.z;
-		
+            vaabMin.z = line._start.z;
+        else if (line._start.z > vaabMax.z)
+            vaabMax.z = line._start.z;
+        
         if (line._end.x < vaabMin.x)
-			vaabMin.x = line._end.x;
-		else if (line._end.x > vaabMax.x)
-			vaabMax.x = line._end.x;
+            vaabMin.x = line._end.x;
+        else if (line._end.x > vaabMax.x)
+            vaabMax.x = line._end.x;
 
         if (line._end.y < vaabMin.y)
-			vaabMin.y = line._end.y;
-		else if (line._end.y > vaabMax.y)
-			vaabMax.y = line._end.y;
+            vaabMin.y = line._end.y;
+        else if (line._end.y > vaabMax.y)
+            vaabMax.y = line._end.y;
 
         if (line._end.z < vaabMin.z)
-			vaabMin.z = line._end.z;
-		else if (line._end.z > vaabMax.z)
-			vaabMax.z = line._end.z;
+            vaabMin.z = line._end.z;
+        else if (line._end.z > vaabMax.z)
+            vaabMax.z = line._end.z;
     }
 
     _vbuf->unlock();
 
     mBox.setInfinite();
-	//mBox.Extents(vaabMin, vaabMax);
-	
-	clear();
+    //mBox.Extents(vaabMin, vaabMax);
+    
+    clear();
 }
 //------------------------------------------------------------------------------------------------
 Real DebugLines::getSquaredViewDepth(const Camera *cam) const

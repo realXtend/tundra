@@ -13,7 +13,7 @@
 #include "CoreStringUtils.h"
 #include "Framework.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 
 #include <QDomDocument>
 
@@ -21,7 +21,7 @@
 
 #include "MemoryLeakCheck.h"
 
-IComponent::IComponent(SceneManager* scene) :
+IComponent::IComponent(Scene* scene) :
     parent_entity_(0),
     framework_(scene ? scene->GetFramework() : 0),
     network_sync_(true),
@@ -75,7 +75,7 @@ Entity* IComponent::GetParentEntity() const
     return parent_entity_;
 }
 
-SceneManager* IComponent::GetParentScene() const
+Scene* IComponent::GetParentScene() const
 {
     if (!parent_entity_)
         return 0;
@@ -194,7 +194,7 @@ void IComponent::EmitAttributeChanged(IAttribute* attribute, AttributeChange::Ty
         return; // No signals
     
     // Trigger scenemanager signal
-    SceneManager* scene = GetParentScene();
+    Scene* scene = GetParentScene();
     if (scene)
         scene->EmitAttributeChanged(this, attribute, change);
     
@@ -299,7 +299,7 @@ bool IComponent::ViewEnabled() const
 {
     if (!parent_entity_)
         return true;
-    SceneManager* scene = parent_entity_->GetScene();
+    Scene* scene = parent_entity_->GetScene();
     if (scene)
         return scene->ViewEnabled();
     else

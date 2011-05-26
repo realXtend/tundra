@@ -15,7 +15,7 @@
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
 #include "OgreDefaultHardwareBufferManager.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "CoreException.h"
 #include "Entity.h"
 #include "SceneAPI.h"
@@ -61,7 +61,7 @@ namespace OgreRenderer
         initialized_(false),
         framework_(framework),
         buffermanager_(0),
-        defaultSceneManager_(0),
+        defaultScene_(0),
         defaultCamera_(0),
         cameraComponent_(0),
         viewport_(0),
@@ -95,12 +95,12 @@ namespace OgreRenderer
         ogreWorlds_.clear();
         
         // Delete the default camera & scene
-        if (defaultSceneManager_)
+        if (defaultScene_)
         {
-            defaultSceneManager_->destroyCamera(defaultCamera_);
+            defaultScene_->destroyCamera(defaultCamera_);
             defaultCamera_ = 0;
-            root_->destroySceneManager(defaultSceneManager_);
-            defaultSceneManager_ = 0;
+            root_->destroySceneManager(defaultScene_);
+            defaultScene_ = 0;
         }
         
         root_.reset();
@@ -244,8 +244,8 @@ namespace OgreRenderer
             SetupResources();
 
             /// Create the default scene manager, which is used for nothing but rendering emptiness in case we have no framework scenes
-            defaultSceneManager_ = root_->createSceneManager(Ogre::ST_GENERIC, "DefaultEmptyScene");
-            defaultCamera_ = defaultSceneManager_->createCamera("DefaultCamera");
+            defaultScene_ = root_->createSceneManager(Ogre::ST_GENERIC, "DefaultEmptyScene");
+            defaultCamera_ = defaultScene_->createCamera("DefaultCamera");
         
             viewport_ = renderWindow->OgreRenderWindow()->addViewport(defaultCamera_);
             c_handler_->Initialize(framework_ ,viewport_);
@@ -639,7 +639,7 @@ namespace OgreRenderer
             resized_dirty_--;
 
         // Clear the RenderableListener(s) of all Ogre scenes
-        for (std::map<SceneManager*, OgreWorldPtr>::iterator i = ogreWorlds_.begin(); i != ogreWorlds_.end(); ++i)
+        for (std::map<Scene*, OgreWorldPtr>::iterator i = ogreWorlds_.begin(); i != ogreWorlds_.end(); ++i)
             i->second->ClearVisibleEntities();
 
 #ifdef PROFILING
@@ -677,7 +677,7 @@ namespace OgreRenderer
         Entity* entity = cameraComponent_->GetParentEntity();
         if (!entity)
             return OgreWorldPtr();
-        SceneManager* scene = entity->GetScene();
+        Scene* scene = entity->GetScene();
         if (scene)
             return scene->GetWorld<OgreWorld>();
         else

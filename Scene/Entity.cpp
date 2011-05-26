@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "EC_Name.h"
 #include "SceneAPI.h"
 
@@ -20,14 +20,14 @@
 
 #include "MemoryLeakCheck.h"
 
-Entity::Entity(Framework* framework, SceneManager* scene) :
+Entity::Entity(Framework* framework, Scene* scene) :
     framework_(framework),
     scene_(scene),
     temporary_(false)
 {
 }
 
-Entity::Entity(Framework* framework, uint id, SceneManager* scene) :
+Entity::Entity(Framework* framework, uint id, Scene* scene) :
     framework_(framework),
     id_(id),
     scene_(scene),

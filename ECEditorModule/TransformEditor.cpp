@@ -8,7 +8,7 @@
 #include "StableHeaders.h"
 #include "TransformEditor.h"
 #include "LoggingFunctions.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "InputAPI.h"

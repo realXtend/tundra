@@ -77,7 +77,7 @@ class EC_Billboard : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Billboard(SceneManager* scene);
+    explicit EC_Billboard(Scene* scene);
 
     /// Destructor.
     ~EC_Billboard();

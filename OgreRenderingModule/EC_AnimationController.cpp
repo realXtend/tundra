@@ -17,7 +17,7 @@
 
 using namespace OgreRenderer;
 
-EC_AnimationController::EC_AnimationController(SceneManager* scene) :
+EC_AnimationController::EC_AnimationController(Scene* scene) :
     IComponent(scene),
     animationState(this, "Animation state", ""),
     mesh(0)

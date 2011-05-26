@@ -13,7 +13,7 @@
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
 #include "CoreException.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "QtUtils.h"
 #include "LoggingFunctions.h"
 #include "SceneImporter.h"
@@ -871,7 +871,7 @@ void SceneTreeWidget::Paste()
         return;
     }
 
-    ///\todo Move all code below, except scene->CreateContentFromXml(), to SceneManager.
+    ///\todo Move all code below, except scene->CreateContentFromXml(), to Scene.
     QDomElement sceneElem = scene_doc.firstChildElement("scene");
     if (sceneElem.isNull())
         return;

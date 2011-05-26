@@ -54,10 +54,10 @@ public slots:
     /// Toggles physics debug geometry
     void ToggleDebugGeometry();
 
-    /// Stops physics
+    /// Stops physics for all physics worlds
     void StopPhysics();
 
-    /// Starts physics
+    /// Starts physics for all physics worlds
     void StartPhysics();
 
     /// Autoassigns static rigid bodies with collision meshes to visible meshes
@@ -76,7 +76,7 @@ private slots:
     void OnSceneRemoved(const QString &name);
 
 private:
-    typedef std::map<SceneManager*, boost::shared_ptr<Physics::PhysicsWorld> > PhysicsWorldMap;
+    typedef std::map<Scene*, boost::shared_ptr<Physics::PhysicsWorld> > PhysicsWorldMap;
     /// Map of physics worlds assigned to scenes
     PhysicsWorldMap physicsWorlds_;
     

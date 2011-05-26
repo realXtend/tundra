@@ -10,7 +10,7 @@
 #include "TreeWidgetItemExpandMemory.h"
 
 #include "SceneAPI.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "EC_DynamicComponent.h"
 #include "InputAPI.h"

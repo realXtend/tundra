@@ -23,7 +23,7 @@ struct EntityReference
     void Set(Entity* entity);
     
     /// Lookup an entity from the scene according to the ref. Return null pointer if not found
-    EntityPtr Lookup(SceneManager* scene) const;
+    EntityPtr Lookup(Scene* scene) const;
     
     /// Return whether the ref does not refer to an entity
     bool IsEmpty() const;

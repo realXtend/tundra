@@ -40,7 +40,7 @@ typedef std::set<MaterialInfo> MaterialInfoList; ///< Set of MaterialInfo struct
 /// Importer tool for OGRE .scene and .mesh files.
 /** You can use SceneImporter to directly create and instantiate content from OGRE .mesh and .scene files,
     or to create scene descriptions for the aforementioned file formats. The scene descriptions can be modified
-    and then instantiated using SceneManager::CreateContentFromSceneDesc().
+    and then instantiated using Scene::CreateContentFromSceneDesc().
     SceneImporter contains also useful OGRE material file utility functions.
 */
 class TUNDRALOGIC_MODULE_API SceneImporter

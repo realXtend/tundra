@@ -72,7 +72,7 @@ class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Terrain(SceneManager* scene);
+    explicit EC_Terrain(Scene* scene);
     virtual ~EC_Terrain();
 
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);

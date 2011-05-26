@@ -74,7 +74,7 @@ class EC_VolumeTrigger : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_VolumeTrigger(SceneManager* scene);
+    explicit EC_VolumeTrigger(Scene* scene);
 
     virtual ~EC_VolumeTrigger();
 

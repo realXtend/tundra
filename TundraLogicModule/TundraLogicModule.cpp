@@ -17,7 +17,7 @@
 #include "IAsset.h"
 #include "ConfigAPI.h"
 #include "IComponentFactory.h"
-#include "SceneManager.h"
+#include "Scene.h"
 
 #include "KristalliProtocolModule.h"
 #include "CoreStringUtils.h"

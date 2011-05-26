@@ -14,7 +14,7 @@
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Framework.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
@@ -31,7 +31,7 @@
 
 #include "MemoryLeakCheck.h"
 
-EC_HoveringText::EC_HoveringText(SceneManager* scene) :
+EC_HoveringText::EC_HoveringText(Scene* scene) :
     IComponent(scene),
     font_(QFont("Arial", 100)),
     backgroundColor_(Qt::transparent),
@@ -406,7 +406,7 @@ void EC_HoveringText::UpdateSignals()
     disconnect(this, SLOT(OnAttributeUpdated(IComponent *, IAttribute *)));
     if(GetParentEntity())
     {
-        SceneManager *scene = GetParentEntity()->GetScene();
+        Scene *scene = GetParentEntity()->GetScene();
         if(scene)
         connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
                 this, SLOT(OnAttributeUpdated(IComponent*, IAttribute*))); 

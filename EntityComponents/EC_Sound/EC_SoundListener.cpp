@@ -12,7 +12,7 @@
 #include "IModule.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "LoggingFunctions.h"
 #include "AudioAPI.h"
 #include "SceneAPI.h"
@@ -20,7 +20,7 @@
 #include "Framework.h"
 #include "MemoryLeakCheck.h"
 
-EC_SoundListener::EC_SoundListener(SceneManager* scene):
+EC_SoundListener::EC_SoundListener(Scene* scene):
     IComponent(scene),
     active(this, "active", false)
 {

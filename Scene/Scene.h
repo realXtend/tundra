@@ -32,22 +32,23 @@ struct AttributeInterpolation
     float length;
 };
 
-/// Acts as a generic scene graph for all entities in the world.
-/** Contains all entities in the world.
-    Acts as a factory for all entities.
+/// Scene. Contains all the entities of the world.
+/** Acts as a factory for all entities.
+    Has subsystem-specific worlds, such as rendering and physics, as dynamic properties.
 
     To create, access and remove scenes, see SceneAPI.
 
     \ingroup Scene_group
 */
-class SceneManager : public QObject, public boost::enable_shared_from_this<SceneManager>
+class Scene : public QObject, public boost::enable_shared_from_this<Scene>
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ Name)
     Q_PROPERTY(bool viewEnabled READ ViewEnabled)
+    Q_PROPERTY(bool authority READ IsAuthority)
 
 public:
-    ~SceneManager();
+    ~Scene();
 
     typedef std::map<entity_id_t, EntityPtr> EntityMap; ///< Typedef for an entity map.
     typedef EntityMap::iterator iterator; ///< entity iterator, see begin() and end()
@@ -69,13 +70,13 @@ public:
     const EntityMap &Entities() const { return entities_; }
 
     /// Returns true if the two scenes have the same name
-    bool operator == (const SceneManager &other) const { return Name() == other.Name(); }
+    bool operator == (const Scene &other) const { return Name() == other.Name(); }
 
     /// Returns true if the two scenes have different names
-    bool operator != (const SceneManager &other) const { return !(*this == other); }
+    bool operator != (const Scene &other) const { return !(*this == other); }
 
     /// Order by scene name
-    bool operator < (const SceneManager &other) const { return Name() < other.Name(); }
+    bool operator < (const Scene &other) const { return Name() < other.Name(); }
 
     /// Return a subsystem world (OgreWorld, PhysicsWorld)
     template <class T> boost::shared_ptr<T> GetWorld() const { T* rawPtr = checked_static_cast<T*>(property(T::PropertyNameStatic()).value<QObject*>()); return rawPtr ? rawPtr->shared_from_this() : boost::shared_ptr<T>(); }
@@ -116,7 +117,7 @@ public slots:
 
     /// Starts an attribute interpolation
     /** @param attr Attribute inside a static-structured component.
-        @param endvalue Same kind of attribute holding the endpoint value. You must dynamically allocate this yourself, but SceneManager
+        @param endvalue Same kind of attribute holding the endpoint value. You must dynamically allocate this yourself, but Scene
                will always take care of deleting it.
         @param length Time length
         @return true if successful (attribute must be in interpolated mode (set in metadata), must be in component, component 
@@ -169,7 +170,7 @@ public slots:
     ///@todo This function is a duplicate copy of void ScriptAsset::ParseReferences(). Delete this code. -jj.
     /** @param filePath. Path to the file that is opened for inspection.
         @param SceneDesc. Scene description struct ref, found asset dependencies will be added here.
-        @todo Make one implementation of this to a common place that EC_Script and SceneManager can use.
+        @todo Make one implementation of this to a common place that EC_Script and Scene can use.
         @note If the way we introduce js dependencies (!ref: and engine.IncludeFile()) changes, this function needs to change too.
     */
     void SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const;
@@ -460,17 +461,17 @@ signals:
     void ActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionTypeField type);
 
     /// Emitted when being destroyed
-    void Removed(SceneManager* scene);
+    void Removed(Scene* scene);
 
     /// Signal when the whole scene is cleared
-    void SceneCleared(SceneManager* scene);
+    void SceneCleared(Scene* scene);
 
 private:
-    Q_DISABLE_COPY(SceneManager);
+    Q_DISABLE_COPY(Scene);
     friend class ::SceneAPI;
 
     /// Default constructor, name will be empty string and authority-flag false.
-    SceneManager();
+    Scene();
 
     /// Constructor.
     /** @param name Name of the scene.
@@ -478,7 +479,7 @@ private:
         @param viewEnabled Whether the scene is view enabled.
         @param authority Whether the scene has authority ie. a singleuser or server scene, false for network client scenes
     */
-    SceneManager(const QString &name, Framework *fw, bool viewEnabled, bool authority   );
+    Scene(const QString &name, Framework *fw, bool viewEnabled, bool authority   );
 
     uint gid_; ///< Current global id for networked entities
     uint gid_local_; ///< Current id for local entities.

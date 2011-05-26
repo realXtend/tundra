@@ -8,7 +8,7 @@
 #include "EntityComponent/EC_Avatar.h"
 #include "AssetAPI.h"
 #include "SceneAPI.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "QtUtils.h"
 
 #include "Entity.h"

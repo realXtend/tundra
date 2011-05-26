@@ -143,7 +143,7 @@ class OGRE_MODULE_API EC_Mesh : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Mesh(SceneManager* scene);
+    explicit EC_Mesh(Scene* scene);
 
     virtual ~EC_Mesh();
 

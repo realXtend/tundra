@@ -13,7 +13,7 @@
 
 #include "Framework.h"
 #include "SceneAPI.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "IComponent.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"

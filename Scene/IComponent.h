@@ -88,7 +88,7 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
 
 public:
     /// Constructor.
-    explicit IComponent(SceneManager* scene);
+    explicit IComponent(Scene* scene);
 
     /// Copy-constructor.
     IComponent(const IComponent& rhs);
@@ -242,7 +242,7 @@ public slots:
 
     /// Returns the scene this Component is part of.
     /// May return null if component is not in an entity or entity is not in a scene
-    SceneManager* GetParentScene() const;
+    Scene* GetParentScene() const;
 
     /// Sets whether component is temporary. Temporary components won't be saved when the scene is saved.
     void SetTemporary(bool enable);

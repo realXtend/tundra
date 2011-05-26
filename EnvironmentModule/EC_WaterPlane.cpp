@@ -10,7 +10,7 @@
 #include "IAttribute.h"
 #include "AttributeMetadata.h"
 #include "Renderer.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "OgreMaterialUtils.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
@@ -26,7 +26,7 @@
 
 namespace Environment
 {
-    EC_WaterPlane::EC_WaterPlane(SceneManager* scene) :
+    EC_WaterPlane::EC_WaterPlane(Scene* scene) :
         IComponent(scene),
         xSize(this, "x-size", 5000),
         ySize(this, "y-size", 5000),

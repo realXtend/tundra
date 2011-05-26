@@ -49,7 +49,7 @@ class OGRE_MODULE_API EC_OgreCustomObject : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_OgreCustomObject(SceneManager* scene);
+    explicit EC_OgreCustomObject(Scene* scene);
 
     virtual ~EC_OgreCustomObject();
 

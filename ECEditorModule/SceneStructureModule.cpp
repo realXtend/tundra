@@ -19,7 +19,7 @@
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "ConsoleAPI.h"
 #include "InputAPI.h"

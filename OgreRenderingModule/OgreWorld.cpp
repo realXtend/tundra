@@ -6,7 +6,7 @@
 #include "Entity.h"
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "CompositionHandler.h"
 #include "Profiler.h"
 #include "ConfigAPI.h"
@@ -453,7 +453,7 @@ void OgreWorld::ClearVisibleEntities()
 QList<Entity*> OgreWorld::GetVisibleEntities() const
 {
     QList<Entity*> l;
-    SceneManager* scene = scene_.lock().get();
+    Scene* scene = scene_.lock().get();
     if (!scene)
         return l;
     for (std::set<entity_id_t>::const_iterator i = visibleEntities_.begin(); i != visibleEntities_.end(); ++i)

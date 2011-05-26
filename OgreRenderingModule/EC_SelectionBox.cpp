@@ -4,7 +4,7 @@
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "EC_SelectionBox.h"
 #include "LoggingFunctions.h"
 #include "OgreConversionUtils.h"
@@ -15,7 +15,7 @@ using namespace OgreRenderer;
 
 #include "MemoryLeakCheck.h"
 
-EC_SelectionBox::EC_SelectionBox(SceneManager* scene) :
+EC_SelectionBox::EC_SelectionBox(Scene* scene) :
     IComponent(scene),
     selectionBox_(0)
 {

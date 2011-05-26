@@ -18,7 +18,7 @@
 #include "LoggingFunctions.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Renderer.h"
 #include "EC_Camera.h"
 #include "OgreConversionUtils.h"
@@ -44,7 +44,7 @@ const AssetReference cAxisBlue("AxisBlue.material");
 const AssetReference cAxisBlueHi("AxisBlueHi.material");
 const AssetReference cAxisWhite("AxisWhite.material");
 
-EC_TransformGizmo::EC_TransformGizmo(SceneManager *scene) :
+EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
     IComponent(scene),
     gizmoType(Translate),
     state(Inactive)

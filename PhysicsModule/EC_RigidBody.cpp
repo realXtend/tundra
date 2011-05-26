@@ -13,7 +13,7 @@
 #include "OgreMeshAsset.h"
 #include "OgreConversionUtils.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
 #include "EC_Terrain.h"
@@ -36,7 +36,7 @@ static const float cForceThreshold = 0.0005f;
 static const float cImpulseThreshold = 0.0005f;
 static const float cTorqueThreshold = 0.0005f;
 
-EC_RigidBody::EC_RigidBody(SceneManager* scene) :
+EC_RigidBody::EC_RigidBody(Scene* scene) :
     IComponent(scene),
     mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
@@ -252,7 +252,7 @@ void EC_RigidBody::UpdateSignals()
     
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceableAndTerrain()));
     
-    SceneManager* scene = parent->GetScene();
+    Scene* scene = parent->GetScene();
     world_ = scene->GetWorld<PhysicsWorld>().get();
     if (world_)
         connect(world_, SIGNAL(AboutToUpdate(float)), this, SLOT(OnAboutToUpdate()));

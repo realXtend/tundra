@@ -18,10 +18,10 @@
 #include <QWeakPointer>
 
 class Entity;
-class SceneManager;
+class Scene;
 
-typedef boost::shared_ptr<SceneManager> ScenePtr;
-typedef boost::weak_ptr<SceneManager> SceneWeakPtr;
+typedef boost::shared_ptr<Scene> ScenePtr;
+typedef boost::weak_ptr<Scene> SceneWeakPtr;
 
 typedef boost::weak_ptr<Entity> EntityWeakPtr;
 typedef boost::shared_ptr<Entity> EntityPtr;

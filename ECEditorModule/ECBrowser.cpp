@@ -11,7 +11,7 @@
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "IComponent.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Framework.h"
 #include "EC_DynamicComponent.h"
 #include "LoggingFunctions.h"

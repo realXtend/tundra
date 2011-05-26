@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "SceneAPI.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "IComponentFactory.h"
 #include "IComponent.h"
 #include "AssetReference.h"
@@ -77,7 +77,7 @@ const ScenePtr &SceneAPI::GetDefaultScene() const
     return defaultScene_;
 }
 
-SceneManager* SceneAPI::GetDefaultSceneRaw() const
+Scene* SceneAPI::GetDefaultSceneRaw() const
 {
     return defaultScene_.get();
 }
@@ -95,7 +95,7 @@ ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled, bool autho
     if (HasScene(name))
         return ScenePtr();
 
-    ScenePtr newScene = ScenePtr(new SceneManager(name, framework_, viewenabled, authority));
+    ScenePtr newScene = ScenePtr(new Scene(name, framework_, viewenabled, authority));
     if (newScene.get())
     {
         scenes_[name] = newScene;
@@ -153,7 +153,7 @@ void SceneAPI::RegisterComponentFactory(ComponentFactoryPtr factory)
     componentFactoriesByTypeid[factory->TypeId()] = factory;
 }
 
-ComponentPtr SceneAPI::CreateComponentByName(SceneManager* scene, const QString &componentTypename, const QString &newComponentName)
+ComponentPtr SceneAPI::CreateComponentByName(Scene* scene, const QString &componentTypename, const QString &newComponentName)
 {
     ComponentFactoryPtr factory = GetFactory(componentTypename);
     if (!factory)
@@ -164,7 +164,7 @@ ComponentPtr SceneAPI::CreateComponentByName(SceneManager* scene, const QString 
     return factory->Create(scene, newComponentName);
 }
 
-ComponentPtr SceneAPI::CreateComponentById(SceneManager* scene, u32 componentTypeid, const QString &newComponentName)
+ComponentPtr SceneAPI::CreateComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName)
 {
     ComponentFactoryPtr factory = GetFactory(componentTypeid);
     if (!factory)

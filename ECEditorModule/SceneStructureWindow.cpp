@@ -17,7 +17,7 @@
 #include "TreeWidgetUtils.h"
 
 #include "Framework.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "EC_Name.h"
 #include "AssetReference.h"
@@ -113,7 +113,7 @@ void SceneStructureWindow::SetScene(const ScenePtr &s)
     scene = s;
     treeWidget->SetScene(s);
 
-    SceneManager *scenePtr = scene.lock().get();
+    Scene *scenePtr = scene.lock().get();
     connect(scenePtr, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
     connect(scenePtr, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
     connect(scenePtr, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)),
@@ -197,7 +197,7 @@ void SceneStructureWindow::Populate()
 
     treeWidget->setSortingEnabled(false);
 
-    for(SceneManager::iterator it = s->begin(); it != s->end(); ++it)
+    for(Scene::iterator it = s->begin(); it != s->end(); ++it)
         AddEntity((*it).second.get());
 
     treeWidget->setSortingEnabled(true);

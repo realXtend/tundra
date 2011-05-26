@@ -41,7 +41,7 @@ class OGRE_MODULE_API EC_SelectionBox : public IComponent
     
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_SelectionBox(SceneManager* scene);
+    explicit EC_SelectionBox(Scene* scene);
     
     virtual ~EC_SelectionBox();
 

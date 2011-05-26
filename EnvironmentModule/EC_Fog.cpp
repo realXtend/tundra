@@ -17,7 +17,7 @@
 namespace Environment
 {
 
-EC_Fog::EC_Fog(SceneManager* scene) :
+EC_Fog::EC_Fog(Scene* scene) :
     IComponent(scene),
     startDistance(this, "Start distance", 100.f),
     endDistance(this, "End distance", 2000.f),

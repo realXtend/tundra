@@ -5,7 +5,7 @@
 #include "DebugOperatorNew.h"
 #include "KristalliProtocolModule.h"
 #include "SyncManager.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
@@ -89,7 +89,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     }
     
     scene_ = scene;
-    SceneManager* sceneptr = scene.get();
+    Scene* sceneptr = scene.get();
     
     connect(sceneptr, SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
         SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
@@ -181,7 +181,7 @@ void SyncManager::NewUserConnected(UserConnection* user)
     
     SceneSyncState* state = checked_static_cast<SceneSyncState*>(user->syncState.get());
     
-    for(SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         EntityPtr entity = iter->second;
         entity_id_t id = entity->GetId();
@@ -367,7 +367,7 @@ void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
 
 void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionTypeField type)
 {
-    //SceneManager* scene = scene_.lock().get();
+    //Scene* scene = scene_.lock().get();
     //assert(scene);
 
     // If we are the server and the local script on this machine has requested a script to be executed on the server, it

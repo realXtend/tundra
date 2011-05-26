@@ -23,7 +23,7 @@
 #include "UiProxyWidget.h"
 #include "FrameAPI.h"
 #include "ConsoleAPI.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "AudioAPI.h"
 #include "SoundChannel.h"
 #include "InputContext.h"
@@ -108,7 +108,7 @@ Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 /// Scene API defines.
 Q_DECLARE_METATYPE(SceneAPI*);
-Q_DECLARE_METATYPE(SceneManager*);
+Q_DECLARE_METATYPE(Scene*);
 Q_DECLARE_METATYPE(Entity*);
 Q_DECLARE_METATYPE(EntityAction*);
 Q_DECLARE_METATYPE(EntityAction::ExecutionType);
@@ -214,7 +214,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     // Scene metatypes.
     qScriptRegisterQObjectMetaType<SceneAPI*>(engine);
-    qScriptRegisterQObjectMetaType<SceneManager*>(engine);
+    qScriptRegisterQObjectMetaType<Scene*>(engine);
     qScriptRegisterQObjectMetaType<Entity*>(engine);
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);

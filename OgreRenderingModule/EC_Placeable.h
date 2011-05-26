@@ -79,7 +79,7 @@ class OGRE_MODULE_API EC_Placeable : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Placeable(SceneManager* scene);
+    explicit EC_Placeable(Scene* scene);
     virtual ~EC_Placeable();
 
     /// position property

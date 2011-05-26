@@ -6,10 +6,11 @@
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
 #include "Renderer.h"
+#include "LoggingFunctions.h"
 
 #include <Ogre.h>
 
@@ -17,7 +18,7 @@
 
 using namespace OgreRenderer;
 
-EC_Camera::EC_Camera(SceneManager* scene) :
+EC_Camera::EC_Camera(Scene* scene) :
     IComponent(scene),
     attached_(false),
     camera_(0),
@@ -32,8 +33,12 @@ EC_Camera::EC_Camera(SceneManager* scene) :
 EC_Camera::~EC_Camera()
 {
     if (world_.expired())
+    {
+        if (camera_)
+            LogError("EC_Camera: World has expired, skipping uninitialization!");
         return;
-
+    }
+    
     OgreWorldPtr world = world_.lock();
     
     DetachCamera();

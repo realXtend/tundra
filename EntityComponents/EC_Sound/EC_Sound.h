@@ -75,7 +75,7 @@ class EC_Sound : public IComponent
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_Sound(SceneManager* scene);
+    explicit EC_Sound(Scene* scene);
 
     ~EC_Sound();
 

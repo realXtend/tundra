@@ -28,7 +28,7 @@ void GetInitialDerivedBonePosition(Ogre::Node* bone, Ogre::Vector3& position);
 // Regrettable magic value
 static const float FIXED_HEIGHT_OFFSET = -0.87f;
 
-EC_Avatar::EC_Avatar(SceneManager* scene) :
+EC_Avatar::EC_Avatar(Scene* scene) :
     IComponent(scene),
     appearanceRef(this, "Appearance ref", AssetReference(""))
 {

@@ -5,7 +5,7 @@
 
 #include "EC_Sky.h"
 #include "Renderer.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "OgreMaterialUtils.h"
 #include "OgreWorld.h"
 #include "LoggingFunctions.h"
@@ -23,7 +23,7 @@ namespace Environment
 {
 
 /// \todo Use Asset API for fetching sky resources.
-EC_Sky::EC_Sky(SceneManager* scene) :
+EC_Sky::EC_Sky(Scene* scene) :
     IComponent(scene),
     materialRef(this, "Material", AssetReference("RexSkyBox")), ///< \todo Add "ogre://" when AssetAPI can handle it.
     textureRefs(this, "Texture", AssetReferenceList("Texture")),

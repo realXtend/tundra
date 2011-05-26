@@ -10,7 +10,7 @@
 #include "OgreConversionUtils.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "LoggingFunctions.h"
@@ -22,7 +22,7 @@
 
 using namespace OgreRenderer;
 
-EC_ParticleSystem::EC_ParticleSystem(SceneManager* scene):
+EC_ParticleSystem::EC_ParticleSystem(Scene* scene):
     IComponent(scene),
     particleRef(this, "Particle ref" ),
     castShadows(this, "Cast shadows", false),
@@ -95,8 +95,12 @@ void EC_ParticleSystem::DeleteParticleSystems()
 {
     OgreWorldPtr world = world_.lock();
     if (!world)
+    {
+        if (particleSystems_.size())
+            LogError("EC_ParticleSystem: World has expired, skipping uninitialization!");
         return;
-
+    }
+    
     Ogre::SceneManager* sceneMgr = world->GetSceneManager();
     if (!sceneMgr)
         return;
