@@ -3,11 +3,9 @@
  *
  *  @file   OgreScriptEditor.h
  *  @brief  Editing tool for OGRE material and particle scripts.
- *          Provides raw text edit for particles and QProperty editing for materials.
  */
 
-#ifndef incl_OgreAssetEditorModule_OgreScriptEditor_h
-#define incl_OgreAssetEditorModule_OgreScriptEditor_h
+#pragma once
 
 #include "OgreAssetEditorModuleApi.h"
 #include "AssetFwd.h"
@@ -22,46 +20,34 @@ class QTextEdit;
 class OgreMaterialProperties;
 class PropertyTableWidget;
 
+/// Editing tool for OGRE material and particle scripts.
+/** Provides raw text edit for both script types and property editing for material scripts. */
 class ASSET_EDITOR_MODULE_API OgreScriptEditor : public QWidget
 {
     Q_OBJECT
 
 public:
-    enum ScriptType
-    {
-        MaterialScript,
-        ParticleScript
-    };
-
-    OgreScriptEditor(ScriptType type, const QString &name, QWidget *parent = 0);
-
-    virtual ~OgreScriptEditor();
-
-    static OgreScriptEditor *OpenOgreScriptEditor(const QString &asset_id, ScriptType type, QWidget* parent = 0);
+    OgreScriptEditor(const AssetPtr &asset, AssetAPI *assetApi, QWidget *parent = 0);
+    ~OgreScriptEditor();
 
 public slots:
     void Open();
 
-    /// Closes the window.
-    void Close();
-
 private slots:
-    /// Save As
+    /// Saves changes made to the asset.
+    void Save();
+
+    /// Saves as new.
     void SaveAs();
 
-    /// Validates the script name
-    /** @param name Name.
-    */
+    /// Validates the script name.
+    /** @param name Name. */
     void ValidateScriptName(const QString &name);
 
     /// Validates the property's new value.
     /** @param row Row of the cell.
-        @param column Column of the cell.
-    */
+        @param column Column of the cell. */
     void PropertyChanged(int row, int column);
-
-    /// Delete this object.
-    void Deleted() { delete this; }
 
 private:
     Q_DISABLE_COPY(OgreScriptEditor);
@@ -72,16 +58,12 @@ private:
     /// Creates the property table for material property editing.
     void CreatePropertyEditor();
 
-    QWidget *mainWidget_; ///< Main widget loaded from .ui file.
-    QLineEdit *lineEditName_; ///< Save As button.
-    QPushButton *buttonSaveAs_; ///< Save As button.
-    QPushButton *buttonCancel_; ///< Cancel button.
-    QTextEdit *textEdit_; ///< Text edit field used in raw edit mode.
-    PropertyTableWidget *propertyTable_; ///< Table widget for editing material properties.
-    QString inventoryId_; ///< Inventory id.
-    ScriptType type_; ///< Script type.
-    QString name_; ///< Script name.
-    OgreMaterialProperties *materialProperties_; ///< Material properties.
+    AssetAPI *assetApi;
+    AssetPtr asset;
+    QLineEdit *lineEditName; ///< Asset name line edit.
+    QPushButton *buttonSave; ///< Save button.
+    QPushButton *buttonSaveAs; ///< Save As button.
+    QTextEdit *textEdit; ///< Text edit field used in raw edit mode.
+    PropertyTableWidget *propertyTable; ///< Table widget for editing material properties.
+    OgreMaterialProperties *materialProperties; ///< Material properties.
 };
-
-#endif
