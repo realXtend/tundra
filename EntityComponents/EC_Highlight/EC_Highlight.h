@@ -115,13 +115,14 @@ private:
     /// Mesh component pointer
     boost::weak_ptr<EC_Mesh> mesh_;
     
+    /// Ogre World
+    OgreWorldWeakPtr world_;
+    
     /// Highlight material assets, cloned from the mesh component's materials
     std::vector<AssetPtr> materials_;
     
     /// Delayed reapply already pending -flag
     bool reapplyPending_;
-    /// In reapply -flag. Used to disregard material change signals that come as a result of our own actions
-    bool inApply_;
 };
 
 #endif

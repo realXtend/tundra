@@ -52,6 +52,11 @@ public:
     Ogre::TextureUnitState* GetTextureUnit(int techIndex, int passIndex, int texUnitIndex);
     
 public slots:
+    /// Makes a clone of this asset.
+    /// For this function to succeed, the asset must be loaded in memory. (IsLoaded() == true)
+    /// @param newAssetName The name for the new asset. This will be the 'assetRef' of the new asset
+    virtual AssetPtr Clone(QString newAssetName) const;
+
     /// Copy content from another OgreMaterialAsset using Ogre internal functions, without having to serialize/deserialize
     void CopyContent(AssetPtr source);
     

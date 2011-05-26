@@ -353,6 +353,34 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     return true;
 }
 
+AssetPtr OgreMaterialAsset::Clone(QString newAssetName) const
+{
+    assert(assetAPI);
+    if (!IsLoaded())
+        return AssetPtr();
+
+    AssetPtr existing = assetAPI->GetAsset(newAssetName);
+    if (existing)
+    {
+        LogError("Cannot Clone() asset \"" + Name() + "\" to a new asset \"" + newAssetName + "\": An asset with that name already exists!");
+        return AssetPtr();
+    }
+    
+    AssetPtr newAsset = assetAPI->CreateNewAsset(this->Type(), newAssetName);
+    if (!newAsset)
+    {
+        LogError("Cannot Clone() asset \"" + Name() + "\" to a new asset \"" + newAssetName + "\": AssetAPI::CreateNewAsset failed!");
+        return AssetPtr();
+    }
+    
+    OgreMaterialAsset* destMat = dynamic_cast<OgreMaterialAsset*>(newAsset.get());
+    assert(destMat);
+    if (destMat)
+        destMat->CopyContent((const_cast<OgreMaterialAsset*>(this))->shared_from_this());
+    
+    return newAsset;
+}
+
 void OgreMaterialAsset::CopyContent(AssetPtr source)
 {
     // Not supported in headless mode
@@ -411,6 +439,9 @@ void OgreMaterialAsset::CopyContent(AssetPtr source)
             *destTech = *sourceTech;
         }
     }
+    
+    // Copy references
+    references_ = sourceMat->references_;
 }
 
 bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const

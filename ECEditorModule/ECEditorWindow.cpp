@@ -823,6 +823,11 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
 #ifdef EC_Highlight_ENABLED
     if (entity)
     {
+        // If component already has an EC_Highlight, that is not ours, do nothing, as the highlights would conflict
+        ComponentPtr c = entity->GetComponent(EC_Highlight::TypeNameStatic());
+        if ((c) && (c->Name() != cEcEditorHighlight))
+            return;
+        
         if (highlight)
         {
             EC_Highlight *hl = dynamic_cast<EC_Highlight *>(entity->GetOrCreateComponent(

@@ -13,9 +13,11 @@
 #include "AssetAPI.h"
 #include "IModule.h"
 #include "Entity.h"
+#include "Scene.h"
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
 #include "OgreMaterialAsset.h"
+#include "OgreWorld.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "LoggingFunctions.h"
@@ -29,14 +31,19 @@
 
 #include "MemoryLeakCheck.h"
 
+// Global flag for detecting conflicting applies from multiple highlights / preventing endless loops
+static bool inApply = false;
+
 EC_Highlight::EC_Highlight(Scene* scene) :
     IComponent(scene),
     visible(this, "Is visible", false),
     solidColor(this, "Solid color", Color(0.3f, 0.5f, 0.1f, 0.5f)),
     outlineColor(this, "Outline color", Color(1.0f, 1.0f, 1.0f, 0.5f)),
-    reapplyPending_(false),
-    inApply_(false)
+    reapplyPending_(false)
 {
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
+    
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
@@ -48,17 +55,16 @@ EC_Highlight::~EC_Highlight()
 
 void  EC_Highlight::Show()
 {
-    if (mesh_.expired())
+    if ((mesh_.expired()) || (world_.expired()))
         return;
     
-    inApply_ = true;
+    inApply = true;
     
     // Remove old materials first if they exist
     Hide();
     
     EC_Mesh* mesh = mesh_.lock().get();
     AssetAPI* assetAPI = framework_->Asset();
-    entity_id_t entityID = GetParentEntity()->GetId();
     
     // Clone all valid material assets that we can find from the mesh
     /// \todo Currently will clone the same material several times if used on several submeshes
@@ -72,8 +78,7 @@ void  EC_Highlight::Show()
             AssetPtr asset = assetAPI->GetAsset(assetFullName);
             if ((asset) && (asset->IsLoaded()) && (dynamic_cast<OgreMaterialAsset*>(asset.get())))
             {
-                /// \todo The material emits an error print when cloning, due to attempting to resolve already sanitated assetrefs
-                AssetPtr clone = asset->Clone("EC_Highlight_" + QString::number(entityID) + "_" + QString::number(i) + ".material");
+                AssetPtr clone = asset->Clone(QString::fromStdString(world_.lock()->GetUniqueObjectName("EC_Highlight_Material")) + ".material");
                 if (clone)
                 {
                     OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(clone.get());
@@ -84,8 +89,6 @@ void  EC_Highlight::Show()
             }
         }
     }
-    
-    inApply_ = false;
 }
 
 void EC_Highlight::Hide()
@@ -169,7 +172,7 @@ void EC_Highlight::OnAttributeUpdated(IAttribute *attribute)
 void EC_Highlight::TriggerReapply()
 {
     // Disregard signal if in the middle of applying highlight
-    if (inApply_)
+    if (inApply)
         return;
     
     // We might get multiple requests to reapply, but actually execute on the next frame, so that we don't do needless recreation of materials

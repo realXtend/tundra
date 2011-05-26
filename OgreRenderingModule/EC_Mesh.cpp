@@ -1079,13 +1079,16 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
             assetUsed = true;
         }
 
+    // This check & debug print is now in Debug mode only. Rapid changes in materials and the delay-loaded nature of assets makes it unavoidable in some cases.
+    #ifdef _DEBUG
     if (!assetUsed)
     {
-        LogWarning("OnMaterialAssetLoaded: Trying to apply material \"" + ogreMaterial->Name().toStdString() + "\" to mesh " +
+        LogDebug("OnMaterialAssetLoaded: Trying to apply material \"" + ogreMaterial->Name().toStdString() + "\" to mesh " +
             meshRef.Get().ref.toStdString() + ", but no submesh refers to the given material! The references are: ");
         for(int i = 0; i < materialList.Size(); ++i)
-            LogWarning(QString::number(i).toStdString() + ": " + materialList[i].ref.toStdString());
+            LogDebug(QString::number(i).toStdString() + ": " + materialList[i].ref.toStdString());
     }
+    #endif
 }
 
 void EC_Mesh::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)

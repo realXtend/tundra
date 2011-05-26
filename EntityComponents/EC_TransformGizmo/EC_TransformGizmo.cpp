@@ -367,7 +367,8 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
         break;
     }
 
-    mesh->meshMaterial.Set(materials, AttributeChange::Default);
+    if (mesh->meshMaterial.Get() != materials)
+        mesh->meshMaterial.Set(materials, AttributeChange::Default);
 }
 
 /*
