@@ -172,6 +172,9 @@ public slots:
 
     void SetKeyBindings(const KeyActionsMap &actionMap) { keyboardMappings = actionMap; }
 
+    /// Return the item at coordinates. If the mouse cursor is hidden, always returns null
+    QGraphicsItem* GetItemAtCoords(int x, int y) const;
+    
 private:
     Q_DISABLE_COPY(InputAPI)
 

@@ -650,7 +650,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         QPoint mousePos = MapPointToMainGraphicsView(obj, e->pos());
 
         MouseEvent mouseEvent;
-        mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = GetItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         switch(event->type())
         {
@@ -705,7 +705,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         MouseEvent mouseEvent;
         mouseEvent.eventType = MouseEvent::MouseMove;
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
-        mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = GetItemAtCoords(e->x(), e->y());
         ///\todo Set whether the previous press originated over a Qt widget or scene.
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
 
@@ -768,7 +768,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         QWheelEvent *e = static_cast<QWheelEvent *>(event);
 #ifdef Q_WS_MAC
-        QGraphicsItem *itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
+        QGraphicsItem *itemUnderMouse = GetItemAtCoords(e->x(), e->y())
         if (itemUnderMouse)
         {
             mainView->removeEventFilter(this);
@@ -783,7 +783,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         MouseEvent mouseEvent;
         mouseEvent.eventType = MouseEvent::MouseScroll;
-        mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = GetItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         mouseEvent.button = MouseEvent::NoButton;
         mouseEvent.otherButtons = e->buttons();
@@ -831,6 +831,15 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
     } // ~switch
 
     return QObject::eventFilter(obj, event);
+}
+
+QGraphicsItem* InputAPI::GetItemAtCoords(int x, int y) const
+{
+    // If the mouse cursor is hidden, act as if there was no item
+    if (IsMouseCursorVisible())
+        return framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(x, y);
+    else
+        return 0;
 }
 
 void InputAPI::Update(float frametime)
