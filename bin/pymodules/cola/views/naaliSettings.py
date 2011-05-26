@@ -42,8 +42,10 @@ class NaaliSettingsDialog(QtGui.QWidget):
 
 		self._localrepo = settings.value('Git/localrepo')
 		self._gitexedir = settings.value('Git/gitexedir')
-		self._localrepo = self._localrepo.replace('\\', '/')
-		self._gitexedir = self._gitexedir.replace('\\', '/')
+		if self._localrepo:
+			self._localrepo = self._localrepo.replace('\\', '/')
+		if self._gitexedir:            
+			self._gitexedir = self._gitexedir.replace('\\', '/')
 
 		self._layth3 = QtGui.QHBoxLayout()
 		self._layth3_1 = QtGui.QHBoxLayout()
@@ -99,6 +101,8 @@ class NaaliSettingsDialog(QtGui.QWidget):
         if gitexedir:
             self._gitexedir = gitexedir;
 			
+        print gitexedir
+        print self._gitexedir	
         self._gitexedir_label_path.text=self._gitexedir
 
     def _openlocalrepo(self):
@@ -112,17 +116,15 @@ class NaaliSettingsDialog(QtGui.QWidget):
 										  os.getcwd())
 		if localrepo:
 			self._localrepo = localrepo;
-			
+		
+		print localrepo
+		print self._localrepo	
 		self._localrepo_label_path.text=self._localrepo
 
     def _savesettings(self):
 		print "Saving values"
 		settings = QtCore.QSettings(1, 0, "realXtend", "configuration/Git")
-		self._localrepo = self._localrepo.replace('/', '\\')
-
 		settings.setValue("Git/localrepo", self._localrepo)
-		self._gitexedir = self._gitexedir.replace('/', '\\')
-
 		settings.setValue("Git/gitexedir", self._gitexedir)
 		settings.setValue("Git/repourl", self._repo_url.text)
 		settings.setValue("Git/branch", self._branch.text)
