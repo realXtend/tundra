@@ -601,13 +601,7 @@ void float3x4::SetRotatePart(const float3 &axisDirection, float angle)
 }
 void float3x4::SetRotatePart(const Quat &q)
 {
-    // See e.g. http://www.geometrictools.com/Documentation/LinearAlgebraicQuaternions.pdf .
-
-    assume(q.IsNormalized());
-    const float x = q.x; const float y = q.y; const float z = q.z; const float w = q.w;
-    v[0][0] = 1 - 2*(y*y + z*z); v[0][1] =     2*(x*y - z*w); v[0][2] =     2*(x*z + y*w);
-    v[1][0] =     2*(x*y + z*w); v[1][1] = 1 - 2*(x*x + z*z); v[1][2] =     2*(y*z - x*w);
-    v[2][0] =     2*(x*z - y*w); v[2][1] =     2*(y*z + x*w); v[2][2] = 1 - 2*(x*x + y*y);
+    SetMatrixRotatePart(*this, q);
 }
 
 void float3x4::LookAt(const float3 &localForward, const float3 &targetPosition, const float3 &localUp, const float3 &worldUp)

@@ -731,3 +731,15 @@ bool CholeskyDecomposeMatrix(const Matrix &mat, Matrix &lower)
 	}
 	return true;
 }
+
+template<typename Matrix>
+void SetMatrixRotatePart(Matrix &m, const Quat &q)
+{
+    // See e.g. http://www.geometrictools.com/Documentation/LinearAlgebraicQuaternions.pdf .
+
+    assume(q.IsNormalized());
+    const float x = q.x; const float y = q.y; const float z = q.z; const float w = q.w;
+    m[0][0] = 1 - 2*(y*y + z*z); m[0][1] =     2*(x*y - z*w); m[0][2] =     2*(x*z + y*w);
+    m[1][0] =     2*(x*y + z*w); m[1][1] = 1 - 2*(x*x + z*z); m[1][2] =     2*(y*z - x*w);
+    m[2][0] =     2*(x*z - y*w); m[2][1] =     2*(y*z + x*w); m[2][2] = 1 - 2*(x*x + y*y);
+}
