@@ -44,6 +44,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     angularFactor(this, "Angular factor", Vector3df(1,1,1)),
     linearVelocity(this, "Linear velocity", Vector3df(0,0,0)),
     angularVelocity(this, "Angular velocity", Vector3df(0,0,0)),
+    gravityEnabled(this, "Gravity", true),
     phantom(this, "Phantom", false),
     drawDebug(this, "Draw Debug", true),
     body_(0),
@@ -347,6 +348,8 @@ void EC_RigidBody::CreateBody()
     body_->setCollisionFlags(collisionFlags);
     world_->GetWorld()->addRigidBody(body_);
     body_->activate();
+
+    gravity_ = body_->getGravity();
 }
 
 void EC_RigidBody::ReaddBody()
@@ -532,6 +535,18 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
         const Vector3df& angular = angularVelocity.Get();
         body_->setAngularVelocity(btVector3(angular.x * DEGTORAD, angular.y * DEGTORAD, angular.z * DEGTORAD));
         body_->activate();
+    }
+
+    if (attribute == &gravityEnabled)
+    {
+        // Cannot modify server-authoritative physics object
+        if (!HasAuthority())
+            return;
+
+        if (gravityEnabled.Get())
+            body_->setGravity(gravity_);
+        else
+            body_->setGravity(btVector3(0,0,0));
     }
 }
 
@@ -813,3 +828,24 @@ void EC_RigidBody::EmitPhysicsCollision(Scene::Entity* otherEntity, const Vector
     emit PhysicsCollision(otherEntity, position, normal, distance, impulse, newCollision);
 }
 
+void EC_RigidBody::InterpolateUpward()
+{
+    btVector3 linearVelocity, angularVelocity;
+    btTransform fromA, toA;
+
+    body_->getMotionState()->getWorldTransform(fromA);
+    btQuaternion pointUp(btVector3(0.f, 1.f, 0.f), 0.0f);
+    btMatrix3x3 fromMat = fromA.getBasis();
+    btQuaternion orientation;
+
+    fromA.getBasis().getRotation(orientation);
+    pointUp *= orientation;
+
+    btMatrix3x3 upMat(pointUp);
+
+    toA.setBasis(upMat);
+
+    btTransformUtil::calculateVelocity(fromA, toA, btScalar(1.0f), linearVelocity, angularVelocity);
+
+    body_->setAngularVelocity(angularVelocity);
+}
