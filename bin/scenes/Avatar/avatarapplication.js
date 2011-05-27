@@ -27,12 +27,17 @@ if (isserver == false) {
     freecamToggleAction['triggered(bool)'].connect(ClientHandleToggleCamera);
 
     var returnButton = new QPushButton("Return To Avatar");
-    returnButton.resize(150, 50);
-    returnButton.font = new QFont("Arial",12);
+    returnButton.resize(150, 35);
     var returnButtonProxy = new UiProxyWidget(returnButton);
     returnButtonProxy.windowFlags = 0;
+    returnButtonProxy.effect = 0;
     ui.AddProxyWidgetToScene(returnButtonProxy);
-    var style = "QWidget { background-color: transparent; } QPushButton { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(228, 228, 228, 255), stop:1 rgba(82, 82, 82, 255)); border: 1px solid grey; border-radius: 10px; color: white; } QPushButton::hover { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.699, y2:1, stop:0 rgba(228, 228, 228, 255), stop:1 rgba(82, 82, 82, 255)); } QPushButton::pressed { color: rgb(248, 248, 248); background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(228, 228, 228, 255), stop:1 rgba(82, 82, 82, 255)); }"
+    
+    var style = "QPushButton          { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(235, 235, 235, 150), stop:1 rgba(82, 82, 82, 150)); \
+                                        font: 11pt \"Calibri\"; border: 1px solid grey; border-radius: 5px; color: rgb(250, 250, 250); } \
+                 QPushButton::hover   { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(135, 135, 135, 150), stop:1 rgba(82, 82, 82, 150)); } \
+                 QPushButton::pressed { color: rgb(220, 220, 220); background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(228, 228, 228, 150), stop:1 rgba(82, 82, 82, 150)); }";
+                 
     returnButton.styleSheet = style;
     returnButton.setAttribute(Qt.WA_OpaquePaintEvent);
     returnButtonProxy.pos = new QPointF(ui.GraphicsView().width/2 - returnButtonProxy.size.width()/2, 100);
@@ -99,6 +104,7 @@ function ClientHandleToggleCamera() {
         freecameralistener.active = true;
         avatarlistener.active = false;
         returnButtonProxy.visible = true;
+        returnButtonProxy.clearFocus();
     } else {
         avatarcamera.SetActive();
         avatarlistener.active = true;
