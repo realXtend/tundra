@@ -158,8 +158,8 @@ template<> std::string Attribute<Transform>::ToString() const
     QString value("");
     Transform transform = Get();
     Vector3df editValues[3];
-    editValues[0] = transform.position;
-    editValues[1] = transform.rotation;
+    editValues[0] = transform.pos;
+    editValues[1] = transform.rot;
     editValues[2] = transform.scale;
 
     for(uint i = 0; i < 3; i++)
@@ -956,12 +956,12 @@ template<> void Attribute<QVariantList>::ToBinary(kNet::DataSerializer& dest) co
 
 template<> void Attribute<Transform>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<float>(value_.position.x);
-    dest.Add<float>(value_.position.y);
-    dest.Add<float>(value_.position.z);
-    dest.Add<float>(value_.rotation.x);
-    dest.Add<float>(value_.rotation.y);
-    dest.Add<float>(value_.rotation.z);
+    dest.Add<float>(value_.pos.x);
+    dest.Add<float>(value_.pos.y);
+    dest.Add<float>(value_.pos.z);
+    dest.Add<float>(value_.rot.x);
+    dest.Add<float>(value_.rot.y);
+    dest.Add<float>(value_.rot.z);
     dest.Add<float>(value_.scale.x);
     dest.Add<float>(value_.scale.y);
     dest.Add<float>(value_.scale.z);
@@ -1108,12 +1108,12 @@ template<> void Attribute<QVariantList>::FromBinary(kNet::DataDeserializer& sour
 template<> void Attribute<Transform>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     Transform value;
-    value.position.x = source.Read<float>();
-    value.position.y = source.Read<float>();
-    value.position.z = source.Read<float>();
-    value.rotation.x = source.Read<float>();
-    value.rotation.y = source.Read<float>();
-    value.rotation.z = source.Read<float>();
+    value.pos.x = source.Read<float>();
+    value.pos.y = source.Read<float>();
+    value.pos.z = source.Read<float>();
+    value.rot.x = source.Read<float>();
+    value.rot.y = source.Read<float>();
+    value.rot.z = source.Read<float>();
     value.scale.x = source.Read<float>();
     value.scale.y = source.Read<float>();
     value.scale.z = source.Read<float>();
@@ -1269,11 +1269,11 @@ template<> void Attribute<Transform>::Interpolate(IAttribute* start, IAttribute*
         Transform newTrans;
         
         // Position
-        newTrans.position = lerp(startValue.position, endValue.position, t);
+        newTrans.pos = lerp(startValue.pos, endValue.pos, t);
         
         // Rotation
-        Quaternion startRot(DEGTORAD * startValue.rotation.x, DEGTORAD * startValue.rotation.y, DEGTORAD * startValue.rotation.z);
-        Quaternion endRot(DEGTORAD * endValue.rotation.x, DEGTORAD * endValue.rotation.y, DEGTORAD * endValue.rotation.z);
+        Quaternion startRot(DEGTORAD * startValue.rot.x, DEGTORAD * startValue.rot.y, DEGTORAD * startValue.rot.z);
+        Quaternion endRot(DEGTORAD * endValue.rot.x, DEGTORAD * endValue.rot.y, DEGTORAD * endValue.rot.z);
         Quaternion newRot;
         newRot.slerp(startRot, endRot, t);
         Vector3df newRotEuler;

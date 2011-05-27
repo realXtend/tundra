@@ -129,7 +129,7 @@ bool EC_VolumeTrigger::IsPivotInside(Entity *entity) const
     if (placeable && rigidbody)
     {
         const Transform& trans = placeable->transform.Get();
-        const Vector3df& pivot = trans.position;
+        const Vector3df& pivot = trans.pos;
 
         return ( RayTestSingle(Vector3df(pivot.x, pivot.y - 1e7f, pivot.z), pivot, rigidbody->GetRigidBody()) &&
                  RayTestSingle(Vector3df(pivot.x, pivot.y + 1e7f, pivot.z), pivot, rigidbody->GetRigidBody()) );

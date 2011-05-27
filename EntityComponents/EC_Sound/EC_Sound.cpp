@@ -157,7 +157,7 @@ void EC_Sound::PlaySound()
 
     if (placeable && spatial.Get() && soundListenerExists)
     {
-        soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->transform.Get().position, audioAsset, SoundChannel::Triggered);
+        soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->transform.Get().pos, audioAsset, SoundChannel::Triggered);
         if (soundChannel)
             soundChannel->SetRange(soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
     }
@@ -262,6 +262,6 @@ void EC_Sound::PlaceableUpdated(IAttribute* attribute)
     if ((attribute == &placeable->transform) && (soundChannel))
     {
         const Transform& trans = placeable->transform.Get();
-        soundChannel->SetPosition(trans.position);
+        soundChannel->SetPosition(trans.pos);
     }
 }

@@ -228,7 +228,7 @@ void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QLis
         EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
         if (p)
         {
-            Vector3df pos = p->transform.Get().position;
+            Vector3df pos = p->transform.Get().pos;
             minPos.x = std::min(minPos.x, pos.x);
             minPos.y = std::min(minPos.y, pos.y);
             minPos.z = std::min(minPos.z, pos.z);
@@ -248,7 +248,7 @@ void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QLis
         if (p)
         {
             Transform t = p->transform.Get();
-            t.position += offset;
+            t.pos += offset;
             p->transform.Set(t, AttributeChange::Default);
         }
     }

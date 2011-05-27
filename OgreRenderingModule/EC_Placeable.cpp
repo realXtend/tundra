@@ -297,7 +297,7 @@ void EC_Placeable::ConvertToObjectSpace(IComponent *comp)
         //Ogre::Vector3 resultScale = invScale * GetSceneNode()->getScale();
 
         Transform newTransform = transform.Get();
-        newTransform.position = Vector3df(resultPos.x, resultPos.y, resultPos.z);
+        newTransform.pos = Vector3df(resultPos.x, resultPos.y, resultPos.z);
         //newTransform.scale = Vector3df(resultScale.x, resultScale.y, resultScale.z);
         //Quaternion(resultRot.x, resultRot.y, resultRot.z, resultRot.w).toEuler(newTransform.rotation);
         transform.Set(newTransform, AttributeChange::Default);
@@ -558,15 +558,15 @@ void EC_Placeable::DetachNode()
 QVector3D EC_Placeable::GetQPosition() const
 {
     const Transform& trans = transform.Get();
-    return QVector3D(trans.position.x, trans.position.y, trans.position.z);
+    return QVector3D(trans.pos.x, trans.pos.y, trans.pos.z);
 }
 
 void EC_Placeable::SetQPosition(QVector3D newpos)
 {
     Transform trans = transform.Get();
-    trans.position.x = newpos.x();
-    trans.position.y = newpos.y();
-    trans.position.z = newpos.z();
+    trans.pos.x = newpos.x();
+    trans.pos.y = newpos.y();
+    trans.pos.z = newpos.z();
     transform.Set(trans, AttributeChange::Default);
     emit PositionChanged(newpos);
 }
@@ -575,9 +575,9 @@ void EC_Placeable::SetQPosition(QVector3D newpos)
 QQuaternion EC_Placeable::GetQOrientation() const 
 {
     const Transform& trans = transform.Get();
-    Quaternion orientation(DEGTORAD * trans.rotation.x,
-                      DEGTORAD * trans.rotation.y,
-                      DEGTORAD * trans.rotation.z);
+    Quaternion orientation(DEGTORAD * trans.rot.x,
+                      DEGTORAD * trans.rot.y,
+                      DEGTORAD * trans.rot.z);
     return QQuaternion(orientation.w, orientation.x, orientation.y, orientation.z);
 }
 
@@ -589,9 +589,9 @@ void EC_Placeable::SetQOrientation(QQuaternion newort)
     
     Vector3df eulers;
     q.toEuler(eulers);
-    trans.rotation.x = eulers.x * RADTODEG;
-    trans.rotation.y = eulers.y * RADTODEG;
-    trans.rotation.z = eulers.z * RADTODEG;
+    trans.rot.x = eulers.x * RADTODEG;
+    trans.rot.y = eulers.y * RADTODEG;
+    trans.rot.z = eulers.z * RADTODEG;
     transform.Set(trans, AttributeChange::Default);
     
     emit OrientationChanged(newort);
@@ -616,9 +616,9 @@ void EC_Placeable::SetQScale(QVector3D newscale)
 void EC_Placeable::SetQOrientationEuler(QVector3D newrot)
 {
     Transform trans = transform.Get();
-    trans.rotation.x = newrot.x();
-    trans.rotation.y = newrot.y();
-    trans.rotation.z = newrot.z();
+    trans.rot.x = newrot.x();
+    trans.rot.y = newrot.y();
+    trans.rot.z = newrot.z();
     transform.Set(trans, AttributeChange::Default);
     
     Quaternion orientation(DEGTORAD * newrot.x(),
@@ -630,7 +630,7 @@ void EC_Placeable::SetQOrientationEuler(QVector3D newrot)
 QVector3D EC_Placeable::GetQOrientationEuler() const
 {
     const Transform& trans = transform.Get();
-    return QVector3D(trans.rotation.x, trans.rotation.y, trans.rotation.z);
+    return QVector3D(trans.rot.x, trans.rot.y, trans.rot.z);
 }
 
 Vector3df EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df& to)
@@ -711,21 +711,21 @@ void EC_Placeable::RegisterActions()
 void EC_Placeable::Translate(const Vector3df& translation)
 {
     Transform newTrans = transform.Get();
-    newTrans.position += translation;
+    newTrans.pos += translation;
     transform.Set(newTrans, AttributeChange::Default);
 }
 
 void EC_Placeable::TranslateRelative(const Vector3df& translation)
 {
     Transform newTrans = transform.Get();
-    newTrans.position += GetOrientation() * translation;
+    newTrans.pos += GetOrientation() * translation;
     transform.Set(newTrans, AttributeChange::Default);
 }
 
 void EC_Placeable::TranslateWorldRelative(const Vector3df& translation)
 {
     Transform newTrans = transform.Get();
-    newTrans.position += GetWorldOrientation() * translation;
+    newTrans.pos += GetWorldOrientation() * translation;
     transform.Set(newTrans, AttributeChange::Default);
 }
 
@@ -748,12 +748,12 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
     if (attribute == &transform)
     {
         const Transform& trans = transform.Get();
-        if (trans.position.IsFinite())
-            sceneNode_->setPosition(trans.position.x, trans.position.y, trans.position.z);
+        if (trans.pos.IsFinite())
+            sceneNode_->setPosition(trans.pos.x, trans.pos.y, trans.pos.z);
         
-        Quaternion orientation(DEGTORAD * trans.rotation.x,
-                          DEGTORAD * trans.rotation.y,
-                          DEGTORAD * trans.rotation.z);
+        Quaternion orientation(DEGTORAD * trans.rot.x,
+                          DEGTORAD * trans.rot.y,
+                          DEGTORAD * trans.rot.z);
 
         if (orientation.IsFinite())
             sceneNode_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));

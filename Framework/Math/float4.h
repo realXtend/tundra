@@ -278,7 +278,7 @@ public:
 #ifdef QT_INTEROP
     float4(const QVector4D &other) { x = other.x(); y = other.y(); z = other.z(); w = other.w(); }
     operator QVector4D() const { return QVector4D(x, y, z, w); }
-    operator QString() const { return "(" + QString::number(x) + "," + QString::number(y) + "," + QString::number(z) + "," + QString::number(w) + ")"; }
+    operator QString() const { return "float4(" + QString::number(x) + "," + QString::number(y) + "," + QString::number(z) + "," + QString::number(w) + ")"; }
     QString toString() const { return (QString)*this; }
 #endif
 #ifdef BULLET_INTEROP

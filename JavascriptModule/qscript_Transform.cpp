@@ -8,10 +8,10 @@ static QScriptValue Transform_Transform(QScriptContext *context, QScriptEngine *
 
 static QScriptValue Transform_Transform_Vector3df_Vector3df_Vector3df(QScriptContext *context, QScriptEngine *engine)
 {
-    Vector3df pos = TypeFromQScriptValue<Vector3df>(context->argument(0));
-    Vector3df rot = TypeFromQScriptValue<Vector3df>(context->argument(1));
+    Vector3df pos_ = TypeFromQScriptValue<Vector3df>(context->argument(0));
+    Vector3df rot_ = TypeFromQScriptValue<Vector3df>(context->argument(1));
     Vector3df scale = TypeFromQScriptValue<Vector3df>(context->argument(2));
-    Transform ret(pos, rot, scale);
+    Transform ret(pos_, rot_, scale);
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -187,22 +187,22 @@ public:
     QScriptValue property(const QScriptValue &object, const QScriptString &name, uint id)
     {
         Transform *This = TypeFromQScriptValue<Transform*>(object);
-        if ((QString)name == (QString)"position") return TypeToQScriptValue(engine(), This->position);
-        if ((QString)name == (QString)"rotation") return TypeToQScriptValue(engine(), This->rotation);
+        if ((QString)name == (QString)"pos") return TypeToQScriptValue(engine(), This->pos);
+        if ((QString)name == (QString)"rot") return TypeToQScriptValue(engine(), This->rot);
         if ((QString)name == (QString)"scale") return TypeToQScriptValue(engine(), This->scale);
         return QScriptValue();
     }
     void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
     {
         Transform *This = TypeFromQScriptValue<Transform*>(object);
-        if ((QString)name == (QString)"position") This->position = TypeFromQScriptValue<Vector3df>(value);
-        if ((QString)name == (QString)"rotation") This->rotation = TypeFromQScriptValue<Vector3df>(value);
-        if ((QString)name == (QString)"scale") This->scale = TypeFromQScriptValue<Vector3df>(value);
+        if ((QString)name == (QString)"pos") This->pos = TypeFromQScriptValue<float3>(value);
+        if ((QString)name == (QString)"rot") This->rot = TypeFromQScriptValue<float3>(value);
+        if ((QString)name == (QString)"scale") This->scale = TypeFromQScriptValue<float3>(value);
     }
     QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
     {
-        if ((QString)name == (QString)"position") return flags;
-        if ((QString)name == (QString)"rotation") return flags;
+        if ((QString)name == (QString)"pos") return flags;
+        if ((QString)name == (QString)"rot") return flags;
         if ((QString)name == (QString)"scale") return flags;
         return 0;
     }

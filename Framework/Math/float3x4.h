@@ -194,6 +194,9 @@ public:
     /// Creates a new float3x4 that performs uniform scaling by the given amount.
     static ScaleOp UniformScale(float uniformScale);
 
+    /// Returns the scaling performed by this matrix.
+    float3 GetScale() const;
+
     /// Produces a matrix that shears along a principal axis.
     /** The shear matrix offsets the two other axes according to the 
         position of the point along the shear axis. [indexTitle: ShearX/Y/Z] */
@@ -584,6 +587,8 @@ public:
     /// Returns a string representation of form "(m00, m01, m02, m03; m10, m11, m12, m13; ... )".
     std::string ToString() const;
 
+    std::string ToString2() const;
+
     /// Extracts the rotation part of this matrix into Euler rotation angles.
     /// [Category: Extract] [indexTitle: ToEuler***]
     float3 ToEulerXYX() const;
@@ -634,7 +639,7 @@ public:
 
 #ifdef QT_INTEROP
     operator QString() const { return toString(); }
-    QString toString() const { return ToString().c_str(); }
+    QString toString() const { return ToString2().c_str(); }
 #endif
 };
 

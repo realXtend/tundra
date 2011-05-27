@@ -1121,14 +1121,14 @@ template<> void ECAttributeEditor<Transform>::Update(IAttribute *attr)
             {
                 Transform transformValue = attribute->Get();
                 QList<QtProperty *> positions = children[0]->subProperties();
-                variantManager->setValue(positions[0], transformValue.position.x);
-                variantManager->setValue(positions[1], transformValue.position.y);
-                variantManager->setValue(positions[2], transformValue.position.z);
+                variantManager->setValue(positions[0], transformValue.pos.x);
+                variantManager->setValue(positions[1], transformValue.pos.y);
+                variantManager->setValue(positions[2], transformValue.pos.z);
 
                 QList<QtProperty *> rotations = children[1]->subProperties();
-                variantManager->setValue(rotations[0], transformValue.rotation.x);
-                variantManager->setValue(rotations[1], transformValue.rotation.y);
-                variantManager->setValue(rotations[2], transformValue.rotation.z);
+                variantManager->setValue(rotations[0], transformValue.rot.x);
+                variantManager->setValue(rotations[1], transformValue.rot.y);
+                variantManager->setValue(rotations[2], transformValue.rot.z);
 
                 QList<QtProperty *> scales    = children[2]->subProperties();
                 variantManager->setValue(scales[0], transformValue.scale.x);
@@ -1241,22 +1241,22 @@ template<> void ECAttributeEditor<Transform>::Set(QtProperty *property)
                 switch(foundIndex)
                 {
                 case 0:
-                    trans.position.x = value;
+                    trans.pos.x = value;
                     break;
                 case 1:
-                    trans.position.y = value;
+                    trans.pos.y = value;
                     break;
                 case 2:
-                    trans.position.z = value;
+                    trans.pos.z = value;
                     break;
                 case 3:
-                    trans.rotation.x = value;
+                    trans.rot.x = value;
                     break;
                 case 4:
-                    trans.rotation.y = value;
+                    trans.rot.y = value;
                     break;
                 case 5:
-                    trans.rotation.z = value;
+                    trans.rot.z = value;
                     break;
                 case 6:
                     trans.scale.x = value;

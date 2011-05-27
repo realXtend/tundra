@@ -877,6 +877,17 @@ std::string float3x3::ToString() const
     return std::string(str);
 }
 
+std::string float3x3::ToString2() const
+{
+    char str[256];
+    sprintf(str, "float3x3(X:(%.2f,%.2f,%.2f) Y:(%.2f,%.2f,%.2f) Z:(%.2f,%.2f,%.2f)", 
+        v[0][0], v[1][0], v[2][0],
+        v[0][1], v[1][1], v[2][1],
+        v[0][2], v[1][2], v[2][2]);
+
+    return std::string(str);
+}
+
 float3 float3x3::ToEulerXYX() const { float3 f; ExtractEulerXYX(*this, f[0], f[1], f[2]); return f; }
 float3 float3x3::ToEulerXZX() const { float3 f; ExtractEulerXZX(*this, f[0], f[1], f[2]); return f; }
 float3 float3x3::ToEulerYXY() const { float3 f; ExtractEulerYXY(*this, f[0], f[1], f[2]); return f; }

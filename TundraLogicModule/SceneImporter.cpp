@@ -246,9 +246,9 @@ QList<Entity *> SceneImporter::Import(const std::string& filename, std::string i
         // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
         LogInfo("Creating entities");
 
-        Quaternion rot(DEGTORAD * worldtransform.rotation.x, DEGTORAD * worldtransform.rotation.y,
-            DEGTORAD * worldtransform.rotation.z);
-        ProcessNodeForCreation(ret, node_elem, worldtransform.position, rot, worldtransform.scale, change, prefix, flipyz, replace);
+        Quaternion rot(DEGTORAD * worldtransform.rot.x, DEGTORAD * worldtransform.rot.y,
+            DEGTORAD * worldtransform.rot.z);
+        ProcessNodeForCreation(ret, node_elem, worldtransform.pos, rot, worldtransform.scale, change, prefix, flipyz, replace);
     }
     catch(Exception& e)
     {
@@ -581,7 +581,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     QStringList materialFiles(QStringList() << materialFileName);
 
 //    Transform f;
-//    Quaternion rot(DEGTORAD * f.rotation.x, DEGTORAD * f.rotation.y, DEGTORAD * f.rotation.z);
+//    Quaternion rot(DEGTORAD * f.rot.x, DEGTORAD * f.rot.y, DEGTORAD * f.rot.z);
 
     QDomElement node_elem = nodes_elem.firstChildElement("node");
 //    ProcessNodeForDesc(sceneDesc, node_elem, f.position, rot, f.scale, path + "/"/*prefix*/, true/*flipyz*/);

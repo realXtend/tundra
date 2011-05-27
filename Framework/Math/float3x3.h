@@ -479,8 +479,10 @@ public:
     /// Returns true if this float3x3 is equal to the given float3x3, up to given per-element epsilon.
     bool Equals(const float3x3 &other, float epsilon = 1e-3f) const;
 
-    /// Returns a string representation of form "(m00, m01, m02, m03; m10, m11, m12, m13; ... )".
+    /// Returns "(m00, m01, m02; m10, m11, m12; m20, m21, m22)".
     std::string ToString() const;
+
+    std::string ToString2() const;
 
     /// Extracts the rotation part of this matrix into Euler rotation angles.
     /// [Category: Extract] [indexTitle: ToEuler***]
@@ -539,7 +541,7 @@ public:
 
 #ifdef QT_INTEROP
     operator QString() const { return toString(); }
-    QString toString() const { return ToString().c_str(); }
+    QString toString() const { return ToString2().c_str(); }
 #endif
 
 };

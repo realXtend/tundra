@@ -243,7 +243,7 @@ public:
 #ifdef QT_INTEROP
     float3(const QVector3D &other) { x = other.x(); y = other.y(); z = other.z(); }
     operator QVector3D() const { return QVector3D(x, y, z); }
-    operator QString() const { return "(" + QString::number(x) + "," + QString::number(y) + "," + QString::number(z) + ")"; }
+    operator QString() const { return "float3(" + QString::number(x) + "," + QString::number(y) + "," + QString::number(z) + ")"; }
     QString toString() const { return (QString)*this; }
 #endif
 #ifdef BULLET_INTEROP

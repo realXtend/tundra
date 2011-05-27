@@ -684,6 +684,8 @@ public:
     /// Returns a string representation of form "(m00, m01, m02, m03; m10, m11, m12, m13; ... )".
     std::string ToString() const;
 
+    std::string ToString2() const;
+
     /// Extracts the rotation part of this matrix into Euler rotation angles.
     /// [Category: Extract] [indexTitle: ToEuler***]
     float3 ToEulerXYX() const;
@@ -734,7 +736,7 @@ public:
     float4x4(const QMatrix4x4 &m) { Set(m(0,0), m(0,1), m(0,2), m(0,3), m(1,0), m(1,1), m(1,2), m(1,3), m(2,0), m(2,1), m(2,2), m(2,3), m(3,0), m(3,1), m(3,2), m(3,3)); }
     operator QMatrix4x4() { return QMatrix4x4(v[0][0], v[0][1], v[0][2], v[0][3], v[1][0], v[1][1], v[1][2], v[1][3], v[2][0], v[2][1], v[2][2], v[2][3], v[3][0], v[3][1], v[3][2], v[3][3]); }
     operator QString() const { return toString(); }
-    QString toString() const { return ToString().c_str(); }
+    QString toString() const { return ToString2().c_str(); }
 #endif
 
     float4x4 Mul(const float3x3 &rhs) const;

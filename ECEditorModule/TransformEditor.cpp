@@ -89,8 +89,8 @@ void TransformEditor::FocusGizmoPivotToAabbBottomCenter()
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
         {
-            minPos = Min(minPos, transform->Get().position);
-            maxPos = Max(maxPos, transform->Get().position);
+            minPos = Min(minPos, transform->Get().pos);
+            maxPos = Max(maxPos, transform->Get().pos);
         }
     }
 
@@ -125,7 +125,7 @@ void TransformEditor::TranslateTargets(const float3 &offset)
         if (transform)
         {
             Transform t = transform->Get();
-            t.position += offset;
+            t.pos += offset;
             transform->Set(t, AttributeChange::Default);
         }
     }
@@ -140,7 +140,7 @@ float3 TransformEditor::GetGizmoPos() const
     boost::shared_ptr<EC_Placeable> placeable = gizmo->GetComponent<EC_Placeable>();
     if (!placeable)
         return float3(0,0,0);
-    return placeable->transform.Get().position;
+    return placeable->transform.Get().pos;
 }
 
 void TransformEditor::RotateTargets(const Quat &delta)

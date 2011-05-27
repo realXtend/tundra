@@ -203,7 +203,11 @@ public:
     float3x4 ToFloat3x4() const;
     float4x4 ToFloat4x4() const;
 
+    /// Returns "(x,y,z,w)".
     std::string ToString() const;
+
+    /// Returns "Quat(axis:(x,y,z) angle:degrees)".
+    std::string ToString2() const;
 
     /// Multiplies two quaternions together.
     /// The product q1 * q2 returns a quaternion that concatenates the two orientation rotations. The rotation
@@ -229,7 +233,7 @@ public:
     Quat(const QQuaternion &other) { w = other.scalar(); x = other.x(); y = other.y(); z = other.z(); }
     operator QQuaternion() const { return QQuaternion(w, x, y, z); }
     operator QString() const { return toString(); }
-    QString toString() const { return ToString().c_str(); }
+    QString toString() const { return ToString2().c_str(); }
 #endif
 #ifdef BULLET_INTEROP
     Quat(const btQuaternion &other) { w = other.w(); x = other.x(); y = other.y(); z = other.z(); }

@@ -59,6 +59,14 @@ static QScriptValue float4x4_float4x4_Quat(QScriptContext *context, QScriptEngin
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue float4x4_ComplementaryProjection(QScriptContext *context, QScriptEngine *engine)
+{
+    float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float4x4 ret = This->ComplementaryProjection();
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue float4x4_At_int_int(QScriptContext *context, QScriptEngine *engine)
 {
     float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
@@ -538,6 +546,25 @@ static QScriptValue float4x4_Adjugate(QScriptContext *context, QScriptEngine *en
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue float4x4_CholeskyDecompose_float4x4(QScriptContext *context, QScriptEngine *engine)
+{
+    float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float4x4 outL = TypeFromQScriptValue<float4x4>(context->argument(0));
+    bool ret = This->CholeskyDecompose(outL);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue float4x4_LUDecompose_float4x4_float4x4(QScriptContext *context, QScriptEngine *engine)
+{
+    float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float4x4 outLower = TypeFromQScriptValue<float4x4>(context->argument(0));
+    float4x4 outUpper = TypeFromQScriptValue<float4x4>(context->argument(1));
+    bool ret = This->LUDecompose(outLower, outUpper);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue float4x4_Inverse(QScriptContext *context, QScriptEngine *engine)
 {
     float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
@@ -661,6 +688,14 @@ static QScriptValue float4x4_RemoveScale(QScriptContext *context, QScriptEngine 
     float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     This->RemoveScale();
+    return QScriptValue();
+}
+
+static QScriptValue float4x4_Pivot(QScriptContext *context, QScriptEngine *engine)
+{
+    float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    This->Pivot();
     return QScriptValue();
 }
 
@@ -793,6 +828,15 @@ static QScriptValue float4x4_IsSkewSymmetric_float(QScriptContext *context, QScr
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float epsilon = TypeFromQScriptValue<float>(context->argument(0));
     bool ret = This->IsSkewSymmetric(epsilon);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue float4x4_IsIdempotent_float(QScriptContext *context, QScriptEngine *engine)
+{
+    float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float epsilon = TypeFromQScriptValue<float>(context->argument(0));
+    bool ret = This->IsIdempotent(epsilon);
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -1766,6 +1810,7 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
 {
     engine->setDefaultPrototype(qMetaTypeId<float4x4*>(), QScriptValue());
     QScriptValue proto = engine->newVariant(qVariantFromValue((float4x4*)0));
+    proto.setProperty("ComplementaryProjection", engine->newFunction(float4x4_ComplementaryProjection, 0));
     proto.setProperty("At", engine->newFunction(float4x4_At_int_int, 2));
     proto.setProperty("Row", engine->newFunction(float4x4_Row_int, 1));
     proto.setProperty("Row3", engine->newFunction(float4x4_Row3_int, 1));
@@ -1814,6 +1859,8 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
     proto.setProperty("SubMatrix", engine->newFunction(float4x4_SubMatrix_int_int, 2));
     proto.setProperty("Minor", engine->newFunction(float4x4_Minor_int_int, 2));
     proto.setProperty("Adjugate", engine->newFunction(float4x4_Adjugate, 0));
+    proto.setProperty("CholeskyDecompose", engine->newFunction(float4x4_CholeskyDecompose_float4x4, 1));
+    proto.setProperty("LUDecompose", engine->newFunction(float4x4_LUDecompose_float4x4_float4x4, 2));
     proto.setProperty("Inverse", engine->newFunction(float4x4_Inverse, 0));
     proto.setProperty("Inverted", engine->newFunction(float4x4_Inverted, 0));
     proto.setProperty("InverseAffine", engine->newFunction(float4x4_InverseAffine, 0));
@@ -1829,6 +1876,7 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
     proto.setProperty("Orthonormalize3", engine->newFunction(float4x4_Orthonormalize3_selector, 3));
     proto.setProperty("Orthonormalize3", engine->newFunction(float4x4_Orthonormalize3_selector, 0));
     proto.setProperty("RemoveScale", engine->newFunction(float4x4_RemoveScale, 0));
+    proto.setProperty("Pivot", engine->newFunction(float4x4_Pivot, 0));
     proto.setProperty("TransformPoint", engine->newFunction(float4x4_TransformPoint_selector, 1));
     proto.setProperty("TransformPoint", engine->newFunction(float4x4_TransformPoint_selector, 3));
     proto.setProperty("TransformDir", engine->newFunction(float4x4_TransformDir_selector, 1));
@@ -1843,6 +1891,7 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
     proto.setProperty("IsInvertible", engine->newFunction(float4x4_IsInvertible_float, 1));
     proto.setProperty("IsSymmetric", engine->newFunction(float4x4_IsSymmetric_float, 1));
     proto.setProperty("IsSkewSymmetric", engine->newFunction(float4x4_IsSkewSymmetric_float, 1));
+    proto.setProperty("IsIdempotent", engine->newFunction(float4x4_IsIdempotent_float, 1));
     proto.setProperty("HasUnitaryScale", engine->newFunction(float4x4_HasUnitaryScale_float, 1));
     proto.setProperty("HasNegativeScale", engine->newFunction(float4x4_HasNegativeScale, 0));
     proto.setProperty("HasUniformScale", engine->newFunction(float4x4_HasUniformScale_float, 1));

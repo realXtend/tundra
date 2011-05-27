@@ -1312,11 +1312,11 @@ void EC_Terrain::UpdateRootNodeTransform()
     const Transform &tm = nodeTransformation.Get();
 
     Ogre::Matrix3 rot_new;
-    rot_new.FromEulerAnglesXYZ(Ogre::Degree(tm.rotation.x), Ogre::Degree(tm.rotation.y), Ogre::Degree(tm.rotation.z));
+    rot_new.FromEulerAnglesXYZ(Ogre::Degree(tm.rot.x), Ogre::Degree(tm.rot.y), Ogre::Degree(tm.rot.z));
     Ogre::Quaternion q_new(rot_new);
 
     rootNode->setOrientation(Ogre::Quaternion(rot_new));
-    rootNode->setPosition(tm.position.x, tm.position.y, tm.position.z);
+    rootNode->setPosition(tm.pos.x, tm.pos.y, tm.pos.z);
     rootNode->setScale(tm.scale.x, tm.scale.y, tm.scale.z);
 }
 

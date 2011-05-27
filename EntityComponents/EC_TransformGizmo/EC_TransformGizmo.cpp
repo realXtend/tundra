@@ -166,9 +166,9 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 //    if ((e->eventType == MouseEvent::MousePressed && e->button == MouseEvent::LeftButton) ||
 //        (e->eventType == MouseEvent::MouseMove && e->otherButtons == 0))
     {
-        xRay = Ray(placeable->transform.Get().position, placeable->GetOrientation()*Vector3df::UNIT_X);
-        yRay = Ray(placeable->transform.Get().position, placeable->GetOrientation()*Vector3df::UNIT_Y);
-        zRay = Ray(placeable->transform.Get().position, placeable->GetOrientation()*Vector3df::UNIT_Z);
+        xRay = Ray(placeable->transform.Get().pos, placeable->GetOrientation()*Vector3df::UNIT_X);
+        yRay = Ray(placeable->transform.Get().pos, placeable->GetOrientation()*Vector3df::UNIT_Y);
+        zRay = Ray(placeable->transform.Get().pos, placeable->GetOrientation()*Vector3df::UNIT_Z);
     }
 
     float relX = (float)e->x/GetFramework()->Ui()->GraphicsView()->size().width();

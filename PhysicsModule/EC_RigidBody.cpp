@@ -645,12 +645,12 @@ void EC_RigidBody::SetRotation(const Vector3df& rotation)
     if (placeable)
     {
         Transform trans = placeable->transform.Get();
-        trans.rotation = rotation;
+        trans.rot = rotation;
         placeable->transform.Set(trans, AttributeChange::Default);
         
         if (body_)
         {
-            Quaternion orientation(DEGTORAD * trans.rotation.x, DEGTORAD * trans.rotation.y, DEGTORAD * trans.rotation.z);
+            Quaternion orientation(DEGTORAD * trans.rot.x, DEGTORAD * trans.rot.y, DEGTORAD * trans.rot.z);
             
             btTransform& worldTrans = body_->getWorldTransform();
             btTransform interpTrans = body_->getInterpolationWorldTransform();
@@ -675,12 +675,12 @@ void EC_RigidBody::Rotate(const Vector3df& rotation)
     if (placeable)
     {
         Transform trans = placeable->transform.Get();
-        trans.rotation += rotation;
+        trans.rot += rotation;
         placeable->transform.Set(trans, AttributeChange::Default);
         
         if (body_)
         {
-            Quaternion orientation(DEGTORAD * trans.rotation.x, DEGTORAD * trans.rotation.y, DEGTORAD * trans.rotation.z);
+            Quaternion orientation(DEGTORAD * trans.rot.x, DEGTORAD * trans.rot.y, DEGTORAD * trans.rot.z);
             
             btTransform& worldTrans = body_->getWorldTransform();
             btTransform interpTrans = body_->getInterpolationWorldTransform();
@@ -827,7 +827,7 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
      */
     heightField_->setLocalScaling(ToBtVector3(scale));
     
-    Vector3df positionAdjust = terrain->nodeTransformation.Get().position;
+    Vector3df positionAdjust = terrain->nodeTransformation.Get().pos;
     positionAdjust += bbCenter;
     
     btCompoundShape* compound = new btCompoundShape();

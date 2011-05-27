@@ -408,6 +408,16 @@ std::string Quat::ToString() const
     return str;
 }
 
+std::string Quat::ToString2() const
+{
+    float3 axis;
+    float angle;
+    ToAxisAngle(axis, angle);
+    char str[256];
+    sprintf(str, "Quat(axis:(%.2f,%.2f,%.2f) angle:%2.f)", axis.x, axis.y, axis.z, RadToDeg(angle));
+    return str;
+}
+
 Quat Quat::operator +(const Quat &rhs) const
 {
     return Quat(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w);

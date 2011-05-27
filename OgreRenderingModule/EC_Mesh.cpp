@@ -175,15 +175,15 @@ void EC_Mesh::SetAttachmentScale(uint index, const Vector3df& scale)
 Vector3df EC_Mesh::GetAdjustPosition() const
 {
     Transform transform = nodeTransformation.Get();
-    return transform.position;
+    return transform.pos;
 }
 
 Quaternion EC_Mesh::GetAdjustOrientation() const
 {
     Transform transform = nodeTransformation.Get();
-    Quaternion orientation(DEGTORAD * transform.rotation.x,
-                      DEGTORAD * transform.rotation.y,
-                      DEGTORAD * transform.rotation.z);
+    Quaternion orientation(DEGTORAD * transform.rot.x,
+                      DEGTORAD * transform.rot.y,
+                      DEGTORAD * transform.rot.z);
     return orientation;
 }
 
@@ -280,10 +280,10 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         
         // Make sure adjustment node is uptodate
         Transform newTransform = nodeTransformation.Get();
-        adjustment_node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
-        Quaternion adjust(DEGTORAD * newTransform.rotation.x,
-                        DEGTORAD * newTransform.rotation.y,
-                        DEGTORAD * newTransform.rotation.z);
+        adjustment_node_->setPosition(newTransform.pos.x, newTransform.pos.y, newTransform.pos.z);
+        Quaternion adjust(DEGTORAD * newTransform.rot.x,
+                        DEGTORAD * newTransform.rot.y,
+                        DEGTORAD * newTransform.rot.z);
         adjustment_node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
         
         // Prevent Ogre exception from zero scale
@@ -890,10 +890,10 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
     else if (attribute == &nodeTransformation)
     {
         Transform newTransform = nodeTransformation.Get();
-        adjustment_node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
-        Quaternion adjust(DEGTORAD * newTransform.rotation.x,
-                          DEGTORAD * newTransform.rotation.y,
-                          DEGTORAD * newTransform.rotation.z);
+        adjustment_node_->setPosition(newTransform.pos.x, newTransform.pos.y, newTransform.pos.z);
+        Quaternion adjust(DEGTORAD * newTransform.rot.x,
+                          DEGTORAD * newTransform.rot.y,
+                          DEGTORAD * newTransform.rot.z);
         adjustment_node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
         
         // Prevent Ogre exception from zero scale
