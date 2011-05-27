@@ -55,7 +55,7 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
     layout->setSpacing(0);
     setLayout(layout);
 
-    proxyWidget = framework->Ui()->AddWidgetToScene(this);
+    proxyWidget = framework->Ui()->AddWidgetToScene(this, Qt::Widget);
     proxyWidget->setMinimumHeight(0);
     proxyWidget->setGeometry(QRect(0, 0, graphicsView->width(), 0));
     /// \todo Opacity has no effect atm.
