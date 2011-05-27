@@ -41,15 +41,28 @@ Ogre::Quaternion ToOgreQuaternion(const Quaternion &quat)
 
 std::string SanitateAssetIdForOgre(const QString& input)
 {
-    return SanitateAssetIdForOgre(input.toStdString());
+// Original form:
+//    return SanitateAssetIdForOgre(input.toStdString());
+    QString ret = input;
+    if (ret.contains('$'))
+    {
+        LogError("SanitateAssetIdForOgre: input cannot contain '$'");
+        return "";
+    }
+
+    ret.replace(':', "$1");
+    ret.replace('/', "$2");
+    return ret.toStdString();
 }
 
 std::string SanitateAssetIdForOgre(const std::string& input)
 {
-    std::string ret = input;
-    ReplaceCharInplace(ret, ':', '_');
-    ReplaceCharInplace(ret, '/', '_');
-    return ret;
+// Original form:
+//    std::string ret = input;
+//    ReplaceCharInplace(ret, ':', '_');
+//    ReplaceCharInplace(ret, '/', '_');
+//    return ret;
+    return SanitateAssetIdForOgre(QString::fromStdString(input));
 }
 
 std::string SanitateAssetIdForOgre(const char* input)
@@ -57,6 +70,19 @@ std::string SanitateAssetIdForOgre(const char* input)
     if (!input)
         return std::string();
     return SanitateAssetIdForOgre(std::string(input));
+}
+
+QString DesanitateAssetIdFromOgre(const QString &input)
+{
+    QString ret = input;
+    ret.replace("$1", ":");
+    ret.replace("$2", "/");
+    return ret;
+}
+
+QString DesanitateAssetIdFromOgre(const std::string &input)
+{
+    return DesanitateAssetIdFromOgre(QString::fromStdString(input));
 }
 
 }

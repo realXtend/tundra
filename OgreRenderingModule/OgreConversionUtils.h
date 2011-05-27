@@ -36,12 +36,17 @@ namespace OgreRenderer
 
     /// Sanitates an asset URL/ID for use with Ogre's parsers.
     /** Call this when you access an Ogre resource directly from Ogre, by querying for asset ID.
+        Replaces '/' with "$1" and ':' with "$2".
+        @note If @c input contains '$' sanitation fails and an empty string is returned.
         @note This process is one-way only. If an asset depends on assets, the original asset ID's, not sanitated one's,
-            should be recorded and used to request other the depended upon assets,
-    */
+            should be recorded and used to request other the depended upon assets. */
     std::string OGRE_MODULE_API SanitateAssetIdForOgre(const QString& input);
     std::string OGRE_MODULE_API SanitateAssetIdForOgre(const std::string& input);
     std::string OGRE_MODULE_API SanitateAssetIdForOgre(const char* input);
+
+    /// Desanitates an asset URL/ID for used with Ogre's parsers.
+    QString OGRE_MODULE_API DesanitateAssetIdFromOgre(const QString &input);
+    QString OGRE_MODULE_API DesanitateAssetIdFromOgre(const std::string &input);
 }
 
 #endif
