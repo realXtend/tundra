@@ -27,6 +27,7 @@ if (isserver == false) {
     freecamToggleAction['triggered(bool)'].connect(ClientHandleToggleCamera);
 
     var returnButton = new QPushButton("Return To Avatar");
+    returnButton.focusPolicy = Qt.NoFocus;
     returnButton.resize(150, 35);
     var returnButtonProxy = new UiProxyWidget(returnButton);
     returnButtonProxy.windowFlags = 0;
@@ -104,7 +105,6 @@ function ClientHandleToggleCamera() {
         freecameralistener.active = true;
         avatarlistener.active = false;
         returnButtonProxy.visible = true;
-        returnButtonProxy.clearFocus();
     } else {
         avatarcamera.SetActive();
         avatarlistener.active = true;

@@ -20,6 +20,7 @@ function init_ui()
     if (!return_button)
     {
         return_button = new QPushButton("Return To Previous Camera");
+        return_button.focusPolicy = Qt.NoFocus;
         return_button.resize(190, 35);
         
         return_button_proxy = new UiProxyWidget(return_button); 
@@ -40,7 +41,6 @@ function init_ui()
         return_button.clicked.connect(toggle_objectcamera);
     }
     return_button_proxy.visible = true;
-    return_button.clearFocus();
 }
 
 if (!me.HasComponent("EC_OgreCamera"))
