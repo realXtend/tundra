@@ -14,6 +14,7 @@
 class OGRE_MODULE_API TextureAsset : public IAsset
 {
     Q_OBJECT;
+
 public:
     TextureAsset(AssetAPI *owner, const QString &type, const QString &name);
     ~TextureAsset();
@@ -24,11 +25,8 @@ public:
     /// Load texture into memory
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
-    /// Handle load errors detected by AssetAPI
-    virtual void HandleLoadError(const QString &loadError);
-
     /// Unload texture from ogre
-    virtual void DoUnload();   
+    virtual void DoUnload();
 
     QImage ToQImage(size_t faceIndex = 0, size_t mipmapLevel = 0) const;
 

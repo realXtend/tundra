@@ -1128,7 +1128,6 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     if (!success)
     {
         QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
-        transfer->asset->HandleLoadError(error);
         transfer->EmitAssetFailed(error);
         return;
     }

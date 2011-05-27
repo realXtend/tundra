@@ -473,14 +473,6 @@ bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serial
     return true;
 }
 
-void OgreMaterialAsset::HandleLoadError(const QString &loadError)
-{
-    // Don't print anything if we are headless, 
-    // not loading the material was intentional
-    if (!assetAPI->IsHeadless())
-        LogError(loadError.toStdString());
-}
-
 std::vector<AssetReference> OgreMaterialAsset::FindReferences() const
 {
     return references_;

@@ -11,8 +11,7 @@
 
 class OGRE_MODULE_API OgreMaterialAsset : public IAsset
 {
-
-Q_OBJECT
+    Q_OBJECT
 
 public:
     OgreMaterialAsset(AssetAPI *owner, const QString &type_, const QString &name_) : IAsset(owner, type_, name_) {}
@@ -26,9 +25,6 @@ public:
 
     /// Unload material from ogre
     virtual void DoUnload();
-
-    /// Handle load errors detected by AssetAPI
-    virtual void HandleLoadError(const QString &loadError);
 
     /// Return references of this material, in most cases textures
     virtual std::vector<AssetReference> FindReferences() const;

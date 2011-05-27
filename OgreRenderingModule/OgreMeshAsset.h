@@ -10,8 +10,7 @@
 
 class OGRE_MODULE_API OgreMeshAsset : public IAsset
 {
-
-Q_OBJECT
+    Q_OBJECT
 
 public:
     OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_)
@@ -29,9 +28,6 @@ public:
 
     /// Unload mesh from ogre
     virtual void DoUnload();
-
-    /// Handle load errors detected by AssetAPI
-    virtual void HandleLoadError(const QString &loadError);
 
     /// Returns an empty list - meshes do not refer to other assets.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
