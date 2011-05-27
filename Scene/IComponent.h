@@ -193,7 +193,7 @@ public slots:
     void SetNetworkSyncEnabled(bool enabled);
 
     /// Returns true if network synchronization of the attributes of this component is enabled.
-    bool GetNetworkSyncEnabled() const { return network_sync_; }
+    bool GetNetworkSyncEnabled() const { return networkSync_; }
 
     /// Sets the default mode for attribute change operations
     void SetUpdateMode(AttributeChange::Type defaultmode);
@@ -308,7 +308,7 @@ protected:
     QString ReadAttributeType(QDomElement& comp_element, const QString &name) const;
 
     /// Points to the Entity this Component is part of, or null if this Component is not attached to any Entity.
-    Entity* parent_entity_;
+    Entity* parentEntity_;
 
     /// The name of this component. By default the name of a component is an empty string.
     QString name_;
@@ -317,7 +317,7 @@ protected:
     AttributeVector attributes_;
 
     /// Network sync enable flag
-    bool network_sync_;
+    bool networkSync_;
     
     /// Default update mode for attribute changes
     AttributeChange::Type updatemode_;

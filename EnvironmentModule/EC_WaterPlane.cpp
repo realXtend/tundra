@@ -132,9 +132,9 @@ namespace Environment
             }
         }
 
-        connect(parent_entity_,SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)),
+        connect(parentEntity_,SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)),
             SLOT(ComponentAdded(IComponent*, AttributeChange::Type)));
-        connect(parent_entity_,SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)),
+        connect(parentEntity_,SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)),
             SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)));
     }
 

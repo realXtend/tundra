@@ -130,6 +130,11 @@ public slots:
     /** @note Use with caution. Never set the position of the camera directly, use the placeable component for that. */
     Ogre::Camera* GetCamera() const { return camera_; }
 
+    /// Returns whether an entity is visible in the camera
+    /** The entity must have the EC_Placeable component, and be in the same scene, otherwise will always return false.
+     */
+    bool IsEntityVisible(Entity* entity) const;
+    
 /* The following functions moved here from IRenderer. Reimplement them:
 
     /// take sceenshot to a location

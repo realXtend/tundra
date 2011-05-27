@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_Camera.h"
+#include "EC_Mesh.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "Scene.h"
@@ -254,4 +255,37 @@ void EC_Camera::OnComponentRemoved(IComponent* component, AttributeChange::Type 
 {
     if (component == placeable_.get())
         SetPlaceable(ComponentPtr());
+}
+
+bool EC_Camera::IsEntityVisible(Entity* entity) const
+{
+    if ((!entity) || (!camera_) || (!parentEntity_))
+        return false;
+    if (entity->GetScene() != parentEntity_->GetScene())
+        return false;
+    EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
+    if (!placeable)
+        return false;
+    Ogre::SceneNode* placeableNode = placeable->GetSceneNode();
+    if (!placeableNode)
+        return false;
+    
+    // Test all movable objects attached to the placeable node
+    unsigned numObjects = placeableNode->numAttachedObjects();
+    for (unsigned i = 0; i < numObjects; ++i)
+    {
+        if (camera_->isVisible(placeableNode->getAttachedObject(i)->getWorldBoundingBox()))
+            return true;
+    }
+    // Treat the mesh as a special case, because it has its own adjustment node, and is not detected by the code above
+    /// \todo Should be a general way
+    EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
+    if (mesh)
+    {
+        Ogre::Entity* entity = mesh->GetEntity();
+        if ((entity) && (camera_->isVisible(entity->getWorldBoundingBox())))
+            return true;
+    }
+    
+    return false;
 }
