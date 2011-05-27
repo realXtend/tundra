@@ -127,18 +127,16 @@ void OgreScriptEditor::Open()
 */
     if (asset->Type() == "OgreMaterial")
     {
-        Ogre::MaterialSerializer serializer;
-        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(OgreRenderer::SanitateAssetIdForOgre(asset->Name()));
-        if (material.get())
+        std::vector<u8> data;
+        if (asset->SerializeTo(data))
         {
-            serializer.queueForExport(material);
-            QString script = QString(serializer.getQueuedAsString().c_str());
+            data.push_back('\0');
+            QString script((const char *)&data[0]);
             script = script.trimmed();
             script.replace(QChar(9), "    ");
 
             CreateTextEdit();
             textEdit->setText(script);
-            LogInfo("Creating MaterialScriptHighlighter");
             MaterialScriptHighlighter *hl= new MaterialScriptHighlighter(textEdit);
             hl->setDocument(textEdit->document());
         }
