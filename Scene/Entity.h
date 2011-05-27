@@ -337,6 +337,12 @@ public:
     void SerializeToBinary(kNet::DataSerializer &dst) const;
 //        void DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change);
 
+    /// Emit EnterView signal. Called by the rendering subsystem
+    void EmitEnterView();
+    
+    /// Emit LeaveView signal. Called by the rendering subsystem
+    void EmitLeaveView();
+    
 signals:
     /// A component has been added to the entity
     /** @note When this signal is received on new entity creation, the attributes might not be filled yet! */ 
@@ -349,6 +355,12 @@ signals:
     /// Signal when this entity is deleted
     void EntityRemoved(Entity* entity, AttributeChange::Type change);
 
+    /// The entity has entered the active viewport. Triggered by the rendering subsystem.
+    void EnterView();
+    
+    /// The entity has left the active viewport. Triggered by the rendering subsystem.
+    void LeaveView();
+    
 private:
     friend class Scene;
 

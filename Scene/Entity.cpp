@@ -508,6 +508,16 @@ void Entity::EmitEntityRemoved(AttributeChange::Type change)
     emit EntityRemoved(this, change);
 }
 
+void Entity::EmitEnterView()
+{
+    emit EnterView();
+}
+
+void Entity::EmitLeaveView()
+{
+    emit LeaveView();
+}
+
 void Entity::SetTemporary(bool enable)
 {
     temporary_ = enable;

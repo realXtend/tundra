@@ -639,9 +639,17 @@ namespace OgreRenderer
             resized_dirty_--;
 
         // Clear the RenderableListener(s) of all Ogre scenes
+        OgreWorldPtr activeOgreWorld = GetActiveOgreWorld();
+        
         for (std::map<Scene*, OgreWorldPtr>::iterator i = ogreWorlds_.begin(); i != ogreWorlds_.end(); ++i)
-            i->second->ClearVisibleEntities();
-
+        {
+            /// \todo This assumes that there is only one active viewport with an active OgreWorld. In the future there may be many
+            if (i->second == activeOgreWorld)
+                i->second->BeginFrame();
+            else
+                i->second->ClearVisibleEntities();
+        }
+        
 #ifdef PROFILING
         // Performance debugging: Toggle the UI overlay visibility based on a debug key.
         // Allows testing whether the GPU is majorly fill rate bound.
@@ -661,6 +669,9 @@ namespace OgreRenderer
             std::cout << "Ogre::Root::renderOneFrame threw an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
             LogCritical(std::string("Ogre::Root::renderOneFrame threw an exception: ") + (e.what() ? e.what() : "(null)"));
         }
+
+        if (activeOgreWorld)
+            activeOgreWorld->EndFrame();
 
         view->MarkViewUndirty();
     }
