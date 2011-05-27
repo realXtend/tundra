@@ -105,9 +105,9 @@ function mouseLeftPress(event)
         if (!objectcamera_mode)
         {
             var raycastResult = renderer.Raycast(event.x, event.y);
-            if (raycastResult.entity !== null)
+            if (raycastResult.entity != null)
             {
-                if (raycastEntity.entity.HasComponent("EC_Selected"))
+                if (raycastResult.entity.HasComponent("EC_Selected"))
                     return;
 
                 init_ui();
