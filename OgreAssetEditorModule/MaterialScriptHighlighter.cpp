@@ -41,6 +41,16 @@ const char *cKeywords[] = {
     "param_indexed", "param_indexed_auto", "param_named", "param_named_auto",
 };
 
+// As copied from OgreParticleEmittor.cpp
+/*
+const char *cParticleKeywords[] = {
+    "affector", // Affector has no keywords, for now at least
+    "emitter", "angle", "colour" "colour_range_start", "colour_range_end", "direction",  "emission_rate", "position",
+    "velocity", "velocity_min", "velocity_max", "time_to_live", "time_to_live_min", "time_to_live_max", "duration",
+    "duration_min", "duration_max", "repeat_delay", "repeat_delay_min", "repeat_delay_max", "name", "emit_emitter"
+};
+*/
+
 bool IsKeyword(const QString &text, const char **keywords, size_t numKeywords)
 {
     for(size_t i = 0; i < numKeywords; ++i)
@@ -58,6 +68,5 @@ void MaterialScriptHighlighter::highlightBlock(const QString &text)
         index = text.indexOf(word, index);
         if (IsKeyword(word, cKeywords, NUMELEMS(cKeywords)))
             setFormat(index, word.length(), Qt::blue);
-        //index = text.indexOf(expression, index + length);
     }
 }
