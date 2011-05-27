@@ -42,6 +42,8 @@ public:
     float3 maxPoint;
 
     /// Sets this structure to a degenerate AABB that does not have any volume.
+    /// This function is useful for initializing the AABB to "null" before a loop of calls to Enclose(),
+    /// which incrementally expand the contents of this AABB to enclose the given objects.
     void SetNegativeInfinity();
 
     /// Sets this AABB to enclose the given OBB.
@@ -103,6 +105,11 @@ public:
     /** This function generates one of the eight corner points of this AABB. 
         @param cornerIndex The index of the corner point to generate, in the range [0, 7]. \todo Document which index generates which one. */
     float3 CornerPoint(int cornerIndex) const;
+
+    /// Returns a point on an edge of this AABB.
+    /** @param edgeIndex The index of the edge to generate a point to, in the range [0, 11]. \todo Document which index generates which one.
+        @param u A normalized value between [0,1]. This specifies the relative distance of the point along the edge. */
+    float3 PointOnEdge(int edgeIndex, float u) const;
 
     /// Returns the point at the center of the given face of this AABB.
     /// @param faceIndex The index of the AABB face to generate the point at. The valid range is [0, 5].
@@ -204,17 +211,17 @@ public:
             speed up the query. The closest point may not be unique, in which case an arbitrary point on the surface of this AABB
             is returned.
         @return The distance between outClosestPoint and outClosestPointOther is returned. */
-    float Distance(const float3 &point, float3 *outClosestPoint) const;
+  //  float Distance(const float3 &point, float3 *outClosestPoint) const;
     /** @param outClosestDistance [out, optional] For ray, line and line segment queries, this parameter will receive the distance along
             the ray that specifies the closest point on that object to this AABB. This parameter may be left null, in which case the 
             actual distance along the ray is not computed. */
-    float Distance(const Ray &ray, float3 *outClosestPoint, float *outClosestDistance) const;
-    float Distance(const Line &line, float3 *outClosestPoint, float *outClosestdistance) const;
-    float Distance(const LineSegment &lineSegment, float3 *outClosestPoint, float *outClosestDistance) const;
+  //  float Distance(const Ray &ray, float3 *outClosestPoint, float *outClosestDistance) const;
+  //  float Distance(const Line &line, float3 *outClosestPoint, float *outClosestdistance) const;
+  //  float Distance(const LineSegment &lineSegment, float3 *outClosestPoint, float *outClosestDistance) const;
     /** @param outClosestPointOther [out, optional] If not null, this parameter will receive the closest point to this AABB on the surface
             of the other object. This parameter may be left null, if the actual point is not important. The closest point 
             may not be unique, in which case an arbitrary point on the surface of the other object is returned.*/
-    float Distance(const AABB &aabb, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
+ /*   float Distance(const AABB &aabb, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
     float Distance(const OBB &obb, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
     float Distance(const Plane &plane, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
     float Distance(const Sphere &sphere, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
@@ -226,7 +233,7 @@ public:
     float Distance(const Frustum &frustum, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
 //    float Distance(const Polygon &polygon, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
 //    float Distance(const Polyhedron &polyhedron, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
-
+*/
     /// Tests if this AABB contains the given point.
     /** This function returns true if the given point lies inside this AABB, and false otherwise.
         \note The comparison is performed using less-or-equal, so the faces of this AABB count as being inside, but
@@ -238,10 +245,10 @@ public:
         @param outDistance [out] For rays, lines and line segments, this parameter receives the distance along the ray
             that specifies the hit point.        
         @return The HitInfo structure that describes the details of the intersection that occurred. */
-    HitInfo Intersect(const Ray &ray, float *outDistance) const; ///< [noscript]
+//    HitInfo Intersect(const Ray &ray, float *outDistance) const; ///< [noscript]
     /** @param maxDistance If specified, limits the maximum distance along the ray to which the intersection
         is checked. This effectively utilizes the ray as if it was a line segment. */
-    HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const; ///< [noscript]
+/*    HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const; ///< [noscript]
     HitInfo Intersect(const Line &line, float *outDistance) const; ///< [noscript]
     HitInfo Intersect(const LineSegment &lineSegment, float *outDistance) const; ///< [noscript]
     HitInfo Intersect(const AABB &aabb) const; ///< [noscript]
@@ -256,7 +263,7 @@ public:
     HitInfo Intersect(const Frustum &frustum) const; ///< [noscript]
 //    HitInfo Intersect(const Polygon &polygon) const; ///< [noscript]
 //    HitInfo Intersect(const Polyhedron &polyhedron) const; ///< [noscript]
-
+*/
     /// Expands this AABB to enclose the given object.
     /** This function computes the AABB that encloses both this AOBB and the specified object, and stores the resulting
         AABB into this.
@@ -268,12 +275,12 @@ public:
     void Enclose(const AABB &aabb);
     void Enclose(const OBB &obb);
     void Enclose(const Sphere &sphere);
-    void Enclose(const Ellipsoid &ellipsoid);
-    void Enclose(const Triangle &triangle);
-    void Enclose(const Cylinder &cylinder);
+//    void Enclose(const Ellipsoid &ellipsoid);
+//    void Enclose(const Triangle &triangle);
+//    void Enclose(const Cylinder &cylinder);
 //    void Enclose(const Capsule &capsule);
 //    void Enclose(const Torus &torus);
-    void Enclose(const Frustum &frustum);
+//    void Enclose(const Frustum &frustum);
 //    void Enclose(const Polygon &polygon);
 //    bool Enclose(const Polyhedron &polyhedron);
     /// [noscript]
