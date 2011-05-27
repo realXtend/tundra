@@ -15,8 +15,10 @@
 class Sphere
 {
 public:
-    float3 center;
-    float radius;
+    /// The center point of this sphere.
+    float3 pos;
+    /// The radius of this sphere.
+    float r;
 
     /// @note The default ctor does not initialize any member values.
     Sphere() {}

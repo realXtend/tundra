@@ -20,11 +20,11 @@
 class OBB
 {
 public:
-    /// The center of the OBB.
-    float3 center;
+    /// The center of this OBB.
+    float3 pos;
 
     /// Stores half-sizes to (local) x, y and z directions.
-    float3 halfDistances;
+    float3 size;
 
     /// Specifies normalized direction vectors for the local axes (x, y and z). [noscript]
     float3 axes[3];
