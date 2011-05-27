@@ -665,9 +665,9 @@ void OgreMaterialAsset::DesanitateAssetIds(std::string &material)
 
         if (idx != -1 && offset != -1)
         {
-            QString origLine = lines[i].mid(idx + offset);
-            QString desanitatedRef = DesanitateAssetIdFromOgre(origLine.trimmed());
-            lines[i].replace(idx, origLine.length(), desanitatedRef);
+            QString desanitatedRef = DesanitateAssetIdFromOgre(lines[i].mid(idx + offset).trimmed());
+            lines[i] = lines[i].left(idx);
+            lines[i].append(id + desanitatedRef);
         }
     }
 

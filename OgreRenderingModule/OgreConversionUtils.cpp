@@ -41,14 +41,9 @@ Ogre::Quaternion ToOgreQuaternion(const Quaternion &quat)
 
 std::string SanitateAssetIdForOgre(const QString& input)
 {
-// Original form:
-//    return SanitateAssetIdForOgre(input.toStdString());
     QString ret = input;
     if (ret.contains('$'))
-    {
-        LogError("SanitateAssetIdForOgre: input cannot contain '$'");
-        return "";
-    }
+        return ret.toStdString();
 
     ret.replace(':', "$1");
     ret.replace('/', "$2");
@@ -57,11 +52,6 @@ std::string SanitateAssetIdForOgre(const QString& input)
 
 std::string SanitateAssetIdForOgre(const std::string& input)
 {
-// Original form:
-//    std::string ret = input;
-//    ReplaceCharInplace(ret, ':', '_');
-//    ReplaceCharInplace(ret, '/', '_');
-//    return ret;
     return SanitateAssetIdForOgre(QString::fromStdString(input));
 }
 
