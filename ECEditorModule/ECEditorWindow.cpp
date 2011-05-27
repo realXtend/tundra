@@ -148,7 +148,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     Scene *scene = framework->Scene()->GetDefaultScene().get();
     if (scene)
     {
-        connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
+        connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(RemoveEntity(Entity*)), Qt::UniqueConnection);
         connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionTypeField)),
             SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
     }
