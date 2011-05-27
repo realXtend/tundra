@@ -159,8 +159,7 @@ EC_Placeable::EC_Placeable(Scene* scene) :
     visible(this, "Visible", true),
     selectionLayer(this, "Selection layer", 1),
     parentRef(this, "Parent entity ref", EntityReference()),
-    parentBone(this, "Parent bone name", ""),
-    signalView(this, "Signal enter/leave view", false)
+    parentBone(this, "Parent bone name", "")
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();

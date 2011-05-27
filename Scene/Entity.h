@@ -338,10 +338,10 @@ public:
 //        void DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change);
 
     /// Emit EnterView signal. Called by the rendering subsystem
-    void EmitEnterView();
+    void EmitEnterView(IComponent* camera);
     
     /// Emit LeaveView signal. Called by the rendering subsystem
-    void EmitLeaveView();
+    void EmitLeaveView(IComponent* camera);
     
 signals:
     /// A component has been added to the entity
@@ -355,11 +355,11 @@ signals:
     /// Signal when this entity is deleted
     void EntityRemoved(Entity* entity, AttributeChange::Type change);
 
-    /// The entity has entered the active viewport. Triggered by the rendering subsystem.
-    void EnterView();
+    /// The entity has entered a camera's view. Triggered by the rendering subsystem.
+    void EnterView(IComponent* camera);
     
-    /// The entity has left the active viewport. Triggered by the rendering subsystem.
-    void LeaveView();
+    /// The entity has left a camera's view. Triggered by the rendering subsystem.
+    void LeaveView(IComponent* camera);
     
 private:
     friend class Scene;

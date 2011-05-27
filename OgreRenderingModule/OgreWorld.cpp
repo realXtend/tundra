@@ -10,6 +10,7 @@
 #include "CompositionHandler.h"
 #include "Profiler.h"
 #include "ConfigAPI.h"
+#include "FrameAPI.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 
 #include <Ogre.h>
@@ -29,14 +30,15 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     {
         rayQuery_ = sceneManager_->createRayQuery(Ogre::Ray());
         rayQuery_->setSortByDistance(true);
-        sceneManager_->getRenderQueue()->setRenderableListener(this);
-        
+
         // If fog is FOG_NONE, force it to some default ineffective settings, because otherwise SuperShader shows just white
         if (sceneManager_->getFogMode() == Ogre::FOG_NONE)
             sceneManager_->setFog(Ogre::FOG_LINEAR, Ogre::ColourValue::White, 0.001f, 2000.0f, 4000.0f);
         
         SetupShadows();
     }
+    
+    connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
 }
 
 OgreWorld::~OgreWorld()
@@ -46,34 +48,6 @@ OgreWorld::~OgreWorld()
     
     Ogre::Root* root = Ogre::Root::getSingletonPtr();
     root->destroySceneManager(sceneManager_);
-}
-
-bool OgreWorld::renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID, Ogre::ushort priority, Ogre::Technique** ppTech, Ogre::RenderQueue* pQueue)
-{
-    Ogre::Any any = rend->getUserAny();
-    if (any.isEmpty())
-        return true;
-    
-    Entity *entity = 0;
-    try
-    {
-        entity = Ogre::any_cast<Entity*>(any);
-        if (entity)
-        {
-            visibleEntities_.insert(entity->GetId());
-            EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
-            if (placeable)
-            {
-                // See if the entity's visibility should be tracked and signaled. We do not want this for all entities by default
-                if (placeable->signalView.Get())
-                    visibleTrackedEntities_.insert(entity->GetId());
-            }
-        }
-    }
-    catch(Ogre::InvalidParametersException &/*e*/)
-    {
-    }
-    return true;
 }
 
 std::string OgreWorld::GetUniqueObjectName(const std::string &prefix)
@@ -316,7 +290,7 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
         if (!entry.movable->isVisible())
             continue;
         
-        Ogre::Any any = entry.movable->getUserAny();
+        const Ogre::Any& any = entry.movable->getUserAny();
         if (any.isEmpty())
             continue;
 
@@ -431,10 +405,14 @@ QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect)
     for(Ogre::SceneQueryResultMovableList::iterator iter = results.movables.begin(); iter != results.movables.end(); ++iter)
     {
         Ogre::MovableObject *m = *iter;
+        const Ogre::Any& any = m->getUserAny();
+        if (any.isEmpty())
+            continue;
+        
         Entity *entity = 0;
         try
         {
-            entity = Ogre::any_cast<Entity*>(m->getUserAny());
+            entity = Ogre::any_cast<Entity*>(any);
         }
         catch(Ogre::InvalidParametersException &/*e*/)
         {
@@ -451,70 +429,100 @@ QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect)
 
 bool OgreWorld::IsEntityVisible(Entity* entity) const
 {
-    if (!entity)
+    EC_Camera* cameraComponent = VerifyCurrentSceneCameraComponent();
+    if (!cameraComponent)
         return false;
     
-    return (visibleEntities_.find(entity->GetId()) != visibleEntities_.end());
-}
-
-void OgreWorld::ClearVisibleEntities()
-{
-    visibleEntities_.clear();
-    visibleTrackedEntities_.clear();
-    lastVisibleEntities_.clear();
-    lastVisibleTrackedEntities_.clear();
-}
-
-void OgreWorld::BeginFrame()
-{
-    lastVisibleEntities_ = visibleEntities_;
-    lastVisibleTrackedEntities_ = visibleTrackedEntities_;
-    visibleEntities_.clear();
-    visibleTrackedEntities_.clear();
-}
-
-void OgreWorld::EndFrame()
-{
-    Scene* scene = scene_.lock().get();
-    if (!scene)
-        return; // Should not be possible
-    
-    // Send enter/leave view signals for entities which have view tracking enabled
-    for (std::set<entity_id_t>::iterator i = visibleTrackedEntities_.begin(); i != visibleTrackedEntities_.end(); ++i)
-    {
-        // If was not visible last frame, emit EnterView signal
-        if (lastVisibleTrackedEntities_.find(*i) == lastVisibleTrackedEntities_.end())
-        {
-            EntityPtr entity = scene->GetEntity(*i);
-            if (entity)
-                entity->EmitEnterView();
-        }
-    }
-    for (std::set<entity_id_t>::iterator i = lastVisibleTrackedEntities_.begin(); i != lastVisibleTrackedEntities_.end(); ++i)
-    {
-        // If was visible last frame, but not anymore, emit LeaveView signal
-        if (visibleTrackedEntities_.find(*i) == visibleTrackedEntities_.end())
-        {
-            EntityPtr entity = scene->GetEntity(*i);
-            if (entity)
-                entity->EmitLeaveView();
-        }
-    }
+    return cameraComponent->IsEntityVisible(entity);
 }
 
 QList<Entity*> OgreWorld::GetVisibleEntities() const
 {
     QList<Entity*> l;
-    Scene* scene = scene_.lock().get();
-    if (!scene)
-        return l;
-    for (std::set<entity_id_t>::const_iterator i = visibleEntities_.begin(); i != visibleEntities_.end(); ++i)
+    EC_Camera* cameraComponent = VerifyCurrentSceneCameraComponent();
+    if (!cameraComponent)
+        return QList<Entity*>();
+    
+    return cameraComponent->GetVisibleEntities();
+}
+
+void OgreWorld::StartViewTracking(Entity* entity)
+{
+    if (!entity)
+        return;
+
+    EntityPtr entityPtr = entity->shared_from_this();
+    for (unsigned i = 0; i < visibilityTrackedEntities_.size(); ++i)
     {
-        Entity* entity = scene->GetEntity(*i).get();
-        if (entity)
-            l.push_back(entity);
+        if (visibilityTrackedEntities_[i].lock() == entityPtr)
+            return; // Already added
     }
-    return l;
+    
+    visibilityTrackedEntities_.push_back(entity->shared_from_this());
+}
+
+void OgreWorld::StopViewTracking(Entity* entity)
+{
+    if (!entity)
+        return;
+    
+    EntityPtr entityPtr = entity->shared_from_this();
+    for (unsigned i = 0; i < visibilityTrackedEntities_.size(); ++i)
+    {
+        if (visibilityTrackedEntities_[i].lock() == entityPtr)
+        {
+            visibilityTrackedEntities_.erase(visibilityTrackedEntities_.begin() + i);
+            return;
+        }
+    }
+}
+
+void OgreWorld::OnUpdated(float timeStep)
+{
+    // Do nothing if visibility not being tracked for any entities
+    if (visibilityTrackedEntities_.empty())
+    {
+        if (!lastVisibleEntities_.empty())
+            lastVisibleEntities_.clear();
+        if (!visibleEntities_.empty())
+            visibleEntities_.clear();
+        return;
+    }
+    
+    // Update visible objects from the active camera
+    lastVisibleEntities_ = visibleEntities_;
+    EC_Camera* activeCamera = VerifyCurrentSceneCameraComponent();
+    if (activeCamera)
+        visibleEntities_ = activeCamera->GetVisibleEntityIDs();
+    else
+        visibleEntities_.clear();
+    
+    for (unsigned i = visibilityTrackedEntities_.size() - 1; i < visibilityTrackedEntities_.size(); --i)
+    {
+        // Check if the entity has expired; erase from list in that case
+        if (visibilityTrackedEntities_[i].expired())
+            visibilityTrackedEntities_.erase(visibilityTrackedEntities_.begin() + i);
+        else
+        {
+            Entity* entity = visibilityTrackedEntities_[i].lock().get();
+            entity_id_t id = entity->GetId();
+            
+            // Check for change in visibility status
+            bool last = lastVisibleEntities_.find(id) != lastVisibleEntities_.end();
+            bool now = visibleEntities_.find(id) != visibleEntities_.end();
+            
+            if ((!last) && (now))
+            {
+                emit EntityEnterView(entity);
+                entity->EmitEnterView(activeCamera);
+            }
+            else if ((last) && (!now))
+            {
+                emit EntityLeaveView(entity);
+                entity->EmitLeaveView(activeCamera);
+            }
+        }
+    }
 }
 
 void OgreWorld::SetupShadows()
@@ -645,13 +653,20 @@ void OgreWorld::SetupShadows()
 
 Ogre::Camera* OgreWorld::VerifyCurrentSceneCamera() const
 {
+    EC_Camera* cameraComponent = VerifyCurrentSceneCameraComponent();
+    return cameraComponent ? cameraComponent->GetCamera() : 0;
+}
+
+EC_Camera* OgreWorld::VerifyCurrentSceneCameraComponent() const
+{
     EC_Camera* cameraComponent = checked_static_cast<EC_Camera*>(renderer_->GetActiveCamera());
     if (!cameraComponent)
         return 0;
     Entity* entity = cameraComponent->GetParentEntity();
     if ((!entity) || (entity->GetScene() != scene_.lock().get()))
         return 0;
-    return cameraComponent->GetCamera();
+    
+    return cameraComponent;
 }
 
 bool OgreWorld::IsActive() const

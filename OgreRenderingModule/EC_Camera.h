@@ -10,6 +10,11 @@
 
 #include <OgreRay.h>
 
+namespace Ogre
+{
+    class PlaneBoundedVolumeListSceneQuery;
+}
+
 /// Ogre camera entity component
 /**
 <table class="header">
@@ -130,10 +135,14 @@ public slots:
     /** @note Use with caution. Never set the position of the camera directly, use the placeable component for that. */
     Ogre::Camera* GetCamera() const { return camera_; }
 
-    /// Returns whether an entity is visible in the camera
-    /** The entity must have the EC_Placeable component, and be in the same scene, otherwise will always return false.
-     */
-    bool IsEntityVisible(Entity* entity) const;
+    /// Returns whether an entity is visible in the camera's frustum
+    bool IsEntityVisible(Entity* entity);
+    
+    /// Get visible entities in the camera's frustum
+    QList<Entity*> GetVisibleEntities();
+    
+    /// Get visible entity ID's in the camera's frustum
+    const std::set<entity_id_t>& GetVisibleEntityIDs();
     
 /* The following functions moved here from IRenderer. Reimplement them:
 
@@ -151,13 +160,32 @@ public slots:
     */
     Ogre::Ray GetMouseRay(float x, float y);
 
+    /// Start tracking an entity's visibility within the scene using this camera
+    /** After this, connect either to the camera's EntityEnterView and EntityLeaveView signals, or the entity's EnterView & LeaveView signals,
+       to be notified of the visibility change(s)
+     */
+    void StartViewTracking(Entity* entity);
+    
+    /// Stop tracking an entity's visibility
+    void StopViewTracking(Entity* entity);
+    
+signals:
+    /// An entity has entered the view
+    void EntityEnterView(Entity* entity);
+    
+    /// An entity has left the view
+    void EntityLeaveView(Entity* entity);
+    
 private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
 
     /// Called when component has been removed from the parent entity. Checks if the component removed was the mesh, and autodissociates it.
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
-
+    
+    /// Handle frame update. Used for entity visibility tracking
+    void OnUpdated(float timeStep);
+    
 private:
     /// attaches camera to placeable
     void AttachCamera();
@@ -165,6 +193,9 @@ private:
     /// detaches camera from placeable
     void DetachCamera();
 
+    /// Perform a frustum query for visible entities
+    void QueryVisibleEntities();
+    
     /// placeable component 
     ComponentPtr placeable_;
 
@@ -176,6 +207,21 @@ private:
 
     /// Ogre camera
     Ogre::Camera* camera_;
+    
+    /// Frame number on which a full frustum query was last performed
+    int queryFrameNumber_;
+    
+    /// Visible entity ID's during this frame
+    std::set<entity_id_t> visibleEntities_;
+    
+    /// Visible entity ID's during last frame
+    std::set<entity_id_t> lastVisibleEntities_;
+    
+    /// Entities being tracked for visibility changes
+    std::vector<EntityWeakPtr> visibilityTrackedEntities_;
+    
+    /// Frustum query
+    Ogre::PlaneBoundedVolumeListSceneQuery *query_;
 };
 
 #endif

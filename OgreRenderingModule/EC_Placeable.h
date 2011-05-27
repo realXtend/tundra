@@ -40,8 +40,6 @@ Registered by OgreRenderer::OgreRenderingModule.
 <div>The entity to attach to. The entity in question needs to have EC_Placeable as well to work correctly</div>
 <li>string: parentBone
 <div>The bone to attach to. The parent entity needs to have a skeletal EC_Mesh component</div>
-<li>bool: signalView
-<div>Whether entity will be signalled of entering/leaving the view. Default false
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -130,10 +128,6 @@ public:
     /// Parent entity bone name. Needs the parent entity to have a skeletal mesh. Empty for no parent bone assignment
     Q_PROPERTY(QString parentBone READ getparentBone WRITE setparentBone)
     DEFINE_QPROPERTY_ATTRIBUTE(QString, parentBone);
-
-    /// Flag whether entity will be signalled of entering/leaving the view. Default false.
-    Q_PROPERTY(bool signalView READ getsignalView WRITE setsignalView)
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, signalView);
 
     /// orients to look at a point in space
     /** @param look_at point to look at

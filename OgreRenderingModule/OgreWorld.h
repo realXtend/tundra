@@ -16,6 +16,7 @@
 
 #include <boost/enable_shared_from_this.hpp>
 
+class EC_Camera;
 class Framework;
 
 namespace OgreRenderer
@@ -25,7 +26,7 @@ namespace OgreRenderer
 }
 
 /// Contains the Ogre representation of a scene, ie. the Ogre Scene
-class OGRE_MODULE_API OgreWorld : public QObject, public Ogre::RenderQueue::RenderableListener, public boost::enable_shared_from_this<OgreWorld>
+class OGRE_MODULE_API OgreWorld : public QObject, public boost::enable_shared_from_this<OgreWorld>
 {
     Q_OBJECT
     
@@ -34,18 +35,6 @@ public:
     OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene);
     /// Destruct. Fully destroy the Ogre scene
     virtual ~OgreWorld();
-    
-    /// React to a renderable object being queued
-    virtual bool renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID, Ogre::ushort priority, Ogre::Technique** ppTech, Ogre::RenderQueue* pQueue);
-    
-    /// Signal that a new frame is about to be rendered. Called each frame by Renderer for the currently active OgreWorld. Used for entity entered/left view signalling.
-    void BeginFrame();
-    
-    /// Signal that the frame was rendered. Called each frame by Renderer for the currently active OgreWorld. Used for entity entered/left view signalling.
-    void EndFrame();
-    
-    /// Clear visible entities. Called by Renderer for the non-active OgreWorlds.
-    void ClearVisibleEntities();
     
     /// Dynamic scene property name
     static const char* PropertyNameStatic()
@@ -88,11 +77,20 @@ public slots:
     /// Return whether a single entity is visible in the currently active camera
     bool IsEntityVisible(Entity* entity) const;
     
-    /// Get currently visible entities in the main viewport
+    /// Get visible entities in the currently active camera
     QList<Entity*> GetVisibleEntities() const;
     
     /// Return whether the currently active camera is in this scene
     bool IsActive() const;
+    
+    /// Start tracking an entity's visibility within this scene, using any camera(s)
+    /** After this, connect either to the EntityEnterView and EntityLeaveView signals, or the entity's EnterView & LeaveView signals,
+       to be notified of the visibility change(s)
+     */
+    void StartViewTracking(Entity* entity);
+    
+    /// Stop tracking an entity's visibility
+    void StopViewTracking(Entity* entity);
     
     /// Return the Renderer instance
     OgreRenderer::Renderer* GetRenderer() const { return renderer_; }
@@ -101,9 +99,23 @@ public slots:
     /// Return the parent scene
     ScenePtr GetScene() { return scene_.lock(); }
     
+signals:
+    /// An entity has entered the view
+    void EntityEnterView(Entity* entity);
+    
+    /// An entity has left the view
+    void EntityLeaveView(Entity* entity);
+    
+private slots:
+    /// Handle frame update. Used for entity visibility tracking
+    void OnUpdated(float timeStep);
+    
 private:
     /// Setup shadows
     void SetupShadows();
+    
+    /// Return the currently active camera component, if it belongs to this scene. Else return null
+    EC_Camera* VerifyCurrentSceneCameraComponent() const;
     
     /// Verify that the currently active camera belongs to this scene. Return its OgreCamera, or null if mismatch
     Ogre::Camera* VerifyCurrentSceneCamera() const;
@@ -120,18 +132,6 @@ private:
     /// Ogre scenemanager
     Ogre::SceneManager* sceneManager_;
     
-    /// Visible entities during current frame
-    std::set<entity_id_t> visibleEntities_;
-    
-    /// Visible entities during last frame
-    std::set<entity_id_t> lastVisibleEntities_;
-    
-    /// Visible entities during current frame, whose view status is to be tracked
-    std::set<entity_id_t> visibleTrackedEntities_;
-    
-    /// Visible entities during current frame, whose view status is to be tracked
-    std::set<entity_id_t> lastVisibleTrackedEntities_;
-    
     /// Ray for raycasting, reusable
     Ogre::RaySceneQuery *rayQuery_;
     
@@ -140,6 +140,15 @@ private:
     
     /// Soft shadow gaussian listeners
     std::list<OgreRenderer::GaussianListener *> gaussianListeners_;
+    
+    /// Visible entity ID's during this frame. Acquired from the active camera. Not updated if no entities are tracked for visibility.
+    std::set<entity_id_t> visibleEntities_;
+    
+    /// Visible entity ID's during last frame. Acquired from the active camera. Not updated if no entities are tracked for visibility.
+    std::set<entity_id_t> lastVisibleEntities_;
+    
+    /// Entities being tracked for visibility changes
+    std::vector<EntityWeakPtr> visibilityTrackedEntities_;
 };
 
 #endif

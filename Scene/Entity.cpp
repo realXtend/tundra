@@ -508,14 +508,14 @@ void Entity::EmitEntityRemoved(AttributeChange::Type change)
     emit EntityRemoved(this, change);
 }
 
-void Entity::EmitEnterView()
+void Entity::EmitEnterView(IComponent* camera)
 {
-    emit EnterView();
+    emit EnterView(camera);
 }
 
-void Entity::EmitLeaveView()
+void Entity::EmitLeaveView(IComponent* camera)
 {
-    emit LeaveView();
+    emit LeaveView(camera);
 }
 
 void Entity::SetTemporary(bool enable)
