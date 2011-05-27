@@ -449,9 +449,12 @@ QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect)
     return l;
 }
 
-bool OgreWorld::IsEntityVisible(uint ent_id) const
+bool OgreWorld::IsEntityVisible(Entity* entity) const
 {
-    return (visibleEntities_.find(ent_id) != visibleEntities_.end());
+    if (!entity)
+        return false;
+    
+    return (visibleEntities_.find(entity->GetId()) != visibleEntities_.end());
 }
 
 void OgreWorld::ClearVisibleEntities()

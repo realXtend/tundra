@@ -85,8 +85,8 @@ public slots:
     */
     QList<Entity*> FrustumQuery(QRect &viewrect);
     
-    /// Return whether a single entity is visible
-    bool IsEntityVisible(uint ent_id) const;
+    /// Return whether a single entity is visible in the currently active camera
+    bool IsEntityVisible(Entity* entity) const;
     
     /// Get currently visible entities in the main viewport
     QList<Entity*> GetVisibleEntities() const;
