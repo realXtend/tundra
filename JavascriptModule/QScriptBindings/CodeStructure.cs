@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using System.IO;
+using System.Web;
 //using System.Windows.Forms;
 //using mshtml;
 using System.Text.RegularExpressions;
@@ -984,8 +985,8 @@ namespace DocGenerator
     static public class StringExtensions
     {
         public static string StripHtmlCharacters(this string str)
-        {
-            return str.Replace("&nbsp;", " ").Replace("&amp;", "&").Trim();
+        {            
+            return System.Net.WebUtility.HtmlDecode(str.Replace("&nbsp;", " ").Replace("&#160;", " ").Replace("&amp;", "&")).Trim();
         }
         public static string StripHtmlLinks(this string str)
         {
