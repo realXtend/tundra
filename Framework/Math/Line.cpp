@@ -73,13 +73,13 @@ void Line::Transform(const float3x3 &transform)
 
 void Line::Transform(const float3x4 &transform)
 {
-    pos = transform.TransformPoint(pos);
+    pos = transform.TransformPos(pos);
     dir = transform.TransformDir(dir);
 }
 
 void Line::Transform(const float4x4 &transform)
 {
-    pos = transform.TransformPoint(pos);
+    pos = transform.TransformPos(pos);
     dir = transform.TransformDir(dir);
 }
 

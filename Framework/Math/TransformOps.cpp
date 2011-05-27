@@ -69,7 +69,7 @@ float3x4 operator *(const TranslateOp &lhs, const float3x4 &rhs)
 float3x4 operator *(const float3x4 &lhs, const TranslateOp &rhs)
 {
     float3x4 r = lhs;
-    r.SetTranslatePart(lhs.TransformPoint(rhs.Offset()));
+    r.SetTranslatePart(lhs.TransformPos(rhs.Offset()));
 
     // Our optimized form of multiplication must be the same as this.
     assert(r.Equals(lhs * (float3x4)rhs));
@@ -89,7 +89,7 @@ float4x4 operator *(const TranslateOp &lhs, const float4x4 &rhs)
 float4x4 operator *(const float4x4 &lhs, const TranslateOp &rhs)
 {
     float4x4 r = lhs;
-    r.SetTranslatePart(lhs.TransformPoint(rhs.Offset()));
+    r.SetTranslatePart(lhs.TransformPos(rhs.Offset()));
 
     // Our optimized form of multiplication must be the same as this.
     assert(r.Equals(lhs * (float4x4)rhs));

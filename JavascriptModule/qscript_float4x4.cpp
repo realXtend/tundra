@@ -782,25 +782,25 @@ static QScriptValue float4x4_Pivot(QScriptContext *context, QScriptEngine *engin
     return QScriptValue();
 }
 
-static QScriptValue float4x4_TransformPoint_float3(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float4x4_TransformPos_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_TransformPoint_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_TransformPos_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float4x4_TransformPoint_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    if (!This) { printf("Error! Invalid context->thisObject in function float4x4_TransformPos_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 pointVector = TypeFromQScriptValue<float3>(context->argument(0));
-    float3 ret = This->TransformPoint(pointVector);
+    float3 ret = This->TransformPos(pointVector);
     return TypeToQScriptValue(engine, ret);
 }
 
-static QScriptValue float4x4_TransformPoint_float_float_float(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float4x4_TransformPos_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float4x4_TransformPoint_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float4x4_TransformPos_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float4x4_TransformPoint_float_float_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    if (!This) { printf("Error! Invalid context->thisObject in function float4x4_TransformPos_float_float_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float x = TypeFromQScriptValue<float>(context->argument(0));
     float y = TypeFromQScriptValue<float>(context->argument(1));
     float z = TypeFromQScriptValue<float>(context->argument(2));
-    float3 ret = This->TransformPoint(x, y, z);
+    float3 ret = This->TransformPos(x, y, z);
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -1221,13 +1221,13 @@ static QScriptValue float4x4_Mul_Quat(QScriptContext *context, QScriptEngine *en
     return TypeToQScriptValue(engine, ret);
 }
 
-static QScriptValue float4x4_MulPoint_float3(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float4x4_MulPos_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_MulPoint_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_MulPos_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float4x4_MulPoint_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    if (!This) { printf("Error! Invalid context->thisObject in function float4x4_MulPos_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 pointVector = TypeFromQScriptValue<float3>(context->argument(0));
-    float3 ret = This->MulPoint(pointVector);
+    float3 ret = This->MulPos(pointVector);
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -1796,13 +1796,13 @@ static QScriptValue float4x4_Orthonormalize3_selector(QScriptContext *context, Q
     printf("float4x4_Orthonormalize3_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
 }
 
-static QScriptValue float4x4_TransformPoint_selector(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float4x4_TransformPos_selector(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 1 && QSVIsOfType<float3>(context->argument(0)))
-        return float4x4_TransformPoint_float3(context, engine);
+        return float4x4_TransformPos_float3(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
-        return float4x4_TransformPoint_float_float_float(context, engine);
-    printf("float4x4_TransformPoint_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+        return float4x4_TransformPos_float_float_float(context, engine);
+    printf("float4x4_TransformPos_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
 }
 
 static QScriptValue float4x4_TransformDir_selector(QScriptContext *context, QScriptEngine *engine)
@@ -2058,8 +2058,8 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
     proto.setProperty("Orthonormalize3", engine->newFunction(float4x4_Orthonormalize3_selector, 0));
     proto.setProperty("RemoveScale", engine->newFunction(float4x4_RemoveScale, 0));
     proto.setProperty("Pivot", engine->newFunction(float4x4_Pivot, 0));
-    proto.setProperty("TransformPoint", engine->newFunction(float4x4_TransformPoint_selector, 1));
-    proto.setProperty("TransformPoint", engine->newFunction(float4x4_TransformPoint_selector, 3));
+    proto.setProperty("TransformPos", engine->newFunction(float4x4_TransformPos_selector, 1));
+    proto.setProperty("TransformPos", engine->newFunction(float4x4_TransformPos_selector, 3));
     proto.setProperty("TransformDir", engine->newFunction(float4x4_TransformDir_selector, 1));
     proto.setProperty("TransformDir", engine->newFunction(float4x4_TransformDir_selector, 3));
     proto.setProperty("Transform", engine->newFunction(float4x4_Transform_selector, 1));
@@ -2095,7 +2095,7 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
     proto.setProperty("Decompose", engine->newFunction(float4x4_Decompose_selector, 3));
     proto.setProperty("toString", engine->newFunction(float4x4_toString, 0));
     proto.setProperty("Mul", engine->newFunction(float4x4_Mul_selector, 1));
-    proto.setProperty("MulPoint", engine->newFunction(float4x4_MulPoint_float3, 1));
+    proto.setProperty("MulPos", engine->newFunction(float4x4_MulPos_float3, 1));
     proto.setProperty("MulDir", engine->newFunction(float4x4_MulDir_float3, 1));
     float4x4_scriptclass *sc = new float4x4_scriptclass(engine);
     engine->setProperty("float4x4_scriptclass", QVariant::fromValue<QScriptClass*>(sc));

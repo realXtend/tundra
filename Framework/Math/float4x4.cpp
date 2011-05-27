@@ -1038,12 +1038,12 @@ void float4x4::Pivot()
 	}
 }
 
-float3 float4x4::TransformPoint(const float3 &pointVector) const
+float3 float4x4::TransformPos(const float3 &pointVector) const
 {
-    return TransformPoint(pointVector.x, pointVector.y, pointVector.z);
+    return TransformPos(pointVector.x, pointVector.y, pointVector.z);
 }
 
-float3 float4x4::TransformPoint(float x, float y, float z) const
+float3 float4x4::TransformPos(float x, float y, float z) const
 {
     return float3(DOT4POS_xyz(Row(0), x,y,z),
                   DOT4POS_xyz(Row(1), x,y,z),
@@ -1070,19 +1070,19 @@ float4 float4x4::Transform(const float4 &vector) const
                   DOT4(Row(3), vector));
 }
 
-void float4x4::TransformPoint(float3 *pointArray, int numPoints) const
+void float4x4::TransformPos(float3 *pointArray, int numPoints) const
 {
     for(int i = 0; i < numPoints; ++i)
-        pointArray[i] = this->TransformPoint(pointArray[i]);
+        pointArray[i] = this->TransformPos(pointArray[i]);
 }
 
-void float4x4::TransformPoint(float3 *pointArray, int numPoints, int strideBytes) const
+void float4x4::TransformPos(float3 *pointArray, int numPoints, int strideBytes) const
 {
     u8 *data = reinterpret_cast<u8*>(pointArray);
     for(int i = 0; i < numPoints; ++i)
     {
         float3 *v = reinterpret_cast<float3*>(data);
-        *v = this->TransformPoint(*v);
+        *v = this->TransformPos(*v);
         data += strideBytes;
     }        
 }
@@ -1562,7 +1562,7 @@ float4x4 float4x4::Mul(const float3x3 &rhs) const { return *this * rhs; }
 float4x4 float4x4::Mul(const float3x4 &rhs) const { return *this * rhs; }
 float4x4 float4x4::Mul(const float4x4 &rhs) const { return *this * rhs; }
 float4x4 float4x4::Mul(const Quat &rhs) const { return *this * rhs; }
-float3 float4x4::MulPoint(const float3 &pointVector) const { return this->TransformPoint(pointVector); }
+float3 float4x4::MulPos(const float3 &pointVector) const { return this->TransformPos(pointVector); }
 float3 float4x4::MulDir(const float3 &directionVector) const { return this->TransformDir(directionVector); }
 float4 float4x4::Mul(const float4 &vector) const { return *this * vector; }
 

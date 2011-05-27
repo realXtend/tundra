@@ -757,12 +757,12 @@ void float3x4::RemoveScale()
     assume(x != 0 && y != 0 && z != 0 && "float3x4::RemoveScale failed!");
 }
 
-float3 float3x4::TransformPoint(const float3 &pointVector) const
+float3 float3x4::TransformPos(const float3 &pointVector) const
 {
-    return TransformPoint(pointVector.x, pointVector.y, pointVector.z);
+    return TransformPos(pointVector.x, pointVector.y, pointVector.z);
 }
 
-float3 float3x4::TransformPoint(float x, float y, float z) const
+float3 float3x4::TransformPos(float x, float y, float z) const
 {
     return float3(DOT3_xyz(v[0], x,y,z) + v[0][3],
                   DOT3_xyz(v[1], x,y,z) + v[1][3],
@@ -789,12 +789,12 @@ float4 float3x4::Transform(const float4 &vector) const
                   vector.w);
 }
 
-void float3x4::BatchTransformPoint(float3 *pointArray, int numPoints) const
+void float3x4::BatchTransformPos(float3 *pointArray, int numPoints) const
 {
     assume(false && "Not implemented!"); ///\todo
 }
 
-void float3x4::BatchTransformPoint(float3 *pointArray, int numPoints, int stride) const
+void float3x4::BatchTransformPos(float3 *pointArray, int numPoints, int stride) const
 {
     assume(false && "Not implemented!"); ///\todo
 }
@@ -1154,7 +1154,7 @@ float3x4 float3x4::Mul(const float3x3 &rhs) const { return *this * rhs; }
 float3x4 float3x4::Mul(const float3x4 &rhs) const { return *this * rhs; }
 float4x4 float3x4::Mul(const float4x4 &rhs) const { return *this * rhs; }
 float3x4 float3x4::Mul(const Quat &rhs) const { return *this * rhs; }
-float3 float3x4::MulPoint(const float3 &pointVector) const { return this->TransformPoint(pointVector); }
+float3 float3x4::MulPos(const float3 &pointVector) const { return this->TransformPos(pointVector); }
 float3 float3x4::MulDir(const float3 &directionVector) const { return this->TransformDir(directionVector); }
 float4 float3x4::Mul(const float4 &vector) const { return *this * vector; }
 

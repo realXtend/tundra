@@ -48,13 +48,13 @@ void Ray::Transform(const float3x3 &transform)
 
 void Ray::Transform(const float3x4 &transform)
 {
-    pos = transform.TransformPoint(pos);
+    pos = transform.TransformPos(pos);
     dir = transform.TransformDir(dir);
 }
 
 void Ray::Transform(const float4x4 &transform)
 {
-    pos = transform.TransformPoint(pos);
+    pos = transform.TransformPos(pos);
     dir = transform.TransformDir(dir);
 }
 

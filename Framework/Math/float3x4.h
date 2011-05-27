@@ -466,8 +466,8 @@ public:
 
     /// Transforms the given point vector by this matrix M , i.e. returns M * (x, y, z, 1).
     /** [Category: Transform] */
-    float3 TransformPoint(const float3 &pointVector) const;
-    float3 TransformPoint(float x, float y, float z) const;
+    float3 TransformPos(const float3 &pointVector) const;
+    float3 TransformPos(float x, float y, float z) const;
 
     /// Transforms the given direction vector by this matrix M , i.e. returns M * (x, y, z, 0).
     float3 TransformDir(const float3 &directionVector) const;
@@ -477,10 +477,10 @@ public:
     float4 Transform(const float4 &vector) const;
 
     /// Performs a batch transform of the given array.
-    void BatchTransformPoint(float3 *pointArray, int numPoints) const;
+    void BatchTransformPos(float3 *pointArray, int numPoints) const;
 
     /// Performs a batch transform of the given array.
-    void BatchTransformPoint(float3 *pointArray, int numPoints, int stride) const;
+    void BatchTransformPos(float3 *pointArray, int numPoints, int stride) const;
 
     /// Performs a batch transform of the given array.
     void BatchTransformDir(float3 *dirArray, int numVectors) const;
@@ -635,7 +635,7 @@ public:
     float3x4 Mul(const float3x4 &rhs) const;
     float4x4 Mul(const float4x4 &rhs) const;
     float3x4 Mul(const Quat &rhs) const;
-    float3 MulPoint(const float3 &pointVector) const;
+    float3 MulPos(const float3 &pointVector) const;
     float3 MulDir(const float3 &directionVector) const;
     float4 Mul(const float4 &vector) const;
 
