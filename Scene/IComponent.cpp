@@ -22,9 +22,9 @@
 #include "MemoryLeakCheck.h"
 
 IComponent::IComponent(Scene* scene) :
-    parent_entity_(0),
+    parentEntity_(0),
     framework_(scene ? scene->GetFramework() : 0),
-    network_sync_(true),
+    networkSync_(true),
     updatemode_(AttributeChange::Replicate),
     temporary_(false)
 {
@@ -32,8 +32,8 @@ IComponent::IComponent(Scene* scene) :
 
 IComponent::IComponent(const IComponent &rhs) :
     framework_(rhs.framework_),
-    parent_entity_(rhs.parent_entity_),
-    network_sync_(rhs.network_sync_),
+    parentEntity_(rhs.parentEntity_),
+    networkSync_(rhs.networkSync_),
     updatemode_(rhs.updatemode_),
     temporary_(false)
 {
@@ -63,8 +63,8 @@ void IComponent::SetUpdateMode(AttributeChange::Type defaultmode)
 
 void IComponent::SetParentEntity(Entity* entity)
 {
-    parent_entity_ = entity;
-    if (parent_entity_)
+    parentEntity_ = entity;
+    if (parentEntity_)
         emit ParentEntitySet();
     else
         emit ParentEntityDetached();
@@ -72,19 +72,19 @@ void IComponent::SetParentEntity(Entity* entity)
 
 Entity* IComponent::GetParentEntity() const
 {
-    return parent_entity_;
+    return parentEntity_;
 }
 
 Scene* IComponent::GetParentScene() const
 {
-    if (!parent_entity_)
+    if (!parentEntity_)
         return 0;
-    return parent_entity_->GetScene();
+    return parentEntity_->GetScene();
 }
 
 void IComponent::SetNetworkSyncEnabled(bool enabled)
 {
-    network_sync_ = enabled;
+    networkSync_ = enabled;
 }
 
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
@@ -119,7 +119,7 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
     if (!name_.isEmpty())
         comp_element.setAttribute("name", name_);
     // Components with no network sync are never network-serialized. However we might be serializing to a file
-    comp_element.setAttribute("sync", QString::fromStdString(ToString<bool>(network_sync_)));
+    comp_element.setAttribute("sync", QString::fromStdString(ToString<bool>(networkSync_)));
     
     if (!base_element.isNull())
         base_element.appendChild(comp_element);
@@ -290,16 +290,16 @@ void IComponent::SetTemporary(bool enable)
 
 bool IComponent::IsTemporary() const
 {
-    if ((parent_entity_) && (parent_entity_->IsTemporary()))
+    if ((parentEntity_) && (parentEntity_->IsTemporary()))
         return true;
     return temporary_;
 }
 
 bool IComponent::ViewEnabled() const
 {
-    if (!parent_entity_)
+    if (!parentEntity_)
         return true;
-    Scene* scene = parent_entity_->GetScene();
+    Scene* scene = parentEntity_->GetScene();
     if (scene)
         return scene->ViewEnabled();
     else

@@ -1492,7 +1492,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     sceneMgr->destroyManualObject(manual);
 
     patch.entity = sceneMgr->createEntity(world->GetUniqueObjectName("EC_Terrain_patchentity"), patch.meshGeometryName);
-    patch.entity->setUserAny(Ogre::Any(parent_entity_));
+    patch.entity->setUserAny(Ogre::Any(parentEntity_));
     patch.entity->setCastShadows(false);
     // Set UserAny also on subentities
     for(uint i = 0; i < patch.entity->getNumSubEntities(); ++i)

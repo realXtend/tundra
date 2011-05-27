@@ -15,7 +15,7 @@ InvokeItem::InvokeItem() : type(Unknown), execTypes(EntityAction::Invalid), mruO
 {
 }
 
-InvokeItem::InvokeItem(const std::string &settingStr)
+InvokeItem::InvokeItem(const QString &settingStr)
 {
     FromSetting(settingStr);
 }
@@ -44,7 +44,7 @@ QString InvokeItem::ToString() const
     return str;
 }
 
-std::string InvokeItem::ToSetting() const
+QString InvokeItem::ToSetting() const
 {
     QString str;
     str.append(QString::number((int)type));
@@ -57,12 +57,12 @@ std::string InvokeItem::ToSetting() const
     foreach(QVariant p, parameters)
         str.append('|' + QString::number((int)p.type()) + '|' + p.toString());
 
-    return str.toStdString();
+    return str;
 }
 
-void InvokeItem::FromSetting(const std::string &str)
+void InvokeItem::FromSetting(const QString &str)
 {
-    QStringList params = QString(str.c_str()).split('|');
+    QStringList params = str.split('|');
     if (params.size() < 3)
         return;
 

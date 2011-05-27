@@ -59,7 +59,16 @@ bool OgreWorld::renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID, Og
     {
         entity = Ogre::any_cast<Entity*>(any);
         if (entity)
+        {
             visibleEntities_.insert(entity->GetId());
+            EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
+            if (placeable)
+            {
+                // See if the entity's visibility should be tracked and signaled. We do not want this for all entities by default
+                if (placeable->signalView.Get())
+                    visibleTrackedEntities_.insert(entity->GetId());
+            }
+        }
     }
     catch(Ogre::InvalidParametersException &/*e*/)
     {
@@ -440,14 +449,57 @@ QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect)
     return l;
 }
 
-bool OgreWorld::IsEntityVisible(uint ent_id) const
+bool OgreWorld::IsEntityVisible(Entity* entity) const
 {
-    return (visibleEntities_.find(ent_id) != visibleEntities_.end());
+    if (!entity)
+        return false;
+    
+    return (visibleEntities_.find(entity->GetId()) != visibleEntities_.end());
 }
 
 void OgreWorld::ClearVisibleEntities()
 {
     visibleEntities_.clear();
+    visibleTrackedEntities_.clear();
+    lastVisibleEntities_.clear();
+    lastVisibleTrackedEntities_.clear();
+}
+
+void OgreWorld::BeginFrame()
+{
+    lastVisibleEntities_ = visibleEntities_;
+    lastVisibleTrackedEntities_ = visibleTrackedEntities_;
+    visibleEntities_.clear();
+    visibleTrackedEntities_.clear();
+}
+
+void OgreWorld::EndFrame()
+{
+    Scene* scene = scene_.lock().get();
+    if (!scene)
+        return; // Should not be possible
+    
+    // Send enter/leave view signals for entities which have view tracking enabled
+    for (std::set<entity_id_t>::iterator i = visibleTrackedEntities_.begin(); i != visibleTrackedEntities_.end(); ++i)
+    {
+        // If was not visible last frame, emit EnterView signal
+        if (lastVisibleTrackedEntities_.find(*i) == lastVisibleTrackedEntities_.end())
+        {
+            EntityPtr entity = scene->GetEntity(*i);
+            if (entity)
+                entity->EmitEnterView();
+        }
+    }
+    for (std::set<entity_id_t>::iterator i = lastVisibleTrackedEntities_.begin(); i != lastVisibleTrackedEntities_.end(); ++i)
+    {
+        // If was visible last frame, but not anymore, emit LeaveView signal
+        if (visibleTrackedEntities_.find(*i) == visibleTrackedEntities_.end())
+        {
+            EntityPtr entity = scene->GetEntity(*i);
+            if (entity)
+                entity->EmitLeaveView();
+        }
+    }
 }
 
 QList<Entity*> OgreWorld::GetVisibleEntities() const

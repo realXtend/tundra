@@ -30,10 +30,6 @@ add_definitions (-DECEDITOR_MODULE_EXPORTS)
 use_package (QT_PROPERTY_BROWSER)
 use_modules (Framework Scene Input Console Ui OgreRenderingModule TundraLogicModule AssetModule)
 
-if (OGREASSETEDITOR)
-    use_modules(OgreAssetEditorModule)
-endif()
-
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()

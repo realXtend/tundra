@@ -88,11 +88,6 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     return true;
 }
 
-void OgreMeshAsset::HandleLoadError(const QString &loadError)
-{
-    LogDebug(loadError.toStdString());
-}
-
 void OgreMeshAsset::DoUnload()
 {
     if (ogreMesh.isNull())

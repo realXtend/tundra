@@ -49,7 +49,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     // Don't load textures to memory in headless mode
     if (assetAPI->IsHeadless())
     {
-	    return false;
+        return false;
     }
 */
     try
@@ -166,14 +166,6 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
         return false;
     }
     return true;
-}
-
-void TextureAsset::HandleLoadError(const QString &loadError)
-{
-    // Don't print anything if we are headless, 
-    // not loading the texture was intentional
-    if (!assetAPI->IsHeadless())
-        LogError(loadError.toStdString());
 }
 
 void TextureAsset::DoUnload()

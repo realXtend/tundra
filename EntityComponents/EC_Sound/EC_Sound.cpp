@@ -196,7 +196,7 @@ EntityPtr EC_Sound::GetActiveSoundListener()
     int numActiveListeners = 0; // For debugging, count how many listeners are active.
 #endif
     
-    EntityList listeners = parent_entity_->GetScene()->GetEntitiesWithComponent("EC_SoundListener");
+    EntityList listeners = parentEntity_->GetScene()->GetEntitiesWithComponent("EC_SoundListener");
     foreach(EntityPtr listener, listeners)
     {
         EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();

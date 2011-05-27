@@ -24,7 +24,6 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
     framework(fw),
     graphicsView(fw->Ui()->GraphicsView()),
     proxyWidget(0),
-    visible(false),
     commandHistoryIndex(-1)
 {
     setStyleSheet(
@@ -55,7 +54,7 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
     layout->setSpacing(0);
     setLayout(layout);
 
-    proxyWidget = framework->Ui()->AddWidgetToScene(this);
+    proxyWidget = framework->Ui()->AddWidgetToScene(this, Qt::Widget);
     proxyWidget->setMinimumHeight(0);
     proxyWidget->setGeometry(QRect(0, 0, graphicsView->width(), 0));
     /// \todo Opacity has no effect atm.
@@ -102,9 +101,9 @@ void ConsoleWidget::ToggleConsole()
     if (!current_scene)
         return;
 
-    visible = !visible;
+    proxyWidget->setVisible(proxyWidget->isVisible());
     int current_height = graphicsView->height()*0.5;
-    if (visible)
+    if (!proxyWidget->isVisible())
     {
         slideAnimation->setStartValue(QRect(0, 0, graphicsView->width(), 0));
         slideAnimation->setEndValue(QRect(0, 0, graphicsView->width(), current_height));
@@ -138,7 +137,7 @@ void ConsoleWidget::HandleInput()
 
 void ConsoleWidget::AdjustToSceneRect(const QRectF& rect)
 {
-    if (visible)
+    if (proxyWidget->isVisible())
     {
         QRectF new_size = rect;
         new_size.setHeight(rect.height() * 0.5); ///<\todo Read height from config?

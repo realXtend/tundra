@@ -34,7 +34,10 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     originalData.clear();
 
     if (!data || numBytes == 0)
+    {
+        LogError("QtUiAsset::DeserializeFromData: null data.");
         return false;
+    }
 
     originalData.insert(originalData.end(), data, data + numBytes);
 

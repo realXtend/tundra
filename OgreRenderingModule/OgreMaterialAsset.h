@@ -3,16 +3,17 @@
 #ifndef incl_OgreRenderer_OgreMaterialAsset_h
 #define incl_OgreRenderer_OgreMaterialAsset_h
 
-#include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 #include "Color.h"
+
+#include <boost/shared_ptr.hpp>
+
 #include <OgreMaterial.h>
 #include "OgreModuleApi.h"
 
 class OGRE_MODULE_API OgreMaterialAsset : public IAsset
 {
-
-Q_OBJECT
+    Q_OBJECT
 
 public:
     OgreMaterialAsset(AssetAPI *owner, const QString &type_, const QString &name_) : IAsset(owner, type_, name_) {}
@@ -27,9 +28,6 @@ public:
     /// Unload material from ogre
     virtual void DoUnload();
 
-    /// Handle load errors detected by AssetAPI
-    virtual void HandleLoadError(const QString &loadError);
-
     /// Return references of this material, in most cases textures
     virtual std::vector<AssetReference> FindReferences() const;
 
@@ -43,14 +41,18 @@ public:
 
     /// references to other resources this resource depends on
     std::vector<AssetReference> references_;
-    
+
     /// Function that safely returns a technique, or 0 if did not exist
     Ogre::Technique* GetTechnique(int techIndex);
     /// Function that safely returns a pass, or 0 if did not exist
     Ogre::Pass* GetPass(int techIndex, int passIndex);
     /// Function that safely returns a texture unit, or 0 if did not exist
     Ogre::TextureUnitState* GetTextureUnit(int techIndex, int passIndex, int texUnitIndex);
-    
+
+    /// Desanitates asset references in material scripts.
+    /** @param material Material script data as string. */
+    static void DesanitateAssetIds(std::string &material);
+
 public slots:
     /// Makes a clone of this asset.
     /// For this function to succeed, the asset must be loaded in memory. (IsLoaded() == true)
@@ -140,5 +142,3 @@ private:
 };
 
 #endif
-
-

@@ -179,6 +179,19 @@ bool GetBoolValue(const QString& value)
     return false;
 }
 
+std::string AddDoubleQuotesIfNecessary(const std::string &str)
+{
+    std::string ret = str;
+    size_t found = ret.find(' ');
+    if (found != std::string::npos)
+    {
+        ret.insert(0, "\"");
+        ret.append("\"");
+    }
+
+    return ret;
+}
+
 OgreMaterialAsset::~OgreMaterialAsset()
 {
     Unload();
@@ -199,8 +212,6 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 
     const std::string assetName = this->Name().toStdString();
     Ogre::MaterialManager& matmgr = Ogre::MaterialManager::getSingleton(); 
-//    ::LogDebug("Parsing material " + assetName);
-    
     if (!data_)
     {
         LogError("DeserializeFromData: Null source asset data pointer");
@@ -231,7 +242,6 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         while(!data->eof())
         {
             Ogre::String line = data->getLine();
-            
             // Skip empty lines & comments
             if ((line.length()) && (line.substr(0, 2) != "//"))
             {
@@ -243,7 +253,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                     {
                         if (num_materials == 0)
                         {
-                            line = "material " + sanitatedname;
+                            line = "material " + AddDoubleQuotesIfNecessary(sanitatedname);
                             ++num_materials;
                         }
                         else
@@ -262,7 +272,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                             references_.push_back(AssetReference(absolute_tex_name));
 //                            original_textures_.push_back(tex_name);
                             // Sanitate the asset ID
-                            line = "texture " + SanitateAssetIdForOgre(absolute_tex_name.toStdString());
+                            line = "texture " + AddDoubleQuotesIfNecessary(SanitateAssetIdForOgre(absolute_tex_name));
                         }
                     }
 
@@ -292,7 +302,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         {
             LogWarning("DeserializeFromData: Failed to create an Ogre material from material asset: " + assetName);
             return false;
-        }        
+        }
         if(!ogreMaterial->getNumTechniques())
         {
             LogWarning("DeserializeFromData: Failed to create an Ogre material, no Techniques in material asset: "  + assetName);
@@ -332,10 +342,9 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                     }
                 }
             }
-
         }
-
-    } catch(Ogre::Exception &e)
+    }
+    catch(Ogre::Exception &e)
     {
         LogWarning("DeserializeFromData: Failed to parse Ogre material " + assetName + ", reason: " + std::string(e.what()));
         try
@@ -459,26 +468,21 @@ bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serial
         if (materialData.empty())
             return false;
 
+        // Make sure that asset refs/IDs are desanitated.
+        DesanitateAssetIds(materialData);
+
         data.clear();
         data.insert(data.end(), &materialData[0], &materialData[0] + materialData.length());
         //serializer.exportQueued(filename);
-    } 
+    }
     catch(std::exception &e)
     {
-        ::LogError("SerializeTo: Failed to export Ogre material " + Name().toStdString() + ":");
+        LogError("SerializeTo: Failed to export Ogre material " + Name().toStdString() + ":");
         if (e.what())
-            ::LogError(e.what());
+            LogError(e.what());
         return false;
     }
     return true;
-}
-
-void OgreMaterialAsset::HandleLoadError(const QString &loadError)
-{
-    // Don't print anything if we are headless, 
-    // not loading the material was intentional
-    if (!assetAPI->IsHeadless())
-        LogError(loadError.toStdString());
 }
 
 std::vector<AssetReference> OgreMaterialAsset::FindReferences() const
@@ -634,6 +638,40 @@ Ogre::TextureUnitState* OgreMaterialAsset::GetTextureUnit(int techIndex, int pas
     if (texUnitIndex < 0 || texUnitIndex >= pass->getNumTextureUnitStates())
         return 0;
      return pass->getTextureUnitState(texUnitIndex);
+}
+
+void OgreMaterialAsset::DesanitateAssetIds(std::string &material)
+{
+    const QString textureId("texture ");
+    const QString materialId("material ");
+    QString matString(material.c_str());
+    QStringList lines = matString.split("\n");
+    for(int i = 0; i < lines.size(); ++i)
+    {
+        QString id;
+        int idx = -1, offset = -1;
+        if (lines[i].contains(textureId))
+        {
+            idx = lines[i].indexOf(textureId);
+            offset = textureId.length();
+            id = textureId;
+        }
+        else if (lines[i].contains(materialId))
+        {
+            idx = lines[i].indexOf(materialId);
+            offset = materialId.length();
+            id = materialId;
+        }
+
+        if (idx != -1 && offset != -1)
+        {
+            QString desanitatedRef = DesanitateAssetIdFromOgre(lines[i].mid(idx + offset).trimmed());
+            lines[i] = lines[i].left(idx);
+            lines[i].append(id + desanitatedRef);
+        }
+    }
+
+    material = lines.join("\n").toStdString();
 }
 
 int OgreMaterialAsset::GetNumTechniques()

@@ -36,11 +36,6 @@
 #include "IAssetTransfer.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
-#ifdef OGREASSETEDITOR_ENABLED
-#include "MeshPreviewEditor.h"
-#include "TexturePreviewEditor.h"
-#include "OgreScriptEditor.h"
-#endif
 
 #include <QDomDocument>
 #include <QDomElement>
@@ -219,14 +214,19 @@ void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
 
     Selection sel = GetSelection();
 
-    QAction *action;
-#ifdef OGREASSETEDITOR_ENABLED
-    action = new QAction(tr("Edit"), menu);
-    connect(action, SIGNAL(triggered()), SLOT(Edit()));
-    menu->addAction(action);
-    menu->setDefaultAction(action);
-#endif
+    // Let other instances add their possible functionality.
+    QList<QObject *> targets;
+    foreach(AssetRefItem *item, sel.assets)
+    {
+        AssetPtr asset = framework->Asset()->GetAsset(item->id);
+        if (asset)
+            targets.append(asset.get());
+    }
 
+    if (targets.size())
+        framework->Ui()->EmitContextMenuAboutToOpen(menu, targets);
+
+    QAction *action;
     if (sel.assets.size() > 0)
     {
         if (sel.assets.size() > 1)
@@ -505,8 +505,8 @@ void SceneTreeWidget::LoadInvokeHistory()
         int idx = 0;
         forever
         {
-            std::string setting = framework->Config()->Get("uimemory", "invoke history", QString("item%1").arg(idx), "").toString().toStdString();
-            if (setting.empty())
+            QString setting = framework->Config()->Get("uimemory", "invoke history", QString("item%1").arg(idx), "").toString();
+            if (setting.isEmpty())
                 break;
             invokeHistory.push_back(InvokeItem(setting));
             ++idx;
@@ -530,7 +530,7 @@ void SceneTreeWidget::SaveInvokeHistory()
     // Sort descending by MRU order.
     qSort(invokeHistory);
     for(int idx = 0; idx < invokeHistory.size(); ++idx)
-        framework->Config()->Set("uimemory", "invoke history", QString("item%1").arg(idx), QString::fromStdString(invokeHistory[idx].ToSetting()));
+        framework->Config()->Set("uimemory", "invoke history", QString("item%1").arg(idx), invokeHistory[idx].ToSetting());
 }
 
 InvokeItem *SceneTreeWidget::FindMruItem() const
@@ -606,25 +606,6 @@ void SceneTreeWidget::Edit()
         /*ui->AddWidgetToScene(ecEditor);
         ui->ShowWidget(ecEditor);
         ui->BringWidgetToFront(ecEditor);*/ 
-    }
-    else
-    {
-#ifdef OGREASSETEDITOR_ENABLED
-        foreach(AssetRefItem *aItem, selection.assets)
-        {
-            QWidget *editor = 0;
-            QString type = GetResourceTypeFromResourceFileName(aItem->id.toLatin1());
-            if (type == "OgreMesh")
-                editor = MeshPreviewEditor::OpenMeshPreviewEditor(framework, OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str());
-            else if (type ==  "OgreTexture")
-                editor = TexturePreviewEditor::OpenPreviewEditor(OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str(), 0);
-            else if (type == "OgreMaterial")
-                editor = OgreScriptEditor::OpenOgreScriptEditor(OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str(), RexTypes::RexAT_MaterialScript);
-
-            if (editor)
-                editor->show();
-        }
-#endif
     }
 }
 

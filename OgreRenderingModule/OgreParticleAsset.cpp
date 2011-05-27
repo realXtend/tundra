@@ -36,12 +36,12 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 
     if (!data_)
     {
-        ::LogError("Null source asset data pointer");     
+        ::LogError("Null source asset data pointer");
         return false;
     }
     if (numBytes == 0)
     {
-        ::LogError("Zero sized particle system asset");     
+        ::LogError("Zero sized particle system asset");
         return false;
     }
 

@@ -138,11 +138,6 @@ void IAsset::DependencyLoaded(AssetPtr dependee)
         emit Loaded(thisAsset);
 }
 
-void IAsset::HandleLoadError(const QString &loadError)
-{
-    LogError(loadError.toStdString());
-}
-
 std::vector<AssetReference> IAsset::FindReferencesRecursive() const
 {
     std::set<AssetReference> refs;

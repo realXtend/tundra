@@ -129,16 +129,15 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     }
     else if (asset->Type() == "OgreMaterial")
     {
-        LogInfo("asset->Type() == OgreMaterial");
-        OgreScriptEditor *scriptEditor = new OgreScriptEditor(OgreScriptEditor::MaterialScript, assetName);
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(asset, framework_->Asset());
         scriptEditor->Open();
         editor = scriptEditor;
     }
     else if (asset->Type() == "OgreParticle")
     {
-        OgreScriptEditor *scriptEditor = new OgreScriptEditor(OgreScriptEditor::ParticleScript, assetName);
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(asset, framework_->Asset());
+        scriptEditor->Open();
         editor = scriptEditor;
-
     }
     /*else if (asset->Type() == "Audio")
     {

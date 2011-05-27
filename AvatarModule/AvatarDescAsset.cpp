@@ -53,9 +53,13 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     QDomDocument avatarDoc("Avatar");
     // If invalid XML, empty it so we will report IsLoaded == false
     if (!avatarDoc.setContent(avatarAppearanceXML_))
+    {
+        LogError("Failed to deserialize AvatarDescAsset from data.");
         avatarAppearanceXML_ = "";
+    }
+
     ReadAvatarAppearance(avatarDoc);
-    
+
     emit AppearanceChanged();
     return true;
 }

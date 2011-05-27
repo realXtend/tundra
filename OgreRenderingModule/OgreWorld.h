@@ -38,7 +38,13 @@ public:
     /// React to a renderable object being queued
     virtual bool renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID, Ogre::ushort priority, Ogre::Technique** ppTech, Ogre::RenderQueue* pQueue);
     
-    /// Clear the visible entities. Called by Renderer.
+    /// Signal that a new frame is about to be rendered. Called each frame by Renderer for the currently active OgreWorld. Used for entity entered/left view signalling.
+    void BeginFrame();
+    
+    /// Signal that the frame was rendered. Called each frame by Renderer for the currently active OgreWorld. Used for entity entered/left view signalling.
+    void EndFrame();
+    
+    /// Clear visible entities. Called by Renderer for the non-active OgreWorlds.
     void ClearVisibleEntities();
     
     /// Dynamic scene property name
@@ -79,8 +85,8 @@ public slots:
     */
     QList<Entity*> FrustumQuery(QRect &viewrect);
     
-    /// Return whether a single entity is visible
-    bool IsEntityVisible(uint ent_id) const;
+    /// Return whether a single entity is visible in the currently active camera
+    bool IsEntityVisible(Entity* entity) const;
     
     /// Get currently visible entities in the main viewport
     QList<Entity*> GetVisibleEntities() const;
@@ -114,9 +120,18 @@ private:
     /// Ogre scenemanager
     Ogre::SceneManager* sceneManager_;
     
-    /// Visible entities during last frame
+    /// Visible entities during current frame
     std::set<entity_id_t> visibleEntities_;
-
+    
+    /// Visible entities during last frame
+    std::set<entity_id_t> lastVisibleEntities_;
+    
+    /// Visible entities during current frame, whose view status is to be tracked
+    std::set<entity_id_t> visibleTrackedEntities_;
+    
+    /// Visible entities during current frame, whose view status is to be tracked
+    std::set<entity_id_t> lastVisibleTrackedEntities_;
+    
     /// Ray for raycasting, reusable
     Ogre::RaySceneQuery *rayQuery_;
     

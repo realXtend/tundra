@@ -927,7 +927,7 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
         }
         */
         if (meshRef.Get().ref.trimmed().isEmpty())
-            LogDebug("Warning: Mesh \"" + this->parent_entity_->GetName().toStdString() + "\" mesh ref was set to an empty reference!");
+            LogDebug("Warning: Mesh \"" + this->parentEntity_->GetName().toStdString() + "\" mesh ref was set to an empty reference!");
         meshAsset->HandleAssetRefChange(&meshRef);
     }
     else if (attribute == &meshMaterial)
