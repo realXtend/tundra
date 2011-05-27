@@ -49,7 +49,6 @@ private:
 
     QPlainTextEdit *textEdit; //< Text area for the log.
     QLineEdit *lineEdit; //< Line edit for input.
-    bool visible; ///< Is the console UI visible.
     Framework* framework; ///< Framework pointer
     QGraphicsView *graphicsView; ///< View to the scene
     UiProxyWidget *proxyWidget; ///< Proxy for the UI
