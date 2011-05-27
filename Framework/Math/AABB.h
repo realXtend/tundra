@@ -10,6 +10,10 @@
 #include "MathFwd.h"
 #include "float3.h"
 
+#ifdef OGRE_INTEROP
+#include <OgreAxisAlignedBox.h>
+#endif
+
 /// A 3D axis-aligned bounding box.
 /** This data structure can be used to represent coarse bounds of objects, in situations where detailed triangle-level
     computations can be avoided. In physics systems, bounding boxes are used as an efficient early-out test for geometry
@@ -303,6 +307,11 @@ public:
     /** @return This function returns a Polyhedron that represents the set of points that are contained in this AABB
         and the given Polyhedron. */
 //    Polyhedron Intersection(const Polyhedron &polyhedron) const;
+
+#ifdef OGRE_INTEROP
+    AABB(const Ogre::AxisAlignedBox &other) { minPoint = other.getMinimum(); maxPoint = other.getMaximum(); }
+    operator Ogre::AxisAlignedBox() const { return Ogre::AxisAlignedBox(minPoint, maxPoint); }
+#endif
 };
 
 #ifdef QT_INTEROP
