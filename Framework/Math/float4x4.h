@@ -203,6 +203,11 @@ public:
     /// Creates a new float4x4 that performs uniform scaling by the given amount.
     static ScaleOp UniformScale(float uniformScale);
 
+    /// Returns the scaling performed by this matrix. This function assumes that the last row is [0 0 0 1].
+    /// GetScale().x specifies the amount of scaling applied to the local x direction vector when it is transformed by this matrix.
+    /// i.e. GetScale()[i] equals Col(i).Length();
+    float3 GetScale() const;
+
     /// Produces a matrix that shears along a principal axis.
     /** The shear matrix offsets the two other axes according to the 
         position of the point along the shear axis. [indexTitle: ShearX/Y/Z] */

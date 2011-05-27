@@ -75,11 +75,35 @@ T TypeFromQScriptValue(const typename TypeHasAScriptClass<T>::QScriptValueWithou
     return qscriptvalue_cast<T>(scriptValue);
 }
 
+template<typename T>
+class TypeT
+{
+public:
+    static T foo(QScriptValue &scriptValue)
+    {
+        return scriptValue.data().toVariant().value<T>();
+    }
+};
+
+template<typename T>
+class TypeT<T*>
+{
+public:
+    static T* foo(QScriptValue &scriptValue)
+    {
+        T *data = qscriptvalue_cast<T*>(scriptValue);
+        if (data)
+            return data;
+        return qscriptvalue_cast<T*>(scriptValue.data());
+    }
+};
+
 /// Converts a QScriptValue which has its data inside a QScriptClass back to T. 
 template<typename T>
 T TypeFromQScriptValue(const typename TypeHasAScriptClass<T>::QScriptValueWithScriptClass &scriptValue)
 {
-    return qscriptvalue_cast<T>(scriptValue.data());
+    QScriptValue sv = scriptValue;
+    return TypeT<T>::foo(sv);
 }
 
 /// Converts a T to QScriptValue. Specializations properly register the QScriptClass types. 
@@ -153,4 +177,10 @@ template<>inline QScriptValue TypeToQScriptValue<ScaleOp>(QScriptEngine *engine,
 {
     QScriptClass *sc = engine->property("ScaleOp_scriptclass").value<QScriptClass*>();
     return engine->newObject(sc, qScriptValueFromValue(engine, t));
+}
+
+// A function to help the automatically generated code produce cleaner error reporting.
+inline std::string Capitalize(QString str)
+{
+    return (str.left(1).toUpper() + str.mid(1)).toStdString();
 }

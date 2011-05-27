@@ -195,6 +195,8 @@ public:
     static ScaleOp UniformScale(float uniformScale);
 
     /// Returns the scaling performed by this matrix.
+    /// GetScale().x specifies the amount of scaling applied to the local x direction vector when it is transformed by this matrix.
+    /// i.e. GetScale()[i] equals Col(i).Length();
     float3 GetScale() const;
 
     /// Produces a matrix that shears along a principal axis.

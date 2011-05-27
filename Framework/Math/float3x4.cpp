@@ -312,6 +312,11 @@ ScaleOp float3x4::UniformScale(float uniformScale)
     return ScaleOp(uniformScale, uniformScale, uniformScale);
 }
 
+float3 float3x4::GetScale() const
+{
+    return float3(Col(0).Length(), Col(1).Length(), Col(2).Length());
+}
+
 float3x4 float3x4::ShearX(float yFactor, float zFactor)
 {
     return float3x4(1.f, yFactor, zFactor, 0.f,

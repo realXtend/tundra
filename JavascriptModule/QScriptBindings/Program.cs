@@ -74,12 +74,11 @@ namespace QScriptBindings
                     GenerateClassFunction(child, tw);
                     functionNames.Add(child.name);
                 }
-                    /*
                 else if (child.kind == "variable" && !child.isStatic)
                 {
                     GenerateClassMemberVariableGet(child, tw);
                     GenerateClassMemberVariableSet(child, tw);
-                }*/
+                }
             }
 
             foreach (string functionName in functionNames)
@@ -123,7 +122,10 @@ namespace QScriptBindings
 
         static string GetMemberVariableGetScriptFuncName(Symbol variable)
         {
-            return variable.name;
+//            return variable.name;
+            string firstChar = variable.name.Substring(0, 1);
+            return "get" + firstChar.ToUpper() + variable.name.Substring(1);
+
         }
 
         static string GetMemberVariableSetScriptFuncName(Symbol variable)
@@ -185,15 +187,19 @@ namespace QScriptBindings
             tw.WriteLine("}");
             tw.WriteLine("");
         }
-/*
+
         static void GenerateClassMemberVariableGet(Symbol variable, TextWriter tw)
         {
             Symbol Class = variable.parent;
 
             tw.WriteLine("static QScriptValue " + GetMemberVariableGetCppFuncName(variable) + "(QScriptContext *context, QScriptEngine *engine)");
             tw.WriteLine("{");
-            tw.WriteLine(Indent(1) + Class.name + " *This = " + "qscriptvalue_cast<" + Class.name + "*>(context->thisObject());");
-            tw.WriteLine(Indent(1) + "if (!This) { printf(\"Error! Invalid context->thisObject!\\n\"); return QScriptValue(); }");
+
+            tw.WriteLine(Indent(1) + "if (context->argumentCount() != 0) { printf(\"Error! Invalid number of arguments passed to function " + GetMemberVariableGetCppFuncName(variable) + " in file %s, line %d!\\nExpected 0, but got %d!\\n\", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }");
+
+            tw.WriteLine(Indent(1) + Class.name + " *This = " + "TypeFromQScriptValue<" + Class.name + "*>(context->thisObject());");
+            tw.WriteLine(Indent(1) + "if (!This) { printf(\"Error! Invalid context->thisObject in file %s, line %d\\n!\", __FILE__, __LINE__); return QScriptValue(); }");
+
             tw.WriteLine(Indent(1) + "return qScriptValueFromValue(context->engine(), This->" + variable.name + ");");
             tw.WriteLine("}");
             tw.WriteLine("");
@@ -205,15 +211,18 @@ namespace QScriptBindings
 
             tw.WriteLine("static QScriptValue " + GetMemberVariableSetCppFuncName(variable) + "(QScriptContext *context, QScriptEngine *engine)");
             tw.WriteLine("{");
-            tw.WriteLine(Indent(1) + Class.name + " *This = " + "qscriptvalue_cast<" + Class.name + "*>(context->thisObject());");
-            tw.WriteLine(Indent(1) + "if (!This) { printf(\"Error! Invalid context->thisObject!\\n\"); return QScriptValue(); }");
+
+            tw.WriteLine(Indent(1) + "if (context->argumentCount() != 1) { printf(\"Error! Invalid number of arguments passed to function " + GetMemberVariableGetCppFuncName(variable) + " in file %s, line %d!\\nExpected 1, but got %d!\\n\", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }");
+
+            tw.WriteLine(Indent(1) + Class.name + " *This = " + "TypeFromQScriptValue<" + Class.name + "*>(context->thisObject());");
+            tw.WriteLine(Indent(1) + "if (!This) { printf(\"Error! Invalid context->thisObject in file %s, line %d\\n!\", __FILE__, __LINE__); return QScriptValue(); }");
             tw.WriteLine(Indent(1) + variable.type + " " + variable.name + " = qscriptvalue_cast<" + variable.type + ">(context->argument(0));");
             tw.WriteLine(Indent(1) + "This->" + variable.name + " = " + variable.name + ";");
             tw.WriteLine(Indent(1) + "return QScriptValue();");
             tw.WriteLine("}");
             tw.WriteLine("");
         }
-*/
+
         static void GenerateScriptClass(Symbol Class, TextWriter tw)
         {
             tw.WriteLine("class " + Class.name + "_scriptclass : public QScriptClass");
@@ -224,6 +233,7 @@ namespace QScriptBindings
             tw.WriteLine(Indent(1) + "QScriptValue property(const QScriptValue &object, const QScriptString &name, uint id)");
             tw.WriteLine(Indent(1) + "{");
             tw.WriteLine(Indent(2) + Class.name + " *This = TypeFromQScriptValue<" + Class.name + "*>(object);");
+            tw.WriteLine(Indent(2) + "if (!This) { printf(\"Error! Cannot convert QScriptValue to type " + Class.name + " in file %s, line %d!\\nTry using " + Class.name + ".get%s() and " + Class.name + ".set%s() to query the member variable '%s'!\\n\", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }");
             foreach (Symbol v in Class.children.Values)
                 if (v.kind == "variable" && IsScriptable(v))
                 {
@@ -237,6 +247,7 @@ namespace QScriptBindings
             tw.WriteLine(Indent(1) + "void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)");
             tw.WriteLine(Indent(1) + "{");
             tw.WriteLine(Indent(2) + Class.name + " *This = TypeFromQScriptValue<" + Class.name + "*>(object);");
+            tw.WriteLine(Indent(2) + "if (!This) { printf(\"Error! Cannot convert QScriptValue to type " + Class.name + " in file %s, line %d!\\nTry using " + Class.name + ".get%s() and " + Class.name + ".set%s() to query the member variable '%s'!\\n\", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }");
 
             foreach (Symbol v in Class.children.Values)
                 if (v.kind == "variable" && IsScriptable(v) && !v.IsConst())
@@ -271,13 +282,15 @@ namespace QScriptBindings
 
             bool isClassCtor = (function.name == Class.name);
 
+            tw.WriteLine(Indent(1) + "if (context->argumentCount() != " + function.parameters.Count + ") { printf(\"Error! Invalid number of arguments passed to function " + GetScriptFunctionName(function) + " in file %s, line %d!\\nExpected " + function.parameters.Count + ", but got %d!\\n\", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }");
+
             // Test that we have a valid this.
             if (!function.isStatic && !isClassCtor)
             {
                 tw.WriteLine(Indent(1) + Class.name + " *This = " + "TypeFromQScriptValue<" + Class.name + "*>(context->thisObject());");
                 if (function.name == "toString") // Qt oddities: It seems sometimes the hardcoded toString is called with this as the first argument and not as 'this'.
                     tw.WriteLine(Indent(1) + "if (!This && context->argumentCount() > 0) This = TypeFromQScriptValue<" + Class.name + "*>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.");
-                tw.WriteLine(Indent(1) + "if (!This) { printf(\"Error! Invalid context->thisObject in file %s, line %d\\n!\", __FILE__, __LINE__); return QScriptValue(); }");
+                tw.WriteLine(Indent(1) + "if (!This) { printf(\"Error! Invalid context->thisObject in function " + GetScriptFunctionName(function) + " in file %s, line %d\\n!\", __FILE__, __LINE__); return QScriptValue(); }");
             }
 
             // Unmarshall all parameters to the function.
@@ -321,15 +334,7 @@ namespace QScriptBindings
             tw.WriteLine("}");
             tw.WriteLine("");
         }
-/*
-        static void GenerateClassCtor(Symbol s, TextWriter tw)
-        {
-            tw.WriteLine("static QScriptValue " + s.name + "_ctor(QScriptContext *context, QScriptEngine *engine)");
-            tw.WriteLine("{");
-            tw.WriteLine("}");
-            tw.WriteLine("");
-        }
-*/
+
         static int CountMaxArgumentsForClassCtor(Symbol Class)
         {
             int args = 0;
@@ -346,6 +351,8 @@ namespace QScriptBindings
             tw.WriteLine("{");
             tw.WriteLine(Indent(1) + "engine->setDefaultPrototype(qMetaTypeId<" + Class.name + "*>(), QScriptValue());");
             tw.WriteLine(Indent(1) + "QScriptValue proto = engine->newVariant(qVariantFromValue((" + Class.name + "*)0));");
+
+            // Add each member function to the prototype.
             foreach (Symbol child in Class.children.Values)
                 if (!registeredFunctions.Contains(child.name + "_____" + child.parameters.Count) && child.kind == "function" && !child.isStatic && child.name != Class.name && !child.name.Contains("operator") && IsScriptable(child))
                 {
@@ -353,14 +360,15 @@ namespace QScriptBindings
                         + ", " + child.parameters.Count + "));");
                     registeredFunctions.Add(child.name + "_____" + child.parameters.Count);
                 }
-/*
+
+            // Add setters and getters for each member variable to the prototype.
             foreach (Symbol child in Class.children.Values)
                 if (child.kind == "variable" && !child.isStatic && child.name != Class.name && !child.name.Contains("operator") && IsScriptable(child))
                 {
                     tw.WriteLine(Indent(1) + "proto.setProperty(\"" + GetMemberVariableGetScriptFuncName(child) + "\", engine->newFunction(" + GetMemberVariableGetCppFuncName(child) + ", 1));");
                     tw.WriteLine(Indent(1) + "proto.setProperty(\"" + GetMemberVariableSetScriptFuncName(child) + "\", engine->newFunction(" + GetMemberVariableSetCppFuncName(child) + ", 1));");
                 }
-*/
+
             tw.WriteLine(Indent(1) + Class.name + "_scriptclass *sc = new " + Class.name + "_scriptclass(engine);");
             tw.WriteLine(Indent(1) + "engine->setProperty(\"" + Class.name + "_scriptclass\", QVariant::fromValue<QScriptClass*>(sc));");
             tw.WriteLine(Indent(1) + "proto.setScriptClass(sc);");
