@@ -7,7 +7,7 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES OgreAssetEditorModule.h EditorManager.h OgreScriptEditor.h PropertyTableWidget.h
     OgreMaterialProperties.h MaterialWizard.h TexturePreviewEditor.h AudioPreviewEditor.h AudioSignalLabel.h
-    MeshPreviewEditor.h)
+    MeshPreviewEditor.h MaterialScriptHighlighter.h)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 

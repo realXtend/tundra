@@ -13,6 +13,7 @@
 #include "OgreAssetEditorModule.h"
 #include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
+#include "MaterialScriptHighlighter.h"
 
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
@@ -33,16 +34,19 @@
 
 #include "MemoryLeakCheck.h"
 
-OgreScriptEditor::OgreScriptEditor(const AssetPtr &asset, AssetAPI *assetApi, QWidget *parent) :
+OgreScriptEditor::OgreScriptEditor(const AssetPtr &assetPtr, AssetAPI *assetAPI, QWidget *parent) :
     QWidget(parent),
+    assetApi(assetAPI),
+    asset(assetPtr),
     lineEditName(0),
     buttonSaveAs(0),
     textEdit(0),
     propertyTable(0),
     materialProperties(0)
 {
-    this->assetApi = assetApi;
-    this->asset = asset;
+    if (asset->Type() != "OgreMaterial" || asset->Type() != "OgreParticle")
+        LogWarning("Created OgreScriptEditor for non-supported asset type " + asset->Type() + ".");
+
     // Create widget from ui file
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/ogrescripteditor.ui");
@@ -134,6 +138,9 @@ void OgreScriptEditor::Open()
 
             CreateTextEdit();
             textEdit->setText(script);
+            LogInfo("Creating MaterialScriptHighlighter");
+            MaterialScriptHighlighter *hl= new MaterialScriptHighlighter(textEdit);
+            hl->setDocument(textEdit->document());
         }
     }
 }
