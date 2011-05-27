@@ -223,6 +223,9 @@ namespace OgreRenderer
         if (!rendersystem)
             throw Exception("Could not find Ogre rendersystem.");
 
+        // Report rendering plugin to log so user can check what actually got loaded
+        OgreRenderingModule::LogInfo("- Selecting " + rendersystem->getName());
+
         // This is needed for QWebView to not lock up!!!
         Ogre::ConfigOptionMap& map = rendersystem->getConfigOptions();
         if (map.find("Floating-point mode") != map.end())
@@ -300,6 +303,7 @@ namespace OgreRenderer
             try
             {
                 root_->loadPlugin(plugin_dir + plugins[i]);
+                OgreRenderingModule::LogInfo("- " + plugins[i] + " loaded");
             }
             catch (Ogre::Exception&)
             {
@@ -390,36 +394,6 @@ namespace OgreRenderer
             Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
             log_listener_.reset();
         }
-    }
-
-    void Renderer::DoFrameTimeLimiting()
-    {
-        /*
-        if (targetFpsLimit > 1.f)
-        {
-            tick_t timeNow = GetCurrentClockTime();
-
-            double msecsSpentInFrame = (double)(timeNow - lastPresentTime) * 1000.0 / timerFrequency;
-            const double msecsPerFrame = 1000.0 / targetFpsLimit;
-            if (msecsSpentInFrame < msecsPerFrame)
-            {
-                PROFILE(Renderer_DoFrameTimeLimiting);
-                while(msecsSpentInFrame >= 0.0 && msecsSpentInFrame < msecsPerFrame)
-                {
-                    if (msecsSpentInFrame + 1.0 < msecsPerFrame)
-                        boost::this_thread::sleep(boost::posix_time::milliseconds(1)); // Sleep in 1msec slices (which on most systems is far from guaranteed to be 1msec, but suits the purpose here)
-
-                    msecsSpentInFrame = (double)(GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
-                }
-
-                // Busy-wait the rest of the time slice to avoid jittering and to produce smoother updates.
-                while(msecsSpentInFrame >= 0 && msecsSpentInFrame < msecsPerFrame)
-                    msecsSpentInFrame = (double)(GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
-            }
-
-            lastPresentTime = GetCurrentClockTime();
-        }
-        */
     }
 
     void Renderer::SetFullScreen(bool value)
@@ -524,12 +498,7 @@ namespace OgreRenderer
             return;
 
         if (framework_->IsHeadless())
-        {
-            // In headless mode, do frame time limiting here to avoid busy-spinning in the main loop and taking up 100% CPU. In headless mode this could
-            // also be safely done using Qt timers, which might be a slightly better approach.
-            DoFrameTimeLimiting(); 
             return;
-        }
 
         PROFILE(Renderer_Render);
 
@@ -710,10 +679,9 @@ namespace OgreRenderer
 
         try
         {
-            DoFrameTimeLimiting(); // Note: Performing limiting here is very prone to FPS jitter depending how much time renderOneFrame takes. The proper method
-                                   // would be to perform the limiting inside renderOneFrame, but Ogre does not support it.
             root_->renderOneFrame();
-        } catch(const std::exception &e)
+        } 
+        catch(const std::exception &e)
         {
             std::cout << "Ogre::Root::renderOneFrame threw an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
             RootLogCritical(std::string("Ogre::Root::renderOneFrame threw an exception: ") + (e.what() ? e.what() : "(null)"));

@@ -240,10 +240,6 @@ namespace OgreRenderer
         float TargetFPSLimit() const { return targetFpsLimit; }
 
     private:
-        
-        //! Sleeps the main thread to throttle the main loop execution speed.
-        void DoFrameTimeLimiting();
-
         //! Initialises the events related info for this module
         void InitializeEvents();
 
