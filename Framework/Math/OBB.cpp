@@ -10,6 +10,7 @@
 #include "MathFunc.h"
 #include "OBB.h"
 #include "AABB.h"
+#include "LCG.h"
 #include "LineSegment.h"
 #include "Plane.h"
 #include "Sphere.h"
@@ -297,25 +298,25 @@ float OBB::SurfaceArea() const
     return 2.f * (size.x*size.y + size.x*size.z + size.y*size.z);
 }
 
-//    float3 RandomPointInside(LCG &rng) const
-//{
-//    return GetPointInside(rng.Float(), rng.Float(), rng.Float());
-//}
+float3 OBB::RandomPointInside(LCG &rng) const
+{
+    return GetPointInside(rng.Float(), rng.Float(), rng.Float());
+}
 
-//    float3 RandomPointOnSurface(LCG &rng) const
-//{
-//    return FacePoint(rng.Int(0, 5), rng.Float(), rng.Float());
-//}
+float3 OBB::RandomPointOnSurface(LCG &rng) const
+{
+    return FacePoint(rng.Int(0, 5), rng.Float(), rng.Float());
+}
 
-//    float3 RandomPointOnEdge(LCG &rng) const
-//{
-//    return PointOnEdge(rng.Int(0, 11), rng.Float());
-//}
+float3 OBB::RandomPointOnEdge(LCG &rng) const
+{
+    return PointOnEdge(rng.Int(0, 11), rng.Float());
+}
 
-//    float3 RandomCornerPoint(LCG &rng) const
-//{
-//    return CornerPoint(rng.Int(0, 7));
-//}
+float3 OBB::RandomCornerPoint(LCG &rng) const
+{
+    return CornerPoint(rng.Int(0, 7));
+}
 
 void OBB::Translate(const float3 &offset)
 {

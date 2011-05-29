@@ -165,19 +165,19 @@ public:
 
     /// Generates a random point inside this OBB.
     /** The points are distributed uniformly. */
-//    float3 RandomPointInside(LCG &rng) const;
+    float3 RandomPointInside(LCG &rng) const;
 
     /// Generates a random point on a random face of this OBB.
     /** The points are distributed uniformly. */
-//    float3 RandomPointOnSurface(LCG &rng) const;
+    float3 RandomPointOnSurface(LCG &rng) const;
 
     /// Generates a random point on a random edge of this OBB.
     /** The points are distributed uniformly. */
-//    float3 RandomPointOnEdge(LCG &rng) const;
+    float3 RandomPointOnEdge(LCG &rng) const;
 
     /// Picks a random corner point of this OBB.
     /** The points are distributed uniformly. */
-//    float3 RandomCornerPoint(LCG &rng) const;
+    float3 RandomCornerPoint(LCG &rng) const;
 
     /// Translates this OBB in the world space.
     /** @param offset The amount of displacement to apply to this OBB, in world space coordinates. */

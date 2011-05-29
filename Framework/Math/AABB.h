@@ -164,19 +164,19 @@ public:
 
     /// Generates a random point inside this AABB.
     /** The points are distributed uniformly. */
-//    float3 RandomPointInside(LCG &rng) const;
+    float3 RandomPointInside(LCG &rng) const;
 
     /// Generates a random point on a random face of this AABB.
     /** The points are distributed uniformly. */
-//    float3 RandomPointOnSurface(LCG &rng) const;
+    float3 RandomPointOnSurface(LCG &rng) const;
 
     /// Generates a random point on a random edge of this AABB.
     /** The points are distributed uniformly. */
-//    float3 RandomPointOnEdge(LCG &rng) const;
+    float3 RandomPointOnEdge(LCG &rng) const;
 
     /// Picks a random corner point of this AABB.
     /** The points are distributed uniformly. */
-//    float3 RandomCornerPoint(LCG &rng) const;
+    float3 RandomCornerPoint(LCG &rng) const;
 
     /// Translates this AABB in the world space.
     /** @param offset The amount of displacement to apply to this AABB, in world space coordinates. */
