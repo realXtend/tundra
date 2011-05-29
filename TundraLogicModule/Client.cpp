@@ -135,7 +135,7 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
     {
         if (GetConnection())
         {
-            owner_->GetKristalliModule()->Disconnect(false, removedConnection_);
+            owner_->GetKristalliModule()->Disconnect(fail, removedConnection_);
             TundraLogicModule::LogInfo("Disconnected");
         }
         
