@@ -41,6 +41,17 @@ static QScriptValue AABB_SetNegativeInfinity(QScriptContext *context, QScriptEng
     return QScriptValue();
 }
 
+static QScriptValue AABB_SetCenter_float3_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function AABB_SetCenter_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_SetCenter_float3_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 center = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 halfSize = TypeFromQScriptValue<float3>(context->argument(1));
+    This->SetCenter(center, halfSize);
+    return QScriptValue();
+}
+
 static QScriptValue AABB_SetFrom_OBB(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_SetFrom_OBB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -638,6 +649,7 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     engine->setDefaultPrototype(qMetaTypeId<AABB*>(), QScriptValue());
     QScriptValue proto = engine->newVariant(qVariantFromValue((AABB*)0));
     proto.setProperty("SetNegativeInfinity", engine->newFunction(AABB_SetNegativeInfinity, 0));
+    proto.setProperty("SetCenter", engine->newFunction(AABB_SetCenter_float3_float3, 2));
     proto.setProperty("SetFrom", engine->newFunction(AABB_SetFrom_selector, 1));
     proto.setProperty("ToOBB", engine->newFunction(AABB_ToOBB, 0));
     proto.setProperty("MinimalEnclosingSphere", engine->newFunction(AABB_MinimalEnclosingSphere, 0));

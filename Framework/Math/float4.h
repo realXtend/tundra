@@ -300,6 +300,7 @@ float4 operator *(float scalar, const float4 &rhs);
 inline float Dot3(const float4 &a, const float4 &b) { return a.Dot3(b); }
 inline float Dot4(const float4 &a, const float4 &b) { return a.Dot4(b); }
 inline float4 Cross3(const float4 &a, const float4 &b) { return a.Cross3(b); }
+inline float4 Abs(const float4 &a) { return a.Abs(); }
 inline float4 Min(const float4 &a, const float4 &b) { return a.Min(b); }
 inline float4 Max(const float4 &a, const float4 &b) { return a.Max(b); }
 inline float4 Clamp(const float4 &a, float floor, float ceil) { return a.Clamp(floor, ceil); }

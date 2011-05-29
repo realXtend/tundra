@@ -41,8 +41,16 @@ void AABB::SetNegativeInfinity()
     maxPoint.SetFromScalar(-std::numeric_limits<float>::infinity());
 }
 
+void AABB::SetCenter(const float3 &center, const float3 &halfSize)
+{
+    minPoint = center - halfSize;
+    maxPoint = center + halfSize;
+}
+
 void AABB::SetFrom(const OBB &obb)
 {
+    float3 halfSize = Max(Max(Abs(obb.axis[0]*obb.r[0]), Abs(obb.axis[1]*obb.r[1])), Abs(obb.axis[2]*obb.r[2]));
+    SetCenter(obb.pos, halfSize);
 }
  
 //    bool AABB::SetFrom(const Polyhedron &polyhedron)
@@ -286,7 +294,7 @@ void AABB::TransformAsAABB(const float3x3 &transform)
     assume(transform.HasUniformScale());
 
     float3 newCenter = transform * CenterPoint();
-    float3 newDir = (transform * Size() / 2.f).Abs();
+    float3 newDir = Abs((transform * Size() / 2.f));
     minPoint = newCenter - newDir;
     maxPoint = newCenter + newDir;
 }
@@ -297,7 +305,7 @@ void AABB::TransformAsAABB(const float3x4 &transform)
     assume(transform.HasUniformScale());
 
     float3 newCenter = transform.MulPos(CenterPoint());
-    float3 newDir = (transform.MulDir(Size()) / 2.f).Abs();
+    float3 newDir = Abs((transform.MulDir(Size()) / 2.f));
     minPoint = newCenter - newDir;
     maxPoint = newCenter + newDir;
 }
@@ -309,7 +317,7 @@ void AABB::TransformAsAABB(const float4x4 &transform)
     assume(transform.Row(3).Equals(0,0,0,1));
 
     float3 newCenter = transform.MulPos(CenterPoint());
-    float3 newDir = (transform.MulDir(Size()) / 2.f).Abs();
+    float3 newDir = Abs((transform.MulDir(Size()) / 2.f));
     minPoint = newCenter - newDir;
     maxPoint = newCenter + newDir;
 }
@@ -317,7 +325,7 @@ void AABB::TransformAsAABB(const float4x4 &transform)
 void AABB::TransformAsAABB(const Quat &transform)
 {
     float3 newCenter = transform.Transform(CenterPoint());
-    float3 newDir = (transform.Transform(Size()) / 2.f).Abs();
+    float3 newDir = Abs((transform.Transform(Size()) / 2.f));
     minPoint = newCenter - newDir;
     maxPoint = newCenter + newDir;
 }

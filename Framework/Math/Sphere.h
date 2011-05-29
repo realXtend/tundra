@@ -23,19 +23,16 @@ public:
     /// @note The default ctor does not initialize any member values.
     Sphere() {}
 
-    Sphere(const float3 &center, float radius)
-    :pos(center), r(radius) 
-    {
-    }
+    Sphere(const float3 &center, float radius);
 
-    /// Constructs a sphere through two points.
+    /// Constructs the minimal sphere enclosing the given two points.
     Sphere(const float3 &pointA, const float3 &pointB);
 
-    /// Constructs a sphere through three points.
-    Sphere(const float3 &pointA, const float3 &pointB, const float3 &pointC);
+    /// Constructs the minimal sphere enclosing the given three points.
+ //   Sphere(const float3 &pointA, const float3 &pointB, const float3 &pointC);
 
-    /// Constructs a sphere through four points.
-    Sphere(const float3 &pointA, const float3 &pointB, const float3 &pointC, const float3 &pointD);
+    /// Constructs the minimal sphere enclosing the given four points.
+ //   Sphere(const float3 &pointA, const float3 &pointB, const float3 &pointC, const float3 &pointD);
 
     AABB MinimalEnclosingAABB() const;
     AABB MaximalContainedAABB() const;
@@ -49,15 +46,16 @@ public:
     bool IsDegenerate() const;
 
     bool Contains(const float3 &point) const;
-
+/*
     static Sphere FastEnclosingSphere(const float3 *pointArray, int numPoints);
     static Sphere ApproximateEnclosingSphere(const float3 *pointArray, int numPoints);
     static Sphere OptimalEnclosingSphere(const float3 *pointArray, int numPoints);
 
     float3 RandomPointInside(LCG &rng) const;
     float3 RandomPointOnSurface(LCG &rng) const;
-
+*/
     float Distance(const float3 &point) const;
+    /*
     float Distance(const float3 &point, float3 &outClosestPointOnSphere) const;
 
     bool Intersect(const Ray &ray, float &outDistance) const;
@@ -74,7 +72,8 @@ public:
     bool Intersect(const Frustum &frustum) const;
     bool Intersect(const Polygon &polygon) const;
     bool Intersect(const Polyhedron &polyhedron) const;
-    
+    */
+    /*
     void Enclose(const AABB &aabb);
     void Enclose(const OBB &obb);
     void Enclose(const Sphere &sphere);
@@ -84,6 +83,7 @@ public:
     void Enclose(const LineSegment &lineSegment);
     void Enclose(const float3 &point);
     void Enclose(const float3 *pointArray, int numPoints);
+    */
 };
 
 #ifdef QT_INTEROP

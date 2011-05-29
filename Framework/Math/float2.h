@@ -228,6 +228,7 @@ float2 operator *(float scalar, const float2 &rhs);
 //float2 operator /(float scalar, const float2 &rhs); 
 
 inline float Dot(const float2 &a, const float2 &b) { return a.Dot(b); }
+inline float2 Abs(const float2 &a) { return a.Abs(); }
 inline float2 Min(const float2 &a, const float2 &b) { return a.Min(b); }
 inline float2 Max(const float2 &a, const float2 &b) { return a.Max(b); }
 inline float2 Clamp(const float2 &a, float floor, float ceil) { return a.Clamp(floor, ceil); }

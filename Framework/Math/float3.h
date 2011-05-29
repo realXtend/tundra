@@ -273,6 +273,7 @@ float3 operator *(float scalar, const float3 &rhs);
 
 inline float Dot(const float3 &a, const float3 &b) { return a.Dot(b); }
 inline float3 Cross(const float3 &a, const float3 &b) { return a.Cross(b); }
+inline float3 Abs(const float3 &a) { return a.Abs(); }
 inline float3 Min(const float3 &a, const float3 &b) { return a.Min(b); }
 inline float3 Max(const float3 &a, const float3 &b) { return a.Max(b); }
 inline float3 Clamp(const float3 &a, float floor, float ceil) { return a.Clamp(floor, ceil); }

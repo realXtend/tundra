@@ -50,6 +50,9 @@ public:
     /// which incrementally expand the contents of this AABB to enclose the given objects.
     void SetNegativeInfinity();
 
+    /// Sets this AABB by speciying the center and half-diagonal vector.
+    void SetCenter(const float3 &center, const float3 &halfSize);
+
     /// Sets this AABB to enclose the given OBB.
     /** This function computes the minimal axis-aligned bounding box for the given oriented bounding box. If the orientation
         of the OBB is not aligned with the world axes, this conversion loosens the volume of the bounding box. */
