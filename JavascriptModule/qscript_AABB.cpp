@@ -244,6 +244,46 @@ static QScriptValue AABB_SurfaceArea(QScriptContext *context, QScriptEngine *eng
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue AABB_RandomPointInside_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_RandomPointInside_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_RandomPointInside_LCG in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    LCG rng = TypeFromQScriptValue<LCG>(context->argument(0));
+    float3 ret = This->RandomPointInside(rng);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue AABB_RandomPointOnSurface_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_RandomPointOnSurface_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_RandomPointOnSurface_LCG in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    LCG rng = TypeFromQScriptValue<LCG>(context->argument(0));
+    float3 ret = This->RandomPointOnSurface(rng);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue AABB_RandomPointOnEdge_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_RandomPointOnEdge_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_RandomPointOnEdge_LCG in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    LCG rng = TypeFromQScriptValue<LCG>(context->argument(0));
+    float3 ret = This->RandomPointOnEdge(rng);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue AABB_RandomCornerPoint_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_RandomCornerPoint_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_RandomCornerPoint_LCG in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    LCG rng = TypeFromQScriptValue<LCG>(context->argument(0));
+    float3 ret = This->RandomCornerPoint(rng);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue AABB_Translate_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Translate_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -456,7 +496,7 @@ static QScriptValue AABB_minPoint_get(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue AABB_minPoint_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_minPoint_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_minPoint_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 minPoint = qscriptvalue_cast<float3>(context->argument(0));
@@ -474,7 +514,7 @@ static QScriptValue AABB_maxPoint_get(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue AABB_maxPoint_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_maxPoint_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_maxPoint_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 maxPoint = qscriptvalue_cast<float3>(context->argument(0));
@@ -618,6 +658,10 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     proto.setProperty("HalfDiagonal", engine->newFunction(AABB_HalfDiagonal, 0));
     proto.setProperty("Volume", engine->newFunction(AABB_Volume, 0));
     proto.setProperty("SurfaceArea", engine->newFunction(AABB_SurfaceArea, 0));
+    proto.setProperty("RandomPointInside", engine->newFunction(AABB_RandomPointInside_LCG, 1));
+    proto.setProperty("RandomPointOnSurface", engine->newFunction(AABB_RandomPointOnSurface_LCG, 1));
+    proto.setProperty("RandomPointOnEdge", engine->newFunction(AABB_RandomPointOnEdge_LCG, 1));
+    proto.setProperty("RandomCornerPoint", engine->newFunction(AABB_RandomCornerPoint_LCG, 1));
     proto.setProperty("Translate", engine->newFunction(AABB_Translate_float3, 1));
     proto.setProperty("Scale", engine->newFunction(AABB_Scale_selector, 2));
     proto.setProperty("TransformAsAABB", engine->newFunction(AABB_TransformAsAABB_selector, 1));

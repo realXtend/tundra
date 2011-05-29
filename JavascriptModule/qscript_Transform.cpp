@@ -183,7 +183,7 @@ static QScriptValue Transform_pos_get(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue Transform_pos_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_pos_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_pos_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     Transform *This = TypeFromQScriptValue<Transform*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 pos = qscriptvalue_cast<float3>(context->argument(0));
@@ -201,7 +201,7 @@ static QScriptValue Transform_rot_get(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue Transform_rot_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_rot_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_rot_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     Transform *This = TypeFromQScriptValue<Transform*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 rot = qscriptvalue_cast<float3>(context->argument(0));
@@ -219,7 +219,7 @@ static QScriptValue Transform_scale_get(QScriptContext *context, QScriptEngine *
 
 static QScriptValue Transform_scale_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_scale_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_scale_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     Transform *This = TypeFromQScriptValue<Transform*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 scale = qscriptvalue_cast<float3>(context->argument(0));

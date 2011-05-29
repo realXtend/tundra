@@ -44,7 +44,7 @@ static QScriptValue ScaleOp_x_get(QScriptContext *context, QScriptEngine *engine
 
 static QScriptValue ScaleOp_x_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function ScaleOp_x_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function ScaleOp_x_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     ScaleOp *This = TypeFromQScriptValue<ScaleOp*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float x = qscriptvalue_cast<float>(context->argument(0));
@@ -62,7 +62,7 @@ static QScriptValue ScaleOp_y_get(QScriptContext *context, QScriptEngine *engine
 
 static QScriptValue ScaleOp_y_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function ScaleOp_y_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function ScaleOp_y_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     ScaleOp *This = TypeFromQScriptValue<ScaleOp*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float y = qscriptvalue_cast<float>(context->argument(0));
@@ -80,7 +80,7 @@ static QScriptValue ScaleOp_z_get(QScriptContext *context, QScriptEngine *engine
 
 static QScriptValue ScaleOp_z_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function ScaleOp_z_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function ScaleOp_z_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     ScaleOp *This = TypeFromQScriptValue<ScaleOp*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float z = qscriptvalue_cast<float>(context->argument(0));

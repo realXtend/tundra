@@ -280,6 +280,46 @@ static QScriptValue OBB_SurfaceArea(QScriptContext *context, QScriptEngine *engi
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue OBB_RandomPointInside_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_RandomPointInside_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function OBB_RandomPointInside_LCG in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    LCG rng = TypeFromQScriptValue<LCG>(context->argument(0));
+    float3 ret = This->RandomPointInside(rng);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue OBB_RandomPointOnSurface_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_RandomPointOnSurface_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function OBB_RandomPointOnSurface_LCG in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    LCG rng = TypeFromQScriptValue<LCG>(context->argument(0));
+    float3 ret = This->RandomPointOnSurface(rng);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue OBB_RandomPointOnEdge_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_RandomPointOnEdge_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function OBB_RandomPointOnEdge_LCG in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    LCG rng = TypeFromQScriptValue<LCG>(context->argument(0));
+    float3 ret = This->RandomPointOnEdge(rng);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue OBB_RandomCornerPoint_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_RandomCornerPoint_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function OBB_RandomCornerPoint_LCG in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    LCG rng = TypeFromQScriptValue<LCG>(context->argument(0));
+    float3 ret = This->RandomCornerPoint(rng);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue OBB_Translate_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Translate_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -423,7 +463,7 @@ static QScriptValue OBB_pos_get(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue OBB_pos_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_pos_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_pos_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 pos = qscriptvalue_cast<float3>(context->argument(0));
@@ -441,7 +481,7 @@ static QScriptValue OBB_r_get(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue OBB_r_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_r_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_r_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 r = qscriptvalue_cast<float3>(context->argument(0));
@@ -574,6 +614,10 @@ QScriptValue register_OBB_prototype(QScriptEngine *engine)
     proto.setProperty("GetFacePlanes", engine->newFunction(OBB_GetFacePlanes_Plane_ptr, 1));
     proto.setProperty("Volume", engine->newFunction(OBB_Volume, 0));
     proto.setProperty("SurfaceArea", engine->newFunction(OBB_SurfaceArea, 0));
+    proto.setProperty("RandomPointInside", engine->newFunction(OBB_RandomPointInside_LCG, 1));
+    proto.setProperty("RandomPointOnSurface", engine->newFunction(OBB_RandomPointOnSurface_LCG, 1));
+    proto.setProperty("RandomPointOnEdge", engine->newFunction(OBB_RandomPointOnEdge_LCG, 1));
+    proto.setProperty("RandomCornerPoint", engine->newFunction(OBB_RandomCornerPoint_LCG, 1));
     proto.setProperty("Translate", engine->newFunction(OBB_Translate_float3, 1));
     proto.setProperty("Scale", engine->newFunction(OBB_Scale_selector, 2));
     proto.setProperty("Transform", engine->newFunction(OBB_Transform_selector, 1));

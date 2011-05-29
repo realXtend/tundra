@@ -111,7 +111,7 @@ static QScriptValue Ray_pos_get(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue Ray_pos_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Ray_pos_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Ray_pos_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     Ray *This = TypeFromQScriptValue<Ray*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 pos = qscriptvalue_cast<float3>(context->argument(0));
@@ -129,7 +129,7 @@ static QScriptValue Ray_dir_get(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue Ray_dir_set(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Ray_dir_get in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Ray_dir_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     Ray *This = TypeFromQScriptValue<Ray*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 dir = qscriptvalue_cast<float3>(context->argument(0));

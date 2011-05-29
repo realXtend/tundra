@@ -22,6 +22,7 @@ Q_DECLARE_METATYPE(QScriptClass*)
 #include "Math/float4x4.h"
 #include "Math/Frustum.h"
 #include "Math/HitInfo.h"
+#include "Math/LCG.h"
 #include "Math/Line.h"
 #include "Math/LineSegment.h"
 #include "Math/OBB.h"
