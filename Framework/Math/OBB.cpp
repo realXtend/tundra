@@ -345,15 +345,155 @@ float Distance(const Torus &torus, float3 *outClosestPoint, float3 *outClosestPo
 float Distance(const Frustum &frustum, float3 *outClosestPoint, float3 *outClosestPointOther) const;
 float Distance(const Polygon &polygon, float3 *outClosestPoint, float3 *outClosestPointOther) const; */
 //    float Distance(const Polyhedron &polyhedron, float3 *outClosestPoint, float3 *outClosestPointOther) const;
-/*
-bool Contains(const float3 &point) const;
 
+bool OBB::Contains(const float3 &point) const
+{
+    float3 pt = point - pos;
+    return Abs(Dot(pt, axis[0]) <= r[0]) &&
+           Abs(Dot(pt, axis[1]) <= r[1]) &&
+           Abs(Dot(pt, axis[2]) <= r[2]);
+}
+
+bool OBB::Contains(const LineSegment &lineSegment) const
+{
+    return Contains(lineSegment.a) && Contains(lineSegment.b);
+}
+
+bool OBB::Contains(const AABB &aabb) const
+{
+    // Since both AABB and OBB are convex objects, this OBB contains the AABB
+    // if and only if it contains all its corner points.
+    for(int i = 0; i < 8; ++i)
+        if (!Contains(aabb.CornerPoint(i)))
+            return false;
+
+    return true;
+}
+
+bool OBB::Contains(const OBB &obb) const
+{
+    for(int i = 0; i < 8; ++i)
+        if (!Contains(obb.CornerPoint(i)))
+            return false;
+
+    return true;
+}
+
+bool OBB::Intersects(const AABB &aabb) const
+{
+    return Intersects(OBB(aabb));
+}
+
+/** The following code is from Christer Ericson's book Real-Time Collision Detection, pp. 101-106.
+    http://realtimecollisiondetection.net/ */
+bool OBB::Intersects(const OBB &b, float epsilon) const
+{
+    assume(pos.IsFinite());
+    assume(b.pos.IsFinite());
+    assume(float3::AreOrthonormal(axis[0], axis[1], axis[2]));
+    assume(float3::AreOrthonormal(b.axis[0], b.axis[1], b.axis[2]));
+
+    // Generate a rotation matrix that transforms from world space to this OBB's coordinate space.
+    float3x3 R;
+    for(int i = 0; i < 3; ++i)
+        for(int j = 0; j < 3; ++j)
+            R[i][j] = Dot(axis[i], b.axis[j]);
+
+    float3 t = b.pos - pos;
+    // Express the translation vector in a's coordinate frame.
+    t = float3(Dot(t, axis[0]), Dot(t, axis[1]), Dot(t, axis[2]));
+
+    float3x3 AbsR;
+    for(int i = 0; i < 3; ++i)
+        for(int j = 0; j < 3; ++j)
+            AbsR[i][j] = Abs(R[i][j]) + epsilon;
+
+    // Test the three major axes of this OBB.
+    for(int i = 0; i < 3; ++i)
+    {
+        float ra = r[i];
+        float rb = DOT3(b.r, AbsR[i]);
+        if (Abs(t[i]) > ra + rb) 
+            return false;
+    }
+
+    // Test the three major axes of the OBB b.
+    for(int i = 0; i < 3; ++i)
+    {
+        float ra = r[0] * AbsR[0][i] + r[1] * AbsR[1][i] + r[2] * AbsR[2][i];
+        float rb = b.r[i];
+        if (Abs(t.x + R[0][i] + t.y * R[1][i] + t.z * R[2][i]) > ra + rb)
+            return false;
+    }
+
+    // Test the 9 different cross-axes.
+
+    // A.x <cross> B.x
+    float ra = r.y * AbsR[2][0] + r.z * AbsR[1][0];
+    float rb = b.r.y * AbsR[0][2] + b.r.z * AbsR[0][1];
+    if (Abs(t.z * R[1][0] - t.y * R[2][0]) > ra + rb)
+        return false;
+
+    // A.x < cross> B.y
+    ra = r.y * AbsR[2][1] + r.z * AbsR[1][1];
+    rb = b.r.x * AbsR[0][2] + b.r.z * AbsR[0][0];
+    if (Abs(t.z * R[1][1] - t.y * R[2][1]) > ra + rb)
+        return false;
+
+    // A.x <cross> B.z
+    ra = r.y * AbsR[2][2] + r.z * AbsR[1][2];
+    rb = b.r.x * AbsR[0][1] + b.r.y * AbsR[0][0];
+    if (Abs(t.z * R[1][22] - t.y * R[2][2]) > ra + rb)
+        return false;
+
+    // A.y <cross> B.x
+    ra = r.x * AbsR[2][0] + r.z * AbsR[0][0];
+    rb = b.r.y * AbsR[1][2] + b.r.z * AbsR[1][1];
+    if (Abs(t.x * R[2][0] - t.z * R[0][0]) > ra + rb)
+        return false;
+
+    // A.y <cross> B.y
+    ra = r.x * AbsR[2][1] + r.z * AbsR[0][1];
+    rb = b.r.x * AbsR[1][2] + b.r.z * AbsR[1][0];
+    if (Abs(t.x * R[2][1] - t.z * R[0][1]) > ra + rb)
+        return false;
+
+    // A.y <cross> B.z
+    ra = r.x * AbsR[2][2] + r.z * AbsR[0][2];
+    rb = b.r.x * AbsR[1][1] + b.r.y * AbsR[1][0];
+    if (Abs(t.x * R[2][2] - t.z * R[0][2]) > ra + rb)
+        return false;
+
+    // A.z <cross> B.x
+    ra = r.x * AbsR[1][0] + r.y * AbsR[0][0];
+    rb = b.r.y * AbsR[2][2] + b.r.z * AbsR[2][1];
+    if (Abs(t.y * R[0][0] - t.x * R[1][0]) > ra + rb)
+        return false;
+
+    // A.z <cross> B.y
+    ra = r.x * AbsR[1][1] + r.y * AbsR[0][1];
+    rb = b.r.x * AbsR[2][2] + b.r.z * AbsR[2][0];
+    if (abs(t.y * R[0][1] - t.x * R[1][1]) > ra + rb)
+        return false;
+
+    // A.z <cross> B.z
+    ra = r.x * AbsR[1][2] + r.y * AbsR[0][2];
+    rb = b.r.x * AbsR[2][1] + b.r.y * AbsR[2][0];
+    if (Abs(t.y * R[0][2] - t.x * R[1][2]) > ra + rb)
+        return false;
+
+    // No separating axis exists, so the two OBB don't intersect.
+    return true;
+}
+
+/*
 HitInfo Intersect(const Ray &ray, float *outDistance) const;
 HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const;
 HitInfo Intersect(const Line &line, float *outDistance) const;
 HitInfo Intersect(const LineSegment &lineSegment, float *outDistance) const;
-HitInfo Intersect(const AABB &aabb) const;
+
 HitInfo Intersect(const OBB &obb) const;
+/*
 HitInfo Intersect(const Plane &plane) const;
 HitInfo Intersect(const Sphere &sphere) const;
 HitInfo Intersect(const Ellipsoid &ellipsoid) const;

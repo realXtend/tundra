@@ -235,26 +235,30 @@ public:
     float Distance(const Polygon &polygon, float3 *outClosestPoint, float3 *outClosestPointOther) const; */
 //    float Distance(const Polyhedron &polyhedron, float3 *outClosestPoint, float3 *outClosestPointOther) const;
 
-    /// Tests if this OBB contains the given point.
-    /** This function returns true if the given point lies inside this OBB, and false otherwise.
+    /// Tests if this OBB fully contains the given object.
+    /** This function returns true if the given object lies inside this OBB, and false otherwise.
         \note The comparison is performed using less-or-equal, so the faces of this OBB count as being inside, but
         due to float inaccuracies, this cannot generally be relied upon. */
     bool Contains(const float3 &point) const;
+    bool Contains(const LineSegment &lineSegment) const;
+    bool Contains(const AABB &aabb) const;
+    bool Contains(const OBB &obb) const;
 
     /// Tests if this OBB intersects the given object.
     /** The first parameter of this function specifies the object to test against.
         @param outDistance [out] For rays, lines and line segments, this parameter receives the distance along the ray
             that specifies the hit point.        
         @return The HitInfo structure that describes the details of the intersection that occurred. */
-    HitInfo Intersect(const Ray &ray, float *outDistance) const;
+//    HitInfo Intersect(const Ray &ray, float *outDistance) const;
     /** @param maxDistance If specified, limits the maximum distance along the ray to which the intersection
         is checked. This effectively utilizes the ray as if it was a line segment. */
-    HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const;
-    HitInfo Intersect(const Line &line, float *outDistance) const;
-    HitInfo Intersect(const LineSegment &lineSegment, float *outDistance) const;
-    HitInfo Intersect(const AABB &aabb) const;
-    HitInfo Intersect(const OBB &obb) const;
-    HitInfo Intersect(const Plane &plane) const; /*
+//    HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const;
+//    HitInfo Intersect(const Line &line, float *outDistance) const;
+//    HitInfo Intersect(const LineSegment &lineSegment, float *outDistance) const;
+    bool Intersects(const AABB &aabb) const;
+    bool Intersects(const OBB &obb, float epsilon = 1e-3f) const;
+
+/*  HitInfo Intersect(const Plane &plane) const; 
     HitInfo Intersect(const Sphere &sphere) const;
     HitInfo Intersect(const Ellipsoid &ellipsoid) const;
     HitInfo Intersect(const Triangle &triangle) const;
