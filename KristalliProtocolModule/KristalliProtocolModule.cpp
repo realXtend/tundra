@@ -166,10 +166,8 @@ void KristalliProtocolModule::Update(f64 frametime)
 {
     // Update method for multiconnection.
     if (!serverConnection_map_.isEmpty())
-    {
-        LogInfo("Mennään connectionArrayUpdate(): " + ToString(serverConnection_map_.size()));
         connectionArrayUpdate();
-    }
+    
 
     // Pulls all new inbound network messages and calls the message handler we've registered
     // for each of them.
@@ -235,7 +233,7 @@ void KristalliProtocolModule::Update(f64 frametime)
             {
                 // Associative QMap stores all items sorted by Key. If array has one item terminated,
                 // we fill it with next succesfull connection. Same is done in client.
-                LogInfo("Inserting properties to: " + ToString(connection));
+                //LogInfo("Inserting properties to: " + ToString(connection));
                 serverConnection_map_.insert(connection, serverConnection);
                 serverIp_list_.insert(connection,serverIp);
                 serverPort_list_.insert(connection,serverPort);
