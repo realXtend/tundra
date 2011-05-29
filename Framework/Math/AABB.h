@@ -249,12 +249,12 @@ public:
 //    float Distance(const Polygon &polygon, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
 //    float Distance(const Polyhedron &polyhedron, float3 *outClosestPoint, float3 *outClosestPointOther) const; ///< [noscript]
 */
-    /// Tests if this AABB contains the given point.
-    /** This function returns true if the given point lies inside this AABB, and false otherwise.
+    /// Tests if this AABB fully contains the given object.
+    /** This function returns true if the given object lies inside this AABB, and false otherwise.
         \note The comparison is performed using less-or-equal, so the faces of this AABB count as being inside, but
         due to float inaccuracies, this cannot generally be relied upon. */
     bool Contains(const float3 &point) const;
-    /// Tests is this AABB contains the given aabb.
+    bool Contains(const LineSegment &lineSegment) const;
     bool Contains(const AABB &aabb) const;
 
     /// Tests if this AABB intersects the given object.

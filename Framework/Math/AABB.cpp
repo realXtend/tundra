@@ -369,6 +369,11 @@ bool AABB::Contains(const float3 &point) const
            minPoint.z <= point.z && point.z <= maxPoint.z;
 }
 
+bool AABB::Contains(const LineSegment &lineSegment) const
+{
+    return Contains(lineSegment.a) && Contains(lineSegment.b);
+}
+
 bool AABB::Contains(const AABB &aabb) const
 {
     return Contains(aabb.minPoint) && Contains(aabb.maxPoint);
