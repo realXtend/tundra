@@ -276,6 +276,16 @@ float3 OBB::HalfSize() const
     return r;
 }
 
+float3 OBB::Diagonal() const
+{
+    return 2.f * HalfDiagonal();
+}
+
+float3 OBB::HalfDiagonal() const
+{
+    return axis[0] * r[0] + axis[1] * r[1] + axis[2] * r[2];
+}
+
 float OBB::Volume() const
 {
     return Size().ProductOfElements();

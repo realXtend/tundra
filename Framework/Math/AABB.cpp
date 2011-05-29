@@ -224,6 +224,11 @@ float3 AABB::Size() const
     return maxPoint - minPoint;
 }
 
+float3 AABB::HalfSize() const
+{
+    return Size() / 2.f;
+}
+
 float AABB::Volume() const
 {
     return Size().ProductOfElements();
@@ -414,6 +419,13 @@ void AABB::Enclose(const AABB &aabb)
     Enclose(aabb.minPoint);
     Enclose(aabb.maxPoint);
 }
+
+void AABB::Enclose(const OBB &obb)
+{
+    for(int i = 0; i < 8; ++i)
+        Enclose(obb.CornerPoint(i));
+}
+
 /*
 void AABB::Enclose(const OBB &obb)
 {

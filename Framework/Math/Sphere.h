@@ -23,7 +23,10 @@ public:
     /// @note The default ctor does not initialize any member values.
     Sphere() {}
 
-    Sphere(const float3 &center, float radius);
+    Sphere(const float3 &center, float radius)
+    :pos(center), r(radius) 
+    {
+    }
 
     /// Constructs a sphere through two points.
     Sphere(const float3 &pointA, const float3 &pointB);
