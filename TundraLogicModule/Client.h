@@ -103,7 +103,7 @@ public slots:
 
     /// Disconnects the client from the current server, and also deletes all contents from the client scene.
     /// \param fail Pass in true if the logout was due to connection/login failure. False, if the connection was aborted deliberately by the client.
-    void Logout(bool fail = false);
+    void Logout(bool fail = false, unsigned short removedConnection_ = 0);
 
     /// Get client connection ID (from loginreply message). Is zero if not connected
     int GetConnectionID() const { return client_id_; }

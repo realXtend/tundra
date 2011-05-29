@@ -129,13 +129,13 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     client_id_ = 0;
 }
 
-void Client::Logout(bool fail)
+void Client::Logout(bool fail, unsigned short removedConnection_)
 {
     if (loginstate_ != NotConnected)
     {
         if (GetConnection())
         {
-            owner_->GetKristalliModule()->Disconnect();
+            owner_->GetKristalliModule()->Disconnect(false, removedConnection_);
             TundraLogicModule::LogInfo("Disconnected");
         }
         
@@ -240,7 +240,8 @@ void Client::HandleKristalliEvent(event_id_t event_id, IEventData* data)
     }
     if (event_id == KristalliProtocol::Events::CONNECTION_FAILED)
     {
-        Logout(true);
+        KristalliProtocol::Events::KristalliConnectionFailed* eventData = checked_static_cast<KristalliProtocol::Events::KristalliConnectionFailed*>(data);
+        Logout(true, eventData->removedConnection_);
     }
 }
 

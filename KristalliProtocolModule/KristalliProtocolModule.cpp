@@ -94,7 +94,15 @@ KristalliProtocolModule::KristalliProtocolModule()
 , serverConnection(0)
 , server(0)
 , reconnectAttempts(0)
+, cleanup(false)
 {
+    serverIp_list_.clear();
+    serverPort_list_.clear();
+    serverTransport_list_.clear();
+    reconnectAttempts_list_.clear();
+    reconnectTimer_list_.clear();
+    serverConnection_map_.clear();
+    cleanupList.clear();
 }
 
 KristalliProtocolModule::~KristalliProtocolModule()
@@ -156,10 +164,18 @@ ConsoleCommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVect
 
 void KristalliProtocolModule::Update(f64 frametime)
 {
+    // Update method for multiconnection.
+    if (!serverConnection_map_.isEmpty())
+    {
+        LogInfo("Mennään connectionArrayUpdate(): " + ToString(serverConnection_map_.size()));
+        connectionArrayUpdate();
+    }
+
     // Pulls all new inbound network messages and calls the message handler we've registered
     // for each of them.
     if (serverConnection)
         serverConnection->Process();
+
 
     // Note: Calling the above serverConnection->Process() may set serverConnection to null if the connection gets disconnected.
     // Therefore, in the code below, we cannot assume serverConnection is non-null, and must check it again.
@@ -169,6 +185,7 @@ void KristalliProtocolModule::Update(f64 frametime)
     // Check here if the server has write-closed, and also write-close our end if so.
     if (serverConnection && !serverConnection->IsReadOpen() && serverConnection->IsWriteOpen())
         serverConnection->Disconnect(0);
+
     
     // Process server incoming connections & messages if server up
     if (server)
@@ -185,7 +202,7 @@ void KristalliProtocolModule::Update(f64 frametime)
     }
     
     if ((!serverConnection || serverConnection->GetConnectionState() == ConnectionClosed ||
-        serverConnection->GetConnectionState() == ConnectionPending) && serverIp.length() != 0)
+         serverConnection->GetConnectionState() == ConnectionPending) && serverIp.length() != 0)
     {
         const int cReconnectTimeout = 5 * 1000.f;
         if (reconnectTimer.Test())
@@ -209,8 +226,33 @@ void KristalliProtocolModule::Update(f64 frametime)
 
     // If connection was made, enable a larger number of reconnection attempts in case it gets lost
     if (serverConnection && serverConnection->GetConnectionState() == ConnectionOK)
-        reconnectAttempts = cReconnectAttempts;
-    
+    {
+        // save succesfully established connection to messageconnection array with all connection properties.
+        for (unsigned short connection = 0;; connection++)
+        {
+            if (!serverConnection_map_.contains(connection))
+            {
+                // Associative QMap stores all items sorted by Key. If array has one item terminated,
+                // we fill it with next succesfull connection. Same is done in client.
+                LogInfo("Inserting properties to: " + ToString(connection));
+                serverConnection_map_.insert(connection, serverConnection);
+                serverIp_list_.insert(connection,serverIp);
+                serverPort_list_.insert(connection,serverPort);
+                serverTransport_list_.insert(connection, serverTransport);
+                reconnectAttempts_list_.insert(connection, cReconnectAttempts);
+                reconnectTimer.Reset();
+                reconnectTimer_list_.insert(connection,reconnectTimer);
+
+                serverConnection = 0;
+                serverIp = "";
+                serverPort = 0;
+
+                break;
+            }
+        }
+    }
+
+
     RESETPROFILER;
 }
 
@@ -404,3 +446,137 @@ using namespace KristalliProtocol;
 POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(KristalliProtocolModule)
 POCO_END_MANIFEST
+
+void KristalliProtocolModule::connectionArrayUpdate()
+{
+    unsigned short connection = 0;
+
+    // Iterator which is used to process messageConnection array items
+    QMutableMapIterator<unsigned short, Ptr(kNet::MessageConnection)> iter(serverConnection_map_);
+
+    // Iterator which points to last item in messageConnection array map.
+    QMutableMapIterator<unsigned short, Ptr(kNet::MessageConnection)> iterLast(serverConnection_map_);
+    iterLast.toBack();
+    iterLast.previous();
+
+    // Pulls all new inbound network messages and calls the message handler we've registered
+    // for each of them.
+    while (iter.hasNext())
+    {
+        iter.next();
+
+        // If we are processing last serverConnection item we enable cleanup flag
+        if (iter.value() == iterLast.value())
+            cleanup = true;
+
+        if (iter.value())
+            iter.value()->Process();
+
+        // Note: Calling the above tempConnection->Process() may set tempConnection to null if the connection gets disconnected.
+        // Therefore, in the code below, we cannot assume tempConnection is non-null, and must check it again.
+
+        // Our client->server connection is never kept half-open.
+        // That is, at the moment the server write-closes the connection, we also write-close the connection.
+        // Check here if the server has write-closed, and also write-close our end if so.
+        if (iter.value() && !iter.value()->IsReadOpen() && iter.value()->IsWriteOpen())
+            iter.value()->Disconnect(0);
+
+
+        if ((!iter.value() || iter.value()->GetConnectionState() == ConnectionClosed ||
+             iter.value()->GetConnectionState() == ConnectionPending) && serverIp_list_[connection].length() != 0)
+        {
+            const int cReconnectTimeout = 5 * 1000.f;
+            if (reconnectTimer_list_[connection].Test())
+            {
+                if (reconnectAttempts_list_[connection])
+                {
+                    PerformReconnection(iter, connection);
+                    --reconnectAttempts_list_[connection];
+                }
+                else
+                {
+                    LogInfo("Failed to connect to " + serverIp_list_[connection] + ":" + ToString(serverPort_list_[connection]));
+                    // Message which declares what connection we are removing
+                    Events::KristalliConnectionFailed msg(connection);
+                    // This sends an event to client::logout() which calls KristalliProtocolModule->Disconnect()
+                    // which sets serverConnection to zero.
+                    framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, &msg);
+                    // When we have iterated through whole connection array we remove all marked connection properties from list/map
+                    cleanupList.append(connection);
+                }
+            }
+            else if (!reconnectTimer_list_[connection].Enabled())
+                reconnectTimer_list_[connection].StartMSecs(cReconnectTimeout);
+        }
+
+        // If connection was made, enable a larger number of reconnection attempts in case it gets lost
+        if (iter.value() && iter.value()->GetConnectionState() == ConnectionOK)
+            reconnectAttempts_list_[connection] = cReconnectAttempts;
+        // This variable keeps track of which properties we handle currently from QLists (IP,PORT, etc)
+        connection++;
+
+        // If current messageconnection was last connection to be processed from QMap we clean up the QMap
+        if (cleanup)
+            removeConnectionProperties();
+
+    }
+}
+
+void KristalliProtocolModule::removeConnectionProperties()
+{
+    for (int counter = 0; counter < cleanupList.length(); counter++)
+    {
+        serverIp_list_.removeAt(cleanupList[counter]);
+        serverPort_list_.removeAt(cleanupList[counter]);
+        serverTransport_list_.removeAt(cleanupList[counter]);
+        reconnectAttempts_list_.removeAt(cleanupList[counter]);
+        reconnectTimer_list_.removeAt(cleanupList[counter]);
+        serverConnection_map_.remove(cleanupList[counter]);
+    }
+    cleanup = false;
+    cleanupList.clear();
+}
+
+void KristalliProtocolModule::PerformReconnection(QMutableMapIterator<unsigned short, Ptr(kNet::MessageConnection)> &iterator, unsigned short connection)
+{
+    if (iterator.value())
+    {
+        iterator.value()->Close();
+//        network.CloseMessageConnection(serverConnection);
+        iterator.value() = 0;
+    }
+
+    // Connect to the server.
+    iterator.value() = network.Connect(serverIp_list_[connection].c_str(), serverPort_list_[connection], serverTransport_list_[connection], this);
+    if (!iterator.value())
+    {
+        LogError("Unable to connect to " + serverIp_list_[connection] + ":" + ToString(serverPort_list_[connection]));
+        return;
+    }
+
+    // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
+    if (iterator.value()->GetSocket() && iterator.value()->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
+        iterator.value()->GetSocket()->SetNaglesAlgorithmEnabled(false);
+}
+
+void KristalliProtocolModule::Disconnect(bool fail, unsigned short con)
+{
+    // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
+    serverIp_list_[con] = "";
+    reconnectTimer_list_[con].Stop();
+
+    for (QMutableMapIterator<unsigned short, Ptr(kNet::MessageConnection)> iterator(serverConnection_map_); iterator.hasNext();)
+    {
+        iterator.next();
+        if (iterator.key() == con)
+        {
+           iterator.value()->Disconnect();
+           iterator.value() = 0;
+        }
+    }
+    if (!fail)
+    {
+        cleanupList.append(con);
+        removeConnectionProperties();
+    }
+}

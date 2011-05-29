@@ -65,6 +65,18 @@ namespace Events
         
         UserConnection *connection;
     };
+
+    // Event structure for failed connection
+    class KristalliConnectionFailed : public IEventData
+    {
+    public:
+        KristalliConnectionFailed(unsigned short con) :
+            removedConnection_(con)
+        {
+        }
+
+        unsigned short removedConnection_;
+    };
 } // ~Events namespace
 
 } // ~KristalliProtocolModule namespace
