@@ -43,8 +43,10 @@
 class LCG
 {
 public:
-	/// Initializes the generator. You probably only want to give the seed and be done with it.
-	LCG(u32 seed = 1, u32 multiplier = 69621, 
+    /// Initializes the generator from the current system clock.
+    LCG();
+	/// Initializes the generator using a custom seed.
+	LCG(u32 seed, u32 multiplier = 69621, 
 		u32 increment = 0, u32 modulus = 0x7FFFFFFF /* 2^31 - 1 */)
 	{
 		Seed(seed, multiplier, increment, modulus);
@@ -83,3 +85,8 @@ private:
 
 	u32 lastNumber;
 };
+
+#ifdef QT_INTEROP
+Q_DECLARE_METATYPE(LCG)
+Q_DECLARE_METATYPE(LCG*)
+#endif

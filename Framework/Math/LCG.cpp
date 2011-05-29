@@ -10,6 +10,12 @@
 #include "StableHeaders.h"
 #include "MathFunc.h"
 #include "LCG.h"
+#include "HighPerfClock.h"
+
+LCG::LCG()
+{
+    Seed(GetCurrentClockTime());
+}
 
 /** If you want to give different parameters for the generator, you should remember that:
 	- modulus should be prime
