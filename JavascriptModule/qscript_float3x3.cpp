@@ -770,6 +770,26 @@ static QScriptValue float3x3_Mul_float3(QScriptContext *context, QScriptEngine *
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue float3x3_MulPos_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x3_MulPos_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3x3 *This = TypeFromQScriptValue<float3x3*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function float3x3_MulPos_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 rhs = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 ret = This->MulPos(rhs);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue float3x3_MulDir_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x3_MulDir_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3x3 *This = TypeFromQScriptValue<float3x3*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function float3x3_MulDir_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 rhs = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 ret = This->MulDir(rhs);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue float3x3_toString(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x3_toString in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -1286,6 +1306,8 @@ QScriptValue register_float3x3_prototype(QScriptEngine *engine)
     proto.setProperty("ExtractScale", engine->newFunction(float3x3_ExtractScale, 0));
     proto.setProperty("Decompose", engine->newFunction(float3x3_Decompose_selector, 2));
     proto.setProperty("Mul", engine->newFunction(float3x3_Mul_selector, 1));
+    proto.setProperty("MulPos", engine->newFunction(float3x3_MulPos_float3, 1));
+    proto.setProperty("MulDir", engine->newFunction(float3x3_MulDir_float3, 1));
     proto.setProperty("toString", engine->newFunction(float3x3_toString, 0));
     float3x3_scriptclass *sc = new float3x3_scriptclass(engine);
     engine->setProperty("float3x3_scriptclass", QVariant::fromValue<QScriptClass*>(sc));

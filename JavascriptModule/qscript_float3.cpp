@@ -581,6 +581,27 @@ static QScriptValue float3_Orthogonalize_float3_float3_float3(QScriptContext *co
     return QScriptValue();
 }
 
+static QScriptValue float3_AreOrthogonal_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3_AreOrthogonal_float3_float3_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3 a = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 b = TypeFromQScriptValue<float3>(context->argument(1));
+    float epsilon = TypeFromQScriptValue<float>(context->argument(2));
+    bool ret = float3::AreOrthogonal(a, b, epsilon);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue float3_AreOrthogonal_float3_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float3_AreOrthogonal_float3_float3_float3_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3 a = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 b = TypeFromQScriptValue<float3>(context->argument(1));
+    float3 c = TypeFromQScriptValue<float3>(context->argument(2));
+    float epsilon = TypeFromQScriptValue<float>(context->argument(3));
+    bool ret = float3::AreOrthogonal(a, b, c, epsilon);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue float3_Orthonormalize_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3_Orthonormalize_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -598,6 +619,27 @@ static QScriptValue float3_Orthonormalize_float3_float3_float3(QScriptContext *c
     float3 c = TypeFromQScriptValue<float3>(context->argument(2));
     float3::Orthonormalize(a, b, c);
     return QScriptValue();
+}
+
+static QScriptValue float3_AreOrthonormal_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3_AreOrthonormal_float3_float3_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3 a = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 b = TypeFromQScriptValue<float3>(context->argument(1));
+    float epsilon = TypeFromQScriptValue<float>(context->argument(2));
+    bool ret = float3::AreOrthonormal(a, b, epsilon);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue float3_AreOrthonormal_float3_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float3_AreOrthonormal_float3_float3_float3_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3 a = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 b = TypeFromQScriptValue<float3>(context->argument(1));
+    float3 c = TypeFromQScriptValue<float3>(context->argument(2));
+    float epsilon = TypeFromQScriptValue<float>(context->argument(3));
+    bool ret = float3::AreOrthonormal(a, b, c, epsilon);
+    return TypeToQScriptValue(engine, ret);
 }
 
 static QScriptValue float3_FromScalar_float(QScriptContext *context, QScriptEngine *engine)
@@ -720,6 +762,15 @@ static QScriptValue float3_Orthogonalize_selector(QScriptContext *context, QScri
     printf("float3_Orthogonalize_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
 }
 
+static QScriptValue float3_AreOrthogonal_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return float3_AreOrthogonal_float3_float3_float(context, engine);
+    if (context->argumentCount() == 4 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)))
+        return float3_AreOrthogonal_float3_float3_float3_float(context, engine);
+    printf("float3_AreOrthogonal_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+}
+
 static QScriptValue float3_Orthonormalize_selector(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 2 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)))
@@ -727,6 +778,15 @@ static QScriptValue float3_Orthonormalize_selector(QScriptContext *context, QScr
     if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)))
         return float3_Orthonormalize_float3_float3_float3(context, engine);
     printf("float3_Orthonormalize_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+}
+
+static QScriptValue float3_AreOrthonormal_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return float3_AreOrthonormal_float3_float3_float(context, engine);
+    if (context->argumentCount() == 4 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)))
+        return float3_AreOrthonormal_float3_float3_float3_float(context, engine);
+    printf("float3_AreOrthonormal_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
 }
 
 class float3_scriptclass : public QScriptClass
@@ -839,8 +899,12 @@ QScriptValue register_float3_prototype(QScriptEngine *engine)
     ctor.setProperty("ScalarTripleProduct", engine->newFunction(float3_ScalarTripleProduct_float3_float3_float3, 3));
     ctor.setProperty("Orthogonalize", engine->newFunction(float3_Orthogonalize_selector, 2));
     ctor.setProperty("Orthogonalize", engine->newFunction(float3_Orthogonalize_selector, 3));
+    ctor.setProperty("AreOrthogonal", engine->newFunction(float3_AreOrthogonal_selector, 3));
+    ctor.setProperty("AreOrthogonal", engine->newFunction(float3_AreOrthogonal_selector, 4));
     ctor.setProperty("Orthonormalize", engine->newFunction(float3_Orthonormalize_selector, 2));
     ctor.setProperty("Orthonormalize", engine->newFunction(float3_Orthonormalize_selector, 3));
+    ctor.setProperty("AreOrthonormal", engine->newFunction(float3_AreOrthonormal_selector, 3));
+    ctor.setProperty("AreOrthonormal", engine->newFunction(float3_AreOrthonormal_selector, 4));
     ctor.setProperty("FromScalar", engine->newFunction(float3_FromScalar_float, 1));
     ctor.setProperty("zero", TypeToQScriptValue(engine, float3::zero));
     ctor.setProperty("one", TypeToQScriptValue(engine, float3::one));
