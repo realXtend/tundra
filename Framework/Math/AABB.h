@@ -142,9 +142,19 @@ public:
     /** This function finds the smallest AABB that contains the given set of points. [noscript] */
     static AABB MinimalEnclosingAABB(const float3 *pointArray, int numPoints);
 
-    /// Returns the diameter vector of this AABB.
-    /** This function returns the size vector of this AABB in world space, which is equal to this.max - this.min. */
+    /// Returns the side lengths of this AABB in x, y and z directions.
+    /// The returned vector is equal to the diagonal vector of this AABB, i.e. it spans from the
+    /// minimum corner of the AABB to the maximum corner of the AABB.
     float3 Size() const;
+    /// Returns Size()/2.
+    float3 HalfSize() const;
+
+    /// Returns the diameter vector of this AABB. 
+    /// @note For AABB, Diagonal() and Size() are the same concept. These functions are provided for symmetry
+    /// with the OBB class.
+    float3 Diagonal() const { return Size(); }
+    /// Returns Diagonal()/2.
+    float3 HalfDiagonal() const { return HalfSize(); }
 
     /// Returns the volume of this AABB.
     float Volume() const;
@@ -186,13 +196,13 @@ public:
         @param scaleFactor The non-uniform scale factors to apply to each world space axis. */
     void Scale(const float3 &centerPoint, const float3 &scaleFactor);
 
-    /// Applies a transformation to this AABB .
+    /// Applies a transformation to this AABB.
     /** This function transforms this AABB with the given transformation, and then recomputes this AABB
         to enclose the resulting oriented bounding box. This transformation is not exact and in general, calling 
         this function results in the loosening of the AABB bounds. 
         @param transform The transformation to apply to this AABB. This function assumes that this
-        transformation does not contain perspective properties, i.e. that the fourth row of the float4x4 is
-        [0 0 0 1]. */
+        transformation does not contain shear, nonuniform scaling or perspective properties, i.e. that the fourth 
+        row of the float4x4 is [0 0 0 1]. */
     void TransformAsAABB(const float3x3 &transform);
     void TransformAsAABB(const float3x4 &transform);
     void TransformAsAABB(const float4x4 &transform);
@@ -201,8 +211,9 @@ public:
     /// Applies a transformation to this AABB and returns the resulting OBB.
     /** Transforming an AABB produces an oriented bounding box. This set of functions does not apply the transformation
         to this object itself, but instead returns the OBB that results in the transformation.
-    /** @param transform The transformation to apply to this OBB. This transformation must be affine, and
-        must contain an orthogonal set of column vectors (may not contain shear or projection). */
+        @param transform The transformation to apply to this AABB. This function assumes that this
+        transformation does not contain shear, nonuniform scaling or perspective properties, i.e. that the fourth 
+        row of the float4x4 is [0 0 0 1]. */
     OBB Transform(const float3x3 &transform) const;
     OBB Transform(const float3x4 &transform) const;
     OBB Transform(const float4x4 &transform) const;
@@ -243,6 +254,8 @@ public:
         \note The comparison is performed using less-or-equal, so the faces of this AABB count as being inside, but
         due to float inaccuracies, this cannot generally be relied upon. */
     bool Contains(const float3 &point) const;
+    /// Tests is this AABB contains the given aabb.
+    bool Contains(const AABB &aabb) const;
 
     /// Tests if this AABB intersects the given object.
     /** The first parameter of this function specifies the object to test against.

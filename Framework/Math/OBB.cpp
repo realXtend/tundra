@@ -1,0 +1,394 @@
+/** @file
+    @author Jukka Jylänki
+
+    This work is copyrighted material and may NOT be used for any kind of commercial or 
+    personal advantage and may NOT be copied or redistributed without prior consent
+    of the author(s). 
+*/
+#include "StableHeaders.h"
+#include <utility>
+#include "MathFunc.h"
+#include "OBB.h"
+#include "AABB.h"
+#include "LineSegment.h"
+#include "Plane.h"
+#include "Sphere.h"
+#include "float3x3.h"
+#include "float3x4.h"
+#include "float4.h"
+#include "float4x4.h"
+#include "Quat.h"
+
+OBB::OBB(const AABB &aabb)
+{
+    SetFrom(aabb);
+}
+
+void OBB::SetNegativeInfinity()
+{
+    pos = float3(0,0,0);
+    r.SetFromScalar(-std::numeric_limits<float>::infinity());
+    axis[0] = float3(1,0,0);
+    axis[1] = float3(0,1,0);
+    axis[2] = float3(0,0,1);
+}
+
+void OBB::SetFrom(const AABB &aabb)
+{
+    pos = aabb.CenterPoint();
+    r = aabb.HalfSize();
+    axis[0] = float3(1,0,0);
+    axis[1] = float3(0,1,0);
+    axis[2] = float3(0,0,1);
+}
+
+void OBB::SetFrom(const AABB &aabb, const float3x3 &transform)
+{
+
+}
+
+void OBB::SetFrom(const AABB &aabb, const float3x4 &transform)
+{
+}
+
+void OBB::SetFrom(const AABB &aabb, const float4x4 &transform)
+{
+}
+
+void OBB::SetFrom(const AABB &aabb, const Quat &transform)
+{
+}
+
+void OBB::SetFrom(const Sphere &sphere)
+{
+}
+
+//    bool SetFrom(const Polyhedron &polyhedron);
+
+void OBB::SetFromApproximate(const float3 *pointArray, int numPoints)
+{
+}
+
+//    Polyhedron ToPolyhedron() const;
+
+AABB OBB::MinimalEnclosingAABB() const
+{
+    AABB aabb;
+    aabb.SetFrom(*this);
+    return aabb;
+}
+
+AABB OBB::MaximalContainedAABB() const
+{
+    assume(false && "Not implemented!");
+    return AABB();
+}
+
+Sphere OBB::MinimalEnclosingSphere() const
+{
+    return Sphere(); ///\todo
+}
+
+Sphere OBB::MaximalContainedSphere() const
+{
+    return Sphere(); ///\todo
+}
+
+bool OBB::IsFinite() const
+{
+    return pos.IsFinite() && r.IsFinite() && axis[0].IsFinite() && axis[1].IsFinite() && axis[2].IsFinite();
+}
+
+bool OBB::IsDegenerate() const
+{
+    return r.x < 0.f || r.y < 0.f || r.z < 0.f;
+}
+
+float3 OBB::CenterPoint() const
+{
+    return pos;
+}
+
+float3 OBB::GetPointInside(float x, float y, float z) const
+{
+    assume(0.f <= x && x <= 1.f);
+    assume(0.f <= y && y <= 1.f);
+    assume(0.f <= z && z <= 1.f);
+
+    return pos + axis[0] * (2.f * r.x * x - r.x)
+               + axis[1] * (2.f * r.y * y - r.y)
+               + axis[2] * (2.f * r.z * z - r.z);
+}
+
+float3 OBB::CornerPoint(int cornerIndex) const
+{    
+    assume(0 <= cornerIndex && cornerIndex <= 7);
+    switch(cornerIndex)
+    {
+        default: // For release builds where assume() is disabled, return always the first option if out-of-bounds.
+        case 0: return pos - r.x * axis[0] - r.y * axis[1] - r.z * axis[2];
+        case 1: return pos - r.x * axis[0] - r.y * axis[1] + r.z * axis[2];
+        case 2: return pos - r.x * axis[0] + r.y * axis[1] - r.z * axis[2];
+        case 3: return pos - r.x * axis[0] + r.y * axis[1] + r.z * axis[2];
+        case 4: return pos + r.x * axis[0] - r.y * axis[1] - r.z * axis[2];
+        case 5: return pos + r.x * axis[0] - r.y * axis[1] + r.z * axis[2];
+        case 6: return pos + r.x * axis[0] + r.y * axis[1] - r.z * axis[2];
+        case 7: return pos + r.x * axis[0] + r.y * axis[1] + r.z * axis[2];
+    }
+}
+
+float3 OBB::PointOnEdge(int edgeIndex, float u) const
+{
+    assume(0 <= edgeIndex && edgeIndex <= 11);
+    assume(0 <= u && u <= 1.f);
+
+    edgeIndex = Clamp(edgeIndex, 0, 11);
+    float3 d = axis[edgeIndex/4] * (2.f * u - 1.f) * r[edgeIndex/4];
+    switch(edgeIndex)
+    {
+    default: // For release builds where assume() is disabled, return always the first option if out-of-bounds.
+    case 0: return pos - r.y * axis[1] - r.z * axis[2] + d;
+    case 1: return pos - r.y * axis[1] + r.z * axis[2] + d;
+    case 2: return pos + r.y * axis[1] - r.z * axis[2] + d;
+    case 3: return pos + r.y * axis[1] + r.z * axis[2] + d;
+
+    case 4: return pos - r.x * axis[0] - r.z * axis[2] + d;
+    case 5: return pos - r.x * axis[0] + r.z * axis[2] + d;
+    case 6: return pos + r.x * axis[0] - r.z * axis[2] + d;
+    case 7: return pos + r.x * axis[0] + r.z * axis[2] + d;
+
+    case 8: return pos - r.x * axis[0] - r.y * axis[1] + d;
+    case 9: return pos - r.x * axis[0] + r.y * axis[1] + d;
+    case 10: return pos + r.x * axis[0] - r.y * axis[1] + d;
+    case 11: return pos + r.x * axis[0] + r.y * axis[1] + d;
+    }
+}
+
+float3 OBB::FaceCenterPoint(int faceIndex) const
+{
+    assume(0 <= faceIndex && faceIndex <= 5);
+
+    switch(faceIndex)
+    {
+    default: // For release builds where assume() is disabled, return always the first option if out-of-bounds.
+    case 0: return pos - r.x * axis[0];
+    case 1: return pos + r.x * axis[0];
+    case 2: return pos - r.y * axis[1];
+    case 3: return pos + r.y * axis[1];
+    case 4: return pos - r.z * axis[2];
+    case 5: return pos + r.z * axis[2];
+    }
+}
+
+float3 OBB::FacePoint(int faceIndex, float u, float v) const
+{
+    assume(0 <= faceIndex && faceIndex <= 5);
+    assume(0 <= u && u <= 1.f);
+    assume(0 <= v && v <= 1.f);
+
+    int uIdx = faceIndex/2;
+    int vIdx = (faceIndex/2 + 1) % 3;
+    float3 U = axis[uIdx] * (2.f * u - 1.f) * r[uIdx];
+    float3 V = axis[vIdx] * (2.f * v - 1.f) * r[vIdx];
+    switch(faceIndex)
+    {
+    default: // For release builds where assume() is disabled, return always the first option if out-of-bounds.
+    case 0: return pos - r.z * axis[2] + U + V;
+    case 1: return pos + r.z * axis[2] + U + V;
+    case 2: return pos - r.x * axis[0] + U + V;
+    case 3: return pos + r.x * axis[0] + U + V;
+    case 4: return pos - r.y * axis[1] + U + V;
+    case 5: return pos + r.y * axis[1] + U + V;
+    }
+}
+
+Plane OBB::FacePlane(int faceIndex) const
+{
+    assume(0 <= faceIndex && faceIndex <= 5);
+    switch(faceIndex)
+    {
+    default: // For release builds where assume() is disabled, return always the first option if out-of-bounds.
+    case 0: return Plane(FaceCenterPoint(0), -axis[0]);
+    case 1: return Plane(FaceCenterPoint(1), axis[0]);
+    case 2: return Plane(FaceCenterPoint(2), -axis[1]);
+    case 3: return Plane(FaceCenterPoint(3), axis[1]);
+    case 4: return Plane(FaceCenterPoint(4), -axis[2]);
+    case 5: return Plane(FaceCenterPoint(5), axis[2]);
+    }
+}
+
+void OBB::GetCornerPoints(float3 *outPointArray) const
+{
+    assert(outPointArray);
+    for(int i = 0; i < 8; ++i)
+        outPointArray[i] = CornerPoint(i);
+}
+
+void OBB::GetFacePlanes(Plane *outPlaneArray) const
+{
+    assert(outPlaneArray);
+    for(int i = 0; i < 6; ++i)
+        outPlaneArray[i] = FacePlane(i);
+}
+
+OBB OBB::PCAEnclosingOBB(const float3 *pointArray, int numPoints)
+{
+    assume(false && "Not implemented!");
+    return OBB();
+}
+
+float3 OBB::Size() const
+{
+    return r * 2.f;
+}
+
+float3 OBB::HalfSize() const
+{
+    return r;
+}
+
+float OBB::Volume() const
+{
+    return Size().ProductOfElements();
+}
+
+float OBB::SurfaceArea() const
+{
+    float3 size = Size();
+    return 2.f * (size.x*size.y + size.x*size.z + size.y*size.z);
+}
+
+//    float3 RandomPointInside(LCG &rng) const
+//{
+//    return GetPointInside(rng.Float(), rng.Float(), rng.Float());
+//}
+
+//    float3 RandomPointOnSurface(LCG &rng) const
+//{
+//    return FacePoint(rng.Int(0, 5), rng.Float(), rng.Float());
+//}
+
+//    float3 RandomPointOnEdge(LCG &rng) const
+//{
+//    return PointOnEdge(rng.Int(0, 11), rng.Float());
+//}
+
+//    float3 RandomCornerPoint(LCG &rng) const
+//{
+//    return CornerPoint(rng.Int(0, 7));
+//}
+
+void OBB::Translate(const float3 &offset)
+{
+    pos += offset;
+}
+
+void OBB::Scale(const float3 &centerPoint, float scaleFactor)
+{
+    return Scale(centerPoint, float3(scaleFactor, scaleFactor, scaleFactor));
+}
+
+void OBB::Scale(const float3 &centerPoint, const float3 &scaleFactor)
+{
+    float3x4 transform = float3x4::Scale(scaleFactor, centerPoint);
+    Transform(transform);
+}
+
+template<typename Matrix>
+void OBBTransform(OBB &o, const Matrix &transform)
+{
+    o.pos = transform.MulPos(o.pos);
+    o.axis[0] = transform.MulDir(o.r.x * o.axis[0]);
+    o.axis[1] = transform.MulDir(o.r.y * o.axis[1]);
+    o.axis[2] = transform.MulDir(o.r.z * o.axis[2]);
+    o.r.x = o.axis[0].Normalize();
+    o.r.y = o.axis[1].Normalize();
+    o.r.z = o.axis[2].Normalize();
+}
+
+void OBB::Transform(const float3x3 &transform)
+{
+    assume(transform.IsOrthogonal());
+    OBBTransform(*this, transform);
+}
+
+void OBB::Transform(const float3x4 &transform)
+{
+    assume(transform.IsOrthogonal());
+    OBBTransform(*this, transform);
+}
+
+void OBB::Transform(const float4x4 &transform)
+{
+    assume(transform.IsOrthogonal3());
+    OBBTransform(*this, transform);
+}
+
+void OBB::Transform(const Quat &transform)
+{
+    OBBTransform(*this, transform.ToFloat3x3());
+}
+/*
+float Distance(const float3 &point, float3 *outClosestPoint) const;
+float Distance(const Ray &ray, float3 *outClosestPoint, float *outClosestDistance) const;
+float Distance(const Line &line, float3 *outClosestPoint, float *outClosestdistance) const;
+float Distance(const LineSegment &lineSegment, float3 *outClosestPoint, float *outClosestDistance) const;
+float Distance(const AABB &aabb, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+float Distance(const OBB &obb, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+float Distance(const Plane &plane, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+float Distance(const Sphere &sphere, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+float Distance(const Ellipsoid &ellipsoid, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+float Distance(const Triangle &triangle, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+float Distance(const Cylinder &cylinder, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+float Distance(const Capsule &capsule, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+float Distance(const Torus &torus, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+float Distance(const Frustum &frustum, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+float Distance(const Polygon &polygon, float3 *outClosestPoint, float3 *outClosestPointOther) const; */
+//    float Distance(const Polyhedron &polyhedron, float3 *outClosestPoint, float3 *outClosestPointOther) const;
+/*
+bool Contains(const float3 &point) const;
+
+HitInfo Intersect(const Ray &ray, float *outDistance) const;
+HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const;
+HitInfo Intersect(const Line &line, float *outDistance) const;
+HitInfo Intersect(const LineSegment &lineSegment, float *outDistance) const;
+HitInfo Intersect(const AABB &aabb) const;
+HitInfo Intersect(const OBB &obb) const;
+HitInfo Intersect(const Plane &plane) const;
+HitInfo Intersect(const Sphere &sphere) const;
+HitInfo Intersect(const Ellipsoid &ellipsoid) const;
+HitInfo Intersect(const Triangle &triangle) const;
+HitInfo Intersect(const Cylinder &cylinder) const;
+HitInfo Intersect(const Capsule &capsule) const;
+HitInfo Intersect(const Torus &torus) const;
+HitInfo Intersect(const Frustum &frustum) const;
+HitInfo Intersect(const Polygon &polygon) const; */
+
+/*    void Enclose(const float3 &point);
+void Enclose(const LineSegment &lineSegment);
+void Enclose(const AABB &aabb);
+void Enclose(const OBB &obb);
+void Enclose(const Sphere &sphere);
+void Enclose(const Ellipsoid &ellipsoid);
+void Enclose(const Triangle &triangle);
+void Enclose(const Cylinder &cylinder);
+void Enclose(const Capsule &capsule);
+void Enclose(const Torus &torus);
+void Enclose(const Frustum &frustum);
+void Enclose(const Polygon &polygon);
+bool Enclose(const Polyhedron &polyhedron);
+void Enclose(const float3 *pointArray, int numPoints);*/
+
+std::string OBB::ToString() const
+{
+    char str[256];
+    sprintf(str, "OBB(Pos:(%.2f, %.2f, %.2f) Size:(%.2f, %.2f, %.2f) X:(%.2f, %.2f, %.2f) Y:(%.2f, %.2f, %.2f) Z:(%.2f, %.2f, %.2f))", 
+        pos.x, pos.y, pos.z, r.x*2.f, r.y*2.f, r.z*2.f, axis[0].x, axis[0].y, axis[0].z, axis[1].x, axis[1].y, axis[1].z, axis[2].x, axis[2].y, axis[2].z);
+    return str;
+}
+
+//    Polyhedron Intersection(const AABB &aabb) const;
+
+//    Polyhedron Intersection(const OBB &obb) const;
+
+//    Polyhedron Intersection(const Polyhedron &polyhedron) const;

@@ -24,10 +24,10 @@ public:
     float3 pos;
 
     /// Stores half-sizes to (local) x, y and z directions.
-    float3 size;
+    float3 r;
 
     /// Specifies normalized direction vectors for the local axes (x, y and z). [noscript]
-    float3 axes[3];
+    float3 axis[3];
 
     /// Constructs an uninitialized OBB.
     /// @note The default ctor does not initialize any member values.
@@ -80,6 +80,16 @@ public:
         AABB. The returned AABB will be centered to the OBB center point. */
     AABB MaximalContainedAABB() const;
 
+    /// Returns the side lengths of this OBB in its local x, y and z directions.
+    float3 Size() const;
+    /// Returns Size()/2.
+    float3 HalfSize() const;
+
+    /// Returns a diagonal vector of this OBB. This vector runs from one corner of the OBB from the opposite corner.
+    float3 Diagonal() const;
+    /// Returns Diagonal()/2.
+    float3 HalfDiagonal() const;
+
     /// Returns the smallest sphere that contains this OBB.
     Sphere MinimalEnclosingSphere() const;
 
@@ -93,7 +103,9 @@ public:
     bool IsFinite() const;
 
     /// Tests the members of this structure for validity.
-    /** This function returns true if this OBB does not span a positive volume, and false if this OBB represents a good non-degenerate volume. */
+    /** This function returns true if this OBB does not span a strictly positive volume, and false if this OBB 
+        represents a good non-degenerate volume.
+        @note An OBB with a volume of zero is considered non-degenerate. A degenerate OBB is one with negative volume. */
     bool IsDegenerate() const;
 
     /// Returns the center point of this OBB.
@@ -109,6 +121,11 @@ public:
     /** This function generates one of the eight corner points of this OBB. 
         @param cornerIndex The index of the corner point to generate, in the range [0, 7]. \todo Document which index generates which one. */
     float3 CornerPoint(int cornerIndex) const;
+
+    /// Returns a point on an edge of this OBB.
+    /** @param edgeIndex The index of the edge to generate a point to, in the range [0, 11]. \todo Document which index generates which one.
+        @param u A normalized value between [0,1]. This specifies the relative distance of the point along the edge. */
+    float3 PointOnEdge(int edgeIndex, float u) const;
 
     /// Returns the point at the center of the given face of this OBB.
     /// @param faceIndex The index of the OBB face to generate the point at. The valid range is [0, 5].
@@ -139,11 +156,6 @@ public:
         @param pointArray [in] The list of points to enclose with an OBB.
         @param numPoints The number of elements in the input array. */
     static OBB PCAEnclosingOBB(const float3 *pointArray, int numPoints);
-
-    /// Returns the diameter vector of this OBB, in local space.
-    /** This function returns the size of this OBB along the local x, y and z axes of this OBB. Unlike the halfDistances 
-        member variable, this function returns the full sizes for each axis. */
-    float3 Size() const;
 
     /// Returns the volume of this OBB.
     float Volume() const;

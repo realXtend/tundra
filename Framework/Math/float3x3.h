@@ -533,6 +533,8 @@ public:
     float4x4 Mul(const float4x4 &rhs) const;
     float3x3 Mul(const Quat &rhs) const;
     float3 Mul(const float3 &rhs) const;
+    float3 MulPos(const float3 &rhs) const { return Mul(rhs); }
+    float3 MulDir(const float3 &rhs) const { return Mul(rhs); }
 
 #ifdef OGRE_INTEROP
     float3x3(const Ogre::Matrix3 &m) { Set(&m[0][0]); }

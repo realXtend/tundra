@@ -5,6 +5,7 @@
     personal advantage and may NOT be copied or redistributed without prior consent
     of the author(s). 
 */
+#include "StableHeaders.h"
 #include "MathFunc.h"
 #include <utility>
 #include "AABB.h"
@@ -163,10 +164,6 @@ float3 AABB::FaceCenterPoint(int faceIndex) const
     }
 }
 
-    /// Generates a point at the surface of the given face of this AABB.
-    /// @param faceIndex The index of the AABB face to generate the point at. The valid range is [0, 5].
-    /// @param u A normalized value between [0, 1].
-    /// @param v A normalized value between [0, 1].
 float3 AABB::FacePoint(int faceIndex, float u, float v) const
 {
     assume(0 <= faceIndex && faceIndex <= 5);
@@ -371,6 +368,12 @@ bool AABB::Contains(const float3 &point) const
            minPoint.y <= point.y && point.y <= maxPoint.y &&
            minPoint.z <= point.z && point.z <= maxPoint.z;
 }
+
+bool AABB::Contains(const AABB &aabb) const
+{
+    return Contains(aabb.minPoint) && Contains(aabb.maxPoint);
+}
+
 /*
 HitInfo Intersect(const Ray &ray, float *outDistance) const; ///< [noscript]
 HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const; ///< [noscript]
