@@ -42,31 +42,54 @@ void OBB::SetFrom(const AABB &aabb)
     axis[2] = float3(0,0,1);
 }
 
+template<typename Matrix>
+void OBBSetFrom(OBB &obb, const AABB &aabb, const Matrix &m)
+{
+    obb.pos = m.MulPos(aabb.CenterPoint());
+    float3 size = aabb.Size();
+    obb.axis[0] = m.MulDir(float3(size.x, 0, 0));
+    obb.axis[1] = m.MulDir(float3(0, size.y, 0));
+    obb.axis[2] = m.MulDir(float3(0, 0, size.z));
+    obb.r.x = obb.axis[0].Normalize();
+    obb.r.y = obb.axis[1].Normalize();
+    obb.r.z = obb.axis[2].Normalize();
+}
+
 void OBB::SetFrom(const AABB &aabb, const float3x3 &transform)
 {
-
+    assume(transform.IsOrthogonal());
+    OBBSetFrom(*this, aabb, transform);
 }
 
 void OBB::SetFrom(const AABB &aabb, const float3x4 &transform)
 {
+    OBBSetFrom(*this, aabb, transform);
 }
 
 void OBB::SetFrom(const AABB &aabb, const float4x4 &transform)
 {
+    OBBSetFrom(*this, aabb, transform);
 }
 
 void OBB::SetFrom(const AABB &aabb, const Quat &transform)
 {
+    OBBSetFrom(*this, aabb, float3x3(transform));
 }
 
 void OBB::SetFrom(const Sphere &sphere)
 {
+    pos = sphere.pos;
+    r.SetFromScalar(sphere.r);
+    axis[0] = float3(1,0,0);
+    axis[1] = float3(0,1,0);
+    axis[2] = float3(0,0,1);
 }
 
 //    bool SetFrom(const Polyhedron &polyhedron);
 
 void OBB::SetFromApproximate(const float3 *pointArray, int numPoints)
 {
+    assume(false && "Not implemented!");
 }
 
 //    Polyhedron ToPolyhedron() const;
@@ -86,12 +109,18 @@ AABB OBB::MaximalContainedAABB() const
 
 Sphere OBB::MinimalEnclosingSphere() const
 {
-    return Sphere(); ///\todo
+    Sphere s;
+    s.pos = pos;
+    s.r = HalfDiagonal().Length();
+    return s;
 }
 
 Sphere OBB::MaximalContainedSphere() const
 {
-    return Sphere(); ///\todo
+    Sphere s;
+    s.pos;
+    s.r = r.MinElement();
+    return s;
 }
 
 bool OBB::IsFinite() const
@@ -349,9 +378,9 @@ float Distance(const Polygon &polygon, float3 *outClosestPoint, float3 *outClose
 bool OBB::Contains(const float3 &point) const
 {
     float3 pt = point - pos;
-    return Abs(Dot(pt, axis[0]) <= r[0]) &&
-           Abs(Dot(pt, axis[1]) <= r[1]) &&
-           Abs(Dot(pt, axis[2]) <= r[2]);
+    return Abs(Dot(pt, axis[0])) <= r[0] &&
+           Abs(Dot(pt, axis[1])) <= r[1] &&
+           Abs(Dot(pt, axis[2])) <= r[2];
 }
 
 bool OBB::Contains(const LineSegment &lineSegment) const
