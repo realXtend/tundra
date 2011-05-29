@@ -174,16 +174,29 @@ public:
     float3 Lerp(const float3 &b, float t) const;
 
     /// Makes the given vectors linearly independent.
+    /// The vector a is kept unmodified, and vector b is modified to be perpendicular to a.
+    /// Note that if either vector is zero, then the resulting two vectors are not orthogonal.
     static void Orthogonalize(const float3 &a, float3 &b);
 
     /// Makes the given vectors linearly independent.
+    /// The vector a is kept unmodified, and vector b is modified to be perpendicular to a.
+    /// Finally, vector c is adjusted to be perpendicular to a and b.
+    /// Note that if any of the vectors is zero, then the resulting set of vectors are not orthogonal.
     static void Orthogonalize(const float3 &a, float3 &b, float3 &c);
+
+    /// Returns true if the given vectors are orthogonal to each other.
+    static bool AreOrthogonal(const float3 &a, const float3 &b, float epsilon = 1e-3f);
+    static bool AreOrthogonal(const float3 &a, const float3 &b, const float3 &c, float epsilon = 1e-3f);
 
     /// Makes the given vectors linearly independent and normalized in length.
     static void Orthonormalize(float3 &a, float3 &b);
 
     /// Makes the given vectors linearly independent and normalized in length.
     static void Orthonormalize(float3 &a, float3 &b, float3 &c);
+
+    /// Returns true if the given vectors are orthogonal to each other and all of length 1.
+    static bool AreOrthonormal(const float3 &a, const float3 &b, float epsilon = 1e-3f);
+    static bool AreOrthonormal(const float3 &a, const float3 &b, const float3 &c, float epsilon = 1e-3f);
 
     /// Generates a new float3 by filling its entries by the given scalar.
     static float3 FromScalar(float scalar);
