@@ -172,21 +172,28 @@ public:
     {
         Ray *This = TypeFromQScriptValue<Ray*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type Ray in file %s, line %d!\nTry using Ray.get%s() and Ray.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }
-        if ((QString)name == (QString)"pos") return TypeToQScriptValue(engine(), This->pos);
-        if ((QString)name == (QString)"dir") return TypeToQScriptValue(engine(), This->dir);
+        QString name_ = (QString)name;
+        if (name_ == "pos_") return TypeToQScriptValue(engine(), This->pos);
+        if (name_ == "pos_ptr") return TypeToQScriptValue(engine(), &This->pos);
+        if (name_ == "dir_") return TypeToQScriptValue(engine(), This->dir);
+        if (name_ == "dir_ptr") return TypeToQScriptValue(engine(), &This->dir);
         return QScriptValue();
     }
     void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
     {
         Ray *This = TypeFromQScriptValue<Ray*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type Ray in file %s, line %d!\nTry using Ray.get%s() and Ray.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }
-        if ((QString)name == (QString)"pos") This->pos = TypeFromQScriptValue<float3>(value);
-        if ((QString)name == (QString)"dir") This->dir = TypeFromQScriptValue<float3>(value);
+        QString name_ = (QString)name;
+        if (name_ == "pos_") This->pos = TypeFromQScriptValue<float3>(value);
+        if (name_ == "pos_ptr") This->pos = *TypeFromQScriptValue<float3*>(value);
+        if (name_ == "dir_") This->dir = TypeFromQScriptValue<float3>(value);
+        if (name_ == "dir_ptr") This->dir = *TypeFromQScriptValue<float3*>(value);
     }
     QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
     {
-        if ((QString)name == (QString)"pos") return flags;
-        if ((QString)name == (QString)"dir") return flags;
+        QString name_ = (QString)name;
+        if (name_ == "pos_" || name_ == "pos_ptr") return flags;
+        if (name_ == "dir_" || name_ == "dir_ptr") return flags;
         return 0;
     }
     QScriptValue prototype() const { return objectPrototype; }
@@ -199,9 +206,9 @@ QScriptValue register_Ray_prototype(QScriptEngine *engine)
     proto.setProperty("Transform", engine->newFunction(Ray_Transform_selector, 1));
     proto.setProperty("ToLine", engine->newFunction(Ray_ToLine, 0));
     proto.setProperty("ToLineSegment", engine->newFunction(Ray_ToLineSegment_float, 1));
-    proto.setProperty("getPos", engine->newFunction(Ray_pos_get, 1));
+    proto.setProperty("pos", engine->newFunction(Ray_pos_get, 1));
     proto.setProperty("setPos", engine->newFunction(Ray_pos_set, 1));
-    proto.setProperty("getDir", engine->newFunction(Ray_dir_get, 1));
+    proto.setProperty("dir", engine->newFunction(Ray_dir_get, 1));
     proto.setProperty("setDir", engine->newFunction(Ray_dir_set, 1));
     Ray_scriptclass *sc = new Ray_scriptclass(engine);
     engine->setProperty("Ray_scriptclass", QVariant::fromValue<QScriptClass*>(sc));

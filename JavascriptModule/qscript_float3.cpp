@@ -798,34 +798,27 @@ public:
     {
         float3 *This = TypeFromQScriptValue<float3*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type float3 in file %s, line %d!\nTry using float3.get%s() and float3.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }
-        if ((QString)name == (QString)"x") return TypeToQScriptValue(engine(), This->x);
-        if ((QString)name == (QString)"y") return TypeToQScriptValue(engine(), This->y);
-        if ((QString)name == (QString)"z") return TypeToQScriptValue(engine(), This->z);
-        if ((QString)name == (QString)"zero") return TypeToQScriptValue(engine(), This->zero);
-        if ((QString)name == (QString)"one") return TypeToQScriptValue(engine(), This->one);
-        if ((QString)name == (QString)"unitX") return TypeToQScriptValue(engine(), This->unitX);
-        if ((QString)name == (QString)"unitY") return TypeToQScriptValue(engine(), This->unitY);
-        if ((QString)name == (QString)"unitZ") return TypeToQScriptValue(engine(), This->unitZ);
+        QString name_ = (QString)name;
+        if (name_ == "x_") return TypeToQScriptValue(engine(), This->x);
+        if (name_ == "y_") return TypeToQScriptValue(engine(), This->y);
+        if (name_ == "z_") return TypeToQScriptValue(engine(), This->z);
         return QScriptValue();
     }
     void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
     {
         float3 *This = TypeFromQScriptValue<float3*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type float3 in file %s, line %d!\nTry using float3.get%s() and float3.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }
-        if ((QString)name == (QString)"x") This->x = TypeFromQScriptValue<float>(value);
-        if ((QString)name == (QString)"y") This->y = TypeFromQScriptValue<float>(value);
-        if ((QString)name == (QString)"z") This->z = TypeFromQScriptValue<float>(value);
+        QString name_ = (QString)name;
+        if (name_ == "x_") This->x = TypeFromQScriptValue<float>(value);
+        if (name_ == "y_") This->y = TypeFromQScriptValue<float>(value);
+        if (name_ == "z_") This->z = TypeFromQScriptValue<float>(value);
     }
     QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
     {
-        if ((QString)name == (QString)"x") return flags;
-        if ((QString)name == (QString)"y") return flags;
-        if ((QString)name == (QString)"z") return flags;
-        if ((QString)name == (QString)"zero") return flags;
-        if ((QString)name == (QString)"one") return flags;
-        if ((QString)name == (QString)"unitX") return flags;
-        if ((QString)name == (QString)"unitY") return flags;
-        if ((QString)name == (QString)"unitZ") return flags;
+        QString name_ = (QString)name;
+        if (name_ == "x_") return flags;
+        if (name_ == "y_") return flags;
+        if (name_ == "z_") return flags;
         return 0;
     }
     QScriptValue prototype() const { return objectPrototype; }
@@ -883,11 +876,11 @@ QScriptValue register_float3_prototype(QScriptEngine *engine)
     proto.setProperty("Div", engine->newFunction(float3_Div_float, 1));
     proto.setProperty("Neg", engine->newFunction(float3_Neg, 0));
     proto.setProperty("toString", engine->newFunction(float3_toString, 0));
-    proto.setProperty("getX", engine->newFunction(float3_x_get, 1));
+    proto.setProperty("x", engine->newFunction(float3_x_get, 1));
     proto.setProperty("setX", engine->newFunction(float3_x_set, 1));
-    proto.setProperty("getY", engine->newFunction(float3_y_get, 1));
+    proto.setProperty("y", engine->newFunction(float3_y_get, 1));
     proto.setProperty("setY", engine->newFunction(float3_y_set, 1));
-    proto.setProperty("getZ", engine->newFunction(float3_z_get, 1));
+    proto.setProperty("z", engine->newFunction(float3_z_get, 1));
     proto.setProperty("setZ", engine->newFunction(float3_z_set, 1));
     float3_scriptclass *sc = new float3_scriptclass(engine);
     engine->setProperty("float3_scriptclass", QVariant::fromValue<QScriptClass*>(sc));

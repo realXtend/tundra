@@ -260,24 +260,33 @@ public:
     {
         Transform *This = TypeFromQScriptValue<Transform*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type Transform in file %s, line %d!\nTry using Transform.get%s() and Transform.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }
-        if ((QString)name == (QString)"pos") return TypeToQScriptValue(engine(), This->pos);
-        if ((QString)name == (QString)"rot") return TypeToQScriptValue(engine(), This->rot);
-        if ((QString)name == (QString)"scale") return TypeToQScriptValue(engine(), This->scale);
+        QString name_ = (QString)name;
+        if (name_ == "pos_") return TypeToQScriptValue(engine(), This->pos);
+        if (name_ == "pos_ptr") return TypeToQScriptValue(engine(), &This->pos);
+        if (name_ == "rot_") return TypeToQScriptValue(engine(), This->rot);
+        if (name_ == "rot_ptr") return TypeToQScriptValue(engine(), &This->rot);
+        if (name_ == "scale_") return TypeToQScriptValue(engine(), This->scale);
+        if (name_ == "scale_ptr") return TypeToQScriptValue(engine(), &This->scale);
         return QScriptValue();
     }
     void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
     {
         Transform *This = TypeFromQScriptValue<Transform*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type Transform in file %s, line %d!\nTry using Transform.get%s() and Transform.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }
-        if ((QString)name == (QString)"pos") This->pos = TypeFromQScriptValue<float3>(value);
-        if ((QString)name == (QString)"rot") This->rot = TypeFromQScriptValue<float3>(value);
-        if ((QString)name == (QString)"scale") This->scale = TypeFromQScriptValue<float3>(value);
+        QString name_ = (QString)name;
+        if (name_ == "pos_") This->pos = TypeFromQScriptValue<float3>(value);
+        if (name_ == "pos_ptr") This->pos = *TypeFromQScriptValue<float3*>(value);
+        if (name_ == "rot_") This->rot = TypeFromQScriptValue<float3>(value);
+        if (name_ == "rot_ptr") This->rot = *TypeFromQScriptValue<float3*>(value);
+        if (name_ == "scale_") This->scale = TypeFromQScriptValue<float3>(value);
+        if (name_ == "scale_ptr") This->scale = *TypeFromQScriptValue<float3*>(value);
     }
     QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
     {
-        if ((QString)name == (QString)"pos") return flags;
-        if ((QString)name == (QString)"rot") return flags;
-        if ((QString)name == (QString)"scale") return flags;
+        QString name_ = (QString)name;
+        if (name_ == "pos_" || name_ == "pos_ptr") return flags;
+        if (name_ == "rot_" || name_ == "rot_ptr") return flags;
+        if (name_ == "scale_" || name_ == "scale_ptr") return flags;
         return 0;
     }
     QScriptValue prototype() const { return objectPrototype; }
@@ -298,11 +307,11 @@ QScriptValue register_Transform_prototype(QScriptEngine *engine)
     proto.setProperty("RotationQuat", engine->newFunction(Transform_RotationQuat, 0));
     proto.setProperty("Mul", engine->newFunction(Transform_Mul_Transform, 1));
     proto.setProperty("toString", engine->newFunction(Transform_toString, 0));
-    proto.setProperty("getPos", engine->newFunction(Transform_pos_get, 1));
+    proto.setProperty("pos", engine->newFunction(Transform_pos_get, 1));
     proto.setProperty("setPos", engine->newFunction(Transform_pos_set, 1));
-    proto.setProperty("getRot", engine->newFunction(Transform_rot_get, 1));
+    proto.setProperty("rot", engine->newFunction(Transform_rot_get, 1));
     proto.setProperty("setRot", engine->newFunction(Transform_rot_set, 1));
-    proto.setProperty("getScale", engine->newFunction(Transform_scale_get, 1));
+    proto.setProperty("scale", engine->newFunction(Transform_scale_get, 1));
     proto.setProperty("setScale", engine->newFunction(Transform_scale_set, 1));
     Transform_scriptclass *sc = new Transform_scriptclass(engine);
     engine->setProperty("Transform_scriptclass", QVariant::fromValue<QScriptClass*>(sc));

@@ -126,24 +126,27 @@ public:
     {
         TranslateOp *This = TypeFromQScriptValue<TranslateOp*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type TranslateOp in file %s, line %d!\nTry using TranslateOp.get%s() and TranslateOp.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }
-        if ((QString)name == (QString)"x") return TypeToQScriptValue(engine(), This->x);
-        if ((QString)name == (QString)"y") return TypeToQScriptValue(engine(), This->y);
-        if ((QString)name == (QString)"z") return TypeToQScriptValue(engine(), This->z);
+        QString name_ = (QString)name;
+        if (name_ == "x_") return TypeToQScriptValue(engine(), This->x);
+        if (name_ == "y_") return TypeToQScriptValue(engine(), This->y);
+        if (name_ == "z_") return TypeToQScriptValue(engine(), This->z);
         return QScriptValue();
     }
     void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
     {
         TranslateOp *This = TypeFromQScriptValue<TranslateOp*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type TranslateOp in file %s, line %d!\nTry using TranslateOp.get%s() and TranslateOp.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }
-        if ((QString)name == (QString)"x") This->x = TypeFromQScriptValue<float>(value);
-        if ((QString)name == (QString)"y") This->y = TypeFromQScriptValue<float>(value);
-        if ((QString)name == (QString)"z") This->z = TypeFromQScriptValue<float>(value);
+        QString name_ = (QString)name;
+        if (name_ == "x_") This->x = TypeFromQScriptValue<float>(value);
+        if (name_ == "y_") This->y = TypeFromQScriptValue<float>(value);
+        if (name_ == "z_") This->z = TypeFromQScriptValue<float>(value);
     }
     QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
     {
-        if ((QString)name == (QString)"x") return flags;
-        if ((QString)name == (QString)"y") return flags;
-        if ((QString)name == (QString)"z") return flags;
+        QString name_ = (QString)name;
+        if (name_ == "x_") return flags;
+        if (name_ == "y_") return flags;
+        if (name_ == "z_") return flags;
         return 0;
     }
     QScriptValue prototype() const { return objectPrototype; }
@@ -155,11 +158,11 @@ QScriptValue register_TranslateOp_prototype(QScriptEngine *engine)
     proto.setProperty("ToFloat3x4", engine->newFunction(TranslateOp_ToFloat3x4, 0));
     proto.setProperty("ToFloat4x4", engine->newFunction(TranslateOp_ToFloat4x4, 0));
     proto.setProperty("Offset", engine->newFunction(TranslateOp_Offset, 0));
-    proto.setProperty("getX", engine->newFunction(TranslateOp_x_get, 1));
+    proto.setProperty("x", engine->newFunction(TranslateOp_x_get, 1));
     proto.setProperty("setX", engine->newFunction(TranslateOp_x_set, 1));
-    proto.setProperty("getY", engine->newFunction(TranslateOp_y_get, 1));
+    proto.setProperty("y", engine->newFunction(TranslateOp_y_get, 1));
     proto.setProperty("setY", engine->newFunction(TranslateOp_y_set, 1));
-    proto.setProperty("getZ", engine->newFunction(TranslateOp_z_get, 1));
+    proto.setProperty("z", engine->newFunction(TranslateOp_z_get, 1));
     proto.setProperty("setZ", engine->newFunction(TranslateOp_z_set, 1));
     TranslateOp_scriptclass *sc = new TranslateOp_scriptclass(engine);
     engine->setProperty("TranslateOp_scriptclass", QVariant::fromValue<QScriptClass*>(sc));

@@ -853,29 +853,30 @@ public:
     {
         Quat *This = TypeFromQScriptValue<Quat*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type Quat in file %s, line %d!\nTry using Quat.get%s() and Quat.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }
-        if ((QString)name == (QString)"x") return TypeToQScriptValue(engine(), This->x);
-        if ((QString)name == (QString)"y") return TypeToQScriptValue(engine(), This->y);
-        if ((QString)name == (QString)"z") return TypeToQScriptValue(engine(), This->z);
-        if ((QString)name == (QString)"w") return TypeToQScriptValue(engine(), This->w);
-        if ((QString)name == (QString)"identity") return TypeToQScriptValue(engine(), This->identity);
+        QString name_ = (QString)name;
+        if (name_ == "x_") return TypeToQScriptValue(engine(), This->x);
+        if (name_ == "y_") return TypeToQScriptValue(engine(), This->y);
+        if (name_ == "z_") return TypeToQScriptValue(engine(), This->z);
+        if (name_ == "w_") return TypeToQScriptValue(engine(), This->w);
         return QScriptValue();
     }
     void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
     {
         Quat *This = TypeFromQScriptValue<Quat*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type Quat in file %s, line %d!\nTry using Quat.get%s() and Quat.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }
-        if ((QString)name == (QString)"x") This->x = TypeFromQScriptValue<float>(value);
-        if ((QString)name == (QString)"y") This->y = TypeFromQScriptValue<float>(value);
-        if ((QString)name == (QString)"z") This->z = TypeFromQScriptValue<float>(value);
-        if ((QString)name == (QString)"w") This->w = TypeFromQScriptValue<float>(value);
+        QString name_ = (QString)name;
+        if (name_ == "x_") This->x = TypeFromQScriptValue<float>(value);
+        if (name_ == "y_") This->y = TypeFromQScriptValue<float>(value);
+        if (name_ == "z_") This->z = TypeFromQScriptValue<float>(value);
+        if (name_ == "w_") This->w = TypeFromQScriptValue<float>(value);
     }
     QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
     {
-        if ((QString)name == (QString)"x") return flags;
-        if ((QString)name == (QString)"y") return flags;
-        if ((QString)name == (QString)"z") return flags;
-        if ((QString)name == (QString)"w") return flags;
-        if ((QString)name == (QString)"identity") return flags;
+        QString name_ = (QString)name;
+        if (name_ == "x_") return flags;
+        if (name_ == "y_") return flags;
+        if (name_ == "z_") return flags;
+        if (name_ == "w_") return flags;
         return 0;
     }
     QScriptValue prototype() const { return objectPrototype; }
@@ -929,13 +930,13 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     proto.setProperty("ToFloat4x4", engine->newFunction(Quat_ToFloat4x4, 0));
     proto.setProperty("toString", engine->newFunction(Quat_toString, 0));
     proto.setProperty("Mul", engine->newFunction(Quat_Mul_selector, 1));
-    proto.setProperty("getX", engine->newFunction(Quat_x_get, 1));
+    proto.setProperty("x", engine->newFunction(Quat_x_get, 1));
     proto.setProperty("setX", engine->newFunction(Quat_x_set, 1));
-    proto.setProperty("getY", engine->newFunction(Quat_y_get, 1));
+    proto.setProperty("y", engine->newFunction(Quat_y_get, 1));
     proto.setProperty("setY", engine->newFunction(Quat_y_set, 1));
-    proto.setProperty("getZ", engine->newFunction(Quat_z_get, 1));
+    proto.setProperty("z", engine->newFunction(Quat_z_get, 1));
     proto.setProperty("setZ", engine->newFunction(Quat_z_set, 1));
-    proto.setProperty("getW", engine->newFunction(Quat_w_get, 1));
+    proto.setProperty("w", engine->newFunction(Quat_w_get, 1));
     proto.setProperty("setW", engine->newFunction(Quat_w_set, 1));
     Quat_scriptclass *sc = new Quat_scriptclass(engine);
     engine->setProperty("Quat_scriptclass", QVariant::fromValue<QScriptClass*>(sc));

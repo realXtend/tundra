@@ -283,6 +283,12 @@ namespace DocGenerator
                 return similarOverload.MemberDocumentationFilename();
             return EscapeFilename(anchorFile) + "_" + EscapeFilename(name) + ".html";
         }
+
+        public static bool IsPODType(string type)
+        {
+            return type == "bool" || type == "int" || type == "float"; ///\todo Add more basic types here.
+        }
+
     };
 
     class CodeStructure

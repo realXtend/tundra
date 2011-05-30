@@ -122,9 +122,11 @@ namespace QScriptBindings
 
         static string GetMemberVariableGetScriptFuncName(Symbol variable)
         {
-//            return variable.name;
-            string firstChar = variable.name.Substring(0, 1);
-            return "get" + firstChar.ToUpper() + variable.name.Substring(1);
+            return variable.name; // Scripts access the member variables using foo.member(); notation
+
+            // Alternate notation: foo.getMember();
+//            string firstChar = variable.name.Substring(0, 1);
+//            return "get" + firstChar.ToUpper() + variable.name.Substring(1);
 
         }
 
@@ -237,11 +239,27 @@ namespace QScriptBindings
             tw.WriteLine(Indent(1) + "{");
             tw.WriteLine(Indent(2) + Class.name + " *This = TypeFromQScriptValue<" + Class.name + "*>(object);");
             tw.WriteLine(Indent(2) + "if (!This) { printf(\"Error! Cannot convert QScriptValue to type " + Class.name + " in file %s, line %d!\\nTry using " + Class.name + ".get%s() and " + Class.name + ".set%s() to query the member variable '%s'!\\n\", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }");
+            tw.WriteLine(Indent(2) + "QString name_ = (QString)name;");
             foreach (Symbol v in Class.children.Values)
                 if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public)
                 {
-                    tw.Write(Indent(2) + "if ((QString)name == (QString)\"" + v.name + "\")");
-                    tw.WriteLine(" return TypeToQScriptValue(engine(), This->" + v.name + ");");
+//                    tw.Write(Indent(2) + "if ((QString)name == (QString)\"" + v.name + "\")");
+// Experimental: Access members directly using 'foo.x_' and 'foo.x_ptr'.
+                    if (v.isStatic)
+                    {
+                        //tw.Write(Indent(2) + "if (name_ == \"" + v.name + "\")");
+                        //tw.WriteLine(" return TypeToQScriptValue(engine(), This->" + v.name + ");");
+                    }
+                    else
+                    {
+                        tw.Write(Indent(2) + "if (name_ == \"" + v.name + "_\")");
+                        tw.WriteLine(" return TypeToQScriptValue(engine(), This->" + v.name + ");");
+                        if (!Symbol.IsPODType(v.type))
+                        {
+                            tw.Write(Indent(2) + "if (name_ == \"" + v.name + "_ptr\")");
+                            tw.WriteLine(" return TypeToQScriptValue(engine(), &This->" + v.name + ");");
+                        }
+                    }
                 }
 
             tw.WriteLine(Indent(2) + "return QScriptValue();");
@@ -251,22 +269,52 @@ namespace QScriptBindings
             tw.WriteLine(Indent(1) + "{");
             tw.WriteLine(Indent(2) + Class.name + " *This = TypeFromQScriptValue<" + Class.name + "*>(object);");
             tw.WriteLine(Indent(2) + "if (!This) { printf(\"Error! Cannot convert QScriptValue to type " + Class.name + " in file %s, line %d!\\nTry using " + Class.name + ".get%s() and " + Class.name + ".set%s() to query the member variable '%s'!\\n\", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }");
+            tw.WriteLine(Indent(2) + "QString name_ = (QString)name;");
 
             foreach (Symbol v in Class.children.Values)
                 if (v.kind == "variable" && IsScriptable(v) && !v.IsConst() && v.visibilityLevel == VisibilityLevel.Public)
                 {
-                    tw.Write(Indent(2) + "if ((QString)name == (QString)\"" + v.name + "\")");
-                    tw.WriteLine(" This->" + v.name + " = TypeFromQScriptValue<" + v.type + ">(value);");
+//                    tw.Write(Indent(2) + "if (name_ == (QString)\"" + v.name + "\")");
+//                    tw.WriteLine(" This->" + v.name + " = TypeFromQScriptValue<" + v.type + ">(value);");
+                    // Experimental: Access members directly using 'foo.x_' and 'foo.x_ptr'.
+                    if (v.isStatic)
+                    {
+                        //tw.Write(Indent(2) + "if (name_ == \"" + v.name + "\")");
+                       // tw.WriteLine(" This->" + v.name + " = TypeFromQScriptValue<" + v.type + ">(value);");
+                    }
+                    else
+                    {
+                        tw.Write(Indent(2) + "if (name_ == \"" + v.name + "_\")");
+                        tw.WriteLine(" This->" + v.name + " = TypeFromQScriptValue<" + v.type + ">(value);");
+                        if (!Symbol.IsPODType(v.type))
+                        {
+                            tw.Write(Indent(2) + "if (name_ == \"" + v.name + "_ptr\")");
+                            tw.WriteLine(" This->" + v.name + " = *TypeFromQScriptValue<" + v.type + "*>(value);");
+                        }
+                    }
                 }
             tw.WriteLine(Indent(1) + "}");
 
             tw.WriteLine(Indent(1) + "QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)");
             tw.WriteLine(Indent(1) + "{");
+            tw.WriteLine(Indent(2) + "QString name_ = (QString)name;");
             foreach (Symbol v in Class.children.Values)
                 if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public)
                 {
-                    tw.Write(Indent(2) + "if ((QString)name == (QString)\"" + v.name + "\")");
-                    tw.WriteLine(" return flags;");
+                    if (v.isStatic)
+                    {
+                        //tw.Write(Indent(2) + "if (name_ == \"" + v.name + "\")");
+                    }
+                    else
+                    {
+                        //                    tw.Write(Indent(2) + "if (name_ == \"" + v.name + "\")");
+                        if (Symbol.IsPODType(v.type))
+                            tw.Write(Indent(2) + "if (name_ == \"" + v.name + "_\")");
+                        else
+                            tw.Write(Indent(2) + "if (name_ == \"" + v.name + "_\" || name_ == \"" + v.name + "_ptr\")");
+                        tw.WriteLine(" return flags;");
+                    }
+//                    tw.WriteLine(" return flags;");
                 }
             tw.WriteLine(Indent(2) + "return 0;");
             tw.WriteLine(Indent(1) + "}");

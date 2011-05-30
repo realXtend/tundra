@@ -1218,19 +1218,18 @@ public:
     {
         float3x3 *This = TypeFromQScriptValue<float3x3*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type float3x3 in file %s, line %d!\nTry using float3x3.get%s() and float3x3.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }
-        if ((QString)name == (QString)"zero") return TypeToQScriptValue(engine(), This->zero);
-        if ((QString)name == (QString)"identity") return TypeToQScriptValue(engine(), This->identity);
+        QString name_ = (QString)name;
         return QScriptValue();
     }
     void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
     {
         float3x3 *This = TypeFromQScriptValue<float3x3*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type float3x3 in file %s, line %d!\nTry using float3x3.get%s() and float3x3.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }
+        QString name_ = (QString)name;
     }
     QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
     {
-        if ((QString)name == (QString)"zero") return flags;
-        if ((QString)name == (QString)"identity") return flags;
+        QString name_ = (QString)name;
         return 0;
     }
     QScriptValue prototype() const { return objectPrototype; }
