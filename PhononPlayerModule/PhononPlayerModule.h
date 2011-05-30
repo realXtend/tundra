@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_PhononPlayerModule_h
-#define incl_PhononPlayerModule_h
+#pragma once
 
 #include "IModule.h"
 
@@ -44,4 +43,4 @@ namespace PhononPlayer
 
 } // PhononPlayer
 
-#endif // incl_PhononPlayerModule_h
+// incl_PhononPlayerModule_h

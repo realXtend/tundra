@@ -6,8 +6,7 @@
  *  @author Nathan Letwory | http://www.letworyinteractive.com
  */
  
-#ifndef incl_EC_Gizmo_EC_Gizmo_h
-#define incl_EC_Gizmo_EC_Gizmo_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -91,4 +90,3 @@ private:
     QStringList subproperties_;
 };
 
-#endif

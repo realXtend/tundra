@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EnvironmentModule_EC_WaterPlane_h
-#define incl_EnvironmentModule_EC_WaterPlane_h
+#pragma once
 
 #include "IComponent.h"
 #include "CoreTypes.h"
@@ -226,4 +225,3 @@ private:
 
 }
 
-#endif

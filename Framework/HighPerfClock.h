@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Framework_HighPerfClock_h
-#define incl_Framework_HighPerfClock_h
+#pragma once
 
 #include <QDateTime>
 #if defined(_WINDOWS)
@@ -52,4 +51,3 @@ inline tick_t GetCurrentClockFreq()
 #endif
 }
 
-#endif

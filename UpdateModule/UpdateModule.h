@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UpdateModule_h
-#define incl_UpdateModule_h
+#pragma once
 
 #include "IModule.h"
 
@@ -32,4 +31,3 @@ namespace Update
         QString updateConfig;
     };
 }
-#endif

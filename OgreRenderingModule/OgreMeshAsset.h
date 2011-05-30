@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderingModule_OgreMeshAsset_h
-#define incl_OgreRenderingModule_OgreMeshAsset_h
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
@@ -47,4 +46,3 @@ public:
 
 typedef boost::shared_ptr<OgreMeshAsset> OgreMeshAssetPtr;
 
-#endif

@@ -6,8 +6,7 @@
  *          various content file formats to the main window.
  */
 
-#ifndef incl_SceneStructureModule_SceneStructureModule_h
-#define incl_SceneStructureModule_SceneStructureModule_h
+#pragma once
 
 #include "IModule.h"
 #include "SceneFwd.h"
@@ -164,4 +163,3 @@ private slots:
     void HandleSceneDescFailed(IAssetTransfer *transfer, QString reason);
 };
 
-#endif

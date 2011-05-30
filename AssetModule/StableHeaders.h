@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_AssetModule_StableHeaders_h__
-#define incl_AssetModule_StableHeaders_h__
+#pragma once
 
 #include "CoreTypes.h"
 #include "LoggingFunctions.h"
@@ -16,4 +15,4 @@
 
 #endif
 
-#endif // incl_AssetModule_StableHeaders_h__
+// incl_AssetModule_StableHeaders_h__

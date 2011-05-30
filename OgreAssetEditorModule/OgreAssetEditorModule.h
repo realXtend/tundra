@@ -6,8 +6,7 @@
  *          OGRE assets such as meshes and material scripts.
  */
 
-#ifndef incl_OgreAssetEditorModule_OgreAssetEditorModule_h
-#define incl_OgreAssetEditorModule_OgreAssetEditorModule_h
+#pragma once
 
 #include "IModule.h"
 #include "AssetFwd.h"
@@ -70,4 +69,3 @@ private slots:
     void OpenAssetInEditor();
 };
 
-#endif

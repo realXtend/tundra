@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_AssetFwd_h
-#define incl_Asset_AssetFwd_h
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -38,4 +37,3 @@ typedef boost::shared_ptr<AssetRefListener> AssetRefListenerPtr;
 
 class Framework;
 
-#endif

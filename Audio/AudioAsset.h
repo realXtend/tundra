@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OpenALAudioModule_AudioAsset_h
-#define incl_OpenALAudioModule_AudioAsset_h
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
@@ -53,4 +52,3 @@ private:
     ALuint handle;
 };
 
-#endif

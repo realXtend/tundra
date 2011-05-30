@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ECEditorModule_LineEditFactory_h
-#define incl_ECEditorModule_LineEditFactory_h
+#pragma once
 
 #define QT_QTPROPERTYBROWSER_IMPORT
 
@@ -86,4 +85,3 @@ private:
     FunctionInvoker *invoker_;
 };
 
-#endif

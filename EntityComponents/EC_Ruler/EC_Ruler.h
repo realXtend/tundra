@@ -7,8 +7,7 @@
  *
  */
 
-#ifndef incl_EC_Ruler_EC_Ruler_h
-#define incl_EC_Ruler_EC_Ruler_h
+#pragma once
 
 #include "IComponent.h"
 #include "Declare_EC.h"
@@ -209,4 +208,3 @@ private:
     QQuaternion newrot_;
 };
 
-#endif

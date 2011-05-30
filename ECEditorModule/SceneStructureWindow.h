@@ -8,8 +8,7 @@
  *          their names. The SceneTreeWidget implements most of the functionality.
  */
 
-#ifndef incl_SceneStructureModule_SceneStructureWindow_h
-#define incl_SceneStructureModule_SceneStructureWindow_h
+#pragma once
 
 #include "SceneFwd.h"
 
@@ -174,4 +173,3 @@ private slots:
     void CheckTreeExpandStatus(QTreeWidgetItem *item);
 };
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_LocalAssetStorage_h
-#define incl_Asset_LocalAssetStorage_h
+#pragma once
 
 #include "AssetModuleApi.h"
 #include "IAssetStorage.h"
@@ -81,4 +80,3 @@ private:
 
 }
 
-#endif

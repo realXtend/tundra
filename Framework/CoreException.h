@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Framework_Exception_h
-#define incl_Framework_Exception_h
+#pragma once
 
 #include <exception>
 #include <cstring>
@@ -86,4 +85,3 @@ private:
     int do_free_;
 };
 
-#endif

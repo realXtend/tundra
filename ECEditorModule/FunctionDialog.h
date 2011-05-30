@@ -5,8 +5,7 @@
  *  @brief  Dialog for invoking Qt slots (i.e. functions) of entities and components.
  */
 
-#ifndef incl_ECEditorModule_FunctionDialog_h
-#define incl_ECEditorModule_FunctionDialog_h
+#pragma once
 
 #include "ECEditorModuleApi.h"
 #include "EntityAction.h"
@@ -148,4 +147,3 @@ private slots:
     void GenerateTargetLabelAndFunctions();
 };
 
-#endif

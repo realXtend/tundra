@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_HttpAssetStorage_h
-#define incl_Asset_HttpAssetStorage_h
+#pragma once
 
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
@@ -69,4 +68,3 @@ private:
     std::vector<SearchRequest> searches;
 };
 
-#endif

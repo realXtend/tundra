@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_KristalliProtocolModule_UserConnection_h
-#define incl_KristalliProtocolModule_UserConnection_h
+#pragma once
 
 #include "KristalliProtocolModuleApi.h"
 #include "kNet.h"
@@ -75,5 +74,4 @@ signals:
 
 typedef std::list<UserConnection*> UserConnectionList;
 
-#endif
 

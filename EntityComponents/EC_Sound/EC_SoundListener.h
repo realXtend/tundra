@@ -7,8 +7,7 @@
  *  @note   Only one entity can have active sound listener at a time.
  */
 
-#ifndef incl_EC_SoundListener_EC_SoundListener_h
-#define incl_EC_SoundListener_EC_SoundListener_h
+#pragma once
 
 #include "IComponent.h"
 
@@ -87,4 +86,3 @@ private slots:
     void RegisterActions();
 };
 
-#endif

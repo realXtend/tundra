@@ -13,8 +13,7 @@
 // Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 // This notice may not be removed or altered from any source distribution.
 
-#ifndef incl_Framework_Quaternion_h
-#define incl_Framework_Quaternion_h
+#pragma once
 
 #include "CoreMath.h"
 #include "Vector3D.h"
@@ -594,5 +593,4 @@ inline Quaternion& Quaternion::rotationFromTo(const Vector3df& from, const Vecto
 
 Q_DECLARE_METATYPE(Quaternion)
 
-#endif
 

@@ -5,8 +5,7 @@
  *  @brief  Javascript script instance used wit EC_Script.
  */
 
-#ifndef incl_JavascriptModule_JavascriptInstance_h
-#define incl_JavascriptModule_JavascriptInstance_h
+#pragma once
 
 #include "IScriptInstance.h"
 #include "SceneFwd.h"
@@ -109,4 +108,3 @@ private slots:
     void OnSignalHandlerException(const QScriptValue& exception);
 };
 
-#endif

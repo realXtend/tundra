@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_AssetStorage_h
-#define incl_Asset_AssetStorage_h
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -55,4 +54,3 @@ signals:
     void AssetRefsChanged(AssetStoragePtr storage);
 };
 
-#endif

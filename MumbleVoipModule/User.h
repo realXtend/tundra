@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_User_h
-#define incl_MumbleVoipModule_User_h
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -130,4 +129,4 @@ namespace MumbleLib
 
 } // namespace MumbleLib
 
-#endif // incl_MumbleVoipModule_User_h
+// incl_MumbleVoipModule_User_h

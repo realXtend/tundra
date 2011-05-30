@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_3DCanvasSource_EC_3DCanvasSource_h
-#define incl_EC_3DCanvasSource_EC_3DCanvasSource_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -176,4 +175,3 @@ private:
     bool canvas_started_;
 };
 
-#endif

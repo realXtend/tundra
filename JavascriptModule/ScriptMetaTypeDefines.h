@@ -5,8 +5,7 @@
  *  @brief  Registration of the Core API objects to Javascript.
  */
 
-#ifndef incl_JavascriptModule_ScriptMetaTypeDefines_h
-#define incl_JavascriptModule_ScriptMetaTypeDefines_h
+#pragma once
 
 #include <QtScript>
 
@@ -61,8 +60,7 @@ int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &pr
 #endif
     )
 {
-    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject,
-                                       qScriptValueToQObject, prototype);
+    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject, qScriptValueToQObject, prototype);
 }
 
 template<typename T> QScriptValue toScriptValueEnum(QScriptEngine *engine, const T &s)
@@ -97,4 +95,3 @@ void ExposeQtMetaTypes(QScriptEngine *engine);
 /// Will register all meta data types that are needed to use the Core API objects.
 void ExposeCoreApiMetaTypes(QScriptEngine *engine);
 
-#endif

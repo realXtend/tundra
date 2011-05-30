@@ -5,8 +5,7 @@
  *  @brief  Implements a persisting storage for the scene.
  */
 
-#ifndef incl_ScenePersistenceModule_h
-#define incl_ScenePersistenceModule_h
+#pragma once
 
 #include "ScenePersistenceModuleApi.h"
 #include "IModule.h"
@@ -71,4 +70,3 @@ private:
     void CreateStatements();
 };
 
-#endif

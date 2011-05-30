@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ECEditorModule_AddComponentDialog_h
-#define incl_ECEditorModule_AddComponentDialog_h
+#pragma once
 
 #include "ECEditorModuleApi.h"
 #include "CoreTypes.h"
@@ -79,4 +78,3 @@ private:
     Framework *framework_;
 };
 
-#endif

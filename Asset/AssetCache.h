@@ -2,8 +2,7 @@
 
 // A note about the filename: This file will be renamed to AssetCache_.h at the moment the old AssetCache.h from AssetModule is deleted.
 
-#ifndef incl_Asset_AssetCache_h
-#define incl_Asset_AssetCache_h
+#pragma once
 
 #include <QString>
 #include <QNetworkDiskCache>
@@ -130,4 +129,3 @@ private:
     QHash<QString, QFile*> preparedItems;
 };
 
-#endif

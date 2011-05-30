@@ -13,8 +13,7 @@
 // Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 // This notice may not be removed or altered from any source distribution.
 
-#ifndef incl_Framework_Vector3D_h
-#define incl_Framework_Vector3D_h
+#pragma once
 
 #include "CoreMath.h"
 #include "CoreStringUtils.h"
@@ -462,5 +461,4 @@ const Vector3df Vector3D<T>::NEGATIVE_UNIT_Z(0, 0, -1);
 
 
 
-#endif
 

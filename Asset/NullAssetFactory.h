@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_NullAssetFactory_h
-#define incl_Asset_NullAssetFactory_h
+#pragma once
 
 #include "IAssetTypeFactory.h"
 
@@ -29,4 +28,3 @@ private:
     QString assetType;
 };
 
-#endif

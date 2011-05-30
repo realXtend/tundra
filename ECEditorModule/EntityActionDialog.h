@@ -5,8 +5,7 @@
  *  @brief  Dialog for invoking entity actions.
  */
 
-#ifndef incl_ECEditorModule_EntityActionDialog_h
-#define incl_ECEditorModule_EntityActionDialog_h
+#pragma once
 
 #include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
@@ -95,4 +94,3 @@ private slots:
     void Execute();
 };
 
-#endif

@@ -5,8 +5,7 @@
  *  @brief  Preview window for textures.
  */
 
-#ifndef incl_OgreAssetEditorModule_TexturePreviewEditor_h
-#define incl_OgreAssetEditorModule_TexturePreviewEditor_h
+#pragma once
 
 #include "CoreTypes.h"
 #include "OgreAssetEditorModuleApi.h"
@@ -123,4 +122,3 @@ private:
     bool useOriginalImageSize_;
 };
 
-#endif

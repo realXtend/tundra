@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_TundraLogicModule_Client_h
-#define incl_TundraLogicModule_Client_h
+#pragma once
 
 #include "CoreDefines.h"
 #include "CoreTypes.h"
@@ -176,4 +175,3 @@ private:
 };
 
 }
-#endif

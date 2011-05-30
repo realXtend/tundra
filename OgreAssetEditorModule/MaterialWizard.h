@@ -6,8 +6,7 @@
  *          the material script template library.
  */
 
-#ifndef incl_OgreAssetEditorModule_MaterialWizard_h
-#define incl_OgreAssetEditorModule_MaterialWizard_h
+#pragma once
 
 #include <QWidget>
 #include <QString>
@@ -121,4 +120,3 @@ private:
     QString scriptName_; ///< Name of the script.
 };
 
-#endif

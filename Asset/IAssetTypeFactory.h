@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_AssetFactory_h
-#define incl_Asset_AssetFactory_h
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -20,4 +19,3 @@ public:
     virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const char *name) = 0;
 };
 
-#endif

@@ -5,8 +5,7 @@
  *  @brief  Dialog for requesting new asset from arbitrary source.
  */
 
-#ifndef incl_SceneStructureModule_RequestNewAssetDialog_h
-#define incl_SceneStructureModule_RequestNewAssetDialog_h
+#pragma once
 
 #include <QDialog>
 
@@ -45,4 +44,3 @@ private:
     QComboBox *typeComboBox;  ///< Asset type combo box.
 };
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_MouseEvent_h
-#define incl_Input_MouseEvent_h
+#pragma once
 
 #include "CoreTypes.h"
 
@@ -198,4 +197,3 @@ public slots:
     bool IsItemUnderMouse() const { if (itemUnderMouse) return true; else return false; }
 };
 
-#endif

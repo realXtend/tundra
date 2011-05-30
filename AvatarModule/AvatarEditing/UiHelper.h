@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Avatar_UiHelper_h
-#define incl_Avatar_UiHelper_h
+#pragma once
 
 #include <QObject>
 #include <QList>
@@ -46,4 +45,3 @@ namespace Avatar
     }
 }
 
-#endif

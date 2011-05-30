@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_OgreParticleAsset_h
-#define incl_OgreRenderer_OgreParticleAsset_h
+#pragma once
 
 #include "IAsset.h"
 #include "OgreModuleApi.h"
@@ -43,4 +42,3 @@ private:
     std::string originalData; ///< Original particle script file data, asset references are in sanitated format.
     std::vector<AssetReference> references; ///< references to other resources this resource depends on
 };
-#endif

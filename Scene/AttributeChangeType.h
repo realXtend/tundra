@@ -7,8 +7,7 @@
  *          between IAttribute and IComponent.
  */
 
-#ifndef incl_Scene_AttributeChangeType_h
-#define incl_Scene_AttributeChangeType_h
+#pragma once
 
 #include <QObject>
 
@@ -37,4 +36,3 @@ public:
     };
 };
 
-#endif

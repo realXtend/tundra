@@ -7,8 +7,7 @@
 
 #if 0
 
-#ifndef incl_OgreAssetEditorModule_EditorManager_h
-#define incl_OgreAssetEditorModule_EditorManager_h
+#pragma once
 
 #include <QWidget>
 #include <QMap>
@@ -78,4 +77,3 @@ private:
 
 #endif
 
-#endif

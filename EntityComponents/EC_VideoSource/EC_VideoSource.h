@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_VideoSource_EC_VideoSource_h
-#define incl_EC_VideoSource_EC_VideoSource_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -106,4 +105,3 @@ private:
     QLabel *error_label_;
 };
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_TundraLogicModule_StableHeaders_h
-#define incl_TundraLogicModule_StableHeaders_h
+#pragma once
 
 #include "CoreDefines.h"
 
@@ -18,5 +17,4 @@
 
 #endif
 
-#endif
 

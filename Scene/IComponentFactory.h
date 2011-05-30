@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Scene_IComponentFactory_h
-#define incl_Scene_IComponentFactory_h
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -60,4 +59,3 @@ public:
     */
 };
 
-#endif

@@ -8,8 +8,7 @@
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
-#ifndef incl_EC_Clone_EC_Clone_h
-#define incl_EC_Clone_EC_Clone_h
+#pragma once
 
 #include "IComponent.h"
 #include "Declare_EC.h"
@@ -108,4 +107,3 @@ private:
     std::string cloneName_;
 };
 
-#endif

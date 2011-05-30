@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Avatar_EC_Avatar_h
-#define incl_Avatar_EC_Avatar_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAsset.h"
@@ -96,4 +95,3 @@ private:
     boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 };
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_DynamicComponent_EC_DynamicComponent_h
-#define incl_EC_DynamicComponent_EC_DynamicComponent_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -207,4 +206,3 @@ signals:
     void AttributeRemoved(const QString &name);
 };
 
-#endif

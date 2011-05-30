@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Scene_SceneAPI_h
-#define incl_Scene_SceneAPI_h
+#pragma once
 
 #include "SceneFwd.h"
 #include "CoreTypes.h"
@@ -184,4 +183,3 @@ private:
     SceneInteract *sceneInteract; ///< Scene interact. \todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
 };
 
-#endif

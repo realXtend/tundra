@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_EC_OgreCustomObject_h
-#define incl_OgreRenderer_EC_OgreCustomObject_h
+#pragma once
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
@@ -132,4 +131,3 @@ private:
     float draw_distance_;
 };
 
-#endif

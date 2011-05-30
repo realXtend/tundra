@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_AvatarModule_AvatarDescAsset_h
-#define incl_AvatarModule_AvatarDescAsset_h
+#pragma once
 
 #include "AvatarDescHelpers.h"
 #include "IAsset.h"
@@ -115,4 +114,3 @@ public:
 
 typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_ServerInfo_h
-#define incl_MumbleVoipModule_ServerInfo_h
+#pragma once
 
 //class EC_VoiceChannel;
 
@@ -34,4 +33,4 @@ namespace MumbleVoip
 
 } // end of namespace: MumbleVoip
 
-#endif // incl_MumbleVoipModule_ConnectionManager_h
+// incl_MumbleVoipModule_ConnectionManager_h

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_KeyEventSignal_h
-#define incl_Input_KeyEventSignal_h
+#pragma once
 
 #include <QObject>
 
@@ -36,5 +35,4 @@ private:
     void operator=(const KeyEventSignal &);
 };
 
-#endif
 

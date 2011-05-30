@@ -5,8 +5,7 @@
  *  @brief  Cross-platform utility functions using Qt.
  */
 
-#ifndef incl_Framework_QtUtils_h
-#define incl_Framework_QtUtils_h
+#pragma once
 
 #include "CoreTypes.h"
 #include <QStringList>
@@ -111,4 +110,3 @@ namespace QtUtils
     std::string GetCurrentPath();
 };
 
-#endif

@@ -5,8 +5,7 @@
  *  @brief  Defines for file extensions supported by Tundra.
  */
 
-#ifndef incl_SceneStructureModule_SupportedFileTypes_h
-#define incl_SceneStructureModule_SupportedFileTypes_h
+#pragma once
 
 // Supported file extensions.
 const QString cTundraXmlFileExtension(".txml");     ///< Tundra XML file extension.
@@ -39,4 +38,3 @@ const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWid
 
 const QString cAllTypesFileFilter(QApplication::translate("SceneTreeWidget", "All types (*.*)"));   ///< All types file filter.
 
-#endif

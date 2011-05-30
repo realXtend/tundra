@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_Script_ScriptAssetFactory_h
-#define incl_EC_Script_ScriptAssetFactory_h
+#pragma once
 
 #include "IAssetTypeFactory.h"
 #include "ScriptAsset.h"
@@ -16,4 +15,3 @@ public:
     virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const char *name) { return AssetPtr(new ScriptAsset(owner, Type(), name)); }
 };
 
-#endif

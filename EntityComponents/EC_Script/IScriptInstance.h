@@ -5,8 +5,7 @@
  *  @brief  Interface for different script instances, e.g. Javascript of Python.
  */
 
-#ifndef incl_EC_Script_IScriptInstance_h
-#define incl_EC_Script_IScriptInstance_h
+#pragma once
 
 #include <QObject>
 
@@ -43,4 +42,3 @@ protected:
 
 };
 
-#endif

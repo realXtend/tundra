@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_PhononPlayer_VideoPlayer_h
-#define incl_PhononPlayer_VideoPlayer_h
+#pragma once
 
 #include <QWidget>
 #include <QBoxLayout>
@@ -36,4 +35,4 @@ namespace PhononPlayer
     };
 } // PhononPlayer
 
-#endif // incl_PhononPlayer_VideoPlayer_h
+// incl_PhononPlayer_VideoPlayer_h

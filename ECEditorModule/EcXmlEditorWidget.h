@@ -5,8 +5,7 @@
  *  @brief  Entity-component XML editor widget used for editing EC attributes in XML format.
  */
 
-#ifndef incl_ECEditorModule_EcXmlEditorWidget_h
-#define incl_ECEditorModule_EcXmlEditorWidget_h
+#pragma once
 
 #include "SceneFwd.h"
 
@@ -67,4 +66,3 @@ private:
     QList<ComponentWeakPtr > components_;
 };
 
-#endif

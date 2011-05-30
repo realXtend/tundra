@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Framework_StableHeaders_h
-#define incl_Framework_StableHeaders_h
+#pragma once
 
 // If PCH is disabled, leave the contents of this whole file empty to avoid any compilation unit getting any unnecessary headers.
 ///\todo Refactor the above #include inside this #ifdef as well.
@@ -15,5 +14,5 @@
 
 #endif
 
-#endif // incl_Framework_StableHeaders_h
+// incl_Framework_StableHeaders_h
 

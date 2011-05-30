@@ -5,8 +5,7 @@
  *  @brief  The main UI for managing asset storages and assets.
  */
 
-#ifndef incl_SceneStructureModule_AssetsWindow_h
-#define incl_SceneStructureModule_AssetsWindow_h
+#pragma once
 
 #include "AssetFwd.h"
 
@@ -116,4 +115,3 @@ private slots:
     void Cancel();
 };
 
-#endif

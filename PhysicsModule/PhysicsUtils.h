@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Physics_PhysicsUtils_h
-#define incl_Physics_PhysicsUtils_h
+#pragma once
 
 #include "CoreDefines.h"
 #include "Vector3D.h"
@@ -59,4 +58,3 @@ inline bool RayTestSingle(const Vector3df& rayFrom, const Vector3df& rayTo, btRi
     return resultCallback.hasHit();
 }
 
-#endif

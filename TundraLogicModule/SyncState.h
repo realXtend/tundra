@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_TundraLogicModule_SyncState_h
-#define incl_TundraLogicModule_SyncState_h
+#pragma once
 
 #include "IAttribute.h"
 #include "UserConnection.h"
@@ -242,4 +241,3 @@ struct SceneSyncState : public ISyncState
 
 }
 
-#endif

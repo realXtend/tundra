@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ECEditorModule_ECAttributeEditor_h
-#define incl_ECEditorModule_ECAttributeEditor_h
+#pragma once
 
 #include "Vector3D.h"
 #include "IComponent.h"
@@ -330,4 +329,3 @@ private:
     QMap<ComponentWeakPtr, AssetReferenceList> originalValues;
 };
 
-#endif

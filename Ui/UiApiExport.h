@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiApi_h
-#define incl_UiApi_h
+#pragma once
 
 #if defined (_WINDOWS) && defined(UI_API_DLL)
 #if defined(UI_API_EXPORTS)
@@ -13,4 +12,3 @@
 #define UI_API
 #endif
 
-#endif

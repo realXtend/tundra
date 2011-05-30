@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef EC_ENVIRONMENTLIGHT_H_
-#define EC_ENVIRONMENTLIGHT_H_
+#pragma once
 
 #include "IComponent.h"
 #include "CoreTypes.h"
@@ -134,5 +133,3 @@ private:
 };
 
 }
-
-#endif // EC_ENVIRONMENTLIGHT_H

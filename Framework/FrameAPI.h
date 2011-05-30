@@ -10,8 +10,7 @@
  *  -trigger delayed signals when spesified amount of time has elapsed.
  */
 
-#ifndef incl_Framework_FrameAPI
-#define incl_Framework_FrameAPI
+#pragma once
 
 #include <QObject>
 
@@ -119,4 +118,3 @@ private slots:
     void DeleteDelayedSignal();
 };
 
-#endif

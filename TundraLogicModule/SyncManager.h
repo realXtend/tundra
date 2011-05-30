@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_TundraLogicModule_SyncManager_h
-#define incl_TundraLogicModule_SyncManager_h
+#pragma once
 
 #include "IComponent.h"
 #include "SyncState.h"
@@ -164,5 +163,4 @@ private:
 
 }
 
-#endif
 

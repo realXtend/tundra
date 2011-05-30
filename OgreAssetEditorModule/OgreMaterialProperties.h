@@ -5,8 +5,7 @@
  *  @brief  Dynamically created QProperties for OGRE material scripts.
  */
 
-#ifndef incl_OgreAssetEditorModule_OgreMaterialProperties_h
-#define incl_OgreAssetEditorModule_OgreMaterialProperties_h
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 
@@ -72,4 +71,3 @@ private:
 //    OgreRenderer::OgreMaterialResource *material_;
 };
 
-#endif

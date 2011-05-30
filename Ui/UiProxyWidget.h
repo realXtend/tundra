@@ -6,8 +6,7 @@
  *          canvas as the in-world 3D scene.
  */
 
-#ifndef incl_Ui_UiProxyWidget_h
-#define incl_Ui_UiProxyWidget_h
+#pragma once
 
 #include <QGraphicsProxyWidget>
 
@@ -89,4 +88,3 @@ protected:
     void closeEvent(QCloseEvent *e);
 };
 
-#endif

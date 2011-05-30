@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_OgreWorld_h
-#define incl_OgreRenderer_OgreWorld_h
+#pragma once
 
 #include "CoreDefines.h"
 #include "IRenderer.h"
@@ -151,4 +150,3 @@ private:
     std::vector<EntityWeakPtr> visibilityTrackedEntities_;
 };
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef incl_Framework_CTransform_h
-#define incl_Framework_CTransform_h
+#pragma once
 
 #include "CoreMath.h"
 #include "Vector3D.h"
@@ -182,4 +181,3 @@ public:
 Q_DECLARE_METATYPE(Transform)
 Q_DECLARE_METATYPE(Transform*)
 
-#endif

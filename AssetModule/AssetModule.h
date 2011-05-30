@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_AssetModule_h
-#define incl_AssetModule_h
+#pragma once
 
 #include "IModule.h"
 
@@ -83,4 +82,3 @@ namespace Asset
     };
 }
 
-#endif

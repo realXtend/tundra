@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_AssetAPI_h
-#define incl_Asset_AssetAPI_h
+#pragma once
 
 #include <QObject>
 #include <vector>
@@ -440,4 +439,3 @@ private:
 
 #include "AssetAPI.inl"
 
-#endif

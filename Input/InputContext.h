@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_InputContext_h
-#define incl_Input_InputContext_h
+#pragma once
 
 #include "KeyEvent.h"
 #include "MouseEvent.h"
@@ -228,4 +227,3 @@ private:
     void operator=(const InputContext &);
 };
 
-#endif

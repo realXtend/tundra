@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_3DCanvas_EC_3DCanvas_h
-#define incl_EC_3DCanvas_EC_3DCanvas_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -120,4 +119,3 @@ private:
     bool mesh_hooked_;
 };
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_PythonScriptModule_PythonScriptModule_h
-#define incl_PythonScriptModule_PythonScriptModule_h
+#pragma once
 
 #include "Foundation.h"
 #include "IModule.h"
@@ -205,4 +204,3 @@ namespace PythonScript
     static PythonScriptModule *self() { return PythonScriptModule::GetInstance(); }
 }
 
-#endif

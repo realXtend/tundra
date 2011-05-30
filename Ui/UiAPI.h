@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Ui_UiAPI_h
-#define incl_Ui_UiAPI_h
+#pragma once
 
 #include <QObject>
 #include <QPointer>
@@ -161,4 +160,3 @@ private:
     QList<QGraphicsProxyWidget *> fullScreenWidgets; ///< List of full screen widgets.
 };
 
-#endif

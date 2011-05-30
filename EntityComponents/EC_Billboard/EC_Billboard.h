@@ -6,8 +6,7 @@
  *  @note   The entity must have EC_Placeable component available in advance.
  */
 
-#ifndef incl_EC_Billboard_EC_BillBoard_h
-#define incl_EC_Billboard_EC_BillBoard_h
+#pragma once
 
 #include "IComponent.h"
 #include "Vector3D.h"
@@ -172,4 +171,3 @@ private:
     AssetRefListenerPtr materialAsset_;
 };
 
-#endif

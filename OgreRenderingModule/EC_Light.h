@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_Light_EC_Light_h
-#define incl_EC_Light_EC_Light_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -171,4 +170,3 @@ private:
 
 };
 
-#endif

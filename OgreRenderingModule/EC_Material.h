@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_EC_Material_h
-#define incl_OgreRenderer_EC_Material_h
+#pragma once
 
 #include "StableHeaders.h"
 #include "IComponent.h"
@@ -103,4 +102,3 @@ private:
     AssetRefListenerPtr materialAsset;
 };
 
-#endif

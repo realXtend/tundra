@@ -1,5 +1,4 @@
-#ifndef incl_MumbleVoipModule_MumbleDefines_h
-#define incl_MumbleVoipModule_MumbleDefines_h
+#pragma once
 
 /// \todo Rename to 'MumbleProtocol.h'
 namespace MumbleVoip
@@ -11,4 +10,4 @@ namespace MumbleVoip
     const int SAMPLE_WIDTH = 16;
 }
 
-#endif incl_MumbleVoipModule_MumbleDefines_h
+incl_MumbleVoipModule_MumbleDefines_h

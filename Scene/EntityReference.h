@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Scene_EntityReference_h
-#define incl_Scene_EntityReference_h
+#pragma once
 
 #include "SceneFwd.h"
 #include "CoreTypes.h"
@@ -40,5 +39,4 @@ struct EntityReference
 
 Q_DECLARE_METATYPE(EntityReference)
 
-#endif
 

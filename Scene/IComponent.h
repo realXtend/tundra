@@ -5,8 +5,7 @@
  *  @brief  Base class for all components. Inherit from this class when creating new components.
  */
 
-#ifndef incl_Scene_IComponent_h
-#define incl_Scene_IComponent_h
+#pragma once
 
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
@@ -333,4 +332,3 @@ private:
     void AddAttribute(IAttribute* attr) { attributes_.push_back(attr); }
 };
 
-#endif

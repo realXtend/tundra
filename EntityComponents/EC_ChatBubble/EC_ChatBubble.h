@@ -6,8 +6,7 @@
  *  @note   The entity must have EC_Placeable component available in advance.
 */
 
-#ifndef incl_EC_ChatBubble_EC_ChatBubble_h
-#define incl_EC_ChatBubble_EC_ChatBubble_h
+#pragma once
 
 #include "IComponent.h"
 #include "Vector3D.h"
@@ -175,4 +174,3 @@ private:
     float default_z_pos_;
 };
 
-#endif

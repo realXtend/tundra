@@ -4,8 +4,7 @@
  *  @brief  Environment module. Environment module is be responsible for visual environment features like terrain, sky & water.
  */
 
-#ifndef incl_EnvironmentModule_EnvironmentModule_h
-#define incl_EnvironmentModule_EnvironmentModule_h
+#pragma once
 
 #include "EnvironmentModuleApi.h"
 #include "IModule.h"
@@ -43,4 +42,3 @@ namespace Environment
     };
 }
 
-#endif

@@ -6,8 +6,7 @@
  *  Label will resize the signal image when it's size is changed.
  */ 
 
-#ifndef incl_OgreAssetEditorModule_AudioSignalLabel_h
-#define incl_OgreAssetEditorModule_AudioSignalLabel_h
+#pragma once
 
 #include "CoreTypes.h"
 
@@ -49,4 +48,3 @@ private:
     bool widget_resized_;
 };
 
-#endif

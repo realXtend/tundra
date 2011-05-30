@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_PythonScriptModule_AssetReferenceDecorator_h
-#define incl_PythonScriptModule_AssetReferenceDecorator_h
+#pragma once
 
 #include <QObject>
 #include "AssetReference.h"
@@ -23,4 +22,3 @@ namespace PythonScript
     };
 }
 
-#endif

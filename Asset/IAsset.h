@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_IAsset_h
-#define incl_Asset_IAsset_h
+#pragma once
 
 #include <boost/enable_shared_from_this.hpp>
 #include <QObject>
@@ -157,4 +156,3 @@ protected:
     QString diskSource;
 };
 
-#endif

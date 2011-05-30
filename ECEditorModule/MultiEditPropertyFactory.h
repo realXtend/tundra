@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ECEditorModule_MultiEditPropertyFactory_h
-#define incl_ECEditorModule_MultiEditPropertyFactory_h
+#pragma once
 
 #define QT_QTPROPERTYBROWSER_IMPORT
 
@@ -67,4 +66,3 @@ private:
     QMap<QDialog *,const QtProperty *> editorToProperty_;
 };
 
-#endif

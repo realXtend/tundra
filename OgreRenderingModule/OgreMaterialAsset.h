@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_OgreMaterialAsset_h
-#define incl_OgreRenderer_OgreMaterialAsset_h
+#pragma once
 
 #include "IAsset.h"
 #include "Color.h"
@@ -139,4 +138,3 @@ private:
     std::vector<PendingTextureApply> pendingApplies;
 };
 
-#endif

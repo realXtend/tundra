@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_h
-#define incl_MumbleVoipModule_h
+#pragma once
 
 #include "IModule.h"
 #include "MumbleVoipModuleApi.h"
@@ -56,4 +55,4 @@ namespace MumbleVoip
 
 } // end of namespace: MumbleVoip
 
-#endif // incl_MumbleVoipModule_h
+// incl_MumbleVoipModule_h

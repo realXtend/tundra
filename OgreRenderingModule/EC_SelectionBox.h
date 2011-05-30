@@ -1,8 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 // Author: Nathan Letwory <nathan@letworyinteractive.com>
 
-#ifndef incl_OgreRenderer_EC_SelectionBox_h
-#define incl_OgreRenderer_EC_SelectionBox_h
+#pragma once
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
@@ -67,4 +66,3 @@ private:
     
 };
 
-#endif

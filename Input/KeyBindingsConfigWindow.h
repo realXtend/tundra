@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_KeyBindingsConfigWindow_h
-#define incl_Input_KeyBindingsConfigWindow_h
+#pragma once
 
 #include <QWidget>
 #include <QKeySequence>
@@ -55,4 +54,3 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 };
 
-#endif

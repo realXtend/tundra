@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Framework_StringUtil_h
-#define incl_Framework_StringUtil_h
+#pragma once
 
 #include <iomanip>
 
@@ -114,4 +113,3 @@ bool ParseBool(const std::string &value);
 */
 bool ParseBool(const QString &value);
 
-#endif

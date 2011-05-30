@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_InputAPI_h
-#define incl_Input_InputAPI_h
+#pragma once
 
 #include "InputFwd.h"
 #include "KeyEvent.h"
@@ -282,4 +281,3 @@ private:
     Framework *framework;
 };
 
-#endif

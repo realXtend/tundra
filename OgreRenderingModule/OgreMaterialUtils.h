@@ -5,8 +5,7 @@
  *  @brief  Contains some often needed utlitity functions when dealing with OGRE material scripts.
  */
 
-#ifndef incl_OgreRenderingModule_OgreMaterialUtils_h
-#define incl_OgreRenderingModule_OgreMaterialUtils_h
+#pragma once
 
 #include <OgreMaterial.h>
 #include "CoreTypes.h"
@@ -92,4 +91,3 @@ namespace OgreRenderer
 
 }
 
-#endif

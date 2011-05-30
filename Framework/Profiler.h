@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Framework_Profiler_h
-#define incl_Framework_Profiler_h
+#pragma once
 
 #ifdef _WINDOWS
 #include <Winsock2.h>
@@ -453,4 +452,3 @@ private:
     bool destroyed_;
 };
 
-#endif

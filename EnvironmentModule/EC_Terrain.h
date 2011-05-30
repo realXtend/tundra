@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_TerrainPatch_h
-#define incl_EC_TerrainPatch_h
+#pragma once
 
 #include "EnvironmentModuleApi.h"
 #include "IComponent.h"
@@ -445,4 +444,3 @@ private:
 };
 }
 
-#endif

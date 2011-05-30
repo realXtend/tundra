@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoip_EC_VoiceChannel_h
-#define incl_MumbleVoip_EC_VoiceChannel_h
+#pragma once
 
 #include "IComponent.h"
 #include "Declare_EC.h"
@@ -60,4 +59,4 @@ private slots:
     void AutoDisabelChannel(IAttribute*, AttributeChange::Type);
 };
 
-#endif // incl_MumbleVoip_EC_VoiceChannel_h
+// incl_MumbleVoip_EC_VoiceChannel_h

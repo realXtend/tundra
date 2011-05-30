@@ -5,8 +5,7 @@
  *  @brief  Tree widget utility functions.
  */
 
-#ifndef incl_SceneStructureModule_TreeWidgetUtils_h
-#define incl_SceneStructureModule_TreeWidgetUtils_h
+#pragma once
 
 /// Searches for items containing @c filter (case-insensitive) in the item's @c column and toggles their visibility.
 /** If match is found the item is set visible and expanded (if filter >= 3 chars), otherwise it's hidden.
@@ -31,4 +30,3 @@ bool TreeWidgetExpandOrCollapseAll(QTreeWidget *treeWidget);
 */
 void TreeWidgetSetCheckStateForAllItems(QTreeWidget *treeWidget, int column, Qt::CheckState state);
 
-#endif

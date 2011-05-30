@@ -5,8 +5,7 @@
  *  @brief  Forward declarations for commonly used OgreRenderingModule and Ogre classes.
  */
 
-#ifndef incl_OgreRendereringModule_OgreModuleFwd_h
-#define incl_OgreRendereringModule_OgreModuleFwd_h
+#pragma once
 
 #include <boost/smart_ptr.hpp>
 
@@ -62,4 +61,3 @@ class EC_Placeable;
 typedef boost::shared_ptr<OgreWorld> OgreWorldPtr;
 typedef boost::weak_ptr<OgreWorld> OgreWorldWeakPtr;
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Renderer_RenderWindow_h
-#define incl_Renderer_RenderWindow_h
+#pragma once
 
 #include "OgreModuleApi.h"
 
@@ -53,4 +52,3 @@ private:
     Ogre::OverlayElement *overlayContainer;
 };
 
-#endif

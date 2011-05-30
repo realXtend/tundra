@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Ui_UiFwd_h
-#define incl_Ui_UiFwd_h
+#pragma once
 
 class Framework;
 
@@ -18,4 +17,3 @@ class QRect;
 class QRectF;
 class QEvent;
 
-#endif

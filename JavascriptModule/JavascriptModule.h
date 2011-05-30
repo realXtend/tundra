@@ -5,8 +5,7 @@
  *  @brief  Enables Javascript execution and scripting by using QtScript.
  */
 
-#ifndef incl_JavascriptModule_JavascriptModule_h
-#define incl_JavascriptModule_JavascriptModule_h
+#pragma once
 
 #include "IModule.h"
 
@@ -98,4 +97,3 @@ private slots:
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine);
 QScriptValue ScriptRunFile(QScriptContext *context, QScriptEngine *engine);
 
-#endif

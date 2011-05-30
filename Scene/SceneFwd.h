@@ -5,8 +5,7 @@
  *  @brief  Forward declarations and typedefs for Scene-related clasess.
  */
 
-#ifndef incl_Scene_SceneFwd
-#define incl_Scene_SceneFwd
+#pragma once
 
 #include <boost/smart_ptr.hpp>
 #include <list>
@@ -43,4 +42,3 @@ typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
 typedef std::vector<IAttribute*> AttributeVector;
 typedef std::map<QString, ScenePtr> SceneMap;
 
-#endif

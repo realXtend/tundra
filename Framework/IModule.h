@@ -6,8 +6,7 @@
  *          See @ref ModuleArchitecture for details.
  */
 
-#ifndef incl_Framework_IModule_h
-#define incl_Framework_IModule_h
+#pragma once
 
 // Disable C4251 warnings in MSVC: 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
 #ifdef _MSC_VER
@@ -102,4 +101,3 @@ private:
 #pragma warning( disable : 4275 )
 #endif
 
-#endif

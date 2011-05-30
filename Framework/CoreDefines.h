@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_CoreDefines_h
-#define incl_CoreDefines_h
+#pragma once
 
 #include <cassert>
 
@@ -30,5 +29,4 @@ inline Dst checked_static_cast(Src src)
 /// Use for QObjects
 #define SAFE_DELETE_LATER(p) { if ((p)) (p)->deleteLater(); (p) = 0; }
 
-#endif
 

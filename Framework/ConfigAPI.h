@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Framework_ConfigAPI_h
-#define incl_Framework_ConfigAPI_h
+#pragma once
 
 #include <QObject>
 #include <QVariant>
@@ -207,4 +206,3 @@ private:
     QString applicationVersion_;
 };
 
-#endif

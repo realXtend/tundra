@@ -5,8 +5,7 @@
  *  @brief  EC_ProximityTrigger reports distance, each frame, of other entities that also have EC_ProximityTrigger component
  */
 
-#ifndef incl_EC_ProximityTrigger_EC_ProximityTrigger_h
-#define incl_EC_ProximityTrigger_EC_ProximityTrigger_h
+#pragma once
 
 #include "IComponent.h"
 #include "Declare_EC.h"
@@ -92,4 +91,3 @@ private:
     EC_ProximityTrigger(IModule *module);
 };
 
-#endif

@@ -5,8 +5,7 @@
  *  @brief  Represent an executable command on an Entity.
  */
 
-#ifndef incl_Scene_EntityAction_h
-#define incl_Scene_EntityAction_h
+#pragma once
 
 #include "CoreTypes.h"
 
@@ -71,4 +70,3 @@ private:
     QString name; ///< Name of the action.
 };
 
-#endif

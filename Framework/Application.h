@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Framework_Application_h
-#define incl_Framework_Application_h
+#pragma once
 
 #include <QTimer>
 #include <QApplication>
@@ -84,4 +83,3 @@ private:
     char **argv; ///< Command line arguments as supplied by the operating system.
 };
 
-#endif

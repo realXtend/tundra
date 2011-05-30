@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_MumbleMainLoopThread_h
-#define incl_MumbleVoipModule_MumbleMainLoopThread_h
+#pragma once
 
 #include <QObject>
 #include <QThread>
@@ -26,4 +25,4 @@ namespace MumbleLib
     };
 } // end of namespace: MumbleLib
 
-#endif // incl_MumbleVoipModule_MumbleMainLoopThread_h
+// incl_MumbleVoipModule_MumbleMainLoopThread_h

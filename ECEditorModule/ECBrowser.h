@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ECEditorModule_ECBrowser_h
-#define incl_ECEditorModule_ECBrowser_h
+#pragma once
 
 #define QT_QTPROPERTYBROWSER_IMPORT
 
@@ -208,4 +207,3 @@ private:
     boost::weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
 };
 
-#endif

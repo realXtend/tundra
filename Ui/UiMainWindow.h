@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Ui_UiMainWindow_h
-#define incl_Ui_UiMainWindow_h
+#pragma once
 
 #include <QMainWindow>
 
@@ -54,4 +53,3 @@ private:
     Framework *owner;
 };
 
-#endif

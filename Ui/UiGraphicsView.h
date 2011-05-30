@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Ui_UiGraphicsView_h
-#define incl_Ui_UiGraphicsView_h
+#pragma once
 
 #include "UiFwd.h"
 #include "UiApiExport.h"
@@ -104,4 +103,3 @@ public:
 #endif
 };
 
-#endif

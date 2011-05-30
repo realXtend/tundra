@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_Script_StableHeaders_h
-#define incl_EC_Script_StableHeaders_h
+#pragma once
 
 #include "CoreTypes.h"
 /*
@@ -17,4 +16,3 @@
 
 #endif
 */
-#endif

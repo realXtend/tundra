@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_KristalliProtocolModule_KristalliProtocolModule_h
-#define incl_KristalliProtocolModule_KristalliProtocolModule_h
+#pragma once
 
 #include "IModule.h"
 #include "KristalliProtocolModuleApi.h"
@@ -129,4 +128,3 @@ public slots:
     };
 }
 
-#endif

@@ -13,8 +13,7 @@
 // Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 // This notice may not be removed or altered from any source distribution.
 
-#ifndef incl_Framework_Math_h
-#define incl_Framework_Math_h
+#pragma once
 
 #include "CoreTypes.h"
 #include <cmath>
@@ -506,5 +505,4 @@ inline f32 fract ( f32 x )
 	return x - floorf ( x );
 }
 
-#endif
 

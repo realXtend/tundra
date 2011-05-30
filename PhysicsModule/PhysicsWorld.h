@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Physics_PhysicsWorld_h
-#define incl_Physics_PhysicsWorld_h
+#pragma once
 
 #include "CoreDefines.h"
 #include "CoreTypes.h"
@@ -211,5 +210,4 @@ private:
 
 }
 
-#endif
 

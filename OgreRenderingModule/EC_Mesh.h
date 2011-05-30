@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_EC_Mesh_h
-#define incl_OgreRenderer_EC_Mesh_h
+#pragma once
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
@@ -479,4 +478,3 @@ private:
     std::map<int, QString> pendingMaterialApplies;
 };
 
-#endif

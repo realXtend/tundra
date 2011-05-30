@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EnvironmentModule_EC_SkyBox_h
-#define incl_EnvironmentModule_EC_SkyBox_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -97,4 +96,3 @@ Registered by Enviroment::EnvironmentModule.
     };
 }
 
-#endif

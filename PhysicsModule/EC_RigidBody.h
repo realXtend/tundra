@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Physics_EC_RigidBody_h
-#define incl_Physics_EC_RigidBody_h
+#pragma once
 
 #include "CoreDefines.h"
 #include "IComponent.h"
@@ -426,4 +425,3 @@ private:
 };
 
 
-#endif

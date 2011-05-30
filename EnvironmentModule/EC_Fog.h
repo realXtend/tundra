@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef EC_FOG_H_
-#define EC_FOG_H_
+#pragma once
 
 #include "IComponent.h"
 #include "Color.h"
@@ -77,5 +76,3 @@ public:
 };
 
 }
-
-#endif // EC_FOG

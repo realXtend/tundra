@@ -6,8 +6,7 @@
  *  @note   The entity must have EC_Mesh component available to be useful
  */
 
-#ifndef incl_EC_Highlight_EC_Highlight_h
-#define incl_EC_Highlight_EC_Highlight_h
+#pragma once
 
 #include "IComponent.h"
 #include "AssetFwd.h"
@@ -125,4 +124,3 @@ private:
     bool reapplyPending_;
 };
 
-#endif

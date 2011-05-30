@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderingModule_TextureAsset_h
-#define incl_OgreRenderingModule_TextureAsset_h
+#pragma once
 
 #include <OgreTexture.h>
 
@@ -55,4 +54,3 @@ public:
 
 typedef boost::shared_ptr<TextureAsset> TextureAssetPtr;
 
-#endif

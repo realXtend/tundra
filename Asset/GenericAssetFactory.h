@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_GenericAssetFactory_h
-#define incl_Asset_GenericAssetFactory_h
+#pragma once
 
 #include "IAssetTypeFactory.h"
 #include "BinaryAsset.h"
@@ -31,4 +30,3 @@ private:
 /// For simple asset types the client wants to parse, we define the BinaryAssetFactory type.
 typedef GenericAssetFactory<BinaryAsset> BinaryAssetFactory;
 
-#endif

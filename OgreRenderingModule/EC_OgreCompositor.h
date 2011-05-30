@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_EC_OgreCompositor_h
-#define incl_OgreRenderer_EC_OgreCompositor_h
+#pragma once
 
 #include "IComponent.h"
 #include "CoreDefines.h"
@@ -96,4 +95,3 @@ private:
     QString previous_ref_;
 };
 
-#endif

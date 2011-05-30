@@ -6,8 +6,7 @@
  *  @note   The entity must have EC_Placeable component available in advance.
 */
 
-#ifndef incl_EC_HoveringText_EC_HoveringText_h
-#define incl_EC_HoveringText_EC_HoveringText_h
+#pragma once
 
 #include "IComponent.h"
 #include "Vector3D.h"
@@ -254,4 +253,3 @@ private:
     boost::shared_ptr<TextureAsset> texture_;  
 };
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_IAssetUploadTransfer_h
-#define incl_Asset_IAssetUploadTransfer_h
+#pragma once
 
 #include <QObject>
 #include <QByteArray>
@@ -59,4 +58,3 @@ signals:
     void Failed(IAssetUploadTransfer *transfer);
 };
 
-#endif

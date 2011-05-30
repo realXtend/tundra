@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ScenePersistenceModuleApi_h
-#define incl_ScenePersistenceModuleApi_h
+#pragma once
 
 #if defined (_WINDOWS)
 #if defined(SCENEPERSISTENCE_MODULE_EXPORTS) 
@@ -13,4 +12,3 @@
 #define SCENEPERSISTENCE_MODULE_API
 #endif
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_TundraLogicModule_TundraLogicModule_h
-#define incl_TundraLogicModule_TundraLogicModule_h
+#pragma once
 
 #include "IModule.h"
 #include "TundraLogicModuleApi.h"
@@ -105,4 +104,3 @@ private:
 
 }
 
-#endif

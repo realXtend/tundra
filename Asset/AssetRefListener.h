@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_AssetRefListener_h
-#define incl_Asset_AssetRefListener_h
+#pragma once
 
 #include <QObject>
 #include "AssetFwd.h"
@@ -45,4 +44,3 @@ private:
     AssetWeakPtr asset;
 };
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_Settings_h
-#define incl_MumbleVoipModule_Settings_h
+#pragma once
 
 #include "ui_VoiceSettings.h"
 #include <QObject>
@@ -63,4 +62,4 @@ namespace MumbleVoip
 
 
 
-#endif // incl_MumbleVoipModule_Settings_h
+// incl_MumbleVoipModule_Settings_h

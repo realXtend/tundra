@@ -55,8 +55,7 @@ int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &pr
 #endif
     )
 {
-    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject,
-                                       qScriptValueToQObject, prototype);
+    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject, qScriptValueToQObject, prototype);
 }
 
 

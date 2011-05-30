@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_EC_AnimationController_h
-#define incl_OgreRenderer_EC_AnimationController_h
+#pragma once
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
@@ -389,4 +388,3 @@ private:
     Ogre::AnimationState::BoneBlendMask lowpriority_mask_;
 };
 
-#endif

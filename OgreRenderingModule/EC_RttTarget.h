@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_EC_RttTarget_h
-#define incl_OgreRenderer_EC_RttTarget_h
+#pragma once
 
 #include "StableHeaders.h"
 #include "IComponent.h"
@@ -80,4 +79,3 @@ private:
     //void ScheduleRender();
 };
 
-#endif

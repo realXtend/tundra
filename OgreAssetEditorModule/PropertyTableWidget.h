@@ -5,8 +5,7 @@
  *  @brief  PropertyTableWidget inherits QTableWidget and add some custom drop-functionality.
  */
 
-#ifndef incl_OgreAssetEditorModule_PropertyTableWidget_h
-#define incl_OgreAssetEditorModule_PropertyTableWidget_h
+#pragma once
 
 #include <QTableWidget>
 
@@ -49,4 +48,3 @@ private:
     void InitWidget();
 };
 
-#endif

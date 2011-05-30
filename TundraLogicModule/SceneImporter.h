@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_TundraLogicModule_SceneImporter_h
-#define incl_TundraLogicModule_SceneImporter_h
+#pragma once
 
 #include "TundraLogicModuleApi.h"
 #include "SceneFwd.h"
@@ -203,4 +202,3 @@ private:
 
 }
 
-#endif

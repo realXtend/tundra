@@ -5,8 +5,7 @@
  *  @brief  Window for adding new content and assets.
  */
 
-#ifndef incl_SceneStructureModule_AddContentWindow_h
-#define incl_SceneStructureModule_AddContentWindow_h
+#pragma once
 
 #include <QWidget>
 
@@ -188,4 +187,3 @@ private slots:
     void CheckUploadTotals();
 };
 
-#endif

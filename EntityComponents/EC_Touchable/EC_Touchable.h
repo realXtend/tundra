@@ -11,8 +11,7 @@
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
-#ifndef incl_EC_Highlight_EC_Touchable_h
-#define incl_EC_Highlight_EC_Touchable_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -167,4 +166,3 @@ private slots:
     void RegisterActions();
 };
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_KristalliProtocolModuleApi_h
-#define incl_KristalliProtocolModuleApi_h
+#pragma once
 
 #if defined (_WINDOWS)
 #if defined(KRISTALLIPROTOCOL_MODULE_EXPORTS) 
@@ -13,4 +12,3 @@
 #define KRISTALLIPROTOCOL_MODULE_API
 #endif
 
-#endif

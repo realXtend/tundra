@@ -5,8 +5,7 @@
  *  @brief  Abstract base class, template class and metadata class for entity-component attributes.
  */
 
-#ifndef incl_Scene_IAttribute_h
-#define incl_Scene_IAttribute_h
+#pragma once
 
 #include "CoreDefines.h"
 #include "CoreStringUtils.h"
@@ -235,4 +234,3 @@ template<> void Attribute<EntityReference>::FromString(const std::string& str, C
 template<> 
 */
 
-#endif

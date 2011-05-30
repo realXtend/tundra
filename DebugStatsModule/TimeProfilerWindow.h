@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_DebugStats_TimeProfilerWindow_h
-#define incl_DebugStats_TimeProfilerWindow_h
+#pragma once
 
 #include "CoreTypes.h"
 
@@ -164,4 +163,3 @@ namespace DebugStats
     };
 }
 
-#endif

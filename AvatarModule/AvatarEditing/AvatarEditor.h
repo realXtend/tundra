@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Avatar_AvatarEditor_h
-#define incl_Avatar_AvatarEditor_h
+#pragma once
 
 #include "AvatarModule.h"
 #include "AvatarModuleApi.h"
@@ -103,4 +102,3 @@ signals:
     };
 }
 
-#endif

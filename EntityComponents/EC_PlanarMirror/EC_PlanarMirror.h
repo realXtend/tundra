@@ -6,8 +6,7 @@
  *  @note   The entity should have EC_Placeable available in advance.
  */
 
-#ifndef incl_EC_PlanarMirror_EC_PlanarMirror_h
-#define incl_EC_PlanarMirror_EC_PlanarMirror_h
+#pragma once
 
 #include "IComponent.h"
 #include "Declare_EC.h"
@@ -83,4 +82,3 @@ private:
     Ogre::MovablePlane* mirror_plane_;
 };
 
-#endif

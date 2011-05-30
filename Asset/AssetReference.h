@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_AssetReference_h
-#define incl_Asset_AssetReference_h
+#pragma once
 
 #include <QString>
 #include <QMetaType>
@@ -131,4 +130,3 @@ struct AssetReferenceList
 Q_DECLARE_METATYPE(AssetReference)
 Q_DECLARE_METATYPE(AssetReferenceList)
 
-#endif

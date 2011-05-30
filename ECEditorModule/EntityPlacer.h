@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ECEditorModule_EntityPlacer_h
-#define incl_ECEditorModule_EntityPlacer_h
+#pragma once
 
 #include "InputFwd.h"
 #include "SceneFwd.h"
@@ -52,4 +51,3 @@ private:
     bool useCustomMesh_;
 };
 
-#endif

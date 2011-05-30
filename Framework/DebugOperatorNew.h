@@ -12,8 +12,7 @@
     these allocations - to do that, see MemoryLeakCheck.h
 */
 
-#ifndef incl_Framework_DebugOperatorNew_h
-#define incl_Framework_DebugOperatorNew_h
+#pragma once
 
 #if defined(_MSC_VER) && defined(_DEBUG) && defined(MEMORY_LEAK_CHECK)
 #include <utility>
@@ -51,4 +50,4 @@ __forceinline void operator delete[](void *ptr)
 
 #endif // ~_MSC_VER
 
-#endif // ~incl_Framework_DebugOperatorNew_h
+// ~incl_Framework_DebugOperatorNew_h

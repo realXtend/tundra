@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_HttpAssetTransfer_h
-#define incl_Asset_HttpAssetTransfer_h
+#pragma once
 
 #include "IAssetTransfer.h"
 
@@ -14,4 +13,3 @@ public:
 
 typedef boost::shared_ptr<HttpAssetTransfer> HttpAssetTransferPtr;
 
-#endif

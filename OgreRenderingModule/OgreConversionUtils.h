@@ -5,8 +5,7 @@
  *  @brief  Contains some common methods for conversions between Ogre and Core variable types.
  */
 
-#ifndef incl_OgreConversionUtils_h
-#define incl_OgreConversionUtils_h
+#pragma once
 
 #include "Color.h"
 #include "Vector3D.h"
@@ -59,4 +58,3 @@ namespace OgreRenderer
     void OGRE_MODULE_API DesanitateAssetIds(std::string &script, const QStringList &keywords);
 }
 
-#endif

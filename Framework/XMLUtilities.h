@@ -1,6 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
-#ifndef incl_XMLUtilities_h
-#define incl_XMLUtilities_h
+#pragma once
 
 #include "CoreDefines.h"
 #include "Color.h"
@@ -32,5 +31,4 @@ void SetAttribute(QDomElement& elem, const std::string& name, float value);
 void SetAttribute(QDomElement& elem, const std::string& name, bool value);
 void SetAttribute(QDomElement& elem, const std::string& name, int value);
 
-#endif
 

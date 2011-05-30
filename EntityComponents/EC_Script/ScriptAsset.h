@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_Script_ScriptAsset_h
-#define incl_EC_Script_ScriptAsset_h
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
@@ -45,4 +44,3 @@ private slots:
 
 typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
 
-#endif

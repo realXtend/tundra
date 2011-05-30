@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Framework_Color_h
-#define incl_Framework_Color_h
+#pragma once
 
 #include "CoreTypes.h"
 
@@ -48,4 +47,3 @@ public:
 
 Q_DECLARE_METATYPE(Color)
 
-#endif

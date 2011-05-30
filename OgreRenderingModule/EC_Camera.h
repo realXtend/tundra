@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_EC_OgreCamera_h
-#define incl_OgreRenderer_EC_OgreCamera_h
+#pragma once
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
@@ -224,4 +223,3 @@ private:
     Ogre::PlaneBoundedVolumeListSceneQuery *query_;
 };
 
-#endif

@@ -5,8 +5,7 @@
  *  @brief  Provides an utility function for extracting html documentation blocks for class symbols from the generated doxygen documentation files.
  */
 
-#ifndef incl_ECEditorModule_DoxygenDocReader_h
-#define incl_ECEditorModule_DoxygenDocReader_h
+#pragma once
 
 #include <QString>
 
@@ -42,4 +41,3 @@ namespace DoxygenDocReader
     bool GetSymbolDocumentation(QString functionName, QString *documentationOut, QUrl *docPathOut);
 }
 
-#endif

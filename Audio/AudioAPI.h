@@ -1,6 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
-#ifndef incl_Audio_Audio_h
-#define incl_Audio_Audio_h
+#pragma once
 
 #include "AudioFwd.h"
 #include "AssetFwd.h"
@@ -147,4 +146,3 @@ private:
     AudioApiImpl *impl;
 };
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_GestureEvent_h
-#define incl_Input_GestureEvent_h
+#pragma once
 
 #include "CoreTypes.h"
 
@@ -71,4 +70,3 @@ public slots:
     bool IsFinishedEvent() { if ((eventType == GestureFinished) || (eventType == GestureCanceled)) return true; else return false; }
 };
 
-#endif

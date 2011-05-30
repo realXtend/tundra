@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_KeyEvent_h
-#define incl_Input_KeyEvent_h
+#pragma once
 
 #include "CoreTypes.h"
 
@@ -118,4 +117,3 @@ public:
 
 };
 
-#endif

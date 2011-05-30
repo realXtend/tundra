@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_PhononPlayer_Service_h
-#define incl_PhononPlayer_Service_h
+#pragma once
 
 #include "MediaPlayerService.h"
 #include <QMap>
@@ -32,4 +31,4 @@ namespace PhononPlayer
 
 } // PhononPlayer
 
-#endif // incl_PhononPlayer_Service_h
+// incl_PhononPlayer_Service_h

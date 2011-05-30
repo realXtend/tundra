@@ -1,6 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
-#ifndef incl_OpenALAudio_SoundChannel_h
-#define incl_OpenALAudio_SoundChannel_h
+#pragma once
 
 #include "SoundBuffer.h"
 #include "AssetFwd.h"
@@ -150,4 +149,3 @@ private:
 
 typedef boost::shared_ptr<SoundChannel> SoundChannelPtr;
 
-#endif

@@ -6,8 +6,7 @@
  *          Useful for verifying and understanding the internal state of the application.
  */
 
-#ifndef incl_DebugStats_h
-#define incl_DebugStats_h
+#pragma once
 
 #include "DebugStatsModuleApi.h"
 #include "IModule.h"
@@ -72,4 +71,3 @@ namespace DebugStats
     };
 }
 
-#endif

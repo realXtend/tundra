@@ -5,8 +5,7 @@
  *  @brief  Utility structures for describing scene and its contents.
  */
 
-#ifndef incl_Scene_SceneDesc_h
-#define incl_Scene_SceneDesc_h
+#pragma once
 
 #include <QMap>
 #include <QPair>
@@ -148,4 +147,3 @@ struct SceneDesc
     }
 };
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef incl_Environment_TerrainLabel_h
-#define incl_Environment_TerrainLabel_h
+#pragma once
 
 #include <QLabel>
 
@@ -28,4 +27,3 @@ namespace Environment
     };
 }
 
-#endif

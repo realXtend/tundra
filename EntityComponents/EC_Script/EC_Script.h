@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_Script_EC_Script_h
-#define incl_EC_Script_EC_Script_h
+#pragma once
 
 #include "IComponent.h"
 #include "AssetReference.h"
@@ -122,4 +121,3 @@ private:
     QString lastRef_;
 };
 
-#endif

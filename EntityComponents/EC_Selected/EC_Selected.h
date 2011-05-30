@@ -6,8 +6,7 @@
  *  @author Nathan Letwory | http://www.letworyinteractive.com
  */
  
-#ifndef incl_EC_Selected_EC_Selected_h
-#define incl_EC_Selected_EC_Selected_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -52,4 +51,3 @@ private:
     explicit EC_Selected(IModule *module);
 };
 
-#endif

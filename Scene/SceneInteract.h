@@ -6,8 +6,7 @@
  *          input-related Entity Action for scene entities.
  */
 
-#ifndef incl_Scene_sceneInteracth
-#define incl_Scene_sceneInteracth
+#pragma once
 
 #include "FrameworkFwd.h"
 #include "SceneFwd.h"
@@ -111,4 +110,3 @@ private slots:
     void HandleMouseEvent(MouseEvent *e);
 };
 
-#endif

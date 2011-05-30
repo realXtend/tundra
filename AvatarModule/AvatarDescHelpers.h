@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_AvatarModule_AvatarDescHelpers_h
-#define incl_AvatarModule_AvatarDescHelpers_h
+#pragma once
 
 #include <QString>
 #include <QObject>
@@ -229,4 +228,3 @@ struct AV_MODULE_API AvatarAttachment
     std::vector<uint> vertices_to_hide_;
 };
 
-#endif
