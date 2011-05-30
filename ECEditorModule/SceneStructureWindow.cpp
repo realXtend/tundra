@@ -504,7 +504,7 @@ void SceneStructureWindow::AddAssetReference(IAttribute *attr)
     else
     {
         // Find parent entity item.
-        Entity *entity = dc->GetParentEntity();
+        Entity *entity = dc->ParentEntity();
         assert(entity);
         if (!entity)
             return;
@@ -574,7 +574,7 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
     // Find parent item for the asset reference item.
     IComponent *ownerComp = assetRef->Owner();
     assert(ownerComp);
-    Entity *parentEntity = assetRef->Owner()->GetParentEntity();
+    Entity *parentEntity = assetRef->Owner()->ParentEntity();
     assert(parentEntity);
 
     QTreeWidgetItem *parentItem = 0;
@@ -630,10 +630,10 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
 void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
 {
     EC_Name *nameComp = dynamic_cast<EC_Name *>(sender());
-    if (!nameComp || (attr != &nameComp->name) || (nameComp->GetParentEntity() == 0))
+    if (!nameComp || (attr != &nameComp->name) || (nameComp->ParentEntity() == 0))
         return;
 
-    Entity *entity = nameComp->GetParentEntity();
+    Entity *entity = nameComp->ParentEntity();
     for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));

@@ -70,12 +70,12 @@ void IComponent::SetParentEntity(Entity* entity)
         emit ParentEntityDetached();
 }
 
-Entity* IComponent::GetParentEntity() const
+Entity* IComponent::ParentEntity() const
 {
     return parentEntity_;
 }
 
-Scene* IComponent::GetParentScene() const
+Scene* IComponent::ParentScene() const
 {
     if (!parentEntity_)
         return 0;
@@ -194,7 +194,7 @@ void IComponent::EmitAttributeChanged(IAttribute* attribute, AttributeChange::Ty
         return; // No signals
     
     // Trigger scenemanager signal
-    Scene* scene = GetParentScene();
+    Scene* scene = ParentScene();
     if (scene)
         scene->EmitAttributeChanged(this, attribute, change);
     

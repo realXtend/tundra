@@ -1188,7 +1188,7 @@ bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, 
         return false;
     
     IComponent* comp = attr ? attr->Owner() : 0;
-    Entity* entity = comp ? comp->GetParentEntity() : 0;
+    Entity* entity = comp ? comp->ParentEntity() : 0;
     Scene* scene = entity ? entity->GetScene() : 0;
     
     if ((length <= 0.0f) || (!attr) || (!attr->HasMetadata()) || (attr->Metadata()->interpolation == AttributeMetadata::None) ||

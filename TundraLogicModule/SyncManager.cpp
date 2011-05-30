@@ -214,7 +214,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
-    Entity* entity = comp->GetParentEntity();
+    Entity* entity = comp->ParentEntity();
     if ((!entity) || (entity->IsLocal()))
         return;
     bool dynamic = comp->HasDynamicStructure();

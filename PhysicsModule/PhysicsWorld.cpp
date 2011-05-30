@@ -152,8 +152,8 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             if ((!bodyA) || (!bodyB))
                 continue;
             // Also, both bodies should have valid parent entities
-            Entity* entityA = bodyA->GetParentEntity();
-            Entity* entityB = bodyB->GetParentEntity();
+            Entity* entityA = bodyA->ParentEntity();
+            Entity* entityB = bodyB->ParentEntity();
             if ((!entityA) || (!entityB))
                 continue;
             // Check that at least one of the bodies is active
@@ -216,7 +216,7 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const Vector3df& origin, const Vecto
         {
             EC_RigidBody* body = static_cast<EC_RigidBody*>(rayCallback.m_collisionObject->getUserPointer());
             if (body)
-                result.entity_ = body->GetParentEntity();
+                result.entity_ = body->ParentEntity();
         }
     }
     

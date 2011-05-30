@@ -460,8 +460,8 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
                         currentToolTipDestination.append("Submesh " + QString::number(res->submesh));
                         if (!mesh->Name().isEmpty())
                             currentToolTipDestination.append(" on " + mesh->Name());
-                        else if (!mesh->GetParentEntity()->GetName().isEmpty())
-                            currentToolTipDestination.append(" on " + mesh->GetParentEntity()->GetName());
+                        else if (!mesh->ParentEntity()->GetName().isEmpty())
+                            currentToolTipDestination.append(" on " + mesh->ParentEntity()->GetName());
                         currentToolTipDestination.append("</p>");
                         e->accept();
                     }

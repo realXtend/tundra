@@ -114,7 +114,7 @@ bool EC_Highlight::IsVisible() const
 
 void EC_Highlight::UpdateSignals()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (parent)
     {
         // Connect to ComponentAdded/Removed signals of the parent entity, so we can check when the mesh component gets added or removed
@@ -140,7 +140,7 @@ void EC_Highlight::AcquireMesh()
     if (!mesh_.expired())
         return;
     
-    mesh_ = GetParentEntity()->GetComponent<EC_Mesh>();
+    mesh_ = ParentEntity()->GetComponent<EC_Mesh>();
     
     EC_Mesh* mesh = mesh_.lock().get();
     if (mesh)

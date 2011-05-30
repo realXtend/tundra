@@ -412,7 +412,7 @@ void EC_Placeable::AttachNode()
         const EntityReference& parent = parentRef.Get();
         if (!parent.IsEmpty())
         {
-            Entity* ownEntity = GetParentEntity();
+            Entity* ownEntity = ParentEntity();
             if (!ownEntity)
                 return;
             Scene* scene = ownEntity->GetScene();
@@ -697,7 +697,7 @@ void EC_Placeable::ToggleVisibility()
 
 void EC_Placeable::RegisterActions()
 {
-    Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
     assert(entity);
     if (entity)
     {

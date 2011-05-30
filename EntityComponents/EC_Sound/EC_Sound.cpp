@@ -112,7 +112,7 @@ void EC_Sound::RegisterActions()
     if (framework_->IsHeadless())
         return;
 
-    Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
     if (entity)
     {
         entity->ConnectAction("PlaySound", this, SLOT(PlaySound()));
@@ -203,8 +203,8 @@ EntityPtr EC_Sound::GetActiveSoundListener()
         if (ec->active.Get())
         {
 #ifndef _DEBUG
-            assert(ec->GetParentEntity());
-            return ec->GetParentEntity()->shared_from_this();
+            assert(ec->ParentEntity());
+            return ec->ParentEntity()->shared_from_this();
 #else
             ++numActiveListeners;
 #endif
@@ -220,12 +220,12 @@ EntityPtr EC_Sound::GetActiveSoundListener()
 
 void EC_Sound::UpdateSignals()
 {
-    if (!GetParentEntity())
+    if (!ParentEntity())
     {
         LogError("Couldn't update signals cause component dont have parent entity set.");
         return;
     }
-    Scene *scene = GetParentEntity()->GetScene();
+    Scene *scene = ParentEntity()->GetScene();
     if(!scene)
     {
         LogError("Fail to update signals cause parent entity's scene is null.");
@@ -239,12 +239,12 @@ ComponentPtr EC_Sound::FindPlaceable() const
 {
     assert(framework_);
     ComponentPtr comp;
-    if(!GetParentEntity())
+    if(!ParentEntity())
     {
         LogError("Fail to find a placeable component cause parent entity is null.");
         return comp;
     }
-    comp = GetParentEntity()->GetComponent<EC_Placeable>();
+    comp = ParentEntity()->GetComponent<EC_Placeable>();
     //We need to update sound source position when placeable component has changed it's transformation.
     if (comp)
     {

@@ -39,10 +39,10 @@ EC_SoundListener::~EC_SoundListener()
 
 void EC_SoundListener::RetrievePlaceable()
 {
-    if (!GetParentEntity())
+    if (!ParentEntity())
         LogError("Couldn't find an parent entity for EC_SoundListener. Cannot retrieve placeable component.");
 
-    placeable_ = GetParentEntity()->GetComponent<EC_Placeable>();
+    placeable_ = ParentEntity()->GetComponent<EC_Placeable>();
     if (!placeable_.lock())
         LogError("Couldn't find an EC_Placeable component from the parent entity.");
 }
@@ -77,7 +77,7 @@ void EC_SoundListener::OnActiveChanged()
 
 void EC_SoundListener::RegisterActions()
 {
-    Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
     assert(entity);
     if (entity)
     {

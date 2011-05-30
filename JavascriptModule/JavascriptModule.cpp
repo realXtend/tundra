@@ -321,8 +321,8 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     if (comp)
     {
         // Set entity and scene that own the EC_Script component.
-        instance->RegisterService(comp->GetParentEntity(), "me");
-        instance->RegisterService(comp->GetParentEntity()->GetScene(), "scene");
+        instance->RegisterService(comp->ParentEntity(), "me");
+        instance->RegisterService(comp->ParentEntity()->GetScene(), "scene");
     }
 
     emit ScriptEngineCreated(instance->GetEngine());

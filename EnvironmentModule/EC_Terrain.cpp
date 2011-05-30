@@ -155,7 +155,7 @@ void EC_Terrain::UpdateSignals()
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         this, SLOT(OnAttributeUpdated(IAttribute*)), Qt::UniqueConnection);
 
-    Entity *parent = GetParentEntity();
+    Entity *parent = ParentEntity();
     CreateRootNode();
     if (parent)
     {    
@@ -1112,7 +1112,7 @@ void ComputeAABB(const std::vector<Ogre::Vector3> &vertices, Ogre::Vector3 &minE
 
 void EC_Terrain::GenerateFromSceneEntity(QString entityName)
 {
-    Entity *parentEntity = GetParentEntity();
+    Entity *parentEntity = ParentEntity();
     if (!parentEntity)
         return;
 
@@ -1332,7 +1332,7 @@ void EC_Terrain::AttachTerrainRootNode()
         rootNode->getParentSceneNode()->removeChild(rootNode);
 
     // If this entity has an EC_Placeable, make sure it is the parent of this terrain component.
-    boost::shared_ptr<EC_Placeable> pos = GetParentEntity()->GetComponent<EC_Placeable>();
+    boost::shared_ptr<EC_Placeable> pos = ParentEntity()->GetComponent<EC_Placeable>();
     if (pos)
     {
         Ogre::SceneNode *parent = pos->GetSceneNode();

@@ -99,7 +99,7 @@ void EcXmlEditorWidget::Refresh()
         temp_doc.appendChild(entity_elem);
 
         QString id_str;
-        id_str.setNum((int)it.peekNext().lock()->GetParentEntity()->GetId());
+        id_str.setNum((int)it.peekNext().lock()->ParentEntity()->GetId());
         entity_elem.setAttribute("id", id_str);
 
         while(it.hasNext())

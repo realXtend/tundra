@@ -48,7 +48,7 @@ void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
     if (!asset)
         return;
 
-    Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     if (!entity)
         return;
 
@@ -99,7 +99,7 @@ void EC_Avatar::SetupAppearance()
 {
     PROFILE(Avatar_SetupAppearance);
     
-    Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -120,7 +120,7 @@ void EC_Avatar::SetupAppearance()
 
 void EC_Avatar::SetupDynamicAppearance()
 {
-    Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -151,7 +151,7 @@ QString EC_Avatar::GetAvatarProperty(const QString& name)
 
 void EC_Avatar::AdjustHeightOffset()
 {
-    Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -202,7 +202,7 @@ void EC_Avatar::AdjustHeightOffset()
 
 void EC_Avatar::SetupMeshAndMaterials()
 {
-    Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -249,7 +249,7 @@ void EC_Avatar::SetupMeshAndMaterials()
 
 void EC_Avatar::SetupAttachments()
 {
-    Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -276,7 +276,7 @@ void EC_Avatar::SetupAttachments()
 
 void EC_Avatar::SetupMorphs()
 {
-    Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -329,7 +329,7 @@ void EC_Avatar::SetupMorphs()
 
 void EC_Avatar::SetupBoneModifiers()
 {
-    Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;

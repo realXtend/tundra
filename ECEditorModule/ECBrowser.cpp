@@ -468,7 +468,7 @@ void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *prev
 
 void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type) 
 {
-    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->GetParentEntity()->GetId());
+    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->ParentEntity()->GetId());
     if(!HasEntity(entity_ptr))
         return;
     ComponentPtr comp_ptr;
@@ -498,7 +498,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
 
 void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
 {
-    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->GetParentEntity()->GetId());
+    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->ParentEntity()->GetId());
     if(!HasEntity(entity_ptr))
         return;
 
@@ -625,7 +625,7 @@ void ECBrowser::DynamicComponentChanged()
         return;
     }
 
-//    Entity *entity = component->GetParentEntity();
+//    Entity *entity = component->ParentEntity();
     RemoveComponentFromGroup(comp_ptr);
     AddNewComponentToGroup(comp_ptr);
 
@@ -911,7 +911,7 @@ void ECBrowser::DeleteComponent(QTreeWidgetItem *item)
         ComponentPtr comp = iter->lock();
         if (comp)
         {
-            Entity *entity = comp->GetParentEntity();
+            Entity *entity = comp->ParentEntity();
             if (entity)
                 entity->RemoveComponent(comp, AttributeChange::Default);
         }

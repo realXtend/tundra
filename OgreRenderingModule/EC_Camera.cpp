@@ -70,7 +70,7 @@ EC_Camera::~EC_Camera()
 
 void EC_Camera::AutoSetPlaceable()
 {
-    Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     if (entity)
     {
         ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
@@ -236,7 +236,7 @@ Ogre::Ray EC_Camera::GetMouseRay(float x, float y)
 
 void EC_Camera::UpdateSignals()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (parent)
     {
         // Connect to ComponentRemoved signal of the parent entity, so we can check if the placeable gets removed

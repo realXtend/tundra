@@ -94,7 +94,7 @@ EC_RigidBody::~EC_RigidBody()
 
 bool EC_RigidBody::SetShapeFromVisibleMesh()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (!parent)
         return false;
     EC_Mesh* mesh = parent->GetComponent<EC_Mesh>().get();
@@ -246,7 +246,7 @@ void EC_RigidBody::ResetForces()
 
 void EC_RigidBody::UpdateSignals()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (!parent)
         return;
     
@@ -260,7 +260,7 @@ void EC_RigidBody::UpdateSignals()
 
 void EC_RigidBody::CheckForPlaceableAndTerrain()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (!parent)
         return;
     
@@ -358,7 +358,7 @@ void EC_RigidBody::RemoveCollisionShape()
 
 void EC_RigidBody::CreateBody()
 {
-    if ((!world_) || (!GetParentEntity()) || (body_))
+    if ((!world_) || (!ParentEntity()) || (body_))
         return;
     
     CheckForPlaceableAndTerrain();
@@ -380,7 +380,7 @@ void EC_RigidBody::CreateBody()
 
 void EC_RigidBody::ReaddBody()
 {
-    if ((!world_) || (!GetParentEntity()) || (!body_))
+    if ((!world_) || (!ParentEntity()) || (!body_))
         return;
     
     btVector3 localInertia;
@@ -719,7 +719,7 @@ void EC_RigidBody::GetAabbox(Vector3df &outAabbMin, Vector3df &outAabbMax)
 
 bool EC_RigidBody::HasAuthority() const
 {
-    if ((!world_) || ((world_->IsClient()) && (!GetParentEntity()->IsLocal())))
+    if ((!world_) || ((world_->IsClient()) && (!ParentEntity()->IsLocal())))
         return false;
     
     return true;
@@ -737,7 +737,7 @@ void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
 
 void EC_RigidBody::RequestMesh()
 {    
-    Entity *parent = GetParentEntity();
+    Entity *parent = ParentEntity();
 
     QString collisionMesh = collisionMeshRef.Get().ref.trimmed();
     if (collisionMesh.isEmpty() && parent) // We use the mesh ref in EC_Mesh as the collision mesh ref if no collision mesh is set in EC_RigidBody.

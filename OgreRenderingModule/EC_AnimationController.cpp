@@ -600,7 +600,7 @@ float EC_AnimationController::GetAnimationRelativeTimePosition(const QString& na
 
 void EC_AnimationController::UpdateSignals()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (parent)
     {
         parent->ConnectAction("PlayAnim", this, SLOT(PlayAnim(const QString &, const QString &, const QString &)));
@@ -621,7 +621,7 @@ void EC_AnimationController::AutoSetMesh()
 {
     if (!mesh)
     {
-        Entity* parent = GetParentEntity();
+        Entity* parent = ParentEntity();
         if (parent)
         {
             EC_Mesh* mesh = parent->GetComponent<EC_Mesh>().get();

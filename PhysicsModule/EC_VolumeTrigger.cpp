@@ -161,7 +161,7 @@ void EC_VolumeTrigger::OnAttributeUpdated(IAttribute* attribute)
 
 void EC_VolumeTrigger::UpdateSignals()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (!parent)
         return;
     
@@ -175,7 +175,7 @@ void EC_VolumeTrigger::UpdateSignals()
 
 void EC_VolumeTrigger::CheckForRigidBody()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (!parent)
         return;
     

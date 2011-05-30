@@ -105,7 +105,7 @@ void EC_Mesh::SetPlaceable(ComponentPtr placeable)
 
 void EC_Mesh::SetPlaceable(EC_Placeable* placeable)
 {
-     ComponentPtr ptr = placeable->GetParentEntity()->GetComponent(placeable->TypeName(), placeable->Name()); //hack to get the shared_ptr to this component
+     ComponentPtr ptr = placeable->ParentEntity()->GetComponent(placeable->TypeName(), placeable->Name()); //hack to get the shared_ptr to this component
      SetPlaceable(ptr);
 }
 
@@ -116,7 +116,7 @@ void EC_Mesh::View(const QString &attributeName)
 
 void EC_Mesh::AutoSetPlaceable()
 {
-    Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     if (entity)
     {
         ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
@@ -239,7 +239,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
     // If placeable is not set yet, set it manually by searching it from the parent entity
     if (!placeable_)
     {
-        Entity* entity = GetParentEntity();
+        Entity* entity = ParentEntity();
         if (entity)
         {
             ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
@@ -265,7 +265,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         
         entity_->setRenderingDistance(drawDistance.Get());
         entity_->setCastShadows(castShadows.Get());
-        entity_->setUserAny(Ogre::Any(GetParentEntity()));
+        entity_->setUserAny(Ogre::Any(ParentEntity()));
         // Set UserAny also on subentities
         for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
             entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
@@ -354,7 +354,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
         
         entity_->setRenderingDistance(drawDistance.Get());
         entity_->setCastShadows(castShadows.Get());
-        entity_->setUserAny(Ogre::Any(GetParentEntity()));
+        entity_->setUserAny(Ogre::Any(ParentEntity()));
         // Set UserAny also on subentities
         for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
             entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
@@ -858,7 +858,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
 
 void EC_Mesh::UpdateSignals()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (parent)
     {
         // Connect to ComponentRemoved signal of the parent entity, so we can check if the placeable gets removed

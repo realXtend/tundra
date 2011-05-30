@@ -142,7 +142,7 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
     if (it == mappings_.end())
         return;
 
-    Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
     if (!entity)
     {
         LogWarning("Parent entity not set. Cannot execute action.");
@@ -175,17 +175,17 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
 {
     if (!enabled.Get())
         return;
-    if (!GetParentEntity())
+    if (!ParentEntity())
         return;
     
     /// \todo this hard coding of look button logic is not nice!
     if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->Input()->IsMouseCursorVisible()))
     {
         if (e->relativeX != 0)
-            GetParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
+            ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
         if (e->relativeY != 0)
-            GetParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
+            ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
     }
     if (e->relativeZ != 0 && e->relativeZ != -1) // For some reason this is -1 without scroll
-        GetParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
+        ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
 }

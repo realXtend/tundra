@@ -65,7 +65,7 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
     // If placeable is not set yet, set it manually by searching it from the parent entity
     if (!placeable_)
     {
-        Entity* entity = GetParentEntity();
+        Entity* entity = ParentEntity();
         if (entity)
         {
             ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
@@ -91,7 +91,7 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
             AttachEntity();
             entity_->setRenderingDistance(draw_distance_);
             entity_->setCastShadows(cast_shadows_);
-            entity_->setUserAny(Ogre::Any(GetParentEntity()));
+            entity_->setUserAny(Ogre::Any(ParentEntity()));
             // Set UserAny also on subentities
             for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
                 entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());

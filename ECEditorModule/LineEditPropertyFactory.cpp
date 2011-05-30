@@ -60,7 +60,7 @@ void LineEditPropertyFactory::ComponentAdded(QtProperty *property, IComponent *c
         if ((*iter).lock().get() == comp)
             return;
 
-    components_.push_back(ComponentWeakPtr(comp->GetParentEntity()->GetComponent(comp->TypeName(), comp->Name())));
+    components_.push_back(ComponentWeakPtr(comp->ParentEntity()->GetComponent(comp->TypeName(), comp->Name())));
 }
 
 void LineEditPropertyFactory::ComponentRemoved(QtProperty *property, IComponent *comp)

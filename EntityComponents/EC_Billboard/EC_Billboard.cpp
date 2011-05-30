@@ -59,7 +59,7 @@ EC_Billboard::~EC_Billboard()
 
 void EC_Billboard::OnParentEntitySet()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (!parent)
         return;
     
@@ -75,7 +75,7 @@ void EC_Billboard::CheckForPlaceable()
     if (placeable_)
         return; // Already assigned
     
-    placeable_ = GetParentEntity()->GetComponent<EC_Placeable>();
+    placeable_ = ParentEntity()->GetComponent<EC_Placeable>();
     if ((placeable_) && (show.Get()))
         Show();
 }

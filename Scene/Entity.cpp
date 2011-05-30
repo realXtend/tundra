@@ -48,7 +48,7 @@ Entity::~Entity()
 void Entity::AddComponent(const ComponentPtr &component, AttributeChange::Type change)
 {
     // Must exist and be free
-    if (component && component->GetParentEntity() == 0)
+    if (component && component->ParentEntity() == 0)
     {
         QString componentTypeName = component->TypeName();
         componentTypeName.replace(0, 3, "");

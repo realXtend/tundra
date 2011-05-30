@@ -101,13 +101,13 @@ bool EC_TransformGizmo::IsVisible() const
 
 void EC_TransformGizmo::Initialize()
 {
-    assert(GetParentEntity());
-    if (!GetParentEntity())
+    assert(ParentEntity());
+    if (!ParentEntity())
         return;
 
-    GetParentEntity()->SetName("TransformGizmo");
+    ParentEntity()->SetName("TransformGizmo");
 
-    placeable = boost::dynamic_pointer_cast<EC_Placeable>(GetParentEntity()->CreateComponent(
+    placeable = boost::dynamic_pointer_cast<EC_Placeable>(ParentEntity()->CreateComponent(
         EC_Placeable::TypeNameStatic(), "TransformGizmoPlaceable", AttributeChange::Default, false));
     if (!placeable)
     {
@@ -119,7 +119,7 @@ void EC_TransformGizmo::Initialize()
 //    placeable->selectionLayer.Set(0, AttributeChange::Default); // ignore raycast
     placeable->visible.Set(false, AttributeChange::Default);
 
-    mesh = boost::dynamic_pointer_cast<EC_Mesh>(GetParentEntity()->CreateComponent(
+    mesh = boost::dynamic_pointer_cast<EC_Mesh>(ParentEntity()->CreateComponent(
         EC_Mesh::TypeNameStatic(), "TransformGizmoMesh", AttributeChange::Default, false));
     if (!mesh)
     {
@@ -285,7 +285,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                 activeAxes = hits;
                 if (activeAxes.size() == 1)
                     prevPoint = activeAxes.first().ray.ClosestPoint(mouseRay);
-                if (activeAxes.size() == 2)
+                else if (activeAxes.size() == 2)
                 {
                     float3 planeNormal = activeAxes[0].ray.dir.Cross(activeAxes[1].ray.dir).Normalized();
                     Plane plane(activeAxes[0].ray.pos, planeNormal);
@@ -293,6 +293,8 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     if (plane.Intersect(mouseRay, &distance))
                         prevPoint = mouseRay.GetPoint(distance);
                 }
+//                else if (activeAxes.size() == 3 && gizmoType == EC_TransformGizmo::Scale)
+//                    prevPoint = activeAxes.first().ray.ClosestPoint(mouseRay);
             }
 
             foreach(GizmoAxis a, activeAxes)
@@ -313,6 +315,8 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     if (plane.Intersect(mouseRay, &distance))
                         curPoint = mouseRay.GetPoint(distance);
                 }
+//                else if (activeAxes.size() == 3 && gizmoType == EC_TransformGizmo::Scale)
+//                    curPoint = activeAxes.first().ray.ClosestPoint(mouseRay);
 
                 std::stringstream ss;
                 switch(gizmoType)

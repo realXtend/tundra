@@ -35,7 +35,7 @@ EC_Material::~EC_Material()
 
 void EC_Material::OnParentEntitySet()
 {
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (!parent)
         return;
     
@@ -100,7 +100,7 @@ QString EC_Material::GetInputMaterialName() const
     if (submesh < 0)
         return inputMat.Get();
     
-    Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (!parent)
         return QString();
     EC_Mesh* mesh = dynamic_cast<EC_Mesh*>(parent->GetComponent<EC_Mesh>().get());
@@ -142,7 +142,7 @@ void EC_Material::ApplyParameters(OgreMaterialAsset* srcMatAsset)
     int questionMark = outputMatName.indexOf('?');
     if (questionMark >= 0)
     {
-        Entity* parentEntity = GetParentEntity();
+        Entity* parentEntity = ParentEntity();
         if (parentEntity)
             outputMatName.replace(questionMark, 1, QString::number(parentEntity->GetId()));
     }

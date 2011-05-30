@@ -454,9 +454,9 @@ namespace Environment
     {
         assert(framework_);
         ComponentPtr comp;
-        if(!GetParentEntity())
+        if(!ParentEntity())
             return comp;
-        comp = GetParentEntity()->GetComponent<EC_Placeable>();
+        comp = ParentEntity()->GetComponent<EC_Placeable>();
         return comp;
     }
 

@@ -271,8 +271,8 @@ void EC_HoveringText::ShowMessage(const QString &text)
     if (!scene)
         return;
 
-    //Scene::Entity *entity = GetParentEntity();
-    Entity* entity = GetParentEntity();
+    //Scene::Entity *entity = ParentEntity();
+    Entity* entity = ParentEntity();
     assert(entity);
     if (!entity)
         return;
@@ -404,9 +404,9 @@ void EC_HoveringText::Redraw()
 void EC_HoveringText::UpdateSignals()
 {
     disconnect(this, SLOT(OnAttributeUpdated(IComponent *, IAttribute *)));
-    if(GetParentEntity())
+    if(ParentEntity())
     {
-        Scene *scene = GetParentEntity()->GetScene();
+        Scene *scene = ParentEntity()->GetScene();
         if(scene)
         connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
                 this, SLOT(OnAttributeUpdated(IComponent*, IAttribute*))); 

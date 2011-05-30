@@ -152,8 +152,8 @@ void EC_ParticleSystem::OnAttributeUpdated(IAttribute *attribute)
 
 ComponentPtr EC_ParticleSystem::FindPlaceable() const
 {
-    if (GetParentEntity())
-        return GetParentEntity()->GetComponent<EC_Placeable>();
+    if (ParentEntity())
+        return ParentEntity()->GetComponent<EC_Placeable>();
     else
         return ComponentPtr();
 }
@@ -186,7 +186,7 @@ void EC_ParticleSystem::OnParticleAssetFailed(IAssetTransfer* asset, QString rea
 
 void EC_ParticleSystem::EntitySet()
 {
-    Entity *entity = this->GetParentEntity();
+    Entity *entity = this->ParentEntity();
     if (!entity)
     {
         LogError("Failed to connect entity signals, component's parent entity is null");

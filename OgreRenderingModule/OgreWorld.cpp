@@ -662,7 +662,7 @@ EC_Camera* OgreWorld::VerifyCurrentSceneCameraComponent() const
     EC_Camera* cameraComponent = checked_static_cast<EC_Camera*>(renderer_->GetActiveCamera());
     if (!cameraComponent)
         return 0;
-    Entity* entity = cameraComponent->GetParentEntity();
+    Entity* entity = cameraComponent->ParentEntity();
     if ((!entity) || (entity->GetScene() != scene_.lock().get()))
         return 0;
     

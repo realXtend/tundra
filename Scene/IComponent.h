@@ -161,13 +161,13 @@ public:
     virtual void DeserializeFrom(QDomElement& element, AttributeChange::Type change);
 
     /// Serialize attributes to binary
-    /** Note: does not include syncmode, typename or name. These are left for higher-level logic, and
+    /** @note does not include syncmode, typename or name. These are left for higher-level logic, and
         it depends on the situation if they are needed or not
      */
     virtual void SerializeToBinary(kNet::DataSerializer& dest) const;
 
     /// Deserialize attributes from binary
-    /** Note: does not include syncmode, typename or name. These are left for higher-level logic, and
+    /** @note does not include syncmode, typename or name. These are left for higher-level logic, and
         it depends on the situation if they are needed or not
      */
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
@@ -223,7 +223,7 @@ public slots:
     void EmitAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     /// This is an overloaded function.
-    /** @param attributeName Name of the attribute that changed. Note: this is a no-op if the named attribute is not found.
+    /** @param attributeName Name of the attribute that changed. @note this is a no-op if the named attribute is not found.
         @param change Informs to the component the type of change that occurred.
     */
     void EmitAttributeChanged(const QString& attributeName, AttributeChange::Type change);
@@ -235,20 +235,20 @@ public slots:
     void ComponentChanged(AttributeChange::Type change);
 
     /// Returns the Entity this Component is part of.
-    /** \note Calling this function will return null if it is called in the ctor of this Component. This is
+    /** @note Calling this function will return null if it is called in the ctor of this Component. This is
               because the parent entity has not yet been set with a call to SetParentEntity at that point.
     */
-    Entity* GetParentEntity() const;
+    Entity* ParentEntity() const;
 
     /// Returns the scene this Component is part of.
     /// May return null if component is not in an entity or entity is not in a scene
-    Scene* GetParentScene() const;
+    Scene* ParentScene() const;
 
     /// Sets whether component is temporary. Temporary components won't be saved when the scene is saved.
     void SetTemporary(bool enable);
 
     /// Returns whether component is temporary. Temporary components won't be saved when the scene is saved.
-    /** Note: if parent entity is temporary, this returns always true regardless of the component's temporary flag
+    /** @note if parent entity is temporary, this returns always true regardless of the component's temporary flag
      */
     bool IsTemporary() const;
 

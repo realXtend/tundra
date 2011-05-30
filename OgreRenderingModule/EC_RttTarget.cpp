@@ -53,7 +53,7 @@ void EC_RttTarget::PrepareRtt()
     int y = size_y.Get();
 
     // Get the camera ec
-    EC_Camera *ec_camera = this->GetParentEntity()->GetComponent<EC_Camera>().get();
+    EC_Camera *ec_camera = this->ParentEntity()->GetComponent<EC_Camera>().get();
     if (!ec_camera)
     {
         LogInfo("No camera for rtt.");
