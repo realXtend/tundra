@@ -149,7 +149,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     if (scene)
     {
         connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(RemoveEntity(Entity*)), Qt::UniqueConnection);
-        connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionTypeField)),
+        connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)),
             SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
     }
 }
@@ -907,7 +907,7 @@ void ECEditorWindow::OnDefaultSceneChanged(Scene *scene)
     /// todo disconnect previous scene connection.
     connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)),
         SLOT(RemoveEntity(Entity*)), Qt::UniqueConnection);
-    connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecutionTypeField)),
+    connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)),
         SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
 }
 

@@ -10,7 +10,7 @@
 #include "MaterialScriptHighlighter.h"
 
 // As copied from OgreMaterialSerializer.cpp.
-const char *cKeywords[] = {
+const char *cMaterialKeywords[] = {
     // Root attributes
     "material", "vertex_program", "geometry_program", "fragment_program",
     // Material attributes
@@ -42,14 +42,12 @@ const char *cKeywords[] = {
 };
 
 // As copied from OgreParticleEmittor.cpp
-/*
 const char *cParticleKeywords[] = {
     "affector", // Affector has no keywords, for now at least
     "emitter", "angle", "colour" "colour_range_start", "colour_range_end", "direction",  "emission_rate", "position",
     "velocity", "velocity_min", "velocity_max", "time_to_live", "time_to_live_min", "time_to_live_max", "duration",
     "duration_min", "duration_max", "repeat_delay", "repeat_delay_min", "repeat_delay_max", "name", "emit_emitter"
 };
-*/
 
 bool IsKeyword(const QString &text, const char **keywords, size_t numKeywords)
 {
@@ -66,7 +64,12 @@ void MaterialScriptHighlighter::highlightBlock(const QString &text)
     foreach(const QString &word, text.split(' '))
     {
         index = text.indexOf(word, index);
-        if (IsKeyword(word, cKeywords, NUMELEMS(cKeywords)))
+        bool keyword = false;
+        if (scriptType == "OgreMaterial")
+            keyword = IsKeyword(word, cMaterialKeywords, NUMELEMS(cMaterialKeywords));
+        else if (scriptType == "OgreParticle")
+            keyword = IsKeyword(word, cParticleKeywords, NUMELEMS(cParticleKeywords));
+        if (keyword)
             setFormat(index, word.length(), Qt::blue);
     }
 }

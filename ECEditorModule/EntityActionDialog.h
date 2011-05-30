@@ -47,7 +47,7 @@ public slots:
     QList<EntityWeakPtr> Entities() const;
 
     /// Returns execution type(s) of the action.
-    EntityAction::ExecutionTypeField ExecutionType() const;
+    EntityAction::ExecTypeField ExecutionType() const;
 
     /// Returns name of the action.
     QString Action() const;

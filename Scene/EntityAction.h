@@ -43,7 +43,7 @@ public:
         Not all of these sound immediately sensible even, but we know we need to be able to do different things at different times.
         Use the ExecutionTypeField type to store logical OR combinations of execution types.
     */
-    enum ExecutionType
+    enum ExecType
     {
         Invalid = 0, ///< Invalid.
         Local = 1, ///< Executed locally.
@@ -52,7 +52,7 @@ public:
     };
 
     /// Used to to store logical OR combinations of execution types.
-    typedef unsigned int ExecutionTypeField;
+    typedef unsigned int ExecTypeField;
 
 signals:
     /// Emitted when action is triggered.

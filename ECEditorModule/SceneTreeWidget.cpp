@@ -1000,7 +1000,7 @@ void SceneTreeWidget::EntityActionDialogFinished(int result)
     if (result == QDialog::Rejected)
         return;
 
-    EntityAction::ExecutionTypeField execTypes = dialog->ExecutionType();
+    EntityAction::ExecTypeField execTypes = dialog->ExecutionType();
     QString action = dialog->Action();
     QStringList params = dialog->Parameters();
 

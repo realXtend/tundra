@@ -82,7 +82,7 @@ private slots:
     void OnEntityRemoved(Entity* entity, AttributeChange::Type change);
 
     /// Trigger sync of entity action.
-    void OnActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionTypeField type);
+    void OnActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type);
 
     /// Trigger sync of entity action to specific user
     void OnUserActionTriggered(UserConnection* user, Entity *entity, const QString &action, const QStringList &params);

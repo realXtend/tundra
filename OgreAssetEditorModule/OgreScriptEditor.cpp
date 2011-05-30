@@ -44,7 +44,7 @@ OgreScriptEditor::OgreScriptEditor(const AssetPtr &assetPtr, AssetAPI *assetAPI,
     propertyTable(0),
     materialProperties(0)
 {
-    if (asset->Type() != "OgreMaterial" || asset->Type() != "OgreParticle")
+    if (asset->Type() != "OgreMaterial" && asset->Type() != "OgreParticle")
         LogWarning("Created OgreScriptEditor for non-supported asset type " + asset->Type() + ".");
 
     // Create widget from ui file
@@ -125,7 +125,7 @@ void OgreScriptEditor::Open()
         textEdit->setText(script);
     }
 */
-    if (asset->Type() == "OgreMaterial")
+    if (asset->Type() == "OgreMaterial" || asset->Type() == "OgreParticle")
     {
         std::vector<u8> data;
         if (asset->SerializeTo(data))
@@ -137,7 +137,7 @@ void OgreScriptEditor::Open()
 
             CreateTextEdit();
             textEdit->setText(script);
-            MaterialScriptHighlighter *hl= new MaterialScriptHighlighter(textEdit);
+            MaterialScriptHighlighter *hl= new MaterialScriptHighlighter(asset->Type(), textEdit);
             hl->setDocument(textEdit->document());
         }
     }

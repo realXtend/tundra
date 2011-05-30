@@ -15,8 +15,11 @@ class MaterialScriptHighlighter : public QSyntaxHighlighter
     Q_OBJECT
 
 public:
-    explicit MaterialScriptHighlighter(QObject *parent = 0) : QSyntaxHighlighter(parent) {}
+    /** param type "OgreMaterial" or "OgreScript" valid. */
+    MaterialScriptHighlighter(const QString &type, QObject *parent = 0) : QSyntaxHighlighter(parent), scriptType(type) {}
 
 protected:
     void highlightBlock(const QString &text);
+private:
+    QString scriptType;
 };

@@ -165,10 +165,10 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         parsedAction.remove('(');
         parsedAction.remove(')');
         QStringList parameters = parsedAction.split(',');
-        entity->Exec((EntityAction::ExecutionType)execType, act, parameters);
+        entity->Exec((EntityAction::ExecType)execType, act, parameters);
     }
     else
-        entity->Exec((EntityAction::ExecutionType)execType, action);
+        entity->Exec((EntityAction::ExecType)execType, action);
 }
 
 void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
@@ -182,10 +182,10 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
     if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->Input()->IsMouseCursorVisible()))
     {
         if (e->relativeX != 0)
-            GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
+            GetParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
         if (e->relativeY != 0)
-            GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
+            GetParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
     }
     if (e->relativeZ != 0 && e->relativeZ != -1) // For some reason this is -1 without scroll
-        GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
+        GetParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
 }

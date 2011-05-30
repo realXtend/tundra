@@ -61,9 +61,9 @@ QString EntityActionDialog::Action() const
     return actionComboBox->currentText();
 }
 
-EntityAction::ExecutionTypeField EntityActionDialog::ExecutionType() const
+EntityAction::ExecTypeField EntityActionDialog::ExecutionType() const
 {
-    EntityAction::ExecutionTypeField type = EntityAction::Invalid;
+    EntityAction::ExecTypeField type = EntityAction::Invalid;
     if (localCheckBox->isChecked())
         type |=  EntityAction::Local;
     if (serverComboBox->isChecked())

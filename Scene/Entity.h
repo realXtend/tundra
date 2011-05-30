@@ -217,20 +217,20 @@ public slots:
         @param p1 1st parameter for the action, if applicable.
         @param p2 2nd parameter for the action, if applicable.
         @param p3 3rd parameter for the action, if applicable. */
-    void Exec(EntityAction::ExecutionTypeField type, const QString &action, const QString &p1 = "", const QString &p2 = "", const QString &p3 = "");
+    void Exec(EntityAction::ExecTypeField type, const QString &action, const QString &p1 = "", const QString &p2 = "", const QString &p3 = "");
 
     /// This is an overloaded function.
     /** @param type Execution type(s), i.e. where the actions is executed.
         @param action Name of the action.
         @param params List of parameters for the action. */
-    void Exec(EntityAction::ExecutionTypeField type, const QString &action, const QStringList &params);
+    void Exec(EntityAction::ExecTypeField type, const QString &action, const QStringList &params);
 
     /// This is an overloaded function. Experimental overload using QVariant. Converts the variants to strings.
-    /// @note If called from JavaScript, syntax '<targetEntity>["Exec(int,QString,QVariantList)"](2, "name", params);' must be used.
+    /// @note If called from JavaScript, syntax '<targetEntity>["Exec(EntityAction::ExecTypeField,QString,QVariantList)"](2, "name", params);' must be used.
     /** @param type Execution type(s), i.e. where the actions is executed.
         @param action Name of the action.
         @param params List of parameters for the action. */
-    void Exec(EntityAction::ExecutionTypeField type, const QString &action, const QVariantList &params);
+    void Exec(EntityAction::ExecTypeField type, const QString &action, const QVariantList &params);
 
     /// Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
     /** By definition, all components of a temporary entity are temporary as well. */

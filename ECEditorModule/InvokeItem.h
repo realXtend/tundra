@@ -60,7 +60,7 @@ struct ECEDITOR_MODULE_API InvokeItem
     QString objectName; ///< Class name of the object. Always Entity for entity actions.
     QString name; ///< Name of the function or entity action.
     QString returnType; ///< Return type (functions only)
-    EntityAction::ExecutionTypeField execTypes; ///< Execution type (entity actions only).
+    EntityAction::ExecTypeField execTypes; ///< Execution type (entity actions only).
     QVariantList parameters; ///< "type name - value pair, e.g. "float"-0.123
     int mruOrder; ///< Most recently used order.
 };

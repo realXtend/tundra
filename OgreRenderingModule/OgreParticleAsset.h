@@ -11,23 +11,23 @@
 class OGRE_MODULE_API OgreParticleAsset : public IAsset
 {
     Q_OBJECT;
-public:
-    OgreParticleAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-    :IAsset(owner, type_, name_)
-    {
-    }
 
+public:
+    OgreParticleAsset(AssetAPI *owner, const QString &type, const QString &name) : IAsset(owner, type, name) {}
     ~OgreParticleAsset();
 
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
+    virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
+
+    /// IAsset overload.
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
 
     virtual std::vector<AssetReference> FindReferences() const;
 
     virtual void DoUnload();
-    
+
     /// Returns the number of templates in this particle system asset.
     int GetNumTemplates() const;
-    
+
     /// Returns the name of the template at the given index.
     QString GetTemplateName(int index) const;
 
@@ -36,15 +36,13 @@ public:
 private:
     /// Removes all particle system templates.
     void RemoveTemplates();
-    
-    /// Stores the names of the loaded particle system templates.
-    StringVector templates_;
 
-    std::string internal_name_;
+    /// Stores the names of the loaded particle system templates.
+    StringVector templates;
+
+    std::string internalName;
 
     /// references to other resources this resource depends on
-    std::vector<AssetReference> references_;
-
+    std::vector<AssetReference> references;
 };
-
 #endif

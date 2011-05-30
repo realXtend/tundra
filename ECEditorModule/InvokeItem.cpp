@@ -69,7 +69,7 @@ void InvokeItem::FromSetting(const QString &str)
     int idx = 0;
     type = (Type)params[idx++].toInt();
     if (type == Action)
-        execTypes = (EntityAction::ExecutionTypeField)params[idx++].toInt();
+        execTypes = (EntityAction::ExecTypeField)params[idx++].toInt();
     if (type == Function)
         returnType = params[idx++];
 
