@@ -1,13 +1,13 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   MaterialScriptHighlighter.pp
- *  @brief  Syntax highlighter for Ogre material scripts.
+ *  @file   OgreScriptHighlighter.pp
+ *  @brief  Syntax highlighter for Ogre scripts.
  */
 
 
 #include "StableHeaders.h"
-#include "MaterialScriptHighlighter.h"
+#include "OgreScriptHighlighter.h"
 
 // As copied from OgreMaterialSerializer.cpp.
 const char *cMaterialKeywords[] = {
@@ -67,7 +67,7 @@ bool IsKeyword(const QString &text, const char **keywords, size_t numKeywords)
     return false;
 }
 
-void MaterialScriptHighlighter::highlightBlock(const QString &text)
+void OgreScriptHighlighter::highlightBlock(const QString &text)
 {
     int index = 0;
     foreach(const QString &word, text.split(' '))

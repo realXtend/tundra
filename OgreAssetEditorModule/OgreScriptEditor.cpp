@@ -13,7 +13,7 @@
 #include "OgreAssetEditorModule.h"
 #include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
-#include "MaterialScriptHighlighter.h"
+#include "OgreScriptHighlighter.h"
 
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
@@ -137,7 +137,7 @@ void OgreScriptEditor::Open()
 
             CreateTextEdit();
             textEdit->setText(script);
-            MaterialScriptHighlighter *hl= new MaterialScriptHighlighter(asset->Type(), textEdit);
+            OgreScriptHighlighter *hl= new OgreScriptHighlighter(asset->Type(), textEdit);
             hl->setDocument(textEdit->document());
         }
     }
