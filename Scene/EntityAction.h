@@ -41,7 +41,7 @@ public:
     /** As combinations we get local+server, local+peers(all clients but not server),
         server+peers (everyone but me), local+server+peers (everyone).
         Not all of these sound immediately sensible even, but we know we need to be able to do different things at different times.
-        Use the ExecutionTypeField type to store logical OR combinations of execution types.
+        Use the ExecTypeField type to store logical OR combinations of execution types.
     */
     enum ExecType
     {
