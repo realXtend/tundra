@@ -145,6 +145,11 @@ public:
     /** This function finds the smallest AABB that contains the given set of points. [noscript] */
     static AABB MinimalEnclosingAABB(const float3 *pointArray, int numPoints);
 
+    /// Finds the most extremal points along the three world axes simultaneously.
+    /// @param minx [out] Receives the point that has the smallest x coordinate.
+    /// @param maxx [out] Receives the point that has the largest x coordinate.
+    static void ExtremePointsAlongAABB(const float3 *pointArray, int numPoints, int &minx, int &maxx, int &miny, int &maxy, int &minz, int &maxz);
+
     /// Returns the side lengths of this AABB in x, y and z directions.
     /// The returned vector is equal to the diagonal vector of this AABB, i.e. it spans from the
     /// minimum corner of the AABB to the maximum corner of the AABB.

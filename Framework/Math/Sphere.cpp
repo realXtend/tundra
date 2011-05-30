@@ -53,6 +53,12 @@ AABB Sphere::MaximalContainedAABB() const
     return aabb;
 }
 
+void Sphere::SetNegativeInfinity()
+{
+    pos = float3(0,0,0);
+    r = -std::numeric_limits<float>::infinity();
+}
+
 float Sphere::Volume() const
 {
     return 4.f * pi * r*r*r / 3.f;
@@ -77,8 +83,47 @@ bool Sphere::Contains(const float3 &point) const
 {
     return pos.DistanceSq(point) <= r*r;
 }
+
+Sphere Sphere::FastEnclosingSphere(const float3 *pts, int numPoints)
+{
+    Sphere s;
+    if (numPoints == 0)
+    {
+        s.SetNegativeInfinity();
+        return s;
+    }
+    assert(pts);
+
+    // First pass: Pick the cardinal axis (X,Y or Z) which has the two most distant points.
+    int minx, maxx, miny, maxy, minz, maxz;
+    AABB::ExtremePointsAlongAABB(pts, numPoints, minx, maxx, miny, maxy, minz, maxz);
+    float dist2x = pts[minx].DistanceSq(pts[maxx]);
+    float dist2y = pts[miny].DistanceSq(pts[maxy]);
+    float dist2z = pts[minz].DistanceSq(pts[maxz]);
+
+    int min = minx;
+    int max = maxx;
+    if (dist2y > dist2x && dist2y > dist2z)
+    {
+        min = miny;
+        max = maxy;
+    }
+    else if (dist2z > dist2x && dist2z > dist2y)
+    {
+        min = minz;
+        max = maxz;
+    }
+
+    // The two points on the longest axis define the initial sphere.
+    s.pos = (pts[min] + pts[max]) / 2.f;
+    r = pts[min].Distance(s.pos);
+
+    // Second pass: Make sure each point lies inside this sphere, expand if necessary.
+    for(int i = 0; i < numPoints; ++i)
+        Enclose(pts[i]);
+}
+
 /*
-Sphere Sphere::FastEnclosingSphere(const float3 *pointArray, int numPoints)
 Sphere Sphere::ApproximateEnclosingSphere(const float3 *pointArray, int numPoints)
 Sphere Sphere::OptimalEnclosingSphere(const float3 *pointArray, int numPoints)
 

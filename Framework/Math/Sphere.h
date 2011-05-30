@@ -37,6 +37,9 @@ public:
     AABB MinimalEnclosingAABB() const;
     AABB MaximalContainedAABB() const;
 
+    /// Sets pos = (0,0,0) and r = -inf.
+    void SetNegativeInfinity();
+
     float Volume() const;
 
     float SurfaceArea() const;
@@ -46,8 +49,15 @@ public:
     bool IsDegenerate() const;
 
     bool Contains(const float3 &point) const;
-/*
+
+    /// Returns a Sphere that bounds the given point array.
+    /// This functions implements a fast approximate (though rather crude) algorithm of Jack Ritter.
+    /// See "An Efficient Bounding Sphere", in Graphics Gems 1, pp. 301-303,
+    /// or Christer Ericson's Real-time Collision Detection, pp. 89-91.
+    /// This algorithm performs two linear passes over the data set, i.e. it is O(n).
     static Sphere FastEnclosingSphere(const float3 *pointArray, int numPoints);
+
+/*
     static Sphere ApproximateEnclosingSphere(const float3 *pointArray, int numPoints);
     static Sphere OptimalEnclosingSphere(const float3 *pointArray, int numPoints);
 

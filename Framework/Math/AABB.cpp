@@ -228,6 +228,21 @@ AABB AABB::MinimalEnclosingAABB(const float3 *pointArray, int numPoints)
     return aabb;
 }
 
+void AABB::ExtremePointsAlongAABB(const float3 *pts, int numPoints, int &minx, int &maxx, int &miny, int &maxy, int &minz, int &maxz)
+{
+    assert(pointArray || numPoints == 0);
+    minx = maxx = miny = maxy = minz = maxz = 0;
+    for(int i = 1; i < numPoints; ++i)
+    {
+        if (pts[i].x < pts[minx].x) minx = i;
+        if (pts[i].x > pts[maxx].x) maxx = i;
+        if (pts[i].y < pts[miny].y) miny = i;
+        if (pts[i].y > pts[maxy].y) maxy = i;
+        if (pts[i].z < pts[minz].z) minz = i;
+        if (pts[i].z > pts[maxz].z) maxz = i;
+    }
+}
+
 float3 AABB::Size() const
 {
     return maxPoint - minPoint;
