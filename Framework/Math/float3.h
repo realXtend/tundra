@@ -105,7 +105,7 @@ public:
     float MaxElement() const;
     /// Returns the index that has the smallest value in this vector.
     int MaxElementIndex() const;
-    /// Takes element-wise absolute value of this vector.
+    /// Takes the element-wise absolute value of this vector.
     float3 Abs() const;
     /// Returns an element-wise minimum of this and the vector (ceil, ceil, ceil).
     float3 Min(float ceil) const;

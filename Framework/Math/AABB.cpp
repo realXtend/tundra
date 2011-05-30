@@ -49,7 +49,7 @@ void AABB::SetCenter(const float3 &center, const float3 &halfSize)
 
 void AABB::SetFrom(const OBB &obb)
 {
-    float3 halfSize = Max(Max(Abs(obb.axis[0]*obb.r[0]), Abs(obb.axis[1]*obb.r[1])), Abs(obb.axis[2]*obb.r[2]));
+    float3 halfSize = Abs(obb.axis[0]*obb.r[0]) + Abs(obb.axis[1]*obb.r[1]) + Abs(obb.axis[2]*obb.r[2]);
     SetCenter(obb.pos, halfSize);
 }
  
@@ -288,15 +288,30 @@ void AABB::Scale(const float3 &centerPoint, const float3 &scaleFactor)
     maxPoint = transform.MulPos(maxPoint);
 }
 
+/// See Christer Ericson's Real-time Collision Detection, p. 87, or 
+/// James Arvo's "Transforming Axis-aligned Bounding Boxes" in Graphics Gems 1, pp. 548-550.
+/// http://www.graphicsgems.org/
+template<typename Matrix>
+void AABBTransformAsAABB(AABB &aabb, Matrix &m)
+{
+    float3 newCenter = m.MulPos(aabb.CenterPoint());
+
+    float3 newDir;
+    float3 h = aabb.HalfSize();
+    // The following is equal to taking the absolute value of the whole matrix m.
+    newDir.x = ABSDOT3(m[0], h);
+    newDir.y = ABSDOT3(m[1], h);
+    newDir.z = ABSDOT3(m[2], h);
+    aabb.minPoint = newCenter - newDir;
+    aabb.maxPoint = newCenter + newDir;
+}
+
 void AABB::TransformAsAABB(const float3x3 &transform)
 {
     assume(transform.IsOrthogonal());
     assume(transform.HasUniformScale());
 
-    float3 newCenter = transform * CenterPoint();
-    float3 newDir = Abs((transform * Size() / 2.f));
-    minPoint = newCenter - newDir;
-    maxPoint = newCenter + newDir;
+    AABBTransformAsAABB(*this, transform);
 }
 
 void AABB::TransformAsAABB(const float3x4 &transform)
@@ -304,10 +319,8 @@ void AABB::TransformAsAABB(const float3x4 &transform)
     assume(transform.IsOrthogonal());
     assume(transform.HasUniformScale());
 
-    float3 newCenter = transform.MulPos(CenterPoint());
-    float3 newDir = Abs((transform.MulDir(Size()) / 2.f));
-    minPoint = newCenter - newDir;
-    maxPoint = newCenter + newDir;
+    AABBTransformAsAABB(*this, transform);
+    minPoint += transform.TranslatePart();
 }
 
 void AABB::TransformAsAABB(const float4x4 &transform)
@@ -316,10 +329,8 @@ void AABB::TransformAsAABB(const float4x4 &transform)
     assume(transform.HasUniformScale());
     assume(transform.Row(3).Equals(0,0,0,1));
 
-    float3 newCenter = transform.MulPos(CenterPoint());
-    float3 newDir = Abs((transform.MulDir(Size()) / 2.f));
-    minPoint = newCenter - newDir;
-    maxPoint = newCenter + newDir;
+    AABBTransformAsAABB(*this, transform);
+    minPoint += transform.TranslatePart();
 }
 
 void AABB::TransformAsAABB(const Quat &transform)
