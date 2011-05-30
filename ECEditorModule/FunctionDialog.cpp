@@ -197,7 +197,7 @@ void FunctionDialog::Initialize()
     connect(functionComboBox, SIGNAL(currentIndexChanged(int)), SLOT(UpdateEditors()));
 
     doxygenView = new QTextEdit/*QWebView*/;
-//    doxygenView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    doxygenView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 //    doxygenView->setMinimumSize(300, 50);
 //    doxygenView->setMaximumSize(600, 200);
     doxygenView->hide();
@@ -206,8 +206,8 @@ void FunctionDialog::Initialize()
     mainLayout->addWidget(doxygenView);
     mainLayout->addWidget(functionComboBox);
 
-    QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    mainLayout->insertSpacerItem(-1, spacer);
+    //QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    //mainLayout->insertSpacerItem(-1, spacer);
 
     publicCheckBox = new QCheckBox(tr("Public"));
     publicCheckBox->setChecked(true);
@@ -245,8 +245,8 @@ void FunctionDialog::Initialize()
     mainLayout->addWidget(returnValueLabel);
     mainLayout->addWidget(returnValueEdit);
 
-    QSpacerItem *spacer2 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    mainLayout->insertSpacerItem(-1, spacer2);
+//    QSpacerItem *spacer2 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
+//    mainLayout->insertSpacerItem(-1, spacer2);
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout;
     QSpacerItem *buttonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);

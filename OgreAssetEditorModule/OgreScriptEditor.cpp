@@ -3,7 +3,6 @@
  *
  *  @file   OgreScriptEditor.cpp
  *  @brief  Editing tool for OGRE material and particle scripts.
- *          Provides raw text edit for particles and QProperty editing for materials.
  */
 
 #include "StableHeaders.h"
@@ -145,9 +144,12 @@ void OgreScriptEditor::Open()
 
 void OgreScriptEditor::Save()
 {
-    QByteArray bytes = textEdit->toPlainText().toAscii().data();
-    const char *data = bytes.data();
-    asset->LoadFromFileInMemory((u8 *)data, (size_t)bytes.size());
+    if (asset->Type() == "OgreMaterial" || asset->Type() == "OgreParticle")
+    {
+        QByteArray bytes = textEdit->toPlainText().toAscii().data();
+        const char *data = bytes.data();
+        asset->LoadFromFileInMemory((u8 *)data, (size_t)bytes.size());
+    }
 }
 
 void OgreScriptEditor::SaveAs()

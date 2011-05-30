@@ -147,6 +147,7 @@ void EntityActionDialog::Initialize()
     mainLayout->addWidget(parametersLineEdit);
 
     QHBoxLayout *checkBoxLayout = new QHBoxLayout;
+    checkBoxLayout->addSpacerItem(new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum));
     checkBoxLayout->addWidget(executionTypeLabel);
     checkBoxLayout->addWidget(localCheckBox);
     checkBoxLayout->addWidget(serverComboBox);
