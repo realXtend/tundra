@@ -1,26 +1,28 @@
-# The CMakeBuildConfigTemplate.txt defines the default build settings
-# that are used when you build a clean checkout.
+## The CMakeBuildConfigTemplate.txt defines the default build settings
+## that are used when you build a clean checkout.
+##
+## CMakeBuildConfigTemplate.txt is only a template file! Changes to that file
+## do not have any effect on the actual CMake execution.
+##
+## For the actual configuration, the file CMakeBuildConfigTemplate.txt gets 
+## copied to CMakeBuildConfig.txt, in which you can customize your own settings.
+##
+## The CMakeBuildConfig.txt is not part of the repository, and do not add it there!
+## The idea is that everyone can customize the set of modules to build using that 
+## file, without having to fear about an accidental commit of these changes.
 
-# CMakeBuildConfigTemplate.txt is only a template file! Changes to that file
-# do not have any effect on the actual CMake execution.
+############################################################################################################
+###### BUILD CONFIGURATION DEFINES #########################################################################
 
-# For the actual configuration, the file CMakeBuildConfigTemplate.txt gets 
-# copied to CMakeBuildConfig.txt, in which you can customize your own settings.
+## Various flags/defines that configure your build
 
-# The CMakeBuildConfig.txt is not part of the repository, and do not add it there!
-# The idea is that everyone can customize the set of modules to build using that 
-# file, without having to fear about an accidental commit of these changes.
-
-# Configure the use of Caelum. http://www.ogre3d.org/tikiwiki/Caelum
-if (MSVC OR APPLE)
-  SET(CAELUM 1)
+if (MSVC OR APPLE)              # Configure the use of Caelum. 
+  SET(CAELUM 1)                 # http://www.ogre3d.org/tikiwiki/Caelum
   configure_caelum ()
 endif()
-
-# Configure the use of Hydrax. By default Hydrax is disabled. http://www.ogre3d.org/tikiwiki/Hydrax
-if (MSVC)
-  SET(HYDRAX 0)
-#  configure_hydrax ()
+if (MSVC)                       # Configure the use of Hydrax.
+  SET(HYDRAX 0)                 # By default Hydrax is disabled. 
+  #configure_hydrax ()          # http://www.ogre3d.org/tikiwiki/Hydrax
 endif()
 
 # If WINDOWS_APP == 0, the console (output log) window is created and shown when Naali starts on Windows.
@@ -28,13 +30,14 @@ endif()
 SET(WINDOWS_APP 0)
 
 # Set login scene type: 1 = dynamic switchable ether + normal login, 0 = static classical login
+# \note Deprecated, used in UiModule that is not a part of a normal tundra build.
 SET(DYNAMIC_LOGIN_SCENE 1)
 
 # If the following flag is defined, Naali will be compiled with the built-in execution time profiler enabled.
-add_definitions(-DPROFILING)
+#add_definitions(-DPROFILING)
 
 # Enable js profiling?
-# add_definitions -(DENABLE_JS_PROFILING)
+#add_definitions -(DENABLE_JS_PROFILING)
 
 # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
 if (MSVC)
@@ -56,7 +59,12 @@ endif()
 # Enables Ogre asset editor module
 SET(OGREASSETEDITOR 1)
 
-# The following are the core modules that are required for the project to build. None of these can be omitted.
+############################################################################################################
+###### REQUIRED FRAMEWORK ##################################################################################
+
+## The following are the core modules/libs that are required 
+## for the project to build. None of these can be omitted.
+
 add_subdirectory(Core)
 add_subdirectory(Foundation)
 
@@ -75,19 +83,26 @@ add_subdirectory(TundraLogicModule)
 add_subdirectory(Viewer)
 add_subdirectory(Server)
 
-#To-be-deprecated, but required for now:
+# \note To-be-deprecated, but required for now
 add_subdirectory(Interfaces)
 add_subdirectory(RexCommon)
 
-# The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
-# they will not be able to conditionally compile the EC.
+############################################################################################################
+###### REQUIRED ENTITY COMPONENTS ##########################################################################
 
-# The following ECs are required for Naali to build.
-AddEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)         # Required by ProtocolUtilities and RexLogicModule. Declared by RexLogicModule.
-AddEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence) # Declared by RexLogicModule.
-AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition) # Required. Declared by AvatarModule.
+## The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
+## they will not be able to conditionally compile the EC.
 
-# The following EC's are declared by RexLogicModule and are optional. You may comment these lines out to disable any ECs you do not want to include.
+## The following ECs are required for Naali to build.
+AddEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)              # Required by ProtocolUtilities and RexLogicModule. Declared by RexLogicModule.
+AddEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)      # Declared by RexLogicModule.
+AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition)      # Required. Declared by AvatarModule.
+
+############################################################################################################
+###### OPTIONAL ENTITY COMPONENTS ##########################################################################
+
+## The following EC's are declared by RexLogicModule and are optional. 
+## You may comment these lines out to disable any ECs you do not want to include.
 AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 AddEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)
 AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
@@ -109,70 +124,66 @@ AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
 AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
 AddEntityComponent(EntityComponents/EC_LaserPointer EC_LaserPointer)
 
-# The following EC's are declared by AvatarModule. Optional.
+## The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
 
-# The following two are declared by both PythonScriptModule and JavascriptModule. They are optional.
+## The following two are declared by both PythonScriptModule and JavascriptModule. They are optional.
 AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)      # Required by ECEditorModule.
 AddEntityComponent(EntityComponents/EC_Script EC_Script)
 
-# The following modules are required.
-add_subdirectory(RexLogicModule)        # Depends on OgreRenderingModule, EnvironmentModule, AvatarModule and Taiga subsystem.
-add_subdirectory(AvatarModule)          # Depends on OgreRenderingModule.
-add_subdirectory(AssetModule)           # Depends on Taiga subsystem.
-add_subdirectory(HttpUtilities)
-add_subdirectory(RpcUtilities)
-add_subdirectory(ProtocolUtilities)     # Depends on Taiga subsystem.
-add_subdirectory(EnvironmentModule)     # Depends on OgreRenderingModule and Taiga subsystem. 
-add_subdirectory(PhysicsModule)         # Depends on OgreRenderingModule.
+############################################################################################################
+###### REQUIRED MODULES ####################################################################################
 
-# The following are not core modules, but you cannot do anything practical without
-# having them, so they are effectively required.
-add_subdirectory(ProtocolModuleOpenSim) # Required with OpenSim.
-add_subdirectory(ProtocolModuleTaiga)   # Required with OpenSim.
+add_subdirectory(RexLogicModule)            # Depends on OgreRenderingModule, EnvironmentModule, AvatarModule and Taiga subsystem.
+add_subdirectory(AvatarModule)              # Depends on OgreRenderingModule.
+add_subdirectory(AssetModule)               # Depends on Taiga subsystem.
+add_subdirectory(EnvironmentModule)         # Depends on OgreRenderingModule and Taiga subsystem. 
+add_subdirectory(PhysicsModule)             # Depends on OgreRenderingModule.
 
+add_subdirectory(ProtocolUtilities)         # Deprecated static utility lib. Depends on Taiga subsystem. Required with OpenSim.
+add_subdirectory(HttpUtilities)             # Deprecated static utility lib. Required with OpenSim.
+add_subdirectory(RpcUtilities)              # Deprecated static utility lib. Required with OpenSim.
+add_subdirectory(ProtocolModuleOpenSim)     # Deprecated. Required with OpenSim.
+add_subdirectory(ProtocolModuleTaiga)       # Deprecated. Required with OpenSim.
 if (USE_UIMODULE)
-    add_subdirectory(UiModule)          # Depends on OgreRenderingModule.
+    add_subdirectory(UiModule)              # Deprecated. Depends on OgreRenderingModule.
 endif()
 
-# The following are optional.
-add_subdirectory(ECEditorModule)        # Tool for editing Naali scene data. Requires EC_DynamicComponent. Depends on OgreRenderingModule.
-#add_subdirectory(InventoryModule)       # OpenSim and Taiga WebDAV inventory.
+############################################################################################################
+###### OPTIONAL MODULES ####################################################################################
+
+add_subdirectory(ECEditorModule)            # Tool for editing Naali scene data. Requires EC_DynamicComponent. Depends on OgreRenderingModule.
+add_subdirectory(DebugStatsModule)          # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule and Taiga subsystem.
+add_subdirectory(PythonScriptModule)        # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
+add_subdirectory(JavascriptModule)          # Allows QtScript-created scene script instances.
+add_subdirectory(CommunicationsModule)      # Enables communication capabilities.
+add_subdirectory(CAVEStereoModule)          # Implements CAVE and Stereoscopy functionality
+add_subdirectory(SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
+#add_subdirectory(ARModule)                 # Augmented reality module
 if (OGREASSETEDITOR)
     add_subdirectory(OgreAssetEditorModule) # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
 endif()
-add_subdirectory(DebugStatsModule)      # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule and Taiga subsystem.
-add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
-add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script instances.
-add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
-#add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
-add_subdirectory(CAVEStereoModule)     # Implements CAVE and Stereoscopy functionality
-add_subdirectory(SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
 if (OPENASSETIMPORT)
-    add_subdirectory(OpenAssetImport)        # Allows import of various mesh file formats
+    add_subdirectory(OpenAssetImport)       # Allows import of various mesh file formats
 endif()
-
-AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule
-AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule
-
-#add_subdirectory(LegacyAvatarModule)
-
 if (MSVC)
-    add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
-    add_subdirectory(CameraInputModule)  # Camera input module depends on opencv library.
+    add_subdirectory(MumbleVoipModule)      # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
+    add_subdirectory(CameraInputModule)     # Camera input module depends on opencv library.
 else()
-    # \todo Include MumbleVoip and CameraInputModule on linux. For CameraInputModule ConfigurePackages.cmake you can find todo comments in the opencv related macros.
+                                            # \todo Include MumbleVoip and CameraInputModule on linux. For CameraInputModule ConfigurePackages.cmake 
+                                            # you can find todo comments in the opencv related macros.
 endif()
-
-#add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
 if (USE_UIMODULE)
     add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
     add_subdirectory(WorldBuildingModule)   # Implements the world building mode. Requires UiModule (USE_UIMODULE defined). Depends on OgreRenderingModule and InventoryModule.
     add_subdirectory(WorldMapModule)        # Implements OpenSim grid world map. Depends on OgreRenderingModule and UiModule.
 endif()
 
-# Only useful for msi installer builds
-#add_subdirectory(UpdateModule)
+#add_subdirectory(PhononPlayerModule)       # Implements Qt Phonon -based video playback capabilities.
+#add_subdirectory(InventoryModule)          # OpenSim and Taiga WebDAV inventory.
+#add_subdirectory(InWorldChatModule)        # Implements in-world text communication.
+#add_subdirectory(LegacyAvatarModule)       # Implements OpenSim/SL legacy avatars.
+#add_subdirectory(UpdateModule)             # Windows release/msi installer spesific module.
 
-
-
+AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # Declared by RexLogicModule.
+AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # Declared by OgreRenderingModule.
