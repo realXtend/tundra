@@ -170,6 +170,7 @@
 #ifdef EC_QmlApp_ENABLED
 #include "EC_QmlApp.h"
 #include "QmlAsset.h"
+#include "PdfAsset.h"
 #endif
 
 #include <OgreManualObject.h>
@@ -286,6 +287,7 @@ void RexLogicModule::Load()
 #ifdef EC_QmlApp_ENABLED
     DECLARE_MODULE_EC(EC_QmlApp);
     framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QmlAsset>("QML")));
+    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<PdfAsset>("PdfAsset")));
 #endif
 }
 
