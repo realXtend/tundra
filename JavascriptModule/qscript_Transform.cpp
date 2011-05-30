@@ -194,9 +194,10 @@ static QScriptValue Transform_pos_set(QScriptContext *context, QScriptEngine *en
 static QScriptValue Transform_rot_get(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_rot_get in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    Transform *This = TypeFromQScriptValue<Transform*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    return qScriptValueFromValue(context->engine(), This->rot);
+//    Transform *This = TypeFromQScriptValue<Transform*>(context->thisObject());
+//    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Transform This = TypeFromQScriptValue<Transform>(context->thisObject());
+    return qScriptValueFromValue(context->engine(), This.rot);
 }
 
 static QScriptValue Transform_rot_set(QScriptContext *context, QScriptEngine *engine)
@@ -295,30 +296,33 @@ QScriptValue register_Transform_prototype(QScriptEngine *engine)
 {
     engine->setDefaultPrototype(qMetaTypeId<Transform*>(), QScriptValue());
     QScriptValue proto = engine->newVariant(qVariantFromValue((Transform*)0));
-    proto.setProperty("SetPos", engine->newFunction(Transform_SetPos_float_float_float, 3));
-    proto.setProperty("SetRot", engine->newFunction(Transform_SetRot_float_float_float, 3));
-    proto.setProperty("SetScale", engine->newFunction(Transform_SetScale_float_float_float, 3));
+//    proto.setProperty("SetPos", engine->newFunction(Transform_SetPos_float_float_float, 3));
+//    proto.setProperty("SetRot", engine->newFunction(Transform_SetRot_float_float_float, 3));
+//    proto.setProperty("SetScale", engine->newFunction(Transform_SetScale_float_float_float, 3));
     proto.setProperty("ToFloat3x4", engine->newFunction(Transform_ToFloat3x4, 0));
     proto.setProperty("ToFloat4x4", engine->newFunction(Transform_ToFloat4x4, 0));
     proto.setProperty("FromFloat3x4", engine->newFunction(Transform_FromFloat3x4_float3x4, 1));
     proto.setProperty("FromFloat4x4", engine->newFunction(Transform_FromFloat4x4_float4x4, 1));
-    proto.setProperty("SetRotation", engine->newFunction(Transform_SetRotation_selector, 1));
+//    proto.setProperty("SetRotation", engine->newFunction(Transform_SetRotation_selector, 1));
     proto.setProperty("Rotation3x3", engine->newFunction(Transform_Rotation3x3, 0));
     proto.setProperty("RotationQuat", engine->newFunction(Transform_RotationQuat, 0));
     proto.setProperty("Mul", engine->newFunction(Transform_Mul_Transform, 1));
     proto.setProperty("toString", engine->newFunction(Transform_toString, 0));
-    proto.setProperty("pos", engine->newFunction(Transform_pos_get, 1));
-    proto.setProperty("setPos", engine->newFunction(Transform_pos_set, 1));
-    proto.setProperty("rot", engine->newFunction(Transform_rot_get, 1));
-    proto.setProperty("setRot", engine->newFunction(Transform_rot_set, 1));
-    proto.setProperty("scale", engine->newFunction(Transform_scale_get, 1));
-    proto.setProperty("setScale", engine->newFunction(Transform_scale_set, 1));
+//    proto.setProperty("pos", engine->newFunction(Transform_pos_get, 1));
+//    proto.setProperty("setPos", engine->newFunction(Transform_pos_set, 1));
+//    proto.setProperty("rot", engine->newFunction(Transform_rot_get, 1));
+//    proto.setProperty("setRot", engine->newFunction(Transform_rot_set, 1));
+//    proto.setProperty("rot_a", engine->newFunction(Transform_rot_get), QScriptValue::PropertyGetter);
+//    proto.setProperty("rot_a", engine->newFunction(Transform_rot_set), QScriptValue::PropertySetter);
+//    proto.setProperty("scale", engine->newFunction(Transform_scale_get, 1));
+//    proto.setProperty("setScale", engine->newFunction(Transform_scale_set, 1));
     Transform_scriptclass *sc = new Transform_scriptclass(engine);
     engine->setProperty("Transform_scriptclass", QVariant::fromValue<QScriptClass*>(sc));
     proto.setScriptClass(sc);
     sc->objectPrototype = proto;
-    engine->setDefaultPrototype(qMetaTypeId<Transform>(), proto);
-    engine->setDefaultPrototype(qMetaTypeId<Transform*>(), proto);
+//    engine->setDefaultPrototype(qMetaTypeId<Transform>(), proto);
+//    engine->setDefaultPrototype(qMetaTypeId<Transform*>(), proto);
+//    qScriptRegisterMetaType(engine, TypeToQScriptValue<Transform>, fromScriptValueTransform);
     QScriptValue ctor = engine->newFunction(Transform_ctor, proto, 3);
     engine->globalObject().setProperty("Transform", ctor);
     return ctor;

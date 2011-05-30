@@ -107,6 +107,19 @@ T TypeFromQScriptValue(const typename TypeHasAScriptClass<T>::QScriptValueWithSc
     return TypeT<T>::foo(sv);
 }
 
+/* Test code: Break Transform down into attributes instead of accessing it opaquely.
+template<>
+inline Transform TypeFromQScriptValue<Transform>(const typename TypeHasAScriptClass<Transform>::QScriptValueWithScriptClass &scriptValue)
+{
+    QScriptValue sv = scriptValue;
+    Transform t;// = TypeT<Transform>::foo(sv);
+    t.pos = TypeFromQScriptValue<float3>(sv.property("pos_attribute"));
+    t.rot = TypeFromQScriptValue<float3>(sv.property("rot_attribute"));
+    t.scale = TypeFromQScriptValue<float3>(sv.property("scale_attribute"));
+    return t;
+}
+*/
+
 /// Converts a T to QScriptValue. Specializations properly register the QScriptClass types. 
 template<typename T>
 QScriptValue TypeToQScriptValue(QScriptEngine *engine, const T &t)
@@ -167,7 +180,17 @@ template<>inline QScriptValue TypeToQScriptValue<Transform>(QScriptEngine *engin
     QScriptClass *sc = engine->property("Transform_scriptclass").value<QScriptClass*>();
     return engine->newObject(sc, qScriptValueFromValue(engine, t));
 }
-
+/* Test code: Break Transform down into attributes instead of trying to access it opaquely, like above.
+template<>inline QScriptValue TypeToQScriptValue<Transform>(QScriptEngine *engine, const Transform &t)
+{
+    QScriptClass *sc = engine->property("Transform_scriptclass").value<QScriptClass*>();
+    QScriptValue tm = engine->newObject(sc);
+    tm.setProperty("pos_attribute", TypeToQScriptValue<float3>(engine, t.pos));
+    tm.setProperty("rot_attribute", TypeToQScriptValue<float3>(engine, t.rot));
+    tm.setProperty("scale_attribute", TypeToQScriptValue<float3>(engine, t.scale));
+    return tm;
+}
+*/
 template<>inline QScriptValue TypeToQScriptValue<TranslateOp>(QScriptEngine *engine, const TranslateOp &t)
 {
     QScriptClass *sc = engine->property("TranslateOp_scriptclass").value<QScriptClass*>();

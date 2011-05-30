@@ -568,21 +568,28 @@ public:
     {
         OBB *This = TypeFromQScriptValue<OBB*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type OBB in file %s, line %d!\nTry using OBB.get%s() and OBB.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }
-        if ((QString)name == (QString)"pos") return TypeToQScriptValue(engine(), This->pos);
-        if ((QString)name == (QString)"r") return TypeToQScriptValue(engine(), This->r);
+        QString name_ = (QString)name;
+        if (name_ == "pos_") return TypeToQScriptValue(engine(), This->pos);
+        if (name_ == "pos_ptr") return TypeToQScriptValue(engine(), &This->pos);
+        if (name_ == "r_") return TypeToQScriptValue(engine(), This->r);
+        if (name_ == "r_ptr") return TypeToQScriptValue(engine(), &This->r);
         return QScriptValue();
     }
     void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
     {
         OBB *This = TypeFromQScriptValue<OBB*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type OBB in file %s, line %d!\nTry using OBB.get%s() and OBB.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }
-        if ((QString)name == (QString)"pos") This->pos = TypeFromQScriptValue<float3>(value);
-        if ((QString)name == (QString)"r") This->r = TypeFromQScriptValue<float3>(value);
+        QString name_ = (QString)name;
+        if (name_ == "pos_") This->pos = TypeFromQScriptValue<float3>(value);
+        if (name_ == "pos_ptr") This->pos = *TypeFromQScriptValue<float3*>(value);
+        if (name_ == "r_") This->r = TypeFromQScriptValue<float3>(value);
+        if (name_ == "r_ptr") This->r = *TypeFromQScriptValue<float3*>(value);
     }
     QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
     {
-        if ((QString)name == (QString)"pos") return flags;
-        if ((QString)name == (QString)"r") return flags;
+        QString name_ = (QString)name;
+        if (name_ == "pos_" || name_ == "pos_ptr") return flags;
+        if (name_ == "r_" || name_ == "r_ptr") return flags;
         return 0;
     }
     QScriptValue prototype() const { return objectPrototype; }
@@ -624,9 +631,9 @@ QScriptValue register_OBB_prototype(QScriptEngine *engine)
     proto.setProperty("Contains", engine->newFunction(OBB_Contains_selector, 1));
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 1));
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 2));
-    proto.setProperty("getPos", engine->newFunction(OBB_pos_get, 1));
+    proto.setProperty("pos", engine->newFunction(OBB_pos_get, 1));
     proto.setProperty("setPos", engine->newFunction(OBB_pos_set, 1));
-    proto.setProperty("getR", engine->newFunction(OBB_r_get, 1));
+    proto.setProperty("r", engine->newFunction(OBB_r_get, 1));
     proto.setProperty("setR", engine->newFunction(OBB_r_set, 1));
     OBB_scriptclass *sc = new OBB_scriptclass(engine);
     engine->setProperty("OBB_scriptclass", QVariant::fromValue<QScriptClass*>(sc));

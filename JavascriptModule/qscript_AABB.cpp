@@ -625,21 +625,28 @@ public:
     {
         AABB *This = TypeFromQScriptValue<AABB*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type AABB in file %s, line %d!\nTry using AABB.get%s() and AABB.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }
-        if ((QString)name == (QString)"minPoint") return TypeToQScriptValue(engine(), This->minPoint);
-        if ((QString)name == (QString)"maxPoint") return TypeToQScriptValue(engine(), This->maxPoint);
+        QString name_ = (QString)name;
+        if (name_ == "minPoint_") return TypeToQScriptValue(engine(), This->minPoint);
+        if (name_ == "minPoint_ptr") return TypeToQScriptValue(engine(), &This->minPoint);
+        if (name_ == "maxPoint_") return TypeToQScriptValue(engine(), This->maxPoint);
+        if (name_ == "maxPoint_ptr") return TypeToQScriptValue(engine(), &This->maxPoint);
         return QScriptValue();
     }
     void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
     {
         AABB *This = TypeFromQScriptValue<AABB*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type AABB in file %s, line %d!\nTry using AABB.get%s() and AABB.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }
-        if ((QString)name == (QString)"minPoint") This->minPoint = TypeFromQScriptValue<float3>(value);
-        if ((QString)name == (QString)"maxPoint") This->maxPoint = TypeFromQScriptValue<float3>(value);
+        QString name_ = (QString)name;
+        if (name_ == "minPoint_") This->minPoint = TypeFromQScriptValue<float3>(value);
+        if (name_ == "minPoint_ptr") This->minPoint = *TypeFromQScriptValue<float3*>(value);
+        if (name_ == "maxPoint_") This->maxPoint = TypeFromQScriptValue<float3>(value);
+        if (name_ == "maxPoint_ptr") This->maxPoint = *TypeFromQScriptValue<float3*>(value);
     }
     QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
     {
-        if ((QString)name == (QString)"minPoint") return flags;
-        if ((QString)name == (QString)"maxPoint") return flags;
+        QString name_ = (QString)name;
+        if (name_ == "minPoint_" || name_ == "minPoint_ptr") return flags;
+        if (name_ == "maxPoint_" || name_ == "maxPoint_ptr") return flags;
         return 0;
     }
     QScriptValue prototype() const { return objectPrototype; }
@@ -681,9 +688,9 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     proto.setProperty("Contains", engine->newFunction(AABB_Contains_selector, 1));
     proto.setProperty("Enclose", engine->newFunction(AABB_Enclose_selector, 1));
     proto.setProperty("Intersection", engine->newFunction(AABB_Intersection_AABB, 1));
-    proto.setProperty("getMinPoint", engine->newFunction(AABB_minPoint_get, 1));
+    proto.setProperty("minPoint", engine->newFunction(AABB_minPoint_get, 1));
     proto.setProperty("setMinPoint", engine->newFunction(AABB_minPoint_set, 1));
-    proto.setProperty("getMaxPoint", engine->newFunction(AABB_maxPoint_get, 1));
+    proto.setProperty("maxPoint", engine->newFunction(AABB_maxPoint_get, 1));
     proto.setProperty("setMaxPoint", engine->newFunction(AABB_maxPoint_set, 1));
     AABB_scriptclass *sc = new AABB_scriptclass(engine);
     engine->setProperty("AABB_scriptclass", QVariant::fromValue<QScriptClass*>(sc));

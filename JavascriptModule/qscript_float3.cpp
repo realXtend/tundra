@@ -880,6 +880,8 @@ QScriptValue register_float3_prototype(QScriptEngine *engine)
     proto.setProperty("setX", engine->newFunction(float3_x_set, 1));
     proto.setProperty("y", engine->newFunction(float3_y_get, 1));
     proto.setProperty("setY", engine->newFunction(float3_y_set, 1));
+    proto.setProperty("y_a", engine->newFunction(float3_y_get), QScriptValue::PropertyGetter);
+    proto.setProperty("y_a", engine->newFunction(float3_y_set), QScriptValue::PropertySetter);
     proto.setProperty("z", engine->newFunction(float3_z_get, 1));
     proto.setProperty("setZ", engine->newFunction(float3_z_set, 1));
     float3_scriptclass *sc = new float3_scriptclass(engine);

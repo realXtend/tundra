@@ -155,21 +155,26 @@ public:
     {
         Sphere *This = TypeFromQScriptValue<Sphere*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type Sphere in file %s, line %d!\nTry using Sphere.get%s() and Sphere.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }
-        if ((QString)name == (QString)"pos") return TypeToQScriptValue(engine(), This->pos);
-        if ((QString)name == (QString)"r") return TypeToQScriptValue(engine(), This->r);
+        QString name_ = (QString)name;
+        if (name_ == "pos_") return TypeToQScriptValue(engine(), This->pos);
+        if (name_ == "pos_ptr") return TypeToQScriptValue(engine(), &This->pos);
+        if (name_ == "r_") return TypeToQScriptValue(engine(), This->r);
         return QScriptValue();
     }
     void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
     {
         Sphere *This = TypeFromQScriptValue<Sphere*>(object);
         if (!This) { printf("Error! Cannot convert QScriptValue to type Sphere in file %s, line %d!\nTry using Sphere.get%s() and Sphere.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }
-        if ((QString)name == (QString)"pos") This->pos = TypeFromQScriptValue<float3>(value);
-        if ((QString)name == (QString)"r") This->r = TypeFromQScriptValue<float>(value);
+        QString name_ = (QString)name;
+        if (name_ == "pos_") This->pos = TypeFromQScriptValue<float3>(value);
+        if (name_ == "pos_ptr") This->pos = *TypeFromQScriptValue<float3*>(value);
+        if (name_ == "r_") This->r = TypeFromQScriptValue<float>(value);
     }
     QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
     {
-        if ((QString)name == (QString)"pos") return flags;
-        if ((QString)name == (QString)"r") return flags;
+        QString name_ = (QString)name;
+        if (name_ == "pos_" || name_ == "pos_ptr") return flags;
+        if (name_ == "r_") return flags;
         return 0;
     }
     QScriptValue prototype() const { return objectPrototype; }
@@ -186,9 +191,9 @@ QScriptValue register_Sphere_prototype(QScriptEngine *engine)
     proto.setProperty("IsDegenerate", engine->newFunction(Sphere_IsDegenerate, 0));
     proto.setProperty("Contains", engine->newFunction(Sphere_Contains_float3, 1));
     proto.setProperty("Distance", engine->newFunction(Sphere_Distance_float3, 1));
-    proto.setProperty("getPos", engine->newFunction(Sphere_pos_get, 1));
+    proto.setProperty("pos", engine->newFunction(Sphere_pos_get, 1));
     proto.setProperty("setPos", engine->newFunction(Sphere_pos_set, 1));
-    proto.setProperty("getR", engine->newFunction(Sphere_r_get, 1));
+    proto.setProperty("r", engine->newFunction(Sphere_r_get, 1));
     proto.setProperty("setR", engine->newFunction(Sphere_r_set, 1));
     Sphere_scriptclass *sc = new Sphere_scriptclass(engine);
     engine->setProperty("Sphere_scriptclass", QVariant::fromValue<QScriptClass*>(sc));

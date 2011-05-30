@@ -11,6 +11,7 @@
 #include "Entity.h"
 #include "ScriptMetaTypeDefines.h"
 #include "Scene.h"
+#include "Transform.h"
 #include "LoggingFunctions.h"
 
 #include <QScriptEngine>
@@ -124,6 +125,13 @@ QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
 }
 
 void fromScriptValueVector3(const QScriptValue &obj, Vector3df &s)
+{
+    s.x = (float)obj.property("x").toNumber();
+    s.y = (float)obj.property("y").toNumber();
+    s.z = (float)obj.property("z").toNumber();
+}
+
+void fromScriptValueVector3(const QScriptValue &obj, float3 &s)
 {
     s.x = (float)obj.property("x").toNumber();
     s.y = (float)obj.property("y").toNumber();
@@ -451,6 +459,81 @@ QScriptValue Quaternion_prototype_RotationTo(QScriptContext *ctx, QScriptEngine 
     return toScriptValueQuaternion(engine, result);
 }
 
+QScriptValue Transform_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Transform_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine);
+void createTransformFunctions(QScriptValue &value, QScriptEngine *engine)
+{
+    // Expose native functions to script value. 
+    value.setProperty("toString", engine->newFunction(Transform_prototype_ToString));
+    value.setProperty("fromString", engine->newFunction(Transform_prototype_FromString));
+}
+
+QScriptValue toScriptValueTransform(QScriptEngine *engine, const Transform &s)
+{
+    QScriptValue obj = engine->newObject();
+    obj.setProperty("pos", toScriptValueVector3(engine, s.pos));
+    obj.setProperty("rot", toScriptValueVector3(engine, s.rot));
+    obj.setProperty("scale", toScriptValueVector3(engine, s.scale));
+    createTransfromFunctions(obj,engine);
+
+    return obj;
+}
+
+QScriptValue Transform_prototype_multiply(QScriptContext *ctx, QScriptEngine *engine);
+void createTransfromFunctions(QScriptValue& value, QScriptEngine* engine)
+{
+      value.setProperty("multiply", engine->newFunction(Transform_prototype_multiply));
+}
+
+QScriptValue Transform_prototype_multiply(QScriptContext *ctx, QScriptEngine *engine)
+{
+     if (ctx->argumentCount() != 1)
+        return ctx->throwError(QScriptContext::TypeError, "Transfrom multiply() : invalid number of arguments.");
+
+    Transform t1 = engine->fromScriptValue<Transform>(ctx->thisObject());
+    Transform t2 = engine->fromScriptValue<Transform>(ctx->argument(0));
+
+    return toScriptValueTransform(engine, t1.Mul(t2));
+}
+
+
+void fromScriptValueTransform(const QScriptValue &obj, Transform &s)
+{
+    fromScriptValueVector3(obj.property("pos"), s.pos);
+    fromScriptValueVector3(obj.property("rot"), s.rot);
+    fromScriptValueVector3(obj.property("scale"), s.scale);
+}
+
+//! @todo this code duplicates with IAttribute.
+QScriptValue Transform_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Transform value = engine->fromScriptValue<Transform>(ctx->thisObject());
+    QString retVal = QString::number(value.pos.x) + " " +
+                     QString::number(value.pos.y) + " " +
+                     QString::number(value.pos.z) + " " +
+                     QString::number(value.rot.x) + " " +
+                     QString::number(value.rot.y) + " " +
+                     QString::number(value.rot.z) + " " +
+                     QString::number(value.scale.x) + " " +
+                     QString::number(value.scale.y) + " " +
+                     QString::number(value.scale.z);
+    return engine->toScriptValue(retVal);
+}
+
+QScriptValue Transform_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError(QScriptContext::TypeError, "Transform fromString(): invalid number of arguments."); 
+    QStringList values = ctx->argument(0).toString().split(" ");
+    if (values.count() != 9)
+        return ctx->throwError(QScriptContext::TypeError, "Transform fromString(): invalid string value."); 
+    
+    Transform retVal(Vector3df(values[0].toFloat(), values[1].toFloat(), values[2].toFloat()), //Pos
+                     Vector3df(values[3].toFloat(), values[4].toFloat(), values[5].toFloat()), //Rot
+                     Vector3df(values[6].toFloat(), values[7].toFloat(), values[8].toFloat()));//Scale
+    return toScriptValueTransform(engine, retVal);
+}
+
 QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &s)
 {
     QScriptValue obj = engine->newObject();
@@ -717,6 +800,27 @@ QScriptValue createQuaternion(QScriptContext *ctx, QScriptEngine *engine)
     return engine->toScriptValue(newQuat);
 }
 
+QScriptValue createTransform(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Transform newTransform;
+    if (ctx->argumentCount() == 3) // Support three Vector3df as arguments.
+    {
+        //! todo! Figure out how this could be more safe.
+        if (ctx->argument(0).isObject() &&
+            ctx->argument(1).isObject() &&
+            ctx->argument(2).isObject())
+        {
+            Vector3df pos = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+            Vector3df rot = engine->fromScriptValue<Vector3df>(ctx->argument(1));
+            Vector3df scale = engine->fromScriptValue<Vector3df>(ctx->argument(2));
+            newTransform.pos = pos;
+            newTransform.rot = rot;
+            newTransform.scale = scale;
+        }
+    }
+    return engine->toScriptValue(newTransform);
+}
+
 QScriptValue createAssetReference(QScriptContext *ctx, QScriptEngine *engine)
 {
     AssetReference newAssetRef;
@@ -756,6 +860,7 @@ void RegisterCoreMetaTypes()
     qRegisterMetaType<Color>("Color");
     qRegisterMetaType<Vector3df>("Vector3df");
     qRegisterMetaType<Quaternion>("Quaternion");
+    qRegisterMetaType<Transform>("Transform");
     qRegisterMetaType<AssetReference>("AssetReference");
     qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
     qRegisterMetaType<EntityReference>("EntityReference");
@@ -770,6 +875,7 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueColor, fromScriptValueColor);
     qScriptRegisterMetaType(engine, toScriptValueVector3, fromScriptValueVector3);
     qScriptRegisterMetaType(engine, toScriptValueQuaternion, fromScriptValueQuaternion);
+    qScriptRegisterMetaType(engine, toScriptValueTransform, fromScriptValueTransform);
     qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
     qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
     qScriptRegisterMetaType(engine, toScriptValueEntityReference, fromScriptValueEntityReference);
@@ -797,6 +903,9 @@ void ExposeCoreTypes(QScriptEngine *engine)
     QScriptValue ctorColor = engine->newFunction(createColor);
     engine->globalObject().setProperty("Color", ctorColor);
     engine->globalObject().property("Color").setProperty("fromString", engine->newFunction(Color_prototype_FromString));
+    QScriptValue ctorTransform = engine->newFunction(createTransform);
+    engine->globalObject().setProperty("Transform", ctorTransform);
+    engine->globalObject().property("Transform").setProperty("fromString", engine->newFunction(Transform_prototype_FromString));
     QScriptValue ctorAssetReference = engine->newFunction(createAssetReference);
     engine->globalObject().setProperty("AssetReference", ctorAssetReference);
     QScriptValue ctorAssetReferenceList = engine->newFunction(createAssetReferenceList);

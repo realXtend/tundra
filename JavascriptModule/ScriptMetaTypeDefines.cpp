@@ -222,7 +222,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     register_Ray_prototype(engine);
     register_ScaleOp_prototype(engine);
     register_TranslateOp_prototype(engine);
-    register_Transform_prototype(engine);
+//    register_Transform_prototype(engine);
 
     // Input metatypes.
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
