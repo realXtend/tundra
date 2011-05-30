@@ -12,9 +12,6 @@
 #include <QString>
 #include <OgreColourValue.h>
 
-namespace Environment
-{
-
 /// Makes the entity a water plane.
 /**
 <table class="header">
@@ -222,6 +219,3 @@ private:
     int lastXsize_;
     int lastYsize_;
 };
-
-}
-

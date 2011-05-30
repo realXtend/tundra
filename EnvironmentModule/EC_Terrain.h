@@ -18,9 +18,6 @@ namespace Ogre
     class Matrix4;
 }
 
-namespace Environment
-{
-
 /// Adds a heightmap-based terrain to the scene.
 /**
 <table class="header">
@@ -442,5 +439,3 @@ private:
     /// Ogre world for referring to the Ogre scene manager
     OgreWorldWeakPtr world_;
 };
-}
-

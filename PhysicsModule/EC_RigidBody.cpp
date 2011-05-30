@@ -275,7 +275,7 @@ void EC_RigidBody::CheckForPlaceableAndTerrain()
     }
     if (!terrain_.lock())
     {
-        boost::shared_ptr<Environment::EC_Terrain> terrain = parent->GetComponent<Environment::EC_Terrain>();
+        boost::shared_ptr<EC_Terrain> terrain = parent->GetComponent<EC_Terrain>();
         if (terrain)
         {
             terrain_ = terrain;
@@ -727,7 +727,7 @@ bool EC_RigidBody::HasAuthority() const
 
 void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
 {
-    Environment::EC_Terrain* terrain = terrain_.lock().get();
+    EC_Terrain* terrain = terrain_.lock().get();
     if (!terrain)
         return;
     /// \todo It is suboptimal to regenerate the whole heightfield when just the terrain's transform changes
@@ -786,12 +786,12 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
 {
     CheckForPlaceableAndTerrain();
     
-    Environment::EC_Terrain* terrain = terrain_.lock().get();
+    EC_Terrain* terrain = terrain_.lock().get();
     if (!terrain)
         return;
     
-    int width = terrain->PatchWidth() * Environment::EC_Terrain::cPatchSize;
-    int height = terrain->PatchHeight() * Environment::EC_Terrain::cPatchSize;
+    int width = terrain->PatchWidth() * EC_Terrain::cPatchSize;
+    int height = terrain->PatchHeight() * EC_Terrain::cPatchSize;
     
     if ((!width) || (!height))
         return;

@@ -31,14 +31,6 @@
 using namespace std;
 using namespace OgreRenderer;
 
-namespace OgreRenderer
-{
-typedef boost::shared_ptr<Renderer> RendererPtr;
-}
-
-namespace Environment
-{
-
 EC_Terrain::EC_Terrain(Scene* scene) :
     IComponent(scene),
     nodeTransformation(this, "Transform"),
@@ -1639,6 +1631,4 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
     ///\todo If this terrain only exists for physics heightfield purposes, don't create GPU resources for it at all.
 
     emit TerrainRegenerated();
-}
-
 }

@@ -1477,7 +1477,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         Entity &entity = *iter->second;
         entities++;
 
-        Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
+        EC_Terrain* terrain = entity.GetComponent<EC_Terrain>().get();
         EC_Mesh* mesh = entity.GetComponent<EC_Mesh>().get();
         EC_OgreCustomObject* custom = entity.GetComponent<EC_OgreCustomObject>().get();
         Ogre::Entity* ogre_entity = 0;

@@ -19,9 +19,6 @@
 
 const unsigned int cSkyBoxTextureCount = 6; ///< Sky box has 6 textures.
 
-namespace Environment
-{
-
 /// \todo Use Asset API for fetching sky resources.
 EC_Sky::EC_Sky(Scene* scene) :
     IComponent(scene),
@@ -259,6 +256,4 @@ void EC_Sky::DisableSky()
 
     if (!world_.expired())
         world_.lock()->GetSceneManager()->setSkyBox(false, "");
-}
-
 }

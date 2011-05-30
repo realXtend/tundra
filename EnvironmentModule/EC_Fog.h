@@ -10,8 +10,6 @@ namespace Ogre
     class ColourValue;
 }
 
-namespace Environment
-{
 /// Environment fog.
 /**
 <table class="header">
@@ -74,5 +72,3 @@ public:
 
     COMPONENT_NAME("EC_Fog", 9)
 };
-
-}

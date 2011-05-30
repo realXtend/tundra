@@ -17,8 +17,6 @@ namespace Caelum
 }
 #endif
 
-namespace Environment
-{
 /// Makes the entity a enviroment light.
 /**
 <table class="header">
@@ -131,5 +129,3 @@ private:
     Caelum::CaelumSystem *caelumSystem_;
 #endif
 };
-
-}

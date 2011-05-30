@@ -9,8 +9,6 @@
 #include "OgreModuleFwd.h"
 #include "AssetRefListener.h"
 
-namespace Environment
-{
 /// Makes the entity a sky.
 /**
 <table class="header">
@@ -36,63 +34,61 @@ Registered by Enviroment::EnvironmentModule.
 </ul>
 </table>
 */
-    class EC_Sky : public IComponent
-    {
-        Q_OBJECT
+class EC_Sky : public IComponent
+{
+    Q_OBJECT
 
-    public:
-        /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-        explicit EC_Sky(Scene* scene);
+public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Sky(Scene* scene);
 
-        virtual ~EC_Sky();
+    virtual ~EC_Sky();
 
-        /// Sky material reference
-        DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
-        Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
+    /// Sky material reference
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
+    Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
 
-        /// Sky texture references.
-        DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, textureRefs);
-        Q_PROPERTY(AssetReferenceList textureRefs READ gettextureRefs WRITE settextureRefs);
+    /// Sky texture references.
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, textureRefs);
+    Q_PROPERTY(AssetReferenceList textureRefs READ gettextureRefs WRITE settextureRefs);
 
-        /// Distance in world coordinates from the camera to each plane of the box.
-        DEFINE_QPROPERTY_ATTRIBUTE(float, distance);
-        Q_PROPERTY(float distance READ getdistance WRITE setdistance);
+    /// Distance in world coordinates from the camera to each plane of the box.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, distance);
+    Q_PROPERTY(float distance READ getdistance WRITE setdistance);
 
-        /// Optional parameter to specify the orientation of the box.
-        DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientation);
-        Q_PROPERTY(Quaternion orientation READ getorientation WRITE setorientation);
+    /// Optional parameter to specify the orientation of the box.
+    DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientation);
+    Q_PROPERTY(Quaternion orientation READ getorientation WRITE setorientation);
 
-         /// Defines that is sky drawn first
-        DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirst);
-        Q_PROPERTY(bool drawFirst READ getdrawFirst WRITE setdrawFirst);
+     /// Defines that is sky drawn first
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirst);
+    Q_PROPERTY(bool drawFirst READ getdrawFirst WRITE setdrawFirst);
 
-        COMPONENT_NAME("EC_Sky", 10)
-    public slots:
+    COMPONENT_NAME("EC_Sky", 10)
+public slots:
 
-        /// View sky assets.
-        void View(const QString &attributeName);
-        /// Called If some of the attributes has been changed.
-        void OnAttributeUpdated(IAttribute* attribute);
+    /// View sky assets.
+    void View(const QString &attributeName);
+    /// Called If some of the attributes has been changed.
+    void OnAttributeUpdated(IAttribute* attribute);
 
-        /// Disables the sky box.
-        void DisableSky();
+    /// Disables the sky box.
+    void DisableSky();
 
-        /// Called when texture asset has been downloaded.
-        void OnTextureAssetLoaded(AssetPtr tex);
+    /// Called when texture asset has been downloaded.
+    void OnTextureAssetLoaded(AssetPtr tex);
 
-    private:
-        void CreateSky();
-        void SetTextures();
+private:
+    void CreateSky();
+    void SetTextures();
 
-        QString lastMaterial_;
-        float lastDistance_;
-        bool lastDrawFirst_;
-        Quaternion lastOrientation_;
+    QString lastMaterial_;
+    float lastDistance_;
+    bool lastDrawFirst_;
+    Quaternion lastOrientation_;
 
-        /// Ogre scene
-        OgreWorldWeakPtr world_;
+    /// Ogre scene
+    OgreWorldWeakPtr world_;
 
-        std::vector<AssetRefListenerPtr> textureAssets;
-    };
-}
-
+    std::vector<AssetRefListenerPtr> textureAssets;
+};

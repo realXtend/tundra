@@ -14,9 +14,6 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace Environment
-{
-
 EC_Fog::EC_Fog(Scene* scene) :
     IComponent(scene),
     startDistance(this, "Start distance", 100.f),
@@ -42,6 +39,4 @@ Ogre::ColourValue EC_Fog::GetColorAsOgreValue() const
 {
     Color col = color.Get();
     return Ogre::ColourValue(col.r, col.g, col.b, col.a);
-}
-
 }

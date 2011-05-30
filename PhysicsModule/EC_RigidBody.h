@@ -17,12 +17,9 @@ class btRigidBody;
 class btCollisionShape;
 class btTriangleMesh;
 class btHeightfieldTerrainShape;
-class EC_Placeable;
 
-namespace Environment
-{
-    class EC_Terrain;
-}
+class EC_Placeable;
+class EC_Terrain;
 
 namespace Physics
 {
@@ -386,7 +383,7 @@ private:
     boost::weak_ptr<EC_Placeable> placeable_;
     
     /// Terrain pointer
-    boost::weak_ptr<Environment::EC_Terrain> terrain_;
+    boost::weak_ptr<EC_Terrain> terrain_;
     
     /// Internal disconnection of attribute changes. True during the time we're setting attributes ourselves due to Bullet update, to prevent endless loop
     bool disconnected_;
