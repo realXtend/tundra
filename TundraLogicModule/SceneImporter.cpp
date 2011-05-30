@@ -392,7 +392,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
         if (!skeletonName.isEmpty())
             mesh->skeletonRef.Set(AssetReference(path + "/" + skeletonName), AttributeChange::Disconnected);
 
-        foreach(IAttribute *a, mesh->GetAttributes())
+        foreach(IAttribute *a, mesh->Attributes())
         {
             AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
             meshDesc.attributes.append(attrDesc);
@@ -401,7 +401,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
 
     boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>(0);
     if (placeable)
-        foreach(IAttribute *a, placeable->GetAttributes())
+        foreach(IAttribute *a, placeable->Attributes())
         {
             AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
             placeableDesc.attributes.append(attrDesc);
@@ -412,7 +412,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     if (name)
     {
         name->name.Set(meshEntityName, AttributeChange::Disconnected);
-        foreach(IAttribute *a, name->GetAttributes())
+        foreach(IAttribute *a, name->Attributes())
         {
             AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
             nameDesc.attributes.append(attrDesc);
@@ -466,7 +466,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
     if (mesh)
     {
         mesh->meshRef.Set(AssetReference(meshUrl.toString()), AttributeChange::Disconnected);
-        foreach(IAttribute *a, mesh->GetAttributes())
+        foreach(IAttribute *a, mesh->Attributes())
         {
             AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
             meshDesc.attributes.append(attrDesc);
@@ -477,7 +477,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
     boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>(0);
     if (placeable)
     {
-        foreach(IAttribute *a, placeable->GetAttributes())
+        foreach(IAttribute *a, placeable->Attributes())
         {
             AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
             placeableDesc.attributes.append(attrDesc);
@@ -489,7 +489,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
     if (name)
     {
         name->name.Set(meshEntityName, AttributeChange::Disconnected);
-        foreach(IAttribute *a, name->GetAttributes())
+        foreach(IAttribute *a, name->Attributes())
         {
             AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
             nameDesc.attributes.append(attrDesc);
@@ -610,7 +610,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                 ComponentDesc placeableDesc;
                 placeableDesc.typeName = EC_Placeable::TypeNameStatic();
 
-                foreach(IAttribute *a, placeable->GetAttributes())
+                foreach(IAttribute *a, placeable->Attributes())
                 {
                     AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
                     placeableDesc.attributes.append(attrDesc);
@@ -1350,17 +1350,17 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, V
                 namePtr->ComponentChanged(change);
 
                 // Create attribute descriptions for each component
-                foreach(IAttribute *a, namePtr->GetAttributes())
+                foreach(IAttribute *a, namePtr->Attributes())
                 {
                     AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
                     nameDesc.attributes.append(attrDesc);
                 }
-                foreach(IAttribute *a, meshPtr->GetAttributes())
+                foreach(IAttribute *a, meshPtr->Attributes())
                 {
                     AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
                     meshDesc.attributes.append(attrDesc);
                 }
-                foreach(IAttribute *a, placeablePtr->GetAttributes())
+                foreach(IAttribute *a, placeablePtr->Attributes())
                 {
                     AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
                     placeableDesc.attributes.append(attrDesc);

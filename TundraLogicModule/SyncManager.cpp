@@ -573,7 +573,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                 DataSerializer dest((char*)&updComponent.componentData[0], updComponent.componentData.size());
                                 bool has_changes = false;
                                 // Otherwise, we assume the attribute structure is static in the component, and we check which attributes are in the dirty list
-                                const AttributeVector& attributes = component->GetAttributes();
+                                const AttributeVector& attributes = component->Attributes();
                                 for(uint k = 0; k < attributes.size(); k++)
                                 {
                                     if (componentstate->dirty_static_attributes.find(attributes[k]) != componentstate->dirty_static_attributes.end())
@@ -992,7 +992,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 else
                 {
                     std::vector<bool> actually_changed_attributes;
-                    const AttributeVector& attributes = component->GetAttributes();
+                    const AttributeVector& attributes = component->Attributes();
                     try
                     {
                         // Deserialize changed attributes (1 bit) with no signals first
@@ -1104,7 +1104,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
         ComponentPtr compShared = i->first->shared_from_this();
         if (compShared)
         {
-            const AttributeVector& attributes = compShared->GetAttributes();
+            const AttributeVector& attributes = compShared->Attributes();
             for(uint j = 0; (j < attributes.size()) && (j < i->second.size()); ++j)
                 if (i->second[j])
                 {

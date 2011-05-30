@@ -239,7 +239,7 @@ void SceneStructureWindow::CreateAssetReferences()
                 if (!comp)
                     continue;
 
-                foreach(IAttribute *attr, comp->GetAttributes())
+                foreach(IAttribute *attr, comp->Attributes())
                     if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
                         CreateAssetItem(cItem, attr);
             }
@@ -248,7 +248,7 @@ void SceneStructureWindow::CreateAssetReferences()
         {
             // Create asset ref items as children of entity items.
             foreach(ComponentPtr comp, entity->Components())
-                foreach(IAttribute *attr, comp->GetAttributes())
+                foreach(IAttribute *attr, comp->Attributes())
                     if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
                         CreateAssetItem(eItem, attr);
         }
@@ -338,7 +338,7 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
             }
 
             // Add possible asset references.
-            foreach(IAttribute *attr, comp->GetAttributes())
+            foreach(IAttribute *attr, comp->Attributes())
                 if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
                     CreateAssetItem(cItem, attr);
         }
@@ -731,7 +731,7 @@ void SceneStructureWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
 {
     bool anyExpanded = false;
     QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
-    while(*iter) 
+    while(*iter)
     {
         QTreeWidgetItem *iterItem = (*iter);
         if (iterItem->isExpanded())

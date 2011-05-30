@@ -127,7 +127,7 @@ public:
     void SetParentEntity(Entity* entity);
 
     /// Returns the list of all Attributes in this component for reflection purposes.
-    const AttributeVector& GetAttributes() const { return attributes_; }
+    const AttributeVector& Attributes() const { return attributes_; }
 
     /// Finds and returns an attribute of type 'Attribute<T>' and given name.
     /** @param T The Attribute type to look for.

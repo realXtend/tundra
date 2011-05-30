@@ -114,7 +114,7 @@ ECComponentEditor::~ECComponentEditor()
 
 void ECComponentEditor::CreateAttributeEditors(ComponentPtr component)
 {
-    AttributeVector attributes = component->GetAttributes();
+    AttributeVector attributes = component->Attributes();
     for(uint i = 0; i < attributes.size(); i++)
     {
         // Check metadata if this attribute is intended to be shown in designer/editor ui

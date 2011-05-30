@@ -794,7 +794,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                 }
                 else
                 {
-                    foreach(IAttribute *attr, comp->GetAttributes())
+                    foreach(IAttribute *attr, comp->Attributes())
                         foreach(AttributeDesc a, c.attributes)
                             if (attr->TypeName().c_str() == a.typeName && attr->GetName() == a.name)
                                 // Trigger no signal yet when scene is in incoherent state
@@ -903,7 +903,7 @@ SceneDesc Scene::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) con
                 }
 
                 comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
-                foreach(IAttribute *a,comp->GetAttributes())
+                foreach(IAttribute *a,comp->Attributes())
                 {
                     QString typeName(a->TypeName().c_str());
                     AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
@@ -1089,7 +1089,7 @@ SceneDesc Scene::GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) 
                             DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
                             // Trigger no signal yet when scene is in incoherent state
                             comp->DeserializeFromBinary(comp_source, AttributeChange::Disconnected);
-                            foreach(IAttribute *a, comp->GetAttributes())
+                            foreach(IAttribute *a, comp->Attributes())
                             {
                                 QString typeName = a->TypeName().c_str();
                                 AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };

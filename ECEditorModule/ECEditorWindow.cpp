@@ -519,7 +519,7 @@ void ECEditorWindow::PasteEntity()
             }
 
             ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
-            AttributeVector attributes = components[i]->GetAttributes();
+            AttributeVector attributes = components[i]->Attributes();
             for(uint j = 0; j < attributes.size(); j++)
             {
                 IAttribute *attribute = component->GetAttribute(attributes[j]->GetNameString().c_str());

@@ -296,8 +296,8 @@ QString EC_DynamicComponent::GetAttributeName(int index) const
 
 bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp) const
 {
-    AttributeVector myAttributeVector = GetAttributes();
-    AttributeVector attributeVector = comp.GetAttributes();
+    AttributeVector myAttributeVector = Attributes();
+    AttributeVector attributeVector = comp.Attributes();
     if(attributeVector.size() != myAttributeVector.size())
         return false;
     if(attributeVector.empty() && myAttributeVector.empty())
@@ -327,8 +327,8 @@ bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp)
     return true;
 
     /*// Get both attributes and check if they are holding exact number of attributes.
-    AttributeVector myAttributeVector = GetAttributes();
-    AttributeVector attributeVector = comp.GetAttributes();
+    AttributeVector myAttributeVector = Attributes();
+    AttributeVector attributeVector = comp.Attributes();
     if(attributeVector.size() != myAttributeVector.size())
         return false;
     
