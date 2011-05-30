@@ -559,6 +559,9 @@ void KristalliProtocolModule::PerformReconnection(QMutableMapIterator<unsigned s
 
 void KristalliProtocolModule::Disconnect(bool fail, unsigned short con)
 {
+    if (serverConnection_map_.isEmpty())
+        return;
+
     // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
     serverIp_list_[con] = "";
     reconnectTimer_list_[con].Stop();
