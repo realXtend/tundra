@@ -293,7 +293,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             physics->CreatePhysicsWorldForScene(scene, true);
             
             framework_->Scene()->SetDefaultScene(scene);
-            owner_->GetSyncManager()->RegisterToScene(scene);
+            //owner_->GetSyncManager()->RegisterToScene(scene);
             
             Events::TundraConnectedEventData event_data;
             event_data.user_id_ = msg.userID;

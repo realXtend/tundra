@@ -37,8 +37,10 @@ static const unsigned short cDefaultPort = 2345;
 
 TundraLogicModule::TundraLogicModule() : IModule(type_name_static_),
     autostartserver_(false),
-    autostartserver_port_(cDefaultPort)
+    autostartserver_port_(cDefaultPort),
+    syncManager_(0)
 {
+    syncManagers_.clear();
 }
 
 TundraLogicModule::~TundraLogicModule()
@@ -53,10 +55,13 @@ void TundraLogicModule::Initialize()
 {
     tundraEventCategory_ = framework_->GetEventManager()->RegisterEventCategory("Tundra");
     
-    syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this));
+    //syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this));
     client_ = boost::shared_ptr<Client>(new Client(this));
     server_ = boost::shared_ptr<Server>(new Server(this));
     
+    connect(framework_->Scene(), SIGNAL(SceneAdded(QString)), this, SLOT(AttachSyncManagerToScene(QString)));
+    connect(framework_->Scene(), SIGNAL(SceneRemoved(QString)), this, SLOT(RemoveSyncManagerFromScene(QString)));
+
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
 }
@@ -117,9 +122,34 @@ void TundraLogicModule::PostInitialize()
 void TundraLogicModule::Uninitialize()
 {
     kristalliModule_.reset();
-    syncManager_.reset();
+    foreach (SyncManager *sm, syncManagers_)
+        delete sm;
+    syncManagers_.clear();
     client_.reset();
     server_.reset();
+}
+
+void TundraLogicModule::AttachSyncManagerToScene(const QString &name)
+{
+    SyncManager *sm = new SyncManager(this);
+    sm->RegisterToScene(framework_->Scene()->GetScene(name));
+    syncManagers_.insert(name, sm);
+    syncManager_ = sm;
+    LogInfo("Registered SyncManager to scene " + name.toStdString());
+}
+
+void TundraLogicModule::RemoveSyncManagerFromScene(const QString &name)
+{
+    syncManager_ = 0;
+    delete syncManager_;
+    SyncManager *sm = syncManagers_.take(name);
+    delete sm;
+    TundraLogicModule::LogInfo("Removed SyncManager from scene " + name.toStdString());
+}
+
+SyncManager *TundraLogicModule::GetSyncManager()
+{
+    return syncManager_;
 }
 
 void TundraLogicModule::Update(f64 frametime)

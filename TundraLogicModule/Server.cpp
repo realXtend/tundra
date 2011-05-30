@@ -99,7 +99,7 @@ bool Server::Start(unsigned short port)
         /// \todo Should be not hard coded like this. Give some unique id (uuid perhaps) that could be returned to the client to make the corresponding named scene in client?
         Scene::ScenePtr scene = framework_->Scene()->CreateScene("TundraServer", true);
         framework_->Scene()->SetDefaultScene(scene);
-        owner_->GetSyncManager()->RegisterToScene(scene);
+        //owner_->GetSyncManager()->RegisterToScene(scene);
         
         // Create an authoritative physics world
         Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
@@ -109,6 +109,8 @@ bool Server::Start(unsigned short port)
         Events::TundraConnectedEventData event_data;
         event_data.user_id_ = 0;
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
+
+        connect(this, SIGNAL(UserConnected(int,UserConnection*)), owner_->GetSyncManager(), SLOT(ProcessNewUserConnection(int,UserConnection*)));
         
         emit ServerStarted();
     }
@@ -320,7 +322,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     }
     
     // Tell syncmanager of the new user
-    owner_->GetSyncManager()->NewUserConnected(user);
+    //owner_->GetSyncManager()->NewUserConnected(user);
     
     emit UserConnected(user->userID, user);
 }

@@ -166,6 +166,13 @@ private:
     
     //! Server sync state (client operation only)
     SceneSyncState server_syncstate_;
+
+    // #######################
+    // #   Multiconnection   #
+    // #######################
+
+public slots:
+    void ProcessNewUserConnection(int, UserConnection*);
 };
 
 }

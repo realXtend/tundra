@@ -9,6 +9,8 @@
 
 #include "AssetFwd.h"
 
+#include <QMap>
+
 namespace kNet
 {
 class MessageConnection;
@@ -93,7 +95,7 @@ public:
     const boost::shared_ptr<KristalliProtocol::KristalliProtocolModule>& GetKristalliModule() const { return kristalliModule_; }
     
     /// Return syncmanager
-    const boost::shared_ptr<SyncManager>& GetSyncManager() const { return syncManager_; }
+    //const boost::shared_ptr<SyncManager>& GetSyncManager() const { return syncManager_; }
     
     /// Return client
     const boost::shared_ptr<Client>& GetClient() const { return client_; }
@@ -113,7 +115,8 @@ private:
     void LoadStartupScene();
     
     /// Sync manager
-    boost::shared_ptr<SyncManager> syncManager_;
+    //boost::shared_ptr<SyncManager> syncManager_;
+
     /// Client
     boost::shared_ptr<Client> client_;
     /// Server
@@ -136,6 +139,27 @@ private:
     bool autostartserver_;
     //! Autostart server port
     short autostartserver_port_;
+
+    // #######################
+    // #   Multiconnection   #
+    // #######################
+
+    // Syncmanager
+    SyncManager *syncManager_;
+    // Syncmanager array
+    QMap<QString, SyncManager*> syncManagers_;
+
+private slots:
+    // Connects new syncManager object to newly created scene
+    void AttachSyncManagerToScene(const QString&);
+    // Removes syncManager object from QMap when scene removed.
+    void RemoveSyncManagerFromScene(const QString&);
+
+public:
+    //Returns syncManager. Used only for server.
+    SyncManager* GetSyncManager();
+
+
 };
 
 }

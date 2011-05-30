@@ -56,6 +56,11 @@ SyncManager::~SyncManager()
 {
 }
 
+void SyncManager::ProcessNewUserConnection(int ID, UserConnection* newuser)
+{
+    NewUserConnected(newuser);
+}
+
 void SyncManager::SetUpdatePeriod(float period)
 {
     // Allow max 100fps
