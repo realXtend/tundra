@@ -146,7 +146,10 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     if (!mesh || !placeable)
         return;
     if (!IsVisible())
+    {
+        input->ClearMouseCursorOverride();
         return;
+    }
     if (ogreWorld.expired())
         return;
     OgreWorldPtr world = ogreWorld.lock();
