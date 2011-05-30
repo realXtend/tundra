@@ -796,7 +796,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                 {
                     foreach(IAttribute *attr, comp->Attributes())
                         foreach(AttributeDesc a, c.attributes)
-                            if (attr->TypeName().c_str() == a.typeName && attr->GetName() == a.name)
+                            if (attr->TypeName() == a.typeName && attr->Name() == a.name)
                                 // Trigger no signal yet when scene is in incoherent state
                                 attr->FromString(a.value.toStdString(), AttributeChange::Disconnected);
                 }
@@ -905,13 +905,13 @@ SceneDesc Scene::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) con
                 comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                 foreach(IAttribute *a,comp->Attributes())
                 {
-                    QString typeName(a->TypeName().c_str());
-                    AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
+                    QString typeName = a->TypeName();
+                    AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str() };
                     compDesc.attributes.append(attrDesc);
 
                     QString attrValue = QString(a->ToString().c_str()).trimmed();
                     if ((typeName == "assetreference" || typeName == "assetreferencelist" || 
-                        (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference")) &&
+                        (a->HasMetadata() && a->Metadata()->elementType == "assetreference")) &&
                         !attrValue.isEmpty())
                     {
                         // We might have multiple references, ";" used as a separator.
@@ -919,7 +919,7 @@ SceneDesc Scene::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) con
                         foreach(QString value, values)
                         {
                             AssetDesc ad;
-                            ad.typeName = a->GetNameString().c_str();
+                            ad.typeName = a->Name();
                             ad.dataInMemory = false;
 
                             // Rewrite source refs for asset descs, if necessary.
@@ -1091,13 +1091,13 @@ SceneDesc Scene::GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) 
                             comp->DeserializeFromBinary(comp_source, AttributeChange::Disconnected);
                             foreach(IAttribute *a, comp->Attributes())
                             {
-                                QString typeName = a->TypeName().c_str();
-                                AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
+                                QString typeName = a->TypeName();
+                                AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str() };
                                 compDesc.attributes.append(attrDesc);
 
                                 QString attrValue = QString(a->ToString().c_str()).trimmed();
                                 if ((typeName == "assetreference" || typeName == "assetreferencelist" || 
-                                    (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference")) &&
+                                    (a->HasMetadata() && a->Metadata()->elementType == "assetreference")) &&
                                     !attrValue.isEmpty())
                                 {
                                     // We might have multiple references, ";" used as a separator.
@@ -1105,7 +1105,7 @@ SceneDesc Scene::GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) 
                                     foreach(QString value, values)
                                     {
                                         AssetDesc ad;
-                                        ad.typeName = a->GetNameString().c_str();
+                                        ad.typeName = a->Name();
                                         ad.dataInMemory = false;
 
                                         // Rewrite source refs for asset descs, if necessary.
@@ -1187,11 +1187,11 @@ bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, 
     if (!endvalue)
         return false;
     
-    IComponent* comp = attr ? attr->GetOwner() : 0;
+    IComponent* comp = attr ? attr->Owner() : 0;
     Entity* entity = comp ? comp->GetParentEntity() : 0;
     Scene* scene = entity ? entity->GetScene() : 0;
     
-    if ((length <= 0.0f) || (!attr) || (!attr->HasMetadata()) || (attr->GetMetadata()->interpolation == AttributeMetadata::None) ||
+    if ((length <= 0.0f) || (!attr) || (!attr->HasMetadata()) || (attr->Metadata()->interpolation == AttributeMetadata::None) ||
         (!comp) || (comp->HasDynamicStructure()) || (!entity) || (!scene) || (scene != this))
     {
         delete endvalue;

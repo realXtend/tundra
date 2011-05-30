@@ -114,20 +114,19 @@ ECComponentEditor::~ECComponentEditor()
 
 void ECComponentEditor::CreateAttributeEditors(ComponentPtr component)
 {
-    AttributeVector attributes = component->Attributes();
-    for(uint i = 0; i < attributes.size(); i++)
+    foreach(IAttribute *attr, component->Attributes())
     {
         // Check metadata if this attribute is intended to be shown in designer/editor ui
-        if (attributes[i]->HasMetadata())
-            if (!attributes[i]->GetMetadata()->designable)
+        if (attr->HasMetadata())
+            if (!attr->Metadata()->designable)
                 continue;
 
         ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this,
-            component, QString(attributes[i]->GetNameString().c_str()), QString(attributes[i]->TypeName().c_str()));
+            component, attr->Name(), attr->TypeName());
         if (!attributeEditor)
             continue;
 
-        attributeEditors_[attributes[i]->GetName()] = attributeEditor;
+        attributeEditors_[attr->Name()] = attributeEditor;
         groupProperty_->setToolTip("Component type is " + component->TypeName());
         groupProperty_->addSubProperty(attributeEditor->GetProperty()); 
         connect(attributeEditor, SIGNAL(EditorChanged(const QString &)), this, SLOT(OnEditorChanged(const QString &)));

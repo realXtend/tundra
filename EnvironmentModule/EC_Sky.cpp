@@ -35,7 +35,7 @@ EC_Sky::EC_Sky(Scene* scene) :
 
     static AttributeMetadata materialRefMetadata;
     AttributeMetadata::ButtonInfoList materialRefButtons;
-    materialRefButtons.push_back(AttributeMetadata::ButtonInfo(materialRef.GetName(), "V", "View"));
+    materialRefButtons.push_back(AttributeMetadata::ButtonInfo(materialRef.Name(), "V", "View"));
     materialRefMetadata.buttons = materialRefButtons;
     materialRef.SetMetadata(&materialRefMetadata);
 
@@ -193,10 +193,9 @@ void EC_Sky::OnAttributeUpdated(IAttribute* attribute)
     if (!ViewEnabled())
         return;
 
-    std::string name = attribute->GetNameString();
-    if ((name == materialRef.GetNameString() && materialRef.Get().ref != lastMaterial_ ) ||
-        (name ==  distance.GetNameString() && distance.Get() != lastDistance_ ) ||
-        (name == drawFirst.GetNameString() && drawFirst.Get() != lastDrawFirst_ ))
+    if ((attribute->Name() == materialRef.Name() && materialRef.Get().ref != lastMaterial_ ) ||
+        (attribute->Name() ==  distance.Name() && distance.Get() != lastDistance_ ) ||
+        (attribute->Name() == drawFirst.Name() && drawFirst.Get() != lastDrawFirst_ ))
     {
         DisableSky();
         CreateSky();
@@ -205,7 +204,7 @@ void EC_Sky::OnAttributeUpdated(IAttribute* attribute)
         lastDistance_ = distance.Get();
         lastDrawFirst_ = drawFirst.Get();
     }
-    else if (name == textureRefs.GetNameString() )
+    else if (attribute->Name() == textureRefs.Name())
     {
         AssetReferenceList textures = textureRefs.Get();
         // Make sure that the asset ref list type stays intact.

@@ -206,7 +206,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         ScenePtr scene = scene_.lock();
         if ((scene) && (!scene->IsInterpolating()) && (!currentSender))
         {
-            if ((attr->HasMetadata()) && (attr->GetMetadata()->interpolation == AttributeMetadata::Interpolate))
+            if ((attr->HasMetadata()) && (attr->Metadata()->interpolation == AttributeMetadata::Interpolate))
                 // Note: it does not matter if the attribute was not actually interpolating
                 scene->EndAttributeInterpolation(attr);
         }
@@ -235,7 +235,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
                     state->OnAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), attr);
                 else
                     // Note: this may be an add, change or remove. We inspect closer when it's time to send the update message.
-                    state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), QString::fromStdString(attr->GetNameString()));
+                    state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), attr->Name());
             }
         }
     }
@@ -245,7 +245,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         if (!dynamic)
             state->OnAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), attr);
         else
-            state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), QString::fromStdString(attr->GetNameString()));
+            state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), attr->Name());
     }
     
     // This attribute changing might in turn cause other attributes to change on the server, and these must be echoed to all, so reset sender now
@@ -609,7 +609,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                     if (attribute)
                                     {
                                         updAttribute.attributeName = StringToBuffer((*k).toStdString());
-                                        updAttribute.attributeType = StringToBuffer(attribute->TypeName());
+                                        updAttribute.attributeType = StringToBuffer(attribute->TypeName().toStdString());
                                         updAttribute.attributeData.resize(64 * 1024);
                                         DataSerializer dest((char*)&updAttribute.attributeData[0], updAttribute.attributeData.size());
                                         attribute->ToBinary(dest);
@@ -1002,7 +1002,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                             {
                                 // If attribute supports interpolation, queue interpolation instead
                                 bool interpolate = false;
-                                if ((!isServer) && (attributes[i]->HasMetadata()) && (attributes[i]->GetMetadata()->interpolation == AttributeMetadata::Interpolate))
+                                if ((!isServer) && (attributes[i]->HasMetadata()) && (attributes[i]->Metadata()->interpolation == AttributeMetadata::Interpolate))
                                     interpolate = true;
                                 
                                 if (!interpolate)
@@ -1067,7 +1067,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                         if (attr)
                         {
                             // If wrong type of attribute, delete and recreate
-                            if (attr->TypeName() != attrTypeName.toStdString())
+                            if (attr->TypeName() != attrTypeName)
                             {
                                 dynComp->RemoveAttribute(attrName, AttributeChange::Disconnected);
                                 attr = dynComp->CreateAttribute(attrTypeName, attrName, AttributeChange::Disconnected);

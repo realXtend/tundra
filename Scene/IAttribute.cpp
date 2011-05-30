@@ -218,97 +218,97 @@ template<> std::string Attribute<QPointF>::ToString() const
 
 // TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
 
-template<> std::string Attribute<int>::TypeName() const
+template<> QString Attribute<int>::TypeName() const
 {
     return "int";
 }
 
-template<> std::string Attribute<uint>::TypeName() const
+template<> QString Attribute<uint>::TypeName() const
 {
     return "uint";
 }
 
-template<> std::string Attribute<float>::TypeName() const
+template<> QString Attribute<float>::TypeName() const
 {
     return "real";
 }
 
-template<> std::string Attribute<QString>::TypeName() const
+template<> QString Attribute<QString>::TypeName() const
 {
     return "string";
 }
 
-template<> std::string Attribute<bool>::TypeName() const
+template<> QString Attribute<bool>::TypeName() const
 {
     return "bool";
 }
 
-template<> std::string Attribute<Vector3df>::TypeName() const
+template<> QString Attribute<Vector3df>::TypeName() const
 {
     return "vector3df";
 }
 
-template<> std::string Attribute<Quaternion>::TypeName() const
+template<> QString Attribute<Quaternion>::TypeName() const
 {
     return "quaternion";
 }
 
-template<> std::string Attribute<Color>::TypeName() const
+template<> QString Attribute<Color>::TypeName() const
 {
     return "color";
 }
 
-template<> std::string Attribute<AssetReference>::TypeName() const
+template<> QString Attribute<AssetReference>::TypeName() const
 {
     return "assetreference";
 }
 
-template<> std::string Attribute<AssetReferenceList>::TypeName() const
+template<> QString Attribute<AssetReferenceList>::TypeName() const
 {
     return "assetreferencelist";
 }
 
-template<> std::string Attribute<EntityReference>::TypeName() const
+template<> QString Attribute<EntityReference>::TypeName() const
 {
     return "entityreference";
 }
 
-template<> std::string Attribute<QVariant>::TypeName() const
+template<> QString Attribute<QVariant>::TypeName() const
 {
     return "qvariant";
 }
 
-template<> std::string Attribute<QVariantList >::TypeName() const
+template<> QString Attribute<QVariantList >::TypeName() const
 {
     return "qvariantlist";
 }
 
-template<> std::string Attribute<Transform>::TypeName() const
+template<> QString Attribute<Transform>::TypeName() const
 {
     return "transform";
 }
 
-template<> std::string Attribute<QVector3D>::TypeName() const
+template<> QString Attribute<QVector3D>::TypeName() const
 {
     return "qvector3d";
 }
 
-template<> std::string Attribute<QSize>::TypeName() const
+template<> QString Attribute<QSize>::TypeName() const
 {
     return "qsize";
 }
 
-template<> std::string Attribute<QSizeF>::TypeName() const
+template<> QString Attribute<QSizeF>::TypeName() const
 {
     return "qsizef";
 }
 
-template<> std::string Attribute<QPoint>::TypeName() const
+template<> QString Attribute<QPoint>::TypeName() const
 {
     return "qpoint";
 }
 
-template<> std::string Attribute<QPointF>::TypeName() const
+template<> QString Attribute<QPointF>::TypeName() const
 {
     return "qpointf";
 }
@@ -865,7 +865,7 @@ template<> void Attribute<QPointF>::FromScriptValue(const QScriptValue &value, A
 
 template<> void Attribute<QString>::ToBinary(kNet::DataSerializer& dest) const
 {
-    QByteArray utf8bytes = value_.toUtf8();
+    QByteArray utf8bytes = value.toUtf8();
     dest.Add<u16>(utf8bytes.size());
     if (utf8bytes.size())
         dest.AddArray<u8>((const u8*)utf8bytes.data(), utf8bytes.size());
@@ -873,7 +873,7 @@ template<> void Attribute<QString>::ToBinary(kNet::DataSerializer& dest) const
 
 template<> void Attribute<bool>::ToBinary(kNet::DataSerializer& dest) const
 {
-    if (value_)
+    if (value)
         dest.Add<u8>(1);
     else
         dest.Add<u8>(0);
@@ -881,114 +881,114 @@ template<> void Attribute<bool>::ToBinary(kNet::DataSerializer& dest) const
 
 template<> void Attribute<int>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<s32>(value_);
+    dest.Add<s32>(value);
 }
 
 template<> void Attribute<uint>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<u32>(value_);
+    dest.Add<u32>(value);
 }
 
 template<> void Attribute<float>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<float>(value_);
+    dest.Add<float>(value);
 }
 
 template<> void Attribute<Vector3df>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<float>(value_.x);
-    dest.Add<float>(value_.y);
-    dest.Add<float>(value_.z);
+    dest.Add<float>(value.x);
+    dest.Add<float>(value.y);
+    dest.Add<float>(value.z);
 }
 
 template<> void Attribute<QVector3D>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<float>(value_.x());
-    dest.Add<float>(value_.y());
-    dest.Add<float>(value_.z());
+    dest.Add<float>(value.x());
+    dest.Add<float>(value.y());
+    dest.Add<float>(value.z());
 }
 
 template<> void Attribute<Quaternion>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<float>(value_.x);
-    dest.Add<float>(value_.y);
-    dest.Add<float>(value_.z);
-    dest.Add<float>(value_.w);
+    dest.Add<float>(value.x);
+    dest.Add<float>(value.y);
+    dest.Add<float>(value.z);
+    dest.Add<float>(value.w);
 }
 
 template<> void Attribute<Color>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<float>(value_.r);
-    dest.Add<float>(value_.g);
-    dest.Add<float>(value_.b);
-    dest.Add<float>(value_.a);
+    dest.Add<float>(value.r);
+    dest.Add<float>(value.g);
+    dest.Add<float>(value.b);
+    dest.Add<float>(value.a);
 }
 
 template<> void Attribute<AssetReference>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.AddString(value_.ref.toStdString());
+    dest.AddString(value.ref.toStdString());
 }
 
 template<> void Attribute<AssetReferenceList>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<u8>(value_.Size());
-    for(int i = 0; i < value_.Size(); ++i)
-        dest.AddString(value_[i].ref.toStdString());
+    dest.Add<u8>(value.Size());
+    for(int i = 0; i < value.Size(); ++i)
+        dest.AddString(value[i].ref.toStdString());
 }
 
 template<> void Attribute<EntityReference>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.AddString(value_.ref.toStdString());
+    dest.AddString(value.ref.toStdString());
 }
 
 template<> void Attribute<QVariant>::ToBinary(kNet::DataSerializer& dest) const
 {
-    std::string str = value_.toString().toStdString();
+    std::string str = value.toString().toStdString();
     dest.AddString(str);
 }
 
 template<> void Attribute<QVariantList>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<u8>(value_.size());
-    for(uint i = 0; i < (uint)value_.size(); ++i)
-        dest.AddString(value_[i].toString().toStdString());
+    dest.Add<u8>(value.size());
+    for(uint i = 0; i < (uint)value.size(); ++i)
+        dest.AddString(value[i].toString().toStdString());
 }
 
 template<> void Attribute<Transform>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<float>(value_.pos.x);
-    dest.Add<float>(value_.pos.y);
-    dest.Add<float>(value_.pos.z);
-    dest.Add<float>(value_.rot.x);
-    dest.Add<float>(value_.rot.y);
-    dest.Add<float>(value_.rot.z);
-    dest.Add<float>(value_.scale.x);
-    dest.Add<float>(value_.scale.y);
-    dest.Add<float>(value_.scale.z);
+    dest.Add<float>(value.pos.x);
+    dest.Add<float>(value.pos.y);
+    dest.Add<float>(value.pos.z);
+    dest.Add<float>(value.rot.x);
+    dest.Add<float>(value.rot.y);
+    dest.Add<float>(value.rot.z);
+    dest.Add<float>(value.scale.x);
+    dest.Add<float>(value.scale.y);
+    dest.Add<float>(value.scale.z);
 }
 
 template<> void Attribute<QSize>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<s32>(value_.width());
-    dest.Add<s32>(value_.height());
+    dest.Add<s32>(value.width());
+    dest.Add<s32>(value.height());
 }
 
 template<> void Attribute<QSizeF>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<double>(value_.width());
-    dest.Add<double>(value_.height());
+    dest.Add<double>(value.width());
+    dest.Add<double>(value.height());
 }
 
 template<> void Attribute<QPoint>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<s32>(value_.x());
-    dest.Add<s32>(value_.y());
+    dest.Add<s32>(value.x());
+    dest.Add<s32>(value.y());
 }
 
 template<> void Attribute<QPointF>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<double>(value_.x());
-    dest.Add<double>(value_.y());
+    dest.Add<double>(value.x());
+    dest.Add<double>(value.y());
 }
 
 // FROMBINARY TEMPLATE IMPLEMENTATIONS.

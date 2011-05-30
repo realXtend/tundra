@@ -386,7 +386,7 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
             AssetReferenceList refs = assetRefList->Get();
             for(int i = 0; i < refs.Size(); ++i)
             {
-                AssetRefItem *aItem = new AssetRefItem(attr->GetName(), refs[i].ref, parentItem);
+                AssetRefItem *aItem = new AssetRefItem(attr->Name(), refs[i].ref, parentItem);
                 aItem->setHidden(!showAssets);
                 parentItem->addChild(aItem);
             }
@@ -572,9 +572,9 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
         return;
 
     // Find parent item for the asset reference item.
-    IComponent *ownerComp = assetRef->GetOwner();
+    IComponent *ownerComp = assetRef->Owner();
     assert(ownerComp);
-    Entity *parentEntity = assetRef->GetOwner()->GetParentEntity();
+    Entity *parentEntity = assetRef->Owner()->GetParentEntity();
     assert(parentEntity);
 
     QTreeWidgetItem *parentItem = 0;
@@ -613,7 +613,7 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
     {
         AssetRefItem *a = dynamic_cast<AssetRefItem *>(*it);
         /// \todo Should check that the parent matches also?
-        if (a && (a->name == assetRef->GetName())) //(a->parent() == parentItem))
+        if (a && (a->name == assetRef->Name())) //(a->parent() == parentItem))
         {
             aItem = a;
             break;

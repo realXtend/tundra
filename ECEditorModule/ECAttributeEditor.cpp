@@ -71,7 +71,7 @@ void ECAttributeEditorBase::UpdateEditorUI(IAttribute *attr)
     {
         ComponentPtr comp = components_[0].lock();
         IAttribute *attribute = FindAttribute(comp);
-        if (attribute && attribute->HasMetadata() && !attribute->GetMetadata()->designable)
+        if (attribute && attribute->HasMetadata() && !attribute->Metadata()->designable)
         {
             // If not uninitialize that attributes ui and return
             UnInitialize();
@@ -151,7 +151,7 @@ void ECAttributeEditorBase::AttributeChanged(IAttribute* attribute)
     {
         // Ensure that attribute's name matchs with the editor's name variable.
         // If they doesn't match, no need to update the ui.
-        if (attribute->GetName() == this->name_)
+        if (attribute->Name() == this->name_)
             UpdateEditorUI(attribute);
     }
 }
@@ -259,7 +259,7 @@ template<> void ECAttributeEditor<float>::Initialize()
             return;
         }
 
-        AttributeMetadata *metaData = attribute->GetMetadata();
+        AttributeMetadata *metaData = attribute->Metadata();
         if (metaData)
         {
             if(!metaData->minimum.isEmpty())
@@ -342,7 +342,7 @@ template<> void ECAttributeEditor<int>::Initialize()
         }
 
         //Check if int need to have min and max value set and also enum types are presented as a int value.
-        AttributeMetadata *metaData = attribute->GetMetadata();
+        AttributeMetadata *metaData = attribute->Metadata();
         if(metaData)
         {
             if(!metaData->enums.empty())
@@ -444,7 +444,7 @@ template<> void ECAttributeEditor<int>::Set(QtProperty *property)
                 return;
             }
 
-            AttributeMetadata *metaData = attribute->GetMetadata();
+            AttributeMetadata *metaData = attribute->Metadata();
             AttributeMetadata::EnumDescMap_t::iterator iter = metaData->enums.begin();
             for(; iter != metaData->enums.end(); ++iter)
                 if (valueString == iter->second)
@@ -1036,7 +1036,7 @@ template<> void ECAttributeEditor<QString>::Initialize()
                 IAttribute *attr = comp->GetAttribute(name_);
                 if (attr && attr->HasMetadata())
                 {
-                    AttributeMetadata *meta = attr->GetMetadata();
+                    AttributeMetadata *meta = attr->Metadata();
                     lineEditFactory->SetComponents(rootProperty_, components_);
                     lineEditFactory->AddButtons(meta->buttons);
                 }
@@ -1488,7 +1488,7 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
             IAttribute *attr = components_[0].lock()->GetAttribute(name_);
             if (attr && attr->HasMetadata())
                 //lineEditFactory->SetComponents(rootProperty_, components_);
-                lineEditFactory->AddButtons(attr->GetMetadata()->buttons);
+                lineEditFactory->AddButtons(attr->Metadata()->buttons);
         }
 
         lineEditFactory->SetComponents(rootProperty_, components_);
@@ -1955,7 +1955,7 @@ template<> void ECAttributeEditor<EntityReference>::Initialize()
             IAttribute *attr = components_[0].lock()->GetAttribute(name_);
             if (attr && attr->HasMetadata())
                 //lineEditFactory->SetComponents(rootProperty_, components_);
-                lineEditFactory->AddButtons(attr->GetMetadata()->buttons);
+                lineEditFactory->AddButtons(attr->Metadata()->buttons);
         }
 
         lineEditFactory->SetComponents(rootProperty_, components_);

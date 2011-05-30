@@ -380,26 +380,24 @@ namespace Environment
 
     void EC_WaterPlane::ChangeWaterPlane(IAttribute* attribute)
     {
-        std::string name = attribute->GetNameString();
-        if ((name == xSize.GetNameString() || name == ySize.GetNameString() || name == scaleUfactor.GetNameString() || name == scaleVfactor.GetNameString()) &&
-            (lastXsize_ != xSize.Get() || lastYsize_ != ySize.Get()))
+        QString name = attribute->Name();
+        if ((name == xSize.Name() || name == ySize.Name() || name == scaleUfactor.Name() ||
+            name == scaleVfactor.Name()) && (lastXsize_ != xSize.Get() || lastYsize_ != ySize.Get()))
         {
             CreateWaterPlane();
-
             lastXsize_ = xSize.Get();
             lastYsize_ = ySize.Get();
         }
-        else if ( name == xSegments.GetNameString() || name == ySegments.GetNameString() )
+        else if (name == xSegments.Name() || name == ySegments.Name())
         {
             CreateWaterPlane();
         }
-        else if ( name == position.GetNameString() )
+        else if (name == position.Name() )
         {
             // Change position
             SetPosition();
-           
         }
-        else if ( name == rotation.GetNameString() )
+        else if (name == rotation.Name() )
         {
             // Change rotation
 
@@ -409,19 +407,16 @@ namespace Environment
                SetOrientation();
             //}
         }
-        else if ( name == depth.GetNameString() )
+        else if (name == depth.Name() )
         {
             // Change depth
             // Currently do nothing..
-           
         }
-        else if ( name ==  materialName.GetNameString())
+        else if (name ==  materialName.Name())
         {
             //Change material
-            if (entity_ != 0)
-            {
+            if (entity_)
                 entity_->setMaterialName(materialName.Get().toStdString().c_str());
-            }
         }
         /*
         // Currently commented out, working feature but not enabled yet.

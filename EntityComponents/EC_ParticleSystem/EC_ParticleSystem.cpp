@@ -33,7 +33,7 @@ EC_ParticleSystem::EC_ParticleSystem(Scene* scene):
     
     static AttributeMetadata particleRefMetadata;
     AttributeMetadata::ButtonInfoList particleRefButtons;
-    particleRefButtons.push_back(AttributeMetadata::ButtonInfo(particleRef.GetName(), "V", "View"));
+    particleRefButtons.push_back(AttributeMetadata::ButtonInfo(particleRef.Name(), "V", "View"));
     particleRefMetadata.buttons = particleRefButtons;
     particleRef.SetMetadata(&particleRefMetadata);
 

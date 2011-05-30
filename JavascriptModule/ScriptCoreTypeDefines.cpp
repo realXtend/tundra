@@ -539,8 +539,8 @@ QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &
     QScriptValue obj = engine->newObject();
     if(s)
     {
-        obj.setProperty("name", QScriptValue(engine, QString::fromStdString(s->GetNameString())));
-        obj.setProperty("typename", QScriptValue(engine, QString::fromStdString(s->TypeName())));
+        obj.setProperty("name", QScriptValue(engine, s->Name()));
+        obj.setProperty("typename", QScriptValue(engine, s->TypeName()));
         obj.setProperty("value", QScriptValue(engine, QString::fromStdString(s->ToString())));
     }
     else

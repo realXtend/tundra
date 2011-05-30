@@ -24,7 +24,7 @@ void AssetRefListener::HandleAssetRefChange(IAttribute *assetRef, const QString&
     if (!attr)
         return; ///\todo Log out warning.
 
-    HandleAssetRefChange(attr->GetOwner()->GetFramework()->Asset(), attr->Get().ref, assetType);
+    HandleAssetRefChange(attr->Owner()->GetFramework()->Asset(), attr->Get().ref, assetType);
 }
 
 void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef, const QString& assetType)

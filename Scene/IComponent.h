@@ -139,7 +139,7 @@ public:
     Attribute<T> *GetAttribute(const std::string &name) const
     {
         for(size_t i = 0; i < attributes_.size(); ++i)
-            if (attributes_[i]->GetNameString() == name)
+            if (attributes_[i]->Name() == name)
                 return dynamic_cast<Attribute<T> *>(&attributes_[i]);
         return 0;
     }

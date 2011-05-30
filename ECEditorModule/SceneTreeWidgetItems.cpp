@@ -88,7 +88,7 @@ AssetRefItem::AssetRefItem(IAttribute *attr, QTreeWidgetItem *parent) :
 {
     Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
     assert(assetRef);
-    this->name = assetRef->GetName();
+    this->name = assetRef->Name();
     id = assetRef->Get().ref;
     SetText(assetRef);
 }
@@ -106,7 +106,7 @@ void AssetRefItem::SetText(IAttribute *attr)
     Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
     assert(assetRef);
     if (assetRef)
-        setText(0, QString("%1: %2").arg(assetRef->GetName()).arg(assetRef->Get().ref));
+        setText(0, QString("%1: %2").arg(assetRef->Name()).arg(assetRef->Get().ref));
 }
 
 // Selection

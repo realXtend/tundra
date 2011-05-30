@@ -90,7 +90,7 @@ void IComponent::SetNetworkSyncEnabled(bool enabled)
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
 {
     for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)
-        if ((*iter)->GetNameString() == name.toStdString())
+        if ((*iter)->Name() == name.toStdString())
             return (*iter)->ToQVariant();
 
     return QVariant();
@@ -100,14 +100,14 @@ QStringList IComponent::GetAttributeNames() const
 {
     QStringList attribute_list;
     for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)
-        attribute_list.push_back(QString::fromStdString((*iter)->GetNameString()));
+        attribute_list.push_back((*iter)->Name());
     return attribute_list;
 }
 
 IAttribute* IComponent::GetAttribute(const QString &name) const
 {
     for(unsigned int i = 0; i < attributes_.size(); ++i)
-        if(attributes_[i]->GetNameString() == name.toStdString())
+        if(attributes_[i]->Name() == name)
             return attributes_[i];
     return 0;
 }
@@ -209,7 +209,7 @@ void IComponent::EmitAttributeChanged(const QString& attributeName, AttributeCha
 
     // Roll through attributes and check name match
     for(uint i = 0; i < attributes_.size(); ++i)
-        if (attributes_[i]->GetName() == attributeName)
+        if (attributes_[i]->Name() == attributeName)
         {
             EmitAttributeChanged(attributes_[i], change);
             break;
@@ -221,7 +221,7 @@ void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
     QDomElement comp_element = BeginSerialization(doc, base_element);
 
     for(uint i = 0; i < attributes_.size(); ++i)
-        WriteAttribute(doc, comp_element, attributes_[i]->GetNameString().c_str(), attributes_[i]->ToString().c_str());
+        WriteAttribute(doc, comp_element, attributes_[i]->Name(), attributes_[i]->ToString().c_str());
 }
 
 /// Returns true if the given XML element has the given child attribute.
@@ -250,9 +250,9 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
 
     for(uint i = 0; i < attributes_.size(); ++i)
     {
-        if (HasAttribute(element, attributes_[i]->GetNameString().c_str()))
+        if (HasAttribute(element, attributes_[i]->Name()))
         {
-            std::string attr_str = ReadAttribute(element, attributes_[i]->GetNameString().c_str()).toStdString();
+            std::string attr_str = ReadAttribute(element, attributes_[i]->Name()).toStdString();
             attributes_[i]->FromString(attr_str, change);
         }
     }

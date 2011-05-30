@@ -64,37 +64,37 @@ EC_Terrain::EC_Terrain(Scene* scene) :
 
     static AttributeMetadata heightRefMetadata;
     AttributeMetadata::ButtonInfoList heightRefButtons;
-    heightRefButtons.push_back(AttributeMetadata::ButtonInfo(heightMap.GetName(), "V", "View"));
+    heightRefButtons.push_back(AttributeMetadata::ButtonInfo(heightMap.Name(), "V", "View"));
     heightRefMetadata.buttons = heightRefButtons;
     heightMap.SetMetadata(&heightRefMetadata);
 
     static AttributeMetadata texRefMetadata0;
     AttributeMetadata::ButtonInfoList texRefButtons;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture0.GetName(), "V", "View"));
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture0.Name(), "V", "View"));
     texRefMetadata0.buttons = texRefButtons;
     texture0.SetMetadata(&texRefMetadata0);
     texRefButtons.clear();
 
     static AttributeMetadata texRefMetadata1;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture1.GetName(), "V", "View"));
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture1.Name(), "V", "View"));
     texRefMetadata1.buttons = texRefButtons;
     texture1.SetMetadata(&texRefMetadata1);
     texRefButtons.clear();
 
     static AttributeMetadata texRefMetadata2;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture2.GetName(), "V", "View"));
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture2.Name(), "V", "View"));
     texRefMetadata2.buttons = texRefButtons;
     texture2.SetMetadata(&texRefMetadata2);
     texRefButtons.clear();
 
     static AttributeMetadata texRefMetadata3;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture3.GetName(), "V", "View"));
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture3.Name(), "V", "View"));
     texRefMetadata3.buttons = texRefButtons;
     texture3.SetMetadata(&texRefMetadata3);
     texRefButtons.clear();
 
     static AttributeMetadata texRefMetadata4;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture4.GetName(), "V", "View"));
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture4.Name(), "V", "View"));
     texRefMetadata4.buttons = texRefButtons;
     texture4.SetMetadata(&texRefMetadata4);
 
@@ -122,27 +122,27 @@ EC_Terrain::~EC_Terrain()
 
 void EC_Terrain::View(const QString &attributeName)
 {
-    if (texture0.GetName() == attributeName)
+    if (texture0.Name() == attributeName)
     {
         /// \todo add implementation
     }
-    else if(texture1.GetName() == attributeName)
+    else if(texture1.Name() == attributeName)
     {
         /// todo! add implementation.
     }
-    else if(texture2.GetName() == attributeName)
+    else if(texture2.Name() == attributeName)
     {
         /// todo! add implementation.
     }
-    else if(texture3.GetName() == attributeName)
+    else if(texture3.Name() == attributeName)
     {
         /// todo! add implementation.
     }
-    else if(texture4.GetName() == attributeName)
+    else if(texture4.Name() == attributeName)
     {
         /// todo! add implementation.
     }
-    else if(heightMap.GetName() == attributeName)
+    else if(heightMap.Name() == attributeName)
     {
         /// todo! add implementation.
     }
@@ -242,19 +242,17 @@ void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
 
 void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
 {
-    std::string changedAttribute = attribute->GetNameString();
-
-    if (changedAttribute == xPatches.GetNameString() || changedAttribute == yPatches.GetNameString())
+    if (attribute->Name() == xPatches.Name() || attribute->Name() == yPatches.Name())
     {
         ResizeTerrain(xPatches.Get(), yPatches.Get());
         // Re-do all the geometry on the GPU.
         RegenerateDirtyTerrainPatches();
     }
-    else if (changedAttribute == nodeTransformation.GetNameString())
+    else if (attribute->Name() == nodeTransformation.Name())
     {
         UpdateRootNodeTransform();
     }
-    else if (changedAttribute == material.GetNameString())
+    else if (attribute->Name() == material.Name())
     {
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(material.Get());
@@ -292,13 +290,13 @@ void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
         if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     } */
-    else if (changedAttribute == heightMap.GetNameString())
+    else if (attribute->Name() == heightMap.Name())
     {
         heightMapAsset->HandleAssetRefChange(attribute);
 //        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref/*, "Terrain"*/));
 //        connect(transfer, SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded()), Qt::UniqueConnection);
     }
-    else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
+    else if (attribute->Name() == uScale.Name() || attribute->Name() == vScale.Name())
     {
         // Re-do all the geometry on the GPU.
         DirtyAllTerrainPatches();

@@ -34,7 +34,7 @@ EC_Sound::EC_Sound(Scene* scene):
     soundGain.SetMetadata(&metaData);
     static AttributeMetadata soundRefMetadata;
     AttributeMetadata::ButtonInfoList soundRefButtons;
-    soundRefButtons.push_back(AttributeMetadata::ButtonInfo(soundRef.GetName(), "V", "View"));
+    soundRefButtons.push_back(AttributeMetadata::ButtonInfo(soundRef.Name(), "V", "View"));
     soundRefMetadata.buttons = soundRefButtons;
     soundRef.SetMetadata(&soundRefMetadata);
 

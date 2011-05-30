@@ -46,7 +46,7 @@ void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
     {
         boost::shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
         if (p)
-            targets.append(AttributeWeakPtr(p, p->GetAttribute(p->transform.GetName())));
+            targets.append(AttributeWeakPtr(p, p->GetAttribute(p->transform.Name())));
     }
 }
 
@@ -61,7 +61,7 @@ void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
     {
         boost::shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
         if (p)
-            targets.removeOne(AttributeWeakPtr(p, p->GetAttribute(p->transform.GetName())));
+            targets.removeOne(AttributeWeakPtr(p, p->GetAttribute(p->transform.Name())));
     }
 }
 
@@ -234,9 +234,12 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
     }
 
     InputAPI *inputApi = scn->GetFramework()->Input();
+    const QKeySequence &toggle= inputApi->KeyBinding("ToggleGizmo", QKeySequence(Qt::Key_section));
     const QKeySequence &translate= inputApi->KeyBinding("SetTranslateGizmo", QKeySequence(Qt::Key_1));
     const QKeySequence &rotate = inputApi->KeyBinding("SetRotateGizmo", QKeySequence(Qt::Key_2));
     const QKeySequence &scale = inputApi->KeyBinding("SetScaleGizmo", QKeySequence(Qt::Key_3));
+    if (e->sequence == toggle)
+        tg->SetVisible(!tg->IsVisible());
     if (e->sequence == translate)
         tg->SetCurrentGizmoType(EC_TransformGizmo::Translate);
     if (e->sequence == rotate)

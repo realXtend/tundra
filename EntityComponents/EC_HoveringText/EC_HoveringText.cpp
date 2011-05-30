@@ -418,28 +418,25 @@ void EC_HoveringText::OnAttributeUpdated(IComponent *component, IAttribute *attr
     if(component != this)
         return;
 
-    QString attrName = QString::fromStdString(attribute->GetNameString());
-    if(QString::fromStdString(font.GetNameString()) == attrName ||QString::fromStdString(fontSize.GetNameString()) == attrName)
+    if(font.Name() == attribute->Name() || fontSize.Name() == attribute->Name())
     {
         SetFont(QFont(font.Get(), fontSize.Get()));
     }
-    else if(QString::fromStdString(backgroundColor.GetNameString()) == attrName)
+    else if(backgroundColor.Name() == attribute->Name())
     {
         Color col = backgroundColor.Get();
         backgroundColor_.setRgbF(col.r, col.g, col.b, col.a);
     }
-    else if(QString::fromStdString(fontColor.GetNameString()) == attrName)
+    else if(fontColor.Name() == attribute->Name())
     {
         Color col = fontColor.Get();
         textColor_.setRgbF(col.r, col.g, col.b, col.a);
     }
-    else if(QString::fromStdString(position.GetNameString()) == attrName)
+    else if(position.Name() == attribute->Name())
     {
         SetPosition(position.Get());
     }
-    else if(QString::fromStdString(gradEnd.GetNameString()) == attrName ||
-        QString::fromStdString(gradStart.GetNameString()) == attrName ||
-        QString::fromStdString(gradEnd.GetNameString()) == attrName)
+    else if(gradEnd.Name() == attribute->Name() || gradStart.Name() == attribute->Name() || gradEnd.Name() == attribute->Name())
     {
         QColor colStart;
         QColor colEnd;
@@ -455,4 +452,3 @@ void EC_HoveringText::OnAttributeUpdated(IComponent *component, IAttribute *attr
     // Repaint the new text with new appearance.
     ShowMessage(text.Get());
 }
-

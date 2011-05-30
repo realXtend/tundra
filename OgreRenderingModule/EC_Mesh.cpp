@@ -49,7 +49,7 @@ EC_Mesh::EC_Mesh(Scene* scene) :
 
     static AttributeMetadata meshRefMetadata;
     AttributeMetadata::ButtonInfoList meshRefButtons;
-    meshRefButtons.push_back(AttributeMetadata::ButtonInfo(meshRef.GetName(), "V", "View"));
+    meshRefButtons.push_back(AttributeMetadata::ButtonInfo(meshRef.Name(), "V", "View"));
     meshRefMetadata.buttons = meshRefButtons;
     meshRef.SetMetadata(&meshRefMetadata);
 
