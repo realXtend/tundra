@@ -41,12 +41,21 @@ const char *cMaterialKeywords[] = {
     "param_indexed", "param_indexed_auto", "param_named", "param_named_auto",
 };
 
-// As copied from OgreParticleEmittor.cpp
+// As copied from http://www.ogre3d.org/tikiwiki/Syntax+highlighting+for+TextWrangler
 const char *cParticleKeywords[] = {
-    "affector", // Affector has no keywords, for now at least
-    "emitter", "angle", "colour" "colour_range_start", "colour_range_end", "direction",  "emission_rate", "position",
-    "velocity", "velocity_min", "velocity_max", "time_to_live", "time_to_live_min", "time_to_live_max", "duration",
-    "duration_min", "duration_max", "repeat_delay", "repeat_delay_min", "repeat_delay_max", "name", "emit_emitter"
+    "particle_system", "quota", "material", "particle_width", "particle_height", "cull_each", "billboard_type",
+    "billboard_origin", "billboard_rotation_type", "common_direction", "common_up_vector", "renderer", "sorted",
+    "local_space", "point_rendering", "accurate_facing", "iteration_interval", "nonvisible_update_timeout", "emitter",
+    "angle", "colour", "colour_range_start", "colour_range_end", "direction", "emission_rate", "position", "velocity",
+    "velocity_min", "velocity_max", "time_to_live", "time_to_live_min", "time_to_live_max", "duration", "duration_min",
+    "duration_max", "repeat_delay", "repeat_delay_min", "repeat_delay_max", "Point", "Box", "width", "height", "depth",
+    "Cylinder", "Ellipsoid", "HollowEllipsoid", "inner_width", "inner_height", "inner_depth", "Ring", "inner_width",
+    "inner_height", "name", "emit_emitter", "emit_emitter_quota", "affector", "LinearForce", "force_vector", "force_application",
+    "ColourFader", "red", "green", "blue", "alpha", "ColourFader2", "red1", "green1", "blue1", "alpha1", "red2", "green2",
+    "blue2", "alpha2", "state_change", "Scaler", "rate", "Rotator", "vrotation_speed_range_start", "rotation_speed_range_end",
+    "rotation_range_start", "rotation_range_end", "ColourInterpolator", "time0", "colour0", "time1", "colour1", "time2", "colour2",
+    "time3", "colour3", "time4", "colour4", "time5", "colour5", "ColourImage", "image", "DeflectorPlane", "plane_point", "plane_normal",
+    "bounce", "DirectionRandomiser", "randomness", "scope", "keep_velocity"
 };
 
 bool IsKeyword(const QString &text, const char **keywords, size_t numKeywords)
