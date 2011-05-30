@@ -144,12 +144,10 @@ private:
     // #   Multiconnection   #
     // #######################
 
-    // Private variable: Syncmanager
+    // Syncmanager
     SyncManager *syncManager_;
-    // Private variable: Syncmanager array
+    // Syncmanager array
     QMap<QString, SyncManager*> syncManagers_;
-
-    // Private method: Creates new Ogre sceneManager and switches to it
 
 private slots:
     // Connects new syncManager object to newly created scene
