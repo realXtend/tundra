@@ -314,6 +314,10 @@ void EC_HoveringText::Redraw()
     if (pixmap.isNull())
         return;
     QImage img = pixmap.toImage();
+    if (img.isNull())
+        return;
+    if (img.height() <= 0 || img.width() <= 0)
+        return;
 
     // Create Ogre texture
     Ogre::TexturePtr texPtr;
@@ -326,11 +330,11 @@ void EC_HoveringText::Redraw()
             texPtr = Ogre::TextureManager::getSingleton().createManual(
                 textureName_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
                 img.width(), img.height(), 0, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
-    ///\todo Disabled mip map generation for now, since the line 'texPtr->getBuffer()->blitFromMemory(pixel_box);' below
-    /// will not regenerate them. 
-//                img.width(), img.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
 
-            assert(!texPtr.isNull());
+            ///\todo Disabled mip map generation for now, since the line 'texPtr->getBuffer()->blitFromMemory(pixel_box);' below
+            /// will not regenerate them. 
+            //  img.width(), img.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
+
             if (texPtr.isNull())
             {
                 LogError("Failed to create texture " + textureName_);
@@ -340,7 +344,12 @@ void EC_HoveringText::Redraw()
         else
         {
             texPtr = Ogre::TextureManager::getSingleton().getByName(textureName_);
-            assert(!texPtr.isNull());
+            if (texPtr.isNull())
+            {
+                LogError("Failed to get created texture " + textureName_ + " for drawing!");
+                return;
+            }
+
             // See if size/format changed, have to delete/recreate internal resources
             if (img.width() != (int)texPtr->getWidth() || img.height() != (int)texPtr->getHeight())
             {
