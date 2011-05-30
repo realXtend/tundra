@@ -30,15 +30,85 @@ Sphere::Sphere(const float3 &pointA, const float3 &pointB)
     pos = (pointA + pointB) / 2.f;
     r = (pointB - pos).Length();
 }
-/*
+
 Sphere::Sphere(const float3 &pointA, const float3 &pointB, const float3 &pointC)
 {
+    // See e.g. http://en.wikipedia.org/wiki/Circumcenter .
+
+    float3 b = pointB - pointA;
+    float3 c = pointC - pointA;
+    float3 normal = Cross(b, c);
+    float denom = 2.f * normal.LengthSq();
+    if (EqualAbs(denom, 0.f))
+    {
+        SetNegativeInfinity();
+        return;
+    }
+
+#if 0
+    {
+        // The three points are collinear. Construct a line through two most extremal points.
+        float dC = Dot(b,c);
+
+        if (dC < 0.f)
+            *this = Sphere(pointB, pointC);
+        else
+        {
+            float dB = Dot(b, b);
+            if (dC > dB)
+                *this = Sphere(pointA, pointC);
+            else
+                *this = sphere(pointA, pointB);
+        }
+        return;
+    }
+#endif
+
+    pos = (c.LengthSq() * Cross(normal, c) + b.LengthSq() * Cross(b, normal)) / denom;
+    r = pos.Length();
+    pos += pointA;
+
+/* // An alternate formulation that is probably correct, but the above contains fewer operations.
+   // This one contains a matrix inverse operation.
+    float3x3 m;
+    m.SetRow(0, pointB - pointA);
+    m.SetRow(1, pointC - pointA);
+    m.SetRow(2, Cross(m.Row(0), m.Row(1)));
+    float3 lengths = float3(m.Row(0).LengthSq(), m.Row(1).LengthSq(), 0.f) * 0.5f;
+
+    bool success = m.Inverse();
+    if (!success)
+    {
+        SetNegativeInfinity();
+        return;
+    }
+
+    pos = m * lengths;
+    r = pos.Length();
+    pos += pointA;
+*/
 }
 
 Sphere::Sphere(const float3 &pointA, const float3 &pointB, const float3 &pointC, const float3 &pointD)
 {
+    float3x3 m;
+    m.SetRow(0, pointB - pointA);
+    m.SetRow(1, pointC - pointA);
+    m.SetRow(2, pointD - pointA);
+    float3 lengths = float3(m.Row(0).LengthSq(), m.Row(1).LengthSq(), m.Row(2).LengthSq()) * 0.5f;
+
+    bool success = m.Inverse();
+    if (!success)
+    {
+        SetNegativeInfinity();
+        return;
+    }
+
+    pos = m * lengths;
+    r = pos.Length();
+    pos += pointA;
 }
-*/
+
 AABB Sphere::MinimalEnclosingAABB() const
 {
     AABB aabb;
@@ -116,16 +186,48 @@ Sphere Sphere::FastEnclosingSphere(const float3 *pts, int numPoints)
 
     // The two points on the longest axis define the initial sphere.
     s.pos = (pts[min] + pts[max]) / 2.f;
-    r = pts[min].Distance(s.pos);
+    s.r = pts[min].Distance(s.pos);
 
     // Second pass: Make sure each point lies inside this sphere, expand if necessary.
     for(int i = 0; i < numPoints; ++i)
-        Enclose(pts[i]);
+        s.Enclose(pts[i]);
+    return s;
 }
 
+/** This implementation was adapted from Christer Ericson's Real-time Collision Detection, pp. 99-100. */
+/*
+Sphere WelzlSphere(const float3 *pts, int numPoints, float3 *support, int numSupports)
+{
+    if (numPoints == 0)
+    {
+        switch(numSupports)
+        {
+        default: assert(false);
+        case 0: return Sphere();
+        case 1: return Sphere(support[0], 0.f);
+        case 2: return Sphere(support[0], support[1]);
+        case 3: return Sphere(support[0], support[1], support[2]);
+        case 4: return Sphere(support[0], support[1], support[2], support[3]);
+        }
+    }
+
+    ///\todo The following recursion can easily crash the stack for large inputs.  Convert this to proper form.
+    Sphere smallestSphere = WelzlSphere(pts, numPoints - 1, support, numSupports);
+    if (smallestSphere.Contains(pts[numPoints-1]))
+        return smallestSphere;
+    support[numSupports] = pts[numPoints-1];
+    return WelzlSphere(pts, numPoints - 1,  support, numSupports + 1);
+}
+*/
+/*
+Sphere Sphere::OptimalEnclosingSphere(const float3 *pts, int numPoints)
+{
+    float3 support[4];
+    WelzlSphere(pts, numPoints, &support, 0);
+}
+*/
 /*
 Sphere Sphere::ApproximateEnclosingSphere(const float3 *pointArray, int numPoints)
-Sphere Sphere::OptimalEnclosingSphere(const float3 *pointArray, int numPoints)
 
 float3 Sphere::RandomPointInside(LCG &rng) const
 float3 Sphere::RandomPointOnSurface(LCG &rng) const

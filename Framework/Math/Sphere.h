@@ -28,11 +28,13 @@ public:
     /// Constructs the minimal sphere enclosing the given two points.
     Sphere(const float3 &pointA, const float3 &pointB);
 
-    /// Constructs the minimal sphere enclosing the given three points.
- //   Sphere(const float3 &pointA, const float3 &pointB, const float3 &pointC);
+    /// Constructs the sphere to pass through the given three points.
+    /// @note The resulting sphere may not be the minimal enclosing sphere for the three points!
+    Sphere(const float3 &pointA, const float3 &pointB, const float3 &pointC);
 
-    /// Constructs the minimal sphere enclosing the given four points.
- //   Sphere(const float3 &pointA, const float3 &pointB, const float3 &pointC, const float3 &pointD);
+    /// Constructs the sphere to pass through the given four points.
+    /// @note The resulting sphere may not be the minimal enclosing sphere for the three points!
+    Sphere(const float3 &pointA, const float3 &pointB, const float3 &pointC, const float3 &pointD);
 
     AABB MinimalEnclosingAABB() const;
     AABB MaximalContainedAABB() const;
@@ -57,9 +59,15 @@ public:
     /// This algorithm performs two linear passes over the data set, i.e. it is O(n).
     static Sphere FastEnclosingSphere(const float3 *pointArray, int numPoints);
 
+    /// Returns a Sphere that bounds the given point array.
+    /// This function implements Emo Welzl's optimal enclosing sphere algorithm.
+    /// See "Smallest enclosing disks (balls and ellipsoids)", Lecture Notes in Computer Science 555 (1991) pp. 359-370.
+    /// The running time is expected linear time, but compared to Ritter's algorithm (the FastEnclosingSphere() function),
+    /// this algorithm is considerably slower.   
+//    static Sphere OptimalEnclosingSphere(const float3 *pointArray, int numPoints);
+
 /*
     static Sphere ApproximateEnclosingSphere(const float3 *pointArray, int numPoints);
-    static Sphere OptimalEnclosingSphere(const float3 *pointArray, int numPoints);
 
     float3 RandomPointInside(LCG &rng) const;
     float3 RandomPointOnSurface(LCG &rng) const;
