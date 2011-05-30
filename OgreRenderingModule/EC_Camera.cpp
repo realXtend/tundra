@@ -7,9 +7,11 @@
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
+#include "FrameAPI.h"
 #include "Scene.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
+#include "Profiler.h"
 #include "Renderer.h"
 #include "LoggingFunctions.h"
 
@@ -23,12 +25,17 @@ EC_Camera::EC_Camera(Scene* scene) :
     IComponent(scene),
     attached_(false),
     camera_(0),
+    query_(0),
+    queryFrameNumber_(-1),
     upVector(this, "Up vector", Vector3df::UNIT_Y)
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
+    
+    if (framework_)
+        connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
 }
 
 EC_Camera::~EC_Camera()
@@ -49,8 +56,15 @@ EC_Camera::~EC_Camera()
         Renderer* renderer = world->GetRenderer();
         if (renderer->GetActiveCamera() == this)
             renderer->SetActiveCamera(0);
-        world->GetSceneManager()->destroyCamera(camera_);
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        sceneMgr->destroyCamera(camera_);
         camera_ = 0;
+        
+        if (query_)
+        {
+            sceneMgr->destroyQuery(query_);
+            query_ = 0;
+        }
     }
 }
 
@@ -247,6 +261,10 @@ void EC_Camera::UpdateSignals()
             camera_->setFarClipDistance(2000.f);
             camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth() / Ogre::Real(viewport->getActualHeight())));
             camera_->setAutoAspectRatio(true);
+
+            // Create a reusable frustum query
+            Ogre::PlaneBoundedVolumeList dummy;
+            query_ = sceneMgr->createPlaneBoundedVolumeQuery(dummy);
         }
     }
 }
@@ -257,35 +275,158 @@ void EC_Camera::OnComponentRemoved(IComponent* component, AttributeChange::Type 
         SetPlaceable(ComponentPtr());
 }
 
-bool EC_Camera::IsEntityVisible(Entity* entity) const
+bool EC_Camera::IsEntityVisible(Entity* entity)
 {
-    if ((!entity) || (!camera_) || (!parentEntity_))
-        return false;
-    if (entity->GetScene() != parentEntity_->GetScene())
-        return false;
-    EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
-    if (!placeable)
-        return false;
-    Ogre::SceneNode* placeableNode = placeable->GetSceneNode();
-    if (!placeableNode)
+    if ((!entity) || (!camera_))
         return false;
     
-    // Test all movable objects attached to the placeable node
-    unsigned numObjects = placeableNode->numAttachedObjects();
-    for (unsigned i = 0; i < numObjects; ++i)
-    {
-        if (camera_->isVisible(placeableNode->getAttachedObject(i)->getWorldBoundingBox()))
-            return true;
-    }
-    // Treat the mesh as a special case, because it has its own adjustment node, and is not detected by the code above
-    /// \todo Should be a general way
-    EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
-    if (mesh)
-    {
-        Ogre::Entity* entity = mesh->GetEntity();
-        if ((entity) && (camera_->isVisible(entity->getWorldBoundingBox())))
-            return true;
-    }
+    // Update query if not updated this frame
+    if (queryFrameNumber_ != framework_->Frame()->FrameNumber())
+        QueryVisibleEntities();
     
-    return false;
+    return visibleEntities_.find(entity->GetId()) != visibleEntities_.end();
 }
+
+QList<Entity*> EC_Camera::GetVisibleEntities()
+{
+    QList<Entity*> l;
+    
+    if ((!camera_) || (!parentEntity_) || (!parentEntity_->GetScene()))
+        return l;
+    
+    Scene* scene = parentEntity_->GetScene();
+    
+    // Update query if not updated this frame
+    if (queryFrameNumber_ != framework_->Frame()->FrameNumber())
+        QueryVisibleEntities();
+    
+    for (std::set<entity_id_t>::iterator i = visibleEntities_.begin(); i != visibleEntities_.end(); ++i)
+    {
+        Entity* entity = scene->GetEntity(*i).get();
+        if (entity)
+            l.push_back(entity);
+    }
+    
+    return l;
+}
+
+const std::set<entity_id_t>& EC_Camera::GetVisibleEntityIDs()
+{
+    if (camera_)
+    {
+        // Update query if not updated this frame
+        if (queryFrameNumber_ != framework_->Frame()->FrameNumber())
+            QueryVisibleEntities();
+    }
+    
+    return visibleEntities_;
+}
+
+void EC_Camera::StartViewTracking(Entity* entity)
+{
+    if (!entity)
+        return;
+
+    EntityPtr entityPtr = entity->shared_from_this();
+    for (unsigned i = 0; i < visibilityTrackedEntities_.size(); ++i)
+    {
+        if (visibilityTrackedEntities_[i].lock() == entityPtr)
+            return; // Already added
+    }
+    
+    visibilityTrackedEntities_.push_back(entity->shared_from_this());
+}
+
+void EC_Camera::StopViewTracking(Entity* entity)
+{
+    if (!entity)
+        return;
+    
+    EntityPtr entityPtr = entity->shared_from_this();
+    for (unsigned i = 0; i < visibilityTrackedEntities_.size(); ++i)
+    {
+        if (visibilityTrackedEntities_[i].lock() == entityPtr)
+        {
+            visibilityTrackedEntities_.erase(visibilityTrackedEntities_.begin() + i);
+            return;
+        }
+    }
+}
+
+void EC_Camera::OnUpdated(float timeStep)
+{
+    // Do nothing if visibility not being tracked for any entities
+    if (visibilityTrackedEntities_.empty())
+        return;
+    
+    // Update visible objects now if necessary
+    if (queryFrameNumber_ != framework_->Frame()->FrameNumber())
+        QueryVisibleEntities();
+    
+    for (unsigned i = visibilityTrackedEntities_.size() - 1; i < visibilityTrackedEntities_.size(); --i)
+    {
+        // Check if the entity has expired; erase from list in that case
+        if (visibilityTrackedEntities_[i].expired())
+            visibilityTrackedEntities_.erase(visibilityTrackedEntities_.begin() + i);
+        else
+        {
+            Entity* entity = visibilityTrackedEntities_[i].lock().get();
+            entity_id_t id = entity->GetId();
+            
+            // Check for change in visibility status
+            bool last = lastVisibleEntities_.find(id) != lastVisibleEntities_.end();
+            bool now = visibleEntities_.find(id) != visibleEntities_.end();
+            
+            if ((!last) && (now))
+            {
+                emit EntityEnterView(entity);
+                entity->EmitEnterView(this);
+            }
+            else if ((last) && (!now))
+            {
+                emit EntityLeaveView(entity);
+                entity->EmitLeaveView(this);
+            }
+        }
+    }
+}
+
+void EC_Camera::QueryVisibleEntities()
+{
+    if ((!camera_) || (!query_))
+        return;
+    
+    PROFILE(OgreWorld_FrustumQuery);
+    
+    lastVisibleEntities_ = visibleEntities_;
+    visibleEntities_.clear();
+    
+    Ogre::PlaneBoundedVolumeList volumes;
+    Ogre::PlaneBoundedVolume p = camera_->getPlaneBoundedVolume();
+    volumes.push_back(p);
+    query_->setVolumes(volumes);
+
+    Ogre::SceneQueryResult results = query_->execute();
+    for(Ogre::SceneQueryResultMovableList::iterator iter = results.movables.begin(); iter != results.movables.end(); ++iter)
+    {
+        Ogre::MovableObject *m = *iter;
+        const Ogre::Any& any = m->getUserAny();
+        if (any.isEmpty())
+            continue;
+        
+        Entity *entity = 0;
+        try
+        {
+            entity = Ogre::any_cast<Entity*>(any);
+        }
+        catch(Ogre::InvalidParametersException &/*e*/)
+        {
+            continue;
+        }
+        if (entity)
+            visibleEntities_.insert(entity->GetId());
+    }
+    
+    queryFrameNumber_ = framework_->Frame()->FrameNumber();
+}
+
