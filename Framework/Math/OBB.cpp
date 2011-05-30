@@ -261,6 +261,36 @@ void OBB::GetFacePlanes(Plane *outPlaneArray) const
         outPlaneArray[i] = FacePlane(i);
 }
 
+/// See Christer Ericson's book Real-Time Collision Detection, page 83.
+void OBB::ExtremePointsAlongDirection(const float3 &dir, const float3 *pointArray, int numPoints, int *idxSmallest, int *idxLargest)
+{
+    assume(idxSmallest || idxLargest);
+    assume(pointArray || numPoints == 0);
+
+    int smallest = 0;
+    int largest = 0;
+    float smallestD = std::numeric_limits<float>::infinity();
+    float largestD = -std::numeric_limits<float>::infinity();
+    for(int i = 0; i < numPoints; ++i)
+    {
+        float d = Dot(pointArray[i], dir);
+        if (d < smallestD)
+        {
+            smallestD = d;
+            smallest = i;
+        }
+        if (d > largestD)
+        {
+            largestD = d;
+            largest = i;
+        }
+    }
+    if (idxSmallest)
+        *idxSmallest = smallest;
+    if (idxLargest)
+        *idxLargest = largest;
+}
+
 OBB OBB::PCAEnclosingOBB(const float3 *pointArray, int numPoints)
 {
     assume(false && "Not implemented!");

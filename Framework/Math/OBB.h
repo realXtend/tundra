@@ -150,6 +150,14 @@ public:
     /// @param outPlaneArray [out] The array to write the planes to. Must have space for 6 elements.
     void GetFacePlanes(Plane *outPlaneArray) const;
 
+    /// Finds the two extreme points along the given direction vector from the given point array.
+    /// @param dir The direction vector to project the point array to. This vector does not need to be normalized.
+    /// @param pointArray [in] The list of points to process.
+    /// @param numPoints The number of elements in pointArray.
+    /// @param idxSmallest [out] The index of the smallest point along the given direction will be received here. This may be null, if this information is of no interest.
+    /// @param idxLargest [out] The index of the largest point along the given direction will be received here. This may be null, if this information is of no interest.
+    static void ExtremePointsAlongDirection(const float3 &dir, const float3 *pointArray, int numPoints, int *idxSmallest, int *idxLargest);
+
     /// Generates an OBB that encloses the given point set.
     /** This function uses principal component analysis as the heuristics to generate the OBB. The returned OBB
         is not necessarily the optimal OBB that encloses the given point set.
