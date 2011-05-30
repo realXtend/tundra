@@ -184,6 +184,9 @@ public:
     static float3x3 MakeOrthographicProjectionXZ(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
     static float3x3 MakeOrthographicProjectionXY(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
 
+    /// Computes the covariance matrix of the given set of data points.
+//    static float3x3 CovarianceMatrix(const float3 *pointArray, int numPoints);
+
     /// Returns the given element. [noscript]
     /** Returns a reference to the element at m[row][col] (or "m[y][x]").
         Remember that zero-based indexing is used, so m[0][0] is the upper-left element of this matrix.
@@ -419,7 +422,6 @@ public:
     float3x3 &operator /=(float scalar);
     float3x3 &operator +=(const float3x3 &rhs);
     float3x3 &operator -=(const float3x3 &rhs);
-
 
     /// Tests if this matrix does not contain any NaNs or infs.
     /** @return Returns true if the entries of this float3x3 are all finite, and do not contain NaN or infs. 

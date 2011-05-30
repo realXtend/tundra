@@ -477,7 +477,7 @@ float float3x3::Determinant() const
     const float h = v[2][1];
     const float i = v[2][2];
 
-    return a*e*i + b*f*g + c*d*h - a*f*h - b*d*i - c*e*g;
+    return a*(e*i - f*h) + b*(f*g - d*i) + c*(d*h - e*g);
 }
 
 #define SKIPNUM(val, skip) (val < skip ? val : skip + 1)
@@ -515,7 +515,29 @@ float3x3 float3x3::Adjugate() const
 */
 bool float3x3::Inverse()
 {
-    return InverseMatrix(*this);
+    // There exists a generic matrix inverse calculator that uses Gaussian elimination.
+    // It would be invoked by calling
+    // return InverseMatrix(*this);
+    // Instead, compute the inverse directly using Cramer's rule.
+    float d = Determinant();
+    if (EqualAbs(d, 0.f))
+        return false;
+
+    d = 1.f / d;
+    float3x3 i;
+    i[0][0] = d * (v[1][1] * v[2][2] - v[1][2] * v[2][1]);
+    i[0][1] = d * (v[0][2] * v[2][1] - v[0][1] * v[2][2]);
+    i[0][2] = d * (v[0][1] * v[1][2] - v[0][2] * v[1][1]);
+
+    i[1][0] = d * (v[1][2] * v[0][0] - v[1][0] * v[2][2]);
+    i[1][1] = d * (v[0][0] * v[2][2] - v[0][2] * v[2][0]);
+    i[1][2] = d * (v[0][2] * v[1][0] - v[0][0] * v[1][2]);
+
+    i[2][0] = d * (v[1][0] * v[2][1] - v[1][1] * v[2][0]);
+    i[2][1] = d * (v[2][0] * v[0][1] - v[0][0] * v[2][1]);
+    i[2][2] = d * (v[0][0] * v[1][1] - v[0][1] * v[1][0]);
+    *this = i;
+    return true;
 }
 
 float3x3 float3x3::Inverted() const
