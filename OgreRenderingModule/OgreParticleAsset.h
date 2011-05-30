@@ -19,6 +19,7 @@ public:
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
 
     /// IAsset overload.
+    /** The data will contain asset references in desanitated format. */
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
 
     virtual std::vector<AssetReference> FindReferences() const;
@@ -37,12 +38,9 @@ private:
     /// Removes all particle system templates.
     void RemoveTemplates();
 
-    /// Stores the names of the loaded particle system templates.
-    StringVector templates;
-
-    std::string internalName;
-
-    /// references to other resources this resource depends on
-    std::vector<AssetReference> references;
+    StringVector templates; /// Stores the names of the loaded particle system templates.
+    std::string internalName; ///< Internal Ogre name for the particle system.
+    std::string originalData; ///< Original particle script file data, asset references are in sanitated format.
+    std::vector<AssetReference> references; ///< references to other resources this resource depends on
 };
 #endif

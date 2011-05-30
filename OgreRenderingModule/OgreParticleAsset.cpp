@@ -118,6 +118,12 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes)
                     // Write line to the copy
                     if (!skip_until_next)
                     {
+                        // Maintain the intendation.
+                        int numIntendations = brace_level;
+                        if (line.find("{") != std::string::npos)
+                            --numIntendations;
+                        for(int i = 0; i < numIntendations; ++i)
+                            output << "    ";
                         output << line << std::endl;
                     }
                     else
@@ -127,7 +133,15 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes)
                 {
                     // Write line to the copy
                     if (!skip_until_next)
+                    {
+                        // Maintain the intendation.
+                        int numIntendations = brace_level;
+                        if (line.find("{") != std::string::npos)
+                            --numIntendations;
+                        for(int i = 0; i < numIntendations; ++i)
+                            output << "    ";
                         output << line << std::endl;
+                    }
                     else
                         LogDebug("Skipping risky particle effect line: " + line);
 
@@ -137,9 +151,9 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes)
             }
         }
 
-        std::string output_str = output.str();
+        originalData = output.str();
 #include "DisableMemoryLeakCheck.h"
-        Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&output_str[0], output_str.size()));
+        Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&originalData[0], originalData.size()));
 #include "EnableMemoryLeakCheck.h"
         Ogre::ParticleSystemManager::getSingleton().parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     }
@@ -168,43 +182,12 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 
 bool OgreParticleAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
-/*
-    if (ogreMaterial.isNull())
-    {
-        LogWarning("OgreParticleAsset::SerializeTo: Tried to export non-existing Ogre material " + Name().toStdString());
-        return false;
-    }
-*/
-    try
-    {
-        for(unsigned i = 0; i < templates.size(); ++i)
-        {
-            Ogre::ParticleSystem *ps = Ogre::ParticleSystemManager::getSingleton().getTemplate(templates[i]);
-            //ps->get
-            //Ogre::ParticleSystemManager
-            //ps->copyParametersTo
-        }
-        /*
-        Ogre::MaterialSerializer serializer;
-        serializer.queueForExport(ogreMaterial);
-        std::string materialData = serializer.getQueuedAsString();
-        if (materialData.empty())
-            return false;
-
-        // Make sure that asset refs/IDs are desanitated.
-        DesanitateAssetIds(materialData);
-
-        data.clear();
-        data.insert(data.end(), &materialData[0], &materialData[0] + materialData.length());
-        */
-    }
-    catch(std::exception &e)
-    {
-        LogError("OgreParticleAsset::SerializeTo: Failed to export Ogre particle system " + Name() + ":");
-        if (e.what())
-            LogError(e.what());
-        return false;
-    }
+    data.clear();
+    std::string desanitatedData = originalData;
+    QStringList keywords;
+    keywords << "particle_system " << "material ";
+    DesanitateAssetIds(desanitatedData, keywords);
+    data.insert(data.end(), &desanitatedData[0], &desanitatedData[0] + desanitatedData.length());
     return true;
 }
 

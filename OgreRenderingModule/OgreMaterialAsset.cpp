@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "OgreMaterialAsset.h"
@@ -177,19 +179,6 @@ bool GetBoolValue(const QString& value)
     if (value == "true")
         return true;
     return false;
-}
-
-std::string AddDoubleQuotesIfNecessary(const std::string &str)
-{
-    std::string ret = str;
-    size_t found = ret.find(' ');
-    if (found != std::string::npos)
-    {
-        ret.insert(0, "\"");
-        ret.append("\"");
-    }
-
-    return ret;
 }
 
 OgreMaterialAsset::~OgreMaterialAsset()
@@ -469,7 +458,9 @@ bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serial
             return false;
 
         // Make sure that asset refs/IDs are desanitated.
-        DesanitateAssetIds(materialData);
+        QStringList keywords;
+        keywords << "material " << "texture ";
+        OgreRenderer::DesanitateAssetIds(materialData, keywords);
 
         data.clear();
         data.insert(data.end(), &materialData[0], &materialData[0] + materialData.length());
@@ -638,40 +629,6 @@ Ogre::TextureUnitState* OgreMaterialAsset::GetTextureUnit(int techIndex, int pas
     if (texUnitIndex < 0 || texUnitIndex >= pass->getNumTextureUnitStates())
         return 0;
      return pass->getTextureUnitState(texUnitIndex);
-}
-
-void OgreMaterialAsset::DesanitateAssetIds(std::string &material)
-{
-    const QString textureId("texture ");
-    const QString materialId("material ");
-    QString matString(material.c_str());
-    QStringList lines = matString.split("\n");
-    for(int i = 0; i < lines.size(); ++i)
-    {
-        QString id;
-        int idx = -1, offset = -1;
-        if (lines[i].contains(textureId))
-        {
-            idx = lines[i].indexOf(textureId);
-            offset = textureId.length();
-            id = textureId;
-        }
-        else if (lines[i].contains(materialId))
-        {
-            idx = lines[i].indexOf(materialId);
-            offset = materialId.length();
-            id = materialId;
-        }
-
-        if (idx != -1 && offset != -1)
-        {
-            QString desanitatedRef = DesanitateAssetIdFromOgre(lines[i].mid(idx + offset).trimmed());
-            lines[i] = lines[i].left(idx);
-            lines[i].append(id + desanitatedRef);
-        }
-    }
-
-    material = lines.join("\n").toStdString();
 }
 
 int OgreMaterialAsset::GetNumTechniques()

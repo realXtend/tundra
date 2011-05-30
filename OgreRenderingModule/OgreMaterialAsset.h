@@ -19,10 +19,12 @@ public:
     OgreMaterialAsset(AssetAPI *owner, const QString &type_, const QString &name_) : IAsset(owner, type_, name_) {}
     ~OgreMaterialAsset();
 
-    /// Load material from memory
+    /// IAsset overload.
+    /// Loads material from memory.
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
-    /// Load material into memory
+    /// IAsset overload.
+    /** The @c data will contain asset references in desanitated format. */
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
     /// Unload material from ogre
@@ -48,10 +50,6 @@ public:
     Ogre::Pass* GetPass(int techIndex, int passIndex);
     /// Function that safely returns a texture unit, or 0 if did not exist
     Ogre::TextureUnitState* GetTextureUnit(int techIndex, int passIndex, int texUnitIndex);
-
-    /// Desanitates asset references in material scripts.
-    /** @param material Material script data as string. */
-    static void DesanitateAssetIds(std::string &material);
 
 public slots:
     /// Makes a clone of this asset.
