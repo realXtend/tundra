@@ -96,6 +96,10 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
         }
     }
 
+    // Resolve the refs now
+    for (unsigned i = 0; i < refs.size(); ++i)
+        refs[i].parsedRef = assetAPI->ResolveAssetRef(Name(), refs[i].parsedRef);
+
     return true;
 }
 
@@ -112,12 +116,12 @@ void QtUiAsset::DoUnload()
 }
 
 std::vector<AssetReference> QtUiAsset::FindReferences() const
-{  
+{
     std::vector<AssetReference> assetRefs;
+    
     for(size_t i = 0; i < refs.size(); ++i)
-    {
         assetRefs.push_back(AssetReference(refs[i].parsedRef));
-    }
+    
     return assetRefs;
 }
 
