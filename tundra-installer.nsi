@@ -1,5 +1,5 @@
 !include "fileassoc.nsh"
-!define VERSION "1.0.5"
+!define VERSION "2.0"
 
 Name "Tundra ${VERSION}"
 
@@ -29,11 +29,11 @@ Section ""
                    "UninstallString" "$INSTDIR\uninstaller.exe"
 
   # Register file extensions for .txml and .tbin.
-  !insertmacro APP_ASSOCIATE "txml" "Tundra.Scenexmlfile" "Tundra XML Scene File" "$INSTDIR\data\ui\images\naali_icon.ico,0" "Open in Tundra Server" "$INSTDIR\server.exe --file $\"%1$\""
-  !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "openviewer" "Open Tundra Viewer in this directory" "$INSTDIR\viewer.exe --storage $\"%1$\""
+  !insertmacro APP_ASSOCIATE "txml" "Tundra.Scenexmlfile" "Tundra XML Scene File" "$INSTDIR\data\ui\images\naali_icon.ico,0" "Open in Tundra Server" "$INSTDIR\tundra.exe --file $\"%1$\" --server 2345 --protocol udp"
+  !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "openviewer" "Open Tundra Viewer in this directory" "$INSTDIR\tundra.exe --config viewer.xml --storage $\"%1$\""
 
-  !insertmacro APP_ASSOCIATE "tbin" "Tundra.Scenebinfile" "Tundra Binary Scene File" "$INSTDIR\data\ui\images\naali_icon.ico,0" "Open in Tundra Server" "$INSTDIR\server.exe --file $\"%1$\""
-  !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenebinfile" "openviewer" "Open Tundra Viewer in this directory" "$INSTDIR\viewer.exe --storage $\"%1$\""
+  !insertmacro APP_ASSOCIATE "tbin" "Tundra.Scenebinfile" "Tundra Binary Scene File" "$INSTDIR\data\ui\images\naali_icon.ico,0" "Open in Tundra Server" "$INSTDIR\tundra.exe --file $\"%1$\" --server 2345 --protocol udp"
+  !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenebinfile" "openviewer" "Open Tundra Viewer in this directory" "$INSTDIR\tundra.exe --config viewer.xml --storage $\"%1$\""
   
   ExecWait '"$INSTDIR\oalinst.exe"'
   ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
@@ -49,22 +49,13 @@ SectionEnd
 Section "Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Server.lnk" "$INSTDIR\server.exe"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Viewer.lnk" "$INSTDIR\viewer.exe"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Server.lnk" "$INSTDIR\tundra.exe" "--server 2345 --protocol udp"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Viewer.lnk" "$INSTDIR\tundra.exe" "--config viewer.xml"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Readme.lnk" "$INSTDIR\readme.txt"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
 
   CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}\Demos"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\3DCanvas.lnk" "$INSTDIR\scenes\3DCanvas\TestScene.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\Avatar.lnk" "$INSTDIR\scenes\Avatar\avatar.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\ChatApplication.lnk" "$INSTDIR\scenes\ChatApplication\TestWorld.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\DayNight.lnk" "$INSTDIR\scenes\DayNight\TestWorld.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\ECSound.lnk" "$INSTDIR\scenes\ECSound\TestWorld.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\MumbleUI.lnk" "$INSTDIR\scenes\MumbleUI\test_mumble.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\Physics.lnk" "$INSTDIR\scenes\Physics\physics.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\RenderToTexture.lnk" "$INSTDIR\scenes\RenderToTexture\RttDemoWorld.txml"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\Tooltip.lnk" "$INSTDIR\scenes\Tooltip\TestWorld.txml"
-#  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\WaterPlane.lnk" "$INSTDIR\scenes\WaterPlane\TestScene.txml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\MeetingApp.lnk" "$INSTDIR\scenes\MeetingApp\MeetingApp.txml"
 SectionEnd
 
 Section "Uninstall"
