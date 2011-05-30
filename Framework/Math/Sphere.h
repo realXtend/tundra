@@ -58,32 +58,31 @@ public:
     /*
     float Distance(const float3 &point, float3 &outClosestPointOnSphere) const;
 
-    bool Intersect(const Ray &ray, float &outDistance) const;
-    bool Intersect(const Line &line, float &outDistance) const;
-    bool Intersect(const LineSegment &lineSegment, float &outDistance) const;
-    bool Intersect(const AABB &aabb) const;
-    bool Intersect(const OBB &obb) const;
-    bool Intersect(const Plane &plane) const;
-    bool Intersect(const Sphere &sphere) const;
-    bool Intersect(const Ellipsoid &ellipsoid) const;
-    bool Intersect(const Triangle &triangle) const;
-    bool Intersect(const Cylinder &cylinder) const;
-    bool Intersect(const Torus &torus) const;
-    bool Intersect(const Frustum &frustum) const;
-    bool Intersect(const Polygon &polygon) const;
-    bool Intersect(const Polyhedron &polyhedron) const;
+    bool Intersects(const Ray &ray, float &outDistance) const;
+    bool Intersects(const Line &line, float &outDistance) const;
+    bool Intersects(const LineSegment &lineSegment, float &outDistance) const;
+    bool Intersects(const AABB &aabb) const;
+    bool Intersects(const OBB &obb) const;
+    bool Intersects(const Plane &plane) const;
+    bool Intersects(const Ellipsoid &ellipsoid) const;
+    bool Intersects(const Triangle &triangle) const;
+    bool Intersects(const Cylinder &cylinder) const;
+    bool Intersects(const Torus &torus) const;
+    bool Intersects(const Frustum &frustum) const;
+    bool Intersects(const Polygon &polygon) const;
+    bool Intersects(const Polyhedron &polyhedron) const;
     */
-    /*
+    bool Intersects(const Sphere &sphere) const;
+
     void Enclose(const AABB &aabb);
     void Enclose(const OBB &obb);
     void Enclose(const Sphere &sphere);
-    void Enclose(const Triangle &triangle);
-    void Enclose(const Polygon &polygon);
-    bool Enclose(const Polyhedron &polyhedron);
+//    void Enclose(const Triangle &triangle);
+//    void Enclose(const Polygon &polygon);
+//    bool Enclose(const Polyhedron &polyhedron);
     void Enclose(const LineSegment &lineSegment);
     void Enclose(const float3 &point);
     void Enclose(const float3 *pointArray, int numPoints);
-    */
 };
 
 #ifdef QT_INTEROP
