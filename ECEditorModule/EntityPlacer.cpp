@@ -14,7 +14,9 @@
 #include "EC_Mesh.h"
 #include "OgreRenderingModule.h"
 
-#include <Ogre.h>
+#include <OgreSceneManager.h>
+#include <OgreEntity.h>
+#include <OgreSubEntity.h>
 
 #include "MemoryLeakCheck.h"
 
