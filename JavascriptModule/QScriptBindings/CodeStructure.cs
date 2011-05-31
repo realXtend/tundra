@@ -291,7 +291,7 @@ namespace DocGenerator
 
     };
 
-    class CodeStructure
+    public class CodeStructure
     {
         public Dictionary<string, Symbol> symbols;
         public Dictionary<string, Symbol> symbolsByAnchor = new Dictionary<string,Symbol>();
@@ -548,7 +548,7 @@ namespace DocGenerator
                         }
                         else
                         {
-                            Console.WriteLine("Can't find similarOverload " + directiveParam + " for member " + s.FullQualifiedSymbolName());
+//                            Console.WriteLine("Can't find similarOverload " + directiveParam + " for member " + s.FullQualifiedSymbolName());
                         }
                         s.comments[i] = CutDocGeneratorCommentDirective(s.comments[i], directiveStartIndex - 1, endIdx + 1 - directiveStartIndex);
 

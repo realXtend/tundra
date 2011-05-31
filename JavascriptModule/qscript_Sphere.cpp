@@ -25,6 +25,27 @@ static QScriptValue Sphere_Sphere_float3_float3(QScriptContext *context, QScript
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue Sphere_Sphere_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Sphere_Sphere_float3_float3_float3 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3 pointA = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 pointB = TypeFromQScriptValue<float3>(context->argument(1));
+    float3 pointC = TypeFromQScriptValue<float3>(context->argument(2));
+    Sphere ret(pointA, pointB, pointC);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Sphere_Sphere_float3_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Sphere_Sphere_float3_float3_float3_float3 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3 pointA = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 pointB = TypeFromQScriptValue<float3>(context->argument(1));
+    float3 pointC = TypeFromQScriptValue<float3>(context->argument(2));
+    float3 pointD = TypeFromQScriptValue<float3>(context->argument(3));
+    Sphere ret(pointA, pointB, pointC, pointD);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue Sphere_MinimalEnclosingAABB(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Sphere_MinimalEnclosingAABB in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -41,6 +62,15 @@ static QScriptValue Sphere_MaximalContainedAABB(QScriptContext *context, QScript
     if (!This) { printf("Error! Invalid context->thisObject in function Sphere_MaximalContainedAABB in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     AABB ret = This->MaximalContainedAABB();
     return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Sphere_SetNegativeInfinity(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Sphere_SetNegativeInfinity in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Sphere *This = TypeFromQScriptValue<Sphere*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Sphere_SetNegativeInfinity in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    This->SetNegativeInfinity();
+    return QScriptValue();
 }
 
 static QScriptValue Sphere_Volume(QScriptContext *context, QScriptEngine *engine)
@@ -99,6 +129,66 @@ static QScriptValue Sphere_Distance_float3(QScriptContext *context, QScriptEngin
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue Sphere_Intersects_Sphere(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_Intersects_Sphere in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Sphere *This = TypeFromQScriptValue<Sphere*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Sphere_Intersects_Sphere in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Sphere sphere = TypeFromQScriptValue<Sphere>(context->argument(0));
+    bool ret = This->Intersects(sphere);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Sphere_Enclose_AABB(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_Enclose_AABB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Sphere *This = TypeFromQScriptValue<Sphere*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Sphere_Enclose_AABB in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    AABB aabb = TypeFromQScriptValue<AABB>(context->argument(0));
+    This->Enclose(aabb);
+    return QScriptValue();
+}
+
+static QScriptValue Sphere_Enclose_OBB(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_Enclose_OBB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Sphere *This = TypeFromQScriptValue<Sphere*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Sphere_Enclose_OBB in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    OBB obb = TypeFromQScriptValue<OBB>(context->argument(0));
+    This->Enclose(obb);
+    return QScriptValue();
+}
+
+static QScriptValue Sphere_Enclose_Sphere(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_Enclose_Sphere in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Sphere *This = TypeFromQScriptValue<Sphere*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Sphere_Enclose_Sphere in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Sphere sphere = TypeFromQScriptValue<Sphere>(context->argument(0));
+    This->Enclose(sphere);
+    return QScriptValue();
+}
+
+static QScriptValue Sphere_Enclose_LineSegment(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_Enclose_LineSegment in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Sphere *This = TypeFromQScriptValue<Sphere*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Sphere_Enclose_LineSegment in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    LineSegment lineSegment = TypeFromQScriptValue<LineSegment>(context->argument(0));
+    This->Enclose(lineSegment);
+    return QScriptValue();
+}
+
+static QScriptValue Sphere_Enclose_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_Enclose_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Sphere *This = TypeFromQScriptValue<Sphere*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Sphere_Enclose_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 point = TypeFromQScriptValue<float3>(context->argument(0));
+    This->Enclose(point);
+    return QScriptValue();
+}
+
 static QScriptValue Sphere_pos_get(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Sphere_pos_get in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -143,7 +233,26 @@ static QScriptValue Sphere_ctor(QScriptContext *context, QScriptEngine *engine)
         return Sphere_Sphere_float3_float(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)))
         return Sphere_Sphere_float3_float3(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)))
+        return Sphere_Sphere_float3_float3_float3(context, engine);
+    if (context->argumentCount() == 4 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)) && QSVIsOfType<float3>(context->argument(3)))
+        return Sphere_Sphere_float3_float3_float3_float3(context, engine);
     printf("Sphere_ctor failed to choose the right function to call! Did you use 'var x = Sphere();' instead of 'var x = new Sphere();'?\n"); return QScriptValue();
+}
+
+static QScriptValue Sphere_Enclose_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<AABB>(context->argument(0)))
+        return Sphere_Enclose_AABB(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<OBB>(context->argument(0)))
+        return Sphere_Enclose_OBB(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Sphere>(context->argument(0)))
+        return Sphere_Enclose_Sphere(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<LineSegment>(context->argument(0)))
+        return Sphere_Enclose_LineSegment(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float3>(context->argument(0)))
+        return Sphere_Enclose_float3(context, engine);
+    printf("Sphere_Enclose_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
 }
 
 class Sphere_scriptclass : public QScriptClass
@@ -185,12 +294,15 @@ QScriptValue register_Sphere_prototype(QScriptEngine *engine)
     QScriptValue proto = engine->newVariant(qVariantFromValue((Sphere*)0));
     proto.setProperty("MinimalEnclosingAABB", engine->newFunction(Sphere_MinimalEnclosingAABB, 0));
     proto.setProperty("MaximalContainedAABB", engine->newFunction(Sphere_MaximalContainedAABB, 0));
+    proto.setProperty("SetNegativeInfinity", engine->newFunction(Sphere_SetNegativeInfinity, 0));
     proto.setProperty("Volume", engine->newFunction(Sphere_Volume, 0));
     proto.setProperty("SurfaceArea", engine->newFunction(Sphere_SurfaceArea, 0));
     proto.setProperty("IsFinite", engine->newFunction(Sphere_IsFinite, 0));
     proto.setProperty("IsDegenerate", engine->newFunction(Sphere_IsDegenerate, 0));
     proto.setProperty("Contains", engine->newFunction(Sphere_Contains_float3, 1));
     proto.setProperty("Distance", engine->newFunction(Sphere_Distance_float3, 1));
+    proto.setProperty("Intersects", engine->newFunction(Sphere_Intersects_Sphere, 1));
+    proto.setProperty("Enclose", engine->newFunction(Sphere_Enclose_selector, 1));
     proto.setProperty("pos", engine->newFunction(Sphere_pos_get, 1));
     proto.setProperty("setPos", engine->newFunction(Sphere_pos_set, 1));
     proto.setProperty("r", engine->newFunction(Sphere_r_get, 1));
@@ -201,7 +313,7 @@ QScriptValue register_Sphere_prototype(QScriptEngine *engine)
     sc->objectPrototype = proto;
     engine->setDefaultPrototype(qMetaTypeId<Sphere>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Sphere*>(), proto);
-    QScriptValue ctor = engine->newFunction(Sphere_ctor, proto, 2);
+    QScriptValue ctor = engine->newFunction(Sphere_ctor, proto, 4);
     engine->globalObject().setProperty("Sphere", ctor);
     return ctor;
 }
