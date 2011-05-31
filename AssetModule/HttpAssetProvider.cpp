@@ -132,7 +132,7 @@ AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString
         return AssetStoragePtr();
     if (!s.contains("src"))
         return AssetStoragePtr();
-
+    
     QString path;
     QString protocolPath;
     AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(s["src"], 0, 0, &protocolPath, 0, 0, &path);
@@ -142,7 +142,13 @@ AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString
 
     QString name = (s.contains("name") ? s["name"] : GenerateUniqueStorageName());
 
-    return AddStorageAddress(protocolPath, name);
+    HttpAssetStoragePtr newStorage = AddStorageAddress(protocolPath, name);
+
+    // Set local dir if specified
+    if (newStorage && s.contains("localdir"))
+        newStorage->localDir = s["localdir"];
+    
+    return newStorage;
 }
 
 QString HttpAssetProvider::GenerateUniqueStorageName() const

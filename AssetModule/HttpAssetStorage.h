@@ -23,7 +23,8 @@ public:
     QString baseAddress;
     QString storageName;
     QStringList assetRefs;
-
+    QString localDir;
+    
 public slots:
     /// Specifies whether data can be uploaded to this asset storage.
     virtual bool Writable() const { return false; }
@@ -54,6 +55,9 @@ public slots:
     
     /// Delete an assetref. Emit AssetRefsChanged() if found. Called by HttpAssetProvider
     void DeleteAssetRef(const QString& ref);
+    
+    /// Returns the local directory of this storage. Empty if not local.
+    const QString& LocalDir() const { return localDir; }
     
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
