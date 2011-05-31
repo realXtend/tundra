@@ -385,6 +385,83 @@ namespace OgreRenderer
         c_handler_->Initialize(framework_ ,viewport_);
     }
 
+    void Renderer::CreateSceneManager(const QString &sceneName)
+    {
+        Ogre::String name= Ogre::String(sceneName.toStdString());
+
+        // Check if scenemanager already exist.
+        if (root_->hasSceneManager(name))
+            return;
+
+        Ogre::SceneManager *scenemanagerTmp = root_->createSceneManager(Ogre::ST_GENERIC, name);
+        if (framework_->IsHeadless())
+            return;
+
+        //sceneManagerMap[sceneName]=scenemanagerTmp;
+        default_camera_ = scenemanagerTmp->createCamera("DefaultCamera");
+
+        default_camera_->setNearClipDistance(0.1f);
+        default_camera_->setFarClipDistance(2000.f);
+        default_camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
+        default_camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
+        default_camera_->setAspectRatio(Ogre::Real(viewport_->getActualWidth()) / Ogre::Real(viewport_->getActualHeight()));
+        default_camera_->setAutoAspectRatio(true);
+
+    }
+
+    // Sets viewport again when scenemanager_ pointer is changed
+    void Renderer::SetupViewPort()
+    {
+        Ogre::Camera* camera=scenemanager_->getCamera("DefaultCamera");
+        viewport_->setCamera(camera);
+        camera_=camera;
+    }
+
+    // Changes scenemanager_ pointer to different scene.
+    // Destroys rayqueries from previous scene and initializes them to new scene
+    void Renderer::SetSceneManager(const QString &sceneName)
+    {
+
+        Ogre::String name= Ogre::String(sceneName.toStdString());
+
+        // Remove ray queries from present sceneManager
+        if (scenemanager_)
+            scenemanager_->destroyQuery(ray_query_);
+        // Get new scenemanager from root_
+        scenemanager_ = root_->getSceneManager(name);
+        // Set rayqueries
+        ray_query_ = scenemanager_->createRayQuery(Ogre::Ray());
+        ray_query_->setSortByDistance(true);
+        // Set shadows
+        InitShadows();
+        // Setup viewport for new sceneManager
+        SetupViewPort();
+    }
+
+    // Overloads GetSceneManager-method to return scenemanager_ pointer with name-parameter.
+    Ogre::SceneManager* Renderer::GetSceneManager(const QString &sceneName)
+    {
+        Ogre::String name= Ogre::String(sceneName.toStdString());
+
+        if(sceneName=="" || !(root_->hasSceneManager(name)))
+            return scenemanager_;
+        else
+            return root_->getSceneManager(name);
+
+    }
+
+    // Removes Ogre scenemanager from root.
+    void Renderer::RemoveSceneManager(const QString &name)
+    {
+        Ogre::String managerName = Ogre::String(name.toStdString());
+        Ogre::SceneManager* sm = root_->getSceneManager(managerName);
+        //sm->getRenderQueue()->setRenderableListener(0);
+        //sm->destroyQuery(ray_query_);
+        std::cout << "Destroying scenemanager " << managerName << std::endl;
+        root_->destroySceneManager(sm);
+    }
+
+
     bool Renderer::IsFullScreen() const
     {
         if (!framework_->IsHeadless())

@@ -129,6 +129,18 @@ namespace OgreRenderer
 
         //! Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
         void DoFullUIRedraw();
+
+        /// Specifies a new fps limit to use for the main loop. Pass in a value of 0 to remove fps limiting altogether.
+        void SetTargetFPSLimit(float fpsLimit) { targetFpsLimit = fpsLimit; if (targetFpsLimit <= 1.f) targetFpsLimit = 0.f; }
+
+        // Creates new scenemanager in Ogre root
+        void CreateSceneManager(const QString&);
+
+        // Sets named scenemanager active
+        void SetSceneManager(const QString&);
+
+        // Removes scenemanager from ogre root
+        void RemoveSceneManager(const QString&);
         
     public:
         //! Constructor
@@ -183,6 +195,9 @@ namespace OgreRenderer
 
         //! Returns Ogre scenemanager
         Ogre::SceneManager* GetSceneManager() const { return scenemanager_; }
+
+        // Returns Ogre scenemanager by name
+        Ogre::SceneManager* GetSceneManager(const QString&);
 
         //! Returns Ogre viewport
         Ogre::Viewport* GetViewport() const { return viewport_; }
@@ -242,13 +257,13 @@ namespace OgreRenderer
 
         RenderWindow *GetRenderWindow() const { return renderWindow; }
 
-        /// Specifies a new fps limit to use for the main loop. Pass in a value of 0 to remove fps limiting altogether.
-        void SetTargetFPSLimit(float fpsLimit) { targetFpsLimit = fpsLimit; if (targetFpsLimit <= 1.f) targetFpsLimit = 0.f; }
-
         /// Returns the current fps limit.
         float TargetFPSLimit() const { return targetFpsLimit; }
 
     private:
+        // When scenemanager change happens this sets up the viewport properly
+        void SetupViewPort();
+
         //! Initialises the events related info for this module
         void InitializeEvents();
 

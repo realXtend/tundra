@@ -147,6 +147,7 @@ void TundraLogicModule::RemoveSyncManagerFromScene(const QString &name)
     TundraLogicModule::LogInfo("Removed SyncManager from scene " + name.toStdString());
 }
 
+// This method is used by server to get syncmanager registered to it's scene
 SyncManager *TundraLogicModule::GetSyncManager()
 {
     return syncManager_;
