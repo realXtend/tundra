@@ -271,12 +271,12 @@ void EC_ChatBubble::Update()
     if (renderer_.expired())
         return;
 
-    boost::shared_ptr<OgreWorld> scene = GetParentScene()->GetWorld<OgreWorld>();
+    boost::shared_ptr<OgreWorld> scene = ParentScene()->GetWorld<OgreWorld>();
     assert(scene);
     if (!scene)
         return;
 
-    Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
 //    assert(entity);
     if (!entity)
         return;
