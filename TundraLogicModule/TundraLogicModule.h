@@ -102,8 +102,8 @@ public:
     const boost::shared_ptr<Server>& GetServer() const { return server_; }
     
 private slots:
-    void StartupSceneLoaded(AssetPtr asset);
-    void StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason);
+    void SceneLoaded(AssetPtr asset);
+    void SceneTransferFailed(IAssetTransfer *transfer, QString reason);
 
 private:
     /// Handle a Kristalli protocol message
@@ -111,6 +111,9 @@ private:
     
     /// Load the startup scene
     void LoadStartupScene();
+
+    /// Load startup or command line scene
+    void LoadScene(std::string sceneToLoad, bool clearScene);
     
     /// Sync manager
     boost::shared_ptr<SyncManager> syncManager_;
