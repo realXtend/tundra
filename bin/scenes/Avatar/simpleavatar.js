@@ -385,23 +385,23 @@ function ClientInitialize() {
                 if (name_tag != null) {
                     name_tag.SetNetworkSyncEnabled(false);
                     name_tag.SetTemporary(true);
-                    name_tag.textAttr = clientName.description;
-                    var pos = name_tag.positionAttr;
-                    pos.z = 1.3;
-                    name_tag.positionAttr = pos;
-                    name_tag.fontSizeAttr = 90;
+                    name_tag.text = clientName.description;
+                    var pos = name_tag.position;
+                    pos.z = 1.4;
+                    name_tag.position = pos;
+                    name_tag.fontSize = 90;
                     var color = new Color();
                     color.r = 0.2;
                     color.g = 0.2;
                     color.b = 0.2;
                     color.a = 1.0;
-                    name_tag.backgroundColorAttr = color;
+                    name_tag.backgroundColor = color;
                     var font_color = new Color();
                     font_color.r = 1.0;
                     font_color.g = 1.0;
                     font_color.b = 1.0;
                     font_color.a = 1.0;              
-                    name_tag.fontColorAttr = font_color;
+                    name_tag.fontColor = font_color;
                     name_tag.Show();
                 }
             }

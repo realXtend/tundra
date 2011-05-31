@@ -87,6 +87,34 @@ function ClientControl(userName)
     
     buttonUserList.clicked.connect(this, this.ToggleUserList);
     userListWidget.itemDoubleClicked.connect(this, this.StartPrivateChat)
+   
+    this.hoveringText = null;
+    this.showTextTime = 4;
+
+    if (this.hoveringText == null) {
+        var name = "Avatar" + client.GetConnectionID();
+        var entity = scene.GetEntityByName(name);
+        if (entity != null) {
+            this.hoveringText = entity.CreateComponent("EC_HoveringText", "ChatText");
+            this.hoveringText.text = " ";
+
+            // Move it over a avatar.
+            var pos = this.hoveringText.position;
+            pos.z = 2.0;
+      
+            this.hoveringText.position = pos;
+            
+            
+        }
+
+    }
+    
+}
+ClientControl.prototype.HideText = function() {
+    
+    if (this.hoveringText != null) {
+        this.hoveringText.text = " ";
+    }
 }
 
 ClientControl.prototype.SendMessage = function()
@@ -101,6 +129,8 @@ ClientControl.prototype.SendMessage = function()
   var msg = lineEdit.text;
   me.Exec(2, "ClientSendMessage", client.GetLoginProperty("username"), msg);    
   lineEdit.text = "";
+  this.hoveringText.text = msg;
+  frame.DelayedExecute(this.showTextTime).Triggered.connect(this, this.HideText);
 }
 
 ClientControl.prototype.ReceiveServerMessage = function(msg)
