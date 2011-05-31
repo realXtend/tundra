@@ -410,38 +410,38 @@ void EC_HoveringText::OnAttributeUpdated(IComponent *component, IAttribute *attr
         return;
 
     QString attrName = QString::fromStdString(attribute->GetNameString());
-    if(QString::fromStdString(fontAttr.GetNameString()) == attrName ||QString::fromStdString(fontSizeAttr.GetNameString()) == attrName)
+    if(QString::fromStdString(font.GetNameString()) == attrName ||QString::fromStdString(fontSize.GetNameString()) == attrName)
     {
-        SetFont(QFont(fontAttr.Get(), fontSizeAttr.Get()));
+        SetFont(QFont(font.Get(), fontSize.Get()));
     }
-    else if(QString::fromStdString(backgroundColorAttr.GetNameString()) == attrName)
+    else if(QString::fromStdString(backgroundColor.GetNameString()) == attrName)
     {
-        Color col = backgroundColorAttr.Get();
+        Color col = backgroundColor.Get();
         backgroundColor_.setRgbF(col.r, col.g, col.b, col.a);
     }
-    else if(QString::fromStdString(fontColorAttr.GetNameString()) == attrName)
+    else if(QString::fromStdString(fontColor.GetNameString()) == attrName)
     {
-        Color col = fontColorAttr.Get();
+        Color col = fontColor.Get();
         textColor_.setRgbF(col.r, col.g, col.b, col.a);
     }
-    else if(QString::fromStdString(positionAttr.GetNameString()) == attrName)
+    else if(QString::fromStdString(position.GetNameString()) == attrName)
     {
-        SetPosition(positionAttr.Get());
+        SetPosition(position.Get());
     }
-    else if(QString::fromStdString(gradEndAttr.GetNameString()) == attrName ||
-        QString::fromStdString(gradStartAttr.GetNameString()) == attrName ||
-        QString::fromStdString(gradEndAttr.GetNameString()) == attrName)
+    else if(QString::fromStdString(gradEnd.GetNameString()) == attrName ||
+        QString::fromStdString(gradStart.GetNameString()) == attrName ||
+        QString::fromStdString(gradEnd.GetNameString()) == attrName)
     {
         QColor colStart;
         QColor colEnd;
-        Color col = gradStartAttr.Get();
+        Color col = gradStart.Get();
         colStart.setRgbF(col.r, col.g, col.b);
-        col = gradEndAttr.Get();
+        col = gradEnd.Get();
         colEnd.setRgbF(col.r, col.g, col.b);
         SetBackgroundGradient(colStart, colEnd);
     }
 
     // Repaint the new text with new appearance.
-    ShowMessage(textAttr.Get());
+    ShowMessage(text.Get());
 }
 
