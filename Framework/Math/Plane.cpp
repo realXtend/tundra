@@ -128,8 +128,7 @@ float3 Plane::Refract(const float3 &normal, float negativeSideRefractionIndex, f
 
 float3 Plane::Project(const float3 &point) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return float3();
+    return point - (Dot(normal, point) - d) * normal;
 }
 
 float3 Plane::ObliqueProject(const float3 &point, const float3 &obliqueProjectionDir) const
