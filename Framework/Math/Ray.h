@@ -16,6 +16,7 @@
 #include <OgreRay.h>
 #endif
 
+/// A ray in 3D space is a line that starts from an origin point and extends to infinity in one direction.
 class Ray
 {
 public:

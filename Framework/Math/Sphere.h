@@ -12,6 +12,7 @@
 #include "MathFwd.h"
 #include "float3.h"
 
+/// A 3D sphere.
 class Sphere
 {
 public:

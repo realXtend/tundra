@@ -12,6 +12,7 @@
 #include "MathFwd.h"
 #include "float3.h"
 
+/// A line segment in 3D space is a finite line with a start and end point.
 class LineSegment
 {
 public:
