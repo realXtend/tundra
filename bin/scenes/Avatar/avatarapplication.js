@@ -53,6 +53,21 @@ function ClientHandleToggleCamera() {
         var trans = freelookcameraentity.placeable.transform;
         trans.pos = avatarcameraentity.placeable.GetWorldPosition();
         trans.rot = avatarcameraentity.placeable.GetWorldOrientationEuler();
+
+        // If there is roll in the rotation, adjust it away
+        if (trans.rot.z > 170.0)
+        {
+            trans.rot.x -= 180.0;
+            trans.rot.z = 0;
+            trans.rot.y = -90.0 - (90.0 + trans.rot.y);
+        }
+        if (trans.rot.z < -170.0)
+        {
+            trans.rot.x += 180.0;
+            trans.rot.z = 0;
+            trans.rot.y = -90.0 - (90.0 + trans.rot.y);
+        }
+
         freelookcameraentity.placeable.transform = trans;
         freelookcamera.SetActive();
         freecameralistener.active = true;
