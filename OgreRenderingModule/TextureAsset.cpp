@@ -328,8 +328,8 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
 
         // Set background brush
         painter.setBrush(backgroundBrush);
-
         painter.setPen(borderPen);
+        painter.drawRoundedRect(rect, 20.0, 20.0, Qt::RelativeSize);
 
         // Draw text
         painter.setPen(textColor);
