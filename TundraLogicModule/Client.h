@@ -10,6 +10,7 @@
 #include <kNet.h>
 
 #include <QObject>
+#include <QMap>
 
 struct MsgLogin;
 struct MsgLoginReply;
@@ -165,6 +166,28 @@ private:
     TundraLogicModule* owner_;
     /// Framework pointer
     Foundation::Framework* framework_;
+
+    // ###################
+    // # Multiconnection #
+    // ###################
+
+private:
+    // scenenames
+    QMap<int, QString> scenenames_;
+
+    // creates unique scenename TundraClientX | X = 0, 1, 2, ..., n; n € Z+
+    // If TundraClient2 is deleted from middle of the list, next scene created will be TundraClient2
+    QString getUniqueSceneName();
+signals:
+    void createOgre(const QString&);
+    void deleteOgre(const QString&);
+public slots:
+    void emitCreateOgreSignal(const QString&);
+    void emitDeleteOgreSignal(const QString&);
+
+
+
+
 };
 
 }

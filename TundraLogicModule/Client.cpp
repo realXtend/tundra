@@ -131,20 +131,30 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
 
 void Client::Logout(bool fail, unsigned short removedConnection_)
 {
+    // Scene to be removed is TundraClientX | X = 1, 2, 3, ..., n; n € Z+
+    // removedConnection_ indicates which scene we are about to disconnect.
+    QString sceneToRemove = "TundraClient";
+    sceneToRemove.append(QString("%1").arg(removedConnection_));
+
     if (loginstate_ != NotConnected)
     {
         if (GetConnection())
         {
             owner_->GetKristalliModule()->Disconnect(fail, removedConnection_);
-            TundraLogicModule::LogInfo("Disconnected");
+            TundraLogicModule::LogInfo(sceneToRemove.toStdString() + " disconnected!");
         }
         
         loginstate_ = NotConnected;
         client_id_ = 0;
         
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
-        framework_->Scene()->RemoveScene("TundraClient");
-        
+        framework_->Scene()->RemoveScene(sceneToRemove);
+
+        // We remove TundraClientX from the scenenames_ map and when next new connection happens
+        // we create TundraClientX again to fill the list.
+        // scenenames_ has unsigned int as key so removedConnection_ clears right item from list.
+        scenenames_.remove(removedConnection_);
+
         emit Disconnected();
     }
     
@@ -287,7 +297,9 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)
         {
-            Scene::ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true);
+            TundraLogicModule::LogInfo("Brand new connection (vs reconnect)");
+            QString sceneName = getUniqueSceneName();
+            Scene::ScenePtr scene = framework_->Scene()->CreateScene(sceneName, true);
             // Create physics world in client (non-authoritative) mode
             Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
             physics->CreatePhysicsWorldForScene(scene, true);
@@ -325,6 +337,31 @@ void Client::HandleClientJoined(MessageConnection* source, const MsgClientJoined
 
 void Client::HandleClientLeft(MessageConnection* source, const MsgClientLeft& msg)
 {
+}
+
+QString Client::getUniqueSceneName()
+{
+    QString sceneName = "TundraClient";
+    bool flag = true;
+
+    for (unsigned short x = 0; flag ;x++)
+        if (!scenenames_.contains(x))
+        {
+            sceneName.append(QString("%1").arg(x));
+            scenenames_.insert(x, sceneName);
+            flag = false;
+        }
+    return sceneName;
+}
+
+void Client::emitCreateOgreSignal(const QString &name)
+{
+    emit createOgre(name);
+}
+
+void Client::emitDeleteOgreSignal(const QString &name)
+{
+    emit deleteOgre(name);
 }
 
 }

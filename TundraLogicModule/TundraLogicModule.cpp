@@ -61,6 +61,8 @@ void TundraLogicModule::Initialize()
     
     connect(framework_->Scene(), SIGNAL(SceneAdded(QString)), this, SLOT(AttachSyncManagerToScene(QString)));
     connect(framework_->Scene(), SIGNAL(SceneRemoved(QString)), this, SLOT(RemoveSyncManagerFromScene(QString)));
+    connect(this, SIGNAL(createOgre(QString)), client_.get(), SLOT(emitCreateOgreSignal(QString)));
+    connect(this, SIGNAL(deleteOgre(QString)), client_.get(), SLOT(emitDeleteOgreSignal(QString)));
 
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
@@ -135,6 +137,8 @@ void TundraLogicModule::AttachSyncManagerToScene(const QString &name)
     sm->RegisterToScene(framework_->Scene()->GetScene(name));
     syncManagers_.insert(name, sm);
     syncManager_ = sm;
+    // When syncmanager is created we also want to create new Ogre sceneManager
+    emit createOgre(name);
     LogInfo("Registered SyncManager to scene " + name.toStdString());
 }
 
@@ -144,8 +148,10 @@ void TundraLogicModule::RemoveSyncManagerFromScene(const QString &name)
     delete syncManager_;
     SyncManager *sm = syncManagers_.take(name);
     delete sm;
+    emit deleteOgre(name);
     TundraLogicModule::LogInfo("Removed SyncManager from scene " + name.toStdString());
 }
+
 
 // This method is used by server to get syncmanager registered to it's scene
 SyncManager *TundraLogicModule::GetSyncManager()
