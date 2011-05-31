@@ -71,7 +71,7 @@ void ECAttributeEditorBase::UpdateEditorUI(IAttribute *attr)
     {
         ComponentPtr comp = components_[0].lock();
         IAttribute *attribute = FindAttribute(comp);
-        if (attribute && attribute->HasMetadata() && !attribute->Metadata()->designable)
+        if (attribute && attribute->Metadata() && !attribute->Metadata()->designable)
         {
             // If not uninitialize that attributes ui and return
             UnInitialize();
@@ -1034,7 +1034,7 @@ template<> void ECAttributeEditor<QString>::Initialize()
             if (comp)
             {
                 IAttribute *attr = comp->GetAttribute(name_);
-                if (attr && attr->HasMetadata())
+                if (attr && attr->Metadata())
                 {
                     AttributeMetadata *meta = attr->Metadata();
                     lineEditFactory->SetComponents(rootProperty_, components_);
@@ -1486,7 +1486,7 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
         if (components_.size() && !components_[0].expired())
         {
             IAttribute *attr = components_[0].lock()->GetAttribute(name_);
-            if (attr && attr->HasMetadata())
+            if (attr && attr->Metadata())
                 //lineEditFactory->SetComponents(rootProperty_, components_);
                 lineEditFactory->AddButtons(attr->Metadata()->buttons);
         }
@@ -1953,7 +1953,7 @@ template<> void ECAttributeEditor<EntityReference>::Initialize()
         if (components_.size() && !components_[0].expired())
         {
             IAttribute *attr = components_[0].lock()->GetAttribute(name_);
-            if (attr && attr->HasMetadata())
+            if (attr && attr->Metadata())
                 //lineEditFactory->SetComponents(rootProperty_, components_);
                 lineEditFactory->AddButtons(attr->Metadata()->buttons);
         }

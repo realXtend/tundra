@@ -206,7 +206,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         ScenePtr scene = scene_.lock();
         if ((scene) && (!scene->IsInterpolating()) && (!currentSender))
         {
-            if ((attr->HasMetadata()) && (attr->Metadata()->interpolation == AttributeMetadata::Interpolate))
+            if ((attr->Metadata()) && (attr->Metadata()->interpolation == AttributeMetadata::Interpolate))
                 // Note: it does not matter if the attribute was not actually interpolating
                 scene->EndAttributeInterpolation(attr);
         }
@@ -1002,7 +1002,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                             {
                                 // If attribute supports interpolation, queue interpolation instead
                                 bool interpolate = false;
-                                if ((!isServer) && (attributes[i]->HasMetadata()) && (attributes[i]->Metadata()->interpolation == AttributeMetadata::Interpolate))
+                                if ((!isServer) && (attributes[i]->Metadata()) && (attributes[i]->Metadata()->interpolation == AttributeMetadata::Interpolate))
                                     interpolate = true;
                                 
                                 if (!interpolate)

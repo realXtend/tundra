@@ -22,9 +22,7 @@
 
 struct DeserializeData
 {
-    DeserializeData(const std::string name = std::string(""),
-                    const std::string type = std::string(""),
-                    const std::string value = std::string("")):
+    DeserializeData(const QString &name = "", const QString &type = "", const QString &value = ""):
         name_(name),
         type_(type),
         value_(value)
@@ -37,9 +35,9 @@ struct DeserializeData
         return name_ == "" || type_ == "" || value_ == "";
     }
 
-    std::string name_;
-    std::string type_;
-    std::string value_;
+    QString name_;
+    QString type_;
+    QString value_;
 };
 
 /// Function that is used by std::sort algorithm to sort attributes by their name.
@@ -89,7 +87,7 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
         QString name = child.attribute("name");
         QString type = child.attribute("type");
         QString value = child.attribute("value");
-        DeserializeData attributeData(name.toStdString(), type.toStdString(), value.toStdString());
+        DeserializeData attributeData(name, type, value);
         deserializedAttributes.push_back(attributeData);
 
         child = child.nextSiblingElement("attribute");
@@ -134,7 +132,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
             //SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
             for(AttributeVector::const_iterator attr_iter = attributes_.begin(); attr_iter != attributes_.end(); attr_iter++)
                 if((*attr_iter)->Name() == iter2->name_)
-                    (*attr_iter)->FromString(iter2->value_, change);
+                    (*attr_iter)->FromString(iter2->value_.toStdString(), change);
 
             iter2++;
             iter1++;
@@ -156,15 +154,15 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
     while(!addAttributes.empty())
     {
         DeserializeData attributeData = addAttributes.back();
-        IAttribute *attribute = CreateAttribute(attributeData.type_.c_str(), attributeData.name_.c_str());
+        IAttribute *attribute = CreateAttribute(attributeData.type_, attributeData.name_);
         if (attribute)
-            attribute->FromString(attributeData.value_, change);
+            attribute->FromString(attributeData.value_.toStdString(), change);
         addAttributes.pop_back();
     }
     while(!remAttributes.empty())
     {
         DeserializeData attributeData = remAttributes.back();
-        RemoveAttribute(QString::fromStdString(attributeData.name_));
+        RemoveAttribute(attributeData.name_);
         remAttributes.pop_back();
     }
 }
@@ -242,7 +240,7 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeCha
         emit AttributeAdded(attribute);
     }
     else
-        LogWarning("Failed to add a new QVariant in name of " + name.toStdString() + ", cause there already is an attribute in that name.");
+        LogWarning("Failed to add a new QVariant in name of " + name + ", cause there already is an attribute in that name.");
 }
 
 QVariant EC_DynamicComponent::GetAttribute(int index) const
@@ -349,7 +347,7 @@ bool EC_DynamicComponent::ContainsAttribute(const QString &name) const
     AttributeVector::const_iterator iter = attributes_.begin();
     while(iter != attributes_.end())
     {
-        if((*iter)->Name() == name.toStdString())
+        if((*iter)->Name() == name)
             return true;
         iter++;
     }
@@ -364,7 +362,7 @@ void EC_DynamicComponent::SerializeToBinary(kNet::DataSerializer& dest) const
     AttributeVector::const_iterator iter = attributes_.begin();
     while(iter != attributes_.end())
     {
-        dest.AddString((*iter)->Name());
+        dest.AddString((*iter)->Name().toStdString());
         dest.AddString((*iter)->TypeName().toStdString());
         dest.AddString((*iter)->ToString());
         ++iter;
@@ -377,11 +375,8 @@ void EC_DynamicComponent::DeserializeFromBinary(kNet::DataDeserializer& source, 
     std::vector<DeserializeData> deserializedAttributes;
     for(uint i = 0; i < num_attributes; ++i)
     {
-        std::string name = source.ReadString();
-        std::string type = source.ReadString();
-        std::string value = source.ReadString();
-        DeserializeData attributeData(name, type, value);
-        deserializedAttributes.push_back(attributeData);
+        DeserializeData attrData(source.ReadString().c_str(), source.ReadString().c_str(), source.ReadString().c_str());
+        deserializedAttributes.push_back(attrData);
     }
 
     DeserializeCommon(deserializedAttributes, change);

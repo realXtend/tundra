@@ -33,10 +33,10 @@ using namespace kNet;
 
 // Implementation code for some common attributes
 
-IAttribute::IAttribute(IComponent* owner, const char* name) :
-    owner_(owner),
-    name_(name),
-    metadata_(0)
+IAttribute::IAttribute(IComponent* owner_, const char* name_) :
+    owner(owner_),
+    name(name_),
+    metadata(0)
 {
     if (owner)
         owner->AddAttribute(this);
@@ -44,8 +44,8 @@ IAttribute::IAttribute(IComponent* owner, const char* name) :
 
 void IAttribute::Changed(AttributeChange::Type change)
 {
-    if (owner_)
-        owner_->EmitAttributeChanged(this, change);
+    if (owner)
+        owner->EmitAttributeChanged(this, change);
 }
 
 // TOSTRING TEMPLATE IMPLEMENTATIONS.

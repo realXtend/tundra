@@ -72,11 +72,9 @@ void EC_Material::OnAttributeUpdated(IAttribute* attribute)
 void EC_Material::OnMeshAttributeUpdated(IAttribute* attribute)
 {
     // If the mesh component has changed its material(s), and we are using its material, do a new input material request
-    if (!strcmp(attribute->Name(), "Mesh materials"))
-    {
+    if (attribute->Name() == "Mesh materials") ///< todo Quite dangerous? What if the attribute name changes?
         if (GetSubmeshNumber() >= 0)
             CheckForInputMaterial();
-    }
 }
 
 int EC_Material::GetSubmeshNumber() const

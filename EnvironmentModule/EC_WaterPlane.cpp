@@ -378,7 +378,7 @@ void EC_WaterPlane::SetOrientation()
 
 void EC_WaterPlane::ChangeWaterPlane(IAttribute* attribute)
 {
-    QString name = attribute->Name();
+    const QString &name = attribute->Name();
     if ((name == xSize.Name() || name == ySize.Name() || name == scaleUfactor.Name() ||
         name == scaleVfactor.Name()) && (lastXsize_ != xSize.Get() || lastYsize_ != ySize.Get()))
     {

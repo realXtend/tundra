@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   IAttribute.h
- *  @brief  Abstract base class, template class and metadata class for entity-component attributes.
+ *  @brief  Abstract base class and template class implementations for entity-component attributes.
  */
 
 #pragma once
@@ -32,18 +32,18 @@ class IAttribute : public boost::enable_shared_from_this<IAttribute>
 {
 public:
     /// Constructor
-    /** @param owner Component which this attribute will be attached to
-        @param name Name of attribute */
+    /** @param owner Component which this attribute will be attached to.
+        @param name Name of the attribute. */
     IAttribute(IComponent* owner, const char* name);
 
     /// Destructor.
     virtual ~IAttribute() {}
 
     /// Returns attribute's owner component.
-    IComponent* Owner() const { return owner_; }
+    IComponent* Owner() const { return owner; }
 
-    /// Returns attributes name as a C string.
-    const char* Name() const { return name_.c_str(); }
+    /// Returns name of the attribute.
+    const QString &Name() const { return name; }
 
     /// Writes attribute to string for XML serialization
     virtual std::string ToString() const = 0;
@@ -56,7 +56,7 @@ public:
 
     /// Writes attribute to binary for binary serialization
     virtual void ToBinary(kNet::DataSerializer& dest) const = 0;
-    
+
     /// Reads attribute from binary for binary deserialization
     virtual void FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change) = 0;
 
@@ -71,14 +71,11 @@ public:
     virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change) = 0;
 
     /// Sets attribute's metadata.
-    /** @param metadata Metadata. */
-    void SetMetadata(AttributeMetadata *metadata) { metadata_ = metadata; }
+    /** @param meta Metadata. */
+    void SetMetadata(AttributeMetadata *meta) { metadata = meta; }
 
     /// Returns attribute's metadata, or null if no metadata exists.
-    AttributeMetadata *Metadata() const { return metadata_; }
-
-    /// Returns true if this attribute has metadata set.
-    bool HasMetadata() const { return metadata_ != 0; }
+    AttributeMetadata *Metadata() const { return metadata; }
 
     /// Notifies owner component that the attribute has changed.
     /** This function is called automatically when the Attribute value is Set(). You may call this manually
@@ -107,9 +104,9 @@ public:
     //bool IsNull() const { return null_; }
 
 protected:
-    IComponent* owner_; ///< Owning component
-    std::string name_; ///< Name of attribute
-    AttributeMetadata *metadata_; ///< Possible attribute metadata.
+    IComponent* owner; ///< Owning component.
+    QString name; ///< Name of attribute.
+    AttributeMetadata *metadata; ///< Possible attribute metadata.
 
     /// Null flag. If attribute is null, its value should be fetched from a parent entity
     /** \todo To be thinked about more thoroughly in the future, and then possibly implemented
@@ -157,8 +154,8 @@ public:
     /// IAttribute override
     virtual IAttribute* Clone() const
     {
-        Attribute<T>* new_attr = new Attribute<T>(0, name_.c_str());
-        new_attr->metadata_ = metadata_;
+        Attribute<T>* new_attr = new Attribute<T>(0, name.toStdString().c_str());
+        new_attr->metadata = metadata;
         // The new attribute has no owner, so the Changed function will have no effect, and therefore the changetype does not actually matter
         new_attr->Set(Get(), AttributeChange::Disconnected);
         return static_cast<IAttribute*>(new_attr);

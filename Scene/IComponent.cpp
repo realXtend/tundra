@@ -90,7 +90,7 @@ void IComponent::SetNetworkSyncEnabled(bool enabled)
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
 {
     for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)
-        if ((*iter)->Name() == name.toStdString())
+        if ((*iter)->Name() == name)
             return (*iter)->ToQVariant();
 
     return QVariant();

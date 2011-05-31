@@ -911,7 +911,7 @@ SceneDesc Scene::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) con
 
                     QString attrValue = QString(a->ToString().c_str()).trimmed();
                     if ((typeName == "assetreference" || typeName == "assetreferencelist" || 
-                        (a->HasMetadata() && a->Metadata()->elementType == "assetreference")) &&
+                        (a->Metadata() && a->Metadata()->elementType == "assetreference")) &&
                         !attrValue.isEmpty())
                     {
                         // We might have multiple references, ";" used as a separator.
@@ -1097,7 +1097,7 @@ SceneDesc Scene::GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) 
 
                                 QString attrValue = QString(a->ToString().c_str()).trimmed();
                                 if ((typeName == "assetreference" || typeName == "assetreferencelist" || 
-                                    (a->HasMetadata() && a->Metadata()->elementType == "assetreference")) &&
+                                    (a->Metadata() && a->Metadata()->elementType == "assetreference")) &&
                                     !attrValue.isEmpty())
                                 {
                                     // We might have multiple references, ";" used as a separator.
@@ -1191,7 +1191,7 @@ bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, 
     Entity* entity = comp ? comp->ParentEntity() : 0;
     Scene* scene = entity ? entity->GetScene() : 0;
     
-    if ((length <= 0.0f) || (!attr) || (!attr->HasMetadata()) || (attr->Metadata()->interpolation == AttributeMetadata::None) ||
+    if ((length <= 0.0f) || (!attr) || (!attr->Metadata()) || (attr->Metadata()->interpolation == AttributeMetadata::None) ||
         (!comp) || (comp->HasDynamicStructure()) || (!entity) || (!scene) || (scene != this))
     {
         delete endvalue;
