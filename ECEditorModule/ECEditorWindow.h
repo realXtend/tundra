@@ -100,6 +100,9 @@ public:
     /** @param id Entity ID. */
     EntityListWidgetItem *FindItem(entity_id_t id) const;
 
+    /// Sets visibility of visual editing aids for this editor window (if applicable).
+    /** @note The state visibility state is not stored within this class. ECEditorModule is authorative for this state.
+        @param show Do we want to show or hide the visual editing aids. */
     void ShowVisualEditingAids(bool show);
 
 public slots:
