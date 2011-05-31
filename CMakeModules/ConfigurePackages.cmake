@@ -142,9 +142,9 @@ endmacro (configure_python_qt)
 
 macro (configure_ogre)
 	SET(OGRE_HOME $ENV{OGRE_HOME})
-#	if ("${OGRE_HOME}" STREQUAL "")
+	if ("${OGRE_HOME}" STREQUAL "")
 		SET(OGRE_HOME ${ENV_NAALI_DEP_PATH}/Ogre)
-#	endif()
+	endif()
 		
     # DX blitting define for naali
     add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
