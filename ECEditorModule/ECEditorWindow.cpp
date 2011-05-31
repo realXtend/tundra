@@ -663,7 +663,6 @@ void ECEditorWindow::RefreshPropertyBrowser()
         transformEditor->FocusGizmoPivotToAabbBottomCenter();
         // Shows gizmo only if we have focus.
         bool enabled = framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled();
-        LogInfo("nable " + ToString(enabled));
         transformEditor->SetGizmoVisible(hasFocus && enabled);
     }
 }
