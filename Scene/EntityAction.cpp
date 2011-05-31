@@ -15,7 +15,7 @@ void EntityAction::Trigger(const QString &param1, const QString &param2, const Q
     emit Triggered(param1, param2, param3, params);
 }
 
-EntityAction::EntityAction(const QString &name)
+EntityAction::EntityAction(const QString &name_)
+:name(name_)
 {
-    this->name;
 }
