@@ -12,7 +12,7 @@ function init() {
     //but is apparently executed too early -- e.g. the camera is not there yet.
     //so have to wrap in a func and make a trick to run with a delay
 
-    var $ = scene.GetEntityByNameRaw; //testing jQuery style a bit :)
+    var $ = scene.GetEntityByName; //testing jQuery style a bit :)
     $("FreeLookCamera").placeable.transform = $("startview").placeable.transform;
 
     /* create all RttTargets, i.e. the component for each cam that we want image from
@@ -31,7 +31,7 @@ function init() {
         bindButton(camname, butname);
     }
 
-    setImageSource(scene.GetEntityByNameRaw(camname));
+    setImageSource(scene.GetEntityByName(camname));
 }
 
 function createRttTarget(camname) {
@@ -41,7 +41,7 @@ function createRttTarget(camname) {
 
     //apparently EC_Camera does not persist, so we have to create them here XXX \todo
     //.. adding with the GUI editing was fun and worked otherwise
-    var cam = scene.GetEntityByNameRaw(camname);
+    var cam = scene.GetEntityByName(camname);
     var cam_ec = cam.GetOrCreateComponent("EC_Camera");
     cam_ec.AutoSetPlaceable();
 
@@ -70,8 +70,8 @@ function setImageSource(cam) {
 }
 
 function bindButton(camname, butname) {
-    var but = scene.GetEntityByNameRaw(butname);
-    var cam = scene.GetEntityByNameRaw(camname);
+    var but = scene.GetEntityByName(butname);
+    var cam = scene.GetEntityByName(camname);
 
     but.Action("MousePress").Triggered.connect(
       function() {

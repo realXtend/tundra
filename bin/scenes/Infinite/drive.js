@@ -61,7 +61,7 @@ function on_carmove(attr, type) {
 
 function init(d) {
     if (!car) {
-        var cam = scene.GetEntityByNameRaw("FreeLookCamera");
+        var cam = scene.GetEntityByName("FreeLookCamera");
         if (cam) {
             car = cam;
             var t = car.placeable.transform;

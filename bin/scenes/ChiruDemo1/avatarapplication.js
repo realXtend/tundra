@@ -24,8 +24,8 @@ if (isserver == false) {
 
 function ClientHandleToggleCamera() {
     // For camera switching to work, must have both the freelookcamera & avatarcamera in the scene
-    var freelookcameraentity = scene.GetEntityByNameRaw("FreeLookCamera");
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var freelookcameraentity = scene.GetEntityByName("FreeLookCamera");
+    var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     if ((freelookcameraentity == null) || (avatarcameraentity == null))
         return;
     var freelookcamera = freelookcameraentity.ogrecamera;
@@ -79,7 +79,7 @@ function ServerHandleUserConnected(connectionID, user) {
 
 function ServerHandleUserDisconnected(connectionID, user) {
     var avatarEntityName = "Avatar" + connectionID;
-    var entityID = scene.GetEntityByNameRaw(avatarEntityName).id;
+    var entityID = scene.GetEntityByName(avatarEntityName).id;
     scene.RemoveEntityRaw(entityID);
 
     if (user != null) {

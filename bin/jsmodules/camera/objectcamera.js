@@ -20,7 +20,7 @@ if (!me.GetComponent("EC_Camera"))
 
     camera.AutoSetPlaceable();
 
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     if (!avatarcameraentity)
         camera.SetActive();
     
@@ -114,8 +114,8 @@ function mouseLeftPress(event)
         if (raycastResult.entity !== null)
         {
             var entityclicked = scene.GetEntityRaw(raycastResult.entity.id);
-            var objectcameraentity = scene.GetEntityByNameRaw("ObjectCamera");
-            var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+            var objectcameraentity = scene.GetEntityByName("ObjectCamera");
+            var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
             if ((objectcameraentity == null) || (avatarcameraentity == null))
                 return;
             var objectcamera = objectcameraentity.ogrecamera;
@@ -210,8 +210,8 @@ function keyPress(event)
         return;
     }
 
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    var freelookcameraentity = scene.GetEntityByNameRaw("FreeLookCamera");
+    var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
+    var freelookcameraentity = scene.GetEntityByName("FreeLookCamera");
     if (avatarcameraentity == null) // || freelookcameraentity == null) 
         return;
 
@@ -245,7 +245,7 @@ function keyRelease(event)
 function cameraZoom()
 {
     var entityplaceable = last_clicked.GetComponent("EC_Placeable");
-    var cameraentity = scene.GetEntityByNameRaw("ObjectCamera");
+    var cameraentity = scene.GetEntityByName("ObjectCamera");
     if (cameraentity == null)
         return;
     var cameraplaceable = cameraentity.GetComponent("EC_Placeable");

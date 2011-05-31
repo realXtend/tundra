@@ -1,10 +1,10 @@
 print("yo! here we go..");
 
-var ball = scene.GetEntityByNameRaw("ball");
+var ball = scene.GetEntityByName("ball");
 print(ball.id);
 
-var bat_a = scene.GetEntityByNameRaw("bat_a");
-var bat_b = scene.GetEntityByNameRaw("bat_b"); //$('bat_b') - how about?
+var bat_a = scene.GetEntityByName("bat_a");
+var bat_b = scene.GetEntityByName("bat_b"); //$('bat_b') - how about?
 
 //nice to have in code to reinit correctly after live updates when devving
 var t = ball.placeable.transform;

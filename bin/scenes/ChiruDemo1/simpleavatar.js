@@ -373,7 +373,7 @@ function ClientInitialize() {
 
 function IsCameraActive()
 {
-    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
         return false;
     var camera = cameraentity.ogrecamera;
@@ -382,7 +382,7 @@ function IsCameraActive()
 
 function ClientHandleToggleTripod()
 {
-    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
         return;
 
@@ -403,7 +403,7 @@ function ClientHandleTripodLookX(param)
 {
     if (tripod)
     {
-        var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+        var cameraentity = scene.GetEntityByName("AvatarCamera");
         if (cameraentity == null)
             return;
         var cameraplaceable = cameraentity.placeable;
@@ -419,7 +419,7 @@ function ClientHandleTripodLookY(param)
 {
     if (tripod)
     {
-        var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+        var cameraentity = scene.GetEntityByName("AvatarCamera");
         if (cameraentity == null)
             return;
         var cameraplaceable = cameraentity.placeable;
@@ -435,7 +435,7 @@ function ClientUpdate(frametime)
 {
     // Tie enabled state of inputmapper to the enabled state of avatar camera
     if (own_avatar) {
-        var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+        var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
         var inputmapper = me.inputmapper;
         if ((avatarcameraentity != null) && (inputmapper != null)) {
             var active = avatarcameraentity.ogrecamera.IsActive();
@@ -506,7 +506,7 @@ function ClientCreateInputMapper() {
 }
 
 function ClientCreateAvatarCamera() {
-    if (scene.GetEntityByNameRaw("AvatarCamera") != null) {
+    if (scene.GetEntityByName("AvatarCamera") != null) {
         return;
     }
 
@@ -624,7 +624,7 @@ function ClientHandleMouseScroll(relativeScroll)
 function ClientUpdateAvatarCamera() {
     if (!tripod)
     {
-        var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+        var cameraentity = scene.GetEntityByName("AvatarCamera");
         if (cameraentity == null)
             return;
         var cameraplaceable = cameraentity.placeable;
