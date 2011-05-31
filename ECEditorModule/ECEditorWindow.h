@@ -37,9 +37,10 @@ class TransformEditor;
 class EntityListWidgetItem: public QListWidgetItem
 {
 public:
-    EntityListWidgetItem(const QString &name, QListWidget *list, Entity *entity);
+    EntityListWidgetItem(const QString &name, QListWidget *list, const EntityPtr &e) :
+        QListWidgetItem(name, list), entity(e) {}
 
-    /// Returns shared pointer of the entity that this item is presenting.
+    /// Returns shared pointer to the entity this item is presenting.
     EntityPtr Entity() const { return entity.lock(); }
 
 private:
@@ -63,8 +64,7 @@ public:
     /// Adds new entity to the entity list.
     /** @param id Entity ID.
         @param updateUi Do we want to update UI.
-        @return The created list item.
-    */
+        @return The created list item. */
     EntityListWidgetItem *AddEntity(entity_id_t id, bool updateUi = true);
 
     /// Sets new list of entities to be shown in the editor.
@@ -101,7 +101,7 @@ public:
     EntityListWidgetItem *FindItem(entity_id_t id) const;
 
     /// Sets visibility of visual editing aids for this editor window (if applicable).
-    /** @note The state visibility state is not stored within this class. ECEditorModule is authorative for this state.
+    /** @note The visibility state is not stored within this class. ECEditorModule is authorative for this state.
         @param show Do we want to show or hide the visual editing aids. */
     void ShowVisualEditingAids(bool show);
 
@@ -229,7 +229,7 @@ private:
     /** @note Will unbold previous selection. */
     void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);
 
-    Framework *framework; ///< Framework pointer.
+    Framework *framework;
     QPushButton* toggleEntitiesButton;
     QListWidget* entityList;
     ECBrowser *ecBrowser;

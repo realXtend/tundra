@@ -42,18 +42,12 @@
 
 const QString cEcEditorHighlight("EcEditorHighlight");
 
-EntityListWidgetItem::EntityListWidgetItem(const QString &name, QListWidget *list, ::Entity *entity):
-    QListWidgetItem(name, list),
-    entity(entity->shared_from_this())
-{
-}
-
-uint AddUniqueListItem(Entity *entity, QListWidget* list, const QString& name)
+uint AddUniqueListItem(const EntityPtr &entity, QListWidget* list, const QString& name)
 {
     for(int i = 0; i < list->count(); ++i)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(list->item(i));
-        if (item && item->Entity() && item->Entity().get() == entity)
+        if (item && item->Entity() && item->Entity() == entity)
             return i;
     }
 
@@ -171,9 +165,9 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpa
         QString entity_name = QString::number(entity_id);
         EntityPtr entity = framework->Scene()->GetDefaultScene()->GetEntity(entity_id);
         if (entity && entity->GetComponent<EC_Name>())
-            entity_name = entity->GetName();
+            entity_name.append(" " + entity->GetName());
 
-        int row = AddUniqueListItem(entity.get(), entityList, entity_name);
+        int row = AddUniqueListItem(entity, entityList, entity_name);
         item = dynamic_cast<EntityListWidgetItem *>(entityList->item(row));
         assert(item);
 
@@ -353,7 +347,7 @@ void ECEditorWindow::DeleteComponent(const QString &componentType, const QString
 void ECEditorWindow::CreateComponent()
 {
     QList<entity_id_t> ids;
-    foreach(EntityPtr e, GetSelectedEntities())
+    foreach(const EntityPtr &e, GetSelectedEntities())
         ids.push_back(e->GetId());
 
     if (ids.size())
@@ -375,7 +369,7 @@ void ECEditorWindow::EntityActionDialogFinished(int result)
         return;
 
     foreach(const EntityWeakPtr &e, dialog->Entities())
-        if (e.lock())
+        if (!e.expired())
             e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
 }
 
@@ -553,7 +547,7 @@ void ECEditorWindow::PasteEntity()
 void ECEditorWindow::OpenEntityActionDialog()
 {
     QList<EntityWeakPtr> entities;
-    foreach(EntityPtr entity, GetSelectedEntities())
+    foreach(const EntityPtr &entity, GetSelectedEntities())
         entities.append(entity);
 
     if (entities.size())
@@ -567,7 +561,7 @@ void ECEditorWindow::OpenEntityActionDialog()
 void ECEditorWindow::OpenFunctionDialog()
 {
     QObjectWeakPtrList objs;
-    foreach(EntityPtr entity, GetSelectedEntities())
+    foreach(const EntityPtr &entity, GetSelectedEntities())
         objs << boost::dynamic_pointer_cast<QObject>(entity);
 
     if (objs.size())
@@ -581,7 +575,7 @@ void ECEditorWindow::OpenFunctionDialog()
 void ECEditorWindow::HighlightEntities(const QString &type, const QString &name)
 {
     QSet<entity_id_t> entities;
-    foreach(EntityPtr entity, GetSelectedEntities())
+    foreach(const EntityPtr &entity, GetSelectedEntities())
         if (entity->GetComponent(type, name))
             entities.insert(entity->GetId());
     BoldEntityListItems(entities);
@@ -722,7 +716,7 @@ void ECEditorWindow::ShowXmlEditorForEntity()
         return;
 
     QList<EntityPtr> ents;
-    foreach(EntityComponentSelection ecs, selection)
+    foreach(const EntityComponentSelection &ecs, selection)
         ents << ecs.entity;
 
     emit EditEntityXml(ents);
@@ -734,7 +728,7 @@ void ECEditorWindow::ShowXmlEditorForComponent(const std::vector<ComponentPtr> &
         return;
 
     QList<ComponentPtr> comps;
-    foreach(ComponentPtr component, components)
+    foreach(const ComponentPtr &component, components)
         comps << component;
 
     emit EditComponentXml(comps);
