@@ -52,6 +52,7 @@ See the following pages for help on working on the Tundra codebase.
 <li>\ref component_base "Entity-Component reference."
 <li>\ref TundraScriptReference "Tundra scripting reference."
 <li>\ref TundraDocumentfiles "Working with Tundra document files."
+<li>\ref MumbleVoipSetup "Setting up Mumble VOIP."
 </ul>
 </td>
 </tr>
@@ -319,6 +320,9 @@ See the following topics for more information:
 <td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
 <h3>Communication</h3>
 The subsystem of Tundra that provides video and audio communication features between clients connected to the world.
+
+See the following topics for more information:
+    - \ref MumbleVoipSetup "Setting up Mumble VOIP."
 
 <p>Implemented by modules
 <ul>
