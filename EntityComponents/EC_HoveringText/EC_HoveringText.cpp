@@ -34,13 +34,10 @@
 EC_HoveringText::EC_HoveringText(Scene* scene) :
     IComponent(scene),
     font_(QFont("Arial", 100)),
-    backgroundColor_(Qt::transparent),
     textColor_(Qt::black),
     billboardSet_(0),
     billboard_(0),
-    visibility_animation_timeline_(new QTimeLine(1000, this)),
-    visibility_timer_(new QTimer(this)),
-    usingGrad(this, "Use Gradiant", false),
+    usingGrad(this, "Use Gradient", false),
     text(this, "Text"),
     font(this, "Font", "Arial"),
     fontColor(this, "Font Color"),
@@ -51,26 +48,24 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
     gradEnd(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
     borderColor(this, "Border Color", Color(0.0f,0.0f,0.0f,0.0f)),
     borderThickness(this, "Border Thickness", 0.0),
-    overlayAlpha(this, "Overlay Alpha", 1.0)
+    overlayAlpha(this, "Overlay Alpha", 1.0),
+    width(this, "Width", 1.0),
+    height(this, "Height", 1.0),
+    texWidth(this, "Texture Width", 256),
+    texHeight(this, "Texture Height", 256)
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
-    visibility_animation_timeline_->setFrameRange(0,100);
-    visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
-    visibility_timer_->setSingleShot(true);
-
-    connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
-    connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
 EC_HoveringText::~EC_HoveringText()
 {
-    if ( texture_.get() != 0 )
+    if (texture_.get() != 0)
     {
-         AssetAPI* asset = framework_->Asset();
-         asset->ForgetAsset(texture_,false);
+        AssetAPI* asset = framework_->Asset();
+        asset->ForgetAsset(texture_,false);
     }
     Destroy();
 }
@@ -139,13 +134,6 @@ void EC_HoveringText::SetTextColor(const QColor &color)
     Redraw();
 }
 
-void EC_HoveringText::SetBackgroundColor(const QColor &color)
-{
-    backgroundColor_ = color;
-    //using_gradient_ = false;
-    Redraw();
-}
-
 void EC_HoveringText::SetBackgroundGradient(const QColor &start_color, const QColor &end_color)
 {
     bg_grad_.setColorAt(0.0, start_color);
@@ -162,36 +150,6 @@ void EC_HoveringText::Show()
         billboardSet_->setVisible(true);
 }
 
-void EC_HoveringText::AnimatedShow()
-{
-    if (!ViewEnabled())
-        return;
-
-    if (visibility_animation_timeline_->state() == QTimeLine::Running ||
-        visibility_timer_->isActive() || IsVisible())
-        return;
-
-    UpdateAnimationStep(0);
-    Show();
-
-    visibility_animation_timeline_->setDirection(QTimeLine::Forward);
-    visibility_animation_timeline_->start();
-}
-
-void EC_HoveringText::Clicked(int msec_to_show)
-{
-    if (!ViewEnabled())
-        return;
-
-    if (visibility_timer_->isActive())
-        visibility_timer_->stop();
-    else
-    {
-        AnimatedShow();
-        visibility_timer_->start(msec_to_show);
-    }
-}
-
 void EC_HoveringText::Hide()
 {
     if (!ViewEnabled())
@@ -199,20 +157,6 @@ void EC_HoveringText::Hide()
 
     if (billboardSet_)
         billboardSet_->setVisible(false);
-}
-
-void EC_HoveringText::AnimatedHide()
-{
-    if (!ViewEnabled())
-        return;
-
-    if (visibility_animation_timeline_->state() == QTimeLine::Running ||
-        visibility_timer_->isActive() || !IsVisible())
-        return;
-
-    UpdateAnimationStep(100);
-    visibility_animation_timeline_->setDirection(QTimeLine::Backward);
-    visibility_animation_timeline_->start();
 }
 
 void EC_HoveringText::SetOverlayAlpha(float alpha)
@@ -226,21 +170,10 @@ void EC_HoveringText::SetOverlayAlpha(float alpha)
         Ogre::LBX_BLEND_MANUAL, Ogre::LBS_TEXTURE, Ogre::LBS_MANUAL, 1.0, 0.0, alpha);
 }
 
-void EC_HoveringText::UpdateAnimationStep(int step)
+void EC_HoveringText::SetBillboardSize(float width, float height)
 {
-    if (materialName_.empty())
-        return;
-
-    float alpha = step;
-    alpha /= 100;
-
-    SetOverlayAlpha(alpha);
-}
-
-void EC_HoveringText::AnimationFinished()
-{
-    if (visibility_animation_timeline_->direction() == QTimeLine::Backward && IsVisible())
-        Hide();
+    if (billboard_)
+        billboard_->setDimensions(width, height);
 }
 
 bool EC_HoveringText::IsVisible() const
@@ -287,7 +220,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
         return;
 
     // Create billboard if it doesn't exist.
-    if (!billboardSet_ && !billboard_)
+    if (!billboardSet_)
     {
         billboardSet_ = scene->createBillboardSet(world->GetUniqueObjectName("EC_HoveringText"), 1);
         assert(billboardSet_);
@@ -297,11 +230,14 @@ void EC_HoveringText::ShowMessage(const QString &text)
         billboardSet_->setMaterialName(materialName_);
         billboardSet_->setCastShadows(false);
 
-        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 0.7f));
-        assert(billboard_);
-        billboardSet_->setDefaultDimensions(2, 1);
-
         sceneNode->attachObject(billboardSet_);
+    }
+
+    if (billboardSet_ && !billboard_)
+    {
+        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 0.7f));
+
+        SetBillboardSize(width.Get(), height.Get());
     }
 
     //text.Set(text);
@@ -319,8 +255,7 @@ void EC_HoveringText::Redraw()
     try
     {
         if (texture_.get() == 0)
-        {
-       
+        {       
             AssetAPI* asset = framework_->Asset();
 
             textureName_ = asset->GenerateUniqueAssetName("tex", "EC_HoveringText_").toStdString();
@@ -334,26 +269,13 @@ void EC_HoveringText::Redraw()
                 LogError("Failed to create texture " + textureName_);
                 return;
             }
-        }
+        }       
        
-        QString txt = ((QString)text.Get()).replace("\\n", "\n");
-        QFontMetrics metric(font_); 
-        int width = metric.width(txt) + metric.averageCharWidth();
-        int height = metric.height() + 100;
-        
-        if (width > 800)
-        {
-            int s = width % 800;
-            int lines = (width - s) / 800;
-            height = height * lines;
-            width = 800 + s;
-        }
-       
-        QBrush brush(backgroundColor_);
+        QBrush brush((QColor)backgroundColor.Get());
 
         if (usingGrad.Get())
         {   
-            QRect rect(0,0,width, height);
+            QRect rect(0,0,texWidth.Get(), texHeight.Get());
             bg_grad_.setStart(QPointF(0,rect.top()));
             bg_grad_.setFinalStop(QPointF(0,rect.bottom()));
             brush = QBrush(bg_grad_);
@@ -367,9 +289,9 @@ void EC_HoveringText::Redraw()
         borderPen.setColor(borderCol);
         borderPen.setWidthF(borderThickness.Get());
                 
-        texture_->SetContentsDrawText(width, 
-                                height, 
-                                txt, 
+        texture_->SetContentsDrawText(texWidth.Get(), 
+                                texHeight.Get(), 
+                                text.Get(), 
                                 textColor_, 
                                 font_, 
                                 brush, 
@@ -413,11 +335,6 @@ void EC_HoveringText::OnAttributeUpdated(IComponent *component, IAttribute *attr
     {
         SetFont(QFont(font.Get(), fontSize.Get()));
     }
-    else if(backgroundColor.Name() == attribute->Name())
-    {
-        Color col = backgroundColor.Get();
-        backgroundColor_.setRgbF(col.r, col.g, col.b, col.a);
-    }
     else if(fontColor.Name() == attribute->Name())
     {
         Color col = fontColor.Get();
@@ -439,6 +356,8 @@ void EC_HoveringText::OnAttributeUpdated(IComponent *component, IAttribute *attr
     }
     else if (attribute == &overlayAlpha)
         SetOverlayAlpha(overlayAlpha.Get());
+    else if (attribute == &width || attribute == &height)
+        SetBillboardSize(width.Get(), height.Get());
 
     // Repaint the new text with new appearance.
     ShowMessage(text.Get());

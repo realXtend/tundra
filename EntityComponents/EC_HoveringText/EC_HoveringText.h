@@ -68,10 +68,6 @@ HoveringText shows a hovering text attached to an entity.
 <ul>
 <li>"hide": Hides the hovering text
 <li>"show": Shows the hovering text.
-<li>"AnimatedShow": Shows the hovering text with animation.
-<li>"Clicked": Hovering text is clicked. Toggles the visibility.
-    @param msec_to_show Time to show in milliseconds.
-<li>"AnimatedHide": Hides the hovering text with animation.
 <li>"ShowMessage": Sets the text to be shown.
     @param text Text to be shown.
 <li>"IsVisible": Returns if the hovering text is visible or not.
@@ -137,6 +133,18 @@ public:
     Q_PROPERTY(float overlayAlpha READ getoverlayAlpha WRITE setoverlayAlpha);
     DEFINE_QPROPERTY_ATTRIBUTE(float, overlayAlpha);
 
+    Q_PROPERTY(float width READ getwidth WRITE setwidth);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, width);
+
+    Q_PROPERTY(float height READ getheight WRITE setheight);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, height);
+
+    Q_PROPERTY(int texWidth READ gettexWidth WRITE settexWidth);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, texWidth);
+
+    Q_PROPERTY(float texHeight READ gettexHeight WRITE settexHeight);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, texHeight);
+
     /// Clears the 3D subsystem resources for this object.
     void Destroy();
     COMPONENT_NAME("EC_HoveringText",29);
@@ -145,18 +153,8 @@ public slots:
     /// Shows the hovering text.
     void Show();
 
-    /// Shows the hovering text with animation.
-    void AnimatedShow();
-
-    /// Hovering text is clicked. Toggles the visibility.
-    /// @param msec_to_show Time to show in milliseconds.
-    void Clicked(int msec_to_show = 5000);
-
     /// Hides the hovering text
     void Hide();
-
-    /// Hides the hovering text with animation.
-    void AnimatedHide();
 
     /// Returns if the hovering text is visible or not.
     /// @true If the hovering text is visible, false if it's hidden or not initialized properly.
@@ -184,12 +182,6 @@ public slots:
     /// @param color Color.
     void SetTextColor(const QColor &color);
 
-    /// Sets the background color for the hovering text.
-    /// @param color Color.
-    /// @note If EC_HoveringText's color is Qt::transparent (default behavior), background is not drawn.
-    /// @note Sets the using_gradient_ boolean to false.
-    void SetBackgroundColor(const QColor &color);
-
     /// Sets the colors for the background gradient color.
     /// @param start_color Start color.
     /// @param end_color End color.
@@ -199,14 +191,10 @@ public slots:
     /// Sets the Ogre overlay alpha value. Called in response to when the alpha value attribute changes.
     void SetOverlayAlpha(float alpha);
 
+    /// Updates the billboard world space size.
+    void SetBillboardSize(float width, float height);
+
 private slots:
-    /// Updates the animation
-    /// @param step Alpha animation step.
-    void UpdateAnimationStep(int step);
-
-    /// Finishes the animation.
-    void AnimationFinished();
-
     /// Redraws the hovering text with the current text, font and color.
     void Redraw();
     void UpdateSignals();
@@ -237,17 +225,8 @@ private:
     /// Color of the hovering text.
     QColor textColor_; 
 
-    /// Color of the hovering text background.
-    QColor backgroundColor_; 
-
     /// Gradient background
     QLinearGradient bg_grad_;
-
-    // Visibility animation timeline.
-    QTimeLine *visibility_animation_timeline_;
-
-    // Timed visibility timer
-    QTimer *visibility_timer_;
 
     // Texture which contains hovering text
     boost::shared_ptr<TextureAsset> texture_;  
