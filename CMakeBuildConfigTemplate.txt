@@ -48,7 +48,7 @@ endif()
 # Enables Ogre asset editor module.
 SET(OGREASSETEDITOR 1)
 
-SET(HAVE_OPENDOCUMENT_SUPPORT 0)
+SET(HAVE_OPENDOCUMENT_SUPPORT 1)
 
 use_package(OPENAL)
 use_package(OGG)
