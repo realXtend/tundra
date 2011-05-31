@@ -336,12 +336,12 @@ void EC_HoveringText::Redraw()
             }
         }
        
-
+        QString txt = ((QString)text.Get()).replace("\\n", "\n");
         QFontMetrics metric(font_); 
-        int width = metric.width(text.Get()) + metric.averageCharWidth();
+        int width = metric.width(txt) + metric.averageCharWidth();
         int height = metric.height() + 100;
         
-        if ( width > 800 )
+        if (width > 800)
         {
             int s = width % 800;
             int lines = (width - s) / 800;
@@ -349,18 +349,14 @@ void EC_HoveringText::Redraw()
             width = 800 + s;
         }
        
-        QBrush* brush = 0;
+        QBrush brush(backgroundColor_);
 
         if (usingGrad.Get())
         {   
             QRect rect(0,0,width, height);
             bg_grad_.setStart(QPointF(0,rect.top()));
             bg_grad_.setFinalStop(QPointF(0,rect.bottom()));
-            brush = new QBrush(bg_grad_);
-        }
-        else
-        {
-            brush = new QBrush(backgroundColor_);
+            brush = QBrush(bg_grad_);
         }
 
         QColor borderCol;
@@ -370,19 +366,14 @@ void EC_HoveringText::Redraw()
         QPen borderPen;
         borderPen.setColor(borderCol);
         borderPen.setWidthF(borderThickness.Get());
-        
-        
+                
         texture_->SetContentsDrawText(width, 
                                 height, 
-                                text.Get(), 
+                                txt, 
                                 textColor_, 
                                 font_, 
-                                *brush, 
+                                brush, 
                                 borderPen);
-
-         delete brush;
-         brush = 0;
-
     }
     catch(Ogre::Exception &e)
     {
