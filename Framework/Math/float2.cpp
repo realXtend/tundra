@@ -440,6 +440,52 @@ int float2::ConvexHullInPlace(float2 *points, int nPoints)
 	return nPointsInHull;
 }
 
+/** Implementation adapted from Christer Ericson's Real-time Collision Detection, p.111. */
+float float2::MinAreaRect(const float2 *pts, int numPoints, float2 &center, float2 &uDir, float2 &vDir)
+{
+    float minArea = std::numeric_limits<float>::max();
+
+    // Loop through all edges formed by pairs of points.
+    for(int i = 0, j = numPoints -1; i < numPoints; j = i, ++i)
+    {
+        // The edge formed by these two points.
+        float2 e0 = pts[i] - pts[j];
+        float len = e0.Normalize();
+        if (len == 0)
+            continue; // the points are duplicate, skip this axis.
+
+        float2 e1 = e0.Rotated90CCW();
+
+        // Find the most extreme points along the coordinate frame { e0, e1 }.
+
+        ///\todo Examine. A bug in the book? All the following are initialized to 0!.
+        float min0 = std::numeric_limits<float>::infinity();
+        float min1 = std::numeric_limits<float>::infinity();
+        float max0 = -std::numeric_limits<float>::infinity();
+        float max1 = -std::numeric_limits<float>::infinity();
+        for(int k = 0; k < numPoints; ++k)
+        {
+            float2 d = pts[k] - pts[j];
+            float dot = ::Dot(d, e0);
+            if (dot < min0) min0 = dot;
+            if (dot > max0) max0 = dot;
+            dot = ::Dot(d, e1);
+            if (dot < min1) min1 = dot;
+            if (dot > max1) max1 = dot;
+        }
+        float area = (max0 - min0) * (max1 - min1);
+
+        if (area < minArea)
+        {
+            minArea = area;
+            center = pts[j] + 0.5f * ((min0 + max0) * e0 + (min1 + max1) * e1);
+            uDir = e0;
+            vDir = e1;
+        }
+    }
+    return minArea;
+}
+
 float2 float2::operator +(const float2 &rhs) const
 {
     return float2(x + rhs.x, y + rhs.y);
