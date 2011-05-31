@@ -11,6 +11,7 @@
 #include "AddContentWindow.h"
 #include "SceneStructureModule.h"
 #include "TreeWidgetUtils.h"
+#include "SupportedFileTypes.h"
 
 #include "UiAPI.h"
 #include "UiMainWindow.h"
@@ -363,7 +364,7 @@ void AddContentWindow::AddFiles(const QStringList &fileNames)
 
 void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
 {
-    if (sceneDesc.type == SceneDesc::AssetUpload && entityDescs.empty())
+    if (entityDescs.empty())
     {
         SetEntitiesVisible(false);
         return;
@@ -515,7 +516,7 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
                             int dotIdx = value.lastIndexOf(".");
                             QString str = value.mid(slashIdx + 1, dotIdx - slashIdx - 1);
 
-                            foreach(SceneDesc::AssetMapKey key, keysWithSubname)
+                            foreach(const SceneDesc::AssetMapKey &key, keysWithSubname)
                                 if (value == key.first && str == key.second)
                                 {
                                     value = key.first;
@@ -783,31 +784,16 @@ void AddContentWindow::AddEntities()
     {
         // Create entities.
         QList<Entity *> entities;
-        switch(newDesc_.type)
+        if (newDesc_.filename.endsWith(cTundraXmlFileExtension, Qt::CaseInsensitive) ||
+            newDesc_.filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
         {
-        case SceneDesc::Tundra:
-        case SceneDesc::OgreMesh:
             entities = destScene->CreateContentFromSceneDesc(newDesc_, false, AttributeChange::Default);
-            break;
-        /*
-        case SceneDesc::OgreMesh:
-        {
-            boost::filesystem::path path(newDesc.filename.toStdString());
-            std::string dirname = path.branch_path().string();
-
-            TundraLogic::SceneImporter importer(destScene);
-            EntityPtr entity = importer.ImportMesh(newDesc.filename.toStdString(), dirname,
-                Transform(),std::string(), dest->BaseURL(), AttributeChange::Default, true, std::string(), newDesc);
-            if (entity)
-                entities << entity.get();
-            break;
         }
-        */
-        case SceneDesc::OgreScene:
+        else if (newDesc_.filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
         {
             if (!dest)
             {
-                LogError("Ogre .scene cannot be upload without destination asset storage.");
+                LogError("AddContentWindow: Ogre .scene cannot be upload without destination asset storage.");
                 return;
             }
 
@@ -817,13 +803,14 @@ void AddContentWindow::AddEntities()
             TundraLogic::SceneImporter importer(destScene);
             entities = importer.Import(newDesc_.filename.toStdString(), dirname, Transform(),
                 dest->BaseURL(), AttributeChange::Default, false/*clearScene*/, false);
-            break;
         }
-        case SceneDesc::AssetUpload:
-            break;
-        default:
-            LogError("Invalid scene description type.");
-            break;
+        else if (newDesc_.entities.isEmpty() && !newDesc_.assets.isEmpty())
+        {
+            LogError("AddContentWindow: Performing plain asset upload.");
+        }
+        else
+        {
+            LogError("AddContentWindow: Cannot figure out SceneDesc's contetnts.");
         }
 
         if (!entities.empty())

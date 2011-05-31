@@ -21,12 +21,8 @@ class QTreeWidgetItem;
 class QProgressBar;
 class QLabel;
 
-class IAssetUploadTransfer;
-class Framework;
-
 /// Window for adding new content and assets.
-/** The window is modal and is deleted when it's closed.
-*/
+/** The window is modal and is deleted when it's closed. */
 class AddContentWindow : public QWidget
 {
     Q_OBJECT
@@ -35,31 +31,26 @@ public:
     /// Constructs the window.
     /** @param fw Framework.
         @param dest Destination scene.
-        @param parent Parent widget.
-    */
-    explicit AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget *parent = 0);
+        @param parent Parent widget. */
+    AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget *parent = 0);
 
     /// Destructor.
     ~AddContentWindow();
 
     /// Adds scene description to be shown in the window.
-    /** @param desc Scene description.
-    */
+    /** @param desc Scene description. */
     void AddDescription(const SceneDesc &desc);
 
     /// Adds multiple scene descriptions to be shown in the window.
-    /** @param desc Scene description.
-    */
+    /** @param desc Scene description. */
 //    void AddDescriptions(const QList<SceneDesc> &descs);
 
     /// Adds files to be shown in the window.
-    /** @param fileNames List of files.
-    */
+    /** @param fileNames List of files. */
     void AddFiles(const QStringList &fileNames);
 
     /// Add offset position which will be applied to the created entities.
-    /** @param pos Position.
-    */
+    /** @param pos Position. */
     void AddPosition(const Vector3df &pos) { position = pos; }
 
 signals:
@@ -72,13 +63,11 @@ private:
     Q_DISABLE_COPY(AddContentWindow)
 
     /// Creates entity items to the entity tree widget.
-    /** @param entityDescs List of entity descriptions.
-    */
+    /** @param entityDescs List of entity descriptions. */
     void AddEntities(const QList<EntityDesc> &entityDescs);
 
     /// Creates asset items to the asset tree widget.
-    /** @param assetDescs List of assets descriptions.
-    */
+    /** @param assetDescs List of assets descriptions. */
     void AddAssets(const SceneDesc::AssetMap &assetDescs);
 
     /// Rewrites values of AssetReference or AssetReferenceList attributes.
@@ -165,25 +154,21 @@ private slots:
 
     /// Checks if tree widget column is editable.
     /** @param item Item which was double-clicked.
-        @param column Column index.
-    */
+        @param column Column index. */
     void CheckIfColumnIsEditable(QTreeWidgetItem *item, int column);
 
     /// Rewrites the destination names of all assets in the UI accordingly to the selected asset storage.
     void RewriteDestinationNames();
 
     /// Handles completed upload asset transfer.
-    /** @param transfer Completed transfer.
-    */
+    /** @param transfer Completed transfer. */
     void HandleUploadCompleted(IAssetUploadTransfer *transfer);
 
     /// Handles failed upload asset transfer.
-    /** @param transfer Failed transfer.
-    */
+    /** @param transfer Failed transfer. */
     void HandleUploadFailed(IAssetUploadTransfer *trasnfer);
 
     void UpdateUploadStatus(bool succesfull, const QString &assetRef);
 
     void CheckUploadTotals();
 };
-

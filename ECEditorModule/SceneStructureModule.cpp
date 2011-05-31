@@ -119,7 +119,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
 
     QList<SceneDesc> sceneDescs;
 
-    foreach(QString filename, filenames)
+    foreach(const QString &filename, filenames)
     {
         if (!IsSupportedFileType(filename))
         {
@@ -439,7 +439,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
     }
 
     currentToolTipDestination.clear();
-    foreach(QUrl url, e->mimeData()->urls())
+    foreach(const QUrl &url, e->mimeData()->urls())
     {
         if (IsSupportedFileType(url.path()))
             e->accept();
@@ -554,7 +554,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             if (!scene)
                 return;
 
-            foreach(EntityPtr cam, scene->GetEntitiesWithComponent(EC_Camera::TypeNameStatic()))
+            foreach(const EntityPtr &cam, scene->GetEntitiesWithComponent(EC_Camera::TypeNameStatic()))
                 if (cam->GetComponent<EC_Camera>()->IsActive())
                 {
                     EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();
@@ -572,7 +572,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         else
             worldPos = res->pos;
 
-        foreach (QUrl url, e->mimeData()->urls())
+        foreach (const QUrl &url, e->mimeData()->urls())
         {
             QString fileRef = url.toString();
             CleanReference(fileRef);
@@ -667,7 +667,6 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
 
                         // Create scene description
                         SceneDesc sceneDesc;
-                        sceneDesc.type = SceneDesc::AssetUpload;
                         sceneDesc.filename = materialRef;
 
                         // Add our material asset to scene description
@@ -690,7 +689,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                             dropFolder = dropFolder.replace("\\", "/");
                             dropFolder = dropFolder.left(dropFolder.lastIndexOf("/")+1);
 
-                            foreach(QString textureName, textures)
+                            foreach(const QString &textureName, textures)
                             {
                                 AssetDesc ad;
                                 ad.typeName = "texture";
@@ -787,7 +786,6 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
 
     // Init description
     SceneDesc sceneDesc;
-    sceneDesc.type = SceneDesc::Tundra;
     sceneDesc.filename = asset->Name();
 
     // Get data

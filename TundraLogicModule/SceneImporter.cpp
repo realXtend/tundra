@@ -336,7 +336,6 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
         return sceneDesc;
     }
 
-    sceneDesc.type = SceneDesc::OgreMesh;
     sceneDesc.filename = filename;
 
     QString path(boost::filesystem::path(filename.toStdString()).branch_path().string().c_str());
@@ -437,7 +436,6 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
         return sceneDesc;
     }
 
-    sceneDesc.type = SceneDesc::OgreMesh;
     sceneDesc.filename = meshUrl.toString();
 
     // Construct entity name from the mesh file name.
@@ -513,7 +511,6 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     }
 
     sceneDesc.filename = filename;
-    sceneDesc.type = SceneDesc::OgreScene;
 
     QFile file(filename);
     if (!file.open(QFile::ReadOnly))

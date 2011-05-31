@@ -28,6 +28,7 @@ typedef boost::shared_ptr<Entity> EntityPtr;
 typedef std::list<EntityPtr> EntityList;
 
 struct SceneDesc;
+struct EntityDesc;
 struct ComponentDesc;
 struct AttributeDesc;
 struct AssetDesc;
