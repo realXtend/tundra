@@ -42,7 +42,7 @@
 
 const QString cEcEditorHighlight("EcEditorHighlight");
 
-EntityListWidgetItem::EntityListWidgetItem(const QString &name, QListWidget *list, Entity *entity):
+EntityListWidgetItem::EntityListWidgetItem(const QString &name, QListWidget *list, ::Entity *entity):
     QListWidgetItem(name, list),
     entity(entity->shared_from_this())
 {
@@ -53,7 +53,7 @@ uint AddUniqueListItem(Entity *entity, QListWidget* list, const QString& name)
     for(int i = 0; i < list->count(); ++i)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(list->item(i));
-        if (item && item->GetEntity() && item->GetEntity().get() == entity)
+        if (item && item->Entity() && item->Entity().get() == entity)
             return i;
     }
 
@@ -219,7 +219,7 @@ void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
     for(uint i = 0; i < (uint)entityList->count(); i++)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
-        if (item && item->GetEntity() && item->GetEntity().get() == entity.get())
+        if (item && item->Entity() && item->Entity().get() == entity.get())
         {
             entityList->removeItemWidget(item);
             SAFE_DELETE(item)
@@ -283,9 +283,9 @@ QList<EntityPtr> ECEditorWindow::GetSelectedEntities() const
     for(uint i = 0; i < (uint)entityList->count(); ++i)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
-        if (item && item->GetEntity() && item->isSelected())
+        if (item && item->Entity() && item->isSelected())
         {
-            EntityPtr entity = scene->GetEntity(item->GetEntity()->GetId());
+            EntityPtr entity = scene->GetEntity(item->Entity()->GetId());
             if (entity)
                 ret.push_back(entity);
         }
@@ -298,7 +298,8 @@ void ECEditorWindow::SetEntitySelected(EntityListWidgetItem *item, bool select)
     entityList->blockSignals(true);
     item->setSelected(select);
     entityList->blockSignals(false);
-    HighlightEntity(item->GetEntity(), select);
+    if (framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled())
+        HighlightEntity(item->Entity(), select);
 }
 
 EntityListWidgetItem *ECEditorWindow::FindItem(entity_id_t id) const
@@ -306,11 +307,23 @@ EntityListWidgetItem *ECEditorWindow::FindItem(entity_id_t id) const
     for(uint i = 0; i < (uint)entityList->count(); i++)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
-        if (item && item->GetEntity() && item->GetEntity()->GetId() == id)
+        if (item && item->Entity() && item->Entity()->GetId() == id)
             return item;
     }
 
     return 0;
+}
+
+void ECEditorWindow::ShowVisualEditingAids(bool show)
+{
+    transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && show);
+
+    for(uint i = 0; i < (uint)entityList->count(); i++)
+    {
+        EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
+        if (item && item->isSelected())
+            HighlightEntity(item->Entity(), show);
+    }
 }
 
 void ECEditorWindow::DeleteEntitiesFromList()
@@ -649,7 +662,9 @@ void ECEditorWindow::RefreshPropertyBrowser()
         transformEditor->SetSelection(entities);
         transformEditor->FocusGizmoPivotToAabbBottomCenter();
         // Shows gizmo only if we have focus.
-        transformEditor->SetGizmoVisible(hasFocus);
+        bool enabled = framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled();
+        LogInfo("nable " + ToString(enabled));
+        transformEditor->SetGizmoVisible(hasFocus && enabled);
     }
 }
 
@@ -766,7 +781,7 @@ void ECEditorWindow::RemoveEntity(Entity* entity)
     for(uint i = 0; i < (uint)entityList->count(); i++)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
-        if (item->GetEntity().get() == entity)
+        if (item->Entity().get() == entity)
         {
             SAFE_DELETE(item);
             break;
@@ -780,13 +795,17 @@ void ECEditorWindow::SetFocus(bool focus)
 //    LogInfo("ECEditorWindow::SetFocus: " + ToString(focus));
 //    bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
 //    LogInfo("SetFocus: showGizmo: " + ToString(showGizmo));
-    transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && hasFocus);
 
-    for(uint i = 0; i < (uint)entityList->count(); i++)
+    if (framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled())
     {
-        EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
-        if (item && item->isSelected())
-            HighlightEntity(item->GetEntity(), hasFocus);
+        transformEditor->SetGizmoVisible(!GetSelectedEntities().isEmpty() && hasFocus);
+
+        for(uint i = 0; i < (uint)entityList->count(); i++)
+        {
+            EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
+            if (item && item->isSelected())
+                HighlightEntity(item->Entity(), hasFocus);
+        }
     }
 }
 
@@ -796,15 +815,18 @@ void ECEditorWindow::setVisible(bool visible)
     if (visible)
         emit FocusChanged(this);
 
-    bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
-//    LogInfo("ECEditorWindow::setVisible: showGizmo: " + ToString(showGizmo));
-    transformEditor->SetGizmoVisible(showGizmo);
-
-    for(uint i = 0; i < (uint)entityList->count(); i++)
+    if (framework->GetModule<ECEditorModule>()->VisualEditingAidsEnabled())
     {
-        EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
-        if (item && item->isSelected())
-            HighlightEntity(item->GetEntity(), hasFocus);
+        bool showGizmo = !GetSelectedEntities().isEmpty() && hasFocus;
+    //    LogInfo("ECEditorWindow::setVisible: showGizmo: " + ToString(showGizmo));
+        transformEditor->SetGizmoVisible(showGizmo);
+
+        for(uint i = 0; i < (uint)entityList->count(); i++)
+        {
+            EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
+            if (item && item->isSelected())
+                HighlightEntity(item->Entity(), hasFocus);
+        }
     }
 }
 
@@ -883,7 +905,7 @@ void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entitie
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
         if (item)
         {
-            EntityPtr ent = item->GetEntity();
+            EntityPtr ent = item->Entity();
             QFont font = item->font();
             if (ent && bolded_entities.contains(ent->GetId()))
             {

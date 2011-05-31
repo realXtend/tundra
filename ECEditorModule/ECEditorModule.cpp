@@ -12,17 +12,19 @@
 #include "SceneAPI.h"
 #include "Scene.h"
 #include "Entity.h"
-#include "EC_DynamicComponent.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "ConsoleAPI.h"
+#include "ConfigAPI.h"
 
 #include "MemoryLeakCheck.h"
 
 #include <QWebView>
 
-ECEditorModule::ECEditorModule() : IModule("ECEditor"), xmlEditor(0)
+const QString cShowAidsSetting("show visual editing aids");
+
+ECEditorModule::ECEditorModule() : IModule("ECEditor")
 {
 }
 
@@ -34,6 +36,12 @@ void ECEditorModule::Initialize()
 {
     GetFramework()->RegisterDynamicObject("eceditor", this);
     expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(Name().c_str(), framework_));
+///\todo For some reason config seems not to work.
+//    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name().c_str());
+//    if (!framework_->Config()->HasValue(configData, cShowAidsSetting))
+//        framework_->Config()->Set(configData, cShowAidsSetting, true);
+//    showVisualAids = framework_->Config()->Get(configData, cShowAidsSetting, QVariant(showVisualAids)).toBool();
+    showVisualAids = true;
 }
 
 void ECEditorModule::PostInitialize()
@@ -47,6 +55,9 @@ void ECEditorModule::PostInitialize()
 
 void ECEditorModule::Uninitialize()
 {
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name().c_str());
+    framework_->Config()->Set(configData, cShowAidsSetting, showVisualAids);
+
     SAFE_DELETE(commonEditor);
     SAFE_DELETE_LATER(xmlEditor);
 }
@@ -58,6 +69,22 @@ void ECEditorModule::Update(f64 frametime)
 ECEditorWindow *ECEditorModule::ActiveEditor() const
 {
     return activeEditor;
+}
+
+void ECEditorModule::ShowVisualEditingAids(bool show)
+{
+    if (framework_->IsHeadless())
+        return;
+
+    if (show != showVisualAids)
+    {
+        showVisualAids = show;
+        foreach(ECEditorWindow *editor, framework_->Ui()->MainWindow()->findChildren<ECEditorWindow *>())
+            if (showVisualAids && editor == activeEditor) // if showVisualAids == true, show visual aids only for active editor.
+                editor->ShowVisualEditingAids(showVisualAids);
+            else
+                editor->ShowVisualEditingAids(false);
+    }
 }
 
 void ECEditorModule::ECEditorFocusChanged(ECEditorWindow *editor)
@@ -186,9 +213,15 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
         return;
 
     const QKeySequence showEcEditor = framework_->Input()->KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
+    const QKeySequence &toggle= framework_->Input()->KeyBinding("ToggleVisualEditingAids", QKeySequence(Qt::Key_section));
     if (e->sequence == showEcEditor)
     {
         ShowEditorWindow();
-        e->handled = true;
+        e->Suppress();
+    }
+    else if (e->sequence == toggle)
+    {
+        ShowVisualEditingAids(!showVisualAids);
+        e->Suppress();
     }
 }

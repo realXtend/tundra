@@ -234,12 +234,9 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
     }
 
     InputAPI *inputApi = scn->GetFramework()->Input();
-    const QKeySequence &toggle= inputApi->KeyBinding("ToggleGizmo", QKeySequence(Qt::Key_section));
     const QKeySequence &translate= inputApi->KeyBinding("SetTranslateGizmo", QKeySequence(Qt::Key_1));
     const QKeySequence &rotate = inputApi->KeyBinding("SetRotateGizmo", QKeySequence(Qt::Key_2));
     const QKeySequence &scale = inputApi->KeyBinding("SetScaleGizmo", QKeySequence(Qt::Key_3));
-    if (e->sequence == toggle)
-        tg->SetVisible(!tg->IsVisible());
     if (e->sequence == translate)
         tg->SetCurrentGizmoType(EC_TransformGizmo::Translate);
     if (e->sequence == rotate)

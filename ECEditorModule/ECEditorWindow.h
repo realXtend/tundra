@@ -39,17 +39,15 @@ class EntityListWidgetItem: public QListWidgetItem
 public:
     EntityListWidgetItem(const QString &name, QListWidget *list, Entity *entity);
 
-    // Returns shared pointer of the entity that this item is presenting.
-    EntityPtr GetEntity() const { return entity.lock(); }
+    /// Returns shared pointer of the entity that this item is presenting.
+    EntityPtr Entity() const { return entity.lock(); }
 
 private:
-    //Weak pointer to entity switch will get released and set to null when QObject's destructor is called.
-    EntityWeakPtr entity;
+    EntityWeakPtr entity; ///< Weak pointer to the represented entity.
 };
 
 /// Entity-component editor window.
-/** \ingroup ECEditorModuleClient.
-*/
+/** \ingroup ECEditorModuleClient. */
 class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
 {
     Q_OBJECT
@@ -72,8 +70,7 @@ public:
     /// Sets new list of entities to be shown in the editor.
     /** Calling this method will clear previously selected entities from the editor.
         @param entities a new list of entities that we want to add into the editor.
-        @param select_all Do we want to select all entities from the list.
-    */
+        @param select_all Do we want to select all entities from the list. */
     void AddEntities(const QList<entity_id_t> &entities, bool select_all = false);
 
     /// Removes entity from the entity list.
@@ -96,13 +93,14 @@ public:
 
     /// Sets item active in the entity list. Also adds/removes EC_Highlight for the entity, if applicable.
     /** @param item Item to be select or deselect
-        @param select Do we want to select or deselect.
-    */
+        @param select Do we want to select or deselect. */
     void SetEntitySelected(EntityListWidgetItem *item, bool select);
 
     /// Returns list item for specific entity.
     /** @param id Entity ID. */
     EntityListWidgetItem *FindItem(entity_id_t id) const;
+
+    void ShowVisualEditingAids(bool show);
 
 public slots:
     /// Deletes selected entity entries from the list (does not delete the entity itself).
@@ -158,8 +156,7 @@ public slots:
     /// Highlights an entity.
     /** @note No-op if EC_Highlight is not included in the build.
         @param entity Entity to be highlighted.
-        @param highlight Do we want to show highlight or hide it.
-    */
+        @param highlight Do we want to show highlight or hide it. */
     void HighlightEntity(const EntityPtr &entity, bool highlight);
 
 signals:
@@ -226,7 +223,7 @@ private slots:
 
 private:
     /// Bold all given entities from the entity_list_ QListWidget object.
-    /// Note! this method will unbold previous selection.
+    /** @note Will unbold previous selection. */
     void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);
 
     Framework *framework; ///< Framework pointer.

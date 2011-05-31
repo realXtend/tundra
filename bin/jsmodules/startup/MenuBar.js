@@ -29,10 +29,20 @@ if (!framework.IsHeadless())
         viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
     }
 
-    if (framework.GetModuleByName("Console"))
-        viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
+//    if (framework.GetModuleByName("Console"))
+//        viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
 
-    //var eceditorAction = viewMenu.addAction("EC Editor");
+    if (framework.GetModuleByName("ECEditor")) {
+        viewMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
+
+        var showVisualAction = viewMenu.addAction("Show visual editing aids");
+        var showVisual = framework.Config().Get("tundra", "eceditor", "show visual editing aids");
+        if (showVisual == null)
+            showVisual = false;
+        showVisualAction.checkable = true;
+        showVisualAction.checked = showVisual;
+        showVisualAction.triggered.connect(ShowVisualEditingAids);
+    }
 
     if (framework.GetModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
@@ -128,6 +138,14 @@ if (!framework.IsHeadless())
 
     function OpenConsoleWindow() {
         framework.GetModuleByName("Console").ToggleConsole();
+    }
+
+    function OpenEcEditorWindow() {
+        framework.GetModuleByName("ECEditor").ShowEditorWindow();
+    }
+
+    function ShowVisualEditingAids(show) {
+        framework.GetModuleByName("ECEditor").ShowVisualEditingAids(show);
     }
 
     function OpenStereoscopyWindow() {
