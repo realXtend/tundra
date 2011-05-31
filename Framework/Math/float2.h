@@ -167,16 +167,36 @@ public:
     /// Rotates this vector 90 degrees clock-wise [in place].
     /// This is in a coordinate system on a plane where +x extends to the right, and +y extends upwards.
     void Rotate90CW();
-    
+
+    /// Returns a vector that is perpendicular to this vector (rotated 90 degrees clock-wise).
+    float2 Rotated90CW() const;
+
     /// Rotates this vector 90 degrees counterclock-wise .
     /// This is in a coordinate system on a plane where +x extends to the right, and +y extends upwards.
     void Rotate90CCW();
+
+    /// Returns a vector that is perpendicular to this vector (rotated 90 degrees counter-clock-wise).
+    float2 Rotated90CCW() const;
 
     /// Returns true if the triangle a->b->c is oriented counter-clockwise, when viewed in the XY-plane
     /// where x spans to the right and y spans up.
     /// Another way to think of this is that this function returns true, if the point C lies to the left
     /// of the directed line AB.
     static bool OrientedCCW(const float2 &a, const float2 &b, const float2 &c);
+
+    /// Computes the 2D convex hull of the given point set.
+    static void ConvexHull(const float2 *pointArray, int numPoints, std::vector<float2> &outConvexHull);
+    /// Computes the 2D convex hull of the given point set, in-place.
+    /// This version of the algorithm works in-place, meaning that when the algorithm finishes,
+    /// pointArray will contain the list of the points on the convex hull.
+    /// @return The number of points on the convex hull, i.e. the number of elements used in pointArray after the operation.
+    static int ConvexHullInPlace(float2 *pointArray, int numPoints);
+
+    /// Computes the minimum-area rectangle that bounds the given point set.
+    /// @param center [out] This variable will receive the center point of the rectangle.
+    /// @param uDir [out] This variable will receive a normalized direction vector pointing one of the sides of the rectangle.
+    /// @param VDir [out] This variable will receive a normalized direction vector pointing the other side of the rectangle.
+    static float MinAreaRect(const float2 *pointArray, int numPoints, float2 &center, float2 &uDir, float2 &vDir);
 
     float2 operator -() const;
 

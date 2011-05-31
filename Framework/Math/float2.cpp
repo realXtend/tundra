@@ -312,7 +312,12 @@ void float2::Rotate90CW()
     x = y;
     y = -oldX;
 }
-    
+
+float2 float2::Rotated90CW() const
+{
+    return float2(y, -x);
+}
+
 void float2::Rotate90CCW()
 {
     float oldX = x;
@@ -320,10 +325,119 @@ void float2::Rotate90CCW()
     y = oldX;
 }
 
+float2 float2::Rotated90CCW() const
+{
+    return float2(-y, x);
+}
+
 bool float2::OrientedCCW(const float2 &a, const float2 &b, const float2 &c)
 {
     assume(false && "Not implemented!"); ///\todo
     return false;
+}
+
+class SortByPolarAngle
+{
+public:
+	float2 perspective;
+
+	bool operator()(const float2 &a, const float2 &b) const
+	{
+		float2 A = a - perspective;
+		float2 B = b - perspective;
+        return A.x*B.y < B.x*A.y;
+	}
+};
+
+void float2::ConvexHull(const float2 *pointArray, int numPoints, std::vector<float2> &outConvexHull)
+{
+    outConvexHull.clear();
+    if (numPoints == 0)
+        return;
+    outConvexHull.insert(outConvexHull.end(), pointArray, pointArray + numPoints);
+    int convexHullSize = ConvexHullInPlace(&outConvexHull[0], outConvexHull.size());
+    outConvexHull.resize(convexHullSize);
+}
+
+/** This function implements the Graham's Scan algorithm for finding the convex hull of 
+    a 2D point set. The running time is O(nlogn). For details, see 
+    "Introduction to Algorithms, 2nd ed.", by Cormen, Leiserson, Rivest, p.824, or
+    a lecture by Shai Simonson: http://www.aduni.org/courses/algorithms/index.php?view=cw , lecture 02-13-01. */
+int float2::ConvexHullInPlace(float2 *points, int nPoints)
+{
+	if (nPoints <= 3)
+		return nPoints;
+	// Find the lowest point of the set.
+	float2 *lowest = &points[0];
+	for(int i = 1; i < nPoints; ++i)
+		if (points[i].y < lowest->y)
+			lowest = &points[i];
+	std::swap(*lowest, points[0]);
+	SortByPolarAngle pred;
+	pred.perspective = points[0];
+    std::sort(&points[1], &points[nPoints], pred);
+	int nPointsInHull = 2; // Two first points are in the hull without checking.
+	for(int i = 2; i < nPoints; ++i)
+	{
+		// The last two added points determine a line, check which side of that line the next point to be added lies in.
+		float2 lineA = points[nPointsInHull-1] - points[nPointsInHull-2];
+		float2 lineB = points[i] - points[nPointsInHull-2];
+		float lineALen = lineA.LengthSq();
+		float lineBLen = lineB.LengthSq();
+		bool dropLastPointFromHull = false;
+		if (lineALen >= 1e-5f)
+			lineA /= sqrt(lineALen);
+		else 
+			dropLastPointFromHull = true;
+		if (lineBLen >= 1e-5f)
+			lineB /= sqrt(lineBLen);
+		float2 normal = float2(-lineA.y, lineA.x);
+        if (dropLastPointFromHull || ::Dot(normal, lineB) > 0.f || (::Dot(normal,lineB) > -1e-4f && lineBLen >= lineALen))// || (Length2(points[i] - points[nPointsInHull-1]) <= 1e-5f)) // lineB is to the left of lineA?
+		{
+			// Points[n-1] is not part of the convex hull. Drop that point and decrement i to reprocess the current point.
+			// (It may be that the current point will cause lots of points to drop out of the convex hull.
+			if (nPointsInHull > 2)
+			{
+				--nPointsInHull;
+				--i;
+			}
+			else
+				points[nPointsInHull-1] = points[i];
+		}
+		else
+			points[nPointsInHull++] = points[i];
+	}
+
+    // The array points now stores the convex hull. For robustness,
+    // prune all duplicate and redundant points from the hull (due to floating point imprecisions).
+	for(int i = 0; i < nPointsInHull && nPointsInHull > 3; ++i)
+	{
+		// Remove any adjacent points that are too close.
+		if (points[i].Equals(points[(i+1)%nPointsInHull]))
+		{
+			for(int j = i; j+1 < nPointsInHull; ++j)
+				points[j] = points[j+1];
+			--nPointsInHull;
+			--i;
+			continue;
+		}
+
+		// Remove any adjacent points that are on the same line.
+		float2 dirA = points[(i+1)%nPointsInHull] - points[i];
+		dirA.Normalize();
+		float2 dirB = points[i] - points[(i+nPointsInHull-1)%nPointsInHull];
+		dirB.Normalize();
+        if (::Dot(dirA, dirB) >= 1.f - 1e-3f)
+		{
+			for(int j = i; j+1 < nPointsInHull; ++j)
+				points[j] = points[j+1];
+			--nPointsInHull;
+			--i;
+			continue;
+		}
+	}
+
+	return nPointsInHull;
 }
 
 float2 float2::operator +(const float2 &rhs) const
