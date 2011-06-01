@@ -12,9 +12,9 @@
 #include <time.h>
 #endif
 
-#include <boost/cstdint.hpp>
+#include "CoreTypes.h"
 
-typedef boost::uint64_t tick_t;
+typedef u64 tick_t;
 
 inline tick_t GetCurrentClockTime()
 {

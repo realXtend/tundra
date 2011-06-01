@@ -4,8 +4,6 @@
 
 #include "CoreTypes.h"
 
-#include <boost/cstdint.hpp>
-
 #include <QWidget>
 #include <QTimer>
 #include <QDir>

@@ -12,17 +12,16 @@
 
 #pragma once
 
-#include <QObject>
+#include "CoreTypes.h"
 
-#include <boost/cstdint.hpp>
+#include <QObject>
 
 class Framework;
 
 /// Class to which scripting languages connect their slots when wanting to receive delayed signal
 /// when certain amount of application time has passed.
 /** In C++ you can ignore the existence of this class, and just give your slot to FrameAPI's DelayedExecute
-    as a parameter. This class cannot be created directly, it's created by Frame
-*/
+    as a parameter. This class cannot be created directly, it's created by FrameAPI. */
 class DelayedSignal : public QObject
 {
     Q_OBJECT
@@ -31,22 +30,19 @@ class DelayedSignal : public QObject
 
 signals:
     /// Emitted when delayed signal is triggered.
-    /** @param time Elapsed framework wall clock time.
-    */
+    /** @param time Elapsed framework wall clock time. */
     void Triggered(float time);
 
 private:
     /// Construct new signal delayed signal object.
-    /** @param startTime Application tick.
-    */
+    /** @param startTime Application tick. */
     explicit DelayedSignal(boost::uint64_t startTime);
 
-    boost::uint64_t startTime_; ///< Application tick when object was created.
+    u64 startTime_; ///< Application tick when object was created.
 
 private slots:
     /// Emits Triggered() signal
-    /** Called by FrameAPI object when the spesified amount of time has passed.
-    */
+    /** Called by FrameAPI object when the spesified amount of time has passed. */
     void Expire();
 };
 
@@ -55,8 +51,7 @@ private slots:
     FrameAPI object can be used to:
     -retrieve signal every time frame has been processed
     -retrieve the wall clock time of Framework
-    -trigger delayed signals when spesified amount of time has elapsed.
-*/
+    -trigger delayed signals when spesified amount of time has elapsed. */
 class FrameAPI : public QObject
 {
     Q_OBJECT
@@ -75,46 +70,39 @@ public slots:
         so that we don't have to expose QTimer manually to e.g.Javascript.
         @param time Time in seconds.
         @note Never returns null pointer
-        @note Never store the returned pointer.
-    */
+        @note Never store the returned pointer. */
     DelayedSignal *DelayedExecute(float time);
 
     /// Triggers DelayedSignal::Triggered(float) signal when spesified amount of time has elapsed.
     /** Use this function from C++ or in Python if the receiver is a QObject.
         @param time Time in seconds.
         @param receiver Receiver object.
-        @param member Member slot.
-    */
+        @param member Member slot. */
     void DelayedExecute(float time, const QObject *receiver, const char *member);
 
-    /// Returns the current application frame number. Note: It is best not to tie any timing-specific animation
-    /// to this number, but instead use GetWallClockTime().
+    /// Returns the current application frame number.
+    /** @note It is best not to tie any timing-specific animation to this number, but instead use GetWallClockTime(). */
     int FrameNumber() const;
 
 signals:
     /// Emitted after one frame is processed.
-    /** @param frametime Elapsed time in seconds since the last frame.
-    */
+    /** @param frametime Elapsed time in seconds since the last frame. */
     void Updated(float frametime);
 
 private:
     /// Constructor. Framework takes ownership of this object.
-    /** @param framework Framework
-    */
+    /** @param framework Framework */
     explicit FrameAPI(Framework *framework);
 
     /// Emits Updated() signal. Called by Framework each frame.
-    /** @param frametime Time elapsed since last frame.
-    */
+    /** @param frametime Time elapsed since last frame. */
     void Update(float frametime);
 
-    boost::uint64_t startTime_; ///< Start time time of Framework/this object;
+    u64 startTime_; ///< Start time time of Framework/this object;
     QList<DelayedSignal *> delayedSignals_; ///< Delayed signals.
-
     int currentFrameNumber;
 
 private slots:
     /// Deletes delayed signal object and removes it from the list when it's expired.
     void DeleteDelayedSignal();
 };
-
