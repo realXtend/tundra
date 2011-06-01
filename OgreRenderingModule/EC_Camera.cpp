@@ -234,6 +234,13 @@ Ogre::Ray EC_Camera::GetMouseRay(float x, float y)
         return Ogre::Ray();
 }
 
+Vector3df EC_Camera::GetMouseRayDirection(float x, float y)
+{
+    Ogre::Ray ray = GetMouseRay(x, y);
+    Ogre::Vector3 dir = ray.getDirection();
+    return Vector3df(dir.x, dir.y, dir.z);
+}
+
 void EC_Camera::UpdateSignals()
 {
     Entity* parent = ParentEntity();

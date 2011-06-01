@@ -159,6 +159,12 @@ public slots:
     */
     Ogre::Ray GetMouseRay(float x, float y);
 
+    /// Returns a direction vector from camera to given viewport point.
+    /** @param The x position at which the ray should intersect the viewport, in normalized screen coordinates [0,1].
+        @param The y position at which the ray should intersect the viewport, in normalized screen coordinates [0,1].
+    */
+    Vector3df GetMouseRayDirection(float x, float y);
+
     /// Start tracking an entity's visibility within the scene using this camera
     /** After this, connect either to the camera's EntityEnterView and EntityLeaveView signals, or the entity's EnterView & LeaveView signals,
        to be notified of the visibility change(s)
