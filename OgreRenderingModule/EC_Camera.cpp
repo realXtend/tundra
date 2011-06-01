@@ -226,19 +226,17 @@ void EC_Camera::AttachCamera()
     attached_ = true;
 }
 
-Ogre::Ray EC_Camera::GetMouseRay(float x, float y)
+Ray EC_Camera::GetMouseRay(float x, float y)
 {
     if (camera_)
-        return camera_->getCameraToViewportRay(clamp(x, 0.f, 1.f), clamp(y, 0.f, 1.f));
+    {
+        Ogre::Ray ray = camera_->getCameraToViewportRay(clamp(x, 0.f, 1.f), clamp(y, 0.f, 1.f));
+        Ogre::Vector3 dir = ray.getOrigin();
+        Ogre::Vector3 rot = ray.getDirection();
+        return Ray(float3(dir.x, dir.y, dir.z), float3(rot.x, rot.y, rot.z));
+    }
     else
-        return Ogre::Ray();
-}
-
-Vector3df EC_Camera::GetMouseRayDirection(float x, float y)
-{
-    Ogre::Ray ray = GetMouseRay(x, y);
-    Ogre::Vector3 dir = ray.getDirection();
-    return Vector3df(dir.x, dir.y, dir.z);
+        return Ray();
 }
 
 void EC_Camera::UpdateSignals()
