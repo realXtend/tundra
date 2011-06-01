@@ -11,6 +11,11 @@
 #include "LineSegment.h"
 #include "Ray.h"
 #include "Line.h"
+#include "Plane.h"
+#include "float3x3.h"
+#include "float3x4.h"
+#include "float4x4.h"
+#include "Quat.h"
 
 LineSegment::LineSegment(const float3 &a_, const float3 &b_)
 :a(a_), b(b_)
@@ -46,22 +51,26 @@ float3 LineSegment::Dir() const
 /// Applies a transformation to this line.
 void LineSegment::Transform(const float3x3 &transform)
 {
-    assume(false && "Not implemented!");
+    a = transform * a;
+    b = transform * b;
 }
 
 void LineSegment::Transform(const float3x4 &transform)
 {
-    assume(false && "Not implemented!");
+    a = transform.MulPos(a);
+    b = transform.MulPos(b);
 }
 
 void LineSegment::Transform(const float4x4 &transform)
 {
-    assume(false && "Not implemented!");
+    a = transform.MulPos(a);
+    b = transform.MulPos(b);
 }
 
 void LineSegment::Transform(const Quat &transform)
 {
-    assume(false && "Not implemented!");
+    a = transform * a;
+    b = transform * b;
 }
 
 float LineSegment::Length() const
@@ -74,18 +83,22 @@ float LineSegment::LengthSq() const
     return a.DistanceSq(b);
 }
 
-float LineSegment::Distance(const float3 &point) const
+float3 LineSegment::ClosestPoint(const float3 &point, float *d) const
 {
-    assume(false && "Not implemented!");
-    return 0.f; ///\todo
+    float t;
+    if (!d)
+        d = &t;
+    float3 dir = b - a;
+    *d = Clamp01(Dot(point - a, dir) / dir.LengthSq());
+    return a + *d * dir;
 }
 
-float LineSegment::Distance(const float3 &point, float &d) const
+float LineSegment::Distance(const float3 &point, float *d) const
 {
-    assume(false && "Not implemented!");
-    return 0.f; ///\todo
+    float3 closestPoint = ClosestPoint(point, d);
+    return closestPoint.Distance(point);
 }
-
+/*
 float LineSegment::Distance(const Ray &other, float &d, float &d2) const
 {
     assume(false && "Not implemented!");
@@ -103,13 +116,14 @@ float LineSegment::Distance(const LineSegment &other, float &d, float &d2) const
     assume(false && "Not implemented!");
     return 0.f; ///\todo
 }
-
-bool LineSegment::Intersect(const Plane &plane) const
+*/
+bool LineSegment::Intersects(const Plane &plane) const
 {
-    assume(false && "Not implemented!");
-    return false; ///\todo
+    float d = plane.SignedDistance(a);
+    float d2 = plane.SignedDistance(b);
+    return d * d2 <= 0.f;
 }
-
+/*
 bool LineSegment::Intersect(const Plane &plane, float &outDistance) const
 {
     assume(false && "Not implemented!");
@@ -175,6 +189,7 @@ bool LineSegment::Intersect(const Frustum &frustum, float &outDistance) const
     assume(false && "Not implemented!");
     return false; ///\todo
 }
+*/
 /*
 bool LineSegment::Intersect(const Polyhedron &polyhedron) const
 {

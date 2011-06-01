@@ -433,6 +433,11 @@ Quat Quat::operator *(float scalar) const
     return Quat(x * scalar, y * scalar, z * scalar, w * scalar);
 }
 
+float3 Quat::operator *(const float3 &rhs) const
+{ 
+    return Mul(rhs);
+}
+
 Quat Quat::operator /(float scalar) const
 {
     assume(!EqualAbs(scalar, 0.f));

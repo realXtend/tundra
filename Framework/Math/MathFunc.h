@@ -144,11 +144,14 @@ float PowInt(float base, int exponent);
 
 /// Returns the given scalar clamped to the range [min, max].
 template<typename T>
-T Clamp(const T &val, const T &floor, const T &ceil)
+inline T Clamp(const T &val, const T &floor, const T &ceil)
 {
     assert(floor <= ceil);
     return val <= ceil ? (val >= floor ? val : floor) : ceil;
 }
+
+template<typename T>
+inline T Clamp01(const T &val) { return Clamp(val, T(0), T(1)); }
 
 /** @return The smaller of two values. */
 template<typename T>

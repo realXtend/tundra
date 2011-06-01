@@ -48,13 +48,24 @@ public:
     float Length() const;
     float LengthSq() const;
 
-    float Distance(const float3 &point) const;
-    float Distance(const float3 &point, float &d) const;
+    /// Returns the closest point on this line segment to the given point.
+    /// @param d [out] If specified, this parameter receives the normalized position along
+    ///          this line segment which specifies the closes point on this line segment to
+    ///          the specified point.
+    float3 ClosestPoint(const float3 &point, float *d = 0) const;
+
+    /// Computes the distance of this line segment to the given point.
+    /// @param d [out] If specified, this parameter receives the normalized position along
+    ///          this line segment which specifies the closes point on this line segment to
+    ///          the specified point.
+    float Distance(const float3 &point, float *d = 0) const;
+/*
     float Distance(const Ray &other, float &d, float &d2) const;
     float Distance(const Line &other, float &d, float &d2) const;
     float Distance(const LineSegment &other, float &d, float &d2) const;
-
-    bool Intersect(const Plane &plane) const;
+*/
+    bool Intersects(const Plane &plane) const;
+/*
     bool Intersect(const Plane &plane, float &outDistance) const;
 
     bool Intersect(const Sphere &sphere) const;
@@ -71,7 +82,7 @@ public:
 
     bool Intersect(const Frustum &frustum) const;
     bool Intersect(const Frustum &frustum, float &outDistance) const;
-
+*/
 //    bool Intersect(const Polyhedron &polyhedron) const;
 //    bool Intersect(const Polyhedron &polyhedron, float &outDistance) const;
 

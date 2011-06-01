@@ -214,6 +214,12 @@ public:
     /// q2 is applied first before q1.
     Quat operator *(const Quat &rhs) const;
 
+    /// Transforms the given vector by this Quaternion.
+    /// @note Technically, this function does not perform a simple multiplication of 'q * v', 
+    /// but instead performs a conjugation operation 'q*v*q^-1'. This corresponds to transforming
+    /// the given vector by this Quaternion.
+    float3 operator *(const float3 &rhs) const;
+
     /// The identity quaternion performs no rotation when applied to a vector.
     /// For quaternions, the identity has the value r = 1, i,j,k = 0.
     static const Quat identity;
@@ -240,7 +246,12 @@ public:
     operator btQuaternion() const { return btQuaternion(x, y, z, w); }
 #endif
 
+    /// Converts the given matrix to a quaternion and computes the concatenated transform 'this * rhs'.
     Quat Mul(const float3x3 &rhs) const;
+    /// Transforms the given vector by this Quaternion.
+    /// @note Technically, this function does not perform a simple multiplication of 'q * v', 
+    /// but instead performs a conjugation operation 'q*v*q^-1'. This corresponds to transforming
+    /// the given vector by this Quaternion.
     float3 Mul(const float3 &vector) const;
     float4 Mul(const float4 &vector) const;
 
