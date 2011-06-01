@@ -12,16 +12,14 @@ class QMenu;
 
 /// UiAPI is the core API object exposed for all UI-related functionality.
 /** @todo More detailed description.
-    @todo Make a new .dox file for UiAPI.
-*/
+    @todo Make a new .dox file for UiAPI. */
 class UI_API UiAPI : public QObject
 {
     Q_OBJECT;
 
 public:
     /// Constructs the UI API.
-    /** param owner Owner framework.
-    */
+    /** param owner Owner framework. */
     explicit UiAPI(Framework *owner);
 
     /// Destroys main window and viewport.
@@ -58,58 +56,48 @@ public slots:
                 It creates movable proxy widget which has title bar and frames.
                 If you want add widget without title bar and frames, use Qt::Widget.
                 For further information, see http://doc.qt.nokia.com/4.7/qt.html#WindowType-enum
-        @return Proxy widget of the added widget.
-    */
+        @return Proxy widget of the added widget. */
     UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
     /// Adds user-created proxy widget to the scene.
     /** @param widget Proxy widget.
-        @return True if the addition was successful, false otherwise.
-    */
+        @return True if the addition was successful, false otherwise. */
     bool AddProxyWidgetToScene(UiProxyWidget *proxy);
 
     /// Removes widget's proxy widget from the scene.
-    /** @param widget Widget.
-    */
+    /** @param widget Widget. */
     void RemoveWidgetFromScene(QWidget *widget);
 
     /// This is an overloaded function.
     /** Removes proxy widget from the scene.
-        @param widget Proxy widget.
-    */
+        @param widget Proxy widget. */
     void RemoveWidgetFromScene(QGraphicsProxyWidget *widget);
 
     /// Removes proxy widget from scene.
     /** @param widget Proxy widget.
-        @todo Make function overloads work with QtScript and remove this function.
-    */
+        @todo Make function overloads work with QtScript and remove this function. */
     void RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget) { return RemoveWidgetFromScene(widget); }
 
     /// Shows the widget's proxy widget in the scene.
-    /** @param widget Widget.
-    */
+    /** @param widget Widget. */
     void ShowWidget(QWidget *widget) const;
 
     /// Hides the widget's proxy widget in the scene.
-    /** @param widget Widget.
-    */
+    /** @param widget Widget. */
     void HideWidget(QWidget *widget) const;
 
     /// Brings the widget's proxy widget to front in the graphics scene and sets focus to it.
-    /** @param widget Widget.
-    */
+    /** @param widget Widget. */
     void BringWidgetToFront(QWidget *widget) const;
 
     /// This is an overloaded function.
     /** Brings the widget's proxy widget to front in the graphics scene and sets focus to it.
-        @param widget Proxy widget.
-    */
+        @param widget Proxy widget. */
     void BringWidgetToFront(QGraphicsProxyWidget *widget) const { return BringProxyWidgetToFront(widget); }
 
     /// Brings the proxy widget to front in the graphics scene and sets focus to it.
     /** @param widget Proxy widget.
-        @todo Make function overloads work with QtScript and remove this function.
-    */
+        @todo Make function overloads work with QtScript and remove this function. */
     void BringProxyWidgetToFront(QGraphicsProxyWidget *widget) const;
 
     /// Loads widget from .ui file and adds it to the graphics scene.
@@ -118,21 +106,18 @@ public slots:
         @param filePath .ui file location.
         @param parent Parent widget.
         @param addToScene Do we want to add new widget to the graphics scene.
-        @return loaded widget's pointer (null if loading failed).
-    */
+        @return loaded widget's pointer (null if loading failed). */
     QWidget *LoadFromFile(const QString &filePath, bool addToScene = true, QWidget *parent = 0);
 
     /// Emits a signal that can be used to attach context menu actions for specific object types.
     /** @param menu Menu to which possible functionality can be appended.
-        @param targets List of target objects for which the context menu is about to open.
-    */
+        @param targets List of target objects for which the context menu is about to open. */
     void EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 
 signals:
     /// Signals that context menu @c menu is about to open for specific objects.
     /** @param menu Menu to which append functionalities.
-        @param targets List of target objects for which the context menu is about to open.
-    */
+        @param targets List of target objects for which the context menu is about to open. */
     void ContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 
 private slots:
@@ -141,13 +126,11 @@ private slots:
 
     /// Performs different operations for proxy widgets when scene rectangle is changed.
     /** F.ex. resizes full screen widgets to fit the screen.
-        @param rect New scene rectangle.
-    */
+        @param rect New scene rectangle. */
     void OnSceneRectChanged(const QRectF &rect);
 
     /// Deletes widget and the corresponding proxy widget if widget has WA_DeleteOnClose on.
-    /** The caller of this slot is retrieved by using QObject::sender().
-    */
+    /** The caller of this slot is retrieved by using QObject::sender(). */
     void DeleteCallingWidgetOnClose();
 
 private:
