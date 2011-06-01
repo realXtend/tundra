@@ -36,12 +36,11 @@ void ECEditorModule::Initialize()
 {
     GetFramework()->RegisterDynamicObject("eceditor", this);
     expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(Name().c_str(), framework_));
-///\todo For some reason config seems not to work.
-//    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name().c_str());
-//    if (!framework_->Config()->HasValue(configData, cShowAidsSetting))
-//        framework_->Config()->Set(configData, cShowAidsSetting, true);
-//    showVisualAids = framework_->Config()->Get(configData, cShowAidsSetting, QVariant(showVisualAids)).toBool();
-    showVisualAids = true;
+
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name().c_str());
+    if (!framework_->Config()->HasValue(configData, cShowAidsSetting))
+        framework_->Config()->Set(configData, cShowAidsSetting, true);
+    showVisualAids = framework_->Config()->Get(configData, cShowAidsSetting, QVariant(showVisualAids)).toBool();
 }
 
 void ECEditorModule::PostInitialize()
