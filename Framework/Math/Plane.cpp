@@ -7,12 +7,17 @@
 */
 #include "StableHeaders.h"
 
+#include "AABB.h"
 #include "Circle.h"
 #include "MathFunc.h"
 #include "Plane.h"
 #include "Line.h"
+#include "OBB.h"
 #include "Ray.h"
+#include "Sphere.h"
+#include "Triangle.h"
 #include "LineSegment.h"
+#include "float3x3.h"
 #include "float3x4.h"
 
 Plane::Plane(const float3 &normal_, float d_)
@@ -35,19 +40,19 @@ void Plane::Set(const float3 &v1, const float3 &v2, const float3 &v3)
 {
     assume(!Line::AreCollinear(v1, v2, v3));
     normal = (v2-v1).Cross(v3-v1).Normalized();
-    d = -Dot(v1, normal);
+    d = Dot(v1, normal);
 }
 
 void Plane::Set(const float3 &point, const float3 &normal_)
 {
     normal = normal_;
     assume(normal.IsNormalized());
-    d = -Dot(point, normal);
+    d = Dot(point, normal);
 }
 
 float3 Plane::PointOnPlane() const
 {
-    return normal * -d;
+    return normal * d;
 }
 
 void Plane::Transform(const float3x3 &transform)
@@ -93,7 +98,7 @@ float Plane::Distance(const float3 &point) const
 
 float Plane::SignedDistance(const float3 &point) const
 {
-    return normal.Dot(point) + d;
+    return normal.Dot(point) - d;
 }
 
 float3x4 Plane::OrthoProjection() const
@@ -137,28 +142,70 @@ float3 Plane::ObliqueProject(const float3 &point, const float3 &obliqueProjectio
     return float3();
 }
 
-bool Plane::Intersect(const Plane &plane, Line &outLine) const
+bool Plane::Intersects(const Plane &plane, Line *outLine) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return false;
+    float3 perp = Cross(normal, plane.normal);
+
+    float3x3 m;
+    m.SetRow(0, normal);
+    m.SetRow(1, plane.normal);
+    m.SetRow(2, perp); // This is arbitrarily chosen, to produce m invertible.
+    bool success = m.Inverse();
+    if (!success) // Inverse failed, so the planes must be parallel.
+    {
+        if (EqualAbs(d, plane.d)) // The planes are equal?
+        {
+            if (outLine)
+                *outLine = Line(plane.PointOnPlane(), plane.normal.Perpendicular());
+            return true;
+        }
+        else
+            return false;
+    }
+    if (outLine)
+        *outLine = Line(m * float3(d, plane.d, 0.f), perp.Normalized());
+    return true;
 }
 
-bool Plane::Intersect(const Plane &plane, const Plane &plane2, Line &outLine)
+bool Plane::Intersects(const Plane &plane, const Plane &plane2, Line *outLine, float3 *outPoint) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return false;
-}
+    Line dummy;
+    if (!outLine)
+        outLine = &dummy;
 
-bool Plane::Intersect(const Plane &plane, const Plane &plane2, float3 &outPoint) const
-{
-    assume(false && "Not implemented!"); ///\todo
-    return false;
-}
+    // First check all planes for parallel pairs.
+    if (this->IsParallel(plane) || this->IsParallel(plane2))
+        if (EqualAbs(d, plane.d) || EqualAbs(d, plane2.d))
+        {
+            bool intersect = plane.Intersects(plane2, outLine);
+            if (intersect && outPoint)
+                *outPoint = outLine->GetPoint(0);
+            return intersect;
+        }
+        else
+            return false;
+    if (plane.IsParallel(plane2))
+        if (EqualAbs(plane.d, plane2.d))
+        {
+            bool intersect = this->Intersects(plane, outLine);
+            if (intersect && outPoint)
+                *outPoint = outLine->GetPoint(0);
+            return intersect;
+        }
+        else
+            return false;
 
-bool Plane::Intersect(const Plane &plane, const Plane &plane2, const Plane &plane3, float3 &outPoint)
-{
-    assume(false && "Not implemented!"); ///\todo
-    return false;
+    // All planes point to different directions.
+    float3x3 m;
+    m.SetRow(0, normal);
+    m.SetRow(1, plane.normal);
+    m.SetRow(2, plane2.normal);
+    bool success = m.Inverse();
+    if (!success)
+        return false;
+    if (outPoint)
+        *outPoint = m * float3(d, plane.d, plane2.d);
+    return true;
 }
 
 bool IntersectLinePlane(const float3 &ptOnPlane, const float3 &planeNormal, const float3 &lineStart, const float3 &lineDir, float *t)
@@ -171,7 +218,7 @@ bool IntersectLinePlane(const float3 &ptOnPlane, const float3 &planeNormal, cons
     return true;
 }
 
-bool Plane::Intersect(const Ray &ray, float *d) const
+bool Plane::Intersects(const Ray &ray, float *d) const
 {
     float t;
     bool success = IntersectLinePlane(PointOnPlane(), normal, ray.pos, ray.dir, &t);
@@ -180,12 +227,12 @@ bool Plane::Intersect(const Ray &ray, float *d) const
     return success && t >= 0.f;
 }
 
-bool Plane::Intersect(const Line &line, float *d) const
+bool Plane::Intersects(const Line &line, float *d) const
 {
     return IntersectLinePlane(PointOnPlane(), normal, line.pos, line.dir, d);
 }
 
-bool Plane::Intersect(const LineSegment &lineSegment, float *d) const
+bool Plane::Intersects(const LineSegment &lineSegment, float *d) const
 {
     float t;
     bool success = IntersectLinePlane(PointOnPlane(), normal, lineSegment.a, lineSegment.Dir(), &t);
@@ -195,37 +242,59 @@ bool Plane::Intersect(const LineSegment &lineSegment, float *d) const
     return success && t >= 0.f && t <= lineSegmentLength;
 }
 
-bool Plane::Intersect(const Sphere &sphere) const
+bool Plane::Intersects(const Sphere &sphere) const
 {
-    assume(false && "Not implemented!"); ///\todo
+    return Distance(sphere.pos) <= sphere.r;
+}
+
+bool Plane::Intersects(const AABB &aabb) const
+{
+    // Simply test which side each vertex of the AABB is on.
+    // If we find vertices on both sides, we must be intersecting.
+    // Points lying on the plane are considered to be intersecting as well.
+    float d = SignedDistance(aabb.CornerPoint(0));
+    for(int i = 1; i < 8; ++i)
+    {
+        float d2 = SignedDistance(aabb.CornerPoint(i));
+        if (d * d2 <= 0.f)
+            return true;
+        d = d2;
+    }
+
     return false;
 }
 
-bool Plane::Intersect(const AABB &aabb) const
+bool Plane::Intersects(const OBB &obb) const
 {
-    assume(false && "Not implemented!"); ///\todo
+    // This implementation is identical to Plane::Intersects(AABB).
+
+    float d = SignedDistance(obb.CornerPoint(0));
+    for(int i = 1; i < 8; ++i)
+    {
+        float d2 = SignedDistance(obb.CornerPoint(i));
+        if (d * d2 <= 0.f)
+            return true;
+        d = d2;
+    }
+
     return false;
 }
 
-bool Plane::Intersect(const OBB &aabb) const
+bool Plane::Intersects(const Triangle &triangle) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return false;
+    float a = SignedDistance(triangle.a);
+    float b = SignedDistance(triangle.a);
+    float c = SignedDistance(triangle.a);
+    return (a*b <= 0.f || a*c <= 0.f || b*c <= 0.f);
 }
 
-bool Plane::Intersect(const Triangle &triangle) const
-{
-    assume(false && "Not implemented!"); ///\todo
-    return false;
-}
-
-bool Plane::Intersect(const Frustum &frustum) const
+bool Plane::Intersects(const Frustum &frustum) const
 {
     assume(false && "Not implemented!"); ///\todo
     return false;
 }
 /*
-bool Plane::Intersect(const Polyhedron &polyhedron) const
+bool Plane::Intersects(const Polyhedron &polyhedron) const
 {
     assume(false && "Not implemented!"); ///\todo
     return false;
@@ -255,10 +324,9 @@ int Plane::Clip(const Triangle &triangle, Triangle &t1, Triangle &t2) const
     return false;
 }
 
-bool Plane::AreParallel(const Plane &plane) const
+bool Plane::IsParallel(const Plane &plane, float epsilon) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return false;
+    return normal.Equals(plane.normal, epsilon);
 }
 
 float Plane::DihedralAngle(const Plane &plane) const
@@ -269,8 +337,7 @@ float Plane::DihedralAngle(const Plane &plane) const
 
 bool Plane::Equals(const Plane &other, float epsilon) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return false;
+    return IsParallel(other, epsilon) && EqualAbs(d, other.d, epsilon);
 }
 
 Circle Plane::GenerateCircle(const float3 &circleCenter, float radius) const

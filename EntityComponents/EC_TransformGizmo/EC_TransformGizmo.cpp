@@ -290,7 +290,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     float3 planeNormal = activeAxes[0].ray.dir.Cross(activeAxes[1].ray.dir).Normalized();
                     Plane plane(activeAxes[0].ray.pos, planeNormal);
                     float distance = 0.f;
-                    if (plane.Intersect(mouseRay, &distance))
+                    if (plane.Intersects(mouseRay, &distance))
                         prevPoint = mouseRay.GetPoint(distance);
                 }
 //                else if (activeAxes.size() == 3 && gizmoType == EC_TransformGizmo::Scale)
@@ -312,7 +312,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     float3 planeNormal = activeAxes[0].ray.dir.Cross(activeAxes[1].ray.dir).Normalized();
                     Plane plane(activeAxes[0].ray.pos, planeNormal);
                     float distance = 0.f;
-                    if (plane.Intersect(mouseRay, &distance))
+                    if (plane.Intersects(mouseRay, &distance))
                         curPoint = mouseRay.GetPoint(distance);
                 }
 //                else if (activeAxes.size() == 3 && gizmoType == EC_TransformGizmo::Scale)

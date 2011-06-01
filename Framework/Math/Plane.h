@@ -37,7 +37,12 @@ public:
 
     /// The direction this plane is facing at.
     float3 normal;
-    /// The signed distance of this plane from origin.
+    /// The offset of this plane from the origin.
+    /// -d gives the signed distance of this plane from origin.
+    /// This class uses the convention ax+by+cz = d, which means that:
+    ///  - If this variable is positive, the origin is on the negative side of this plane.
+    ///  - If this variable is negative, the origin is on the on the positive side of this plane.
+    /// (some sources use the convention ax+by+cz+d = 0 for the variable d)
     float d;
 
     /// Sets this plane by specifying three points on the plane. The normal of the plane will point to 
@@ -92,26 +97,28 @@ public:
     /// Projects the given point onto this plane orthographically (finds the closest point on this plane).
     float3 Project(const float3 &point) const;
 
+    /// Returns the closest point on this plane to the given point. This is an alias to Plane::Project(const float3 &point).
+    float3 ClosestPoint(const float3 &point) const { return Project(point); }
+
     /// Projects the given point onto this plane in the given oblique projection direction.
     float3 ObliqueProject(const float3 &point, const float3 &obliqueProjectionDir) const;
 
     /// Computes the intersection of two planes.
-    bool Intersect(const Plane &plane, Line &outLine) const;
-    static bool Intersect(const Plane &plane, const Plane &plane2, Line &outLine);
+    bool Intersects(const Plane &plane, Line *outLine = 0) const;
 
     /// Computes the intersection of three planes.
-    /// @note If two of the planes are identical, the intersection will be a line, but this function does not detect this case, and only returns a single point on the line.
-    bool Intersect(const Plane &plane, const Plane &plane2, float3 &outPoint) const;
-    static bool Intersect(const Plane &plane, const Plane &plane2, const Plane &plane3, float3 &outPoint);
+    /// @note If two of the planes are identical, the intersection will be a line.
+    ///       does not detect this case, and only returns a single point on the line.
+    bool Intersects(const Plane &plane, const Plane &plane2, Line *outLine = 0, float3 *outPoint = 0) const;
     
-    bool Intersect(const Ray &ray, float *d) const;
-    bool Intersect(const Line &line, float *d) const;
-    bool Intersect(const LineSegment &lineSegment, float *d) const;
-    bool Intersect(const Sphere &sphere) const;
-    bool Intersect(const AABB &aabb) const;
-    bool Intersect(const OBB &aabb) const;
-    bool Intersect(const Triangle &triangle) const;
-    bool Intersect(const Frustum &frustum) const;
+    bool Intersects(const Ray &ray, float *d) const;
+    bool Intersects(const Line &line, float *d) const;
+    bool Intersects(const LineSegment &lineSegment, float *d) const;
+    bool Intersects(const Sphere &sphere) const;
+    bool Intersects(const AABB &aabb) const;
+    bool Intersects(const OBB &obb) const;
+    bool Intersects(const Triangle &triangle) const;
+    bool Intersects(const Frustum &frustum) const;
 //    bool Intersect(const Polyhedron &polyhedron) const;
 
     /// Clips a line segment against this plane.
@@ -127,7 +134,7 @@ public:
     int Clip(const Triangle &triangle, Triangle &t1, Triangle &t2) const;
 
     /// Tests if two planes are parallel.
-    bool AreParallel(const Plane &plane) const;
+    bool IsParallel(const Plane &plane, float epsilon = 1e-3f) const;
 
     /// Returns the angle of intersection between two planes.
     float DihedralAngle(const Plane &plane) const;
