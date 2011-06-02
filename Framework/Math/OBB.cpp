@@ -320,7 +320,7 @@ float3 OBB::HalfDiagonal() const
 float3x4 OBB::WorldToLocal() const
 {
     float3x4 m = LocalToWorld();
-    m.InverseAffine();
+    m.InverseOrthogonal();
     return m;
 }
 

@@ -655,7 +655,7 @@ static QScriptValue float4x4_InverseAffine(QScriptContext *context, QScriptEngin
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4x4_InverseAffine in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in function float4x4_InverseAffine in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    bool ret = This->InverseAffine();
+    bool ret = This->InverseOrthogonal();
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -664,7 +664,7 @@ static QScriptValue float4x4_InverseAffineUniformScale(QScriptContext *context, 
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4x4_InverseAffineUniformScale in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in function float4x4_InverseAffineUniformScale in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    bool ret = This->InverseAffineUniformScale();
+    bool ret = This->InverseOrthogonalUniformScale();
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -673,7 +673,7 @@ static QScriptValue float4x4_InverseAffineNoScale(QScriptContext *context, QScri
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4x4_InverseAffineNoScale in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float4x4 *This = TypeFromQScriptValue<float4x4*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in function float4x4_InverseAffineNoScale in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    This->InverseAffineNoScale();
+    This->InverseOrthonormal();
     return QScriptValue();
 }
 
@@ -2043,9 +2043,9 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
     proto.setProperty("LUDecompose", engine->newFunction(float4x4_LUDecompose_float4x4_float4x4, 2));
     proto.setProperty("Inverse", engine->newFunction(float4x4_Inverse, 0));
     proto.setProperty("Inverted", engine->newFunction(float4x4_Inverted, 0));
-    proto.setProperty("InverseAffine", engine->newFunction(float4x4_InverseAffine, 0));
-    proto.setProperty("InverseAffineUniformScale", engine->newFunction(float4x4_InverseAffineUniformScale, 0));
-    proto.setProperty("InverseAffineNoScale", engine->newFunction(float4x4_InverseAffineNoScale, 0));
+    proto.setProperty("InverseOrthogonal", engine->newFunction(float4x4_InverseAffine, 0));
+    proto.setProperty("InverseOrthogonalUniformScale", engine->newFunction(float4x4_InverseAffineUniformScale, 0));
+    proto.setProperty("InverseOrthonormal", engine->newFunction(float4x4_InverseAffineNoScale, 0));
     proto.setProperty("Transpose", engine->newFunction(float4x4_Transpose, 0));
     proto.setProperty("Transposed", engine->newFunction(float4x4_Transposed, 0));
     proto.setProperty("InverseTranspose", engine->newFunction(float4x4_InverseTranspose, 0));

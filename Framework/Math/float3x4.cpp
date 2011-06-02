@@ -657,8 +657,9 @@ float3x4 float3x4::Inverted() const
     return copy;
 }
 
-bool float3x4::InverseAffine()
+bool float3x4::InverseOrthogonal()
 {
+    assume(IsOrthogonal());
     std::swap(v[0][1], v[1][0]);
     std::swap(v[0][2], v[2][0]);
     std::swap(v[1][2], v[2][1]);
@@ -675,8 +676,10 @@ bool float3x4::InverseAffine()
     return true;
 }
 
-bool float3x4::InverseAffineUniformScale()
+bool float3x4::InverseOrthogonalUniformScale()
 {
+    assume(IsOrthogonal());
+    assume(HasUniformScale());
     std::swap(v[0][1], v[1][0]);
     std::swap(v[0][2], v[2][0]);
     std::swap(v[1][2], v[2][1]);
@@ -691,40 +694,47 @@ bool float3x4::InverseAffineUniformScale()
     return true;
 }
 
-void float3x4::InverseAffineNoScale()
+void float3x4::InverseOrthonormal()
 {
+    assume(IsOrthonormal());
     std::swap(v[0][1], v[1][0]);
     std::swap(v[0][2], v[2][0]);
     std::swap(v[1][2], v[2][1]);
     SetTranslatePart(TransformDir(-v[0][3], -v[1][3], -v[2][3]));
 }
 
-void float3x4::Transpose()
+void float3x4::Transpose3()
 {
     std::swap(v[0][1], v[1][0]);
     std::swap(v[0][2], v[2][0]);
     std::swap(v[1][2], v[2][1]);
 }
 
-float3x4 float3x4::Transposed() const
+float3x4 float3x4::Transposed3() const
 {
     float3x4 copy = *this;
-    copy.Transpose();
+    copy.Transpose3();
     return copy;
 }
 
 bool float3x4::InverseTranspose()
 {
     bool success = Inverse();
-    Transpose();
+    Transpose3();
+    // float3x4 cannot represent the translation element as the fourth row after transposing.
+    // Since inverse transposes are used to transform direction vectors, we can discard that.
+    SetTranslatePart(0,0,0);
     return success;
 }
 
 float3x4 float3x4::InverseTransposed() const
 {
     float3x4 copy = *this;
-    copy.Transpose();
+    copy.Transpose3();
     copy.Inverse();
+    // float3x4 cannot represent the translation element as the fourth row after transposing.
+    // Since inverse transposes are used to transform direction vectors, we can discard that.
+    copy.SetTranslatePart(0,0,0);
     return copy;
 }
 

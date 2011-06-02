@@ -909,8 +909,9 @@ float4x4 float4x4::Inverted() const
     return copy;
 }
 
-bool float4x4::InverseAffine()
+bool float4x4::InverseOrthogonal()
 {
+    assume(IsOrthogonal3());
     std::swap(v[0][1], v[1][0]);
     std::swap(v[0][2], v[2][0]);
     std::swap(v[1][2], v[2][1]);
@@ -927,8 +928,10 @@ bool float4x4::InverseAffine()
     return true;
 }
 
-bool float4x4::InverseAffineUniformScale()
+bool float4x4::InverseOrthogonalUniformScale()
 {
+    assume(IsOrthogonal3());
+    assume(HasUniformScale());
     std::swap(v[0][1], v[1][0]);
     std::swap(v[0][2], v[2][0]);
     std::swap(v[1][2], v[2][1]);
@@ -943,8 +946,9 @@ bool float4x4::InverseAffineUniformScale()
     return true;
 }
 
-void float4x4::InverseAffineNoScale()
+void float4x4::InverseOrthonormal()
 {
+    assume(IsOrthonormal3());
     std::swap(v[0][1], v[1][0]);
     std::swap(v[0][2], v[2][0]);
     std::swap(v[1][2], v[2][1]);

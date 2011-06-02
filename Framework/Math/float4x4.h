@@ -36,12 +36,12 @@
     The element m_yx is the value on the row y and column x.
     You can access m_yx using the double-bracket notation m[y][x], or using the member function m.At(y, x);
 
-    \note The member functions in this class use the convention that transforms are applied to vectors in the form 
+    @note The member functions in this class use the convention that transforms are applied to vectors in the form 
     M * v. This means that "float4x4 M, M1, M2; M = M1 * M2;" gives a transformation M that applies M2 first, followed
     by M1 second, i.e. M * v = M1 * M2 * v = M1 * (M2 * v). This is the convention commonly used with OpenGL. The
     opposing convention (v * M) is commonly used with Direct3D.
 
-    \note This class uses row-major storage, which means that the elements are packed in memory in order 
+    @note This class uses row-major storage, which means that the elements are packed in memory in order 
      m[0][0], m[0][1], m[0][2], m[0][3], m[1][0], m[1][1], ...
     The elements for a single row of the matrix hold successive memory addresses. This is the same memory layout as 
      with C++ multidimensional arrays.
@@ -139,7 +139,7 @@ public:
     static float4x4 RotateAxisAngle(const float3 &axisDirection, float angleRadians, const float3 &pointOnAxis);
 
     /// Creates a new float4x4 that rotates sourceDirection vector to coincide with the targetDirection vector.
-    /** \note There are infinite such rotations - this function returns the rotation that has the shortest angle
+    /** @note There are infinite such rotations - this function returns the rotation that has the shortest angle
         (when decomposed to axis-angle notation). */
     static float4x4 RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection);
     /** @param centerPoint If specified, rotation is performed using this point as the coordinate space origin. */
@@ -221,7 +221,7 @@ public:
     static float4x4 Reflect(const Plane &p);
 
     /// Creates a new float4x4 that performs perspective projection.
-    /// \note The returned matrix contains a last row that differs from [0 0 0 1].
+    /// @note The returned matrix contains a last row that differs from [0 0 0 1].
     static float4x4 MakePerspectiveProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalFov, float verticalFov);
 
     /// Creates a new float4x4 that performs orthographic projection. [indexTitle: MakeOrthographicProjection/YZ/XZ/XY]
@@ -239,8 +239,8 @@ public:
     /// Returns the given element.
     /** Returns a reference to the element at m[row][col] (or "m[y][x]").
         Remember that zero-based indexing is used, so m[0][0] is the upper-left element of this matrix.
-        \note You can use the index notation to set elements of the matrix, e.g. m[0][1] = 5.f;
-        \note MatrixProxy is a temporary helper class. Do not store references to it, but always
+        @note You can use the index notation to set elements of the matrix, e.g. m[0][1] = 5.f;
+        @note MatrixProxy is a temporary helper class. Do not store references to it, but always
         directly dereference it with the [] operator.
         \example m[0][3] Returns the last element on the first row, which is the amount 
         of translation in the x-direction.
@@ -300,27 +300,27 @@ public:
         This is equivalent to decomposing this matrix in the form M = T * M', i.e. this translation is applied last,
         after applying rotation and scale. If this matrix represents a local->world space transformation for an object, 
         then this gives the world space position of the object.
-        \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]). */
+        @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]). */
     float3 TranslatePart() const;
 
     /// Returns the top-left 3x3 part of this matrix. This stores the rotation part of this matrix (if this matrix represents a rotation).
     float3x3 RotatePart() const;
 
     // Returns the local right axis in the post-transformed coordinate space, according to the given convention.
-    // \note The returned vector might not be normalized if this matrix contains scaling.
-    // \note The basis returned by (Right, Up, Forward) might not be of the same handedness as the
+    // @note The returned vector might not be normalized if this matrix contains scaling.
+    // @note The basis returned by (Right, Up, Forward) might not be of the same handedness as the
     //       pre-transformed coordinate system, if the matrix contained reflection.
 //    template<typename Convention = XposRight_YposUp_ZposForward> float3 Right() const;
 
     // Returns the local up axis in the post-transformed coordinate space, according to the given convention.
-    // \note The returned vector might not be normalized if this matrix contains scaling.
-    // \note The basis returned by (Right, Up, Forward) might not be of the same handedness as the
+    // @note The returned vector might not be normalized if this matrix contains scaling.
+    // @note The basis returned by (Right, Up, Forward) might not be of the same handedness as the
     //       pre-transformed coordinate system, if the matrix contained reflection.
 //    template<typename Convention = XposRight_YposUp_ZposForward> float3 Up() const;
 
     // Returns the local forward axis in the post-transformed coordinate space, according to the given convention.
-    // \note The returned vector might not be normalized if this matrix contains scaling.
-    // \note The basis returned by (Right, Up, Forward) might not be of the same handedness as the
+    // @note The returned vector might not be normalized if this matrix contains scaling.
+    // @note The basis returned by (Right, Up, Forward) might not be of the same handedness as the
     //       pre-transformed coordinate system, if the matrix contained reflection.
 //    template<typename Convention = XposRight_YposUp_ZposForward> float3 Forward() const;
 
@@ -490,24 +490,24 @@ public:
     /// This function is faster than the generic matrix Inverse() function.
     /// Returns true on success. On failure, the matrix is not modified. This function fails if any of the
     /// elements of this vector are not finite, or if the matrix contains zero scale.
-    /// \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
-    bool InverseAffine();
+    /// @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
+    bool InverseOrthogonal();
 
     /// Inverts a matrix that is a concatenation of only translate, rotate and uniform scale operations. 
     /// To call this function, the matrix can not contain any projection, shearing or non-uniform scaling 
     /// operations about any of the axes.
-    /// This function is faster than InverseAffine().
+    /// This function is faster than InverseOrthogonal().
     /// Returns true on success. On failure, the matrix is not modified. This function fails if it contains
     /// a null column vector or if any of the elements of this vector are not finite.
-    /// \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
-    bool InverseAffineUniformScale();
+    /// @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
+    bool InverseOrthogonalUniformScale();
 
     /// Inverts a matrix that is a concatenation of only translate and rotate operations.
     /// To call this function, the matrix can not contain any projection, shearing or scaling operations
     /// about any of the axes. Always succeeds (or rather, fails to detect if it fails).
-    /// This function is faster than InverseAffineUniformScale().
-    /// \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
-    void InverseAffineNoScale();
+    /// This function is faster than InverseOrthogonalUniformScale().
+    /// @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
+    void InverseOrthonormal();
 
     /// Transposes this matrix.
     /// This operation swaps all elements with respect to the diagonal.
@@ -547,9 +547,9 @@ public:
 
     /// Removes the scaling performed by this matrix. That is, decomposes this matrix M into a form M = M' * S, where
     /// M' has unitary column vectors and S is a diagonal matrix. Then replaces this matrix with M'.
-    /// \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
-    /// \note This function assumes that this matrix has orthogonal basis vectors (row and column vector sets are orthogonal).
-    /// \note This function does not remove reflection (-1 scale along some axis).
+    /// @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
+    /// @note This function assumes that this matrix has orthogonal basis vectors (row and column vector sets are orthogonal).
+    /// @note This function does not remove reflection (-1 scale along some axis).
     void RemoveScale();
 
     /// Reduces this matrix to its row-echelon form.
@@ -651,8 +651,8 @@ public:
     /** A matrix does not do any scaling if the column vectors of this 
         matrix are normalized in length, compared to the given epsilon. Note that this matrix may still perform
         reflection, i.e. it has a -1 scale along some axis.
-        \note This function only examines the upper 3-by-3 part of this matrix.
-        \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]). */
+        @note This function only examines the upper 3-by-3 part of this matrix.
+        @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]). */
     bool HasUnitaryScale(float epsilon = 1e-3f) const;
 
     /// Returns true if this matrix performs a reflection along some plane.
@@ -663,21 +663,28 @@ public:
     bool HasNegativeScale() const;
 
     /// Returns true if this matrix contains only uniform scaling, compared to the given epsilon.
-    /// \note If the matrix does not really do any scaling, this function returns true (scaling uniformly by a factor of 1).
-    /// \note This function only examines the upper 3-by-3 part of this matrix.
-    /// \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
+    /// @note If the matrix does not really do any scaling, this function returns true (scaling uniformly by a factor of 1).
+    /// @note This function only examines the upper 3-by-3 part of this matrix.
+    /// @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
     bool HasUniformScale(float epsilon = 1e-3f) const;
 
     /// Returns true if the column and row vectors of the 3x3 top-left submatrix are all perpendicular to each other.
-    /** A matrix is orthogonal iff its column and row vectors are orthogonal unit vectors,
-        but this function only checks if the column and row vectors are orthogonal, not the unitarity.
-        \note This function only examines the upper 3-by-3 part of this matrix.
+    /** @note In math terms, a matrix is orthogonal iff its column and row vectors are orthogonal unit vectors.
+        In the terms of this library however, a matrix is orthogonal iff its column and row vectors are orthogonal (no need to be unitary).
+        @note This function only examines the upper 3-by-3 part of this matrix.
         If this function returns true, one can use InverseTransform() to compute the inverse of this matrix, instead
         of the more expensive general Inverse(). If additionally IsUnitaryScale() returns true, then
         it is possible to use InverseTransformNoScale() to compute the inverse, which is the fastest way to compute
         an inverse.
-        \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]). */
+        @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]). */
     bool IsOrthogonal3(float epsilon = 1e-3f) const;
+
+    /// Returns true if the column and row vectors of the 3x3 top-left submatrix form an orthonormal set.
+    /// @note In math terms, there does not exist such a thing as 'orthonormal matrix'. In math terms,
+    /// a matrix is orthogonal iff its column and row vectors are orthogonal *unit* vectors.
+    /// In the terms of this library however, a matrix is orthogonal iff its column and row vectors are orthogonal (no need to be unitary),
+    /// and a matrix is orthonormal if the column and row vectors are orthonormal.
+    bool IsOrthonormal3(float epsilon = 1e-3f) const;
 
     /// Returns true if this float4x4 is equal to the given float4x4, up to given per-element epsilon.
     bool Equals(const float4x4 &other, float epsilon = 1e-3f) const;
@@ -712,16 +719,16 @@ public:
         represents a local->world space transformation for an object, then this scale represents a 'local scale', i.e.
         scaling that is performed before translating and rotating the object from its local coordinate system to its world
         position.
-        \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
-        \note This function does not detect and return reflection (-1 scale along some axis). */
+        @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
+        @note This function does not detect and return reflection (-1 scale along some axis). */
     float3 ExtractScale() const;
 
     /// Decomposes this matrix to translate, rotate and scale parts.
     /** This function decomposes this matrix M to a form M = T * R * S, where T is a translation matrix, R a rotation matrix and S a
         scale matrix.
-        \note Remember that in the convention of this class, transforms are applied in the order M * v, so scale is
+        @note Remember that in the convention of this class, transforms are applied in the order M * v, so scale is
         applied first, then rotation, and finally the translation last.
-        \note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
+        @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]).
         @param translate [out] This vector receives the translation component this matrix performs. The translation is applied last
             after rotation and scaling.
         @param rotate [out] This object receives the rotation part of this transform.
