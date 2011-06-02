@@ -8,8 +8,6 @@
 #include "Vector3D.h"
 #include "Math/Ray.h"
 
-#include <OgreRay.h>
-
 namespace Ogre
 {
     class PlaneBoundedVolumeListSceneQuery;
@@ -54,6 +52,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"IsActive": returns whether camera is active in the viewport
 <li>"GetCamera": returns the actual Ogre camera.
         use with caution. never set the position of the camera directly, use the placeable component for that.
+<li>"GetMouseRay": Returns a world space ray as cast from the camera through a viewport position.
 </ul>
 
 <b>Reacts on the following actions:</b>

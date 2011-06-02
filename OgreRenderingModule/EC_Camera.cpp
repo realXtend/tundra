@@ -3,16 +3,19 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#define OGRE_INTEROP
+
 #include "EC_Camera.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
+#include "OgreRenderingModule.h"
+#include "OgreWorld.h"
+#include "Renderer.h"
+
 #include "Entity.h"
 #include "FrameAPI.h"
 #include "Scene.h"
-#include "OgreRenderingModule.h"
-#include "OgreWorld.h"
 #include "Profiler.h"
-#include "Renderer.h"
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
@@ -229,12 +232,7 @@ void EC_Camera::AttachCamera()
 Ray EC_Camera::GetMouseRay(float x, float y)
 {
     if (camera_)
-    {
-        Ogre::Ray ray = camera_->getCameraToViewportRay(clamp(x, 0.f, 1.f), clamp(y, 0.f, 1.f));
-        Ogre::Vector3 dir = ray.getOrigin();
-        Ogre::Vector3 rot = ray.getDirection();
-        return Ray(float3(dir.x, dir.y, dir.z), float3(rot.x, rot.y, rot.z));
-    }
+        return camera_->getCameraToViewportRay(clamp(x, 0.f, 1.f), clamp(y, 0.f, 1.f));
     else
         return Ray();
 }
