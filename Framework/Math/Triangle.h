@@ -50,6 +50,9 @@ public:
     /// @param triangleThickness The epsilon value to use for this test. This specifies the maximum distance
     /// the point lie from the plane defined by this triangle.
     bool Contains(const float3 &point, float triangleThickness = 1e-3f) const;
+
+    /// Returns the closest point on this triangle to the target point.
+    float3 ClosestPoint(const float3 &targetPoint) const;
 };
 
 #ifdef QT_INTEROP

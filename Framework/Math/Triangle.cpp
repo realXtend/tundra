@@ -80,3 +80,60 @@ bool Triangle::Contains(const float3 &point, float triangleThickness) const
     float3 br = Barycentric(point);
     return br.y >= 0.f && br.z >= 0.f && (br.y + br.z) <= 1.f;
 }
+
+/// Code from Christer Ericson's Real-Time Collision Detection, pp. 141-142.
+float3 Triangle::ClosestPoint(const float3 &p) const
+{
+    // Check if P is in vertex region outside A.
+    float3 ab = b - a;
+    float3 ac = c - a;
+    float3 ap = p - a;
+    float d1 = Dot(ab, ap);
+    float d2 = Dot(ac, ap);
+    if (d1 <= 0.f && d2 <= 0.f)
+        return a; // Barycentric coordinates are (1,0,0).
+
+    // Check if P is in vertex region outside B.
+    float3 bp = p - b;
+    float d3 = Dot(ab, bp);
+    float d4 = Dot(ac, bp);
+    if (d3 >= 0.f && d4 <= d3)
+        return b; // Barycentric coordinates are (0,1,0).
+
+    // Check if P is in edge region of AB, and if so, return the projection of P onto AB.
+    float vc = d1*d4 - d3*d2;
+    if (vc <= 0.f && d1 >= 0.f && d3 <= 0.f)
+    {
+        float v = d1 / (d1 - d3);
+        return a + v * ab; // The barycentric coordinates are (1-v, v, 0).
+    }
+
+    // Check if P is in vertex region outside C.
+    float3 cp = p - c;
+    float d5 = Dot(ab, cp);
+    float d6 = Dot(ac, cp);
+    if (d6 >= 0.f && d5 <= d6)
+        return c; // The barycentric coordinates are (0,0,1).
+
+    // Check if P is in edge region of AC, and if so, return the projection of P onto AC.
+    float vb = d5*d2 - d1*d6;
+    if (vb <= 0.f && d2 >= 0.f && d6 <= 0.f)
+    {
+        float w = d2 / (d2 - d6);
+        return a + w * ac; // The barycentric coordinates are (1-w, 0, w).
+    }
+
+    // Check if P is in edge region of BC, and if so, return the projection of P onto BC.
+    float va = d3*d6 - d5*d4;
+    if (va <= 0.f && d4 - d3 >= 0.f && d5 - d6 >= 0.f)
+    {
+        float w = (d4 - d3) / (d4 - d3 + d5 - d6);
+        return b + w * (c - b); // The barycentric coordinates are (0, 1-w, w).
+    }
+
+    // P must be inside the face region. Compute the closest point through its barycentric coordinates (u,v,w).
+    float denom = 1.f / (va + vb + vc);
+    float v = vb * denom;
+    float w = vc * denom;
+    return a + ab * v + ac * w;
+}
