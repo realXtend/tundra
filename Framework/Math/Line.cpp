@@ -125,13 +125,9 @@ float Line::Distance(const LineSegment &other, float *d, float *d2) const
 
 float3 Line::ClosestPoint(const float3 &targetPoint, float *d) const
 {
-    float3 p1 = pos;
-    float3 p2 = pos + dir;
-    float3 p3 = targetPoint;
-    float u = ((p3.x - p1.x)*(p2.x - p1.x) + (p3.y - p1.y)*(p2.y - p1.y) + (p3.z - p1.z)*(p2.z - p1.z)) / (p2-p1).LengthSq();
+    float u = Dot(targetPoint - pos, dir);
     if (d)
         *d = u;
-
     return GetPoint(u);
 }
 

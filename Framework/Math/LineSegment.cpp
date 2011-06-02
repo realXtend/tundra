@@ -85,16 +85,17 @@ float LineSegment::LengthSq() const
 
 float3 LineSegment::ClosestPoint(const float3 &point, float *d) const
 {
-    float t;
-    if (!d)
-        d = &t;
     float3 dir = b - a;
-    *d = Clamp01(Dot(point - a, dir) / dir.LengthSq());
+    float u = Clamp01(Dot(point - a, dir) / dir.LengthSq());
+    if (d)
+        *d = u;
     return a + *d * dir;
 }
 
 float LineSegment::Distance(const float3 &point, float *d) const
 {
+    ///\todo This function could be slightly optimized.
+    /// See Christer Ericson's Real-Time Collision Detection, p.130.
     float3 closestPoint = ClosestPoint(point, d);
     return closestPoint.Distance(point);
 }
