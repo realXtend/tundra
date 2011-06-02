@@ -232,14 +232,6 @@ public slots:
     /*! \param radians how many radians to roll
      */
     void SetRoll(float radians);
-    //! pitches the node
-    /*! \param radians how many radians to pitch
-     */
-    void SetPitchWorld(float radians);
-    //! rolls the node
-    /*! \param radians how many radians to roll
-     */
-    void SetRollWorld(float radians);
 
     //! get the yaw of the node
     float GetYaw() const;

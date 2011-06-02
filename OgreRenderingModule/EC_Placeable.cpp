@@ -211,16 +211,6 @@ void EC_Placeable::SetRoll(float radians)
     link_scene_node_->roll(Ogre::Radian(radians));
 } 
 
-void EC_Placeable::SetPitchWorld(float radians)
-{
-    link_scene_node_->pitch(Ogre::Radian(radians), Ogre::Node::TS_WORLD);
-}
-
-void EC_Placeable::SetRollWorld(float radians)
-{
-    link_scene_node_->roll(Ogre::Radian(radians), Ogre::Node::TS_WORLD);
-} 
-
 float EC_Placeable::GetYaw() const
 {
     const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
