@@ -48,11 +48,17 @@ public:
     float Length() const;
     float LengthSq() const;
 
-    /// Returns the closest point on this line segment to the given point.
+    /// Returns the closest point on this line segment to the given object.
     /// @param d [out] If specified, this parameter receives the normalized position along
-    ///          this line segment which specifies the closes point on this line segment to
+    ///          this line segment which specifies the closest point on this line segment to
     ///          the specified point.
+    /// @param d2 [out] If specified, this parameter receives the normalized position along
+    ///          the other line object which specifies the closest point on that line to
+    ///          this line segment.
     float3 ClosestPoint(const float3 &point, float *d = 0) const;
+    float3 ClosestPoint(const Ray &other, float *d = 0, float *d2 = 0) const;
+    float3 ClosestPoint(const Line &other, float *d = 0, float *d2 = 0) const;
+    float3 ClosestPoint(const LineSegment &other, float *d = 0, float *d2 = 0) const;
 
     /// Computes the distance of this line segment to the given point.
     /// @param d [out] If specified, this parameter receives the normalized position along

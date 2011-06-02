@@ -23,6 +23,10 @@ float Dmnop(const float3 *v, int m, int n, int o, int p)
     return (v[m].x - v[n].x) * (v[o].x - v[p].x) + (v[m].y - v[n].y) * (v[o].y - v[p].y) + (v[m].z - v[n].z) * (v[o].z - v[p].z);
 }
 
+/// Computes the closest points on both lines start0<->end0 and start1<->end1 to each other.
+/// @param d [out] The normalize distance along the first line that specifies the closest point is returned here.
+/// @param d2 [out] The normalize distance along the second line that specifies the closest point is returned here.
+/// @return Returns the closest point on line start0<->end0 to the second line.
 float3 LineLine(float3 start0, float3 end0, float3 start1, float3 end1, float *d, float *d2)
 {
     const float3 v[4] = { start0, end0, start1, end1 };
@@ -133,6 +137,7 @@ float3 Line::ClosestPoint(const float3 &targetPoint, float *d) const
 
 float3 Line::ClosestPoint(const Ray &other, float *d, float *d2) const
 {
+    ///\bug Properly cap d2.
     return LineLine(pos, pos + dir, other.pos, other.pos + other.dir, d, d2);
 }
 
@@ -143,6 +148,7 @@ float3 Line::ClosestPoint(const Line &other, float *d, float *d2) const
 
 float3 Line::ClosestPoint(const LineSegment &other, float *d, float *d2) const
 {
+    ///\bug Properly cap d2.
     return LineLine(pos, pos + dir, other.a, other.b, d, d2);
 }
 

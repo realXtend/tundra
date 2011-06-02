@@ -92,6 +92,44 @@ float3 LineSegment::ClosestPoint(const float3 &point, float *d) const
     return a + *d * dir;
 }
 
+float3 LineSegment::ClosestPoint(const Ray &other, float *d, float *d2) const
+{
+    float u, u2;
+    LineLine(a, b, other.pos, other.pos + other.dir, &u, &u2);
+    u = Clamp01(u); // This is a line segment - cap both ends.
+    if (d)
+        *d = u;
+    u2 = Max(0.f, u2); // The other primitive is a ray - cap negative side.
+    if (d2)
+        *d2 = u2;
+    return GetPoint(u);
+}
+
+float3 LineSegment::ClosestPoint(const Line &other, float *d, float *d2) const
+{
+    float u, u2;
+    LineLine(a, b, other.pos, other.pos + other.dir, &u, &u2);
+    u = Clamp01(u); // This is a line segment - cap both ends.
+    if (d)
+        *d = u;
+    if (d2)
+        *d2 = u2;
+    return GetPoint(u);
+}
+
+float3 LineSegment::ClosestPoint(const LineSegment &other, float *d, float *d2) const
+{
+    float u, u2;
+    LineLine(a, b, other.a, other.b, &u, &u2);
+    u = Clamp01(u); // This is a line segment - cap both ends.
+    if (d)
+        *d = u;
+    u2 = Clamp01(u2); // The other primitive is a line segment as well - cap both ends.
+    if (d2)
+        *d2 = u2;
+    return GetPoint(u);
+}
+
 float LineSegment::Distance(const float3 &point, float *d) const
 {
     ///\todo This function could be slightly optimized.
