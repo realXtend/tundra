@@ -549,6 +549,7 @@ float3x3 float3x3::Inverted() const
 
 bool float3x3::InverseOrthogonal()
 {
+    assume(IsOrthogonal());
     std::swap(v[0][1], v[1][0]);
     std::swap(v[0][2], v[2][0]);
     std::swap(v[1][2], v[2][1]);
@@ -565,6 +566,8 @@ bool float3x3::InverseOrthogonal()
 
 bool float3x3::InverseOrthogonalUniformScale()
 {
+    assume(IsOrthogonal());
+    assume(HasUniformScale());
     std::swap(v[0][1], v[1][0]);
     std::swap(v[0][2], v[2][0]);
     std::swap(v[1][2], v[2][1]);
@@ -575,6 +578,12 @@ bool float3x3::InverseOrthogonalUniformScale()
     v[2][0] *= scale; v[2][1] *= scale; v[2][2] *= scale;
 
     return true;
+}
+
+void float3x3::InverseOrthonormal()
+{
+    assume(IsOrthonormal());
+    Transpose();
 }
 
 void float3x3::Transpose()
@@ -882,6 +891,12 @@ bool float3x3::IsOrthogonal(float epsilon) const
     return Row(0).IsPerpendicular(Row(1), epsilon)
         && Row(0).IsPerpendicular(Row(2), epsilon)
         && Row(1).IsPerpendicular(Row(2), epsilon);
+}
+
+bool float3x3::IsOrthonormal(float epsilon) const
+{
+    ///\todo Epsilon magnitudes don't match.
+    return IsOrthogonal(epsilon) && Row(0).IsNormalized(epsilon) && Row(1).IsNormalized(epsilon) && Row(2).IsNormalized(epsilon);
 }
 
 bool float3x3::Equals(const float3x3 &other, float epsilon) const

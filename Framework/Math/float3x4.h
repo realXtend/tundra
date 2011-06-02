@@ -576,9 +576,9 @@ public:
     /** @note In math terms, a matrix is orthogonal iff its column and row vectors are orthogonal unit vectors.
         In the terms of this library however, a matrix is orthogonal iff its column and row vectors are orthogonal (no need to be unitary).
         @note This function only examines the upper 3-by-3 part of this matrix.
-        If this function returns true, one can use InverseTransform() to compute the inverse of this matrix, instead
+        If this function returns true, one can use InverseOrthogonal() to compute the inverse of this matrix, instead
         of the more expensive general Inverse(). If additionally IsUnitaryScale() returns true, then
-        it is possible to use InverseTransformNoScale() to compute the inverse, which is the fastest way to compute
+        it is possible to use InverseOrthonormal() to compute the inverse, which is the fastest way to compute
         an inverse. */
     bool IsOrthogonal(float epsilon = 1e-3f) const;
 

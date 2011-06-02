@@ -486,7 +486,7 @@ static QScriptValue float3x4_Transpose(QScriptContext *context, QScriptEngine *e
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_Transpose in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float3x4 *This = TypeFromQScriptValue<float3x4*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in function float3x4_Transpose in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    This->Transpose();
+    This->Transpose3();
     return QScriptValue();
 }
 
@@ -495,7 +495,7 @@ static QScriptValue float3x4_Transposed(QScriptContext *context, QScriptEngine *
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_Transposed in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float3x4 *This = TypeFromQScriptValue<float3x4*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in function float3x4_Transposed in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float3x4 ret = This->Transposed();
+    float3x4 ret = This->Transposed3();
     return TypeToQScriptValue(engine, ret);
 }
 

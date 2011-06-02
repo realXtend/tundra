@@ -1053,6 +1053,12 @@ bool float3x4::IsOrthogonal(float epsilon) const
         && Row(1).IsPerpendicular3(Row(2), epsilon);
 }
 
+bool float3x4::IsOrthonormal(float epsilon) const
+{
+    ///\todo Epsilon magnitudes don't match.
+    return IsOrthogonal(epsilon) && Row3(0).IsNormalized(epsilon) && Row3(1).IsNormalized(epsilon) && Row3(2).IsNormalized(epsilon);
+}
+
 bool float3x4::Equals(const float3x4 &other, float epsilon) const
 {
     for(int y = 0; y < Rows; ++y)

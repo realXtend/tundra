@@ -1395,6 +1395,12 @@ bool float4x4::IsOrthogonal3(float epsilon) const
         && Row3(1).IsPerpendicular(Row3(2), epsilon);
 }
 
+bool float4x4::IsOrthonormal3(float epsilon) const
+{
+    ///\todo Epsilon magnitudes don't match.
+    return IsOrthogonal3(epsilon) && Row3(0).IsNormalized(epsilon) && Row3(1).IsNormalized(epsilon) && Row3(2).IsNormalized(epsilon);
+}
+
 bool float4x4::Equals(const float4x4 &other, float epsilon) const
 {
     for(int y = 0; y < Rows; ++y)
