@@ -31,7 +31,7 @@ namespace QScriptBindings
 
         static bool IsBadType(string type)
         {
-            return type.EndsWith("float *") || type.EndsWith("float3 *") || type.Contains("std::string");
+            return type.EndsWith("float *") || type.EndsWith("float3 *") || type.Contains("std::");
         }
 
         static bool IsScriptable(Symbol s)
