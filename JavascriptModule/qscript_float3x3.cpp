@@ -570,6 +570,16 @@ static QScriptValue float3x3_IsOrthogonal_float(QScriptContext *context, QScript
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue float3x3_IsOrthonormal_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x3_IsOrthonormal_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3x3 *This = TypeFromQScriptValue<float3x3*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function float3x3_IsOrthonormal_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float epsilon = TypeFromQScriptValue<float>(context->argument(0));
+    bool ret = This->IsOrthonormal(epsilon);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue float3x3_Equals_float3x3_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x3_Equals_float3x3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -1289,6 +1299,7 @@ QScriptValue register_float3x3_prototype(QScriptEngine *engine)
     proto.setProperty("HasNegativeScale", engine->newFunction(float3x3_HasNegativeScale, 0));
     proto.setProperty("HasUniformScale", engine->newFunction(float3x3_HasUniformScale_float, 1));
     proto.setProperty("IsOrthogonal", engine->newFunction(float3x3_IsOrthogonal_float, 1));
+    proto.setProperty("IsOrthonormal", engine->newFunction(float3x3_IsOrthonormal_float, 1));
     proto.setProperty("Equals", engine->newFunction(float3x3_Equals_float3x3_float, 2));
     proto.setProperty("ToEulerXYX", engine->newFunction(float3x3_ToEulerXYX, 0));
     proto.setProperty("ToEulerXZX", engine->newFunction(float3x3_ToEulerXZX, 0));

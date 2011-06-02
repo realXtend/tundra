@@ -454,47 +454,47 @@ static QScriptValue float3x4_Inverted(QScriptContext *context, QScriptEngine *en
     return TypeToQScriptValue(engine, ret);
 }
 
-static QScriptValue float3x4_InverseAffine(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_InverseOrthogonal(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_InverseAffine in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_InverseOrthogonal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float3x4 *This = TypeFromQScriptValue<float3x4*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_InverseAffine in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_InverseOrthogonal in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     bool ret = This->InverseOrthogonal();
     return TypeToQScriptValue(engine, ret);
 }
 
-static QScriptValue float3x4_InverseAffineUniformScale(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_InverseOrthogonalUniformScale(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_InverseAffineUniformScale in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_InverseOrthogonalUniformScale in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float3x4 *This = TypeFromQScriptValue<float3x4*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_InverseAffineUniformScale in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_InverseOrthogonalUniformScale in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     bool ret = This->InverseOrthogonalUniformScale();
     return TypeToQScriptValue(engine, ret);
 }
 
-static QScriptValue float3x4_InverseAffineNoScale(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_InverseOrthonormal(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_InverseAffineNoScale in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_InverseOrthonormal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float3x4 *This = TypeFromQScriptValue<float3x4*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_InverseAffineNoScale in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_InverseOrthonormal in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     This->InverseOrthonormal();
     return QScriptValue();
 }
 
-static QScriptValue float3x4_Transpose(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_Transpose3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_Transpose in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_Transpose3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float3x4 *This = TypeFromQScriptValue<float3x4*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_Transpose in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_Transpose3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     This->Transpose3();
     return QScriptValue();
 }
 
-static QScriptValue float3x4_Transposed(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_Transposed3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_Transposed in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_Transposed3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float3x4 *This = TypeFromQScriptValue<float3x4*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_Transposed in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_Transposed3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3x4 ret = This->Transposed3();
     return TypeToQScriptValue(engine, ret);
 }
@@ -729,6 +729,16 @@ static QScriptValue float3x4_IsOrthogonal_float(QScriptContext *context, QScript
     if (!This) { printf("Error! Invalid context->thisObject in function float3x4_IsOrthogonal_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float epsilon = TypeFromQScriptValue<float>(context->argument(0));
     bool ret = This->IsOrthogonal(epsilon);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue float3x4_IsOrthonormal_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_IsOrthonormal_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3x4 *This = TypeFromQScriptValue<float3x4*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function float3x4_IsOrthonormal_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float epsilon = TypeFromQScriptValue<float>(context->argument(0));
+    bool ret = This->IsOrthonormal(epsilon);
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -1657,11 +1667,11 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     proto.setProperty("Determinant", engine->newFunction(float3x4_Determinant, 0));
     proto.setProperty("Inverse", engine->newFunction(float3x4_Inverse, 0));
     proto.setProperty("Inverted", engine->newFunction(float3x4_Inverted, 0));
-    proto.setProperty("InverseOrthogonal", engine->newFunction(float3x4_InverseAffine, 0));
-    proto.setProperty("InverseOrthogonalUniformScale", engine->newFunction(float3x4_InverseAffineUniformScale, 0));
-    proto.setProperty("InverseOrthonormal", engine->newFunction(float3x4_InverseAffineNoScale, 0));
-    proto.setProperty("Transpose", engine->newFunction(float3x4_Transpose, 0));
-    proto.setProperty("Transposed", engine->newFunction(float3x4_Transposed, 0));
+    proto.setProperty("InverseOrthogonal", engine->newFunction(float3x4_InverseOrthogonal, 0));
+    proto.setProperty("InverseOrthogonalUniformScale", engine->newFunction(float3x4_InverseOrthogonalUniformScale, 0));
+    proto.setProperty("InverseOrthonormal", engine->newFunction(float3x4_InverseOrthonormal, 0));
+    proto.setProperty("Transpose3", engine->newFunction(float3x4_Transpose3, 0));
+    proto.setProperty("Transposed3", engine->newFunction(float3x4_Transposed3, 0));
     proto.setProperty("InverseTranspose", engine->newFunction(float3x4_InverseTranspose, 0));
     proto.setProperty("InverseTransposed", engine->newFunction(float3x4_InverseTransposed, 0));
     proto.setProperty("Trace", engine->newFunction(float3x4_Trace, 0));
@@ -1685,6 +1695,7 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     proto.setProperty("HasNegativeScale", engine->newFunction(float3x4_HasNegativeScale, 0));
     proto.setProperty("HasUniformScale", engine->newFunction(float3x4_HasUniformScale_float, 1));
     proto.setProperty("IsOrthogonal", engine->newFunction(float3x4_IsOrthogonal_float, 1));
+    proto.setProperty("IsOrthonormal", engine->newFunction(float3x4_IsOrthonormal_float, 1));
     proto.setProperty("Equals", engine->newFunction(float3x4_Equals_float3x4_float, 2));
     proto.setProperty("ToEulerXYX", engine->newFunction(float3x4_ToEulerXYX, 0));
     proto.setProperty("ToEulerXZX", engine->newFunction(float3x4_ToEulerXZX, 0));

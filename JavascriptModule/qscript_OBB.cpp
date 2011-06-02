@@ -142,6 +142,24 @@ static QScriptValue OBB_HalfDiagonal(QScriptContext *context, QScriptEngine *eng
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue OBB_WorldToLocal(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function OBB_WorldToLocal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function OBB_WorldToLocal in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3x4 ret = This->WorldToLocal();
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue OBB_LocalToWorld(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function OBB_LocalToWorld in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function OBB_LocalToWorld in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3x4 ret = This->LocalToWorld();
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue OBB_MinimalEnclosingSphere(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function OBB_MinimalEnclosingSphere in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -392,6 +410,26 @@ static QScriptValue OBB_Transform_Quat(QScriptContext *context, QScriptEngine *e
     return QScriptValue();
 }
 
+static QScriptValue OBB_ClosestPoint_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_ClosestPoint_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function OBB_ClosestPoint_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 targetPoint = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 ret = This->ClosestPoint(targetPoint);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue OBB_Distance_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Distance_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function OBB_Distance_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 point = TypeFromQScriptValue<float3>(context->argument(0));
+    float ret = This->Distance(point);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue OBB_Contains_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Contains_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -607,6 +645,8 @@ QScriptValue register_OBB_prototype(QScriptEngine *engine)
     proto.setProperty("HalfSize", engine->newFunction(OBB_HalfSize, 0));
     proto.setProperty("Diagonal", engine->newFunction(OBB_Diagonal, 0));
     proto.setProperty("HalfDiagonal", engine->newFunction(OBB_HalfDiagonal, 0));
+    proto.setProperty("WorldToLocal", engine->newFunction(OBB_WorldToLocal, 0));
+    proto.setProperty("LocalToWorld", engine->newFunction(OBB_LocalToWorld, 0));
     proto.setProperty("MinimalEnclosingSphere", engine->newFunction(OBB_MinimalEnclosingSphere, 0));
     proto.setProperty("MaximalContainedSphere", engine->newFunction(OBB_MaximalContainedSphere, 0));
     proto.setProperty("IsFinite", engine->newFunction(OBB_IsFinite, 0));
@@ -628,6 +668,8 @@ QScriptValue register_OBB_prototype(QScriptEngine *engine)
     proto.setProperty("Translate", engine->newFunction(OBB_Translate_float3, 1));
     proto.setProperty("Scale", engine->newFunction(OBB_Scale_selector, 2));
     proto.setProperty("Transform", engine->newFunction(OBB_Transform_selector, 1));
+    proto.setProperty("ClosestPoint", engine->newFunction(OBB_ClosestPoint_float3, 1));
+    proto.setProperty("Distance", engine->newFunction(OBB_Distance_float3, 1));
     proto.setProperty("Contains", engine->newFunction(OBB_Contains_selector, 1));
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 1));
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 2));

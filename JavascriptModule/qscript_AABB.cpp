@@ -407,6 +407,26 @@ static QScriptValue AABB_Transform_Quat(QScriptContext *context, QScriptEngine *
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue AABB_ClosestPoint_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_ClosestPoint_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_ClosestPoint_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 targetPoint = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 ret = This->ClosestPoint(targetPoint);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue AABB_Distance_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Distance_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_Distance_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 point = TypeFromQScriptValue<float3>(context->argument(0));
+    float ret = This->Distance(point);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue AABB_Contains_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Contains_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -685,6 +705,8 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     proto.setProperty("Scale", engine->newFunction(AABB_Scale_selector, 2));
     proto.setProperty("TransformAsAABB", engine->newFunction(AABB_TransformAsAABB_selector, 1));
     proto.setProperty("Transform", engine->newFunction(AABB_Transform_selector, 1));
+    proto.setProperty("ClosestPoint", engine->newFunction(AABB_ClosestPoint_float3, 1));
+    proto.setProperty("Distance", engine->newFunction(AABB_Distance_float3, 1));
     proto.setProperty("Contains", engine->newFunction(AABB_Contains_selector, 1));
     proto.setProperty("Enclose", engine->newFunction(AABB_Enclose_selector, 1));
     proto.setProperty("Intersection", engine->newFunction(AABB_Intersection_AABB, 1));

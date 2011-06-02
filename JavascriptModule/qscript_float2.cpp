@@ -423,6 +423,15 @@ static QScriptValue float2_Rotate90CW(QScriptContext *context, QScriptEngine *en
     return QScriptValue();
 }
 
+static QScriptValue float2_Rotated90CW(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Rotated90CW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function float2_Rotated90CW in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float2 ret = This->Rotated90CW();
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue float2_Rotate90CCW(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Rotate90CCW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -430,6 +439,15 @@ static QScriptValue float2_Rotate90CCW(QScriptContext *context, QScriptEngine *e
     if (!This) { printf("Error! Invalid context->thisObject in function float2_Rotate90CCW in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     This->Rotate90CCW();
     return QScriptValue();
+}
+
+static QScriptValue float2_Rotated90CCW(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Rotated90CCW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function float2_Rotated90CCW in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float2 ret = This->Rotated90CCW();
+    return TypeToQScriptValue(engine, ret);
 }
 
 static QScriptValue float2_Add_float2(QScriptContext *context, QScriptEngine *engine)
@@ -532,6 +550,15 @@ static QScriptValue float2_OrientedCCW_float2_float2_float2(QScriptContext *cont
     float2 b = TypeFromQScriptValue<float2>(context->argument(1));
     float2 c = TypeFromQScriptValue<float2>(context->argument(2));
     bool ret = float2::OrientedCCW(a, b, c);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue float2_ConvexHullInPlace_float2_ptr_int(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_ConvexHullInPlace_float2_ptr_int in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float2 * points = TypeFromQScriptValue<float2 *>(context->argument(0));
+    int nPoints = TypeFromQScriptValue<int>(context->argument(1));
+    int ret = float2::ConvexHullInPlace(points, nPoints);
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -691,7 +718,9 @@ QScriptValue register_float2_prototype(QScriptEngine *engine)
     proto.setProperty("SetFromScalar", engine->newFunction(float2_SetFromScalar_float, 1));
     proto.setProperty("Set", engine->newFunction(float2_Set_float_float, 2));
     proto.setProperty("Rotate90CW", engine->newFunction(float2_Rotate90CW, 0));
+    proto.setProperty("Rotated90CW", engine->newFunction(float2_Rotated90CW, 0));
     proto.setProperty("Rotate90CCW", engine->newFunction(float2_Rotate90CCW, 0));
+    proto.setProperty("Rotated90CCW", engine->newFunction(float2_Rotated90CCW, 0));
     proto.setProperty("Add", engine->newFunction(float2_Add_float2, 1));
     proto.setProperty("Sub", engine->newFunction(float2_Sub_float2, 1));
     proto.setProperty("Mul", engine->newFunction(float2_Mul_float, 1));
@@ -713,6 +742,7 @@ QScriptValue register_float2_prototype(QScriptEngine *engine)
     ctor.setProperty("Orthonormalize", engine->newFunction(float2_Orthonormalize_float2_float2, 2));
     ctor.setProperty("FromScalar", engine->newFunction(float2_FromScalar_float, 1));
     ctor.setProperty("OrientedCCW", engine->newFunction(float2_OrientedCCW_float2_float2_float2, 3));
+    ctor.setProperty("ConvexHullInPlace", engine->newFunction(float2_ConvexHullInPlace_float2_ptr_int, 2));
     ctor.setProperty("zero", TypeToQScriptValue(engine, float2::zero));
     ctor.setProperty("one", TypeToQScriptValue(engine, float2::one));
     ctor.setProperty("unitX", TypeToQScriptValue(engine, float2::unitX));

@@ -198,17 +198,24 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
 Q_DECLARE_METATYPE(SoundChannelPtr);
 Q_DECLARE_METATYPE(InputContextPtr);
 
+QScriptValue register_AABB_prototype(QScriptEngine *engine);
 QScriptValue register_float2_prototype(QScriptEngine *engine);
 QScriptValue register_float3_prototype(QScriptEngine *engine);
 QScriptValue register_float3x3_prototype(QScriptEngine *engine);
 QScriptValue register_float3x4_prototype(QScriptEngine *engine);
 QScriptValue register_float4_prototype(QScriptEngine *engine);
 QScriptValue register_float4x4_prototype(QScriptEngine *engine);
+QScriptValue register_LCG_prototype(QScriptEngine *engine);
+QScriptValue register_Line_prototype(QScriptEngine *engine);
+QScriptValue register_LineSegment_prototype(QScriptEngine *engine);
+QScriptValue register_OBB_prototype(QScriptEngine *engine);
 QScriptValue register_Quat_prototype(QScriptEngine *engine);
 QScriptValue register_Ray_prototype(QScriptEngine *engine);
 QScriptValue register_ScaleOp_prototype(QScriptEngine *engine);
+QScriptValue register_Sphere_prototype(QScriptEngine *engine);
 QScriptValue register_TranslateOp_prototype(QScriptEngine *engine);
 QScriptValue register_Transform_prototype(QScriptEngine *engine);
+QScriptValue register_Triangle_prototype(QScriptEngine *engine);
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
@@ -218,10 +225,17 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     register_float3x4_prototype(engine);
     register_float4_prototype(engine);
     register_float4x4_prototype(engine);
+    register_AABB_prototype(engine);
+    register_LCG_prototype(engine);
+    register_Line_prototype(engine);
+    register_LineSegment_prototype(engine);
+    register_OBB_prototype(engine);
     register_Quat_prototype(engine);
     register_Ray_prototype(engine);
     register_ScaleOp_prototype(engine);
+    register_Sphere_prototype(engine);
     register_TranslateOp_prototype(engine);
+    register_Triangle_prototype(engine);
 //    register_Transform_prototype(engine);
 
     // Input metatypes.
