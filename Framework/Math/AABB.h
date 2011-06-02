@@ -227,6 +227,11 @@ public:
     OBB Transform(const float4x4 &transform) const;
     OBB Transform(const Quat &transform) const;
 
+    /// Returns the closest point inside this AABB to the given target point.
+    /// If the target point is inside the AABB, then it is the closest point, otherwise
+    /// a point on a face of this AABB is returned.
+    float3 ClosestPoint(const float3 &targetPoint) const;
+
     /// Computes the distance of this AABB to the given object.
     /** The first parameter of this function specifies the object to test the distance to.
         @param outClosestPoint [out, optional] If not null, this parameter will receive the closest point on this AABB (in world space)
@@ -234,7 +239,7 @@ public:
             speed up the query. The closest point may not be unique, in which case an arbitrary point on the surface of this AABB
             is returned.
         @return The distance between outClosestPoint and outClosestPointOther is returned. */
-  //  float Distance(const float3 &point, float3 *outClosestPoint) const;
+    float Distance(const float3 &point) const;
     /** @param outClosestDistance [out, optional] For ray, line and line segment queries, this parameter will receive the distance along
             the ray that specifies the closest point on that object to this AABB. This parameter may be left null, in which case the 
             actual distance along the ray is not computed. */

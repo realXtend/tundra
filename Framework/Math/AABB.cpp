@@ -384,8 +384,19 @@ OBB AABB::Transform(const Quat &transform) const
     return obb;
 }
 
+float3 AABB::ClosestPoint(const float3 &targetPoint) const
+{
+    return targetPoint.Clamp(minPoint, maxPoint);
+}
+
+float AABB::Distance(const float3 &point) const
+{
+    ///\todo This function could be slightly optimized. See Christer Ericson's
+    /// Real-Time Collision Detection, p.131.
+    return ClosestPoint(point).Distance(point);
+}
+
 /*
-float AABB::Distance(const float3 &point, float3 *outClosestPoint) const
 float AABB::Distance(const Ray &ray, float3 *outClosestPoint, float *outClosestDistance) const
 float Distance(const Line &line, float3 *outClosestPoint, float *outClosestdistance) const;
 float Distance(const LineSegment &lineSegment, float3 *outClosestPoint, float *outClosestDistance) const;
