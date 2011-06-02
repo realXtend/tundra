@@ -111,7 +111,7 @@ void EntityActionDialog::Initialize()
         EntityPtr e = entities[i].lock();
         if (e)
         {
-            targets.append(QString::number(e->GetId()));
+            targets.append(QString::number(e->Id()));
             if (i < entities.size() - 1)
                 targets.append(", ");
 

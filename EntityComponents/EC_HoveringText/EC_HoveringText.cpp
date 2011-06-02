@@ -406,7 +406,7 @@ void EC_HoveringText::UpdateSignals()
     disconnect(this, SLOT(OnAttributeUpdated(IComponent *, IAttribute *)));
     if(ParentEntity())
     {
-        Scene *scene = ParentEntity()->GetScene();
+        Scene *scene = ParentEntity()->ParentScene();
         if(scene)
         connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
                 this, SLOT(OnAttributeUpdated(IComponent*, IAttribute*))); 

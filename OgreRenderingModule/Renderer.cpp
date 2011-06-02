@@ -673,7 +673,7 @@ namespace OgreRenderer
         Entity* entity = cameraComponent_->ParentEntity();
         if (!entity)
             return OgreWorldPtr();
-        Scene* scene = entity->GetScene();
+        Scene* scene = entity->ParentScene();
         if (scene)
             return scene->GetWorld<OgreWorld>();
         else

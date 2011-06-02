@@ -184,7 +184,7 @@ void SyncManager::NewUserConnected(UserConnection* user)
     for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         EntityPtr entity = iter->second;
-        entity_id_t id = entity->GetId();
+        entity_id_t id = entity->Id();
         // If we cross over to local entities (ID range 0x80000000 - 0xffffffff), break
         if (id & LocalEntity)
             break;
@@ -232,10 +232,10 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
             if (state)
             {
                 if (!dynamic)
-                    state->OnAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), attr);
+                    state->OnAttributeChanged(entity->Id(), comp->TypeId(), comp->Name(), attr);
                 else
                     // Note: this may be an add, change or remove. We inspect closer when it's time to send the update message.
-                    state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), attr->Name());
+                    state->OnDynamicAttributeChanged(entity->Id(), comp->TypeId(), comp->Name(), attr->Name());
             }
         }
     }
@@ -243,9 +243,9 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     {
         SceneSyncState* state = &server_syncstate_;
         if (!dynamic)
-            state->OnAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), attr);
+            state->OnAttributeChanged(entity->Id(), comp->TypeId(), comp->Name(), attr);
         else
-            state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeId(), comp->Name(), attr->Name());
+            state->OnDynamicAttributeChanged(entity->Id(), comp->TypeId(), comp->Name(), attr->Name());
     }
     
     // This attribute changing might in turn cause other attributes to change on the server, and these must be echoed to all, so reset sender now
@@ -270,13 +270,13 @@ void SyncManager::OnComponentAdded(Entity* entity, IComponent* comp, AttributeCh
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
-                state->OnComponentAdded(entity->GetId(), comp->TypeId(), comp->Name());
+                state->OnComponentAdded(entity->Id(), comp->TypeId(), comp->Name());
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnComponentAdded(entity->GetId(), comp->TypeId(), comp->Name());
+        state->OnComponentAdded(entity->Id(), comp->TypeId(), comp->Name());
     }
 }
 
@@ -297,13 +297,13 @@ void SyncManager::OnComponentRemoved(Entity* entity, IComponent* comp, Attribute
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
-                state->OnComponentRemoved(entity->GetId(), comp->TypeId(), comp->Name());
+                state->OnComponentRemoved(entity->Id(), comp->TypeId(), comp->Name());
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnComponentRemoved(entity->GetId(), comp->TypeId(), comp->Name());
+        state->OnComponentRemoved(entity->Id(), comp->TypeId(), comp->Name());
     }
 }
 
@@ -323,19 +323,19 @@ void SyncManager::OnEntityCreated(Entity* entity, AttributeChange::Type change)
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
             {
-                if (state->removed_entities_.find(entity->GetId()) != state->removed_entities_.end())
+                if (state->removed_entities_.find(entity->Id()) != state->removed_entities_.end())
                 {
-                    LogWarning("An entity with ID " + QString::number(entity->GetId()).toStdString() + " is queued to be deleted, but a new entity \"" + 
+                    LogWarning("An entity with ID " + QString::number(entity->Id()).toStdString() + " is queued to be deleted, but a new entity \"" + 
                         entity->GetName().toStdString() + "\" is to be added to the scene!");
                 }
-                state->OnEntityChanged(entity->GetId());
+                state->OnEntityChanged(entity->Id());
             }
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnEntityChanged(entity->GetId());
+        state->OnEntityChanged(entity->Id());
     }
 }
 
@@ -355,13 +355,13 @@ void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
-                state->OnEntityRemoved(entity->GetId());
+                state->OnEntityRemoved(entity->Id());
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnEntityRemoved(entity->GetId());
+        state->OnEntityRemoved(entity->Id());
     }
 }
 
@@ -381,7 +381,7 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
 
     // Craft EntityAction message.
     MsgEntityAction msg;
-    msg.entityId = entity->GetId();
+    msg.entityId = entity->Id();
     // msg.executionType will be set below depending are we server or client.
     msg.name = StringToBuffer(action.toStdString());
     for(int i = 0; i < params.size(); ++i)
@@ -425,7 +425,7 @@ void SyncManager::OnUserActionTriggered(UserConnection* user, Entity *entity, co
     
     // Craft EntityAction message.
     MsgEntityAction msg;
-    msg.entityId = entity->GetId();
+    msg.entityId = entity->Id();
     msg.name = StringToBuffer(action.toStdString());
     msg.executionType = (u8)EntityAction::Local; // Propagate as local action.
     for(int i = 0; i < params.size(); ++i)
@@ -502,7 +502,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         {
             entitystate = state->GetOrCreateEntity(*i);
             MsgCreateEntity msg;
-            msg.entityID = entity->GetId();
+            msg.entityID = entity->Id();
             for(uint j = 0; j < components.size(); ++j)
             {
                 ComponentPtr component = components[j];
@@ -535,9 +535,9 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             {
                 std::set<std::pair<uint, QString> > dirtycomps = entitystate->dirty_components_;
                 MsgCreateComponents createMsg;
-                createMsg.entityID = entity->GetId();
+                createMsg.entityID = entity->Id();
                 MsgUpdateComponents updateMsg;
-                updateMsg.entityID = entity->GetId();
+                updateMsg.entityID = entity->Id();
                 
                 for(std::set<std::pair<uint, QString> >::iterator j = dirtycomps.begin(); j != dirtycomps.end(); ++j)
                 {
@@ -649,7 +649,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             {
                 std::set<std::pair<uint, QString> > removedcomps = entitystate->removed_components_;
                 MsgRemoveComponents removeMsg;
-                removeMsg.entityID = entity->GetId();
+                removeMsg.entityID = entity->Id();
                 
                 for(std::set<std::pair<uint, QString> >::iterator j = removedcomps.begin(); j != removedcomps.end(); ++j)
                 {

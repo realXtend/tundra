@@ -142,7 +142,7 @@ void EC_Material::ApplyParameters(OgreMaterialAsset* srcMatAsset)
     {
         Entity* parentEntity = ParentEntity();
         if (parentEntity)
-            outputMatName.replace(questionMark, 1, QString::number(parentEntity->GetId()));
+            outputMatName.replace(questionMark, 1, QString::number(parentEntity->Id()));
     }
     
     OgreMaterialAsset* destMatAsset = 0;

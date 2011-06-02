@@ -99,7 +99,7 @@ void EcXmlEditorWidget::Refresh()
         temp_doc.appendChild(entity_elem);
 
         QString id_str;
-        id_str.setNum((int)it.peekNext().lock()->ParentEntity()->GetId());
+        id_str.setNum((int)it.peekNext().lock()->ParentEntity()->Id());
         entity_elem.setAttribute("id", id_str);
 
         while(it.hasNext())
@@ -132,7 +132,7 @@ void EcXmlEditorWidget::Refresh()
             entities_elem.appendChild(entity_elem);
         else
             temp_doc.appendChild(entity_elem);
-        entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
+        entity_elem.setAttribute("id", QString::number((int)entity->Id()));
 
         const Entity::ComponentVector &components = entity->Components();
         for(uint i = 0; i < components.size(); ++i)
@@ -200,15 +200,14 @@ void EcXmlEditorWidget::Save()
         while(!entity_elem.isNull())
         {
             entity_found = true;
-            entity_id_t id = (entity_id_t)boost::lexical_cast<int>(entity_elem.attribute("id").toStdString());
+            entity_id_t id = (entity_id_t)entity_elem.attribute("id").toInt();
             EntityPtr entity = scene->GetEntity(id);
             if (entity)
             {
                 QDomElement comp_elem = entity_elem.firstChildElement("component");
                 while(!comp_elem.isNull())
                 {
-                    ComponentPtr comp = entity->GetComponent(comp_elem.attribute("type"),
-                                                                                  comp_elem.attribute("name"));
+                    ComponentPtr comp = entity->GetComponent(comp_elem.attribute("type"), comp_elem.attribute("name"));
                     if (comp)
                     {
                         comp->DeserializeFrom(comp_elem, AttributeChange::Default);

@@ -196,7 +196,7 @@ EntityPtr EC_Sound::GetActiveSoundListener()
     int numActiveListeners = 0; // For debugging, count how many listeners are active.
 #endif
     
-    EntityList listeners = parentEntity_->GetScene()->GetEntitiesWithComponent("EC_SoundListener");
+    EntityList listeners = parentEntity_->ParentScene()->GetEntitiesWithComponent("EC_SoundListener");
     foreach(EntityPtr listener, listeners)
     {
         EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
@@ -225,7 +225,7 @@ void EC_Sound::UpdateSignals()
         LogError("Couldn't update signals cause component dont have parent entity set.");
         return;
     }
-    Scene *scene = ParentEntity()->GetScene();
+    Scene *scene = ParentEntity()->ParentScene();
     if(!scene)
     {
         LogError("Fail to update signals cause parent entity's scene is null.");

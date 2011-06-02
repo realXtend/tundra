@@ -49,23 +49,104 @@ static const entity_id_t LocalEntity = 0x80000000;
 class Entity : public QObject, public boost::enable_shared_from_this<Entity>
 {
     Q_OBJECT
-    Q_PROPERTY (uint id READ GetId)
+    Q_PROPERTY (uint id READ Id)
     Q_PROPERTY (QString name READ GetName)
 
 public:
     typedef std::vector<ComponentPtr> ComponentVector; ///< Component container.
     typedef QMap<QString, EntityAction *> ActionMap; ///< Action container
 
+    /// If entity has components that are still alive, they become free-floating.
     ~Entity();
 
+    /// Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
+    /** If there are several components with the specified type, returns the first component found (arbitrary). */
+    template <class T>
+    boost::shared_ptr<T> GetComponent() const
+    {
+        return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic()));
+    }
+
+    /** Returns list of components with certain class type, already cast to correct type.
+        @param T Component class type.
+        @return List of components with certain class type, or empty list if no components was found. */
+    template <class T>
+    std::vector<boost::shared_ptr<T> > GetComponents() const
+    {
+        std::vector<boost::shared_ptr<T> > ret;
+        for(size_t i = 0; i < components_.size() ; ++i)
+        {
+            boost::shared_ptr<T> t = boost::dynamic_pointer_cast<T>(components_[i]);
+            if (t)
+                ret.push_back(t);
+        }
+        return ret;
+    }
+
+    /// Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
+    /** @param name name of the component */
+    template <class T>
+    boost::shared_ptr<T> GetComponent(const QString& name) const
+    {
+        return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
+    }
+
+   /** Returns pointer to the first attribute with specific name.
+        @param T Type name/class of the attribute.
+        @param name Name of the attribute.
+        @return Pointer to the attribute.
+        @note Always remember to check for null pointer. */
+    template<typename T>
+    Attribute<T> *GetAttribute(const std::string &name) const
+    {
+        for(size_t i = 0; i < components_.size() ; ++i)
+        {
+            Attribute<T> *t = components_[i]->GetAttribute<T>(name);
+            if (t)
+                return t;
+        }
+        return 0;
+    }
+
+    /// Returns list of attributes with specific name.
+    /** @param T Type name/class of the attribute.
+        @param name Name of the attribute.
+        @return List of attributes, or empty list if no attributes are found. */
+    template<typename T>
+    std::vector<Attribute<T> > GetAttributes(const std::string &name) const
+    {
+        std::vector<Attribute<T> > ret;
+        for(size_t i = 0; i < components_.size() ; ++i)
+        {
+            Attribute<T> *t = components_[i]->GetAttribute<T>(name);
+            if (t)
+                return ret.push_back(t);
+        }
+        return ret;
+    }
+
+    /// In the following, deserialization functions are now disabled since deserialization can't safely
+    /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.
+    /// \todo Implement a deserialization flow that takes that into account. In the meanwhile, use Scene
+    /// functions for achieving the same.
+
+    void SerializeToBinary(kNet::DataSerializer &dst) const;
+//        void DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change);
+
+    /// Emit EnterView signal. Called by the rendering subsystem
+    void EmitEnterView(IComponent* camera);
+    
+    /// Emit LeaveView signal. Called by the rendering subsystem
+    void EmitLeaveView(IComponent* camera);
+
     /// Returns true if the two entities have the same id, false otherwise
-    bool operator == (const Entity &other) const { return GetId() == other.GetId(); }
+    bool operator == (const Entity &other) const { return Id() == other.Id(); }
 
     /// Returns true if the two entities have different id, false otherwise
     bool operator != (const Entity &other) const { return !(*this == other); }
 
     /// comparison by id
-    bool operator < (const Entity &other) const { return GetId() < other.GetId(); }
+    bool operator < (const Entity &other) const { return Id() < other.Id(); }
 
 public slots:
     /// Returns a component with type 'type_name' or empty pointer if component was not found
@@ -226,8 +307,8 @@ public slots:
     void Exec(EntityAction::ExecTypeField type, const QString &action, const QStringList &params);
 
     /// This is an overloaded function. Experimental overload using QVariant. Converts the variants to strings.
-    /// @note If called from JavaScript, syntax '<targetEntity>["Exec(EntityAction::ExecTypeField,QString,QVariantList)"](2, "name", params);' must be used.
-    /** @param type Execution type(s), i.e. where the actions is executed.
+    /** @note If called from JavaScript, syntax '<targetEntity>["Exec(EntityAction::ExecTypeField,QString,QVariantList)"](2, "name", params);' must be used.
+        @param type Execution type(s), i.e. where the actions is executed.
         @param action Name of the action.
         @param params List of parameters for the action. */
     void Exec(EntityAction::ExecTypeField type, const QString &action, const QVariantList &params);
@@ -248,7 +329,7 @@ public slots:
     QString ToString() const;
 
     /// Returns the unique id of this entity
-    entity_id_t GetId() const { return id_; }
+    entity_id_t Id() const { return id_; }
 
     /// introspection for the entity, returns all components
     const ComponentVector &Components() const { return components_; }
@@ -256,93 +337,12 @@ public slots:
     /// Returns framework
     Framework *GetFramework() const { return framework_; }
 
-    /// Returns scene
-    Scene* GetScene() const { return scene_; }
+    /// Returns parent scene of this entity.
+    Scene* ParentScene() const { return scene_; }
 
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }
 
-public:
-    /// Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
-    /** If there are several components with the specified type, returns the first component found (arbitrary). */
-    template <class T>
-    boost::shared_ptr<T> GetComponent() const
-    {
-        return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic()));
-    }
-
-    /** Returns list of components with certain class type, already cast to correct type.
-        @param T Component class type.
-        @return List of components with certain class type, or empty list if no components was found. */
-    template <class T>
-    std::vector<boost::shared_ptr<T> > GetComponents() const
-    {
-        std::vector<boost::shared_ptr<T> > ret;
-        for(size_t i = 0; i < components_.size() ; ++i)
-        {
-            boost::shared_ptr<T> t = boost::dynamic_pointer_cast<T>(components_[i]);
-            if (t)
-                ret.push_back(t);
-        }
-        return ret;
-    }
-
-    /// Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
-    /** @param name name of the component */
-    template <class T>
-    boost::shared_ptr<T> GetComponent(const QString& name) const
-    {
-        return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
-    }
-
-   /** Returns pointer to the first attribute with specific name.
-        @param T Type name/class of the attribute.
-        @param name Name of the attribute.
-        @return Pointer to the attribute.
-        @note Always remember to check for null pointer. */
-    template<typename T>
-    Attribute<T> *GetAttribute(const std::string &name) const
-    {
-        for(size_t i = 0; i < components_.size() ; ++i)
-        {
-            Attribute<T> *t = components_[i]->GetAttribute<T>(name);
-            if (t)
-                return t;
-        }
-        return 0;
-    }
-
-    /// Returns list of attributes with specific name.
-    /** @param T Type name/class of the attribute.
-        @param name Name of the attribute.
-        @return List of attributes, or empty list if no attributes are found. */
-    template<typename T>
-    std::vector<Attribute<T> > GetAttributes(const std::string &name) const
-    {
-        std::vector<Attribute<T> > ret;
-        for(size_t i = 0; i < components_.size() ; ++i)
-        {
-            Attribute<T> *t = components_[i]->GetAttribute<T>(name);
-            if (t)
-                return ret.push_back(t);
-        }
-        return ret;
-    }
-
-    /// In the following, deserialization functions are now disabled since deserialization can't safely
-    /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.
-    /// \todo Implement a deserialization flow that takes that into account. In the meanwhile, use Scene
-    /// functions for achieving the same.
-
-    void SerializeToBinary(kNet::DataSerializer &dst) const;
-//        void DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change);
-
-    /// Emit EnterView signal. Called by the rendering subsystem
-    void EmitEnterView(IComponent* camera);
-    
-    /// Emit LeaveView signal. Called by the rendering subsystem
-    void EmitLeaveView(IComponent* camera);
-    
 signals:
     /// A component has been added to the entity
     /** @note When this signal is received on new entity creation, the attributes might not be filled yet! */ 

@@ -79,7 +79,7 @@ Scene* IComponent::ParentScene() const
 {
     if (!parentEntity_)
         return 0;
-    return parentEntity_->GetScene();
+    return parentEntity_->ParentScene();
 }
 
 void IComponent::SetNetworkSyncEnabled(bool enabled)
@@ -299,7 +299,7 @@ bool IComponent::ViewEnabled() const
 {
     if (!parentEntity_)
         return true;
-    Scene* scene = parentEntity_->GetScene();
+    Scene* scene = parentEntity_->ParentScene();
     if (scene)
         return scene->ViewEnabled();
     else

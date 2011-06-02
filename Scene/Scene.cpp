@@ -106,7 +106,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
             entity->AddComponent(newComp, change); //change the param to a qstringlist or so \todo XXX
         }
     }
-    entities_[entity->GetId()] = entity;
+    entities_[entity->Id()] = entity;
 
     return entity;
 }
@@ -363,7 +363,7 @@ QVariantList Scene::GetEntityIdsWithComponent(const QString &type_name) const
 
     EntityList entities = GetEntitiesWithComponent(type_name);
     foreach(EntityPtr e, entities)
-        ret.append(QVariant(e->GetId()));
+        ret.append(QVariant(e->Id()));
 
     return ret;
 }
@@ -385,7 +385,7 @@ QVariantList Scene::LoadSceneXMLRaw(const QString &filename, bool clearScene, bo
     QList<Entity *> entities = LoadSceneXML(filename, clearScene, useEntityIDsFromFile, change);
  
     foreach(Entity * e, entities)
-        ret.append(QVariant(e->GetId()));
+        ret.append(QVariant(e->Id()));
 
     return ret;
 }
@@ -441,7 +441,7 @@ QByteArray Scene::GetSceneXML(bool gettemporary, bool getlocal) const
             QDomElement entity_elem = scene_doc.createElement("entity");
 
             QString id_str;
-            id_str.setNum((int)entity->GetId());
+            id_str.setNum((int)entity->Id());
             entity_elem.setAttribute("id", id_str);
 
             const Entity::ComponentVector &components = entity->Components();
@@ -1151,7 +1151,7 @@ QByteArray Scene::GetEntityXml(Entity *entity)
         QDomElement entity_elem = scene_doc.createElement("entity");
         
         QString id_str;
-        id_str.setNum((int)entity->GetId());
+        id_str.setNum((int)entity->Id());
         entity_elem.setAttribute("id", id_str);
         
         const Entity::ComponentVector &components = entity->Components();
@@ -1187,7 +1187,7 @@ bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, 
     
     IComponent* comp = attr ? attr->Owner() : 0;
     Entity* entity = comp ? comp->ParentEntity() : 0;
-    Scene* scene = entity ? entity->GetScene() : 0;
+    Scene* scene = entity ? entity->ParentScene() : 0;
     
     if ((length <= 0.0f) || (!attr) || (!attr->Metadata()) || (attr->Metadata()->interpolation == AttributeMetadata::None) ||
         (!comp) || (comp->HasDynamicStructure()) || (!entity) || (!scene) || (scene != this))
@@ -1206,7 +1206,7 @@ bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, 
         attr->CopyValue(endvalue, AttributeChange::LocalOnly);
     
     AttributeInterpolation newInterp;
-    newInterp.entityId = entity->GetId();
+    newInterp.entityId = entity->Id();
     newInterp.compName = comp->Name();
     newInterp.compTypeId = comp->TypeId();
     newInterp.dest = attr;

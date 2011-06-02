@@ -167,7 +167,7 @@ void EC_VolumeTrigger::UpdateSignals()
     
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForRigidBody()));
 
-    Scene* scene = parent->GetScene();
+    Scene* scene = parent->ParentScene();
     PhysicsWorld* world = scene->GetWorld<PhysicsWorld>().get();
     if (world)
         connect(world, SIGNAL(Updated(float)), this, SLOT(OnPhysicsUpdate()));

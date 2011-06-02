@@ -252,7 +252,7 @@ void EC_RigidBody::UpdateSignals()
     
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceableAndTerrain()));
     
-    Scene* scene = parent->GetScene();
+    Scene* scene = parent->ParentScene();
     world_ = scene->GetWorld<PhysicsWorld>().get();
     if (world_)
         connect(world_, SIGNAL(AboutToUpdate(float)), this, SLOT(OnAboutToUpdate()));

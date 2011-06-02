@@ -1108,7 +1108,7 @@ void EC_Terrain::GenerateFromSceneEntity(QString entityName)
     if (!parentEntity)
         return;
 
-    Scene *scene = parentEntity->GetScene();
+    Scene *scene = parentEntity->ParentScene();
     if (!scene)
         return;
 

@@ -382,7 +382,7 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
             Entity *e = dynamic_cast<Entity *>(obj);
             IComponent *c = dynamic_cast<IComponent *>(obj);
             if (e)
-                targetText.append('(' + QString::number((uint)e->GetId()) + ')');
+                targetText.append('(' + QString::number((uint)e->Id()) + ')');
             else if (c)
                 targetText.append('(' + c->Name() + ')');
         }

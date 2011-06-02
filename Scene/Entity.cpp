@@ -103,7 +103,7 @@ void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Typ
         }
         else
         {
-            LogWarning("Failed to remove component: " + component->TypeName() + " from entity: " + QString::number(GetId()));
+            LogWarning("Failed to remove component: " + component->TypeName() + " from entity: " + QString::number(Id()));
         }
     }
 }
@@ -280,7 +280,7 @@ IAttribute *Entity::GetAttribute(const std::string &name) const
 
 void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
 {
-    dst.Add<u32>(GetId());
+    dst.Add<u32>(Id());
     uint num_serializable = 0;
     foreach(const ComponentPtr &comp, Components())
         if (!comp->IsTemporary())
@@ -316,7 +316,7 @@ void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element) const
     QDomElement entity_elem = doc.createElement("entity");
     
     QString id_str;
-    id_str.setNum((int)GetId());
+    id_str.setNum((int)Id());
     entity_elem.setAttribute("id", id_str);
 
     foreach(const ComponentPtr c, Components())
@@ -475,8 +475,8 @@ void Entity::Exec(EntityAction::ExecTypeField type, const QString &action, const
             act->Trigger(params[0], params[1], params[2], params.mid(3));
     }
 
-    if (GetScene())
-        GetScene()->EmitActionTriggered(this, action, params, type);
+    if (ParentScene())
+        ParentScene()->EmitActionTriggered(this, action, params, type);
 }
 
 void Entity::Exec(EntityAction::ExecTypeField type, const QString &action, const QVariantList &params)
@@ -527,7 +527,7 @@ QString Entity::ToString() const
 {
     QString name = GetName();
     if (name.trimmed().isEmpty())
-        return QString("Entity ID ") + QString::number(GetId());
+        return QString("Entity ID ") + QString::number(Id());
     else
-        return QString("Entity \"") + name + "\" (ID: " + QString::number(GetId()) + ")";
+        return QString("Entity \"") + name + "\" (ID: " + QString::number(Id()) + ")";
 }

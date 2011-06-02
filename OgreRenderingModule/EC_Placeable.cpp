@@ -415,7 +415,7 @@ void EC_Placeable::AttachNode()
             Entity* ownEntity = ParentEntity();
             if (!ownEntity)
                 return;
-            Scene* scene = ownEntity->GetScene();
+            Scene* scene = ownEntity->ParentScene();
             if (!scene)
                 return;
 
@@ -796,7 +796,7 @@ void EC_Placeable::CheckParentEntityCreated(Entity* entity, AttributeChange::Typ
     if ((!attached_) && (entity))
     {
         // Check if the entity is the one we should use as parent
-        if (entity == parentRef.Get().Lookup(entity->GetScene()).get())
+        if (entity == parentRef.Get().Lookup(entity->ParentScene()).get())
             AttachNode();
     }
 }

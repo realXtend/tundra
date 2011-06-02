@@ -88,7 +88,7 @@ void AudioPreviewEditor::HandleAssetReady(AssetInterfacePtr asset)
             if(!sound_service)
                 return;
 
-            request_tag_ = sound_service->RequestSoundResource(QString::fromStdString(asset->GetId()));
+            request_tag_ = sound_service->RequestSoundResource(QString::fromStdString(asset->Id()));
         }
     }
 }
@@ -136,7 +136,7 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
                 }
                 audioSignalLabel->SetAudioData(buffer.data_, buffer.frequency_, bits, buffer.stereo_);
             }
-            assetId_ = QString(sound->GetId().c_str());
+            assetId_ = QString(sound->Id().c_str());
         }
     }
 }

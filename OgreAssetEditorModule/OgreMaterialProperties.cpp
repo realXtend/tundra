@@ -29,7 +29,7 @@ OgreMaterialProperties::OgreMaterialProperties(const QString &name, void *asset)
     ///\todo Regression. Reimplement using the new Asset API. -jj.
     /*
     // Hack: tell the materialresource that shadows are medium quality, so that it won't create extra shadow texture units
-    material_ = new OgreRenderer::OgreMaterialResource(asset->GetId(), OgreRenderer::Shadows_Low, asset);
+    material_ = new OgreRenderer::OgreMaterialResource(asset->Id(), OgreRenderer::Shadows_Low, asset);
     if (material_)
         if (material_->IsValid())
             CreateProperties();

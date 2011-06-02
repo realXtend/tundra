@@ -218,7 +218,7 @@ void TransformEditor::DeleteGizmo()
 {
     ScenePtr s = scene.lock();
     if (s && gizmo)
-        s->RemoveEntity(gizmo->GetId());
+        s->RemoveEntity(gizmo->Id());
 }
 
 void TransformEditor::HandleKeyEvent(KeyEvent *e)

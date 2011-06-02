@@ -159,7 +159,7 @@ QVariantList ECEditorModule::GetSelectedEntities() const
         QList<EntityPtr> entities = activeEditor->GetSelectedEntities();
         QVariantList retEntities;
         for(uint i = 0; i < (uint)entities.size(); ++i)
-            retEntities.push_back(QVariant(entities[i]->GetId()));
+            retEntities.push_back(QVariant(entities[i]->Id()));
         return retEntities;
     }
     return QVariantList();

@@ -56,9 +56,9 @@ uint AddUniqueListItem(const EntityPtr &entity, QListWidget* list, const QString
 }
 
 /// Function that is used by std::sort algorithm to sort entities by their ids.
-bool CmpEntityById(EntityPtr a, EntityPtr b)
+bool CmpEntityById(const EntityPtr &a, const EntityPtr &b)
 {
-    return a->GetId() < b->GetId();
+    return a->Id() < b->Id();
 }
 
 ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
@@ -279,7 +279,7 @@ QList<EntityPtr> ECEditorWindow::GetSelectedEntities() const
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
         if (item && item->Entity() && item->isSelected())
         {
-            EntityPtr entity = scene->GetEntity(item->Entity()->GetId());
+            EntityPtr entity = scene->GetEntity(item->Entity()->Id());
             if (entity)
                 ret.push_back(entity);
         }
@@ -301,7 +301,7 @@ EntityListWidgetItem *ECEditorWindow::FindItem(entity_id_t id) const
     for(uint i = 0; i < (uint)entityList->count(); i++)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entityList->item(i));
-        if (item && item->Entity() && item->Entity()->GetId() == id)
+        if (item && item->Entity() && item->Entity()->Id() == id)
             return item;
     }
 
@@ -348,7 +348,7 @@ void ECEditorWindow::CreateComponent()
 {
     QList<entity_id_t> ids;
     foreach(const EntityPtr &e, GetSelectedEntities())
-        ids.push_back(e->GetId());
+        ids.push_back(e->Id());
 
     if (ids.size())
     {
@@ -405,7 +405,7 @@ void ECEditorWindow::FunctionDialogFinished(int result)
                 Entity *e = dynamic_cast<Entity *>(obj);
                 IComponent *c = dynamic_cast<IComponent *>(obj);
                 if (e)
-                    objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
+                    objNameWithId.append('(' + QString::number((uint)e->Id()) + ')');
                 else if (c)
                     objNameWithId.append('(' + c->Name() + ')');
             }
@@ -434,12 +434,12 @@ void ECEditorWindow::OnActionTriggered(Entity *entity, const QString &action, co
             if (!framework->Input()->IsKeyDown(Qt::Key_Control))
                 DeselectAllEntities();
 
-            EntityListWidgetItem *item = FindItem(entity->GetId());
+            EntityListWidgetItem *item = FindItem(entity->Id());
             if (item && item->isSelected())
                 SetEntitySelected(item, false);
             else
             {
-                item = AddEntity(entity->GetId());
+                item = AddEntity(entity->Id());
                 SetEntitySelected(item, true);
             }
         }
@@ -456,7 +456,7 @@ void ECEditorWindow::DeleteEntity()
 
     QList<EntityPtr> entities = GetSelectedEntities();
     for(uint i = 0; i < (uint)entities.size(); ++i)
-        scene->RemoveEntity(entities[i]->GetId(), AttributeChange::Default);
+        scene->RemoveEntity(entities[i]->Id(), AttributeChange::Default);
 }
 
 void ECEditorWindow::CopyEntity()
@@ -469,7 +469,7 @@ void ECEditorWindow::CopyEntity()
         if (entity)
         {
             QDomElement entity_elem = temp_doc.createElement("entity");
-            entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
+            entity_elem.setAttribute("id", QString::number((int)entity->Id()));
 
             foreach(const ComponentPtr &comp, entity->Components())
                 comp->SerializeTo(temp_doc, entity_elem);
@@ -536,10 +536,10 @@ void ECEditorWindow::PasteEntity()
         }
         if(hasPlaceable)
         {
-            EntityPlacer *entityPlacer = new EntityPlacer(framework, entity->GetId(), this);
+            EntityPlacer *entityPlacer = new EntityPlacer(framework, entity->Id(), this);
             entityPlacer->setObjectName("EntityPlacer");
         }
-        AddEntity(entity->GetId());
+        AddEntity(entity->Id());
         scene->EmitEntityCreated(entity);
     }
 }
@@ -577,7 +577,7 @@ void ECEditorWindow::HighlightEntities(const QString &type, const QString &name)
     QSet<entity_id_t> entities;
     foreach(const EntityPtr &entity, GetSelectedEntities())
         if (entity->GetComponent(type, name))
-            entities.insert(entity->GetId());
+            entities.insert(entity->Id());
     BoldEntityListItems(entities);
 }
 
@@ -630,13 +630,13 @@ void ECEditorWindow::RefreshPropertyBrowser()
         }
 
         // Entity has already added to the browser.
-        if((*iter1)->GetId() == (*iter2)->GetId())
+        if((*iter1)->Id() == (*iter2)->Id())
         {
             iter2++;
             iter1++;
         }
         // Found new entity that that need to be added to the browser.
-        else if((*iter1)->GetId() > (*iter2)->GetId())
+        else if((*iter1)->Id() > (*iter2)->Id())
         {
             ecBrowser->AddEntity(*iter2);
             iter2++;
@@ -900,7 +900,7 @@ void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entitie
         {
             EntityPtr ent = item->Entity();
             QFont font = item->font();
-            if (ent && bolded_entities.contains(ent->GetId()))
+            if (ent && bolded_entities.contains(ent->Id()))
             {
                 font.setBold(true);
                 item->setFont(font);

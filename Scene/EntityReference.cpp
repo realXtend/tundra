@@ -30,17 +30,17 @@ void EntityReference::Set(Entity* entity)
     }
     
     QString name = entity->GetName();
-    Scene* scene = entity->GetScene();
+    Scene* scene = entity->ParentScene();
     if (!scene)
     {
         // If entity is not in scene, set directly by ID
-        ref = QString::number(entity->GetId());
+        ref = QString::number(entity->Id());
         return;
     }
     if (scene->IsUniqueName(name))
         ref = name;
     else
-        ref = QString::number(entity->GetId());
+        ref = QString::number(entity->Id());
 }
 
 bool EntityReference::IsEmpty() const

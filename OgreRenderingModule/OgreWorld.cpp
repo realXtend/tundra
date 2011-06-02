@@ -505,7 +505,7 @@ void OgreWorld::OnUpdated(float timeStep)
         else
         {
             Entity* entity = visibilityTrackedEntities_[i].lock().get();
-            entity_id_t id = entity->GetId();
+            entity_id_t id = entity->Id();
             
             // Check for change in visibility status
             bool last = lastVisibleEntities_.find(id) != lastVisibleEntities_.end();
@@ -663,7 +663,7 @@ EC_Camera* OgreWorld::VerifyCurrentSceneCameraComponent() const
     if (!cameraComponent)
         return 0;
     Entity* entity = cameraComponent->ParentEntity();
-    if ((!entity) || (entity->GetScene() != scene_.lock().get()))
+    if ((!entity) || (entity->ParentScene() != scene_.lock().get()))
         return 0;
     
     return cameraComponent;

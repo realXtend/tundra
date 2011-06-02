@@ -468,7 +468,7 @@ void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *prev
 
 void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type) 
 {
-    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->ParentEntity()->GetId());
+    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->ParentEntity()->Id());
     if(!HasEntity(entity_ptr))
         return;
     ComponentPtr comp_ptr;
@@ -498,7 +498,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
 
 void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
 {
-    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->ParentEntity()->GetId());
+    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->ParentEntity()->Id());
     if(!HasEntity(entity_ptr))
         return;
 
@@ -583,9 +583,7 @@ void ECBrowser::PasteComponent()
         if (comp_elem.isNull())
             return;
 
-        for(EntityWeakPtrList::iterator iter = entities_.begin();
-            iter != entities_.end();
-            iter++)
+        for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); iter++)
         {
             if((*iter).expired())
                 continue;
@@ -596,7 +594,7 @@ void ECBrowser::PasteComponent()
             QString name = comp_elem.attribute("name");
             if (!entity_ptr->GetComponent(type, name))
             {
-                component = framework_->Scene()->CreateComponentByName(entity_ptr->GetScene(), type, name);
+                component = framework_->Scene()->CreateComponentByName(entity_ptr->ParentScene(), type, name);
                 entity_ptr->AddComponent(component, AttributeChange::Default);
             }
             else

@@ -469,7 +469,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
             if (entity)
             {
                 QDomElement entity_elem = scene_doc.createElement("entity");
-                entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
+                entity_elem.setAttribute("id", QString::number((int)entity->Id()));
 
                 foreach(ComponentPtr component, entity->Components())
                     component->SerializeTo(scene_doc, entity_elem);
@@ -1096,7 +1096,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
                 Entity *e = dynamic_cast<Entity *>(obj);
                 IComponent *c = dynamic_cast<IComponent *>(obj);
                 if (e)
-                    objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
+                    objNameWithId.append('(' + QString::number((uint)e->Id()) + ')');
                 else if (c)
                     objNameWithId.append('(' + c->Name() + ')');
             }
@@ -1592,7 +1592,7 @@ void SceneTreeWidget::ConvertEntityToLocal()
             {
                 EntityPtr newEntity = orgEntity->Clone(true, orgEntity->IsTemporary());
                 if (newEntity)
-                    scn->RemoveEntity(orgEntity->GetId()); // Creation successful, remove the original.
+                    scn->RemoveEntity(orgEntity->Id()); // Creation successful, remove the original.
             }
         }
 }
@@ -1608,7 +1608,7 @@ void SceneTreeWidget::ConvertEntityToReplicated()
             {
                 EntityPtr newEntity = orgEntity->Clone(false, orgEntity->IsTemporary());
                 if (newEntity)
-                    scn->RemoveEntity(orgEntity->GetId()); // Creation successful, remove the original.
+                    scn->RemoveEntity(orgEntity->Id()); // Creation successful, remove the original.
             }
         }
 }

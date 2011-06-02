@@ -287,17 +287,17 @@ bool EC_Camera::IsEntityVisible(Entity* entity)
     if (queryFrameNumber_ != framework_->Frame()->FrameNumber())
         QueryVisibleEntities();
     
-    return visibleEntities_.find(entity->GetId()) != visibleEntities_.end();
+    return visibleEntities_.find(entity->Id()) != visibleEntities_.end();
 }
 
 QList<Entity*> EC_Camera::GetVisibleEntities()
 {
     QList<Entity*> l;
     
-    if ((!camera_) || (!parentEntity_) || (!parentEntity_->GetScene()))
+    if ((!camera_) || (!parentEntity_) || (!parentEntity_->ParentScene()))
         return l;
     
-    Scene* scene = parentEntity_->GetScene();
+    Scene* scene = parentEntity_->ParentScene();
     
     // Update query if not updated this frame
     if (queryFrameNumber_ != framework_->Frame()->FrameNumber())
@@ -374,7 +374,7 @@ void EC_Camera::OnUpdated(float timeStep)
         else
         {
             Entity* entity = visibilityTrackedEntities_[i].lock().get();
-            entity_id_t id = entity->GetId();
+            entity_id_t id = entity->Id();
             
             // Check for change in visibility status
             bool last = lastVisibleEntities_.find(id) != lastVisibleEntities_.end();
@@ -427,7 +427,7 @@ void EC_Camera::QueryVisibleEntities()
             continue;
         }
         if (entity)
-            visibleEntities_.insert(entity->GetId());
+            visibleEntities_.insert(entity->Id());
     }
     
     queryFrameNumber_ = framework_->Frame()->FrameNumber();

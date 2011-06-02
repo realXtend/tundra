@@ -20,14 +20,14 @@
 // EntityItem
 
 EntityItem::EntityItem(const EntityPtr &entity) :
-    ptr(entity), id(entity->GetId())
+    ptr(entity), id(entity->Id())
 {
     SetText(entity.get());
 }
 
 void EntityItem::SetText(::Entity *entity)
 {
-    setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+    setText(0, QString("%1 %2").arg(entity->Id()).arg(entity->GetName()));
 }
 
 EntityPtr EntityItem::Entity() const
