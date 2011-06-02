@@ -36,7 +36,7 @@ When component is deserialized it will compare old and a new attribute values an
 between those two and use that information to remove attributes that are not in the new list and add those
 that are only in new list and only update those values that are same in both lists.
 
-Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
+Registered by TundraLogicModule.
 
 <b>No Static Attributes.</b>
 
@@ -73,6 +73,7 @@ Does not emit any actions.
 class EC_DynamicComponent : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_DynamicComponent", 25)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
@@ -110,79 +111,66 @@ public:
     /// IComponent override
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
-    COMPONENT_NAME("EC_DynamicComponent", 25)
 public slots:
-
     /// A factory method that constructs a new attribute of a given the type name.
     /** @param typeName Type name of the attribute.
         @param name Name of the attribute.
         @param change Change type.
-        This factory is not extensible. If attribute was already created the method will return it's pointer.
-    */
+        This factory is not extensible. If attribute was already created the method will return it's pointer. */
     IAttribute *CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Create new attribute that type is QVariant.
-    /** @param name Name of the attribute.
-    */
+    /** @param name Name of the attribute. */
     void AddQVariantAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Get attribute value as QVariant.
     /** If attribute type isn't QVariantAttribute then attribute value is returned as in string format.
         Use QVariant's isNull method to check if the variant value is initialized.
         @param index Index to attribute list.
-        @return Return attribute value as QVariant if attribute has been found, else return null QVariant.
-    */
+        @return Return attribute value as QVariant if attribute has been found, else return null QVariant. */
     QVariant GetAttribute(int index) const;
 
     /// This is an overloaded function.
-    /** @param name Name of the attribute.
-    */
+    /** @param name Name of the attribute. */
     QVariant GetAttribute(const QString &name) const;
 
     /// Inserts new attribute value to attribute. Note: this is only meant to be used from QtScript.
     /** @param name Name of the attribute.
         @param value Value of the attribute.
         @param change Change type.
-        @todo remove this from dynamic component when possible.
-    */
+        @todo remove this from dynamic component when possible. */
     void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change = AttributeChange::Default);
 
     /// Inserts new attribute value to attribute.
     /** @param index Index for the attribute.
         @param value Value of the attribute.
-        @param change Change type.
-    */
+        @param change Change type. */
     void SetAttribute(int index, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
 
     /// This is an overloaded function.
     /** @param name Name of the attribute.
         @param value Value of the attribute.
-        @param change Change type.
-    */
+        @param change Change type. */
     void SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
 
     /// Returns number of attributes in this component.
     int GetNumAttributes() const { return attributes_.size(); }
 
     /// Returns name of attribute with the specific @c index
-    /** @param index Index of the attribute.
-    */
+    /** @param index Index of the attribute. */
     QString GetAttributeName(int index) const;
 
     /// Checks if a given component @c comp is holding exactly same attributes as this component.
     /** @param comp Component to be compared with.
-        @return Return true if component is holding same attributes as this component else return false.
-    */
+        @return Return true if component is holding same attributes as this component else return false. */
     bool ContainSameAttributes(const EC_DynamicComponent &comp) const;
 
     /// Remove attribute from the component.
-    /** @param name Name of the attribute.
-    */
+    /** @param name Name of the attribute. */
     void RemoveAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Check if component is holding an attribute by the @c name.
-    /** @param name Name of attribute that we are looking for.
-    */
+    /** @param name Name of attribute that we are looking for. */
     bool ContainsAttribute(const QString &name) const;
 
     /// Removes all attributes from the component
@@ -190,19 +178,11 @@ public slots:
 
 signals:
     /// Emitted when a new attribute is added to this component.
-    /** @param attr New attribute.
-    */
+    /** @param attr New attribute. */
     void AttributeAdded(IAttribute *attr);
 
     /// Emitted when attribute is about to be removed.
     /** @param attr Attribute about to be removed.
-    */
+        @todo Scripts cannot access IAttribute; consider maybe using name or something else in the signature. */
     void AttributeAboutToBeRemoved(IAttribute *attr);
-
-    /// Emitted when attribute is removed from this component.
-    /** @param name Name of the attribute.
-        @todo REMOVE
-    */
-    void AttributeRemoved(const QString &name);
 };
-

@@ -109,7 +109,7 @@
 namespace TundraLogic
 {
 
-    static const unsigned short cDefaultPort = 2345;
+static const unsigned short cDefaultPort = 2345;
 
 TundraLogicModule::TundraLogicModule()
 :IModule("TundraLogic"),
@@ -127,7 +127,9 @@ void TundraLogicModule::PreInitialize()
 }
 
 void TundraLogicModule::Load()
-{    
+{
+    // Name and DynamicComponent are present always.
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Name>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_DynamicComponent>));
 
     // External EC's
@@ -155,7 +157,6 @@ void TundraLogicModule::Load()
 #ifdef EC_SoundRuler_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundRuler>));
 #endif
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Name>));
 #ifdef EC_ParticleSystem_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
 #endif

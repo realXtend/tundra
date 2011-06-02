@@ -205,7 +205,6 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
             emit AttributeAboutToBeRemoved(*iter);
             SAFE_DELETE(*iter);
             attributes_.erase(iter);
-            emit AttributeRemoved(name);
             break;
         }
     }

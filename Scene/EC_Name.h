@@ -20,6 +20,8 @@
 Provides network-synchronizable means of identification for entities in addition to the plain ID number.
 This EC is not present by default for entities.
 
+Registered by TundraLogicModule.
+
 <b>Attributes</b>:
 <ul>
 <li> QString: Name
@@ -37,6 +39,7 @@ Does not emit any actions.
 class EC_Name : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_Name", 26)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
@@ -60,7 +63,4 @@ public:
     /// Boolean which indicates that the current name value is defined by the user and should not be set programmatically.
     DEFINE_QPROPERTY_ATTRIBUTE(bool, userDefined);
     Q_PROPERTY(bool userDefined READ getuserDefined WRITE setuserDefined); 
-
-    COMPONENT_NAME("EC_Name", 26)
 };
-
