@@ -63,19 +63,20 @@ public:
 
     /// Adds new entity to the entity list.
     /** @param id Entity ID.
-        @param updateUi Do we want to update UI.
+        @param updateUi Do we want to update the UI.
         @return The created list item. */
     EntityListWidgetItem *AddEntity(entity_id_t id, bool updateUi = true);
 
     /// Sets new list of entities to be shown in the editor.
     /** Calling this method will clear previously selected entities from the editor.
         @param entities a new list of entities that we want to add into the editor.
-        @param select_all Do we want to select all entities from the list. */
-    void AddEntities(const QList<entity_id_t> &entities, bool select_all = false);
+        @param selectAll Do we want to select all entities from the list. */
+    void AddEntities(const QList<entity_id_t> &entities, bool selectAll = false);
 
     /// Removes entity from the entity list.
-    /** @param id Entity ID. */
-    void RemoveEntity(entity_id_t id, bool udpate_ui = true); 
+    /** @param id Entity ID.
+        @param updateUi Do we want to update the UI. */
+    void RemoveEntity(entity_id_t id, bool udpateUi = true);
 
     /// Sets which entities are selected in the editor window.
     /** @param ids List of entity ID's. */
@@ -130,13 +131,13 @@ public slots:
     /** @param pos Mouse position of right-click event. */
     void ShowEntityContextMenu(const QPoint &pos);
 
-    /// Shows EC XML editor.for entity's all components.
+    /// Shows EC XML editor. or entity's all components.
     void ShowXmlEditorForEntity();
 
-    /// Shows EC XML editor.for each components.
+    /// Shows EC XML editor for each components.
     void ShowXmlEditorForComponent(const std::vector<ComponentPtr> &components);
 
-    /// Shows EC XML editor.for a single component.
+    /// Shows EC XML editor for a single component.
     void ShowXmlEditorForComponent(const QString &componentType);
 
     /// Show/Hide entity list.
