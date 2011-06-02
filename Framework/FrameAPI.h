@@ -36,7 +36,7 @@ signals:
 private:
     /// Construct new signal delayed signal object.
     /** @param startTime Application tick. */
-    explicit DelayedSignal(boost::uint64_t startTime);
+    explicit DelayedSignal(u64 startTime);
 
     u64 startTime_; ///< Application tick when object was created.
 

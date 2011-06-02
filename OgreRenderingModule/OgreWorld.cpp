@@ -389,8 +389,8 @@ QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect)
     float left = (float)(viewrect.left()) / w, right = (float)(viewrect.right()) / w;
     float top = (float)(viewrect.top()) / h, bottom = (float)(viewrect.bottom()) / h;
     
-    if(left > right) std::swap<float>(left, right);
-    if(top > bottom) std::swap<float>(top, bottom);
+    if(left > right) std::swap(left, right);
+    if(top > bottom) std::swap(top, bottom);
     // don't do selection box is too small
     if((right - left) * (bottom-top) < 0.0001) return l;
     
