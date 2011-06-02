@@ -9,7 +9,6 @@
 #pragma once
 
 #include "IComponent.h"
-#include "IModule.h"
 
 /// Provides network-synchronizable means of identification for entities in addition to the plain ID number
 /**
