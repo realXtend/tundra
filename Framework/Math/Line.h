@@ -52,7 +52,7 @@ public:
     float3 ClosestPoint(const Ray &other, float *d = 0, float *d2 = 0) const;
     float3 ClosestPoint(const Line &other, float *d = 0, float *d2 = 0) const;
     float3 ClosestPoint(const LineSegment &other, float *d = 0, float *d2 = 0) const;
-
+/*
     bool Intersect(const Plane &plane) const;
     bool Intersect(const Plane &plane, float &outDistance) const;
 
@@ -67,7 +67,7 @@ public:
 
     bool Intersect(const OBB &aabb) const;
     bool Intersect(const OBB &aabb, float &outDistance) const;
-
+*/
 //    bool Intersect(const Triangle &triangle) const;
 //    bool Intersect(const Triangle &triangle, float &outDistance) const;
 

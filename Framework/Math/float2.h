@@ -192,7 +192,7 @@ public:
     /// @return The number of points on the convex hull, i.e. the number of elements used in pointArray after the operation.
     static int ConvexHullInPlace(float2 *pointArray, int numPoints);
 
-    /// Computes the minimum-area rectangle that bounds the given point set.
+    /// Computes the minimum-area rectangle that bounds the given point set. [noscript]
     /// @param center [out] This variable will receive the center point of the rectangle.
     /// @param uDir [out] This variable will receive a normalized direction vector pointing one of the sides of the rectangle.
     /// @param VDir [out] This variable will receive a normalized direction vector pointing the other side of the rectangle.
