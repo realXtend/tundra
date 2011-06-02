@@ -17,6 +17,9 @@ public:
     float3 b;
     float3 c;
 
+    Triangle() {}
+    Triangle(const float3 &a, const float3 &b, const float3 &c);
+
     /// Expresses the given point in barycentric (u,v,w) coordinates with respect to this triangle.
     float3 Barycentric(const float3 &point) const;
 

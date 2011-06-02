@@ -13,6 +13,11 @@
 #include "Math/Triangle.h"
 #include "Math/Plane.h"
 
+Triangle::Triangle(const float3 &a_, const float3 &b_, const float3 &c_)
+:a(a_), b(b_), c(c_)
+{
+}
+
 float3 Triangle::Barycentric(const float3 &point) const
 {
     /// @note An alternate mechanism to compute the barycentric is given in Christer Ericson's
