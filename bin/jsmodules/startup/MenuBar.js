@@ -38,8 +38,7 @@ if (!framework.IsHeadless())
         var showVisualAction = viewMenu.addAction("Show visual editing aids");
         var showVisual = framework.Config().Get("tundra", "eceditor", "show visual editing aids");
         if (showVisual == null)
-            showVisual = false;
-        print(showVisual);
+            showVisual = true;
         showVisualAction.checkable = true;
         showVisualAction.checked = !showVisual; // lolwtf: we have to put negation here to make this work right.
         showVisualAction.triggered.connect(ShowVisualEditingAids);
