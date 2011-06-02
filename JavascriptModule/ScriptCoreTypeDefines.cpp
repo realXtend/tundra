@@ -34,6 +34,17 @@ void fromScriptValueEntity(const QScriptValue &obj, const QPointer<Scene::Entity
   //XXX \todo
 }
 
+QScriptValue toScriptValueComponent(QScriptEngine *engine, const ComponentPtr &c)
+{
+    return engine->newQObject(c.get());
+}
+
+void fromScriptValueComponent(const QScriptValue &obj, ComponentPtr &comp_ptr)
+{
+    IComponent* comp = (IComponent*)obj.toQObject();
+    comp_ptr = comp->shared_from_this();
+}
+
 QScriptValue toScriptValueColor(QScriptEngine *engine, const Color &s)
 {
     QScriptValue obj = engine->newObject();
@@ -306,6 +317,12 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType_helper(
         engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueEntity),
         reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueEntity),
+        QScriptValue());
+
+    id = qRegisterMetaType<ComponentPtr>("ComponentPtr");
+    qScriptRegisterMetaType_helper(
+        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueComponent),
+        reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueComponent),
         QScriptValue());
 
     id = qRegisterMetaType< QList<Scene::Entity*> >("QList<Scene::Entity*>");
