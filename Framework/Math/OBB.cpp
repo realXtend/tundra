@@ -317,6 +317,50 @@ float3 OBB::HalfDiagonal() const
     return axis[0] * r[0] + axis[1] * r[1] + axis[2] * r[2];
 }
 
+float3x4 OBB::WorldToLocal() const
+{
+    float3x4 m = LocalToWorld();
+    m.InverseAffine();
+    return m;
+}
+
+float3x4 OBB::LocalToWorld() const
+{
+    // To produce a normalized local->world matrix, do the following.
+    /*
+    float3x4 m;
+    float3 x = axis[0] * r.x;
+    float3 y = axis[1] * r.y;
+    float3 z = axis[2] * r.z;
+    m.SetCol(0, 2.f * x);
+    m.SetCol(1, 2.f * y);
+    m.SetCol(2, 2.f * z);
+    m.SetCol(3, pos - x - y - z);
+    return m;
+    */
+
+    assume(axis[0].IsNormalized());
+    assume(axis[1].IsNormalized());
+    assume(axis[2].IsNormalized());
+    float3x4 m;
+    m.SetCol(0, axis[0]);
+    m.SetCol(1, axis[1]);
+    m.SetCol(2, axis[2]);
+    m.SetCol(3, pos - axis[0] * r.x - axis[1] * r.y - axis[2] * r.z);
+    return m;
+}
+
+/// Implementation from Christer Ericson's Real-Time Collision Detection, p.133.
+float3 OBB::ClosestPoint(const float3 &targetPoint) const
+{
+    float3 d = targetPoint - pos;
+    float3 closestPoint = pos; // Start at the center point of the OBB.
+    for(int i = 0; i < 3; ++i) // Project the target onto the OBB axes and walk towards that point.
+        closestPoint += Clamp(Dot(d, axis[i]), -r[i], r[i]) * axis[i];
+
+    return closestPoint;
+}
+
 float OBB::Volume() const
 {
     return Size().ProductOfElements();
@@ -398,8 +442,16 @@ void OBB::Transform(const Quat &transform)
 {
     OBBTransform(*this, transform.ToFloat3x3());
 }
+
+float OBB::Distance(const float3 &point) const
+{
+    ///\todo This code can be optimized a bit. See Christer Ericson's Real-Time Collision Detection,
+    /// p.134.
+    float3 closestPoint = ClosestPoint(point);
+    return point.Distance(closestPoint);
+}
+
 /*
-float Distance(const float3 &point, float3 *outClosestPoint) const;
 float Distance(const Ray &ray, float3 *outClosestPoint, float *outClosestDistance) const;
 float Distance(const Line &line, float3 *outClosestPoint, float *outClosestdistance) const;
 float Distance(const LineSegment &lineSegment, float3 *outClosestPoint, float *outClosestDistance) const;

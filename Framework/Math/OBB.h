@@ -90,6 +90,12 @@ public:
     /// Returns Diagonal()/2.
     float3 HalfDiagonal() const;
 
+    /// Returns the transformation matrix that transforms from world space to the local space of this OBB.
+    float3x4 WorldToLocal() const;
+
+    /// Returns the transformation matrix that transforms from the local space of this OBB to world space.
+    float3x4 LocalToWorld() const;
+
     /// Returns the smallest sphere that contains this OBB.
     Sphere MinimalEnclosingSphere() const;
 
@@ -213,6 +219,9 @@ public:
     void Transform(const float4x4 &transform);
     void Transform(const Quat &transform);
 
+    /// Returns the point inside this OBB that is closest to the given target point.
+    float3 ClosestPoint(const float3 &targetPoint) const;
+
     /// Computes the distance of this OBB to the given object.
     /** The first parameter of this function specifies the object to test the distance to.
         @param outClosestPoint [out, optional] If not null, this parameter will receive the closest point on this OBB (in world space)
@@ -220,7 +229,7 @@ public:
             speed up the query. The closest point may not be unique, in which case an arbitrary point on the surface of this OBB
             is returned.
         @return The distance between outClosestPoint and outClosestPointOther is returned. */
-    float Distance(const float3 &point, float3 *outClosestPoint) const;
+    float Distance(const float3 &point) const;
     /** @param outClosestDistance [out, optional] For ray, line and line segment queries, this parameter will receive the distance along
             the ray that specifies the closest point on that object to this OBB. This parameter may be left null, in which case the 
             actual distance along the ray is not computed. */
