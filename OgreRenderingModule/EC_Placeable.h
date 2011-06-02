@@ -111,58 +111,16 @@ public:
      */
     virtual bool IsSerializable() const { return true; }
     
-    //! sets parent placeable
-    /*! set null placeable to attach to scene root (the default)
-        \param placeable new parent
-     */
-    void SetParent(ComponentPtr placeable);
-    
-    //! sets position
-    /*! \param position new position
-     */
-    void SetPosition(const Vector3df& position);
-    //! sets orientation
-    /*! \param orientation new orientation
-     */
-    void SetOrientation(const Quaternion& orientation);
-
     //! orients to look at a point in space
     /*! \param look_at point to look at
      */
     void LookAt(const Vector3df& look_at);
-    //! yaws the node
-    /*! \param radians how many radians to yaw
-     */
-    void SetYaw(float radians);
-    //! pitches the node
-    /*! \param radians how many radians to pitch
-     */
-    void SetPitch(float radians);
-    //! rolls the node
-    /*! \param radians how many radians to roll
-     */
-    void SetRoll(float radians);
-
-    //! get the yaw of the node
-    float GetYaw() const;
-    //! get the pitch of the node
-    float GetPitch() const;
-    //! get the roll of the node
-    float GetRoll() const;
     
-    //! sets scale
-    /*! \param scale new scale
-     */
-    void SetScale(const Vector3df& scale);
-
     //! sets select priority
     /*! \param priority new select priority
      */
     void SetSelectPriority(int priority) { select_priority_ = priority; }
-    
-    //! gets parent placeable
-    ComponentPtr GetParent() { return parent_; }
-    
+       
     //! returns position
     Vector3df GetPosition() const;
     //! returns orientation
@@ -218,6 +176,28 @@ public:
 
 
 public slots:
+    //! sets position
+    /*! \param position new position
+     */
+    void SetPosition(const Vector3df& position);
+    //! sets orientation
+    /*! \param orientation new orientation
+     */
+    void SetOrientation(const Quaternion& orientation);
+    //! sets scale
+    /*! \param scale new scale
+     */
+    void SetScale(const Vector3df& scale);
+
+    //! gets parent placeable
+    ComponentPtr GetParent() { return parent_; }
+
+    //! sets parent placeable
+    /*! set null placeable to attach to scene root (the default)
+        \param placeable new parent
+     */
+    void SetParent(ComponentPtr placeable);
+    
     //! translate
     /* 0 = x, 1 = y, 2 = z. returns new position */
     QVector3D translate( int axis, float amount);
@@ -237,14 +217,45 @@ public slots:
     //! Calculates rotation
     Vector3df GetRotationFromTo(const Vector3df& from, const Vector3df& to);
 
+    Vector3df GetDerivedPosition(); 
+    Quaternion GetDerivedOrientation();
+
+    //! yaws the node
+    /*! \param radians how many radians to yaw
+     */
+    void SetYaw(float radians);
+    //! pitches the node
+    /*! \param radians how many radians to pitch
+     */
+    void SetPitch(float radians);
+    //! rolls the node
+    /*! \param radians how many radians to roll
+     */
+    void SetRoll(float radians);
+    //! pitches the node
+    /*! \param radians how many radians to pitch
+     */
+    void SetPitchWorld(float radians);
+    //! rolls the node
+    /*! \param radians how many radians to roll
+     */
+    void SetRollWorld(float radians);
+
+    //! get the yaw of the node
+    float GetYaw() const;
+    //! get the pitch of the node
+    float GetPitch() const;
+    //! get the roll of the node
+    float GetRoll() const;
+
     /// Shows the Entity
     void Show();
 
-	/// Hides the Entity
-	void Hide();
+    /// Hides the Entity
+    void Hide();
 
-	/// Toggle Visibility
-	void ToggleVisibility();
+    /// Toggle Visibility
+    void ToggleVisibility();
 
 signals:
     //! emmitted when position has changed.
