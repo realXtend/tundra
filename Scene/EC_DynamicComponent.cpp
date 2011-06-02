@@ -225,7 +225,6 @@ void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
         emit AttributeAboutToBeRemoved(attributes_[i]);
         SAFE_DELETE(attributes_[i]);
         attributes_.erase(attributes_.begin() + i);
-        emit AttributeRemoved(name);
     }
 }
 
