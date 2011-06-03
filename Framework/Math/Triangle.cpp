@@ -15,6 +15,7 @@
 #include "Math/Line.h"
 #include "Math/LineSegment.h"
 #include "Math/Ray.h"
+#include "Math/Sphere.h"
 
 Triangle::Triangle(const float3 &a_, const float3 &b_, const float3 &c_)
 :a(a_), b(b_), c(c_)
@@ -211,6 +212,17 @@ bool Triangle::Intersects(const Ray &r, float *d, float3 *intersectionPoint) con
 bool Triangle::Intersects(const Plane &plane) const
 {
     return plane.Intersects(*this);
+}
+
+/// See Christer Ericson's Real-Time Collision Detection, p.167.
+bool Triangle::Intersects(const Sphere &sphere, float3 *closestPointOnTriangle) const
+{
+    float3 pt = ClosestPoint(sphere.pos);
+
+    if (closestPointOnTriangle)
+        *closestPointOnTriangle = pt;
+
+    return pt.DistanceSq(sphere.pos) <= sphere.r * sphere.r;
 }
 
 /// Code from Christer Ericson's Real-Time Collision Detection, pp. 141-142.

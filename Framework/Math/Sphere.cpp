@@ -21,6 +21,7 @@
 #include "float4.h"
 #include "float4x4.h"
 #include "Quat.h"
+#include "Triangle.h"
 
 Sphere::Sphere(const float3 &center, float radius)
 :pos(center), r(radius) 
@@ -335,6 +336,11 @@ bool Sphere::Intersects(const AABB &aabb, float3 *closestPointOnAABB) const
 bool Sphere::Intersects(const OBB &obb, float3 *closestPointOnOBB) const
 {
     return obb.Intersects(*this, closestPointOnOBB);
+}
+
+bool Sphere::Intersects(const Triangle &triangle, float3 *closestPointOnTriangle) const
+{
+    return triangle.Intersects(*this, closestPointOnTriangle);
 }
 
 /*
