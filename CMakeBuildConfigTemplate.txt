@@ -160,6 +160,7 @@ add_subdirectory(CommunicationsModule)      # Enables communication capabilities
 add_subdirectory(CAVEStereoModule)          # Implements CAVE and Stereoscopy functionality
 add_subdirectory(SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
 #add_subdirectory(ARModule)                 # Augmented reality module
+#add_subdirectory(MobilityModule)            # Listens and relays mobility related data such as device battery levels etc.
 if (OGREASSETEDITOR)
     add_subdirectory(OgreAssetEditorModule) # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
 endif()
