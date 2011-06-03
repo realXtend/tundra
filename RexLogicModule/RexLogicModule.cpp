@@ -170,7 +170,6 @@
 #ifdef EC_QmlApp_ENABLED
 #include "EC_QmlApp.h"
 #include "QmlAsset.h"
-#include "PdfAsset.h"
 #endif
 
 #include <OgreManualObject.h>
@@ -287,7 +286,6 @@ void RexLogicModule::Load()
 #ifdef EC_QmlApp_ENABLED
     DECLARE_MODULE_EC(EC_QmlApp);
     framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QmlAsset>("QML")));
-    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<PdfAsset>("PdfAsset")));
 #endif
 }
 
@@ -417,6 +415,7 @@ void RexLogicModule::PostInitialize()
 #endif
 
     obj_camera_controller_->PostInitialize();
+    
 }
 
 Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
@@ -1340,7 +1339,7 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *compon
     {
         LogDebug("Added new sound listener to the listener list.");
 //        EC_SoundListener *listener = entity->GetComponent<EC_SoundListener>().get();
-//        connect(listener, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)), 
+//        connect(listener, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
     }

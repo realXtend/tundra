@@ -146,7 +146,7 @@ AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString
 
     // Set local dir if specified
     if (newStorage && s.contains("localdir"))
-        newStorage->localDir = s["localdir"];
+        newStorage->localDir = GuaranteeTrailingSlash(s["localdir"]);
     
     return newStorage;
 }
