@@ -61,7 +61,9 @@ public:
     /// Returns the distance of the given point to this triangle.
     bool Distance(const float3 &point);
 
-    bool Intersects(const LineSegment &other, float3 *intersectionPoint) const;
+    bool Intersects(const LineSegment &lineSegment, float *d, float3 *intersectionPoint) const;
+    bool Intersects(const Line &line, float *d, float3 *intersectionPoint) const;
+    bool Intersects(const Ray &ray, float *d, float3 *intersectionPoint) const;
 
     /// Returns the closest point on this triangle to the target object.
     float3 ClosestPoint(const float3 &targetPoint) const;

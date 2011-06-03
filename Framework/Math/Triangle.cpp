@@ -100,9 +100,112 @@ bool Triangle::Distance(const float3 &point)
     return ClosestPoint(point).Distance(point);
 }
 
-bool Triangle::Intersects(const LineSegment &other, float3 *intersectionPoint) const
+/** Calculates the intersection between a ray and a triangle. The facing is not accounted for, so
+	rays are reported to intersect triangles that are both front and backfacing.
+	According to "T. Möller, B. Trumbore. Fast, Minimum Storage Ray/Triangle Intersection. 2005."
+	http://jgt.akpeters.com/papers/MollerTrumbore97/
+	@param ray The ray to test.
+	@param v0 Vertex 0 of the triangle.
+	@param v1 Vertex 1 of the triangle.
+	@param v2 Vertex 2 of the triangle.
+	@param u [out] The barycentric u coordinate is returned here if an intersection occurred.
+	@param v [out] The barycentric v coordinate is returned here if an intersection occurred.
+	@param t [out] The signed distance from ray origin to ray intersection position will be returned here. (if intersection occurred)
+	@return True if an intersection occurred. If no intersection, then u,v and t will contain undefined values. */
+bool IntersectLineTri(const float3 &linePos, const float3 &lineDir,
+		const float3 &v0, const float3 &v1, const float3 &v2,
+		float &u, float &v, float &t)
 {
-    return false;
+	float3 vE1, vE2;
+	float3 vT, vP, vQ;
+
+	const float epsilon = 1e-6f;
+
+	// Edge vectors
+	vE1 = v1 - v0;
+	vE2 = v2 - v0;
+
+	// begin calculating determinant - also used to calculate U parameter
+	vP = Cross(lineDir, vE2);
+
+	// If det < 0, intersecting backfacing tri, > 0, intersecting frontfacing tri, 0, parallel to plane.
+	const float det = Dot(vE1, vP);
+
+	// If determinant is near zero, ray lies in plane of triangle.
+	if (fabs(det) <= epsilon)
+		return false;
+	const float recipDet = 1.f / det;
+
+	// Calculate distance from v0 to ray origin
+	vT = linePos - v0;
+
+	// Output barycentric u
+	u = Dot(vT, vP) * recipDet;
+	if (u < 0.f || u > 1.f)
+		return false; // Barycentric U is outside the triangle - early out.
+
+	// Prepare to test V parameter
+	vQ = Cross(vT, vE1);
+
+	// Output barycentric v
+	v = Dot(lineDir, vQ) * recipDet;
+	if (v < 0.f || u + v > 1.f) // Barycentric V or the combination of U and V are outside the triangle - no intersection.
+		return false;
+
+	// Barycentric u and v are in limits, the ray intersects the triangle. 
+	
+	// Output signed distance from ray to triangle.
+	t = Dot(vE2, vQ) * recipDet;
+    return true;
+//	return (det < 0.f) ? IntersectBackface : IntersectFrontface;
+}
+
+bool Triangle::Intersects(const LineSegment &l, float *d, float3 *intersectionPoint) const
+{
+    float u, v, t;
+    bool success = IntersectLineTri(l.a, l.Dir(), a, b, c, u, v, t);
+    if (!success)
+        return false;
+    float length = l.LengthSq();
+    if (t < 0.f || t*t >= length)
+        return false;
+    length = sqrtf(length);
+    if (d)
+    {
+        float len = t / length;
+        *d = len;
+        if (intersectionPoint)
+            *intersectionPoint = l.GetPoint(len);
+    }
+    else if (intersectionPoint)
+        *intersectionPoint = l.GetPoint(t / length);
+    return true;
+}
+
+bool Triangle::Intersects(const Line &l, float *d, float3 *intersectionPoint) const
+{
+    float u, v, t;
+    bool success = IntersectLineTri(l.pos, l.dir, a, b, c, u, v, t);
+    if (!success)
+        return false;
+    if (d)
+        *d = t;
+    if (intersectionPoint)
+        *intersectionPoint = l.GetPoint(t);
+    return success;
+}
+
+bool Triangle::Intersects(const Ray &r, float *d, float3 *intersectionPoint) const
+{
+    float u, v, t;
+    bool success = IntersectLineTri(r.pos, r.dir, a, b, c, u, v, t);
+    if (!success || t <= 0.f)
+        return false;
+    if (d)
+        *d = t;
+    if (intersectionPoint)
+        *intersectionPoint = r.GetPoint(t);
+    return success;
 }
 
 /// Code from Christer Ericson's Real-Time Collision Detection, pp. 141-142.
@@ -165,7 +268,7 @@ float3 Triangle::ClosestPoint(const float3 &p) const
 float3 Triangle::ClosestPoint(const LineSegment &line, float3 *otherPt) const
 {
     float3 intersectionPoint;
-    bool success = Intersects(line, &intersectionPoint);
+    bool success = Intersects(line, 0, &intersectionPoint);
     if (success)
         return intersectionPoint;
 
