@@ -12,6 +12,8 @@
 #include "AABB.h"
 #include "LCG.h"
 #include "LineSegment.h"
+#include "Line.h"
+#include "Ray.h"
 #include "Plane.h"
 #include "Sphere.h"
 #include "float3x3.h"
@@ -249,12 +251,80 @@ bool Sphere::Intersects(const Sphere &sphere) const
     return (pos - sphere.pos).LengthSq() <= r*r + sphere.r*sphere.r;
 }
 
+bool IntersectLineSphere(const float3 &lPos, const float3 &lDir, const Sphere &s, float &t)
+{
+    assume(lDir.IsNormalized());
+
+    const float3 dist = lPos - s.pos;
+	const float distSq = dist.LengthSq();
+	const float radSq = s.r*s.r;
+
+	const float b = 2.f * Dot(lDir, dist);
+	const float c = distSq - radSq;
+	const float D = b*b - 4.f*c;
+	if (D <= 0.f)
+		return false;  // The ray doesn't even come near.
+
+	t = (-b - sqrtf(D)) * 0.5f;
+    return true;
+}
+
+bool Sphere::Intersects(const Ray &r, float3 *intersectionPoint, float3 *intersectionNormal, float *d) const
+{
+    float t;
+    IntersectLineSphere(r.pos, r.dir, *this, t);
+	if (t < 0.f)
+		return false; // The intersection position is on the negative direction of the ray.
+
+    float3 hitPoint = r.pos + t * r.dir;
+    if (intersectionPoint)
+	    *intersectionPoint = hitPoint;
+    if (intersectionNormal)
+        *intersectionNormal = (hitPoint - pos).Normalized();
+    if (d)
+        *d = t;
+//	return (distSq <= radSq) ? IntersectBackface : IntersectFrontface;
+    return true;
+}
+
+bool Sphere::Intersects(const Line &l, float3 *intersectionPoint, float3 *intersectionNormal, float *d) const
+{
+    float t;
+    IntersectLineSphere(l.pos, l.dir, *this, t);
+
+    float3 hitPoint = l.pos + t * l.dir;
+    if (intersectionPoint)
+	    *intersectionPoint = hitPoint;
+    if (intersectionNormal)
+        *intersectionNormal = (hitPoint - pos).Normalized();
+    if (d)
+        *d = t;
+//	return (distSq <= radSq) ? IntersectBackface : IntersectFrontface;
+    return true;
+}
+
+bool Sphere::Intersects(const LineSegment &l, float3 *intersectionPoint, float3 *intersectionNormal, float *d) const
+{
+    float t;
+    IntersectLineSphere(l.a, l.Dir(), *this, t);
+
+    float lineLength = l.Length();
+    if (t < 0.f || t > lineLength)
+        return false;
+    float3 hitPoint = l.GetPoint(t / lineLength);
+    if (intersectionPoint)
+	    *intersectionPoint = hitPoint;
+    if (intersectionNormal)
+        *intersectionNormal = (hitPoint - pos).Normalized();
+    if (d)
+        *d = t;
+//	return (distSq <= radSq) ? IntersectBackface : IntersectFrontface;
+    return true;
+}
+
 /*
 float Sphere::Distance(const float3 &point, float3 &outClosestPointOnSphere) const
 
-bool Sphere::Intersect(const Ray &ray, float &outDistance) const
-bool Sphere::Intersect(const Line &line, float &outDistance) const
-bool Sphere::Intersect(const LineSegment &lineSegment, float &outDistance) const
 bool Sphere::Intersect(const AABB &aabb) const
 bool Sphere::Intersect(const OBB &obb) const
 bool Sphere::Intersect(const Plane &plane) const
