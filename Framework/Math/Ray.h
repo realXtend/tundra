@@ -42,6 +42,10 @@ public:
     void Transform(const float4x4 &transform);
     void Transform(const Quat &transform);
 
+    /// Returns true if this ray contains the given point, i.e. if the squared
+    /// distance to this point is smaller than the given threshold epsilon.
+    bool Contains(const float3 &point, float distanceThreshold = 1e-3f) const;
+
     /// Returns the distance of the given point to this ray.
     /// @param d [out] This element will receive the distance along this ray that specifies the closest point on this ray to the given point. This value can be negative.
     float Distance(const float3 &point, float *d = 0) const;

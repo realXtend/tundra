@@ -93,6 +93,11 @@ void Line::Transform(const Quat &transform)
     dir = transform.Transform(dir);
 }
 
+bool Line::Contains(const float3 &point, float distanceThreshold) const
+{
+    return ClosestPoint(point).DistanceSq(point) <= distanceThreshold;
+}
+
 /// Returns the distance of the given point to this line.
 /// @param d [out] This element will receive the distance along this line that specifies the closest point on this line to the given point.
 float Line::Distance(const float3 &point, float *d) const

@@ -48,6 +48,10 @@ public:
     float Length() const;
     float LengthSq() const;
 
+    /// Returns true if this line segment contains the given point, i.e. if the squared
+    /// distance to this point is smaller than the given threshold epsilon.
+    bool Contains(const float3 &point, float distanceThreshold = 1e-3f) const;
+
     /// Returns the closest point on this line segment to the given object.
     /// @param d [out] If specified, this parameter receives the normalized position along
     ///          this line segment which specifies the closest point on this line segment to
