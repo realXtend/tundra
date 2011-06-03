@@ -7,6 +7,7 @@
 #include "StereoManager.h"
 #include <QVector>
 #include <QDebug>
+#include <QMessageBox>
 #include "ExternalRenderWindow.h"
 #include "CAVEStereoModule.h"
 
@@ -17,7 +18,8 @@ namespace CAVEStereo
         module_(mod),
         settings_widget_(0),
         number_of_views_(0),
-        prefix_("stereoview")
+        prefix_("stereoview"),
+		flip_(false)
     {
     }
 
@@ -71,6 +73,7 @@ namespace CAVEStereo
        QObject::connect(settings_widget_, SIGNAL(DisableStereo()), this, SLOT(DisableStereo()));
        QObject::connect(settings_widget_, SIGNAL(ChangeColorLeft(qreal, qreal, qreal)), this, SLOT(ChangeColorLeft(qreal, qreal, qreal)));
        QObject::connect(settings_widget_, SIGNAL(ChangeColorRight(qreal, qreal, qreal)), this, SLOT(ChangeColorRight(qreal, qreal, qreal)));
+	   QObject::connect(settings_widget_, SIGNAL(StereoFlip()), this, SLOT(StereoFlip()));
     }
 
     void StereoController::EnableStereo(QString& tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width)
@@ -151,6 +154,86 @@ namespace CAVEStereo
                 number_of_views_++;
             }
         }
+		else if (tech_type == "horizontal")
+        {
+            QVector<Ogre::RenderWindow*> windows = getRenderWindows();
+            for(int i=0; i< windows.size();i++)
+            {
+                QString name = prefix_;
+                name += QString::number(number_of_views_);
+                StereoManager* mngr = new StereoManager();
+                Ogre::RenderWindow *original_window = windows.at(i);
+                Ogre::Viewport *viewport = original_window->getViewport(0);
+
+
+                mngr->init(viewport,0,StereoManager::SM_INTERLACED_H);
+                mngr->setEyesSpacing(eye_dist);
+                mngr->setFocalLength(focal_l);
+                mngr->setPixelOffset(offset);
+				mngr->inverseStereo(flip_);
+
+                if(scrn_width > 0)
+                    mngr->setScreenWidth(scrn_width);
+
+                stereo_views_[name] = mngr;
+                number_of_views_++;
+
+				flip_ = mngr->isStereoInversed();
+            }
+        }
+		else if (tech_type == "vertical")
+        {
+            QVector<Ogre::RenderWindow*> windows = getRenderWindows();
+            for(int i=0; i< windows.size();i++)
+            {
+                QString name = prefix_;
+                name += QString::number(number_of_views_);
+                StereoManager* mngr = new StereoManager();
+                Ogre::RenderWindow *original_window = windows.at(i);
+                Ogre::Viewport *viewport = original_window->getViewport(0);
+
+
+                mngr->init(viewport,0,StereoManager::SM_INTERLACED_V);
+                mngr->setEyesSpacing(eye_dist);
+                mngr->setFocalLength(focal_l);
+                mngr->setPixelOffset(offset);
+				mngr->inverseStereo(flip_);
+                if(scrn_width > 0)
+                    mngr->setScreenWidth(scrn_width);
+
+                stereo_views_[name] = mngr;
+                number_of_views_++;
+
+				flip_ = mngr->isStereoInversed();
+            }
+        }
+		else if (tech_type == "checkboard")
+        {
+            QVector<Ogre::RenderWindow*> windows = getRenderWindows();
+            for(int i=0; i< windows.size();i++)
+            {
+                QString name = prefix_;
+                name += QString::number(number_of_views_);
+                StereoManager* mngr = new StereoManager();
+                Ogre::RenderWindow *original_window = windows.at(i);
+                Ogre::Viewport *viewport = original_window->getViewport(0);
+
+
+                mngr->init(viewport,0,StereoManager::SM_INTERLACED_CB);
+                mngr->setEyesSpacing(eye_dist);
+                mngr->setFocalLength(focal_l);
+                mngr->setPixelOffset(offset);
+				mngr->inverseStereo(flip_);
+
+                if(scrn_width > 0)
+                    mngr->setScreenWidth(scrn_width);
+
+                stereo_views_[name] = mngr;
+                number_of_views_++;
+
+				flip_ = mngr->isStereoInversed();
+            }
+        }
     }
 
     void StereoController::DisableStereo()
@@ -172,6 +255,11 @@ namespace CAVEStereo
         windows_to_dispose_.clear();
         stereo_views_.clear();
     }
+
+	void StereoController::StereoFlip()
+	{
+		flip_ = !flip_;		
+	}
 
     StereoWidget * StereoController::GetStereoWidget() const
     {

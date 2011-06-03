@@ -23,12 +23,14 @@ namespace CAVEStereo
         void StereoOff();
         void ColorLeftChanged();
         void ColorRightChanged();
+        void FlipStereo();
 
     signals:
         void EnableStereo(QString& tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width);
         void DisableStereo();
         void ChangeColorLeft(qreal r, qreal g, qreal b);
         void ChangeColorRight(qreal r, qreal g, qreal b);
+        void StereoFlip();
 
     private:
         Foundation::Framework* framework_;

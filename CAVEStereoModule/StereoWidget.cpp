@@ -15,11 +15,12 @@ namespace CAVEStereo
         setupUi(this);
 
         framework_ = framework;
-       // ui->AddSettingsWidget(this, "Stereo");
+        //ui->AddSettingsWidget(this, "Stereo");
         QObject::connect(this->enable, SIGNAL(clicked()), this, SLOT(StereoOn()));
         QObject::connect(this->disable, SIGNAL(clicked()), this, SLOT(StereoOff()));
         QObject::connect(this->left_color, SIGNAL(clicked()), this, SLOT(ColorLeftChanged()));
         QObject::connect(this->right_color, SIGNAL(clicked()), this, SLOT(ColorRightChanged()));
+        QObject::connect(this->flip, SIGNAL(clicked()), this, SLOT(FlipStereo())); 
     }
 
     void StereoWidget::StereoOn()
@@ -32,16 +33,28 @@ namespace CAVEStereo
         if(this->anaglyph->isChecked())
         {
             tech_name = "anaglyph";
-        }else if(this->active->isChecked())
+        }
+        else if(this->active->isChecked())
         {
             tech_name = "active";
-
-        }else if(this->passive->isChecked())
+        }
+        else if(this->passive->isChecked())
         {
             tech_name = "passive";
         }
-
-        emit EnableStereo(tech_name, eye,focal,offset, scrn_width);
+        else if(this->horizontal->isChecked())
+        {
+            tech_name = "horizontal";
+        }
+        else if(this->vertical->isChecked())
+        {
+            tech_name = "vertical";
+        }
+        else if(this->checkboard->isChecked())
+        {
+            tech_name = "checkboard";
+        }
+        emit EnableStereo(tech_name, eye, focal, offset, scrn_width);
     }
 
     void StereoWidget::StereoOff()
@@ -68,4 +81,9 @@ namespace CAVEStereo
             emit ChangeColorRight(col.redF(), col.greenF(), col.blueF());
         }
     }
+
+	void StereoWidget::FlipStereo() 
+	{
+		emit StereoFlip();
+	}
 }

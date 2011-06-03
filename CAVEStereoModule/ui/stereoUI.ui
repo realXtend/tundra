@@ -202,6 +202,54 @@
         </property>
        </widget>
       </item>
+       <item>
+         <widget class="QRadioButton" name="horizontal">
+           <property name="font">
+             <font>
+               <weight>50</weight>
+               <bold>false</bold>
+             </font>
+           </property>
+           <property name="text">
+             <string>Horizontal</string>
+           </property>
+           <property name="checkable">
+             <bool>true</bool>
+           </property>
+         </widget>
+       </item>
+       <item>
+         <widget class="QRadioButton" name="vertical">
+           <property name="font">
+             <font>
+               <weight>50</weight>
+               <bold>false</bold>
+             </font>
+           </property>
+           <property name="text">
+             <string>Vertical</string>
+           </property>
+           <property name="checkable">
+             <bool>true</bool>
+           </property>
+         </widget>
+       </item>
+       <item>
+         <widget class="QRadioButton" name="checkboard">
+           <property name="font">
+             <font>
+               <weight>50</weight>
+               <bold>false</bold>
+             </font>
+           </property>
+           <property name="text">
+             <string>Checkboard</string>
+           </property>
+           <property name="checkable">
+             <bool>true</bool>
+           </property>
+         </widget>
+       </item>
      </layout>
     </widget>
    </item>
@@ -229,6 +277,24 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_9">
+       <item>
+         <widget class="QPushButton" name="flip">
+           <property name="text">
+             <string>Flip</string>
+           </property>
+         </widget>
+       </item>
+       <item>
+       <widget class="QLabel" name="flip_label">
+         <property name="text">
+           <string>Flip left/right</string>
+         </property>
+       </widget>
+      </item>
+     </layout>
    </item>
    <item>
     <spacer name="verticalSpacer">
