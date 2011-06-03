@@ -9,14 +9,11 @@
 
 #include "IComponent.h"
 #include "InputFwd.h"
-#include "Vector3D.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
 #include "Math/Ray.h"
 #include "Math/float3.h"
 #include "Math/Quat.h"
-
-class Quaternion;
 
 /// Enables visual manipulators (gizmos) for Transform attributes.
 /** <table class="header">

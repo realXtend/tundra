@@ -62,6 +62,8 @@ EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
 EC_TransformGizmo::~EC_TransformGizmo()
 {
     input.reset();
+    placeable.reset();
+    mesh.reset();
 }
 
 void EC_TransformGizmo::SetPosition(const float3 &pos)
