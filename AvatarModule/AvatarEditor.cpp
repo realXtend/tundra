@@ -3,9 +3,9 @@
 #include "StableHeaders.h"
 
 #include "DebugOperatorNew.h"
-#include "AvatarEditing/AvatarEditor.h"
+#include "AvatarEditor.h"
 #include "AvatarDescAsset.h"
-#include "EntityComponent/EC_Avatar.h"
+#include "EC_Avatar.h"
 #include "AssetAPI.h"
 #include "SceneAPI.h"
 #include "Scene.h"
