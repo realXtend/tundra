@@ -327,6 +327,16 @@ bool Sphere::Intersects(const Plane &plane) const
     return plane.Intersects(*this);
 }
 
+bool Sphere::Intersects(const AABB &aabb, float3 *closestPointOnAABB) const
+{
+    return aabb.Intersects(*this, closestPointOnAABB);
+}
+
+bool Sphere::Intersects(const OBB &obb, float3 *closestPointOnOBB) const
+{
+    return obb.Intersects(*this, closestPointOnOBB);
+}
+
 /*
 float Sphere::Distance(const float3 &point, float3 &outClosestPointOnSphere) const
 

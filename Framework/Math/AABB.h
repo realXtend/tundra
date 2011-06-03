@@ -276,6 +276,8 @@ public:
     bool Intersects(const LineSegment &lineSegment, float *dNear, float *dFar) const;
     bool Intersects(const Plane &plane) const;
     bool Intersects(const OBB &obb) const;
+    /// @param closestPointOnAABB [out] Returns the closest point on this AABB to the given sphere.
+    bool Intersects(const Sphere &sphere, float3 *closestPointOnAABB) const;
 
     /** The first parameter of this function specifies the object to test against.
         @param outDistance [out] For rays, lines and line segments, this parameter receives the distance along the ray

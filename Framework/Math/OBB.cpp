@@ -643,6 +643,19 @@ bool OBB::Intersects(const LineSegment &lineSegment, float *dNear, float *dFar) 
     return aabb.Intersects(lineSegment, dNear, dFar);
 }
 
+/// See Christer Ericson's Real-Time Collision Detection, p. 166.
+bool OBB::Intersects(const Sphere &sphere, float3 *closestPointOnOBB) const
+{
+    // Find the point on this AABB closest to the sphere center.
+    float3 pt = ClosestPoint(sphere.pos);
+
+    // If that point is inside sphere, the AABB and sphere intersect.
+    if (closestPointOnOBB)
+        *closestPointOnOBB = pt;
+
+    return pt.DistanceSq(sphere.pos) <= sphere.r * sphere.r;
+}
+
 /*
 HitInfo Intersect(const Ray &ray, float *outDistance) const;
 HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const;

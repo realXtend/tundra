@@ -91,6 +91,8 @@ public:
     bool Intersects(const Line &l, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *d = 0) const;
     bool Intersects(const Ray &r, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *d = 0) const;
     bool Intersects(const Plane &plane) const;
+    bool Intersects(const AABB &aabb, float3 *closestPointOnAABB) const;
+    bool Intersects(const OBB &obb, float3 *closestPointOnOBB) const;
 
     /*
     float Distance(const float3 &point, float3 &outClosestPointOnSphere) const;
