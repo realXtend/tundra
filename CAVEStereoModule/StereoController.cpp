@@ -19,7 +19,7 @@ namespace CAVEStereo
         settings_widget_(0),
         number_of_views_(0),
         prefix_("stereoview"),
-		flip_(false)
+        flip_(false)
     {
     }
 
@@ -68,12 +68,12 @@ namespace CAVEStereo
 
     void StereoController::InitializeUi()
     {
-       settings_widget_ = new StereoWidget(renderer_->GetFramework());
-       QObject::connect(settings_widget_, SIGNAL(EnableStereo(QString&, qreal, qreal, qreal, qreal)), this,SLOT(EnableStereo(QString&, qreal, qreal, qreal, qreal) )); 
-       QObject::connect(settings_widget_, SIGNAL(DisableStereo()), this, SLOT(DisableStereo()));
-       QObject::connect(settings_widget_, SIGNAL(ChangeColorLeft(qreal, qreal, qreal)), this, SLOT(ChangeColorLeft(qreal, qreal, qreal)));
-       QObject::connect(settings_widget_, SIGNAL(ChangeColorRight(qreal, qreal, qreal)), this, SLOT(ChangeColorRight(qreal, qreal, qreal)));
-	   QObject::connect(settings_widget_, SIGNAL(StereoFlip()), this, SLOT(StereoFlip()));
+        settings_widget_ = new StereoWidget(renderer_->GetFramework());
+        QObject::connect(settings_widget_, SIGNAL(EnableStereo(QString&, qreal, qreal, qreal, qreal)), this,SLOT(EnableStereo(QString&, qreal, qreal, qreal, qreal) )); 
+        QObject::connect(settings_widget_, SIGNAL(DisableStereo()), this, SLOT(DisableStereo()));
+        QObject::connect(settings_widget_, SIGNAL(ChangeColorLeft(qreal, qreal, qreal)), this, SLOT(ChangeColorLeft(qreal, qreal, qreal)));
+        QObject::connect(settings_widget_, SIGNAL(ChangeColorRight(qreal, qreal, qreal)), this, SLOT(ChangeColorRight(qreal, qreal, qreal)));
+        QObject::connect(settings_widget_, SIGNAL(StereoFlip()), this, SLOT(StereoFlip()));
     }
 
     void StereoController::EnableStereo(QString& tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width)
@@ -154,7 +154,7 @@ namespace CAVEStereo
                 number_of_views_++;
             }
         }
-		else if (tech_type == "horizontal")
+        else if (tech_type == "horizontal")
         {
             QVector<Ogre::RenderWindow*> windows = getRenderWindows();
             for(int i=0; i< windows.size();i++)
@@ -170,7 +170,7 @@ namespace CAVEStereo
                 mngr->setEyesSpacing(eye_dist);
                 mngr->setFocalLength(focal_l);
                 mngr->setPixelOffset(offset);
-				mngr->inverseStereo(flip_);
+                mngr->inverseStereo(flip_);
 
                 if(scrn_width > 0)
                     mngr->setScreenWidth(scrn_width);
@@ -178,10 +178,10 @@ namespace CAVEStereo
                 stereo_views_[name] = mngr;
                 number_of_views_++;
 
-				flip_ = mngr->isStereoInversed();
+                flip_ = mngr->isStereoInversed();
             }
         }
-		else if (tech_type == "vertical")
+        else if (tech_type == "vertical")
         {
             QVector<Ogre::RenderWindow*> windows = getRenderWindows();
             for(int i=0; i< windows.size();i++)
@@ -197,17 +197,17 @@ namespace CAVEStereo
                 mngr->setEyesSpacing(eye_dist);
                 mngr->setFocalLength(focal_l);
                 mngr->setPixelOffset(offset);
-				mngr->inverseStereo(flip_);
+                mngr->inverseStereo(flip_);
                 if(scrn_width > 0)
                     mngr->setScreenWidth(scrn_width);
 
                 stereo_views_[name] = mngr;
                 number_of_views_++;
 
-				flip_ = mngr->isStereoInversed();
+                flip_ = mngr->isStereoInversed();
             }
         }
-		else if (tech_type == "checkboard")
+        else if (tech_type == "checkboard")
         {
             QVector<Ogre::RenderWindow*> windows = getRenderWindows();
             for(int i=0; i< windows.size();i++)
@@ -223,7 +223,7 @@ namespace CAVEStereo
                 mngr->setEyesSpacing(eye_dist);
                 mngr->setFocalLength(focal_l);
                 mngr->setPixelOffset(offset);
-				mngr->inverseStereo(flip_);
+                mngr->inverseStereo(flip_);
 
                 if(scrn_width > 0)
                     mngr->setScreenWidth(scrn_width);
@@ -231,7 +231,7 @@ namespace CAVEStereo
                 stereo_views_[name] = mngr;
                 number_of_views_++;
 
-				flip_ = mngr->isStereoInversed();
+                flip_ = mngr->isStereoInversed();
             }
         }
     }
@@ -256,13 +256,13 @@ namespace CAVEStereo
         stereo_views_.clear();
     }
 
-	void StereoController::StereoFlip()
-	{
-		flip_ = !flip_;		
-	}
+    void StereoController::StereoFlip()
+    {
+        flip_ = !flip_;
+    }
 
     StereoWidget * StereoController::GetStereoWidget() const
     {
-	    return settings_widget_;
+        return settings_widget_;
     }
 }

@@ -37,7 +37,7 @@ namespace CAVEStereo
         void ChangeColorLeft(qreal r, qreal g, qreal b);
         void ChangeColorRight(qreal r, qreal g, qreal b);
         StereoWidget* GetStereoWidget() const;
-		void StereoFlip();
+        void StereoFlip();
 
     private:
         void ChangeShaderColour(qreal r, qreal g, qreal b,const Ogre::String& name);
@@ -50,9 +50,9 @@ namespace CAVEStereo
         CAVEStereoModule *module_;
         StereoWidget* settings_widget_;
         
-		int number_of_views_;
+        int number_of_views_;
         QString prefix_;
-		bool flip_;
+        bool flip_;
     };
 }
 

@@ -82,8 +82,8 @@ namespace CAVEStereo
         }
     }
 
-	void StereoWidget::FlipStereo() 
-	{
-		emit StereoFlip();
-	}
+    void StereoWidget::FlipStereo() 
+    {
+        emit StereoFlip();
+    }
 }
