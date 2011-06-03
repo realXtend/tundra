@@ -237,6 +237,13 @@ float Sphere::Distance(const float3 &point) const
     return Max(0.f, pos.Distance(point) - r);
 }
 
+float3 Sphere::ClosestPoint(const float3 &point) const
+{
+    float d = pos.Distance(point);
+    float t = (d >= r ? r : d);
+    return pos + (point - pos) * (t / d);
+}
+
 bool Sphere::Intersects(const Sphere &sphere) const
 {
     return (pos - sphere.pos).LengthSq() <= r*r + sphere.r*sphere.r;

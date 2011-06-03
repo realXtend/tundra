@@ -73,7 +73,12 @@ public:
     float3 RandomPointInside(LCG &rng) const;
     float3 RandomPointOnSurface(LCG &rng) const;
 */
+    /// Returns the distance of this sphere to the given point.
     float Distance(const float3 &point) const;
+
+    /// Returns the closest point inside this sphere to the given point.
+    float3 ClosestPoint(const float3 &point) const;
+
     /*
     float Distance(const float3 &point, float3 &outClosestPointOnSphere) const;
 
