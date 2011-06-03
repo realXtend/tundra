@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "AvatarModule.h"
-#include "AvatarEditing/AvatarEditor.h"
+#include "AvatarEditor.h"
 #include "InputAPI.h"
 #include "Scene.h"
 #include "SceneAPI.h"
@@ -13,7 +13,7 @@
 #include "ConsoleAPI.h"
 #include "IComponentFactory.h"
 
-#include "EntityComponent/EC_Avatar.h"
+#include "EC_Avatar.h"
 
 namespace Avatar
 {
