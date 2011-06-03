@@ -103,6 +103,10 @@ public:
     /// Projects the given point onto this plane in the given oblique projection direction.
     float3 ObliqueProject(const float3 &point, const float3 &obliqueProjectionDir) const;
 
+    /// Returns true if this plane contains the given point.
+    /// @param distanceThreshold The epsilon value to use for the comparison.
+    bool Contains(const float3 &point, float distanceThreshold = 1e-3f) const;
+
     /// Computes the intersection of two planes.
     bool Intersects(const Plane &plane, Line *outLine = 0) const;
 

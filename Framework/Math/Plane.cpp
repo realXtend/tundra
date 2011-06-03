@@ -142,6 +142,11 @@ float3 Plane::ObliqueProject(const float3 &point, const float3 &obliqueProjectio
     return float3();
 }
 
+bool Plane::Contains(const float3 &point, float distanceThreshold) const
+{
+    return Distance(point) <= distanceThreshold;
+}
+
 bool Plane::Intersects(const Plane &plane, Line *outLine) const
 {
     float3 perp = Cross(normal, plane.normal);
