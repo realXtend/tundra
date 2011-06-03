@@ -13,6 +13,7 @@
 #include "float3x3.h"
 #include "float3x4.h"
 #include "float4x4.h"
+#include "OBB.h"
 #include "Plane.h"
 #include "Quat.h"
 #include "Sphere.h"
@@ -150,6 +151,11 @@ bool Ray::Intersects(const Sphere &sphere, float3 *intersectionPoint, float3 *in
 bool Ray::Intersects(const AABB &aabb, float *dNear, float *dFar) const
 {
     return aabb.Intersects(*this, dNear, dFar);
+}
+
+bool Ray::Intersects(const OBB &obb, float *dNear, float *dFar) const
+{
+    return obb.Intersects(*this, dNear, dFar);
 }
 
 Line Ray::ToLine() const

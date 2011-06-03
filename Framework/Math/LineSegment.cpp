@@ -16,6 +16,7 @@
 #include "float3x3.h"
 #include "float3x4.h"
 #include "float4x4.h"
+#include "OBB.h"
 #include "Quat.h"
 #include "Sphere.h"
 #include "Triangle.h"
@@ -199,6 +200,11 @@ bool LineSegment::Intersects(const Sphere &s, float3 *intersectionPoint, float3 
 bool LineSegment::Intersects(const AABB &aabb, float *dNear, float *dFar) const
 {
     return aabb.Intersects(*this, dNear, dFar);
+}
+
+bool LineSegment::Intersects(const OBB &obb, float *dNear, float *dFar) const
+{
+    return obb.Intersects(*this, dNear, dFar);
 }
 
 /*

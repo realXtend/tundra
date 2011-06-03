@@ -276,6 +276,10 @@ public:
     bool Intersects(const OBB &obb, float epsilon = 1e-3f) const;
     bool Intersects(const Plane &plane) const;
 
+    bool Intersects(const Ray &ray, float *dNear, float *dFar) const;
+    bool Intersects(const Line &line, float *dNear, float *dFar) const;
+    bool Intersects(const LineSegment &lineSegment, float *dNear, float *dFar) const;
+
 /*  HitInfo Intersect(const Plane &plane) const; 
     HitInfo Intersect(const Sphere &sphere) const;
     HitInfo Intersect(const Ellipsoid &ellipsoid) const;

@@ -12,6 +12,7 @@
 #include "AABB.h"
 #include "LCG.h"
 #include "LineSegment.h"
+#include "Line.h"
 #include "Plane.h"
 #include "Sphere.h"
 #include "float3x3.h"
@@ -19,6 +20,7 @@
 #include "float4.h"
 #include "float4x4.h"
 #include "Quat.h"
+#include "Ray.h"
 
 OBB::OBB(const AABB &aabb)
 {
@@ -611,6 +613,27 @@ bool OBB::Intersects(const OBB &b, float epsilon) const
 bool OBB::Intersects(const Plane &plane) const
 {
     return plane.Intersects(*this);
+}
+
+bool OBB::Intersects(const Ray &ray, float *dNear, float *dFar) const
+{
+    AABB aabb(float3(0,0,0), float3(Size()));
+    Ray r = WorldToLocal() * ray;
+    return aabb.Intersects(ray, dNear, dFar);
+}
+
+bool OBB::Intersects(const Line &line, float *dNear, float *dFar) const
+{
+    AABB aabb(float3(0,0,0), float3(Size()));
+    Line l = WorldToLocal() * line;
+    return aabb.Intersects(line, dNear, dFar);
+}
+
+bool OBB::Intersects(const LineSegment &lineSegment, float *dNear, float *dFar) const
+{
+    AABB aabb(float3(0,0,0), float3(Size()));
+    LineSegment l = WorldToLocal() * lineSegment;
+    return aabb.Intersects(lineSegment, dNear, dFar);
 }
 
 /*

@@ -77,6 +77,7 @@ public:
     bool Intersects(const Triangle &triangle, float *d, float3 *intersectionPoint) const;
     bool Intersects(const Sphere &s, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *d = 0) const;
     bool Intersects(const AABB &aabb, float *dNear = 0, float *dFar = 0) const;
+    bool Intersects(const OBB &obb, float *dNear, float *dFar) const;
 
 /*
     bool Intersect(const Plane &plane, float &outDistance) const;

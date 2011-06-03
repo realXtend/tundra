@@ -12,6 +12,7 @@
 #include "float3x3.h"
 #include "float3x4.h"
 #include "float4x4.h"
+#include "OBB.h"
 #include "Quat.h"
 #include "Triangle.h"
 #include "Plane.h"
@@ -154,6 +155,11 @@ bool Line::Intersects(const Sphere &s, float3 *intersectionPoint, float3 *inters
 bool Line::Intersects(const AABB &aabb, float *dNear, float *dFar) const
 {
     return aabb.Intersects(*this, dNear, dFar);
+}
+
+bool Line::Intersects(const OBB &obb, float *dNear, float *dFar) const
+{
+    return obb.Intersects(*this, dNear, dFar);
 }
 
 float3 Line::ClosestPoint(const float3 &targetPoint, float *d) const
