@@ -118,8 +118,8 @@ function mouseLeftPress(event)
             var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
             if ((objectcameraentity == null) || (avatarcameraentity == null))
                 return;
-            var objectcamera = objectcameraentity.ogrecamera;
-            var avatarcamera = avatarcameraentity.ogrecamera;
+            var objectcamera = objectcameraentity.camera;
+            var avatarcamera = avatarcameraentity.camera;
 
             if (objectcamera.IsActive() && last_clicked == entityclicked)
                 return;
@@ -215,8 +215,8 @@ function keyPress(event)
     if (avatarcameraentity == null) // || freelookcameraentity == null) 
         return;
 
-    var avatarcamera = avatarcameraentity.ogrecamera;
-    var freelookcamera = freelookcameraentity.ogrecamera;
+    var avatarcamera = avatarcameraentity.camera;
+    var freelookcamera = freelookcameraentity.camera;
 
     if (freelookcamera.IsActive())
         return;

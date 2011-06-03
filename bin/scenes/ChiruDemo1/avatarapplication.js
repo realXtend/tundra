@@ -28,8 +28,8 @@ function ClientHandleToggleCamera() {
     var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     if ((freelookcameraentity == null) || (avatarcameraentity == null))
         return;
-    var freelookcamera = freelookcameraentity.ogrecamera;
-    var avatarcamera = avatarcameraentity.ogrecamera;
+    var freelookcamera = freelookcameraentity.camera;
+    var avatarcamera = avatarcameraentity.camera;
 
     if (avatarcamera.IsActive()) {
         freelookcameraentity.placeable.transform = avatarcameraentity.placeable.transform;

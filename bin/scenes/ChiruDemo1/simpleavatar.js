@@ -376,7 +376,7 @@ function IsCameraActive()
     var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
         return false;
-    var camera = cameraentity.ogrecamera;
+    var camera = cameraentity.camera;
     return camera.IsActive();
 }
 
@@ -386,7 +386,7 @@ function ClientHandleToggleTripod()
     if (cameraentity == null)
         return;
 
-    var camera = cameraentity.ogrecamera;
+    var camera = cameraentity.camera;
     if (camera.IsActive() == false)
     {
         tripod = false;
@@ -438,7 +438,7 @@ function ClientUpdate(frametime)
         var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
         var inputmapper = me.inputmapper;
         if ((avatarcameraentity != null) && (inputmapper != null)) {
-            var active = avatarcameraentity.ogrecamera.IsActive();
+            var active = avatarcameraentity.camera.IsActive();
             if (inputmapper.enabled != active) {
                 inputmapper.enabled = active;
 	    }
