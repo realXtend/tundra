@@ -9,11 +9,6 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB UI_FILES ui/*.ui)
 
-# SubFolders to project with filtering
-AddSourceFolder (Avatar)
-AddSourceFolder (AvatarEditing)
-AddSourceFolder (EntityComponent)
-
 # Qt4 Moc files to "CMake Moc" subgroup
 # and ui_*.h generated .h files to "Generated UI" subgroup
 MocFolder ()
