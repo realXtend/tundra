@@ -6,13 +6,17 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
+#include "AABB.h"
 #include "Line.h"
 #include "Ray.h"
 #include "LineSegment.h"
 #include "float3x3.h"
 #include "float3x4.h"
 #include "float4x4.h"
+#include "Plane.h"
 #include "Quat.h"
+#include "Sphere.h"
+#include "Triangle.h"
 #include "MathFunc.h"
 
 Ray::Ray(const float3 &pos_, const float3 &dir_)
@@ -126,6 +130,26 @@ float3 Ray::ClosestPoint(const LineSegment &other, float *d, float *d2) const
 {
     ///\todo Properly cap d2.
     return LineLine(pos, pos + dir, other.a, other.b, d, d2);
+}
+
+bool Ray::Intersects(const Triangle &triangle, float *d, float3 *intersectionPoint) const
+{
+    return triangle.Intersects(*this, d, intersectionPoint);
+}
+
+bool Ray::Intersects(const Plane &plane, float *d) const
+{
+    return plane.Intersects(*this, d);
+}
+
+bool Ray::Intersects(const Sphere &sphere, float3 *intersectionPoint, float3 *intersectionNormal, float *d) const
+{
+    return sphere.Intersects(*this, intersectionPoint, intersectionNormal, d);
+}
+
+bool Ray::Intersects(const AABB &aabb, float *dNear, float *dFar) const
+{
+    return aabb.Intersects(*this, dNear, dFar);
 }
 
 Line Ray::ToLine() const

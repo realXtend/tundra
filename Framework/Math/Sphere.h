@@ -85,11 +85,11 @@ public:
 	    @param radius The sphere radius.
 	    @param intersectionPoint [out] The intersection position will be returned here.
 	    @param intersectionNormal [out] The normal vector of the sphere at intersection position will be returned here.
-	    @param distance [out] The distance from ray origin to the intersection point along the ray line will be returned here.
+	    @param d [out] The distance from ray origin to the intersection point along the ray line will be returned here.
 	    @return True if an intersection occurs, false otherwise. */
-    bool Intersects(const LineSegment &l, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *distance = 0) const;
-    bool Intersects(const Line &l, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *distance = 0) const;
-    bool Intersects(const Ray &r, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *distance = 0) const;
+    bool Intersects(const LineSegment &l, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *d = 0) const;
+    bool Intersects(const Line &l, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *d = 0) const;
+    bool Intersects(const Ray &r, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *d = 0) const;
 
     /*
     float Distance(const float3 &point, float3 &outClosestPointOnSphere) const;
