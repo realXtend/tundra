@@ -8,6 +8,7 @@
 #include "StableHeaders.h"
 
 #include "MathFunc.h"
+#include "AABB.h"
 #include "LineSegment.h"
 #include "Ray.h"
 #include "Line.h"
@@ -16,6 +17,8 @@
 #include "float3x4.h"
 #include "float4x4.h"
 #include "Quat.h"
+#include "Sphere.h"
+#include "Triangle.h"
 
 LineSegment::LineSegment(const float3 &a_, const float3 &b_)
 :a(a_), b(b_)
@@ -182,6 +185,22 @@ bool LineSegment::Intersects(const Plane &plane) const
     float d2 = plane.SignedDistance(b);
     return d * d2 <= 0.f;
 }
+
+bool LineSegment::Intersects(const Triangle &triangle, float *d, float3 *intersectionPoint) const
+{
+    return triangle.Intersects(*this, d, intersectionPoint);
+}
+
+bool LineSegment::Intersects(const Sphere &s, float3 *intersectionPoint, float3 *intersectionNormal, float *d) const
+{
+    return s.Intersects(*this, intersectionPoint, intersectionNormal, d);
+}
+
+bool LineSegment::Intersects(const AABB &aabb, float *dNear, float *dFar) const
+{
+    return aabb.Intersects(*this, dNear, dFar);
+}
+
 /*
 bool LineSegment::Intersect(const Plane &plane, float &outDistance) const
 {
