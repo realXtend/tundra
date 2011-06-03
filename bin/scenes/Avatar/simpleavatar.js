@@ -9,8 +9,6 @@ var move_force = 15.0;
 var fly_speed_factor = 0.25;
 var damping_force = 3.0;
 var walk_anim_speed = 0.5;
-var avatar_camera_distance = 7.0;
-var avatar_camera_height = 1.0;
 var avatar_mass = 10;
 
 // Tracking motion with entity actions
@@ -38,6 +36,15 @@ var sitAnimName = "SitOnGround";
 var waveAnimName = "Wave";
 var animsDetected = false;
 var listenGesture = false;
+
+// Camera variables
+var visibility_detection_enabled = true;
+var avatar_camera_default_distance = 7.0;
+var avatar_camera_distance = avatar_camera_default_distance;
+var avatar_camera_preferred_distance = avatar_camera_distance;
+var avatar_camera_default_height = 1.0;
+var avatar_camera_height = avatar_camera_default_height;
+var avatar_camera_preferred_height = avatar_camera_height;
 
 // Create avatar on server, and camera & inputmapper on client
 if (isserver) {
@@ -664,12 +671,12 @@ function ClientHandleMouseScroll(relativeScroll)
         return;
 
     var moveAmount = 0;
-    if (relativeScroll < 0 && avatar_camera_distance < 500) {
+    if (relativeScroll < 0 && avatar_camera_default_distance < 500) {
         if (relativeScroll < -50)
             moveAmount = 2;
         else
             moveAmount = 1;
-    } else if (relativeScroll > 0 && avatar_camera_distance > 0) {
+    } else if (relativeScroll > 0 && avatar_camera_default_distance > 0) {
         if (relativeScroll > 50)
             moveAmount = -2
         else
@@ -677,15 +684,18 @@ function ClientHandleMouseScroll(relativeScroll)
     }
     if (moveAmount != 0)
     {
-        // Add movement
-        avatar_camera_distance = avatar_camera_distance + moveAmount;
+        // Add movement, if visibility detection is enabled check for visibility first
+        if(visibility_detection_enabled && !AvatarVisible(avatar_camera_default_distance + moveAmount))
+            return;
+        
+        avatar_camera_default_distance = avatar_camera_default_distance + moveAmount;
         // Clamp distance  to be between 1 and 500
-        if (avatar_camera_distance < -0.5)
-            avatar_camera_distance = -0.5;
-        else if (avatar_camera_distance > 500)
-            avatar_camera_distance = 500;
+        if (avatar_camera_default_distance < -0.5)
+            avatar_camera_default_distance = -0.5;
+        else if (avatar_camera_default_distance > 500)
+            avatar_camera_default_distance = 500;
             
-        if (avatar_camera_distance <= 0)
+        if (avatar_camera_default_distance <= 0)
         {
             first_person = true;
             crosshair.show();
@@ -700,6 +710,83 @@ function ClientHandleMouseScroll(relativeScroll)
     }
 }
 
+// Shoots single ray from given location to avatarplaceable (levels the ray with z-axis)
+function AvatarVisibleFrom(location) {
+    if(first_person)
+        return true;
+        
+    var avatartransform = me.placeable.transform;
+        
+    avatarposition = new Vector3df();
+    avatarposition.x = avatartransform.pos.x;
+    avatarposition.y = avatartransform.pos.y;
+    avatarposition.z = avatartransform.pos.z + 0.7; // Magic offset
+    
+    location.z = avatarposition.z;
+    
+    var raycastResult = renderer.RaycastFromTo(location, avatarposition);
+    if(raycastResult.entity != null) {   
+        if(me.id == raycastResult.entity.id)
+            return true;
+    }
+    return false;
+}
+
+// Shoots three rays to avatarplaceable from given camera distance
+function AvatarVisible(distance) {
+    var avatarplaceable = me.placeable;
+    var avatartransform = avatarplaceable.transform;
+    
+    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    
+    var cameraposition = new Vector3df();
+    var offsetvec = new Vector3df();
+    
+    for(var x = -0.7; x <= 0.7; x += 0.7) {
+        offsetvec.x = -distance;
+        offsetvec.z = avatar_camera_height;
+        offsetvec.y = x;
+        
+        offsetvec = avatarplaceable.GetRelativeVector(offsetvec);
+        cameraposition.x = avatartransform.pos.x + offsetvec.x;
+        cameraposition.y = avatartransform.pos.y + offsetvec.y;
+        cameraposition.z = avatartransform.pos.z + offsetvec.z;
+        
+        if(!AvatarVisibleFrom(cameraposition))
+            return false;
+    }
+    return true;
+}
+
+// Checks if avatar is visible. If not, finds visible camera distance
+function FindVisiblePosition()  {
+    for(var x = avatar_camera_default_distance; x >= 0.4; x -= 0.4) {
+        if(AvatarVisible(x)) {
+            avatar_camera_preferred_distance = x;
+            return true;
+        }
+    }
+}
+
+// Moves the actual distance of the camera towards the 'preferred' visible distance
+function MoveAvatarCamera() {
+    if(first_person) {
+        avatar_camera_distance = avatar_camera_default_distance;
+        return
+    }
+
+    if(Math.abs(avatar_camera_preferred_distance - avatar_camera_distance) < 0.13) {
+        avatar_camera_distance = avatar_camera_preferred_distance;
+        return
+    }
+    
+    if(avatar_camera_preferred_distance > avatar_camera_distance) {
+        avatar_camera_distance += (avatar_camera_preferred_distance - avatar_camera_distance) / 25;
+    } else if(avatar_camera_preferred_distance < avatar_camera_distance) {
+        avatar_camera_distance -= (avatar_camera_distance - avatar_camera_preferred_distance) / 5;
+    }
+}
+
 function ClientUpdateAvatarCamera() {
     if (!tripod)
     {
@@ -708,6 +795,10 @@ function ClientUpdateAvatarCamera() {
             return;
         var cameraplaceable = cameraentity.placeable;
         var avatarplaceable = me.placeable;
+        
+        if(visibility_detection_enabled && !first_person && !flying)
+            FindVisiblePosition();
+        MoveAvatarCamera();
 
         var cameratransform = cameraplaceable.transform;
         var avatartransform = avatarplaceable.transform;

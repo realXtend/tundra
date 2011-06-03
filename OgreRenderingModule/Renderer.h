@@ -86,6 +86,15 @@ namespace OgreRenderer
         */
         virtual RaycastResult* Raycast(int x, int y);
 
+        //! Do a raycast from a world coordinate to another.
+        /*! Takes two tundra scene coordinates as parameters.
+
+            \param pos The origin of the generated ray
+            \param dir Direction of the ray, automatically normalised
+            \return Raycast result structure
+        */
+        virtual RaycastResult* RaycastFromTo(Vector3df pos, Vector3df dir);
+
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
 
@@ -256,6 +265,9 @@ namespace OgreRenderer
 
         //! Initializes shadows. Called by SetupScene().
         void InitShadows();
+
+        /// Do the actual raycast
+        void PerformRaycast(Ogre::Ray &ray, RaycastResult &result);
 
         //! Successfully initialized flag
         bool initialized_;

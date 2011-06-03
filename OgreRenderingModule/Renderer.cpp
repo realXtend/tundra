@@ -876,11 +876,31 @@ namespace OgreRenderer
         return t;
     }
 
+    RaycastResult* Renderer::RaycastFromTo(Vector3df pos, Vector3df dir)
+    {
+        static RaycastResult result;
+
+        result.entity_ = 0;
+        if (!initialized_)
+            return &result;
+        if (!renderWindow)
+            return &result;
+
+        Ogre::Vector3 normalisedDir = ToOgreVector3(dir -pos);
+        normalisedDir.normalise();
+
+        Ogre::Ray ray(ToOgreVector3(pos), normalisedDir);
+
+        PerformRaycast(ray, result);
+
+        return &result;
+    }
+
     RaycastResult* Renderer::Raycast(int x, int y)
     {
         static RaycastResult result;
-        
-        result.entity_ = 0; 
+
+        result.entity_ = 0;
         if (!initialized_)
             return &result;
         if (!renderWindow)
@@ -890,6 +910,14 @@ namespace OgreRenderer
         float screeny = y / (float)renderWindow->OgreRenderWindow()->getHeight();
 
         Ogre::Ray ray = camera_->getCameraToViewportRay(screenx, screeny);
+
+        PerformRaycast(ray, result);
+
+        return &result;
+    }
+
+    void Renderer::PerformRaycast(Ogre::Ray &ray, RaycastResult &result)
+    {
         ray_query_->setRay(ray);
         Ogre::RaySceneQueryResult &results = ray_query_->execute();
 
@@ -1048,8 +1076,6 @@ namespace OgreRenderer
                 }
             }
         }
-
-        return &result;
     }
     
     //qt wrapper / upcoming replacement for the one above
