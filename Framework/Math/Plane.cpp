@@ -271,18 +271,7 @@ bool Plane::Intersects(const AABB &aabb) const
 
 bool Plane::Intersects(const OBB &obb) const
 {
-    // This implementation is identical to Plane::Intersects(AABB).
-
-    float d = SignedDistance(obb.CornerPoint(0));
-    for(int i = 1; i < 8; ++i)
-    {
-        float d2 = SignedDistance(obb.CornerPoint(i));
-        if (d * d2 <= 0.f)
-            return true;
-        d = d2;
-    }
-
-    return false;
+    return obb.Intersects(*this);
 }
 
 bool Plane::Intersects(const Triangle &triangle) const

@@ -610,9 +610,16 @@ bool OBB::Intersects(const OBB &b, float epsilon) const
     return true;
 }
 
-bool OBB::Intersects(const Plane &plane) const
+/// Code taken from Christer Ericson's Real-Time Collision Detection, p. 163.
+bool OBB::Intersects(const Plane &p) const
 {
-    return plane.Intersects(*this);
+    // Compute the projection interval radius of this OBB onto L(t) = this->pos + x * p.normal;
+    float t = r[0] * Abs(Dot(p.normal, axis[0])) +
+              r[1] * Abs(Dot(p.normal, axis[1])) +
+              r[2] * Abs(Dot(p.normal, axis[2]));
+    // Compute the distance of this OBB center from the plane.
+    float s = Dot(p.normal, pos) - p.d;
+    return Abs(s) <= t;
 }
 
 bool OBB::Intersects(const Ray &ray, float *dNear, float *dFar) const
