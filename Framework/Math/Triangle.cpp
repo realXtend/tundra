@@ -12,6 +12,9 @@
 #include "Math/float3.h"
 #include "Math/Triangle.h"
 #include "Math/Plane.h"
+#include "Math/Line.h"
+#include "Math/LineSegment.h"
+#include "Math/Ray.h"
 
 Triangle::Triangle(const float3 &a_, const float3 &b_, const float3 &c_)
 :a(a_), b(b_), c(c_)
@@ -35,6 +38,12 @@ float3 Triangle::Barycentric(const float3 &point) const
     float w = (d00 * d21 - d01 * d20) * denom;
     float u = 1.0f - v - w;
     return float3(u, v, w);
+}
+
+bool Triangle::BarycentricInsideTriangle(const float3 &barycentric)
+{
+    return barycentric.x >= 0.f && barycentric.y >= 0.f && barycentric.z >= 0.f &&
+        EqualAbs(barycentric.x + barycentric.y + barycentric.z, 1.f);
 }
 
 float3 Triangle::Point(float u, float v, float w) const
@@ -84,6 +93,11 @@ bool Triangle::Contains(const float3 &point, float triangleThickness) const
 
     float3 br = Barycentric(point);
     return br.y >= 0.f && br.z >= 0.f && (br.y + br.z) <= 1.f;
+}
+
+bool Triangle::Intersects(const LineSegment &other, float3 *intersectionPoint) const
+{
+    return false;
 }
 
 /// Code from Christer Ericson's Real-Time Collision Detection, pp. 141-142.
@@ -141,4 +155,76 @@ float3 Triangle::ClosestPoint(const float3 &p) const
     float v = vb * denom;
     float w = vc * denom;
     return a + ab * v + ac * w;
+}
+
+float3 Triangle::ClosestPoint(const LineSegment &line, float3 *otherPt) const
+{
+    float3 intersectionPoint;
+    bool success = Intersects(line, &intersectionPoint);
+    if (success)
+        return intersectionPoint;
+
+    Plane p = GetPlane();
+    float d1 = p.Distance(line.a);
+    float d2 = p.Distance(line.b);
+    bool aProjectsInsideTriangle = BarycentricInsideTriangle(line.a);
+    bool bProjectsInsideTriangle = BarycentricInsideTriangle(line.b);
+
+    if (aProjectsInsideTriangle && bProjectsInsideTriangle)
+    {
+        // We tested above for intersection, so cannot intersect now.
+        if (d1 <= d2)
+        {
+            if (otherPt)
+                *otherPt = line.a;
+            return p.Project(line.a);
+        }
+        else
+        {
+            if (otherPt)
+                *otherPt = line.b;
+            return p.Project(line.b);
+        }
+    }
+    LineSegment ab(a, b);
+    LineSegment ac(a, c);
+    LineSegment bc(b, c);
+
+    float tab, tac, tbc;
+    float tab2, tac2, tbc2;
+
+    float dab = ab.Distance(line, &tab, &tab2);
+    float dac = ac.Distance(line, &tac, &tac2);
+    float dbc = bc.Distance(line, &tbc, &tbc2);
+
+    if (dab <= dac && dab <= dbc && dab <= d1 && dab <= d2)
+    {
+        if (otherPt)
+            *otherPt = line.GetPoint(tab2);
+        return ab.GetPoint(tab);
+    }
+    else if (dac <= dbc && dac <= d1 && dac <= d2)
+    {
+        if (otherPt)
+            *otherPt = line.GetPoint(tac2);
+        return ab.GetPoint(tac);
+    }
+    else if (dbc <= d1 && dbc <= d2)
+    {
+        if (otherPt)
+            *otherPt = line.GetPoint(tbc2);
+        return ab.GetPoint(tbc);
+    }
+    else if (d1 <= d2)
+    {
+        if (otherPt)
+            *otherPt = line.a;
+        return p.Project(line.a);
+    }
+    else
+    {
+        if (otherPt)
+            *otherPt = line.b;
+        return p.Project(line.b);
+    }
 }

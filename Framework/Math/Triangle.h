@@ -23,6 +23,10 @@ public:
     /// Expresses the given point in barycentric (u,v,w) coordinates with respect to this triangle.
     float3 Barycentric(const float3 &point) const;
 
+    /// Returns true if the given barycentric coordinates lie inside a triangle.
+    /// That is, 0 <= u,v,w <= 1 and u+v+w==1.
+    static bool BarycentricInsideTriangle(const float3 &barycentric);
+
     /// Returns a point at the given barycentric coordinates.
     /// The inputted u, v and w should sum up to 1.
     float3 Point(float u, float v, float w) const;
@@ -54,8 +58,14 @@ public:
     /// the point lie from the plane defined by this triangle.
     bool Contains(const float3 &point, float triangleThickness = 1e-3f) const;
 
-    /// Returns the closest point on this triangle to the target point.
+    bool Intersects(const LineSegment &other, float3 *intersectionPoint) const;
+
+    /// Returns the closest point on this triangle to the target object.
     float3 ClosestPoint(const float3 &targetPoint) const;
+    float3 ClosestPoint(const LineSegment &other, float3 *otherPt) const;
+    float3 ClosestPoint(const Ray &other, float3 *otherPt) const;
+    float3 ClosestPoint(const Line &other, float3 *otherPt) const;
+    float3 ClosestPoint(const Triangle &other, float3 *otherPt) const;
 };
 
 #ifdef QT_INTEROP
