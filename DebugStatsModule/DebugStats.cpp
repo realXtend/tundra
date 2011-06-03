@@ -148,11 +148,11 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     //profilerWindow_->move(100, 100);
     profilerWindow_->resize(650, 530);
 //$ BEGIN_MOD $
-	UiProxyWidget *proxy = ui_service->AddWidgetToScene(profilerWindow_, true, true);
+	//UiProxyWidget *proxy = ui_service->AddWidgetToScene(profilerWindow_, true, true);
     //connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 	//$ END_MOD $
 
-	ui_service->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("View"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+	//ui_service->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("View"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
 }
 
 void DebugStatsModule::StartProfiling(bool visible)

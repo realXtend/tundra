@@ -31,7 +31,7 @@ namespace CoreUi
     class NotificationBaseWidget;
 }
 
-/// Interface for Naali's user interface ulitizing Qt's QWidgets.
+/// Interface for Naali's user interface ulitizing Qt's QWidgets. 
 /** If you want to see your QWidgets external to the main application just call show() for them.
 */
 class UiServiceInterface : public QObject, public IService

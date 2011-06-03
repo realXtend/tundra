@@ -27,7 +27,7 @@
 #include "ServiceManager.h"
 #include "ModuleManager.h"
 
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 
 #include <Ogre.h>
 

@@ -10,7 +10,7 @@
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "Framework.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "InputAPI.h"
 
 #include "UiAPI.h"
@@ -104,9 +104,9 @@ namespace OgreRenderer
             return;
 
 		//$ BEGIN_MOD $
-		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-        if (!ui)
-            return;
+		//UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        //if (!ui)
+        //    return;
 		//$ END_MOD $
 
 

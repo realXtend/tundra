@@ -74,7 +74,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
         return;
     
     mainWindow = new UiMainWindow(owner);
-    mainWindow->setAutoFillBackground(false);
+    mainWindow->centralWidget()->setAutoFillBackground(false);
     //mainWindow->setUpdatesEnabled(false);
 
     // Apply the Naali main window icon. 
@@ -84,17 +84,17 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     QIcon icon("./data/ui/images/icon/naali_logo_32px_RC1.ico");
     mainWindow->setWindowIcon(icon);
 
-    graphicsView = new UiGraphicsView(mainWindow);
+    graphicsView = new UiGraphicsView(mainWindow->centralWidget());
 
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
 
     // QMainWindow has a layout by default. It will not let you set another.
     // Leave this check here if the window type changes to for example QWidget so we dont crash then.
-    if (!mainWindow->layout())
-        mainWindow->setLayout(new QVBoxLayout());
-    mainWindow->layout()->setMargin(0);
-    mainWindow->layout()->setContentsMargins(0,0,0,0);
-    mainWindow->layout()->addWidget(graphicsView);
+    if (!mainWindow->centralWidget()->layout())
+        mainWindow->centralWidget()->setLayout(new QVBoxLayout());
+    mainWindow->centralWidget()->layout()->setMargin(0);
+    mainWindow->centralWidget()->layout()->setContentsMargins(0,0,0,0);
+    mainWindow->centralWidget()->layout()->addWidget(graphicsView);
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
@@ -102,7 +102,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     viewportWidget->setGeometry(0, 0, graphicsView->width(), graphicsView->height());
     viewportWidget->setContentsMargins(0,0,0,0);
 
-    mainWindow->setContentsMargins(0,0,0,0);
+    mainWindow->centralWidget()->setContentsMargins(0,0,0,0);
     graphicsView->setContentsMargins(0,0,0,0);
     
     graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

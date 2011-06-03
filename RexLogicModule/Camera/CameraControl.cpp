@@ -10,7 +10,7 @@
 #include <QGraphicsView>
 #include "InputContext.h"
 #include "ObjectCameraController.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "FrameAPI.h"
 
 namespace RexLogic
@@ -105,9 +105,9 @@ namespace RexLogic
 
         connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
 
-        UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
-        if (ui_service)
-		{
+        //UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
+        //if (ui_service)
+		//{
 			//$ BEGIN_MOD $
 			/*
 			* Not used with tundra
@@ -121,7 +121,7 @@ namespace RexLogic
 			setMaximumWidth(600);
 			ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "View", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
 			*/
-		}
+		//}
         
 	}
 

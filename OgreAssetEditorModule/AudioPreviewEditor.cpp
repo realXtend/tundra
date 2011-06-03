@@ -5,7 +5,7 @@
 #include "AudioSignalLabel.h"
 #include "OgreAssetEditorModule.h"
 
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "ModuleManager.h"
 #include "AudioAPI.h"
@@ -113,11 +113,11 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
 
 void AudioPreviewEditor::Closed()
 {
-    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
+    //UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
+    //if (!ui)
+    //    return;
 
-    ui->RemoveWidgetFromScene(this);
+    //ui->RemoveWidgetFromScene(this);
 
     emit Closed(inventoryId_, assetType_);
 }
@@ -208,9 +208,9 @@ void AudioPreviewEditor::resizeEvent(QResizeEvent *ev)
 void AudioPreviewEditor::InitializeEditorWidget()
 {
     // Get ui service and create canvas
-    UiServiceInterface *ui= framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
+    //UiServiceInterface *ui= framework_->GetService<UiServiceInterface>();
+    //if (!ui)
+    //    return;
 
     // Create widget from ui file
     QUiLoader loader;
@@ -238,9 +238,9 @@ void AudioPreviewEditor::InitializeEditorWidget()
 
     // Add widget to UI via ui services module
     setWindowTitle(tr("Audio: ") + objectName());
-    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
-    connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
-    proxy->show();
-    ui->BringWidgetToFront(proxy);
+    //UiProxyWidget *proxy = ui->AddWidgetToScene(this);
+    //connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
+    //proxy->show();
+    //ui->BringWidgetToFront(proxy);
 }
 

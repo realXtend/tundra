@@ -12,7 +12,7 @@
 #include "MaterialWizard.h"
 #include "OgreAssetEditorModule.h"
 //$ BEGIN_MOD $
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 //$ END_MOD $
 #include "Inventory/InventoryEvents.h"
 
@@ -97,9 +97,9 @@ void MaterialWizard::Create()
     emit NewMaterial(&event_data);
 //$ BEGIN_MOD $   
 //$ MOD_DESCRIPTION now it uses the uiService to hide the widget $ 
-	UiServiceInterface *uiService= framework_->GetService<UiServiceInterface>();
-	if (uiService)
-		uiService->HideWidget(this);
+	//UiServiceInterface *uiService= framework_->GetService<UiServiceInterface>();
+	//if (uiService)
+	//	uiService->HideWidget(this);
 //$ END_MOD $  
     ClearSelections();
 }
@@ -108,9 +108,9 @@ void MaterialWizard::Close()
 {
 //$ BEGIN_MOD $   
 //$ MOD_DESCRIPTION now it uses the uiService to hide the widget $ 
-	UiServiceInterface *uiService= framework_->GetService<UiServiceInterface>();
-	if (uiService)
-		uiService->HideWidget(this);
+	//UiServiceInterface *uiService= framework_->GetService<UiServiceInterface>();
+	//if (uiService)
+	//	uiService->HideWidget(this);
 //$ END_MOD $  
     ClearSelections();
 }

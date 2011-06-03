@@ -21,7 +21,7 @@
 #include "EC_DynamicComponent.h"
 #include "SceneManager.h"
 #include "InputAPI.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "AudioAPI.h"
 #include "FrameAPI.h"
 #include "ConsoleAPI.h"
@@ -93,7 +93,7 @@ void JavascriptModule::PostInitialize()
 		debuggerAction = new QAction("Debugging", this);
 		debuggerAction->setCheckable(true);
 
-		GetFramework()->UiService()->AddExternalMenuAction(debuggerAction, "Debugging", "Scripts");
+		//GetFramework()->UiService()->AddExternalMenuAction(debuggerAction, "Debugging", "Scripts");
 		connect(debuggerAction, SIGNAL(triggered(bool)), this, SLOT(OnToogleDebugging(bool)));
 
 		if (debugging_enable)
@@ -106,8 +106,9 @@ void JavascriptModule::PostInitialize()
 				connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
 				connect(debugger, SIGNAL(evaluationResumed(void)), this, SLOT(OnEvaluationResumed(void)));
 				debuggerWindow = (QWidget*) debugger->standardWindow();
-				GetFramework()->UiService()->AddWidgetToScene(debuggerWindow,true,true);
-				GetFramework()->UiService()->AddWidgetToMenu(debuggerWindow,"Show Debugger", "Scripts");
+				//GetFramework()->UiService()->AddWidgetToScene(debuggerWindow,true,true);
+				//GetFramework()->UiService()->AddWidgetToMenu(debuggerWindow,"Show Debugger", "Scripts");
+                debuggerWindow->show();
 			}
 		}
 		else
@@ -117,7 +118,7 @@ void JavascriptModule::PostInitialize()
 	}
 #endif
 
-    RegisterNaaliCoreMetaTypes();
+    RegisterCoreMetaTypes();
     
     framework_->Console()->RegisterCommand(CreateConsoleCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
@@ -169,12 +170,13 @@ void JavascriptModule::Uninitialize()
 			if (debuggerWindow)
 			{
 				//On exit, UiModule could have been uninitialized before.
-				UiServiceInterface* uiservice = GetFramework()->UiService();
+				/*UiServiceInterface* uiservice = GetFramework()->UiService();
 				if (uiservice)
 				{
 					uiservice->RemoveWidgetFromMenu(debuggerWindow);
 					uiservice->RemoveWidgetFromScene(debuggerWindow);
 				}
+                */
 				debuggerWindow = 0;//It is removed with debugger
 			}
 
@@ -433,8 +435,8 @@ void JavascriptModule::OnToogleDebugging(bool checked)
 
 		if (debuggerWindow)
 		{
-			GetFramework()->UiService()->RemoveWidgetFromMenu(debuggerWindow);
-			GetFramework()->UiService()->RemoveWidgetFromScene(debuggerWindow);
+			//GetFramework()->UiService()->RemoveWidgetFromMenu(debuggerWindow);
+			//GetFramework()->UiService()->RemoveWidgetFromScene(debuggerWindow);
 			debuggerWindow = 0;//It is removed with debugger
 		}
 		if(debugger)
@@ -451,8 +453,9 @@ void JavascriptModule::OnToogleDebugging(bool checked)
 		{
 			connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
 			debuggerWindow = (QWidget*) debugger->standardWindow();
-			GetFramework()->UiService()->AddWidgetToScene(debuggerWindow,true,true);
-			GetFramework()->UiService()->AddWidgetToMenu(debuggerWindow,"Show Debugger", "Scripts");
+			//GetFramework()->UiService()->AddWidgetToScene(debuggerWindow,true,true);
+			//GetFramework()->UiService()->AddWidgetToMenu(debuggerWindow,"Show Debugger", "Scripts");
+            debuggerWindow->show();
 		}
 	}
 
@@ -481,7 +484,8 @@ void JavascriptModule::OnEvaluationSuspended(void)
 	if (debuggerWindow)
 	{
 		debuggerWindow->setEnabled(true);
-		GetFramework()->UiService()->ShowWidget(debuggerWindow);
+		//GetFramework()->UiService()->ShowWidget(debuggerWindow);
+        debuggerWindow->show();
 	}
 }
 

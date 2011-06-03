@@ -11,7 +11,7 @@
 #include "SceneEvents.h"
 #include "AvatarEvents.h"
 #include "NetworkEvents.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "SceneManager.h"
 #include "EC_Placeable.h"
 #include "EC_OgreCamera.h"
@@ -190,15 +190,15 @@ namespace RexLogic
 
         // Only do obj focus when in the in-world scene, ignore on building and avatar scenes
         ///\todo UiServiceInterface is/will be deprecated. Refactor.
-        UiServiceInterface *uiService = framework_->GetService<UiServiceInterface>();
-        if (!uiService)
-            return;
+        //UiServiceInterface *uiService = framework_->GetService<UiServiceInterface>();
+        ///if (!uiService)
+        //    return;
 
-        QGraphicsScene *scene = uiService->GetScene("Inworld");
-        if (!scene)
-            return;
-        if (!scene->isActive())
-            return;
+        //QGraphicsScene *scene = uiService->GetScene("Inworld");
+        //if (!scene)
+        //    return;
+        //if (!scene->isActive())
+        //    return;
 
         if (key_event->keyCode == Qt::Key_Alt)
         {

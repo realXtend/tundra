@@ -22,7 +22,7 @@
 #include "InputEvents.h"
 #include "InputAPI.h"
 #include "OgreRenderingModule.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "AttributeChangeType.h"
 
@@ -228,9 +228,9 @@ namespace Environment
 
     void EnvironmentEditor::InitEditorWindow()
     {
-        UiServiceInterface *ui = environment_module_->GetFramework()->GetService<UiServiceInterface>();
-        if (!ui) // If this occurs, we're most probably operating in headless mode.
-            return;
+        //UiServiceInterface *ui = environment_module_->GetFramework()->GetService<UiServiceInterface>();
+        //if (!ui) // If this occurs, we're most probably operating in headless mode.
+        //    return;
 
         QUiLoader loader;
         loader.setLanguageChangeEnabled(true);
@@ -252,9 +252,9 @@ namespace Environment
 
         setWindowTitle(tr("Environment Editor"));
 
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, true);
+        //UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, true);
 
-        ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("View"), "./data/ui/images/menus/edbutton_ENVED_normal");
+        //ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("View"), "./data/ui/images/menus/edbutton_ENVED_normal");
        // ui->RegisterUniversalWidget("Environment", this);
 
         // Tab window signals

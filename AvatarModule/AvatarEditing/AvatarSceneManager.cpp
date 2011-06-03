@@ -92,12 +92,12 @@ namespace Avatar
 
     void AvatarSceneManager::ToggleScene()
     {
-		/*Scene toogle disabled in tundra
+		Scene toogle disabled in tundra
         if (avatar_scene_->isActive())
             ExitScene();
         else
             ShowScene();
-			*/
+			
     }
 
     void AvatarSceneManager::ShowScene()

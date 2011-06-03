@@ -55,9 +55,9 @@ namespace Tts
 	void TtsModule::Initialize()
 	{
 		tts_service_ = TtsServicePtr(new TtsService(framework_));
-		framework_->GetServiceManager()->RegisterService(Service::ST_Tts, tts_service_);
+		//framework_->GetServiceManager()->RegisterService(Service::ST_Tts, tts_service_);
         connect(tts_service_.get(), SIGNAL(SettingsUpdated()), this, SLOT(ReadTtsSettings()));
-		framework_->RegisterDynamicObject("tts", tts_service_.get());
+		//framework_->RegisterDynamicObject("tts", tts_service_.get());
         ReadTtsSettings();
 	}
 
@@ -76,7 +76,7 @@ namespace Tts
     }
 	void TtsModule::Uninitialize()
 	{
-		framework_->GetServiceManager()->UnregisterService(tts_service_);
+		//framework_->GetServiceManager()->UnregisterService(tts_service_);
 		tts_service_.reset();
 	}
 
@@ -87,12 +87,13 @@ namespace Tts
 
     void TtsModule::SetupSettingsWidget()
     {
-        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-        if (!ui)
-            return;
+        //UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        //if (!ui)
+        //    return;
 
         settings_widget_ = new SettingsWidget(framework_);
-        ui->AddSettingsWidget(settings_widget_, "TTS");
+        //ui->AddSettingsWidget(settings_widget_, "TTS");
+        settings_widget_->show();
     }
 
 } // end of namespace: Tts

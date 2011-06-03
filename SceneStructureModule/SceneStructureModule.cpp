@@ -47,7 +47,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 #endif
 
 //#include <OgreCamera.h>
-
 #include "MemoryLeakCheck.h"
 
 SceneStructureModule::SceneStructureModule() :
@@ -69,23 +68,25 @@ SceneStructureModule::~SceneStructureModule()
 void SceneStructureModule::PostInitialize()
 {
 	//Create panels
-	UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
+	//UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+    //if (!ui)
+    //    return;
 
 	//Assets panel
 	assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
     assetsWindow->setWindowFlags(Qt::Tool);	
-    ui->AddWidgetToScene(assetsWindow, true, true);
-	ui->AddWidgetToMenu(assetsWindow, "Assets", "View");
+    //ui->AddWidgetToScene(assetsWindow, true, true);
+	//ui->AddWidgetToMenu(assetsWindow, "Assets", "View");
+    assetsWindow->show();
 
 	//Scene panel
 	sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
 	sceneWindow->SetScene(framework_->Scene()->GetDefaultScene());
 	connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)),sceneWindow, SLOT(SetNewScene()));
-    ui->AddWidgetToScene(sceneWindow, true, true);
-	ui->AddWidgetToMenu(sceneWindow, "Scene", "View");
+    //ui->AddWidgetToScene(sceneWindow, true, true);
+	//ui->AddWidgetToMenu(sceneWindow, "Scene", "View");
+    sceneWindow->show();
 
     framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", this, SLOT(ToggleSceneStructureWindow()));
     framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", this, SLOT(ToggleAssetsWindow()));
@@ -330,6 +331,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     {
         LogError("Cannot show scene structure window in headless mode.");
         return;
+    }
 
     if (sceneWindow)
     {

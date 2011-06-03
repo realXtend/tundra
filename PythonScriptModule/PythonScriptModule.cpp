@@ -87,7 +87,7 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
 
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
 #include "EC_OpenSimPrim.h"
@@ -838,15 +838,15 @@ namespace PythonScript
 
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
-		UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-		if (!ui)
-			return 0;
+		//UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+		//if (!ui)
+		//	return 0;
         //NaaliMainWindow *mainWnd = framework_->Ui()->CentralWindow();
 		pythonqtconsole_ = new PythonQtScriptingConsole(framework_->Ui()->MainWindow(), PythonQt::self()->getMainModule(), Qt::Tool);
 		pythonqtconsole_->setObjectName("Python console");
 		pythonqtconsole_->setWindowTitle("Python console");
-		ui->AddWidgetToScene(pythonqtconsole_, true, true);
-		ui->AddWidgetToMenu(pythonqtconsole_, "Python console", "View");
+		//ui->AddWidgetToScene(pythonqtconsole_, true, true);
+		//ui->AddWidgetToMenu(pythonqtconsole_, "Python console", "View");
 
         return pythonqtconsole_;
     }
@@ -1429,14 +1429,14 @@ PyObject* PyLogError(PyObject *self, PyObject *args)
 
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
-    UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<UiServiceInterface>();
-    if (!ui)
-    {
+    //UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<UiServiceInterface>();
+    //if (!ui)
+    //{
         // If this occurs, we're most probably operating in headless mode.
         //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
-        PyErr_SetString(PyExc_RuntimeError, "UI service is missing.");
-        return NULL;
-    }
+    //    PyErr_SetString(PyExc_RuntimeError, "UI service is missing.");
+    //    return NULL;
+    //}
 
 //    if(!PyArg_ParseTuple(args, "OO", &pywidget, &pyuiprops))
     PyObject* pywidget;
@@ -1747,7 +1747,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&UiMainWindow::staticMetaObject);
 	    /*  PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);*/
             // UiService() - naali.ui
-            PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
+            //PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
             //PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
 
             PythonQt::self()->registerClass(&AudioAPI::staticMetaObject);

@@ -543,8 +543,8 @@ void SceneTreeWidget::Edit()
                 /*foreach(entity_id_t id, selection.EntityIds())
                 ecEditor->AddEntity(id, false);
                 ecEditor->SetSelectedEntities(selection.EntityIds());*/
-				ui_service->ShowWidget(editor);
-                //editor->show();
+				//ui_service->ShowWidget(editor);
+                editor->show();
                 //ui->BringWidgetToFront(ecEditor);
                 return;
             }
@@ -583,7 +583,8 @@ void SceneTreeWidget::Edit()
         //editor->setWindowFlags(Qt::Tool);
         //if (!editor->isVisible())
         //    editor->show();
-		ui_service->ShowWidget(editor);
+		//ui_service->ShowWidget(editor);
+        editor->show();
         editor->AddEntities(selection.EntityIds(), true);
 
         /*ui->AddWidgetToScene(ecEditor);
@@ -656,9 +657,10 @@ void SceneTreeWidget::EditInNew()
 	}
 	if (editor2){
 		editor2->SetFocus(true);
-		UiServiceInterface *ui_service = framework->GetService<UiServiceInterface>();
-		assert(ui_service);
-		ui_service->ShowWidget(editor2);
+		//UiServiceInterface *ui_service = framework->GetService<UiServiceInterface>();
+		//assert(ui_service);
+		//ui_service->ShowWidget(editor2);
+        editor2->show();
 	} 
 
 

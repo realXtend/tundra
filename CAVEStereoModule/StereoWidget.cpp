@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "StereoWidget.h"
 #include "ServiceManager.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "Framework.h"
 #include <QColorDialog>
 

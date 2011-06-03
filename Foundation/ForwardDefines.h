@@ -44,9 +44,9 @@ namespace Foundation
 
 class RaycastResult;
 
-class UiServiceInterface;
-typedef boost::shared_ptr<UiServiceInterface> UiServicePtr;
-typedef boost::weak_ptr<UiServiceInterface> UiServiceWeakPtr;
+//class UiServiceInterface;
+//typedef boost::shared_ptr<UiServiceInterface> UiServicePtr;
+//typedef boost::weak_ptr<UiServiceInterface> UiServiceWeakPtr;
 
 //! Use root logging only in foundation classes.
 void RootLogFatal(const std::string &msg);

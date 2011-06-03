@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-
+#include "Application.h"
 #include "Client.h"
 #include "TundraLogicModule.h"
 #include "EventManager.h"
@@ -15,7 +15,6 @@
 #include "TundraEvents.h"
 #include "PhysicsModule.h"
 
-#include "NaaliApplication.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
 
@@ -129,14 +128,14 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     loginstate_ = ConnectionPending;
     client_id_ = 0;
 
-	connect(framework_->GetNaaliApplication(), SIGNAL(ExitRequested()), this, SLOT(Logout()));
+	connect(framework_->GetApplication(), SIGNAL(ExitRequested()), this, SLOT(Logout()));
 }
 
 void Client::Logout(bool fail)
 {
 	emit AboutToDisconnect();
 
-	disconnect(framework_->GetNaaliApplication(), SIGNAL(ExitRequested()), this, SLOT(Logout()));
+	disconnect(framework_->GetApplication(), SIGNAL(ExitRequested()), this, SLOT(Logout()));
 
     if (loginstate_ != NotConnected)
     {

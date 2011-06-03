@@ -2462,7 +2462,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
     // However, when using the new ec sync, only one ec is included per message. this means that then removes are called explicitly with ec_remove message
     if(deleteNonExitingOnes)
     {
-        Scene::Entity::ComponentVector all_components = entity->GetComponents();
+        Scene::Entity::ComponentVector all_components = entity->Components();
         for (uint i = 0; i < all_components.size(); ++i)
         {
             if ((all_components[i]->IsSerializable()) && (all_components[i]->GetNetworkSyncEnabled()))

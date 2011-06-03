@@ -341,7 +341,7 @@ ConsoleCommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &par
     LoadScene(params[0], clearScene);
 
     //Return success since the scene load is asynchronous
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 ConsoleCommandResult TundraLogicModule::ConsoleImportScene(const StringVector &params)

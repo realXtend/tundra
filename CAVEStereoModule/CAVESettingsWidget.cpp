@@ -2,7 +2,7 @@
 #include "CAVESettingsWidget.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "Framework.h"
 #include "UiMainWindow.h"
 #include "UiAPI.h"

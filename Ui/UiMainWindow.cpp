@@ -24,17 +24,17 @@ using namespace std;
 class NewCentralWid : public QWidget 
 {
 public:
-    NewCentralWid(NaaliMainWindow *parent = 0, Qt::WindowFlags f = 0);
+    NewCentralWid(UiMainWindow *parent = 0, Qt::WindowFlags f = 0);
     virtual ~NewCentralWid() {}
 
 protected:
     /// Overridden to trigger WindowResizeEvent signal.
     void resizeEvent(QResizeEvent *e);
-    NaaliMainWindow *parent_;
+    UiMainWindow *parent_;
 
 };
 
-NewCentralWid::NewCentralWid(NaaliMainWindow *parent, Qt::WindowFlags f)
+NewCentralWid::NewCentralWid(UiMainWindow *parent, Qt::WindowFlags f)
 : QWidget(parent, f),
 parent_(parent)
 {
@@ -82,51 +82,54 @@ int UiMainWindow::DesktopHeight()
 
 void UiMainWindow::LoadWindowSettingsFromFile()
 {	
-	QPoint pos;
-	int win_width;
-	int win_height;
-	bool window_fullscreen = false;
+	int width = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_width", 800);
+    int height = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_height", 600);
+    int windowX = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_left", -1);
+    int windowY = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_top", -1);
+    bool maximized = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_maximized", false);
+    bool fullscreen = owner->GetDefaultConfig().DeclareSetting("MainWindow", "fullscreen", false);
 
-	//QSettings
-	if (owner->IsEditionless())
-	{
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
-		pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
-		win_width = settings.value("win_width", 1024).toInt();
-		win_height = settings.value("win_height", 768).toInt();
-		window_fullscreen = settings.value("win_fullscreen", false).toBool();
-	}
-	else
-	{
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
-		pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
-		win_width = settings.value("win_width", 1024).toInt();
-		win_height = settings.value("win_height", 768).toInt();
-		window_fullscreen = settings.value("win_fullscreen", false).toBool();
-	}
     setWindowTitle(owner->ApplicationVersion()->toString());
 
+    width = max(1, min(DesktopWidth(), width));
+    height = max(1, min(DesktopHeight(), height));
+    windowX = max(0, min(DesktopWidth()-width, windowX));
     windowY = max(25, min(DesktopHeight()-height, windowY));
-		//Assign parameters to our window
-		setWindowTitle("Tundra 1.0.3");
-		setDockNestingEnabled(true);
 
-		//Menu bar for Qwin this Mac support
-		QMenuBar *menuBar = new QMenuBar(this);
-		menuBar->heightForWidth(500);
-		setMenuBar(menuBar);
+    resize(width, height);
 
-		resize(win_width,win_height);
+    //Assign parameters to our window
+    setDockNestingEnabled(true);
 
-		if (window_fullscreen)
-			showFullScreen();
-		else
-			move(pos);
+	//Menu bar for Qwin this Mac support
+	QMenuBar *menuBar = new QMenuBar(this);
+	menuBar->heightForWidth(500);
+	setMenuBar(menuBar);
+
+	if (fullscreen)
+		showFullScreen();
+	else
+        move(windowX, windowY);
 }
 
 void UiMainWindow::SaveWindowSettingsToFile()
 {
-	//Not needed any more since QMainWindow restoreState is used in uimodule.
+	// The values (0, 25) and (-50, -20) below serve to artificially limit the main window positioning into awkward places.
+    int windowX = max(0, min(DesktopWidth()-50, pos().x()));
+    int windowY = max(25, min(DesktopHeight()-20, pos().y()));
+    int width = max(1, min(DesktopWidth()-windowX, size().width()));
+    int height = max(1, min(DesktopHeight()-windowY, size().height()));
+   
+    // If we are in windowed mode, store the window rectangle for next run.
+    if (!isMaximized() && !isFullScreen())
+    {
+        owner->GetDefaultConfig().SetSetting("MainWindow", "window_width", width);
+        owner->GetDefaultConfig().SetSetting("MainWindow", "window_height", height);
+        owner->GetDefaultConfig().SetSetting("MainWindow", "window_left", windowX);
+        owner->GetDefaultConfig().SetSetting("MainWindow", "window_top", windowY);
+    }
+    owner->GetDefaultConfig().SetSetting("MainWindow", "window_maximized", isMaximized());
+    owner->GetDefaultConfig().SetSetting("MainWindow", "fullscreen", isFullScreen());
 }
 
 void UiMainWindow::closeEvent(QCloseEvent *e)
@@ -187,6 +190,7 @@ QAction *UiMainWindow::AddMenuAction(const QString &menuName, const QString &act
     return menu->addAction(icon, actionName);
 }
 
-void NaaliMainWindow::SizeOfCentralWidgetChanged(){
+void UiMainWindow::SizeOfCentralWidgetChanged(){
     emit WindowResizeEvent(centralWidget()->width(), centralWidget()->height());
+}
 

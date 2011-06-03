@@ -69,6 +69,8 @@ public slots:
     /// \note menuName is case sensitive.
     QAction *AddMenuAction(const QString &menuName, const QString &actionName, const QIcon &icon = QIcon());
 
+    void SizeOfCentralWidgetChanged();
+
 signals:
     /// Emitted when the main window is resized.
     /** @param newWidth New width.

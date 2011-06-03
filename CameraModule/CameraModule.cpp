@@ -10,11 +10,10 @@
 #include "StableHeaders.h"
 
 #include "CameraModule.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "EventManager.h"
 #include "SceneEvents.h"
 #include "EC_Placeable.h"
-#include "NaaliApplication.h"
 #include "SceneAPI.h"
 
 #include <QColor>
@@ -69,6 +68,7 @@ namespace Camera
             return;
 
         //Check if UiExternalIsAvailable 
+        /*
         UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
         if (ui){            
 			//Create Action, insert into menu Views
@@ -78,6 +78,7 @@ namespace Camera
 				connect(ui, SIGNAL(CreateDynamicWidget(const QString&,const QString&,const QVariantList)), SLOT(OnCreateNewCamera(const QString&,const QString&,const QVariantList)),Qt::DirectConnection);
 			}
         }
+        */
         connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));       
 	}    
 
@@ -169,13 +170,14 @@ namespace Camera
 
         CameraWidget* camera_view = new CameraWidget(title);
         //Check if UiExternalIsAvailable 
-        UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+        /*UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
         if (ui)
         {
             ui->AddWidgetToScene(camera_view,true,true);
 			if (!restored)
 				ui->ShowWidget(camera_view);
         }
+        */
         //set qdoc features to flotable and movable, but not closable
         QDockWidget *doc = dynamic_cast<QDockWidget*>(camera_view->parent());           
         if (doc)
@@ -285,10 +287,10 @@ namespace Camera
 		camera_view->blockSignals(true);
 
         //remove widget from scene
-        UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-		if (ui){
-			ui->RemoveWidgetFromScene(camera_view);
-		}
+        //UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+		//if (ui){
+		//	ui->RemoveWidgetFromScene(camera_view);
+		//}
 
         //remove widget and handler from controller map
         QMap<CameraWidget*,CameraHandler*>::const_iterator i = controller_view_handlers_.find(camera_view);
