@@ -95,6 +95,11 @@ bool Triangle::Contains(const float3 &point, float triangleThickness) const
     return br.y >= 0.f && br.z >= 0.f && (br.y + br.z) <= 1.f;
 }
 
+bool Triangle::Distance(const float3 &point)
+{
+    return ClosestPoint(point).Distance(point);
+}
+
 bool Triangle::Intersects(const LineSegment &other, float3 *intersectionPoint) const
 {
     return false;

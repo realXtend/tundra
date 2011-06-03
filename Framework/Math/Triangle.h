@@ -58,6 +58,9 @@ public:
     /// the point lie from the plane defined by this triangle.
     bool Contains(const float3 &point, float triangleThickness = 1e-3f) const;
 
+    /// Returns the distance of the given point to this triangle.
+    bool Distance(const float3 &point);
+
     bool Intersects(const LineSegment &other, float3 *intersectionPoint) const;
 
     /// Returns the closest point on this triangle to the target object.
