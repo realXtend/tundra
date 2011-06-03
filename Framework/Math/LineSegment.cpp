@@ -137,25 +137,40 @@ float LineSegment::Distance(const float3 &point, float *d) const
     float3 closestPoint = ClosestPoint(point, d);
     return closestPoint.Distance(point);
 }
-/*
-float LineSegment::Distance(const Ray &other, float &d, float &d2) const
+
+float LineSegment::Distance(const Ray &other, float *d, float *d2) const
 {
-    assume(false && "Not implemented!");
-    return 0.f; ///\todo
+    float u, u2;
+    ClosestPoint(other, &u, &u2);
+    if (d)
+        *d = u;
+    if (d2)
+        *d2 = u2;
+    return GetPoint(u).Distance(other.GetPoint(u2));
 }
 
-float LineSegment::Distance(const Line &other, float &d, float &d2) const
+float LineSegment::Distance(const Line &other, float *d, float *d2) const
 {
-    assume(false && "Not implemented!");
-    return 0.f; ///\todo
+    float u, u2;
+    ClosestPoint(other, &u, &u2);
+    if (d)
+        *d = u;
+    if (d2)
+        *d2 = u2;
+    return GetPoint(u).Distance(other.GetPoint(u2));
 }
 
-float LineSegment::Distance(const LineSegment &other, float &d, float &d2) const
+float LineSegment::Distance(const LineSegment &other, float *d, float *d2) const
 {
-    assume(false && "Not implemented!");
-    return 0.f; ///\todo
+    float u, u2;
+    ClosestPoint(other, &u, &u2);
+    if (d)
+        *d = u;
+    if (d2)
+        *d2 = u2;
+    return GetPoint(u).Distance(other.GetPoint(u2));
 }
-*/
+
 bool LineSegment::Intersects(const Plane &plane) const
 {
     float d = plane.SignedDistance(a);

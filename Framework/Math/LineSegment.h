@@ -65,11 +65,10 @@ public:
     ///          this line segment which specifies the closes point on this line segment to
     ///          the specified point.
     float Distance(const float3 &point, float *d = 0) const;
-/*
-    float Distance(const Ray &other, float &d, float &d2) const;
-    float Distance(const Line &other, float &d, float &d2) const;
-    float Distance(const LineSegment &other, float &d, float &d2) const;
-*/
+    float Distance(const Ray &other, float *d = 0, float *d2 = 0) const;
+    float Distance(const Line &other, float *d = 0, float *d2 = 0) const;
+    float Distance(const LineSegment &other, float *d = 0, float *d2 = 0) const;
+
     bool Intersects(const Plane &plane) const;
 /*
     bool Intersect(const Plane &plane, float &outDistance) const;
