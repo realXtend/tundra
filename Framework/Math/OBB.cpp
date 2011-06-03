@@ -608,6 +608,11 @@ bool OBB::Intersects(const OBB &b, float epsilon) const
     return true;
 }
 
+bool OBB::Intersects(const Plane &plane) const
+{
+    return plane.Intersects(*this);
+}
+
 /*
 HitInfo Intersect(const Ray &ray, float *outDistance) const;
 HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const;

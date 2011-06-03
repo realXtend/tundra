@@ -274,6 +274,8 @@ public:
     bool Intersects(const Ray &ray, float *dNear, float *dFar) const;
     bool Intersects(const Line &line, float *dNear, float *dFar) const;
     bool Intersects(const LineSegment &lineSegment, float *dNear, float *dFar) const;
+    bool Intersects(const Plane &plane) const;
+    bool Intersects(const OBB &obb) const;
 
     /** The first parameter of this function specifies the object to test against.
         @param outDistance [out] For rays, lines and line segments, this parameter receives the distance along the ray

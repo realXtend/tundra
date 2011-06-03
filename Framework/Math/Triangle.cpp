@@ -208,6 +208,11 @@ bool Triangle::Intersects(const Ray &r, float *d, float3 *intersectionPoint) con
     return success;
 }
 
+bool Triangle::Intersects(const Plane &plane) const
+{
+    return plane.Intersects(*this);
+}
+
 /// Code from Christer Ericson's Real-Time Collision Detection, pp. 141-142.
 float3 Triangle::ClosestPoint(const float3 &p) const
 {

@@ -274,6 +274,7 @@ public:
 //    HitInfo Intersect(const LineSegment &lineSegment, float *outDistance) const;
     bool Intersects(const AABB &aabb) const;
     bool Intersects(const OBB &obb, float epsilon = 1e-3f) const;
+    bool Intersects(const Plane &plane) const;
 
 /*  HitInfo Intersect(const Plane &plane) const; 
     HitInfo Intersect(const Sphere &sphere) const;

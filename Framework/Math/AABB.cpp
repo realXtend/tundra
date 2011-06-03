@@ -531,6 +531,16 @@ bool AABB::Intersects(const LineSegment &lineSegment, float *dNear, float *dFar)
     return success;
 }
 
+bool AABB::Intersects(const Plane &plane) const
+{
+    return plane.Intersects(*this);
+}
+
+bool AABB::Intersects(const OBB &obb) const
+{
+    return obb.Intersects(*this);
+}
+
 /*
 HitInfo Intersect(const Ray &ray, float *outDistance) const; ///< [noscript]
 HitInfo Intersect(const Ray &ray, float maxDistance, float *outDistance) const; ///< [noscript]

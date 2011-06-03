@@ -51,6 +51,11 @@ public:
     float Distance(const Line &other, float *d = 0, float *d2 = 0) const;
     float Distance(const LineSegment &other, float *d = 0, float *d2 = 0) const;
 
+    bool Intersects(const Triangle &triangle, float *d, float3 *intersectionPoint) const;
+    bool Intersects(const Plane &plane, float *d) const;
+    bool Intersects(const Sphere &s, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *d = 0) const;
+    bool Intersects(const AABB &aabb, float *dNear, float *dFar) const;
+
     /// Returns the closest point on <b>this</b> line to the given object.
     float3 ClosestPoint(const float3 &targetPoint, float *d = 0) const;
     float3 ClosestPoint(const Ray &other, float *d = 0, float *d2 = 0) const;

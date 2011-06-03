@@ -13,6 +13,10 @@
 #include "float3x4.h"
 #include "float4x4.h"
 #include "Quat.h"
+#include "Triangle.h"
+#include "Plane.h"
+#include "Sphere.h"
+#include "AABB.h"
 #include "MathFunc.h"
 
 /// This code is adapted from http://paulbourke.net/geometry/lineline3d/ .
@@ -130,6 +134,26 @@ float Line::Distance(const LineSegment &other, float *d, float *d2) const
     float3 c = ClosestPoint(other, d, &u2);
     if (d2) *d2 = u2;
     return c.Distance(other.GetPoint(u2));
+}
+
+bool Line::Intersects(const Triangle &triangle, float *d, float3 *intersectionPoint) const
+{
+    return triangle.Intersects(*this, d, intersectionPoint);
+}
+
+bool Line::Intersects(const Plane &plane, float *d) const
+{
+    return plane.Intersects(*this, d);
+}
+
+bool Line::Intersects(const Sphere &s, float3 *intersectionPoint, float3 *intersectionNormal, float *d) const
+{
+    return s.Intersects(*this, intersectionPoint, intersectionNormal, d);
+}
+
+bool Line::Intersects(const AABB &aabb, float *dNear, float *dFar) const
+{
+    return aabb.Intersects(*this, dNear, dFar);
 }
 
 float3 Line::ClosestPoint(const float3 &targetPoint, float *d) const

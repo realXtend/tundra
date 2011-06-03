@@ -322,6 +322,11 @@ bool Sphere::Intersects(const LineSegment &l, float3 *intersectionPoint, float3 
     return true;
 }
 
+bool Sphere::Intersects(const Plane &plane) const
+{
+    return plane.Intersects(*this);
+}
+
 /*
 float Sphere::Distance(const float3 &point, float3 &outClosestPointOnSphere) const
 
