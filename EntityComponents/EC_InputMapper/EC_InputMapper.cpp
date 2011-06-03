@@ -87,14 +87,14 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     }
     executionType.SetMetadata(&executionAttrData);
     
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
+    connect(this, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
         SLOT(HandleAttributeUpdated(IAttribute *, AttributeChange::Type)));
 
     input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
     input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
     input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
-    connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-    connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+    connect(input_.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 }
 
 void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
@@ -103,8 +103,8 @@ void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChan
     {
         input_.reset();
         input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
-        connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-        connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+        connect(input_.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+        connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
     }
     else if(attribute == &takeKeyboardEventsOverQt)
     {

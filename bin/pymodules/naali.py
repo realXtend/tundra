@@ -6,7 +6,7 @@ import rexviewer as r #the old module is still used , while porting away from it
 import sys #for stdout redirecting
 #from _naali import *
 
-# for PythonQt.private.AttributeChange
+# for core types like PythonQt.private.AttributeChange
 import PythonQt
 
 #\todo: do we have version num info somewhere?
@@ -18,10 +18,11 @@ Core API
 frame = _naali.Frame()
 console = _naali.Console()
 input = _naali.Input()
+scene = _naali.Scene()
 audio = _naali.Audio()
-ui = _naali.UiService() #the UI core object does not implement the old uiservice stuff yet
-uicore = _naali.Ui()
+ui = _naali.Ui()
 debug = _naali.Debug()
+devices = _naali.Devices()
 
 """Aka. Tundra
 The API object is there also in client mode, used to check if is running as server or not""" 
@@ -29,6 +30,10 @@ server = _naali.server
 
 client = _naali.client #now for web login ui
 framework = _naali #idea was that 'framework' is not in core api, but is used anyhow? (someone added this)
+
+"""some basic types"""
+from PythonQt.private import Vector3df, Quaternion, AttributeChange, DelayedSignal, KeyEvent, Transform
+#NOTE: could say 'from PythonQt.private import *' but that would bring e.g. Core API classes, which are not singletons
 
 class Logger:
     def __init__(self):
@@ -38,7 +43,11 @@ class Logger:
         self.buf += msg
         while '\n' in self.buf:
             line, self.buf = self.buf.split("\n", 1)
-            r.logInfo(line)
+            try:
+                r.logInfo(line)
+            except ValueError:
+                pass #somehow this isn't a string always
+                r.logInfo("logging prob from py print: is not a string? " + str(type(line)))
 
 sys.stdout = Logger()
 
@@ -59,7 +68,7 @@ def createEntity(comptypes = [], localonly = False, sync = True, temporary = Fal
     if localonly:
         ent = s.CreateEntityLocalRaw(comptypes)
     else:
-        ent = s.CreateEntityRaw(0, comptypes, PythonQt.private.AttributeChange.Replicate, sync)
+        ent = s.CreateEntityRaw(0, comptypes, AttributeChange.Replicate, sync)
     # set temporary
     if temporary:
         ent.SetTemporary(True)
@@ -81,12 +90,12 @@ def createMeshEntity(meshname, raycastprio=1, additional_comps = [], localonly =
 
 #XXX check how to do with SceneManager
 def removeEntity(entity):
-    r.removeEntity(entity.Id)
+    r.removeEntity(entity.id)
     
 # using the scene manager, note above
 def deleteEntity(entity):
     s = getDefaultScene()
-    s.DeleteEntityById(entity.Id)
+    s.DeleteEntityById(entity.id)
 
 def createInputContext(name, priority = 100):
     return _pythonscriptmodule.CreateInputContext(name, priority)
@@ -130,7 +139,7 @@ def getEntity(entid):
 def _getAsPyEntity(qentget, errmsg):
     qent = qentget()
     if qent is not None:
-        #print qent.Id
+        #print qent.id
         return qent
     else:
         raise ValueError, errmsg

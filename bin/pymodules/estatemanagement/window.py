@@ -27,7 +27,8 @@ class IncomingMessagesHandler():
             
             self.proxywidget.hide()
             uism = naali.ui
-            uism.RemoveWidgetFromMenu(self.proxywidget)
+            # TODO: Due to core UI API refactor RemoveWidgetFromMenu doesn't exist anymore.
+            #uism.RemoveWidgetFromMenu(self.proxywidget)
             uism.RemoveWidgetFromScene(self.proxywidget)
             return True
         except:
@@ -89,7 +90,8 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         if not uism.AddWidgetToScene(self.proxywidget):
             r.logInfo("Adding ProxyWidget failed.")
 
-        uism.AddWidgetToMenu(self.proxywidget, "Estate Manager", "Scene", "./data/ui/images/menus/edbutton_ESMNG_normal.png")
+        # TODO: Due to core UI API refactor RemoveWidgetFromMenu doesn't exist anymore.
+        #uism.AddWidgetToMenu(self.proxywidget, "Estate Management", "Server Tools", "./data/ui/images/menus/edbutton_ESMNG_normal.png")
 
         self.btnLoadEstate = self.gui.findChild("QPushButton", "btnLoadEstate")
         self.listWEI = self.gui.findChild("QListWidget","listWidgetEstateInfo")
@@ -191,8 +193,8 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
             
             self.proxywidget.hide()
             uism = naali.ui
-            uism.RemoveWidgetFromMenu(self.proxywidget)
-            uism.RemoveWidgetFromScene(self.proxywidget)
+            # TODO: Due to core UI API refactor RemoveWidgetFromMenu doesn't exist anymore.
+            #uism.RemoveWidgetFromMenu(self.proxywidget)
             return True
         except:
             r.logInfo("Estate Window failure:")

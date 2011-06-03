@@ -4,6 +4,9 @@ project(tundra)
 # CMake version requirement
 cmake_minimum_required(VERSION 2.4)
 
+#boost filesystem version used
+add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
+
 # The AddEntityComponent macro adds the static EC lib from the given sourceFolder directory to the build.
 # The componentName must be the name of the EC that will be added. E.g. AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 # Use this macro when adding ECs to the build, since this macro tracks the set of ECs that are added, so that the individual Naali
@@ -152,7 +155,7 @@ include(ModuleSetup)
 include(ConfigurePackages)
 
 # Disable unnecessary build types
-set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
+set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
 # In Visual Studio, use unicode character set
 if (MSVC)
@@ -180,6 +183,11 @@ configure_curl()
 configure_openjpeg()
 configure_qtpropertybrowser()
 
+# \todo remove the windows check when configure_package_opencv() macro has been tested on linux.
+if (WIN32)
+    configure_package_opencv()
+endif()
+
 use_package(BOOST)
 use_package(POCO)
 use_package(OGRE)
@@ -193,12 +201,13 @@ include_directories(Input)
 include_directories(Ui)
 include_directories(Asset)
 include_directories(Scene)
+include_directories(Devices)
 
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/Input)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/Ui)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/Asset)
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/Scene)
-
+link_directories(Input)
+link_directories(Ui)
+link_directories(Asset)
+link_directories(Scene)
+link_directories(Devices)
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from the template file.

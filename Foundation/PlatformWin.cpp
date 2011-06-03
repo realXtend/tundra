@@ -11,6 +11,10 @@
 
 #if defined(_WINDOWS)
 
+#include <QDebug>
+#include <QApplication>
+#include <QDir>
+
 #include <windows.h>
 #include <shlobj.h>
 
@@ -28,6 +32,28 @@ namespace Foundation
 
     std::string PlatformWin::GetInstallDirectory()
     {
+        /*! 
+            \todo Fix this path mess. Find a more sophisticated solution for going around
+            the fact that visual studio runs the directory from the project folder even if working directory is set.
+            Or just rewrite the travel up code with Qt so we dont have duplicate code here.
+        */
+
+        // This is more reliable when the executable is launched by another application
+        // like a web browser via the tundra:// protocol links. 
+        // The old code below will fail with those always.
+        QString appDirPath = QApplication::applicationDirPath();
+        if (!appDirPath.isEmpty())
+        {
+            // Check the modules folder, if not there let it 
+            // fallback to the old code that travels folders up to find modules
+            // The fallback code is only used when you run inside visual studio and then appDirPath
+            // will be C:\tundra\Viewer\{RelWithDebInfo|Debug|Release}, for normal runs outside VC getting
+            // the path from QApplication should always work.
+            QDir appDir(appDirPath);
+            if (appDir.exists("modules"))
+                return appDirPath.toStdString();
+        }
+
         char cpath[MAX_PATH];
         GetCurrentDirectoryA(MAX_PATH, cpath);
         // When running from a debugger, the current directory may in fact be the install directory.
@@ -54,6 +80,14 @@ namespace Foundation
     
     std::wstring PlatformWin::GetInstallDirectoryW()
     {
+        /*! 
+            \todo fix this like above is done. Why we just cant do appDirPath.toStdWString() here
+            is because we get a linker error. More here: http://developer.qt.nokia.com/forums/viewthread/3004
+            But its not a problem atm as this function seems to never be called.
+        */
+
+        qWarning() << "PlatformWin::GetInstallDirectoryW() is not up to date, use PlatformWin::GetInstallDirectory() if possible.";
+
         wchar_t cpath[MAX_PATH];
         GetCurrentDirectoryW(MAX_PATH, cpath);
         // When running from a debugger, the current directory may in fact be the install directory.

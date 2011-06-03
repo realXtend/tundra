@@ -24,7 +24,7 @@ public:
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
     /// Loade mesh into memory
-    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters);
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
     /// Unload mesh from ogre
     virtual void DoUnload();
@@ -36,6 +36,8 @@ public:
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
 
     void SetDefaultMaterial();
+
+    bool IsLoaded() const;
 
     /// This points to the loaded mesh asset, if it is present.
     Ogre::MeshPtr ogreMesh;

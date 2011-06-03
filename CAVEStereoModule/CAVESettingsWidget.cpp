@@ -4,26 +4,28 @@
 #include "ServiceManager.h"
 #include "UiServiceInterface.h"
 #include "Framework.h"
+#include "UiMainWindow.h"
+#include "UiAPI.h"
+#include "qdesktopwidget.h"
+
 #include <Ogre.h>
 #include <QDebug>
+#include <QApplication>
 
 namespace CAVEStereo
 {
 
-    CAVESettingsWidget::CAVESettingsWidget(Foundation::Framework* framework, QWidget* parent)
-        :QWidget(parent),
+    CAVESettingsWidget::CAVESettingsWidget(Foundation::Framework* framework, QWidget* parent) :
+        QWidget(parent),
+        framework_(framework),
         settings_dialog_(this),
         next_view_num_(0),
         view_prefix_("View")
     {
         setupUi(this);
 
-        framework_ = framework;
-        UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-            if (!ui)
-                return;
-        ui->AddSettingsWidget(this, "CAVE");
         QObject::connect(this, SIGNAL(NewCAVEViewRequested(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&)), this, SLOT(AddViewToUi(const QString&)));
+        QObject::connect(this, SIGNAL(NewCAVEPanoramaViewRequested(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, int)), this, SLOT(AddViewToUi(const QString&)));
         QObject::connect(toggle_CAVE, SIGNAL(toggled(bool)),this, SLOT(CAVEButtonToggled(bool)));
         QObject::connect(addView, SIGNAL(clicked(bool)),this,SLOT(AddNewCAVEView()));
         QObject::connect(addViewAdvanced, SIGNAL(clicked(bool)), this, SLOT(AddNewCAVEViewAdvanced()));
@@ -32,6 +34,12 @@ namespace CAVEStereo
         QObject::connect(minicave_button, SIGNAL(clicked(bool)), this, SLOT(MiniCAVE()));
         QObject::connect(&modmapper_, SIGNAL(mapped(QString)), this, SLOT(ModifyViewPressed(QString)));
         QObject::connect(&remmapper_, SIGNAL(mapped(QString)), this, SLOT(DeleteViewPressed(QString)));
+        QObject::connect(panorama_button, SIGNAL(clicked()),this,SLOT(Panorama()));
+    }
+
+    void CAVESettingsWidget::ShowCaveWindow()
+    {
+        show();
     }
 
     void CAVESettingsWidget::AddNewCAVEViewAdvanced()
@@ -47,7 +55,6 @@ namespace CAVEStereo
                 emit NewCAVEViewRequested(GetNextName(), tl ,bl, br, eye); 
             }
         }
-
     }
 
     void CAVESettingsWidget::AddViewToUi(const QString& name)
@@ -71,7 +78,6 @@ namespace CAVEStereo
         layout->addWidget(remb);
         viewslayout->addLayout(layout);
     }
-
 
     void CAVESettingsWidget::ModifyViewPressed(QString name)
     {
@@ -167,6 +173,36 @@ namespace CAVEStereo
         emit NewCAVEViewRequested(GetNextName(), tl ,bl, br, eye);
         CAVEViewSettings::ConvertToVectors(0.f,0.f,2.f,60.f,60.f*(3.f/4.f),bl,tl,br);
         emit NewCAVEViewRequested(GetNextName(), tl ,bl, br, eye);
+        toggle_CAVE->setChecked(true);
+
+    }
+    void CAVESettingsWidget::Panorama()
+    {
+        QRect rect = QApplication::desktop()->screenGeometry();
+        int new_render_width = rect.width();
+        int new_render_height = rect.height();
+        framework_->Ui()->MainWindow()->resize(new_render_width/2,new_render_height/2);
+        int main_window_width = framework_->Ui()->MainWindow()->width();
+        int main_window_height = framework_->Ui()->MainWindow()->height();
+        framework_->Ui()->MainWindow()->move((new_render_width/2)-(main_window_width/2),(new_render_height/2)-(main_window_height*0.666));
+
+        toggle_CAVE->setChecked(false);
+
+        Ogre::Vector3 bl,br,tl,eye;
+
+        eye = Ogre::Vector3(0,0,0);
+
+        CAVEViewSettings::ConvertToVectors(45.f,-0.2f,2.f,45.f,45.f*(3.f/4.f),bl,tl,br);
+        emit NewCAVEPanoramaViewRequested(GetNextName(), tl, bl,br,eye,2);
+        CAVEViewSettings::ConvertToVectors(-45.f,0.2f,2.f,45.f,45.f*(3.f/4.f),bl,tl,br);
+        emit NewCAVEPanoramaViewRequested(GetNextName(), tl ,bl, br, eye,4);
+        CAVEViewSettings::ConvertToVectors(0.f,0.f,2.f,45.f,45.f*(3.f/4.f),bl,tl,br);
+        emit NewCAVEPanoramaViewRequested(GetNextName(), tl ,bl, br, eye,3);
+        CAVEViewSettings::ConvertToVectors(90.f,-0.2f,2.f,45.f,45.f*(3.f/4.f),bl,tl,br);
+        emit NewCAVEPanoramaViewRequested(GetNextName(), tl, bl,br,eye,1);
+        CAVEViewSettings::ConvertToVectors(-90.f,0.2f,2.f,45.f,45.f*(3.f/4.f),bl,tl,br);
+        emit NewCAVEPanoramaViewRequested(GetNextName(), tl, bl,br,eye,5);
+
         toggle_CAVE->setChecked(true);
 
     }

@@ -25,13 +25,13 @@ DOXYFILE_ENCODING      = UTF-8
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded 
 # by quotes) that should identify the project.
 
-PROJECT_NAME           = Naali
+PROJECT_NAME           = "RealXtend Tundra SDK"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = develop
+PROJECT_NUMBER         = "Latest Nightly"
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -124,7 +124,7 @@ FULL_PATH_NAMES        = YES
 # If left blank the directory from which doxygen is run is used as the 
 # path to strip.
 
-STRIP_FROM_PATH        = 
+STRIP_FROM_PATH        = /root/naali/
 
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of 
 # the path mentioned in the documentation of a class, which tells 
@@ -313,7 +313,7 @@ EXTRACT_ALL            = YES
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class 
 # will be included in the documentation.
 
-EXTRACT_PRIVATE        = YES
+EXTRACT_PRIVATE        = NO
 
 # If the EXTRACT_STATIC tag is set to YES all static members of a file 
 # will be included in the documentation.
@@ -639,7 +639,29 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = ../external_libs
+EXCLUDE                = ../external_libs \
+                         ../bin \
+                         ../.git \
+                         ../CMakeFiles \
+                         ../CMakeModules \
+                         ../tools \
+                         ../WorldBuildingModule \
+                         ../WorldMapModule \
+                         ../UiModule \
+                         ../TtsModule \
+                         ../ScenePersistenceModule \
+                         ../ProtocolModuleOpenSim \
+                         ../ProtocolModuleTaiga \
+                         ../ProtocolUtilities \
+                         ../InWorldChatModule \
+                         ../TelepathyIMModule \
+                         ../LegacyAvatarModule \
+                         ../InventoryModule \
+                         ../LibraryModule \
+                         ../RpcUtilities \
+                         ../HttpUtilities \
+                         ../TextureDecoderModule \
+                         ../UnitTests
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -653,8 +675,12 @@ EXCLUDE_SYMLINKS       = NO
 # against the file with absolute path, so to exclude all test directories 
 # for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       = *.svn* \
-                         *.git*
+EXCLUDE_PATTERNS       = */.git* \
+                         *.dir/* \
+                         ui_*.h \
+                         sqlite*.* \
+                         moc_*.cxx \
+                         *.py
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 
@@ -662,7 +688,10 @@ EXCLUDE_PATTERNS       = *.svn* \
 # wildcard * is used, a substring. Examples: ANamespace, AClass, 
 # AClass::ANamespace, ANamespace::*Test
 
-EXCLUDE_SYMBOLS        = 
+EXCLUDE_SYMBOLS        = DEFINE_QPROPERTY_ATTRIBUTE* \
+                         poco::* \
+                         boost::* \
+                         json::* \
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 

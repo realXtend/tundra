@@ -52,8 +52,8 @@ namespace Environment
         static AttributeMetadata currentTimeMetaData("", "0", "100", "0.1");
         currentTimeAttr.SetMetadata(&currentTimeMetaData);
 
-        connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+            SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)));
 
         UpdateSun();
         UpdateAmbientLight();
@@ -134,7 +134,7 @@ namespace Environment
         sunLight_->setDirection(OgreRenderer::ToOgreVector3(sunDirectionAttr.Get()));
         sunLight_->setCastShadows(sunCastShadowsAttr.Get());
         sunLight_->setDiffuseColour(OgreRenderer::ToOgreColor(sunDiffuseColorAttr.Get()));
-            
+        sunLight_->setSpecularColour(0.0,0.0,0.0);
         ///\todo Read parameters from config file?
         //sunLight_->setDiffuseColour(0.93f, 1, 0.13f);
         //sunLight_->setDirection(-1, -1, -1);
@@ -143,7 +143,7 @@ namespace Environment
     
     }
 
-    void EC_EnvironmentLight::AttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
+    void EC_EnvironmentLight::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
     {
         ChangeEnvironmentLight(attribute);
     }

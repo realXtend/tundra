@@ -3,30 +3,27 @@
 #include "StableHeaders.h"
 #include "ObjectCameraController.h"
 #include "EventManager.h"
-
 #include "Renderer.h"
 #include "FrameAPI.h"
 #include "SceneAPI.h"
 #include "Entity.h"
-
 #include "InputEvents.h"
 #include "SceneEvents.h"
 #include "AvatarEvents.h"
 #include "NetworkEvents.h"
 #include "UiServiceInterface.h"
-
+#include "SceneManager.h"
+#include "EC_Placeable.h"
+#include "EC_OgreCamera.h"
+#include "EC_Mesh.h"
+#include "EC_OgreCustomObject.h"
+#include "InputContext.h"
 #include <QApplication>
 #include <QGraphicsScene>
 
-#include <SceneManager.h>
-#include <EC_Placeable.h>
-#include <EC_OgreCamera.h>
-#include <EC_Mesh.h>
-#include <EC_OgreCustomObject.h>
-
 #include <Ogre.h>
 
-#include "InputContext.h"
+#include "MemoryLeakCheck.h"
 
 namespace RexLogic
 {
@@ -191,9 +188,13 @@ namespace RexLogic
         if (avatar_edit_mode_)
             return;
 
-        // Only do obj focus when in the inworld scene, ignore on building and avatar scenes
-        //QGraphicsScene *scene = framework_->UiService()->GetScene("Inworld");
-		QGraphicsScene *scene = framework_->UiService()->GetMainScene();
+        // Only do obj focus when in the in-world scene, ignore on building and avatar scenes
+        ///\todo UiServiceInterface is/will be deprecated. Refactor.
+        UiServiceInterface *uiService = framework_->GetService<UiServiceInterface>();
+        if (!uiService)
+            return;
+
+        QGraphicsScene *scene = uiService->GetScene("Inworld");
         if (!scene)
             return;
         if (!scene->isActive())
@@ -221,7 +222,9 @@ namespace RexLogic
             key_event->sequence == framework_->Input()->KeyBinding("Avatar.RotateRight") ||
             key_event->sequence == framework_->Input()->KeyBinding("Avatar.StrafeLeft") ||
             key_event->sequence == framework_->Input()->KeyBinding("Avatar.StrafeRight"))
+        {
             return_to_avatar = true;
+        }
 
         if (return_to_avatar)
             ReturnToAvatarCamera();

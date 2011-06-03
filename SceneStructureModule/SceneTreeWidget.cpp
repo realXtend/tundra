@@ -13,7 +13,6 @@
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
 
-#include "UiServiceInterface.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
 #include "LoggingFunctions.h"
@@ -37,7 +36,7 @@
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #ifdef OGREASSETEDITOR_ENABLED
 #include "MeshPreviewEditor.h"
 #include "TexturePreviewEditor.h"
@@ -444,7 +443,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
                 QDomElement entity_elem = scene_doc.createElement("entity");
                 entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
-                foreach(ComponentPtr component, entity->GetComponentVector())
+                foreach(ComponentPtr component, entity->Components())
                     if (component->IsSerializable())
                         component->SerializeTo(scene_doc, entity_elem);
 
@@ -534,9 +533,6 @@ void SceneTreeWidget::Edit()
 
     if (selection.HasComponents() || selection.HasEntities())
     {
-        UiServiceInterface *ui_service = framework->GetService<UiServiceInterface>();
-        assert(ui_service);
-
         // If we have an existing editor instance, use it.
         if (ecEditors.size())
         {
@@ -593,24 +589,24 @@ void SceneTreeWidget::Edit()
         /*ui->AddWidgetToScene(ecEditor);
         ui->ShowWidget(ecEditor);
         ui->BringWidgetToFront(ecEditor);*/ 
-    } else
+    }
+    else
     {
 #ifdef OGREASSETEDITOR_ENABLED
         foreach(AssetRefItem *aItem, selection.assets)
         {
             //int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
+            QWidget *editor = 0;
             QString type = GetResourceTypeFromResourceFileName(aItem->id.toLatin1());
-
             if (type == "OgreMesh")
-            {
-                MeshPreviewEditor::OpenMeshPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), aItem->type);
-            } else if (type ==  "OgreTexture")
-            {
-                TexturePreviewEditor::OpenPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
-            } else if (type == "OgreMaterial")
-            {
-                OgreScriptEditor::OpenOgreScriptEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), RexTypes::RexAT_MaterialScript);
-            }
+                editor = MeshPreviewEditor::OpenMeshPreviewEditor(framework, OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str());
+            else if (type ==  "OgreTexture")
+                editor = TexturePreviewEditor::OpenPreviewEditor(OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str(), 0);
+            else if (type == "OgreMaterial")
+                editor = OgreScriptEditor::OpenOgreScriptEditor(OgreRenderer::SanitateAssetIdForOgre(aItem->id).c_str(), RexTypes::RexAT_MaterialScript);
+
+            if (editor)
+                editor->show();
         }
 #endif
     }
@@ -623,9 +619,6 @@ void SceneTreeWidget::EditInNew()
         return;
 
     // Create new editor instance every time, but if our "singleton" editor is not instantiated, create it.
-    //UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-    //assert(ui);
-
     ECEditorWindow *editor = new ECEditorWindow(framework);
 	ECEditorModule *module = framework->GetModule<ECEditorModule>();
 	disconnect(editor, SIGNAL(OnFocusChanged(ECEditorWindow *)), module, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
@@ -1381,7 +1374,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
             if (!comp)
                 continue;
 
-            foreach(ComponentPtr comp, entity->GetComponentVector())
+            foreach(ComponentPtr comp, entity->Components())
                 foreach(IAttribute *attr, comp->GetAttributes())
                     if (attr->TypeName() == "assetreference")
                     {

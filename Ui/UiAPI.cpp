@@ -3,26 +3,30 @@
 #include "DebugOperatorNew.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
-#include "NaaliGraphicsView.h"
+#include "UiMainWindow.h"
+#include "UiGraphicsView.h"
+#include "QtUiAsset.h"
+#include "UiProxyWidget.h"
+
 #include "Framework.h"
 #include "AssetAPI.h"
-#include "QtUiAsset.h"
 #include "GenericAssetFactory.h"
-
-//#include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("UiAPI")
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("UiAPI")
 
 #include <QEvent>
 #include <QLayout>
 #include <QVBoxLayout>
 #include <QScrollBar>
+#include <QUiLoader>
+#include <QFile>
+#include <QAction>
 
 #include "MemoryLeakCheck.h"
 
-/// The SuppressedPaintWidget is used as a viewport for the main Naali QGraphicsView. Its purpose is
-/// to disable all automatic drawing of the QGraphicsView to screen so that we can composit an Ogre
-/// 3D render with the Qt widgets added to a QGraphicsScene.
+/// The SuppressedPaintWidget is used as a viewport for the main Naali QGraphicsView.
+/** Its purpose is to disable all automatic drawing of the QGraphicsView to screen so that
+    we can composite an Ogre 3D render with the Qt widgets added to a QGraphicsScene. */
 class SuppressedPaintWidget : public QWidget {
 public:
     SuppressedPaintWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
@@ -43,26 +47,22 @@ SuppressedPaintWidget::SuppressedPaintWidget(QWidget *parent, Qt::WindowFlags f)
 
 bool SuppressedPaintWidget::event(QEvent *event)
 {
-    if (event->type() == QEvent::UpdateRequest)
+    switch(event->type())
+    {
+    case QEvent::UpdateRequest:
+    case QEvent::Paint:
+    case QEvent::Wheel:
+    case QEvent::Resize:
         return true;
-
-    if (event->type() == QEvent::Paint)
-        return true;
-
-    if (event->type() == QEvent::Wheel)
-        return true;
-
-    if (event->type() == QEvent::Resize)
-        return true;
-
-    return QWidget::event(event);
+    default:
+        return QWidget::event(event);
+    }
 }
 
 void SuppressedPaintWidget::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
 }
-
 
 UiAPI::UiAPI(Foundation::Framework *owner_) :
     owner(owner_),
@@ -73,8 +73,9 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     if (owner->IsHeadless())
         return;
     
-    mainWindow = new NaaliMainWindow(owner);
-	mainWindow->centralWidget()->setAutoFillBackground(false);
+    mainWindow = new UiMainWindow(owner);
+    mainWindow->setAutoFillBackground(false);
+    //mainWindow->setUpdatesEnabled(false);
 
     // Apply the Naali main window icon. 
     // Note: this will only affect to a icon at main window left top corner.
@@ -83,18 +84,17 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     QIcon icon("./data/ui/images/icon/naali_logo_32px_RC1.ico");
     mainWindow->setWindowIcon(icon);
 
-	
-	graphicsView = new NaaliGraphicsView(mainWindow->centralWidget());
+    graphicsView = new UiGraphicsView(mainWindow);
 
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
 
     // QMainWindow has a layout by default. It will not let you set another.
     // Leave this check here if the window type changes to for example QWidget so we dont crash then.
-    if (!mainWindow->centralWidget()->layout())
-        mainWindow->centralWidget()->setLayout(new QVBoxLayout());
-    mainWindow->centralWidget()->layout()->setMargin(0);
-    mainWindow->centralWidget()->layout()->setContentsMargins(0,0,0,0);
-    mainWindow->centralWidget()->layout()->addWidget(graphicsView);
+    if (!mainWindow->layout())
+        mainWindow->setLayout(new QVBoxLayout());
+    mainWindow->layout()->setMargin(0);
+    mainWindow->layout()->setContentsMargins(0,0,0,0);
+    mainWindow->layout()->addWidget(graphicsView);
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
@@ -102,7 +102,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     viewportWidget->setGeometry(0, 0, graphicsView->width(), graphicsView->height());
     viewportWidget->setContentsMargins(0,0,0,0);
 
-    mainWindow->centralWidget()->setContentsMargins(0,0,0,0);
+    mainWindow->setContentsMargins(0,0,0,0);
     graphicsView->setContentsMargins(0,0,0,0);
     
     graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -113,32 +113,30 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     graphicsView->verticalScrollBar()->setValue(0);
     graphicsView->verticalScrollBar()->setRange(0, 0);
 
-    // Setup Qts mainwindow with title and geometry
-    //mainWindow->setWindowTitle(QString(window_title_.c_str()));
-    //mainWindow->setGeometry(window_left, window_top, width, height);
-    //if (maximized)
-    //    mainWindow->showMaximized();
-
     graphicsScene = new QGraphicsScene(this);
 
     graphicsView->setScene(graphicsScene);
     graphicsView->scene()->setSceneRect(graphicsView->rect());
     connect(graphicsScene, SIGNAL(changed(const QList<QRectF> &)), graphicsView, SLOT(HandleSceneChanged(const QList<QRectF> &))); 
-//    connect(graphicsScene, SIGNAL(sceneRectChanged(const QRectF &)), SLOT(OnSceneRectChanged(const QRectF &)));
+    connect(graphicsScene, SIGNAL(sceneRectChanged(const QRectF &)), SLOT(OnSceneRectChanged(const QRectF &)));
 
-    connect(mainWindow, SIGNAL(WindowResizeEvent(int,int)), graphicsView, SLOT(Resize(int,int)));
+    connect(mainWindow, SIGNAL(WindowResizeEvent(int,int)), graphicsView, SLOT(Resize(int,int))); 
 
     mainWindow->LoadWindowSettingsFromFile();
-    graphicsView->Resize(mainWindow->centralWidget()->width(), mainWindow->centralWidget()->height());
+    graphicsView->Resize(mainWindow->width(), mainWindow->height());
 
-    graphicsView->show();
-	mainWindow->show();
-    viewportWidget->show();
+    // Unfortunate hack we have to do, will mess up the splash screen for a moment.
+    // Reason why we need to show/hide hack is qt makes the QWidget::winId() valid on first show event.
+    // This means we need to have a valid win id before ogre is loaded and the winid is passet to its renderer to paint into.
+    mainWindow->show();
+    mainWindow->hide();
 
     /// Do a full repaint of the view now that we've shown it.
     graphicsView->MarkViewUndirty();
 
     owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
+
+    connect(mainWindow, SIGNAL(WindowCloseEvent()), owner, SLOT(Exit()));
 }
 
 UiAPI::~UiAPI()
@@ -147,15 +145,12 @@ UiAPI::~UiAPI()
     delete viewportWidget;
 }
 
-QMainWindow *UiAPI::MainWindow() const
+UiMainWindow *UiAPI::MainWindow() const
 {
-	if (owner->IsHeadless())
-        return 0;
-	else
-		return mainWindow;
+    return mainWindow;
 }
 
-NaaliGraphicsView *UiAPI::GraphicsView() const
+UiGraphicsView *UiAPI::GraphicsView() const
 {
     return graphicsView;
 }
@@ -165,12 +160,11 @@ QGraphicsScene *UiAPI::GraphicsScene() const
     return graphicsScene;
 }
 
-/*
 UiProxyWidget *UiAPI::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
 {
     if (!widget)
     {
-        LogError("AddWidgetToScene called with a null proxywidget!");
+        LogError("AddWidgetToScene called with a null proxy widget!");
         return 0;
     }
 
@@ -184,7 +178,7 @@ UiProxyWidget *UiAPI::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
     // Synchronize windowState flags
     proxy->widget()->setWindowState(widget->windowState());
 
-    AddWidgetToScene(proxy);
+    AddProxyWidgetToScene(proxy);
 
     // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
     // signal to a slot which handles the deletion. This must be done because closing
@@ -195,29 +189,29 @@ UiProxyWidget *UiAPI::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
     return proxy;
 }
 
-bool UiAPI::AddWidgetToScene(UiProxyWidget *widget)
+bool UiAPI::AddProxyWidgetToScene(UiProxyWidget *widget)
 {
     if (!widget)
     {
-        LogError("AddWidgetToScene called with a null proxywidget!");
+        LogError("AddWidgetToScene called with a null proxy widget!");
         return false;
     }
 
     if (!widget->widget())
     {
-        LogError("AddWidgetToScene called for proxywidget that does not embed a widget!");
+        LogError("AddWidgetToScene called for proxy widget that does not embed a widget!");
         return false;
     }
 
-    if (widgets_.contains(widget))
+    if (widgets.contains(widget))
     {
         LogWarning("AddWidgetToScene: Scene already contains the given widget!");
         return false;
     }
 
-    QObject::connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(OnProxyDestroyed(QObject *)));
-    
-    widgets_.append(widget);
+    connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(OnProxyDestroyed(QObject *)));
+
+    widgets.append(widget);
 
     if (widget->isVisible())
         widget->hide();
@@ -230,7 +224,7 @@ bool UiAPI::AddWidgetToScene(UiProxyWidget *widget)
     // Resize full screen widgets to fit the scene rect.
     if (widget->widget()->windowState() & Qt::WindowFullScreen)
     {
-        fullScreenWidgets_ << widget;
+        fullScreenWidgets << widget;
         widget->setGeometry(graphicsScene->sceneRect().toRect());
     }
 
@@ -245,8 +239,8 @@ void UiAPI::RemoveWidgetFromScene(QWidget *widget)
 
     if (graphicsScene)
         graphicsScene->removeItem(widget->graphicsProxyWidget());
-    widgets_.removeOne(widget->graphicsProxyWidget());
-    fullScreenWidgets_.removeOne(widget->graphicsProxyWidget());
+    widgets.removeOne(widget->graphicsProxyWidget());
+    fullScreenWidgets.removeOne(widget->graphicsProxyWidget());
 }
 
 void UiAPI::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
@@ -256,8 +250,8 @@ void UiAPI::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
 
     if (graphicsScene)
         graphicsScene->removeItem(widget);
-    widgets_.removeOne(widget);
-    fullScreenWidgets_.removeOne(widget);
+    widgets.removeOne(widget);
+    fullScreenWidgets.removeOne(widget);
 }
 
 void UiAPI::OnProxyDestroyed(QObject* obj)
@@ -265,34 +259,32 @@ void UiAPI::OnProxyDestroyed(QObject* obj)
     // Make sure we don't get dangling pointers
     // Note: at this point it's a QObject, not a QGraphicsProxyWidget anymore
     QGraphicsProxyWidget* proxy = static_cast<QGraphicsProxyWidget*>(obj);
-    widgets_.removeOne(proxy);
-    fullScreenWidgets_.removeOne(proxy);
+    widgets.removeOne(proxy);
+    fullScreenWidgets.removeOne(proxy);
 }
 
-QWidget *UiAPI::LoadFromFile(const QString &file_path, bool add_to_scene, QWidget *parent)
+QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *parent)
 {
-    AssetAPI *assetAPI = owner->Asset();
-    QString outPath = "";
-    AssetPtr asset;
     QWidget *widget = 0;
 
-    if (AssetAPI::ParseAssetRefType(file_path) != AssetAPI::AssetRefLocalPath)
+    if (AssetAPI::ParseAssetRefType(filePath) != AssetAPI::AssetRefLocalPath)
     {
-        asset = assetAPI->GetAsset(file_path);
+        AssetPtr asset = owner->Asset()->GetAsset(filePath);
         if (!asset)
         {
-            LogError(("LoadFromFile: Asset \"" + file_path + "\" is not loaded to the asset system. Call RequestAsset prior to use!").toStdString());
+            LogError(("LoadFromFile: Asset \"" + filePath + "\" is not loaded to the asset system. Call RequestAsset prior to use!").toStdString());
             return 0;
         }
+
         QtUiAsset *uiAsset = dynamic_cast<QtUiAsset*>(asset.get());
         if (!uiAsset)
         {
-            LogError(("LoadFromFile: Asset \"" + file_path + "\" is not of type QtUiFile!").toStdString());
+            LogError(("LoadFromFile: Asset \"" + filePath + "\" is not of type QtUiFile!").toStdString());
             return 0;
         }
-        if (!uiAsset->IsDataValid())
+        if (!uiAsset->IsLoaded())
         {
-            LogError(("LoadFromFile: Asset \"" + file_path + "\" data is not valid!").toStdString());
+            LogError(("LoadFromFile: Asset \"" + filePath + "\" data is not valid!").toStdString());
             return 0;
         }
 
@@ -305,21 +297,37 @@ QWidget *UiAPI::LoadFromFile(const QString &file_path, bool add_to_scene, QWidge
     }
     else // The file is from absolute source location.
     {
-        QFile file(file_path); 
+        QFile file(filePath);
         QUiLoader loader;
-        file.open(QFile::ReadOnly);    
+        file.open(QFile::ReadOnly);
         widget = loader.load(&file, parent);
     }
 
     if (!widget)
     {
-        LogError(("LoadFromFile: Failed to load widget from file \"" + file_path + "\"!").toStdString());
+        LogError(("LoadFromFile: Failed to load widget from file \"" + filePath + "\"!").toStdString());
         return 0;
     }
 
-    if (add_to_scene && widget)
+    if (addToScene && widget)
         AddWidgetToScene(widget);
+
     return widget;
+}
+
+void UiAPI::EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
+{
+    emit ContextMenuAboutToOpen(menu,targets);
+}
+
+void UiAPI::EmitAddAction(QAction *action, const QString &group)
+{
+    emit AddAction(action, group);
+}
+
+void UiAPI::EmitOpenUrl(const QUrl &url)
+{
+    emit OpenUrl(url);
 }
 
 void UiAPI::ShowWidget(QWidget *widget) const
@@ -363,7 +371,7 @@ void UiAPI::BringWidgetToFront(QWidget *widget) const
     graphicsScene->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
 }
 
-void UiAPI::BringWidgetToFront(QGraphicsProxyWidget *widget) const
+void UiAPI::BringProxyWidgetToFront(QGraphicsProxyWidget *widget) const
 {
     if (!widget)
     {
@@ -377,7 +385,7 @@ void UiAPI::BringWidgetToFront(QGraphicsProxyWidget *widget) const
 
 void UiAPI::OnSceneRectChanged(const QRectF &rect)
 {
-    foreach(QGraphicsProxyWidget *widget, fullScreenWidgets_)
+    foreach(QGraphicsProxyWidget *widget, fullScreenWidgets)
         widget->setGeometry(rect);
 }
 
@@ -387,4 +395,3 @@ void UiAPI::DeleteCallingWidgetOnClose()
     if (proxy && !proxy->isVisible())
         proxy->deleteLater();
 }
-*/

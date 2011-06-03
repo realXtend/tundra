@@ -95,7 +95,7 @@ void TextureAsset::RegenerateAllMipLevels()
         }
 }
 */
-bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
+bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     if (ogreTexture.isNull())
     {
@@ -164,4 +164,9 @@ void TextureAsset::DoUnload()
         Ogre::TextureManager::getSingleton().remove(ogreAssetName.toStdString());
     }
     catch (...) {}
+}
+
+bool TextureAsset::IsLoaded() const
+{
+    return ogreTexture.get() != 0;
 }

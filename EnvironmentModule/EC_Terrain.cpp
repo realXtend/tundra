@@ -144,10 +144,10 @@ void EC_Terrain::View(const QString &attributeName)
 
 void EC_Terrain::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(IAttribute *)));
+    disconnect(this, SLOT(OnAttributeUpdated(IAttribute *)));
 
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-        this, SLOT(AttributeUpdated(IAttribute*)), Qt::UniqueConnection);
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+        this, SLOT(OnAttributeUpdated(IAttribute*)), Qt::UniqueConnection);
 
     Scene::Entity *parent = GetParentEntity();
     CreateRootNode();
@@ -234,8 +234,7 @@ void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
         }
 }
 
-//! Emitted when some of the attributes has been changed.
-void EC_Terrain::AttributeUpdated(IAttribute *attribute)
+void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
 {
     std::string changedAttribute = attribute->GetNameString();
 
@@ -474,8 +473,8 @@ Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const
 {
     if (!rootNode)
     {
-	LogError("GetPointOnMap called before rootNode initialized, returning zeros");
-	return Vector3df(0, 0, 0);
+        LogError("GetPointOnMap called before rootNode initialized, returning zeros");
+        return Vector3df(0, 0, 0);
     }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
@@ -490,8 +489,8 @@ Vector3df EC_Terrain::GetPointOnMapLocal(const Vector3df &point) const
 {
     if (!rootNode)
     {
-	LogError("GetPointOnMapLocal called before rootNode initialized, returning zeros");
-	return Vector3df(0, 0, 0);
+        LogError("GetPointOnMapLocal called before rootNode initialized, returning zeros");
+        return Vector3df(0, 0, 0);
     }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
@@ -550,8 +549,8 @@ Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const 
 {
     if (!rootNode)
     {
-	LogError("GetTerrainRotationAngles called before rootNode initialized, returning zeros");
-	return Vector3df(0, 0, 0);
+        LogError("GetTerrainRotationAngles called before rootNode initialized, returning zeros");
+        return Vector3df(0, 0, 0);
     }
     Vector3df worldPos(x,y,z);
     Vector3df local = GetPointOnMapLocal(worldPos);
@@ -572,14 +571,14 @@ Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const 
     Ogre::Matrix3 m3x3;
 
     m3x3[0][0] = xVec.x;
- 	m3x3[0][1] = front.x;
- 	m3x3[0][2] = worldUp.x;
- 	m3x3[1][0] = xVec.y;
- 	m3x3[1][1] = front.y;
- 	m3x3[1][2] = worldUp.y;
- 	m3x3[2][0] = xVec.z;
- 	m3x3[2][1] = front.z;
- 	m3x3[2][2] = worldUp.z; 
+    m3x3[0][1] = front.x;
+    m3x3[0][2] = worldUp.x;
+    m3x3[1][0] = xVec.y;
+    m3x3[1][1] = front.y;
+    m3x3[1][2] = worldUp.y;
+    m3x3[2][0] = xVec.z;
+    m3x3[2][1] = front.z;
+    m3x3[2][2] = worldUp.z; 
  
     Ogre::Quaternion q(m3x3);
     Quaternion orientation(q.x, q.y,q.z, q.w);
@@ -755,7 +754,7 @@ bool EC_Terrain::SaveToFile(QString filename)
     }
     fflush(handle);
     if (ferror(handle))
-	LogError("Write error in SaveToFile");
+    LogError("Write error in SaveToFile");
     fclose(handle);
 
     return true;

@@ -28,7 +28,7 @@ EC_SkyBox::EC_SkyBox(IModule *module) :
     distance(this, "Distance",50.0),
     drawFirst(this, "Draw first", true)
 {
-     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
      static AttributeMetadata materialRefMetadata;
      AttributeMetadata::ButtonInfoList materialRefButtons;
@@ -121,7 +121,7 @@ void EC_SkyBox::View(const QString &attributeName)
     /// @todo implement this.
 }
 
-void EC_SkyBox::AttributeUpdated(IAttribute* attribute)
+void EC_SkyBox::OnAttributeUpdated(IAttribute* attribute)
 {
     if (!ViewEnabled())
         return;
@@ -174,7 +174,7 @@ void EC_SkyBox::DisableSky()
     if (!ViewEnabled())
         return;
 
-    if (renderer_.expired())
+    if (!renderer_.expired())
         renderer_.lock()->GetSceneManager()->setSkyBox(false, "");
 }
 

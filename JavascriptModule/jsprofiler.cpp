@@ -30,7 +30,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-namespace jsprofiler {
+namespace JsProfiler {
 
 
 inline suseconds_t getTimeOfDay()

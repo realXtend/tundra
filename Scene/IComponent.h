@@ -25,9 +25,9 @@ class QDomElement;
 namespace Foundation { class Framework; }
 
 /// IComponent is the base class for all user-created components. Inherit your own components from this class.
-/** Each Component has a compile-time specified Typename that identifies the class-name of the Component.
+/** Each Component has a compile-time specified type name that identifies the class-name of the Component.
     This differentiates different derived implementations of the IComponent class. Each implemented Component
-    must have a unique Typename.
+    must have a unique type name.
 
     Additionally, each Component has a Name string, which identifies different instances of the same Component,
     if more than one is added to an Entity.
@@ -37,19 +37,20 @@ namespace Foundation { class Framework; }
 
     Every Component has a state variable 'UpdateMode' that specifies a default setting for managing which objects
     get notified whenever an Attribute change event occurs. This is used to create "Local Only"-objects as well
-    as when doing batch updates of Attributes (for performance or correctness). */
+    as when doing batch updates of Attributes (for performance or correctness).
+*/
 class IComponent : public QObject, public boost::enable_shared_from_this<IComponent>
 {
     friend class ::IAttribute;
 
     Q_OBJECT
-    Q_PROPERTY(QString Name READ Name WRITE SetName)
-    Q_PROPERTY(QString TypeName READ TypeName)
-    Q_PROPERTY(bool NetworkSyncEnabled READ GetNetworkSyncEnabled WRITE SetNetworkSyncEnabled)
-    Q_PROPERTY(AttributeChange::Type UpdateMode READ GetUpdateMode WRITE SetUpdateMode)
+    Q_PROPERTY(QString name READ Name WRITE SetName)
+    Q_PROPERTY(QString typeName READ TypeName)
+    Q_PROPERTY(bool networkSyncEnabled READ GetNetworkSyncEnabled WRITE SetNetworkSyncEnabled)
+    Q_PROPERTY(AttributeChange::Type updateMode READ GetUpdateMode WRITE SetUpdateMode)
 
 public:
-    /// Constuctor.
+    /// Constructor.
     explicit IComponent(Foundation::Framework* framework);
 
     /// Copy-constructor.
@@ -77,7 +78,7 @@ public:
 
     /// Sets the name of the component.
     /** This call will silently fail if there already exists a component with the
-        same (Typename, Name) pair in this entity. When this function changes the name of the component,
+        same (TypeName, Name) pair in this entity. When this function changes the name of the component,
         the signal ComponentNameChanged is emitted.
         @param name The new name for this component. This may be an empty string.
     */
@@ -98,7 +99,8 @@ public:
         @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
                 that attribute is returned, otherwise returns null.
     */
-    template<typename T> Attribute<T> *GetAttribute(const std::string &name) const
+    template<typename T>
+    Attribute<T> *GetAttribute(const std::string &name) const
     {
         for(size_t i = 0; i < attributes_.size(); ++i)
             if (attributes_[i]->GetNameString() == name)
@@ -192,8 +194,7 @@ public slots:
     /** You may call this function manually to force Attribute change signal to
         occur, but it is not necessary if you use the Attribute::Set function, since
         it notifies this function automatically.
-        @param attribute The attribute that was changed. The attribute passed here
-                   must be an Attribute member of this component.
+        @param attribute The attribute that was changed. The attribute passed here must be an Attribute member of this component.
         @param change Informs to the component the type of change that occurred.
 
         This function calls Scene::EmitAttributeChanged and triggers the 
@@ -202,27 +203,17 @@ public slots:
         This function is called by IAttribute::Changed whenever the value in that
         attribute is changed.
     */
-    void AttributeChanged(IAttribute* attribute, AttributeChange::Type change);
+    void EmitAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
-    /// Informs this component that the value of a member Attribute of this component has changed.
-    /** You may call this function manually to force Attribute change signal to
-        occur, but it is not necessary if you use the Attribute::Set function, since
-        it notifies this function automatically.
-        @param attributeName Name of the attribute that changed. Note: this is a no-op
-               if the named attribute is not found.
+    /// This is an overloaded function.
+    /** @param attributeName Name of the attribute that changed. Note: this is a no-op if the named attribute is not found.
         @param change Informs to the component the type of change that occurred.
-
-        This function calls Scene::EmitAttributeChanged and triggers the 
-        OnAttributeChanged signal of this component.
     */
-    void AttributeChanged(const QString& attributeName, AttributeChange::Type change);
+    void EmitAttributeChanged(const QString& attributeName, AttributeChange::Type change);
 
     /// Informs that every attribute in this Component has changed with the change
     /** you specify. If change is Replicate, or it is Default and the UpdateMode is Replicate,
         every attribute will be synced to the network.
-
-        \todo Triggers also the deprecated OnChanged() signal. That will be removed in the future.
-        Do not rely on it.
     */
     void ComponentChanged(AttributeChange::Type change);
 
@@ -257,17 +248,11 @@ public slots:
 
     /// Returns list of attribute names of the component
     /// @return list of attribute names
-    QStringList GetAttributeNames();
+    QStringList GetAttributeNames() const;
 
 signals:
-    /// This signal is emitted when any Attribute of this component has changed.
-    /// Users may freely register to this signal to get notifications of the changes to this Component.
-    /// \todo This member is deprecated and will be removed. You can achieve the exact same thing by 
-    /// connecting to OnAttributeChanged and just ignoring the parameters of that signal.
-    void OnChanged();
-
     /// This signal is emitted when an Attribute of this Component has changed. 
-    void OnAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
+    void AttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     ///\todo In the future, provide a method of listening to a change of specific Attribute, instead of having to
     /// always connect to the above function and if(...)'ing if it was the change we were interested in.
@@ -294,7 +279,7 @@ protected:
     void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& value, const QString &type) const;
 
     /// Helper function for starting deserialization. 
-    /** Checks that xml element contains the right kind of EC, and if it is right, sets the component name.
+    /** Checks that XML element contains the right kind of EC, and if it is right, sets the component name.
         Otherwise returns false and does nothing.
     */
     bool BeginDeserialization(QDomElement& comp_element);

@@ -11,10 +11,9 @@
 #include "IModule.h"
 #include "ModuleManager.h"
 #include "Entity.h"
+#include "UiAPI.h"
 #include "UiProxyWidget.h"
-#include "UiServiceInterface.h"
 #include "LoggingFunctions.h"
-
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 
 #include <QWebView>
@@ -52,7 +51,7 @@ EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
     pageWidth.SetMetadata(&size_metadata);
     pageHeight.SetMetadata(&size_metadata);
 
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateWidgetAndCanvas(IAttribute*, AttributeChange::Type)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateWidgetAndCanvas(IAttribute*, AttributeChange::Type)));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(RegisterActions()));
     CreateWidget();
 }
@@ -475,13 +474,6 @@ void EC_3DCanvasSource::CreateWidget()
     if (GetFramework()->IsHeadless())
         return;
 
-    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    if (!ui)
-    {
-        LogError("Failed to acquire UI service");
-        return;
-    }
-
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
     QFile file("./data/ui/3dcanvassource.ui");
@@ -496,7 +488,7 @@ void EC_3DCanvasSource::CreateWidget()
     }
 
     widget_->setWindowTitle(tr("Naali Web Browser"));
-    proxy_ = ui->AddWidgetToScene(widget_, false, false);
+    proxy_ = GetFramework()->Ui()->AddWidgetToScene(widget_);
     connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
 
     source_edit_ = widget_->findChild<QLineEdit*>("line_source");

@@ -73,7 +73,7 @@ public slots:
     Ogre::uchar* GetRawTexture(int texture_width, int texture_height);        
 
 private slots:
-    void AttributeUpdated(IAttribute* attribute);
+    void OnAttributeUpdated(IAttribute* attribute);
     //void UpdateRtt();
 
 private:

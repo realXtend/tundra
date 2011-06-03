@@ -45,13 +45,13 @@ else
 //Checking if needed components are added after EC_Script to Entity
  function CheckComponent(component, type)
 {
-	if (component.TypeName == "EC_Sound")
+	if (component.typeName == "EC_Sound")
 	{
-		if (component.Name == "Collision")
+		if (component.name == "Collision")
 			CollisionSound = component;
 	}
 
-	else if (component.TypeName == "RigidBody")
+	else if (component.typeName == "RigidBody")
 		RigidBody = true;
 
 	if (CollisionSound && RigidBody && Water)
@@ -67,7 +67,7 @@ function ConnectSignals()
 		var position = me.placeable.transform.pos;
 		inWater = Water.waterplane.IsPointInsideWaterCube(position);
 		me.rigidbody.PhysicsCollision.connect(Collision);
-		me.placeable.OnAttributeChanged.connect(PositionChange);
+		me.placeable.AttributeChanged.connect(PositionChange);
 }
 
 function Collision (otherEntity, pos, normal, distance, impulse, newCollision)

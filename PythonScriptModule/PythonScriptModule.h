@@ -82,7 +82,7 @@ namespace PythonScript
         Communications::ServiceInterface* GetCommunicationsService() const;
         
         void RemoveQtDynamicProperty(QObject* qobj, char* propname);
-        QList<Scene::Entity*> ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QString uuidstr, uint refresh_rate);
+        //QList<Scene::Entity*> ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate);
 
         /// Prepares Python script instance used with EC_Script for execution.
         /** The script is executed instantly only if the runOnLoad attribute of the script EC is true.
@@ -109,9 +109,9 @@ namespace PythonScript
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! callback for console command
-        Console::CommandResult ConsoleRunString(const StringVector &params);
-        Console::CommandResult ConsoleRunFile(const StringVector &params);
-        Console::CommandResult ConsoleReset(const StringVector &params);
+        ConsoleCommandResult ConsoleRunString(const StringVector &params);
+        ConsoleCommandResult ConsoleRunFile(const StringVector &params);
+        ConsoleCommandResult ConsoleReset(const StringVector &params);
 
         MODULE_LOGGING_FUNCTIONS
 

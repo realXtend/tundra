@@ -18,9 +18,6 @@
 #include "FunctionInvoker.h"
 #include "ECEditorModule.h"
 
-#include "UiProxyWidget.h"
-#include "UiServiceInterface.h"
-#include "ModuleManager.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "EC_Name.h"
@@ -94,6 +91,7 @@ void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
         item->setSelected(!item->isSelected());
         entity_list_->blockSignals(false);
     }
+
     if (udpate_ui)
         RefreshPropertyBrowser();
 }
@@ -164,6 +162,7 @@ void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
                 break;
             }
         }
+
     entity_list_->blockSignals(false);
     RefreshPropertyBrowser();
 }
@@ -258,7 +257,7 @@ void ECEditorWindow::CopyEntity()
             QDomElement entity_elem = temp_doc.createElement("entity");
             entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
-            foreach(ComponentPtr component, entity->GetComponentVector())
+            foreach(ComponentPtr component, entity->Components())
                 if (component->IsSerializable())
                     component->SerializeTo(temp_doc, entity_elem);
 
@@ -304,7 +303,7 @@ void ECEditorWindow::PasteEntity()
             return;
 
         bool hasPlaceable = false;
-        Scene::Entity::ComponentVector components = originalEntity->GetComponentVector();
+        Scene::Entity::ComponentVector components = originalEntity->Components();
         for(uint i = 0; i < components.size(); i++)
         {
             // If the entity is holding placeable component we can place it into the scene.
@@ -389,51 +388,51 @@ void ECEditorWindow::OpenFunctionDialog()
 
 void ECEditorWindow::FunctionDialogFinished(int result)
 {
-FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
-if (!dialog)
-    return;
+    FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
+    if (!dialog)
+        return;
 
-if (result == QDialog::Rejected)
-    return;
+    if (result == QDialog::Rejected)
+        return;
 
-// Get the list of parameters we will pass to the function we are invoking,
-// and update the latest values to them from the editor widgets the user inputted.
-QVariantList params;
-foreach(IArgumentType *arg, dialog->Arguments())
-{
-    arg->UpdateValueFromEditor();
-    params << arg->ToQVariant();
-}
-
-// Clear old return value from the dialog.
-dialog->SetReturnValueText("");
-
-foreach(QObjectWeakPtr o, dialog->Objects())
-    if (o.lock())
+    // Get the list of parameters we will pass to the function we are invoking,
+    // and update the latest values to them from the editor widgets the user inputted.
+    QVariantList params;
+    foreach(IArgumentType *arg, dialog->Arguments())
     {
-        QObject *obj = o.lock().get();
-
-        QString objName = obj->metaObject()->className();
-        QString objNameWithId = objName;
-        {
-            Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
-            IComponent *c = dynamic_cast<IComponent *>(obj);
-            if (e)
-                objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
-            else if (c)
-                objNameWithId.append('(' + c->Name() + ')');
-        }
-
-        QString errorMsg;
-        QVariant ret;
-        FunctionInvoker invoker;
-        invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
-
-        if (errorMsg.isEmpty())
-            dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
-        else
-            dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+        arg->UpdateValueFromEditor();
+        params << arg->ToQVariant();
     }
+
+    // Clear old return value from the dialog.
+    dialog->SetReturnValueText("");
+
+    foreach(QObjectWeakPtr o, dialog->Objects())
+        if (o.lock())
+        {
+            QObject *obj = o.lock().get();
+
+            QString objName = obj->metaObject()->className();
+            QString objNameWithId = objName;
+            {
+                Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
+                IComponent *c = dynamic_cast<IComponent *>(obj);
+                if (e)
+                    objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
+                else if (c)
+                    objNameWithId.append('(' + c->Name() + ')');
+            }
+
+            QString errorMsg;
+            QVariant ret;
+            FunctionInvoker invoker;
+            invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
+
+            if (errorMsg.isEmpty())
+                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+            else
+                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+        }
 }
 
 void ECEditorWindow::HighlightEntities(const QString &type, const QString &name)
@@ -561,7 +560,7 @@ void ECEditorWindow::ShowXmlEditorForEntity()
     {
         EntityComponentSelection entityComponent;
         entityComponent.entity = entities[i];
-        entityComponent.components = entities[i]->GetComponentVector();
+        entityComponent.components = entities[i]->Components();
         selection.push_back(entityComponent);
     }
 

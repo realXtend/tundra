@@ -104,9 +104,8 @@ public:
 
    
 public slots: 
-   
     /// Called If some of the attributes has been changed.
-    void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
+    void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
 
     /// Update sun state
     void UpdateSun();

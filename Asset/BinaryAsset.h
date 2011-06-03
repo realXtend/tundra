@@ -25,6 +25,11 @@ public:
         data.clear(); 
     }
 
+    bool Isloaded() const
+    {
+        return data.size() != 0;
+    }
+
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes)
     {
         data.clear();
@@ -32,7 +37,7 @@ public:
         return true;
     }
 
-    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters)
+    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
     {
         dst = data;
         return true;
@@ -42,6 +47,8 @@ public:
     {
         return std::vector<AssetReference>();
     }
+
+    bool IsLoaded() const { return data.size() > 0; }
 
     std::vector<u8> data;
 };

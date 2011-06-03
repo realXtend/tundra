@@ -6,8 +6,10 @@
 #define incl_Asset_AssetCache_h
 
 #include <QString>
+#include <QNetworkCookieJar>
 #include <QNetworkDiskCache>
 #include <QNetworkCacheMetaData>
+#include <QByteArray>
 #include <QHash>
 #include <QUrl>
 #include <QDir>
@@ -16,7 +18,7 @@
 #include "CoreTypes.h"
 #include "AssetFwd.h"
 
-class QNetworkDiskCache;
+class CookieJar;
 
 /// An utility function that takes an assetRef and makes a string out of it that can safely be used as a part of a filename.
 /// Replaces characters / \ : * ? " ' < > | with _
@@ -33,37 +35,37 @@ public:
     explicit AssetCache(AssetAPI *owner, QString assetCacheDirectory);
 
     /// Allocates new QFile*, it is the callers responsibility to free the memory once done with it.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual QIODevice* data(const QUrl &url);
     
     /// Frees allocated QFile* that was prepared in prepare().
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual void insert(QIODevice* device);
 
     /// Allocates new QFile*, the data is freed in either insert() or remove(), 
     /// remove() cancels the preparation and insert() finishes it.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual QIODevice* prepare(const QNetworkCacheMetaData &metaData);
     
     /// Frees allocated QFile* if one was prepared in prepare().
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual bool remove(const QUrl &url);
 
-    /// Reads metadata file to hard drive.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// Reads metadata file from hard drive.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual QNetworkCacheMetaData metaData(const QUrl &url);
 
     /// Writes metadata file to hard drive, if metadata is different from known cache metadata.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual void updateMetaData(const QNetworkCacheMetaData &metaData);
 
     /// Deletes all data and metadata files from the asset cache.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual void clear();
 
     /// Checks if asset cache is currently over the maximum limit.
     /// This call is ignored untill we decide to limit the disk cache size.
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    /// \note QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual qint64 expire();
 
 public slots:
@@ -108,9 +110,22 @@ public slots:
     /// Will not clear subfolders in the cache folders, or remove any folders.
     void ClearAssetCache();
 
+    /// Creates a new cookie jar that implements disk writing and reading. Can be used with any QNetworkAccessManager with setCookieJar() function.
+    /// \note AssetCache will be the CookieJars parent and it will destroyed by it, don't take ownerwhip of the returned CookieJar.
+    /// \param QString File path to the file the jar will read/write cookies to/from.
+    CookieJar *NewCookieJar(const QString &cookieDiskFile);
+
 private slots:
     /// Writes metadata into a file. Helper function for the QNetworkDiskCache overrides.
     bool WriteMetadata(const QString &filePath, const QNetworkCacheMetaData &metaData);
+
+    /// If the metadata for this cache item has Content-MD5 digest, compare them with the data file we are about to pass onwards.
+    /// \note If the metadata does not contain the header Content-MD5 this function will do nothing and return true. All http servers don't send this header eg. disabled by default on apache.
+    /// \note In the case that corruption is detected this function will remove the data and metadata files from disk and return false. This will trigger a full fetch for the asset data.
+    /// \param QString Absolute path to data file. You should validate that the file actually exists.
+    /// \param QNetworkCacheMetaData The assets metadata.
+    /// \return False if digest did not match with data file, true otherwise.
+    bool VerifyCacheContentDigest(const QString &absoluteDataFilePath, const QNetworkCacheMetaData &metaData);
 
     /// Genrates the absolute path to an asset cache entry. Helper function for the QNetworkDiskCache overrides.
     QString GetAbsoluteFilePath(bool isMetaData, const QUrl &url);
@@ -136,6 +151,32 @@ private:
 
     /// Internal tracking of prepared QUrl to QIODevice pairs.
     QHash<QString, QFile*> preparedItems;
+};
+
+/*! CookieJar is a subclass of QNetworkCookieJar. This is the only way to do disk storage for cookies with Qt.
+    Part reason why this is declared here is because JavaScript cannot do proper inheritance of QNetworkCookieJar to access the protected functions.
+    
+    \todo If you feel that there is a more appropriate place for this, please move the class but be sure to check depending 3rd party code.
+    \note You can ask AssetCache::NewCookiJar to make you a new CookieJar.
+*/
+class CookieJar : public QNetworkCookieJar
+{
+
+Q_OBJECT
+
+public:
+    CookieJar(QObject *parent, const QString &cookieDiskFile = QString());
+    ~CookieJar();
+
+public slots:
+    void SetDataFile(const QString &cookieDiskFile);
+    void ClearCookies();
+    void ReadCookies();
+    void StoreCookies();
+
+private:
+    QString cookieDiskFile_;
+
 };
 
 #endif

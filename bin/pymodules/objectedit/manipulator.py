@@ -82,7 +82,7 @@ class Manipulator:
 
     def compareIds(self, id):
         if self.usesManipulator:
-            if self.manipulator.Id == id:
+            if self.manipulator.id == id:
                 return True
         return False
         
@@ -183,7 +183,7 @@ class Manipulator:
                 return
 
 
-            if ent.Id == self.manipulator.Id:
+            if ent.id == self.manipulator.id:
                 ent.gizmo.ClearEditableAttributes();
                 self.setAttributes(ents)
                 submeshid = results[-3]

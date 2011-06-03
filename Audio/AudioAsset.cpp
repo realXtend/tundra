@@ -132,3 +132,8 @@ bool AudioAsset::CreateBuffer()
     
     return true;
 }
+
+bool AudioAsset::IsLoaded() const
+{
+    return handle != 0;
+}

@@ -2,9 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   AssetsWindow.cpp
- *  @brief  
- *
- *          Detailed.
+ *  @brief  The main UI for managing asset storages and assets.
  */
 
 #include "StableHeaders.h"
@@ -40,9 +38,7 @@ namespace
 AssetsWindow::AssetsWindow(Foundation::Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw),
-    searchField(0),
-    expandAndCollapseButton(0),
-    expandingOrCollapsing(false)
+    expandAndCollapseButton(0)
 {
     // Init main widget
     setAttribute(Qt::WA_DeleteOnClose);
@@ -63,7 +59,7 @@ AssetsWindow::AssetsWindow(Foundation::Framework *fw, QWidget *parent) :
     searchField->installEventFilter(this);
 
     expandAndCollapseButton = new QPushButton(tr("Expand All"), this);
-    
+
     QHBoxLayout *hlayout= new QHBoxLayout;
     hlayout->addWidget(searchField);
     hlayout->addWidget(expandAndCollapseButton);
@@ -100,6 +96,42 @@ AssetsWindow::~AssetsWindow()
         SAFE_DELETE(item);
         ++it;
     }
+}
+
+bool AssetsWindow::eventFilter(QObject *obj, QEvent *e)
+{
+    if (searchField && searchField == obj)
+    {
+        switch (e->type())
+        {
+        case QEvent::FocusIn:
+        {
+            QString currentText = searchField->text();
+            if (currentText == tr("Search..."))
+            {
+                searchField->setText("");
+                searchField->setStyleSheet("color:black;");
+            }
+            else if (!currentText.isEmpty())
+            {
+                // Calling selectAll() directly here won't do anything
+                // as the ongoing QFocusEvent will overwrite what it does.
+                QTimer::singleShot(1, searchField, SLOT(selectAll()));
+            }
+            break;
+        }
+        case QEvent::FocusOut:
+            if (searchField->text().simplified().isEmpty())
+            {
+                searchField->setText(tr("Search..."));
+                searchField->setStyleSheet("color:grey;");
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return QWidget::eventFilter(obj, e);
 }
 
 void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
@@ -146,6 +178,9 @@ void AssetsWindow::AddAsset(AssetPtr asset)
     AssetItem *item = new AssetItem(asset);
     AddChildren(asset, item);
 
+    connect(asset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleAssetLoaded(AssetPtr)));
+    connect(asset.get(), SIGNAL(Unloaded(IAsset *)), SLOT(HandleAssetUnloaded(IAsset *)));
+
     bool storageFound = false;
     AssetStoragePtr storage = asset->GetAssetStorage();
     if (storage)
@@ -190,22 +225,12 @@ void AssetsWindow::Search(const QString &filter)
 
 void AssetsWindow::ExpandOrCollapseAll()
 {
-    expandingOrCollapsing = true;
     bool treeExpanded = TreeWidgetExpandOrCollapseAll(treeWidget);
-    if (treeExpanded && expandAndCollapseButton)
-        expandAndCollapseButton->setText(tr("Collapse All"));
-    else
-        expandAndCollapseButton->setText(tr("Expand All"));
-    expandingOrCollapsing = false;
+    expandAndCollapseButton->setText(treeExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 
 void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
 {
-    if (expandingOrCollapsing)
-        return;
-    if (!expandAndCollapseButton)
-        return;
-
     bool anyExpanded = false;
     QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
     while (*iter) 
@@ -230,41 +255,26 @@ void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
         expandAndCollapseButton->setText(tr("Expand All"));
 }
 
-
-bool AssetsWindow::eventFilter(QObject *obj, QEvent *e)
+void AssetsWindow::HandleAssetLoaded(AssetPtr asset)
 {
-    if (searchField && searchField == obj)
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
     {
-        switch (e->type())
-        {
-        case QEvent::FocusIn:
-            {
-                QString currentText = searchField->text();
-                if (currentText == "Search...")
-                {
-                    searchField->setText("");
-                    searchField->setStyleSheet("color:black;");
-                }
-                else if (!currentText.isEmpty())
-                {
-                    // Calling selectAll() directly here won't do anything
-                    // as the ongoing QFocusEvent will overwrite what it does.
-                    QTimer::singleShot(1, searchField, SLOT(selectAll()));
-                }
-                break;
-            }
-        case QEvent::FocusOut:
-            {
-                if (searchField->text().simplified().isEmpty())
-                {
-                    searchField->setText(tr("Search..."));
-                    searchField->setStyleSheet("color:grey;");
-                }
-                break;
-            }
-        default:
-            break;
-        }
+        AssetItem *item = dynamic_cast<AssetItem *>(*it);
+        if (item && item->Asset() == asset)
+            item->MarkUnloaded(false);
+        ++it;
     }
-    return QWidget::eventFilter(obj, e);
+}
+
+void AssetsWindow::HandleAssetUnloaded(IAsset *asset)
+{
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
+    {
+        AssetItem *item = dynamic_cast<AssetItem *>(*it);
+        if (item && item->Asset().get() == asset)
+            item->MarkUnloaded(true);
+        ++it;
+    }
 }

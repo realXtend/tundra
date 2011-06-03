@@ -62,9 +62,9 @@ using namespace kNet;
 namespace TundraLogic
 {
 
-Server::Server(TundraLogicModule* owner, Foundation::Framework* fw) :
+Server::Server(TundraLogicModule* owner) :
     owner_(owner),
-    framework_(fw),
+    framework_(owner->GetFramework()),
     current_port_(-1),
     current_protocol_("")
 {

@@ -8,12 +8,9 @@
 #include "Framework.h"
 #include "WorldStream.h"
 
-#ifndef UISERVICE_TEST
-//#include "UiModule.h"
+#ifdef USE_UIMODULE
+#include "Common/UiAction.h"
 #include "UiServiceInterface.h"
-//#include "Inworld/InworldSceneController.h"
-//#include "Inworld/ControlPanelManager.h"
-//#include "Common/UiAction.h"
 #include <QPushButton>
 #endif
 
@@ -22,7 +19,7 @@ namespace RexLogic
 
 MainPanelHandler::MainPanelHandler(RexLogicModule *rexlogic) : rexlogic_(rexlogic)
 {
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
     //Do it with QPushButton
     UiServiceInterface *ui = rexlogic_->GetFramework()->UiService();
     if (ui)

@@ -43,15 +43,16 @@ public:
     /// Destructor.
     ~AddContentWindow();
 
-    /// Adds scene descrition to be shown in the window.
+public slots:
+    /// Adds scene description to be shown in the window.
     /** @param desc Scene description.
     */
     void AddDescription(const SceneDesc &desc);
 
-    /// Adds multiple scene descritions to be shown in the window.
+    /// Adds multiple scene descriptions to be shown in the window.
     /** @param desc Scene description.
     */
-//    void AddDescriptions(const QList<SceneDesc> &descs);
+    //void AddDescriptions(const QList<SceneDesc> &descs);
 
     /// Adds files to be shown in the window.
     /** @param fileNames List of files.
@@ -62,6 +63,20 @@ public:
     /** @param pos Position.
     */
     void AddPosition(const Vector3df &pos) { position = pos; }
+
+    /// Silently without showing ui commit everything as is and close the dialog. 
+    /// This will not show anything to user and will do everything with default settings.
+    /// Especially handy when you know there are no assets to upload (everything has web refs),
+    /// and you just want the entities to be added to the scene silently eg. on a drag and drop event.
+    void CommitEverythingAndClose();
+
+    /// Returns if current dialog content has uploads that need processing.
+    /** @return bool True if there are assets that are marked for download, false other wise.
+    */
+    bool HasAssetUploads() const;
+    
+signals:
+    void Completed(bool contentAdded, const QString &uploadBaseUrl);
 
 protected:
     void showEvent(QShowEvent *e);
@@ -86,6 +101,12 @@ private:
     */
     void RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage);
 
+    /// Returns name of the currently selected asset storage.
+    QString GetCurrentStorageName() const;
+
+    /// Generates contents of asset storage combo box. Sets default storage selected as default.
+    void GenerateStorageComboBoxContents();
+
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
     Foundation::Framework *framework; ///< Framework.
@@ -95,7 +116,7 @@ private:
     QPushButton *cancelButton; ///< Cancel/close button.
     QComboBox *storageComboBox; ///< Asset storage combo box.
     Vector3df position; ///< Centralization position for instantiated context (if used).
-    
+
     // Uploading
     QLabel *uploadStatus_;
     QProgressBar *uploadProgress_;
@@ -108,9 +129,6 @@ private:
     QLabel *entitiesStatus_;
     QProgressBar *entitiesProgress_;
 
-    QString currentStorage_;
-    QString currentStorageBaseUrl_;
-
     // Parent widget
     QWidget *parentEntities_;
     QWidget *parentAssets_;
@@ -120,6 +138,9 @@ private:
 
     // Bool for completion
     bool contentAdded_;
+
+    // Bool if we are in silent commit mode, see CommitEverythingAndClose().
+    bool silentCommit_;
 
 private slots:
     /// Checks all entity check boxes.
@@ -137,13 +158,13 @@ private slots:
     /// Start content creation and asset uploading.
     void AddContent();
 
-    /// Create new scene desctiption with ui checkbox selections
+    /// Create new scene description with ui check box selections
     bool CreateNewDesctiption();
 
     /// Start uploading
     bool UploadAssets();
 
-    /// Add entities to scene (autocalled when all transfers finish)
+    /// Add entities to scene (automatically called when all transfers finish)
     void AddEntities();
 
     /// Centers this window to the app main window
@@ -180,9 +201,6 @@ private slots:
     void UpdateUploadStatus(bool succesfull, const QString &assetRef);
 
     void CheckUploadTotals();
-
-signals:
-    void Completed(bool contentAdded, const QString &uploadBaseUrl);
 };
 
 #endif

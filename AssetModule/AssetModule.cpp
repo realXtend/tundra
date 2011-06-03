@@ -12,6 +12,7 @@
 #include "ServiceManager.h"
 #include "CoreException.h"
 #include "AssetAPI.h"
+#include "ConsoleAPI.h"
 
 #include <QDir>
 
@@ -50,13 +51,13 @@ namespace Asset
 
     void AssetModule::PostInitialize()
     {
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
-            Console::Bind(this, &AssetModule::ConsoleRequestAsset)));
+            ConsoleBind(this, &AssetModule::ConsoleRequestAsset)));
 
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "AddHttpStorage", "Adds a new Http asset storage to the known storages. Usage: AddHttpStorage(url, name)", 
-            Console::Bind(this, &AssetModule::AddHttpStorage)));
+            ConsoleBind(this, &AssetModule::AddHttpStorage)));
 
         ProcessCommandLineOptions();
     }
@@ -86,9 +87,15 @@ namespace Asset
             }
         }
 
-        if (options.count("storage") > 0)
+        
+        if (!options.count("storage"))
+            return;
+
+        std::vector<std::string> sv = options["storage"].as<std::vector<std::string> >();
+            
+        for(std::vector<std::string>::iterator i = sv.begin(); i != sv.end(); ++i)
         {
-            std::string startup_scene_ = QString(options["storage"].as<std::string>().c_str()).trimmed().toStdString();
+            std::string startup_scene_ = QString(i->c_str()).trimmed().toStdString();
             if (!startup_scene_.empty())
             {
                 // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
@@ -103,30 +110,31 @@ namespace Asset
                     framework_->Asset()->setProperty("assetdir", QVariant(GuaranteeTrailingSlash(QString::fromStdString(dirname))));
                 }
             }
+                                                                                                
         }
     }
 
-    Console::CommandResult AssetModule::ConsoleRequestAsset(const StringVector &params)
+    ConsoleCommandResult AssetModule::ConsoleRequestAsset(const StringVector &params)
     {
         if (params.size() != 2)
-            return Console::ResultFailure("Usage: RequestAsset(uuid,assettype)");
+            return ConsoleResultFailure("Usage: RequestAsset(uuid,assettype)");
 
         AssetTransferPtr transfer = framework_->Asset()->RequestAsset(params[0].c_str(), params[1].c_str());
         if (transfer)
-            return Console::ResultSuccess();
+            return ConsoleResultSuccess();
         else
-            return Console::ResultFailure();
+            return ConsoleResultFailure();
     }
 
-    Console::CommandResult AssetModule::AddHttpStorage(const StringVector &params)
+    ConsoleCommandResult AssetModule::AddHttpStorage(const StringVector &params)
     {
         if (params.size() != 2)
-            return Console::ResultFailure("Usage: AddHttpStorage(url, name). For example: AddHttpStorage(http://www.google.com/, google)");
+            return ConsoleResultFailure("Usage: AddHttpStorage(url, name). For example: AddHttpStorage(http://www.google.com/, google)");
 
         if (!framework_->Asset()->GetAssetProvider<HttpAssetProvider>())
-            return Console::ResultFailure();
+            return ConsoleResultFailure();
         framework_->Asset()->AddAssetStorage(params[0].c_str(), params[1].c_str(), true);       
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
     }
 }
 

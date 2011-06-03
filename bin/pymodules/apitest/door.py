@@ -38,7 +38,7 @@ class DoorHandler(circuits.BaseComponent):
         self.comp = comp
         circuits.BaseComponent.__init__(self)
 
-        comp.connect("OnAttributeChanged(IAttribute*, AttributeChange::Type)", self.onAttributeChanged)
+        comp.connect("AttributeChanged(IAttribute*, AttributeChange::Type)", self.onAttributeChanged)
         self.inworld_inited = False #a cheap hackish substitute for some initing system
         self.initgui()
 
@@ -64,7 +64,8 @@ class DoorHandler(circuits.BaseComponent):
         self.proxywidget.setWindowTitle(self.GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
-        uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
+        # TODO: Due to core UI API refactor AddWidgetToMenu doesn't exist anymore.
+        #uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
 
     def onAttributeChanged(self, attr, chane):
         try:
@@ -79,7 +80,7 @@ class DoorHandler(circuits.BaseComponent):
             try:
                 t = ent.touchable
             except AttributeError:
-                print "no touchable in door? it doesn't persist yet? adding..", ent.Id
+                print "no touchable in door? it doesn't persist yet? adding..", ent.id
                 t = ent.GetOrCreateComponentRaw("EC_Touchable")
             else:
                 print "touchable pre-existed in door."
@@ -92,8 +93,8 @@ class DoorHandler(circuits.BaseComponent):
         locked = self.locked
 
         newpos = OPENPOS if opened else CLOSEPOS
-        ent.placeable.Position = newpos        
-        #print opened, type(opened), ent.placeable.Position
+        ent.placeable.position = newpos        
+        #print opened, type(opened), ent.placeable.position
 
         self.openbut.text = "Close" if opened else "Open"
         self.lockbut.text = "Unlock" if locked else "Lock"
@@ -107,7 +108,7 @@ class DoorHandler(circuits.BaseComponent):
         at all. the object is moved in all clients only.
         when logging back to a server, wasn't seeing the right positions,
         probably because server send pos update after the comp sync."""
-        self.forcepos = ent.placeable.Position
+        self.forcepos = ent.placeable.position
         
     def get_opened(self):
         if self.comp is not None:
@@ -116,7 +117,7 @@ class DoorHandler(circuits.BaseComponent):
             return None
     def set_opened(self, newval):
         self.comp.SetAttribute("opened", newval)
-        self.comp.OnChanged()
+        self.comp.ComponentChanged(0)
     opened = property(get_opened, set_opened)
 
     def get_locked(self):
@@ -126,7 +127,7 @@ class DoorHandler(circuits.BaseComponent):
             return None
     def set_locked(self, newval):
         self.comp.SetAttribute("locked", newval)
-        self.comp.OnChanged()
+        self.comp.ComponentChanged(0)
     locked = property(get_locked, set_locked)
 
     def open(self):
@@ -160,12 +161,12 @@ class DoorHandler(circuits.BaseComponent):
             return # nothing useful to do anyway
 
         if self.forcepos is not None:
-            ent.placeable.Position = self.forcepos
+            ent.placeable.position = self.forcepos
 
     @circuits.handler("on_logout")
     def removegui(self, evid):
         self.proxywidget.hide()
         uism = naali.ui
-        uism.RemoveWidgetFromMenu(self.proxywidget)
+        # TODO: Due to core UI API refactor RemoveWidgetFromMenu doesn't exist anymore.
+        #uism.RemoveWidgetFromMenu(self.proxywidget)
         uism.RemoveWidgetFromScene(self.proxywidget)
-        

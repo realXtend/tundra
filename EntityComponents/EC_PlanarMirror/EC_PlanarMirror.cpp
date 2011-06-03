@@ -17,7 +17,7 @@
 #include "EC_OgreCamera.h"
 #include "EC_RttTarget.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_PlanarMirror")
 
@@ -33,8 +33,8 @@ EC_PlanarMirror::EC_PlanarMirror(IModule *module)
     mirror_plane_(0)
 {
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(Initialize()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+            SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_PlanarMirror::~EC_PlanarMirror()
@@ -47,7 +47,7 @@ EC_PlanarMirror::~EC_PlanarMirror()
     SAFE_DELETE(mirror_plane_);
 }
 
-void EC_PlanarMirror::AttributeUpdated(IAttribute* attr)
+void EC_PlanarMirror::OnAttributeUpdated(IAttribute* attr)
 {
     if (!ViewEnabled())
         return;

@@ -28,7 +28,7 @@ bool ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     return true;
 }
 
-bool ScriptAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters)
+bool ScriptAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
 {
     QByteArray arr(scriptContent.toStdString().c_str());
     dst.clear();
@@ -77,4 +77,9 @@ void ScriptAsset::ParseReferences()
             addedRefs << ref.ref;
         }
     }
+}
+
+bool ScriptAsset::IsLoaded() const
+{
+    return !scriptContent.isEmpty();
 }

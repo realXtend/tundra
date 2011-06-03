@@ -39,10 +39,8 @@ class ToolBarWindow():
         if not uism.AddWidgetToScene(self.proxywidget):
             r.logInfo("Adding the ProxyWidget to the bar failed.")
 
-        #$ BEGIN_MOD $
-        #uism.AddWidgetToMenu(self.proxywidget, "Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
-        uism.AddWidgetToMenu(self.proxywidget, "Ogre Scene Tool", "Scene", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
-        #$ END_MOD $
+        # TODO: Due to core UI API refactor AddWidgetToMenu doesn't exist anymore.
+        #uism.AddWidgetToMenu(self.proxywidget, "Local Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
 
         self.inputQueue = queue
         self.endApplication = endApplication
@@ -59,7 +57,8 @@ class ToolBarWindow():
 
             self.proxywidget.hide()
             uism = naali.ui
-            uism.RemoveWidgetFromMenu(self.proxywidget)
+            # TODO: Due to core UI API refactor RemoveWidgetFromMenu doesn't exist anymore.
+            #uism.RemoveWidgetFromMenu(self.proxywidget)
             uism.RemoveWidgetFromScene(self.proxywidget)
             return True
         except:

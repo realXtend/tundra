@@ -44,9 +44,10 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw, QWidget *p
     showAssets(true),
     treeWidget(0),
     expandAndCollapseButton(0),
-    searchField(0),
-    expandingOrCollapsing(false)
+    searchField(0)
 {
+    setAttribute(Qt::WA_DeleteOnClose);
+
     // Init main widget
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
@@ -259,7 +260,7 @@ void SceneStructureWindow::CreateAssetReferences()
         else
         {
             // Create asset ref items as children of entity items.
-            foreach(ComponentPtr comp, entity->GetComponentVector())
+            foreach(ComponentPtr comp, entity->Components())
                 foreach(IAttribute *attr, comp->GetAttributes())
                     if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
                         CreateAssetItem(eItem, attr);
@@ -296,7 +297,7 @@ void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 
     treeWidget->addTopLevelItem(item);
 
-    foreach(ComponentPtr c, entity->GetComponentVector())
+    foreach(ComponentPtr c, entity->Components())
         AddComponent(entity, c.get());
 }
 
@@ -336,7 +337,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
                 eItem->SetText(entity);
                 DecorateEntityItem(entity, eItem);
 
-                connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
+                connect(comp, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
                     SLOT(UpdateEntityName(IAttribute *)), Qt::UniqueConnection);
             }
 
@@ -346,7 +347,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             {
                 connect(comp, SIGNAL(AttributeAdded(IAttribute *)), SLOT(AddAssetReference(IAttribute *)));
                 connect(comp, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(RemoveAssetReference(IAttribute *)));
-                connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
+                connect(comp, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
                     SLOT(UpdateAssetReference(IAttribute *)), Qt::UniqueConnection);
             }
 //#endif
@@ -744,14 +745,12 @@ bool SceneStructureWindow::eventFilter(QObject *obj, QEvent *e)
                 break;
             }
             case QEvent::FocusOut:
-            {
                 if (searchField->text().simplified().isEmpty())
                 {
                     searchField->setText(tr("Search..."));
                     searchField->setStyleSheet("color:grey;");
                 }
                 break;
-            }
             default:
                 break;
         }
@@ -766,22 +765,12 @@ void SceneStructureWindow::Search(const QString &filter)
 
 void SceneStructureWindow::ExpandOrCollapseAll()
 {
-    expandingOrCollapsing = true;
     bool treeExpanded = TreeWidgetExpandOrCollapseAll(treeWidget);
-    if (treeExpanded && expandAndCollapseButton)
-        expandAndCollapseButton->setText(tr("Collapse All"));
-    else
-        expandAndCollapseButton->setText(tr("Expand All"));
-    expandingOrCollapsing = false;
+    expandAndCollapseButton->setText(treeExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 
 void SceneStructureWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
 {
-    if (expandingOrCollapsing)
-        return;
-    if (!expandAndCollapseButton)
-        return;
-
     bool anyExpanded = false;
     QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
     while (*iter) 

@@ -18,6 +18,7 @@
 #include "IAsset.h"
 #include "AssetCache.h"
 #include "QtUtils.h"
+#include "UiAPI.h"
 
 #ifdef _WINDOWS
 #include <windows.h>
@@ -32,11 +33,21 @@ AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
     assetPtr(asset)
 {
     setText(0, asset->Name());
+    MarkUnloaded(!asset->IsLoaded());
 }
 
 AssetPtr AssetItem::Asset() const
 {
     return assetPtr.lock();
+}
+
+void AssetItem::MarkUnloaded(bool value)
+{
+    QString unloaded = QApplication::translate("AssetItem", " (Unloaded)");
+    if (value)
+        setText(0, text(0) + unloaded);
+    else
+        setText(0, text(0).remove(unloaded));
 }
 
 // AssetTreeWidget
@@ -187,6 +198,12 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     QAction *requestNewAssetAction = new QAction(tr("Request new asset..."), menu);
     connect(requestNewAssetAction, SIGNAL(triggered()), SLOT(RequestNewAsset()));
     menu->addAction(requestNewAssetAction);
+
+    // Let other instances add their possible functionality.
+    QList<QObject *> targets;
+    foreach(AssetItem *item, items)
+        targets.append(item->Asset().get());
+    framework->Ui()->EmitContextMenuAboutToOpen(menu, targets);
 }
 
 QList<AssetItem *> AssetTreeWidget::GetSelection() const
@@ -246,9 +263,10 @@ void AssetTreeWidget::Unload()
         if (item->Asset())
         {
             item->Asset()->Unload();
-            QTreeWidgetItem *parent = item->parent();
-            parent->removeChild(item);
-            SAFE_DELETE(item);
+            // Do not delete item, instead mark it as unloaded in AssetsWindow.
+            //QTreeWidgetItem *parent = item->parent();
+            //parent->removeChild(item);
+            //SAFE_DELETE(item);
             ///\todo Preferably use the AssetDeleted() or similar signal from AssetAPI for deleting items.
         }
 }

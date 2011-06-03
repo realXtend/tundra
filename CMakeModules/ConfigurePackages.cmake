@@ -13,7 +13,7 @@ macro (configure_boost)
         set(Boost_USE_STATIC_LIBS FALSE)
     endif ()
 
-    if (APPLE)
+    if (UNIX)
             set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_regex boost_program_options)
     else ()
             set (BOOST_COMPONENTS date_time filesystem system thread regex program_options)
@@ -455,7 +455,6 @@ macro(use_package_knet)
     if (UNIX)    
         add_definitions(-DUNIX)
     endif()
-    add_definitions(-DKNET_USE_BOOST)
 endmacro()
 
 macro(link_package_knet)
@@ -510,4 +509,72 @@ macro(link_package_assimp)
     if (WIN32)
         target_link_libraries(${TARGET_NAME} debug assimpd)
     endif()
+endmacro()
+
+macro(configure_package_opencv)
+    # \todo Dont do this on linux systems
+    SET(OPENCV_ROOT ${ENV_NAALI_DEP_PATH}/OpenCV-2.2.0)
+
+    # Include directories to add to the user project:
+    SET(OpenCV_INCLUDE_DIR ${OPENCV_ROOT}/include)
+    SET(OpenCV_INCLUDE_DIRS ${OPENCV_ROOT}/include ${OPENCV_ROOT}/include/opencv)
+    INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
+
+    # Link directories to add to the user project:
+    SET(OpenCV_LIB_DIR ${OPENCV_ROOT}/lib)
+    LINK_DIRECTORIES(${OpenCV_LIB_DIR})
+
+    # Link to libraries, todo modify the list, we dont need all this stuff
+    # Full list of available libs from opencv are listed below. If you need there to our dependencies please contact Jonne Nauha aka Pforce on IRC #realxtend-dev @ freenode
+    #set(OPENCV_LIB_COMPONENTS opencv_core opencv_imgproc opencv_features2d opencv_gpu opencv_calib3d opencv_objdetect opencv_video opencv_highgui opencv_ml opencv_legacy opencv_contrib opencv_flann)
+    set(OPENCV_LIB_COMPONENTS opencv_core opencv_highgui)
+    SET(OpenCV_LIBS "")
+    foreach(__CVLIB ${OPENCV_LIB_COMPONENTS})
+        # CMake>=2.6 supports the notation "debug XXd optimized XX"
+        if (CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+            # Modern CMake:
+            SET(OpenCV_LIBS ${OpenCV_LIBS} debug ${__CVLIB}220d optimized ${__CVLIB}220)
+        else(CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+            # Old CMake:
+            SET(OpenCV_LIBS ${OpenCV_LIBS} ${__CVLIB}220)
+        endif(CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+    endforeach(__CVLIB)
+
+    foreach(__CVLIB ${OPENCV_LIB_COMPONENTS})
+        # We only need the "core",... part here: "opencv_core" -> "core"
+        STRING(REGEX REPLACE "opencv_(.*)" "\\1" MODNAME ${__CVLIB})
+        # \todo This wont work on linux as win deps ship all the headers in OPENCV_ROOT/include
+        # see how the headers are in /urs/include and implement the else() part here
+        if (WIN32)
+            INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIR}/${MODNAME})
+        else()
+            # \todo Impl linux module folder includes
+            # something like INCLUDE_DIRECTORIES("/usr/include/opencv/${MODNAME}/include") ??
+        endif()
+    endforeach(__CVLIB)
+
+    # Link to the 3rdparty libs as well
+    if(WIN32)
+        LINK_DIRECTORIES(${OPENCV_ROOT}/3rdparty/lib)
+    else()
+        # \todo Verify this works in linux
+        LINK_DIRECTORIES(${OPENCV_ROOT}/share/opencv/3rdparty/lib)
+    endif()    
+
+    set(OpenCV_LIBS comctl32;gdi32;ole32;vfw32 ${OpenCV_LIBS})
+    set(OPENCV_EXTRA_COMPONENTS libjpeg libpng libtiff libjasper zlib opencv_lapack)
+
+    if (CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+        foreach(__EXTRA_LIB ${OPENCV_EXTRA_COMPONENTS})
+            set(OpenCV_LIBS ${OpenCV_LIBS}
+                debug ${__EXTRA_LIB}d
+                optimized ${__EXTRA_LIB})
+        endforeach(__EXTRA_LIB)
+    else(CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+        set(OpenCV_LIBS ${OpenCV_LIBS} ${OPENCV_EXTRA_COMPONENTS})
+    endif(CMAKE_MAJOR_VERSION GREATER 2  OR  CMAKE_MINOR_VERSION GREATER 4)
+endmacro()
+
+macro(link_package_opencv)
+    TARGET_LINK_LIBRARIES(${TARGET_NAME} ${OpenCV_LIBS})
 endmacro()

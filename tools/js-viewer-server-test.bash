@@ -14,12 +14,12 @@ case $testfile in
 	echo "Setting up args for a js file ($testfile)"
 	cat exitdelay.js $testfile > s.js
 	servercmd="./server --headless --run s.js"
-	viewercmd="./viewer --run v.js"
+	viewercmd="./viewer --headless --run v.js"
 	;;
     *.txml)
 	echo "Setting up args for a txml file ($testfile)"
-	servercmd="./server --file $testfile --run exitdelay.js"
-	viewercmd="./viewer --storage `dirname $testfile` --run v.js"
+	servercmd="./server --headless --file $testfile --run exitdelay.js"
+	viewercmd="./viewer --headless --storage `dirname $testfile`/ --run v.js"
 	;;
 esac
 
@@ -33,8 +33,10 @@ grep . exitstatus.?
 grep Error: [sv].out
 test -f core && exit 1
 if test `cat exitstatus.s` = 0 && test `cat exitstatus.v` = 0; then
+    echo 'test outcome: success'
     exit 0
 else
+    echo 'test outcome: failure'
     exit 1
 fi
 

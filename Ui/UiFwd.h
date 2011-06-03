@@ -8,8 +8,8 @@ namespace Foundation
     class Framework;
 }
 
-class NaaliGraphicsView;
-class NaaliMainWindow;
+class UiGraphicsView;
+class UiMainWindow;
 class UiAPI;
 class NaaliUiImpl;
 class UiProxyWidget;
@@ -21,5 +21,6 @@ class QPainter;
 class QRect;
 class QRectF;
 class QEvent;
+class QAction;
 
 #endif

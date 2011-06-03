@@ -22,8 +22,6 @@
 #include "SceneEvents.h"
 #include "NetworkEvents.h"
 #include "Entity.h"
-#include "ConsoleServiceInterface.h"
-#include "ConsoleCommandServiceInterface.h"
 #include "RendererSettings.h"
 #include "ConfigurationManager.h"
 #include "EventManager.h"
@@ -34,6 +32,9 @@
 #include "OgreSkeletonAsset.h"
 #include "OgreMaterialAsset.h"
 #include "TextureAsset.h"
+#include "ConsoleAPI.h"
+#include "ConsoleCommandUtils.h"
+#include "VersionInfo.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -90,14 +91,8 @@ namespace OgreRenderer
         std::string plugins_filename = "plugins-unix.cfg";
 #endif
 
-        // Create window title
-        std::string group = Foundation::Framework::ConfigurationGroup();
-        std::string version_major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major");
-        std::string version_minor = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor");
-        std::string window_title = framework_->GetDefaultConfig().GetSetting<std::string>(group, "window_title") + " " + version_major + "." + version_minor;
-
         // Create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
-        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
+        renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, framework_->ApplicationVersion()->toString().toStdString()));
     }
 
     void OgreRenderingModule::Initialize()
@@ -120,9 +115,9 @@ namespace OgreRenderer
 
         renderer_->PostInitialize();
 
-        RegisterConsoleCommand(Console::CreateCommand(
+        framework_->Console()->RegisterCommand(CreateConsoleCommand(
                 "RenderStats", "Prints out render statistics.", 
-                Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
+                ConsoleBind(this, &OgreRenderingModule::ConsoleStats)));
         renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
     }
 
@@ -190,25 +185,21 @@ namespace OgreRenderer
         RESETPROFILER;
     }
 
-    Console::CommandResult OgreRenderingModule::ConsoleStats(const StringVector &params)
+    ConsoleCommandResult OgreRenderingModule::ConsoleStats(const StringVector &params)
     {
         if (renderer_)
         {
-            Console::ConsoleServiceInterface *console = GetFramework()->GetService<Console::ConsoleServiceInterface>();
-            if (console)
-            {
-                const Ogre::RenderTarget::FrameStats& stats = renderer_->GetCurrentRenderWindow()->getStatistics();
-                console->Print("Average FPS: " + ToString(stats.avgFPS));
-                console->Print("Worst FPS: " + ToString(stats.worstFPS));
-                console->Print("Best FPS: " + ToString(stats.bestFPS));
-                console->Print("Triangles: " + ToString(stats.triangleCount));
-                console->Print("Batches: " + ToString(stats.batchCount));
-
-                return Console::ResultSuccess();
-            }
+            ConsoleAPI *c = framework_->Console();
+            const Ogre::RenderTarget::FrameStats& stats = renderer_->GetCurrentRenderWindow()->getStatistics();
+            c->Print("Average FPS: " + QString::number(stats.avgFPS));
+            c->Print("Worst FPS: " + QString::number(stats.worstFPS));
+            c->Print("Best FPS: " + QString::number(stats.bestFPS));
+            c->Print("Triangles: " + QString::number(stats.triangleCount));
+            c->Print("Batches: " + QString::number(stats.batchCount));
+            return ConsoleResultSuccess();
         }
 
-        return Console::ResultFailure("No renderer found.");
+        return ConsoleResultFailure("No renderer found.");
     }
 }
 

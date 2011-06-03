@@ -6,8 +6,7 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB MOC_FILES CommunicationsService.h UiSettingsServiceInterface.h
     MediaPlayerService.h WorldBuildingServiceInterface.h RenderServiceInterface.h
-    UiServiceInterface.h UiWidgetProperties.h UiProxyWidget.h LoginServiceInterface.h WorldLogicInterface.h TtsServiceInterface.h
-    ConsoleCommandServiceInterface.h InputServiceInterface.h IOpenSimSceneService.h)
+    LoginServiceInterface.h WorldLogicInterface.h InputServiceInterface.h IOpenSimSceneService.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 MocFolder ()

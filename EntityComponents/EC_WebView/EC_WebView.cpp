@@ -15,7 +15,7 @@
 #include "RenderServiceInterface.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include "TundraLogicModule.h"
 #include "Client.h"
@@ -34,6 +34,7 @@
 #include <QMessageBox>
 #include <QWheelEvent>
 #include <QApplication>
+#include <QUuid>
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_WebView")
@@ -94,9 +95,13 @@ EC_WebView::EC_WebView(IModule *module) :
     if (!ViewEnabled() || GetFramework()->IsHeadless())
         return;
 
+    // Connect window size changes to update rendering as the ogre textures go black.
+    if (GetFramework()->Ui()->MainWindow())
+        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(RenderDelayed()), Qt::UniqueConnection);
+
     // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
     
     // Prepare render timer
     renderTimer_ = new QTimer(this);
@@ -106,7 +111,7 @@ EC_WebView::EC_WebView(IModule *module) :
     SceneInteractWeakPtr sceneInteract = GetFramework()->Scene()->GetSceneIteract();
     if (!sceneInteract.isNull())
     {
-        connect(sceneInteract.data(), SIGNAL(EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)), 
+        connect(sceneInteract.data(), SIGNAL(EntityMousePressed(Scene::Entity*, Qt::MouseButton, RaycastResult*)), 
                 SLOT(EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)));
     }
 
@@ -174,7 +179,7 @@ void EC_WebView::ServerInitialize(TundraLogic::Server *server)
     if (!server || !server->IsRunning())
         return;
     connect(server, SIGNAL(UserDisconnected(int, UserConnection*)), SLOT(ServerHandleDisconnect(int, UserConnection*)));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(ServerHandleAttributeChange(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(ServerHandleAttributeChange(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 }
 
 void EC_WebView::ServerHandleDisconnect(int connectionID, UserConnection* connection)
@@ -412,13 +417,18 @@ void EC_WebView::PrepareComponent()
         // Inspect if this mesh is ready for rendering. EC_Mesh being present != being loaded into Ogre and ready for rendering.
         if (!mesh->GetEntity())
         {
-            connect(mesh, SIGNAL(OnMeshChanged()), SLOT(TargetMeshReady()), Qt::UniqueConnection);
+            connect(mesh, SIGNAL(MeshChanged()), SLOT(TargetMeshReady()), Qt::UniqueConnection);
             return;
         }
+        else
+            connect(mesh, SIGNAL(MaterialChanged(uint, const QString&)), SLOT(TargetMeshMaterialChanged(uint, const QString&)), Qt::UniqueConnection);
     }
+    
+    if (sceneCanvasName_.isEmpty())
+        sceneCanvasName_ = "WebViewCanvas-" + QUuid::createUuid().toString().replace("{", "").replace("}", "");
 
     // Get or create local EC_3DCanvas component
-    IComponent *iComponent = parent->GetOrCreateComponentRaw(EC_3DCanvas::TypeNameStatic(), AttributeChange::LocalOnly, false);
+    IComponent *iComponent = parent->GetOrCreateComponentRaw(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_, AttributeChange::LocalOnly, false);
     EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(iComponent);
     if (!sceneCanvas)
     {
@@ -564,6 +574,30 @@ void EC_WebView::TargetMeshReady()
         PrepareComponent();
 }
 
+void EC_WebView::TargetMeshMaterialChanged(uint index, const QString &material)
+{
+    if (!componentPrepared_)
+        return;
+    if (sceneCanvasName_.isEmpty())
+        return;
+    if (!GetParentEntity())
+        return;
+
+    if (index == getrenderSubmeshIndex())
+    {
+        // Don't create the canvas, if its not there yet there is nothing to re-apply
+        IComponent *comp = GetParentEntity()->GetComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_).get();
+        EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(comp);
+        if (sceneCanvas)
+        {
+            // This will make 3DCanvas to update its internals, which means
+            // our material is re-applied to the submesh.
+            sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
+            RenderDelayed();
+        }
+    }
+}
+
 void EC_WebView::ComponentAdded(IComponent *component, AttributeChange::Type change)
 {
     if (component->TypeName() == EC_Mesh::TypeNameStatic())
@@ -596,6 +630,10 @@ void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type c
                 canvasSource->RestoreOriginalMeshMaterials();
                 canvasSource->SetWidget(0);
             }
+
+            // Clean up our EC_3DCanvas component from the entity
+            if (GetParentEntity() && !sceneCanvasName_.isEmpty())
+                GetParentEntity()->RemoveComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_, AttributeChange::LocalOnly);
         }
     }
     /// \todo Add check if this component has another EC_Mesh then init EC_3DCanvas again for that! Now we just blindly stop this EC.
@@ -732,8 +770,11 @@ EC_3DCanvas *EC_WebView::GetSceneCanvasComponent()
 {
     if (!GetParentEntity())
         return 0;
-    EC_3DCanvas *canvas = GetParentEntity()->GetComponent<EC_3DCanvas>().get();
-    return canvas;
+    if (sceneCanvasName_.isEmpty())
+        return 0;
+    IComponent *comp = GetParentEntity()->GetComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_).get();
+    EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(comp);
+    return sceneCanvas;
 }
 
 void EC_WebView::EntityClicked(Scene::Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult)

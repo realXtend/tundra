@@ -15,11 +15,13 @@ class AssetRefListener : public QObject
 public:
     /// Issues a new asset request to the given AssetReference.
     /// @param assetRef A pointer to an attribute of type AssetReference.
-    void HandleAssetRefChange(IAttribute *assetRef);
+    /// @param assetType Optional asset type name
+    void HandleAssetRefChange(IAttribute *assetRef, const QString& assetType = "");
 
     /// Issues a new asset request to the given assetRef URL.
     /// @param assetApi Pass a pointer to the system Asset API into this function (This utility object doesn't keep reference to framework).
-    void HandleAssetRefChange(AssetAPI *assetApi, QString assetRef);
+    /// @param assetType Optional asset type name
+    void HandleAssetRefChange(AssetAPI *assetApi, QString assetRef, const QString& assetType = "");
     
     /// Returns the asset currently stored in this asset reference.
     AssetPtr Asset();
@@ -43,7 +45,6 @@ private slots:
 
 private:
     AssetWeakPtr asset;
-    bool loaded_;
 };
 
 #endif

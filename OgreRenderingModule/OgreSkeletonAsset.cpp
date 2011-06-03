@@ -61,7 +61,7 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     return true;
 }
 
-bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
+bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     if (ogreSkeleton.isNull())
     {
@@ -102,4 +102,9 @@ void OgreSkeletonAsset::DoUnload()
         Ogre::SkeletonManager::getSingleton().remove(skeleton_name);
     }
     catch (...) {}
+}
+
+bool OgreSkeletonAsset::IsLoaded() const
+{
+    return ogreSkeleton.get() != 0;
 }

@@ -27,16 +27,19 @@
 #include "InputContext.h"
 #include "RenderServiceInterface.h"
 #include "CommunicationsService.h"
-#include "NaaliMainWindow.h"
-#include "NaaliGraphicsView.h"
+#include "UiMainWindow.h"
+#include "UiGraphicsView.h"
 #include "EntityAction.h"
 #include "InputFwd.h"
 #include "ConfigAPI.h"
-#include "LoggingFunctions.h"
+#include "DevicesAPI.h"
+#include "IDevice.h"
+#include "IPositionalDevice.h"
 
 #include <QUiLoader>
 #include <QFile>
 
+#include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("Script")
 
 //! Qt defines
@@ -60,11 +63,12 @@ Q_DECLARE_METATYPE(IAssetUploadTransfer*);
 Q_DECLARE_METATYPE(AssetStoragePtr);
 Q_DECLARE_METATYPE(IAssetStorage*);
 Q_DECLARE_METATYPE(AssetCache*);
+Q_DECLARE_METATYPE(CookieJar*);
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
-Q_DECLARE_METATYPE(NaaliMainWindow*);
-Q_DECLARE_METATYPE(NaaliGraphicsView*);
+Q_DECLARE_METATYPE(UiMainWindow*);
+Q_DECLARE_METATYPE(UiGraphicsView*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 //! Naali Scene defines.
@@ -81,7 +85,7 @@ Q_DECLARE_METATYPE(AttributeChange::Type);
 Q_DECLARE_METATYPE(Foundation::Framework*);
 Q_DECLARE_METATYPE(FrameAPI*);
 Q_DECLARE_METATYPE(ConsoleAPI*);
-Q_DECLARE_METATYPE(Command*);
+Q_DECLARE_METATYPE(ConsoleCommand*);
 Q_DECLARE_METATYPE(DelayedSignal*);
 Q_DECLARE_METATYPE(DebugAPI*);
 
@@ -94,6 +98,11 @@ Q_DECLARE_METATYPE(ConfigAPI*);
 
 //! Naali renderer defines
 Q_DECLARE_METATYPE(RaycastResult*);
+
+//! DeviceAPI defined
+Q_DECLARE_METATYPE(DevicesAPI*);
+Q_DECLARE_METATYPE(IDevice*);
+Q_DECLARE_METATYPE(IPositionalDevice*);
 
 //! Communications metatype
 Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
@@ -215,7 +224,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     
     // Console metatypes.
     qScriptRegisterQObjectMetaType<ConsoleAPI*>(engine);
-    qScriptRegisterQObjectMetaType<Command*>(engine);
+    qScriptRegisterQObjectMetaType<ConsoleCommand*>(engine);
 
     // Frame metatypes.
     qScriptRegisterQObjectMetaType<FrameAPI*>(engine);
@@ -223,6 +232,11 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     // Config metatypes.
     qScriptRegisterQObjectMetaType<ConfigAPI*>(engine);
+
+    // Devices metatype.
+    qScriptRegisterQObjectMetaType<DevicesAPI*>(engine);
+    qScriptRegisterQObjectMetaType<IDevice*>(engine);
+    qScriptRegisterQObjectMetaType<IPositionalDevice*>(engine);
 
     // Asset API
     qRegisterMetaType<AssetPtr>("AssetPtr");
@@ -241,10 +255,11 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetStorage>, qScriptValueToBoostSharedPtr<IAssetStorage>);
 
     qScriptRegisterQObjectMetaType<AssetCache*>(engine);
+    qScriptRegisterQObjectMetaType<CookieJar*>(engine);
 
     // Ui metatypes.
-    qScriptRegisterQObjectMetaType<NaaliMainWindow*>(engine);
-    qScriptRegisterQObjectMetaType<NaaliGraphicsView*>(engine);
+    qScriptRegisterQObjectMetaType<UiMainWindow*>(engine);
+    qScriptRegisterQObjectMetaType<UiGraphicsView*>(engine);
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
     qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
 

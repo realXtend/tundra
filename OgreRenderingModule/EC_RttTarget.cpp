@@ -20,8 +20,8 @@ EC_RttTarget::EC_RttTarget(IModule* module) :
   size_y(this, "Texture size y", 300),
   pixelData_(0)
 {   
-    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+            SLOT(OnAttributeUpdated(IAttribute*)));
 
     //can't do immediately here, 'cause getcomponent crashes
     //.. is not allowed to get other components in the creation of a component. ok?
@@ -133,7 +133,7 @@ void EC_RttTarget::SetAutoUpdated(bool val)
 }
 */
 
-void EC_RttTarget::AttributeUpdated(IAttribute* attribute)
+void EC_RttTarget::OnAttributeUpdated(IAttribute* attribute)
 {
     //if change x, y or name prepare rtt again
     Ogre::TextureManager::getSingleton().remove(targettexture.Get().toStdString());

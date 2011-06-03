@@ -23,12 +23,12 @@ else
 //Checking if needed components are added after Script component to Entity
  function CheckComponent(component, type)
 {	
-	if (component.TypeName == "EC_Sound")
+	if (component.typeName == "EC_Sound")
 	{
-		if(component.Name == "Collision")
+		if(component.name == "Collision")
 			CollisionSound = component;
 	}
-	else if(component.TypeName == "RigidBody")
+	else if(component.typeName == "RigidBody")
 		RigidBody = true;
 		
 	if(CollisionSound && RigidBody)

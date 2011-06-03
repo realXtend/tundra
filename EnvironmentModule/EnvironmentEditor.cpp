@@ -1853,8 +1853,8 @@ namespace Environment
         terrainPaintInputContext->SetTakeKeyboardEventsOverQt(true); // To be able to process ESC over Qt and Ether.
         terrainPaintInputContext->SetTakeMouseEventsOverQt(true);
 
-        connect(terrainPaintInputContext.get(), SIGNAL(OnMouseEvent(MouseEvent *)), this, SLOT(HandleMouseInputEvent(MouseEvent *)));
-        connect(terrainPaintInputContext.get(), SIGNAL(OnKeyEvent(KeyEvent *)), this, SLOT(HandleKeyInputEvent(KeyEvent *)));
+        connect(terrainPaintInputContext.get(), SIGNAL(MouseEventReceived(MouseEvent *)), this, SLOT(HandleMouseInputEvent(MouseEvent *)));
+        connect(terrainPaintInputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), this, SLOT(HandleKeyInputEvent(KeyEvent *)));
     }
 
     void EnvironmentEditor::ToggleTerrainPaintMode()

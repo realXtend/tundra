@@ -10,12 +10,10 @@
 #include "Profiler.h"
 #include "EventManager.h"
 #include "CoreStringUtils.h"
-#include "ConsoleServiceInterface.h"
-#include "ConsoleCommandServiceInterface.h"
-
+#include "ConsoleCommandUtils.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
-#include "UiServiceInterface.h"
+#include "UiMainWindow.h"
+#include "ConsoleAPI.h"
 
 #include <kNet.h>
 #include <kNet/qt/NetworkDialog.h>
@@ -135,9 +133,10 @@ void KristalliProtocolModule::Initialize()
 void KristalliProtocolModule::PostInitialize()
 {
 #ifdef KNET_USE_QT
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "kNet", "Shows the kNet statistics window.", 
-            Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
+            ConsoleBind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
+#endif
 //$ BEGIN_MOD $
 	if (!framework_->IsHeadless() && !framework_->IsEditionless()) {
 		networkDialog = new NetworkDialog(0, &network);
@@ -157,7 +156,7 @@ void KristalliProtocolModule::Uninitialize()
 }
 
 #ifdef KNET_USE_QT
-Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
+ConsoleCommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
 {
 //$ BEGIN_MOD $
 	if (framework_->IsHeadless() && !framework_->IsEditionless()) {
@@ -187,7 +186,7 @@ void KristalliProtocolModule::Update(f64 frametime)
     // Note: Calling the above serverConnection->Process() may set serverConnection to null if the connection gets disconnected.
     // Therefore, in the code below, we cannot assume serverConnection is non-null, and must check it again.
 
-    // Our client->server connection is never kept partially open.
+    // Our client->server connection is never kept half-open.
     // That is, at the moment the server write-closes the connection, we also write-close the connection.
     // Check here if the server has write-closed, and also write-close our end if so.
     if (serverConnection && !serverConnection->IsReadOpen() && serverConnection->IsWriteOpen())

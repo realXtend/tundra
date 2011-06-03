@@ -13,6 +13,9 @@
 #include "UiServiceInterface.h"
 #include "InputAPI.h"
 
+#include "UiAPI.h"
+#include "UiMainWindow.h"
+
 #include <QUiLoader>
 #include <QFile>
 #include <QDoubleSpinBox>
@@ -21,6 +24,7 @@
 #include <QLabel>
 #include <QKeyEvent>
 #include <QApplication>
+#include <QAction>
 
 #include "MemoryLeakCheck.h"
 
@@ -40,13 +44,11 @@ namespace OgreRenderer
 
     void RendererSettings::InitWindow()
     {
-        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-        if (!ui)
+        if (framework_->IsHeadless() || !framework_->Ui()->MainWindow())
             return;
 
         QUiLoader loader;
         QFile file("./data/ui/renderersettings.ui");
-
         if (!file.exists())
         {
             OgreRenderingModule::LogError("Cannot find renderer settings .ui file.");
@@ -56,8 +58,11 @@ namespace OgreRenderer
         settings_widget_ = loader.load(&file); 
         if (!settings_widget_)
             return;
+        settings_widget_->setParent(framework_->Ui()->MainWindow());
+        settings_widget_->setWindowFlags(Qt::Tool);
 
-        ui->AddSettingsWidget(settings_widget_, "Rendering");
+        QAction *action = framework_->Ui()->MainWindow()->AddMenuAction("&Settings", "Rendering");
+        connect(action, SIGNAL(triggered()), settings_widget_, SLOT(show()));
 
         QDoubleSpinBox* spin = settings_widget_->findChild<QDoubleSpinBox*>("spinbox_viewdistance");
         boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Service::ST_Renderer).lock();
@@ -86,7 +91,7 @@ namespace OgreRenderer
             QObject::connect(combo, SIGNAL(currentIndexChanged(int)), this, SLOT(TextureQualityChanged(int)));
         }
         
-        //fullscreen shortcut key
+        // For listening to the fullscreen shortcut key
         input_context_ = framework_->Input()->RegisterInputContext("Renderer", 90);
         if (input_context_)
             connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));

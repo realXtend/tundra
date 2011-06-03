@@ -15,9 +15,10 @@
 #include "ParticipantWindow.h"
 
 #include "Framework.h"
+#include "UiAPI.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 #include "WorldStream.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
@@ -27,13 +28,12 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "Renderer.h"
-#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EC_OpenSimPresence.h"
 #include "ConsoleAPI.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include <utility>
 #include <QDebug>
@@ -78,41 +78,36 @@ void DebugStatsModule::PostInitialize()
 #endif
 
 #ifdef PROFILING
-/*
-    RegisterConsoleCommand(Console::CreateCommand("Prof", 
-        "Shows the profiling window.",
-        Console::Bind(this, &DebugStatsModule::ShowProfilingWindow)));
-*/
     framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
 
-    RegisterConsoleCommand(Console::CreateCommand("rin", 
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("rin", 
         "Sends a random network message in.",
-        Console::Bind(this, &DebugStatsModule::SendRandomNetworkInPacket)));
+        ConsoleBind(this, &DebugStatsModule::SendRandomNetworkInPacket)));
 
-    RegisterConsoleCommand(Console::CreateCommand("rout", 
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("rout", 
         "Sends a random network message out.",
-        Console::Bind(this, &DebugStatsModule::SendRandomNetworkOutPacket)));
+        ConsoleBind(this, &DebugStatsModule::SendRandomNetworkOutPacket)));
 #endif
 
-    RegisterConsoleCommand(Console::CreateCommand("Participant", 
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("Participant", 
         "Shows the participant window.",
-        Console::Bind(this, &DebugStatsModule::ShowParticipantWindow)));
+        ConsoleBind(this, &DebugStatsModule::ShowParticipantWindow)));
 
-    RegisterConsoleCommand(Console::CreateCommand("iddqd",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("iddqd",
         "Requests god-mode on from the server.",
-        Console::Bind(this, &DebugStatsModule::RequestGodMode)));
+        ConsoleBind(this, &DebugStatsModule::RequestGodMode)));
 
-    RegisterConsoleCommand(Console::CreateCommand("kick",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("kick",
         "Kicks user out from the server. Usage: \"kick(fullname)\"",
-        Console::Bind(this, &DebugStatsModule::KickUser)));
+        ConsoleBind(this, &DebugStatsModule::KickUser)));
 
-    RegisterConsoleCommand(Console::CreateCommand("dumptextures",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("dumptextures",
         "Dumps all currently existing J2K decoded textures as PNG files into the viewer working directory.",
-        Console::Bind(this, &DebugStatsModule::DumpTextures)));
+        ConsoleBind(this, &DebugStatsModule::DumpTextures)));
         
-    RegisterConsoleCommand(Console::CreateCommand("exec",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("exec",
         "Invokes action execution in entity",
-        Console::Bind(this, &DebugStatsModule::Exec)));
+        ConsoleBind(this, &DebugStatsModule::Exec)));
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
@@ -147,20 +142,10 @@ void DebugStatsModule::AddProfilerWidgetToUi()
         return;
     }
 
-    UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
-    if (!ui_service)
-        return;
-    /*NaaliUi *ui = GetFramework()->Ui();
-    if (!ui)
-        return;*/
-    UiAPI *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
-
     profilerWindow_ = new TimeProfilerWindow(framework_);
-    /*profilerWindow_->setParent(ui->MainWindow());
-    profilerWindow_->setWindowFlags(Qt::Tool);*/
-    profilerWindow_->move(100, 100);
+    profilerWindow_->setParent(framework_->Ui()->MainWindow());
+    profilerWindow_->setWindowFlags(Qt::Tool);
+    //profilerWindow_->move(100, 100);
     profilerWindow_->resize(650, 530);
 //$ BEGIN_MOD $
 	UiProxyWidget *proxy = ui_service->AddWidgetToScene(profilerWindow_, true, true);
@@ -178,43 +163,34 @@ void DebugStatsModule::StartProfiling(bool visible)
         profilerWindow_->OnProfilerWindowTabChanged(-1); 
 }
 
-Console::CommandResult DebugStatsModule::ShowProfilingWindow(/*const StringVector &params*/)
+ConsoleCommandResult DebugStatsModule::ShowProfilingWindow()
 {
-    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    if (!ui)
-        return Console::ResultFailure("Failed to acquire UI service!");
-
     // If the window is already created, bring it to front.
     if (profilerWindow_)
     {
-        ui->BringWidgetToFront(profilerWindow_);
-        return Console::ResultSuccess();
+        framework_->Ui()->BringWidgetToFront(profilerWindow_);
+        return ConsoleResultSuccess();
     }
     else
-        return Console::ResultFailure("Profiler window has not been initialised, something went wrong on startup!");
+        return ConsoleResultFailure("Profiler window has not been initialized, something went wrong on startup!");
 }
 
-Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
+ConsoleCommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
 {
-    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    if (!ui)
-        return Console::ResultFailure("Failed to acquire UI service!");
-
     if (participantWindow_)
     {
-        ui->BringWidgetToFront(participantWindow_);
-        return Console::ResultSuccess();
+        framework_->Ui()->BringWidgetToFront(participantWindow_);
+        return ConsoleResultSuccess();
     }
 
     participantWindow_ = new ParticipantWindow(framework_);
     participantWindow_->move(100, 100);
     participantWindow_->setWindowFlags(Qt::Dialog);
 
-    /*QGraphicsProxyWidget *proxy = */ui->AddWidgetToScene(participantWindow_);
-    ui->BringWidgetToFront(participantWindow_);
-//    proxy->show();
+    framework_->Ui()->AddWidgetToScene(participantWindow_);
+    framework_->Ui()->BringWidgetToFront(participantWindow_);
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 void DebugStatsModule::Update(f64 frametime)
@@ -352,10 +328,10 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
     return false;
 }
 
-Console::CommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringVector &params)
+ConsoleCommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringVector &params)
 {
     if (params.size() == 0)
-        return Console::ResultSuccess();
+        return ConsoleResultSuccess();
 
     int numMessages = atoi(params[0].c_str());
     for(int i = 0; i < numMessages; ++i)
@@ -369,7 +345,7 @@ Console::CommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringV
 
         ProtocolUtilities::NetMessageManager *messageManager = current_world_stream_->GetCurrentProtocolModule()->GetNetworkMessageManager();
         if (!messageManager)
-            return Console::ResultSuccess();
+            return ConsoleResultSuccess();
 
         try
         {
@@ -400,34 +376,34 @@ Console::CommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringV
             LogInfo("Unknown exception thrown.");
         }
     }
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult DebugStatsModule::SendRandomNetworkOutPacket(const StringVector &params)
+ConsoleCommandResult DebugStatsModule::SendRandomNetworkOutPacket(const StringVector &params)
 {
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult DebugStatsModule::RequestGodMode(const StringVector &params)
+ConsoleCommandResult DebugStatsModule::RequestGodMode(const StringVector &params)
 {
     if (!current_world_stream_)
-        return Console::ResultFailure("Not connected to server.");
+        return ConsoleResultFailure("Not connected to server.");
 
     current_world_stream_->SendRequestGodlikePowersPacket(true);
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
+ConsoleCommandResult DebugStatsModule::KickUser(const StringVector &params)
 {
     if (!current_world_stream_)
-        return Console::ResultFailure("Not connected to server.");
+        return ConsoleResultFailure("Not connected to server.");
 
     if (params.empty())
-        return Console::ResultFailure("Not enough parameters. Usage: \"kick(fullname)\"");
+        return ConsoleResultFailure("Not enough parameters. Usage: \"kick(fullname)\"");
 
     Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene found.");
+        return ConsoleResultFailure("No active scene found.");
 
     boost::shared_ptr<EC_OpenSimPresence> user_presence;
     Scene::EntityList users = scene->GetEntitiesWithComponent("EC_OpenSimPresence");
@@ -443,21 +419,21 @@ Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
     }
 
     if (!user_presence)
-        return Console::ResultFailure("No user found with the given name.");;
+        return ConsoleResultFailure("No user found with the given name.");;
 
     current_world_stream_->SendGodKickUserPacket(user_presence->agentId, "God doesn't want you here.");
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params)
+ConsoleCommandResult DebugStatsModule::DumpTextures(const StringVector &params)
 {
     /* /// \todo Regression. Reimplement using the Asset API. -jj.
 
     boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
         <OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
-        return Console::ResultFailure("No renderer");
+        return ConsoleResultFailure("No renderer");
     
     OgreRenderer::ResourceHandlerPtr res_handler = renderer->GetResourceHandler();
     std::vector<Foundation::ResourcePtr> textures = res_handler->GetResources(OgreRenderer::OgreTextureResource::GetTypeStatic());
@@ -512,25 +488,25 @@ Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params
         }
     }
     */
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
+ConsoleCommandResult DebugStatsModule::Exec(const StringVector &params)
 {
     if (params.size() < 2)
-        return Console::ResultFailure("Not enough parameters.");
+        return ConsoleResultFailure("Not enough parameters.");
 
     int id = ParseString<int>(params[0], 0);
     if (id == 0)
-        return Console::ResultFailure("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
+        return ConsoleResultFailure("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
 
     Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene.");
+        return ConsoleResultFailure("No active scene.");
 
     Scene::EntityPtr entity = scene->GetEntity(id);
     if (!entity)
-        return Console::ResultFailure("No entity found for entity ID " + params[0]);
+        return ConsoleResultFailure("No entity found for entity ID " + params[0]);
 
     QStringList execParameters;
     
@@ -546,7 +522,7 @@ Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
     else
         entity->Exec(EntityAction::Local, params[1].c_str(), execParameters);
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 }

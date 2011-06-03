@@ -15,8 +15,8 @@
 
 #include <QDomDocument>
 
-#include "kNet/DataSerializer.h"
-#include "kNet/DataDeserializer.h"
+#include <kNet/DataSerializer.h>
+#include <kNet/DataDeserializer.h>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Entity")
 
@@ -114,7 +114,7 @@ namespace Scene
             }
             else
             {
-                LogWarning("Failed to remove component: " + component->TypeName().toStdString() + " from entity: " + ToString(GetId()));
+                LogWarning("Failed to remove component: " + component->TypeName() + " from entity: " + QString::number(GetId()));
             }
         }
     }
@@ -131,80 +131,94 @@ namespace Scene
 
     ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->TypeName() == type_name)
-                return components_[i];
-
-        // If component was not found, try to create
-        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
+        ComponentPtr new_comp = GetComponent(type_name);
         if (new_comp)
-        {
-            if (!syncEnabled)
-                new_comp->SetNetworkSyncEnabled(false);
-            AddComponent(new_comp, change);
             return new_comp;
-        }
 
-        // Could not be created
-        return ComponentPtr();
+        return CreateComponent(type_name, change, syncEnabled);
     }
 
     ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->TypeName() == type_name && components_[i]->Name() == name)
-                return components_[i];
-
-        // If component was not found, try to create
-        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+        ComponentPtr new_comp = GetComponent(type_name, name);
         if (new_comp)
-        {
-            if (!syncEnabled)
-                new_comp->SetNetworkSyncEnabled(false);
-            AddComponent(new_comp, change);
             return new_comp;
-        }
 
-        // Could not be created
-        return ComponentPtr();
+        return CreateComponent(type_name, name, change, syncEnabled);
     }
 
     ComponentPtr Entity::GetOrCreateComponent(uint type_hash, AttributeChange::Type change)
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->TypeNameHash() == type_hash)
-                return components_[i];
-
-        // If component was not found, try to create
-        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash);
+        ComponentPtr new_comp = GetComponent(type_hash);
         if (new_comp)
-        {
-            AddComponent(new_comp, change);
             return new_comp;
-        }
 
-        // Could not be created
-        return ComponentPtr();
+        return CreateComponent(type_hash, change);
     }
 
     ComponentPtr Entity::GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change)
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->TypeNameHash() == type_hash && components_[i]->Name() == name)
-                return components_[i];
-
-        // If component was not found, try to create
-        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash, name);
+        ComponentPtr new_comp = GetComponent(type_hash, name);
         if (new_comp)
-        {
-            AddComponent(new_comp, change);
             return new_comp;
+
+        return CreateComponent(type_hash, name, change);
+    }
+
+    ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
+    {
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
+        if (!new_comp)
+        {
+            LogError("Failed to create a component of type \"" + type_name + "\" to " + ToString());
+            return ComponentPtr();
         }
 
-        // Could not be created
-        return ComponentPtr();
+        new_comp->SetNetworkSyncEnabled(syncEnabled);
+        AddComponent(new_comp, change);
+        return new_comp;
     }
-    
+
+    ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
+    {
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+        if (!new_comp)
+        {
+            LogError("Failed to create a component of type \"" + type_name + "\" and name \"" + name + "\" to " + ToString());
+            return ComponentPtr();
+        }
+
+        new_comp->SetNetworkSyncEnabled(syncEnabled);
+        AddComponent(new_comp, change);
+        return new_comp;
+    }
+
+    ComponentPtr Entity::CreateComponent(uint type_hash, AttributeChange::Type change)
+    {
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash);
+        if (!new_comp)
+        {
+            LogError("Failed to create a component of type hash " + QString::number(type_hash) + " to " + ToString());
+            return ComponentPtr();
+        }
+
+        AddComponent(new_comp, change);
+        return new_comp;
+    }
+
+    ComponentPtr Entity::CreateComponent(uint type_hash, const QString &name, AttributeChange::Type change)
+    {
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash, name);
+        if (!new_comp)
+        {
+            LogError("Failed to create a component of type hash " + QString::number(type_hash) + " and name \"" + name + "\" to " + ToString());
+            return ComponentPtr();
+        }
+
+        AddComponent(new_comp, change);
+        return new_comp;
+    }
+
     
     ComponentPtr Entity::GetComponent(const QString &type_name) const
     {
@@ -231,6 +245,15 @@ namespace Scene
                component->Name() == components_[i]->Name())
                return components_[i];
         return ComponentPtr();
+    }
+
+    Entity::ComponentVector Entity::GetComponents(const QString &type_name) const
+    {
+        ComponentVector ret;
+        for(size_t i = 0; i < components_.size() ; ++i)
+            if (components_[i]->TypeName() == type_name)
+                ret.push_back(components_[i]);
+        return ret;
     }
 
     ComponentPtr Entity::GetComponent(const QString &type_name, const QString& name) const
@@ -296,7 +319,7 @@ namespace Scene
         return false;
     }
     
-    IAttribute *Entity::GetAttributeInterface(const std::string &name) const
+    IAttribute *Entity::GetAttribute(const std::string &name) const
     {
         for(size_t i = 0; i < components_.size() ; ++i)
         {
@@ -310,38 +333,36 @@ namespace Scene
     void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
     {
         dst.Add<u32>(GetId());
-        const Scene::Entity::ComponentVector &components = GetComponentVector();
         uint num_serializable = 0;
-        for(uint i = 0; i < components.size(); ++i)
-            if ((components[i]->IsSerializable()) && (!components[i]->IsTemporary()))
+        foreach(const ComponentPtr &comp, Components())
+            if (comp->IsSerializable() && !comp->IsTemporary())
                 num_serializable++;
         dst.Add<u32>(num_serializable);
-        for(uint i = 0; i < components.size(); ++i)
-        {
-            if ((components[i]->IsSerializable()) && (!components[i]->IsTemporary()))
+        foreach(const ComponentPtr &comp, Components())
+            if (comp->IsSerializable() && !comp->IsTemporary())
             {
-                dst.Add<u32>(components[i]->TypeNameHash());
-                dst.AddString(components[i]->Name().toStdString());
-                dst.Add<u8>(components[i]->GetNetworkSyncEnabled() ? 1 : 0);
+                dst.Add<u32>(comp->TypeNameHash());
+                dst.AddString(comp->Name().toStdString());
+                dst.Add<u8>(comp->GetNetworkSyncEnabled() ? 1 : 0);
                 
                 // Write each component to a separate buffer, then write out its size first, so we can skip unknown components
                 QByteArray comp_bytes;
                 // Assume 64KB max per component for now
                 comp_bytes.resize(64 * 1024);
                 kNet::DataSerializer comp_dest(comp_bytes.data(), comp_bytes.size());
-                components[i]->SerializeToBinary(comp_dest);
+                comp->SerializeToBinary(comp_dest);
                 comp_bytes.resize(comp_dest.BytesFilled());
                 
                 dst.Add<u32>(comp_bytes.size());
                 dst.AddArray<u8>((const u8*)comp_bytes.data(), comp_bytes.size());
             }
-        }
     }
+
 /* Disabled for now, since have to decide how entityID conflicts are handled.
     void Entity::DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change)
     {
-    }
-*/
+    }*/
+
     void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element) const
     {
         QDomElement entity_elem = doc.createElement("entity");
@@ -350,18 +371,18 @@ namespace Scene
         id_str.setNum((int)GetId());
         entity_elem.setAttribute("id", id_str);
 
-        const Scene::Entity::ComponentVector &components = GetComponentVector();
-        for(uint i = 0; i < components.size(); ++i)
-            if ((components[i]->IsSerializable()) && (!components[i]->IsTemporary()))
-                components[i]->SerializeTo(doc, entity_elem);
+        foreach(const ComponentPtr c, Components())
+            if (c->IsSerializable() && !c->IsTemporary())
+                c->SerializeTo(doc, entity_elem);
 
         base_element.appendChild(entity_elem);
     }
+
 /* Disabled for now, since have to decide how entityID conflicts are handled.
     void Entity::DeserializeFromXML(QDomElement& element, AttributeChange::Type change)
     {
-    }
-*/
+    }*/
+
     QString Entity::SerializeToXMLString() const
     {
         QDomDocument scene_doc("Scene");
@@ -370,6 +391,7 @@ namespace Scene
         SerializeToXML(scene_doc, scene_elem);
         return scene_doc.toString();
     }
+
 /* Disabled for now, since have to decide how entityID conflicts are handled.
     bool Entity::DeserializeFromXMLString(const QString &src, AttributeChange::Type change)
     {
@@ -381,8 +403,8 @@ namespace Scene
         }
 
         return CreateContentFromXml(entityDocument, replaceOnConflict, change);
-    }
-*/
+    }*/
+
     AttributeVector Entity::GetAttributes(const std::string &name) const
     {
         std::vector<IAttribute *> ret;
@@ -521,5 +543,14 @@ namespace Scene
     void Entity::SetTemporary(bool enable)
     {
         temporary_ = enable;
+    }
+
+    QString Entity::ToString() const
+    {
+        QString name = GetName();
+        if (name.trimmed().isEmpty())
+            return QString("Entity ID ") + QString::number(GetId());
+        else
+            return QString("Entity \"") + name + "\" (ID: " + QString::number(GetId()) + ")";
     }
 }

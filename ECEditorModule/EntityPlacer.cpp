@@ -58,7 +58,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
 
     input_->SetTakeMouseEventsOverQt(true);
 
-    connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), this, SLOT(OnMouseEvent(MouseEvent *)));
+    connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), this, SLOT(OnMouseEvent(MouseEvent *)));
     connect(input_.get(), SIGNAL(MouseMove(MouseEvent *)), this, SLOT(MouseMove(MouseEvent *)));
 }
 
@@ -89,7 +89,7 @@ void EntityPlacer::OnMouseEvent(MouseEvent *mouse)
     }
     else if(mouse->eventType == MouseEvent::MouseScroll)
     {
-        //! @Todo add scele code inside.
+        //! @todo add scele code inside.
     }
 }
 

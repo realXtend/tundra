@@ -44,9 +44,9 @@ kNet::MessageConnection* currentSender = 0;
 namespace TundraLogic
 {
 
-SyncManager::SyncManager(TundraLogicModule* owner, Foundation::Framework* fw) :
+SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
-    framework_(fw),
+    framework_(owner->GetFramework()),
     update_period_(1.0f / 30.0f),
     update_acc_(0.0)
 {
@@ -222,11 +222,10 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            #ifndef ECHO_CHANGES_TO_SENDER
+#ifndef ECHO_CHANGES_TO_SENDER
             if ((*i)->connection == currentSender)
                 continue;
-            #endif
-            
+#endif
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
             {
@@ -470,7 +469,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         Scene::EntityPtr entity = scene->GetEntity(*i);
         if (!entity)
             continue;
-        const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+        const Scene::Entity::ComponentVector &components = entity->Components();
         EntitySyncState* entitystate = state->GetEntity(*i);
         // No record in entitystate -> newly created entity, send full state
         if (!entitystate)
@@ -776,7 +775,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     
     // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
     scene->EmitEntityCreated(entity, change);
-    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+    const Scene::Entity::ComponentVector &components = entity->Components();
     for(uint i = 0; i < components.size(); ++i)
         components[i]->ComponentChanged(change);
 }
@@ -1069,7 +1068,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 if (i->second[j])
                 {
                     currentSender = source;
-                    compShared->AttributeChanged(attributes[j], change);
+                    compShared->EmitAttributeChanged(attributes[j], change);
                 }
         }
         ++i;
@@ -1089,7 +1088,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 if (attr)
                 {
                     currentSender = source;
-                    compShared->AttributeChanged(attr, change);
+                    compShared->EmitAttributeChanged(attr, change);
                 }
             }
         }

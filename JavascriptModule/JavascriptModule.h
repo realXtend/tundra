@@ -61,9 +61,9 @@ public:
     void RunScript(const QString &scriptname);
     void RunString(const QString &codestr, const QVariantMap &context = QVariantMap());
 
-    Console::CommandResult ConsoleRunString(const StringVector &params);
-    Console::CommandResult ConsoleRunFile(const StringVector &params);
-    Console::CommandResult ConsoleReloadScripts(const StringVector &params);
+    ConsoleCommandResult ConsoleRunString(const StringVector &params);
+    ConsoleCommandResult ConsoleRunFile(const StringVector &params);
+    ConsoleCommandResult ConsoleReloadScripts(const StringVector &params);
 
     /// Prepares script instance by registering all needed services to it.
     /** If script is part of the scene, i.e. EC_Script component is present, we add some special services.
@@ -110,8 +110,6 @@ private:
     /// Engines for executing startup (possibly persistent) scripts
     std::vector<JavascriptInstance *> startupScripts_;
 
-    /// Additional startupscript defined from command line
-    std::string commandLineStartupScript_;
 
 #ifndef QT_NO_SCRIPTTOOLS
 public:

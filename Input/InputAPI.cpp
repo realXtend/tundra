@@ -9,7 +9,7 @@
 #include "EventManager.h"
 #include "RenderServiceInterface.h"
 #include "UiAPI.h"
-#include "NaaliGraphicsView.h"
+#include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("Input")
 
@@ -563,6 +563,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         KeyEvent keyEvent;
         keyEvent.keyCode = StripModifiersFromKey(e->key());
+        keyEvent.sequence = QKeySequence(e->key() | e->modifiers());
         keyEvent.keyPressCount = 1;
         keyEvent.modifiers = e->modifiers();
         keyEvent.text = e->text();

@@ -85,18 +85,18 @@ class Manipulator:
     def compareIds(self, id):
         if self.usesManipulator:
             if self.manipulator:
-                if self.manipulator.Id == id:
+                if self.manipulator.id == id:
                     return True
         return False
         
     def moveTo(self, ents):
         if self.manipulator:
             pos = self.getPivotPos(ents)
-            self.manipulator.placeable.Position = pos
+            self.manipulator.placeable.position = pos
             
     def getManipulatorPosition(self):
         if self.manipulator:
-            return self.manipulator.placeable.Position
+            return self.manipulator.placeable.position
         return None
     
     def createManipulator(self):
@@ -149,14 +149,14 @@ class Manipulator:
                 man_trans.SetRot(ent_rot)
                 self.manipulator.placeable.settransform(man_trans)
             else:
-                self.manipulator.placeable.Orientation = self.MANIPULATORORIENTATION
+                self.manipulator.placeable.orientation = self.MANIPULATORORIENTATION
             
             
     def getPivotPos(self, ents):        
         '''Median position used as pivot point'''
-        xs = [e.placeable.Position.x() for e in ents]
-        ys = [e.placeable.Position.y() for e in ents]
-        zs = [e.placeable.Position.z() for e in ents]
+        xs = [e.placeable.position.x() for e in ents]
+        ys = [e.placeable.position.y() for e in ents]
+        zs = [e.placeable.position.z() for e in ents]
                 
         minpos = QVector3D(min(xs), min(ys), min(zs))
         maxpos = QVector3D(max(xs), max(ys), max(zs))
@@ -170,8 +170,8 @@ class Manipulator:
             try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
                 #print "Hiding arrows!"
                 if self.manipulator is not None:
-                    self.manipulator.placeable.Scale = QVector3D(0.0, 0.0, 0.0) #ugly hack
-                    self.manipulator.placeable.Position = QVector3D(0.0, 0.0, 0.0)#another ugly hack
+                    self.manipulator.placeable.scale = QVector3D(0.0, 0.0, 0.0) #ugly hack
+                    self.manipulator.placeable.position = QVector3D(0.0, 0.0, 0.0)#another ugly hack
                     self.manipulator.ruler.SetVisible(False)
                     #r.logInfo("hiding ruler hideManipulator")
                     self.manipulator.ruler.UpdateRuler()
@@ -191,7 +191,7 @@ class Manipulator:
             if ent is None:
                 return
 
-            if ent.Id == self.manipulator.Id:
+            if ent.id == self.manipulator.id:
                 submeshid = results[-3]
                 self.axisSubmesh = submeshid
                 u = results[-2]
@@ -224,7 +224,7 @@ class Manipulator:
                     self.manipulator.ruler.UpdateRuler()
                     if ents[0]:
                         placeable = ents[0].placeable
-                        self.manipulator.ruler.StartDrag(placeable.Position, placeable.Orientation, placeable.Scale)
+                        self.manipulator.ruler.StartDrag(placeable.position, placeable.orientation, placeable.scale)
                     set_custom_cursor(self.CURSOR_HOLD_SHAPE)
                 else:
                     remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
@@ -236,16 +236,16 @@ class Manipulator:
         if ents is None or len(ents) == 0: 
                 return
 
-        campos = naali.getCamera().placeable.Position
+        campos = naali.getCamera().placeable.position
         ent = ents[-1]
-        entpos = ent.placeable.Position
+        entpos = ent.placeable.position
         length = (campos-entpos).length()
             
         v = self.MANIPULATORSCALE
         factor = length*.1
         newv = QVector3D(v) * factor
         try:
-            self.manipulator.placeable.Scale = newv
+            self.manipulator.placeable.scale = newv
         except AttributeError:
             pass
                     
@@ -253,9 +253,9 @@ class Manipulator:
         if ents is not None:
             fov = naali.getCamera().camera.GetVerticalFov()
             width, height = rend.GetWindowWidth(), rend.GetWindowHeight()
-            campos = naali.getCamera().placeable.Position
+            campos = naali.getCamera().placeable.position
             ent = ents[-1]
-            entpos = ent.placeable.Position
+            entpos = ent.placeable.position
             length = (campos-entpos).length()
                 
             worldwidth = (math.tan(fov/2)*length) * 2
@@ -327,7 +327,7 @@ class Manipulator:
     def setCenterPointAndCenterVectors(self, ents):
         self.centerPoint = self.getPivotPos(ents)
         for ent in ents:
-            pos = ent.placeable.Position
+            pos = ent.placeable.position
             diff = self.vectorDifference(pos, self.centerPoint)
             self.entCenterVectors[ent]=diff 
         # print "center vectors"
@@ -383,11 +383,11 @@ class MoveManipulator(Manipulator):
         if self.grabbed:
             if False: #self.controller.useLocalTransform:
                 if self.grabbed_axis == self.AXIS_RED:
-                    ent.network.Position = ent.placeable.translate(0, -changevec.x())
+                    ent.network.position = ent.placeable.translate(0, -changevec.x())
                 elif self.grabbed_axis == self.AXIS_GREEN:
-                    ent.network.Position = ent.placeable.translate(1, -changevec.y())
+                    ent.network.position = ent.placeable.translate(1, -changevec.y())
                 elif self.grabbed_axis == self.AXIS_BLUE:
-                    ent.network.Position = ent.placeable.translate(2, changevec.z())
+                    ent.network.position = ent.placeable.translate(2, changevec.z())
             else:
                 if self.grabbed_axis == self.AXIS_BLUE:
                     changevec.setX(0)
@@ -398,7 +398,7 @@ class MoveManipulator(Manipulator):
                 elif self.grabbed_axis == self.AXIS_GREEN:
                     changevec.setZ(0)
                     changevec.setX(0)
-                ent.placeable.Position += changevec
+                ent.placeable.position += changevec
 #                ent.network.Position += changevec
 
 class ScaleManipulator(Manipulator):
@@ -467,6 +467,8 @@ class ScaleManipulator(Manipulator):
                 changevec.setX(0)
                 changevec.setZ(0)
             
+            ent.placeable.scale += changevec
+            
 class FreeMoveManipulator(Manipulator):
     NAME = "FreeMoveManipulator"
     MANIPULATOR_MESH_NAME = "freemove.mesh"
@@ -488,7 +490,7 @@ class FreeMoveManipulator(Manipulator):
 
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
     def _manipulate(self, ent, amountx, amounty, changevec):
-        ent.placeable.Position += changevec
+        ent.placeable.position += changevec
         #ent.network.Position += changevec      
 
 class RotationManipulator(Manipulator):
@@ -532,7 +534,7 @@ class RotationManipulator(Manipulator):
             #Implementation using Orientation attribute
             
             mov = changevec.length() * 15
-            ort = ent.placeable.Orientation
+            ort = ent.placeable.orientation
 
             if amountx < 0 and amounty < 0:
                 dir = -1
@@ -567,7 +569,7 @@ class RotationManipulator(Manipulator):
 
                 ort = mu.euler_to_quat(euler)
 
-            ent.placeable.Orientation = ort
+            ent.placeable.orientation = ort
             #ent.network.Orientation = ort
     
     """ Rotate locations around center point """
@@ -661,7 +663,7 @@ class RotationManipulator(Manipulator):
             # print "newVec %s"%newVec
             newPos = self.vectorAdd(centerpoint, newVec)
             if hasattr(ent, "placeable"):
-                ent.placeable.Position = newPos
+                ent.placeable.position = newPos
                 #ent.network.Position = newPos
             else:
                 print "entity missing placeable"
@@ -675,7 +677,7 @@ class RotationManipulator(Manipulator):
         anyway keeping it separate untill multirotate works correctly """
     def _rotateEachEntWithQuaternion(self, q, ents, angle):
         for ent in ents:
-            ort = ent.placeable.Orientation
+            ort = ent.placeable.orientation
             euler = mu.quat_to_euler(ort)
             if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
                 #print euler[0] 
@@ -690,7 +692,7 @@ class RotationManipulator(Manipulator):
                 #print math.radians(angle)
                 euler[2] += math.radians(angle)
             ort = mu.euler_to_quat(euler)
-            ent.placeable.Orientation = ort
+            ent.placeable.orientation = ort
             #ent.network.Orientation = ort
         pass
     

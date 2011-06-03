@@ -1,0 +1,5 @@
+/**
+\page DebugConsole Debug console
+    The console can be accessed throught ConsoleAPI.
+    @todo Write description with both C++ and py/js examples.
+*/

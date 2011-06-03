@@ -2,27 +2,28 @@
  
 \section intro_sec Introduction
 
-Welcome to the Naali developer documentation. This page is a site map that assembles together all the major features offered by Naali.
+Welcome to the Tundra developer documentation. This page is a site map that assembles together all the major features offered by Tundra.
 
 <table style="margin: 20px;">
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
 <h2>Download</h2>
-Obtain Naali from
+Obtain Tundra from
 <ul>
-<li><a href="http://code.google.com/p/realxtend-naali/downloads/list">A binary distribution</a>. <a href="http://wiki.realxtend.org/index.php/Getting_Started_with_Naali#Changelog_and_History">Changelog</a>.
-<li><a href="http://github.com/realXtend">Source repository on github</a>.
+<li><a href="http://code.google.com/p/realxtend-naali/downloads/list">A binary distribution</a>.
+<li><a href="http://github.com/realXtend">Source repository on github</a>. Remember to checkout to the <b>tundra</b> branch.
 <li><a href="http://code.google.com/p/realxtend-naali-deps/">Binary dependencies repository on Google code</a>.   
 </ul>
-<a href="http://github.com/realXtend/naali/blob/develop/license.txt">Naali distribution license</a>.
+<a href="http://github.com/realXtend/naali/blob/develop/license.txt">Tundra distribution license</a>.
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
 <h2>Getting Started</h2>
 Follow these first steps.
 <ul>
-<li><a href="http://wiki.realxtend.org/index.php/Getting_Started_with_Naali">Getting started with Naali</a>.
-<li><a href="http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk">Building the sources</a>.
-<li>\ref RunningNaali "Configuring and Running Naali."
+<li>\ref BuildOnWindows "Building and Running Tundra on Windows".
+<li><a href="http://wiki.realxtend.org/index.php/Getting_Started_with_Naali">Getting started with Naali</a> (old).
+<li><a href="http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk">Building the sources</a> (old).
+<li>\ref RunningTundra "Configuring and Running Tundra."
 </ul>
 </td>
 </tr>
@@ -30,26 +31,26 @@ Follow these first steps.
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
 <h2>Community</h2>
-Contact Naali developers and users at
+Contact Tundra developers and users at
 <ul>
 <li><a href="http://groups.google.com/group/realxtend-dev">Developer mailing list</a>.
 <li><a href="http://groups.google.com/group/realxtend">End-user mailing list</a>.
-<li><a href="http://wiki.realxtend.org/index.php/Main_Page">Naali community wiki</a>.
+<li><a href="http://wiki.realxtend.org/index.php/Main_Page">Naali community wiki</a> (old for Tundra content).
 <li>IRC channels: #realxtend and #realxtend-dev on <a href="http://freenode.net/">freenode</a>.
-<li>Bug trackers: <a href="http://github.com/realXtend/naali/issues">github</a>, <a href="http://code.google.com/p/realxtend-naali/issues/list">Google Code</a>. (yes, there are two, one of them is due to be dropped!)
+<li>Bug trackers: <a href="http://github.com/realXtend/naali/issues">github</a>, <a href="http://code.google.com/p/realxtend-naali/issues/list">Google Code</a>. Note: Yes, there are two, one of them is due to be dropped! Prefer to use the google code ticket system.
 </ul>
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
 <h2>Technical Resources</h2>
-See the following pages for help on working on the Naali codebase.  
+See the following pages for help on working on the Tundra codebase.  
 <ul>
 <li>\ref progconv "Coding conventions."
 <li><a href="http://wiki.realxtend.org/index.php/Header_Usage_Best_Practices">Header usage best practices</a>.
 <li><a href="http://doc.qt.nokia.com/">Qt documentation</a>.
 <li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>.
-<li>\ref NaaliArchitectureOverview "Architecture Overview."
+<li>\ref TundraArchitectureOverview "Naali and Tundra Architecture Overview."
 <li>\ref component_base "Entity-Component reference."
-<li>\ref NaaliScriptReference "Naali scripting reference."
+<li>\ref TundraScriptReference "Tundra scripting reference."
 <li>\ref TundraDocumentfiles "Working with Tundra document files."
 </ul>
 </td>
@@ -57,16 +58,16 @@ See the following pages for help on working on the Naali codebase.
 
 </table>
 
-The functionality built into Naali is subdivided into core libraries and optional subsystems. The core libraries are sets of APIs that each expose some functionality of the Naali system to native C++ code or scripted modules or scene entities. 
+The functionality built into Tundra is subdivided into core libraries and optional subsystems. The core libraries are sets of APIs that each expose some functionality of the Tundra system to native C++ code or scripted modules or scene entities. 
 These interfaces are accessible directly through the root Framework object. The individual subsystems are accessible by querying the appropriate modules using the Module API.     
 
-The root object for accessing all Naali features is the Framework object. This object drives the main loop and gives access of all the core APIs to modules and scripts. For more information, see
+The root object for accessing all Tundra features is the Framework object. This object drives the main loop and gives access of all the core APIs to modules and scripts. For more information, see
 - \ref Foundation::Framework "the Framework class".
-- \ref FrameAPI "Naali Frame API."
+- \ref FrameAPI "Tundra Frame API."
 
 \section CoreAPIList Core
 
-The Naali SDK consists of the following set of core APIs that are accessible from client modules, components and scripts.
+The Tundra SDK consists of the following set of core APIs that are accessible from client modules, components and scripts.
 <table style="margin: 20px;">
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
@@ -87,7 +88,8 @@ Classes:
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Event</h3>
-The Naali event pipe is a channel for system-wide inter-module messaging.
+The Tundra event pipe is a channel for system-wide inter-module messaging.
+<div style="color: #FF0000;">The use of the event system is discontinued, and no longer needed for new code.</div>
 
 Information:
 <ul>
@@ -107,14 +109,10 @@ Classes:
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Config</h3>
-Implements a uniform mechanism for modules to store their configuration data. \ref ConfigAPI "Main documentation page."
-
-More information:
-- \ref ConfigReadWrite "Reading and writing configuration data."
-- \ref ConfigDefaultValues "Using default values."
+Implements a uniform mechanism for modules to store and get their configuration data. See \ref ConfigAPI "ConfigAPI documentation" for usage reference.
 
 Classes:
-- ConfigurationManager.
+- ConfigAPI
    
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
@@ -123,12 +121,12 @@ Contains useful development-time mechanisms like memory tracking and execution t
 
 Topics:
 - Detecting memory leaks.
-- Using the Naali execution time profiler.
+- Using the Tundra execution time profiler.
 - Performing automated network testing.
 
 Classes:
-- Foundation::Profiler.
-- Foundation::ProfilerBlock.   
+- Foundation::Profiler
+- Foundation::ProfilerBlock 
 </td>
 </tr>
 
@@ -136,6 +134,8 @@ Classes:
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Input</h3>
 Provides access to Qt input devices in a contextual order.
+
+InputAPI is available as 'input' in Javascript and 'naali.input' in Python.
 
 Follow these topics to learn more:
 - Reading input through an InputContext.
@@ -145,26 +145,40 @@ Follow these topics to learn more:
 </td>
 
 Classes:
-- InputContext.
-- KeyEvent.
-- MouseEvent.
-- QtInputService.
+- InputAPI
+- InputContext
+- KeyEvent
+- MouseEvent
+
+Also see SceneInteract class for additional input signals and entity actions that are accessible without using InputAPI.
 
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>UI</h3>
-Exposes the Naali main window and allows clients to create and show their own Qt-based windows.
+Exposes the Tundra main window and allows clients to create and show their own Qt-based widgets. You can use own external QWidgets or add your widget via UiAPI to the 2D ui scene that is implemented with the QGraphicsView system.
+
+UiAPI is available as 'ui' in Javascript and 'naali.ui' in Python.
+
+Classes:
+- UiAPI
+- UiGraphicsView
+- UiMainWindow
+- UiProxyWidget
+- QtUiAsset
 </td>
 </tr>
 
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Scene</h3>
-Gives access to the Naali 3D scene structure: entities, components and attributes.
+Gives access to the Tundra 3D scene structure: entities, components and attributes.
+
+SceneAPI is available as 'scene' in Javascript and 'naali.scene' in Python.
+
 Topics:
 <ul>
 <li>\ref SceneModelPage "Scenes, entities and components."
 <li>Attributes and attribute metadata.
-<li>\ref EntityActionPage "Entity actions".
+<li>\ref EntityActionPage "Entity actions". <b>broken link</b>
 <li>Accessing scene contents from C++ code.
 <li>Working with multiple scenes.
 <li>Accessing entity attributes using JavaScript.   
@@ -173,42 +187,45 @@ Topics:
 <li>Creating new attribute types.
 <li>Entity attribute replication model.      
 </ul>
+
 Classes:
-<ul>
-<li>IAttribute
-<li>AttributeMetadata
-<li>ComponentManager
-<li>IComponent
-<li>Scene::SceneManager
-<li>Scene::Entity
-<li>Scene::EntityAction
+- IAttribute
+- AttributeMetadata
+- ComponentManager
+- IComponent
+- Scene::SceneManager
+- Scene::Entity
+- EntityAction
+
+<b>NOTE:</b> Scene::SceneManager and SceneAPI might be refactored with name changes as SceneAPI is actually the 'SceneManager' and Scene::SceneManager is actually a 'Scene'. Also the idea is to remove Scene namespace all togerher at some point.
 </ul>
   
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Asset</h3>
-Implements the Naali asset system and a pluggable asset provider architecture for streaming in asset data files.
+Implements the Tundra asset system and a pluggable asset provider architecture for streaming in asset data files.
 
-For more information, see
-- \ref AssetModule "Using the asset module".
-- \ref Resources "Using resources".
-- \ref TextureDecoderModule "Texture decoding".
-- Assets on localhost.
-- HTTP asset provider.
-- Implementing a new asset provider plugin.
-- Naali asset cache structure.
-</td>
+The AssetAPI can be requested to fetch assets with
+- local:// and file:// \n AssetAPI will look for local storage paths for the asset reference.
+- http:// and https:// \n AssetAPI will fetch the asset from the web url from the asset reference.
+
+Current asset providers are
+- LocalAssetProvider
+- HttpAssetProvider
+
+You can implement and register additional storages and providers to the AssetAPI with
+- Implement an IAssetProvider and register it to \nAssetAPI::RegisterAssetProvider()
+- Register new asset storages with \nAssetAPI::AddAssetStorage()
 
 Classes:
-- Foundation::AssetServiceInterface.
-- Asset::AssetManager.
-- Foundation::AssetInterface.
-- Foundation::AssetMetadataInterface.
-- Foundation::AssetProviderInterface.
-- Foundation::AssetServiceInterface.
-- Foundation::ResourceInterface.
-- Foundation::TextureInterface.
-- Foundation::TextureServiceInterface.
+- AssetAPI
+- IAsset
+- IAssetProvider
+- IAssetStorage
+- IAssetTransfer
+- AssetRefListener
+- AssetCache
+</td>
 </tr>
 
 <tr>
@@ -216,27 +233,30 @@ Classes:
 <h3>Console</h3>
 Allows modules to register new commands that are invokeable from a command line console.
 
-More information:
+ConsoleAPI is available as 'console' in Javascript and 'naali.console' in Python with the support for:
 - Registering new console commands.
 - Programmatically invoking console commands.
 
 Classes:
-- Console::Command.
-- Console::ConsoleCommandServiceInterface.
-- Console::ConsoleServiceInterface.
-- Console::CommandManager.
--     
+- ConsoleAPI
+- ConsoleCommand
+     
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
-<h3>Connection</h3>
-Exposes the functionality related to the currently active server connection, if Naali is connected to a server.   
+<h3>Client</h3>
+Exposes the functionality related to the currently active server connection, if Tundra is connected to a server.
+
+<b>NOTE:</b> There is no Framework::Client() currently, this API is (propably) under construction. See TundraLogic::Client for client connection state signals and functions.
 </td>
 </tr>
 
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Server</h3>
-If naali is acting as a network server, this interface can be accessed to interact with the currently active client connections.    
+If Tundra is acting as a network server, this interface can be accessed to interact with the currently active client connections.
+
+<b>NOTE:</b> There is no Framework::Server() currently, this API is (propably) under construction. See TundraLogic::Server for server connection state signals and functions.
+   
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Audio</h3>
@@ -247,11 +267,8 @@ Topics:
  - todo: add here the concepts related to audio.
 
 Classes:
- - ISoundService.
- - OpenALAudio::Sound.
- - OpenALAudio::SoundChannel.
- - OpenALAudio::SoundSettings.
- - OpenALAudio::SoundSystem.
+ - AudioAPI
+ - SoundChannel
 </td>
 </tr>
 
@@ -265,32 +282,41 @@ Topics:
 - \ref FrameAPI_Delayed "Delayed one-time execution".
 - \ref FrameAPI_Periodic "Periodic execution".
 
-The Frame API is accessed through the class \ref Frame "Frame". 
+Classes:
+- FrameAPI
 
-<!--    
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
-<h3></h3>
+<h3>Devices</h3>
+
+\ref device_api_page "DeviceAPI: Implementing and using a device with code examples"
+
+Classes:
+<ul>
+<li>DevicesAPI
+<li>IDevice
+<li>IPositionalDevice
+</ul>
+
 </td>
--->
 
 </tr>
 
 </table>
 
-<h2>Naali Scene Structure</h2>
+<h2>Tundra Scene Structure</h2>
 
-The most visible part of Naali to end-users and world builders is the Naali scene structure. The Scene API is used to access this scene in program code. 
-The \ref component_base "Naali Entity Component Reference" page contains a reference documentation for all the components that make up a scene. 
+The most visible part of Tundra to end-users and world builders is the Tundra scene structure. The Scene API is used to access this scene in program code. 
+The \ref component_base "Tundra Entity Component Reference" page contains a reference documentation for all the components that make up a scene. 
 
-\section NaaliSubsystems Subsystems
-In addition to providing the core API, Naali contains the following functional subsystems, implemented as sets of modules.
+\section TundraSubsystems Subsystems
+In addition to providing the core API, Tundra contains the following functional subsystems, implemented as sets of modules.
 
 <table style="margin: 20px;">
 <tr>
 <td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
 <h3>Renderer</h3>
-This subsystem consists of the rendering library and the graphics-related Naali scene features.  
+This subsystem consists of the rendering library and the graphics-related Tundra scene features.  
 
 See the following topics for more information:
 	- \ref OgreRenderingModule "Using the Ogre renderer module".	
@@ -312,42 +338,13 @@ See the following topics for more information:
 <tr>
 <td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
 <h3>Communication</h3>
-The subsystem of Naali that provides video and audio communication features between clients connected to the world.
+The subsystem of Tundra that provides video and audio communication features between clients connected to the world.
 
 <p>Implemented by modules
 <ul>
 <li>CommunicationsModule
 <li>MumbleVoipModule
 <li>PhononPlayerModule
-<li>TelepathyIMModule
-</ul>
-
-</td>
-</tr>
-</table>
-
-<table style="margin: 20px;">
-<tr>
-<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
-<h3>Taiga</h3>
-This subsystem consists of the modules that provide the features to access the features of a Taiga server or an OpenSim server.
-
-Topics:
-	- \ref OpenSimProtocolConnection "Overview of login procedure". 
-	- \ref OSUDP "Interfacing with the OpenSim world using OSUDP messages".
-	- \ref XMLRPC "Performing custom XMLRPC calls".
-
-<p>Implemented by modules
-<ul>
-<li>InventoryModule
-<li>InWorldChatModule
-<ul><li>Exposes the components Billboard, ChatBubble.</ul>
-<li>LegacyAvatarModule
-<li>ProtocolModuleOpenSim
-<li>ProtocolModuleTaiga
-<li>\ref RexLogic_Module "RexLogicModule"
-<ul><li>Exposes the components FreeData, AttachedSound, OpenSimAvatar, NetworkPosition, Controllable, AvatarAppearance, HoveringWidget, Highlight, HoveringText, Clone, Light, OpenSimPresence, OpenSimPrim, Touchable, 3DCanvas, 3DCanvasSource, Ruler, SoundRuler, Name, ParticleSystem, SoundListener, Sound, Mesh, InputMapper, Movable.</ul>
-<li>WorldMapModule
 </ul>
 
 </td>
@@ -371,58 +368,6 @@ Allows implementing modules using the Python script language as well as embeddin
 </tr>
 </table>
 
-<table style="margin: 20px;">
-<tr>
-<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
-<h3>Ether</h3>
-Provides the visual end-user UI experience to Naali.
-
-<p>Implemented by module
-<ul>
-<li>UiModule
-</ul>
-
-</td>
-</tr>
-</table>
-
-<table style="margin: 20px;">
-<tr>
-<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
-<h3>WorldEditor</h3>
-Implements functionality for editing Naali scene content and Ogre asset data.
-
-<p>Implemented by modules
-<ul>
-<li>\ref ec_editormodule "ECEditorModule"
-<li>OgreAssetEditorModule
-<li>WorldBuildingModule
-</ul>
- 
-</td>
-</tr>
-</table>
-
-<h2>Modules</h2>
-Additionally, there exists the following modules.
-
-<table style="margin: 20px;">
-<tr>
-<td style="width:500px; height: 120px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
-<h3>LoginScreenModule</h3>
-Implements a server login screen with a very simple end-user UI. 
- </td>
-</tr>
-</table>
-
-<table style="margin: 20px;">
-<tr>
-<td style="width:500px; height: 120px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
-<h3>UiServiceModule</h3>
-Very simple light-weight UI module with no high-level functionality (menus etc. ) at all. Used with LoginScreenModule.
-</td>
-</tr>
-</table>
 <table style="margin: 20px;">
 <tr>
 <td style="width:500px; height: 120px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">

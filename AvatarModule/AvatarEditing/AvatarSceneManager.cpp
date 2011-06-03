@@ -2,6 +2,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+/// \todo Deprecated in Tundra. If needed, needs to be reimplemented using EC_Avatar and AvatarDescAsset.
+/*
+
 #include "AvatarEditing/AvatarSceneManager.h"
 #include "AvatarEditing/AnchorLayout.h"
 
@@ -171,3 +175,5 @@ namespace Avatar
 
     }
 }
+
+*/

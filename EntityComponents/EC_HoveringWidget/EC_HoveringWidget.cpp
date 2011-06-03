@@ -19,9 +19,8 @@
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
-#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "ModuleManager.h"
+#include "UiAPI.h"
 
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
@@ -74,12 +73,7 @@ EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
     connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
     connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
-    UiServiceInterface *ui = module->GetFramework()->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
-
-    //proxy_ = ui->GetScene("Inworld")->addWidget(detachedwidget_);
-	proxy_ = ui->GetMainScene()->addWidget(detachedwidget_);
+    proxy_ = framework_->Ui()->AddWidgetToScene(detachedwidget_);
     proxy_->hide();
 
     QPushButton *b = new QPushButton("Attach");

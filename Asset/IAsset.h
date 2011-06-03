@@ -55,11 +55,24 @@ public slots:
     /// but its dependencies cannot be determined and it cannot be used in any other way.
     void Unload();
 
+    /// Returns true if this asset is loaded in memory, and is ready to use.
+    /// An asset can be in an unloaded state, to save memory. In this state the asset can be reloaded from its DiskSource() to enable using it.
+    virtual bool IsLoaded() const = 0;
+
+    /// Makes a clone of this asset. 
+    /// For this function to succeed, the asset must be loaded in memory. (IsLoaded() == true)
+    /// @param newAssetName The name for the new asset. This will be the 'assetRef' of the new asset. You will use AssetAPI::GetAsset(newAssetName) to get
+    ///     a reference to the new asset.
+    /// @note The default implementation is able to clone each asset by first serializing the old asset to a buffer, and then deserializing that buffer onto a newly
+    ///     created asset object of the same type than this asset. A subclass derived from IAsset can reimplement this method if it can implement a more efficient
+    ///     mechanism for cloning itself.
+    virtual AssetPtr Clone(QString newAssetName) const;
+
     /// Stores the *current in-memory copy* of this asset to disk to the given file on the local filesystem. Use this function to export an asset from the system to a file.
     /// Returns true if saving succeeded, false otherwise.
     /// The default implementation immediately returns false for the asset.
     /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.
-    virtual bool SaveToFile(const QString &filename, const QString &serializationParameters = "");
+    virtual bool SaveToFile(const QString &filename, const QString &serializationParameters = "") const;
 
     /// Copies the disk cache version of this asset to the specified file. 
     bool SaveCachedCopyToFile(const QString &filename);
@@ -77,7 +90,7 @@ public slots:
     void EmitLoaded();
 
     // Raw data getter for scripts
-    QByteArray GetRawData(const QString serializationParameters = "") { std::vector<u8> data; if (SerializeTo(data, serializationParameters)) return QByteArray::fromRawData((const char*)&data[0], data.size()); else return QByteArray();}
+    QByteArray GetRawData(const QString serializationParameters = "") const { std::vector<u8> data; if (SerializeTo(data, serializationParameters)) return QByteArray::fromRawData((const char*)&data[0], data.size()); else return QByteArray();}
 
 signals:
     /// This signal is emitted when the contents of this asset is unloaded. It might be due to an explicit call by client code
@@ -124,7 +137,7 @@ public:
 
     /// Saves this asset to the given data buffer. Returns true on success. If this asset is unloaded, will return false.
     /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.
-    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "");
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
 
 protected:
     /// Loads this asset by deserializing it from the given data. The data pointer that is passed in is never null, and numBytes is always greater than zero.

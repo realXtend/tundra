@@ -6,6 +6,7 @@
 
 #include "ModuleManager.h"
 #include "Framework.h"
+#include "Application.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("ModuleManager")
 
@@ -541,6 +542,7 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
             continue;
         }
 
+        framework_->GetApplication()->SetSplashMessage("Loading " + QString::fromStdString(*it));
         RootLogDebug(">> Loading module " + *it + ".");
 
         if (library->cl_.findClass(*it) == 0)
@@ -605,6 +607,7 @@ void ModuleManager::InitializeModule(IModule *module)
 {
     assert(module);
     assert(module->State() == MS_Loaded);
+    framework_->GetApplication()->SetSplashMessage("Preparing " + QString::fromStdString(module->Name()));
     RootLogDebug("Initializing module " + module->Name());
     module->InitializeInternal();
 

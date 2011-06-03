@@ -51,6 +51,7 @@ class AnimationSync(circuits.BaseComponent):
         self.proxywidget.setWindowTitle(self.GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
+        # TODO: Due to core UI API refactor AddWidgetToMenu doesn't exist anymore.
         #uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
 
         #to not flood the network
@@ -80,7 +81,7 @@ class AnimationSync(circuits.BaseComponent):
             try:
                 t = ent.touchable
             except AttributeError:
-                print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.Id
+                print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.id
                 print ent.GetOrCreateComponentRaw("EC_Touchable")
                 t = ent.touchable
             else:

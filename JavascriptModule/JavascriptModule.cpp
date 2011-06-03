@@ -11,7 +11,7 @@
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
 #include "JavascriptInstance.h"
-#include "NaaliCoreTypeDefines.h"
+#include "ScriptCoreTypeDefines.h"
 
 #include "SceneAPI.h"
 #include "Entity.h"
@@ -25,7 +25,7 @@
 #include "AudioAPI.h"
 #include "FrameAPI.h"
 #include "ConsoleAPI.h"
-#include "ConsoleCommandServiceInterface.h"
+#include "ConsoleCommandUtils.h"
 
 #include "ScriptAsset.h"
 
@@ -65,6 +65,8 @@ void JavascriptModule::Initialize()
 
     LogInfo("Module " + Name() + " initializing...");
 
+    QString pluginspath("./qtscript-plugins");
+    QCoreApplication::addLibraryPath(pluginspath);
     assert(!javascriptModuleInstance_);
     javascriptModuleInstance_ = this;
 
@@ -117,17 +119,17 @@ void JavascriptModule::PostInitialize()
 
     RegisterNaaliCoreMetaTypes();
     
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
-        Console::Bind(this, &JavascriptModule::ConsoleRunString)));
+        ConsoleBind(this, &JavascriptModule::ConsoleRunString)));
 
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
         "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",
-        Console::Bind(this, &JavascriptModule::ConsoleRunFile)));
+        ConsoleBind(this, &JavascriptModule::ConsoleRunFile)));
     
-    RegisterConsoleCommand(Console::CreateCommand(
+    framework_->Console()->RegisterCommand(CreateConsoleCommand(
         "JsReloadScripts", "Reloads and re-executes startup scripts.",
-        Console::Bind(this, &JavascriptModule::ConsoleReloadScripts)));
+        ConsoleBind(this, &JavascriptModule::ConsoleReloadScripts)));
     
     // Initialize startup scripts
     LoadStartupScripts();
@@ -136,11 +138,14 @@ void JavascriptModule::PostInitialize()
 
     if (programOptions.count("run"))
     {
-        commandLineStartupScript_ = programOptions["run"].as<std::string>();
-        JavascriptInstance *jsInstance = new JavascriptInstance(commandLineStartupScript_.c_str(), this);
-        PrepareScriptInstance(jsInstance);
-        startupScripts_.push_back(jsInstance);
-        jsInstance->Run();
+        std::vector<std::string> sv =  programOptions["run"].as<std::vector<std::string> >();
+        for(std::vector<std::string>::iterator i = sv.begin(); i != sv.end(); ++i)
+        {
+            JavascriptInstance *jsInstance = new JavascriptInstance(i->c_str(), this);
+            PrepareScriptInstance(jsInstance);
+            startupScripts_.push_back(jsInstance);
+            jsInstance->Run();
+        }
     }
 }
 
@@ -186,30 +191,30 @@ void JavascriptModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-Console::CommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
+ConsoleCommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
 {
     if (params.size() != 1)
-        return Console::ResultFailure("Usage: JsExec(print 1 + 1)");
+        return ConsoleResultFailure("Usage: JsExec(print 1 + 1)");
 
     JavascriptModule::RunString(QString::fromStdString(params[0]));
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult JavascriptModule::ConsoleRunFile(const StringVector &params)
+ConsoleCommandResult JavascriptModule::ConsoleRunFile(const StringVector &params)
 {
     if (params.size() != 1)
-        return Console::ResultFailure("Usage: JsLoad(myfile.js)");
+        return ConsoleResultFailure("Usage: JsLoad(myfile.js)");
 
     JavascriptModule::RunScript(QString::fromStdString(params[0]));
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
-Console::CommandResult JavascriptModule::ConsoleReloadScripts(const StringVector &params)
+ConsoleCommandResult JavascriptModule::ConsoleReloadScripts(const StringVector &params)
 {
     LoadStartupScripts();
 
-    return Console::ResultSuccess();
+    return ConsoleResultSuccess();
 }
 
 JavascriptModule *JavascriptModule::GetInstance()
@@ -403,7 +408,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     instance->RegisterService(framework_, "framework");
     instance->RegisterService(instance, "engine");
     
-    for(uint i = 0; i < properties.size(); ++i)
+    for(int i = 0; i < properties.size(); ++i)
         instance->RegisterService(framework_->property(properties[i]).value<QObject*>(), properties[i]);
 
     if (comp)

@@ -22,7 +22,6 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "ConsoleAPI.h"
-#include "UiServiceInterface.h"
 #include "InputAPI.h"
 #include "RenderServiceInterface.h"
 #include "SceneImporter.h"
@@ -30,8 +29,8 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "UiAPI.h"
-#include "NaaliGraphicsView.h"
-#include "NaaliMainWindow.h"
+#include "UiGraphicsView.h"
+#include "UiMainWindow.h"
 #include "LoggingFunctions.h"
 #include "SceneDesc.h"
 
@@ -233,8 +232,8 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
         addContent->show();
     }
 
-    /** \todo this is always empty list of entities, remove (?!) as we actually dont know the entity count yet.
-     *  it is known only after the add content window selectios and processing has been done 
+    /** \todo this is always empty list of entities, remove (?!) as we actually don't know the entity count yet.
+     *  it is known only after the add content window selections and processing has been done 
      */
     return ret; 
 }
@@ -327,50 +326,50 @@ void SceneStructureModule::CleanReference(QString &fileRef)
 
 void SceneStructureModule::ToggleSceneStructureWindow()
 {
-    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-	if (ui && sceneWindow){
-		ui->ShowWidget(sceneWindow);
-		return;
-	}      
-
-	/*NaaliUi *ui = GetFramework()->Ui();
-    if (!ui)
+    if (framework_->IsHeadless())
+    {
+        LogError("Cannot show scene structure window in headless mode.");
         return;
 
     if (sceneWindow)
     {
-        ui->ShowWidget(sceneWindow);
+        //ui->ShowWidget(sceneWindow);
         //sceneWindow->show();
+        if (!sceneWindow->isVisible())
+            sceneWindow->close();
         return;
     }
 
-    sceneWindow = new SceneStructureWindow(framework_, ui->MainWindow());
+    sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
     sceneWindow->SetScene(GetFramework()->Scene()->GetDefaultScene());
     //sceneWindow->show();
-    ui->AddWidgetToScene(sceneWindow);
-    ui->ShowWidget(sceneWindow);*/
+   // ui->AddWidgetToScene(sceneWindow);
+    //ui->ShowWidget(sceneWindow);*/
 }
 
 void SceneStructureModule::ToggleAssetsWindow()
 {
-    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+    if (framework_->IsHeadless())
+    {
+        LogError("Cannot show assets window in headless mode.");
+        return;
+    }
+   /* UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
 	if (ui && assetsWindow){
         ui->ShowWidget(assetsWindow);
 		return;
-	}
+	}*/
 
    /* if (assetsWindow)
     {
         assetsWindow->setVisible(!assetsWindow->isVisible());
+        if (!assetsWindow->isVisible())
+            assetsWindow->close();
         return;
     }
 
-    UiAPI *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
-
-    assetsWindow = new AssetsWindow(framework_, ui->MainWindow());
+    assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
 	*/
@@ -388,14 +387,12 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
 
     const QKeySequence &showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
     const QKeySequence &showAssets = input.KeyBinding("ShowAssetsWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_A));
-
-    QKeySequence keySeq(e->keyCode | e->modifiers);
-    if (keySeq == showSceneStruct)
+    if (e->Sequence()== showSceneStruct)
     {
         ToggleSceneStructureWindow();
         e->handled = true;
     }
-    if (keySeq == showAssets)
+    if (e->Sequence() == showAssets)
     {
         ToggleAssetsWindow();
         e->handled = true;
@@ -815,7 +812,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
     QByteArray data_qt((const char *)&data[0], data.size());
     if (data_qt.isEmpty())
     {
-        LogError("Failed to convert txml data to QByteArray.");
+        LogError("Failed to convert txml/tbin data to QByteArray.");
         return;
     }
 

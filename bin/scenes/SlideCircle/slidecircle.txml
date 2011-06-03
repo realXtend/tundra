@@ -1,0 +1,158 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1">
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="local://slidecircleapplication.js" name="Script ref"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="SlideCircleScript" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_InputMapper" sync="1">
+   <attribute value="EC_InputMapper" name="Input context name"/>
+   <attribute value="90" name="Input context priority"/>
+   <attribute value="false" name="Take keyboard events over Qt"/>
+   <attribute value="false" name="Take mouse events over Qt"/>
+   <attribute value="" name="Mappings"/>
+   <attribute value="1" name="Action execution type"/>
+   <attribute value="1" name="Key modifiers enable"/>
+   <attribute value="true" name="Enable actions"/>
+   <attribute value="true" name="Trigger on keyrepeats"/>
+  </component>
+ </entity>
+ <entity id="2">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="local://screen.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://screen.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0,20,0,180,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="screen" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_WebView" sync="1">
+   <attribute value="" name="View URL"/>
+   <attribute value="800 600" name="View Size"/>
+   <attribute value="0" name="Render Submesh"/>
+   <attribute value="0" name="Render FPS"/>
+   <attribute value="false" name="Interactive"/>
+   <attribute value="-1" name="ControllerId"/>
+  </component>
+ </entity>
+ <entity id="3">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="local://screen.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://screen.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0,-20,0,180,5,180,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="screen" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_WebView" sync="1">
+   <attribute value="" name="View URL"/>
+   <attribute value="800 600" name="View Size"/>
+   <attribute value="0" name="Render Submesh"/>
+   <attribute value="0" name="Render FPS"/>
+   <attribute value="false" name="Interactive"/>
+   <attribute value="-1" name="ControllerId"/>
+  </component>
+ </entity>
+ <entity id="4">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,10,180,1,1,1" name="Transform"/>
+   <attribute value="local://screen.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://screen.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="20,0,0,180,0,270,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="screen" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_WebView" sync="1">
+   <attribute value="" name="View URL"/>
+   <attribute value="800 600" name="View Size"/>
+   <attribute value="0" name="Render Submesh"/>
+   <attribute value="0" name="Render FPS"/>
+   <attribute value="false" name="Interactive"/>
+   <attribute value="-1" name="ControllerId"/>
+  </component>
+ </entity>
+ <entity id="5">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="local://screen.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://screen.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-20,0,0,180,15,90,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="screen" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_WebView" sync="1">
+   <attribute value="" name="View URL"/>
+   <attribute value="800 600" name="View Size"/>
+   <attribute value="0" name="Render Submesh"/>
+   <attribute value="0" name="Render FPS"/>
+   <attribute value="false" name="Interactive"/>
+   <attribute value="-1" name="ControllerId"/>
+  </component>
+ </entity>
+ <entity id="6">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="local://monkey.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://screen.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="Monkey" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  </entity>
+</scene>

@@ -341,7 +341,10 @@ namespace Scene
             return;
         if (change == AttributeChange::Default)
             change = AttributeChange::Replicate;
-        emit EntityCreated(entity.get(), change);
+        
+        //@note This is not enough, it might be that entity is deleted after this call so we have dangling pointer in queue. 
+        if ( entity.get() != 0 )
+            emit EntityCreated(entity.get(), change);
     }
 
     void SceneManager::EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change)
@@ -442,7 +445,7 @@ namespace Scene
                     id_str.setNum((int)entity->GetId());
                     entity_elem.setAttribute("id", id_str);
 
-                    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+                    const Scene::Entity::ComponentVector &components = entity->Components();
                     for(uint i = 0; i < components.size(); ++i)
                         if (components[i]->IsSerializable())
                             components[i]->SerializeTo(scene_doc, entity_elem);
@@ -604,7 +607,7 @@ namespace Scene
             Entity* entity = ret[i];
             EmitEntityCreated(entity, change);
             // All entities & components have been loaded. Trigger change for them now.
-            const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+            const Scene::Entity::ComponentVector &components = entity->Components();
             for(uint j = 0; j < components.size(); ++j)
                 components[j]->ComponentChanged(change);
         }
@@ -715,7 +718,7 @@ namespace Scene
             Entity* entity = ret[i];
             EmitEntityCreated(entity, change);
             // All entities & components have been loaded. Trigger change for them now.
-            foreach(ComponentPtr comp, entity->GetComponentVector())
+            foreach(ComponentPtr comp, entity->Components())
                 comp->ComponentChanged(change);
         }
         
@@ -796,7 +799,7 @@ namespace Scene
         foreach(Entity *entity, ret)
         {
             EmitEntityCreated(entity, change);
-            foreach(ComponentPtr component, entity->GetComponentVector())
+            foreach(ComponentPtr component, entity->Components())
                 component->ComponentChanged(change);
         }
 
@@ -1135,7 +1138,7 @@ namespace Scene
             id_str.setNum((int)entity->GetId());
             entity_elem.setAttribute("id", id_str);
             
-            const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+            const Scene::Entity::ComponentVector &components = entity->Components();
             for(uint i = 0; i < components.size(); ++i)
                 if (components[i]->IsSerializable())
                     components[i]->SerializeTo(scene_doc, entity_elem);

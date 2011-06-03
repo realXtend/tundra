@@ -1,8 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
 #include "DebugOperatorNew.h"
+#include "InputContext.h"
 #include <QList>
 #include "MemoryLeakCheck.h"
-#include "InputContext.h"
 
 InputContext::InputContext(const char *name_, int priority_)
 :name(name_), priority(priority_), takeMouseEventsOverQt(false), takeKeyboardEventsOverQt(false)
@@ -42,8 +43,8 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
     switch(key.eventType)
     {
     case KeyEvent::KeyPressed:
-        // 1. First emit the generic OnKeyEvent signal that receives all event types for all key codes.
-        emit OnKeyEvent(&key);
+        // 1. First emit the generic KeyEventReceived signal that receives all event types for all key codes.
+        emit KeyEventReceived(&key);
         // 2. Emit the event type -specific signal for all key codes.
         emit KeyPressed(&key);
         // 3. Emit the key code -specific signal for specific event.
@@ -54,7 +55,7 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
         if (!IsKeyDownImmediate(key.keyCode))
             break; // If we've received a keydown for a key we haven't gotten a corresponding press for before, ignore this event.
 
-        emit OnKeyEvent(&key); // 1.
+        emit KeyEventReceived(&key); // 1.
         emit KeyDown(&key); // 2.
 //        if (keySignal != registeredKeyEventSignals.end())
  //           keySignal->second->OnKeyDown(key); // 3.
@@ -63,7 +64,7 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
         if (!IsKeyDownImmediate(key.keyCode))
             break; // If we've received a keydown for a key we haven't gotten a corresponding press for before, ignore this event.
 
-        emit OnKeyEvent(&key); // 1.
+        emit KeyEventReceived(&key); // 1.
         emit KeyReleased(&key); // 2.
         if (keySignal != registeredKeyEventSignals.end())
             keySignal->second->OnKeyReleased(key); // 3.
@@ -102,7 +103,7 @@ void InputContext::TriggerKeyReleaseEvent(Qt::Key keyCode)
 
 void InputContext::TriggerMouseEvent(MouseEvent &mouse)
 {
-    emit OnMouseEvent(&mouse);
+    emit MouseEventReceived(&mouse);
 
     switch(mouse.eventType)
     {

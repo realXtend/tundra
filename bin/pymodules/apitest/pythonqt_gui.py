@@ -46,7 +46,8 @@ class TestGui(Component):
         self.proxywidget.setWindowTitle(GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
-        uism.AddWidgetToMenu(self.proxywidget, GUINAME, "Developer Tools")
+        # TODO: Due to core UI API refactor AddWidgetToMenu doesn't exist anymore.
+        #uism.AddWidgetToMenu(self.proxywidget, GUINAME, "Developer Tools")
 
         #self.canvas.Show()
 

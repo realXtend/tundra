@@ -1,9 +1,9 @@
 /*!
 
-\page component_base Naali Entity Component Reference
+\page component_base Tundra Entity Component Reference
 
-Naali provides a set of built-in entity components, which are the building blocks that make up the world. This page is the reference documentation for all these components. 
-You can define your own components in C++ by writing your own Naali module to host it. See the Module API and Scene API for more information on how to do this.
+Tundra provides a set of built-in entity components, which are the building blocks that make up the world. This page is the reference documentation for all these components. 
+You can define your own components in C++ by writing your own Tundra module to host it. See the Module API and Scene API for more information on how to do this.
 
 <b>Note:</b> Some of the components listed here are internal to the system and they have never been intended to be used directly from the EC editor.
 Basically this means any component that does not contain any attributes or publicly accessible slots or actions.
@@ -11,7 +11,7 @@ Basically this means any component that does not contain any attributes or publi
 In C++ code, the components are prefixed with "EC_". In this documentation and in the EC editor, however, all the entity components are referred to without this prefix. 
 
 - \ref EC_3DCanvas "3DCanvas"
-- \ref EC_3DCanvasSource "3DCanvasSource"
+- \ref EC_3DCanvasSource "3DCanvasSource" (note: deprecated, see EC_WebView instead)
 - \ref EC_AnimationController "AnimationController"
 - \ref EC_Avatar "Avatar"
 - \ref EC_AvatarAppearance "AvatarAppearance"
@@ -27,6 +27,7 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 - \ref EC_HoveringText "HoveringText"
 - \ref EC_HoveringWidget "HoveringWidget"
 - \ref EC_InputMapper "InputMapper"
+- \ref EC_LaserPointer "LaserPointer"
 - \ref EC_Light "Light"
 - \ref EC_Mesh "Mesh"
 - \ref EC_Movable "Movable"
@@ -44,6 +45,8 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 - \ref EC_OpenSimPrim "OpenSimPrim"
 - \ref EC_ParticleSystem "ParticleSystem"
 - \ref EC_Placeable "Placeable"
+- \ref EC_PlanarMirror "PlanarMirror"
+- \ref EC_ProximityTrigger "ProximityTrigger"
 - \ref EC_RigidBody "RigidBody"
 - \ref EC_Ruler "Ruler"
 - \ref EC_Script "Script"
@@ -55,6 +58,7 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 - \ref Environment::EC_Terrain "Terrain"
 - \ref EC_Touchable "Touchable"
 - \ref Environment::EC_WaterPlane "WaterPlane"
+- \ref EC_WebView "WebView"
 
 <!--
 <table style="margin: 20px;">
@@ -134,7 +138,7 @@ Does not emit any actions.
 
 
 <h2>Scriptable Components</h2>
-All the components in Naali are written in C++. To allow dynamic behavior for data driven ECA data and script contents, the following special components exist:
+All the components in Tundra are written in C++. To allow dynamic behavior for data driven ECA data and script contents, the following special components exist:
 
 <table style="margin: 20px;">
 <tr>
