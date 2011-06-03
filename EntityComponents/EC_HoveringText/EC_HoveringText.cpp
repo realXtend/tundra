@@ -295,7 +295,7 @@ void EC_HoveringText::Redraw()
                                 textColor_, 
                                 font_, 
                                 brush, 
-                                borderPen);
+                                borderPen, Qt::AlignCenter | Qt::TextWordWrap, true);
     }
     catch(Ogre::Exception &e)
     {

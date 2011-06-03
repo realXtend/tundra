@@ -245,7 +245,8 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
     if (!ogreTexture.get())
     {
         ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
-            newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+            newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, 
+            Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE | (regenerateMipMaps ? Ogre::TU_AUTOMIPMAP : 0));
         if (!ogreTexture.get())
         {
             LogError("TextureAsset::SetContents failed: Cannot create texture asset \"" + ToString() + "\" to name \"" + Name() + "\" and size " + QString::number(newWidth) + "x" + QString::number(newHeight) + "!");
@@ -310,7 +311,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
         ogreTexture->createInternalResources();
 }
 
-void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags)
+void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags, bool generateMipmaps)
 {
     text = text.replace("\\n", "\n");
 
@@ -336,5 +337,5 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
         painter.drawText(rect, flags, text);
     }
 
-    SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, false);
+    SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, generateMipmaps);
 }
