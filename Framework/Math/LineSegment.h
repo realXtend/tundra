@@ -32,6 +32,10 @@ public:
     /// @important The meaning of d here differs from Line::GetPoint and Ray::GetPoint. GetPoint(0) returns a, GetPoint(1) returns b.
     float3 GetPoint(float d) const;
 
+    /// Returns the center point of this line segment.
+    /// This function is the same as calling GetPoint(0.5f);
+    float3 CenterPoint() const;
+
     /// Reverses this line segment in place. That is, swaps the start and end points of
     /// this line segment so that it goes from end->start now.
     void Reverse();

@@ -42,6 +42,11 @@ float3 LineSegment::GetPoint(float d) const
     return (1.f - d) * a + d * b;
 }
 
+float3 LineSegment::CenterPoint() const
+{
+    return (a + b) * 0.5f;
+}
+
 void LineSegment::Reverse()
 {
     std::swap(a, b);
