@@ -273,9 +273,9 @@ bool Plane::Intersects(const OBB &obb) const
 bool Plane::Intersects(const Triangle &triangle) const
 {
     float a = SignedDistance(triangle.a);
-    float b = SignedDistance(triangle.a);
-    float c = SignedDistance(triangle.a);
-    return (a*b <= 0.f || a*c <= 0.f || b*c <= 0.f);
+    float b = SignedDistance(triangle.b);
+    float c = SignedDistance(triangle.c);
+    return (a*b <= 0.f || a*c <= 0.f);
 }
 
 bool Plane::Intersects(const Frustum &frustum) const

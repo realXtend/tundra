@@ -225,6 +225,76 @@ bool Triangle::Intersects(const Sphere &sphere, float3 *closestPointOnTriangle) 
     return pt.DistanceSq(sphere.pos) <= sphere.r * sphere.r;
 }
 
+static void FindIntersectingLineSegments(const Triangle &t, float da, float db, float dc, LineSegment &l1, LineSegment &l2)
+{
+    if (da*db > 0.f)
+    {
+        l1 = LineSegment(t.a, t.c);
+        l2 = LineSegment(t.b, t.c);
+    }
+    else if (db*dc > 0.f)
+    {
+        l1 = LineSegment(t.a, t.b);
+        l1 = LineSegment(t.a, t.c);
+    }
+    else
+    {
+        l1 = LineSegment(t.a, t.b);
+        l1 = LineSegment(t.b, t.c);
+    }
+}
+
+bool Triangle::Intersects(const Triangle &t2, LineSegment *outLine) const
+{
+    // Is the triangle t2 completely on one side of the plane of this triangle?
+    Plane p1 = this->GetPlane();
+    float t2da = p1.SignedDistance(t2.a);
+    float t2db = p1.SignedDistance(t2.b);
+    float t2dc = p1.SignedDistance(t2.c);
+    if (t2da*t2db > 0.f && t2da*t2dc > 0.f)
+        return false;
+    // Is this triangle completely on one side of the plane of the triangle t2?
+    Plane p2 = t2.GetPlane();
+    float t1da = p2.SignedDistance(this->a);
+    float t1db = p2.SignedDistance(this->b);
+    float t1dc = p2.SignedDistance(this->c);
+    if (t1da*t1db > 0.f && t1da*t1dc > 0.f)
+        return false;
+
+    // Find the intersection line of the two planes. 
+    Line l;
+    bool success = p1.Intersects(p2, &l);
+    assume(success); // We already determined the two triangles have intersecting planes, so this should always succeed.
+    if (!success)
+        return false;
+
+    // Find the two line segments of both triangles which straddle the intersection line.
+    LineSegment l1a, l1b;
+    LineSegment l2a, l2b;
+    FindIntersectingLineSegments(*this, t1da, t1db, t1dc, l1a, l1b);
+    FindIntersectingLineSegments(t2, t2da, t2db, t2dc, l2a, l2b);
+
+    // Find the projection intervals on the intersection line.
+    float d1a, d1b, d2a, d2b;
+    l.Distance(l1a, &d1a);
+    l.Distance(l1b, &d1b);
+    l.Distance(l2a, &d2a);
+    l.Distance(l2b, &d2b);
+    if (d1a > d1b)
+        std::swap(d1a, d1b);
+    if (d2a > d2b)
+        std::swap(d2a, d2b);
+    float rStart = std::max(d1a, d2a);
+    float rEnd = std::min(d1b, d2b);
+    if (rStart <= rEnd)
+    {
+        if (outLine)
+            *outLine = LineSegment(l.GetPoint(rStart), l.GetPoint(rEnd));
+        return true;
+    }
+    return false;
+}
+
 /// Code from Christer Ericson's Real-Time Collision Detection, pp. 141-142.
 float3 Triangle::ClosestPoint(const float3 &p) const
 {

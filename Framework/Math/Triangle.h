@@ -66,6 +66,8 @@ public:
     bool Intersects(const Ray &ray, float *d, float3 *intersectionPoint) const;
     bool Intersects(const Plane &plane) const;
     bool Intersects(const Sphere &sphere, float3 *closestPointOnTriangle) const;
+    /// @param outLine [out] Specifies the line segment of intersection if the two triangles intersect.
+    bool Intersects(const Triangle &triangle, LineSegment *outLine) const;
 
     /// Returns the closest point on this triangle to the target object.
     float3 ClosestPoint(const float3 &targetPoint) const;
