@@ -10,6 +10,10 @@
 #include "Math/MathFunc.h"
 #include "Math/float2.h"
 #include "Math/float3.h"
+#include "Math/float3x3.h"
+#include "Math/float3x4.h"
+#include "Math/float4x4.h"
+#include "Math/Quat.h"
 #include "Math/Triangle.h"
 #include "Math/Plane.h"
 #include "Math/Line.h"
@@ -17,6 +21,7 @@
 #include "Math/Ray.h"
 #include "Math/Sphere.h"
 #include "Math/AABB.h"
+#include "Math/OBB.h"
 
 Triangle::Triangle(const float3 &a_, const float3 &b_, const float3 &c_)
 :a(a_), b(b_), c(c_)
@@ -356,6 +361,11 @@ bool Triangle::Intersects(const AABB &aabb) const
     return true;
 }
 
+bool Triangle::Intersects(const OBB &obb) const
+{
+    return obb.Intersects(*this);
+}
+
 void Triangle::ProjectToAxis(const float3 &axis, float &dMin, float &dMax) const
 {
     dMin = dMax = Dot(axis, a);
@@ -540,5 +550,24 @@ float3 Triangle::ClosestPoint(const Triangle &other, float3 *otherPt) const
     if (otherPt)
         *otherPt = closestOther;
     return closestThis;
+}
 
+Triangle operator *(const float3x3 &transform, const Triangle &t)
+{
+    return Triangle(transform*t.a, transform*t.b, transform*t.c);
+}
+
+Triangle operator *(const float3x4 &transform, const Triangle &t)
+{
+    return Triangle(transform.MulPos(t.a), transform.MulPos(t.b), transform.MulPos(t.c));
+}
+
+Triangle operator *(const float4x4 &transform, const Triangle &t)
+{
+    return Triangle(transform.MulPos(t.a), transform.MulPos(t.b), transform.MulPos(t.c));
+}
+
+Triangle operator *(const Quat &transform, const Triangle &t)
+{
+    return Triangle(transform*t.a, transform*t.b, transform*t.c);
 }

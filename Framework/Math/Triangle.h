@@ -75,6 +75,7 @@ public:
     /// @param outLine [out] Specifies the line segment of intersection if the two triangles intersect.
     bool Intersects(const Triangle &triangle, LineSegment *outLine) const;
     bool Intersects(const AABB &aabb) const;
+    bool Intersects(const OBB &obb) const;
 
     /// Projects this Triangle to the given axis.
     /// @param axis The axis to project onto. This vector can be unnormalized.
@@ -89,6 +90,11 @@ public:
     float3 ClosestPoint(const Line &other, float3 *otherPt) const;
     float3 ClosestPoint(const Triangle &other, float3 *otherPt) const;
 };
+
+Triangle operator *(const float3x3 &transform, const Triangle &t);
+Triangle operator *(const float3x4 &transform, const Triangle &t);
+Triangle operator *(const float4x4 &transform, const Triangle &t);
+Triangle operator *(const Quat &transform, const Triangle &t);
 
 #ifdef QT_INTEROP
 Q_DECLARE_METATYPE(Triangle)

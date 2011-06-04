@@ -21,6 +21,7 @@
 #include "float4x4.h"
 #include "Quat.h"
 #include "Ray.h"
+#include "Triangle.h"
 
 OBB::OBB(const AABB &aabb)
 {
@@ -654,6 +655,13 @@ bool OBB::Intersects(const Sphere &sphere, float3 *closestPointOnOBB) const
         *closestPointOnOBB = pt;
 
     return pt.DistanceSq(sphere.pos) <= sphere.r * sphere.r;
+}
+
+bool OBB::Intersects(const Triangle &triangle) const
+{
+    AABB aabb(float3(0,0,0), float3(Size()));
+    Triangle t = WorldToLocal() * triangle;
+    return t.Intersects(aabb);
 }
 
 /*

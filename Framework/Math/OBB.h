@@ -280,6 +280,7 @@ public:
     bool Intersects(const Line &line, float *dNear, float *dFar) const;
     bool Intersects(const LineSegment &lineSegment, float *dNear, float *dFar) const;
     bool Intersects(const Sphere &sphere, float3 *closestPointOnOBB) const;
+    bool Intersects(const Triangle &triangle) const;
 
 /*  HitInfo Intersect(const Plane &plane) const; 
     HitInfo Intersect(const Sphere &sphere) const;
