@@ -244,6 +244,9 @@ static void FindIntersectingLineSegments(const Triangle &t, float da, float db, 
     }
 }
 
+/// Implementation based on pseudo-code from Tomas Möller's 
+/// "A Fast Triangle-Triangle Intersection Test". http://jgt.akpeters.com/papers/Moller97/
+/// See also Christer Ericson's Real-Time Collision Detection, p. 172.
 bool Triangle::Intersects(const Triangle &t2, LineSegment *outLine) const
 {
     // Is the triangle t2 completely on one side of the plane of this triangle?
@@ -422,4 +425,51 @@ float3 Triangle::ClosestPoint(const LineSegment &line, float3 *otherPt) const
             *otherPt = line.b;
         return p.Project(line.b);
     }
+}
+
+/// Implemented based on pseudo-code from Christer Ericson's Real-Time Collision Detection, pp. 155-156.
+float3 Triangle::ClosestPoint(const Triangle &other, float3 *otherPt) const
+{
+    // First detect if the two triangles are intersecting.
+    LineSegment l;
+    bool success = this->Intersects(other, &l);
+    if (success)
+    {
+        float3 cp = l.CenterPoint();
+        if (otherPt)
+            *otherPt = cp;
+        return cp;
+    }
+
+    float3 closestThis = this->ClosestPoint(other.a);
+    float3 closestOther = other.a;
+    float closestDSq = closestThis.DistanceSq(closestOther);
+
+    float3 pt = this->ClosestPoint(other.b);
+    float dSq = pt.DistanceSq(other.b);
+    if (dSq < closestDSq) closestThis = pt, closestOther = other.b, closestDSq = dSq;
+
+    pt = this->ClosestPoint(other.c);
+    dSq = pt.DistanceSq(other.c);
+    if (dSq < closestDSq) closestThis = pt, closestOther = other.c, closestDSq = dSq;
+
+    LineSegment l1[3] = { LineSegment(a,b), LineSegment(a,c), LineSegment(b,c) };
+    LineSegment l2[3] = { LineSegment(other.a,other.b), LineSegment(other.a,other.c), LineSegment(other.b,other.c) };
+    float d, d2;
+    for(int i = 0; i < 3; ++i)
+        for(int j = 0; j < 3; ++j)
+        {
+            float dist = l1[i].Distance(l2[j], &d, &d2);
+            if (dist*dist < closestDSq)
+            {
+                closestThis = l1[i].GetPoint(d);
+                closestOther = l2[j].GetPoint(d2);
+                closestDSq = dist*dist;
+            }
+        }
+
+    if (otherPt)
+        *otherPt = closestOther;
+    return closestThis;
+
 }
