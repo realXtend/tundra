@@ -16,6 +16,7 @@
 #include "Math/LineSegment.h"
 #include "Math/Ray.h"
 #include "Math/Sphere.h"
+#include "Math/AABB.h"
 
 Triangle::Triangle(const float3 &a_, const float3 &b_, const float3 &c_)
 :a(a_), b(b_), c(c_)
@@ -65,6 +66,16 @@ float Triangle::Area() const
 Plane Triangle::GetPlane() const
 {
     return Plane(a, b, c);
+}
+
+float3 Triangle::Normal() const
+{
+    return UnnormalizedNormal().Normalized();
+}
+
+float3 Triangle::UnnormalizedNormal() const
+{
+    return Cross(b-a, c-a);
 }
 
 float Triangle::Area2D(const float2 &p1, const float2 &p2, const float2 &p3)
@@ -296,6 +307,64 @@ bool Triangle::Intersects(const Triangle &t2, LineSegment *outLine) const
         return true;
     }
     return false;
+}
+
+bool RangesOverlap(float start1, float end1, float start2, float end2)
+{
+    return end1 >= start2 && end2 >= start1;
+}
+
+/// Implementation based on the pseudo-code in Christer Ericson's Real-Time Collision Detection, pp. 169-172.
+bool Triangle::Intersects(const AABB &aabb) const
+{
+    ///\todo This test can be greatly optimized by manually unrolling loops, trivial math and by avoiding 
+    /// unnecessary copying.
+    float t1, t2, a1, a2;
+    const float3 e[3] = { float3(1,0,0), float3(0,1,0), float3(0,0,1) };
+
+    for(int i = 0; i < 3; ++i)
+    {
+        ProjectToAxis(e[i], t1, t2);
+        aabb.ProjectToAxis(e[i], a1, a2);
+        if (!RangesOverlap(t1, t2, a1, a2))
+            return false;
+    }
+
+    float3 n = UnnormalizedNormal();
+    ProjectToAxis(n, t1, t2);
+    aabb.ProjectToAxis(n, a1, a2);
+    if (!RangesOverlap(t1, t2, a1, a2))
+        return false;
+
+    const float3 t[3] = { b-a, c-a, c-b };
+
+    for(int i = 0; i < 3; ++i)
+        for(int j = 0; j < 3; ++j)
+        {
+            float3 axis = Cross(e[i], t[j]);
+            float len = axis.LengthSq();
+            if (len <= 1e-4f)
+                continue; // Ignore tests on degenerate axes.
+
+            ProjectToAxis(axis, t1, t2);
+            aabb.ProjectToAxis(axis, a1, a2);
+            if (!RangesOverlap(t1, t2, a1, a2))
+                return false;
+        }
+
+    // No separating axis exists, the AABB and triangle intersect.
+    return true;
+}
+
+void Triangle::ProjectToAxis(const float3 &axis, float &dMin, float &dMax) const
+{
+    dMin = dMax = Dot(axis, a);
+    float t = Dot(axis, b);
+    dMin = Min(t, dMin);
+    dMax = Max(t, dMax);
+    t = Dot(axis, c);
+    dMin = Min(t, dMin);
+    dMax = Max(t, dMax);
 }
 
 /// Code from Christer Ericson's Real-Time Collision Detection, pp. 141-142.

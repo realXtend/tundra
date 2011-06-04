@@ -39,6 +39,12 @@ public:
     /// Returns the plane this triangle lies on.
     Plane GetPlane() const;
 
+    /// Returns the triangle normal. This points to the direction where this plane is viewed to wind in CCW direction.
+    float3 Normal() const;
+
+    /// Returns the unnormalized triangle normal.
+    float3 UnnormalizedNormal() const;
+
     /// Returns the surface area of the given 2D triangle.
     static float Area2D(const float2 &p1, const float2 &p2, const float2 &p3);
 
@@ -68,6 +74,13 @@ public:
     bool Intersects(const Sphere &sphere, float3 *closestPointOnTriangle) const;
     /// @param outLine [out] Specifies the line segment of intersection if the two triangles intersect.
     bool Intersects(const Triangle &triangle, LineSegment *outLine) const;
+    bool Intersects(const AABB &aabb) const;
+
+    /// Projects this Triangle to the given axis.
+    /// @param axis The axis to project onto. This vector can be unnormalized.
+    /// @param dMin [out] Returns the minimum extent of this triangle on the given axis.
+    /// @param dMax [out] Returns the maximum extent of this triangle on the given axis.
+    void ProjectToAxis(const float3 &axis, float &dMin, float &dMax) const;
 
     /// Returns the closest point on this triangle to the target object.
     float3 ClosestPoint(const float3 &targetPoint) const;

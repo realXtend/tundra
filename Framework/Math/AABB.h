@@ -278,6 +278,13 @@ public:
     bool Intersects(const OBB &obb) const;
     /// @param closestPointOnAABB [out] Returns the closest point on this AABB to the given sphere.
     bool Intersects(const Sphere &sphere, float3 *closestPointOnAABB) const;
+    bool Intersects(const Triangle &triangle) const;
+
+    /// Projects this AABB onto the given axis.
+    /// @param axis The axis to project onto. This vector can be unnormalized.
+    /// @param dMin [out] Returns the minimum extent of this AABB on the given axis.
+    /// @param dMax [out] Returns the maximum extent of this AABB on the given axis.
+    void ProjectToAxis(const float3 &axis, float &dMin, float &dMax) const;
 
     /** The first parameter of this function specifies the object to test against.
         @param outDistance [out] For rays, lines and line segments, this parameter receives the distance along the ray

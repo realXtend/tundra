@@ -21,6 +21,7 @@
 #include "float4.h"
 #include "float4x4.h"
 #include "Quat.h"
+#include "Triangle.h"
 
 AABB::AABB(const float3 &minPoint_, const float3 &maxPoint_)
 :minPoint(minPoint_), maxPoint(maxPoint_)
@@ -552,6 +553,26 @@ bool AABB::Intersects(const Sphere &sphere, float3 *closestPointOnAABB) const
         *closestPointOnAABB = pt;
 
     return pt.DistanceSq(sphere.pos) <= sphere.r * sphere.r;
+}
+
+bool AABB::Intersects(const Triangle &triangle) const
+{
+    return triangle.Intersects(*this);
+}
+
+void AABB::ProjectToAxis(const float3 &axis, float &dMin, float &dMax) const
+{
+    float3 c = CenterPoint();
+    float3 e = HalfDiagonal();
+
+    // Compute the projection interval radius of the AABB onto L(t) = aabb.center + t * plane.normal;
+    float r = e[0]*Abs(axis[0]) + e[1]*Abs(axis[1]) + e[2]*Abs(axis[2]);
+    // Compute the distance of the box center from plane.
+    float s = Dot(axis, c);
+    dMin = s - r;
+    dMax = s + r;
+    if (dMin > dMax)
+        std::swap(dMin, dMax);
 }
 
 /*

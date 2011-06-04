@@ -258,8 +258,8 @@ bool Plane::Intersects(const AABB &aabb) const
     float3 c = aabb.CenterPoint();
     float3 e = aabb.HalfDiagonal();
 
-    // Compute the projection interval raidus of the AABB onto L(t) = aabb.center + t * plane.normal;
-    float r = e[0] * Abs(normal[0]) + e[1]*Abs(normal[1]) + e[2]*Abs(normal[2]);
+    // Compute the projection interval radius of the AABB onto L(t) = aabb.center + t * plane.normal;
+    float r = e[0]*Abs(normal[0]) + e[1]*Abs(normal[1]) + e[2]*Abs(normal[2]);
     // Compute the distance of the box center from plane.
     float s = Dot(normal, c) - d;
     return Abs(s) <= r;
