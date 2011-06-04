@@ -491,6 +491,26 @@ static QScriptValue OBB_Intersects_OBB_float(QScriptContext *context, QScriptEng
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue OBB_Intersects_Plane(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function OBB_Intersects_Plane in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Plane plane = TypeFromQScriptValue<Plane>(context->argument(0));
+    bool ret = This->Intersects(plane);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue OBB_Intersects_Triangle(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_Triangle in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    OBB *This = TypeFromQScriptValue<OBB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function OBB_Intersects_Triangle in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Triangle triangle = TypeFromQScriptValue<Triangle>(context->argument(0));
+    bool ret = This->Intersects(triangle);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue OBB_pos_get(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function OBB_pos_get in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -594,6 +614,10 @@ static QScriptValue OBB_Intersects_selector(QScriptContext *context, QScriptEngi
         return OBB_Intersects_AABB(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<OBB>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
         return OBB_Intersects_OBB_float(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Plane>(context->argument(0)))
+        return OBB_Intersects_Plane(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Triangle>(context->argument(0)))
+        return OBB_Intersects_Triangle(context, engine);
     printf("OBB_Intersects_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
 }
 

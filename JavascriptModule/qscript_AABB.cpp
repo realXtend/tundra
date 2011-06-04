@@ -457,6 +457,48 @@ static QScriptValue AABB_Contains_AABB(QScriptContext *context, QScriptEngine *e
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue AABB_Intersects_Plane(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Intersects_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_Intersects_Plane in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Plane plane = TypeFromQScriptValue<Plane>(context->argument(0));
+    bool ret = This->Intersects(plane);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue AABB_Intersects_OBB(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Intersects_OBB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_Intersects_OBB in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    OBB obb = TypeFromQScriptValue<OBB>(context->argument(0));
+    bool ret = This->Intersects(obb);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue AABB_Intersects_Triangle(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Intersects_Triangle in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_Intersects_Triangle in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Triangle triangle = TypeFromQScriptValue<Triangle>(context->argument(0));
+    bool ret = This->Intersects(triangle);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue AABB_ProjectToAxis_float3_float_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function AABB_ProjectToAxis_float3_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    AABB *This = TypeFromQScriptValue<AABB*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function AABB_ProjectToAxis_float3_float_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 axis = TypeFromQScriptValue<float3>(context->argument(0));
+    float dMin = TypeFromQScriptValue<float>(context->argument(1));
+    float dMax = TypeFromQScriptValue<float>(context->argument(2));
+    This->ProjectToAxis(axis, dMin, dMax);
+    return QScriptValue();
+}
+
 static QScriptValue AABB_Enclose_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Enclose_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -621,6 +663,17 @@ static QScriptValue AABB_Contains_selector(QScriptContext *context, QScriptEngin
     printf("AABB_Contains_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
 }
 
+static QScriptValue AABB_Intersects_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<Plane>(context->argument(0)))
+        return AABB_Intersects_Plane(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<OBB>(context->argument(0)))
+        return AABB_Intersects_OBB(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Triangle>(context->argument(0)))
+        return AABB_Intersects_Triangle(context, engine);
+    printf("AABB_Intersects_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+}
+
 static QScriptValue AABB_Enclose_selector(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 1 && QSVIsOfType<float3>(context->argument(0)))
@@ -708,6 +761,8 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     proto.setProperty("ClosestPoint", engine->newFunction(AABB_ClosestPoint_float3, 1));
     proto.setProperty("Distance", engine->newFunction(AABB_Distance_float3, 1));
     proto.setProperty("Contains", engine->newFunction(AABB_Contains_selector, 1));
+    proto.setProperty("Intersects", engine->newFunction(AABB_Intersects_selector, 1));
+    proto.setProperty("ProjectToAxis", engine->newFunction(AABB_ProjectToAxis_float3_float_float, 3));
     proto.setProperty("Enclose", engine->newFunction(AABB_Enclose_selector, 1));
     proto.setProperty("Intersection", engine->newFunction(AABB_Intersection_AABB, 1));
     proto.setProperty("minPoint", engine->newFunction(AABB_minPoint_get, 1));

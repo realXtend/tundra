@@ -78,6 +78,24 @@ static QScriptValue Triangle_GetPlane(QScriptContext *context, QScriptEngine *en
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue Triangle_Normal(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_Normal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Triangle *This = TypeFromQScriptValue<Triangle*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Triangle_Normal in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 ret = This->Normal();
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Triangle_UnnormalizedNormal(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_UnnormalizedNormal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Triangle *This = TypeFromQScriptValue<Triangle*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Triangle_UnnormalizedNormal in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 ret = This->UnnormalizedNormal();
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue Triangle_IsDegenerate_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_IsDegenerate_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -99,6 +117,69 @@ static QScriptValue Triangle_Contains_float3_float(QScriptContext *context, QScr
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue Triangle_Distance_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Distance_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Triangle *This = TypeFromQScriptValue<Triangle*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Triangle_Distance_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 point = TypeFromQScriptValue<float3>(context->argument(0));
+    bool ret = This->Distance(point);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Triangle_Intersects_Plane(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Triangle *This = TypeFromQScriptValue<Triangle*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Triangle_Intersects_Plane in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Plane plane = TypeFromQScriptValue<Plane>(context->argument(0));
+    bool ret = This->Intersects(plane);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Triangle_Intersects_Triangle_LineSegment_ptr(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_Triangle_LineSegment_ptr in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Triangle *This = TypeFromQScriptValue<Triangle*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Triangle_Intersects_Triangle_LineSegment_ptr in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Triangle t2 = TypeFromQScriptValue<Triangle>(context->argument(0));
+    LineSegment * outLine = TypeFromQScriptValue<LineSegment *>(context->argument(1));
+    bool ret = This->Intersects(t2, outLine);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Triangle_Intersects_AABB(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_AABB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Triangle *This = TypeFromQScriptValue<Triangle*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Triangle_Intersects_AABB in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    AABB aabb = TypeFromQScriptValue<AABB>(context->argument(0));
+    bool ret = This->Intersects(aabb);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Triangle_Intersects_OBB(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_OBB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Triangle *This = TypeFromQScriptValue<Triangle*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Triangle_Intersects_OBB in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    OBB obb = TypeFromQScriptValue<OBB>(context->argument(0));
+    bool ret = This->Intersects(obb);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Triangle_ProjectToAxis_float3_float_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Triangle_ProjectToAxis_float3_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Triangle *This = TypeFromQScriptValue<Triangle*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Triangle_ProjectToAxis_float3_float_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 axis = TypeFromQScriptValue<float3>(context->argument(0));
+    float dMin = TypeFromQScriptValue<float>(context->argument(1));
+    float dMax = TypeFromQScriptValue<float>(context->argument(2));
+    This->ProjectToAxis(axis, dMin, dMax);
+    return QScriptValue();
+}
+
 static QScriptValue Triangle_ClosestPoint_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_ClosestPoint_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -106,6 +187,14 @@ static QScriptValue Triangle_ClosestPoint_float3(QScriptContext *context, QScrip
     if (!This) { printf("Error! Invalid context->thisObject in function Triangle_ClosestPoint_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3 targetPoint = TypeFromQScriptValue<float3>(context->argument(0));
     float3 ret = This->ClosestPoint(targetPoint);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Triangle_BarycentricInsideTriangle_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_BarycentricInsideTriangle_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3 barycentric = TypeFromQScriptValue<float3>(context->argument(0));
+    bool ret = Triangle::BarycentricInsideTriangle(barycentric);
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -224,6 +313,19 @@ static QScriptValue Triangle_IsDegenerate_selector(QScriptContext *context, QScr
     printf("Triangle_IsDegenerate_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
 }
 
+static QScriptValue Triangle_Intersects_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<Plane>(context->argument(0)))
+        return Triangle_Intersects_Plane(context, engine);
+    if (context->argumentCount() == 2 && QSVIsOfType<Triangle>(context->argument(0)) && QSVIsOfType<LineSegment *>(context->argument(1)))
+        return Triangle_Intersects_Triangle_LineSegment_ptr(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<AABB>(context->argument(0)))
+        return Triangle_Intersects_AABB(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<OBB>(context->argument(0)))
+        return Triangle_Intersects_OBB(context, engine);
+    printf("Triangle_Intersects_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+}
+
 class Triangle_scriptclass : public QScriptClass
 {
 public:
@@ -274,8 +376,14 @@ QScriptValue register_Triangle_prototype(QScriptEngine *engine)
     proto.setProperty("Point", engine->newFunction(Triangle_Point_selector, 1));
     proto.setProperty("Area", engine->newFunction(Triangle_Area, 0));
     proto.setProperty("GetPlane", engine->newFunction(Triangle_GetPlane, 0));
+    proto.setProperty("Normal", engine->newFunction(Triangle_Normal, 0));
+    proto.setProperty("UnnormalizedNormal", engine->newFunction(Triangle_UnnormalizedNormal, 0));
     proto.setProperty("IsDegenerate", engine->newFunction(Triangle_IsDegenerate_selector, 1));
     proto.setProperty("Contains", engine->newFunction(Triangle_Contains_float3_float, 2));
+    proto.setProperty("Distance", engine->newFunction(Triangle_Distance_float3, 1));
+    proto.setProperty("Intersects", engine->newFunction(Triangle_Intersects_selector, 1));
+    proto.setProperty("Intersects", engine->newFunction(Triangle_Intersects_selector, 2));
+    proto.setProperty("ProjectToAxis", engine->newFunction(Triangle_ProjectToAxis_float3_float_float, 3));
     proto.setProperty("ClosestPoint", engine->newFunction(Triangle_ClosestPoint_float3, 1));
     proto.setProperty("a", engine->newFunction(Triangle_a_get, 1));
     proto.setProperty("setA", engine->newFunction(Triangle_a_set, 1));
@@ -290,6 +398,7 @@ QScriptValue register_Triangle_prototype(QScriptEngine *engine)
     engine->setDefaultPrototype(qMetaTypeId<Triangle>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Triangle*>(), proto);
     QScriptValue ctor = engine->newFunction(Triangle_ctor, proto, 3);
+    ctor.setProperty("BarycentricInsideTriangle", engine->newFunction(Triangle_BarycentricInsideTriangle_float3, 1));
     ctor.setProperty("Area2D", engine->newFunction(Triangle_Area2D_float2_float2_float2, 3));
     ctor.setProperty("SignedArea", engine->newFunction(Triangle_SignedArea_float3_float3_float3_float3, 4));
     ctor.setProperty("IsDegenerate", engine->newFunction(Triangle_IsDegenerate_selector, 4));

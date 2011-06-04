@@ -129,6 +129,26 @@ static QScriptValue Sphere_Distance_float3(QScriptContext *context, QScriptEngin
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue Sphere_ClosestPoint_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_ClosestPoint_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Sphere *This = TypeFromQScriptValue<Sphere*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Sphere_ClosestPoint_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 point = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 ret = This->ClosestPoint(point);
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue Sphere_Intersects_Plane(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_Intersects_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Sphere *This = TypeFromQScriptValue<Sphere*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Sphere_Intersects_Plane in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Plane plane = TypeFromQScriptValue<Plane>(context->argument(0));
+    bool ret = This->Intersects(plane);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue Sphere_Intersects_Sphere(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Sphere_Intersects_Sphere in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -240,6 +260,15 @@ static QScriptValue Sphere_ctor(QScriptContext *context, QScriptEngine *engine)
     printf("Sphere_ctor failed to choose the right function to call! Did you use 'var x = Sphere();' instead of 'var x = new Sphere();'?\n"); return QScriptValue();
 }
 
+static QScriptValue Sphere_Intersects_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<Plane>(context->argument(0)))
+        return Sphere_Intersects_Plane(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Sphere>(context->argument(0)))
+        return Sphere_Intersects_Sphere(context, engine);
+    printf("Sphere_Intersects_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+}
+
 static QScriptValue Sphere_Enclose_selector(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 1 && QSVIsOfType<AABB>(context->argument(0)))
@@ -301,7 +330,8 @@ QScriptValue register_Sphere_prototype(QScriptEngine *engine)
     proto.setProperty("IsDegenerate", engine->newFunction(Sphere_IsDegenerate, 0));
     proto.setProperty("Contains", engine->newFunction(Sphere_Contains_float3, 1));
     proto.setProperty("Distance", engine->newFunction(Sphere_Distance_float3, 1));
-    proto.setProperty("Intersects", engine->newFunction(Sphere_Intersects_Sphere, 1));
+    proto.setProperty("ClosestPoint", engine->newFunction(Sphere_ClosestPoint_float3, 1));
+    proto.setProperty("Intersects", engine->newFunction(Sphere_Intersects_selector, 1));
     proto.setProperty("Enclose", engine->newFunction(Sphere_Enclose_selector, 1));
     proto.setProperty("pos", engine->newFunction(Sphere_pos_get, 1));
     proto.setProperty("setPos", engine->newFunction(Sphere_pos_set, 1));

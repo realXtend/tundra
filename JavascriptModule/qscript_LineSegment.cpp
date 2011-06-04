@@ -44,6 +44,15 @@ static QScriptValue LineSegment_GetPoint_float(QScriptContext *context, QScriptE
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue LineSegment_CenterPoint(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LineSegment_CenterPoint in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    LineSegment *This = TypeFromQScriptValue<LineSegment*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function LineSegment_CenterPoint in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 ret = This->CenterPoint();
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue LineSegment_Reverse(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LineSegment_Reverse in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -117,6 +126,17 @@ static QScriptValue LineSegment_LengthSq(QScriptContext *context, QScriptEngine 
     LineSegment *This = TypeFromQScriptValue<LineSegment*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in function LineSegment_LengthSq in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float ret = This->LengthSq();
+    return TypeToQScriptValue(engine, ret);
+}
+
+static QScriptValue LineSegment_Contains_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function LineSegment_Contains_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    LineSegment *This = TypeFromQScriptValue<LineSegment*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function LineSegment_Contains_float3_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 point = TypeFromQScriptValue<float3>(context->argument(0));
+    float distanceThreshold = TypeFromQScriptValue<float>(context->argument(1));
+    bool ret = This->Contains(point, distanceThreshold);
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -250,11 +270,13 @@ QScriptValue register_LineSegment_prototype(QScriptEngine *engine)
     engine->setDefaultPrototype(qMetaTypeId<LineSegment*>(), QScriptValue());
     QScriptValue proto = engine->newVariant(qVariantFromValue((LineSegment*)0));
     proto.setProperty("GetPoint", engine->newFunction(LineSegment_GetPoint_float, 1));
+    proto.setProperty("CenterPoint", engine->newFunction(LineSegment_CenterPoint, 0));
     proto.setProperty("Reverse", engine->newFunction(LineSegment_Reverse, 0));
     proto.setProperty("Dir", engine->newFunction(LineSegment_Dir, 0));
     proto.setProperty("Transform", engine->newFunction(LineSegment_Transform_selector, 1));
     proto.setProperty("Length", engine->newFunction(LineSegment_Length, 0));
     proto.setProperty("LengthSq", engine->newFunction(LineSegment_LengthSq, 0));
+    proto.setProperty("Contains", engine->newFunction(LineSegment_Contains_float3_float, 2));
     proto.setProperty("Intersects", engine->newFunction(LineSegment_Intersects_Plane, 1));
     proto.setProperty("ToRay", engine->newFunction(LineSegment_ToRay, 0));
     proto.setProperty("ToLine", engine->newFunction(LineSegment_ToLine, 0));

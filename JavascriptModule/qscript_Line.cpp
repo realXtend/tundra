@@ -82,6 +82,17 @@ static QScriptValue Line_Transform_Quat(QScriptContext *context, QScriptEngine *
     return QScriptValue();
 }
 
+static QScriptValue Line_Contains_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Line_Contains_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Line *This = TypeFromQScriptValue<Line*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Line_Contains_float3_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 point = TypeFromQScriptValue<float3>(context->argument(0));
+    float distanceThreshold = TypeFromQScriptValue<float>(context->argument(1));
+    bool ret = This->Contains(point, distanceThreshold);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue Line_ToRay(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Line_ToRay in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -215,6 +226,7 @@ QScriptValue register_Line_prototype(QScriptEngine *engine)
     QScriptValue proto = engine->newVariant(qVariantFromValue((Line*)0));
     proto.setProperty("GetPoint", engine->newFunction(Line_GetPoint_float, 1));
     proto.setProperty("Transform", engine->newFunction(Line_Transform_selector, 1));
+    proto.setProperty("Contains", engine->newFunction(Line_Contains_float3_float, 2));
     proto.setProperty("ToRay", engine->newFunction(Line_ToRay, 0));
     proto.setProperty("ToLineSegment", engine->newFunction(Line_ToLineSegment_float, 1));
     proto.setProperty("pos", engine->newFunction(Line_pos_get, 1));
