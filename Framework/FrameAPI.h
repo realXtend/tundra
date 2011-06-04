@@ -18,9 +18,9 @@
 
 class Framework;
 
-/// Class to which scripting languages connect their slots when wanting to receive delayed signal
-/// when certain amount of application time has passed.
-/** In C++ you can ignore the existence of this class, and just give your slot to FrameAPI's DelayedExecute
+/// Stores a delayed signal invocation.   
+/** Scripting languages connect their slots when wanting to receive delayed signal when certain amount of application time has passed.
+    In C++ you can ignore the existence of this class, and just give your slot to FrameAPI's DelayedExecute
     as a parameter. This class cannot be created directly, it's created by FrameAPI. */
 class DelayedSignal : public QObject
 {
@@ -46,7 +46,7 @@ private slots:
     void Expire();
 };
 
-/// Frame core API. Exposes framework's update tick.
+/// Provides a mechanism for plugins and scripts to receive per-frame and time-based events.
 /** This class cannot be created directly, it's created by Framework.
     FrameAPI object can be used to:
     -retrieve signal every time frame has been processed

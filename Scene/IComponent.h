@@ -60,8 +60,9 @@ private: // Return the class visibility specifier to the strictest form so that 
     type get##attribute() const { return (type)attribute.Get(); } \
     void set##attribute(type value) { attribute.Set((type)value, AttributeChange::Default); }
 
-/// IComponent is the base class for all user-created components. Inherit your own components from this class.
-/** Each Component has a compile-time specified type name that identifies the class-name of the Component.
+/// The common interface for all components, which are the building blocks the scene entities are formed of.
+/** Inherit your own components from this class.
+    Each Component has a compile-time specified type name that identifies the class-name of the Component.
     This differentiates different derived implementations of the IComponent class. Each implemented Component
     must have a unique type name.
 

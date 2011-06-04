@@ -11,6 +11,7 @@ class AssetAPI;
 namespace Asset
 {
 
+/// Represents a single (possibly recursive) directory on the local file system.
 class ASSET_MODULE_API LocalAssetStorage : public IAssetStorage
 {
 Q_OBJECT

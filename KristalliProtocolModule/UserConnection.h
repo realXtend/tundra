@@ -21,7 +21,7 @@ struct ISyncState
     virtual ~ISyncState() {}
 };
 
-/// Connection on the Kristalli server
+/// Represents a client conncetion on the server side.
 class KRISTALLIPROTOCOL_MODULE_API UserConnection : public QObject
 {
     Q_OBJECT

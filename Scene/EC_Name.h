@@ -10,7 +10,7 @@
 
 #include "IComponent.h"
 
-/// Provides network-synchronizable means of identification for entities in addition to the plain ID number
+/// Allows identifying the Entity using a name string in addition to the Entity ID number.
 /**
 <table class="header">
 <tr>

@@ -4,11 +4,11 @@
 
 #include "IAssetTypeFactory.h"
 
-/// NullAssetFactory is a factory that always returns a null pointer for creating assets.
-/// This factory is used to ignore certain asset types when they are supposed to never be used in the system.
-/// Another way to disable the use of certain assets is to not register a factory at all for that type.
-/// However, that will log out an error message. Instead, by using the Null Factory we can signal that 
-/// we are ok that the assets of the given type are not loaded.
+/// A factory that always returns a null pointer for creating assets.
+/** This factory is used to ignore certain asset types when they are supposed to never be used in the system.
+    Another way to disable the use of certain assets is to not register a factory at all for that type.
+    However, that will log out an error message. Instead, by using the Null Factory we can signal that 
+    we are ok that the assets of the given type are not loaded. */
 class NullAssetFactory : public IAssetTypeFactory
 {
 public:

@@ -16,6 +16,7 @@ class Framework;
 #undef PlaySound
 #endif
 
+/// Enables audio playback functionality.
 class AUDIO_API AudioAPI : public QObject
 {
     Q_OBJECT;

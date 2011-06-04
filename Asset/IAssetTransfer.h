@@ -12,6 +12,7 @@
 
 #include <QByteArray>
 
+/// Represents a currently ongoing asset download operation.
 class IAssetTransfer : public QObject, public boost::enable_shared_from_this<IAssetTransfer>
 {
     Q_OBJECT

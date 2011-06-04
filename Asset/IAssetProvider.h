@@ -7,12 +7,12 @@
 
 #include <QString>
 
+/// A common interface for all classes that implement downloading and uploading assets via different protocols.
 /** Asset providers receive asset download requests through the RequestAsset() function. It should
     return true if the asset id was of such format that the request can be handled (for example
     a valid UUID for legacy UDP assets), false if it could not be handled.
         
-    Additionally, the asset provider can post events of the progress of an asset download.
- */
+    Additionally, the asset provider can post events of the progress of an asset download. */
 class IAssetProvider
 {
 public:

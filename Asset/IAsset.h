@@ -10,6 +10,7 @@
 #include "AssetFwd.h"
 #include "AssetReference.h"
 
+/// Base class for all assets loaded in the system.
 class IAsset : public QObject, public boost::enable_shared_from_this<IAsset>
 {
     Q_OBJECT

@@ -11,6 +11,7 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
+/// Represents a currently ongoing asset upload operation.
 class IAssetUploadTransfer : public QObject, public boost::enable_shared_from_this<IAssetUploadTransfer>
 {
     Q_OBJECT

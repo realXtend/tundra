@@ -7,6 +7,7 @@
 
 class IAttribute;
 
+/// Tracks and notifies about asset change events.
 class AssetRefListener : public QObject
 {
     Q_OBJECT;

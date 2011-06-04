@@ -10,6 +10,7 @@
 #include "MathFwd.h"
 #include "float3.h"
 
+/// Specifies a triangle through three points in 3D space.
 class Triangle
 {
 public:

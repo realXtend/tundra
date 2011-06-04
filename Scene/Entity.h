@@ -23,7 +23,7 @@ class QDomElement;
     Entity or Component only affect locally and are not synchronized to the network. */
 static const entity_id_t LocalEntity = 0x80000000;
 
-/// Represents an entity in the world.
+/// Represents a single object in a Scene.
 /** An entity is just a collection of components, the components define what
     the entity is and what it does.
     Entities should not be directly created, instead use Scene::CreateEntity().

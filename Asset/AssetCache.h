@@ -21,8 +21,9 @@ class QNetworkDiskCache;
 /// Replaces characters / \ : * ? " ' < > | with _
 QString SanitateAssetRefForCache(QString assetRef);
 
-/// Subclassing QNetworkDiskCache has the main goal of separating metadata from the raw asset data. The basic implementation of QNetworkDiskCache
-/// will store both in the same file. That did not work very well with our asset system as we need absolute paths to loaded assets for various purpouses.
+/// Implements a disk cache for asset files to avoid re-downloading assets between runs.
+/** Subclassing QNetworkDiskCache has the main goal of separating metadata from the raw asset data. The basic implementation of QNetworkDiskCache
+    will store both in the same file. That did not work very well with our asset system as we need absolute paths to loaded assets for various purpouses. */
 class AssetCache : public QNetworkDiskCache
 {
 

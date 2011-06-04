@@ -10,6 +10,7 @@
 #include <QByteArray>
 #include <QStringList>
 
+/// Contains the data for a Qt .ui file.
 class QtUiAsset : public IAsset
 {
     Q_OBJECT

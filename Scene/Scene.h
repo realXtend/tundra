@@ -32,7 +32,7 @@ struct AttributeInterpolation
     float length;
 };
 
-/// Scene. Contains all the entities of the world.
+/// A collection of entities which form an observable world.
 /** Acts as a factory for all entities.
     Has subsystem-specific worlds, such as rendering and physics, as dynamic properties.
 

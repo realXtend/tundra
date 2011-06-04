@@ -5,8 +5,9 @@
 #include "IAssetTypeFactory.h"
 #include "BinaryAsset.h"
 
-/// GenericAssetFactory is a predefined concrete factory type anyone defining a new asset type can use
-/// to create new assets of any type.
+/// A factory for instantiating assets of a templated type T.
+/** GenericAssetFactory is a predefined concrete factory type anyone defining a new asset type can use
+    to create new assets of any type. */
 template<typename AssetType>
 class GenericAssetFactory : public IAssetTypeFactory
 {

@@ -14,6 +14,7 @@ struct SearchRequest
     QNetworkReply* reply;
 };
 
+/// Represents a network source storage for assets.
 class HttpAssetStorage : public IAssetStorage
 {
 Q_OBJECT

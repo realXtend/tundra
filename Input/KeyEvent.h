@@ -8,7 +8,7 @@
 #include <QString>
 #include <QKeySequence>
 
-/// KeyEvent is the event data structure passed as the parameter in all in-scene KeyPressed and KeyReleased events.
+/// This data structure is passed as a parameter in all keyboard-related input events.
 class KeyEvent : public QObject
 {
     Q_OBJECT

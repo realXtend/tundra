@@ -19,7 +19,7 @@ class Framework;
 class ConsoleWidget;
 class ShellInputThread;
 
-/// This structure represents a registered console command.
+/// Represents a registered console command.
 class ConsoleCommand : public QObject
 {
     Q_OBJECT

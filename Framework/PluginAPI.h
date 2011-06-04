@@ -8,6 +8,7 @@
 
 class Framework;
 
+/// Implements plugin loading functionality.
 class PluginAPI : public QObject
 {
     Q_OBJECT;

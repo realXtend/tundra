@@ -10,6 +10,7 @@
 #include <QImage>
 #include "OgreModuleApi.h"
 
+/// Represents a texture on the GPU.
 class OGRE_MODULE_API TextureAsset : public IAsset
 {
     Q_OBJECT;

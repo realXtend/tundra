@@ -8,7 +8,8 @@
 
 #include <cassert>
 
-/// Represents a reference to an asset. This structure can be used as a parameter type to an EC attribute.
+/// Represents a reference to an asset.
+/** This structure can be used as a parameter type to an EC attribute. */
 struct AssetReference
 {
 public:

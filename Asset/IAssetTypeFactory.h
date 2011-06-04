@@ -6,6 +6,7 @@
 #include <QString>
 #include "AssetFwd.h"
 
+/// A common interface for factories which instantiate assets of different types.
 class IAssetTypeFactory : public QObject
 {
 public:

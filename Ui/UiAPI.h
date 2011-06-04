@@ -10,7 +10,7 @@
 
 class QMenu;
 
-/// UiAPI is the core API object exposed for all UI-related functionality.
+/// Provides functions for managing the currently opened windows in the application main window.
 /** @todo More detailed description.
     @todo Make a new .dox file for UiAPI. */
 class UI_API UiAPI : public QObject

@@ -8,7 +8,8 @@
 #include <QString>
 #include <QMetaType>
 
-/// Represents a reference to an entity, either by name or ID This structure can be used as a parameter type to an EC attribute.
+/// Represents a reference to an entity, either by name or ID.
+/** This structure can be used as a parameter type to an EC attribute. */
 struct EntityReference
 {
     EntityReference() {}

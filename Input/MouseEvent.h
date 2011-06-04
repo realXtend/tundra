@@ -11,7 +11,7 @@
 
 class QGraphicsItem;
 
-/// MouseEvent is the event data structure passed as the parameter in all mouse-related events.
+/// This data structure is passed as a parameter in all mouse-related input events.
 class MouseEvent : public QObject
 {
     Q_OBJECT

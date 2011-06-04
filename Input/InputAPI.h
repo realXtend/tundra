@@ -19,7 +19,7 @@ class QGraphicsView;
 
 class Framework;
 
-/// The Input API provides other modules with different methods of acquiring keyboard and mouse input.
+/// Provides keyboard and mouse input events.
 /** The Input API works with the notion of 'input contexts', which are objects that modules acquire
     to receive input events. The contexts have a priority that determine the order in which the input 
     events are posted.

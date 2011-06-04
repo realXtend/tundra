@@ -33,6 +33,7 @@ namespace TundraLogic
 {
 class TundraLogicModule;
 
+/// Implements Tundra server functionality.
 class TUNDRALOGIC_MODULE_API Server : public QObject
 {
     Q_OBJECT

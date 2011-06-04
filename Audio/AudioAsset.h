@@ -8,6 +8,7 @@
 #include "AudioFwd.h"
 #include "SoundBuffer.h"
 
+/// Stores raw decoded audio data ready for playback.
 class AUDIO_API AudioAsset : public IAsset
 {
     Q_OBJECT;

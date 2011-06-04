@@ -13,7 +13,7 @@ namespace Asset
 
     typedef boost::shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
 
-    /// LocalAssetProvider provides the scene to use assets from the local file system with 'local://' reference.
+    /// Provides access to files on the local file system using the 'local://' URL specifier.
     class ASSET_MODULE_API LocalAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<LocalAssetProvider>
     {
         Q_OBJECT;

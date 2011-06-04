@@ -5,8 +5,8 @@
 #include "IAsset.h"
 #include "OgreModuleApi.h"
 
-/// An Ogre-specific particle system template resource. One resource may contain multiple templates.
-/** \ingroup OgreRenderingModuleClient */
+/// Represents an Ogre .particle file loaded to memory.
+/** An Ogre-specific particle system resource. One resource may contain multiple templates. */
 class OGRE_MODULE_API OgreParticleAsset : public IAsset
 {
     Q_OBJECT;

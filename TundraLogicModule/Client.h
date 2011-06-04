@@ -39,6 +39,7 @@ namespace TundraLogic
 
 class TundraLogicModule;
 
+/// Provides Tundra client->server connection functions.
 class TUNDRALOGIC_MODULE_API Client : public QObject
 {
     Q_OBJECT

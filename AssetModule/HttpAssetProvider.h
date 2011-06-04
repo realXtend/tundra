@@ -16,7 +16,7 @@ class QNetworkRequest;
 class HttpAssetStorage;
 typedef boost::shared_ptr<HttpAssetStorage> HttpAssetStoragePtr;
 
-/// HttpAssetProvider adds support for downloading assets that have the http:// protocol specifier in them.
+/// Adds support for downloading assets over the web using the 'http://' specifier.
 class ASSET_MODULE_API HttpAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<HttpAssetProvider>
 {
     Q_OBJECT;

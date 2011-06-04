@@ -37,6 +37,7 @@ struct RemovedComponent
     QString name_;
 };
 
+/// Performs synchronization of the changes in a scene between the server and the client.
 class SyncManager : public QObject
 {
     Q_OBJECT

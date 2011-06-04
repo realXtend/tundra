@@ -9,6 +9,7 @@
 #include "AssetFwd.h"
 #include <boost/enable_shared_from_this.hpp>
 
+/// A base class for a database or a collection of assets in a single source.
 class IAssetStorage : public QObject, public boost::enable_shared_from_this<IAssetStorage>
 {
     Q_OBJECT

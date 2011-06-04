@@ -10,6 +10,7 @@
 
 class IComponent;
 
+/// A common interface for factories which instantiate components of different types.
 class IComponentFactory
 {
 public:
@@ -22,6 +23,7 @@ public:
 //    virtual boost::shared_ptr<IComponent> Clone(IComponent *existingComponent, const QString &newComponentName) = 0;
 };
 
+/// A factory for instantiating components of a templated type T.
 template<typename T>
 class GenericComponentFactory : public IComponentFactory
 {

@@ -5,6 +5,7 @@
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 
+/// A generic data container for assets of unknown type.
 class BinaryAsset : public IAsset
 {
     Q_OBJECT;

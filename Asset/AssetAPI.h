@@ -30,6 +30,7 @@ typedef std::map<QString, AssetPtr> AssetMap;
 
 typedef std::vector<AssetStoragePtr> AssetStorageVector;
 
+/// Implements asset download and upload functionality.
 class AssetAPI : public QObject
 {
     Q_OBJECT

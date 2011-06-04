@@ -29,6 +29,7 @@ struct KeyPressInformation
 };
 typedef std::map<Qt::Key, KeyPressInformation> HeldKeysMap;
 
+/// Provides clients with input events in a priority order.
 class InputContext : public QObject, public boost::enable_shared_from_this<InputContext>
 {
     Q_OBJECT

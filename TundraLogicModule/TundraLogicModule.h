@@ -24,6 +24,7 @@ class Client;
 class Server;
 class SyncManager;
 
+/// Implements the Tundra protocol server and client functionality.
 class TUNDRALOGIC_MODULE_API TundraLogicModule : public IModule
 {
     Q_OBJECT

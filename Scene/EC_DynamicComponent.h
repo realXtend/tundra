@@ -17,7 +17,7 @@ struct DeserializeData;
 
 class QScriptValue;
 
-/// Component for which user can add and delete attributes at runtime.
+/// A component that allows adding of dynamically structured attributes at runtime.
 /**
 <table class="header">
 <tr>

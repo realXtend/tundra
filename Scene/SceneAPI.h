@@ -12,7 +12,7 @@
 class Framework;
 class SceneInteract;
 
-/// Scene core API.
+/// Gives access to the scenes in the system.
 /**
 <table class="header"><tr><td>
 <h2>SceneAPI</h2>

@@ -7,6 +7,7 @@
 #include <OgreMesh.h>
 #include "OgreModuleApi.h"
 
+/// Represents an Ogre .mesh loaded to the GPU.
 class OGRE_MODULE_API OgreMeshAsset : public IAsset
 {
     Q_OBJECT

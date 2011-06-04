@@ -7,6 +7,7 @@
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 
+/// A signal object for input events to a specific key on the keyboard.
 class KeyEventSignal : public QObject
 {
     Q_OBJECT
