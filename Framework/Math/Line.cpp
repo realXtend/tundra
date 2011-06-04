@@ -202,3 +202,23 @@ LineSegment Line::ToLineSegment(float d) const
 {
     return LineSegment(pos, GetPoint(d));
 }
+
+Line operator *(const float3x3 &transform, const Line &l)
+{
+    return Line(transform * l.pos, transform * l.dir);
+}
+
+Line operator *(const float3x4 &transform, const Line &l)
+{
+    return Line(transform.MulPos(l.pos), transform.MulDir(l.dir));
+}
+
+Line operator *(const float4x4 &transform, const Line &l)
+{
+    return Line(transform.MulPos(l.pos), transform.MulDir(l.dir));
+}
+
+Line operator *(const Quat &transform, const Line &l)
+{
+    return Line(transform * l.pos, transform * l.dir);
+}

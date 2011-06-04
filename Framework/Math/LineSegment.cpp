@@ -301,3 +301,23 @@ Line LineSegment::ToLine() const
 {
     return Line(a, Dir());
 }
+
+LineSegment operator *(const float3x3 &transform, const LineSegment &l)
+{
+    return LineSegment(transform * l.a, transform * l.b);
+}
+
+LineSegment operator *(const float3x4 &transform, const LineSegment &l)
+{
+    return LineSegment(transform.MulPos(l.a), transform.MulPos(l.b));
+}
+
+LineSegment operator *(const float4x4 &transform, const LineSegment &l)
+{
+    return LineSegment(transform.MulPos(l.a), transform.MulPos(l.b));
+}
+
+LineSegment operator *(const Quat &transform, const LineSegment &l)
+{
+    return LineSegment(transform * l.a, transform * l.b);
+}

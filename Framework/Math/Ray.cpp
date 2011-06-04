@@ -167,3 +167,23 @@ LineSegment Ray::ToLineSegment(float d) const
 {
     return LineSegment(pos, GetPoint(d));
 }
+
+Ray operator *(const float3x3 &transform, const Ray &ray)
+{
+    return Ray(transform * ray.pos, transform * ray.dir);
+}
+
+Ray operator *(const float3x4 &transform, const Ray &ray)
+{
+    return Ray(transform.MulPos(ray.pos), transform.MulDir(ray.dir));
+}
+
+Ray operator *(const float4x4 &transform, const Ray &ray)
+{
+    return Ray(transform.MulPos(ray.pos), transform.MulDir(ray.dir));
+}
+
+Ray operator *(const Quat &transform, const Ray &ray)
+{
+    return Ray(transform * ray.pos, transform * ray.dir);
+}
