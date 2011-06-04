@@ -66,6 +66,7 @@ public:
     /// Returns the underlying kNet MessageConnection object that represents this connection.
     /// This function may return null in the case the connection is not active.
     kNet::MessageConnection* GetConnection();
+    kNet::MessageConnection* GetConnection(unsigned short);
 
     /// Handles Kristalli event
     void HandleKristalliEvent(event_id_t event_id, IEventData* data);
@@ -172,12 +173,24 @@ private:
     // ###################
 
 private:
-    // scenenames
+    // Container for all the connections loginstates
+    QMap<QString,ClientLoginState> loginstate_list_;
+    // Container for all the connections properties
+    QMap< QString, std::map<QString, QString> > properties_list_;
+    // Container for all the connections reconnect bool value
+    QMap<QString, bool> reconnect_list_;
+    // Container for all the connections clientID values
+    QMap<QString, u8> client_id_list_;
+    // Container for all the connections scenenames
     QMap<int, QString> scenenames_;
 
     // creates unique scenename TundraClientX | X = 0, 1, 2, ..., n; n € Z+
     // If TundraClient2 is deleted from middle of the list, next scene created will be TundraClient2
-    QString getUniqueSceneName();
+    // bool value false only returns QString without saving new item to scenenames_
+    QString getUniqueSceneName(bool save = false);
+
+    // Saves connection properties to Containers
+    void saveProperties(const QString&);
 signals:
     void createOgre(const QString&);
     void deleteOgre(const QString&);

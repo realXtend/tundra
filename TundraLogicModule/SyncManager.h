@@ -45,7 +45,7 @@ class SyncManager : public QObject
     
 public:
     //! Constructor
-    explicit SyncManager(TundraLogicModule* owner);
+    explicit SyncManager(TundraLogicModule* owner, const unsigned short attachedConnection);
     
     //! Destructor
     ~SyncManager();
@@ -170,7 +170,10 @@ private:
     // #######################
     // #   Multiconnection   #
     // #######################
-
+private:
+    // This variable is initialized in constructor. This tells what messageConnection this particular syncManager is attached to
+    // so it can get right connection through client->GetConnection(unsigned short)
+    const unsigned short attachedConnection;
 public slots:
     void ProcessNewUserConnection(int, UserConnection*);
 };

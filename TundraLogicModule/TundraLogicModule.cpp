@@ -61,6 +61,7 @@ void TundraLogicModule::Initialize()
     
     connect(framework_->Scene(), SIGNAL(SceneAdded(QString)), this, SLOT(AttachSyncManagerToScene(QString)));
     connect(framework_->Scene(), SIGNAL(SceneRemoved(QString)), this, SLOT(RemoveSyncManagerFromScene(QString)));
+    // Multiconnection specific. When syncManager is created/deleted these are run.
     connect(this, SIGNAL(createOgre(QString)), client_.get(), SLOT(emitCreateOgreSignal(QString)));
     connect(this, SIGNAL(deleteOgre(QString)), client_.get(), SLOT(emitDeleteOgreSignal(QString)));
 
@@ -133,7 +134,13 @@ void TundraLogicModule::Uninitialize()
 
 void TundraLogicModule::AttachSyncManagerToScene(const QString &name)
 {
-    SyncManager *sm = new SyncManager(this);
+    // Grep number from scenename; list[0] = TundraClient/TundraServer and list[1] = 0, 1, 2, ..., n: n € Z+
+    QStringList list = name.split("_");
+    QString number = list[1];
+    unsigned short attachedConnection = number.toInt();
+
+    // Tell syncManager 'attachedConnection' is the magic number when using client_->GetConnection(X)
+    SyncManager *sm = new SyncManager(this, attachedConnection);
     sm->RegisterToScene(framework_->Scene()->GetScene(name));
     syncManagers_.insert(name, sm);
     syncManager_ = sm;

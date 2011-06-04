@@ -72,8 +72,13 @@ namespace KristalliProtocol
         void SubscribeToNetworkEvents();
 
         /// Return message connection, for use by other modules (null if no connection made)
-        kNet::MessageConnection *GetMessageConnection() { if (!serverConnection_map_.isEmpty()) return serverConnection_map_[0].ptr(); else return serverConnection.ptr(); }
-        
+        kNet::MessageConnection *GetMessageConnection() { return serverConnection.ptr(); }
+        // Return message connection, multiconnection.
+        kNet::MessageConnection *GetMessageConnection(const unsigned short connection) { return serverConnection_map_[connection].ptr(); }
+        // Returns iterator to serverConnection_map_
+        QMapIterator<unsigned short, Ptr(kNet::MessageConnection)> GetConnectionArray() { return QMapIterator<unsigned short, Ptr(kNet::MessageConnection)> (serverConnection_map_); }
+
+
         /// Return server, for use by other modules (null if not running)
         kNet::NetworkServer* GetServer() const { return server; }
         
