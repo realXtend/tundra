@@ -252,21 +252,17 @@ bool Plane::Intersects(const Sphere &sphere) const
     return Distance(sphere.pos) <= sphere.r;
 }
 
+/// Set Christer Ericson's Real-Time Collision Detection, p.164.
 bool Plane::Intersects(const AABB &aabb) const
 {
-    // Simply test which side each vertex of the AABB is on.
-    // If we find vertices on both sides, we must be intersecting.
-    // Points lying on the plane are considered to be intersecting as well.
-    float d = SignedDistance(aabb.CornerPoint(0));
-    for(int i = 1; i < 8; ++i)
-    {
-        float d2 = SignedDistance(aabb.CornerPoint(i));
-        if (d * d2 <= 0.f)
-            return true;
-        d = d2;
-    }
+    float3 c = aabb.CenterPoint();
+    float3 e = aabb.HalfDiagonal();
 
-    return false;
+    // Compute the projection interval raidus of the AABB onto L(t) = aabb.center + t * plane.normal;
+    float r = e[0] * Abs(normal[0]) + e[1]*Abs(normal[1]) + e[2]*Abs(normal[2]);
+    // Compute the distance of the box center from plane.
+    float s = Dot(normal, c) - d;
+    return Abs(s) <= r;
 }
 
 bool Plane::Intersects(const OBB &obb) const
