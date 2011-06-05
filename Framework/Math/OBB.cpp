@@ -50,7 +50,7 @@ template<typename Matrix>
 void OBBSetFrom(OBB &obb, const AABB &aabb, const Matrix &m)
 {
     obb.pos = m.MulPos(aabb.CenterPoint());
-    float3 size = aabb.Size();
+    float3 size = aabb.HalfSize();
     obb.axis[0] = m.MulDir(float3(size.x, 0, 0));
     obb.axis[1] = m.MulDir(float3(0, size.y, 0));
     obb.axis[2] = m.MulDir(float3(0, 0, size.z));
