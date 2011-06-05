@@ -381,6 +381,12 @@ public:
     float3 Transform(const float3 &vector) const;
     float3 Transform(float x, float y, float z) const;
 
+    /// Transforms the given 3-vector by this matrix M so that the vector occurs on the left-hand side, i.e.
+    /// computes the product lhs * M. This is against the common convention used by this class when transforming
+    /// geometrical objects, but this operation is still occasionally useful for other purposes.
+    /// (Remember that M * v != v * M in general).
+    float3 TransformLeft(const float3 &lhs) const;
+
     /// Transforms the given 4-vector by this matrix M, i.e. returns M * (x, y, z, w). 
     /// This function ignores the w component of the given input vector. This component is assumed to be either 0 or 1.
     float4 Transform(const float4 &vector) const;
@@ -565,11 +571,10 @@ std::ostream &operator <<(std::ostream &out, const float3x3 &rhs);
 
 /// Multiplies two transforms together.
 float3x3 operator *(const Quat &lhs, const float3x3 &rhs);
-//float3x3 operator *(const float3x3 &lhs, const float3x3 &rhs);
 
 /// Transforms the given vector by the given matrix in the order v * M. Note that this form
-/// of multiplication is against the convention of this math system. Please use the M * v notation instead.
-/// (Remember that M * v != v * M in general).
+/// of multiplication is against the convention of this math system for transforming geometrical objects. 
+/// Please use the M * v notation instead. (Remember that M * v != v * M in general).
 float3 operator *(const float3 &lhs, const float3x3 &rhs);
 
 /// Transforms the given vector by the given matrix in the order v * M. Note that this form

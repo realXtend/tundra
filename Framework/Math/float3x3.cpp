@@ -649,6 +649,13 @@ float3 float3x3::Transform(const float3 &vector) const
     return Transform(vector.x, vector.y, vector.z);
 }
 
+float3 float3x3::TransformLeft(const float3 &vector) const
+{
+    return float3(DOT3STRIDED(vector, ptr(), 3),
+                  DOT3STRIDED(vector, ptr()+1, 3),
+                  DOT3STRIDED(vector, ptr()+2, 3));
+}
+
 float3 float3x3::Transform(float x, float y, float z) const
 {
     return float3(DOT3_xyz(Row(0), x,y,z),
@@ -976,6 +983,23 @@ float3x4 float3x3::Mul(const float3x4 &rhs) const { return *this * rhs; }
 float4x4 float3x3::Mul(const float4x4 &rhs) const { return *this * rhs; }
 float3x3 float3x3::Mul(const Quat &rhs) const { return *this * rhs; }
 float3 float3x3::Mul(const float3 &rhs) const { return *this * rhs; }
+
+float3x3 operator *(const Quat &lhs, const float3x3 &rhs)
+{
+    float3x3 lhsRot(lhs);
+    return lhsRot * rhs;
+}
+
+float3 operator *(const float3 &lhs, const float3x3 &rhs)
+{
+    return rhs.TransformLeft(lhs);
+}
+
+float4 operator *(const float4 &lhs, const float3x3 &rhs)
+{
+    assume(lhs.IsWZeroOrOne());
+    return float4(rhs.TransformLeft(lhs.xyz()), lhs.w);
+}
 
 const float3x3 float3x3::zero     = float3x3(0,0,0, 0,0,0, 0,0,0);
 const float3x3 float3x3::identity = float3x3(1,0,0, 0,1,0, 0,0,1);
