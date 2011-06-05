@@ -36,7 +36,7 @@ THE SOFTWARE.
 #include <Ogre.h>
 #include "LinearMath/btIDebugDraw.h"
 
-struct Line
+struct DebugLine
 {
     Ogre::Vector3 _start;
     Ogre::Vector3 _end;
@@ -52,7 +52,7 @@ public:
 
     void addLine (const btVector3& from, const btVector3& to, const btVector3& color)
     {
-        Line newLine;
+        DebugLine newLine;
         newLine._start.x = from.x();
         newLine._start.y = from.y();
         newLine._start.z = from.z();
@@ -74,7 +74,7 @@ public:
 
 protected:
 
-    std::vector<Line> _lines;
+    std::vector<DebugLine> _lines;
     Ogre::HardwareVertexBufferSharedPtr _vbuf;
 };
 

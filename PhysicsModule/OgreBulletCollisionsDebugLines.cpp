@@ -121,7 +121,7 @@ void DebugLines::draw()
 
     for(unsigned int i = 0; i < size; i++)
     {
-        const Line& line = _lines[i];
+        const DebugLine& line = _lines[i];
         uint32 packedColor;
         if (vet == VET_COLOUR_ARGB)
             packedColor = line._color.getAsARGB();
