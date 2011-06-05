@@ -74,7 +74,7 @@ float3x4 float3x4::RotateX(float angleRadians, const float3 &pointOnAxis)
 {
     float3x4 r;
     r.SetRotatePartX(angleRadians);
-    r.SetRow(3, 0, 0, 0, 1);
+    r.SetTranslatePart(0, 0, 0);
     return float3x4::Translate(pointOnAxis) * r * float3x4::Translate(-pointOnAxis);
 }
 
@@ -90,7 +90,7 @@ float3x4 float3x4::RotateY(float angleRadians, const float3 &pointOnAxis)
 {
     float3x4 r;
     r.SetRotatePartY(angleRadians);
-    r.SetRow(3, 0, 0, 0, 1);
+    r.SetTranslatePart(0, 0, 0);
     return float3x4::Translate(pointOnAxis) * r * float3x4::Translate(-pointOnAxis);
 }
 
@@ -106,7 +106,7 @@ float3x4 float3x4::RotateZ(float angleRadians, const float3 &pointOnAxis)
 {
     float3x4 r;
     r.SetRotatePartZ(angleRadians);
-    r.SetRow(3, 0, 0, 0, 1);
+    r.SetTranslatePart(0, 0, 0);
     return float3x4::Translate(pointOnAxis) * r * float3x4::Translate(-pointOnAxis);
 }
 
@@ -122,7 +122,7 @@ float3x4 float3x4::RotateAxisAngle(const float3 &axisDirection, float angleRadia
 {
     float3x4 r;
     r.SetRotatePart(axisDirection, angleRadians);
-    r.SetRow(3, 0, 0, 0, 1);
+    r.SetTranslatePart(0, 0, 0);
     return float3x4::Translate(pointOnAxis) * r * float3x4::Translate(-pointOnAxis);
 }
 
