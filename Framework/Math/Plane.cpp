@@ -19,6 +19,8 @@
 #include "LineSegment.h"
 #include "float3x3.h"
 #include "float3x4.h"
+#include "float4.h"
+#include "Quat.h"
 
 Plane::Plane(const float3 &normal_, float d_)
 :normal(normal_), d(d_)
@@ -57,22 +59,31 @@ float3 Plane::PointOnPlane() const
 
 void Plane::Transform(const float3x3 &transform)
 {
-    assume(false && "Not implemented!"); ///\todo
+    float3x3 it = transform.InverseTransposed(); ///\todo Could optimize the inverse here by assuming orthogonality or orthonormality.
+    normal = it * normal;
 }
 
+/// See Eric Lengyel's Mathematics for 3D Game Programming And Computer Graphics 2nd ed., p.110, chapter 4.2.3.
 void Plane::Transform(const float3x4 &transform)
 {
-    assume(false && "Not implemented!"); ///\todo
+    ///\todo Could optimize this function by switching to plane convention ax+by+cz+d=0 instead of ax+by+cz=d.
+    float3x3 r = transform.Float3x3Part();
+    bool success = r.Inverse(); ///\todo Can optimize the inverse here by assuming orthogonality or orthonormality.
+    assume(success);
+    d = d + Dot(normal, r * transform.TranslatePart());
+    normal = normal * r;
 }
 
 void Plane::Transform(const float4x4 &transform)
 {
-    assume(false && "Not implemented!"); ///\todo
+    assume(transform.Row(3).Equals(float4(0,0,0,1)));
+    Transform(transform.Float3x4Part());
 }
 
 void Plane::Transform(const Quat &transform)
 {
-    assume(false && "Not implemented!"); ///\todo
+    float3x3 r = transform.ToFloat3x3();
+    Transform(r);
 }
 
 bool Plane::IsInPositiveDirection(const float3 &directionVector) const
@@ -334,4 +345,32 @@ Circle Plane::GenerateCircle(const float3 &circleCenter, float radius) const
 {
     assume(false && "Not implemented!"); ///\todo
     return Circle();
+}
+
+Plane operator *(const float3x3 &transform, const Plane &plane)
+{
+    Plane p(plane);
+    p.Transform(transform);
+    return p;
+}
+
+Plane operator *(const float3x4 &transform, const Plane &plane)
+{
+    Plane p(plane);
+    p.Transform(transform);
+    return p;
+}
+
+Plane operator *(const float4x4 &transform, const Plane &plane)
+{
+    Plane p(plane);
+    p.Transform(transform);
+    return p;
+}
+
+Plane operator *(const Quat &transform, const Plane &plane)
+{
+    Plane p(plane);
+    p.Transform(transform);
+    return p;
 }
