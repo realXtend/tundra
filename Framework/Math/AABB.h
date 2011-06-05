@@ -110,7 +110,8 @@ public:
 
     /// Returns a corner point of this AABB.
     /** This function generates one of the eight corner points of this AABB. 
-        @param cornerIndex The index of the corner point to generate, in the range [0, 7]. \todo Document which index generates which one. */
+        @param cornerIndex The index of the corner point to generate, in the range [0, 7].
+         The points are returned in the order ---, --+, -+-, -++, +--, +-+, ++-, +++. (corresponding the XYZ axis directions). */
     float3 CornerPoint(int cornerIndex) const;
 
     /// Returns a point on an edge of this AABB.
