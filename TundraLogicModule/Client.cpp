@@ -141,13 +141,12 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
 
 void Client::Logout(bool fail, unsigned short removedConnection_)
 {
-    TundraLogicModule::LogInfo("Client::Logout!");
     QMapIterator<unsigned short, Ptr(kNet::MessageConnection)> sourceIterator = owner_->GetKristalliModule()->GetConnectionArray();
 
     if (!sourceIterator.hasNext())
         return;
 
-    // Scene to be removed is TundraClient_X | X = 1, 2, 3, ..., n; n € Z+
+    // Scene to be removed is TundraClient_X | X = 0, 1, 2, 3, ..., n; n € Z+
     // removedConnection_ indicates which scene we are about to disconnect.
     QString sceneToRemove = "TundraClient_";
     sceneToRemove.append(QString("%1").arg(removedConnection_));
@@ -299,11 +298,23 @@ void Client::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 
 void Client::HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes)
 {
+    QMapIterator<unsigned short, Ptr(kNet::MessageConnection)> sourceIterator = owner_->GetKristalliModule()->GetConnectionArray();
 
-    if (source != GetConnection(0))
+    // check if any of the client's messageConnections send the message
+    while (sourceIterator.hasNext())
     {
-        TundraLogicModule::LogWarning("Client: dropping message " + ToString(id) + " from unknown source");
-        return;
+        sourceIterator.next();
+
+        if (source == sourceIterator.value().ptr())
+            break;
+        else if (source != sourceIterator.value().ptr() && sourceIterator.hasNext())
+            continue;
+        else
+        {
+            TundraLogicModule::LogWarning("Client: dropping message " + ToString(id) + " from unknown source");
+            return;
+        }
+
     }
     
     switch (id)
