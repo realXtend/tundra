@@ -53,6 +53,7 @@ See the following pages for help on working on the Tundra codebase.
 <li>\ref TundraScriptReference "Tundra scripting reference."
 <li>\ref TundraDocumentfiles "Working with Tundra document files."
 <li>\ref MumbleVoipSetup "Setting up Mumble VOIP."
+<li>\ref UsingPdfDocuments "Using PDF documents with Tundra."
 </ul>
 </td>
 </tr>
