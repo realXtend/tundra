@@ -8,6 +8,7 @@
 #pragma once
 
 #include "IComponent.h"
+#include "Vector3D.h"
 
 struct EC_SkyXImpl;
 
@@ -31,9 +32,9 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
     Q_PROPERTY(float timeMultiplier READ gettimeMultiplier WRITE settimeMultiplier);
 
-    /// Time of the day.
-//    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, time);
-//    Q_PROPERTY(Vector3df time READ gettime WRITE settime);
+    /// Time of the day: x = time in [0, 24]h range, y = sunrise hour in [0, 24]h range, z = sunset hour in [0, 24] range.
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, time);
+    Q_PROPERTY(Vector3df time READ gettime WRITE settime);
 
 private:
     EC_SkyXImpl *impl;

@@ -23,6 +23,8 @@
 #ifdef max
 #undef max
 #endif
+#include "OgreConversionUtils.h"
+
 #include <Ogre.h>
 
 #include <SkyX.h>
@@ -44,7 +46,8 @@ struct EC_SkyXImpl
 EC_SkyX::EC_SkyX(Scene* scene) :
     IComponent(scene),
     volumetricClouds(this, "Volumetric clouds", false),
-    timeMultiplier(this, "Time multiplier", 0.25f)
+    timeMultiplier(this, "Time multiplier", 0.25f),
+    time(this, "Time")
 {
     try
     {
@@ -99,10 +102,19 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr)
     {
         impl->skyX->setTimeMultiplier((Ogre::Real)timeMultiplier.Get());
     }
+    else if (attr == &time)
+    {
+        SkyX::AtmosphereManager::Options atOpt = impl->skyX->getAtmosphereManager()->getOptions();
+        atOpt.Time = OgreRenderer::ToOgreVector3(time.Get());
+        impl->skyX->getAtmosphereManager()->setOptions(atOpt);
+    }
 }
 
 void EC_SkyX::Update(float frameTime)
 {
     if (impl->skyX)
+    {
         impl->skyX->update(frameTime);
+        settime(OgreRenderer::ToCoreVector(impl->skyX->getAtmosphereManager()->getOptions().Time));
+    }
 }

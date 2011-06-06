@@ -23,6 +23,8 @@
 #undef max
 #endif
 
+#include "OgreConversionUtils.h"
+
 #include <Hydrax.h>
 #include <Noise/Perlin/Perlin.h>
 #include <Modules/ProjectedGrid/ProjectedGrid.h>
@@ -73,8 +75,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     // but due to the high number of customizable parameters, since 0.4 version, Hydrax allows save/load config files.
     impl->hydrax->loadCfg("HydraxDemo.hdx");
 
-    position.Set(Vector3df(impl->hydrax->getPosition().x, impl->hydrax->getPosition().y, impl->hydrax->getPosition().z),
-        AttributeChange::Disconnected);
+    position.Set(OgreRenderer::ToCoreVector(impl->hydrax->getPosition()), AttributeChange::Disconnected);
 
     // Create water
     impl->hydrax->create();
@@ -90,15 +91,15 @@ EC_Hydrax::~EC_Hydrax()
 
 void EC_Hydrax::UpdateAttribute(IAttribute *attr)
 {
+    if (!impl->hydrax)
+        return;
     if (attr == &visible)
     {
-        if (impl->hydrax)
-            impl->hydrax->setVisible(visible.Get());
+        impl->hydrax->setVisible(visible.Get());
     }
     else if (attr == &position)
     {
-        if (impl->hydrax)
-            impl->hydrax->setPosition(Ogre::Vector3(position.Get().x, position.Get().y, position.Get().z));
+        impl->hydrax->setPosition(OgreRenderer::ToOgreVector3(position.Get()));
     }
 }
 
