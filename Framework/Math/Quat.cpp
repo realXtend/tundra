@@ -459,6 +459,7 @@ Quat Quat::operator /(const Quat &rhs) const
     return *this * inverse;
 }
 
+Quat Quat::Mul(const Quat &rhs) const { return *this * rhs; } 
 Quat Quat::Mul(const float3x3 &rhs) const { return *this * Quat(rhs); } 
 float3 Quat::Mul(const float3 &vector) const { return this->Transform(vector); }
 float4 Quat::Mul(const float4 &vector) const { return this->Transform(vector); }

@@ -246,6 +246,9 @@ public:
     operator btQuaternion() const { return btQuaternion(x, y, z, w); }
 #endif
 
+    /// Multiplies two quaternions in the order 'this * rhs'.
+    /// This corresponds to the concatenation of the two operations ('this * rhs * vector' applies the rotation 'rhs' first, followed by the rotation 'this'.
+    Quat Mul(const Quat &rhs) const;
     /// Converts the given matrix to a quaternion and computes the concatenated transform 'this * rhs'.
     Quat Mul(const float3x3 &rhs) const;
     /// Transforms the given vector by this Quaternion.

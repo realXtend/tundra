@@ -429,6 +429,16 @@ static QScriptValue float3x3_Transform_float_float_float(QScriptContext *context
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue float3x3_TransformLeft_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x3_TransformLeft_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float3x3 *This = TypeFromQScriptValue<float3x3*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function float3x3_TransformLeft_float3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    float3 lhs = TypeFromQScriptValue<float3>(context->argument(0));
+    float3 ret = This->TransformLeft(lhs);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue float3x3_Transform_float4(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x3_Transform_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -1286,6 +1296,7 @@ QScriptValue register_float3x3_prototype(QScriptEngine *engine)
     proto.setProperty("RemoveScale", engine->newFunction(float3x3_RemoveScale, 0));
     proto.setProperty("Transform", engine->newFunction(float3x3_Transform_selector, 1));
     proto.setProperty("Transform", engine->newFunction(float3x3_Transform_selector, 3));
+    proto.setProperty("TransformLeft", engine->newFunction(float3x3_TransformLeft_float3, 1));
     proto.setProperty("BatchTransform", engine->newFunction(float3x3_BatchTransform_selector, 2));
     proto.setProperty("BatchTransform", engine->newFunction(float3x3_BatchTransform_selector, 3));
     proto.setProperty("IsFinite", engine->newFunction(float3x3_IsFinite, 0));

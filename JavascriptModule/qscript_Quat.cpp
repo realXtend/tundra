@@ -508,6 +508,16 @@ static QScriptValue Quat_toString(QScriptContext *context, QScriptEngine *engine
     return TypeToQScriptValue(engine, ret);
 }
 
+static QScriptValue Quat_Mul_Quat(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_Mul_Quat in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    Quat *This = TypeFromQScriptValue<Quat*>(context->thisObject());
+    if (!This) { printf("Error! Invalid context->thisObject in function Quat_Mul_Quat in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
+    Quat rhs = TypeFromQScriptValue<Quat>(context->argument(0));
+    Quat ret = This->Mul(rhs);
+    return TypeToQScriptValue(engine, ret);
+}
+
 static QScriptValue Quat_Mul_float3x3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_Mul_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
@@ -826,6 +836,8 @@ static QScriptValue Quat_Set_selector(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue Quat_Mul_selector(QScriptContext *context, QScriptEngine *engine)
 {
+    if (context->argumentCount() == 1 && QSVIsOfType<Quat>(context->argument(0)))
+        return Quat_Mul_Quat(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))
         return Quat_Mul_float3x3(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3>(context->argument(0)))
