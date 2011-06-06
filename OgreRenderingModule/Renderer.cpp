@@ -544,7 +544,11 @@ namespace OgreRenderer
     {
         using namespace std;
         
-        if (!initialized_) 
+        // Do not render if headless
+        if (framework_->IsHeadless())
+            return;
+            
+        if (!initialized_)
             return;
 
         PROFILE(Renderer_Render);

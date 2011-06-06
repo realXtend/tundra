@@ -254,7 +254,10 @@ void InputAPI::ApplyMouseCursorOverride()
 {    
     if (!IsMouseCursorVisible())
         return;
-
+    // Return if in headless and do not have the GraphicsView
+    if (!framework->Ui()->GraphicsView())
+        return;
+    
     bool is2DUiUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(lastMouseX, lastMouseY) != 0;
 
     for(InputContextList::iterator iter = registeredInputContexts.begin(); 
