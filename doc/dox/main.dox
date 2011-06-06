@@ -174,6 +174,7 @@ SceneAPI is available as 'scene' in Javascript and 'naali.scene' in Python.
 Topics:
 <ul>
 <li>\ref SceneModelPage "Scenes, entities and components."
+<li>\ref QmlScenePage "Accessing the scene from Qml."
 <li>Attributes and attribute metadata.
 <li>\ref EntityActionPage "Entity actions".
 <li>Accessing scene contents from C++ code.

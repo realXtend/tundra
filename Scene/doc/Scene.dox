@@ -7,9 +7,8 @@
 \section scene_sec Scene
 
 	At the highest level, the world (and some other parts aswell) is composed of one or
-	more scenes. Scenes are generic containers for entities, and entities may be shared
-	between scenes.
-	
+	more scenes. Scenes are generic containers for entities.
+
 	Iterators are provided for iterating through all entities in a scene. If you wish to
 	access components of a specific type inside the entities, iterating with
 	Foundation::ComponentManager is the preferred way.
@@ -17,13 +16,7 @@
 \section entity_scene_sec Entity
 
 	An entity is a presence in the scene. Entities contain components, which define
-	data and behaviour for the entity. Components can be shared between entities and
-	it allows for uniform behaviour between entities.
-
-	For example you can have a row of entities all sharing the same 'light' component.
-	In this way all the entities have the same lighting characteristics and can be used
-	to represent a row of identical lights which can be turned on or off by simply
-	modifying the one shared component.
+	data and behaviour for the entity.
 
 	Entities can contain any number of components of any type. They can even contain
 	several different instances of the same type of component. It is up to the component

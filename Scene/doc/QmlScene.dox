@@ -1,0 +1,24 @@
+/**
+
+\page QmlScenePage Accessing the scene from Qml
+
+The Javascript engine provided by the Qml language does not support binding custom metatypes. Therefore, accessing the scene objects must happen only using their public slots and properties. Where available, it is necessary to use the GetXXXRaw() forms of functions, for example GetEntityRaw() in Scene.
+
+When a Qml script is executed in an EC_QmlApp, the following objects are bound to it, similar to how objects are bound to a script executed in an EC_Script component:
+
+- me - The parent entity
+- scene - The parent scene
+
+Other components in the same entity as the EC_QmlApp are bound without the EC prefix and in lowercase. For example EC_Placeable is bound as placeable.
+
+As Tundra's native math types such as Vector3df are not available in the Qml script engine, QVector3 and QQuaternion must be used instead. For example EC_Placeable provides alternative position/orientation/scale properties through them.
+
+An example of getting an entity from the scene by ID, then getting its EC_Placeable component, and then accessing the placeable's position:
+
+\verbatim
+var entity = scene.GetEntityRaw(someEntityId);
+var placeable = entity.GetComponentRaw("EC_Placeable", ""); // Note the necessity to specify both type and name, as all function overloads do not work reliably
+print("Position is " + placeable.position.x + " " + placeable.position.y + " " + placeable.position.z);
+\endverbatim
+
+*/
