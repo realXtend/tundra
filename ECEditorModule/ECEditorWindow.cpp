@@ -165,7 +165,7 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpa
         QString entity_name = QString::number(entity_id);
         EntityPtr entity = framework->Scene()->GetDefaultScene()->GetEntity(entity_id);
         if (entity && entity->GetComponent<EC_Name>())
-            entity_name.append(" " + entity->GetName());
+            entity_name.append(" " + entity->Name());
 
         int row = AddUniqueListItem(entity, entityList, entity_name);
         item = dynamic_cast<EntityListWidgetItem *>(entityList->item(row));

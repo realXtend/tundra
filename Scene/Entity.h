@@ -50,7 +50,8 @@ class Entity : public QObject, public boost::enable_shared_from_this<Entity>
 {
     Q_OBJECT
     Q_PROPERTY (uint id READ Id)
-    Q_PROPERTY (QString name READ GetName)
+    Q_PROPERTY (QString name READ Name WRITE SetName)
+    Q_PROPERTY (QString description READ Description WRITE SetDescription)
 
 public:
     typedef std::vector<ComponentPtr> ComponentVector; ///< Component container.
@@ -62,34 +63,18 @@ public:
     /// Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary). */
     template <class T>
-    boost::shared_ptr<T> GetComponent() const
-    {
-        return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic()));
-    }
+    boost::shared_ptr<T> GetComponent() const;
 
     /** Returns list of components with certain class type, already cast to correct type.
         @param T Component class type.
         @return List of components with certain class type, or empty list if no components was found. */
     template <class T>
-    std::vector<boost::shared_ptr<T> > GetComponents() const
-    {
-        std::vector<boost::shared_ptr<T> > ret;
-        for(size_t i = 0; i < components_.size() ; ++i)
-        {
-            boost::shared_ptr<T> t = boost::dynamic_pointer_cast<T>(components_[i]);
-            if (t)
-                ret.push_back(t);
-        }
-        return ret;
-    }
+    std::vector<boost::shared_ptr<T> > GetComponents() const;
 
     /// Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
     /** @param name name of the component */
     template <class T>
-    boost::shared_ptr<T> GetComponent(const QString& name) const
-    {
-        return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
-    }
+    boost::shared_ptr<T> GetComponent(const QString& name) const;
 
    /** Returns pointer to the first attribute with specific name.
         @param T Type name/class of the attribute.
@@ -97,33 +82,14 @@ public:
         @return Pointer to the attribute.
         @note Always remember to check for null pointer. */
     template<typename T>
-    Attribute<T> *GetAttribute(const std::string &name) const
-    {
-        for(size_t i = 0; i < components_.size() ; ++i)
-        {
-            Attribute<T> *t = components_[i]->GetAttribute<T>(name);
-            if (t)
-                return t;
-        }
-        return 0;
-    }
+    Attribute<T> *GetAttribute(const std::string &name) const;
 
     /// Returns list of attributes with specific name.
     /** @param T Type name/class of the attribute.
         @param name Name of the attribute.
         @return List of attributes, or empty list if no attributes are found. */
     template<typename T>
-    std::vector<Attribute<T> > GetAttributes(const std::string &name) const
-    {
-        std::vector<Attribute<T> > ret;
-        for(size_t i = 0; i < components_.size() ; ++i)
-        {
-            Attribute<T> *t = components_[i]->GetAttribute<T>(name);
-            if (t)
-                return ret.push_back(t);
-        }
-        return ret;
-    }
+    std::vector<Attribute<T> > GetAttributes(const std::string &name) const;
 
     /// In the following, deserialization functions are now disabled since deserialization can't safely
     /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.
@@ -261,14 +227,14 @@ public slots:
     void SetName(const QString &name);
 
     /// Returns name of this entity if EC_Name is available, empty string otherwise.
-    QString GetName() const;
+    QString Name() const;
 
     /// Sets description of the entity to EC_Name component. If the component doesn't exist, it will be created.
     /** @param desc Description. */
     void SetDescription(const QString &desc);
 
     /// Returns description of this entity if EC_Name is available, empty string otherwise.
-    QString GetDescription() const;
+    QString Description() const;
 
     /// Return by name and type, 'cause can't call RemoveComponent with comp as shared_py
     void RemoveComponentRaw(QObject* comp);
@@ -395,3 +361,5 @@ private:
     ActionMap actions_; ///< Map of registered entity actions.
     bool temporary_; ///< Temporary-flag
 };
+
+#include "Entity.inl"

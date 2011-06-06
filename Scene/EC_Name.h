@@ -27,8 +27,6 @@ Registered by TundraLogicModule.
 <div>Name</div> 
 <li> QString: description
 <div>Description</div> 
-<li> bool: userDefined
-<div>Boolean which indicates that the current name value is defined by the user and should not be set programmatically.</div> 
 </ul>
 
 Does not emit any actions.
@@ -45,8 +43,7 @@ public:
     explicit EC_Name(Scene* scene) :
         IComponent(scene),
         name(this, "name", ""),
-        description(this, "description", ""),
-        userDefined(this, "user-defined", false)
+        description(this, "description", "")
     {}
 
     ~EC_Name() {}
@@ -58,8 +55,4 @@ public:
     /// Description.
     DEFINE_QPROPERTY_ATTRIBUTE(QString, description);
     Q_PROPERTY(QString description READ getdescription WRITE setdescription); 
-
-    /// Boolean which indicates that the current name value is defined by the user and should not be set programmatically.
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, userDefined);
-    Q_PROPERTY(bool userDefined READ getuserDefined WRITE setuserDefined); 
 };

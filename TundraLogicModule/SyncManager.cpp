@@ -326,7 +326,7 @@ void SyncManager::OnEntityCreated(Entity* entity, AttributeChange::Type change)
                 if (state->removed_entities_.find(entity->Id()) != state->removed_entities_.end())
                 {
                     LogWarning("An entity with ID " + QString::number(entity->Id()).toStdString() + " is queued to be deleted, but a new entity \"" + 
-                        entity->GetName().toStdString() + "\" is to be added to the scene!");
+                        entity->Name().toStdString() + "\" is to be added to the scene!");
                 }
                 state->OnEntityChanged(entity->Id());
             }
@@ -491,7 +491,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
 
         if (state->removed_entities_.find(*i) != state->removed_entities_.end())
         {
-            LogWarning("Potentially buggy behavior! Sending entity update for ID " + QString::number(*i).toStdString() + ", name: " + entity->GetName().toStdString()
+            LogWarning("Potentially buggy behavior! Sending entity update for ID " + QString::number(*i).toStdString() + ", name: " + entity->Name().toStdString()
                 + " but the entity with that ID is queued for deletion later!");
         }
 

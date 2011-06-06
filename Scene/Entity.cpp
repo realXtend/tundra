@@ -394,7 +394,7 @@ void Entity::SetName(const QString &name)
     ecName->name.Set(name, AttributeChange::Default);
 }
 
-QString Entity::GetName() const
+QString Entity::Name() const
 {
     boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
     if (name)
@@ -410,7 +410,7 @@ void Entity::SetDescription(const QString &desc)
     ecName->description.Set(desc, AttributeChange::Default);
 }
 
-QString Entity::GetDescription() const
+QString Entity::Description() const
 {
     boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
     if (name)
@@ -525,7 +525,7 @@ void Entity::SetTemporary(bool enable)
 
 QString Entity::ToString() const
 {
-    QString name = GetName();
+    QString name = Name();
     if (name.trimmed().isEmpty())
         return QString("Entity ID ") + QString::number(Id());
     else

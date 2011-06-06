@@ -29,7 +29,7 @@ void EntityReference::Set(Entity* entity)
         return;
     }
     
-    QString name = entity->GetName();
+    QString name = entity->Name();
     Scene* scene = entity->ParentScene();
     if (!scene)
     {

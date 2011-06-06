@@ -27,7 +27,7 @@ EntityItem::EntityItem(const EntityPtr &entity) :
 
 void EntityItem::SetText(::Entity *entity)
 {
-    setText(0, QString("%1 %2").arg(entity->Id()).arg(entity->GetName()));
+    setText(0, QString("%1 %2").arg(entity->Id()).arg(entity->Name()));
 }
 
 EntityPtr EntityItem::Entity() const

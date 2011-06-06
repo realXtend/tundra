@@ -80,7 +80,7 @@ public:
     /// Notifies owner component that the attribute has changed.
     /** This function is called automatically when the Attribute value is Set(). You may call this manually
         to force a change signal to be emitted for this attribute. Calling this is equivalent to calling the
-        IComponent::AttributeChanged(this->GetName()) for the owner of this attribute. */
+        IComponent::AttributeChanged(this->Name()) for the owner of this attribute. */
     void Changed(AttributeChange::Type change);
 
     /// Creates a clone of this attribute by dynamic allocation.

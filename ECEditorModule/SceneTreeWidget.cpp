@@ -653,7 +653,7 @@ void SceneTreeWidget::Rename()
         if (entity)
         {
             // Remove the entity ID from the text when user is editing entity's name.
-            eItem->setText(0, entity->GetName());
+            eItem->setText(0, entity->Name());
 //            openPersistentEditor(eItem);
 //            setCurrentIndex(index);
             edit(index);

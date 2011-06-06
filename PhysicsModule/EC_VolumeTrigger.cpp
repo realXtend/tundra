@@ -62,7 +62,7 @@ QStringList EC_VolumeTrigger::GetEntityNamesInside() const
     {
         EntityPtr entity = entityw.lock();
         if (entity)
-            entitynames.append(entity->GetName());
+            entitynames.append(entity->Name());
     }
 
     return entitynames;
@@ -100,7 +100,7 @@ float EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
     foreach(EntityWeakPtr wentity, entities)
     {
         EntityPtr entity = wentity.lock();
-        if (entity && entity->GetName().compare(name) == 0)
+        if (entity && entity->Name().compare(name) == 0)
             return GetEntityInsidePercent(entity.get());
     }
     return 0.f;
@@ -232,7 +232,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const Vector3df& 
 {
     assert (otherEntity && "Physics collision with no entity.");
 
-    if (!entities.Get().isEmpty() && !IsInterestingEntity(otherEntity->GetName()))
+    if (!entities.Get().isEmpty() && !IsInterestingEntity(otherEntity->Name()))
         return;
 
     EntityPtr entity = otherEntity->shared_from_this();
