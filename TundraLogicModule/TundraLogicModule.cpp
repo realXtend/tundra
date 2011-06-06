@@ -64,6 +64,8 @@ void TundraLogicModule::Initialize()
     // Multiconnection specific. When syncManager is created/deleted these are run.
     connect(this, SIGNAL(createOgre(QString)), client_.get(), SLOT(emitCreateOgreSignal(QString)));
     connect(this, SIGNAL(deleteOgre(QString)), client_.get(), SLOT(emitDeleteOgreSignal(QString)));
+    connect(this, SIGNAL(setOgre(QString)), client_.get(), SLOT(emitSetOgreSignal(QString)));
+    connect(client_.get(), SIGNAL(aboutToDisconnect(QString)), this, SLOT(changeScene(QString)));
 
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
@@ -157,6 +159,16 @@ void TundraLogicModule::RemoveSyncManagerFromScene(const QString &name)
     delete sm;
     emit deleteOgre(name);
     TundraLogicModule::LogInfo("Removed SyncManager from scene " + name.toStdString());
+}
+
+void TundraLogicModule::changeScene(const QString &name)
+{
+    TundraLogicModule::LogInfo("Changing default scene to " + name.toStdString());
+    framework_->Scene()->SetDefaultScene(name);
+    TundraLogicModule::LogInfo("Changing syncmanager!");
+    syncManager_ = syncManagers_[name];
+    TundraLogicModule::LogInfo("Changing ogre scenemanager!");
+    emit setOgre(name);
 }
 
 

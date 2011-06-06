@@ -65,7 +65,6 @@ public:
 
     /// Returns the underlying kNet MessageConnection object that represents this connection.
     /// This function may return null in the case the connection is not active.
-    kNet::MessageConnection* GetConnection();
     kNet::MessageConnection* GetConnection(unsigned short);
 
     /// Handles Kristalli event
@@ -86,6 +85,17 @@ signals:
     /// This signal is emitted when the client has disconnected from the server.
     void Disconnected();
 
+    /// This signal is emitted when connection to the server is lost and couldn't accomplish reconnection.
+    void FallbackConnection();
+
+    //Signal for tundralogicmodule.cpp when we are about to disconnect a scene
+    void aboutToDisconnect(const QString&);
+
+    // Signals for javascript.
+    void createOgre(const QString&);
+    void deleteOgre(const QString&);
+    void setOgre(const QString&);
+    
 public slots:
     /// Connects and logs in. The QUrl's query parameters will be evaluated for the login data.
     /** Minimum information needed to try a connection in the url are host and username.
@@ -133,7 +143,20 @@ public slots:
     /// Deletes all set login properties.
     void ClearLoginProperties() { properties.clear(); }
 
+    // Bridge slots from TundraLogicModule.cpp to emit Client signals for creating/deleting OgreScenes in javascript.
+    void emitCreateOgreSignal(const QString&);
+    void emitDeleteOgreSignal(const QString&);
+    void emitSetOgreSignal(const QString&);
+
 private:
+    // creates unique scenename TundraClientX | X = 0, 1, 2, ..., n; n € Z+
+    // If TundraClient2 is deleted from middle of the list, next scene created will be TundraClient2
+    // bool value false only returns QString without saving new item to scenenames_
+    QString getUniqueSceneName(bool save = false);
+
+    // Saves connection properties to Containers
+    void saveProperties(const QString&);
+
     /// Handles a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
 
@@ -158,21 +181,6 @@ private:
     /// User ID, once known
     u8 client_id_;
 
-    /// Kristalli event category
-    event_category_id_t kristalliEventCategory_;
-    /// Tundra event category
-    event_category_id_t tundraEventCategory_;
-
-    /// Owning module
-    TundraLogicModule* owner_;
-    /// Framework pointer
-    Foundation::Framework* framework_;
-
-    // ###################
-    // # Multiconnection #
-    // ###################
-
-private:
     // Container for all the connections loginstates
     QMap<QString,ClientLoginState> loginstate_list_;
     // Container for all the connections properties
@@ -184,22 +192,15 @@ private:
     // Container for all the connections scenenames
     QMap<int, QString> scenenames_;
 
-    // creates unique scenename TundraClientX | X = 0, 1, 2, ..., n; n € Z+
-    // If TundraClient2 is deleted from middle of the list, next scene created will be TundraClient2
-    // bool value false only returns QString without saving new item to scenenames_
-    QString getUniqueSceneName(bool save = false);
+    /// Kristalli event category
+    event_category_id_t kristalliEventCategory_;
+    /// Tundra event category
+    event_category_id_t tundraEventCategory_;
 
-    // Saves connection properties to Containers
-    void saveProperties(const QString&);
-signals:
-    void createOgre(const QString&);
-    void deleteOgre(const QString&);
-public slots:
-    void emitCreateOgreSignal(const QString&);
-    void emitDeleteOgreSignal(const QString&);
-
-
-
+    /// Owning module
+    TundraLogicModule* owner_;
+    /// Framework pointer
+    Foundation::Framework* framework_;
 
 };
 

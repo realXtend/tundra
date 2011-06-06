@@ -34,6 +34,49 @@ if (!framework.IsHeadless())
 
     // View
     var viewMenu = mainwin.AddMenu("&View");
+
+    // Chiru demonstration and mobility menu:
+    var demoMenu = mainwin.AddMenu("&Demo");
+    var connectMenu = demoMenu.addMenu("&Connect");
+    connectMenu.addAction("Chiru world").triggered.connect(ConnectRemote);
+    connectMenu.addAction("Local world").triggered.connect(ConnectLocal);
+    if(framework.GetModuleQObj("Mobility"))
+    {
+        var mobilityModule = framework.GetModuleQObj("Mobility");
+        
+        mobilityModule.networkStateChanged.connect(mobilitySignalHandler);
+        mobilityModule.networkModeChanged.connect(mobilitySignalHandler);
+        mobilityModule.networkQualityChanged.connect(mobilitySignalHandler);
+        mobilityModule.screenStateChanged.connect(mobilitySignalHandler);
+        mobilityModule.usingBattery.connect(mobilitySignalHandler);
+        mobilityModule.batteryLevelChanged.connect(mobilitySignalHandler);
+        
+        var signalMenu = demoMenu.addMenu("&Signal");
+        signalMenu.addAction("networkStateChanged(MobilityModule::NetworkState)").triggered.connect(signalNetworkStateChanged);
+        signalMenu.addAction("networkModeChanged(MobilityModule::NetworkMode)").triggered.connect(signalNetworkModeChanged);
+        signalMenu.addAction("networkQualityChanged(int)").triggered.connect(signalNetworkQualityChanged);
+        signalMenu.addAction("screenStateChanged(MobilityModule::ScreenState)").triggered.connect(signalScreenStateChanged);
+        signalMenu.addAction("usingBattery(bool)").triggered.connect(signalUsingBattery);
+        signalMenu.addAction("batteryLevelChanged(int)").triggered.connect(signalBatteryLevelChanged);
+    }
+
+	// Chiru Multiconnection Menu
+	if (!server.IsAboutToStart())
+	{	
+		var multiMenu = mainwin.AddMenu("&MultiCon");
+		var THEREbeDRAGONS = multiMenu.addAction("*Dragons ahead*");
+		var multiconnect = multiMenu.addMenu("&connect");
+		multiconnect.addAction("Chiru world - UDP").triggered.connect(ConnectChiruUDP);
+		multiconnect.addAction("Chiru world - TCP").triggered.connect(ConnectChiruTCP);
+		multiconnect.addAction("Local world - UDP").triggered.connect(ConnectLocalUDP);
+		multiconnect.addAction("Local world - TCP").triggered.connect(ConnectLocalTCP);
+		multiconnect.addAction("Local world - 2346").triggered.connect(ConnectLocal2346);
+	}    
+	function mobilitySignalHandler(value)
+    {
+        //print("Emitted and catched MobilityModule signal with value: " + value);
+    }
+
     if (framework.GetModuleQObj("SceneStructure"))
     {
         assetAction = viewMenu.addAction(new QIcon("./data/ui/images/fileIcons.png"), "Assets");
@@ -231,4 +274,131 @@ if (!framework.IsHeadless())
         else if (ext == "tbin")
             currentScene.SaveSceneBinary(filename);
     }
+
+    // Chiru Mobility changes:
+
+    function ConnectRemote() {
+        console.ExecuteCommand("disconnect");
+        console.ExecuteCommand("connect(chiru.cie.fi, 2345, 'erkki', '', udp)");
+        
+    }
+
+    function ConnectLocal() {
+        console.ExecuteCommand("disconnect");
+        console.ExecuteCommand("connect(localhost, 2345, 'erkki', '', udp)");
+    }
+
+	// Chiru multiconnection changes:
+
+	function ConnectChiruUDP()
+	{
+        console.ExecuteCommand("connect(chiru.cie.fi, 2345, 'multitapsa', '', udp)");
+	}
+
+	function ConnectChiruTCP()
+	{
+        console.ExecuteCommand("connect(chiru.cie.fi, 2345, 'multitapsa', '', tcp)");
+	}
+
+	function ConnectLocalUDP()
+	{
+        console.ExecuteCommand("connect(localhost, 2345, 'multitapsa', '', udp)");
+	}
+
+	function ConnectLocalTCP()
+	{
+        console.ExecuteCommand("connect(localhost, 2345, 'multitapsa', '', tcp)");
+	}
+
+	function ConnectLocal2346()
+	{
+        console.ExecuteCommand("connect(localhost, 2346, 'multitapsa', '', tcp)");
+	}
+    
+    function signalNetworkStateChanged() {      
+        var options = new Array();
+        
+        options[0] = "Undetermined";
+        options[1] = "Connecting";
+        options[2] = "Connected";
+        options[3] = "Disconnected";
+        options[4] = "Roaming";
+        
+        var value = QInputDialog.getItem(0, "networkStateChanged(bool)", "value:", options, 0, false, 0);
+        
+        for(var x=0; x < options.length; x++)
+        {
+            if(value == options[x]) mobilityModule.networkStateChanged(x);
+        }
+    }
+    
+    function signalNetworkModeChanged() {
+        var options = new Array();
+        
+        options[0] = "Unknown";
+        options[1] = "Gsm";
+        options[2] = "Cdma";
+        options[3] = "Wcdma";
+        options[4] = "Wlan";
+        options[5] = "Ethernet";
+        options[6] = "Bluetooth";
+        options[7] = "Wimax";
+        
+        var value = QInputDialog.getItem(0, "networkModeChanged(bool)", "value:", options, 0, false, 0);
+        
+        for(var x=0; x < options.length; x++)
+        {
+            if(value == options[x]) mobilityModule.networkModeChanged(x);
+        }
+    }
+    
+    function signalNetworkQualityChanged() {
+        var value = QInputDialog.getInt(0, "networkQualityChanged(int)", "value(0-100):", 0, 0, 100, 1) 
+        if(value) mobilityModule.networkQualityChanged(value);
+    }
+    
+    function signalScreenStateChanged() {
+        var options = new Array();
+        
+        options[0] = "Unknown";
+        options[1] = "On";
+        options[2] = "Dimmed";
+        options[3] = "Off";
+        options[4] = "Screen saver";
+        
+        var value = QInputDialog.getItem(0, "screenStateChanged(MobilityModule::ScreenState)", "value:", options, 0, false, 0);
+        
+        for(var x=0; x < options.length; x++)
+        {
+            if(value == options[x]) mobilityModule.screenStateChanged(x);
+        }
+    }
+    
+    function signalUsingBattery() {
+        var options = new Array();
+        
+        options[0] = "false";
+        options[1] = "true";
+        
+        var value = QInputDialog.getItem(0, "usingBattery(bool)", "value:", options, 0, false, 0);
+                                          
+        switch(value)
+        {
+        case "false":
+            mobilityModule.usingBattery(false);
+            break;
+        case "true":
+            mobilityModule.usingBattery(true);
+            break;
+        default:
+            break;
+        }
+    }
+    
+    function signalBatteryLevelChanged() {
+        var value = QInputDialog.getInt(0, "batteryLevelChanged(int)", "value(0-100):", 0, 0, 100, 1) 
+        if(value) mobilityModule.batteryLevelChanged(value);
+    }
+    
+
 }

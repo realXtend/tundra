@@ -102,10 +102,27 @@ public:
     
     /// Return server
     const boost::shared_ptr<Server>& GetServer() const { return server_; }
+
+public slots:
+    //Returns syncManager. Used only for server.
+    SyncManager* GetSyncManager();
+    // changeScene
+    void changeScene(const QString&);
     
 private slots:
     void StartupSceneLoaded(AssetPtr asset);
     void StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason);
+
+    // Connects new syncManager object to newly created scene
+    void AttachSyncManagerToScene(const QString&);
+    // Removes syncManager object from QMap when scene removed.
+    void RemoveSyncManagerFromScene(const QString&);
+
+signals:
+    // Signals which activate clients slots which again emit signals. This is because we want to catch these signals in javascript.
+    void createOgre(const QString&);
+    void deleteOgre(const QString&);
+    void setOgre(const QString&);
 
 private:
     /// Handle a Kristalli protocol message
@@ -114,8 +131,10 @@ private:
     /// Load the startup scene
     void LoadStartupScene();
     
-    /// Sync manager
-    //boost::shared_ptr<SyncManager> syncManager_;
+    // Currently active syncmanager
+    SyncManager *syncManager_;
+    // Syncmanager array
+    QMap<QString, SyncManager*> syncManagers_;
 
     /// Client
     boost::shared_ptr<Client> client_;
@@ -139,30 +158,6 @@ private:
     bool autostartserver_;
     //! Autostart server port
     short autostartserver_port_;
-
-    // #######################
-    // #   Multiconnection   #
-    // #######################
-
-    // Private variable: Syncmanager
-    SyncManager *syncManager_;
-    // Private variable: Syncmanager array
-    QMap<QString, SyncManager*> syncManagers_;
-
-    // Private method: Creates new Ogre sceneManager and switches to it
-
-private slots:
-    // Connects new syncManager object to newly created scene
-    void AttachSyncManagerToScene(const QString&);
-    // Removes syncManager object from QMap when scene removed.
-    void RemoveSyncManagerFromScene(const QString&);
-
-public:
-    //Returns syncManager. Used only for server.
-    SyncManager* GetSyncManager();
-signals:
-    void createOgre(const QString&);
-    void deleteOgre(const QString&);
 
 };
 

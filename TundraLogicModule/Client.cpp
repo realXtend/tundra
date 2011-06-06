@@ -155,6 +155,7 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
     {
         if (GetConnection(removedConnection_))
         {
+            emit aboutToDisconnect(sceneToRemove);
             TundraLogicModule::LogInfo("Client::Logout, disconnecting connection!");
             owner_->GetKristalliModule()->Disconnect(fail, removedConnection_);
             TundraLogicModule::LogInfo(sceneToRemove.toStdString() + " disconnected!");
@@ -174,6 +175,9 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
         client_id_list_.remove(sceneToRemove);
         properties_list_.remove(sceneToRemove);
         scenenames_.remove(removedConnection_);
+
+        if (!scenenames_.isEmpty())
+            owner_->changeScene(scenenames_.constBegin().value());
 
         emit Disconnected();
     }
@@ -269,11 +273,6 @@ void Client::CheckLogin()
     }
 }
 
-kNet::MessageConnection* Client::GetConnection()
-{
-    return owner_->GetKristalliModule()->GetMessageConnection();
-}
-
 kNet::MessageConnection* Client::GetConnection(unsigned short con)
 {
     return owner_->GetKristalliModule()->GetMessageConnection(con);
@@ -346,15 +345,20 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
 
     if (msg.success)
     {
+        // conNumber is used if we are reconnecting.
         unsigned short conNumber = 0;
+
+        // Iterators for checking the source of the message and handling message correcly using right properties.
         QMutableMapIterator<QString, ClientLoginState> loginstateIterator(loginstate_list_);
         QMutableMapIterator<QString, u8> client_idIterator(client_id_list_);
         QMutableMapIterator<QString, bool> reconnectIterator(reconnect_list_);
         QMapIterator<unsigned short, Ptr(kNet::MessageConnection)> sourceIterator = owner_->GetKristalliModule()->GetConnectionArray();
 
+        TundraLogicModule::LogInfo("DEBUG: Locating loginReply sender!");
+
+        // This while loop locates which messageconnection send the message. When we know it we also know if it is a reconnect or not.
         while (sourceIterator.hasNext())
         {
-            TundraLogicModule::LogInfo("DEBUG: Locating loginReply sender!");
             loginstateIterator.next();
             reconnectIterator.next();
             client_idIterator.next();
@@ -466,6 +470,11 @@ void Client::emitCreateOgreSignal(const QString &name)
 void Client::emitDeleteOgreSignal(const QString &name)
 {
     emit deleteOgre(name);
+}
+
+void Client::emitSetOgreSignal(const QString &name)
+{
+    emit setOgre(name);
 }
 
 }

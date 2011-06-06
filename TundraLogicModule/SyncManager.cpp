@@ -164,7 +164,7 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
             HandleEntityAction(source, msg);
         }
     }
-    
+
     currentSender = 0;
 }
 
