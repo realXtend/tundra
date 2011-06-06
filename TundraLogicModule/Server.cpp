@@ -97,7 +97,7 @@ bool Server::Start(unsigned short port)
 
         // Create the default server scene
         /// \todo Should be not hard coded like this. Give some unique id (uuid perhaps) that could be returned to the client to make the corresponding named scene in client?
-        Scene::ScenePtr scene = framework_->Scene()->CreateScene("TundraServer", true);
+        Scene::ScenePtr scene = framework_->Scene()->CreateScene("TundraServer_", true);
         framework_->Scene()->SetDefaultScene(scene);
         //owner_->GetSyncManager()->RegisterToScene(scene);
         
@@ -123,7 +123,7 @@ void Server::Stop()
     if (!owner_->IsServer())
     {
         owner_->GetKristalliModule()->StopServer();
-        framework_->Scene()->RemoveScene("TundraServer");
+        framework_->Scene()->RemoveScene("TundraServer_");
         
         emit ServerStopped();
     }
