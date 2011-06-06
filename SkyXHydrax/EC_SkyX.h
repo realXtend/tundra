@@ -27,6 +27,14 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, volumetricClouds);
     Q_PROPERTY(bool volumetricClouds READ getvolumetricClouds WRITE setvolumetricClouds);
 
+    /// The time multiplier can be a also a negative number, 0 will disable auto-updating.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
+    Q_PROPERTY(float timeMultiplier READ gettimeMultiplier WRITE settimeMultiplier);
+
+    /// Time of the day.
+//    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, time);
+//    Q_PROPERTY(Vector3df time READ gettime WRITE settime);
+
 private:
     EC_SkyXImpl *impl;
 

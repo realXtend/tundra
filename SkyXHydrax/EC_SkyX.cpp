@@ -43,7 +43,8 @@ struct EC_SkyXImpl
 
 EC_SkyX::EC_SkyX(Scene* scene) :
     IComponent(scene),
-    volumetricClouds(this, "Volumetric clouds", false)
+    volumetricClouds(this, "Volumetric clouds", false),
+    timeMultiplier(this, "Time multiplier", 0.25f)
 {
     try
     {
@@ -54,8 +55,8 @@ EC_SkyX::EC_SkyX(Scene* scene) :
             static_cast<EC_Camera *>(w->GetRenderer()->GetActiveCamera())->GetCamera());
         impl->skyX->create();
 
-        // Create clouds
         UpdateAttribute(&volumetricClouds);
+        UpdateAttribute(&timeMultiplier);
 
         // A little change to default atmosphere settings
         SkyX::AtmosphereManager::Options atOpt = impl->skyX->getAtmosphereManager()->getOptions();
@@ -85,16 +86,18 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr)
     {
         if (volumetricClouds.Get())
         {
-            LogInfo("if (volumetricClouds.Get())");
             impl->skyX->getCloudsManager()->removeAll();
             impl->skyX->getVCloudsManager()->create();
         }
         else
         {
-            LogInfo("else");
             impl->skyX->getVCloudsManager()->remove();
             impl->skyX->getCloudsManager()->add(SkyX::CloudLayer::Options());
         }
+    }
+    else if (attr == &timeMultiplier)
+    {
+        impl->skyX->setTimeMultiplier((Ogre::Real)timeMultiplier.Get());
     }
 }
 
