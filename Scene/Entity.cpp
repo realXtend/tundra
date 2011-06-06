@@ -54,7 +54,7 @@ void Entity::AddComponent(const ComponentPtr &component, AttributeChange::Type c
         componentTypeName.replace(0, 3, "");
         componentTypeName = componentTypeName.toLower();
         // We already have 'name' property in Entity, so ignore "EC_Name" ("name") here.
-        if (componentTypeName != "name" && property(componentTypeName.toStdString().c_str()).isValid())
+        if (componentTypeName != "name" && !property(componentTypeName.toStdString().c_str()).isValid())
         {
             QVariant var = QVariant::fromValue<QObject*>(component.get());
             setProperty(componentTypeName.toStdString().c_str(), var);
