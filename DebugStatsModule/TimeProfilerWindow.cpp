@@ -1079,7 +1079,7 @@ void TimeProfilerWindow::RefreshOgreProfilingWindow()
     Ogre::ParticleSystemManager
 */
 //    Ogre::SceneManagerEnumerator::SceneManagerIterator iter = root->getSceneManagerIterator();
-    findChild<QLabel*>("labelNumScenes")->setText(QString("%1").arg(CountSize(root->getSceneManagerIterator())));
+    findChild<QLabel*>("labelNumSceneManagers")->setText(QString("%1").arg(CountSize(root->getSceneManagerIterator())));
     findChild<QLabel*>("labelNumArchives")->setText(QString("%1").arg(CountSize(Ogre::ArchiveManager::getSingleton().getArchiveIterator())));
 
     findChild<QLabel*>("labelTextureManager")->setText(ReadOgreManagerStatus(Ogre::TextureManager::getSingleton()).c_str());
