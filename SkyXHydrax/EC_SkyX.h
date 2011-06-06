@@ -23,13 +23,14 @@ public:
     explicit EC_SkyX(Scene* scene);
     ~EC_SkyX();
 
-    /// 
-//    DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
-//    Q_PROPERTY(float timeMultiplier READ gettimeMultiplier WRITE settimeMultiplier);
+    /// Do we want to use volumetric clouds.
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, volumetricClouds);
+    Q_PROPERTY(bool volumetricClouds READ getvolumetricClouds WRITE setvolumetricClouds);
 
 private:
     EC_SkyXImpl *impl;
 
 private slots:
+    void UpdateAttribute(IAttribute *attr);
     void Update(float frameTime);
 };

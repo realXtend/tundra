@@ -42,7 +42,8 @@ struct EC_SkyXImpl
 };
 
 EC_SkyX::EC_SkyX(Scene* scene) :
-    IComponent(scene)
+    IComponent(scene),
+    volumetricClouds(this, "Volumetric clouds", false)
 {
     try
     {
@@ -53,17 +54,16 @@ EC_SkyX::EC_SkyX(Scene* scene) :
             static_cast<EC_Camera *>(w->GetRenderer()->GetActiveCamera())->GetCamera());
         impl->skyX->create();
 
-        // Add a basic cloud layer
-        impl->skyX->getCloudsManager()->add(SkyX::CloudLayer::Options()); //Default options 
-        // Volumetric clouds
-    //    impl->skyX->getVCloudsManager()->create();
+        // Create clouds
+        UpdateAttribute(&volumetricClouds);
 
-        // A little change to default atmosphere settings :)
+        // A little change to default atmosphere settings
         SkyX::AtmosphereManager::Options atOpt = impl->skyX->getAtmosphereManager()->getOptions();
         atOpt.RayleighMultiplier = 0.0045f;
         impl->skyX->getAtmosphereManager()->setOptions(atOpt);
 
         connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)));
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)));
     }
     catch(Ogre::Exception &e)
     {
@@ -76,7 +76,30 @@ EC_SkyX::~EC_SkyX()
     delete impl;
 }
 
+void EC_SkyX::UpdateAttribute(IAttribute *attr)
+{
+    if (!impl->skyX)
+        return;
+
+    if (attr == &volumetricClouds)
+    {
+        if (volumetricClouds.Get())
+        {
+            LogInfo("if (volumetricClouds.Get())");
+            impl->skyX->getCloudsManager()->removeAll();
+            impl->skyX->getVCloudsManager()->create();
+        }
+        else
+        {
+            LogInfo("else");
+            impl->skyX->getVCloudsManager()->remove();
+            impl->skyX->getCloudsManager()->add(SkyX::CloudLayer::Options());
+        }
+    }
+}
+
 void EC_SkyX::Update(float frameTime)
 {
-    impl->skyX->update(frameTime);
+    if (impl->skyX)
+        impl->skyX->update(frameTime);
 }

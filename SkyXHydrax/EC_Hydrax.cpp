@@ -46,6 +46,7 @@ struct EC_HydraxImpl
 
 EC_Hydrax::EC_Hydrax(Scene* scene) :
     IComponent(scene),
+    visible(this, "Visible", true),
     position(this, "Position")
 {
     OgreWorldPtr w = scene->GetWorld<OgreWorld>();
@@ -89,7 +90,12 @@ EC_Hydrax::~EC_Hydrax()
 
 void EC_Hydrax::UpdateAttribute(IAttribute *attr)
 {
-    if (attr == &position)
+    if (attr == &visible)
+    {
+        if (impl->hydrax)
+            impl->hydrax->setVisible(visible.Get());
+    }
+    else if (attr == &position)
     {
         if (impl->hydrax)
             impl->hydrax->setPosition(Ogre::Vector3(position.Get().x, position.Get().y, position.Get().z));

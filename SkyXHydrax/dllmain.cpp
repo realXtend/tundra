@@ -1,8 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#if SKYX_ENABLED
 #include "EC_SkyX.h"
+#endif
+#if HYDRAX_ENABLED
 #include "EC_Hydrax.h"
-
+#endif
 #include "Framework.h"
 #include "SceneAPI.h"
 #include "IComponentFactory.h"

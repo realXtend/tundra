@@ -24,7 +24,11 @@ public:
     explicit EC_Hydrax(Scene* scene);
     ~EC_Hydrax();
 
-    /// 
+    /// Is the water visible.
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, visible);
+    Q_PROPERTY(bool visible READ getvisible WRITE setvisible);
+
+    /// Position of the water.
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, position);
     Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
 
