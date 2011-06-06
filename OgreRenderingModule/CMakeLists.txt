@@ -21,17 +21,9 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-if (HYDRAX)
-    INCLUDE_HYDRAX()
-endif (HYDRAX)
-
 if (CAELUM)
     add_definitions (-DCAELUM)
 endif (CAELUM)
-
-if (HYDRAX)
-    add_definitions (-DHYDRAX)
-endif (HYDRAX)
 
 add_definitions (-DOGRE_MODULE_EXPORTS)
 
@@ -44,10 +36,6 @@ if (CAELUM)
     use_package (CAELUM)
 endif (CAELUM)
 
-if (HYDRAX)
-    use_package (HYDRAX)
-endif (HYDRAX)
-
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 GetOpenAssetImport()
@@ -58,11 +46,6 @@ if (CAELUM)
     link_package (CAELUM)
 endif (CAELUM)
 
-if (HYDRAX)
-    link_package (HYDRAX)
-endif (HYDRAX)
-
 SetupCompileFlagsWithPCH()
-
 
 final_target ()

@@ -17,10 +17,16 @@ if (MSVC OR APPLE)
   configure_caelum ()
 endif()
 
-# Configure the use of Hydrax. By default Hydrax is disabled. http://www.ogre3d.org/tikiwiki/Hydrax
+# Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
 if (MSVC)
-  SET(HYDRAX 0)
-#  configure_hydrax ()
+    SET(HYDRAX 0)
+    #configure_hydrax ()
+endif()
+
+# Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
+if (MSVC)
+    SET(SKYX 0)
+    #configure_skyx()
 endif()
 
 # If WINDOWS_APP == 0, the console (output log) window is created and shown when the application starts on Windows.

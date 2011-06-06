@@ -50,8 +50,7 @@ LinkEntityComponent(EntityComponents/EC_ProximityTrigger EC_ProximityTrigger)
 LinkEntityComponent(EntityComponents/EC_Billboard EC_Billboard)
 LinkEntityComponent(EntityComponents/EC_TransformGizmo EC_TransformGizmo)
 
-link_modules (Framework Asset Scene KristalliProtocolModule
-    OgreRenderingModule PhysicsModule Console)
+link_modules (Framework Asset Scene KristalliProtocolModule OgreRenderingModule PhysicsModule Console)
 
 # This is only needed because this module bootstraps EC_Sound. If EC_Sound is removed to someplace else, this can be removed.
 link_modules(Audio)
@@ -62,7 +61,6 @@ link_modules(Input)
 link_ogre()
 
 SetupCompileFlagsWithPCH()
-
 
 if (WIN32)
     target_link_libraries (${TARGET_NAME} ws2_32.lib)

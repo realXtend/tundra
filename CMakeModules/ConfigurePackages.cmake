@@ -7,7 +7,7 @@
 
 macro (configure_boost)
     if (MSVC)
-	    set(Boost_USE_MULTITHREADED TRUE)
+        set(Boost_USE_MULTITHREADED TRUE)
         set(Boost_USE_STATIC_LIBS TRUE)
     else ()
         set(Boost_USE_STATIC_LIBS FALSE)
@@ -65,9 +65,9 @@ macro (configure_qt4)
 
     # FindQt4.cmake
     if (QT4_FOUND AND QT_USE_FILE)
-	
+    
         include (${QT_USE_FILE})
-		
+        
         set (QT4_INCLUDE_DIRS 
             ${QT_INCLUDE_DIR}
             ${QT_QTCORE_INCLUDE_DIR}
@@ -82,10 +82,10 @@ macro (configure_qt4)
 #            ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
 #            ${QT_PHONON_INCLUDE_DIR}
 
-		
+        
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
-		
+        
         set (QT4_LIBRARIES 
             ${QT_LIBRARIES}
             ${QT_QTCORE_LIBRARY}
@@ -99,7 +99,7 @@ macro (configure_qt4)
             
 #            ${QT_QTSCRIPTTOOLS_LIBRARY}
 #            ${QT_PHONON_LIBRARY}
-		
+        
     endif ()
     
     sagase_configure_report (QT4)
@@ -117,16 +117,16 @@ macro (configure_python)
         set (PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
         #unset (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
     endif ()
-	
+    
     # FindPythonLibs.cmake prefers the system-wide Python, which does not
     # include debug libraries, so we force to NAALI_DEP_PATH.
 
-	if (MSVC)
-		set (PYTHON_LIBRARY_DIRS ${ENV_NAALI_DEP_PATH}/Python/lib)
-		set (PYTHON_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/Python/include)
-		set (PYTHON_LIBRARIES python26)
-		set (PYTHON_DEBUG_LIBRARIES python26_d)
-	endif()
+    if (MSVC)
+        set (PYTHON_LIBRARY_DIRS ${ENV_NAALI_DEP_PATH}/Python/lib)
+        set (PYTHON_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/Python/include)
+        set (PYTHON_LIBRARIES python26)
+        set (PYTHON_DEBUG_LIBRARIES python26_d)
+    endif()
     
     sagase_configure_report (PYTHON)
 endmacro (configure_python)
@@ -141,12 +141,12 @@ macro (configure_python_qt)
 endmacro (configure_python_qt)
 
 macro (configure_ogre)
-	SET(OGRE_HOME $ENV{OGRE_HOME})
-	if ("${OGRE_HOME}" STREQUAL "")
-		SET(OGRE_HOME ${ENV_NAALI_DEP_PATH}/Ogre)
-	endif()
-		
-    # DX blitting define for naali
+    SET(OGRE_HOME $ENV{OGRE_HOME})
+    if ("${OGRE_HOME}" STREQUAL "")
+        SET(OGRE_HOME ${ENV_NAALI_DEP_PATH}/Ogre)
+    endif()
+
+    # DX blitting define for Tundra.
     add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
     include_directories(${OGRE_HOME})
     # Tundra deps Ogre
@@ -165,7 +165,7 @@ endmacro (configure_ogre)
 macro(link_ogre)
     if (OGRE_LIBRARIES)
         link_package(OGRE)
-    else()    
+    else()
         target_link_libraries(${TARGET_NAME} debug OgreMain_d.lib)
         target_link_libraries(${TARGET_NAME} optimized OgreMain.lib)
         if (WIN32)
@@ -176,7 +176,7 @@ macro(link_ogre)
 endmacro()
 
 macro (configure_caelum)
-    sagase_configure_package (CAELUM 
+    sagase_configure_package (CAELUM
         NAMES Caelum caelum CAELUM
         COMPONENTS Caelum caelum CAELUM
         PREFIXES ${ENV_NAALI_DEP_PATH})
@@ -184,23 +184,32 @@ macro (configure_caelum)
     sagase_configure_report (CAELUM)
 endmacro (configure_caelum)
 
+macro (configure_skyx)
+    sagase_configure_package (SKYX
+        NAMES SkyX SKYX skyx
+        COMPONENTS SkyX SKYX skyx
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    
+    sagase_configure_report (SKYX)
+endmacro (configure_skyx)
+
+macro (configure_hydrax)
+    sagase_configure_package (HYDRAX
+        NAMES Hydrax HYDRAX hydrax
+        COMPONENTS Hydrax HYDRAX hydrax
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    
+    sagase_configure_report (HYDRAX)
+endmacro (configure_hydrax)
+
 macro (configure_qtpropertybrowser)
-    sagase_configure_package (QT_PROPERTY_BROWSER 
+    sagase_configure_package (QT_PROPERTY_BROWSER
         NAMES QtPropertyBrowser QtSolutions_PropertyBrowser-2.5
         COMPONENTS QtPropertyBrowser QtSolutions_PropertyBrowser-2.5
         PREFIXES ${ENV_NAALI_DEP_PATH})
     
     sagase_configure_report (QT_PROPERTY_BROWSER)
 endmacro (configure_qtpropertybrowser)
-
-macro (configure_hydrax)
-    sagase_configure_package (HYDRAX 
-        NAMES Hydrax
-        COMPONENTS Hydrax
-        PREFIXES ${ENV_NAALI_DEP_PATH})
-    
-    sagase_configure_report (HYDRAX)
-endmacro (configure_hydrax)
 
 macro (configure_xmlrpc)
     if (APPLE)
@@ -218,14 +227,14 @@ macro (configure_xmlrpc)
             PREFIXES ${ENV_NAALI_DEP_PATH}
                 ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
                 ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug
-		${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release)
+        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release)
     endif()
    
-	if (MSVC)
-		set (XMLRPC_LIBRARIES xmlrpcepi)
-		set (XMLRPC_DEBUG_LIBRARIES xmlrpcepid)
-	endif()
-	
+    if (MSVC)
+        set (XMLRPC_LIBRARIES xmlrpcepi)
+        set (XMLRPC_DEBUG_LIBRARIES xmlrpcepid)
+    endif()
+    
     sagase_configure_report (XMLRPC)
 endmacro (configure_xmlrpc)
 
@@ -234,18 +243,18 @@ macro (configure_curl)
         NAMES Curl curl libcurl
         COMPONENTS curl libcurl_imp libcurld_imp
         PREFIXES ${ENV_NAALI_DEP_PATH}
-        ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Debug 
-        ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Release)		
+        ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Debug
+        ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Release)
     
-	if (MSVC)
-		set (CURL_LIBRARIES libcurl_imp)
-		set (CURL_DEBUG_LIBRARIES libcurld_imp)
-	endif()
+    if (MSVC)
+        set (CURL_LIBRARIES libcurl_imp)
+        set (CURL_DEBUG_LIBRARIES libcurld_imp)
+    endif()
 
-	if (APPLE)
-		set (CURL_LIBRARIES curl)
-	endif()
-	
+    if (APPLE)
+        set (CURL_LIBRARIES curl)
+    endif()
+    
     sagase_configure_report (CURL)
 endmacro (configure_curl)
 
@@ -338,7 +347,7 @@ macro (configure_openal)
 
         # Force include dir on MSVC
         if (MSVC)
-  		   set (OPENAL_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/OpenAL/include)
+             set (OPENAL_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/OpenAL/include)
         endif ()
     sagase_configure_report (OPENAL)
 endmacro (configure_openal)
@@ -351,7 +360,7 @@ macro (configure_ogg)
         
         # Force include dir on MSVC
         if (MSVC)
-  		   set (OGG_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libogg/include)
+             set (OGG_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libogg/include)
         endif ()
     sagase_configure_report (OGG)
 endmacro (configure_ogg)
@@ -370,7 +379,7 @@ else()
 endif()
         # Force include dir on MSVC
         if (MSVC)
-  		   set (VORBIS_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libvorbis/include)
+             set (VORBIS_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libvorbis/include)
         endif ()
     sagase_configure_report (VORBIS)
 endmacro (configure_vorbis)
@@ -383,7 +392,7 @@ macro (configure_theora)
         
         # Force include dir on MSVC
         if (MSVC)
-  		   set (THEORA_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libtheora/include)
+             set (THEORA_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libtheora/include)
         endif ()
     sagase_configure_report (THEORA)
 endmacro (configure_theora)
@@ -401,13 +410,13 @@ macro (configure_openssl)
         NAMES openssl
         COMPONENTS libeay32 ssleay32 ssl
         PREFIXES ${ENV_NAALI_DEP_PATH}/OpenSSL)
-    # remove 'NOTFOUND' entry which makes to linking impossible	
+    # remove 'NOTFOUND' entry which makes to linking impossible    
     if (MSVC)
         list(REMOVE_ITEM OPENSSL_LIBRARIES debug optimized SSL_EAY_RELEASE-NOTFOUND LIB_EAY_RELEASE-NOTFOUND SSL_EAY_DEBUG-NOTFOUND LIB_EAY_DEBUG-NOTFOUND NOTFOUND)
     message(----------)
     message(${OPENSSL_LIBRARIES})
     message(----------)
-    endif ()		
+    endif ()        
     sagase_configure_report (OPENSSL)
 endmacro (configure_openssl)
 
@@ -418,10 +427,10 @@ macro (configure_protobuf)
         PREFIXES ${ENV_NAALI_DEP_PATH}/protobuf)
     # Force include dir and libraries on MSVC
     if (MSVC)
-  	    set (PROTOBUF_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/protobuf/include)
+          set (PROTOBUF_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/protobuf/include)
     endif ()
     sagase_configure_report (PROTOBUF)
-	
+    
 endmacro (configure_protobuf)
 
 macro (configure_celt)
