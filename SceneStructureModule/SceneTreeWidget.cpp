@@ -668,10 +668,6 @@ void SceneTreeWidget::EditInNew()
     /*if (!ecEditor)
         ecEditor = editor;*/
 
-    
-    /*ui->AddWidgetToScene(editor); 
-    ui->ShowWidget(editor);
-    ui->BringWidgetToFront(editor);*/
 }
 
 void SceneTreeWidget::Rename()

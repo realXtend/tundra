@@ -38,21 +38,20 @@ namespace RexLogic
 
     void ScriptDialogHandler::ShowDialog(ScriptDialogRequest& request)
     {
-        //UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
-        //if (!ui)
-        //{
-        //    RexLogicModule::LogError("Cannot show ScriptDialogWidget, UI service pointer not valid.");
-        //    return;
-        //}
+/*        UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
+        if (!ui)
+        {
+            RexLogicModule::LogError("Cannot show ScriptDialogWidget, UI service pointer not valid.");
+            return;
+        }*/
 
         ScriptDialogWidget* widget = new ScriptDialogWidget(request);
         dialogs_.append(widget);
         connect(widget, SIGNAL(OnClosed(int, QString)), this, SLOT(OnDialogClosed(int, QString)));
 
         widget->setWindowTitle(tr("Message from object"));
-        //ui->AddWidgetToScene(widget);
+       // ui->AddWidgetToScene(widget);
         //ui->ShowWidget(widget);
-        widget->show();
     }
 
     void ScriptDialogHandler::OnDialogClosed(int channel, const QString &answer)

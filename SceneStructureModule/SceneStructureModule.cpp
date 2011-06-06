@@ -74,8 +74,8 @@ void SceneStructureModule::PostInitialize()
 
 	//Assets panel
 	assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
-    assetsWindow->setWindowFlags(Qt::Tool);	
-    //ui->AddWidgetToScene(assetsWindow, true, true);
+    assetsWindow->setWindowFlags(Qt::Tool);
+    framework_, framework_->Ui()->AddWidgetToWindow(assetsWindow);
 	//ui->AddWidgetToMenu(assetsWindow, "Assets", "View");
     assetsWindow->show();
 
@@ -84,7 +84,7 @@ void SceneStructureModule::PostInitialize()
     sceneWindow->setWindowFlags(Qt::Tool);
 	sceneWindow->SetScene(framework_->Scene()->GetDefaultScene());
 	connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)),sceneWindow, SLOT(SetNewScene()));
-    //ui->AddWidgetToScene(sceneWindow, true, true);
+    framework_, framework_->Ui()->AddWidgetToWindow(sceneWindow);
 	//ui->AddWidgetToMenu(sceneWindow, "Scene", "View");
     sceneWindow->show();
 
@@ -335,8 +335,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
 
     if (sceneWindow)
     {
-        //ui->ShowWidget(sceneWindow);
-        //sceneWindow->show();
+        sceneWindow->setVisible(!sceneWindow->isVisible());
         if (!sceneWindow->isVisible())
             sceneWindow->close();
         return;
@@ -345,9 +344,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
     sceneWindow->SetScene(GetFramework()->Scene()->GetDefaultScene());
-    //sceneWindow->show();
-   // ui->AddWidgetToScene(sceneWindow);
-    //ui->ShowWidget(sceneWindow);*/
+    framework_->Ui()->AddWidgetToWindow(sceneWindow);
 }
 
 void SceneStructureModule::ToggleAssetsWindow()
@@ -357,13 +354,8 @@ void SceneStructureModule::ToggleAssetsWindow()
         LogError("Cannot show assets window in headless mode.");
         return;
     }
-   /* UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-	if (ui && assetsWindow){
-        ui->ShowWidget(assetsWindow);
-		return;
-	}*/
 
-   /* if (assetsWindow)
+    if (assetsWindow)
     {
         assetsWindow->setVisible(!assetsWindow->isVisible());
         if (!assetsWindow->isVisible())
@@ -374,9 +366,8 @@ void SceneStructureModule::ToggleAssetsWindow()
     assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
-	*/
-
-    //ui->AddWidgetToScene(assetsWindow);
+	
+    framework_->Ui()->AddWidgetToWindow(assetsWindow);
     //ui->ShowWidget(assetsWindow);
 }
 

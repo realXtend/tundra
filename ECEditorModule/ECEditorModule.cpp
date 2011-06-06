@@ -132,21 +132,17 @@ void ECEditorModule::AddEditorWindowToUI()
         return;
     }
 
-    /*UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>(); 
-    if (!ui_service)
-        return;
     UiAPI *ui = GetFramework()->Ui();
     if (!ui)
         return;
-        */
 
     active_editor_ = new ECEditorWindow(GetFramework());
     common_editor_ = active_editor_;
-    //active_editor_->setParent(ui->MainWindow());
+    active_editor_->setParent(ui->MainWindow());
     active_editor_->setWindowFlags(Qt::Tool);
     active_editor_->setAttribute(Qt::WA_DeleteOnClose);
 
-    //ui_service->AddWidgetToScene(active_editor_, true, true);
+    ui->AddWidgetToWindow(active_editor_);
     // We need to listen proxy widget's focus signal, because for some reason QWidget's focusInEvent wont get triggered when
     // it's attached to QGraphicsProxyWidget.
     //connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);

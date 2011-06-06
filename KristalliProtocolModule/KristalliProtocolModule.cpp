@@ -136,18 +136,15 @@ void KristalliProtocolModule::PostInitialize()
     framework_->Console()->RegisterCommand(CreateConsoleCommand(
             "kNet", "Shows the kNet statistics window.", 
             ConsoleBind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
-//$ BEGIN_MOD $
-    /*
 	if (!framework_->IsHeadless() && !framework_->IsEditionless()) {
 		networkDialog = new NetworkDialog(0, &network);
 		networkDialog->setWindowTitle("Knet Statistics");
-		UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+		UiServiceInterface *ui = GetFramework()->Ui();
 		if (ui)
-			ui->AddWidgetToScene(networkDialog, true, true);
+			ui->AddWidgetToWindow(networkDialog);
 			ui->AddWidgetToMenu(networkDialog, "Knet Statistics", "View");
 	}
-    */
-//$ END_MOD $
+
 #endif
 }
 

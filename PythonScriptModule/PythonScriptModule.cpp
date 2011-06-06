@@ -838,14 +838,10 @@ namespace PythonScript
 
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
-		//UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-		//if (!ui)
-		//	return 0;
-        //NaaliMainWindow *mainWnd = framework_->Ui()->CentralWindow();
 		pythonqtconsole_ = new PythonQtScriptingConsole(framework_->Ui()->MainWindow(), PythonQt::self()->getMainModule(), Qt::Tool);
 		pythonqtconsole_->setObjectName("Python console");
 		pythonqtconsole_->setWindowTitle("Python console");
-		//ui->AddWidgetToScene(pythonqtconsole_, true, true);
+        framework_->Ui()->AddWidgetToWindow(pythonqtconsole_);
 		//ui->AddWidgetToMenu(pythonqtconsole_, "Python console", "View");
 
         return pythonqtconsole_;

@@ -21,7 +21,7 @@
 #include "EC_DynamicComponent.h"
 #include "SceneManager.h"
 #include "InputAPI.h"
-//#include "UiServiceInterface.h"
+#include "UiAPI.h"
 #include "AudioAPI.h"
 #include "FrameAPI.h"
 #include "ConsoleAPI.h"
@@ -106,7 +106,7 @@ void JavascriptModule::PostInitialize()
 				connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
 				connect(debugger, SIGNAL(evaluationResumed(void)), this, SLOT(OnEvaluationResumed(void)));
 				debuggerWindow = (QWidget*) debugger->standardWindow();
-				//GetFramework()->UiService()->AddWidgetToScene(debuggerWindow,true,true);
+                framework_->Ui()->AddWidgetToWindow(debuggerWindow);
 				//GetFramework()->UiService()->AddWidgetToMenu(debuggerWindow,"Show Debugger", "Scripts");
                 debuggerWindow->show();
 			}
@@ -453,7 +453,7 @@ void JavascriptModule::OnToogleDebugging(bool checked)
 		{
 			connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
 			debuggerWindow = (QWidget*) debugger->standardWindow();
-			//GetFramework()->UiService()->AddWidgetToScene(debuggerWindow,true,true);
+            framework_->Ui()->AddWidgetToWindow(debuggerWindow);
 			//GetFramework()->UiService()->AddWidgetToMenu(debuggerWindow,"Show Debugger", "Scripts");
             debuggerWindow->show();
 		}

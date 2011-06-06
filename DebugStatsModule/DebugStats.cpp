@@ -147,7 +147,8 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_->setWindowFlags(Qt::Tool);
     //profilerWindow_->move(100, 100);
     profilerWindow_->resize(650, 530);
-//$ BEGIN_MOD $
+
+    framework_->Ui()->AddWidgetToWindow(profilerWindow_);
 	//UiProxyWidget *proxy = ui_service->AddWidgetToScene(profilerWindow_, true, true);
     //connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 	//$ END_MOD $
@@ -187,8 +188,8 @@ ConsoleCommandResult DebugStatsModule::ShowParticipantWindow(const StringVector 
     participantWindow_->move(100, 100);
     participantWindow_->setWindowFlags(Qt::Dialog);
 
-    framework_->Ui()->AddWidgetToScene(participantWindow_);
-    framework_->Ui()->BringWidgetToFront(participantWindow_);
+    framework_->Ui()->AddWidgetToWindow(participantWindow_); //from BringWidgetToFront
+    framework_->Ui()->AddWidgetToWindow(participantWindow_); //from BringWidgetToFront
 
     return ConsoleResultSuccess();
 }

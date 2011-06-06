@@ -9,7 +9,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-
+#include "UiAPI.h"
 #include "OgreAssetEditorModule.h"
 #include "EditorManager.h"
 #include "OgreScriptEditor.h"
@@ -66,17 +66,13 @@ void OgreAssetEditorModule::PostInitialize()
     materialWizard = new MaterialWizard;
     connect(materialWizard, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
-
 /*
-    uiService_ = framework_->GetServiceManager()->GetService<UiServiceInterface>(Service::ST_Gui);
-    if (!uiService_.expired())
+    UiAPI *ui = framework_->Ui();
+    if (ui)
     {
-        UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_, true, true);
-        uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material Wizard"), tr("View"),
+        ui->AddWidgetToWindow(materialWizard);
+       // uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material Wizard"), tr("View"),
             "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
-		//$ BEGIN_MOD $
-        //connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
-		//$ END_MOD $  
     }
 */
     editorManager = new EditorManager;

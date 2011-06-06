@@ -24,6 +24,7 @@
 #include "TerrainWeightEditor.h"
 #include "EC_OgreEnvironment.h"
 
+#include "UiAPI.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
@@ -173,7 +174,7 @@ namespace Environment
 
         terrainWeightEditor_ = new TerrainWeightEditor(framework_);
         terrainWeightEditor_->setWindowFlags(Qt::Tool);
-        terrainWeightEditor_->show();
+        framework_->Ui()->AddWidgetToWindow(terrainWeightEditor_);
     }
 
     void EnvironmentModule::ShowPostProcessWindow()
@@ -201,7 +202,7 @@ namespace Environment
             */
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
             postprocess_dialog_->setWindowFlags(Qt::Tool);
-            postprocess_dialog_->show();
+            framework_->Ui()->AddWidgetToWindow(postprocess_dialog_);
         }
     }
 

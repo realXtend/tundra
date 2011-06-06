@@ -62,10 +62,6 @@ namespace Environment
         if (editor_widget_ == 0)
             return;
 
-//        UiProxyWidget *editor_proxy = fw_->Ui()->AddWidgetToScene(this);
-//        if (editor_proxy == 0)
-//            return;
-
 //        ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"));
 //        ui->RegisterUniversalWidget("Weights", editor_proxy);
 
