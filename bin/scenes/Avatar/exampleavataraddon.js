@@ -23,7 +23,7 @@ function ServerInitialize()
 function ClientInitialize()
 {
     // Initialization is only necessary for own avatar. Do nothing with others' avatars
-    if (me.GetName() == "Avatar" + client.GetConnectionID()) {
+    if (me.name == "Avatar" + client.GetConnectionID()) {
         own_avatar = true;
 
         // Connect keys to the inputmapper actions
