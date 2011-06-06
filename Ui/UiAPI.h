@@ -9,6 +9,7 @@
 
 #include "UiFwd.h"
 #include "UiApiExport.h"
+#include "UiWidget.h"
 #include <QMainWindow>
 
 class QMenu;
@@ -67,10 +68,12 @@ public slots:
 
     /** Add a widget into the main Window of the app
       @param widget Widget to be added
-      @param params 
+      @param params List of params to customize the widget in the main window
+      @param flags Window flags. Qt::Dialog is used as default.
 
+      @return void
     */
-    //AddWidgetToWindow(QWidget* widget, const QStringList &params = QStringList(), Qt::WindowFlags flags = Qt::Dialog);
+    UiWidget *AddWidgetToWindow(QWidget* widget, const QStringList &params = QStringList(), Qt::WindowFlags flags = Qt::Dialog);
 
 
     /// Adds user-created proxy widget to the scene.
@@ -95,6 +98,11 @@ public slots:
         @todo Make function overloads work with QtScript and remove this function.
     */
     void RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget) { return RemoveWidgetFromScene(widget); }
+
+    /// Removes widget from main window
+    /** @param widget widget.
+    */
+    void RemoveWidgetFromWindow(QWidget* widget);
 
     /// Shows the widget's proxy widget in the scene.
     /** @param widget Widget.
@@ -167,6 +175,13 @@ signals:
     /** @param url Url that is being requested to be opened by the 3rd party browser.
     */
     void OpenUrl(const QUrl &url);
+
+    // Signal to nofify that a widget wants to be added to the main window
+    void CustomizeAddWidgetToWindow(QWidget* widget, const QStringList &params, Qt::WindowFlags flags);
+
+    // Signal to nofify that a widget wants to be removed from main window
+    void CustomizeRemoveWidgetFromWindow(QWidget* widget);
+
 
 private slots:
     /// Removes proxy widget from internally maintained lists upon destruction.

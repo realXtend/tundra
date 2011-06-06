@@ -7,6 +7,7 @@
 #include "UiGraphicsView.h"
 #include "QtUiAsset.h"
 #include "UiProxyWidget.h"
+#include "UiWidget.h"
 
 #include "Framework.h"
 #include "AssetAPI.h"
@@ -189,6 +190,19 @@ UiProxyWidget *UiAPI::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
     return proxy;
 }
 
+UiWidget *UiAPI::AddWidgetToWindow(QWidget* widget, const QStringList &params, Qt::WindowFlags flags)
+{
+    UiWidget *new_widget = new UiWidget(widget, flags);
+    //Add propierty to the widget
+    new_widget->setProperty("customized", "false");
+    //emit signal
+    emit CustomizeAddWidgetToWindow(new_widget, params, flags);
+    //Check property
+    if (new_widget->property("customized") == "false")
+        new_widget->show();
+    return new_widget;
+}
+
 bool UiAPI::AddProxyWidgetToScene(UiProxyWidget *widget)
 {
     if (!widget)
@@ -252,6 +266,12 @@ void UiAPI::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
         graphicsScene->removeItem(widget);
     widgets.removeOne(widget);
     fullScreenWidgets.removeOne(widget);
+}
+
+void UiAPI::RemoveWidgetFromWindow(QWidget* widget)
+{
+    //emit signal
+    emit CustomizeRemoveWidgetFromWindow(widget);
 }
 
 void UiAPI::OnProxyDestroyed(QObject* obj)
