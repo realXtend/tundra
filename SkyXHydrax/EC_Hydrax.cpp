@@ -31,13 +31,22 @@
 
 struct EC_HydraxImpl
 {
-    EC_HydraxImpl() : hydrax(0) {}
-    ~EC_HydraxImpl() { SAFE_DELETE(hydrax) }
+    EC_HydraxImpl() : hydrax(0), module(0) {}
+    ~EC_HydraxImpl()
+    {
+        if (hydrax)
+            hydrax->remove();
+        SAFE_DELETE(hydrax);
+        //SAFE_DELETE(module); ///\todo < mem leak
+    }
+
     Hydrax::Hydrax *hydrax;
+    Hydrax::Module::Module *module;
 };
 
 EC_Hydrax::EC_Hydrax(Scene* scene) :
-    IComponent(scene)
+    IComponent(scene),
+    position(this, "Position")
 {
     OgreWorldPtr w = scene->GetWorld<OgreWorld>();
 
@@ -55,6 +64,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
 
     // Set our module
     impl->hydrax->setModule(module);
+    impl->module = module;
 
     // Load all parameters from config file
     // Remarks: The config file must be in Hydrax resource group.
@@ -62,15 +72,28 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     // but due to the high number of customizable parameters, since 0.4 version, Hydrax allows save/load config files.
     impl->hydrax->loadCfg("HydraxDemo.hdx");
 
+    position.Set(Vector3df(impl->hydrax->getPosition().x, impl->hydrax->getPosition().y, impl->hydrax->getPosition().z),
+        AttributeChange::Disconnected);
+
     // Create water
     impl->hydrax->create();
 
     connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)));
 }
 
 EC_Hydrax::~EC_Hydrax()
 {
     delete impl;
+}
+
+void EC_Hydrax::UpdateAttribute(IAttribute *attr)
+{
+    if (attr == &position)
+    {
+        if (impl->hydrax)
+            impl->hydrax->setPosition(Ogre::Vector3(position.Get().x, position.Get().y, position.Get().z));
+    }
 }
 
 void EC_Hydrax::Update(float frameTime)

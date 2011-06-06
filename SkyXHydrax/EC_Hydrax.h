@@ -8,6 +8,7 @@
 #pragma once
 
 #include "IComponent.h"
+#include "Vector3D.h"
 
 struct EC_HydraxImpl;
 
@@ -24,12 +25,13 @@ public:
     ~EC_Hydrax();
 
     /// 
-//    DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
-//    Q_PROPERTY(float timeMultiplier READ gettimeMultiplier WRITE settimeMultiplier);
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, position);
+    Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
 
 private:
     EC_HydraxImpl *impl;
 
 private slots:
+    void UpdateAttribute(IAttribute *attr);
     void Update(float frameTime);
 };
