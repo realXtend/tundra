@@ -16,7 +16,18 @@ class UiWidget :  public QWidget
      Q_OBJECT
 
 public:
-    UiWidget(QWidget *widget, Qt::WindowFlags flags);
+    UiWidget(QWidget *widget, QWidget *parent = 0, const QStringList &params = QStringList(), Qt::WindowFlags flags = 0);
     ~UiWidget(void);
+
+public slots:
+    virtual void setVisible(bool visible);
+    void toogleVisibility();
+    QWidget* widget() {return widget_;}
+
+signals:
+    void visibilityChanged(bool visible);
+
+private:
+    QWidget* widget_;
 };
 #endif

@@ -192,14 +192,11 @@ UiProxyWidget *UiAPI::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
 
 UiWidget *UiAPI::AddWidgetToWindow(QWidget* widget, const QStringList &params, Qt::WindowFlags flags)
 {
-    UiWidget *new_widget = new UiWidget(widget, flags);
-    //Add propierty to the widget
-    new_widget->setProperty("customized", "false");
+    UiWidget *new_widget = new UiWidget(widget, mainWindow, params, flags);
+
     //emit signal
     emit CustomizeAddWidgetToWindow(new_widget, params, flags);
-    //Check property
-    if (new_widget->property("customized") == "false")
-        new_widget->show();
+
     return new_widget;
 }
 
