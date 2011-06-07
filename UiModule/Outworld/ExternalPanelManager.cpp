@@ -3,9 +3,10 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "UiWidget.h"
 
 #include "ExternalPanelManager.h"
-#include "ExternalMenuManager.h"
+//#include "ExternalMenuManager.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -23,7 +24,7 @@ namespace UiServices
     {
     }
 
-	QDockWidget* ExternalPanelManager::AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags)
+	QDockWidget* ExternalPanelManager::AddExternalPanel(UiWidget *widget, QString title, Qt::WindowFlags flags)
     {
         QDockWidget *wid = new QDockWidget(title, qWin_, flags);
 		wid->setObjectName(title);
@@ -36,7 +37,8 @@ namespace UiServices
 			child_widget ->setParent(0);
             SAFE_DELETE(wid);
             return false;
-        }        
+        }
+        //connect(
 		connect(wid,SIGNAL(visibilityChanged(bool)),widget,SLOT(show()));
         return wid;
     }
@@ -66,7 +68,7 @@ namespace UiServices
         return true;
     }
 
-	bool ExternalPanelManager::RemoveExternalPanel(QWidget *widget)
+	bool ExternalPanelManager::RemoveExternalPanel(QDockWidget *widget)
     {
 		/*TODO: Check if it is in the menu bar also?*/
 		//The widget is passed, no the QDockWidget!

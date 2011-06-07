@@ -166,7 +166,7 @@ namespace UiServices
         CoreUi::AnchorLayoutManager *layout_manager_;
 
         //! Menu manager
-        CoreUi::MenuManager *menu_manager_;
+        //CoreUi::MenuManager *menu_manager_;
 
         //! Control panel manager
         CoreUi::ControlPanelManager *control_panel_manager_;

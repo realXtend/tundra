@@ -6,7 +6,7 @@
 
 #include "SettingsWidget.h"
 #include "../../UiModule.h"
-#include "../../UiSceneService.h"
+#include "UiAPI.h"
 #include "../InworldSceneController.h"
 
 #include <QPropertyAnimation>
@@ -30,9 +30,9 @@ namespace CoreUi
         connect(cancelPushButton, SIGNAL(clicked()), SLOT(Canceled()));
 
         if (ui_module_->GetFramework()->IsEditionless())
-            ui_module->GetUiSceneService()->AddWidgetToScene(this, true , false);
+            ui_module->GetFramework()->Ui()->AddWidgetToWindow(this);
         else
-            ui_module->GetUiSceneService()->AddWidgetToScene(this, true , true);
+            ui_module->GetFramework()->Ui()->AddWidgetToScene(this);
 
         QPushButton *sett_button = new QPushButton("Settings");
         connect(sett_button, SIGNAL(clicked()),SLOT(ToggleVisibility()));
@@ -48,10 +48,12 @@ namespace CoreUi
 
     void SettingsWidget::ToggleVisibility()
     {
-        if (this->isVisible())
-           ui_module_->GetUiSceneService()->HideWidget(this);
+       if (this->isVisible())
+           hide();
+           //ui_module_->GetUiSceneService()->HideWidget(this);
        else
-           ui_module_->GetUiSceneService()->ShowWidget(this);
+           show();
+           //ui_module_->GetUiSceneService()->ShowWidget(this);
     }
 
     // Private

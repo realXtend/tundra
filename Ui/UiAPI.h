@@ -102,7 +102,7 @@ public slots:
     /// Removes widget from main window
     /** @param widget widget.
     */
-    void RemoveWidgetFromWindow(QWidget* widget);
+    void RemoveWidgetFromWindow(UiWidget* widget);
 
     /// Shows the widget's proxy widget in the scene.
     /** @param widget Widget.
@@ -177,10 +177,10 @@ signals:
     void OpenUrl(const QUrl &url);
 
     // Signal to nofify that a widget wants to be added to the main window
-    void CustomizeAddWidgetToWindow(QWidget* widget, const QStringList &params, Qt::WindowFlags flags);
+    void CustomizeAddWidgetToWindow(UiWidget* widget);
 
     // Signal to nofify that a widget wants to be removed from main window
-    void CustomizeRemoveWidgetFromWindow(QWidget* widget);
+    void CustomizeRemoveWidgetFromWindow(UiWidget* widget);
 
 
 private slots:

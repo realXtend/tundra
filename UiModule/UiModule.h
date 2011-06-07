@@ -6,11 +6,12 @@
 
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
-#include "Inworld/ControlPanel/SettingsWidget.h"
+//#include "Inworld/ControlPanel/SettingsWidget.h"
 
 #include "UiModuleApi.h"
 #include "UiModuleFwd.h"
 #include "UiTypes.h"
+#include "UiWidget.h"
 
 #include <QObject>
 #include <QMap>
@@ -35,16 +36,16 @@ namespace ProtocolUtilities
 
 namespace UiServices
 {
-    class UiSettingsService;
-    class UiSceneService;
-    class MessageNotification;
+    //class UiSettingsService;
+    //class UiSceneService;
+    //class MessageNotification;
 	class ExternalPanelManager;
-	class ExternalMenuManager;
+	//class ExternalMenuManager;
 	class ExternalToolBarManager;
 	class ViewManager;
 
-    typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
-    typedef boost::shared_ptr<UiSceneService> UiSceneServicePtr;
+    //typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
+    //typedef boost::shared_ptr<UiSceneService> UiSceneServicePtr;
 
     //! UiModule provides user interface services
     /*! For details about Inworld Widget Services read UiWidgetServices.h
@@ -75,14 +76,14 @@ namespace UiServices
         //! the UI related services like adding your own QWidgets into the 2D scene 
         //! \return InworldSceneController The scene manager with scene services
         InworldSceneController *GetInworldSceneController() const { return inworld_scene_controller_; }
-        NotificationManager *GetNotificationManager() const { return inworld_notification_manager_; }
-        CoreUi::UiStateMachine *GetUiStateMachine() const { return ui_state_machine_; }
-        UiSceneServicePtr GetUiSceneService() const { return ui_scene_service_; }
+        //NotificationManager *GetNotificationManager() const { return inworld_notification_manager_; }
+        //CoreUi::UiStateMachine *GetUiStateMachine() const { return ui_state_machine_; }
+        //UiSceneServicePtr GetUiSceneService() const { return ui_scene_service_; }
 
 		//!Get Managers of the module
-		ExternalMenuManager *GetExternalMenuManager() const { return external_menu_manager_; }
+		//ExternalMenuManager *GetExternalMenuManager() const { return external_menu_manager_; }
 		ExternalPanelManager *GetExternalPanelManager() const { return external_panel_manager_; }
-		ExternalToolBarManager *GetExternalToolBarManager() const { return external_toolbar_manager_;}
+		//ExternalToolBarManager *GetExternalToolBarManager() const { return external_toolbar_manager_;}
         CoreUi::SettingsWidget *GetSettingsPanel() const { return settings_widget_;}
 		bool HasBeenPostinitializaded() const { return win_restored_; }
         bool HasBeenUninitializaded() const { return win_uninitialized_;}
@@ -93,6 +94,13 @@ namespace UiServices
         //! Returns name of this module.
         static const std::string &NameStatic() { return type_name_static_; }
 
+    public slots:
+        
+        void AddWidgetToWindow(UiWidget *widget);
+        void RemoveWidgetFromScene(UiWidget *widget);
+        void AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence);
+        void RemoveAnchoredWidgetFromScene(QWidget *widget);
+
     private slots:
         void OnKeyPressed(KeyEvent *key);
 		
@@ -102,7 +110,7 @@ namespace UiServices
     private:
         //! Notify all ui module components of connected/disconnected state
         //! \param message Optional message, e.g. error message.
-        void PublishConnectionState(ConnectionState connection_state, const QString &message = "");
+        //void PublishConnectionState(ConnectionState connection_state, const QString &message = "");
 
         //! Get all the category id:s of categories in eventQueryCategories
         void SubscribeToEventCategories();
@@ -111,9 +119,9 @@ namespace UiServices
         static std::string type_name_static_;
 
 		//! External Managers of the Module
-		ExternalMenuManager *external_menu_manager_;
+		//ExternalMenuManager *external_menu_manager_;
 		ExternalPanelManager *external_panel_manager_;
-		ExternalToolBarManager *external_toolbar_manager_;
+		//ExternalToolBarManager *external_toolbar_manager_;
         CoreUi::SettingsWidget *settings_widget_;
 
         //! Current query categories
@@ -126,13 +134,13 @@ namespace UiServices
         QGraphicsView *ui_view_;
 
         //! UiStateMachine pointer
-        CoreUi::UiStateMachine *ui_state_machine_;
+        //CoreUi::UiStateMachine *ui_state_machine_;
 
         //! InworldSceneController pointer
         InworldSceneController *inworld_scene_controller_;
 
         //! NotificationManager pointer
-        NotificationManager *inworld_notification_manager_;
+        //NotificationManager *inworld_notification_manager_;
 
         //! MainWindow
 		QMainWindow* qWin_;
@@ -140,17 +148,20 @@ namespace UiServices
 		//! Manager of views
 		ViewManager* viewManager_;
 
+        QMap<QString, QDockWidget*> external_widgets_;
+
         //! Current World Stream pointer
-        boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
+        //boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
 
         //! Ui service.
-        UiSceneServicePtr ui_scene_service_;
+        //UiSceneServicePtr ui_scene_service_;
 
         //! Input context for Ether
-        boost::shared_ptr<InputContext> input;
+        //boost::shared_ptr<InputContext> input;
 
 		bool win_restored_;
         bool win_uninitialized_;
+        int i;
 
     };
 

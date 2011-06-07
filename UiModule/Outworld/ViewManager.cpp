@@ -2,6 +2,7 @@
 #include "StableHeaders.h"
 #include "ViewManager.h"
 #include "NewViewDialog.h"
+#include "UiMainWindow.h"
 
 #include <QSettings>
 #include <QMap>
@@ -20,8 +21,10 @@ namespace UiServices
 		uiService_(0)
 	{
 		uiService_ = owner_->GetFramework()->GetService<UiServiceInterface>();
+        if (!uiService_)
+            return;
 
-		qWin_ = dynamic_cast<QMainWindow*>(owner_->GetFramework()->Ui()->MainWindow());
+		qWin_ = dynamic_cast<UiMainWindow*>(owner_->GetFramework()->Ui()->MainWindow());
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/ConfigurationViews");
 		
 		if(!settings.childGroups().contains("Building")){

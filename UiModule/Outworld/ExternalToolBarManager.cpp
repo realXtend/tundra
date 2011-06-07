@@ -55,7 +55,7 @@ namespace UiServices
 		QAction *menuAc = new QAction(name, toolbar);
 		menuAc->setCheckable(true);
 		actionsOfToolBars_[toolbar->windowTitle()] = menuAc;
-		owner_->GetExternalMenuManager()->AddExternalMenuAction(menuAc, name, "ToolBars",0, 50, true);
+		//owner_->GetExternalMenuManager()->AddExternalMenuAction(menuAc, name, "ToolBars",0, 50, true);
 		connect(toolbar, SIGNAL(visibilityChanged(bool)), SLOT(CheckMenuAction(bool)));
 		connect(menuAc, SIGNAL(triggered()), SLOT(ActionNodeClicked()));
 		

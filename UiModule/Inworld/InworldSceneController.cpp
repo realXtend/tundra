@@ -6,9 +6,10 @@
 #include "InworldSceneController.h"
 #include "UiAPI.h"
 #include "Common/AnchorLayoutManager.h"
-#include "Menus/MenuManager.h"
-#include "Inworld/ControlPanel/SettingsWidget.h"
+//#include "Menus/MenuManager.h"
+//#include "Inworld/ControlPanel/SettingsWidget.h"
 #include "UiProxyWidget.h"
+#include "UiMainWindow.h"
 
 #include "MemoryLeakCheck.h"
 #include "TundraLogicModule.h"
@@ -42,7 +43,7 @@ namespace UiServices
 
         // Init UI managers with layout manager
         //control_panel_manager_ = new CoreUi::ControlPanelManager(this, layout_manager_);
-        menu_manager_ = new CoreUi::MenuManager(this, layout_manager_);
+        //menu_manager_ = new CoreUi::MenuManager(this, layout_manager_);
                 
         // Connect settings widget
         //connect(control_panel_manager_->GetSettingsWidget(), SIGNAL(NewUserInterfaceSettingsApplied(int, int)), SLOT(ApplyNewProxySettings(int, int)));
@@ -508,10 +509,12 @@ namespace UiServices
 		}
 	}
 
+
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
-        menu_manager_->AddMenuItem(widget, name, menu, icon);
+        //menu_manager_->AddMenuItem(widget, name, menu, icon);
     }
+    
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget)
     {
@@ -526,7 +529,7 @@ namespace UiServices
 
     void InworldSceneController::RemoveWidgetFromMenu(QWidget *widget)
     {
-        menu_manager_->RemoveMenuItem(widget);
+       // menu_manager_->RemoveMenuItem(widget);
     }
 
     void InworldSceneController::BringProxyToFront(QGraphicsProxyWidget *widget) const

@@ -195,7 +195,7 @@ UiWidget *UiAPI::AddWidgetToWindow(QWidget* widget, const QStringList &params, Q
     UiWidget *new_widget = new UiWidget(widget, mainWindow, params, flags);
 
     //emit signal
-    emit CustomizeAddWidgetToWindow(new_widget, params, flags);
+    emit CustomizeAddWidgetToWindow(new_widget);
 
     return new_widget;
 }
@@ -265,7 +265,7 @@ void UiAPI::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
     fullScreenWidgets.removeOne(widget);
 }
 
-void UiAPI::RemoveWidgetFromWindow(QWidget* widget)
+void UiAPI::RemoveWidgetFromWindow(UiWidget* widget)
 {
     //emit signal
     emit CustomizeRemoveWidgetFromWindow(widget);

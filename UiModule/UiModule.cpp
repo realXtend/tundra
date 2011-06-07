@@ -5,41 +5,40 @@
 #include "DebugOperatorNew.h"
 
 #include "UiModule.h"
-//#include "UiSettingsService.h"
 #include "UiDarkBlueStyle.h"
-#include "UiStateMachine.h"
+//#include "UiStateMachine.h"
 #include "InputAPI.h"
 
 #include "Inworld/InworldSceneController.h"
-//#include "Inworld/ControlPanelManager.h"
-#include "Inworld/NotificationManager.h"
+//#include "Inworld/NotificationManager.h"
 #include "UiProxyWidget.h"
-#include "Inworld/Notifications/MessageNotification.h"
+//#include "Inworld/Notifications/MessageNotification.h"
 
 #include "Inworld/ControlPanel/SettingsWidget.h"
 #include "Inworld/ControlPanel/LanguageWidget.h"
-#include "Inworld/ControlPanel/CacheSettingsWidget.h"
+//#include "Inworld/ControlPanel/CacheSettingsWidget.h"
 #include "Inworld/ControlPanel/ChangeThemeWidget.h"
 
 #include "Outworld/ExternalPanelManager.h"
-#include "Outworld/ExternalMenuManager.h"
+//#include "Outworld/ExternalMenuManager.h"
 #include "Outworld/ExternalToolBarManager.h"
 #include "Outworld/ViewManager.h"
 
 //#include "Common/UiAction.h"
-#include "UiSceneService.h"
+//#include "UiSceneService.h"
 #include "UiAPI.h"
-#include "NaaliGraphicsView.h"
+#include "UiGraphicsView.h"
+#include "UiMainWindow.h"
 
 #include "EventManager.h"
-#include "ServiceManager.h"
+//#include "ServiceManager.h"
 #include "ConfigurationManager.h"
 #include "Framework.h"
 #include "WorldStream.h"
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
 #include "InputEvents.h"
-#include "UiServiceInterface.h"
+//#include "UiServiceInterface.h"
 #include "WorldLogicInterface.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
@@ -63,13 +62,14 @@ namespace UiServices
 
     UiModule::UiModule() :
         IModule(type_name_static_),
-        ui_state_machine_(0),
+        //ui_state_machine_(0),
         inworld_scene_controller_(0),
 		qWin_(0),
-		external_menu_manager_(0),
+		//external_menu_manager_(0),
 		external_panel_manager_(0),
-		external_toolbar_manager_(0),
-        inworld_notification_manager_(0),
+		//external_toolbar_manager_(0),
+        external_widgets_(),
+        //inworld_notification_manager_(0),
 		win_restored_(false),
         win_uninitialized_(false)
     {
@@ -77,16 +77,13 @@ namespace UiServices
 
     UiModule::~UiModule()
     {
-        SAFE_DELETE(ui_state_machine_);
+        //SAFE_DELETE(ui_state_machine_);
         SAFE_DELETE(inworld_scene_controller_);
-        SAFE_DELETE(inworld_notification_manager_);
+        //SAFE_DELETE(inworld_notification_manager_);
     }
 
     void UiModule::Load()
     {
-		//QApplication::setStyle(new UiDarkBlueStyle());
-        //QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
-        //QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
         event_query_categories_ << "Framework" << "Scene" << "Input";
     }
 
@@ -106,57 +103,60 @@ namespace UiServices
         ui_view_ = GetFramework()->Ui()->GraphicsView();
         if (ui_view_)
         {
-            ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_, this);
-            ui_state_machine_->RegisterMainScene("Inworld", ui_view_->scene());
-            LogDebug("State Machine STARTED");
+            //ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_, this);
+            //ui_state_machine_->RegisterMainScene("Inworld", ui_view_->scene());
+            //LogDebug("State Machine STARTED");
 
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
             LogDebug("Scene Manager service READY");
 
             //Notifications
-            inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);
-			connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), inworld_notification_manager_, SLOT(SceneAboutToChange()));
-            LogDebug("Notification Manager service READY");
+            //inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);
+			//connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), inworld_notification_manager_, SLOT(SceneAboutToChange()));
+            //LogDebug("Notification Manager service READY");
 
             // Register UI service
-            ui_scene_service_ = UiSceneServicePtr(new UiSceneService(this));
-            framework_->GetServiceManager()->RegisterService(Service::ST_Gui, ui_scene_service_);
-            connect(ui_scene_service_.get(), SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)),
-                    inworld_scene_controller_, SLOT(HandleWidgetTransfer(const QString&, QGraphicsProxyWidget*)));
-            framework_->RegisterDynamicObject("uiservice", ui_scene_service_.get());
+            //ui_scene_service_ = UiSceneServicePtr(new UiSceneService(this));
+            //framework_->GetServiceManager()->RegisterService(Service::ST_Gui, ui_scene_service_);
+            //connect(ui_scene_service_.get(), SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)), inworld_scene_controller_, SLOT(HandleWidgetTransfer(const QString&, QGraphicsProxyWidget*)));
+            //framework_->RegisterDynamicObject("uiservice", ui_scene_service_.get());
         }
         else
             LogWarning("Could not acquire QGraphicsView shared pointer from framework, UiServices are disabled");
 
 		//External Ui
-		qWin_ = dynamic_cast<QMainWindow*>(framework_->Ui()->MainWindow());
+		qWin_ = dynamic_cast<UiMainWindow*>(framework_->Ui()->MainWindow());
         if (qWin_)
         {
 			//qWin_->setObjectName("Naali MainWindow");
 		   //Create MenuManager and PanelManager and ToolBarManager
-           external_menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
+           //external_menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
 		   //connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_menu_manager_, SLOT(DisableMenus()));
 		   //connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_menu_manager_, SLOT(EnableMenus()));
 		   external_panel_manager_ = new ExternalPanelManager(qWin_, this);
-		   connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_panel_manager_, SLOT(DisableDockWidgets()));
-		   connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_panel_manager_, SLOT(EnableDockWidgets()));
-		   external_toolbar_manager_ = new ExternalToolBarManager(qWin_, this);
-		   connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_toolbar_manager_, SLOT(DisableToolBars()));
-		   connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_toolbar_manager_, SLOT(EnableToolBars()));
+		   //connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_panel_manager_, SLOT(DisableDockWidgets()));
+		   //connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_panel_manager_, SLOT(EnableDockWidgets()));
+		   //external_toolbar_manager_ = new ExternalToolBarManager(qWin_, this);
+		   //connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_toolbar_manager_, SLOT(DisableToolBars()));
+		   //connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_toolbar_manager_, SLOT(EnableToolBars()));
         }
         else
 			LogWarning("Could not acquire QMainWindow!");
 
         //Settings
-        settings_widget_ = new CoreUi::SettingsWidget(ui_view_->scene(), this);
+       settings_widget_ = new CoreUi::SettingsWidget(ui_view_->scene(), this);
+
+        //Listen to UiAPI
+        bool test = connect(framework_->Ui(), SIGNAL(CustomizeAddWidgetToWindow(UiWidget *)), SLOT(AddWidgetToWindow(UiWidget *)));
+
     }
 
 
     void UiModule::PostInitialize()
     {
-		if (ui_scene_service_)
-		{
-			SubscribeToEventCategories();
+		//if (ui_scene_service_)
+		//{
+			//SubscribeToEventCategories();
 			//ui_scene_service_->CreateSettingsPanel();
 
 			//Create the view manager
@@ -165,15 +165,15 @@ namespace UiServices
 
             //Add some tabs to settings.. @todo: move somewhere else
             // Adding cache tab
-            CoreUi::CacheSettingsWidget *cache_settings_widget_ = new CoreUi::CacheSettingsWidget(settings_widget_);
-            settings_widget_->AddWidget(cache_settings_widget_, "Cache");
+            //CoreUi::CacheSettingsWidget *cache_settings_widget_ = new CoreUi::CacheSettingsWidget(settings_widget_);
+            //settings_widget_->AddWidget(cache_settings_widget_, "Cache");
             // Adding a language tab.
             CoreUi::LanguageWidget *language_widget_ = new CoreUi::LanguageWidget(settings_widget_);
             settings_widget_->AddWidget(language_widget_, "Language");
             // Adding change theme tab
             CoreUi::ChangeThemeWidget *changetheme_widget_ = new CoreUi::ChangeThemeWidget(settings_widget_, framework_);
             settings_widget_->AddWidget(changetheme_widget_, "Change theme");
-		}
+		//}
     }
 
 	void UiModule::RestoreMainWindow()
@@ -248,11 +248,11 @@ namespace UiServices
 			}
 		}
 
-		if (ui_scene_service_)
-		{
-			framework_->GetServiceManager()->UnregisterService(ui_scene_service_);
-			ui_scene_service_.reset();
-		}
+		//if (ui_scene_service_)
+		//{
+		//	framework_->GetServiceManager()->UnregisterService(ui_scene_service_);
+		//	ui_scene_service_.reset();
+		//}
 
 		viewManager_->DeleteView("Previous");
         //SAFE_DELETE(settings_widget_);
@@ -269,6 +269,7 @@ namespace UiServices
 	
     bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
+        /*
         PROFILE(UiModule_HandleEvent);
 
         QString category = service_category_identifiers_.keys().value(service_category_identifiers_.values().indexOf(category_id));
@@ -331,7 +332,7 @@ namespace UiServices
                     break;
             }
         }
-
+    */
         return false;
     }
 
@@ -339,29 +340,41 @@ namespace UiServices
     {
     }
 
-    void UiModule::PublishConnectionState(UiServices::ConnectionState connection_state, const QString &message)
+
+    void UiModule::AddWidgetToWindow(UiWidget *widget)
     {
-        switch (connection_state)
-        {
-            case Connected:
-            {
-                ui_state_machine_->SetConnectionState(connection_state);
-                break;
-            }
-            case Disconnected:
-            {
-                inworld_notification_manager_->ClearHistory();
-                ui_state_machine_->SetConnectionState(connection_state);
-                break;
-            }
-            case Failed:
-            {
-                break;
-            }
-            default:
-                return;
-        }
+        widget->setProperty("Customized", true);
+		QString pos = "vacio";
+		if (widget->windowTitle() == "")
+            return;
+
+		if (!external_widgets_.contains(widget->windowTitle()))
+            external_widgets_[widget->windowTitle()] = external_panel_manager_->AddExternalPanel(widget,widget->windowTitle());
+		return;
     }
+
+    void UiModule::RemoveWidgetFromScene(UiWidget *widget)
+    {
+		if (external_widgets_.contains(widget->windowTitle())) {
+			external_panel_manager_->RemoveExternalPanel(external_widgets_[widget->windowTitle()]);
+			external_widgets_.remove(widget->windowTitle());
+        }
+		else
+			return;
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+		settings.remove(widget->windowTitle());
+    }
+
+    void UiModule::AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence)
+    {
+		inworld_scene_controller_->AddAnchoredWidgetToScene(widget, corner, orientation, priority, persistence);
+	}
+
+    void UiModule::RemoveAnchoredWidgetFromScene(QWidget *widget)
+    {
+        inworld_scene_controller_->RemoveAnchoredWidgetFromScene(widget);
+    }
+
 
     void UiModule::SubscribeToEventCategories()
     {

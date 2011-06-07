@@ -6,6 +6,7 @@
 
 #include "UiModuleApi.h"
 #include "ExternalMenuManager.h"
+#include "UiWidget.h"
 
 #include <QObject>
 #include <QList>
@@ -46,7 +47,7 @@ namespace UiServices
          *         
          *  \return widget of the added widget (is a QDockWidget).
          */
-		QDockWidget* AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags = Qt::Dialog);
+		QDockWidget* AddExternalPanel(UiWidget *widget, QString title, Qt::WindowFlags flags = Qt::Dialog);
 
         //! Adds a already created QDockWidget into the main window.
         /*! Please prefer using AddExternalWidget() with normal QWidget and properties instead of this directly.
@@ -58,7 +59,7 @@ namespace UiServices
          *  Used for removing your widget from main window. The show/hide toggle button will also be removed from the main menu.
          *  \param widget Proxy widget.
          */
-        bool RemoveExternalPanel(QWidget *widget);
+        bool RemoveExternalPanel(QDockWidget *widget);
 
 		/*! Shows the widget's DockWidget in the main window.
          *  \param widget Widget.
