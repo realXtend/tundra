@@ -257,7 +257,8 @@ namespace Foundation
         }
         catch (Poco::ExistsException &/*e*/)
         {
-            assert (false && "Somewhere, a message is pushed to log before the logger is initialized.");
+            RootLogWarning("Somewhere, a message is pushed to log before the logger is initialized.");
+//            assert (false && "Somewhere, a message is pushed to log before the logger is initialized.");
         }
 
         try
