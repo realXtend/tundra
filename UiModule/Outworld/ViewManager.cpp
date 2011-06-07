@@ -20,9 +20,9 @@ namespace UiServices
 		owner_(owner),
 		uiService_(0)
 	{
-		uiService_ = owner_->GetFramework()->GetService<UiServiceInterface>();
-        if (!uiService_)
-            return;
+		//uiService_ = owner_->GetFramework()->GetService<UiServiceInterface>();
+        //if (!uiService_)
+        //    return;
 
 		qWin_ = dynamic_cast<UiMainWindow*>(owner_->GetFramework()->Ui()->MainWindow());
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/ConfigurationViews");
@@ -46,47 +46,55 @@ namespace UiServices
 
 		//Create the menu
 		configWindow_ = new ViewDialog(views);
-		uiService_->AddExternalMenu("Window");
+        owner->GetFramework()->Ui()->MainWindow()->AddMenu("Window");
+		//uiService_->AddExternalMenu("Window");
 
 		//Insert New Action
-		QAction* newAction = new QAction(tr("New"), this);
+
+		//QAction* newAction = new QAction(tr("New"), this);
+        QAction* newAction = owner->GetFramework()->Ui()->MainWindow()->AddMenuAction("Window", "New", QIcon(), 99);
 		connect(newAction, SIGNAL(triggered()), SLOT(NewViewWindow()));
-		uiService_->AddExternalMenuAction(newAction, "New", "Window", 0, 99);
+		//uiService_->AddExternalMenuAction(newAction, "New", "Window", 0, 99);
 
 		//Insert Configure Action
-		QAction* open = new QAction(tr("Configure"), this);
+		//QAction* open = new QAction(tr("Configure"), this);
+        QAction* open = owner->GetFramework()->Ui()->MainWindow()->AddMenuAction("Window", "Configure", QIcon(), 98);
 		connect(open, SIGNAL(triggered()),configWindow_, SLOT(show()));
-		uiService_->AddExternalMenuAction(open, "Configure", "Window", 0, 98);
+		//uiService_->AddExternalMenuAction(open, "Configure", "Window", 0, 98);
 
 		//Add separator
-		QAction* separator = new QAction(tr(""), this);
+		//QAction* separator = new QAction(tr(""), this);
+        QAction* separator = owner->GetFramework()->Ui()->MainWindow()->AddMenuAction("Window", "separator", QIcon(), 97);
 		separator->setSeparator(true);
-		uiService_->AddExternalMenuAction(separator, "separator", "Window", 0,  97);
+		//uiService_->AddExternalMenuAction(separator, "separator", "Window", 0,  97);
 
 		//Create the Action Group and insert all views
 		actionGroup_=new QActionGroup(this);
 		connect(actionGroup_, SIGNAL(triggered(QAction*)), SLOT(ActionChanged(QAction*)));
 
-		previous_ = new QAction(tr("Previous"), this);
+		//previous_ = new QAction(tr("Previous"), this);
+        previous_ = owner->GetFramework()->Ui()->MainWindow()->AddMenuAction("Window", "Previous", QIcon(), 50);
 		actionGroup_->addAction(previous_);
-		uiService_->AddExternalMenuAction(previous_, tr("Previous"), "Window", 0, 50, true);
+		//uiService_->AddExternalMenuAction(previous_, tr("Previous"), "Window", 0, 50, true);
 		previous_->setVisible(false);
 
-		QAction* hide = new QAction(tr("Hide"), this);
+		//QAction* hide = new QAction(tr("Hide"), this);
+        QAction* hide = owner->GetFramework()->Ui()->MainWindow()->AddMenuAction("Window", "Hide");
 		actionGroup_->addAction(hide);
-		uiService_->AddExternalMenuAction(hide, tr("Hide"), "Window", 0, 50, true);
+		//uiService_->AddExternalMenuAction(hide, tr("Hide"), "Window", 0, 50, true);
 
 		QListIterator<QString> i(views);
 		while(i.hasNext()){
 			QString name=i.next();
-			actionGroup_->addAction(new QAction(name,this));
+			//actionGroup_->addAction(new QAction(name,this));
+            actionGroup_->addAction(owner->GetFramework()->Ui()->MainWindow()->AddMenuAction("Window", name));
 		}
 
 		QListIterator<QAction*> q(actionGroup_->actions());
 		while(q.hasNext()){
 			QAction* a=q.next();
 			a->setCheckable(true);
-			uiService_->AddExternalMenuAction(a, a->text(), "Window", 0, 50, true);
+			//uiService_->AddExternalMenuAction(a, a->text(), "Window", 0, 50, true);
 		}
 
 		connect(configWindow_,SIGNAL(Save(const QString &)),this,SLOT(SaveView(const QString &)));		
@@ -109,15 +117,19 @@ namespace UiServices
 
 	void ViewManager::HideView()
 	{
-		QList<QString> widgets = uiService_->GetAllWidgetsNames();
+		//QList<QString> widgets = uiService_->GetAllWidgetsNames();
+        QMap<QString, QDockWidget*> external_wid = owner_->GetExternalWidgets();
+        QList<QString> widgets = external_wid.keys();
 
 		QListIterator<QString> i(widgets);
 		while(i.hasNext()){
-			QWidget* widget = uiService_->GetWidget(i.next());
+            QWidget* widget = external_wid.value(i.next());
+            /*
 			if(dynamic_cast<QDockWidget*>(widget->parentWidget()) && !widget->property("dynamic").isValid())
 				widget->parentWidget()->hide();
 			else
-				widget->hide();
+				widget->hide();*/
+            widget->hide();
 		}
 	}
 	void ViewManager::TogglePreviousView(bool save)
@@ -138,12 +150,15 @@ namespace UiServices
 
 			settings.setValue("win_state", qWin_->saveState());
 
-			QList<QString> widgets = uiService_->GetAllWidgetsNames();
+			//QList<QString> widgets = uiService_->GetAllWidgetsNames();
+            QMap<QString, QDockWidget*> external_wid = owner_->GetExternalWidgets();
+            QList<QString> widgets = external_wid.keys();
 			QListIterator<QString> i(widgets);
 
 			while(i.hasNext()){
 				QString nameWidget = i.next();
-				QWidget* widget = uiService_->GetWidget(nameWidget);
+				//QWidget* widget = uiService_->GetWidget(nameWidget);
+                QWidget* widget = external_wid.value(nameWidget);
 				if(dynamic_cast<QDockWidget*>(widget))
 					widget = dynamic_cast<QDockWidget*>(widget)->widget();
 				if(widget->property("dynamic").isValid()){
@@ -158,6 +173,7 @@ namespace UiServices
 				}
 			}
 			settings.endGroup();
+            
 		}else{
 			settings.remove("Previous");
 			previous_->setVisible(false);
@@ -170,7 +186,10 @@ namespace UiServices
 		if(settings.childGroups().contains(name)){
 			settings.beginGroup(name);
 
-			QList<QString> currentWidgets = uiService_->GetAllWidgetsNames();	
+			//QList<QString> currentWidgets = uiService_->GetAllWidgetsNames();
+            QMap<QString, QDockWidget*> external_wid = owner_->GetExternalWidgets();
+            QList<QString> currentWidgets = external_wid.keys();
+
 			QList<QString> widgets = settings.childGroups();
 			QListIterator<QString> i(widgets);
 			QListIterator<QString> k(currentWidgets);
@@ -179,8 +198,9 @@ namespace UiServices
 			//Delete all dynamic widgets that aren't in view
 			while(k.hasNext()){
 				QString widgetName = k.next();
-				if(!qset.contains(widgetName) && uiService_->GetWidget(widgetName)->property("dynamic").isValid())
-					uiService_->HideWidget(widgetName);
+                if(!qset.contains(widgetName) && external_wid.value(widgetName)->widget()->property("dynamic").isValid()/*uiService_->GetWidget(widgetName)->property("dynamic").isValid()*/)
+					//TODO!uiService_->HideWidget(widgetName);
+                    external_wid.value(widgetName)->hide();
 			}
 
 			//Create all dynamic widgets in view
@@ -200,7 +220,7 @@ namespace UiServices
 							properties.append(settings.value(prop));
 					}
 					settings.endGroup();
-					emit uiService_->SendToCreateDynamicWidget(widgetName,module,properties);
+					//TODO!emit uiService_->SendToCreateDynamicWidget(widgetName,module,properties);
 				}
 			}
 			//Restore the state of main window
@@ -223,10 +243,11 @@ namespace UiServices
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/ConfigurationViews");
 
 		if(!settings.childGroups().contains(name)){
-			QAction* a = new QAction(name,this);
+			//QAction* a = new QAction(name,this);
+            QAction* a = owner_->GetFramework()->Ui()->MainWindow()->AddMenuAction(name, "Window");
 			a->setCheckable(true);
 			actionGroup_->addAction(a);
-			uiService_->AddExternalMenuAction(a, a->text(), "Window", 0, 50, true);
+			//uiService_->AddExternalMenuAction(a, a->text(), "Window", 0, 50, true);
 			a->setChecked(true);
 		}
 		
@@ -240,12 +261,16 @@ namespace UiServices
 			
 		settings.setValue("win_state", qWin_->saveState());
 
-		QList<QString> widgets = uiService_->GetAllWidgetsNames();
+		//QList<QString> widgets = uiService_->GetAllWidgetsNames();
+        QMap<QString, QDockWidget*> external_wid = owner_->GetExternalWidgets();
+        QList<QString> widgets = external_wid.keys();
 		QListIterator<QString> i(widgets);
 
 		while(i.hasNext()){
 			QString nameWidget = i.next();
-			QWidget* widget = uiService_->GetWidget(nameWidget);
+			//QWidget* widget = uiService_->GetWidget(nameWidget);
+            QWidget* widget = external_wid.value(nameWidget);
+
 			if(dynamic_cast<QDockWidget*>(widget))
 				widget = dynamic_cast<QDockWidget*>(widget)->widget();
 			if(widget->property("dynamic").isValid()){
@@ -272,11 +297,12 @@ namespace UiServices
 		QStringList groups = settings.childGroups();
 		if(groups.contains(name)){
 			QListIterator<QAction*> q(actionGroup_->actions());
-			uiService_ = owner_->GetFramework()->GetService<UiServiceInterface>();
+			//uiService_ = owner_->GetFramework()->GetService<UiServiceInterface>();
 			while(q.hasNext()){
 				QAction* a=q.next();
-				if(a->text()==name && uiService_) //Check if uiservice is still available
-					uiService_->RemoveExternalMenuAction(a);
+				if(a->text()==name /*&& uiService_*/) //Check if uiservice is still available
+                    owner_->GetFramework()->Ui()->MainWindow()->removeAction(a);
+					//todo!uiService_->RemoveExternalMenuAction(a);
 			}
 			settings.remove(name);
 			configWindow_->UpdateViews(settings.childGroups());

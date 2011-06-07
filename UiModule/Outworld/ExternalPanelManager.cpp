@@ -38,8 +38,8 @@ namespace UiServices
             SAFE_DELETE(wid);
             return false;
         }
-        //connect(
-		connect(wid,SIGNAL(visibilityChanged(bool)),widget,SLOT(show()));
+        connect(widget, SIGNAL(visibilityChanged(bool)), wid, SLOT(setVisible(bool)));
+		//connect(wid,SIGNAL(visibilityChanged(bool)),widget,SLOT(show()));
         return wid;
     }
 
