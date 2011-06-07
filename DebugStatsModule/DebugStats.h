@@ -14,6 +14,7 @@
 #include "InputFwd.h"
 #include "ModuleLoggingFunctions.h"
 #include "RexTypes.h"
+#include "UiWidget.h"
 
 #include <QObject>
 #include <QPointer>
@@ -110,6 +111,9 @@ namespace DebugStats
 
         /// Profiler window
         QPointer<TimeProfilerWindow> profilerWindow_;
+
+        /// Profiler widget
+        QPointer<UiWidget> profilerWidget_;
 
         /// Participant window
         QPointer<ParticipantWindow> participantWindow_;

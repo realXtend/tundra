@@ -61,6 +61,7 @@ DebugStatsModule::DebugStatsModule() :
     networkOutEventCategory_(0),
     networkStateEventCategory_(0),
     profilerWindow_(0),
+    profilerWidget_(0),
     participantWindow_(0),
     godMode_(false)
 {
@@ -136,24 +137,16 @@ void DebugStatsModule::HandleKeyPressed(KeyEvent *e)
 
 void DebugStatsModule::AddProfilerWidgetToUi()
 {
-    if (profilerWindow_)
+    if (profilerWindow_ && profilerWidget_)
     {
-        profilerWindow_->setVisible(!(profilerWindow_->isVisible()));
+        //profilerWidget_->setVisible(!(profilerWindow_->isVisible()));
         return;
     }
 
     profilerWindow_ = new TimeProfilerWindow(framework_);
-    profilerWindow_->setParent(framework_->Ui()->MainWindow());
-    profilerWindow_->setWindowFlags(Qt::Tool);
-    //profilerWindow_->move(100, 100);
     profilerWindow_->resize(650, 530);
 
-    framework_->Ui()->AddWidgetToWindow(profilerWindow_);
-	//UiProxyWidget *proxy = ui_service->AddWidgetToScene(profilerWindow_, true, true);
-    //connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
-	//$ END_MOD $
-
-	//ui_service->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("View"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+    profilerWidget_ = framework_->Ui()->AddWidgetToWindow(profilerWindow_, Qt::Tool);
 }
 
 void DebugStatsModule::StartProfiling(bool visible)
@@ -167,9 +160,9 @@ void DebugStatsModule::StartProfiling(bool visible)
 ConsoleCommandResult DebugStatsModule::ShowProfilingWindow()
 {
     // If the window is already created, bring it to front.
-    if (profilerWindow_)
+    if (profilerWindow_ && profilerWidget_)
     {
-        framework_->Ui()->BringWidgetToFront(profilerWindow_);
+        profilerWidget_->show();
         return ConsoleResultSuccess();
     }
     else
