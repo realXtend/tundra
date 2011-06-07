@@ -37,7 +37,10 @@ void HttpAssetStorage::RefreshAssetRefs()
 
 QString HttpAssetStorage::SerializeToString() const
 {
-    return "type=" + Type() + ";name=" + storageName + ";src=" + baseAddress;
+    if (localDir.isEmpty())
+        return "type=" + Type() + ";name=" + storageName + ";src=" + baseAddress;
+    else
+        return "type=" + Type() + ";name=" + storageName + ";localdir=" + localDir + ";src=" + baseAddress;
 }
 
 void HttpAssetStorage::PerformSearch(QString path)
