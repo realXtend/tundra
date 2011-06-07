@@ -15,6 +15,7 @@
 #include "AssetFwd.h"
 #include "Vector3D.h"
 #include "AssetReference.h"
+#include "UiWidget.h"
 
 #include <QPointer>
 #include <QWidget>
@@ -109,7 +110,9 @@ public slots:
 
 private:
     QPointer<SceneStructureWindow> sceneWindow; ///< Scene Structure window.
+    QPointer<UiWidget> sceneWidget;
     QPointer<AssetsWindow> assetsWindow;///< Assets window.
+    QPointer<UiWidget> assetsWidget;
     boost::shared_ptr<InputContext> inputContext; ///< Input context.
 
     SceneMaterialDropData materialDropData;
