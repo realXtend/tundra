@@ -192,7 +192,7 @@ namespace Tts
 
     void TtsService::TriggerSettingsUpdated()
     {
-        emit Tts::TtsServiceInterface::SettingsUpdated();
+        emit SettingsUpdated();
     }
 
 	/*const Voice TtsService::GetVoice()

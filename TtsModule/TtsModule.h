@@ -20,7 +20,6 @@
 #include <QObject>
 
 #include "TtsModuleApi.h"
-#include "TtsServiceInterface.h"
 #include "TtsService.h"
 
 class RexUUID;
@@ -86,7 +85,7 @@ namespace Tts
         /// Name of the module.
         static const std::string module_name_;
 		/// TTS service
-		TtsServicePtr tts_service_;
+		TtsService* tts_service_;
         SettingsWidget* settings_widget_;
         //QString own_avatar_voice_;
         bool publish_own_voice_;

@@ -48,9 +48,9 @@ namespace Tts
         settings.sync();
     }
 
-    SettingsWidget::SettingsWidget(Foundation::Framework* framework):
+    SettingsWidget::SettingsWidget(TtsService* tts_service):
         QWidget(),
-        framework_(framework)
+        tts_service_(tts_service)
     {
         setupUi(this);
         UpdateVoiceOptions();
@@ -70,7 +70,7 @@ namespace Tts
 
     SettingsWidget::~SettingsWidget()
     {
-        SaveSettings();
+        //SaveSettings();
     }
 
     void SettingsWidget::SaveSettings()
@@ -90,21 +90,19 @@ namespace Tts
 		//$ END_MOD $
         settings_.Save();
 
-        Tts::TtsServiceInterface* tts_service = framework_->GetService<Tts::TtsServiceInterface>();
-		if (tts_service)
-			tts_service->TriggerSettingsUpdated();
+		if (tts_service_)
+			tts_service_->TriggerSettingsUpdated();
     }
 
     void SettingsWidget::UpdateVoiceOptions()
     {
-        Tts::TtsServiceInterface* tts_service = framework_->GetService<Tts::TtsServiceInterface>();
-		if (!tts_service)
+		if (!tts_service_)
 			return;
 
-        ownVoice->addItems(tts_service->GetAvailableVoices());
-        defaultVoiceForTextChat->addItems(tts_service->GetAvailableVoices());
-        notificationVoice->addItems(tts_service->GetAvailableVoices());
-        testVoice->addItems(tts_service->GetAvailableVoices());
+        ownVoice->addItems(tts_service_->GetAvailableVoices());
+        defaultVoiceForTextChat->addItems(tts_service_->GetAvailableVoices());
+        notificationVoice->addItems(tts_service_->GetAvailableVoices());
+        testVoice->addItems(tts_service_->GetAvailableVoices());
     }
 
     // Set given text to currentText of the given combobox if the text is an option
@@ -160,11 +158,10 @@ namespace Tts
         QString text = testPhraseText->displayText();
         QString voice = testVoice->currentText();
 
-        Tts::TtsServiceInterface* tts_service = framework_->GetService<Tts::TtsServiceInterface>();
-		if (!tts_service)
+		if (!tts_service_)
 			return;
 
-        tts_service->Text2Speech(text, voice, 1);
+        tts_service_->Text2Speech(text, voice, 1);
     }
 
 } // Tts

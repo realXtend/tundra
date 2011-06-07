@@ -14,7 +14,6 @@
 #include "SceneManager.h"
 #include "WorldLogicInterface.h"
 
-#include "UiServiceInterface.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "CoreStringUtils.h"
@@ -22,6 +21,9 @@
 #include "SettingsWidget.h"
 
 #include "EC_TtsVoice.h"
+
+#include "UiAPI.h"
+#include "UiMainWindow.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -40,7 +42,6 @@ namespace Tts
 
 	TtsModule::~TtsModule()
 	{
-        SAFE_DELETE(settings_widget_);
 	}
 
 	void TtsModule::Load()
@@ -54,10 +55,9 @@ namespace Tts
 
 	void TtsModule::Initialize()
 	{
-		tts_service_ = TtsServicePtr(new TtsService(framework_));
-		//framework_->GetServiceManager()->RegisterService(Service::ST_Tts, tts_service_);
-        connect(tts_service_.get(), SIGNAL(SettingsUpdated()), this, SLOT(ReadTtsSettings()));
-		//framework_->RegisterDynamicObject("tts", tts_service_.get());
+		tts_service_ = new TtsService(framework_);
+        connect(tts_service_, SIGNAL(SettingsUpdated()), this, SLOT(ReadTtsSettings()));
+		framework_->RegisterDynamicObject("tts", tts_service_);
         ReadTtsSettings();
 	}
 
@@ -76,8 +76,8 @@ namespace Tts
     }
 	void TtsModule::Uninitialize()
 	{
-		//framework_->GetServiceManager()->UnregisterService(tts_service_);
-		tts_service_.reset();
+        SAFE_DELETE(settings_widget_);
+        SAFE_DELETE(tts_service_)
 	}
 
     void TtsModule::UnpublishOwnAvatarVoice()
@@ -87,13 +87,11 @@ namespace Tts
 
     void TtsModule::SetupSettingsWidget()
     {
-        //UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-        //if (!ui)
-        //    return;
-
-        settings_widget_ = new SettingsWidget(framework_);
-        //ui->AddSettingsWidget(settings_widget_, "TTS");
-        settings_widget_->show();
+        settings_widget_ = new SettingsWidget(tts_service_);
+        settings_widget_->setWindowTitle(QString("TTS Settings"));
+        UiWidget* ui_settings_widget = framework_->Ui()->AddWidgetToWindow(settings_widget_, Qt::Tool);
+        QAction* settings_action = framework_->Ui()->MainWindow()->AddMenuAction("&Settings", "TTS");
+        connect(settings_action, SIGNAL(triggered()), ui_settings_widget, SLOT(toogleVisibility()));
     }
 
 } // end of namespace: Tts

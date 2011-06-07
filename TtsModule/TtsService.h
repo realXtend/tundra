@@ -6,7 +6,6 @@
 
 #include "Framework.h"
 
-#include "TtsServiceInterface.h"
 #include <QProcess>
 #include <QMap>
 #include <QPair>
@@ -20,7 +19,7 @@ namespace Tts
 	using std::deque;
 	typedef QPair<QString, clock_t> ttsPair;
 	
-	class TtsService : public TtsServiceInterface
+	class TtsService : public QObject
 	{
 		Q_OBJECT
 
@@ -33,23 +32,61 @@ namespace Tts
         virtual ~TtsService();
         
 	public slots:
+        /** Synthetizes text to speech
+		\param message Text to synthetize
+        \param voice Voice database. @see GetAvailableVoices
+        \param type 1 overlap speech(Chat), 2 exclusive speech(NPCs)
+        \return tts process pid*/
+		qulonglong Text2Speech(QString message, QString voice, int type = 1);
 
-		virtual qulonglong Text2Speech(QString message, QString voice, int type = 1); //1 chat, 2 NPC
+		/** Synthetizes text to WAV
+		\param message Text to synthetize.
+		\param pathAndFileName The path and file name where the WAV is saved.
+		\param voice Voice database. @see GetAvailableVoices*/
+        void Text2WAV(QString message, QString pathAndFileName, QString voice);
+        
+        /** Synthetizes text to PHO
+		\param message Text to synthetize.
+		\param pathAndFileName The path and file name where the phonetic information (PHO) is saved.
+		\param voice Voice database. @see GetAvailableVoices*/
+		void Text2PHO(QString message, QString pathAndFileName, QString voice);
 
-		virtual void Text2WAV(QString message, QString pathAndFileName, QString voice);
-		virtual void Text2PHO(QString message,QString pathAndFileName, QString voice);
+        /** Synthetizes a text file to speech
+		\param pathAndFileName Input text file path, to synthetize.
+		\param voice Voice database. @see GetAvailableVoices*/
+		void File2Speech(QString pathAndFileName, QString voice);
+        
+        /** Synthetizes a text file to WAV
+		\param pathAndFileNameIn Input text file path, to synthetize.
+        \param pathAndFileNameOut The path and file name where the WAV is saved.
+		\param voice Voice database. @see GetAvailableVoices*/
+        void File2WAV(QString pathAndFileNameIn, QString pathAndFileNameOut, QString voice);
 
+        /** Synthetizes a text file to PHO
+		\param pathAndFileNameIn Input text file path, to synthetize.
+        \param pathAndFileNameOut The path and file name where the PHO is saved.
+		\param voice Voice database. @see GetAvailableVoices*/
+		void File2PHO(QString pathAndFileNameIn, QString pathAndFileNameOut, QString voice);
 
-		virtual void File2Speech(QString pathAndFileName, QString voice);
-		virtual void File2WAV(QString pathAndFileNameIn, QString pathAndFileNameOut, QString voice);
-		virtual void File2PHO(QString pathAndFileNameIn, QString pathAndFileNameOut, QString voice);
+        /**
+         \return Available voice options.
+         \see Text2Speech*/
+        QStringList GetAvailableVoices() const;
 
-		virtual QStringList GetAvailableVoices() const;
-		virtual void TriggerSettingsUpdated();
+        void TriggerSettingsUpdated();
 
 		void TtsAvailable();
 
 		void HandleProcessFinished();
+
+    signals:
+        /** Emited when settings are changed
+            @see TriggerSettingsUpdated*/
+        void SettingsUpdated();
+
+		/** Emited when tts process is terminated
+        \param processPid tts process pid*/            
+        void ProcessFinished(qulonglong processPid);
 
 	private:
 		

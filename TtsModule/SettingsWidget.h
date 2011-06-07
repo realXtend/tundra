@@ -4,6 +4,7 @@
 #define incl_TtsModule_SettingsWidget_h
 
 #include "ui_TTSSettings.h"
+#include "TtsService.h"
 
 namespace Foundation
 {
@@ -38,7 +39,7 @@ namespace Tts
     {
         Q_OBJECT
     public:
-        SettingsWidget(Foundation::Framework* framework);
+        SettingsWidget(TtsService* tts_service);
         virtual ~SettingsWidget();
 
         public slots:
@@ -50,7 +51,7 @@ namespace Tts
         virtual void UpdateVoiceOptions();
     private:
         Settings settings_;
-        Foundation::Framework* framework_;
+        TtsService* tts_service_;
 		//$ BEGIN_MOD $
 	//signals:
 		//void SaveSettingsClicked();
