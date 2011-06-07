@@ -280,6 +280,8 @@ public:
     operator QVector4D() const { return QVector4D(x, y, z, w); }
     operator QString() const { return "float4(" + QString::number(x) + "," + QString::number(y) + "," + QString::number(z) + "," + QString::number(w) + ")"; }
     QString toString() const { return (QString)*this; }
+    QVector4D ToQVector4D() const { return QVector4D(x, y, z, w); }
+    static float4 FromQVector4D(const QVector4D &v) { return (float4)v; }
 #endif
 #ifdef BULLET_INTEROP
     // Bullet uses the same btVector3 class for both 3- and 4 -tuples (due to SSE).

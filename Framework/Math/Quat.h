@@ -240,6 +240,8 @@ public:
     operator QQuaternion() const { return QQuaternion(w, x, y, z); }
     operator QString() const { return toString(); }
     QString toString() const { return ToString2().c_str(); }
+    QQuaternion ToQQuaternion() const { return (QQuaternion)*this; }
+    static Quat FromQQuaternion(const QQuaternion &q) { return (Quat)q; }
 #endif
 #ifdef BULLET_INTEROP
     Quat(const btQuaternion &other) { w = other.w(); x = other.x(); y = other.y(); z = other.z(); }

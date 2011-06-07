@@ -238,6 +238,8 @@ public:
     operator QVector2D() const { return QVector2D(x, y); }
     operator QString() const { return "float2(" + QString::number(x) + "," + QString::number(y) + ")"; }
     QString toString() const { return (QString)*this; }
+    QVector2D ToQVector2D() const { return QVector2D(x, y); }
+    static float2 FromQVector2D(const QVector2D &v) { return (float2)v; }
 #endif
 };
 

@@ -258,6 +258,8 @@ public:
     operator QVector3D() const { return QVector3D(x, y, z); }
     operator QString() const { return "float3(" + QString::number(x) + "," + QString::number(y) + "," + QString::number(z) + ")"; }
     QString toString() const { return (QString)*this; }
+    QVector3D ToQVector3D() const { return QVector3D(x, y, z); }
+    static float3 FromQVector3D(const QVector3D &v) { return (float3)v; }
 #endif
 #ifdef BULLET_INTEROP
     float3(const btVector3 &other) { x = other.x(); y = other.y(); z = other.z(); }
