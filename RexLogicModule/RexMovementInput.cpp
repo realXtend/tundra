@@ -177,6 +177,11 @@ void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
         }
         break;
     case MouseEvent::MouseMove:
+        if (weControlMouseCursor && !mouse->IsRightButtonDown() && !framework->Input()->IsMouseCursorVisible())
+        {
+            framework->Input()->SetMouseCursorVisible(true);
+            weControlMouseCursor = false;
+        }
         if (mouse->IsRightButtonDown() && !framework->Input()->IsMouseCursorVisible()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
         {
            eventMgr->SendEvent("Input", InputEvents::MOUSELOOK, &movement);
