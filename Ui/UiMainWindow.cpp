@@ -162,19 +162,21 @@ QMenu *UiMainWindow::GetMenu(const QString &name)
     return 0;
 }
 
-QMenu *UiMainWindow::AddMenu(const QString &name)
+QMenu *UiMainWindow::AddMenu(const QString &name, int priority)
 {
     if (!menuBar())
         return 0;
 
     if (HasMenu(name))
-        return menus_[name];
+        return menus_[name];    
     QMenu *menu = menuBar()->addMenu(name);
     menus_[name] = menu;
+    all_menus_[QString::number(100 - priority) + "_" + name] = name;
+    //SortMenus();
     return menu;
 }
 
-QAction *UiMainWindow::AddMenuAction(const QString &menuName, const QString &actionName, const QIcon &icon)
+QAction *UiMainWindow::AddMenuAction(const QString &menuName, const QString &actionName, const QIcon &icon, int priority)
 {
     if (!menuBar())
         return 0;
@@ -187,7 +189,54 @@ QAction *UiMainWindow::AddMenuAction(const QString &menuName, const QString &act
 
     if (!menu)
         return 0;
-    return menu->addAction(icon, actionName);
+
+    QAction *act = menu->addAction(icon, actionName);
+
+    all_actions_[QString::number(100 - priority) + "_" + actionName] = menu_action_pair_(menuName, act);
+    act->setParent(0);
+    SortMenus();
+    return all_actions_[QString::number(100 - priority) + "_" + actionName].second;
+    //return menu->addAction(icon, actionName);
+}
+
+bool UiMainWindow::RemoveMenuAction(QAction *action)
+{
+   //The widget is the widget of RealXtend that is inside a dockwidget!
+	foreach(menu_action_pair_ pair, all_actions_)
+		if (action == pair.second)
+		{
+			//QObject::disconnect(pair.second, SIGNAL(triggered()), this, SLOT(ActionNodeClicked()));
+			//controller_panels_visibility_.remove(action->text());
+			all_actions_.remove(all_actions_.key(pair));
+			SAFE_DELETE(pair.second);
+			//Check if any menu has 0 items, then delete it!
+			QMutableMapIterator<QString, QMenu*> i(menus_);
+			while (i.hasNext()) {
+				i.next();
+				if (i.value()->isEmpty()) {
+					SAFE_DELETE(i.value());
+					menus_.remove(i.key());
+				}
+			}
+			SortMenus();
+			return true;
+		}
+	return false;
+}
+
+
+void UiMainWindow::SortMenus()
+{
+	//Clean category_menu_ from rootMenu
+	foreach(QMenu *menu, menus_)
+		SAFE_DELETE(menu);
+    menus_.clear();
+	//Create menus
+	foreach(QString new_menu, all_menus_)
+		menus_[new_menu] = AddMenu(new_menu);
+	//Add actions
+	foreach(menu_action_pair_ pair, all_actions_)
+		menus_[pair.first]->addAction(pair.second);
 }
 
 void UiMainWindow::SizeOfCentralWidgetChanged(){

@@ -12,6 +12,7 @@ class QMenu;
 class QAction;
 
 #include <QHash>
+#include <QMap>
 #include <QString>
 #include <QIcon>
 
@@ -40,6 +41,7 @@ public:
 
     /// Returns the whole desktop height, taking into account multiple displays.
     static int DesktopHeight();
+    typedef QPair<QString, QAction *> menu_action_pair_;
 
 public slots:
     /// Returns if a menu with name is in the main windows menu bar.
@@ -58,7 +60,7 @@ public slots:
     /// \param Name of the menu to be added.
     /// \return QMenu Added or already existing QMenu with the name.
     /// \note name is case sensitive.
-    QMenu *AddMenu(const QString &name);
+    QMenu *AddMenu(const QString &name, int priority = 50);
 
     /// Adds a action with name to a sub menu of menuName. Option to provide icon.
     /// \param menuName Name of the sub menu where you want the action to be added.
@@ -67,7 +69,9 @@ public slots:
     /// \return QAction the added action.
     /// \note If menuName does not exist it will be created.
     /// \note menuName is case sensitive.
-    QAction *AddMenuAction(const QString &menuName, const QString &actionName, const QIcon &icon = QIcon());
+    QAction *AddMenuAction(const QString &menuName, const QString &actionName, const QIcon &icon = QIcon(), int priority = 50);
+    
+    bool RemoveMenuAction(QAction *action);
 
     void SizeOfCentralWidgetChanged();
 
@@ -91,8 +95,12 @@ private:
     /// Framework ptr.
     Foundation::Framework *owner;
 
+    void SortMenus();
+
     /// A hash map to internally track existing menus.
-    QHash<QString, QMenu*> menus_;
+    QMap<QString, QMenu*> menus_;
+    QMap<QString, menu_action_pair_> all_actions_;
+    QMap<QString, QString> all_menus_;
 };
 
 #endif
