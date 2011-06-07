@@ -136,12 +136,19 @@ public:
     float3 AxisFromTo(const Quat &target) const;
 
     void ToAxisAngle(float3 &rotationAxis, float &rotationAngle) const;
-    void SetFromAxisAngle(const float3 &rotationAxis, float rotationAngle);
+    /// Sets this quaternion by specifying the axis about which the rotation is performed, and the angle of rotation.
+    /// @param rotationAxis The axis of rotation. This vector must be normalized to call this function.
+    /// @param rotationAngle The angle of rotation in radians.
+    void SetFromAxisAngle(const float3 &rotationAxis, float rotationAngleRadians);
 
     /// Sets this quaternion to represent the same rotation as the given matrix.
     void Set(const float3x3 &matrix);
     void Set(const float3x4 &matrix);
     void Set(const float4x4 &matrix);
+    /// Sets all elements of this quaternion.
+    /// @note This sets the raw elements, which do *not* correspond directly to the axis and angle of the rotation. Use
+    ///       SetFromAxisAngle to define this Quat using a rotation axis and an angle.
+    void Set(float x, float y, float z, float w);
 
     /// Applies a rotation to this quaternion so that the local (pre-transformed) axis specified by localForward 
     /// looks towards targetDirection. Then tries to orient the localUp axis to point towards the

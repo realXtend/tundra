@@ -306,6 +306,14 @@ void Quat::Set(const float4x4 &m)
     SetQuatFrom(*this, m);
 }
 
+void Quat::Set(float x_, float y_, float z_, float w_)
+{
+    x = x_;
+    y = y_;
+    z = z_;
+    w = w_;
+}
+
 void Quat::LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp)
 {
     assume(false && "Not implemented!");
