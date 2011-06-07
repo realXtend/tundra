@@ -381,7 +381,7 @@ function ClientInitialize() {
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {
-                var name_tag = me.GetOrCreateComponentRaw("EC_HoveringText", 2, false);
+                var name_tag = me.GetOrCreateComponentRaw("EC_HoveringText", "NameTag", 2, false);
                 if (name_tag != null) {
                     name_tag.SetNetworkSyncEnabled(false);
                     name_tag.SetTemporary(true);
