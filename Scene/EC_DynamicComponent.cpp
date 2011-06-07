@@ -373,7 +373,11 @@ void EC_DynamicComponent::DeserializeFromBinary(kNet::DataDeserializer& source, 
     std::vector<DeserializeData> deserializedAttributes;
     for(uint i = 0; i < num_attributes; ++i)
     {
-        DeserializeData attrData(source.ReadString().c_str(), source.ReadString().c_str(), source.ReadString().c_str());
+        std::string name = source.ReadString();
+        std::string typeName = source.ReadString();
+        std::string value = source.ReadString();
+        
+        DeserializeData attrData(name.c_str(), typeName.c_str(), value.c_str());
         deserializedAttributes.push_back(attrData);
     }
 
