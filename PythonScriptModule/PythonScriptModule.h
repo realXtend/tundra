@@ -9,6 +9,7 @@
 #include "PythonQtScriptingConsole.h"
 #include "InputFwd.h"
 #include "SceneFwd.h"
+#include "UiWidget.h"
 
 #include <QObject>
 #include <QList>
@@ -152,6 +153,9 @@ namespace PythonScript
 
 		/// Python console
 		PythonQtScriptingConsole* pythonqtconsole_;
+
+        /// Python console UiWidget
+		UiWidget* pythonqtconsole_widget_;
 
     private:
         //! Type name of the module.

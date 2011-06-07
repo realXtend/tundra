@@ -138,7 +138,7 @@ namespace PythonScript
 
     PythonScriptModule::PythonScriptModule()
     :IModule(type_name_static_),
-    pmmModule(0), pmmDict(0), pmmClass(0), pmmInstance(0)
+    pmmModule(0), pmmDict(0), pmmClass(0), pmmInstance(0), pythonqtconsole_(0), pythonqtconsole_widget_(0)
     {
         pythonqt_inited = false;
         inboundCategoryID_ = 0;
@@ -838,19 +838,21 @@ namespace PythonScript
 
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
-		pythonqtconsole_ = new PythonQtScriptingConsole(framework_->Ui()->MainWindow(), PythonQt::self()->getMainModule(), Qt::Tool);
-		pythonqtconsole_->setObjectName("Python console");
-		pythonqtconsole_->setWindowTitle("Python console");
-        framework_->Ui()->AddWidgetToWindow(pythonqtconsole_);
-		//ui->AddWidgetToMenu(pythonqtconsole_, "Python console", "View");
+		if (!pythonqtconsole_ || !pythonqtconsole_widget_)
+        {
+            pythonqtconsole_ = new PythonQtScriptingConsole(framework_->Ui()->MainWindow(), PythonQt::self()->getMainModule(), Qt::Tool);
+		    pythonqtconsole_->setObjectName("Python console");
+		    pythonqtconsole_->setWindowTitle("Python console");
+            pythonqtconsole_widget_ = framework_->Ui()->AddWidgetToWindow(pythonqtconsole_, Qt::Tool);
+        }
 
         return pythonqtconsole_;
     }
 
     void PythonScriptModule::ShowConsole()
     {
-        PythonQtScriptingConsole *console = CreateConsole();
-        console->show();
+        CreateConsole();
+        pythonqtconsole_widget_->show();
     }
 }
 
