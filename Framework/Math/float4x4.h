@@ -376,7 +376,14 @@ public:
              float _30, float _31, float _32, float _33);
 
     /// Sets all values of this matrix.
+    /// @param values The values in this array will be copied over to this matrix. The source must contain 16 floats in row-major order (the same
+    ///        order as the Set() function above has its input parameters in).
     void Set(const float *values);
+
+    /// Sets a single element of this matrix.
+    /// @param row The row index of the element to set, in the range [0-3].
+    /// @param col The col index of the element to set, in the range [0-3].
+    void Set(int row, int col, float value);
 
     void Set3x3Part(const float3x3 &rotation);
     void Set3x4Part(const float3x4 &rotateTranslate);

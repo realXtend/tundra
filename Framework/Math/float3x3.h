@@ -278,7 +278,15 @@ public:
              float _10, float _11, float _12,
              float _20, float _21, float _22);
 
+    /// Sets all values of this matrix.
+    /// @param values The values in this array will be copied over to this matrix. The source must contain 9 floats in row-major order (the same
+    ///        order as the Set() function above has its input parameters in).
     void Set(const float *values);
+
+    /// Sets a single element of this matrix.
+    /// @param row The row index of the element to set, in the range [0-2].
+    /// @param col The col index of the element to set, in the range [0-2].
+    void Set(int row, int col, float value);
 
     /// Sets this matrix to equal the identity.
     void SetIdentity();

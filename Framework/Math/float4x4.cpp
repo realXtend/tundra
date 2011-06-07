@@ -684,17 +684,24 @@ void float4x4::Set(float _00, float _01, float _02, float _03,
     v[3][0] = _30; v[3][1] = _31; v[3][2] = _32; v[3][3] = _33;
 }
 
+void float4x4::Set(const float *values)
+{
+    memcpy(ptr(), values, sizeof(float) * Rows * Cols);
+}
+
+void float4x4::Set(int row, int col, float value)
+{
+    assume(0 <= row && row <= 3);
+    assume(0 <= col && col <= 3);
+    v[row][col] = value;
+}
+
 void float4x4::SetIdentity()
 {
     Set(1,0,0,0,
         0,1,0,0,
         0,0,1,0,
         0,0,0,1);
-}
-
-void float4x4::Set(const float *values)
-{
-    memcpy(ptr(), values, sizeof(float) * Rows * Cols);
 }
 
 void float4x4::Set3x3Part(const float3x3 &r)

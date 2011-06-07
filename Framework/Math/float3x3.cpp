@@ -402,16 +402,23 @@ void float3x3::Set(float _00, float _01, float _02,
     v[2][0] = _20; v[2][1] = _21; v[2][2] = _22;
 }
 
+void float3x3::Set(const float *values)
+{
+    memcpy(ptr(), values, sizeof(float) * Rows * Cols);
+}
+
+void float3x3::Set(int row, int col, float value)
+{
+    assume(0 <= row && row <= 2);
+    assume(0 <= col && col <= 2);
+    v[row][col] = value;
+}
+
 void float3x3::SetIdentity()
 {
     Set(1,0,0,
         0,1,0,
         0,0,1);
-}
-
-void float3x3::Set(const float *values)
-{
-    memcpy(ptr(), values, sizeof(float) * Rows * Cols);
 }
 
 void float3x3::SwapColumns(int col1, int col2)
