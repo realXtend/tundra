@@ -12,8 +12,9 @@
 #include "MemoryLeakCheck.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QVariant>
 
-UiWidget::UiWidget(QWidget *widget, QWidget *parent, const QStringList &params, Qt::WindowFlags flags):
+UiWidget::UiWidget(QWidget *widget, QWidget *parent, Qt::WindowFlags flags, const QStringList &params):
 QWidget(parent, flags),
 widget_(widget)
 {
@@ -26,6 +27,13 @@ widget_(widget)
     v_box->addLayout(h_box);
     
     setLayout(v_box);
+
+    int i = 1;
+    while (i < params.size())
+    {
+        setProperty(params.at(i-1).toStdString().c_str(), QVariant::fromValue(params.at(i)));
+        i += 2;
+    }
 }
 
 UiWidget::~UiWidget(void)

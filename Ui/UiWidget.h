@@ -16,7 +16,7 @@ class UiWidget :  public QWidget
      Q_OBJECT
 
 public:
-    UiWidget(QWidget *widget, QWidget *parent = 0, const QStringList &params = QStringList(), Qt::WindowFlags flags = 0);
+    UiWidget(QWidget *widget, QWidget *parent = 0, Qt::WindowFlags flags = 0, const QStringList &params = QStringList());
     ~UiWidget(void);
 
 public slots:

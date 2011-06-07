@@ -73,7 +73,7 @@ public slots:
 
       @return void
     */
-    UiWidget *AddWidgetToWindow(QWidget* widget, const QStringList &params = QStringList(), Qt::WindowFlags flags = Qt::Dialog);
+    UiWidget *AddWidgetToWindow(QWidget* widget, Qt::WindowFlags flags = Qt::Dialog, const QStringList &params = QStringList());
 
 
     /// Adds user-created proxy widget to the scene.
