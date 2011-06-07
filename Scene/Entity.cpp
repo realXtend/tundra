@@ -45,11 +45,6 @@ namespace Scene
         for (size_t i=0 ; i<components_.size() ; ++i)
         {
             components_[i]->SetParentEntity(0);
-            // Remove component dynamic properties in case scripts still try to access them
-            QString componentTypeName = components_[i]->TypeName();
-            componentTypeName.replace(0, 3, "");
-            componentTypeName = componentTypeName.toLower();
-            setProperty(componentTypeName.toStdString().c_str(), QVariant());
         }
         
         components_.clear();
