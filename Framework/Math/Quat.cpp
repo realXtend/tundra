@@ -126,6 +126,11 @@ bool Quat::IsFinite() const
     return isfinite(x) && isfinite(y) && isfinite(z) && isfinite(w);
 }
 
+bool Quat::Equals(const Quat &rhs, float epsilon) const
+{
+    return EqualAbs(x, rhs.x, epsilon) && EqualAbs(y, rhs.y, epsilon) && EqualAbs(z, rhs.z, epsilon) && EqualAbs(w, rhs.w, epsilon);
+}
+
 float *Quat::ptr()
 {
     return &x;

@@ -90,6 +90,9 @@ public:
     /// Returns true if the entries of this quaternion are all finite.
     bool IsFinite() const;
 
+    /// Returns true if this quaternion equals rhs, up to the given epsilon.
+    bool Equals(const Quat &rhs, float epsilon = 1e-3f) const;
+
     /// @return A pointer to the first element (x). The data is contiguous in memory.
     /// ptr[0] gives x, ptr[1] is y, ptr[2] is z and ptr[3] is w.
     float *ptr();
