@@ -37,6 +37,13 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
 {
     QApplication::setApplicationName("realXtend-Naali");
 
+    // In headless mode, we create windows that are never shown.
+    // Also, the user can open up debugging windows like the profiler or kNet network stats from the console,
+    // so disable the whole application from closing when these are shut down.
+    // For headful mode, we depend on explicitly checking on the closing of the main window, so we don't need
+    // this flag in any case.
+    setQuitOnLastWindowClosed(false);
+
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
         // If under windows, add run_dir/plugins as library path
         // unix users will get plugins from their OS Qt installation folder automatically
