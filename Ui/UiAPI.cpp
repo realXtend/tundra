@@ -192,6 +192,12 @@ UiProxyWidget *UiAPI::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
 
 bool UiAPI::AddProxyWidgetToScene(UiProxyWidget *widget)
 {
+    if (!graphicsScene)
+    {
+        LogError("Can not add widgets to scene in headless mode");
+        return false;
+    }
+    
     if (!widget)
     {
         LogError("AddWidgetToScene called with a null proxy widget!");
@@ -359,8 +365,11 @@ void UiAPI::BringWidgetToFront(QWidget *widget) const
     }
 
     ShowWidget(widget);
-    graphicsScene->setActiveWindow(widget->graphicsProxyWidget());
-    graphicsScene->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
+    if (graphicsScene)
+    {
+        graphicsScene->setActiveWindow(widget->graphicsProxyWidget());
+        graphicsScene->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
+    }
 }
 
 void UiAPI::BringProxyWidgetToFront(QGraphicsProxyWidget *widget) const
@@ -371,8 +380,11 @@ void UiAPI::BringProxyWidgetToFront(QGraphicsProxyWidget *widget) const
         return;
     }
 
-    graphicsScene->setActiveWindow(widget);
-    graphicsScene->setFocusItem(widget, Qt::ActiveWindowFocusReason);
+    if (graphicsScene)
+    {
+        graphicsScene->setActiveWindow(widget);
+        graphicsScene->setFocusItem(widget, Qt::ActiveWindowFocusReason);
+    }
 }
 
 void UiAPI::OnSceneRectChanged(const QRectF &rect)
