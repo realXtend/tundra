@@ -51,9 +51,11 @@ namespace Environment
     EnvironmentModule::EnvironmentModule() :
         IModule(type_name_static_),
         terrainWeightEditor_(0),
+        terrainWeightEditor_widget_(0),
         waiting_for_regioninfomessage_(false),
         environment_editor_(0),
         postprocess_dialog_(0),
+        postprocess_widget_(0),
         resource_event_category_(0),
         framework_event_category_(0),
         firstTime_(true)
@@ -166,15 +168,15 @@ namespace Environment
         if (framework_->IsHeadless())
             return;
 
-        if (terrainWeightEditor_)
+        if (terrainWeightEditor_widget_)
         {
-            terrainWeightEditor_->show();
+            terrainWeightEditor_widget_->show();
             return;
         }
 
         terrainWeightEditor_ = new TerrainWeightEditor(framework_);
-        terrainWeightEditor_->setWindowFlags(Qt::Tool);
-        framework_->Ui()->AddWidgetToWindow(terrainWeightEditor_);
+        terrainWeightEditor_widget_ = framework_->Ui()->AddWidgetToWindow(terrainWeightEditor_, Qt::Tool);
+        terrainWeightEditor_widget_->show();
     }
 
     void EnvironmentModule::ShowPostProcessWindow()
@@ -182,9 +184,9 @@ namespace Environment
         if (framework_->IsHeadless())
             return;
 
-        if (postprocess_dialog_)
+        if (postprocess_widget_)
         {
-            postprocess_dialog_->show();
+            postprocess_widget_->show();
             return;
         }
 
@@ -201,8 +203,8 @@ namespace Environment
                     "./data/ui/images/menus/edbutton_POSTPR_normal.png");
             */
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
-            postprocess_dialog_->setWindowFlags(Qt::Tool);
-            framework_->Ui()->AddWidgetToWindow(postprocess_dialog_);
+            postprocess_widget_ = framework_->Ui()->AddWidgetToWindow(postprocess_dialog_, Qt::Tool);
+            postprocess_widget_->show();
         }
     }
 

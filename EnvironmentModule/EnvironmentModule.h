@@ -12,6 +12,7 @@
 #include "ModuleLoggingFunctions.h"
 #include "WorldStream.h"
 #include "SceneFwd.h"
+#include "UiWidget.h"
 
 #ifdef CAELUM
 namespace Caelum
@@ -192,6 +193,9 @@ namespace Environment
         //! Editor for terrain texture weights
         TerrainWeightEditor* terrainWeightEditor_;
 
+        //! Widget pointer of terrain texture weights editor
+        UiWidget* terrainWeightEditor_widget_;
+
         //! Event manager pointer.
         EventManagerPtr event_manager_;
 
@@ -227,6 +231,9 @@ namespace Environment
 
         //! PostProcess dialog pointer
         PostProcessWidget *postprocess_dialog_;
+
+        //! PostProcess widget pointer
+        UiWidget *postprocess_widget_;
 
         //! WorldStream will handle those network messages that we are wishing to send.
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;

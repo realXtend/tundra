@@ -62,6 +62,8 @@ namespace Environment
         if (editor_widget_ == 0)
             return;
 
+        setWindowTitle(editor_widget_->windowTitle());
+
 //        ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"));
 //        ui->RegisterUniversalWidget("Weights", editor_proxy);
 
