@@ -593,3 +593,5 @@ const float2 float2::zero = float2(0, 0);
 const float2 float2::one = float2(1, 1);
 const float2 float2::unitX = float2(1, 0);
 const float2 float2::unitY = float2(0, 1);
+const float2 float2::nan = float2(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
+const float2 float2::inf = float2(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());

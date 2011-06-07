@@ -81,6 +81,12 @@ public:
         Transforming a vector by the identity matrix is like multiplying a number by one, i.e. the vector is not changed. */
     static const float3x3 identity;
 
+    /// A compile-time constant float3x3 which has NaN in each element.
+    /// For this constant, each element has the value of quiet NaN, or Not-A-Number.
+    /// @note Never compare a float3x3 to this value! Due to how IEEE floats work, for each float x, both the expression "x == nan" and "x == nan" returns false!
+    ///       That is, nothing is equal to NaN, not even NaN itself!
+    static const float3x3 nan;
+
     /// Creates a new float3x3 with uninitialized member values.
     /** [Category: Create] */
     float3x3() {}

@@ -478,3 +478,4 @@ float3 Quat::Mul(const float3 &vector) const { return this->Transform(vector); }
 float4 Quat::Mul(const float4 &vector) const { return this->Transform(vector); }
 
 const Quat Quat::identity = Quat(0.f, 0.f, 0.f, 1.f);
+const Quat Quat::nan = Quat(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());

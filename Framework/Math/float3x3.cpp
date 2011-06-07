@@ -1010,3 +1010,4 @@ float4 operator *(const float4 &lhs, const float3x3 &rhs)
 
 const float3x3 float3x3::zero     = float3x3(0,0,0, 0,0,0, 0,0,0);
 const float3x3 float3x3::identity = float3x3(1,0,0, 0,1,0, 0,0,1);
+const float3x3 float3x3::nan = float3x3(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());

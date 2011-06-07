@@ -263,6 +263,13 @@ public:
     static const float4 unitZ;
     /// Specifies a compile-time constant float4 with value (0, 0, 0, 1).
     static const float4 unitW;
+    /// A compile-time constant float4 with value (NaN, NaN, NaN, NaN).
+    /// For this constant, each element has the value of quiet NaN, or Not-A-Number.
+    /// @note Never compare a float4 to this value! Due to how IEEE floats work, for each float x, both the expression "x == nan" and "x == nan" returns false!
+    ///       That is, nothing is equal to NaN, not even NaN itself!
+    static const float4 nan;
+    /// A compile-time constant float4 with value (+infinity, +infinity, +infinity, +infinity).
+    static const float4 inf;
 
     float4 Add(const float4 &rhs) const { return *this + rhs; }
     float4 Sub(const float4 &rhs) const { return *this - rhs; }

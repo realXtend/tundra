@@ -244,6 +244,13 @@ public:
     static const float3 unitY;
     /// Specifies a compile-time constant float3 with value (0, 0, 1).
     static const float3 unitZ;
+    /// A compile-time constant float3 with value (NaN, NaN, NaN).
+    /// For this constant, each element has the value of quiet NaN, or Not-A-Number.
+    /// @note Never compare a float3 to this value! Due to how IEEE floats work, for each float x, both the expression "x == nan" and "x == nan" returns false!
+    ///       That is, nothing is equal to NaN, not even NaN itself!
+    static const float3 nan;
+    /// A compile-time constant float3 with value (+infinity, +infinity, +infinity).
+    static const float3 inf;
 
 #ifdef OGRE_INTEROP
     float3(const Ogre::Vector3 &other) { x = other.x; y = other.y; z = other.z; }

@@ -642,3 +642,5 @@ const float4 float4::unitX = float4(1, 0, 0, 0);
 const float4 float4::unitY = float4(0, 1, 0, 0);
 const float4 float4::unitZ = float4(0, 0, 1, 0);
 const float4 float4::unitW = float4(0, 0, 0, 1);
+const float4 float4::nan = float4(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
+const float4 float4::inf = float4(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
