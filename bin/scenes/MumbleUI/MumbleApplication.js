@@ -2,6 +2,29 @@
 // !ref: local://ParticipantsList.ui
 // !ref: local://TransmissionMode.ui
 
+var pw = null;
+var tm = null;
+var widget = null;
+var menu = null;
+
+function OnScriptDestroyed()
+{
+    if (pw)
+        pw.deleteLater();
+    if (tm)
+        tm.deleteLater();
+    if (widget)
+        widget.deleteLater();
+    if (menu)
+        menu.deleteLater();
+}
+
+function ShowMumbleUI()
+{
+    if (widget)
+        widget.visible = true;
+}
+
 if (!server.IsRunning())
 {
     engine.ImportExtension("qt.core");
@@ -9,7 +32,7 @@ if (!server.IsRunning())
     engine.ImportExtension("qt.uitools");
 
     // Load ParticipantsList widget and hide
-    var pw = ui.LoadFromFile("local://ParticipantsList.ui", false);
+    pw = ui.LoadFromFile("local://ParticipantsList.ui", false);
     var plTableWidget = findChild(pw, "plTableWidget");
     plTableWidget.setColumnWidth(0, 198);
     plTableWidget.setColumnWidth(1, 51);
@@ -17,14 +40,14 @@ if (!server.IsRunning())
     pw.hide();
 
     // Load TransmissionMode widget and hide
-    var tm = ui.LoadFromFile("local://TransmissionMode.ui", false);
+    tm = ui.LoadFromFile("local://TransmissionMode.ui", false);
     var rbOff = findChild(tm, "rbOff");
     var rbCt = findChild(tm, "rbCt");
     ui.AddWidgetToScene(tm);
     tm.hide();
 
     // Load SettingWidget
-    var widget = ui.LoadFromFile("local://SettingsWidget.ui", false);	
+    widget = ui.LoadFromFile("local://SettingsWidget.ui", false);
     var channelsList = findChild(widget, "channelsList");
     var transmissionType = findChild(widget, "transmissionType");
     var participantsList = findChild(widget, "participantsList");
@@ -37,6 +60,12 @@ if (!server.IsRunning())
 
     if (inWorldVoiceSession)
     {
+        if (menu == null)
+        {
+            menu = ui.MainWindow().menuBar().addMenu("&Mumble VOIP");
+            menu.addAction("Show VOIP UI").triggered.connect(ShowMumbleUI);
+        }
+        
         var chlist = inWorldVoiceSession.GetChannels();
         ui.AddWidgetToScene(widget);
 
@@ -61,7 +90,7 @@ if (!server.IsRunning())
             inWorldVoiceSession.SetActiveChannel(channel);
             widget.resize(310, 50);
 
-            participantsList.styleSheet = "border-image: url(./data/assets/user_green.png) 3 3 3 3; border-top: 3px transparent;border-bottom: 3px transparent;border-right: 3px transparent;border-left: 3px transparent;";
+            participantsList.styleSheet = "border-image: url(user_green.png) 3 3 3 3; border-top: 3px transparent;border-bottom: 3px transparent;border-right: 3px transparent;border-left: 3px transparent;";
         }
     }
 
@@ -71,13 +100,13 @@ if (!server.IsRunning())
         {
             inWorldVoiceSession.DisableAudioReceiving();
             inWorldVoiceSession.DisableAudioSending();
-            transmissionType.styleSheet = "border-image: url(./data/assets/status_offline.png) 3 3 3 3; border-top: 3px transparent; border-bottom: 3px transparent; border-right: 3px transparent; border-left: 3px transparent;";
+            transmissionType.styleSheet = "border-image: url(status_offline.png) 3 3 3 3; border-top: 3px transparent; border-bottom: 3px transparent; border-right: 3px transparent; border-left: 3px transparent;";
         }
         if (rbCt.checked)
         {
             inWorldVoiceSession.EnableAudioReceiving();
             inWorldVoiceSession.EnableAudioSending();
-            transmissionType.styleSheet = "border-image: url(./data/assets/status_online.png) 3 3 3 3; border-top: 3px transparent; border-bottom: 3px transparent; border-right: 3px transparent; border-left: 3px transparent;";
+            transmissionType.styleSheet = "border-image: url(status_online.png) 3 3 3 3; border-top: 3px transparent; border-bottom: 3px transparent; border-right: 3px transparent; border-left: 3px transparent;";
         }
     }
 
@@ -104,7 +133,7 @@ if (!server.IsRunning())
                 plTableWidget.insertRow(rowCount + i);
                 plTableWidget.setItem(rowCount + i, 0, p);
                 muteButton[i] = new QPushButton("Mute");
-                //muteButton[i].styleSheet = "border-image: url(./data/assets/mute.png) 3 3 3 3; border-top: 3px transparent; border-bottom: 3px transparent; border-right: 3px transparent; border-left: 3px transparent;";
+                //muteButton[i].styleSheet = "border-image: url(mute.png) 3 3 3 3; border-top: 3px transparent; border-bottom: 3px transparent; border-right: 3px transparent; border-left: 3px transparent;";
 
                 muteButton[i].stylesheet = "border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde; min-width: 80px;";
                 plTableWidget.setCellWidget(rowCount + i, 1, muteButton[i]);
@@ -188,7 +217,10 @@ if (!server.IsRunning())
     }
 
     input.TopLevelInputContext().KeyPressed.connect(keyPressed);
-    inWorldVoiceSession.ParticipantJoined.connect(participantListChanged);
-    inWorldVoiceSession.ParticipantLeft.connect(participantListChanged);
-    inWorldVoiceSession.ChannelListChanged.connect(channelListChanged);
+    if (inWorldVoiceSession)
+    {
+        inWorldVoiceSession.ParticipantJoined.connect(participantListChanged);
+        inWorldVoiceSession.ParticipantLeft.connect(participantListChanged);
+        inWorldVoiceSession.ChannelListChanged.connect(channelListChanged);
+    }
 }
