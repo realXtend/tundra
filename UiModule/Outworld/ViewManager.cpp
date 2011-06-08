@@ -244,7 +244,7 @@ namespace UiServices
 
 		if(!settings.childGroups().contains(name)){
 			//QAction* a = new QAction(name,this);
-            QAction* a = owner_->GetFramework()->Ui()->MainWindow()->AddMenuAction(name, "Window");
+            QAction* a = owner_->GetFramework()->Ui()->MainWindow()->AddMenuAction("Window", name);
 			a->setCheckable(true);
 			actionGroup_->addAction(a);
 			//uiService_->AddExternalMenuAction(a, a->text(), "Window", 0, 50, true);
@@ -301,7 +301,7 @@ namespace UiServices
 			while(q.hasNext()){
 				QAction* a=q.next();
 				if(a->text()==name /*&& uiService_*/) //Check if uiservice is still available
-                    owner_->GetFramework()->Ui()->MainWindow()->removeAction(a);
+                    owner_->GetFramework()->Ui()->MainWindow()->RemoveMenuAction(a);
 					//todo!uiService_->RemoveExternalMenuAction(a);
 			}
 			settings.remove(name);
