@@ -28,10 +28,24 @@ widget_(widget)
     
     setLayout(v_box);
 
+    //Inherit dynamic properties of embedded widget
+    QListIterator<QByteArray> it(widget_->dynamicPropertyNames());
+    while(it.hasNext())
+    {
+        QString propertyName = it.next();
+        if (propertyName.isNull() || propertyName.isEmpty())
+            continue;
+        setProperty(propertyName.toStdString().c_str(), widget_->property(propertyName.toStdString().c_str()));
+    }
+
+    //Set parameters as dynamic properties
     int i = 1;
     while (i < params.size())
     {
-        setProperty(params.at(i-1).toStdString().c_str(), QVariant::fromValue(params.at(i)));
+        QString propertyName = params.at(i-1);
+        if (propertyName.isNull() || propertyName.isEmpty())
+            continue;
+        setProperty(propertyName.toStdString().c_str(), QVariant::fromValue(params.at(i)));
         i += 2;
     }
 }

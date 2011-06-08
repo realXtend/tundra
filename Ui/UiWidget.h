@@ -1,9 +1,8 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   UiProxyWidget.h
- *  @brief  Represents Naali UI widget created by embedding QWidget to the same
- *          canvas as the in-world 3D scene.
+ *  @file   UiWidget.h
+ *  @brief  Represents external UI widget created by embedding QWidget.
  */
 
 #ifndef incl_Ui_UiWidget_h
