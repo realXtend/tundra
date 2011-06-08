@@ -233,7 +233,7 @@ void UiMainWindow::SortMenus()
     menus_.clear();
 	//Create menus
 	foreach(QString new_menu, all_menus_)
-		menus_[new_menu] = AddMenu(new_menu);
+        menus_[new_menu] = menuBar()->addMenu(new_menu);
 	//Add actions
 	foreach(menu_action_pair_ pair, all_actions_)
 		menus_[pair.first]->addAction(pair.second);
