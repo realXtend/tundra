@@ -16,6 +16,7 @@
 #include "AssetFwd.h"
 #include "SceneFwd.h"
 #include "JavascriptFwd.h"
+#include "UiWidget.h"
 
 #ifndef QT_NO_SCRIPTTOOLS
 #include <QScriptEngineDebugger>
@@ -132,7 +133,7 @@ private:
 	QScriptEngineDebugger *debugger;
 	QScriptEngine* debuggerAttachedEngine;
 	bool debuggerAttachedEngineEvaluating;
-	QWidget *debuggerWindow;
+	UiWidget *debuggerWindow;
 	QAction *debuggerAction;
 #endif
 };

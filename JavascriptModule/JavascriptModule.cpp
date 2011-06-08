@@ -105,10 +105,9 @@ void JavascriptModule::PostInitialize()
 			{
 				connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
 				connect(debugger, SIGNAL(evaluationResumed(void)), this, SLOT(OnEvaluationResumed(void)));
-				debuggerWindow = (QWidget*) debugger->standardWindow();
-                UiWidget* debuggerWidget = framework_->Ui()->AddWidgetToWindow(debuggerWindow);
+                debuggerWindow = framework_->Ui()->AddWidgetToWindow((QWidget*) debugger->standardWindow(), Qt::Tool);
                 QAction* showDebugger = framework_->Ui()->MainWindow()->AddMenuAction("&Scripts", "Show Debugger");
-                connect(showDebugger, SIGNAL(triggered()), debuggerWidget, SLOT(toogleVisibility()));
+                connect(showDebugger, SIGNAL(triggered()), debuggerWindow, SLOT(toogleVisibility()));
 			}
 		}
 		else
@@ -177,6 +176,7 @@ void JavascriptModule::Uninitialize()
 					uiservice->RemoveWidgetFromScene(debuggerWindow);
 				}
                 */
+                framework_->Ui()->RemoveWidgetFromWindow(debuggerWindow);
 				debuggerWindow = 0;//It is removed with debugger
 			}
 
@@ -437,6 +437,7 @@ void JavascriptModule::OnToogleDebugging(bool checked)
 		{
 			//GetFramework()->UiService()->RemoveWidgetFromMenu(debuggerWindow);
 			//GetFramework()->UiService()->RemoveWidgetFromScene(debuggerWindow);
+            framework_->Ui()->RemoveWidgetFromWindow(debuggerWindow);
 			debuggerWindow = 0;//It is removed with debugger
 		}
 		if(debugger)
@@ -452,10 +453,9 @@ void JavascriptModule::OnToogleDebugging(bool checked)
 		if (debugger)
 		{
 			connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
-			debuggerWindow = (QWidget*) debugger->standardWindow();
-            UiWidget* debuggerWidget = framework_->Ui()->AddWidgetToWindow(debuggerWindow);
+            debuggerWindow = framework_->Ui()->AddWidgetToWindow((QWidget*) debugger->standardWindow(), Qt::Tool);
             QAction* showDebugger = framework_->Ui()->MainWindow()->AddMenuAction("&Scripts", "Show Debugger");
-            connect(showDebugger, SIGNAL(triggered()), debuggerWidget, SLOT(toogleVisibility()));
+            connect(showDebugger, SIGNAL(triggered()), debuggerWindow, SLOT(toogleVisibility()));
 		}
 	}
 
@@ -484,8 +484,6 @@ void JavascriptModule::OnEvaluationSuspended(void)
 	if (debuggerWindow)
 	{
 		debuggerWindow->setEnabled(true);
-        debuggerWindow->show();
-		//GetFramework()->UiService()->ShowWidget(debuggerWindow);
         debuggerWindow->show();
 	}
 }
