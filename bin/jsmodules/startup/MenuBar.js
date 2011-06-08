@@ -9,55 +9,56 @@ if (!framework.IsHeadless())
     var mainwin = ui.MainWindow();
 
     // File
-    var fileMenu = mainwin.AddMenu("&File");
+    var fileMenu = mainwin.AddMenu("&File", 100);
     
     // Load and save scene
-    var importWebAction = fileMenu.addAction(new QIcon("./data/ui/images/folder_closed.png"), "Import Web Scene");
+    var importWebAction = mainwin.AddMenuAction("&File", "Import Web Scene", new QIcon("./data/ui/images/folder_closed.png"));
     importWebAction.triggered.connect(OpenWebScene);
-    var exportAction = fileMenu.addAction(new QIcon("./data/ui/images/resource.png"), "Save as...");
+    var exportAction = mainwin.AddMenuAction("&File", "Save as...", new QIcon("./data/ui/images/resource.png"));
     exportAction.triggered.connect(SaveScene);
-    fileMenu.addSeparator();
+    //fileMenu.addSeparator();
     
     if (framework.GetModuleQObj("UpdateModule"))
-        fileMenu.addAction(new QIcon("./data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
+    	mainwin.AddMenuAction("&File", "Check Updates", new QIcon("./data/ui/images/icon/update.ico")).triggered.connect(CheckForUpdates);
        
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
     {
-        var disconnectAction = fileMenu.addAction(new QIcon("./data/ui/images/icon/disconnect.ico"), "Disconnect");
+        var disconnectAction = mainwin.AddMenuAction("&File", "Disconnect", new QIcon("./data/ui/images/icon/disconnect.ico"));
         disconnectAction.triggered.connect(Disconnect);
         client.Connected.connect(Connected);
         client.Disconnected.connect(Disconnected);
         Disconnected();
     }
-    fileMenu.addAction(new QIcon("./data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
+    mainwin.AddMenuAction("&File", "Quit", new QIcon("./data/ui/images/icon/system-shutdown.ico")).triggered.connect(Quit);
 
     // View
-    var viewMenu = mainwin.AddMenu("&View");
+    var viewMenu = mainwin.AddMenu("&View", 90);
     if (framework.GetModuleQObj("SceneStructure"))
     {
-        assetAction = viewMenu.addAction(new QIcon("./data/ui/images/fileIcons.png"), "Assets");
+        assetAction = mainwin.AddMenuAction("&View", "Assets", new QIcon("./data/ui/images/fileIcons.png"));
         assetAction.triggered.connect(OpenAssetsWindow);
-        sceneAction = viewMenu.addAction(new QIcon("./data/ui/images/fileList.png"), "Scene");
+        sceneAction = mainwin.AddMenuAction("&View", "Scene", new QIcon("./data/ui/images/fileList.png"));
         sceneAction.triggered.connect(OpenSceneWindow);
     }
 
     if (framework.GetModuleQObj("Console"))
-        viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
+    	mainwin.AddMenuAction("&View", "Console").triggered.connect(OpenConsoleWindow);
 
     if (framework.GetModuleQObj("DebugStats"))
-        viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
+    	mainwin.AddMenuAction("&View", "Profiler").triggered.connect(OpenProfilerWindow);
 
     if (framework.GetModuleQObj("Environment"))
     {
-        viewMenu.addAction("Terrain Editor").triggered.connect(OpenTerrainEditor);
-        viewMenu.addAction("Post-processing").triggered.connect(OpenPostProcessWindow);
+    	mainwin.AddMenuAction("&View", "Terrain Editor").triggered.connect(OpenTerrainEditor);
+    	mainwin.AddMenuAction("&View", "Post-processing").triggered.connect(OpenPostProcessWindow);
     }
 
     if (framework.GetModuleQObj("PythonScript"))
-        viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
+    	mainwin.AddMenuAction("&View", "Python Console").triggered.connect(OpenPythonConsole);
         
     // Settings
+    mainwin.AddMenu("&Settings", 80);
     if (framework.GetModuleQObj("CAVEStereo"))
     {
         var caveSettings = mainwin.AddMenuAction("&Settings", "Cave");
@@ -67,10 +68,10 @@ if (!framework.IsHeadless())
     }
     
     // Help
-    var helpMenu = mainwin.AddMenu("&Help");
-    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
-    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
-    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Mailing list").triggered.connect(OpenMailingListUrl);
+    var helpMenu = mainwin.AddMenu("&Help", 10);
+    mainwin.AddMenuAction("&Help", "Wiki", new QIcon("./data/ui/images/icon/browser.ico")).triggered.connect(OpenWikiUrl);
+    mainwin.AddMenuAction("&Help", "Doxygen", new QIcon("./data/ui/images/icon/browser.ico")).triggered.connect(OpenDoxygenUrl);
+    mainwin.AddMenuAction("&Help", "Mailing list", new QIcon("./data/ui/images/icon/browser.ico")).triggered.connect(OpenMailingListUrl);
     
     function NewScene() {
         scene.RemoveAllEntities();
