@@ -162,6 +162,12 @@ namespace Environment
         /// Shows terrain texture editor.
         void ShowPostProcessWindow();
 
+        /// Gets Terrain Editor UiWidget
+        UiWidget *GetTerrainEditorUiWidget();
+
+        /// Gets PostProcessing UiWidget
+        UiWidget *GetPostProcessingUiWidget();
+
     private slots:
         //! Handles the recreation of environment (relevant to Tundra only) when scene is cleared.
         /// @todo Hopefully this will only be a temporary solution.

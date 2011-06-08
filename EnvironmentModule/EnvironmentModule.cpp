@@ -179,6 +179,19 @@ namespace Environment
         terrainWeightEditor_widget_->show();
     }
 
+    UiWidget *EnvironmentModule::GetTerrainEditorUiWidget()
+    {
+        if (framework_->IsHeadless())
+            return 0;
+
+        if (terrainWeightEditor_widget_)
+            return terrainWeightEditor_widget_;
+
+        terrainWeightEditor_ = new TerrainWeightEditor(framework_);
+        terrainWeightEditor_widget_ = framework_->Ui()->AddWidgetToWindow(terrainWeightEditor_, Qt::Tool);
+        return terrainWeightEditor_widget_;
+    }
+
     void EnvironmentModule::ShowPostProcessWindow()
     {
         if (framework_->IsHeadless())
@@ -206,6 +219,24 @@ namespace Environment
             postprocess_widget_ = framework_->Ui()->AddWidgetToWindow(postprocess_dialog_, Qt::Tool);
             postprocess_widget_->show();
         }
+    }
+
+    UiWidget *EnvironmentModule::GetPostProcessingUiWidget()
+    {
+        if (framework_->IsHeadless())
+            return 0;
+
+        if (postprocess_widget_)
+            return postprocess_widget_;
+
+        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
+        if (renderer)
+        {
+            postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
+            postprocess_widget_ = framework_->Ui()->AddWidgetToWindow(postprocess_dialog_, Qt::Tool);
+            return postprocess_widget_;
+        }
+        return 0;
     }
 
     bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
