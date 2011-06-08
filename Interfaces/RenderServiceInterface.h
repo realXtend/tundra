@@ -126,6 +126,12 @@ namespace Foundation
 
         virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
 
+        //! Sets the current scenemanager
+        virtual void SetSceneManager(const QString &sceneName)=0;
+
+        //! Creates new scenemanager
+        virtual void CreateSceneManager(const QString &sceneName)=0;
+
     };
 }
 

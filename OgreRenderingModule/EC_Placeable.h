@@ -197,6 +197,7 @@ public slots:
         \param placeable new parent
      */
     void SetParent(ComponentPtr placeable);
+    void SetParent(EC_Placeable* placeable);
     
     //! translate
     /* 0 = x, 1 = y, 2 = z. returns new position */
@@ -298,6 +299,9 @@ private:
     
     //! selection priority for picking
     int select_priority_;
+
+    // Parent scene name
+    QString scenename_;
 };
 
 #endif

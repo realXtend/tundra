@@ -95,6 +95,7 @@ signals:
     void createOgre(const QString&);
     void deleteOgre(const QString&);
     void setOgre(const QString&);
+    void changeScene(const QString&);
     
 public slots:
     /// Connects and logs in. The QUrl's query parameters will be evaluated for the login data.
@@ -147,6 +148,7 @@ public slots:
     void emitCreateOgreSignal(const QString&);
     void emitDeleteOgreSignal(const QString&);
     void emitSetOgreSignal(const QString&);
+    void emitChangeSceneSignal(const QString&);
 
 private:
     // creates unique scenename TundraClientX | X = 0, 1, 2, ..., n; n € Z+

@@ -66,6 +66,7 @@ void TundraLogicModule::Initialize()
     connect(this, SIGNAL(deleteOgre(QString)), client_.get(), SLOT(emitDeleteOgreSignal(QString)));
     connect(this, SIGNAL(setOgre(QString)), client_.get(), SLOT(emitSetOgreSignal(QString)));
     connect(client_.get(), SIGNAL(aboutToDisconnect(QString)), this, SLOT(changeScene(QString)));
+    connect(client_.get(), SIGNAL(changeScene(QString)), this, SLOT(changeScene(QString)));
 
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
@@ -163,12 +164,18 @@ void TundraLogicModule::RemoveSyncManagerFromScene(const QString &name)
 
 void TundraLogicModule::changeScene(const QString &name)
 {
-    TundraLogicModule::LogInfo("Changing default scene to " + name.toStdString());
-    framework_->Scene()->SetDefaultScene(name);
-    TundraLogicModule::LogInfo("Changing syncmanager!");
-    syncManager_ = syncManagers_[name];
-    TundraLogicModule::LogInfo("Changing ogre scenemanager!");
-    emit setOgre(name);
+    // If we already have this scene selected, do nothing.
+    if (framework_->Scene()->GetDefaultScene() == framework_->Scene()->GetScene(name))
+        return;
+    else
+    {
+        TundraLogicModule::LogInfo("Changing ogre scenemanager!");
+        emit setOgre(name);
+        TundraLogicModule::LogInfo("Changing default scene to " + name.toStdString());
+        framework_->Scene()->SetDefaultScene(name);
+        TundraLogicModule::LogInfo("Changing syncmanager!");
+        syncManager_ = syncManagers_[name];
+    }
 }
 
 

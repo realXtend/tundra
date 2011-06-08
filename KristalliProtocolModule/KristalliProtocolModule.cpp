@@ -87,7 +87,7 @@ namespace
 }
 
 static const int cInitialAttempts = 1;
-static const int cReconnectAttempts = 5;
+static const int cReconnectAttempts = 3;
 
 KristalliProtocolModule::KristalliProtocolModule()
 :IModule(NameStatic())
@@ -205,8 +205,7 @@ void KristalliProtocolModule::Update(f64 frametime)
         const int cReconnectTimeout = 5 * 1000.f;
         if (reconnectTimer.Test())
         {
-            //            if (reconnectAttempts)
-            if (true)
+            if (reconnectAttempts)
             {
                 PerformConnection();
                 --reconnectAttempts;
@@ -214,7 +213,8 @@ void KristalliProtocolModule::Update(f64 frametime)
             else
             {
                 LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
-                framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, 0);
+                // If connection fails we just ignore it. Client has no use for information if initial connection failed.
+                //framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, 0);
                 reconnectTimer.Stop();
                 serverIp = "";
             }
@@ -499,6 +499,7 @@ void KristalliProtocolModule::connectionArrayUpdate()
                     Events::KristalliConnectionFailed msg(connection);
                     // This sends an event to client::logout() which calls KristalliProtocolModule->Disconnect()
                     // which sets serverConnection to zero.
+                    LogInfo("Sending message: CONNETION_FAILED");
                     framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, &msg);
                     // When we have iterated through whole connection array we remove all marked connection properties from list/map
                     cleanupList.append(connection);

@@ -141,11 +141,14 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
 
 void Client::Logout(bool fail, unsigned short removedConnection_)
 {
+    TundraLogicModule::LogInfo("Client::Logout method");
     QMapIterator<unsigned short, Ptr(kNet::MessageConnection)> sourceIterator = owner_->GetKristalliModule()->GetConnectionArray();
 
+    TundraLogicModule::LogInfo("Checking if sourceiterator has items!");
     if (!sourceIterator.hasNext())
         return;
 
+    TundraLogicModule::LogInfo("Yes it had!");
     // Scene to be removed is TundraClient_X | X = 0, 1, 2, 3, ..., n; n € Z+
     // removedConnection_ indicates which scene we are about to disconnect.
     QString sceneToRemove = "TundraClient_";
@@ -153,9 +156,11 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
 
     if (loginstate_list_[sceneToRemove] != NotConnected)
     {
+        TundraLogicModule::LogInfo("Loginstate was: " + ToString(loginstate_list_[sceneToRemove]));
+        TundraLogicModule::LogInfo("Client::Logout, emitting aboutToDisconnect");
+        emit aboutToDisconnect(sceneToRemove);
         if (GetConnection(removedConnection_))
         {
-            emit aboutToDisconnect(sceneToRemove);
             TundraLogicModule::LogInfo("Client::Logout, disconnecting connection!");
             owner_->GetKristalliModule()->Disconnect(fail, removedConnection_);
             TundraLogicModule::LogInfo(sceneToRemove.toStdString() + " disconnected!");
@@ -163,8 +168,9 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
         
         loginstate_ = NotConnected;
         client_id_ = 0;
-        
+        TundraLogicModule::LogInfo("Logout: Event tundra_disconnected!");
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
+        TundraLogicModule::LogInfo("Removing scene!");
         framework_->Scene()->RemoveScene(sceneToRemove);
 
         // We remove TundraClient_X from the scenenames_ map and when next new connection happens
@@ -475,6 +481,15 @@ void Client::emitDeleteOgreSignal(const QString &name)
 void Client::emitSetOgreSignal(const QString &name)
 {
     emit setOgre(name);
+}
+
+void Client::emitChangeSceneSignal(const QString &name)
+{
+    QStringList list = name.split("_");
+    QString number = list[1];
+    unsigned short key = number.toInt();
+    if (scenenames_.contains(key))
+        emit changeScene(name);
 }
 
 }
