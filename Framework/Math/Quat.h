@@ -15,11 +15,11 @@
 #ifdef QT_INTEROP
 #include <QQuaternion>
 #endif
-
+/*
 #ifdef IRRLICHT_INTEROP
 #include "Quaternion.h"
 #endif
-
+*/
 #ifdef OGRE_INTEROP
 #include <OgreQuaternion.h>
 #endif
@@ -227,6 +227,10 @@ public:
     /// Returns "Quat(axis:(x,y,z) angle:degrees)".
     std::string ToString2() const;
 
+    /// Parses a string that is of form "x,y,z,w" or "(x,y,z,w)" or "(x;y;z;w)" to a new quaternion.
+    static Quat FromString(const char *str);
+    static Quat FromString(const std::string &str) { return FromString(str.c_str()); }
+
     /// Multiplies two quaternions together.
     /// The product q1 * q2 returns a quaternion that concatenates the two orientation rotations. The rotation
     /// q2 is applied first before q1.
@@ -254,10 +258,12 @@ public:
     Quat(const Ogre::Quaternion &other) { w = other.w; x = other.x; y = other.y; z = other.z; }
     operator Ogre::Quaternion() const { return Ogre::Quaternion(w, x, y, z); }
 #endif
+/*
 #ifdef IRRLICHT_INTEROP
     Quat(const Quaternion &other) { w = other.w; x = other.x; y = other.y; z = other.z; }
     operator Quaternion() const { return Quaternion(x, y, z, w); }
 #endif
+*/
 #ifdef QT_INTEROP
     Quat(const QQuaternion &other) { w = other.scalar(); x = other.x(); y = other.y(); z = other.z(); }
     operator QQuaternion() const { return QQuaternion(w, x, y, z); }

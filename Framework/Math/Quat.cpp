@@ -431,6 +431,27 @@ std::string Quat::ToString2() const
     return str;
 }
 
+Quat Quat::FromString(const char *str)
+{
+    assume(str);
+    if (!str)
+        return Quat();
+    if (*str == '(')
+        ++str;
+    Quat q;
+    q.x = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.y = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.z = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.w = strtod(str, const_cast<char**>(&str));
+    return q;
+}
+
 Quat Quat::operator +(const Quat &rhs) const
 {
     return Quat(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w);
