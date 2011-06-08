@@ -87,6 +87,10 @@ namespace UiServices
 		QDockWidget* GetExternalMenuPanel(QString &widget);
 
 		void restoreWidget(QDockWidget *widget);
+
+    private slots:
+        void ModifyPanelVisibility(bool vis);
+        void DockVisibilityChanged(bool vis);
 		
     private:
 
@@ -96,6 +100,7 @@ namespace UiServices
 		//Pointer to owner
 		UiModule *owner_;
 
+        QMap<QString, bool> controller_panels_visibility_;
     };
 }
 
