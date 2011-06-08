@@ -31,6 +31,8 @@ public:
     /// Destroys main window and viewport.
     ~UiAPI();
 
+    void RegisterUiWidgetFactory(UiWidgetFactoryPtr factory);
+
 public slots:
     /// Returns the widget that is the main window of Naali.
     /** @return Main window pointer, or null pointer if we're running in headless mode. */
@@ -158,6 +160,8 @@ public slots:
     */
     void EmitOpenUrl(const QUrl &url);
 
+    UiWidgetFactoryPtr GetUiWidgetFactory(QString typeName);
+
 signals:
     /// Signals that context menu @c menu is about to open for specific objects.
     /** @param menu Menu to which append functionalities.
@@ -206,6 +210,7 @@ private:
     QPointer<QWidget> viewportWidget; ///< Viewport for the graphics scene.
     QList<QGraphicsProxyWidget *> widgets; ///< Internal list of proxy widgets in scene.
     QList<QGraphicsProxyWidget *> fullScreenWidgets; ///< List of full screen widgets.
+    std::vector<UiWidgetFactoryPtr> uiWidgetFactories;
 };
 
 #endif

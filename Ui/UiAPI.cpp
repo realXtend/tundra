@@ -8,6 +8,7 @@
 #include "QtUiAsset.h"
 #include "UiProxyWidget.h"
 #include "UiWidget.h"
+#include "IUiWidgetFactory.h"
 
 #include "Framework.h"
 #include "AssetAPI.h"
@@ -411,4 +412,27 @@ void UiAPI::DeleteCallingWidgetOnClose()
     QGraphicsProxyWidget *proxy = dynamic_cast<QGraphicsProxyWidget *>(sender());
     if (proxy && !proxy->isVisible())
         proxy->deleteLater();
+}
+
+void UiAPI::RegisterUiWidgetFactory(UiWidgetFactoryPtr factory)
+{
+    UiWidgetFactoryPtr existingFactory = GetUiWidgetFactory(factory->Type());
+    if (existingFactory)
+    {
+        LogWarning("UiAPI::RegisterUiWidgetFactory: Factory with type '" + factory->Type() + "' already registered.");
+        return;
+    }
+
+    assert(factory->Type() == factory->Type().trimmed());
+
+    uiWidgetFactories.push_back(factory);
+}
+
+UiWidgetFactoryPtr UiAPI::GetUiWidgetFactory(QString typeName)
+{
+    for(size_t i = 0; i < uiWidgetFactories.size(); ++i)
+        if (uiWidgetFactories[i]->Type().toLower() == typeName.toLower())
+            return uiWidgetFactories[i];
+
+    return UiWidgetFactoryPtr();
 }
