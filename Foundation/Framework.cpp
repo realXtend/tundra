@@ -121,8 +121,9 @@ namespace Foundation
             // This will make us load modules etc. correctly even if the working dir is something else
             // than our actual install dir.
             application = new Application(this, argc_, argv_);
+#ifndef _DEBUG
             application->InitializeSplash();
-
+#endif
             // Force install directory as the current working directory.
             /** \Todo: we may not want to do this in all cases, but there is a huge load of places
                 that depend on being able to refer to the install dir with .*/
