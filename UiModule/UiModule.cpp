@@ -147,7 +147,8 @@ namespace UiServices
        settings_widget_ = new CoreUi::SettingsWidget(ui_view_->scene(), this);
 
         //Listen to UiAPI
-        bool test = connect(framework_->Ui(), SIGNAL(CustomizeAddWidgetToWindow(UiWidget *)), SLOT(AddWidgetToWindow(UiWidget *)));
+        connect(framework_->Ui(), SIGNAL(CustomizeAddWidgetToWindow(UiWidget *)), SLOT(AddWidgetToWindow(UiWidget *)));
+        connect(framework_->Ui(), SIGNAL(CustomizeRemoveWidgetFromWindow(UiWidget *)), SLOT(RemoveWidgetFromScene(UiWidget *)));
 
     }
 

@@ -72,8 +72,9 @@ namespace UiServices
 		QDockWidget *qdoc = dynamic_cast<QDockWidget*>(sender());
 		if (!controller_panels_visibility_.contains(qdoc->windowTitle()))
 			return;
-        QString test2 = qdoc->windowTitle();
         controller_panels_visibility_[qdoc->windowTitle()] = vis;
+        if (qdoc->widget()->isVisible() != vis)
+            qdoc->widget()->setVisible(vis);
 	}
 
     void ExternalPanelManager::ModifyPanelVisibility(bool vis)
@@ -83,7 +84,7 @@ namespace UiServices
 			return;
         QDockWidget *qdoc = dynamic_cast<QDockWidget *>(uiwidget->parentWidget());
         QString name = qdoc->windowTitle();
-        if (vis)
+        if (vis && !controller_panels_visibility_[uiwidget->windowTitle()] )
         {
             qdoc->show();
             QList<QDockWidget *> docks = dynamic_cast<QMainWindow *>(qWin_)->tabifiedDockWidgets(qdoc);
@@ -91,15 +92,7 @@ namespace UiServices
 			foreach (value, docks)
 				dynamic_cast<QMainWindow *>(qWin_)->tabifyDockWidget(value, qdoc);
         }
-        else if(!vis && !controller_panels_visibility_[uiwidget->windowTitle()] /*&& qdoc->isVisible()*/)
-        {
-            QList<QDockWidget *> docks = dynamic_cast<QMainWindow *>(qWin_)->tabifiedDockWidgets(qdoc);
-			QDockWidget *value;
-			foreach (value, docks)
-				dynamic_cast<QMainWindow *>(qWin_)->tabifyDockWidget(value, qdoc);
-            uiwidget->show();
-        }
-        else
+        else if(!vis && controller_panels_visibility_[uiwidget->windowTitle()] /*&& qdoc->isVisible()*/)
             qdoc->hide();
     }
 
