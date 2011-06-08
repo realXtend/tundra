@@ -19,6 +19,7 @@
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 #include "UiProxyWidget.h"
+#include "UiWidget.h"
 #include "FrameAPI.h"
 #include "ConsoleAPI.h"
 #include "SceneManager.h"
@@ -67,6 +68,7 @@ Q_DECLARE_METATYPE(CookieJar*);
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
+Q_DECLARE_METATYPE(UiWidget*);
 Q_DECLARE_METATYPE(UiMainWindow*);
 Q_DECLARE_METATYPE(UiGraphicsView*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
@@ -261,6 +263,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<UiMainWindow*>(engine);
     qScriptRegisterQObjectMetaType<UiGraphicsView*>(engine);
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
+    qScriptRegisterQObjectMetaType<UiWidget*>(engine);
     qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
 
     // Add support to create proxy widgets in javascript side.
