@@ -38,6 +38,24 @@ Plane::Plane(const float3 &point, const float3 &normal_)
     Set(point, normal_);
 }
 
+Plane::Plane(const Ray &ray, const float3 &normal)
+{
+	float3 perpNormal = normal - normal.ProjectToNorm(ray.dir);
+	Set(ray.pos, perpNormal.Normalized());
+}
+
+Plane::Plane(const Line &line, const float3 &normal)
+{
+	float3 perpNormal = normal - normal.ProjectToNorm(line.dir);
+	Set(line.pos, perpNormal.Normalized());
+}
+
+Plane::Plane(const LineSegment &lineSegment, const float3 &normal)
+{
+	float3 perpNormal = normal - normal.ProjectTo(lineSegment.b - lineSegment.a);
+	Set(lineSegment.a, perpNormal.Normalized());
+}
+
 void Plane::Set(const float3 &v1, const float3 &v2, const float3 &v3)
 {
     assume(!Line::AreCollinear(v1, v2, v3));

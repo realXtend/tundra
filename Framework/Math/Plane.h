@@ -34,6 +34,10 @@ public:
     /// Constructs a plane by specifying a single point on the plane, and the surface normal.
     /// @param normal The direction the plane is facing. This vector must have been normalized in advance.
     Plane(const float3 &point, const float3 &normal);
+	/// Constructs a plane by specifying a line that lies on the plane, and the plane normal.
+	Plane(const Ray &ray, const float3 &normal);
+	Plane(const Line &line, const float3 &normal);
+	Plane(const LineSegment &lineSegment, const float3 &normal);
 
     /// The direction this plane is facing at.
     float3 normal;
