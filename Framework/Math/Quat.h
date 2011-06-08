@@ -52,7 +52,10 @@ public:
     /// @note The input data is not normalized after construction, this has to be done manually.
     Quat(float x, float y, float z, float w);
 
-    Quat(const float3 &rotationAxis, float rotationAngle);
+    /// Constructs this quaternion by specifying a rotation axis and the amount of rotation to be performed
+    /// about that axis.
+    /// @param rotationAxis The normalized rotation axis to rotate about.
+    Quat(const float3 &rotationAxis, float rotationAngleRadians);
 
     /// Returns the local +X axis in the post-transformed coordinate space. This is the same as transforming the vector (1,0,0) by this quaternion.
     float3 WorldX() const;
@@ -130,12 +133,13 @@ public:
     Quat Lerp(const Quat &target, float t) const;
     Quat Slerp(const Quat &target, float t) const;
 
-    /// Returns the angle between this and the target orientation (the shortest route).
+    /// Returns the angle between this and the target orientation (the shortest route) in radians.
     float AngleBetween(const Quat &target) const;
     /// Returns the axis of rotation to get from this orientation to target orientation (the shortest route).
     float3 AxisFromTo(const Quat &target) const;
 
-    void ToAxisAngle(float3 &rotationAxis, float &rotationAngle) const;
+    /// Returns the rotation axis and angle of this quaternion.
+    void ToAxisAngle(float3 &rotationAxis, float &rotationAngleRadians) const;
     /// Sets this quaternion by specifying the axis about which the rotation is performed, and the angle of rotation.
     /// @param rotationAxis The axis of rotation. This vector must be normalized to call this function.
     /// @param rotationAngle The angle of rotation in radians.
@@ -156,14 +160,14 @@ public:
     void LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp);
 
     /// Creates a new quaternion that rotates about the positive X axis by the given angle.
-    static Quat RotateX(float angle);
+    static Quat RotateX(float angleRadians);
     /// Creates a new quaternion that rotates about the positive Y axis by the given angle.
-    static Quat RotateY(float angle);
+    static Quat RotateY(float angleRadians);
     /// Creates a new quaternion that rotates about the positive Z axis by the given angle.
-    static Quat RotateZ(float angle);
+    static Quat RotateZ(float angleRadians);
 
     /// Creates a new Quat that rotates about the given axis by the given angle.
-    static Quat RotateAxisAngle(const float3 &axisDirection, float angle);
+    static Quat RotateAxisAngle(const float3 &axisDirection, float angleRadians);
 
     /// Creates a new quaternion that rotates sourceDirection vector (in world space) to coincide with the 
     /// targetDirection vector (in world space).
@@ -179,7 +183,7 @@ public:
     static Quat RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection,
         const float3 &sourceDirection2, const float3 &targetDirection2);
 
-    /// Creates a new Quat from the given sequence of Euler rotation angles.
+    /// Creates a new Quat from the given sequence of Euler rotation angles (in radians).
     /** The FromEulerABC function returns a matrix M = A(a) * B(b) * C(c). Rotation
         C is applied first, followed by B and then A. [indexTitle: FromEuler***] */
     static Quat FromEulerXYX(float x2, float y, float x);
@@ -195,7 +199,11 @@ public:
     static Quat FromEulerZXY(float z, float x, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
     static Quat FromEulerZYX(float z, float y, float x); ///< [similarOverload: FromEulerXYX] [hideIndex]
 
-    /// Extracts the rotation part of this quaternion into Euler rotation angles.
+    /// Extracts the rotation part of this quaternion into Euler rotation angles (in radians).
+    /// @note It is better to thinkg about the returned float3 as an array of three floats, and
+    /// not as a triple of xyz, because e.g. the .y component returned by ToEulerYXZ() does
+    /// not return the amount of rotation about the y axis, but contains the amount of rotation
+    /// in the second axis, in this case the x axis.
     float3 ToEulerXYX() const;
     float3 ToEulerXZX() const;
     float3 ToEulerYXY() const;

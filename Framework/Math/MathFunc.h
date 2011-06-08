@@ -58,8 +58,8 @@ inline float DegToRad(float degrees) { return degrees * (pi / 180.f); }
 inline float3 RadToDeg(const float3 &radians) { return radians * (180.f / pi); }
 inline float RadToDeg(float radians) { return radians * (180.f / pi); }
 
-inline float Cos(float angle) { return cos(angle); }
-inline float Sin(float angle) { return sin(angle); }
+inline float Cos(float angleRadians) { return cos(angleRadians); }
+inline float Sin(float angleRadians) { return sin(angleRadians); }
 inline float Sqrt(float v) { return sqrt(v); }
 inline float Pow(float base, float exp) { return pow(base, exp); }
 

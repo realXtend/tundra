@@ -137,7 +137,7 @@ public:
     static float3x3 FromRS(const Quat &rotate, const float3 &scale);
     static float3x3 FromRS(const float3x3 &rotate, const float3 &scale);
 
-    /// Creates a new float3x3 from the given sequence of Euler rotation angles.
+    /// Creates a new float3x3 from the given sequence of Euler rotation angles (in radians).
     /** The FromEulerABC function returns a matrix M = A(ea) * B(eb) * C(ec). Rotation
         C is applied first, followed by B and then A. [indexTitle: FromEuler***] */
     static float3x3 FromEulerXYX(float ex, float ey, float ex2);
@@ -305,14 +305,14 @@ public:
 
     /// Sets this matrix to perform rotation about the positive X axis which passes through
     /// the origin. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartX(float angle);
+    void SetRotatePartX(float angleRadians);
     /// Sets this matrix to perform rotation about the positive Y axis. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartY(float angle);
+    void SetRotatePartY(float angleRadians);
     /// Sets this matrix to perform rotation about the positive Z axis. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartZ(float angle);
+    void SetRotatePartZ(float angleRadians);
 
     /// Sets this matrix to perform rotation about the given axis and angle. [indexTitle: SetRotatePart/X/Y/Z]
-    void SetRotatePart(const float3 &axisDirection, float angle);
+    void SetRotatePart(const float3 &axisDirection, float angleRadians);
     /// Sets this matrix to perform the rotation expressed by the given quaternion. 
     void SetRotatePart(const Quat &orientation);
 
@@ -516,7 +516,11 @@ public:
 
     std::string ToString2() const;
 
-    /// Extracts the rotation part of this matrix into Euler rotation angles.
+    /// Extracts the rotation part of this matrix into Euler rotation angles (in radians).
+    /// @note It is better to thinkg about the returned float3 as an array of three floats, and
+    /// not as a triple of xyz, because e.g. the .y component returned by ToEulerYXZ() does
+    /// not return the amount of rotation about the y axis, but contains the amount of rotation
+    /// in the second axis, in this case the x axis.
     /// [Category: Extract] [indexTitle: ToEuler***]
     float3 ToEulerXYX() const;
     float3 ToEulerXZX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]

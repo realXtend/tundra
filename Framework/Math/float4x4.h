@@ -174,7 +174,7 @@ public:
     static float4x4 FromTRS(const float3 &translate, const float3x4 &rotate, const float3 &scale);
     static float4x4 FromTRS(const float3 &translate, const float4x4 &rotate, const float3 &scale);
 
-    /// Creates a new float4x4 from the given sequence of Euler rotation angles.
+    /// Creates a new float4x4 from the given sequence of Euler rotation angles (in radians).
     /** The FromEulerABC function returns a matrix M = A(a) * B(b) * C(c). Rotation
         C is applied first, followed by B and then A. [indexTitle: FromEuler***] */
     static float4x4 FromEulerXYX(float x2, float y, float x);
@@ -415,17 +415,17 @@ public:
 
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive X axis which passes through
     /// the origin. Leaves all other entries of this matrix untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartX(float angle);
+    void SetRotatePartX(float angleRadians);
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive Y axis. Leaves all other
     /// entries untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartY(float angle);
+    void SetRotatePartY(float angleRadians);
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive Z axis. Leaves all other
     /// entries untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartZ(float angle);
+    void SetRotatePartZ(float angleRadians);
 
-    /// Sets the 3-by-3 part of this matrix to perform rotation about the given axis and angle. Leaves all other
+    /// Sets the 3-by-3 part of this matrix to perform rotation about the given axis and angle (in radians). Leaves all other
     /// entries of this matrix untouched. [indexTitle: SetRotatePart/X/Y/Z]
-    void SetRotatePart(const float3 &axisDirection, float angle);
+    void SetRotatePart(const float3 &axisDirection, float angleRadians);
     /// Sets the 3-by-3 part of this matrix to perform the rotation expressed by the given quaternion. 
     /// Leaves all other entries of this matrix untouched.
     void SetRotatePart(const Quat &orientation);
@@ -711,7 +711,11 @@ public:
 
     std::string ToString2() const;
 
-    /// Extracts the rotation part of this matrix into Euler rotation angles.
+    /// Extracts the rotation part of this matrix into Euler rotation angles (in radians).
+    /// @note It is better to thinkg about the returned float3 as an array of three floats, and
+    /// not as a triple of xyz, because e.g. the .y component returned by ToEulerYXZ() does
+    /// not return the amount of rotation about the y axis, but contains the amount of rotation
+    /// in the second axis, in this case the x axis.
     /// [Category: Extract] [indexTitle: ToEuler***]
     float3 ToEulerXYX() const;
     float3 ToEulerXZX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
