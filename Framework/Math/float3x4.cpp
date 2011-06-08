@@ -52,6 +52,12 @@ float3x4::float3x4(const Quat &orientation)
     SetTranslatePart(0, 0, 0);
 }
 
+float3x4::float3x4(const Quat &orientation, const float3 &translation)
+{
+    SetRotatePart(orientation);
+    SetTranslatePart(translation);
+}
+
 TranslateOp float3x4::Translate(float tx, float ty, float tz)
 {
     return TranslateOp(tx, ty, tz);

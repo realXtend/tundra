@@ -105,7 +105,7 @@ float Quat::Normalize()
 
 Quat Quat::Normalized() const
 {
-    Quat copy;
+    Quat copy = *this;
     float success = copy.Normalize();
     assume(success > 0 && "Quat::Normalized failed!");
     return copy;
@@ -170,7 +170,7 @@ void Quat::Conjugate()
 
 Quat Quat::Conjugated() const
 {
-    Quat copy;
+    Quat copy = *this;
     copy.Conjugate();
     return copy;
 }

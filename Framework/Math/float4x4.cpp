@@ -59,6 +59,13 @@ float4x4::float4x4(const Quat &orientation)
     SetCol3(3, 0, 0, 0);
 }
 
+float4x4::float4x4(const Quat &orientation, const float3 &translation)
+{
+    SetRotatePart(orientation);
+    SetTranslatePart(translation);
+    SetRow(3, 0, 0, 0, 1);
+}
+
 TranslateOp float4x4::Translate(float tx, float ty, float tz)
 {
     return TranslateOp(tx, ty, tz);

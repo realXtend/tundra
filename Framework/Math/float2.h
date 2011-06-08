@@ -34,7 +34,7 @@ public:
     float2(float x, float y);
 
     /// Constructs this float2 from an array. The array must contain at least 2 elements.
-    float2(const float *data);
+    explicit float2(const float *data);
 
     /// Returns a pointer to first float2 element. The data is contiguous in memory.
     float *ptr();

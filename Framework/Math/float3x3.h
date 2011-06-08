@@ -108,7 +108,7 @@ public:
     float3x3(const float3 &col0, const float3 &col1, const float3 &col2);
 
     /// Constructs this float3x3 from the given quaternion.
-    float3x3(const Quat &orientation);
+    explicit float3x3(const Quat &orientation);
 
     /// Creates a new float3x3 that rotates about one of the principal axes by the given angle. [indexTitle: RotateX/Y/Z]
     /** Calling RotateX, RotateY or RotateZ is slightly faster than calling the more generic RotateAxisAngle function. */

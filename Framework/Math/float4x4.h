@@ -116,7 +116,11 @@ public:
     float4x4(const float4 &col0, const float4 &col1, const float4 &col2, const float4 &col3);
 
     /// Constructs this float4x4 from the given quaternion.
-    float4x4(const Quat &orientation);
+    explicit float4x4(const Quat &orientation);
+
+    /// Constructs this float4x4 from the given quaternion and translation.
+    /// Logically, the translation occurs after the rotation has been performed.
+    float4x4(const Quat &orientation, const float3 &translation);
 
     /// Creates a new transformation matrix that translates by the given offset.
     /** [Category: Create] */

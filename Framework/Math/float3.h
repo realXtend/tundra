@@ -45,7 +45,7 @@ public:
     float3(const float2 &xy, float z);
 
     /// Constructs this float3 from an array. The array must contain at least 3 elements. [noscript]
-    float3(const float *data);
+    explicit float3(const float *data);
 
     /// Returns a pointer to first float3 element. The data is contiguous in memory. [noscript]
     float *ptr();
