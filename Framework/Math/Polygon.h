@@ -40,12 +40,12 @@ public:
     bool IsConvex() const;
 
     /// Tests if all the points of this polygon lie in the same plane.
-    bool IsPlanar() const;
+    bool IsPlanar(float epsilon = 1e-3f) const;
 
     /// Returns true if no two nonconsecutive edges have a point in common.
     bool IsSimple() const;
 
-    /// Returns the plane this polygon fist most well into.
+    /// Returns the plane this polygon fits most well into.
     Plane GetPlane() const;
 
     /// Returns true if the edges of this polygon self-intersect.
