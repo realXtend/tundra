@@ -3,6 +3,8 @@
 #include "ViewManager.h"
 #include "NewViewDialog.h"
 #include "UiMainWindow.h"
+#include "UiAPI.h"
+#include "IUiWidgetFactory.h"
 
 #include <QSettings>
 #include <QMap>
@@ -207,20 +209,25 @@ namespace UiServices
 			while(i.hasNext()){
 				QString widgetName = i.next();
 				if(!currentWidgets.contains(widgetName)){
-					QString module="";
-					QVariantList properties;
+					QString type="";
+					QStringList properties;
 					settings.beginGroup(widgetName);
 					QStringList keys = settings.childKeys();
 					QListIterator<QString> j(keys);
 					while(j.hasNext()){
 						QString prop = j.next(); //Only has one element
-						if(prop=="DP_ModuleName")
-							module=settings.value(prop).toString();
+						if(prop=="type")
+							type=settings.value(prop).toString();
 						else
-							properties.append(settings.value(prop));
+                            properties.append(settings.value(prop).toString());
 					}
 					settings.endGroup();
-					//TODO!emit uiService_->SendToCreateDynamicWidget(widgetName,module,properties);
+                    if (!type.isEmpty())
+                    {
+                        UiWidgetFactoryPtr factory = owner_->GetFramework()->Ui()->GetUiWidgetFactory(type);
+                        if (factory)
+                            factory->CreateWidget(widgetName, properties);
+                    }
 				}
 			}
 			//Restore the state of main window
