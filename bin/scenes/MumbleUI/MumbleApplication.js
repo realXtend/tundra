@@ -71,7 +71,7 @@ if (!server.IsRunning())
 
         widget.x = 10;
         widget.y = 10;
-        widget.visible = true;
+        //widget.visible = true;
         widget.windowFlags = 0;
 
         channelsList.addItems(chlist);

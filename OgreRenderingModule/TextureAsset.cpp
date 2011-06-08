@@ -214,7 +214,7 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
     return img;
 }
 
-void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps)
+void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic)
 {
     if (newWidth == 0 || newHeight == 0)
     {
@@ -224,17 +224,22 @@ void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 co
     ///\todo Could optimize a lot here, don't create this temporary vector.
     ///\todo This only works for 32bpp images.
     std::vector<u32> data(newWidth * newHeight, color);
-    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps);
+    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps, dynamic);
 }
 
-void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps)
+void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps, bool dynamic)
 {
     PROFILE(TextureAsset_SetContents);
 
     if (!ogreTexture.get())
     {
-        ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
-            newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+        if (dynamic)
+            ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+                newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+        else
+            ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+                newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, Ogre::TU_STATIC_WRITE_ONLY);
+        
         if (!ogreTexture.get())
             return; ///\todo Log error
     }
@@ -298,7 +303,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
         ogreTexture->createInternalResources();
 }
 
-void TextureAsset::SetTextContent(int newWidth, int newHeight, const QString& text, const QColor& textColor, const QFont& font, const QBrush& backgroundBrush, const QPen& borderPen, int flags)
+void TextureAsset::SetTextContent(int newWidth, int newHeight, const QString& text, const QColor& textColor, const QFont& font, const QBrush& backgroundBrush, const QPen& borderPen, bool dynamic, int flags)
 {
     
     QRect max_rect(0,0, newWidth, newHeight);
@@ -325,6 +330,6 @@ void TextureAsset::SetTextContent(int newWidth, int newHeight, const QString& te
 
     QImage img = pixmap.toImage();
     u8* data = static_cast<u8* >(img.bits());
-    SetContents(newWidth, newHeight, data,  img.byteCount(), Ogre::PF_A8R8G8B8, false);
+    SetContents(newWidth, newHeight, data,  img.byteCount(), Ogre::PF_A8R8G8B8, false, dynamic);
  
 }

@@ -44,7 +44,7 @@ EC_3DCanvas::EC_3DCanvas(IModule *module) :
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
             texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
             Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
-            Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+            Ogre::TU_STATIC_WRITE_ONLY);
         if (texture.isNull())
             texture_name_ = "";
     }

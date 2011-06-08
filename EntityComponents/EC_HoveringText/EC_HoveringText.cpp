@@ -369,7 +369,8 @@ void EC_HoveringText::Redraw()
                                 textColor_, 
                                 font_, 
                                 *brush, 
-                                borderPen);
+                                borderPen,
+                                false);
 
          delete brush;
          brush = 0;

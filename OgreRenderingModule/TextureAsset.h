@@ -38,13 +38,13 @@ public:
     ///\todo Add individual surface set option.
     /// @param data The new contents of the texture. If you only want to resize the texture, and not fill it
     ///     with any data at this time, you may pass in a null pointer here.
-    void SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps);
+    void SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic);
 
     /// Sets this texture to the given size and fills it with the given color value.
-    void SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps);
+    void SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic);
 
     /// Sets given text to a texture.
-    void SetTextContent(int newWidth, int newHeight, const QString& text, const QColor& textColor, const QFont& font, const QBrush& backgroundBrush, const QPen& borderPen, int flags = Qt::AlignCenter | Qt::TextWordWrap);
+    void SetTextContent(int newWidth, int newHeight, const QString& text, const QColor& textColor, const QFont& font, const QBrush& backgroundBrush, const QPen& borderPen, bool dynamic, int flags = Qt::AlignCenter | Qt::TextWordWrap);
 
     //void RegenerateAllMipLevels();
 
