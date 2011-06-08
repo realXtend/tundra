@@ -2,8 +2,19 @@
 init_target (SkyXHydrax OUTPUT plugins)
 
 # Define source files
-file (GLOB CPP_FILES *.cpp)
-file (GLOB H_FILES EC_SkyX.h EC_Hydrax.h)
+if (SKYX)
+    file (GLOB CPP_FILES dllmain.cpp EC_SkyX.cpp)
+    file (GLOB H_FILES EC_SkyX.h)
+endif(SKYX)
+if (HYDRAX)
+    file (GLOB CPP_FILES dllmain.cpp EC_Hydrax.cpp)
+    file (GLOB H_FILES EC_Hydrax.h)
+endif(HYDRAX)
+if (SKYX AND HYDRAX)
+    file (GLOB CPP_FILES dllmain.cpp EC_SkyX.h EC_Hydrax.cpp)
+    file (GLOB H_FILES EC_SkyX.h EC_Hydrax.h)
+endif(SKYX AND HYDRAX)
+
 file (GLOB MOC_FILES ${H_FILES})
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
@@ -15,7 +26,6 @@ if (SKYX)
     add_definitions(-DSKYX_ENABLED)
     use_package (SKYX)
 endif(SKYX)
-
 if (HYDRAX)
     add_definitions(-DHYDRAX_ENABLED)
     use_package (HYDRAX)
@@ -32,7 +42,6 @@ link_ogre()
 if (SKYX)
     link_package(SKYX)
 endif(SKYX)
-
 if (HYDRAX)
     link_package (HYDRAX)
 endif(HYDRAX)

@@ -36,6 +36,10 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, time);
     Q_PROPERTY(Vector3df time READ gettime WRITE settime);
 
+public slots:
+    /// Returns position of the sun.
+    Vector3df SunPosition() const;
+
 private:
     EC_SkyXImpl *impl;
 

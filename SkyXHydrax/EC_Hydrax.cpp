@@ -15,7 +15,12 @@
 #include "OgreWorld.h"
 #include "Renderer.h"
 #include "EC_Camera.h"
+#include "Entity.h"
+#ifdef SKYX_ENABLED
+#include "EC_SkyX.h"
+#endif
 
+// The evil Windows min & max defs seems to leak here
 #ifdef min
 #undef min
 #endif
@@ -39,7 +44,7 @@ struct EC_HydraxImpl
         if (hydrax)
             hydrax->remove();
         SAFE_DELETE(hydrax);
-        //SAFE_DELETE(module); ///\todo < mem leak
+        //SAFE_DELETE(module); ///\todo < Possible mem leak?
     }
 
     Hydrax::Hydrax *hydrax;
@@ -105,5 +110,13 @@ void EC_Hydrax::UpdateAttribute(IAttribute *attr)
 
 void EC_Hydrax::Update(float frameTime)
 {
-    impl->hydrax->update(frameTime);
+    if (impl->hydrax)
+    {
+#ifdef SKYX_ENABLED
+        EntityList entities = ParentEntity()->ParentScene()->GetEntitiesWithComponent(EC_SkyX::TypeNameStatic());
+        if (!entities.empty())
+            impl->hydrax->setSunPosition(OgreRenderer::ToOgreVector3((*entities.begin())->GetComponent<EC_SkyX>()->SunPosition()));
+#endif
+        impl->hydrax->update(frameTime);
+    }
 }

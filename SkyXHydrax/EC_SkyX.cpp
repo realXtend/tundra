@@ -17,12 +17,14 @@
 #include "EC_Camera.h"
 #include "LoggingFunctions.h"
 
+// The evil Windows min & max defs seems to leak here
 #ifdef min
 #undef min
 #endif
 #ifdef max
 #undef max
 #endif
+
 #include "OgreConversionUtils.h"
 
 #include <Ogre.h>
@@ -71,6 +73,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
     }
     catch(Ogre::Exception &e)
     {
+        // Currently if we try to create more than one SkyX component we end up here due to Ogre internal name collision.
         LogError("Could not create EC_SkyX: " + std::string(e.what()));
     }
 }
@@ -78,6 +81,13 @@ EC_SkyX::EC_SkyX(Scene* scene) :
 EC_SkyX::~EC_SkyX()
 {
     delete impl;
+}
+
+Vector3df EC_SkyX::SunPosition() const
+{
+    if (impl->skyX)
+        return OgreRenderer::ToCoreVector(impl->skyX->getAtmosphereManager()->getSunPosition());
+    return Vector3df();
 }
 
 void EC_SkyX::UpdateAttribute(IAttribute *attr)
@@ -115,6 +125,7 @@ void EC_SkyX::Update(float frameTime)
     if (impl->skyX)
     {
         impl->skyX->update(frameTime);
+        // Do not trigger AttributeChanged for time as SkyX internals are authorative for it.
         settime(OgreRenderer::ToCoreVector(impl->skyX->getAtmosphereManager()->getOptions().Time));
     }
 }
