@@ -13,6 +13,8 @@
 #include "CameraModuleApi.h"
 #include "ModuleLoggingFunctions.h"
 #include "Core.h"
+#include "IUiWidgetFactory.h"
+#include "UiWidget.h"
 
 #include "CameraHandler.h"
 #include "CameraView.h"
@@ -28,7 +30,7 @@ namespace Camera
     class CameraHanlder;
     class CameraWidget;
 
-    class CAMERA_MODULE_API CameraModule :  public QObject, public IModule
+    class CAMERA_MODULE_API CameraModule : public IUiWidgetFactory, public IModule
     {
         Q_OBJECT
 
@@ -94,11 +96,11 @@ namespace Camera
         /*!Delete camera widget
          * \param widget camera widget
 		 */
-		void DeleteCameraWidget(QWidget *widget);
+		void DeleteCameraWidget(UiWidget *widget);
 
         /*!Delete the camera widget when it is hidden
 		 */
-        void OnCameraWidgetHidden();
+        void OnCameraWidgetVisibilityChanged(bool visible);
         /*!Create a new camera widget when new button is clicked
 		 */
         void OnNewButtonClicked();
@@ -120,12 +122,9 @@ namespace Camera
         void OnFarPlusButtonClicked(bool checked);
         void OnFarMinusButtonClicked(bool checked);
 
-        /*!Create a new camera (dynamic widget)
-         * \param name Name of dynamic widhet
-         * \param module Name of module
-         * \param properties Properties of dynamic widget
-		 */
-		void OnCreateNewCamera(const QString &name,const QString &module,const QVariantList properties);
+        virtual QString Type() const {return "CameraWidget";} 
+
+        virtual QWidget* CreateWidget(const QString &name, const QStringList &params = QStringList());
 
     private:
         Q_DISABLE_COPY(CameraModule);      
@@ -162,7 +161,7 @@ namespace Camera
         int click_distance_percent_;
 
         //! Widgets list to delete in the next update. Append widgets when delete button is clicked and when camera widgets is hidden
-        QList<CameraWidget*> dirty_widgets_;
+        QList<UiWidget*> dirty_widgets_;
     };
 }
 

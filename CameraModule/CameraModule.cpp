@@ -1,20 +1,18 @@
-//$ HEADER_NEW_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   CameraModule.cpp
- *  @brief  Simple OpenSim Empty module. receives the chat message and plays it 
- *			using the Festival Empty wuth the configuration established in the current session.
  */
 
 #include "StableHeaders.h"
 
 #include "CameraModule.h"
-//#include "UiServiceInterface.h"
 #include "EventManager.h"
 #include "SceneEvents.h"
 #include "EC_Placeable.h"
 #include "SceneAPI.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
 
 #include <QColor>
 
@@ -25,7 +23,6 @@ namespace Camera
 	const std::string CameraModule::module_name_ = std::string("CameraModule");
 
 	CameraModule::CameraModule() :
-	    QObject(),
         IModule(module_name_),
 		scene_event_category_(0),
         network_state_event_category_(0),
@@ -58,6 +55,8 @@ namespace Camera
         scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
 		connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)), SLOT(DefaultWorldSceneChanged(Scene::SceneManager *)));        
 
+        framework_->Ui()->RegisterUiWidgetFactory(UiWidgetFactoryPtr(this));
+
         //Generate widgets
         ReadConfig();
         
@@ -67,18 +66,9 @@ namespace Camera
         if (framework_->IsHeadless())
             return;
 
-        //Check if UiExternalIsAvailable 
-        /*
-        UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-        if (ui){            
-			//Create Action, insert into menu Views
-			QAction *action = new QAction("New Camera View",this);
-			if (ui->AddExternalMenuAction(action, "New Camera View", tr("View"))){
-				connect(action, SIGNAL(triggered()), SLOT(CreateNewCamera()));
-				connect(ui, SIGNAL(CreateDynamicWidget(const QString&,const QString&,const QVariantList)), SLOT(OnCreateNewCamera(const QString&,const QString&,const QVariantList)),Qt::DirectConnection);
-			}
-        }
-        */
+        QAction *action = framework_->Ui()->MainWindow()->AddMenuAction("&View", "New Camera View");
+        connect(action, SIGNAL(triggered()), SLOT(CreateNewCamera()));
+        
         connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));       
 	}    
 
@@ -169,21 +159,15 @@ namespace Camera
         GenerateValidWidgetTitle(title);
 
         CameraWidget* camera_view = new CameraWidget(title);
-        //Check if UiExternalIsAvailable 
-        /*UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-        if (ui)
-        {
-            ui->AddWidgetToScene(camera_view,true,true);
-			if (!restored)
-				ui->ShowWidget(camera_view);
-        }
-        */
+        UiWidget* camera_widget = framework_->Ui()->AddWidgetToWindow(camera_view);
+        camera_widget->show();
+
         //set qdoc features to flotable and movable, but not closable
-        QDockWidget *doc = dynamic_cast<QDockWidget*>(camera_view->parent());           
+        QDockWidget *doc = dynamic_cast<QDockWidget*>(camera_widget->parent());           
         if (doc)
             doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
         
-		connect(camera_view, SIGNAL(WidgetHidden()), this, SLOT(OnCameraWidgetHidden()));
+		connect(camera_widget, SIGNAL(visibilityChanged(bool)), this, SLOT(OnCameraWidgetVisibilityChanged(bool)));
         //insert title to camera view titles
         camera_view_titles_.insert(title);
         return camera_view;
@@ -201,7 +185,7 @@ namespace Camera
     {
 		//Set dynamic properties for dynamic widget
 		camera_view->setProperty("dynamic",QVariant::fromValue(true));
-		camera_view->setProperty("DP_ModuleName",QVariant("CameraModule"));
+		camera_view->setProperty("type",QVariant("CameraWidget"));
 		camera_view->setProperty("DP_Camera",QVariant::fromValue(camera_type));
 		camera_view->setProperty("DP_Projection",QVariant::fromValue(projection_type));
 		camera_view->setProperty("DP_Wireframe",QVariant::fromValue(wireframe));
@@ -264,33 +248,31 @@ namespace Camera
 
     void CameraModule::OnDeleteButtonClicked()
     {
-        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent());
+        UiWidget* camera_view = qobject_cast<UiWidget*>(sender()->parent()->parent()->parent());
 		if (!camera_view)
             return;
 		camera_view->hide();
     }
 
-    void CameraModule::OnCameraWidgetHidden()
+    void CameraModule::OnCameraWidgetVisibilityChanged(bool visible)
     {
-        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender());
+        UiWidget* camera_view = qobject_cast<UiWidget*>(sender());
 		if (!camera_view)
             return;
 		dirty_widgets_.append(camera_view);
     }
 
-    void CameraModule::DeleteCameraWidget(QWidget *widget)
+    void CameraModule::DeleteCameraWidget(UiWidget *widget)
     {		
-        CameraWidget* camera_view = qobject_cast<CameraWidget*>(widget);
+        CameraWidget* camera_view = qobject_cast<CameraWidget*>(widget->widget());
 		if (!camera_view)
             return;
 
 		camera_view->blockSignals(true);
-
-        //remove widget from scene
-        //UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-		//if (ui){
-		//	ui->RemoveWidgetFromScene(camera_view);
-		//}
+        
+        
+        //remove widget from window
+        framework_->Ui()->RemoveWidgetFromWindow(widget);
 
         //remove widget and handler from controller map
         QMap<CameraWidget*,CameraHandler*>::const_iterator i = controller_view_handlers_.find(camera_view);
@@ -430,14 +412,35 @@ namespace Camera
             i++;
         }
     }
-	void CameraModule::OnCreateNewCamera(const QString &name,const QString &module,const QVariantList properties)
-	{
-		if(module.toStdString()==module_name_)
-		{
-			if(properties.count()==3)
-				CreateNewCamera(name,true,properties.value(0).toInt(),properties.value(1).toInt(),properties.value(2).toBool());
-		}
-	}
+
+    QWidget* CameraModule::CreateWidget(const QString &name, const QStringList &params)
+    {
+        int camera_type = 0;
+        int projection_type = 1;
+        bool wireframe = false;
+
+        int i = 1;
+        while (i < params.size())
+        {
+            if (params.at(i-1).compare(QString("DP_Camera")) == 0) {
+                camera_type = params.at(i).toInt();
+            }
+            else if (params.at(i-1).compare(QString("DP_Projection")) == 0) {
+                projection_type = params.at(i).toInt();
+            }
+            else if (params.at(i-1).compare(QString("DP_Wireframe")) == 0) {
+                wireframe = (params.at(i).compare(QString("true"), Qt::CaseInsensitive) == 0);
+            }
+            i += 2;
+        }
+        
+        CameraWidget* cameraWidget = CreateCameraWidget(name, true);
+        
+        ConnectViewToHandler(cameraWidget, CreateCameraHandler(),camera_type, projection_type, wireframe);
+
+        return cameraWidget;
+    }
+
 }
 
 
