@@ -59,6 +59,9 @@ namespace DebugStats
         /// Creates and shows the participant window.
         ConsoleCommandResult ShowParticipantWindow(const StringVector &params);
 
+        /// Gets debug stats uiwidget
+        UiWidget *GetDebugStatsUiWidget();
+
     private slots:
         void AddProfilerWidgetToUi();
 

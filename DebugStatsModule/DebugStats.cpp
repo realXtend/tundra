@@ -149,6 +149,12 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWidget_ = framework_->Ui()->AddWidgetToWindow(profilerWindow_, Qt::Tool);
 }
 
+UiWidget *DebugStatsModule::GetDebugStatsUiWidget()
+{
+    AddProfilerWidgetToUi();
+    return profilerWidget_;
+}
+
 void DebugStatsModule::StartProfiling(bool visible)
 {
     profilerWindow_->SetVisibility(visible);
