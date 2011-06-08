@@ -54,6 +54,7 @@ See the following pages for help on working on the Tundra codebase.
 <li>\ref TundraDocumentfiles "Working with Tundra document files."
 <li>\ref MumbleVoipSetup "Setting up Mumble VOIP."
 <li>\ref UsingPdfDocuments "Using PDF documents with Tundra."
+<li>\ref SettingUpWebdav "Setting up an http asset storage with WebDAV."
 </ul>
 </td>
 </tr>
@@ -202,6 +203,7 @@ Classes:
 Implements the Tundra asset system and a pluggable asset provider architecture for streaming in asset data files.
 
 For more information, see
+- \ref SettingUpWebdav "Setting up an http asset storage with WebDAV."
 - Assets on localhost.
 - HTTP asset provider.
 - Implementing a new asset provider plugin.

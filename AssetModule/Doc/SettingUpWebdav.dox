@@ -1,0 +1,50 @@
+/**
+
+\page SettingUpWebdav Setting up an http asset storage with WebDAV
+
+WebDAV is required on the Tundra http asset storages so that assets can be reliably queried from the storage directory and any subdirectories.
+
+This page describes how to set up a WebDAV-enabled http asset storage, using the Apache http server, on Windows.
+
+1. Download the latest stable Apache binary package from http://httpd.apache.org/download.cgi.
+
+2. Install Apache on the same machine as the Tundra server. It is recommended to install Apache as a service so that the http server will start up automatically. The "Typical" setup option can be used.
+
+3. Note the Apache %Service Monitor icon on the right side of the taskbar. This will be used to stop and restart the server after making modifications to the server configuration (they do not take effect before restart.)
+
+4. Verify with a browser that the server works (ie. you see the "It works!" page at http://<your-hostname-or-ip-address-here>/
+
+   (replace <your-hostname-or-ip-address-here> with your actual IP address or hostname)
+
+5. Make a subdirectory called "data" into C:\\Program Files\\Apache Software %Foundation\\Apache2.2\\htdocs
+   (C:\\Program Files (x86)\\Apache Software %Foundation\\Apache2.2\\htdocs on 64bit systems)
+   This is the folder we will enable WebDAV for, and it will be the root directory for the http asset storage as well.
+
+6. Edit the Apache master configuration file C:\\Program Files\\Apache Software %Foundation\\Apache2.2\\conf\\httpd.conf
+   and uncomment (remove #) from the following lines to enable the loading of DAV modules:
+   - LoadModule dav_module modules/mod_dav.so
+   - LoadModule dav_fs_module modules/mod_dav_fs.so
+   - LoadModule dav_lock_module modules/mod_dav_lock.so
+
+7. Add the following lines to the end of the httpd.conf file. This will enable DAV access to the "data" subdirectory.
+
+\verbatim
+DavLockDB "C:/Program Files/Apache Software Foundation/Apache2.2/DavLock"
+<Location /data>
+    Dav On
+</Location>
+\endverbatim
+
+(replace the path with your actual Apache installation path if it is different)
+
+8. Stop and restart the http server using the Apache %Service Monitor.
+
+9. The following command line parameter can now be used for the Tundra server to specify the http storage to use. Note that we also tell its local directory. This is necessary for the asset conversion functionality (see \ref UsingPdfDocuments "Using PDF documents with Tundra") to work properly.
+
+\verbatim
+--storage "src=http://<your-hostname-or-ip-address-here>/data/;localdir=C:\Program Files\Apache Software Foundation\Apache2.2\htdocs\data\;name=web"
+\endverbatim
+
+   (replace <your-hostname-or-ip-address-here> with your actual IP address or hostname, and the local path with your actual Apache installation path if it is different)
+
+ */
