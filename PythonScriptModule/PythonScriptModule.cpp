@@ -849,6 +849,12 @@ namespace PythonScript
         return pythonqtconsole_;
     }
 
+    UiWidget *PythonScriptModule::GetPythonConsoleUiWidget()
+    {
+        CreateConsole();
+        return pythonqtconsole_widget_;
+    }
+
     void PythonScriptModule::ShowConsole()
     {
         CreateConsole();

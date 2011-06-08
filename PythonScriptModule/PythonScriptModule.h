@@ -93,6 +93,9 @@ namespace PythonScript
 
         PythonQtScriptingConsole* CreateConsole();
 
+        //Get UiWidget of the console
+        UiWidget *GetPythonConsoleUiWidget();
+
         /// Shows the Python script console.
         void ShowConsole();
 
