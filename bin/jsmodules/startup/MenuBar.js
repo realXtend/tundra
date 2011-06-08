@@ -37,31 +37,54 @@ if (!framework.IsHeadless())
     if (framework.GetModuleQObj("SceneStructure"))
     {
         assetAction = mainwin.AddMenuAction("&View", "Assets", new QIcon("./data/ui/images/fileIcons.png"));
-        assetAction.triggered.connect(OpenAssetsWindow);
-        sceneAction = mainwin.AddMenuAction("&View", "Scene", new QIcon("./data/ui/images/fileList.png"));
-        sceneAction.triggered.connect(OpenSceneWindow);
+        var assetswid = framework.GetModuleQObj("SceneStructure").GetAssetsUiWidget();
+		assetAction.triggered.connect(assetswid, assetswid.toogleVisibility);
+		assetswid.visibilityChanged.connect(assetAction, assetAction.setChecked);
+		
+		sceneAction = mainwin.AddMenuAction("&View", "Scene", new QIcon("./data/ui/images/fileList.png"));        
+		var scenewid = framework.GetModuleQObj("SceneStructure").GetSceneStructureUiWidget();
+		sceneAction.triggered.connect(scenewid, scenewid.toogleVisibility);
+		assetswid.visibilityChanged.connect(assetAction, assetAction.setChecked);		
     }
 
     if (framework.GetModuleQObj("Console"))
     	mainwin.AddMenuAction("&View", "Console").triggered.connect(OpenConsoleWindow);
 
     if (framework.GetModuleQObj("DebugStats"))
-    	mainwin.AddMenuAction("&View", "Profiler").triggered.connect(OpenProfilerWindow);
+	{
+    	debugstatAction = mainwin.AddMenuAction("&View", "Profiler");
+		var debugstatwid = framework.GetModuleQObj("DebugStats").GetDebugStatsUiWidget();
+		debugstatAction.triggered.connect(debugstatwid, debugstatwid.toogleVisibility);
+		debugstatwid.visibilityChanged.connect(debugstatAction, debugstatAction.setChecked);
+	}
 
     if (framework.GetModuleQObj("Environment"))
     {
-    	mainwin.AddMenuAction("&View", "Terrain Editor").triggered.connect(OpenTerrainEditor);
-    	mainwin.AddMenuAction("&View", "Post-processing").triggered.connect(OpenPostProcessWindow);
+    	terrainAction = mainwin.AddMenuAction("&View", "Terrain Editor")
+		var terrainwid = framework.GetModuleQObj("Environment").GetTerrainEditorUiWidget();
+		terrainAction.triggered.connect(terrainwid, terrainwid.toogleVisibility);
+		terrainwid.visibilityChanged.connect(terrainAction, terrainAction.setChecked);
+		
+		postprocessingAction = mainwin.AddMenuAction("&View", "Post-processing");
+		var postprocessingwid = framework.GetModuleQObj("Environment").GetPostProcessingUiWidget();
+		postprocessingAction.triggered.connect(postprocessingwid, postprocessingwid.toogleVisibility);
+		postprocessingwid.visibilityChanged.connect(postprocessingAction, postprocessingAction.setChecked);
     }
 
     if (framework.GetModuleQObj("PythonScript"))
-    	mainwin.AddMenuAction("&View", "Python Console").triggered.connect(OpenPythonConsole);
+	{
+    	pythonAction = mainwin.AddMenuAction("&View", "Python Console");
+		var pythonwid = framework.GetModuleQObj("PythonScript").GetPythonConsoleUiWidget();
+		pythonAction.triggered.connect(pythonwid, pythonwid.toogleVisibility);
+		pythonwid.visibilityChanged.connect(pythonAction, pythonAction.setChecked);
+	}
         
     // Settings
     mainwin.AddMenu("&Settings", 80);
     if (framework.GetModuleQObj("CAVEStereo"))
     {
         var caveSettings = mainwin.AddMenuAction("&Settings", "Cave");
+		//var caveSettingsWid
         caveSettings.triggered.connect(OpenCaveWindow);
         var stereoSettings = mainwin.AddMenuAction("&Settings", "Stereoscopy");
         stereoSettings.triggered.connect(OpenStereoscopyWindow);
