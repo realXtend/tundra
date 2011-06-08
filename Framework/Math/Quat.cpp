@@ -270,13 +270,31 @@ void Quat::SetFromAxisAngle(const float3 &axis, float angle)
     w = cosz;
 }
 
+/// See Eric Lengyel's Mathetmatics for 3D Game Programming and Computer Graphics 2nd ed., p. 92.
 template<typename M>
 void SetQuatFrom(Quat &q, const M &m)
 {
-    q.w = sqrt(1.f + m[0][0] + m[1][1] + m[2][2]) / 2.f;
-    q.x = (m[2][1] - m[1][2]) / (4.f * q.w);
-    q.y = (m[0][2] - m[2][0]) / (4.f * q.w);
-    q.z = (m[1][0] - m[0][1]) / (4.f * q.w);
+    // The rotation matrix is of form:
+    // 1 - 2y^2 - 2z^2     2xy - 2wz         2xz + 2wy
+    //    2xy + 2wz     1 - 2x^2 - 2z^2      2yz - 2wx
+    //    2xz - 2wy        2yz + 2wx      1 - 2x^2 - 2y^2
+
+    float r = 1.f + m[0][0] + m[1][1] + m[2][2]; // The element w is easiest picked up as a sum of the diagonals.
+    if (r > 1e-4f)
+    {
+        q.w = sqrtf(r) * 0.5f;
+        float inv4w = 1.f / (4.f * q.w);
+        q.x = (m[2][1] - m[1][2]) * inv4w;
+        q.y = (m[0][2] - m[2][0]) * inv4w;
+        q.z = (m[1][0] - m[0][1]) * inv4w;
+    }
+    else // W will be zero, so need to resort to an alternative extraction.
+    {
+        q.w = 0.f;
+        q.x = sqrtf(1.f + m[0][0] - m[1][1] - m[2][2]) * 0.5f;
+        q.y = sqrtf(1.f + m[1][1] - m[0][0] - m[2][2]) * 0.5f;
+        q.z = sqrtf(1.f + m[2][2] - m[0][0] - m[1][1]) * 0.5f;
+    }
     float oldLength = q.Normalize();
     assume(oldLength > 0.f);
 }
