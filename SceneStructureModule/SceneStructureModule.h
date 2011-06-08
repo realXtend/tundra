@@ -105,8 +105,14 @@ public slots:
     /// Toggles visibility of Scene Structure window.
     void ToggleSceneStructureWindow();
 
+    /// Get UiWidget of Scene Structure window
+    UiWidget *GetSceneStructureUiWidget();
+
     /// Toggles visibility of Assets window.
     void ToggleAssetsWindow();
+
+    /// Get UiWidget of Assets Window
+    UiWidget *GetAssetsUiWidget();
 
 private:
     QPointer<SceneStructureWindow> sceneWindow; ///< Scene Structure window.

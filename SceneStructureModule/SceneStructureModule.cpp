@@ -339,6 +339,21 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     sceneWidget->show();
 }
 
+UiWidget *SceneStructureModule::GetSceneStructureUiWidget()
+{
+    if (framework_->IsHeadless())
+        return 0;
+
+    if (sceneWidget)
+        return sceneWidget;
+
+    sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
+    sceneWindow->setWindowFlags(Qt::Tool);
+    sceneWindow->SetScene(GetFramework()->Scene()->GetDefaultScene());
+    sceneWidget = framework_->Ui()->AddWidgetToWindow(sceneWindow, Qt::Tool);
+    return sceneWidget;
+}
+
 void SceneStructureModule::ToggleAssetsWindow()
 {
     if (framework_->IsHeadless())
@@ -359,6 +374,20 @@ void SceneStructureModule::ToggleAssetsWindow()
 	
     assetsWidget = framework_->Ui()->AddWidgetToWindow(assetsWindow, Qt::Tool);
     assetsWidget->show();
+}
+
+UiWidget *SceneStructureModule::GetAssetsUiWidget()
+{
+    if (framework_->IsHeadless())
+        return 0;
+
+    if (assetsWidget)
+        return assetsWidget;
+
+    assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
+    assetsWindow->setWindowFlags(Qt::Tool);	
+    assetsWidget = framework_->Ui()->AddWidgetToWindow(assetsWindow, Qt::Tool);
+    return assetsWidget;
 }
 
 void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
