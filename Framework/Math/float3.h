@@ -91,6 +91,13 @@ public:
     /// Returns "(x, y, z)". [noscript]
     std::string ToString() const;
 
+    /// Returns "x y z". This is the preferred format for the float3 if it has to be serialized to a string for machine transfer.
+    std::string SerializeToString() const;
+
+    /// Parses a string that is of form "x,y,z" or "(x,y,z)" or "(x;y;z)" or "x y z" to a new float3.
+    static float3 FromString(const char *str);
+    static float3 FromString(const std::string &str) { return FromString(str.c_str()); }
+
     /// Returns x + y + z.
     float SumOfElements() const;
     /// Returns x * y * z.

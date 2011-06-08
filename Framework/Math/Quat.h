@@ -227,7 +227,10 @@ public:
     /// Returns "Quat(axis:(x,y,z) angle:degrees)".
     std::string ToString2() const;
 
-    /// Parses a string that is of form "x,y,z,w" or "(x,y,z,w)" or "(x;y;z;w)" to a new quaternion.
+    /// Returns "x y z w". This is the preferred format for the quaternion if it has to be serialized to a string for machine transfer.
+    std::string SerializeToString() const;
+
+    /// Parses a string that is of form "x,y,z,w" or "(x,y,z,w)" or "(x;y;z;w)" or "x y z w" to a new quaternion.
     static Quat FromString(const char *str);
     static Quat FromString(const std::string &str) { return FromString(str.c_str()); }
 

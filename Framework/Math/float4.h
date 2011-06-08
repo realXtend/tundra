@@ -114,6 +114,12 @@ public:
 
     /// Returns "(x, y, z, w)".
     std::string ToString() const;
+    /// Returns "x y z w". This is the preferred format for the float4 if it has to be serialized to a string for machine transfer.
+    std::string SerializeToString() const;
+
+    /// Parses a string that is of form "x,y,z,w" or "(x,y,z,w)" or "(x;y;z;w)" or "x y z w" to a new float4.
+    static float4 FromString(const char *str);
+    static float4 FromString(const std::string &str) { return FromString(str.c_str()); }
 
     /// Returns x + y + z + w.
     float SumOfElements() const;

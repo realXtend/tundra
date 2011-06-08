@@ -135,6 +135,28 @@ std::string float2::ToString() const
     return std::string(str);
 }
 
+std::string float2::SerializeToString() const
+{ 
+    char str[256];
+    sprintf(str, "%f %f", x, y);
+    return std::string(str);
+}
+
+float2 float2::FromString(const char *str)
+{
+    assume(str);
+    if (!str)
+        return float2::nan;
+    if (*str == '(')
+        ++str;
+    float2 f;
+    f.x = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    f.y = strtod(str, const_cast<char**>(&str));
+    return f;
+}
+
 float float2::SumOfElements() const
 {
     return x + y;

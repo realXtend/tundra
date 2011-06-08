@@ -431,6 +431,13 @@ std::string Quat::ToString2() const
     return str;
 }
 
+std::string Quat::SerializeToString() const
+{ 
+    char str[256];
+    sprintf(str, "%f %f %f %f", x, y, z, w);
+    return std::string(str);
+}
+
 Quat Quat::FromString(const char *str)
 {
     assume(str);

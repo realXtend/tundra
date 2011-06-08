@@ -77,14 +77,21 @@ public:
     bool Equals(const float2 &rhs, float epsilon = 1e-3f) const;
     bool Equals(float x, float y, float epsilon = 1e-3f) const;
 
-    /// Returns "(x, y)" .
+    /// Returns "(x, y)".
     std::string ToString() const;
 
-    /// Returns x + y .
+    /// Returns "x y". This is the preferred format for the float2 if it has to be serialized to a string for machine transfer.
+    std::string SerializeToString() const;
+
+    /// Parses a string that is of form "x,y" or "(x,y)" or "(x;y)" or "x y" to a new float2.
+    static float2 FromString(const char *str);
+    static float2 FromString(const std::string &str) { return FromString(str.c_str()); }
+
+    /// Returns x + y.
     float SumOfElements() const;
-    /// Returns x * y .
+    /// Returns x * y.
     float ProductOfElements() const;
-    /// Returns (x+y)/2 .
+    /// Returns (x+y)/2.
     float AverageOfElements() const;
     /// Returns min(x, y).
     float MinElement() const;

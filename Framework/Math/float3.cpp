@@ -140,6 +140,31 @@ std::string float3::ToString() const
     return std::string(str);
 }
 
+std::string float3::SerializeToString() const
+{ 
+    char str[256];
+    sprintf(str, "%f %f %f", x, y, z);
+    return std::string(str);
+}
+
+float3 float3::FromString(const char *str)
+{
+    assume(str);
+    if (!str)
+        return float3::nan;
+    if (*str == '(')
+        ++str;
+    float3 f;
+    f.x = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    f.y = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    f.z = strtod(str, const_cast<char**>(&str));
+    return f;
+}
+
 float float3::SumOfElements() const
 {
     return x + y + z;
