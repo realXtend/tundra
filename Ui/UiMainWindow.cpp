@@ -191,9 +191,9 @@ QAction *UiMainWindow::AddMenuAction(const QString &menuName, const QString &act
         return 0;
 
     QAction *act = menu->addAction(icon, actionName);
-
     all_actions_[QString::number(100 - priority) + "_" + actionName] = menu_action_pair_(menuName, act);
     act->setParent(0);
+    act->setCheckable(true);
     SortMenus();
     return all_actions_[QString::number(100 - priority) + "_" + actionName].second;
     //return menu->addAction(icon, actionName);
