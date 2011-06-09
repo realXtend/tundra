@@ -133,10 +133,13 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
         protocol = owner_->GetKristalliModule()->defaultTransport;
     }
 
+    QString newConName = getUniqueSceneName();
+    TundraLogicModule::LogInfo("Using " + newConName.toStdString() + " as key for this connection attempt!");
+
     owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, protocol);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
-    saveProperties(getUniqueSceneName());
+    saveProperties(newConName);
 }
 
 void Client::Logout(bool fail, unsigned short removedConnection_)
@@ -181,6 +184,7 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
         client_id_list_.remove(sceneToRemove);
         properties_list_.remove(sceneToRemove);
         scenenames_.remove(removedConnection_);
+        TundraLogicModule::LogInfo("DEBUG: Scenename " + sceneToRemove.toStdString() + " now available for usage!");
 
         if (!scenenames_.isEmpty())
             owner_->changeScene(scenenames_.constBegin().value());
@@ -245,9 +249,33 @@ void Client::CheckLogin()
     // Checklogin only happens if atleast one connection is made in KristalliProtocolModule and set to ConnectionOK state.
     while (connectionIterator.hasNext() && loginstateIterator.hasNext())
     {
-        propertiesIterator.next();
         connectionIterator.next();
+        propertiesIterator.next();
         loginstateIterator.next();
+
+        // Grep number from scenename; list[0] = TundraClient/TundraServer and list[1] = 0, 1, 2, ..., n: n € Z+
+        // If we have multiple connections and one of them gets disconnected, our serverconnection map has "missing" key
+        // while client has properties for it if it is making new connection. When this happens we compare if serverConnection
+        // key is higher of value than loginstateIterator key after we grep the number out of it. If so, we proceed to next item
+        // in loginstate and properties iterator.
+        QStringList list;
+        QString number;
+        unsigned short temp;
+
+        while (true)
+        {
+            list = loginstateIterator.key().split("_");
+            number = list[1];
+            temp = number.toInt();
+
+            if (temp < connectionIterator.key())
+            {
+                propertiesIterator.next();
+                loginstateIterator.next();
+            }
+            else
+                break;
+        }
 
         switch (loginstateIterator.value())
         {
