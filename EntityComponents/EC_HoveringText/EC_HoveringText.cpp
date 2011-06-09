@@ -55,6 +55,9 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 
+    if (framework_->IsHeadless())
+        return;
+
     visibility_animation_timeline_->setFrameRange(0,100);
     visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
     visibility_timer_->setSingleShot(true);
@@ -72,6 +75,8 @@ EC_HoveringText::~EC_HoveringText()
 
 void EC_HoveringText::Destroy()
 {
+    if (framework_->IsHeadless())
+        return;
     if (!ViewEnabled())
         return;
 
