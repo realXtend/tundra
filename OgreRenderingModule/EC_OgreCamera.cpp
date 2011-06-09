@@ -36,9 +36,7 @@ EC_OgreCamera::~EC_OgreCamera()
         RendererPtr renderer = renderer_.lock();
         if (renderer->GetCurrentCamera() == camera_)
             renderer->SetCurrentCamera(0);
-        scenename_= GetParentSceneName();
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager(scenename_);
-        scene_mgr->destroyCamera(camera_);
+        renderer->GetSceneManager()->destroyCamera(camera_);
         camera_ = 0;
     }
 }
@@ -52,12 +50,6 @@ void EC_OgreCamera::AutoSetPlaceable()
         if (placeable)
             SetPlaceable(placeable);
     }
-}
-
-void EC_OgreCamera::SetPlaceable(EC_Placeable* placeable)
-{
-     ComponentPtr ptr = placeable->GetParentEntity()->GetComponent(placeable->TypeName(), placeable->Name()); //hack to get the shared_ptr to this component
-     SetPlaceable(ptr);
 }
 
 void EC_OgreCamera::SetPlaceable(ComponentPtr placeable)
@@ -188,8 +180,7 @@ void EC_OgreCamera::UpdateSignals()
         if (!camera_)
         {
             RendererPtr renderer = renderer_.lock();
-            scenename_= GetParentSceneName();
-            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager(scenename_);
+            Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
             Ogre::Viewport* viewport = renderer->GetViewport();
             
             camera_ = scene_mgr->createCamera(renderer->GetUniqueObjectName("EC_OgreCamera"));

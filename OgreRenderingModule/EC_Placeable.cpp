@@ -76,7 +76,7 @@ EC_Placeable::~EC_Placeable()
     if (renderer_.expired())
         return;
     RendererPtr renderer = renderer_.lock();
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager(scenename_);
+    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
                     
     if (scene_node_ && link_scene_node_)
     {
@@ -108,12 +108,6 @@ void EC_Placeable::SetParent(ComponentPtr placeable)
     DetachNode();
     parent_ = placeable;
     AttachNode();
-}
-
-void EC_Placeable::SetParent(EC_Placeable* placeable)
-{
-        ComponentPtr ptr = placeable->GetParentEntity()->GetComponent(placeable->TypeName(), placeable->Name()); //hack to get the shared_ptr to this component
-        SetParent(ptr);
 }
 
 Vector3df EC_Placeable::GetPosition() const
@@ -259,7 +253,7 @@ void EC_Placeable::AttachNode()
     
     if (!parent_)
     {
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager(scenename_);
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         parent_node = scene_mgr->getRootSceneNode();
     }
     else
@@ -288,7 +282,7 @@ void EC_Placeable::DetachNode()
     
     if (!parent_)
     {
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager(scenename_);
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         parent_node = scene_mgr->getRootSceneNode();
     }
     else

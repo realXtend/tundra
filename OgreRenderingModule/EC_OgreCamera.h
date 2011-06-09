@@ -68,7 +68,6 @@ public:
         \param placeable placeable component
      */
     void SetPlaceable(ComponentPtr placeable);
-    void SetPlaceable(EC_Placeable*);
 
 public slots:
     //! automatically find the placeable and set it
@@ -141,9 +140,6 @@ private:
     
     //! Ogre camera
     Ogre::Camera* camera_;
-
-    // parent scenename
-    QString scenename_;
 
 };
 

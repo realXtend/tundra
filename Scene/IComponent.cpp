@@ -86,16 +86,6 @@ Scene::SceneManager* IComponent::GetParentScene() const
     return parent_entity_->GetScene();
 }
 
-QString IComponent::GetParentSceneName() const
-{
-        if (!parent_entity_){
-                std::cout<<"No Parent Entity found"<<std::endl;
-        return 0;
-        }
-    return parent_entity_->GetScene()->Name();
-
-}
-
 void IComponent::SetNetworkSyncEnabled(bool enabled)
 {
     network_sync_ = enabled;

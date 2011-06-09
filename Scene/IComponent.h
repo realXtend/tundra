@@ -157,8 +157,6 @@ public:
     IAttribute* GetAttribute(const QString &name) const;
 
 public slots:
-    QString GetParentSceneName() const;
-
     /// Returns a pointer to the Naali framework instance.
     Foundation::Framework *GetFramework() const { return framework_; }
 
