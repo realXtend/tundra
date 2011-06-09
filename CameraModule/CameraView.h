@@ -38,9 +38,9 @@ namespace Camera
         //! Get camera view renderer
         QLabel* GetRenderer() { return reinterpret_cast<QLabel*>(renderer);};
 
-	signals:
-        //! Emit when the widget is hidden
-        void WidgetHidden();
+	//signals:
+ //       //! Emit when the widget is hidden
+ //       void WidgetHidden();
 
     public slots:
         /*! set parent widget title
@@ -60,8 +60,8 @@ namespace Camera
          */
 		void UpdateWireframe(const int wireframe);
 
-    protected:
-        void hideEvent(QHideEvent *event);
+    //protected:
+    //    void hideEvent(QHideEvent *event);
 
     private:
         //! Render QLabel
