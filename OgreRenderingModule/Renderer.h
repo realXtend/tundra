@@ -254,8 +254,9 @@ namespace OgreRenderer
 
         //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
         /*! \param plugin_filename path & filename of the Ogre plugins file
+            \return QStringList Succesfully loaded plugins.
          */
-        void LoadPlugins(const std::string& plugin_filename);
+        QStringList LoadPlugins(const std::string& plugin_filename);
 
         //! Sets up Ogre resources based on resources.cfg
         void SetupResources();
