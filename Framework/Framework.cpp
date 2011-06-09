@@ -107,15 +107,15 @@ Framework::Framework(int argc, char** argv) :
 
 Framework::~Framework()
 {
-    // Delete the QObjects that don't have a parent.
-    delete input;
-    delete asset;
-    delete audio;
-    delete plugin;
-    delete ui;
+    SAFE_DELETE(input);
+    SAFE_DELETE(asset);
+    SAFE_DELETE(audio);
+    SAFE_DELETE(plugin);
+    SAFE_DELETE(ui);
 #ifdef PROFILING
-    delete profiler;
+    SAFE_DELETE(profiler);
 #endif
+    SAFE_DELETE(console);
 
     // This delete must be the last one in Framework since application derives QApplication.
     // When we delete QApplication, we must have ensured that all QObjects have been deleted.
