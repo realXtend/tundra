@@ -32,4 +32,7 @@ public:
 
     /// Parses the specified .xml file and loads and executes all plugins specified in that file.
     void LoadPluginsFromXML(QString pluginListFilename);
+
+    void UnloadPlugins();
+
 };

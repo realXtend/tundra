@@ -82,6 +82,9 @@ public:
     /// Returns all command for introspection purposes.
     const CommandMap &Commands() const { return commands; }
 
+    /// Erases all registered console commands and stops the native input thread.
+    void Reset();
+
 public slots:
     /// Registers a new console command which invokes a slot on the specified QObject.
     /** @param name The function name to use for this command.

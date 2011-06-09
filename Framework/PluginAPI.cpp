@@ -82,7 +82,16 @@ void PluginAPI::LoadPlugin(const QString &filename)
         return;
     }
 
+    Plugin p = { module };
+    plugins.push_back(p);
     mainEntryPoint(owner);
+}
+
+void PluginAPI::UnloadPlugins()
+{
+    for(std::list<Plugin>::reverse_iterator iter = plugins.rbegin(); iter != plugins.rend(); ++iter)
+        FreeLibrary(iter->libraryHandle);
+    plugins.clear();
 }
 
 QString LookupRelativePath(QString path)

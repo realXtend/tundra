@@ -40,8 +40,7 @@ isHeadless_(isHeadless)
 
 AssetAPI::~AssetAPI()
 {
-    delete assetCache;
-    delete diskSourceChangeWatcher;
+    Reset();
 }
 
 void AssetAPI::OpenAssetCache(QString directory)
@@ -614,6 +613,22 @@ void AssetAPI::ForgetAllAssets()
 
     assets.clear();
     currentTransfers.clear();
+}
+
+void AssetAPI::Reset()
+{
+    ForgetAllAssets();
+    SAFE_DELETE(assetCache);
+    SAFE_DELETE(diskSourceChangeWatcher);
+    assets.clear();
+    pendingDownloadRequests.clear();
+    assetTypeFactories.clear();
+    defaultStorage.reset();
+    readyTransfers.clear();
+    assetDependencies.clear();
+    currentUploadTransfers.clear();
+    currentTransfers.clear();
+    providers.clear();
 }
 
 std::vector<AssetTransferPtr> AssetAPI::PendingTransfers()

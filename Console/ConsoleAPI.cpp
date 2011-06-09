@@ -39,6 +39,19 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
     shellInputThread = boost::shared_ptr<ShellInputThread>(new ShellInputThread);
 }
 
+ConsoleAPI::~ConsoleAPI()
+{
+    Reset();
+}
+
+void ConsoleAPI::Reset()
+{
+    commands.clear();
+    inputContext.reset();
+    SAFE_DELETE(consoleWidget);
+    shellInputThread.reset();
+}
+
 QVariant ConsoleCommand::Invoke(const QStringList &params)
 {
     QVariant returnValue;
@@ -57,11 +70,6 @@ QVariant ConsoleCommand::Invoke(const QStringList &params)
     emit Invoked(params);
 
     return returnValue;
-}
-
-ConsoleAPI::~ConsoleAPI()
-{
-    // note: consoleWidget is already deleted here by its parent graphics scene/view.
 }
 
 ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &desc)

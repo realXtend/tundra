@@ -202,7 +202,7 @@ void ProfilerNodeTree::RemoveThreadRootBlock()
         owner_->RemoveThreadRootBlock(this);
 }
 
-Profiler::~Profiler()
+void Profiler::Reset()
 {
     // We are going down.. tell all root blocks that they don't need to notify back to the Profiler that they've been deleted.
     // i.e. 'detach' all the (thread specific) root blocks so that they delete themselves at their leisure when their threads die.
@@ -210,4 +210,9 @@ Profiler::~Profiler()
     for(std::list<ProfilerNodeTree*>::iterator iter = thread_root_nodes_.begin(); iter != thread_root_nodes_.end(); ++iter)
         (*iter)->MarkAsRootBlock(0);
     mutex_.unlock();
+}
+
+Profiler::~Profiler()
+{
+    Reset();
 }

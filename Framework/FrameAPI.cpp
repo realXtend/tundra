@@ -38,6 +38,11 @@ currentFrameNumber(0)
 
 FrameAPI::~FrameAPI()
 {
+    Reset();
+}
+
+void FrameAPI::Reset()
+{
     qDeleteAll(delayedSignals_);
 }
 

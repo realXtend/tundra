@@ -333,7 +333,7 @@ class Profiler
 {
 public:
 Profiler()
-    :current_node_(&EmptyDeletor),
+    :/*current_node_(&EmptyDeletor),*/
         root_("Root")
         {
         }
@@ -387,6 +387,8 @@ public:
 
     ProfilerNodeTree *GetRoot() { return &root_; }
 
+    void Reset();
+
 private:
     /// The single global root node object. This is a dummy root node that doesn't track any
     /// timing statistics, but just contains all the root blocks of each thread as its children.
@@ -396,9 +398,11 @@ private:
     ProfilerNodeTree root_;
 
     /// Contains the root profile block for each thread.
-    boost::thread_specific_ptr<ProfilerNodeTree> thread_specific_root_;
+//    boost::thread_specific_ptr<ProfilerNodeTree> thread_specific_root_;
     /// Points to the current topmost profile block in the stack for each thread.
-    boost::thread_specific_ptr<ProfilerNodeTree> current_node_;
+ //   boost::thread_specific_ptr<ProfilerNodeTree> current_node_;
+    boost::shared_ptr<ProfilerNodeTree> thread_specific_root_;
+    boost::shared_ptr<ProfilerNodeTree> current_node_;
 
     /// container for all the root profile nodes for each thread.
     std::list<ProfilerNodeTree*> thread_root_nodes_;
