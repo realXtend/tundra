@@ -6,7 +6,6 @@
 #include "UiWidget.h"
 
 #include "ExternalPanelManager.h"
-//#include "ExternalMenuManager.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -36,18 +35,17 @@ namespace UiServices
 			wid->setWidget(0);
 			child_widget ->setParent(0);
             SAFE_DELETE(wid);
-            return false;
+            return 0;
         }
-        controller_panels_visibility_[widget->windowTitle()] = wid->isVisible();
+        
         connect(widget, SIGNAL(visibilityChanged(bool)), SLOT(ModifyPanelVisibility(bool)));
-
-        connect(wid, SIGNAL(visibilityChanged(bool)), SLOT(DockVisibilityChanged(bool)));
+       
         return wid;
     }
 
 	bool ExternalPanelManager::AddQDockWidget(QDockWidget *widget)
     {
-		if (all_qdockwidgets_in_window_.contains(widget))
+		if (controller_panels_.contains(widget))
 			return false;
 
         //Configure zones for the dockwidget
@@ -59,10 +57,12 @@ namespace UiServices
 		widget->hide();
 
         // Add to internal control list
-        all_qdockwidgets_in_window_.append(widget);
+        controller_panels_[widget] = widget->isVisible();
 		
 		//Restore estate if neccesary
 		restoreWidget(widget);
+
+        connect(widget, SIGNAL(visibilityChanged(bool)), SLOT(DockVisibilityChanged(bool)));
 
         return true;
     }
@@ -70,21 +70,30 @@ namespace UiServices
     void ExternalPanelManager::DockVisibilityChanged(bool vis)
 	{		
 		QDockWidget *qdoc = dynamic_cast<QDockWidget*>(sender());
-		if (!controller_panels_visibility_.contains(qdoc->windowTitle()))
+		if (!controller_panels_.contains(qdoc))
 			return;
-        controller_panels_visibility_[qdoc->windowTitle()] = vis;
+        controller_panels_[qdoc] = vis;
         if (qdoc->widget()->isVisible() != vis)
             qdoc->widget()->setVisible(vis);
+        else if (!vis && !qdoc->isVisible())
+        {
+            UiWidget *uiwidget = dynamic_cast<UiWidget*>(qdoc->widget());
+            if (uiwidget)
+                uiwidget->sendVisibilityChanged(vis);
+        }
 	}
 
     void ExternalPanelManager::ModifyPanelVisibility(bool vis)
     {
         UiWidget *uiwidget = dynamic_cast<UiWidget*>(sender());
-		if (!controller_panels_visibility_.contains(uiwidget->windowTitle()))
-			return;
+        if (!uiwidget->parentWidget())
+            return;
         QDockWidget *qdoc = dynamic_cast<QDockWidget *>(uiwidget->parentWidget());
-        QString name = qdoc->windowTitle();
-        if (vis && !controller_panels_visibility_[uiwidget->windowTitle()] )
+        if (!qdoc)
+            return;
+		if (!controller_panels_.contains(qdoc))
+			return;
+        if (vis && !controller_panels_[qdoc] )
         {
             qdoc->show();
             QList<QDockWidget *> docks = dynamic_cast<QMainWindow *>(qWin_)->tabifiedDockWidgets(qdoc);
@@ -92,7 +101,7 @@ namespace UiServices
 			foreach (value, docks)
 				dynamic_cast<QMainWindow *>(qWin_)->tabifyDockWidget(value, qdoc);
         }
-        else if(!vis && controller_panels_visibility_[uiwidget->windowTitle()] /*&& qdoc->isVisible()*/)
+        else if(!vis && controller_panels_[qdoc])
             qdoc->hide();
     }
 
@@ -103,14 +112,12 @@ namespace UiServices
         QDockWidget *doc_widget = dynamic_cast<QDockWidget*>(widget);
         if (!doc_widget)
         {
-            doc_widget = dynamic_cast<QDockWidget*>(widget->parentWidget());    
-            if (!doc_widget)
-                return false;
+            return false;
         }
 
-        if (all_qdockwidgets_in_window_.contains(doc_widget)) {
+        if (controller_panels_.contains(doc_widget)) {
+            controller_panels_.remove(doc_widget);
             qWin_->removeDockWidget(doc_widget);
-		    all_qdockwidgets_in_window_.removeOne(doc_widget);      
             //to keep widget, removes widget parent and dock widget 
 
 			QWidget *child_widget = doc_widget->widget();
@@ -124,57 +131,18 @@ namespace UiServices
 			return false;	
     }
     
-	void ExternalPanelManager::ShowWidget(QWidget *widget){
-		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget))){
-			QDockWidget *aux = dynamic_cast<QDockWidget *>(widget->parentWidget());
-			if (aux)
-                aux->show();
-            else
-                widget->show();
-			//	return;
-			////Hide or show the widget; we make every widget a qdockwidget before integrate it in the qmainwindow
-			//if (aux->isHidden())
-			//	aux->show();
-			//widget->parentWidget()->show();	
-			//dynamic_cast<QDockWidget*>(widget)->widget()->show();
-            //widget->parentWidget()->show();
-			//widget->show();
-		}
-	}
-
-	void ExternalPanelManager::HideWidget(QWidget *widget){
-		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget()))){
-            //widget->parentWidget()->hide();
-			//widget->hide();
-            QDockWidget *aux = dynamic_cast<QDockWidget *>(widget->parentWidget());
-			if (aux)
-                aux->hide();
-            else
-                widget->hide();
-		}
-	}
-
 	void ExternalPanelManager::EnableDockWidgets(){
 		//Enable QDockWidgets
 		QDockWidget *s;
-		foreach( s , all_qdockwidgets_in_window_ )
+        foreach( s , controller_panels_.keys() )
 			s->widget()->setEnabled(true);
 	}
 
 	void ExternalPanelManager::DisableDockWidgets(){
 		//Disable QDockWidgets
 		QDockWidget *s;
-		foreach( s , all_qdockwidgets_in_window_ )
+		foreach( s , controller_panels_.keys() )
 			s->widget()->setEnabled(false);
-	}
-
-	QDockWidget* ExternalPanelManager::GetExternalMenuPanel(QString &widget){
-		QDockWidget *s;
-		foreach( s , all_qdockwidgets_in_window_ )
-			if (s->windowTitle() == widget)
-				return s;
-		return false;
-
 	}
 
 	void ExternalPanelManager::restoreWidget(QDockWidget *widget) {

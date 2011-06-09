@@ -71,6 +71,8 @@ namespace UiServices
 
 	private:
 
+        void StoreViewSettings(const QString &viewname);
+
 		UiModule* owner_;
 		UiServiceInterface* uiService_;
 		QMainWindow* qWin_;

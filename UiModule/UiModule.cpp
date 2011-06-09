@@ -349,21 +349,20 @@ namespace UiServices
 		if (widget->windowTitle() == "")
             return;
 
-		if (!external_widgets_.contains(widget->windowTitle()))
-            external_widgets_[widget->windowTitle()] = external_panel_manager_->AddExternalPanel(widget,widget->windowTitle());
-		return;
+		if (!external_widgets_.contains(widget))
+        {
+            QDockWidget* dock_widget = external_panel_manager_->AddExternalPanel(widget,widget->windowTitle());
+            if (dock_widget)
+                external_widgets_[widget] = dock_widget;
+        }
     }
 
     void UiModule::RemoveWidgetFromScene(UiWidget *widget)
     {
-		if (external_widgets_.contains(widget->windowTitle())) {
-			external_panel_manager_->RemoveExternalPanel(external_widgets_[widget->windowTitle()]);
-			external_widgets_.remove(widget->windowTitle());
+		if (external_widgets_.contains(widget)) {
+			external_panel_manager_->RemoveExternalPanel(external_widgets_[widget]);
+			external_widgets_.remove(widget);
         }
-		else
-			return;
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
-		settings.remove(widget->windowTitle());
     }
 
     void UiModule::AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence)
