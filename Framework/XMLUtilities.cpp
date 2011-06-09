@@ -89,28 +89,7 @@ Color ParseColor(const std::string& text)
     }
     return color;
 }
-
-Quaternion ParseQuaternion(const std::string& text)
-{
-    Quaternion quat;
-    
-    StringVector components = SplitString(text, ' ');
-    if (components.size() == 4)
-    {
-        try
-        {
-            quat.w = ParseString<float>(components[0]);
-            quat.x = ParseString<float>(components[1]);
-            quat.y = ParseString<float>(components[2]);
-            quat.z = ParseString<float>(components[3]);
-        }
-        catch(boost::bad_lexical_cast)
-        {
-        }
-    }
-    return quat;
-}
-
+/*
 Quaternion ParseEulerAngles(const std::string& text)
 {
     Quaternion quat;
@@ -150,7 +129,7 @@ Quaternion ParseEulerAngles(const std::string& text)
     
     return quat;
 }
-
+*/
 std::string WriteBool(bool value)
 {
     if (value)
@@ -176,14 +155,6 @@ std::string WriteVector3(const Vector3df& vector)
         ToString<float>(vector.z);
 }
 
-std::string WriteQuaternion(const Quaternion& quat)
-{
-    return ToString<float>(quat.w) + " " +
-        ToString<float>(quat.x) + " " +
-        ToString<float>(quat.y) + " " +
-        ToString<float>(quat.z);
-}
-
 std::string WriteColor(const Color& color)
 {
     return ToString<float>(color.r) + " " +
@@ -191,7 +162,7 @@ std::string WriteColor(const Color& color)
         ToString<float>(color.b) + " " +
         ToString<float>(color.a);
 }
-
+/*
 std::string WriteEulerAngles(const Quaternion& quat)
 {
     Vector3df radians;
@@ -218,7 +189,7 @@ std::string WriteEulerAngles(const Quaternion& quat)
     //    ToString<float>(angles[1]) + " " + 
     //    ToString<float>(angles[2]);
 }
-
+*/
 void SetAttribute(QDomElement& elem, const std::string& name, const char* value)
 {
     elem.setAttribute(QString::fromStdString(name), value);

@@ -8,14 +8,14 @@
 #include <boost/shared_ptr.hpp>
 
 #include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include "AvatarModuleApi.h"
 
 /// Defines a transform for an avatar, attachment or bone
 struct AV_MODULE_API AvatarTransform
 {
     Vector3df position_;
-    Quaternion orientation_;
+    Quat orientation_;
     Vector3df scale_;
     
     AvatarTransform() : position_(Vector3df::ZERO),

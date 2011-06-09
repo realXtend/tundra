@@ -537,6 +537,10 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
 
 Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const Vector3df& direction) const
 {
+    ///\todo Delete this function and provide a proper replacement which returns local coordinate frames
+    /// at the given point.
+    ///\bug Whether this is actually working at all is a result of random tweaking.
+
     if (!rootNode)
     {
         LogError("GetTerrainRotationAngles called before rootNode initialized, returning zeros");
@@ -553,11 +557,10 @@ Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const 
     
     xVec.normalize();  // X 
     front.normalize(); // Y 
-    xVec = -xVec;
-    front = -front;
+    xVec = -xVec;  // Why is this being done?
+    front = -front; // Why is this being done?
     worldUp.normalize(); // Z 
-    
-  
+      
     Ogre::Matrix3 m3x3;
 
     m3x3[0][0] = xVec.x;
@@ -571,12 +574,12 @@ Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const 
     m3x3[2][2] = worldUp.z; 
  
     Ogre::Quaternion q(m3x3);
-    Quaternion orientation(q.x, q.y,q.z, q.w);
+    Quat orientation(q.x, q.y,q.z, q.w);
     
-    Vector3df rotations;
-    orientation.toEuler(rotations);
+    float3 rotations = orientation.ToEulerZYX();
+    std::swap(rotations.x, rotations.z);
     
-    rotations*=RADTODEG;
+    rotations *= RADTODEG;
     return rotations;
 
 }

@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_Mesh.h"
@@ -12,6 +13,9 @@
 #include "AttributeMetadata.h"
 #include "Entity.h"
 #include "Scene.h"
+#include "Math/Quat.h"
+#include "Math/float3x3.h"
+#include "Math/float3x4.h"
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
@@ -224,17 +228,16 @@ EC_Placeable::~EC_Placeable()
         boneAttachmentNode_ = 0;
     }
 }
-
+#if 0
 Vector3df EC_Placeable::GetPosition() const
 {
     const Ogre::Vector3& pos = sceneNode_->getPosition();
     return Vector3df(pos.x, pos.y, pos.z);
 }
 
-Quaternion EC_Placeable::GetOrientation() const
+Quat EC_Placeable::GetOrientation() const
 {
-    const Ogre::Quaternion& orientation = sceneNode_->getOrientation();
-    return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
+    return (Quat)sceneNode_->getOrientation();
 }
 
 Vector3df EC_Placeable::GetScale() const
@@ -301,7 +304,7 @@ void EC_Placeable::ConvertToObjectSpace(IComponent *comp)
         //newTransform.scale = Vector3df(resultScale.x, resultScale.y, resultScale.z);
         //Quaternion(resultRot.x, resultRot.y, resultRot.z, resultRot.w).toEuler(newTransform.rotation);
         transform.Set(newTransform, AttributeChange::Default);
-        SetOrientation(Quaternion(resultRot.x, resultRot.y, resultRot.z, resultRot.w));
+        SetOrientation(Quat(resultRot.x, resultRot.y, resultRot.z, resultRot.w));
     }
 }
 
@@ -317,18 +320,17 @@ void EC_Placeable::SetPosition(const Vector3df &pos)
     transform.Set(newtrans, AttributeChange::Default);
 }
 
-void EC_Placeable::SetOrientation(const Quaternion& orientation)
+void EC_Placeable::SetOrientation(const Quat &orientation)
 {
     Transform newtrans = transform.Get();
-    Vector3df result;
-    orientation.toEuler(result);
-    newtrans.SetRot(result.x * RADTODEG, result.y * RADTODEG, result.z * RADTODEG);
+    float3 euler = orientation.ToEulerZYX() * RADTODEG; 
+    newtrans.SetRot(euler.z, euler.y, euler.x);
     transform.Set(newtrans, AttributeChange::Default);
 }
 
 void EC_Placeable::SetOrientation(const Vector3df& euler)
 {
-    SetOrientation(Quaternion(euler));
+    SetOrientation(Quat::FromEulerZYX(euler.z, euler.y, euler.x));
 }
 
 void EC_Placeable::LookAt(const Vector3df& look_at)
@@ -378,7 +380,7 @@ void EC_Placeable::SetScale(const Vector3df& newscale)
     newtrans.SetScale(newscale.x, newscale.y, newscale.z);
     transform.Set(newtrans, AttributeChange::Default);
 }
-
+#endif
 void EC_Placeable::AttachNode()
 {
     if (world_.expired())
@@ -553,7 +555,7 @@ void EC_Placeable::DetachNode()
         LogError("EC_Placeable::DetachNode: Ogre exception " + std::string(e.what()));
     }
 }
-
+#if 0
 //experimental QVector3D acessors
 QVector3D EC_Placeable::GetQPosition() const
 {
@@ -571,7 +573,7 @@ void EC_Placeable::SetQPosition(QVector3D newpos)
     emit PositionChanged(newpos);
 }
 
-
+/*
 QQuaternion EC_Placeable::GetQOrientation() const 
 {
     const Transform& trans = transform.Get();
@@ -596,7 +598,7 @@ void EC_Placeable::SetQOrientation(QQuaternion newort)
     
     emit OrientationChanged(newort);
 }
-
+*/
 QVector3D EC_Placeable::GetQScale() const
 {
     const Transform& trans = transform.Get();
@@ -612,7 +614,7 @@ void EC_Placeable::SetQScale(QVector3D newscale)
     transform.Set(trans, AttributeChange::Default);
     emit ScaleChanged(newscale);
 }
-
+/*
 void EC_Placeable::SetQOrientationEuler(QVector3D newrot)
 {
     Transform trans = transform.Get();
@@ -632,16 +634,19 @@ QVector3D EC_Placeable::GetQOrientationEuler() const
     const Transform& trans = transform.Get();
     return QVector3D(trans.rot.x, trans.rot.y, trans.rot.z);
 }
+*/
 
+/*
 Vector3df EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df& to)
 {
-    Quaternion orientation;
+    Quat orientation;
     orientation.rotationFromTo(from,to);
     Vector3df result;
     orientation.toEuler(result);
     result *= RADTODEG;
     return result;
 }
+*/
 
 Vector3df EC_Placeable::GetWorldPosition() const
 {
@@ -670,7 +675,7 @@ Vector3df EC_Placeable::GetWorldScale() const
     const Ogre::Vector3& pos = sceneNode_->_getDerivedScale();
     return Vector3df(pos.x, pos.y, pos.z);
 }
-
+#endif
 void EC_Placeable::Show()
 {
     if (!sceneNode_)
@@ -707,7 +712,7 @@ void EC_Placeable::RegisterActions()
         entity->ConnectAction("ToggleEntity", this, SLOT(ToggleVisibility()));
     }
 }
-
+#if 0
 void EC_Placeable::Translate(const Vector3df& translation)
 {
     Transform newTrans = transform.Get();
@@ -738,7 +743,7 @@ Vector3df EC_Placeable::GetWorldRelativeVector(const Vector3df& vec)
 {
     return GetWorldOrientation() * vec;
 }
-
+#endif
 void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     // If parent ref or parent bone changed, reattach node to scene hierarchy
@@ -749,19 +754,17 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
     {
         const Transform& trans = transform.Get();
         if (trans.pos.IsFinite())
-            sceneNode_->setPosition(trans.pos.x, trans.pos.y, trans.pos.z);
+            sceneNode_->setPosition(trans.pos);
         
-        Quaternion orientation(DEGTORAD * trans.rot.x,
-                          DEGTORAD * trans.rot.y,
-                          DEGTORAD * trans.rot.z);
+        Quat orientation = trans.Orientation();
 
         if (orientation.IsFinite())
-            sceneNode_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
+            sceneNode_->setOrientation(orientation);
         else
             ::LogError("EC_Placeable: transform attribute changed, but orientation not valid!");
 
         // Prevent Ogre exception from zero scale
-        Vector3df scale(trans.scale.x, trans.scale.y, trans.scale.z);
+        float3 scale = trans.scale;
         if (scale.x < 0.0000001f)
             scale.x = 0.0000001f;
         if (scale.y < 0.0000001f)
@@ -769,7 +772,7 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
         if (scale.z < 0.0000001f)
             scale.z = 0.0000001f;
 
-        sceneNode_->setScale(scale.x, scale.y, scale.z);
+        sceneNode_->setScale(scale);
     }
     else if (attribute == &drawDebug)
     {
@@ -811,4 +814,130 @@ void EC_Placeable::OnComponentAdded(IComponent* component, AttributeChange::Type
 {
     if (!attached_)
         AttachNode();
+}
+
+void EC_Placeable::SetPosition(float x, float y, float z)
+{
+    Transform newtrans = transform.Get();
+    newtrans.SetPos(x, y, z);
+    transform.Set(newtrans, AttributeChange::Default);
+}
+
+void EC_Placeable::SetPosition(const float3 &pos)
+{
+    SetPosition(pos.x, pos.y, pos.z);
+}
+
+void EC_Placeable::SetOrientation(const Quat &q)
+{
+    Transform newtrans = transform.Get();
+    newtrans.SetOrientation(q);
+    transform.Set(newtrans, AttributeChange::Default);
+}
+
+void EC_Placeable::SetScale(float x, float y, float z)
+{
+    SetScale(float3(x,y,z));
+}
+
+void EC_Placeable::SetScale(const float3 &scale)
+{
+    Transform newtrans = transform.Get();
+    newtrans.SetScale(scale);
+    transform.Set(newtrans, AttributeChange::Default);
+}
+
+void EC_Placeable::SetTransform(const float3x3 &tm)
+{
+    assume(tm.IsOrthogonal());
+    assume(!tm.HasNegativeScale());
+    Transform newtrans = transform.Get();
+    newtrans.SetRotationAndScale(tm);
+    transform.Set(newtrans, AttributeChange::Default);
+}
+
+void EC_Placeable::SetTransform(const float3x4 &tm)
+{
+    assume(tm.IsOrthogonal());
+    assume(!tm.HasNegativeScale());
+    float3 translate;
+    Quat rotate;
+    float3 scale;
+    tm.Decompose(translate, rotate, scale);
+    SetPosition(translate);
+    SetOrientation(rotate);
+    SetScale(scale);
+}
+
+void EC_Placeable::SetTransform(const float4x4 &tm)
+{
+    assume(tm.Row(3).Equals(float4(0,0,0,1)));
+    SetTransform(tm.Float3x4Part());
+}
+
+float3 EC_Placeable::WorldPosition() const
+{
+    return LocalToWorld().TranslatePart();
+}
+
+Quat EC_Placeable::WorldOrientation() const
+{
+    float3 translate;
+    Quat rotate;
+    float3 scale;
+    LocalToWorld().Decompose(translate, rotate, scale);
+    return rotate;
+}
+
+float3 EC_Placeable::WorldScale() const
+{
+    float3 translate;
+    Quat rotate;
+    float3 scale;
+    LocalToWorld().Decompose(translate, rotate, scale);
+    return scale;
+}
+
+float3 EC_Placeable::Position() const
+{
+    return transform.Get().pos;
+}
+
+Quat EC_Placeable::Orientation() const
+{
+    return transform.Get().Orientation();
+}
+
+float3 EC_Placeable::Scale() const
+{
+    return transform.Get().scale;
+}
+
+float3x4 EC_Placeable::LocalToWorld() const
+{
+    if (sceneNode_)
+        return ((float4x4)sceneNode_->_getFullTransform()).Float3x4Part();
+    else
+        return float3x4::identity;
+}
+
+float3x4 EC_Placeable::WorldToLocal() const
+{
+    float3x4 tm = LocalToWorld();
+    bool success = tm.InverseOrthogonal();
+    assume(success);
+    return tm;
+}
+
+float3x4 EC_Placeable::LocalToParent() const
+{
+    return transform.Get().ToFloat3x4();
+}
+
+float3x4 EC_Placeable::ParentToLocal() const
+{
+    float3x4 tm = transform.Get().ToFloat3x4();
+    bool success = tm.InverseOrthogonal();
+    assume(success);
+    return tm;
 }

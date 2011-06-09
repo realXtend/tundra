@@ -12,7 +12,7 @@
 #include "OgreMaterialUtils.h"
 #include "CoreStringUtils.h"
 #include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_Name.h"
@@ -246,8 +246,7 @@ QList<Entity *> SceneImporter::Import(const std::string& filename, std::string i
         // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
         LogInfo("Creating entities");
 
-        Quaternion rot(DEGTORAD * worldtransform.rot.x, DEGTORAD * worldtransform.rot.y,
-            DEGTORAD * worldtransform.rot.z);
+        Quat rot = worldtransform.Orientation();
         ProcessNodeForCreation(ret, node_elem, worldtransform.pos, rot, worldtransform.scale, change, prefix, flipyz, replace);
     }
     catch(Exception& e)
@@ -992,7 +991,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::strin
     }
 }
 
-void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElement node_elem, Vector3df pos, Quat rot, Vector3df scale,
     AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace)
 {
     while(!node_elem.isNull())
@@ -1027,13 +1026,13 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
         scalez = ParseString<float>(scale_elem.attribute("z").toStdString(), 1.0f);
 
         Vector3df newpos(posx, posy, posz);
-        Quaternion newrot(rotx, roty, rotz, rotw);
+        Quat newrot(rotx, roty, rotz, rotw);
         Vector3df newscale(fabsf(scalex), fabsf(scaley), fabsf(scalez));
 
         // Transform by the parent transform
         newrot = rot * newrot;
         newscale = scale * newscale;
-        newpos = rot * (scale * newpos);
+        newpos = rot * float3(scale * newpos);
         newpos += pos;
 
         // Process entity node, if any
@@ -1127,21 +1126,18 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                     /// Todo: allow any transformation of coordinate axes, not just fixed y/z flip
                     if (flipyz)
                     {
-                        Vector3df rot_euler;
-                        Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
-                        adjustedrot = Quaternion(0, PI, 0) * adjustedrot;
-                        adjustedrot.toEuler(rot_euler);
+                        float3 rot_euler;
+                        Quat adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
+                        adjustedrot = Quat::FromEulerZYX(0, PI, 0) * adjustedrot;
                         entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
-                        entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                        entity_transform.SetOrientation(adjustedrot);
                         entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
                     }
                     else
                     {
-                        Vector3df rot_euler;
-                        newrot.toEuler(rot_euler);
-                        entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
-                        entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
-                        entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                        entity_transform.SetPos(newpos);
+                        entity_transform.SetOrientation(newrot);
+                        entity_transform.SetScale(newscale);
                     }
                     
                     

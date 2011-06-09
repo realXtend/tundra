@@ -4,7 +4,7 @@
 
 #include "CoreDefines.h"
 #include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include "LinearMath/btQuaternion.h"
 #include "LinearMath/btVector3.h"
 #include <BulletDynamics/Dynamics/btRigidBody.h>
@@ -18,16 +18,6 @@ inline btVector3 ToBtVector3(const Vector3df& vector)
 inline Vector3df ToVector3(const btVector3& btVector)
 {
     return Vector3df(btVector.x(), btVector.y(), btVector.z());
-}
-
-inline btQuaternion ToBtQuaternion(const Quaternion& quat)
-{
-    return btQuaternion(quat.x, quat.y, quat.z, quat.w);
-}
-
-inline Quaternion ToQuaternion(const btQuaternion& btQuat)
-{
-    return Quaternion(btQuat.x(), btQuat.y(), btQuat.z(), btQuat.w());
 }
 
 /// Simple raycast against single rigid body

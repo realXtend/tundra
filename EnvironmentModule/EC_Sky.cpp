@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_Sky.h"
@@ -24,7 +25,7 @@ EC_Sky::EC_Sky(Scene* scene) :
     IComponent(scene),
     materialRef(this, "Material", AssetReference("RexSkyBox")), ///< \todo Add "ogre://" when AssetAPI can handle it.
     textureRefs(this, "Texture", AssetReferenceList("Texture")),
-    orientation(this, "Orientation", Quaternion()),
+    orientation(this, "Orientation", Quat()),
     distance(this, "Distance",50.0),
     drawFirst(this, "Draw first", true)
 {
@@ -116,11 +117,8 @@ void EC_Sky::CreateSky()
 
     try
     {
-        //Vector3df v = angleAxisAttr.Get();
-        //Ogre::Quaternion rotation(Ogre::Degree(90.0), Ogre::Vector3(1, 0, 0));
-        Quaternion o = orientation.Get();
         world_.lock()->GetSceneManager()->setSkyBox(true, currentMaterial.toStdString().c_str(), distance.Get(),
-            drawFirst.Get(), Ogre::Quaternion(o.w, o.x, o.y, o.z));
+            drawFirst.Get(), orientation.Get());
     }
     catch(Ogre::Exception& e)
     {

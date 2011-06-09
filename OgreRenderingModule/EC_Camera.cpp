@@ -88,12 +88,10 @@ Vector3df EC_Camera::GetInitialRotation() const
     normUpVector.normalize();
     
     // Identity rotation corresponds to -Z = forward & Y = up. Calculate which rotation we need to adjust for our up vector.
-    Quaternion rot;
-    rot.rotationFromTo(Vector3df::UNIT_Y, normUpVector);
+    Quat rot = Quat::RotateFromTo(float3::unitY, normUpVector);
     
-    Vector3df euler;
-    rot.toEuler(euler);
-    euler *= RADTODEG;
+    float3 euler = rot.ToEulerZYX() * RADTODEG;
+    std::swap(euler.x, euler.z); // Take into account our different convention for storing euler angles. (See Transform class).
     return euler;
 }
 
@@ -105,15 +103,13 @@ Vector3df EC_Camera::GetAdjustedRotation(const Vector3df& rotVec) const
     if (normUpVector.equals(Vector3df::UNIT_Y))
         return rotVec;
     
-    Quaternion adjustQuat;
-    adjustQuat.rotationFromTo(Vector3df::UNIT_Y, normUpVector);
+    Quat adjustQuat = Quat::RotateFromTo(float3::unitY, normUpVector);
     
-    Quaternion rotQuat(rotVec.x * DEGTORAD, rotVec.y * DEGTORAD, rotVec.z * DEGTORAD);
-    Quaternion final = rotQuat * adjustQuat;
+    Quat rotQuat = Quat::FromEulerZYX(rotVec.z * DEGTORAD, rotVec.y * DEGTORAD, rotVec.x * DEGTORAD);
+    Quat final = rotQuat * adjustQuat;
     
-    Vector3df euler;
-    final.toEuler(euler);
-    euler *= RADTODEG;
+    float3 euler = final.ToEulerZYX() * RADTODEG;
+    std::swap(euler.x, euler.z);
     return euler;
 }
 

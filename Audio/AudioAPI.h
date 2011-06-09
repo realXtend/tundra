@@ -7,7 +7,7 @@
 #include "SoundChannel.h"
 #include "AudioApiExports.h"
 #include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 
 class Framework;
 
@@ -40,7 +40,7 @@ public slots:
     /// Sets listener position & orientation
     /** \param position Position
         \param orientation Orientation as quaternion */
-    void SetListener(const Vector3df &position, const Quaternion &orientation);
+    void SetListener(const Vector3df &position, const Quat &orientation);
     
     /// Sets master gain of whole sound system
     /** \param master_gain New master gain, in range 0.0 - 1.0 */

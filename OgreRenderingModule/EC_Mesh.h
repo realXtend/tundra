@@ -6,7 +6,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include "Transform.h"
 #include "AssetReference.h"
 #include "AssetRefListener.h"
@@ -230,7 +230,7 @@ public slots:
     /// sets adjustment orientation
     /** \param orientation new orientation
      */
-    void SetAdjustOrientation(const Quaternion& orientation);
+    void SetAdjustOrientation(const Quat &orientation);
 
     /// sets adjustment scale
     /** \param position new scale
@@ -254,7 +254,7 @@ public slots:
     void SetAttachmentPosition(uint index, const Vector3df& position);
     
     /// sets orientation of attachment mesh, relative to attachment point
-    void SetAttachmentOrientation(uint index, const Quaternion& orientation);
+    void SetAttachmentOrientation(uint index, const Quat &orientation);
     
     /// sets scale of attachment mesh, relative to attachment point
     void SetAttachmentScale(uint index, const Vector3df& scale);
@@ -339,7 +339,7 @@ public slots:
     Vector3df GetAdjustPosition() const;
 
     /// returns adjustment orientation
-    Quaternion GetAdjustOrientation() const;
+    Quat GetAdjustOrientation() const;
 
     /// returns adjustment scale
     Vector3df GetAdjustScale() const;
@@ -348,7 +348,7 @@ public slots:
     Vector3df GetAttachmentPosition(uint index) const;
 
     /// returns offset orientation of attachment
-    Quaternion GetAttachmentOrientation(uint index) const;
+    Quat GetAttachmentOrientation(uint index) const;
 
     /// returns offset scale of attachment
     Vector3df GetAttachmentScale(uint index) const;
@@ -382,13 +382,13 @@ public slots:
     /// Return bone's root-derived position. Note: these are not world coordinates, but relative to the mesh root
     Vector3df GetBoneDerivedPosition(const QString& bone_name);
     /// Return bone's local orientation
-    Quaternion GetBoneOrientation(const QString& bone_name);
+    Quat GetBoneOrientation(const QString& bone_name);
     /// Return bone's root-derived orientation
-    Quaternion GetBoneDerivedOrientation(const QString& bone_name);
+    Quat GetBoneDerivedOrientation(const QString& bone_name);
     /// Return bone's local orientation as Euler degrees
-    Vector3df GetBoneOrientationEuler(const QString& bone_name);
+//    Vector3df GetBoneOrientationEuler(const QString& bone_name);
     /// Return bone's root-derived orientation as Euler degrees
-    Vector3df GetBoneDerivedOrientationEuler(const QString& bone_name);
+//    Vector3df GetBoneDerivedOrientationEuler(const QString& bone_name);
     
 signals:
     /// Emitted before the Ogre mesh entity is about to be destroyed

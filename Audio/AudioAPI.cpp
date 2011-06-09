@@ -13,6 +13,7 @@
 #include "LoggingFunctions.h"
 #include "Framework.h"
 #include "Profiler.h"
+#include "Math/float3.h"
 
 #ifndef Q_WS_MAC
 #include <AL/al.h>
@@ -31,6 +32,12 @@ using namespace std;
 struct AudioApiImpl
 {
 public:
+    AudioApiImpl()
+    :listenerPosition(0,0,0),
+    listenerOrientation(Quat::identity)
+    {
+    }
+
     /// Initialized flag
     bool initialized;
     /// OpenAL context
@@ -49,7 +56,7 @@ public:
     /// Listener position
     Vector3df listenerPosition;
     /// Listener orientation
-    Quaternion listenerOrientation;
+    Quat listenerOrientation;
     
     /// Master gain for whole sound system
     float masterGain;
@@ -216,8 +223,8 @@ void AudioAPI::Update(f64 frametime)
     // Update listener position/orientation to sound device
     ALfloat pos[] = {impl->listenerPosition.x, impl->listenerPosition.y, impl->listenerPosition.z};
     alListenerfv(AL_POSITION, pos);
-    Vector3df front = impl->listenerOrientation * Vector3df(0.0f, -1.0f, 0.0f);
-    Vector3df up = impl->listenerOrientation * Vector3df(0.0f, 0.0f, -1.0f); 
+    Vector3df front = impl->listenerOrientation * float3(0.0f, -1.0f, 0.0f);
+    Vector3df up = impl->listenerOrientation * float3(0.0f, 0.0f, -1.0f); 
     ALfloat orient[] = {front.x, front.y, front.z, up.x, up.y, up.z};
     alListenerfv(AL_ORIENTATION, orient);
     
@@ -245,7 +252,7 @@ bool AudioAPI::IsInitialized() const
     return impl && impl->initialized;
 }
 
-void AudioAPI::SetListener(const Vector3df &position, const Quaternion &orientation)
+void AudioAPI::SetListener(const Vector3df &position, const Quat &orientation)
 {
     if (!impl || !impl->initialized)
         return;

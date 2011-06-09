@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_WaterPlane.h"
@@ -30,7 +31,7 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     ySize(this, "y-size", 5000),
     depth(this, "Depth", 20),
     position(this, "Position", Vector3df()),
-    rotation(this, "Rotation", Quaternion()),
+    rotation(this, "Rotation", Quat()),
     scaleUfactor(this, "U factor", 0.0002f),
     scaleVfactor(this, "V factor", 0.0002f),
     xSegments(this, "Segments in x", 10),
@@ -364,15 +365,15 @@ void EC_WaterPlane::SetOrientation()
         return;
     
     // Set orientation
-    Quaternion rot = rotation.Get();
+    Quat rot = rotation.Get();
 
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
     Ogre::Quaternion current_rot = node_->_getDerivedOrientation();
     Ogre::Quaternion tmp(rot.w, rot.x, rot.y, rot.z);
-    Ogre::Quaternion rota = current_rot +  tmp;
+    Ogre::Quaternion rota = current_rot * tmp;
     node_->setOrientation(rota);
 #else
-    node_->_setDerivedOrientation(Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
+    node_->_setDerivedOrientation(rot);
 #endif
 }
 

@@ -9,6 +9,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#define NOMINMAX
 #include "SceneStructureModule.h"
 #include "SceneStructureWindow.h"
 #include "AssetsWindow.h"
@@ -561,10 +562,10 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
                     if (placeable)
                     {
                         //Ogre::Ray ray = cam->GetComponent<EC_Camera>()->GetCamera()->getCameraToViewportRay(e->pos().x(), e->pos().y());
-                        Quaternion q = placeable->GetOrientation();
-                        Vector3df v = q * -Vector3df::UNIT_Z;
+                        Quat q = placeable->WorldOrientation();
+                        Vector3df v = q * -float3::unitZ;
                         //Ogre::Vector3 oV = ray.getPoint(20);
-                        worldPos = /*Vector3df(oV.x, oV.y, oV.z);*/ placeable->GetPosition() + v * 20;
+                        worldPos = /*Vector3df(oV.x, oV.y, oV.z);*/ placeable->Position() + v * 20;
                         break;
                     }
                 }

@@ -7,6 +7,9 @@
 #include "SceneFwd.h"
 #include "PhysicsModuleApi.h"
 #include "Vector3D.h"
+#include "Math/MathFwd.h"
+#define BULLET_INTEROP
+#include "Math/AABB.h"
 
 #include <LinearMath/btIDebugDraw.h>
 
@@ -138,6 +141,11 @@ public slots:
     /// Return whether simulation is on
     bool GetRunPhysics() const { return runPhysics_; }
     
+    // Debugging aids:
+    void DrawAABB(AABB *aabb, float r, float g, float b);
+    void DrawOBB(OBB *obb, float r, float g, float b);
+    void DrawLineSegment(LineSegment *l, float r, float g, float b);
+
 signals:
     /// A physics collision has happened between two entities. 
     /** Note: both rigidbodies participating in the collision will also emit a signal separately. 

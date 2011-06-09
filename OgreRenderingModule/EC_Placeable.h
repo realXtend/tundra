@@ -9,9 +9,9 @@
 #include "OgreModuleFwd.h"
 #include "Transform.h"
 #include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/MathFwd.h"
 
-#include <QQuaternion>
+//#include <QQuaternion>
 #include <QVector3D>
 
 #include <OgreNode.h>
@@ -84,26 +84,26 @@ public:
 
     /// position property
     /// @note This affects internally the transform attribute, but allows QVector3D access to it
-    Q_PROPERTY(QVector3D position READ GetQPosition WRITE SetQPosition)
+//    Q_PROPERTY(QVector3D position READ GetQPosition WRITE SetQPosition)
     
     /// scale property
     /// @note This affects internally the transform attribute, but allows QVector3D access to it
-    Q_PROPERTY(QVector3D scale READ GetQScale WRITE SetQScale)
-
+//    Q_PROPERTY(QVector3D scale READ GetQScale WRITE SetQScale)
+/*
     /// orientation property
     /// @note This affects internally the transform attribute, but allows QQuaternion access to it
     Q_PROPERTY(QQuaternion orientation READ GetQOrientation WRITE SetQOrientation)
-
+*/
     /// orientationEuler property
     /// @note This affects internally the transform attribute, but allows QVector3D euler angle (in degrees) access to it
-    Q_PROPERTY(QVector3D orientationEuler READ GetQOrientationEuler WRITE SetQOrientationEuler)
+//    Q_PROPERTY(QVector3D orientationEuler READ GetQOrientationEuler WRITE SetQOrientationEuler)
     
-    Q_PROPERTY(QVector3D LocalXAxis READ GetQLocalXAxis)
-    Q_PROPERTY(QVector3D LocalYAxis READ GetQLocalYAxis)
-    Q_PROPERTY(QVector3D LocalZAxis READ GetQLocalZAxis)
-    Q_PROPERTY(float Yaw READ GetYaw)
-    Q_PROPERTY(float Pitch READ GetPitch)
-    Q_PROPERTY(float Roll READ GetRoll)
+ //   Q_PROPERTY(QVector3D LocalXAxis READ GetQLocalXAxis)
+ //   Q_PROPERTY(QVector3D LocalYAxis READ GetQLocalYAxis)
+ //   Q_PROPERTY(QVector3D LocalZAxis READ GetQLocalZAxis)
+ //   Q_PROPERTY(float Yaw READ GetYaw)
+ //   Q_PROPERTY(float Pitch READ GetPitch)
+ //   Q_PROPERTY(float Roll READ GetRoll)
     
     /// Transformation attribute for position, rotation and scale adjustments.
     Q_PROPERTY(Transform transform READ gettransform WRITE settransform);
@@ -128,7 +128,7 @@ public:
     /// Parent entity bone name. Needs the parent entity to have a skeletal mesh. Empty for no parent bone assignment
     Q_PROPERTY(QString parentBone READ getparentBone WRITE setparentBone)
     DEFINE_QPROPERTY_ATTRIBUTE(QString, parentBone);
-
+#if 0
     /// orients to look at a point in space
     /** @param look_at point to look at
      */
@@ -168,15 +168,15 @@ public:
     QVector3D GetQLocalYAxis() const;
     /// Get the local Z axis from the node orientation
     QVector3D GetQLocalZAxis() const;
-
+#endif
     /// Returns Ogre scene node for attaching geometry.
     /** Do not manipulate the pos/orientation/scale of this node directly. */
     Ogre::SceneNode* GetSceneNode() const { return sceneNode_; }
-    
+#if 0
     /// get node position
     QVector3D GetQPosition() const;
     void SetQPosition(QVector3D newpos);
-
+/*
     /// get node orientation
     QQuaternion GetQOrientation() const;
     /// set node orientation
@@ -186,13 +186,73 @@ public:
     QVector3D GetQOrientationEuler() const;
     /// set node orientation as euler (degrees)
     void SetQOrientationEuler(QVector3D newrot);
-
+*/
     /// set node scale
     QVector3D GetQScale() const;
     /// get node scale
     void SetQScale(QVector3D newscale);
+#endif
 
 public slots:
+
+    /// Sets the translation part of this placeable's transform.
+    /// @note This function sets the Transform attribute of this component, and synchronizes to network.
+    void SetPosition(float x, float y, float z);
+    void SetPosition(const float3 &pos);
+
+    /// Sets the orientation of this placeable's transform.
+    /// If you want to set the orientation of this placeable using Euler angles, use e.g. 
+    /// the Quat::FromEulerZYX function.
+    /// @note This function sets the Transform attribute of this component, and synchronizes to network.
+    void SetOrientation(const Quat &q);
+
+    void SetScale(float x, float y, float z);
+    void SetScale(const float3 &scale);
+
+    /// Sets the rotation and scale of this placeable (the local-to-parent transform).
+    /// @param mat The transformation matrix to set. This matrix is assumed to be orthogonal (no shear), 
+    ///            and can not contain any mirroring.
+    /// @note This function sets the Transform attribute of this component, and synchronizes to network.
+    void SetTransform(const float3x3 &mat);
+    /// Sets the position, rotation and scale of this placeable (the local-to-parent transform).
+    /// @param tm An orthogonal matrix (no shear), which cannot contain mirroring. The float4x4 version is provided
+    ///           for conveniency, and the last row must be identity [0 0 0 1].
+    /// @note This function sets the Transform attribute of this component, and synchronizes to network.
+    void SetTransform(const float3x4 &tm);
+    void SetTransform(const float4x4 &tm);
+
+    /// Returns the position of this placable node in world space.
+    float3 WorldPosition() const;
+
+    /// Returns the orientation of this placeable node in world space.
+    Quat WorldOrientation() const;
+
+    /// Returns the scale of this placeable node in world space.
+    float3 WorldScale() const;
+
+    /// Returns the position of this placeable node in the space of its parent.
+    float3 Position() const;
+
+    /// Returns the orientation of this placeable node in the space of its parent.
+    Quat Orientation() const;
+
+    /// Returns the scale of this placeable node in the space of its parent.
+    float3 Scale() const;
+
+    /// Returns the concatenated world transformation of this placeable.
+    float3x4 LocalToWorld() const;
+    /// Returns the matrix that transforms objects from world space into the local coordinate space of this placeable.
+    float3x4 WorldToLocal() const;
+
+    /// Returns the local transformation of this placeable in the space of its parent.
+    /// @note For a placeable which is not attached to any parent, this returns the same transform as LocalToWorld().
+    float3x4 LocalToParent() const;
+    /// Returns the matrix that transforms objects from this placeable's parent's space into the local coordinate 
+    /// space of this placeable.
+    /// @note For a placeable which is not attached to any parent, this returns the same transform as WorldToLocal().
+    float3x4 ParentToLocal() const;
+
+#if 0
     /// Convers placeable transformation to given EC_Placeable space.
     /// @todo Add scale conversion. This method wont change scale related to it's parent (only position and rotation are converted).
     /// @param comp EC_Placeable component that we are converting our transformation to.
@@ -217,7 +277,7 @@ public slots:
     /// sets orientation
     /** @param orientation new orientation
      */
-    void SetOrientation(const Quaternion& orientation);
+    void SetOrientation(const Quat &orientation);
 
     /// sets orientation using euler angles. 
     /** @param eulerVec euler rotations.
@@ -225,7 +285,7 @@ public slots:
     void SetOrientation(const Vector3df& euler);
 
     /// returns orientation
-    Quaternion GetOrientation() const;
+    Quat GetOrientation() const;
 
     /// LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
     void LookAt(const QVector3D look_at) { LookAt(Vector3df((f32)look_at.x(), (f32)look_at.y(), (f32)look_at.z())); }
@@ -252,14 +312,14 @@ public slots:
     Vector3df GetWorldPosition() const;
     
     /// Return world-derived orientation from the scene node
-    Quaternion GetWorldOrientation() const;
+    Quat GetWorldOrientation() const;
     
     /// Return world-derived orientation as euler degrees from the scene node
     Vector3df GetWorldOrientationEuler() const;
     
     /// Return world-derived scale from the scene node
     Vector3df GetWorldScale() const;
-
+#endif
     /// Shows the entity
     /** @note Doesn't alter the component's attribute. */
     void Show();
@@ -276,15 +336,16 @@ public slots:
     bool IsAttached() const { return attached_; }
 
 signals:
+#if 0
     /// emitted when position has changed.
     void PositionChanged(const QVector3D &pos);
 
     /// emitted when rotation has changed.
-    void OrientationChanged(const QQuaternion &rot);
+    void OrientationChanged(const Quat &rot);
 
     /// emitted when scale has changed.
     void ScaleChanged(const QVector3D &scale);
-
+#endif
     /// Emitted when about to be destroyed
     void AboutToBeDestroyed();
 

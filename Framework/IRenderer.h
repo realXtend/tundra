@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 
 #include <QObject>
 #include <QVariant>

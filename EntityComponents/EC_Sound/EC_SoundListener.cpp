@@ -50,7 +50,7 @@ void EC_SoundListener::RetrievePlaceable()
 void EC_SoundListener::Update()
 {
     if (active.Get() && !placeable_.expired())
-        GetFramework()->Audio()->SetListener(placeable_.lock()->GetPosition(), placeable_.lock()->GetOrientation());
+        GetFramework()->Audio()->SetListener(placeable_.lock()->WorldPosition(), placeable_.lock()->WorldOrientation());
 }
 
 void EC_SoundListener::OnActiveChanged()

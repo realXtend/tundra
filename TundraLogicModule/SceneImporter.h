@@ -6,7 +6,7 @@
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include <QPair>
 #include <QUrl>
 
@@ -157,7 +157,7 @@ private:
         \param prefix 
         \param replace Whether to replace contents of entities by name. If false, all entities will be created as new
      */
-    void ProcessNodeForCreation(QList<Entity *> &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+    void ProcessNodeForCreation(QList<Entity *> &entities, QDomElement node_elem, Vector3df pos, Quat rot, Vector3df scale,
         AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace);
 
     /// Process node and its child nodes for creation of scene description.

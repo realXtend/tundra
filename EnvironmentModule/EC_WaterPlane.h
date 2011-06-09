@@ -5,7 +5,7 @@
 #include "IComponent.h"
 #include "CoreTypes.h"
 #include "Color.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
 
@@ -94,8 +94,8 @@ public:
     Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
 
     /// Water plane rotation
-    DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, rotation);
-    Q_PROPERTY(Quaternion rotation READ getrotation WRITE setrotation);
+    DEFINE_QPROPERTY_ATTRIBUTE(Quat, rotation);
+    Q_PROPERTY(Quat rotation READ getrotation WRITE setrotation);
 
     ///U Scale, factor which defines how many times the texture should be repeated in the u direction.
     DEFINE_QPROPERTY_ATTRIBUTE(float, scaleUfactor);

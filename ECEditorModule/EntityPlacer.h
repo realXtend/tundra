@@ -6,7 +6,7 @@
 #include "SceneFwd.h"
 #include "OgreModuleFwd.h"
 #include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 
 #include <QObject>
 
@@ -30,16 +30,16 @@ public slots:
     void MouseMove(MouseEvent *mouse);
 
 signals:
-    void Finished(Vector3df location, Quaternion orientation);
+    void Finished(Vector3df location, Quat orientation);
     void LocationChanged(Vector3df location);
-    void OrientationChanged(Quaternion orientation);
+    void OrientationChanged(Quat orientation);
 
 private:
      bool DoRayCast(int x, int y, Vector3df &result);
 
 private:
     Vector3df location_;
-    Quaternion orientation_;
+    Quat orientation_;
     InputContextPtr input_;
     EC_Placeable *placeable_;
     Framework *framework_;

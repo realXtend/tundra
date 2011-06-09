@@ -9,7 +9,7 @@
 
 #include "Color.h"
 #include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include "OgreModuleApi.h"
 
 #include <OgreColourValue.h>
@@ -29,9 +29,6 @@ namespace OgreRenderer
 
     /// Converts Ogre::Vector3 to Vector3df.
     Vector3df OGRE_MODULE_API ToCoreVector(const Ogre::Vector3&vector);
-
-    /// Converts Quaternion to Ogre::Quaternion
-    Ogre::Quaternion OGRE_MODULE_API ToOgreQuaternion(const Quaternion &quat);
 
     /// Sanitates an asset URL/ID for use with Ogre's parsers.
     /** Call this when you access an Ogre resource directly from Ogre, by querying for asset ID.

@@ -3,7 +3,8 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#define OGRE_INTEROP 
+#define OGRE_INTEROP
+#define BULLET_INTEROP
 #include "EC_RigidBody.h"
 #include "ConvexHull.h"
 #include "PhysicsModule.h"
@@ -417,11 +418,11 @@ void EC_RigidBody::getWorldTransform(btTransform &worldTrans) const
     if (!placeable)
         return;
         
-    Vector3df position = placeable->GetWorldPosition();
-    Quaternion orientation = placeable->GetWorldOrientation();
+    float3 position = placeable->WorldPosition();
+    Quat orientation = placeable->WorldOrientation();
     
-    worldTrans.setOrigin(ToBtVector3(position));
-    worldTrans.setRotation(ToBtQuaternion(orientation));
+    worldTrans.setOrigin(position);
+    worldTrans.setRotation(orientation);
 }
 
 void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
@@ -439,16 +440,14 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     
     // Set transform
     float3 position = worldTrans.getOrigin();
-    Quaternion orientation = ToQuaternion(worldTrans.getRotation());
+    Quat orientation = worldTrans.getRotation();
     
     // Non-parented case
     if (placeable->parentRef.Get().IsEmpty())
     {
         Transform newTrans = placeable->transform.Get();
-        Vector3df euler;
-        orientation.toEuler(euler);
         newTrans.SetPos(position.x, position.y, position.z);
-        newTrans.SetRot(euler.x * RADTODEG, euler.y * RADTODEG, euler.z * RADTODEG);
+        newTrans.SetOrientation(orientation);
         placeable->transform.Set(newTrans, AttributeChange::Default);
     }
     else
@@ -456,16 +455,12 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     {
         if (placeable->IsAttached())
         {
-            /// \todo Use a Placeable utility function for this
-            position = placeable->GetSceneNode()->convertWorldToLocalPosition(OgreRenderer::ToOgreVector3(position));
-            Ogre::Quaternion ogreQuat = placeable->GetSceneNode()->convertWorldToLocalOrientation(OgreRenderer::ToOgreQuaternion(orientation));
-            orientation = Quaternion(ogreQuat.x, ogreQuat.y, ogreQuat.z, ogreQuat.w);
+            position = placeable->GetSceneNode()->convertWorldToLocalPosition(position);
+            orientation = placeable->GetSceneNode()->convertWorldToLocalOrientation(orientation);
             
             Transform newTrans = placeable->transform.Get();
-            Vector3df euler;
-            orientation.toEuler(euler);
-            newTrans.SetPos(position.x, position.y, position.z);
-            newTrans.SetRot(euler.x * RADTODEG, euler.y * RADTODEG, euler.z * RADTODEG);
+            newTrans.SetPos(position);
+            newTrans.SetOrientation(orientation);
             placeable->transform.Set(newTrans, AttributeChange::Default);
         }
     }
@@ -650,11 +645,9 @@ void EC_RigidBody::SetRotation(const Vector3df& rotation)
         
         if (body_)
         {
-            Quaternion orientation(DEGTORAD * trans.rot.x, DEGTORAD * trans.rot.y, DEGTORAD * trans.rot.z);
-            
             btTransform& worldTrans = body_->getWorldTransform();
             btTransform interpTrans = body_->getInterpolationWorldTransform();
-            worldTrans.setRotation(ToBtQuaternion(orientation));
+            worldTrans.setRotation(trans.Orientation());
             interpTrans.setRotation(worldTrans.getRotation());
             body_->setInterpolationWorldTransform(interpTrans);
         }
@@ -680,11 +673,9 @@ void EC_RigidBody::Rotate(const Vector3df& rotation)
         
         if (body_)
         {
-            Quaternion orientation(DEGTORAD * trans.rot.x, DEGTORAD * trans.rot.y, DEGTORAD * trans.rot.z);
-            
             btTransform& worldTrans = body_->getWorldTransform();
             btTransform interpTrans = body_->getInterpolationWorldTransform();
-            worldTrans.setRotation(ToBtQuaternion(orientation));
+            worldTrans.setRotation(trans.Orientation());
             interpTrans.setRotation(worldTrans.getRotation());
             body_->setInterpolationWorldTransform(interpTrans);
         }
@@ -892,12 +883,12 @@ void EC_RigidBody::UpdatePosRotFromPlaceable()
     if (!placeable || !body_)
         return;
     
-    Vector3df position = placeable->GetWorldPosition();
-    Quaternion orientation = placeable->GetWorldOrientation();
+    float3 position = placeable->WorldPosition();
+    Quat orientation = placeable->WorldOrientation();
 
     btTransform& worldTrans = body_->getWorldTransform();
-    worldTrans.setOrigin(ToBtVector3(position));
-    worldTrans.setRotation(ToBtQuaternion(orientation));
+    worldTrans.setOrigin(position);
+    worldTrans.setRotation(orientation);
     
     // When we forcibly set the physics transform, also set the interpolation transform to prevent jerky motion
     btTransform interpTrans = body_->getInterpolationWorldTransform();

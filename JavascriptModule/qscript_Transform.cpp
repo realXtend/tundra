@@ -61,7 +61,7 @@ static QScriptValue Transform_SetRot_float_float_float(QScriptContext *context, 
     float x = TypeFromQScriptValue<float>(context->argument(0));
     float y = TypeFromQScriptValue<float>(context->argument(1));
     float z = TypeFromQScriptValue<float>(context->argument(2));
-    This->SetRot(x, y, z);
+    This->SetRotation(x, y, z);
     return QScriptValue();
 }
 
@@ -121,7 +121,7 @@ static QScriptValue Transform_SetRotation_float3x3(QScriptContext *context, QScr
     Transform *This = TypeFromQScriptValue<Transform*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in function Transform_SetRotation_float3x3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     float3x3 mat = TypeFromQScriptValue<float3x3>(context->argument(0));
-    This->SetRotation(mat);
+    This->SetOrientation(mat);
     return QScriptValue();
 }
 
@@ -131,7 +131,7 @@ static QScriptValue Transform_SetRotation_Quat(QScriptContext *context, QScriptE
     Transform *This = TypeFromQScriptValue<Transform*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in function Transform_SetRotation_Quat in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
     Quat q = TypeFromQScriptValue<Quat>(context->argument(0));
-    This->SetRotation(q);
+    This->SetOrientation(q);
     return QScriptValue();
 }
 
@@ -140,7 +140,7 @@ static QScriptValue Transform_Rotation3x3(QScriptContext *context, QScriptEngine
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Rotation3x3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     Transform *This = TypeFromQScriptValue<Transform*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in function Transform_Rotation3x3 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float3x3 ret = This->Rotation3x3();
+    float3x3 ret = This->Orientation3x3();
     return TypeToQScriptValue(engine, ret);
 }
 
@@ -149,7 +149,7 @@ static QScriptValue Transform_RotationQuat(QScriptContext *context, QScriptEngin
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_RotationQuat in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     Transform *This = TypeFromQScriptValue<Transform*>(context->thisObject());
     if (!This) { printf("Error! Invalid context->thisObject in function Transform_RotationQuat in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    Quat ret = This->RotationQuat();
+    Quat ret = This->Orientation();
     return TypeToQScriptValue(engine, ret);
 }
 

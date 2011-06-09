@@ -12,7 +12,10 @@
 #include "SceneInteract.h"
 
 #include "Color.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
+#include "Math/float2.h"
+#include "Math/float3.h"
+#include "Math/float4.h"
 #include "Transform.h"
 #include "MemoryLeakCheck.h"
 
@@ -47,7 +50,6 @@ SceneInteract *SceneAPI::GetSceneInteract() const
 {
     return sceneInteract;
 }
-
 bool SceneAPI::HasScene(const QString &name) const
 {
     return scenes_.find(name) != scenes_.end();
@@ -216,14 +218,20 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
         attribute = new Attribute<float>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "color")
         attribute = new Attribute<Color>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "float2")
+        attribute = new Attribute<float2>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "float3")
+        attribute = new Attribute<float3>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "float4")
+        attribute = new Attribute<float4>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "vector3df")
         attribute = new Attribute<Vector3df>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "bool")
         attribute = new Attribute<bool>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "uint")
         attribute = new Attribute<uint>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "quaternion")
-        attribute = new Attribute<Quaternion>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypename == "quat")
+        attribute = new Attribute<Quat>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "assetreference")
         attribute = new Attribute<AssetReference>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "assetreferencelist")

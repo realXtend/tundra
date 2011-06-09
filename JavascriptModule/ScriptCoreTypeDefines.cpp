@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "Color.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include "Vector3D.h"
 #include "IAttribute.h"
 #include "AssetReference.h"
@@ -315,7 +315,7 @@ QScriptValue Vector3df_prototype_distance(QScriptContext *ctx, QScriptEngine *en
 
     return vec1.getDistanceFrom(vec2);
 }
-
+/*
 QScriptValue Quaternion_prototype_ToEuler(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_Normalize(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Quaternion_prototype_MakeIdentity(QScriptContext *ctx, QScriptEngine *engine);
@@ -335,7 +335,7 @@ void createQuaternionFunctions(QScriptValue &value, QScriptEngine *engine)
     value.setProperty("rotationTo", engine->newFunction(Quaternion_prototype_RotationTo));
 }
 
-QScriptValue toScriptValueQuaternion(QScriptEngine *engine, const Quaternion &s)
+QScriptValue toScriptValueQuaternion(QScriptEngine *engine, const Quat &s)
 {
     QScriptValue obj = engine->newObject();
     obj.setProperty("x", QScriptValue(engine, s.x));
@@ -413,7 +413,10 @@ QScriptValue Quaternion_prototype_Slerp(QScriptContext *ctx, QScriptEngine *engi
 
     return toScriptValueQuaternion(engine, result);
 }
+*/
 void createTransfromFunctions(QScriptValue& value, QScriptEngine* engine);
+
+/*
 //! @todo This code is copy pasted from IAttribute.cpp. There should be a funtion that both could call.
 QScriptValue Quaternion_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
 {
@@ -458,7 +461,7 @@ QScriptValue Quaternion_prototype_RotationTo(QScriptContext *ctx, QScriptEngine 
 
     return toScriptValueQuaternion(engine, result);
 }
-
+*/
 QScriptValue Transform_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Transform_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine);
 void createTransformFunctions(QScriptValue &value, QScriptEngine *engine)
@@ -780,7 +783,7 @@ QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
     }
     return engine->toScriptValue(newVec);
 }
-
+/*
 QScriptValue createQuaternion(QScriptContext *ctx, QScriptEngine *engine)
 {
     Quaternion newQuat;
@@ -799,7 +802,7 @@ QScriptValue createQuaternion(QScriptContext *ctx, QScriptEngine *engine)
     }
     return engine->toScriptValue(newQuat);
 }
-
+*/
 QScriptValue createTransform(QScriptContext *ctx, QScriptEngine *engine)
 {
     Transform newTransform;
@@ -859,7 +862,7 @@ void RegisterCoreMetaTypes()
     qRegisterMetaType<ComponentPtr>("ComponentPtr");
     qRegisterMetaType<Color>("Color");
     qRegisterMetaType<Vector3df>("Vector3df");
-    qRegisterMetaType<Quaternion>("Quaternion");
+//    qRegisterMetaType<Quaternion>("Quaternion");
     qRegisterMetaType<Transform>("Transform");
     qRegisterMetaType<AssetReference>("AssetReference");
     qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
@@ -874,7 +877,7 @@ void ExposeCoreTypes(QScriptEngine *engine)
 {
     qScriptRegisterMetaType(engine, toScriptValueColor, fromScriptValueColor);
     qScriptRegisterMetaType(engine, toScriptValueVector3, fromScriptValueVector3);
-    qScriptRegisterMetaType(engine, toScriptValueQuaternion, fromScriptValueQuaternion);
+//    qScriptRegisterMetaType(engine, toScriptValueQuaternion, fromScriptValueQuaternion);
     qScriptRegisterMetaType(engine, toScriptValueTransform, fromScriptValueTransform);
     qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
     qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
@@ -918,8 +921,9 @@ void ExposeCoreTypes(QScriptEngine *engine)
     protoVector3df.setProperty("normalize2", engine->newFunction(Vector3df_prototype_normalize)); //leaving in for debug/test purposes
     QScriptValue ctorVector3df = engine->newFunction(createVector3df, protoVector3df); //this is supposed to work according to docs, doesnt.
     engine->globalObject().setProperty("Vector3df", ctorVector3df);*/
-    
+/*    
     QScriptValue ctorQuaternion = engine->newFunction(createQuaternion);
     engine->globalObject().setProperty("Quaternion", ctorQuaternion);
     engine->globalObject().property("Quaternion").setProperty("fromString", engine->newFunction(Quaternion_prototype_FromString));
+*/
 }

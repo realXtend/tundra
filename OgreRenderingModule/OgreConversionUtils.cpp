@@ -34,11 +34,6 @@ Vector3df ToCoreVector(const Ogre::Vector3 &vector)
     return Vector3df(vector.x, vector.y, vector.z);
 }
 
-Ogre::Quaternion ToOgreQuaternion(const Quaternion &quat)
-{
-    return Ogre::Quaternion(quat.w, quat.x, quat.y, quat.z);
-}
-
 std::string SanitateAssetIdForOgre(const QString& input)
 {
     QString ret = input;

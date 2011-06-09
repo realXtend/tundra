@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
 #include "EC_Avatar.h"
 #include "EC_Mesh.h"
@@ -415,8 +416,10 @@ void ApplyBoneModifier(Entity* entity, const BoneModifier& modifier, float value
         Ogre::Radian ex, ey, ez;
         Ogre::Radian bx, by, bz;
         Ogre::Radian rx, ry, rz;
-        OgreRenderer::ToOgreQuaternion(modifier.start_.orientation_).ToRotationMatrix(rot_start);
-        OgreRenderer::ToOgreQuaternion(modifier.end_.orientation_).ToRotationMatrix(rot_end);
+        rot_start = float3x3(modifier.start_.orientation_);
+        rot_end = float3x3(modifier.end_.orientation_);
+//        OgreRenderer::ToOgreQuaternion(modifier.start_.orientation_).ToRotationMatrix(rot_start);
+ //       OgreRenderer::ToOgreQuaternion(modifier.end_.orientation_).ToRotationMatrix(rot_end);
         bone->getInitialOrientation().ToRotationMatrix(rot_orig);
         rot_start.ToEulerAnglesXYZ(sx, sy, sz);
         rot_end.ToEulerAnglesXYZ(ex, ey, ez);
