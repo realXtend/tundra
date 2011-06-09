@@ -56,11 +56,19 @@ UiWidget::~UiWidget(void)
 
 void UiWidget::setVisible(bool visible)
 {
-    QWidget::setVisible(visible);
-    emit visibilityChanged(visible);
+    if (isVisible() != visible)
+    {
+        QWidget::setVisible(visible);
+        sendVisibilityChanged(visible);
+    }
 }
 
 void UiWidget::toogleVisibility()
 {
     setVisible(!isVisible());
+}
+
+void UiWidget::sendVisibilityChanged(bool visible)
+{
+    emit visibilityChanged(visible);
 }

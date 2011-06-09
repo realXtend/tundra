@@ -21,6 +21,7 @@ public:
 public slots:
     virtual void setVisible(bool visible);
     void toogleVisibility();
+    void sendVisibilityChanged(bool visible);
     QWidget* widget() {return widget_;}
 
 signals:
