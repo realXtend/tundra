@@ -62,9 +62,8 @@ UiConsoleManager::UiConsoleManager(CommandManager* mgr, Foundation::Framework *f
 
 UiConsoleManager::~UiConsoleManager()
 {
-    // consoleWidget gets deleted by the scene it is in currently
-    if (consoleUi)
-        SAFE_DELETE(consoleUi);
+    SAFE_DELETE(consoleUi);
+    SAFE_DELETE(consoleWidget);
 }
 
 void UiConsoleManager::PrintToConsole(const QString &text)

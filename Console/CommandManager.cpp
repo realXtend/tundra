@@ -22,6 +22,7 @@ typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
 typedef boost::tokenizer< boost::escaped_list_separator<char> > escape_tokenizer;
 
 CommandManager::CommandManager(ConsoleAPI *console, Foundation::Framework *fw) :
+    QObject(console),
     framework_(fw),
     console_(console),
     nativeinput_(0)

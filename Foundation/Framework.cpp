@@ -202,17 +202,17 @@ namespace Foundation
         // if we delete them here seems to be quite crash prone, core dumps at exit in QApplication::notify.
         //delete frame;
         //delete console;
-        //delete ui;
 
         // Delete the QObjects that don't have a parent.
-        delete input;
-        delete asset;
-        delete audio;
+        SAFE_DELETE(input);
+        SAFE_DELETE(asset);
+        SAFE_DELETE(audio);
+        SAFE_DELETE(ui);
 
         // This delete must be the last one in Framework since naaliApplication derives QApplication.
         // When we delete QApplication, we must have ensured that all QObjects have been deleted.
         ///\bug Framework is itself a QObject and we should delete naaliApplication only after Framework has been deleted. A refactor is required.
-        delete application;
+        SAFE_DELETE(application);
     }
 
     void Framework::CreateLoggingSystem()
