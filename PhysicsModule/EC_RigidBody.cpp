@@ -23,6 +23,8 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
 
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
+#include <BulletCollision/Gimpact/btGImpactShape.h>
+#include <BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 
 using namespace Physics;
 
@@ -34,6 +36,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     IComponent(module->GetFramework()),
     mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
+	physicsType(this, "Physics Type", (int)Type_Dynamic),
     size(this, "Size", Vector3df(1,1,1)),
     collisionMeshRef(this, "Collision mesh ref"),
     friction(this, "Friction", 0.5f),
@@ -65,9 +68,20 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
         shapemetadata.enums[Shape_TriMesh] = "TriMesh";
         shapemetadata.enums[Shape_HeightField] = "HeightField";
         shapemetadata.enums[Shape_ConvexHull] = "ConvexHull";
-        metadataInitialized = true;
+        metadataInitialized = true;  
     }
     shapeType.SetMetadata(&shapemetadata);
+
+	static AttributeMetadata physicstypemetadata;
+    static bool metadataInitialized2 = false;
+    if(!metadataInitialized2)
+    {
+        physicstypemetadata.enums[Type_Dynamic] = "Dynamic";
+        physicstypemetadata.enums[Type_Static] = "Static";
+        physicstypemetadata.enums[Type_Kinematic] = "Kinematic";
+        metadataInitialized2 = true;
+    }
+    physicsType.SetMetadata(&physicstypemetadata);
 
     // Note: we cannot create the body yet because we are not in an entity/scene yet (and thus don't know what physics world we belong to)
     // We will create the body when the scene is known.
@@ -310,8 +324,9 @@ void EC_RigidBody::CreateCollisionShape()
         shape_ = new btCapsuleShapeZ(sizeVec.x * 0.5f, sizeVec.z * 0.5f);
         break;
     case Shape_TriMesh:
-        if (triangleMesh_)
-            shape_ = new btBvhTriangleMeshShape(triangleMesh_.get(), true, true);
+		if (triangleMesh_){
+			shape_ = new btBvhTriangleMeshShape(triangleMesh_.get(), true, true);
+		}
     case Shape_HeightField:
         CreateHeightFieldFromTerrain();
         break;
@@ -356,10 +371,11 @@ void EC_RigidBody::CreateBody()
     int collisionFlags;
     
     GetProperties(localInertia, m, collisionFlags);
-    
     body_ = new btRigidBody(m, this, shape_, localInertia);
     body_->setUserPointer(this);
     body_->setCollisionFlags(collisionFlags);
+	if (physicsType.Get() == Type_Kinematic)
+		body_->setActivationState(DISABLE_DEACTIVATION);
     world_->GetWorld()->addRigidBody(body_);
     body_->activate();
 }
@@ -380,6 +396,8 @@ void EC_RigidBody::ReaddBody()
     body_->setCollisionFlags(collisionFlags);
     
     world_->GetWorld()->removeRigidBody(body_);
+	if (physicsType.Get() == Type_Kinematic)
+		body_->setActivationState(DISABLE_DEACTIVATION);
     world_->GetWorld()->addRigidBody(body_);
     body_->clearForces();
     body_->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
@@ -530,6 +548,10 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
     
     if (attribute == &phantom)
         // Readd body to the world in case phantom classification changed
+        ReaddBody();
+
+	if (attribute == &physicsType)
+        // Readd body to the world in case physicsType classification changed
         ReaddBody();
     
     if (attribute == &drawDebug)
@@ -812,12 +834,14 @@ void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisi
     if ((shape_) && (m > 0.0f))
         shape_->calculateLocalInertia(m, localInertia);
     
-    bool isDynamic = m > 0.0f;
+    //bool isDynamic = m > 0.0f;
     bool isPhantom = phantom.Get();
     collisionFlags = 0;
-    if (!isDynamic)
-        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
-    if (isPhantom)
+    if (physicsType.Get() == Type_Static)
+        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;   
+	else if (physicsType.Get() == Type_Kinematic)   
+		collisionFlags |= btCollisionObject::CF_KINEMATIC_OBJECT;
+	if (isPhantom)
         collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
     if (!drawDebug.Get())
         collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;

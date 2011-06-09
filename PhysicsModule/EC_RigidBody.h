@@ -120,6 +120,7 @@ class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState
     
     Q_OBJECT
     Q_ENUMS(ShapeType)
+	Q_ENUMS(physicsType)
     
     DECLARE_EC(EC_RigidBody);
 public:
@@ -133,6 +134,13 @@ public:
         Shape_HeightField,
         Shape_ConvexHull
     };
+
+	enum physicsType
+    {
+		Type_Dynamic,
+        Type_Static,
+        Type_Kinematic
+    };
     
     //! Mass of the body. Set to 0 for static
     Q_PROPERTY(float mass READ getmass WRITE setmass);
@@ -141,6 +149,10 @@ public:
     //! Shape type
     Q_PROPERTY(int shapeType READ getshapeType WRITE setshapeType)
     DEFINE_QPROPERTY_ATTRIBUTE(int, shapeType);
+
+	//! Physics type
+    Q_PROPERTY(int physicsType READ getphysicsType WRITE setphysicsType)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, physicsType);
     
     //! Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.
     Q_PROPERTY(Vector3df size READ getsize WRITE setsize)
