@@ -129,6 +129,10 @@ public:
     /// Creates a new float3x3 that performs the rotation expressed by the given quaternion.
     static float3x3 FromQuat(const Quat &orientation);
 
+    /// Converts this rotation matrix to a quaternion.
+    /// This function assumes that the matrix is orthonormal (no shear or scaling) and does not perform any mirroring (determinant > 0).
+    Quat ToQuat() const;
+
     /// Creates a new float3x3 as a combination of rotation and scale.
     /** This function creates a new float3x3 M of the form M = R * S, where R is a
         rotation matrix and S a scale matrix. Transforming a vector v using this matrix computes the vector

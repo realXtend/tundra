@@ -108,6 +108,21 @@ ScaleOp::ScaleOp(const float3 &scale)
 
 ScaleOp::operator float3x3() const
 {
+    return ToFloat3x3();
+}
+
+ScaleOp::operator float3x4() const
+{
+    return ToFloat3x4();
+}
+
+ScaleOp::operator float4x4() const
+{
+    return ToFloat4x4();
+}
+
+float3x3 ScaleOp::ToFloat3x3() const
+{
     float3x3 m;
     m.SetRow(0, x, 0, 0);
     m.SetRow(1, 0, y, 0);
@@ -115,7 +130,7 @@ ScaleOp::operator float3x3() const
     return m;
 }
 
-ScaleOp::operator float3x4() const
+float3x4 ScaleOp::ToFloat3x4() const
 {
     float3x4 m;
     m.SetRow(0, x, 0, 0, 0);
@@ -124,7 +139,7 @@ ScaleOp::operator float3x4() const
     return m;
 }
 
-ScaleOp::operator float4x4() const
+float4x4 ScaleOp::ToFloat4x4() const
 {
     float4x4 m;
     m.SetRow(0, x, 0, 0, 0);

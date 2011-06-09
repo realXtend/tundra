@@ -56,6 +56,10 @@ public:
     operator float3x3() const;
     operator float3x4() const;
     operator float4x4() const;
+
+    float3x3 ToFloat3x3() const;
+    float3x4 ToFloat3x4() const;
+    float4x4 ToFloat4x4() const;
 };
 
 float3x3 operator *(const ScaleOp &lhs, const float3x3 &rhs);
