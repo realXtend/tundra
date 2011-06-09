@@ -95,7 +95,6 @@ function Update(frametime)
                                -motion_z * move_sensitivity * frametime);
     motionvec = placeable.Orientation().Mul(motionvec);
     var newpos = placeable.Position().Add(motionvec);
-    print(newpos);
     placeable.SetPosition(newpos.x(), newpos.y(), newpos.z());
 }
 

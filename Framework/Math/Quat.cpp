@@ -506,10 +506,10 @@ Quat Quat::operator /(float scalar) const
 
 Quat Quat::operator *(const Quat &r) const
 {
-    return Quat(w*r.w - x*r.x - y*r.y - z*r.z,
-                w*r.x + x*r.w + y*r.z - z*r.y,
+    return Quat(w*r.x + x*r.w + y*r.z - z*r.y,
                 w*r.y - x*r.z + y*r.w + z*r.x,
-                w*r.z + x*r.y - y*r.x + z*r.w);
+                w*r.z + x*r.y - y*r.x + z*r.w,
+                w*r.w - x*r.x - y*r.y - z*r.z);
 }
 
 Quat Quat::operator /(const Quat &rhs) const
