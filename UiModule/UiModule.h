@@ -36,7 +36,7 @@ namespace ProtocolUtilities
 
 namespace CoreUi
 {
-    class LanguageWidget;
+    class ChangeThemeWidget;
 }
 
 namespace UiServices
