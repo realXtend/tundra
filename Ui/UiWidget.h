@@ -15,16 +15,34 @@ class UiWidget :  public QWidget
      Q_OBJECT
 
 public:
+    /// Constructor.
+    /** @param  widget The widget which will be embedded to the ui widget.
+        @param  flags Window flags. 
+        @param  params list of string parameters.
+    */
     UiWidget(QWidget *widget, QWidget *parent = 0, Qt::WindowFlags flags = 0, const QStringList &params = QStringList());
+    
+    /// Destructor.
     ~UiWidget(void);
 
 public slots:
     virtual void setVisible(bool visible);
-    void toogleVisibility();
+
+    /// Toggles visibility
+    void toggleVisibility();
+
+    /// Sends visibilityChanged signal
+    /** @param visible visitility to signal
+    */
     void sendVisibilityChanged(bool visible);
+
+    /// Returns contained widget
     QWidget* widget() {return widget_;}
 
 signals:
+    ///Emitted when visibility changes.
+    /**@param visible visibility
+    */
     void visibilityChanged(bool visible);
 
 private:

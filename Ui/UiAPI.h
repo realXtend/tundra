@@ -31,6 +31,9 @@ public:
     /// Destroys main window and viewport.
     ~UiAPI();
 
+    /// Registers UiWidgetFactory
+    /** @param  factory UiWidgetFactory to register
+    */
     void RegisterUiWidgetFactory(UiWidgetFactoryPtr factory);
 
 public slots:
@@ -70,13 +73,11 @@ public slots:
 
     /** Add a widget into the main Window of the app
       @param widget Widget to be added
-      @param params List of params to customize the widget in the main window
       @param flags Window flags. Qt::Dialog is used as default.
-
-      @return void
+      @param params List of params to customize the widget in the main window
+      @return UiWidget containing added widget.
     */
     UiWidget *AddWidgetToWindow(QWidget* widget, Qt::WindowFlags flags = Qt::Dialog, const QStringList &params = QStringList());
-
 
     /// Adds user-created proxy widget to the scene.
     /** @param widget Proxy widget.
@@ -160,6 +161,9 @@ public slots:
     */
     void EmitOpenUrl(const QUrl &url);
 
+    /// Returns UiWidgetFactory for the specified widget type
+    /* @param  typeName widget type
+    */
     UiWidgetFactoryPtr GetUiWidgetFactory(QString typeName);
 
 signals:

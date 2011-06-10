@@ -2,9 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   UiProxyWidget.cpp
- *  @brief  Represents Naali UI widget created by embedding QWidget to the same
- *          canvas as the in-world 3D scene.
- */
+  */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -63,7 +61,7 @@ void UiWidget::setVisible(bool visible)
     }
 }
 
-void UiWidget::toogleVisibility()
+void UiWidget::toggleVisibility()
 {
     setVisible(!isVisible());
 }
