@@ -105,7 +105,7 @@ class AutoSave(Component):
         if entity.IsTemporary() or entity.IsLocal():
             return
         
-        if entity.Id == self.entity_saver_conf.Id:
+        if entity.id == self.entity_saver_conf.id:
             return
                 
         if entity.GetName() == "unique_world_name" and entity.GetDescription != "":
@@ -157,10 +157,10 @@ class AutoSave(Component):
         
         if entity in self.entities:
             if not entity in self.removedEntities:
-                if entity.Id > 0:
-                    self.removedEntities.append(entity.Id)
+                if entity.id > 0:
+                    self.removedEntities.append(entity.id)
                 else:
-                    self.removedEntities.append(entity.Id * (-1))          
+                    self.removedEntities.append(entity.id * (-1))          
             self.entities.remove(entity)
             
         if entity in self.dirtyEntities:
@@ -227,10 +227,10 @@ class AutoSave(Component):
             return            
                 
         for ent_save in self.dirtyEntities:
-            if ent_save.Id < 0:
-                f = open(self.path + str(ent_save.Id * (-1)) + ".txml", 'w')
+            if ent_save.id < 0:
+                f = open(self.path + str(ent_save.id * (-1)) + ".txml", 'w')
             else:
-                f = open(self.path + str(ent_save.Id) + ".txml", 'w')            
+                f = open(self.path + str(ent_save.id) + ".txml", 'w')            
             f.write(str(self.scene.GetEntityXml(ent_save)))
             f.close()
             
@@ -261,10 +261,10 @@ class AutoSave(Component):
             if not self.save:
                 #save!
                 for ent_save in self.dirtyEntities:
-                    if ent_save.Id < 0:
-                        f = open(self.path + str(ent_save.Id * (-1)) + ".txml", 'w')
+                    if ent_save.id < 0:
+                        f = open(self.path + str(ent_save.id * (-1)) + ".txml", 'w')
                     else:
-                        f = open(self.path + str(ent_save.Id) + ".txml", 'w')            
+                        f = open(self.path + str(ent_save.id) + ".txml", 'w')            
                     f.write(str(self.scene.GetEntityXml(ent_save)))
                     f.close()
                     

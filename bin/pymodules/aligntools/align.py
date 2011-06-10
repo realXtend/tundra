@@ -33,11 +33,11 @@ def align_position(entities, axis, first, spaced):
                     pos.setZ(orig_pos.z())
                 entity.placeable.Position = pos
                 try:
-                    rexviewer.networkUpdate(entity.Id)
+                    rexviewer.networkUpdate(entity.id)
                 except:
-                    rexviewer.logDebug("align_position non spaced: couldn't update entity %d" % entity.Id)
+                    rexviewer.logDebug("align_position non spaced: couldn't update entity %d" % entity.id)
             except: # entity didn't have EC_Placeable
-                    rexviewer.logDebug("align_position non spaced: entity %d has no EC_Placeable" % entity.Id)
+                    rexviewer.logDebug("align_position non spaced: entity %d has no EC_Placeable" % entity.id)
     else:
         count = len(entities)
 
@@ -78,11 +78,11 @@ def align_position(entities, axis, first, spaced):
                 print entity.placeable.Position, pos, step*i
                 entity.placeable.Position = pos
                 try:
-                    rexviewer.networkUpdate(entity.Id)
+                    rexviewer.networkUpdate(entity.id)
                 except:
-                    rexviewer.logDebug("align_position spaced: couldn't update entity %d" % entity.Id)
+                    rexviewer.logDebug("align_position spaced: couldn't update entity %d" % entity.id)
             except: # entity didn't have EC_Placeable
-                    rexviewer.logDebug("align_position spaced: entity %d has no EC_Placeable" % entity.Id)
+                    rexviewer.logDebug("align_position spaced: entity %d has no EC_Placeable" % entity.id)
 
 ###############################################################################
 ##
@@ -152,9 +152,9 @@ def align_random(entities):
         z = random.uniform(min.z(),max.z())
         entity.placeable.Position = QVector3D(x, y, z)
         try:
-            rexviewer.networkUpdate(entity.Id)
+            rexviewer.networkUpdate(entity.id)
         except:
-            rexviewer.logDebug("align_position random: couldn't update entity %d" % entity.Id)
+            rexviewer.logDebug("align_position random: couldn't update entity %d" % entity.id)
 
 def align_random_x(entities):
     min, max, med = _get_selection_bb(entities)
@@ -165,9 +165,9 @@ def align_random_x(entities):
         z = entity.placeable.Position.z()
         entity.placeable.Position = QVector3D(x, y, z)
         try:
-            rexviewer.networkUpdate(entity.Id)
+            rexviewer.networkUpdate(entity.id)
         except:
-            rexviewer.logDebug("align_position random z: couldn't update entity %d" % entity.Id)
+            rexviewer.logDebug("align_position random z: couldn't update entity %d" % entity.id)
 
 def align_random_y(entities):
     min, max, med = _get_selection_bb(entities)
@@ -178,9 +178,9 @@ def align_random_y(entities):
         z = entity.placeable.Position.z()
         entity.placeable.Position = QVector3D(x, y, z)
         try:
-            rexviewer.networkUpdate(entity.Id)
+            rexviewer.networkUpdate(entity.id)
         except:
-            rexviewer.logDebug("align_position random y: couldn't update entity %d" % entity.Id)
+            rexviewer.logDebug("align_position random y: couldn't update entity %d" % entity.id)
 
 def align_random_z(entities):
     min, max, med = _get_selection_bb(entities)
@@ -191,6 +191,6 @@ def align_random_z(entities):
         z = random.uniform(min.z(),max.z())
         entity.placeable.Position = QVector3D(x, y, z)
         try:
-            rexviewer.networkUpdate(entity.Id)
+            rexviewer.networkUpdate(entity.id)
         except:
-            rexviewer.logDebug("align_position random z: couldn't update entity %d" % entity.Id)
+            rexviewer.logDebug("align_position random z: couldn't update entity %d" % entity.id)
