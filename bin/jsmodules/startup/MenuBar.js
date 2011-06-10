@@ -39,14 +39,14 @@ if (!framework.IsHeadless())
         assetAction = mainwin.AddMenuAction("&View", "Assets", new QIcon("./data/ui/images/fileIcons.png"));
 		assetAction.checkable = true;
         var assetswid = framework.GetModuleQObj("SceneStructure").GetAssetsUiWidget();
-		assetAction.triggered.connect(assetswid, assetswid.toogleVisibility);
+		assetAction.triggered.connect(assetswid, assetswid.toggleVisibility);
 		assetswid.visibilityChanged.connect(assetAction, assetAction.setChecked);
 		
 		sceneAction = mainwin.AddMenuAction("&View", "Scene", new QIcon("./data/ui/images/fileList.png"));        
 		sceneAction.checkable = true;
 		var scenewid = framework.GetModuleQObj("SceneStructure").GetSceneStructureUiWidget();
-		sceneAction.triggered.connect(scenewid, scenewid.toogleVisibility);
-		assetswid.visibilityChanged.connect(assetAction, assetAction.setChecked);		
+		sceneAction.triggered.connect(scenewid, scenewid.toggleVisibility);
+		scenewid.visibilityChanged.connect(assetAction, assetAction.setChecked);		
     }
 
     if (framework.GetModuleQObj("Console"))
@@ -57,7 +57,7 @@ if (!framework.IsHeadless())
     	debugstatAction = mainwin.AddMenuAction("&View", "Profiler");
 		debugstatAction.checkable = true;
 		var debugstatwid = framework.GetModuleQObj("DebugStats").GetDebugStatsUiWidget();
-		debugstatAction.triggered.connect(debugstatwid, debugstatwid.toogleVisibility);
+		debugstatAction.triggered.connect(debugstatwid, debugstatwid.toggleVisibility);
 		debugstatwid.visibilityChanged.connect(debugstatAction, debugstatAction.setChecked);		
 	}
 
@@ -66,13 +66,13 @@ if (!framework.IsHeadless())
     	terrainAction = mainwin.AddMenuAction("&View", "Terrain Editor")
 		terrainAction.checkable = true;
 		var terrainwid = framework.GetModuleQObj("Environment").GetTerrainEditorUiWidget();
-		terrainAction.triggered.connect(terrainwid, terrainwid.toogleVisibility);
+		terrainAction.triggered.connect(terrainwid, terrainwid.toggleVisibility);
 		terrainwid.visibilityChanged.connect(terrainAction, terrainAction.setChecked);		
 		
 		postprocessingAction = mainwin.AddMenuAction("&View", "Post-processing");
 		postprocessingAction.checkable = true;
 		var postprocessingwid = framework.GetModuleQObj("Environment").GetPostProcessingUiWidget();
-		postprocessingAction.triggered.connect(postprocessingwid, postprocessingwid.toogleVisibility);
+		postprocessingAction.triggered.connect(postprocessingwid, postprocessingwid.toggleVisibility);
 		postprocessingwid.visibilityChanged.connect(postprocessingAction, postprocessingAction.setChecked);		
     }
 
@@ -81,7 +81,7 @@ if (!framework.IsHeadless())
     	pythonAction = mainwin.AddMenuAction("&View", "Python Console");
 		pythonAction.checkable = true;
 		var pythonwid = framework.GetModuleQObj("PythonScript").GetPythonConsoleUiWidget();
-		pythonAction.triggered.connect(pythonwid, pythonwid.toogleVisibility);
+		pythonAction.triggered.connect(pythonwid, pythonwid.toggleVisibility);
 		pythonwid.visibilityChanged.connect(pythonAction, pythonAction.setChecked);		
 	}
         
