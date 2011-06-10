@@ -61,8 +61,8 @@ namespace OgreRenderer
         settings_widget_->setParent(framework_->Ui()->MainWindow());
         settings_widget_->setWindowFlags(Qt::Tool);
 
-        QAction *action = framework_->Ui()->MainWindow()->AddMenuAction("&Settings", "Rendering");
-        connect(action, SIGNAL(triggered()), settings_widget_, SLOT(show()));
+        //QAction *action = framework_->Ui()->MainWindow()->AddMenuAction("&Settings", "Rendering");
+        //connect(action, SIGNAL(triggered()), settings_widget_, SLOT(show()));
 
         QDoubleSpinBox* spin = settings_widget_->findChild<QDoubleSpinBox*>("spinbox_viewdistance");
         boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Service::ST_Renderer).lock();

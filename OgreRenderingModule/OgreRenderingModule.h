@@ -6,6 +6,8 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "OgreModuleApi.h"
+#include <QObject>
+#include <QWidget>
 
 namespace Foundation
 {
@@ -28,8 +30,10 @@ namespace OgreRenderer
     */
 
     //! A renderer module using Ogre
-    class OGRE_MODULE_API OgreRenderingModule : public IModule
+    class OGRE_MODULE_API OgreRenderingModule : public QObject, public IModule
     {
+        Q_OBJECT
+
     public:
         OgreRenderingModule();
         virtual ~OgreRenderingModule();
@@ -52,6 +56,10 @@ namespace OgreRenderer
 
         //! callback for console command
         ConsoleCommandResult ConsoleStats(const StringVector &params);
+
+    public slots:
+        //! returns settings widget 
+        QWidget *GetRendererSettingsWidget();
 
     private:
         //! Type name of the module.

@@ -121,6 +121,14 @@ namespace OgreRenderer
         renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
     }
 
+    QWidget *OgreRenderingModule::GetRendererSettingsWidget()
+    {
+        if(renderer_settings_)
+            return renderer_settings_.get()->GetSettingsWidget();
+        else
+            return 0;
+    }
+
     bool OgreRenderingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(OgreRenderingModule_HandleEvent);
