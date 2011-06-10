@@ -64,6 +64,7 @@
 #include "DevicesAPI.h"
 #include "IDevice.h"
 #include "IPositionalDevice.h"
+#include "IControlDevice.h"
 
 //Kristalli UserConnection
 //for JS this is actually registered in TundraLogicModule, which depends on QtScript directly.
@@ -1896,6 +1897,8 @@ namespace PythonScript
             PythonQt::self()->registerClass(&DevicesAPI::staticMetaObject);
             PythonQt::self()->registerClass(&IDevice::staticMetaObject);
             PythonQt::self()->registerClass(&IPositionalDevice::staticMetaObject);
+            PythonQt::self()->registerClass(&IControlDevice::staticMetaObject);
+            PythonQt::self()->registerClass(&AxisData::staticMetaObject);
 
             //knet UserConnection
             PythonQt::self()->registerClass(&UserConnection::staticMetaObject);
