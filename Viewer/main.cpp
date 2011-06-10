@@ -49,7 +49,7 @@ int main (int argc, char **argv)
     // Note that this file is written to the same directory where the executable resides,
     // so you can only use this in a development version where you have write access to
     // that directory.
-#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK) && defined(_DEBUG)
     int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF;
     _CrtSetDbgFlag(tmpDbgFlag);
 
@@ -70,7 +70,7 @@ int main (int argc, char **argv)
     }
 #endif
 
-#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK) && defined (_DEBUG)
     if (hLogFile != INVALID_HANDLE_VALUE)
     {
        _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
@@ -191,7 +191,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Tundra_v1.0.7-client";
+    WCHAR* szVersion = L"Tundra_v1.0.8-client";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
