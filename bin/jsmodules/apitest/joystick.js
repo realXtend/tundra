@@ -6,8 +6,8 @@
 var js0;
 function init() {
     if (!js0) {
-	js0 = devices.GetDevice("joystick0"); //the naming technique in pyppet.py
-	if (js0) {
+        js0 = devices.GetDevice("joystick0"); //the naming technique in pyppet.py
+        if (js0) {
 	    print("found joystick 0.");
 	    js0.PositionEvent.connect(joymove)
 	}
