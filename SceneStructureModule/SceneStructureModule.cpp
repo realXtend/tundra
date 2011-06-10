@@ -70,16 +70,22 @@ SceneStructureModule::~SceneStructureModule()
 void SceneStructureModule::PostInitialize()
 {
 	//Assets panel
-	assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
-    assetsWindow->setWindowFlags(Qt::Tool);
-    assetsWidget = framework_->Ui()->AddWidgetToWindow(assetsWindow, Qt::Tool);
+    if (!assetsWidget)
+    {
+        assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
+        assetsWindow->setWindowFlags(Qt::Tool);
+        assetsWidget = framework_->Ui()->AddWidgetToWindow(assetsWindow, Qt::Tool);
+    }
     
 	//Scene panel
-	sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
-    sceneWindow->setWindowFlags(Qt::Tool);
-	sceneWindow->SetScene(framework_->Scene()->GetDefaultScene());
-	connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)),sceneWindow, SLOT(SetNewScene()));
-    sceneWidget = framework_->Ui()->AddWidgetToWindow(sceneWindow, Qt::Tool);
+    if (!sceneWidget)
+    {
+        sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
+        sceneWindow->setWindowFlags(Qt::Tool);
+        sceneWindow->SetScene(framework_->Scene()->GetDefaultScene());
+        connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)),sceneWindow, SLOT(SetNewScene()));
+        sceneWidget = framework_->Ui()->AddWidgetToWindow(sceneWindow, Qt::Tool);
+    }
 
     framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", this, SLOT(ToggleSceneStructureWindow()));
     framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", this, SLOT(ToggleAssetsWindow()));
@@ -350,6 +356,7 @@ UiWidget *SceneStructureModule::GetSceneStructureUiWidget()
     sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
     sceneWindow->SetScene(GetFramework()->Scene()->GetDefaultScene());
+    connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)),sceneWindow, SLOT(SetNewScene()));
     sceneWidget = framework_->Ui()->AddWidgetToWindow(sceneWindow, Qt::Tool);
     return sceneWidget;
 }
