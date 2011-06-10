@@ -120,67 +120,70 @@ namespace UiServices
 	void ViewManager::HideView()
 	{
 		//QList<QString> widgets = uiService_->GetAllWidgetsNames();
-        QMap<QString, QDockWidget*> external_wid = owner_->GetExternalWidgets();
-        QList<QString> widgets = external_wid.keys();
+        QMap<UiWidget*, QDockWidget*> external_wid = owner_->GetExternalWidgets();
+        QList<UiWidget*> widgets = external_wid.keys();
 
-		QListIterator<QString> i(widgets);
+		QListIterator<UiWidget*> i(widgets);
 		while(i.hasNext()){
-            QWidget* widget = external_wid.value(i.next());
-            /*
-			if(dynamic_cast<QDockWidget*>(widget->parentWidget()) && !widget->property("dynamic").isValid())
-				widget->parentWidget()->hide();
-			else
-				widget->hide();*/
+            QDockWidget* widget = external_wid.value(i.next());
             widget->hide();
 		}
 	}
 	void ViewManager::TogglePreviousView(bool save)
 	{
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/ConfigurationViews");
-
 		if(save){
-
 			previous_->setVisible(true);
-
-			settings.beginGroup("Previous");
-
-			//Delete the old widgets
-			QStringList keys = settings.allKeys();
-			QListIterator<QString> key(keys);
-			while(key.hasNext())
-				settings.remove(key.next());
-
-			settings.setValue("win_state", qWin_->saveState());
-
-			//QList<QString> widgets = uiService_->GetAllWidgetsNames();
-            QMap<QString, QDockWidget*> external_wid = owner_->GetExternalWidgets();
-            QList<QString> widgets = external_wid.keys();
-			QListIterator<QString> i(widgets);
-
-			while(i.hasNext()){
-				QString nameWidget = i.next();
-				//QWidget* widget = uiService_->GetWidget(nameWidget);
-                QWidget* widget = external_wid.value(nameWidget);
-				if(dynamic_cast<QDockWidget*>(widget))
-					widget = dynamic_cast<QDockWidget*>(widget)->widget();
-				if(widget->property("dynamic").isValid()){
-					settings.beginGroup(nameWidget);
-					QList<QByteArray> properties = widget->dynamicPropertyNames();
-					QListIterator<QByteArray> p(properties);
-					while(p.hasNext()){
-						QString s = p.next();
-						if(s.startsWith("DP_"))
-							 settings.setValue(s, widget->property(s.toAscii()));
-					}
-				}
-			}
-			settings.endGroup();
-            
-		}else{
+    		StoreViewSettings("Previous");
+ 		}else{
+            QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/ConfigurationViews");
 			settings.remove("Previous");
 			previous_->setVisible(false);
 		}
 	}
+
+    void ViewManager::StoreViewSettings(const QString &viewname)
+    {
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/ConfigurationViews");
+
+        settings.beginGroup(viewname);
+
+        //Delete the old widgets
+        QStringList keys = settings.allKeys();
+        QListIterator<QString> key(keys);
+        while(key.hasNext())
+            settings.remove(key.next());
+
+        settings.setValue("win_state", qWin_->saveState());
+
+        QMap<UiWidget*, QDockWidget*> external_wid = owner_->GetExternalWidgets();
+        QList<UiWidget*> widgets = external_wid.keys();
+        QListIterator<UiWidget*> i(widgets);
+
+        while(i.hasNext()){
+            UiWidget* uiWidget = i.next();
+            //QDockWidget* dockWidget = external_wid.value(uiWidget);
+            //if(dynamic_cast<QDockWidget*>(widget))
+            //	widget = dynamic_cast<QDockWidget*>(widget)->widget();
+            QVariant dynamic_property = uiWidget->property("dynamic");
+            if(dynamic_property.isValid() && dynamic_property.toBool()){
+                QVariant type_property = uiWidget->property("type");
+                if (type_property.isValid()) {
+                    settings.beginGroup(uiWidget->windowTitle());
+                    settings.setValue(QString("type"), type_property);
+                    QList<QByteArray> properties = uiWidget->dynamicPropertyNames();
+                    QListIterator<QByteArray> p(properties);
+                    while(p.hasNext()){
+                        QString s = p.next();
+                        if(s.startsWith("DP_"))
+                            settings.setValue(s, uiWidget->property(s.toAscii()));
+                    }
+                    settings.endGroup();
+                }
+            }
+        }
+        settings.endGroup();
+    }
+
 	void ViewManager::ShowView(const QString &name)
 	{
 		//Restore values
@@ -189,26 +192,28 @@ namespace UiServices
 			settings.beginGroup(name);
 
 			//QList<QString> currentWidgets = uiService_->GetAllWidgetsNames();
-            QMap<QString, QDockWidget*> external_wid = owner_->GetExternalWidgets();
-            QList<QString> currentWidgets = external_wid.keys();
-
+            QMap<UiWidget*, QDockWidget*> external_wid = owner_->GetExternalWidgets();
+            QList<UiWidget*> currentWidgets = external_wid.keys();
+            QList<QString> currentWidgetsNames;
 			QList<QString> widgets = settings.childGroups();
 			QListIterator<QString> i(widgets);
-			QListIterator<QString> k(currentWidgets);
+			QListIterator<UiWidget*> k(currentWidgets);
 			QSet<QString> qset = QSet<QString>::fromList(widgets);
 
 			//Delete all dynamic widgets that aren't in view
 			while(k.hasNext()){
-				QString widgetName = k.next();
-                if(!qset.contains(widgetName) && external_wid.value(widgetName)->widget()->property("dynamic").isValid()/*uiService_->GetWidget(widgetName)->property("dynamic").isValid()*/)
+                UiWidget* uiWidget = k.next();
+                currentWidgetsNames.append(uiWidget->windowTitle());
+                QVariant dynamic_property = uiWidget->property("dynamic");
+                if(!qset.contains(uiWidget->windowTitle()) && dynamic_property.isValid() && dynamic_property.toBool())
 					//TODO!uiService_->HideWidget(widgetName);
-                    external_wid.value(widgetName)->hide();
+                    external_wid.value(uiWidget)->hide();
 			}
 
 			//Create all dynamic widgets in view
 			while(i.hasNext()){
 				QString widgetName = i.next();
-				if(!currentWidgets.contains(widgetName)){
+				if(!currentWidgetsNames.contains(widgetName)){
 					QString type="";
 					QStringList properties;
 					settings.beginGroup(widgetName);
@@ -219,7 +224,9 @@ namespace UiServices
 						if(prop=="type")
 							type=settings.value(prop).toString();
 						else
+                        {   properties.append(prop);
                             properties.append(settings.value(prop).toString());
+                        }
 					}
 					settings.endGroup();
                     if (!type.isEmpty())
@@ -258,41 +265,43 @@ namespace UiServices
 			a->setChecked(true);
 		}
 		
-		settings.beginGroup(name);
+        StoreViewSettings(name);
 
-		//Delete the old widgets
-		QStringList keys = settings.allKeys();
-		QListIterator<QString> key(keys);
-		while(key.hasNext())
-			settings.remove(key.next());
-			
-		settings.setValue("win_state", qWin_->saveState());
+		//settings.beginGroup(name);
 
-		//QList<QString> widgets = uiService_->GetAllWidgetsNames();
-        QMap<QString, QDockWidget*> external_wid = owner_->GetExternalWidgets();
-        QList<QString> widgets = external_wid.keys();
-		QListIterator<QString> i(widgets);
+		////Delete the old widgets
+		//QStringList keys = settings.allKeys();
+		//QListIterator<QString> key(keys);
+		//while(key.hasNext())
+		//	settings.remove(key.next());
+		//	
+		//settings.setValue("win_state", qWin_->saveState());
 
-		while(i.hasNext()){
-			QString nameWidget = i.next();
-			//QWidget* widget = uiService_->GetWidget(nameWidget);
-            QWidget* widget = external_wid.value(nameWidget);
+		////QList<QString> widgets = uiService_->GetAllWidgetsNames();
+  //      QMap<UiWidget*, QDockWidget*> external_wid = owner_->GetExternalWidgets();
+  //      QList<UiWidget*> widgets = external_wid.keys();
+		//QListIterator<UiWidget*> i(widgets);
 
-			if(dynamic_cast<QDockWidget*>(widget))
-				widget = dynamic_cast<QDockWidget*>(widget)->widget();
-			if(widget->property("dynamic").isValid()){
-				settings.beginGroup(nameWidget);
-				QList<QByteArray> properties = widget->dynamicPropertyNames();
-				QListIterator<QByteArray> p(properties);
-				while(p.hasNext()){
-					QString s = p.next();
-					if(s.startsWith("DP_"))
-						 settings.setValue(s, widget->property(s.toAscii()));
-				}
-				settings.endGroup();
-			}
-		}
-		settings.endGroup();
+		//while(i.hasNext()){
+		//	UiWidget* uiWidget = i.next();
+		//	//QWidget* widget = uiService_->GetWidget(nameWidget);
+  //          //QWidget* widget = external_wid.value(nameWidget);
+
+		//	if(dynamic_cast<QDockWidget*>(widget))
+		//		widget = dynamic_cast<QDockWidget*>(widget)->widget();
+		//	if(widget->property("dynamic").isValid()){
+		//		settings.beginGroup(nameWidget);
+		//		QList<QByteArray> properties = widget->dynamicPropertyNames();
+		//		QListIterator<QByteArray> p(properties);
+		//		while(p.hasNext()){
+		//			QString s = p.next();
+		//			if(s.startsWith("DP_"))
+		//				 settings.setValue(s, widget->property(s.toAscii()));
+		//		}
+		//		settings.endGroup();
+		//	}
+		//}
+		//settings.endGroup();
 		
 		configWindow_->UpdateViews(settings.childGroups());
 	}

@@ -328,7 +328,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
 
     if (sceneWidget)
     {
-        sceneWidget->toogleVisibility();
+        sceneWidget->toggleVisibility();
         return;
     }
 
@@ -364,7 +364,7 @@ void SceneStructureModule::ToggleAssetsWindow()
 
     if (assetsWidget)
     {
-        assetsWidget->toogleVisibility();
+        assetsWidget->toggleVisibility();
         return;
     }
 

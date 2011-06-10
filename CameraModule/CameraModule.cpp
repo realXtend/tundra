@@ -56,10 +56,7 @@ namespace Camera
 		connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)), SLOT(DefaultWorldSceneChanged(Scene::SceneManager *)));        
 
         framework_->Ui()->RegisterUiWidgetFactory(UiWidgetFactoryPtr(this));
-
-        //Generate widgets
-        ReadConfig();
-        
+       
 	}
 	void CameraModule::PostInitialize()
 	{
@@ -69,7 +66,10 @@ namespace Camera
         QAction *action = framework_->Ui()->MainWindow()->AddMenuAction("&View", "New Camera View");
         connect(action, SIGNAL(triggered()), SLOT(CreateNewCamera()));
         
-        connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));       
+        connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));  
+
+        //Generate widgets
+        ReadConfig();
 	}    
 
 	void CameraModule::Uninitialize()
@@ -163,10 +163,13 @@ namespace Camera
         camera_widget->show();
 
         //set qdoc features to flotable and movable, but not closable
-        QDockWidget *doc = dynamic_cast<QDockWidget*>(camera_widget->parent());           
-        if (doc)
-            doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        
+        if (camera_widget->parent())
+        {
+            QDockWidget *doc = dynamic_cast<QDockWidget*>(camera_widget->parent());           
+            if (doc)
+                doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+        }
+
 		connect(camera_widget, SIGNAL(visibilityChanged(bool)), this, SLOT(OnCameraWidgetVisibilityChanged(bool)));
         //insert title to camera view titles
         camera_view_titles_.insert(title);
@@ -184,11 +187,11 @@ namespace Camera
     void CameraModule::ConnectViewToHandler(CameraWidget *camera_view, CameraHandler *camera_handler, int camera_type, int projection_type, bool wireframe)
     {
 		//Set dynamic properties for dynamic widget
-		camera_view->setProperty("dynamic",QVariant::fromValue(true));
-		camera_view->setProperty("type",QVariant("CameraWidget"));
-		camera_view->setProperty("DP_Camera",QVariant::fromValue(camera_type));
-		camera_view->setProperty("DP_Projection",QVariant::fromValue(projection_type));
-		camera_view->setProperty("DP_Wireframe",QVariant::fromValue(wireframe));
+		camera_view->parentWidget()->setProperty("dynamic",QVariant::fromValue(true));
+		camera_view->parentWidget()->setProperty("type",QVariant("CameraWidget"));
+		camera_view->parentWidget()->setProperty("DP_Camera",QVariant::fromValue(camera_type));
+		camera_view->parentWidget()->setProperty("DP_Projection",QVariant::fromValue(projection_type));
+		camera_view->parentWidget()->setProperty("DP_Wireframe",QVariant::fromValue(wireframe));
 
         //init camera view
         camera_view->comboBoxCameras->addItem("Pivot");
@@ -259,21 +262,42 @@ namespace Camera
         UiWidget* camera_view = qobject_cast<UiWidget*>(sender());
 		if (!camera_view)
             return;
-		dirty_widgets_.append(camera_view);
+
+        if (!visible && camera_view->parent())
+        {
+            QDockWidget *doc = dynamic_cast<QDockWidget*>(camera_view->parent());           
+            if (doc && doc->isVisible())
+                return;
+        }
+        
+        for (int i = 0; i < dirty_widgets_.size(); ++i) {
+            if (dirty_widgets_[i] == camera_view)
+            {
+                if (visible)
+                {
+                    dirty_widgets_.removeAt(i);
+                }
+                return;
+            }
+        }
+        if (!visible)
+		    dirty_widgets_.append(camera_view);
     }
 
     void CameraModule::DeleteCameraWidget(UiWidget *widget)
-    {		
+    {	
+        if(!widget->widget())
+            return;
+
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(widget->widget());
 		if (!camera_view)
             return;
 
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/CameraModuleSettings");
+		settings.remove(camera_view->windowTitle());
+
 		camera_view->blockSignals(true);
         
-        
-        //remove widget from window
-        framework_->Ui()->RemoveWidgetFromWindow(widget);
-
         //remove widget and handler from controller map
         QMap<CameraWidget*,CameraHandler*>::const_iterator i = controller_view_handlers_.find(camera_view);
         while (i != controller_view_handlers_.end() && i.key() == camera_view) {
@@ -285,11 +309,14 @@ namespace Camera
             delete handler;
         } 
 
+        //remove widget from window
+        framework_->Ui()->RemoveWidgetFromWindow(widget);
+
     }
     void CameraModule::ReadConfig()
     {
         // Init config file if file/segments doesnt exist
-        QSettings camera_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+        QSettings camera_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/CameraModuleSettings");
 
         QStringList cameras = camera_config.childGroups();
 
@@ -311,7 +338,7 @@ namespace Camera
     void CameraModule::SaveConfig()
     {
         // Init config file if file/segments doesnt exist
-        QSettings camera_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+        QSettings camera_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/CameraModuleSettings");
         //delete previous file
         //camera_config.clear();
         

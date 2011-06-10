@@ -17,8 +17,13 @@ public:
     virtual ~IUiWidgetFactory() {}
 
 public slots:
+    /// Returns the type of widgets this widget factory can create.
     virtual QString Type() const = 0;
 
+    /// Creates a new widget of the given type.
+    /*@param name The name to give for this widget.
+      @param params List for specific factory parameters
+    */
     virtual QWidget* CreateWidget(const QString &name, const QStringList &params = QStringList()) = 0;
 
 };

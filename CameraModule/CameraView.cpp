@@ -34,29 +34,40 @@ namespace Camera
 
     void CameraWidget::SetWindowTitle(const QString &name)
     {
-        if (this->parentWidget())                    
-            dynamic_cast<QWidget*>(this->parentWidget())->setWindowTitle(name + " Camera");        
+        if (this->parentWidget())
+        {
+            if (this->parentWidget()->parentWidget())
+            {
+                QDockWidget *doc = dynamic_cast<QDockWidget*>(this->parentWidget()->parentWidget());           
+                if (doc)
+                {
+                    doc->setWindowTitle(name + " Camera"); 
+                    return;
+                }
+            }
+            this->parentWidget()->setWindowTitle(name + " Camera");        
+        }
     }
 
 	void CameraWidget::UpdateCameraType(const int camera_type){
-		setProperty("DP_Camera",QVariant::fromValue(camera_type));
+		parentWidget()->setProperty("DP_Camera",QVariant::fromValue(camera_type));
 	}
 	void CameraWidget::UpdateCameraProjection(const int projection_type){
-		setProperty("DP_Projection",QVariant::fromValue(projection_type));
+		parentWidget()->setProperty("DP_Projection",QVariant::fromValue(projection_type));
 	}
 	void CameraWidget::UpdateWireframe(const int wireframe){
         //Qt::CheckState: 0: unchecked, 1: partial checked, 2: checked
 		if (wireframe == 0)
-			setProperty("DP_Wireframe",QVariant::fromValue(false));
+			parentWidget()->setProperty("DP_Wireframe",QVariant::fromValue(false));
 		else
 			setProperty("DP_Wireframe",QVariant::fromValue(true));
 	}
 
-    void CameraWidget::hideEvent(QHideEvent * event)
-    {
-        if (isHidden())
-            emit WidgetHidden();
-    }
+    //void CameraWidget::hideEvent(QHideEvent * event)
+    //{
+    //    if (isHidden())
+    //        emit WidgetHidden();
+    //}
 
     CameraView::CameraView(QWidget* widget) :
         QLabel(widget),

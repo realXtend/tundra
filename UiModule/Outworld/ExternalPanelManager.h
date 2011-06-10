@@ -35,9 +35,6 @@ namespace UiServices
         //! Destructor.
         ~ExternalPanelManager();
 
-		//! Internal list of proxy widgets in scene.
-		QList<QDockWidget*> all_qdockwidgets_in_window_;
-
     public slots:
         /*! \brief	Adds widget to the main Window in a QDockWidget.
          *
@@ -61,16 +58,6 @@ namespace UiServices
          */
         bool RemoveExternalPanel(QDockWidget *widget);
 
-		/*! Shows the widget's DockWidget in the main window.
-         *  \param widget Widget.
-         */
-		void ShowWidget(QWidget *widget);
-
-		/*! Hides the widget's DockWidget in the main window.
-         *  \param widget Widget.
-         */
-		void HideWidget(QWidget *widget);
-
 		/*!Disable all the dockwidgets in the qmainwindow
 		 * 
 		 */
@@ -80,11 +67,6 @@ namespace UiServices
 		 * 
 		 */
 		void EnableDockWidgets();
-
-		/*! Returns the QDockWidget where the widget with the name widget is in the QMainWindow. Used (at least) to use WorldBuildingModule with this module.
-         *  \param widget Name of the widget.
-         */
-		QDockWidget* GetExternalMenuPanel(QString &widget);
 
 		void restoreWidget(QDockWidget *widget);
 
@@ -100,7 +82,7 @@ namespace UiServices
 		//Pointer to owner
 		UiModule *owner_;
 
-        QMap<QString, bool> controller_panels_visibility_;
+        QMap<QDockWidget*, bool> controller_panels_;
     };
 }
 

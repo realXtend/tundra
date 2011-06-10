@@ -270,6 +270,8 @@ void UiAPI::RemoveWidgetFromWindow(UiWidget* widget)
 {
     //emit signal
     emit CustomizeRemoveWidgetFromWindow(widget);
+
+    widget->deleteLater();
 }
 
 void UiAPI::OnProxyDestroyed(QObject* obj)

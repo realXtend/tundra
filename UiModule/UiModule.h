@@ -84,7 +84,7 @@ namespace UiServices
         //NotificationManager *GetNotificationManager() const { return inworld_notification_manager_; }
         //CoreUi::UiStateMachine *GetUiStateMachine() const { return ui_state_machine_; }
         //UiSceneServicePtr GetUiSceneService() const { return ui_scene_service_; }
-        QMap<QString, QDockWidget*> GetExternalWidgets() const { return external_widgets_; }
+        QMap<UiWidget*, QDockWidget*> GetExternalWidgets() const { return external_widgets_; }
 
 
 		//!Get Managers of the module
@@ -159,7 +159,7 @@ namespace UiServices
 		//! Manager of views
 		ViewManager* viewManager_;
 
-        QMap<QString, QDockWidget*> external_widgets_;
+        QMap<UiWidget*, QDockWidget*> external_widgets_;
 
         //! Current World Stream pointer
         //boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
