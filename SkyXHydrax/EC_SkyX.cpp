@@ -38,7 +38,8 @@ struct EC_SkyXImpl
     EC_SkyXImpl() : skyX(0) {}
     ~EC_SkyXImpl()
     {
-        skyX->remove();
+        if (skyX)
+            skyX->remove();
         SAFE_DELETE(skyX)
     }
 
