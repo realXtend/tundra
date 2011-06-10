@@ -46,7 +46,7 @@ if (!framework.IsHeadless())
 		sceneAction.checkable = true;
 		var scenewid = framework.GetModuleQObj("SceneStructure").GetSceneStructureUiWidget();
 		sceneAction.triggered.connect(scenewid, scenewid.toggleVisibility);
-		scenewid.visibilityChanged.connect(assetAction, assetAction.setChecked);		
+		scenewid.visibilityChanged.connect(sceneAction, sceneAction.setChecked);		
     }
 
     if (framework.GetModuleQObj("Console"))

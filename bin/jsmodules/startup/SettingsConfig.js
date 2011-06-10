@@ -10,6 +10,7 @@ if (!framework.IsHeadless())
 	var themeWidget;
 	var cave_win;
 	var stereo_win;
+	var ttsWidget;
 	var delayed;
         
     // Settings
@@ -52,8 +53,10 @@ if (!framework.IsHeadless())
 	{
 		renderWidget = framework.GetModuleQObj("OgreRendering").GetRendererSettingsWidget();
 		if (renderWidget)
-			AddTabWidget(cave_win, "RenderSettings");
-	}	
+			AddTabWidget(renderWidget, "RenderSettings");
+	}
+
+	//CAVEStereo
 	if (framework.GetModuleQObj("CAVEStereo"))
 	{
 		cave_win = framework.GetModuleQObj("CAVEStereo").GetCaveWindow();
@@ -63,6 +66,13 @@ if (!framework.IsHeadless())
 		stereo_win = framework.GetModuleQObj("CAVEStereo").GetStereoscopyWindow();
 		if(stereo_win)
 			AddTabWidget(stereo_win, "Stereoscopy");
+	}
+	//TTS Module
+	if (framework.GetModuleQObj("TtsModule"))
+	{
+		ttsWidget = framework.GetModuleQObj("TtsModule").GetSettingsWidget();
+		if (ttsWidget)
+			AddTabWidget(ttsWidget, "Tts Settings");
 	}
 	
 	delayed = frame.DelayedExecute(5.0);
@@ -98,7 +108,15 @@ function checkForSettings()
 			AddTabWidget(stereo_win, "Stereoscopy");
 	}
 	
-	if(!themeWidget || !cave_win || !stereo_win || !!renderWidget)
+	if(!ttsWidget)
+	{
+		ttsWidget = framework.GetModuleQObj("TtsModule").GetSettingsWidget();
+		if (ttsWidget)
+			AddTabWidget(ttsWidget, "Tts Settings");
+	
+	}
+	
+	if(!themeWidget || !cave_win || !stereo_win || !renderWidget || !ttsWidget)
 	{
 		delayed = frame.DelayedExecute(5.0);
 		delayed.Triggered.connect(checkForSettings);
