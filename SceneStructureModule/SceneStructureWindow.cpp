@@ -356,7 +356,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
                 eItem->SetText(entity);
                 DecorateEntityItem(entity, eItem);
 
-                connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
+                connect(comp, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
                     SLOT(UpdateVisible(IAttribute *)), Qt::UniqueConnection);
             }
             // Add possible asset references.
