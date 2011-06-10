@@ -1749,6 +1749,7 @@ namespace PythonScript
             // Ui() - naali.uicore
             PythonQt::self()->registerClass(&UiAPI::staticMetaObject);
             PythonQt::self()->registerClass(&UiMainWindow::staticMetaObject);
+            PythonQt::self()->registerClass(&UiWidget::staticMetaObject);
 	    /*  PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);*/
             // UiService() - naali.ui
             //PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);

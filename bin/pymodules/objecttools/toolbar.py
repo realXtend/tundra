@@ -7,7 +7,7 @@ class ObjectToolsToolbar:
     def __init__(self, controller):
         self.controller = controller
         
-        self.edit_toolbar = naali.ui.GetExternalToolbar("EditToolBar")
+        self.edit_toolbar = naali.ui.MainWindow().addToolBar("EditToolBar")
         if self.edit_toolbar:
             self.edit_toolbar.hide() 
             self.action_group = QActionGroup(self.edit_toolbar)

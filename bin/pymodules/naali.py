@@ -110,7 +110,7 @@ frame = _naali.Frame()
 console = _naali.Console()
 input = _naali.Input()
 audio = _naali.Audio()
-ui = _naali.UiService() #the UI core object does not implement the old uiservice stuff yet
+ui = _naali.Ui() #the UI core object does not implement the old uiservice stuff yet
 config = _naali.Config()
 try:
     library = _naali.library

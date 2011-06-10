@@ -19,9 +19,11 @@ class ObjectToolsWindow:
 
         if self.widget:
             self.widget.setWindowTitle("Edit Tools")
-            naali.ui.AddWidgetToScene(self.widget, True, True)
-            naali.ui.AddWidgetToMenu(self.widget,"Edit Tools", "View")
-        
+            self.uiwidget = naali.ui.AddWidgetToWindow(self.widget, 11) #Qt::QtTool
+            action = naali.ui.MainWindow().AddMenuAction("&View", "Edit Tools")
+            action.setCheckable(True)
+            self.uiwidget.connect("visibilityChanged(bool)", action.setChecked)
+            action.connect("triggered()", self.uiwidget.toggleVisibility)
             
             #self.widget.findChild("QWidget","tab_widget").setVisible(False)
                         

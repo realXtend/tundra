@@ -111,11 +111,11 @@ class ObjectEdit(Component):
             # menuBar = mainWindow.menuBar()
             # self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
             # self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
-            if naali.server.IsAboutToStart() == False:
-                naali.client.connect("Connected()", self.on_connected_tundra)
-            else:
-                editMenu = mainWindow.AddMenu("Edit")
-                editMenu.addAction(self.menuToggleAction)
+        if naali.server.IsAboutToStart() == False:
+            naali.client.connect("Connected()", self.on_connected_tundra)
+        else:
+            editMenu = mainWindow.AddMenu("Edit")
+            editMenu.addAction(self.menuToggleAction)
         self.toggleEditing(False)
         
         """
@@ -149,6 +149,8 @@ class ObjectEdit(Component):
             self.hideManipulator()
             self.resetManipulators()
             self.resetValues()
+        if self.toolbar != None:
+            self.toolbar.toogleEditing(editing)
     """
         if self.menuToggleAction != None:
             if self.editing:
@@ -158,8 +160,7 @@ class ObjectEdit(Component):
                 self.menuToggleAction.setToolTip("Enable Object Manipulation")
                 self.menuToggleAction.setText("Disable Object Manipulation")
     """
-        if self.toolbar != None:
-            self.toolbar.toogleEditing(editing)				
+				
     
     def rotateObject(self):
         self.changeManipulator(self.MANIPULATE_ROTATE)
