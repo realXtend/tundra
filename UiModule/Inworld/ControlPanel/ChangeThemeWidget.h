@@ -16,7 +16,7 @@ namespace CoreUi
         Q_OBJECT
 
         public:
-			ChangeThemeWidget(QObject* settings_widget, Foundation::Framework *framework);
+			ChangeThemeWidget(Foundation::Framework *framework);
             virtual ~ChangeThemeWidget();
 
         public slots:

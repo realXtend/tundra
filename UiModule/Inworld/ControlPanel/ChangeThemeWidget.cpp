@@ -17,13 +17,11 @@
 
 namespace CoreUi
 {
-	ChangeThemeWidget::ChangeThemeWidget(QObject* settings_widget, Foundation::Framework *framework) : 
+	ChangeThemeWidget::ChangeThemeWidget(Foundation::Framework *framework) : 
         QWidget(),
 		framework_(framework)
     {
         setupUi(this);
-        connect(settings_widget, SIGNAL(SaveSettingsClicked()), this, SLOT(ChangeTheme()));
-//        connect(settings_widget, SIGNAL(CancelClicked()), settings_widget, SLOT(CancelClicked()));
         
         comboBox_changeTheme->addItem(QString::fromStdString("Naali dark blue"));
         comboBox_changeTheme->addItems(QStyleFactory::keys());
@@ -70,6 +68,7 @@ namespace CoreUi
 			}
 			QApplication::setPalette(QApplication::style()->standardPalette());
 		}
+        connect(comboBox_changeTheme, SIGNAL(currentIndexChanged(int)), SLOT(ChangeTheme()));
     }
 
     ChangeThemeWidget::~ChangeThemeWidget()
