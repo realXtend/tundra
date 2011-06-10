@@ -56,10 +56,10 @@ class IControlDevice : public IDevice
 Q_OBJECT
 
 public:
-    /// IPositionalDevice constructor.
+    /// IControlDevice constructor.
     IControlDevice(const QString &name);
 
-    /// IPositionalDevice deconstructor.
+    /// IControlDevice deconstructor.
     ~IControlDevice();
 
 signals:
