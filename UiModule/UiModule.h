@@ -34,6 +34,11 @@ namespace ProtocolUtilities
     class WorldStream;
 }
 
+namespace CoreUi
+{
+    class LanguageWidget;
+}
+
 namespace UiServices
 {
     //class UiSettingsService;
@@ -95,6 +100,8 @@ namespace UiServices
 
         //! Returns name of this module.
         static const std::string &NameStatic() { return type_name_static_; }
+        //CoreUi::LanguageWidget *language_widget_ ;
+        CoreUi::ChangeThemeWidget *changetheme_widget_;
 
     public slots:
         
@@ -102,6 +109,8 @@ namespace UiServices
         void RemoveWidgetFromScene(UiWidget *widget);
         void AddAnchoredWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence);
         void RemoveAnchoredWidgetFromScene(QWidget *widget);
+        //CoreUi::LanguageWidget *GetLanguageSettingsWidget() { return language_widget_; }
+        QWidget *GetThemeSettingsWidget(); 
 
     private slots:
         void OnKeyPressed(KeyEvent *key);
@@ -163,7 +172,6 @@ namespace UiServices
 
 		bool win_restored_;
         bool win_uninitialized_;
-        int i;
 
     };
 

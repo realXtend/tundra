@@ -71,7 +71,10 @@ namespace UiServices
         external_widgets_(),
         //inworld_notification_manager_(0),
 		win_restored_(false),
-        win_uninitialized_(false)
+        win_uninitialized_(false),
+        changetheme_widget_(0)
+        //settings_uiwidget_(0),
+        //settings_uiproxy_(0)
     {
     }
 
@@ -144,7 +147,7 @@ namespace UiServices
 			LogWarning("Could not acquire QMainWindow!");
 
         //Settings
-       settings_widget_ = new CoreUi::SettingsWidget(ui_view_->scene(), this);
+       //settings_widget_ = new CoreUi::SettingsWidget(ui_view_->scene(), this);
 
         //Listen to UiAPI
         connect(framework_->Ui(), SIGNAL(CustomizeAddWidgetToWindow(UiWidget *)), SLOT(AddWidgetToWindow(UiWidget *)));
@@ -164,16 +167,29 @@ namespace UiServices
 			if (!framework_->IsEditionless())
 				viewManager_=new ViewManager(this);
 
+            //Add settings widget to window
+            /*if (!framework_->IsEditionless())
+                settings_uiwidget_ = framework_->Ui()->AddWidgetToWindow(settings_widget_);
+            else
+                settings_uiproxy_ = framework_->Ui()->AddWidgetToScene(settings_widget_);
+            //Add settings widget to menus
+            QPushButton *sett_button = new QPushButton("Settings");
+            connect(sett_button, SIGNAL(clicked()),SLOT(ToggleSettingsVisibility()));
+            inworld_scene_controller_->AddAnchoredWidgetToScene(sett_button, Qt::TopRightCorner, Qt::Horizontal, 50, true);
+            QAction *toogle_menu = framework_->Ui()->MainWindow()->AddMenuAction("&Settings", "General Settings");
+            toogle_menu->setCheckable(true);
+            connect(toogle_menu, SIGNAL(triggered(bool)), SLOT(ToggleSettingsVisibility()));*/
+
             //Add some tabs to settings.. @todo: move somewhere else
             // Adding cache tab
             //CoreUi::CacheSettingsWidget *cache_settings_widget_ = new CoreUi::CacheSettingsWidget(settings_widget_);
             //settings_widget_->AddWidget(cache_settings_widget_, "Cache");
             // Adding a language tab.
-            CoreUi::LanguageWidget *language_widget_ = new CoreUi::LanguageWidget(settings_widget_);
-            settings_widget_->AddWidget(language_widget_, "Language");
+            //language_widget_ = new CoreUi::LanguageWidget(0);
+            //settings_widget_->AddWidget(language_widget_, "Language");
             // Adding change theme tab
-            CoreUi::ChangeThemeWidget *changetheme_widget_ = new CoreUi::ChangeThemeWidget(settings_widget_, framework_);
-            settings_widget_->AddWidget(changetheme_widget_, "Change theme");
+            changetheme_widget_ = new CoreUi::ChangeThemeWidget(framework_);
+            //settings_widget_->AddWidget(changetheme_widget_, "Change theme");
 		//}
     }
 
@@ -344,7 +360,6 @@ namespace UiServices
 
     void UiModule::AddWidgetToWindow(UiWidget *widget)
     {
-        widget->setProperty("Customized", true);
 		QString pos = "vacio";
 		if (widget->windowTitle() == "")
             return;
@@ -376,6 +391,13 @@ namespace UiServices
         inworld_scene_controller_->RemoveAnchoredWidgetFromScene(widget);
     }
 
+    QWidget *UiModule::GetThemeSettingsWidget()
+    {
+        if (changetheme_widget_)
+            return dynamic_cast<QWidget *>(changetheme_widget_);
+        else
+            return 0;
+    }
 
     void UiModule::SubscribeToEventCategories()
     {
