@@ -94,7 +94,7 @@ void JavascriptModule::PostInitialize()
         debuggerAction = framework_->Ui()->MainWindow()->AddMenuAction("&Scripts", "Debugging");
 		debuggerAction->setCheckable(true);
 
-		connect(debuggerAction, SIGNAL(triggered(bool)), this, SLOT(OnToogleDebugging(bool)));
+		connect(debuggerAction, SIGNAL(triggered(bool)), this, SLOT(OnToggleDebugging(bool)));
 
 		if (debugging_enable)
 		{
@@ -107,7 +107,7 @@ void JavascriptModule::PostInitialize()
 				connect(debugger, SIGNAL(evaluationResumed(void)), this, SLOT(OnEvaluationResumed(void)));
                 debuggerWindow = framework_->Ui()->AddWidgetToWindow((QWidget*) debugger->standardWindow(), Qt::Tool);
                 QAction* showDebugger = framework_->Ui()->MainWindow()->AddMenuAction("&Scripts", "Show Debugger");
-                connect(showDebugger, SIGNAL(triggered()), debuggerWindow, SLOT(toogleVisibility()));
+                connect(showDebugger, SIGNAL(triggered()), debuggerWindow, SLOT(toggleVisibility()));
 			}
 		}
 		else
@@ -423,7 +423,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     emit ScriptEngineCreated(instance->GetEngine());
 }
 #ifndef QT_NO_SCRIPTTOOLS
-void JavascriptModule::OnToogleDebugging(bool checked)
+void JavascriptModule::OnToggleDebugging(bool checked)
 {
 	if (!checked || debugger)
 	{
@@ -455,7 +455,7 @@ void JavascriptModule::OnToogleDebugging(bool checked)
 			connect(debugger, SIGNAL(evaluationSuspended(void)), this, SLOT(OnEvaluationSuspended(void)));
             debuggerWindow = framework_->Ui()->AddWidgetToWindow((QWidget*) debugger->standardWindow(), Qt::Tool);
             QAction* showDebugger = framework_->Ui()->MainWindow()->AddMenuAction("&Scripts", "Show Debugger");
-            connect(showDebugger, SIGNAL(triggered()), debuggerWindow, SLOT(toogleVisibility()));
+            connect(showDebugger, SIGNAL(triggered()), debuggerWindow, SLOT(toggleVisibility()));
 		}
 	}
 

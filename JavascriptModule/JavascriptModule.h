@@ -126,7 +126,7 @@ private slots:
 	void OnEvaluationResumed(void);
 
 	//! Menu action slot for toogle debugging
-	void OnToogleDebugging(bool checked);
+	void OnToggleDebugging(bool checked);
 
 private:
 	// Script debugger

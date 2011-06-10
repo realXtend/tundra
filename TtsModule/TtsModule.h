@@ -70,17 +70,20 @@ namespace Tts
 		/// Unregisters and destroys the service. 
         void Uninitialize();
 
-        void SetupSettingsWidget();
-		
         /// Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return module_name_; } 
 
 		//! Logging
         MODULE_LOGGING_FUNCTIONS
 
-	
+    public slots:
+        ///Returns setttings widget.
+        QWidget* GetSettingsWidget();
+
     private:
         Q_DISABLE_COPY(TtsModule);
+
+        void SetupSettingsWidget();
 
         /// Name of the module.
         static const std::string module_name_;

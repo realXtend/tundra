@@ -35,6 +35,7 @@ namespace Tts
 	    QObject(),
         IModule(module_name_),
         settings_widget_(0),
+        tts_service_(0),
         publish_own_voice_(false)
 	{
 
@@ -72,7 +73,8 @@ namespace Tts
 
 	void TtsModule::PostInitialize()
 	{
-        SetupSettingsWidget();
+        if (!settings_widget_)
+            SetupSettingsWidget();
     }
 	void TtsModule::Uninitialize()
 	{
@@ -87,12 +89,20 @@ namespace Tts
 
     void TtsModule::SetupSettingsWidget()
     {
-        settings_widget_ = new SettingsWidget(tts_service_);
-        settings_widget_->setWindowTitle(QString("TTS Settings"));
-        UiWidget* ui_settings_widget = framework_->Ui()->AddWidgetToWindow(settings_widget_, Qt::Tool);
-        QAction* settings_action = framework_->Ui()->MainWindow()->AddMenuAction("&Settings", "TTS");
-        connect(settings_action, SIGNAL(triggered()), ui_settings_widget, SLOT(toogleVisibility()));
+        if(tts_service_)
+        {
+            settings_widget_ = new SettingsWidget(tts_service_);
+            settings_widget_->setWindowTitle(QString("TTS Settings"));
+        }
     }
+
+    QWidget* TtsModule::GetSettingsWidget()
+    {
+        if (!settings_widget_)
+            SetupSettingsWidget();
+        return settings_widget_;
+    }
+
 
 } // end of namespace: Tts
 
