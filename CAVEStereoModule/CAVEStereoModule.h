@@ -6,6 +6,8 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "CAVEStereoModuleApi.h"
+#include "CAVESettingsWidget.h"
+#include "StereoWidget.h"
 #include <QVector>
 #include <QObject>
 
@@ -40,6 +42,9 @@ namespace CAVEStereo
     public slots:
         void ShowStereoscopyWindow();
         void ShowCaveWindow();
+        QWidget *GetCaveWindow();
+        QWidget *GetStereoscopyWindow();
+
 
     private:
         //! Type name of the module.

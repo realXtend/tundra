@@ -65,6 +65,22 @@ namespace CAVEStereo
     {
         cave_->GetCaveWidget()->show();
     }
+
+    QWidget *CAVEStereoModule::GetCaveWindow()
+    {
+        if (cave_)
+            return dynamic_cast<QWidget *>(cave_->GetCaveWidget()); 
+        else
+            return 0;
+    }
+
+    QWidget *CAVEStereoModule::GetStereoscopyWindow()
+    {
+        if (stereo_)
+            return dynamic_cast<QWidget *>(stereo_->GetStereoWidget()); 
+        else
+            return 0;
+    }
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
