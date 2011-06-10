@@ -8,7 +8,7 @@
 #include "Vector3D.h"
 #include "Quaternion.h"
 
-/*! IPositionalDevice is a interface for positional data devices. It declares a specific signals for providing positional data.
+/*! IPositionalDevice is a interface for positional data devices. It declares specific signals for providing positional data.
     \note See IDevice on what protected functionality you need to override to implement a working device that you can use with DevicesAPI.
 
     Inherits IDevice.

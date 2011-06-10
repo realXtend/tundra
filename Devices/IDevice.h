@@ -85,10 +85,17 @@ signals:
     void Stopped();
 
     /// Generic data event for emitting data.
+    /// You can query QVariant::Type() for the data type if needed.
+    /// \note Not all devices use this generic data signal, they might emit device specific signals.
+    /// \param QString id
+    /// \param QVariant value
+    void DataEvent(const QString &id, const QVariant &value);
+
+    /// Generic data event for emitting data.
+    /// You can query QVariant::Type() for the data type if needed.
     /// \note Not all devices use this generic data signal, they might emit device specific signals.
     /// \param QVariantMap. QVariantMap is a typedef of QMap<QString, QVariant>. QString (the key) is name of data variable, QVariant (the value) is the data.
-    /// You can query QVariant::Type() for the data type if needed.
-    void DataEvent(const QVariantMap &data);
+    void DataEvent(const QVariantMap &data);   
 
     /// Signal will be emitted when this device is destroyed. Don't use this device after you receive this signal.
     void Destroyed();

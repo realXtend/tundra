@@ -11,30 +11,40 @@
 #include "ScriptMetaTypeDefines.h"
 
 #include "SceneAPI.h"
+#include "SceneManager.h"
 #include "Entity.h"
+#include "EntityAction.h"
+
+#include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "IAssetUploadTransfer.h"
 #include "IAssetStorage.h"
 #include "AssetCache.h"
+
+#include "InputAPI.h"
+#include "InputContext.h"
 #include "KeyEvent.h"
 #include "MouseEvent.h"
-#include "UiProxyWidget.h"
-#include "FrameAPI.h"
-#include "ConsoleAPI.h"
-#include "SceneManager.h"
-#include "AudioAPI.h"
-#include "SoundChannel.h"
-#include "InputContext.h"
-#include "RenderServiceInterface.h"
-#include "CommunicationsService.h"
+
+#include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "UiGraphicsView.h"
-#include "EntityAction.h"
-#include "InputFwd.h"
+#include "UiProxyWidget.h"
+
+#include "FrameAPI.h"
 #include "ConfigAPI.h"
+#include "ConsoleAPI.h"
+
+#include "AudioAPI.h"
+#include "SoundChannel.h"
+
+#include "RenderServiceInterface.h"
+#include "CommunicationsService.h"
+
 #include "DevicesAPI.h"
 #include "IDevice.h"
 #include "IPositionalDevice.h"
+#include "IControlDevice.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -103,6 +113,8 @@ Q_DECLARE_METATYPE(RaycastResult*);
 Q_DECLARE_METATYPE(DevicesAPI*);
 Q_DECLARE_METATYPE(IDevice*);
 Q_DECLARE_METATYPE(IPositionalDevice*);
+Q_DECLARE_METATYPE(IControlDevice*);
+Q_DECLARE_METATYPE(AxisData*);
 
 //! Communications metatype
 Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
@@ -237,6 +249,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<DevicesAPI*>(engine);
     qScriptRegisterQObjectMetaType<IDevice*>(engine);
     qScriptRegisterQObjectMetaType<IPositionalDevice*>(engine);
+    qScriptRegisterQObjectMetaType<IControlDevice*>(engine);
+    qScriptRegisterQObjectMetaType<AxisData*>(engine);
 
     // Asset API
     qRegisterMetaType<AssetPtr>("AssetPtr");

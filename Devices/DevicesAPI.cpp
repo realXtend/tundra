@@ -3,6 +3,7 @@
 #include "DevicesAPI.h"
 #include "IDevice.h"
 #include "IPositionalDevice.h"
+#include "IControlDevice.h"
 
 #include "Framework.h"
 #include "FrameAPI.h"
@@ -74,7 +75,6 @@ IDevice *DevicesAPI::CreateAndRegisterDevice(const QString &name)
         return 0;
 
     IDevice *device = new IDevice(deviceNameLower);
-    
     if (RegisterDevice(device))
     {
         device->setParent(this);
@@ -96,7 +96,27 @@ IPositionalDevice *DevicesAPI::CreateAndRegisterPositionalDevice(const QString &
         return 0;
 
     IPositionalDevice *device = new IPositionalDevice(deviceNameLower);
-    
+    if (RegisterDevice(device))
+    {
+        device->setParent(this);
+        return device;
+    }
+    else
+    {
+        delete device;
+        return 0;
+    }
+}
+
+IControlDevice *DevicesAPI::CreateAndRegisterControlDevice(const QString &name)
+{
+    DeviceCleanup();
+
+    QString deviceNameLower = name.toLower();
+    if (devices.contains(deviceNameLower))
+        return 0;
+
+    IControlDevice *device = new IControlDevice(deviceNameLower);
     if (RegisterDevice(device))
     {
         device->setParent(this);

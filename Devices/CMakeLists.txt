@@ -7,7 +7,7 @@ init_target (Devices)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB MOC_FILES DevicesAPI.h IDevice.h IPositionalDevice.h)
+file (GLOB MOC_FILES DevicesAPI.h IDevice.h IPositionalDevice.h IControlDevice.h)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
