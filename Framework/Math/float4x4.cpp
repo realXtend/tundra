@@ -850,7 +850,7 @@ float float4x4::Determinant3() const
 
 float float4x4::Determinant4() const
 {
-    return v[0][0] * Minor(0,0) - v[0][1] * Minor(0,1) + v[0][2] * Minor(0,2) + v[0][3] * Minor(0,3);
+    return v[0][0] * Minor(0,0) - v[0][1] * Minor(0,1) + v[0][2] * Minor(0,2) - v[0][3] * Minor(0,3);
 }
 
 #define SKIPNUM(val, skip) (val < skip ? val : skip + 1)
