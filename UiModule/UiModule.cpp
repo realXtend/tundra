@@ -158,6 +158,9 @@ namespace UiServices
 
     void UiModule::PostInitialize()
     {
+		if (GetFramework()->IsHeadless())
+			return;
+
 		//if (ui_scene_service_)
 		//{
 			//SubscribeToEventCategories();
