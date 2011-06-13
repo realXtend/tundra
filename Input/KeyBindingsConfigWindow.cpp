@@ -60,6 +60,7 @@ void KeyBindingsConfigWindow::ShowWindow()
 
 void KeyBindingsConfigWindow::CloseWindow()
 {
+    Clear();
 }
 
 void KeyBindingsConfigWindow::ApplyKeyConfig()
@@ -112,19 +113,27 @@ void KeyBindingsConfigWindow::ExtractBindingsList()
     }
 }
 
+void KeyBindingsConfigWindow::Clear()
+{
+    for(uint i = 0; i < (uint)configList->topLevelItemCount(); ++i)
+    {
+        QTreeWidgetItem *item = configList->topLevelItem(i);
+        delete item;
+    }
+    configList->clear();
+}
+
 void KeyBindingsConfigWindow::PopulateBindingsList()
 {
     assert(configList);
     if (!configList)
         return;
 
-    configList->clear();
+    Clear();
 
     const InputAPI::KeyActionsMap &keyActions = framework->Input()->GetKeyBindings();
-
     for(InputAPI::KeyActionsMap::const_iterator iter = keyActions.begin(); iter != keyActions.end(); ++iter)
     {
-        ///\todo Fix - this leaks?
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(iter->first.c_str())));
         item->setText(1, iter->second.toString(QKeySequence::NativeText));
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable);
@@ -140,7 +149,7 @@ void KeyBindingsConfigWindow::ButtonOK()
 
 void KeyBindingsConfigWindow::ButtonCancel()
 {
-    framework->Input()->LoadKeyBindingsFromFile();    
+    framework->Input()->LoadKeyBindingsFromFile();
 }
 
 bool KeyBindingsConfigWindow::eventFilter(QObject *obj, QEvent *event)
