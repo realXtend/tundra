@@ -106,6 +106,11 @@ public:
     Q_PROPERTY(bool interactive READ getinteractive WRITE setinteractive);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, interactive);
 
+    //! Boolean for illuminating the webview. This means the materials emissive will be manipulated to show the webview with full bright always.
+    //! If illuminating is true there are no shadows affecting the light, otherwise shadows will be shown.
+    Q_PROPERTY(bool illuminating READ getilluminating WRITE setilluminating);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, illuminating);
+
     //! Interaction ID for components to exchange messages.
     /// \note this attribute is hidden from the UI layer and is not meant to be modified by normal users.
     Q_PROPERTY(int controllerId READ getcontrollerId WRITE setcontrollerId);

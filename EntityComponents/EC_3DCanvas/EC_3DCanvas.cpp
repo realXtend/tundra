@@ -39,12 +39,6 @@ EC_3DCanvas::EC_3DCanvas(IModule *module) :
     mesh_hooked_ = false;
     if (renderer)
     {
-        // Create material
-        material_name_ = renderer->GetUniqueObjectName("EC_3DCanvas_mat");
-        Ogre::MaterialPtr material = OgreRenderer::GetOrCreateLitTexturedMaterial(material_name_);
-        if (material.isNull())
-            material_name_ = "";
-
         // Create texture
         texture_name_ = renderer->GetUniqueObjectName("EC_3DCanvas_tex");
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
@@ -52,7 +46,23 @@ EC_3DCanvas::EC_3DCanvas(IModule *module) :
             Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
             Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
         if (texture.isNull())
-            texture_name_ = "";
+        {
+            LogError("Could not create texture for usage!");
+            return;
+        }
+
+        // Create material: Make sure we have one tech with one pass with one texture unit.
+        // Don't use our lit textured templates here as emissive will not work there as it has vertex etc programs in it.
+        material_name_ = renderer->GetUniqueObjectName("EC_3DCanvas_mat");
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        if (material->getNumTechniques() == 0)
+            material->createTechnique();
+        if (material->getTechnique(0) && 
+            material->getTechnique(0)->getNumPasses() == 0)
+            material->getTechnique(0)->createPass();
+        if (material->getTechnique(0)->getPass(0) && 
+            material->getTechnique(0)->getPass(0)->getNumTextureUnitStates() == 0)
+            material->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);        
     }
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(ParentEntitySet()), Qt::UniqueConnection);
@@ -257,6 +267,7 @@ void EC_3DCanvas::Update()
             Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name_);
             if (material.isNull())
                 return;
+            // Just for good measure, this is done once in the ctor already if everything went well.
             OgreRenderer::SetTextureUnitOnMaterial(material, texture_name_);
             UpdateSubmeshes();
             update_internals_ = false;
@@ -404,7 +415,9 @@ void EC_3DCanvas::RestoreOriginalMeshMaterials()
         {
             if (ec_mesh->GetMaterialName(index) == material_name_)
                 if (restore_materials_.contains(index))
+                {
                     ec_mesh->SetMaterial(index, restore_materials_[index]);
+                }
         }
         else if(draw_type == RexTypes::DRAWTYPE_PRIM)
         {
@@ -438,5 +451,36 @@ void EC_3DCanvas::ComponentRemoved(IComponent *component, AttributeChange::Type 
         RestoreOriginalMeshMaterials();
         SetWidget(0);
         submeshes_.clear();
+    }
+}
+
+void EC_3DCanvas::SetSelfIllumination(bool illuminating)
+{
+    if (material_name_.empty())
+        return;
+
+    Ogre::ColourValue emissiveColor;
+    if (illuminating)
+        emissiveColor = Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f);
+    else
+        emissiveColor = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f);
+
+    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name_);
+    if (!material.isNull())
+    {
+        Ogre::Material::TechniqueIterator iter = material->getTechniqueIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::Technique *tech = iter.getNext();
+            if (!tech)
+                continue;
+            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+            while(passIter.hasMoreElements())
+            {
+                Ogre::Pass *pass = passIter.getNext();
+                if (pass)
+                    pass->setSelfIllumination(emissiveColor);
+            }
+        }
     }
 }

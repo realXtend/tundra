@@ -57,7 +57,8 @@ EC_WebView::EC_WebView(IModule *module) :
     renderSubmeshIndex(this, "Render Submesh", 0),
     renderRefreshRate(this, "Render FPS", 0),
     interactive(this, "Interactive", false),
-    controllerId(this, "ControllerId", NoneControlID)
+    controllerId(this, "ControllerId", NoneControlID),
+    illuminating(this, "Illuminating", true)
 {
     interactionMetaData_ = new AttributeMetadata();
 
@@ -435,6 +436,7 @@ void EC_WebView::PrepareComponent()
         LogError("PrepareComponent: Could not get or create EC_3DCanvas component!");
         return;
     }
+    sceneCanvas->SetSelfIllumination(getilluminating());
     
     // All the needed components are present, mark prepared as true.
     componentPrepared_ = true;
@@ -755,6 +757,12 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
             }
             ++iter;
         }
+    }
+    else if (attribute == &illuminating)
+    {
+        EC_3DCanvas *canvas = GetSceneCanvasComponent();
+        if (canvas)
+            canvas->SetSelfIllumination(getilluminating());
     }
 }
 
