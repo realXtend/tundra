@@ -31,7 +31,7 @@ namespace QScriptBindings
 
         static bool IsBadType(string type)
         {
-            return type.EndsWith("float *") || type.EndsWith("float3 *") || type.Contains("std::");
+            return type.EndsWith("float *") || type.EndsWith("float3 *") || type.Contains("std::") || type.Contains("char*") || type.Contains("char *");
         }
 
         static bool IsScriptable(Symbol s)
@@ -63,6 +63,8 @@ namespace QScriptBindings
             tw.WriteLine("#include \"QtScriptBindingsHelpers.h\"");
             tw.WriteLine("");
 
+            GenerateToExistingScriptValue(classSymbol, tw);
+
             HashSet<string> functionNames = new HashSet<string>();
             foreach (Symbol child in classSymbol.children.Values)
             {
@@ -76,8 +78,8 @@ namespace QScriptBindings
                 }
                 else if (child.kind == "variable" && !child.isStatic && IsScriptable(child) && child.visibilityLevel == VisibilityLevel.Public)
                 {
-                    GenerateClassMemberVariableGet(child, tw);
-                    GenerateClassMemberVariableSet(child, tw);
+//                    GenerateClassMemberVariableGet(child, tw);
+//                    GenerateClassMemberVariableSet(child, tw);
                 }
             }
 
@@ -86,7 +88,10 @@ namespace QScriptBindings
 
             //GenerateClassCtor(classSymbol, tw);
 
-            GenerateScriptClass(classSymbol, tw);
+//            GenerateScriptClass(classSymbol, tw);
+            GenerateFromScriptValue(classSymbol, tw);
+            GenerateToScriptValue(classSymbol, tw);
+            GenerateToScriptValueConst(classSymbol, tw);
             GenerateClassPrototype(classSymbol, tw);
 
             tw.Close();
@@ -192,7 +197,7 @@ namespace QScriptBindings
             tw.WriteLine("}");
             tw.WriteLine("");
         }
-
+/*
         static void GenerateClassMemberVariableGet(Symbol variable, TextWriter tw)
         {
             Symbol Class = variable.parent;
@@ -227,7 +232,71 @@ namespace QScriptBindings
             tw.WriteLine("}");
             tw.WriteLine("");
         }
+        */
 
+        static void GenerateToExistingScriptValue(Symbol Class, TextWriter tw)
+        {
+            tw.WriteLine("void ToExistingScriptValue_" + Class.name + "(QScriptEngine *engine, const " + Class.name + " &value, QScriptValue obj)");
+            tw.WriteLine("{");
+            foreach (Symbol v in Class.children.Values)
+                if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public && !v.isStatic)
+                {
+                    string flags = v.IsConst() ? "QScriptValue::Undeletable | QScriptValue::ReadOnly" : "QScriptValue::Undeletable";
+
+                    if (v.IsConst() && !Symbol.IsPODType(v.type))
+                        tw.WriteLine(Indent(1) + "obj.setProperty(\"" + v.name + "\", ToScriptValue_const_" + v.type + "(engine, value." + v.name
+                            + "), " + flags + ");");
+                    else
+                        tw.WriteLine(Indent(1) + "obj.setProperty(\"" + v.name + "\", qScriptValueFromValue(engine, value." + v.name
+                            + "), " + flags + ");");
+                }
+            tw.WriteLine("}");
+            tw.WriteLine("");
+        }
+
+        static void GenerateToScriptValue(Symbol Class, TextWriter tw)
+        {
+            tw.WriteLine("QScriptValue ToScriptValue_" + Class.name + "(QScriptEngine *engine, const " + Class.name + " &value)");
+            tw.WriteLine("{");
+            tw.WriteLine(Indent(1) + "QScriptValue obj = engine->newObject();");
+            tw.WriteLine(Indent(1) + "ToExistingScriptValue_" + Class.name + "(engine, value, obj);");
+            tw.WriteLine(Indent(1) + "return obj;");
+            tw.WriteLine("}");
+            tw.WriteLine("");
+        }
+
+        static void GenerateToScriptValueConst(Symbol Class, TextWriter tw)
+        {
+            tw.WriteLine("QScriptValue ToScriptValue_const_" + Class.name + "(QScriptEngine *engine, const " + Class.name + " &value)");
+            tw.WriteLine("{");
+            tw.WriteLine(Indent(1) + "QScriptValue obj = engine->newObject();");
+            tw.WriteLine(Indent(1) + "obj.setPrototype(engine->defaultPrototype(qMetaTypeId<" + Class.name + ">()));");
+            foreach (Symbol v in Class.children.Values)
+                if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public && !v.isStatic)
+                {
+                    string conversionFunc = Symbol.IsPODType(v.type) ? "qScriptValueFromValue" : ("ToScriptValue_const_" + v.type);
+                    tw.WriteLine(Indent(1) + "obj.setProperty(\"" + v.name + "\", " + conversionFunc + "(engine, value." + v.name
+                        + "), QScriptValue::Undeletable | QScriptValue::ReadOnly);");
+                }
+
+            //            tw.WriteLine(Indent(1) + "obj.setPrototype(engine->defaultPrototype(qMetaTypeId<" + Class.name + ">()));");
+            tw.WriteLine(Indent(1) + "return obj;");
+            tw.WriteLine("}");
+            tw.WriteLine("");
+        }
+
+        static void GenerateFromScriptValue(Symbol Class, TextWriter tw)
+        {
+            tw.WriteLine("void FromScriptValue_" + Class.name + "(const QScriptValue &obj, " + Class.name + " &value)");
+            tw.WriteLine("{");
+            foreach (Symbol v in Class.children.Values)
+                if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public && !v.isStatic)
+                    tw.WriteLine(Indent(1) + "value." + v.name + " = qScriptValueToValue<" + v.type + ">(obj.property(\"" + v.name + "\"));");
+
+            tw.WriteLine("}");
+            tw.WriteLine("");
+        }
+/*
         static void GenerateScriptClass(Symbol Class, TextWriter tw)
         {
             tw.WriteLine("class " + Class.name + "_scriptclass : public QScriptClass");
@@ -322,7 +391,7 @@ namespace QScriptBindings
             tw.WriteLine(Indent(1) + "QScriptValue prototype() const { return objectPrototype; }");
             tw.WriteLine("};");
         }
-
+        */
         static void GenerateClassFunction(Symbol function, TextWriter tw)
         {
             Symbol Class = function.parent;
@@ -338,15 +407,25 @@ namespace QScriptBindings
             // Test that we have a valid this.
             if (!function.isStatic && !isClassCtor)
             {
-                tw.WriteLine(Indent(1) + Class.name + " *This = " + "TypeFromQScriptValue<" + Class.name + "*>(context->thisObject());");
+//                tw.WriteLine(Indent(1) + Class.name + " *This = " + "TypeFromQScriptValue<" + Class.name + "*>(context->thisObject());");
+//                tw.WriteLine(Indent(1) + Class.name + " *This = " + "qscriptvalue_cast<" + Class.name + "*>(context->thisObject());");
                 if (function.name == "toString") // Qt oddities: It seems sometimes the hardcoded toString is called with this as the first argument and not as 'this'.
-                    tw.WriteLine(Indent(1) + "if (!This && context->argumentCount() > 0) This = TypeFromQScriptValue<" + Class.name + "*>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.");
-                tw.WriteLine(Indent(1) + "if (!This) { printf(\"Error! Invalid context->thisObject in function " + GetScriptFunctionName(function) + " in file %s, line %d\\n!\", __FILE__, __LINE__); return QScriptValue(); }");
+                {
+                    tw.WriteLine(Indent(1) + Class.name + " This;");
+                    tw.WriteLine(Indent(1) + "if (context->argumentCount() > 0) This = qscriptvalue_cast<" + Class.name + ">(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.");
+                    tw.WriteLine(Indent(1) + "else This = qscriptvalue_cast<" + Class.name + ">(context->thisObject());");
+
+                }
+                else
+                    tw.WriteLine(Indent(1) + Class.name + " This = " + "qscriptvalue_cast<" + Class.name + ">(context->thisObject());");
+                //                tw.WriteLine(Indent(1) + "if (!This && context->argumentCount() > 0) This = TypeFromQScriptValue<" + Class.name + "*>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.");
+//                tw.WriteLine(Indent(1) + "if (!This) { printf(\"Error! Invalid context->thisObject in function " + GetScriptFunctionName(function) + " in file %s, line %d\\n!\", __FILE__, __LINE__); return QScriptValue(); }");
             }
 
             // Unmarshall all parameters to the function.
             foreach (Parameter p in function.parameters)
-                tw.WriteLine(Indent(1) + p.BasicType() + " " + p.name + " = TypeFromQScriptValue<" + p.BasicType() + ">(context->argument(" + (argIdx++) + "));");
+                tw.WriteLine(Indent(1) + p.BasicType() + " " + p.name + " = qscriptvalue_cast<" + p.BasicType() + ">(context->argument(" + (argIdx++) + "));");
+//            tw.WriteLine(Indent(1) + p.BasicType() + " " + p.name + " = TypeFromQScriptValue<" + p.BasicType() + ">(context->argument(" + (argIdx++) + "));");
 
             if (isClassCtor) // Is this function a ctor of this class.
             {
@@ -357,7 +436,8 @@ namespace QScriptBindings
             }
             else
             {
-                string instanceName = (function.isStatic ? (Class.name + "::") : "This->");
+                string instanceName = (function.isStatic ? (Class.name + "::") : "This.");
+//                string instanceName = (function.isStatic ? (Class.name + "::") : "This->");
                 if (function.type != "void")
                     tw.Write(Indent(1) + function.type + " ret = " + instanceName + function.name + "("); // Make the function call.
                 else
@@ -369,17 +449,23 @@ namespace QScriptBindings
             if (!isClassCtor || function.parameters.Count > 0)
                 tw.WriteLine(");");
 
+            // If the function is non-const, regenerate the proper QScriptValue as the result.
+            if (!function.IsConst() && !function.isStatic && function.name != Class.name)
+                tw.WriteLine(Indent(1) + "ToExistingScriptValue_" + Class.name + "(engine, This, context->thisObject());");
+
             // Return the return value as QScriptValue.
             if (!isClassCtor)
             {
                 if (function.type != "void")
-                    tw.WriteLine(Indent(1) + "return TypeToQScriptValue(engine, ret);");
+//                    tw.WriteLine(Indent(1) + "return TypeToQScriptValue(engine, ret);");
+                    tw.WriteLine(Indent(1) + "return qScriptValueFromValue(engine, ret);");
                 else
                     tw.WriteLine(Indent(1) + "return QScriptValue();");
             }
             else
             {
-                tw.WriteLine(Indent(1) + "return TypeToQScriptValue(engine, ret);");
+//                tw.WriteLine(Indent(1) + "return TypeToQScriptValue(engine, ret);");
+                tw.WriteLine(Indent(1) + "return qScriptValueFromValue(engine, ret);");
             }
 
             tw.WriteLine("}");
@@ -400,18 +486,19 @@ namespace QScriptBindings
             HashSet<string> registeredFunctions = new HashSet<string>();
             tw.WriteLine("QScriptValue register_" + Class.name + "_prototype(QScriptEngine *engine)");
             tw.WriteLine("{");
-            tw.WriteLine(Indent(1) + "engine->setDefaultPrototype(qMetaTypeId<" + Class.name + "*>(), QScriptValue());");
-            tw.WriteLine(Indent(1) + "QScriptValue proto = engine->newVariant(qVariantFromValue((" + Class.name + "*)0));");
+//            tw.WriteLine(Indent(1) + "engine->setDefaultPrototype(qMetaTypeId<" + Class.name + "*>(), QScriptValue());");
+//            tw.WriteLine(Indent(1) + "QScriptValue proto = engine->newVariant(qVariantFromValue((" + Class.name + "*)0));");
+            tw.WriteLine(Indent(1) + "QScriptValue proto = engine->newObject();");
 
             // Add each member function to the prototype.
             foreach (Symbol child in Class.children.Values)
                 if (!registeredFunctions.Contains(child.name + "_____" + child.parameters.Count) && child.kind == "function" && !child.isStatic && child.name != Class.name && !child.name.Contains("operator") && IsScriptable(child))
                 {
                     tw.WriteLine(Indent(1) + "proto.setProperty(\"" + child.name + "\", engine->newFunction(" + (NeedsClassFunctionSelector(Class, child.name) ? GetScriptFunctionSelectorName(child) : GetScriptFunctionName(child))
-                        + ", " + child.parameters.Count + "));");
+                        + ", " + child.parameters.Count + "), QScriptValue::Undeletable | QScriptValue::ReadOnly);");
                     registeredFunctions.Add(child.name + "_____" + child.parameters.Count);
                 }
-
+/*
             // Add setters and getters for each member variable to the prototype.
             foreach (Symbol child in Class.children.Values)
                 if (child.kind == "variable" && !child.isStatic && child.name != Class.name && !child.name.Contains("operator") && IsScriptable(child) && child.visibilityLevel == VisibilityLevel.Public)
@@ -419,14 +506,16 @@ namespace QScriptBindings
                     tw.WriteLine(Indent(1) + "proto.setProperty(\"" + GetMemberVariableGetScriptFuncName(child) + "\", engine->newFunction(" + GetMemberVariableGetCppFuncName(child) + ", 1));");
                     tw.WriteLine(Indent(1) + "proto.setProperty(\"" + GetMemberVariableSetScriptFuncName(child) + "\", engine->newFunction(" + GetMemberVariableSetCppFuncName(child) + ", 1));");
                 }
-
-            tw.WriteLine(Indent(1) + Class.name + "_scriptclass *sc = new " + Class.name + "_scriptclass(engine);");
-            tw.WriteLine(Indent(1) + "engine->setProperty(\"" + Class.name + "_scriptclass\", QVariant::fromValue<QScriptClass*>(sc));");
-            tw.WriteLine(Indent(1) + "proto.setScriptClass(sc);");
-            tw.WriteLine(Indent(1) + "sc->objectPrototype = proto;");
+*/
+//            tw.WriteLine(Indent(1) + Class.name + "_scriptclass *sc = new " + Class.name + "_scriptclass(engine);");
+//            tw.WriteLine(Indent(1) + "engine->setProperty(\"" + Class.name + "_scriptclass\", QVariant::fromValue<QScriptClass*>(sc));");
+//            tw.WriteLine(Indent(1) + "proto.setScriptClass(sc);");
+//            tw.WriteLine(Indent(1) + "sc->objectPrototype = proto;");
 
             tw.WriteLine(Indent(1) + "engine->setDefaultPrototype(qMetaTypeId<" + Class.name + ">(), proto);");
             tw.WriteLine(Indent(1) + "engine->setDefaultPrototype(qMetaTypeId<" + Class.name + "*>(), proto);");
+            tw.WriteLine(Indent(1) + "qScriptRegisterMetaType(engine, ToScriptValue_" + Class.name + ", FromScriptValue_" + Class.name + ", proto);");
+            tw.WriteLine("");
 
             tw.WriteLine(Indent(1) + "QScriptValue ctor = engine->newFunction(" + Class.name + "_ctor, proto, " + CountMaxArgumentsForClassCtor(Class) + ");");
 
@@ -435,18 +524,21 @@ namespace QScriptBindings
                 if (!registeredFunctions.Contains(child.name + "_____" + child.parameters.Count) && child.kind == "function" && child.isStatic && child.name != Class.name && !child.name.Contains("operator") && IsScriptable(child))
                 {
                     tw.WriteLine(Indent(1) + "ctor.setProperty(\"" + child.name + "\", engine->newFunction(" + (NeedsClassFunctionSelector(Class, child.name) ? GetScriptFunctionSelectorName(child) : GetScriptFunctionName(child))
-                        + ", " + child.parameters.Count + "));");
+                        + ", " + child.parameters.Count + "), QScriptValue::Undeletable | QScriptValue::ReadOnly);");
                     registeredFunctions.Add(child.name + "_____" + child.parameters.Count);
                 }
 
             foreach (Symbol child in Class.children.Values)
                 if (child.kind == "variable" && child.isStatic && child.name != Class.name && !child.name.Contains("operator") && IsScriptable(child))
                 {
-                    tw.WriteLine(Indent(1) + "ctor.setProperty(\"" + child.name + "\", TypeToQScriptValue(engine, " + Class.name + "::" + child.name + "));");
+//                    tw.WriteLine(Indent(1) + "ctor.setProperty(\"" + child.name + "\", TypeToQScriptValue(engine, " + Class.name + "::" + child.name + "));");
+                    tw.WriteLine(Indent(1) + "ctor.setProperty(\"" + child.name + "\", qScriptValueFromValue(engine, " + Class.name + "::" + child.name +
+                        "), QScriptValue::Undeletable" + ( child.IsConst() ? " | QScriptValue::ReadOnly" : "" ) + ");");
                     registeredFunctions.Add(child.name + "_____" + child.parameters.Count);
                 }
 
-            tw.WriteLine(Indent(1) + "engine->globalObject().setProperty(\"" + Class.name + "\", ctor);");
+            tw.WriteLine(Indent(1) + "engine->globalObject().setProperty(\"" + Class.name + "\", ctor, QScriptValue::Undeletable | QScriptValue::ReadOnly);");
+            tw.WriteLine("");
 
             tw.WriteLine(Indent(1) + "return ctor;");
 
