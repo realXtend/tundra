@@ -2,15 +2,12 @@
 
 #pragma once
 
-#include "StableHeaders.h"
 #include "IComponent.h"
 #include "CoreDefines.h"
 #include "OgreModuleApi.h"
 #include "AssetRefListener.h"
 
 class OgreMaterialAsset;
-
-namespace OgreRenderer { class OgreRenderingModule; };
 
 /// Ogre material modifier component
 /**
@@ -51,7 +48,8 @@ Does not emit any actions.
 class OGRE_MODULE_API EC_Material : public IComponent
 {
     Q_OBJECT
-    
+    COMPONENT_NAME("EC_Material", 31)
+
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Material(Scene* scene);
@@ -66,9 +64,6 @@ public:
 
     Q_PROPERTY(QString inputMat READ getoutputMat WRITE setoutputMat);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, outputMat);
-
-    COMPONENT_NAME("EC_Material", 31)
-public slots:
 
 private slots:
     void OnAttributeUpdated(IAttribute* attribute);
