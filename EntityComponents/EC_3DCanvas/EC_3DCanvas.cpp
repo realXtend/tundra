@@ -415,9 +415,7 @@ void EC_3DCanvas::RestoreOriginalMeshMaterials()
         {
             if (ec_mesh->GetMaterialName(index) == material_name_)
                 if (restore_materials_.contains(index))
-                {
                     ec_mesh->SetMaterial(index, restore_materials_[index]);
-                }
         }
         else if(draw_type == RexTypes::DRAWTYPE_PRIM)
         {

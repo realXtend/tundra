@@ -6,7 +6,6 @@
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "Declare_EC.h"
-#include "Color.h"
 
 #include <QMap>
 #include <QImage>
@@ -90,7 +89,6 @@ public slots:
     void SetRefreshRate(int refresh_per_second);
     void SetSubmesh(uint submesh);
     void SetSubmeshes(const QList<uint> &submeshes);
-
     void SetSelfIllumination(bool illuminating);
 
     QWidget *GetWidget() { return widget_; }
