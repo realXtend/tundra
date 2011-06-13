@@ -12,25 +12,25 @@ if (!framework.IsHeadless())
     var fileMenu = mainwin.AddMenu("&File", 100);
     
     // Load and save scene
-    var importWebAction = mainwin.AddMenuAction("&File", "Import Web Scene", new QIcon("./data/ui/images/folder_closed.png"));
+    var importWebAction = mainwin.AddMenuAction("&File", "Import Web Scene", new QIcon("./data/ui/images/folder_closed.png"), 90);
     importWebAction.triggered.connect(OpenWebScene);
-    var exportAction = mainwin.AddMenuAction("&File", "Save as...", new QIcon("./data/ui/images/resource.png"));
+    var exportAction = mainwin.AddMenuAction("&File", "Save as...", new QIcon("./data/ui/images/resource.png"), 85);
     exportAction.triggered.connect(SaveScene);
     //fileMenu.addSeparator();
     
     if (framework.GetModuleQObj("UpdateModule"))
-    	mainwin.AddMenuAction("&File", "Check Updates", new QIcon("./data/ui/images/icon/update.ico")).triggered.connect(CheckForUpdates);
+    	mainwin.AddMenuAction("&File", "Check Updates", new QIcon("./data/ui/images/icon/update.ico"), 80).triggered.connect(CheckForUpdates);
        
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
     {
-        var disconnectAction = mainwin.AddMenuAction("&File", "Disconnect", new QIcon("./data/ui/images/icon/disconnect.ico"));
+        var disconnectAction = mainwin.AddMenuAction("&File", "Disconnect", new QIcon("./data/ui/images/icon/disconnect.ico"), 20);
         disconnectAction.triggered.connect(Disconnect);
         client.Connected.connect(Connected);
         client.Disconnected.connect(Disconnected);
         Disconnected();
     }
-    mainwin.AddMenuAction("&File", "Quit", new QIcon("./data/ui/images/icon/system-shutdown.ico")).triggered.connect(Quit);
+    mainwin.AddMenuAction("&File", "Quit", new QIcon("./data/ui/images/icon/system-shutdown.ico"), 10).triggered.connect(Quit);
 
     // View
     var viewMenu = mainwin.AddMenu("&View", 90);

@@ -12,11 +12,13 @@ function initgui() {
 
     mainwin = ui.MainWindow();
     orgtitle = mainwin.windowTitle;
+    
+    mainwin.AddMenu("&File", 100);
 
-    var newact = mainwin.AddMenuAction("&File", "New Scene");
+    var newact = mainwin.AddMenuAction("&File", "New Scene", new QIcon(), 100);
     newact.triggered.connect(showNewSceneDialog);
 
-    saveact = mainwin.AddMenuAction("&File", "Save");
+    saveact = mainwin.AddMenuAction("&File", "Save", new QIcon(), 95);
     saveact.triggered.connect(saveCurrent);
     saveact.enabled = false;
 }
