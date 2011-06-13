@@ -45,6 +45,7 @@ del build\data\avatar_*.llm
 del build\data\gabble.manager
 del build\data\assets\dummy.txt
 del build\lvm.sh
+del build\scene.txml
 
 :: Installers we dont need in .msi
 ::del build\dxwebsetup.exe
