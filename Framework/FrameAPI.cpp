@@ -48,7 +48,7 @@ void FrameAPI::Reset()
 
 float FrameAPI::GetWallClockTime() const
 {
-    return (GetCurrentClockTime() - startTime_) / GetCurrentClockFreq();
+    return (float)((double)(GetCurrentClockTime() - startTime_) / GetCurrentClockFreq());
 }
 
 DelayedSignal *FrameAPI::DelayedExecute(float time)
