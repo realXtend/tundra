@@ -113,7 +113,7 @@ void Application::Go()
 
     try
     {
-        exec ();
+        exec();
     }
     catch(const std::exception &e)
     {
