@@ -142,20 +142,26 @@ float4 finalToneMapping(
 	float2 uv : TEXCOORD0,
 	uniform sampler2D inRTT : register(s0),
 	uniform sampler2D inBloom : register(s1),
-	uniform sampler2D inLum : register(s2)
+	uniform sampler2D inLum : register(s2),
+	uniform float LuminanceMin,
+	uniform float LuminanceMax,
+	uniform float BloomWeight
     ) : COLOR
 {
 	// Get main scene colour
     float4 sceneCol = tex2D(inRTT, uv);
 
 	// Get luminence value
-	float4 lum = tex2D(inLum, float2(0.5f, 0.5f));
+	float lum = tex2D(inLum, float2(0.5f, 0.5f)).r;
+
+    // Clamp luminance
+    lum = clamp(lum, LuminanceMin, LuminanceMax);
 
 	// tone map this
-	float4 toneMappedSceneCol = toneMap(sceneCol, lum.r);
+	float4 toneMappedSceneCol = toneMap(sceneCol, lum);
 	
 	// Get bloom colour
-    float4 bloom = tex2D(inBloom, uv);
+    float4 bloom = tex2D(inBloom, uv) * BloomWeight;
 
 	// Add scene & bloom
 	return float4(toneMappedSceneCol.rgb + bloom.rgb, 1.0f);
@@ -215,22 +221,28 @@ float4 finalToneMapping_StrongHDR(
 	float2 uv : TEXCOORD0,
 	uniform sampler2D inRTT : register(s0),
 	uniform sampler2D inBloom : register(s1),
-	uniform sampler2D inLum : register(s2)
+	uniform sampler2D inLum : register(s2),
+	uniform float LuminanceMin,
+	uniform float LuminanceMax,
+	uniform float BloomWeight
     ) : COLOR
 {
 	// Get main scene colour
     float4 sceneCol = tex2D(inRTT, uv);
 
 	// Get luminence value
-	float4 lum = tex2D(inLum, float2(0.5f, 0.5f));
+	float lum = tex2D(inLum, float2(0.5f, 0.5f)).r;
+
+    // Clamp luminance
+    lum = clamp(lum, LuminanceMin, LuminanceMax);
 
 	// tone map this
-	float4 toneMappedSceneCol = toneMap(sceneCol, lum.r);
-	
+	float4 toneMappedSceneCol = toneMap(sceneCol, lum);
+
 	// Get bloom colour
     float4 bloom = tex2D(inBloom, uv);
 
 	// Add scene & bloom
-	return float4((toneMappedSceneCol.rgb * (1.5 * toneMappedSceneCol.rgb)) + (bloom.rgb * bloom.rgb), 1.0);
+	return float4((toneMappedSceneCol.rgb * (1.5 * toneMappedSceneCol.rgb)) + (bloom.rgb * bloom.rgb) * BloomWeight, 1.0);
      	
 }
