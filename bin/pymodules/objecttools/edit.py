@@ -105,17 +105,18 @@ class ObjectEdit(Component):
         self.selection_box_inited = False
         
         self.menuToggleAction = None
-        # mainWindow = naali.uicore.MainWindow()
+        
         # print mainWindow
-        # if mainWindow:
-            # menuBar = mainWindow.menuBar()
-            # self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
-            # self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
+        
         if naali.server.IsAboutToStart() == False:
             naali.client.connect("Connected()", self.on_connected_tundra)
         else:
-            editMenu = mainWindow.AddMenu("Edit")
-            editMenu.addAction(self.menuToggleAction)
+            mainWindow = naali.ui.MainWindow()
+            if mainWindow:
+                mainWindow.AddMenu("Edit", 30)
+                self.menuToggleAction = mainWindow.AddMenuAction("Edit", "Toggle Object Manipulation", QIcon("./data/ui/images/worldbuilding/transform-move.png"))
+                self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
+
         self.toggleEditing(False)
         
         """
@@ -137,7 +138,12 @@ class ObjectEdit(Component):
         """
         
     def on_connected_tundra(self):
-        naali.ui.EmitAddAction(self.menuToggleAction);
+        mainWindow = naali.ui.MainWindow()
+        if mainWindow:
+            mainWindow.AddMenu("Edit", 30)
+            self.menuToggleAction = mainWindow.AddMenuAction("Edit", "Toggle Object Manipulation", QIcon("./data/ui/images/worldbuilding/transform-move.png"))
+            self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
+            naali.ui.EmitAddAction(self.menuToggleAction);
     
     def toggleEditingKeyTrigger(self):
         self.toggleEditing(not self.editing)
