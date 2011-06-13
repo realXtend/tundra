@@ -28,6 +28,7 @@ namespace UiServices
         QDockWidget *wid = new QDockWidget(title, qWin_, flags);
 		wid->setObjectName(title);
 		wid->setWidget(widget);
+        wid->setMinimumSize(widget->minimumSize());
         if (!AddQDockWidget(wid))
         {
             //to keep widget, removes widget parent and dock widget 
@@ -73,9 +74,26 @@ namespace UiServices
 		if (!controller_panels_.contains(qdoc))
 			return;
         controller_panels_[qdoc] = vis;
-        if (qdoc->widget()->isVisible() != vis)
+        QWidget* titleBar = qdoc->titleBarWidget();
+        if (titleBar)
+        {
+            QObjectList children = titleBar->children();
+            foreach (QObject* object, children)
+            {
+                QString objectName = object->objectName();
+            }
+        }
+        if (vis && !qdoc->widget()->isVisible())
             qdoc->widget()->setVisible(vis);
         else if (!vis && !qdoc->isVisible())
+            qdoc->widget()->setVisible(vis);
+        else if (!vis && qdoc->isVisible())
+        {
+            UiWidget *uiwidget = dynamic_cast<UiWidget*>(qdoc->widget());
+            if (uiwidget)
+                uiwidget->sendVisibilityChanged(vis);
+        }
+        else if (vis && qdoc->widget()->isVisible())
         {
             UiWidget *uiwidget = dynamic_cast<UiWidget*>(qdoc->widget());
             if (uiwidget)
@@ -93,13 +111,31 @@ namespace UiServices
             return;
 		if (!controller_panels_.contains(qdoc))
 			return;
-        if (vis && !controller_panels_[qdoc] )
+        if ((vis && !controller_panels_[qdoc]) || (!vis && !uiwidget->isVisible() && !controller_panels_[qdoc] && qdoc->isVisible()))
         {
-            qdoc->show();
+            qdoc->show();            
             QList<QDockWidget *> docks = dynamic_cast<QMainWindow *>(qWin_)->tabifiedDockWidgets(qdoc);
+            if (docks.size() > 0)
+            {
+                QWidget* titleBar = qdoc->titleBarWidget();
+                if (titleBar)
+                {
+                    QObjectList children = titleBar->children();
+                    foreach (QObject* object, children)
+                    {
+                        QString objectName = object->objectName();
+                    }
+                }
+
+            }
+
 			QDockWidget *value;
 			foreach (value, docks)
+            {
 				dynamic_cast<QMainWindow *>(qWin_)->tabifyDockWidget(value, qdoc);
+                /*if (value->width() > qdoc->width())
+                    qdoc->setFixedWidth(value->width());*/
+            }
         }
         else if(!vis && controller_panels_[qdoc])
             qdoc->hide();
