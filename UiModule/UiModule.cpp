@@ -367,6 +367,9 @@ namespace UiServices
 		if (widget->windowTitle() == "")
             return;
 
+        if(widget->property("dockeable") == false)
+            return;
+
 		if (!external_widgets_.contains(widget))
         {
             QDockWidget* dock_widget = external_panel_manager_->AddExternalPanel(widget,widget->windowTitle());
