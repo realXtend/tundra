@@ -622,7 +622,7 @@ void SceneTreeWidget::EditInNew()
         return;
 
     QStringList args;
-    args.append("dockeable");
+    args.append("dockable");
     args.append("false");
 
     UiWidget* ededitoruiw = ui->AddWidgetToWindow(editor, Qt::Dialog, args);
