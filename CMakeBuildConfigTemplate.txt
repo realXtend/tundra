@@ -18,13 +18,13 @@ if (MSVC OR APPLE)
 endif()
 
 # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
-SET(HYDRAX 0)
+SET(HYDRAX 1)
 if (MSVC AND HYDRAX)
     configure_hydrax ()
 endif()
 
 # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
-SET(SKYX 0)
+SET(SKYX 1)
 if (MSVC AND SKYX)
     configure_skyx()
 endif()
