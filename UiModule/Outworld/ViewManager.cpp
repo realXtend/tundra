@@ -66,7 +66,7 @@ namespace UiServices
 
 		//Add separator
 		//QAction* separator = new QAction(tr(""), this);
-        QAction* separator = owner->GetFramework()->Ui()->MainWindow()->AddMenuAction("Window", "separator", QIcon(), 97);
+        QAction* separator = owner->GetFramework()->Ui()->MainWindow()->AddMenuAction("Window", "", QIcon(), 97);
 		separator->setSeparator(true);
 		//uiService_->AddExternalMenuAction(separator, "separator", "Window", 0,  97);
 
