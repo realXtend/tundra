@@ -5,13 +5,13 @@
 #include "DebugOperatorNew.h"
 
 #include "UiModule.h"
-#include "UiDarkBlueStyle.h"
+#include "UiSettings/UiDarkBlueStyle.h"
 #include "InputAPI.h"
 
 #include "Inworld/InworldSceneController.h"
 #include "UiProxyWidget.h"
 
-#include "Inworld/ControlPanel/ChangeThemeWidget.h"
+#include "UiSettings/ChangeThemeWidget.h"
 
 #include "Outworld/ExternalPanelManager.h"
 #include "Outworld/ViewManager.h"
@@ -68,6 +68,19 @@ namespace UiServices
     void UiModule::Load()
     {
         event_query_categories_ << "Framework" << "Scene" << "Input";
+        if (GetFramework()->IsHeadless())
+			return;
+
+		//External Ui
+		qWin_ = dynamic_cast<UiMainWindow*>(framework_->Ui()->MainWindow());
+        if (qWin_)
+            external_panel_manager_ = new ExternalPanelManager(qWin_, this);
+        else
+			LogWarning("Could not acquire QMainWindow!");
+
+        //Listen to UiAPI
+        connect(framework_->Ui(), SIGNAL(CustomizeAddWidgetToWindow(UiWidget *)), SLOT(AddWidgetToWindow(UiWidget *)));
+        connect(framework_->Ui(), SIGNAL(CustomizeRemoveWidgetFromWindow(UiWidget *)), SLOT(RemoveWidgetFromScene(UiWidget *)));
     }
 
     void UiModule::Unload()
@@ -89,17 +102,6 @@ namespace UiServices
         }
         else
             LogWarning("Could not acquire QGraphicsView shared pointer from framework, UiServices are disabled");
-
-		//External Ui
-		qWin_ = dynamic_cast<UiMainWindow*>(framework_->Ui()->MainWindow());
-        if (qWin_)
-            external_panel_manager_ = new ExternalPanelManager(qWin_, this);
-        else
-			LogWarning("Could not acquire QMainWindow!");
-
-        //Listen to UiAPI
-        connect(framework_->Ui(), SIGNAL(CustomizeAddWidgetToWindow(UiWidget *)), SLOT(AddWidgetToWindow(UiWidget *)));
-        connect(framework_->Ui(), SIGNAL(CustomizeRemoveWidgetFromWindow(UiWidget *)), SLOT(RemoveWidgetFromScene(UiWidget *)));
     }
 
 
@@ -209,7 +211,6 @@ namespace UiServices
 
     void UiModule::AddWidgetToWindow(UiWidget *widget)
     {
-		QString pos = "vacio";
 		if (widget->windowTitle() == "")
             return;
 
