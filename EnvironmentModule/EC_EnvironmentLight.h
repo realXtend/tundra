@@ -10,13 +10,6 @@
 #include <Color.h>
 #include <QString>
 
-#ifdef CAELUM
-namespace Caelum
-{
-    class CaelumSystem;
-}
-#endif
-
 /// Makes the entity a enviroment light.
 /**
 <table class="header">
@@ -52,6 +45,7 @@ false user can totally control scene "global" lights.
 class EC_EnvironmentLight : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_EnvironmentLight", 8)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
@@ -90,8 +84,7 @@ public:
      /// Defines that is caelum to used to define sun color & direction vector and ambient light.
     DEFINE_QPROPERTY_ATTRIBUTE(bool, useCaelumAttr);
     Q_PROPERTY(bool useCaelumAttr READ getuseCaelumAttr WRITE setuseCaelumAttr); 
-   
-    COMPONENT_NAME("EC_EnvironmentLight", 8)
+
 public slots:
 
     /// Called If some of the attributes has been changed.
@@ -123,9 +116,4 @@ private:
 
      /// Sunlight which is used if there does not exist caelum
     Ogre::Light* sunLight_;
-
-#ifdef CAELUM
-    /// Caelum system.
-    Caelum::CaelumSystem *caelumSystem_;
-#endif
 };

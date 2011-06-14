@@ -100,9 +100,9 @@ endfunction (sagase_generate_paths)
 #     NAMES glib-2.0
 #     COMPONENTS glib glib-2.0)
 #
-# sagase_configure_package (CAELUM
-#     NAMES Caelum
-#     COMPONENTS Caelum
+# sagase_configure_package (SKYX
+#     NAMES SkyX
+#     COMPONENTS SkyX
 #     PREFIXES $ENV{NAALI_DEP_PATH})
 
 

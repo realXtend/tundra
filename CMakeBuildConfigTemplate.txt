@@ -11,20 +11,14 @@
 # The idea is that everyone can customize the set of modules to build using that 
 # file, without having to fear about an accidental commit of these changes.
 
-# Configure the use of Caelum. http://www.ogre3d.org/tikiwiki/Caelum
-if (MSVC OR APPLE)
-  SET(CAELUM 0)
-  configure_caelum ()
-endif()
-
 # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
-SET(HYDRAX 1)
+SET(HYDRAX 0)
 if (MSVC AND HYDRAX)
     configure_hydrax ()
 endif()
 
 # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
-SET(SKYX 1)
+SET(SKYX 0)
 if (MSVC AND SKYX)
     configure_skyx()
 endif()
@@ -128,4 +122,4 @@ endif()
 add_subdirectory(SpeexVoipModule)
 
 # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
-add_subdirectory(SkyXHydrax)
+#add_subdirectory(SkyXHydrax)

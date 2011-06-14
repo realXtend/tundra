@@ -11,13 +11,6 @@
 
 #include "SceneFwd.h"
 
-#ifdef CAELUM
-namespace Caelum
-{
-    class CaelumSystem;
-}
-#endif
-
 namespace Environment
 {
     class ENVIRONMENT_MODULE_API EnvironmentModule : public IModule

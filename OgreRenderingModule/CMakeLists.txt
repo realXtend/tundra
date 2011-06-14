@@ -21,10 +21,6 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-if (CAELUM)
-    add_definitions (-DCAELUM)
-endif (CAELUM)
-
 add_definitions (-DOGRE_MODULE_EXPORTS)
 
 #add_definitions (-DUSE_NVIDIA_PERFHUD)
@@ -32,19 +28,11 @@ add_definitions (-DOGRE_MODULE_EXPORTS)
 use_package_assimp()
 use_modules (Framework Scene Input Ui Asset Console)
 
-if (CAELUM)
-    use_package (CAELUM)
-endif (CAELUM)
-
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 GetOpenAssetImport()
 link_ogre()
 link_modules (Framework Scene Ui Asset Console)
-
-if (CAELUM)
-    link_package (CAELUM)
-endif (CAELUM)
 
 SetupCompileFlagsWithPCH()
 

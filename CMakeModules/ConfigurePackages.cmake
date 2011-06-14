@@ -175,15 +175,6 @@ macro(link_ogre)
     endif()
 endmacro()
 
-macro (configure_caelum)
-    sagase_configure_package (CAELUM
-        NAMES Caelum caelum CAELUM
-        COMPONENTS Caelum caelum CAELUM
-        PREFIXES ${ENV_NAALI_DEP_PATH})
-    
-    sagase_configure_report (CAELUM)
-endmacro (configure_caelum)
-
 macro (configure_skyx)
     sagase_configure_package (SKYX
         NAMES SkyX SKYX skyx

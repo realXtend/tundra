@@ -21,28 +21,12 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 add_definitions (-DENVIRONMENT_MODULE_EXPORTS)
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${UI_FILES} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-if (CAELUM)
-    add_definitions (-DCAELUM)
-endif (CAELUM)
-
-if (HYDRAX)
-    add_definitions (-DHYDRAX)
-endif (HYDRAX)
-
-if (CAELUM)
-    use_package (CAELUM)
-endif (CAELUM)
-
 use_modules (Framework Scene OgreRenderingModule Asset Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
 link_modules (Framework Scene OgreRenderingModule Asset Console)
 
 link_ogre()
-
-if (CAELUM)
-    link_package (CAELUM)
-endif (CAELUM)
 
 SetupCompileFlagsWithPCH()
 
