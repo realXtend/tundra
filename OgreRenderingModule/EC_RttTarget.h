@@ -2,12 +2,8 @@
 
 #pragma once
 
-#include "StableHeaders.h"
 #include "IComponent.h"
-#include "CoreDefines.h"
 #include "OgreModuleApi.h"
-
-namespace OgreRenderer { class OgreRenderingModule; };
 
 /// Ogre render-to-texture component
 /**
@@ -38,17 +34,17 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 Does not emit any actions.
 
-<b>Depends on a camera component.</b>.
+<b>Depends on EC_Camera.</b>.
 </table>
 */
 class OGRE_MODULE_API EC_RttTarget : public IComponent
 {
     Q_OBJECT
-    
+    COMPONENT_NAME("EC_RttTarget", 21)
+
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_RttTarget(Scene* scene);
-
     virtual ~EC_RttTarget();
 
     Q_PROPERTY(QString targettexture READ gettargettexture WRITE settargettexture);
@@ -60,9 +56,7 @@ public:
     Q_PROPERTY(int size_y READ getsize_y WRITE setsize_y);
     DEFINE_QPROPERTY_ATTRIBUTE(int, size_y);
 
-    COMPONENT_NAME("EC_RttTarget", 21)
 public slots:
-
     void PrepareRtt();
     void SetAutoUpdated(bool val);
 
@@ -71,11 +65,6 @@ private slots:
     //void UpdateRtt();
 
 private:
-    /// Owner module of this component
-    //OgreRenderer::OgreRenderingModule *owner_;
-
-    Ogre::TexturePtr tex_;
     std::string material_name_;
     //void ScheduleRender();
 };
-

@@ -2,15 +2,17 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
-#include "OgreRenderingModule.h"
-#include "Scene.h"
+
 #include "EC_RttTarget.h"
 #include "EC_Camera.h"
 #include "OgreMaterialUtils.h"
+
+#include "Scene.h"
 #include "FrameAPI.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
+
+#include "MemoryLeakCheck.h"
 
 EC_RttTarget::EC_RttTarget(Scene* scene) :
     IComponent(scene),
@@ -53,7 +55,7 @@ void EC_RttTarget::PrepareRtt()
     int y = size_y.Get();
 
     // Get the camera ec
-    EC_Camera *ec_camera = this->ParentEntity()->GetComponent<EC_Camera>().get();
+    EC_Camera *ec_camera = ParentEntity()->GetComponent<EC_Camera>().get();
     if (!ec_camera)
     {
         LogInfo("No camera for rtt.");
@@ -62,17 +64,15 @@ void EC_RttTarget::PrepareRtt()
 
     ec_camera->GetCamera()->setAspectRatio(Ogre::Real(x) / Ogre::Real(y));
 
-    tex_ = Ogre::TextureManager::getSingleton().getByName(targettexture.Get().toStdString());
-    if (tex_.isNull())
+    Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().getByName(targettexture.Get().toStdString());
+    if (tex.isNull())
     {
-        tex_ = Ogre::TextureManager::getSingleton()
-          .createManual(
-                        targettexture.Get().toStdString(), 
-                        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                        Ogre::TEX_TYPE_2D, x, y, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
+        tex = Ogre::TextureManager::getSingleton().createManual(targettexture.Get().toStdString(),
+            Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, x, y, 0,
+            Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
     }
 
-    Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
+    Ogre::RenderTexture *render_texture = tex->getBuffer()->getRenderTarget();
     if (render_texture)
     {
         render_texture->removeAllViewports();
@@ -84,9 +84,8 @@ void EC_RttTarget::PrepareRtt()
         vp->setVisibilityMask(0x2);
 
         render_texture->update(false);
-        tex_->getBuffer()->getRenderTarget()->setAutoUpdated(false); 
+        tex->getBuffer()->getRenderTarget()->setAutoUpdated(false); 
     }
-
     else
         LogError("render target texture getting failed.");
 
@@ -95,7 +94,7 @@ void EC_RttTarget::PrepareRtt()
     OgreRenderer::CloneMaterial("HoveringText", material_name_); //would LitTextured be the right thing? XXX \todo
     Ogre::MaterialManager &material_manager = Ogre::MaterialManager::getSingleton();
     Ogre::MaterialPtr material = material_manager.getByName(material_name_);
-    OgreRenderer::SetTextureUnitOnMaterial(material, targettexture.Get().toStdString());    
+    OgreRenderer::SetTextureUnitOnMaterial(material, targettexture.Get().toStdString());
 }
 
 void EC_RttTarget::SetAutoUpdated(bool val)
@@ -103,13 +102,21 @@ void EC_RttTarget::SetAutoUpdated(bool val)
     if (!ViewEnabled())
         return;
 
-    Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
-    if (render_texture)
+    Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().getByName(targettexture.Get().toStdString());
+    if (tex.isNull())
     {
-         tex_->getBuffer()->getRenderTarget()->setAutoUpdated(val);
-    }
-    else
         LogError("render target texture getting failed.");
+        return;
+    }
+
+    Ogre::RenderTexture *render_texture = tex->getBuffer()->getRenderTarget();
+    if (!render_texture)
+    {
+        LogError("Render target texture getting failed.");
+        return;
+    }
+
+    tex->getBuffer()->getRenderTarget()->setAutoUpdated(val);
 }
 
 /*void EC_RttTarget::ScheduleRender()
