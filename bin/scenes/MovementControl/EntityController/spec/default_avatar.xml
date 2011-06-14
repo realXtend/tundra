@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Template XML file for avatar parameters -->
+<avatar>
+    <!-- version string for this file -->
+    <version>0.2</version>
+    <base name="default_female" mesh="Jack.mesh" />
+    <skeleton name="Jack.skeleton" />
+    <material name="Jack_Body.material" />
+    <material name="Jack_Face.material" />
+    <texture_face name="" />
+    <texture_body name="" />
+    <appearance height="1.800000" weight="1" />
+    <transformation position="0 0 0" rotation="1 0 0 0" scale="1 1 1" />
+    <dynamic_animation_parameter name="Height_Adjust" position="0.5" />
+    <dynamic_animation name="Height_Adjust">
+        <base_animations />
+        <bones>
+            <bone name="Bip01_Pelvis">
+                <rotation start="0 0 0" end="0 0 0" mode="absolute" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="0.93 0.93 0.93" end="1.07 1.07 1.07" />
+            </bone>
+            <bone name="Bip01_Spine1">
+                <rotation start="0 0 0" end="0 0 0" mode="absolute" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="0.97 0.97 0.97" end="1.03 1.03 1.03" />
+            </bone>
+            <bone name="Bip01_L_Thigh">
+                <rotation start="0 0 0" end="0 0 0" mode="absolute" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="0.93 0.93 0.93" end="1.07 1.07 1.07" />
+            </bone>
+            <bone name="Bip01_R_Thigh">
+                <rotation start="0 0 0" end="0 0 0" mode="absolute" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="0.93 0.93 0.93" end="1.07 1.07 1.07" />
+            </bone>
+        </bones>
+    </dynamic_animation>
+    <dynamic_animation_parameter name="Widen_Clavicles" position="0" />
+    <dynamic_animation name="Widen_Clavicles">
+        <base_animations />
+        <bones>
+            <bone name="Bip01_L_Clavicle">
+                <rotation start="0 0 0" end="0 0 0" mode="absolute" />
+                <translation start="0 0 0" end="0 0 0.05" mode="relative" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+            <bone name="Bip01_R_Clavicle">
+                <rotation start="0 0 0" end="0 0 0" mode="absolute" />
+                <translation start="0 0 0" end="0 0 -0.05" mode="relative" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+        </bones>
+    </dynamic_animation>
+    <dynamic_animation_parameter name="Spine_Posture" position="0.5" />
+    <dynamic_animation name="Spine_Posture">
+        <base_animations />
+        <bones>
+            <bone name="Bip01_Spine1">
+                <rotation start="0 0 -20" end="0 0 20" mode="relative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+            <bone name="Bip01_Head">
+                <rotation start="0 0 15" end="0 0 -15" mode="relative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+            <bone name="Bip01_R_UpperArm">
+                <rotation start="0 0 20" end="0 0 -20" mode="relative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+            <bone name="Bip01_L_UpperArm">
+                <rotation start="0 0 20" end="0 0 -20" mode="relative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+        </bones>
+    </dynamic_animation>
+    <dynamic_animation_parameter name="Leg_Twist" position="0" />
+    <dynamic_animation name="Leg_Twist">
+        <base_animations />
+        <bones>
+            <bone name="Bip01_L_Thigh">
+                <rotation start="0 0 0" end="0 -10 0" mode="relative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+            <bone name="Bip01_L_Calf">
+                <rotation start="0 0 0" end="0 -20 0" mode="relative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+            <bone name="Bip01_R_Thigh">
+                <rotation start="0 0 0" end="0 10 0" mode="relative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+            <bone name="Bip01_R_Calf">
+                <rotation start="0 0 0" end="0 20 0" mode="relative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+        </bones>
+    </dynamic_animation>
+    <dynamic_animation_parameter name="Arm_Twist" position="0" />
+    <dynamic_animation name="Arm_Twist">
+        <base_animations />
+        <bones>
+            <bone name="Bip01_L_UpperArm">
+                <rotation start="0 0 0" end="0 -20 0" mode="cumulative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+            <bone name="Bip01_L_Forearm">
+                <rotation start="0 0 0" end="0 10 0" mode="relative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+            <bone name="Bip01_R_UpperArm">
+                <rotation start="0 0 0" end="0 20 0" mode="cumulative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+            <bone name="Bip01_R_Forearm">
+                <rotation start="0 0 0" end="0 -10 0" mode="relative" />
+                <translation start="0 0 0" end="0 0 0" mode="absolute" />
+                <scale start="1 1 1" end="1 1 1" />
+            </bone>
+        </bones>
+    </dynamic_animation>
+    <morph_modifier name="fat-arms-lower" internal_name="Morph_fat-arms-lower" influence="0.000000" />
+    <morph_modifier name="fat-arms-upper" internal_name="Morph_fat-arms-upper" influence="0.000000" />
+    <morph_modifier name="fat-body-lower" internal_name="Morph_fat-body-lower" influence="0.000000" />
+    <morph_modifier name="fat-body-upper" internal_name="Morph_fat-body-upper" influence="0.000000" />
+    <morph_modifier name="fat-legs-lower" internal_name="Morph_fat-legs-lower" influence="0.000000" />
+    <morph_modifier name="fat-legs-upper" internal_name="Morph_fat-legs-upper" influence="0.000000" />
+    <morph_modifier name="muscular-arms-lower" internal_name="Morph_muscular-arms-lower" influence="0.000000" />
+    <morph_modifier name="muscular-arms-upper" internal_name="Morph_muscular-arms-upper" influence="0.000000" />
+    <morph_modifier name="muscular-body-lower" internal_name="Morph_muscular-body-lower" influence="0.000000" />
+    <morph_modifier name="muscular-body-upper" internal_name="Morph_muscular-body-upper" influence="0.000000" />
+    <morph_modifier name="muscular-legs-lower" internal_name="Morph_muscular-legs-lower" influence="0.000000" />
+    <morph_modifier name="muscular-legs-upper" internal_name="Morph_muscular-legs-upper" influence="0.000000" />
+    <morph_modifier name="thin-arms-lower" internal_name="Morph_thin-arms-lower" influence="0.000000" />
+    <morph_modifier name="thin-arms-upper" internal_name="Morph_thin-arms-upper" influence="0.000000" />
+    <morph_modifier name="thin-body-lower" internal_name="Morph_thin-body-lower" influence="0.000000" />
+    <morph_modifier name="thin-body-upper" internal_name="Morph_thin-body-upper" influence="0.000000" />
+    <morph_modifier name="thin-legs-lower" internal_name="Morph_thin-legs-lower" influence="0.000000" />
+    <morph_modifier name="thin-legs-upper" internal_name="Morph_thin-legs-upper" influence="0.000000" />
+    <animation name="CrouchWalk" id="47f5f6fb-22e5-ae44-f871-73aaaf4a6022" internal_name="Crouch" looped="1" speedfactor="1.4" usevelocity="1" fadein="0.25" fadeout="0.25" />
+    <animation name="Fly" id="aec4610c-757f-bc4e-c092-c6e9caf18daf" internal_name="Fly" looped="1" speedfactor="1.1" fadein="0.25" fadeout="0.25" />
+    <animation name="Hover" id="4ae8016b-31b9-03bb-c401-b1ea941db41d" internal_name="Hover" speedfactor="0.35" looped="1" fadein="0.25" fadeout="0.25" />
+    <animation name="HoverDown" id="20f063ea-8306-2562-0b07-5c853b37b31e" internal_name="Hover" speedfactor="0.35" looped="1" fadein="0.25" fadeout="0.25" />
+    <animation name="HoverUp" id="62c5de58-cb33-5743-3d07-9e4cd4352864" internal_name="Hover" speedfactor="0.35" looped="1" fadein="0.25" fadeout="0.25" />
+    <animation name="Run" id="05ddbff8-aaa9-92a1-2b74-8fe77a29b445" internal_name="Run" looped="1" speedfactor="0.6" usevelocity="1" fadein="0.25" fadeout="0.25" />
+    <animation name="Sit" id="1a5fe8ac-a804-8a5d-7cbd-56bd83184568" internal_name="SitOnObject" looped="0" fadein="0.4" fadeout="0.5" />
+    <animation name="SitGround" id="1c7600d6-661f-b87b-efe2-d7421eb93c86" internal_name="SitOnGround1" looped="0" fadein="0.4" fadeout="0.5" />
+    <animation name="Stand" id="2408fe9e-df1d-1d7d-f4ff-1384fa7b350f" internal_name="Stand" looped="1" fadein="0.25" fadeout="0.25" />
+    <animation name="Walk" id="6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0" internal_name="Walk" looped="1" speedfactor="1.0" usevelocity="1" fadein="0.25" fadeout="0.25" />
+    <master_modifier name="Arms twist" position="0.000000" category="Posture">
+        <target_modifier type="dynamic_animation" name="Arm_Twist" mode="cumulative" />
+    </master_modifier>
+    <master_modifier name="Body mass" position="0.500000" category="Body">
+        <target_modifier type="morph" name="thin-legs-lower" mode="cumulative">
+            <position_mapping master="0.000000" target="1.000000" />
+            <position_mapping master="0.500000" target="0.000000" />
+        </target_modifier>
+        <target_modifier type="morph" name="thin-legs-upper" mode="cumulative">
+            <position_mapping master="0.000000" target="1.000000" />
+            <position_mapping master="0.500000" target="0.000000" />
+        </target_modifier>
+        <target_modifier type="morph" name="thin-arms-lower" mode="cumulative">
+            <position_mapping master="0.000000" target="1.000000" />
+            <position_mapping master="0.500000" target="0.000000" />
+        </target_modifier>
+        <target_modifier type="morph" name="thin-arms-upper" mode="cumulative">
+            <position_mapping master="0.000000" target="1.000000" />
+            <position_mapping master="0.500000" target="0.000000" />
+        </target_modifier>
+        <target_modifier type="morph" name="thin-body-lower" mode="cumulative">
+            <position_mapping master="0.000000" target="1.000000" />
+            <position_mapping master="0.500000" target="0.000000" />
+        </target_modifier>
+        <target_modifier type="morph" name="thin-body-upper" mode="cumulative">
+            <position_mapping master="0.000000" target="1.000000" />
+            <position_mapping master="0.500000" target="0.000000" />
+        </target_modifier>
+        <target_modifier type="morph" name="fat-arms-lower" mode="cumulative">
+            <position_mapping master="0.500000" target="0.000000" />
+            <position_mapping master="1.000000" target="1.000000" />
+        </target_modifier>
+        <target_modifier type="morph" name="fat-arms-upper" mode="cumulative">
+            <position_mapping master="0.500000" target="0.000000" />
+            <position_mapping master="1.000000" target="1.000000" />
+        </target_modifier>
+        <target_modifier type="morph" name="fat-legs-lower" mode="cumulative">
+            <position_mapping master="0.500000" target="0.000000" />
+            <position_mapping master="1.000000" target="1.000000" />
+        </target_modifier>
+        <target_modifier type="morph" name="fat-legs-upper" mode="cumulative">
+            <position_mapping master="0.500000" target="0.000000" />
+            <position_mapping master="1.000000" target="1.000000" />
+        </target_modifier>
+        <target_modifier type="morph" name="fat-body-lower" mode="cumulative">
+            <position_mapping master="0.500000" target="0.000000" />
+            <position_mapping master="1.000000" target="0.800000" />
+        </target_modifier>
+        <target_modifier type="morph" name="fat-body-upper" mode="cumulative">
+            <position_mapping master="0.500000" target="0.000000" />
+            <position_mapping master="1.000000" target="1.000000" />
+        </target_modifier>
+        <target_modifier type="dynamic_animation" name="Widen_Clavicles2" mode="cumulative">
+            <position_mapping master="0.500000" target="0.000000" />
+            <position_mapping master="1.000000" target="0.800000" />
+        </target_modifier>
+    </master_modifier>
+    <master_modifier name="Body muscles" position="0.000000" category="Body">
+        <target_modifier type="morph" name="muscular-arms-lower" mode="cumulative" />
+        <target_modifier type="morph" name="muscular-arms-upper" mode="cumulative" />
+        <target_modifier type="morph" name="muscular-legs-lower" mode="cumulative" />
+        <target_modifier type="morph" name="muscular-legs-upper" mode="cumulative" />
+        <target_modifier type="morph" name="muscular-body-lower" mode="cumulative" />
+        <target_modifier type="morph" name="muscular-body-upper" mode="cumulative" />
+        <target_modifier type="dynamic_animation" name="Widen_Clavicles2" mode="cumulative">
+            <position_mapping master="0.300000" target="0.000000" />
+            <position_mapping master="1.000000" target="0.500000" />
+        </target_modifier>
+    </master_modifier>
+    <master_modifier name="Height" position="0.500000" category="Body">
+        <target_modifier type="dynamic_animation" name="Height_Adjust" mode="cumulative" />
+    </master_modifier>
+    <master_modifier name="Leg twist" position="0.000000" category="Posture">
+        <target_modifier type="dynamic_animation" name="Leg_Twist" mode="cumulative" />
+    </master_modifier>
+    <master_modifier name="Spine back/forward" position="0.500000" category="Posture">
+        <target_modifier type="dynamic_animation" name="Spine_Posture" mode="cumulative" />
+    </master_modifier>
+    <property name="MovementSpeed" value="1" />
+    <property name="attach_Chest" value="Bip01_Spine1" />
+    <property name="attach_Chin" value="Bip01_Head" />
+    <property name="attach_L Forearm" value="Bip01_L_Forearm" />
+    <property name="attach_L Lower Leg" value="Bip01_L_Calf" />
+    <property name="attach_L Upper Arm" value="Bip01_L_UpperArm" />
+    <property name="attach_L Upper Leg" value="Bip01_L_Thigh" />
+    <property name="attach_Left Ear" value="Bip01_Head" />
+    <property name="attach_Left Eyeball" value="Bip01_Head" />
+    <property name="attach_Left Foot" value="Bip01_L_Foot" />
+    <property name="attach_Left Hand" value="Bip01_L_Hand" />
+    <property name="attach_Left Hip" value="Bip01_L_Thigh" />
+    <property name="attach_Left Pec" value="Bip01_Spine1" />
+    <property name="attach_Left Shoulder" value="Bip01_L_Clavicle" />
+    <property name="attach_Mouth" value="Bip01_Head" />
+    <property name="attach_Nose" value="Bip01_Head" />
+    <property name="attach_Pelvis" value="Bip01_Pelvis" />
+    <property name="attach_R Forearm" value="Bip01_R_Forearm" />
+    <property name="attach_R Lower Leg" value="Bip01_R_Calf" />
+    <property name="attach_R Upper Arm" value="Bip01_R_UpperArm" />
+    <property name="attach_R Upper Leg" value="Bip01_R_Thigh" />
+    <property name="attach_Right Ear" value="Bip01_Head" />
+    <property name="attach_Right Eyeball" value="Bip01_Head" />
+    <property name="attach_Right Foot" value="Bip01_R_Foot" />
+    <property name="attach_Right Hand" value="Bip01_R_Hand" />
+    <property name="attach_Right Hip" value="Bip01_R_Thigh" />
+    <property name="attach_Right Pec" value="Bip01_Spine1" />
+    <property name="attach_Right Shoulder" value="Bip01_R_Clavicle" />
+    <property name="attach_Skull" value="Bip01_Head" />
+    <property name="attach_Spine" value="Bip01_Spine" />
+    <property name="attach_Stomach" value="Bip01_Pelvis" />
+    <property name="basebone" value="Bip01_R_Toe0" />
+    <property name="basemesh" value="Jack.mesh" />
+    <property name="baseoffset" value="0 -0.03 0" />
+    <property name="headbone" value="Bip01_Head" />
+    <property name="neckbone" value="Bip01_Spine2" />
+    <property name="rootbone" value="Bip01" />
+    <property name="torsobone" value="Bip01_Spine1" />
+</avatar>
