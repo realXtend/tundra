@@ -20,10 +20,11 @@ widget_(widget)
 
     QHBoxLayout* h_box = new QHBoxLayout();
     h_box->addWidget(widget_);
+    h_box->setContentsMargins(0,0,0,0);
     
     QVBoxLayout* v_box = new QVBoxLayout();
     v_box->addLayout(h_box);
-    
+    v_box->setContentsMargins(0,0,0,0);
     setLayout(v_box);
 
     //Inherit dynamic properties of embedded widget
