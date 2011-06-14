@@ -7,6 +7,7 @@
 #include <QPropertyAnimation>
 
 #include "CoreTypes.h"
+#include "UiWidget.h"
 
 namespace Foundation { class Framework; }
 namespace Ui { class ConsoleWidget; }
@@ -33,6 +34,8 @@ public slots:
     /// Toggles visibility of the console UI.
     void ToggleConsole();
 
+    void PostInitialize();
+
 private slots:
     /// Handles input to the console (called after return is pressed).
     void HandleInput();
@@ -54,7 +57,8 @@ private:
     QGraphicsView *graphicsView; ///< View to the scene
     Ui::ConsoleWidget* consoleUi; ///< UI
     QWidget * consoleWidget; ///< Widget in UI
-    UiProxyWidget *proxyWidget; ///< Proxy for our UI
+    //UiProxyWidget *proxyWidget; ///< Proxy for our UI
+    UiWidget *uiWidget; //UiWidget for console
     QPropertyAnimation slideAnimation; ///< Animation used for sliding effect
     QList<QString> commandHistory; ///< Command history stack.
     int commandHistoryIndex; ///< Current command history index.

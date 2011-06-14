@@ -127,6 +127,8 @@ public slots:
     */
     void Print(const QString &message);
 
+    void PostInitialize();
+
 private:
     Q_DISABLE_COPY(ConsoleAPI);
 

@@ -165,6 +165,12 @@ void ConsoleAPI::Uninitialize()
     UnsubscribeLogListener();
 }
 
+void ConsoleAPI::PostInitialize()
+{
+    if (uiConsoleManager)
+        uiConsoleManager->PostInitialize();
+}
+
 void ConsoleAPI::InvokeCommand(const QString &name, const QStringList &params) const
 {
     QMap<QString, ConsoleCommand *>::const_iterator i = commands_.find(name);

@@ -353,8 +353,12 @@ namespace Foundation
         // PostInitialize SceneAPI.
         scene->PostInitialize();
 
+        //Postinitialize console
+        console->PostInitialize();
+
         // commands must be registered after modules are loaded and initialized
         RegisterConsoleCommands();
+
     }
 
     double Framework::CalculateFrametime(tick_t currentClockTime)
@@ -499,6 +503,9 @@ namespace Foundation
             RootLogDebug("\n\nLOADING MODULES\n================================================================\n");
             module_manager_->LoadAvailableModules();
         }
+
+        console->PostInitialize();
+
         {
             PROFILE(FW_InitializeModules);
             RootLogDebug("\n\nINITIALIZING MODULES\n================================================================\n");

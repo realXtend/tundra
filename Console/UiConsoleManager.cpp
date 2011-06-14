@@ -28,7 +28,8 @@ UiConsoleManager::UiConsoleManager(CommandManager* mgr, Foundation::Framework *f
     graphicsView(fw->Ui()->GraphicsView()),
     consoleUi(0),
     consoleWidget(0),
-    proxyWidget(0),
+    uiWidget(0),
+    //proxyWidget(0),
     visible(false),
     commandHistoryIndex(-1)
 {
@@ -40,20 +41,23 @@ UiConsoleManager::UiConsoleManager(CommandManager* mgr, Foundation::Framework *f
 
     // Init internals
     consoleUi->setupUi(consoleWidget);
+    consoleWidget->setWindowTitle("Console");
+    consoleWidget->setMinimumSize(200, 100);
 
-    proxyWidget = framework->Ui()->AddWidgetToScene(consoleWidget);
-    proxyWidget->setMinimumHeight(0);
-    proxyWidget->setGeometry(QRect(0, 0, graphicsView->width(), 0));
+    //CONSOLE USED AS A EXTERNAL WIDGET!
+    //proxyWidget = framework->Ui()->AddWidgetToScene(consoleWidget);
+    //proxyWidget->setMinimumHeight(0);
+    //proxyWidget->setGeometry(QRect(0, 0, graphicsView->width(), 0));
     /// \todo Opacity has no effect atm.
-    proxyWidget->setOpacity(0.8); ///<\todo Read opacity from config?
-    proxyWidget->setZValue(20000);
+    //proxyWidget->setOpacity(0.8); ///<\todo Read opacity from config?
+    //proxyWidget->setZValue(20000);
 
-    connect(framework->Ui()->GraphicsScene(), SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
+    //connect(framework->Ui()->GraphicsScene(), SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
 
     // Init animation
-    slideAnimation.setTargetObject(proxyWidget);
-    slideAnimation.setPropertyName("geometry");
-    slideAnimation.setDuration(300);  ///<\todo Read animation speed from config?
+    //slideAnimation.setTargetObject(proxyWidget);
+    //slideAnimation.setPropertyName("geometry");
+    //slideAnimation.setDuration(300);  ///<\todo Read animation speed from config?
 
     connect(consoleUi->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
 
@@ -76,6 +80,15 @@ void UiConsoleManager::PrintToConsole(const QString &text)
     consoleUi->ConsoleTextArea->appendHtml(html);
 }
 
+void UiConsoleManager::PostInitialize()
+{
+    if (framework->IsHeadless() ||framework->IsEditionless())
+        return;
+
+    if(!uiWidget)
+         uiWidget = framework->Ui()->AddWidgetToWindow(consoleWidget);
+}
+
 void UiConsoleManager::ToggleConsole()
 {
     if (framework->IsHeadless())
@@ -83,11 +96,14 @@ void UiConsoleManager::ToggleConsole()
     if (!graphicsView)
         return;
 
-    QGraphicsScene *current_scene = proxyWidget->scene();
-    if (!current_scene)
-        return;
+    //QGraphicsScene *current_scene = proxyWidget->scene();
+    //if (!current_scene)
+    //    return;
 
     visible = !visible;
+    uiWidget->toggleVisibility();
+
+    /*
     int current_height = graphicsView->height()*0.5;
     if (visible)
     {
@@ -107,6 +123,7 @@ void UiConsoleManager::ToggleConsole()
     }
 
     slideAnimation.start();
+    */
 }
 
 void UiConsoleManager::HandleInput()
@@ -123,6 +140,7 @@ void UiConsoleManager::HandleInput()
 
 void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
 {
+    /*
     if (visible)
     {
         QRectF new_size = rect;
@@ -133,6 +151,7 @@ void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
     {
         proxyWidget->hide();
     }
+    */
 }
 
 bool UiConsoleManager::eventFilter(QObject *obj, QEvent *e)
