@@ -843,6 +843,7 @@ namespace PythonScript
             pythonqtconsole_ = new PythonQtScriptingConsole(framework_->Ui()->MainWindow(), PythonQt::self()->getMainModule(), Qt::Tool);
 		    pythonqtconsole_->setObjectName("Python console");
 		    pythonqtconsole_->setWindowTitle("Python console");
+            pythonqtconsole_->setMinimumSize(200, 75);
             pythonqtconsole_widget_ = framework_->Ui()->AddWidgetToWindow(pythonqtconsole_, Qt::Tool);
         }
 
