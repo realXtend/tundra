@@ -2,20 +2,18 @@
 
 #include "DebugOperatorNew.h"
 
+#include "KeyBindingsConfigWindow.h"
+#include "InputAPI.h"
+
+#include "Framework.h"
+#include "Application.h"
+
 #include <QVBoxLayout>
 #include <QTreeWidget>
 #include <QUiLoader>
 #include <QPushButton>
 #include <QFile>
 #include <QKeySequence>
-#include <cassert>
-
-#include "Framework.h"
-#include "Application.h"
-#include "InputAPI.h"
-
-#include "KeyBindingsConfigWindow.h"
-
 #include <QObject>
 #include <QStringList>
 #include <QMessageBox>
@@ -24,9 +22,13 @@
 #include <QEvent>
 #include <QKeyEvent>
 
+#include <cassert>
+
 #include "MemoryLeakCheck.h"
 
-void KeyBindingsConfigWindow::ShowWindow()
+KeyBindingsConfigWindow::KeyBindingsConfigWindow(Framework *fw) :
+    framework(fw),
+    configList(0)
 {
     QUiLoader loader;
     QFile file(Application::InstallationDirectory() + "data/ui/KeyBindingsConfig.ui");
@@ -54,11 +56,11 @@ void KeyBindingsConfigWindow::ShowWindow()
     connect(configList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ConfigListAdjustEditable(QTreeWidgetItem *, int)));
     PopulateBindingsList();
 
-    setWindowTitle(tr("Actions"));
+    setWindowTitle(tr("Key bindings"));
     setAttribute(Qt::WA_DeleteOnClose);
 }
 
-void KeyBindingsConfigWindow::CloseWindow()
+KeyBindingsConfigWindow::~KeyBindingsConfigWindow()
 {
     Clear();
 }

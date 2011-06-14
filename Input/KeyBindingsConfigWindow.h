@@ -17,16 +17,8 @@ class KeyBindingsConfigWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit KeyBindingsConfigWindow(Framework *fw) : framework(fw), configList(0)
-    {
-        ShowWindow();
-    }
-
-    // Creates and shows the configuration window.
-    void ShowWindow();
-
-    // Closes and deletes the configuration window.
-    void CloseWindow();
+    explicit KeyBindingsConfigWindow(Framework *fw);
+    ~KeyBindingsConfigWindow();
 
 public slots:
     void ApplyKeyConfig();
