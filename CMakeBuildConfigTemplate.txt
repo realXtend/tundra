@@ -128,4 +128,4 @@ endif()
 add_subdirectory(SpeexVoipModule)
 
 # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
-#add_subdirectory(SkyXHydrax)
+add_subdirectory(SkyXHydrax)
