@@ -140,9 +140,9 @@
    <attribute value="true" name="Visible"/>
   </component>
   <component type="EC_RttTarget" sync="1">
-   <attribute value="box_red_cam_tex" name="Target texture"/>
-   <attribute value="800" name="Texture size x"/>
-   <attribute value="600" name="Texture size y"/>
+   <attribute value="box_red_cam_tex" name="Texture Name"/>
+   <attribute value="800" name="Texture width"/>
+   <attribute value="600" name="Texture height"/>
   </component>
  </entity>
  <entity id="6">
@@ -159,9 +159,9 @@
    <attribute value="true" name="Visible"/>
   </component>
   <component type="EC_RttTarget" sync="1">
-   <attribute value="box_blue_cam_tex" name="Target texture"/>
-   <attribute value="800" name="Texture size x"/>
-   <attribute value="600" name="Texture size y"/>
+   <attribute value="box_blue_cam_tex" name="Texture name"/>
+   <attribute value="800" name="Texture width"/>
+   <attribute value="600" name="Texture height"/>
   </component>
  </entity>
  <entity id="7">
@@ -178,9 +178,9 @@
    <attribute value="true" name="Visible"/>
   </component>
   <component type="EC_RttTarget" sync="1">
-   <attribute value="box_green_cam_tex" name="Target texture"/>
-   <attribute value="800" name="Texture size x"/>
-   <attribute value="600" name="Texture size y"/>
+   <attribute value="box_green_cam_tex" name="Texture name"/>
+   <attribute value="800" name="Texture width"/>
+   <attribute value="600" name="Texture height"/>
   </component>
  </entity>
  <entity id="8">

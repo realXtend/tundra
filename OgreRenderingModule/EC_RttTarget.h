@@ -16,8 +16,12 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Attributes</b>:
 <ul>
-<li>QString targettexture
-<div>Name of the target texture where to render the image
+<li>QString textureName
+<div>Name of the target texture where to render the image.
+<li>int width
+<div>Width of the texture.
+<li>int height
+<div>Height of the texture.
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -47,14 +51,17 @@ public:
     explicit EC_RttTarget(Scene* scene);
     virtual ~EC_RttTarget();
 
-    Q_PROPERTY(QString targettexture READ gettargettexture WRITE settargettexture);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, targettexture);
+    /// Name of the target texture where to render the image.
+    Q_PROPERTY(QString textureName READ gettextureName WRITE settextureName);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, textureName);
 
-    Q_PROPERTY(int size_x READ getsize_x WRITE setsize_x);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, size_x);
+    /// Width of the texture.
+    Q_PROPERTY(int width READ getwidth WRITE setwidth);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, width);
 
-    Q_PROPERTY(int size_y READ getsize_y WRITE setsize_y);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, size_y);
+    /// Height of the texture.
+    Q_PROPERTY(int height READ getheight WRITE setheight);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, height);
 
 public slots:
     void PrepareRtt();
