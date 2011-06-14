@@ -153,7 +153,7 @@ class ObjectEdit(Component):
         if not self.editing:
             self.deselect_all()
             self.hideManipulator()
-            self.resetManipulators()
+            #self.resetManipulators()
             self.resetValues()
         if self.toolbar != None:
             self.toolbar.toogleEditing(editing)
