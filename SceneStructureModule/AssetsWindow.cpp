@@ -43,6 +43,7 @@ AssetsWindow::AssetsWindow(Foundation::Framework *fw, QWidget *parent) :
     // Init main widget
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(tr("Assets"));
+    setMinimumSize(280,300);
     resize(300, 400);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
