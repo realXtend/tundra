@@ -5,7 +5,7 @@
 
 #include "InworldSceneController.h"
 #include "UiAPI.h"
-#include "Common/AnchorLayoutManager.h"
+#include "AnchorLayoutManager.h"
 #include "UiProxyWidget.h"
 #include "UiMainWindow.h"
 

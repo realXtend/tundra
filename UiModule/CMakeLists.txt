@@ -12,10 +12,7 @@ file (GLOB RESOURCE_FILES resource/*.qrc)
 AddSourceFolder (Common)
 
 AddSourceFolder (Inworld)
-AddSourceFolder (Inworld/View)
-AddSourceFolder (Inworld/Menus)
-AddSourceFolder (Inworld/ControlPanel)
-AddSourceFolder (Inworld/Notifications)
+AddSourceFolder (UiSettings)
 AddSourceFolder (Outworld)
 
 # Qt4 Moc files to "CMake Moc" subgroup
