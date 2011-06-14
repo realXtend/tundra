@@ -47,6 +47,9 @@ if (!framework.IsHeadless())
 		if (themeWidget)
 			AddTabWidget(themeWidget, "Theme");
 	}
+	else
+		themeWidget = 1; //to avoid checking again
+		
 			
 	//OgreRenderingSettinngs
 	if (framework.GetModuleQObj("OgreRendering"))
@@ -55,6 +58,9 @@ if (!framework.IsHeadless())
 		if (renderWidget)
 			AddTabWidget(renderWidget, "RenderSettings");
 	}
+	else
+		renderWidget = 1;
+		
 
 	//CAVEStereo
 	if (framework.GetModuleQObj("CAVEStereo"))
@@ -67,6 +73,12 @@ if (!framework.IsHeadless())
 		if(stereo_win)
 			AddTabWidget(stereo_win, "Stereoscopy");
 	}
+	else
+	{
+		cave_win = 1;
+		stereo_win = 1;
+	}
+	
 	//TTS Module
 	if (framework.GetModuleQObj("TtsModule"))
 	{
@@ -74,8 +86,11 @@ if (!framework.IsHeadless())
 		if (ttsWidget)
 			AddTabWidget(ttsWidget, "Tts Settings");
 	}
+	else
+		ttsWidget = 1;
+		
 	
-	delayed = frame.DelayedExecute(5.0);
+	delayed = frame.DelayedExecute(1.0);
 	delayed.Triggered.connect(checkForSettings);	
 }
 
