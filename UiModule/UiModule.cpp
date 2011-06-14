@@ -6,39 +6,27 @@
 
 #include "UiModule.h"
 #include "UiDarkBlueStyle.h"
-//#include "UiStateMachine.h"
 #include "InputAPI.h"
 
 #include "Inworld/InworldSceneController.h"
-//#include "Inworld/NotificationManager.h"
 #include "UiProxyWidget.h"
-//#include "Inworld/Notifications/MessageNotification.h"
 
-#include "Inworld/ControlPanel/SettingsWidget.h"
-#include "Inworld/ControlPanel/LanguageWidget.h"
-//#include "Inworld/ControlPanel/CacheSettingsWidget.h"
 #include "Inworld/ControlPanel/ChangeThemeWidget.h"
 
 #include "Outworld/ExternalPanelManager.h"
-//#include "Outworld/ExternalMenuManager.h"
-#include "Outworld/ExternalToolBarManager.h"
 #include "Outworld/ViewManager.h"
 
-//#include "Common/UiAction.h"
-//#include "UiSceneService.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
 #include "UiMainWindow.h"
 
 #include "EventManager.h"
-//#include "ServiceManager.h"
 #include "ConfigurationManager.h"
 #include "Framework.h"
 #include "WorldStream.h"
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
 #include "InputEvents.h"
-//#include "UiServiceInterface.h"
 #include "WorldLogicInterface.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
@@ -62,27 +50,19 @@ namespace UiServices
 
     UiModule::UiModule() :
         IModule(type_name_static_),
-        //ui_state_machine_(0),
         inworld_scene_controller_(0),
 		qWin_(0),
-		//external_menu_manager_(0),
 		external_panel_manager_(0),
-		//external_toolbar_manager_(0),
         external_widgets_(),
-        //inworld_notification_manager_(0),
 		win_restored_(false),
         win_uninitialized_(false),
         changetheme_widget_(0)
-        //settings_uiwidget_(0),
-        //settings_uiproxy_(0)
     {
     }
 
     UiModule::~UiModule()
     {
-        //SAFE_DELETE(ui_state_machine_);
         SAFE_DELETE(inworld_scene_controller_);
-        //SAFE_DELETE(inworld_notification_manager_);
     }
 
     void UiModule::Load()
@@ -98,31 +78,14 @@ namespace UiServices
 
     void UiModule::Initialize()
     {
-		//framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
-
 		if (GetFramework()->IsHeadless())
 			return;
 
         ui_view_ = GetFramework()->Ui()->GraphicsView();
         if (ui_view_)
         {
-            //ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_, this);
-            //ui_state_machine_->RegisterMainScene("Inworld", ui_view_->scene());
-            //LogDebug("State Machine STARTED");
-
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
             LogDebug("Scene Manager service READY");
-
-            //Notifications
-            //inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);
-			//connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), inworld_notification_manager_, SLOT(SceneAboutToChange()));
-            //LogDebug("Notification Manager service READY");
-
-            // Register UI service
-            //ui_scene_service_ = UiSceneServicePtr(new UiSceneService(this));
-            //framework_->GetServiceManager()->RegisterService(Service::ST_Gui, ui_scene_service_);
-            //connect(ui_scene_service_.get(), SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)), inworld_scene_controller_, SLOT(HandleWidgetTransfer(const QString&, QGraphicsProxyWidget*)));
-            //framework_->RegisterDynamicObject("uiservice", ui_scene_service_.get());
         }
         else
             LogWarning("Could not acquire QGraphicsView shared pointer from framework, UiServices are disabled");
@@ -130,29 +93,13 @@ namespace UiServices
 		//External Ui
 		qWin_ = dynamic_cast<UiMainWindow*>(framework_->Ui()->MainWindow());
         if (qWin_)
-        {
-			//qWin_->setObjectName("Naali MainWindow");
-		   //Create MenuManager and PanelManager and ToolBarManager
-           //external_menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
-		   //connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_menu_manager_, SLOT(DisableMenus()));
-		   //connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_menu_manager_, SLOT(EnableMenus()));
-		   external_panel_manager_ = new ExternalPanelManager(qWin_, this);
-		   //connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_panel_manager_, SLOT(DisableDockWidgets()));
-		   //connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_panel_manager_, SLOT(EnableDockWidgets()));
-		   //external_toolbar_manager_ = new ExternalToolBarManager(qWin_, this);
-		   //connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_toolbar_manager_, SLOT(DisableToolBars()));
-		   //connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_toolbar_manager_, SLOT(EnableToolBars()));
-        }
+            external_panel_manager_ = new ExternalPanelManager(qWin_, this);
         else
 			LogWarning("Could not acquire QMainWindow!");
-
-        //Settings
-       //settings_widget_ = new CoreUi::SettingsWidget(ui_view_->scene(), this);
 
         //Listen to UiAPI
         connect(framework_->Ui(), SIGNAL(CustomizeAddWidgetToWindow(UiWidget *)), SLOT(AddWidgetToWindow(UiWidget *)));
         connect(framework_->Ui(), SIGNAL(CustomizeRemoveWidgetFromWindow(UiWidget *)), SLOT(RemoveWidgetFromScene(UiWidget *)));
-
     }
 
 
@@ -161,39 +108,11 @@ namespace UiServices
 		if (GetFramework()->IsHeadless())
 			return;
 
-		//if (ui_scene_service_)
-		//{
-			//SubscribeToEventCategories();
-			//ui_scene_service_->CreateSettingsPanel();
-
-			//Create the view manager
-			if (!framework_->IsEditionless())
-				viewManager_=new ViewManager(this);
-
-            //Add settings widget to window
-            /*if (!framework_->IsEditionless())
-                settings_uiwidget_ = framework_->Ui()->AddWidgetToWindow(settings_widget_);
-            else
-                settings_uiproxy_ = framework_->Ui()->AddWidgetToScene(settings_widget_);
-            //Add settings widget to menus
-            QPushButton *sett_button = new QPushButton("Settings");
-            connect(sett_button, SIGNAL(clicked()),SLOT(ToggleSettingsVisibility()));
-            inworld_scene_controller_->AddAnchoredWidgetToScene(sett_button, Qt::TopRightCorner, Qt::Horizontal, 50, true);
-            QAction *toogle_menu = framework_->Ui()->MainWindow()->AddMenuAction("&Settings", "General Settings");
-            toogle_menu->setCheckable(true);
-            connect(toogle_menu, SIGNAL(triggered(bool)), SLOT(ToggleSettingsVisibility()));*/
-
-            //Add some tabs to settings.. @todo: move somewhere else
-            // Adding cache tab
-            //CoreUi::CacheSettingsWidget *cache_settings_widget_ = new CoreUi::CacheSettingsWidget(settings_widget_);
-            //settings_widget_->AddWidget(cache_settings_widget_, "Cache");
-            // Adding a language tab.
-            //language_widget_ = new CoreUi::LanguageWidget(0);
-            //settings_widget_->AddWidget(language_widget_, "Language");
-            // Adding change theme tab
-            changetheme_widget_ = new CoreUi::ChangeThemeWidget(framework_);
-            //settings_widget_->AddWidget(changetheme_widget_, "Change theme");
-		//}
+		if (!framework_->IsEditionless())
+			viewManager_=new ViewManager(this);
+        
+        // Adding change theme tab
+        changetheme_widget_ = new CoreUi::ChangeThemeWidget(framework_);
     }
 
 	void UiModule::RestoreMainWindow()
@@ -236,8 +155,6 @@ namespace UiServices
 		if (GetFramework()->IsHeadless())
 			return;
 
-		//Save the position of widgets (inside/outside)
-		//ui_scene_service_->SaveViewConfiguration(); //done in each call to uiservice add or delete
 		//Save state of the MainWindow
 		if (qWin_)
 		{
@@ -268,14 +185,7 @@ namespace UiServices
 			}
 		}
 
-		//if (ui_scene_service_)
-		//{
-		//	framework_->GetServiceManager()->UnregisterService(ui_scene_service_);
-		//	ui_scene_service_.reset();
-		//}
-
 		viewManager_->DeleteView("Previous");
-        //SAFE_DELETE(settings_widget_);
     }
 
     void UiModule::Update(f64 frametime)
@@ -289,70 +199,6 @@ namespace UiServices
 	
     bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
-        /*
-        PROFILE(UiModule_HandleEvent);
-
-        QString category = service_category_identifiers_.keys().value(service_category_identifiers_.values().indexOf(category_id));
-        if (category == "Framework")
-        {
-            switch (event_id)
-            {
-                case Foundation::NETWORKING_REGISTERED:
-                {
-                    if (!event_query_categories_.contains("NetworkState"))
-                        event_query_categories_ << "NetworkState";
-                    SubscribeToEventCategories();
-                    break;
-                }
-                case Foundation::WORLD_STREAM_READY:
-                {
-                    ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
-                    if (event_data)
-                        current_world_stream_ = event_data->WorldStream;
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-        else if (category == "NetworkState")
-        {
-            using namespace ProtocolUtilities;
-            switch (event_id)
-            {
-                case Events::EVENT_CONNECTION_FAILED:
-                {
-                    ConnectionFailedEvent *in_data = static_cast<ConnectionFailedEvent *>(data);
-                    if (in_data)
-                        PublishConnectionState(Failed, in_data->message);
-                    else
-                        PublishConnectionState(Failed, "Unknown connection error");
-                    break;
-                }
-                case Events::EVENT_SERVER_DISCONNECTED:
-                    PublishConnectionState(Disconnected);
-                    break;
-                case Events::EVENT_USER_KICKED_OUT:
-                    PublishConnectionState(Disconnected);
-                    break;
-                case Events::EVENT_SERVER_CONNECTED:
-                    break;
-                default:
-                    break;
-            }
-        }
-        else if (category == "Scene")
-        {		
-            switch (event_id)
-            {
-                case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
-                    PublishConnectionState(Connected);
-                    break;
-                default:
-                    break;
-            }
-        }
-    */
         return false;
     }
 
@@ -367,7 +213,7 @@ namespace UiServices
 		if (widget->windowTitle() == "")
             return;
 
-        if(widget->property("dockeable") == false)
+        if(widget->property("dockable") == false)
             return;
 
 		if (!external_widgets_.contains(widget))

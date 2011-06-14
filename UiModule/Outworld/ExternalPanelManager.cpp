@@ -131,11 +131,7 @@ namespace UiServices
 
 			QDockWidget *value;
 			foreach (value, docks)
-            {
 				dynamic_cast<QMainWindow *>(qWin_)->tabifyDockWidget(value, qdoc);
-                /*if (value->width() > qdoc->width())
-                    qdoc->setFixedWidth(value->width());*/
-            }
         }
         else if(!vis && controller_panels_[qdoc])
             qdoc->hide();
@@ -143,7 +139,6 @@ namespace UiServices
 
 	bool ExternalPanelManager::RemoveExternalPanel(QDockWidget *widget)
     {
-		/*TODO: Check if it is in the menu bar also?*/
 		//The widget is passed, no the QDockWidget!
         QDockWidget *doc_widget = dynamic_cast<QDockWidget*>(widget);
         if (!doc_widget)
