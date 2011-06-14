@@ -152,7 +152,6 @@ if (OPENASSETIMPORT)
     add_subdirectory(OpenAssetImport)        # Allows import of various mesh file formats
 endif()
 #add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
-add_subdirectory(CAVEStereoModule)	 # Implements CAVE and Stereoscopy functionality
 
 add_subdirectory(CameraModule)
 
