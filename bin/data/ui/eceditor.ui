@@ -10,6 +10,12 @@
     <height>395</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>250</width>
+    <height>250</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Entity-Component Editor</string>
   </property>
