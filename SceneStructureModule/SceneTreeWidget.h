@@ -11,6 +11,7 @@
 #include "CoreTypes.h"
 #include "SceneFwd.h"
 #include "AssetFwd.h"
+#include "UiWidget.h"
 
 #include <QTreeWidget>
 #include <QPointer>
@@ -122,6 +123,7 @@ private:
     Foundation::Framework *framework; ///< Framework pointer.
     Scene::SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     QList<QPointer<ECEditorWindow> > ecEditors; ///< This EC editors owned by this widget.
+    QList<QPointer<UiWidget> > ecEditorsUiWidgets;
     int historyMaxItemCount; ///< Maximum count of invoke history items.
     int numberOfInvokeItemsVisible; ///< Number of visible invoke items in the context-menu.
     QPointer<QFileDialog> fileDialog; ///< Keeps track of the latest opened file save/open dialog.

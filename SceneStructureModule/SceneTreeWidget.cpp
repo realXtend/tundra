@@ -37,6 +37,7 @@
 #include "IAssetTransfer.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
+#include "UiWidget.h"
 #ifdef OGREASSETEDITOR_ENABLED
 #include "MeshPreviewEditor.h"
 #include "TexturePreviewEditor.h"
@@ -540,12 +541,7 @@ void SceneTreeWidget::Edit()
             if (editor)
             {
                 editor->AddEntities(selection.EntityIds(), true);
-                /*foreach(entity_id_t id, selection.EntityIds())
-                ecEditor->AddEntity(id, false);
-                ecEditor->SetSelectedEntities(selection.EntityIds());*/
-				//ui_service->ShowWidget(editor);
-                editor->show();
-                //ui->BringWidgetToFront(ecEditor);
+                ecEditorsUiWidgets.first()->setVisible(true);
                 return;
             }
         }
@@ -553,10 +549,12 @@ void SceneTreeWidget::Edit()
         ECEditorWindow *editor = 0;
         ECEditorModule *module = framework->GetModule<ECEditorModule>();
         editor = module->GetActiveECEditor();
+        UiWidget *uiwid = module->GetActiveECEditorUiWidget();
         if (editor && !ecEditors.contains(editor))
         {
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
+            ecEditorsUiWidgets.push_back(uiwid);
         }
         else if (editor && ecEditors.contains(editor))
 			editor->setAttribute(Qt::WA_DeleteOnClose);
@@ -566,30 +564,16 @@ void SceneTreeWidget::Edit()
             editor->setAttribute(Qt::WA_DeleteOnClose);
 			UiAPI *ui = framework->Ui();
 			if (ui)
-				editor->setParent(ui->MainWindow());
+                uiwid = ui->AddWidgetToWindow(editor);
+				//editor->setParent(ui->MainWindow());
             ecEditors.push_back(editor);
+            ecEditorsUiWidgets.push_back(uiwid);
         }
         // To ensure that destroyed editors will get erased from the ecEditors list.
         connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
 
-        //ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
-        //ecEditor->hide();
-        //ecEditor->AddEntities(selection.EntityIds(), true);
-        /*foreach(entity_id_t id, selection.EntityIds())
-            ecEditor->AddEntity(id, false);
-        ecEditor->SetSelectedEntities(selection.EntityIds());*/
-         
-        //editor->setParent(ui->MainWindow());
-        //editor->setWindowFlags(Qt::Tool);
-        //if (!editor->isVisible())
-        //    editor->show();
-		//ui_service->ShowWidget(editor);
-        editor->show();
+        uiwid->setVisible(true);
         editor->AddEntities(selection.EntityIds(), true);
-
-        /*ui->AddWidgetToScene(ecEditor);
-        ui->ShowWidget(ecEditor);
-        ui->BringWidgetToFront(ecEditor);*/ 
     }
     else
     {
@@ -624,13 +608,11 @@ void SceneTreeWidget::EditInNew()
 	ECEditorModule *module = framework->GetModule<ECEditorModule>();
 	disconnect(editor, SIGNAL(OnFocusChanged(ECEditorWindow *)), module, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
     editor->setAttribute(Qt::WA_DeleteOnClose);
+    editor->setWindowFlags(Qt::Tool);
     connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
     //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
-    editor->hide();
+    //editor->hide();
     editor->AddEntities(selection.EntityIds(), true);
-    /*foreach(entity_id_t id, selection.EntityIds())
-        editor->AddEntity(id);
-    editor->SetSelectedEntities(selection.EntityIds());*/
 
 	disconnect(scene.lock().get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)), editor, 
             SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)));
@@ -638,9 +620,16 @@ void SceneTreeWidget::EditInNew()
     UiAPI *ui = framework->Ui();
     if (!ui)
         return;
-    editor->setParent(ui->MainWindow());
-    editor->setWindowFlags(Qt::Tool);	
-    editor->show();
+
+    QStringList args;
+    args.append("dockeable");
+    args.append("false");
+
+    UiWidget* ededitoruiw = ui->AddWidgetToWindow(editor, Qt::Dialog, args);
+    //editor->setParent(ui->MainWindow());
+    
+    ededitoruiw->setVisible(true);
+    //editor->show();
 	//Disconnect to avoid listen to scene events
 	//editor->SetFocus(true);
 	//editor->setFocus(Qt::MouseFocusReason);
