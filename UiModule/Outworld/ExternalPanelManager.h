@@ -4,8 +4,8 @@
 #ifndef incl_UiModule_ExternalPanelManager_h
 #define incl_UiModule_ExternalPanelManager_h
 
+#include "UiModule.h"
 #include "UiModuleApi.h"
-#include "ExternalMenuManager.h"
 #include "UiWidget.h"
 
 #include <QObject>
