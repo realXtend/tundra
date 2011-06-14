@@ -13,7 +13,8 @@
 struct EC_HydraxImpl;
 
 /// A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
-/** @note Requires Hydrax Ogre add-on. */
+/** Provides means of creating photorealistic environments together with EC_SkyX.
+    @note Requires Hydrax Ogre add-on. */
 class EC_Hydrax : public IComponent
 {
     Q_OBJECT

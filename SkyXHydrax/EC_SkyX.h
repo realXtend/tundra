@@ -13,7 +13,9 @@
 struct EC_SkyXImpl;
 
 /// A Sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
-/** @note Requires SkyX Ogre add-on. */
+/** This is a singleton type component and only one component per scene is prohibited.
+    Provides means of creating photorealistic environments together with EC_Hydrax.
+    @note Requires SkyX Ogre add-on. */
 class EC_SkyX : public IComponent
 {
     Q_OBJECT
