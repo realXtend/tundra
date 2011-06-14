@@ -9,6 +9,7 @@
 #include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
 #include "InputFwd.h"
+#include "UiWidget.h"
 
 #include <QObject>
 #include <QPointer>
@@ -60,6 +61,8 @@ public:
     ConsoleCommandResult EditDynamicComponent(const StringVector &params);
 
     ECEditorWindow *GetActiveECEditor() const;
+
+    UiWidget* GetActiveECEditorUiWidget() const;
 
     //! returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return name_static_; }
@@ -129,6 +132,8 @@ private:
 
     /// Active ECEditorWindow.
     QPointer<ECEditorWindow> active_editor_;
+
+    QPointer<UiWidget> active_editor_uiwidget_;
 
     /// ECEditorModule will create it's own ECEditorWindow instance while it's initializing. 
     /// To avoid a memory leak, we store that pointer.
