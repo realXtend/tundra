@@ -123,6 +123,7 @@ AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
 AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
 AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
 AddEntityComponent(EntityComponents/EC_LaserPointer EC_LaserPointer)
+AddEntityComponent(EntityComponents/EC_Sittable EC_Sittable)
 
 ## The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
