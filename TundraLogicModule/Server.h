@@ -24,7 +24,8 @@ namespace KristalliProtocol
 }
 
 class UserConnection;
-typedef std::list<UserConnection*> UserConnectionList;
+typedef boost::shared_ptr<UserConnection> UserConnectionPtr;
+typedef std::list<UserConnectionPtr> UserConnectionList;
 
 class QScriptEngine;
 

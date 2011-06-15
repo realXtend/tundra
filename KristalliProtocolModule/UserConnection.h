@@ -6,6 +6,7 @@
 #include "Foundation.h"
 #include "KristalliProtocolModuleApi.h"
 #include "kNet.h"
+#include <boost/enable_shared_from_this.hpp>
 
 #include <QObject>
 
@@ -26,7 +27,7 @@ struct ISyncState
 };
 
 //! Connection on the Kristalli server
-class KRISTALLIPROTOCOL_MODULE_API UserConnection : public QObject
+class KRISTALLIPROTOCOL_MODULE_API UserConnection : public QObject, public boost::enable_shared_from_this<UserConnection>
 {
     Q_OBJECT
     
@@ -73,7 +74,9 @@ signals:
     void ActionTriggered(UserConnection* connection, Scene::Entity* entity, const QString& action, const QStringList& params);
 };
 
-typedef std::list<UserConnection*> UserConnectionList;
+typedef boost::shared_ptr<UserConnection> UserConnectionPtr;
+typedef boost::weak_ptr<UserConnection> UserConnectionWeakPtr;
+typedef std::list<UserConnectionPtr> UserConnectionList;
 
 #endif
 
