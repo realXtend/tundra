@@ -9,14 +9,14 @@ void ToExistingScriptValue_Triangle(QScriptEngine *engine, const Triangle &value
 
 static QScriptValue Triangle_Triangle(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_Triangle in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_Triangle in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle ret;
     return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue Triangle_Triangle_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Triangle_Triangle_float3_float3_float3 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Triangle_Triangle_float3_float3_float3 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 a = qscriptvalue_cast<float3>(context->argument(0));
     float3 b = qscriptvalue_cast<float3>(context->argument(1));
     float3 c = qscriptvalue_cast<float3>(context->argument(2));
@@ -26,7 +26,7 @@ static QScriptValue Triangle_Triangle_float3_float3_float3(QScriptContext *conte
 
 static QScriptValue Triangle_Barycentric_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Barycentric_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Barycentric_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 point = qscriptvalue_cast<float3>(context->argument(0));
     float3 ret = This.Barycentric(point);
@@ -35,7 +35,7 @@ static QScriptValue Triangle_Barycentric_float3(QScriptContext *context, QScript
 
 static QScriptValue Triangle_Point_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Triangle_Point_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Triangle_Point_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float u = qscriptvalue_cast<float>(context->argument(0));
     float v = qscriptvalue_cast<float>(context->argument(1));
@@ -46,7 +46,7 @@ static QScriptValue Triangle_Point_float_float_float(QScriptContext *context, QS
 
 static QScriptValue Triangle_Point_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Triangle_Point_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Triangle_Point_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float u = qscriptvalue_cast<float>(context->argument(0));
     float v = qscriptvalue_cast<float>(context->argument(1));
@@ -56,7 +56,7 @@ static QScriptValue Triangle_Point_float_float(QScriptContext *context, QScriptE
 
 static QScriptValue Triangle_Point_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Point_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Point_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 barycentric = qscriptvalue_cast<float3>(context->argument(0));
     float3 ret = This.Point(barycentric);
@@ -65,7 +65,7 @@ static QScriptValue Triangle_Point_float3(QScriptContext *context, QScriptEngine
 
 static QScriptValue Triangle_Area(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_Area in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_Area in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float ret = This.Area();
     return qScriptValueFromValue(engine, ret);
@@ -73,7 +73,7 @@ static QScriptValue Triangle_Area(QScriptContext *context, QScriptEngine *engine
 
 static QScriptValue Triangle_GetPlane(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_GetPlane in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_GetPlane in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     Plane ret = This.GetPlane();
     return qScriptValueFromValue(engine, ret);
@@ -81,7 +81,7 @@ static QScriptValue Triangle_GetPlane(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue Triangle_Normal(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_Normal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_Normal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 ret = This.Normal();
     return qScriptValueFromValue(engine, ret);
@@ -89,7 +89,7 @@ static QScriptValue Triangle_Normal(QScriptContext *context, QScriptEngine *engi
 
 static QScriptValue Triangle_UnnormalizedNormal(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_UnnormalizedNormal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_UnnormalizedNormal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 ret = This.UnnormalizedNormal();
     return qScriptValueFromValue(engine, ret);
@@ -97,7 +97,7 @@ static QScriptValue Triangle_UnnormalizedNormal(QScriptContext *context, QScript
 
 static QScriptValue Triangle_IsDegenerate_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_IsDegenerate_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_IsDegenerate_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float epsilon = qscriptvalue_cast<float>(context->argument(0));
     bool ret = This.IsDegenerate(epsilon);
@@ -106,7 +106,7 @@ static QScriptValue Triangle_IsDegenerate_float(QScriptContext *context, QScript
 
 static QScriptValue Triangle_Contains_float3_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Triangle_Contains_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Triangle_Contains_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 point = qscriptvalue_cast<float3>(context->argument(0));
     float triangleThickness = qscriptvalue_cast<float>(context->argument(1));
@@ -116,7 +116,7 @@ static QScriptValue Triangle_Contains_float3_float(QScriptContext *context, QScr
 
 static QScriptValue Triangle_Distance_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Distance_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Distance_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 point = qscriptvalue_cast<float3>(context->argument(0));
     bool ret = This.Distance(point);
@@ -126,7 +126,7 @@ static QScriptValue Triangle_Distance_float3(QScriptContext *context, QScriptEng
 
 static QScriptValue Triangle_Intersects_Plane(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     Plane plane = qscriptvalue_cast<Plane>(context->argument(0));
     bool ret = This.Intersects(plane);
@@ -135,7 +135,7 @@ static QScriptValue Triangle_Intersects_Plane(QScriptContext *context, QScriptEn
 
 static QScriptValue Triangle_Intersects_Triangle_LineSegment_ptr(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_Triangle_LineSegment_ptr in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_Triangle_LineSegment_ptr in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     Triangle t2 = qscriptvalue_cast<Triangle>(context->argument(0));
     LineSegment * outLine = qscriptvalue_cast<LineSegment *>(context->argument(1));
@@ -145,7 +145,7 @@ static QScriptValue Triangle_Intersects_Triangle_LineSegment_ptr(QScriptContext 
 
 static QScriptValue Triangle_Intersects_AABB(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_AABB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_AABB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     AABB aabb = qscriptvalue_cast<AABB>(context->argument(0));
     bool ret = This.Intersects(aabb);
@@ -154,7 +154,7 @@ static QScriptValue Triangle_Intersects_AABB(QScriptContext *context, QScriptEng
 
 static QScriptValue Triangle_Intersects_OBB(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_OBB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_Intersects_OBB in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     OBB obb = qscriptvalue_cast<OBB>(context->argument(0));
     bool ret = This.Intersects(obb);
@@ -163,7 +163,7 @@ static QScriptValue Triangle_Intersects_OBB(QScriptContext *context, QScriptEngi
 
 static QScriptValue Triangle_ProjectToAxis_float3_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Triangle_ProjectToAxis_float3_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Triangle_ProjectToAxis_float3_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 axis = qscriptvalue_cast<float3>(context->argument(0));
     float dMin = qscriptvalue_cast<float>(context->argument(1));
@@ -174,7 +174,7 @@ static QScriptValue Triangle_ProjectToAxis_float3_float_float(QScriptContext *co
 
 static QScriptValue Triangle_ClosestPoint_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_ClosestPoint_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_ClosestPoint_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
     float3 targetPoint = qscriptvalue_cast<float3>(context->argument(0));
     float3 ret = This.ClosestPoint(targetPoint);
@@ -183,7 +183,7 @@ static QScriptValue Triangle_ClosestPoint_float3(QScriptContext *context, QScrip
 
 static QScriptValue Triangle_BarycentricInsideTriangle_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_BarycentricInsideTriangle_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Triangle_BarycentricInsideTriangle_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 barycentric = qscriptvalue_cast<float3>(context->argument(0));
     bool ret = Triangle::BarycentricInsideTriangle(barycentric);
     return qScriptValueFromValue(engine, ret);
@@ -191,7 +191,7 @@ static QScriptValue Triangle_BarycentricInsideTriangle_float3(QScriptContext *co
 
 static QScriptValue Triangle_Area2D_float2_float2_float2(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Triangle_Area2D_float2_float2_float2 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Triangle_Area2D_float2_float2_float2 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float2 p1 = qscriptvalue_cast<float2>(context->argument(0));
     float2 p2 = qscriptvalue_cast<float2>(context->argument(1));
     float2 p3 = qscriptvalue_cast<float2>(context->argument(2));
@@ -201,7 +201,7 @@ static QScriptValue Triangle_Area2D_float2_float2_float2(QScriptContext *context
 
 static QScriptValue Triangle_SignedArea_float3_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Triangle_SignedArea_float3_float3_float3_float3 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Triangle_SignedArea_float3_float3_float3_float3 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 point = qscriptvalue_cast<float3>(context->argument(0));
     float3 a = qscriptvalue_cast<float3>(context->argument(1));
     float3 b = qscriptvalue_cast<float3>(context->argument(2));
@@ -212,7 +212,7 @@ static QScriptValue Triangle_SignedArea_float3_float3_float3_float3(QScriptConte
 
 static QScriptValue Triangle_IsDegenerate_float3_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Triangle_IsDegenerate_float3_float3_float3_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Triangle_IsDegenerate_float3_float3_float3_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 p1 = qscriptvalue_cast<float3>(context->argument(0));
     float3 p2 = qscriptvalue_cast<float3>(context->argument(1));
     float3 p3 = qscriptvalue_cast<float3>(context->argument(2));
@@ -227,7 +227,7 @@ static QScriptValue Triangle_ctor(QScriptContext *context, QScriptEngine *engine
         return Triangle_Triangle(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)))
         return Triangle_Triangle_float3_float3_float3(context, engine);
-    printf("Triangle_ctor failed to choose the right function to call! Did you use 'var x = Triangle();' instead of 'var x = new Triangle();'?\n"); return QScriptValue();
+    printf("Triangle_ctor failed to choose the right function to call! Did you use 'var x = Triangle();' instead of 'var x = new Triangle();'?\n"); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue Triangle_Point_selector(QScriptContext *context, QScriptEngine *engine)
@@ -238,7 +238,7 @@ static QScriptValue Triangle_Point_selector(QScriptContext *context, QScriptEngi
         return Triangle_Point_float_float(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3>(context->argument(0)))
         return Triangle_Point_float3(context, engine);
-    printf("Triangle_Point_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("Triangle_Point_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue Triangle_IsDegenerate_selector(QScriptContext *context, QScriptEngine *engine)
@@ -247,7 +247,7 @@ static QScriptValue Triangle_IsDegenerate_selector(QScriptContext *context, QScr
         return Triangle_IsDegenerate_float(context, engine);
     if (context->argumentCount() == 4 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)))
         return Triangle_IsDegenerate_float3_float3_float3_float(context, engine);
-    printf("Triangle_IsDegenerate_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("Triangle_IsDegenerate_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue Triangle_Intersects_selector(QScriptContext *context, QScriptEngine *engine)
@@ -260,7 +260,7 @@ static QScriptValue Triangle_Intersects_selector(QScriptContext *context, QScrip
         return Triangle_Intersects_AABB(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<OBB>(context->argument(0)))
         return Triangle_Intersects_OBB(context, engine);
-    printf("Triangle_Intersects_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("Triangle_Intersects_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 void FromScriptValue_Triangle(const QScriptValue &obj, Triangle &value)

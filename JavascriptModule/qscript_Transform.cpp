@@ -9,14 +9,14 @@ void ToExistingScriptValue_Transform(QScriptEngine *engine, const Transform &val
 
 static QScriptValue Transform_Transform(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Transform in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Transform in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform ret;
     return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue Transform_Transform_Vector3df_Vector3df_Vector3df(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_Transform_Vector3df_Vector3df_Vector3df in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_Transform_Vector3df_Vector3df_Vector3df in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Vector3df pos_ = qscriptvalue_cast<Vector3df>(context->argument(0));
     Vector3df rot_ = qscriptvalue_cast<Vector3df>(context->argument(1));
     Vector3df scale = qscriptvalue_cast<Vector3df>(context->argument(2));
@@ -26,7 +26,7 @@ static QScriptValue Transform_Transform_Vector3df_Vector3df_Vector3df(QScriptCon
 
 static QScriptValue Transform_Transform_float3x3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_Transform_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_Transform_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x3 m = qscriptvalue_cast<float3x3>(context->argument(0));
     Transform ret(m);
     return qScriptValueFromValue(engine, ret);
@@ -34,7 +34,7 @@ static QScriptValue Transform_Transform_float3x3(QScriptContext *context, QScrip
 
 static QScriptValue Transform_Transform_float3x4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_Transform_float3x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_Transform_float3x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 m = qscriptvalue_cast<float3x4>(context->argument(0));
     Transform ret(m);
     return qScriptValueFromValue(engine, ret);
@@ -42,7 +42,7 @@ static QScriptValue Transform_Transform_float3x4(QScriptContext *context, QScrip
 
 static QScriptValue Transform_Transform_float4x4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_Transform_float4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_Transform_float4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4x4 m = qscriptvalue_cast<float4x4>(context->argument(0));
     Transform ret(m);
     return qScriptValueFromValue(engine, ret);
@@ -50,7 +50,7 @@ static QScriptValue Transform_Transform_float4x4(QScriptContext *context, QScrip
 
 static QScriptValue Transform_SetPos_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_SetPos_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_SetPos_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float3 v = qscriptvalue_cast<float3>(context->argument(0));
     This.SetPos(v);
@@ -60,7 +60,7 @@ static QScriptValue Transform_SetPos_float3(QScriptContext *context, QScriptEngi
 
 static QScriptValue Transform_SetPos_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_SetPos_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_SetPos_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float x = qscriptvalue_cast<float>(context->argument(0));
     float y = qscriptvalue_cast<float>(context->argument(1));
@@ -72,7 +72,7 @@ static QScriptValue Transform_SetPos_float_float_float(QScriptContext *context, 
 
 static QScriptValue Transform_SetRotation_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_SetRotation_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_SetRotation_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float x = qscriptvalue_cast<float>(context->argument(0));
     float y = qscriptvalue_cast<float>(context->argument(1));
@@ -84,7 +84,7 @@ static QScriptValue Transform_SetRotation_float_float_float(QScriptContext *cont
 
 static QScriptValue Transform_SetScale_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_SetScale_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_SetScale_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float x = qscriptvalue_cast<float>(context->argument(0));
     float y = qscriptvalue_cast<float>(context->argument(1));
@@ -96,7 +96,7 @@ static QScriptValue Transform_SetScale_float_float_float(QScriptContext *context
 
 static QScriptValue Transform_SetScale_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_SetScale_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_SetScale_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float3 s = qscriptvalue_cast<float3>(context->argument(0));
     This.SetScale(s);
@@ -106,7 +106,7 @@ static QScriptValue Transform_SetScale_float3(QScriptContext *context, QScriptEn
 
 static QScriptValue Transform_ToFloat3x4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_ToFloat3x4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_ToFloat3x4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float3x4 ret = This.ToFloat3x4();
     return qScriptValueFromValue(engine, ret);
@@ -114,7 +114,7 @@ static QScriptValue Transform_ToFloat3x4(QScriptContext *context, QScriptEngine 
 
 static QScriptValue Transform_ToFloat4x4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_ToFloat4x4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_ToFloat4x4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float4x4 ret = This.ToFloat4x4();
     return qScriptValueFromValue(engine, ret);
@@ -122,7 +122,7 @@ static QScriptValue Transform_ToFloat4x4(QScriptContext *context, QScriptEngine 
 
 static QScriptValue Transform_FromFloat3x4_float3x4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_FromFloat3x4_float3x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_FromFloat3x4_float3x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float3x4 m = qscriptvalue_cast<float3x4>(context->argument(0));
     This.FromFloat3x4(m);
@@ -132,7 +132,7 @@ static QScriptValue Transform_FromFloat3x4_float3x4(QScriptContext *context, QSc
 
 static QScriptValue Transform_FromFloat4x4_float4x4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_FromFloat4x4_float4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_FromFloat4x4_float4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float4x4 m = qscriptvalue_cast<float4x4>(context->argument(0));
     This.FromFloat4x4(m);
@@ -142,7 +142,7 @@ static QScriptValue Transform_FromFloat4x4_float4x4(QScriptContext *context, QSc
 
 static QScriptValue Transform_SetRotationAndScale_float3x3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_SetRotationAndScale_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_SetRotationAndScale_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float3x3 mat = qscriptvalue_cast<float3x3>(context->argument(0));
     This.SetRotationAndScale(mat);
@@ -152,7 +152,7 @@ static QScriptValue Transform_SetRotationAndScale_float3x3(QScriptContext *conte
 
 static QScriptValue Transform_SetOrientation_float3x3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_SetOrientation_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_SetOrientation_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float3x3 mat = qscriptvalue_cast<float3x3>(context->argument(0));
     This.SetOrientation(mat);
@@ -162,7 +162,7 @@ static QScriptValue Transform_SetOrientation_float3x3(QScriptContext *context, Q
 
 static QScriptValue Transform_SetOrientation_Quat(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_SetOrientation_Quat in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_SetOrientation_Quat in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     Quat q = qscriptvalue_cast<Quat>(context->argument(0));
     This.SetOrientation(q);
@@ -172,7 +172,7 @@ static QScriptValue Transform_SetOrientation_Quat(QScriptContext *context, QScri
 
 static QScriptValue Transform_Orientation3x3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Orientation3x3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Orientation3x3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     float3x3 ret = This.Orientation3x3();
     return qScriptValueFromValue(engine, ret);
@@ -180,7 +180,7 @@ static QScriptValue Transform_Orientation3x3(QScriptContext *context, QScriptEng
 
 static QScriptValue Transform_Orientation(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Orientation in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_Orientation in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     Quat ret = This.Orientation();
     return qScriptValueFromValue(engine, ret);
@@ -188,7 +188,7 @@ static QScriptValue Transform_Orientation(QScriptContext *context, QScriptEngine
 
 static QScriptValue Transform_Mul_Transform(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_Mul_Transform in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Transform_Mul_Transform in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This = qscriptvalue_cast<Transform>(context->thisObject());
     Transform rhs = qscriptvalue_cast<Transform>(context->argument(0));
     Transform ret = This.Mul(rhs);
@@ -197,7 +197,7 @@ static QScriptValue Transform_Mul_Transform(QScriptContext *context, QScriptEngi
 
 static QScriptValue Transform_toString(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_toString in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_toString in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This;
     if (context->argumentCount() > 0) This = qscriptvalue_cast<Transform>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
     else This = qscriptvalue_cast<Transform>(context->thisObject());
@@ -217,7 +217,7 @@ static QScriptValue Transform_ctor(QScriptContext *context, QScriptEngine *engin
         return Transform_Transform_float3x4(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float4x4>(context->argument(0)))
         return Transform_Transform_float4x4(context, engine);
-    printf("Transform_ctor failed to choose the right function to call! Did you use 'var x = Transform();' instead of 'var x = new Transform();'?\n"); return QScriptValue();
+    printf("Transform_ctor failed to choose the right function to call! Did you use 'var x = Transform();' instead of 'var x = new Transform();'?\n"); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue Transform_SetPos_selector(QScriptContext *context, QScriptEngine *engine)
@@ -226,7 +226,7 @@ static QScriptValue Transform_SetPos_selector(QScriptContext *context, QScriptEn
         return Transform_SetPos_float3(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
         return Transform_SetPos_float_float_float(context, engine);
-    printf("Transform_SetPos_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("Transform_SetPos_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue Transform_SetScale_selector(QScriptContext *context, QScriptEngine *engine)
@@ -235,7 +235,7 @@ static QScriptValue Transform_SetScale_selector(QScriptContext *context, QScript
         return Transform_SetScale_float_float_float(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3>(context->argument(0)))
         return Transform_SetScale_float3(context, engine);
-    printf("Transform_SetScale_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("Transform_SetScale_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue Transform_SetOrientation_selector(QScriptContext *context, QScriptEngine *engine)
@@ -244,7 +244,7 @@ static QScriptValue Transform_SetOrientation_selector(QScriptContext *context, Q
         return Transform_SetOrientation_float3x3(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<Quat>(context->argument(0)))
         return Transform_SetOrientation_Quat(context, engine);
-    printf("Transform_SetOrientation_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("Transform_SetOrientation_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 void FromScriptValue_Transform(const QScriptValue &obj, Transform &value)

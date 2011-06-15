@@ -50,3 +50,12 @@ inline std::string Capitalize(QString str)
 {
     return (str.left(1).toUpper() + str.mid(1)).toStdString();
 }
+
+inline void PrintCallStack(const QStringList &callStack)
+{
+    foreach(QString i, callStack)
+    {
+        printf("Call stack:\n");
+        printf("   %s\n", i.toStdString().c_str());
+    }
+}

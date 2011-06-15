@@ -8,14 +8,14 @@ void ToExistingScriptValue_Line(QScriptEngine *engine, const Line &value, QScrip
 
 static QScriptValue Line_Line(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Line_Line in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Line_Line in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Line ret;
     return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue Line_Line_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Line_Line_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Line_Line_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 pos = qscriptvalue_cast<float3>(context->argument(0));
     float3 dir = qscriptvalue_cast<float3>(context->argument(1));
     Line ret(pos, dir);
@@ -24,7 +24,7 @@ static QScriptValue Line_Line_float3_float3(QScriptContext *context, QScriptEngi
 
 static QScriptValue Line_Line_Ray(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Line_Ray in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Line_Ray in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Ray ray = qscriptvalue_cast<Ray>(context->argument(0));
     Line ret(ray);
     return qScriptValueFromValue(engine, ret);
@@ -32,7 +32,7 @@ static QScriptValue Line_Line_Ray(QScriptContext *context, QScriptEngine *engine
 
 static QScriptValue Line_Line_LineSegment(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Line_LineSegment in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Line_LineSegment in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LineSegment lineSegment = qscriptvalue_cast<LineSegment>(context->argument(0));
     Line ret(lineSegment);
     return qScriptValueFromValue(engine, ret);
@@ -40,7 +40,7 @@ static QScriptValue Line_Line_LineSegment(QScriptContext *context, QScriptEngine
 
 static QScriptValue Line_GetPoint_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_GetPoint_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_GetPoint_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Line This = qscriptvalue_cast<Line>(context->thisObject());
     float distance = qscriptvalue_cast<float>(context->argument(0));
     float3 ret = This.GetPoint(distance);
@@ -49,7 +49,7 @@ static QScriptValue Line_GetPoint_float(QScriptContext *context, QScriptEngine *
 
 static QScriptValue Line_Transform_float3x3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Transform_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Transform_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Line This = qscriptvalue_cast<Line>(context->thisObject());
     float3x3 transform = qscriptvalue_cast<float3x3>(context->argument(0));
     This.Transform(transform);
@@ -59,7 +59,7 @@ static QScriptValue Line_Transform_float3x3(QScriptContext *context, QScriptEngi
 
 static QScriptValue Line_Transform_float3x4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Transform_float3x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Transform_float3x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Line This = qscriptvalue_cast<Line>(context->thisObject());
     float3x4 transform = qscriptvalue_cast<float3x4>(context->argument(0));
     This.Transform(transform);
@@ -69,7 +69,7 @@ static QScriptValue Line_Transform_float3x4(QScriptContext *context, QScriptEngi
 
 static QScriptValue Line_Transform_float4x4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Transform_float4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Transform_float4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Line This = qscriptvalue_cast<Line>(context->thisObject());
     float4x4 transform = qscriptvalue_cast<float4x4>(context->argument(0));
     This.Transform(transform);
@@ -79,7 +79,7 @@ static QScriptValue Line_Transform_float4x4(QScriptContext *context, QScriptEngi
 
 static QScriptValue Line_Transform_Quat(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Transform_Quat in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_Transform_Quat in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Line This = qscriptvalue_cast<Line>(context->thisObject());
     Quat transform = qscriptvalue_cast<Quat>(context->argument(0));
     This.Transform(transform);
@@ -89,7 +89,7 @@ static QScriptValue Line_Transform_Quat(QScriptContext *context, QScriptEngine *
 
 static QScriptValue Line_Contains_float3_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Line_Contains_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Line_Contains_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Line This = qscriptvalue_cast<Line>(context->thisObject());
     float3 point = qscriptvalue_cast<float3>(context->argument(0));
     float distanceThreshold = qscriptvalue_cast<float>(context->argument(1));
@@ -99,7 +99,7 @@ static QScriptValue Line_Contains_float3_float(QScriptContext *context, QScriptE
 
 static QScriptValue Line_ToRay(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Line_ToRay in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Line_ToRay in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Line This = qscriptvalue_cast<Line>(context->thisObject());
     Ray ret = This.ToRay();
     return qScriptValueFromValue(engine, ret);
@@ -107,7 +107,7 @@ static QScriptValue Line_ToRay(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue Line_ToLineSegment_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_ToLineSegment_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Line_ToLineSegment_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Line This = qscriptvalue_cast<Line>(context->thisObject());
     float d = qscriptvalue_cast<float>(context->argument(0));
     LineSegment ret = This.ToLineSegment(d);
@@ -116,7 +116,7 @@ static QScriptValue Line_ToLineSegment_float(QScriptContext *context, QScriptEng
 
 static QScriptValue Line_AreCollinear_float3_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Line_AreCollinear_float3_float3_float3_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Line_AreCollinear_float3_float3_float3_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 p1 = qscriptvalue_cast<float3>(context->argument(0));
     float3 p2 = qscriptvalue_cast<float3>(context->argument(1));
     float3 p3 = qscriptvalue_cast<float3>(context->argument(2));
@@ -135,7 +135,7 @@ static QScriptValue Line_ctor(QScriptContext *context, QScriptEngine *engine)
         return Line_Line_Ray(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<LineSegment>(context->argument(0)))
         return Line_Line_LineSegment(context, engine);
-    printf("Line_ctor failed to choose the right function to call! Did you use 'var x = Line();' instead of 'var x = new Line();'?\n"); return QScriptValue();
+    printf("Line_ctor failed to choose the right function to call! Did you use 'var x = Line();' instead of 'var x = new Line();'?\n"); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue Line_Transform_selector(QScriptContext *context, QScriptEngine *engine)
@@ -148,7 +148,7 @@ static QScriptValue Line_Transform_selector(QScriptContext *context, QScriptEngi
         return Line_Transform_float4x4(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<Quat>(context->argument(0)))
         return Line_Transform_Quat(context, engine);
-    printf("Line_Transform_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("Line_Transform_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 void FromScriptValue_Line(const QScriptValue &obj, Line &value)

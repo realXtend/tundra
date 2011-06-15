@@ -6,14 +6,14 @@ void ToExistingScriptValue_LCG(QScriptEngine *engine, const LCG &value, QScriptV
 
 static QScriptValue LCG_LCG(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_LCG in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_LCG in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LCG ret;
     return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue LCG_LCG_u32_u32_u32_u32(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function LCG_LCG_u32_u32_u32_u32 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function LCG_LCG_u32_u32_u32_u32 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     u32 seed = qscriptvalue_cast<u32>(context->argument(0));
     u32 multiplier = qscriptvalue_cast<u32>(context->argument(1));
     u32 increment = qscriptvalue_cast<u32>(context->argument(2));
@@ -24,7 +24,7 @@ static QScriptValue LCG_LCG_u32_u32_u32_u32(QScriptContext *context, QScriptEngi
 
 static QScriptValue LCG_Seed_u32_u32_u32_u32(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function LCG_Seed_u32_u32_u32_u32 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function LCG_Seed_u32_u32_u32_u32 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LCG This = qscriptvalue_cast<LCG>(context->thisObject());
     u32 seed = qscriptvalue_cast<u32>(context->argument(0));
     u32 mul = qscriptvalue_cast<u32>(context->argument(1));
@@ -37,7 +37,7 @@ static QScriptValue LCG_Seed_u32_u32_u32_u32(QScriptContext *context, QScriptEng
 
 static QScriptValue LCG_Int(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_Int in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_Int in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LCG This = qscriptvalue_cast<LCG>(context->thisObject());
     u32 ret = This.Int();
     ToExistingScriptValue_LCG(engine, This, context->thisObject());
@@ -46,7 +46,7 @@ static QScriptValue LCG_Int(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue LCG_MaxInt(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_MaxInt in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_MaxInt in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LCG This = qscriptvalue_cast<LCG>(context->thisObject());
     u32 ret = This.MaxInt();
     return qScriptValueFromValue(engine, ret);
@@ -54,7 +54,7 @@ static QScriptValue LCG_MaxInt(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue LCG_IntFast(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_IntFast in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_IntFast in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LCG This = qscriptvalue_cast<LCG>(context->thisObject());
     u32 ret = This.IntFast();
     ToExistingScriptValue_LCG(engine, This, context->thisObject());
@@ -63,7 +63,7 @@ static QScriptValue LCG_IntFast(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue LCG_Int_int_int(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function LCG_Int_int_int in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function LCG_Int_int_int in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LCG This = qscriptvalue_cast<LCG>(context->thisObject());
     int a = qscriptvalue_cast<int>(context->argument(0));
     int b = qscriptvalue_cast<int>(context->argument(1));
@@ -74,7 +74,7 @@ static QScriptValue LCG_Int_int_int(QScriptContext *context, QScriptEngine *engi
 
 static QScriptValue LCG_Float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_Float in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LCG_Float in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LCG This = qscriptvalue_cast<LCG>(context->thisObject());
     float ret = This.Float();
     ToExistingScriptValue_LCG(engine, This, context->thisObject());
@@ -83,7 +83,7 @@ static QScriptValue LCG_Float(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue LCG_Float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function LCG_Float_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function LCG_Float_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LCG This = qscriptvalue_cast<LCG>(context->thisObject());
     float a = qscriptvalue_cast<float>(context->argument(0));
     float b = qscriptvalue_cast<float>(context->argument(1));
@@ -98,7 +98,7 @@ static QScriptValue LCG_ctor(QScriptContext *context, QScriptEngine *engine)
         return LCG_LCG(context, engine);
     if (context->argumentCount() == 4 && QSVIsOfType<u32>(context->argument(0)) && QSVIsOfType<u32>(context->argument(1)) && QSVIsOfType<u32>(context->argument(2)) && QSVIsOfType<u32>(context->argument(3)))
         return LCG_LCG_u32_u32_u32_u32(context, engine);
-    printf("LCG_ctor failed to choose the right function to call! Did you use 'var x = LCG();' instead of 'var x = new LCG();'?\n"); return QScriptValue();
+    printf("LCG_ctor failed to choose the right function to call! Did you use 'var x = LCG();' instead of 'var x = new LCG();'?\n"); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue LCG_Int_selector(QScriptContext *context, QScriptEngine *engine)
@@ -107,7 +107,7 @@ static QScriptValue LCG_Int_selector(QScriptContext *context, QScriptEngine *eng
         return LCG_Int(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<int>(context->argument(0)) && QSVIsOfType<int>(context->argument(1)))
         return LCG_Int_int_int(context, engine);
-    printf("LCG_Int_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("LCG_Int_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue LCG_Float_selector(QScriptContext *context, QScriptEngine *engine)
@@ -116,7 +116,7 @@ static QScriptValue LCG_Float_selector(QScriptContext *context, QScriptEngine *e
         return LCG_Float(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
         return LCG_Float_float_float(context, engine);
-    printf("LCG_Float_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("LCG_Float_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 void FromScriptValue_LCG(const QScriptValue &obj, LCG &value)

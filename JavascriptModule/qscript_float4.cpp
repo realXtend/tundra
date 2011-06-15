@@ -10,14 +10,14 @@ void ToExistingScriptValue_float4(QScriptEngine *engine, const float4 &value, QS
 
 static QScriptValue float4_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_float4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_float4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 ret;
     return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float4_float4_float_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float4_float4_float_float_float_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float4_float4_float_float_float_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float x = qscriptvalue_cast<float>(context->argument(0));
     float y = qscriptvalue_cast<float>(context->argument(1));
     float z = qscriptvalue_cast<float>(context->argument(2));
@@ -28,7 +28,7 @@ static QScriptValue float4_float4_float_float_float_float(QScriptContext *contex
 
 static QScriptValue float4_float4_float3_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_float4_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_float4_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 xyz = qscriptvalue_cast<float3>(context->argument(0));
     float w = qscriptvalue_cast<float>(context->argument(1));
     float4 ret(xyz, w);
@@ -37,7 +37,7 @@ static QScriptValue float4_float4_float3_float(QScriptContext *context, QScriptE
 
 static QScriptValue float4_xyz(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_xyz in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_xyz in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float3 ret = This.xyz();
     return qScriptValueFromValue(engine, ret);
@@ -45,7 +45,7 @@ static QScriptValue float4_xyz(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue float4_LengthSq3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_LengthSq3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_LengthSq3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.LengthSq3();
     return qScriptValueFromValue(engine, ret);
@@ -53,7 +53,7 @@ static QScriptValue float4_LengthSq3(QScriptContext *context, QScriptEngine *eng
 
 static QScriptValue float4_Length3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Length3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Length3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.Length3();
     return qScriptValueFromValue(engine, ret);
@@ -61,7 +61,7 @@ static QScriptValue float4_Length3(QScriptContext *context, QScriptEngine *engin
 
 static QScriptValue float4_LengthSq4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_LengthSq4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_LengthSq4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.LengthSq4();
     return qScriptValueFromValue(engine, ret);
@@ -69,7 +69,7 @@ static QScriptValue float4_LengthSq4(QScriptContext *context, QScriptEngine *eng
 
 static QScriptValue float4_Length4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Length4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Length4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.Length4();
     return qScriptValueFromValue(engine, ret);
@@ -77,7 +77,7 @@ static QScriptValue float4_Length4(QScriptContext *context, QScriptEngine *engin
 
 static QScriptValue float4_Normalize3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Normalize3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Normalize3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.Normalize3();
     ToExistingScriptValue_float4(engine, This, context->thisObject());
@@ -86,7 +86,7 @@ static QScriptValue float4_Normalize3(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue float4_Normalize4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Normalize4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Normalize4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.Normalize4();
     ToExistingScriptValue_float4(engine, This, context->thisObject());
@@ -95,7 +95,7 @@ static QScriptValue float4_Normalize4(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue float4_Normalized3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Normalized3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Normalized3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 ret = This.Normalized3();
     return qScriptValueFromValue(engine, ret);
@@ -103,7 +103,7 @@ static QScriptValue float4_Normalized3(QScriptContext *context, QScriptEngine *e
 
 static QScriptValue float4_Normalized4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Normalized4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Normalized4 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 ret = This.Normalized4();
     return qScriptValueFromValue(engine, ret);
@@ -111,7 +111,7 @@ static QScriptValue float4_Normalized4(QScriptContext *context, QScriptEngine *e
 
 static QScriptValue float4_NormalizeW(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_NormalizeW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_NormalizeW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     bool ret = This.NormalizeW();
     ToExistingScriptValue_float4(engine, This, context->thisObject());
@@ -120,7 +120,7 @@ static QScriptValue float4_NormalizeW(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue float4_IsWZeroOrOne_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_IsWZeroOrOne_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_IsWZeroOrOne_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float epsilon = qscriptvalue_cast<float>(context->argument(0));
     bool ret = This.IsWZeroOrOne(epsilon);
@@ -129,7 +129,7 @@ static QScriptValue float4_IsWZeroOrOne_float(QScriptContext *context, QScriptEn
 
 static QScriptValue float4_IsZero3_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_IsZero3_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_IsZero3_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float epsilonSq = qscriptvalue_cast<float>(context->argument(0));
     bool ret = This.IsZero3(epsilonSq);
@@ -138,7 +138,7 @@ static QScriptValue float4_IsZero3_float(QScriptContext *context, QScriptEngine 
 
 static QScriptValue float4_IsZero4_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_IsZero4_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_IsZero4_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float epsilonSq = qscriptvalue_cast<float>(context->argument(0));
     bool ret = This.IsZero4(epsilonSq);
@@ -147,7 +147,7 @@ static QScriptValue float4_IsZero4_float(QScriptContext *context, QScriptEngine 
 
 static QScriptValue float4_IsNormalized3_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_IsNormalized3_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_IsNormalized3_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float epsilonSq = qscriptvalue_cast<float>(context->argument(0));
     bool ret = This.IsNormalized3(epsilonSq);
@@ -156,7 +156,7 @@ static QScriptValue float4_IsNormalized3_float(QScriptContext *context, QScriptE
 
 static QScriptValue float4_IsNormalized4_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_IsNormalized4_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_IsNormalized4_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float epsilonSq = qscriptvalue_cast<float>(context->argument(0));
     bool ret = This.IsNormalized4(epsilonSq);
@@ -165,7 +165,7 @@ static QScriptValue float4_IsNormalized4_float(QScriptContext *context, QScriptE
 
 static QScriptValue float4_Scale3_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Scale3_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Scale3_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float scalar = qscriptvalue_cast<float>(context->argument(0));
     This.Scale3(scalar);
@@ -175,7 +175,7 @@ static QScriptValue float4_Scale3_float(QScriptContext *context, QScriptEngine *
 
 static QScriptValue float4_ScaleToLength3_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_ScaleToLength3_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_ScaleToLength3_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float newLength = qscriptvalue_cast<float>(context->argument(0));
     float ret = This.ScaleToLength3(newLength);
@@ -185,7 +185,7 @@ static QScriptValue float4_ScaleToLength3_float(QScriptContext *context, QScript
 
 static QScriptValue float4_IsFinite(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_IsFinite in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_IsFinite in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     bool ret = This.IsFinite();
     return qScriptValueFromValue(engine, ret);
@@ -193,7 +193,7 @@ static QScriptValue float4_IsFinite(QScriptContext *context, QScriptEngine *engi
 
 static QScriptValue float4_IsPerpendicular3_float4_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_IsPerpendicular3_float4_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_IsPerpendicular3_float4_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 other = qscriptvalue_cast<float4>(context->argument(0));
     float epsilon = qscriptvalue_cast<float>(context->argument(1));
@@ -203,7 +203,7 @@ static QScriptValue float4_IsPerpendicular3_float4_float(QScriptContext *context
 
 static QScriptValue float4_SumOfElements(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_SumOfElements in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_SumOfElements in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.SumOfElements();
     return qScriptValueFromValue(engine, ret);
@@ -211,7 +211,7 @@ static QScriptValue float4_SumOfElements(QScriptContext *context, QScriptEngine 
 
 static QScriptValue float4_ProductOfElements(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_ProductOfElements in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_ProductOfElements in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.ProductOfElements();
     return qScriptValueFromValue(engine, ret);
@@ -219,7 +219,7 @@ static QScriptValue float4_ProductOfElements(QScriptContext *context, QScriptEng
 
 static QScriptValue float4_AverageOfElements(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_AverageOfElements in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_AverageOfElements in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.AverageOfElements();
     return qScriptValueFromValue(engine, ret);
@@ -227,7 +227,7 @@ static QScriptValue float4_AverageOfElements(QScriptContext *context, QScriptEng
 
 static QScriptValue float4_MinElement(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_MinElement in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_MinElement in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.MinElement();
     return qScriptValueFromValue(engine, ret);
@@ -235,7 +235,7 @@ static QScriptValue float4_MinElement(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue float4_MinElementIndex(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_MinElementIndex in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_MinElementIndex in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     int ret = This.MinElementIndex();
     return qScriptValueFromValue(engine, ret);
@@ -243,7 +243,7 @@ static QScriptValue float4_MinElementIndex(QScriptContext *context, QScriptEngin
 
 static QScriptValue float4_MaxElement(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_MaxElement in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_MaxElement in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ret = This.MaxElement();
     return qScriptValueFromValue(engine, ret);
@@ -251,7 +251,7 @@ static QScriptValue float4_MaxElement(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue float4_MaxElementIndex(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_MaxElementIndex in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_MaxElementIndex in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     int ret = This.MaxElementIndex();
     return qScriptValueFromValue(engine, ret);
@@ -259,7 +259,7 @@ static QScriptValue float4_MaxElementIndex(QScriptContext *context, QScriptEngin
 
 static QScriptValue float4_Abs(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Abs in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Abs in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 ret = This.Abs();
     return qScriptValueFromValue(engine, ret);
@@ -267,7 +267,7 @@ static QScriptValue float4_Abs(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue float4_Min_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Min_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Min_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float ceil = qscriptvalue_cast<float>(context->argument(0));
     float4 ret = This.Min(ceil);
@@ -276,7 +276,7 @@ static QScriptValue float4_Min_float(QScriptContext *context, QScriptEngine *eng
 
 static QScriptValue float4_Min_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Min_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Min_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 ceil = qscriptvalue_cast<float4>(context->argument(0));
     float4 ret = This.Min(ceil);
@@ -285,7 +285,7 @@ static QScriptValue float4_Min_float4(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue float4_Max_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Max_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Max_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float floor = qscriptvalue_cast<float>(context->argument(0));
     float4 ret = This.Max(floor);
@@ -294,7 +294,7 @@ static QScriptValue float4_Max_float(QScriptContext *context, QScriptEngine *eng
 
 static QScriptValue float4_Max_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Max_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Max_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 floor = qscriptvalue_cast<float4>(context->argument(0));
     float4 ret = This.Max(floor);
@@ -303,7 +303,7 @@ static QScriptValue float4_Max_float4(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue float4_Clamp_float4_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Clamp_float4_float4 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Clamp_float4_float4 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 floor = qscriptvalue_cast<float4>(context->argument(0));
     float4 ceil = qscriptvalue_cast<float4>(context->argument(1));
@@ -313,7 +313,7 @@ static QScriptValue float4_Clamp_float4_float4(QScriptContext *context, QScriptE
 
 static QScriptValue float4_Clamp01(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Clamp01 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Clamp01 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 ret = This.Clamp01();
     return qScriptValueFromValue(engine, ret);
@@ -321,7 +321,7 @@ static QScriptValue float4_Clamp01(QScriptContext *context, QScriptEngine *engin
 
 static QScriptValue float4_Clamp_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Clamp_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Clamp_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float floor = qscriptvalue_cast<float>(context->argument(0));
     float ceil = qscriptvalue_cast<float>(context->argument(1));
@@ -331,7 +331,7 @@ static QScriptValue float4_Clamp_float_float(QScriptContext *context, QScriptEng
 
 static QScriptValue float4_Lerp_float4_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Lerp_float4_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Lerp_float4_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 b = qscriptvalue_cast<float4>(context->argument(0));
     float t = qscriptvalue_cast<float>(context->argument(1));
@@ -341,7 +341,7 @@ static QScriptValue float4_Lerp_float4_float(QScriptContext *context, QScriptEng
 
 static QScriptValue float4_Distance3Sq_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Distance3Sq_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Distance3Sq_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
     float ret = This.Distance3Sq(rhs);
@@ -350,7 +350,7 @@ static QScriptValue float4_Distance3Sq_float4(QScriptContext *context, QScriptEn
 
 static QScriptValue float4_Distance3_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Distance3_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Distance3_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
     float ret = This.Distance3(rhs);
@@ -359,7 +359,7 @@ static QScriptValue float4_Distance3_float4(QScriptContext *context, QScriptEngi
 
 static QScriptValue float4_Dot3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Dot3_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Dot3_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float3 rhs = qscriptvalue_cast<float3>(context->argument(0));
     float ret = This.Dot3(rhs);
@@ -368,7 +368,7 @@ static QScriptValue float4_Dot3_float3(QScriptContext *context, QScriptEngine *e
 
 static QScriptValue float4_Dot3_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Dot3_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Dot3_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
     float ret = This.Dot3(rhs);
@@ -377,7 +377,7 @@ static QScriptValue float4_Dot3_float4(QScriptContext *context, QScriptEngine *e
 
 static QScriptValue float4_Dot4_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Dot4_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Dot4_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
     float ret = This.Dot4(rhs);
@@ -386,7 +386,7 @@ static QScriptValue float4_Dot4_float4(QScriptContext *context, QScriptEngine *e
 
 static QScriptValue float4_Cross3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Cross3_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Cross3_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float3 rhs = qscriptvalue_cast<float3>(context->argument(0));
     float4 ret = This.Cross3(rhs);
@@ -395,7 +395,7 @@ static QScriptValue float4_Cross3_float3(QScriptContext *context, QScriptEngine 
 
 static QScriptValue float4_Cross3_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Cross3_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Cross3_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
     float4 ret = This.Cross3(rhs);
@@ -404,7 +404,7 @@ static QScriptValue float4_Cross3_float4(QScriptContext *context, QScriptEngine 
 
 static QScriptValue float4_OuterProduct_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_OuterProduct_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_OuterProduct_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
     float4x4 ret = This.OuterProduct(rhs);
@@ -413,7 +413,7 @@ static QScriptValue float4_OuterProduct_float4(QScriptContext *context, QScriptE
 
 static QScriptValue float4_Perpendicular3_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Perpendicular3_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Perpendicular3_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float3 hint = qscriptvalue_cast<float3>(context->argument(0));
     float3 hint2 = qscriptvalue_cast<float3>(context->argument(1));
@@ -423,7 +423,7 @@ static QScriptValue float4_Perpendicular3_float3_float3(QScriptContext *context,
 
 static QScriptValue float4_AnotherPerpendicular3_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_AnotherPerpendicular3_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_AnotherPerpendicular3_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float3 hint = qscriptvalue_cast<float3>(context->argument(0));
     float3 hint2 = qscriptvalue_cast<float3>(context->argument(1));
@@ -433,7 +433,7 @@ static QScriptValue float4_AnotherPerpendicular3_float3_float3(QScriptContext *c
 
 static QScriptValue float4_Reflect3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Reflect3_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Reflect3_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float3 normal = qscriptvalue_cast<float3>(context->argument(0));
     float4 ret = This.Reflect3(normal);
@@ -442,7 +442,7 @@ static QScriptValue float4_Reflect3_float3(QScriptContext *context, QScriptEngin
 
 static QScriptValue float4_AngleBetween3_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_AngleBetween3_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_AngleBetween3_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 other = qscriptvalue_cast<float4>(context->argument(0));
     float ret = This.AngleBetween3(other);
@@ -451,7 +451,7 @@ static QScriptValue float4_AngleBetween3_float4(QScriptContext *context, QScript
 
 static QScriptValue float4_AngleBetweenNorm3_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_AngleBetweenNorm3_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_AngleBetweenNorm3_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 normalizedVector = qscriptvalue_cast<float4>(context->argument(0));
     float ret = This.AngleBetweenNorm3(normalizedVector);
@@ -460,7 +460,7 @@ static QScriptValue float4_AngleBetweenNorm3_float4(QScriptContext *context, QSc
 
 static QScriptValue float4_AngleBetween4_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_AngleBetween4_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_AngleBetween4_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 other = qscriptvalue_cast<float4>(context->argument(0));
     float ret = This.AngleBetween4(other);
@@ -469,7 +469,7 @@ static QScriptValue float4_AngleBetween4_float4(QScriptContext *context, QScript
 
 static QScriptValue float4_AngleBetweenNorm4_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_AngleBetweenNorm4_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_AngleBetweenNorm4_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 normalizedVector = qscriptvalue_cast<float4>(context->argument(0));
     float ret = This.AngleBetweenNorm4(normalizedVector);
@@ -478,7 +478,7 @@ static QScriptValue float4_AngleBetweenNorm4_float4(QScriptContext *context, QSc
 
 static QScriptValue float4_ProjectTo3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_ProjectTo3_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_ProjectTo3_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float3 target = qscriptvalue_cast<float3>(context->argument(0));
     float4 ret = This.ProjectTo3(target);
@@ -487,7 +487,7 @@ static QScriptValue float4_ProjectTo3_float3(QScriptContext *context, QScriptEng
 
 static QScriptValue float4_ProjectToNorm3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_ProjectToNorm3_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_ProjectToNorm3_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float3 target = qscriptvalue_cast<float3>(context->argument(0));
     float4 ret = This.ProjectToNorm3(target);
@@ -496,7 +496,7 @@ static QScriptValue float4_ProjectToNorm3_float3(QScriptContext *context, QScrip
 
 static QScriptValue float4_SetFromScalar_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_SetFromScalar_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_SetFromScalar_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float scalar = qscriptvalue_cast<float>(context->argument(0));
     This.SetFromScalar(scalar);
@@ -506,7 +506,7 @@ static QScriptValue float4_SetFromScalar_float(QScriptContext *context, QScriptE
 
 static QScriptValue float4_SetFromScalar_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_SetFromScalar_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_SetFromScalar_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float scalar = qscriptvalue_cast<float>(context->argument(0));
     float w = qscriptvalue_cast<float>(context->argument(1));
@@ -517,7 +517,7 @@ static QScriptValue float4_SetFromScalar_float_float(QScriptContext *context, QS
 
 static QScriptValue float4_Set_float_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float4_Set_float_float_float_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float4_Set_float_float_float_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float x = qscriptvalue_cast<float>(context->argument(0));
     float y = qscriptvalue_cast<float>(context->argument(1));
@@ -530,7 +530,7 @@ static QScriptValue float4_Set_float_float_float_float(QScriptContext *context, 
 
 static QScriptValue float4_Equals_float4_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Equals_float4_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Equals_float4_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 other = qscriptvalue_cast<float4>(context->argument(0));
     float epsilon = qscriptvalue_cast<float>(context->argument(1));
@@ -540,7 +540,7 @@ static QScriptValue float4_Equals_float4_float(QScriptContext *context, QScriptE
 
 static QScriptValue float4_Equals_float_float_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 5) { printf("Error! Invalid number of arguments passed to function float4_Equals_float_float_float_float_float in file %s, line %d!\nExpected 5, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 5) { printf("Error! Invalid number of arguments passed to function float4_Equals_float_float_float_float_float in file %s, line %d!\nExpected 5, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float x = qscriptvalue_cast<float>(context->argument(0));
     float y = qscriptvalue_cast<float>(context->argument(1));
@@ -553,7 +553,7 @@ static QScriptValue float4_Equals_float_float_float_float_float(QScriptContext *
 
 static QScriptValue float4_Add_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Add_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Add_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
     float4 ret = This.Add(rhs);
@@ -562,7 +562,7 @@ static QScriptValue float4_Add_float4(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue float4_Sub_float4(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Sub_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Sub_float4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
     float4 ret = This.Sub(rhs);
@@ -571,7 +571,7 @@ static QScriptValue float4_Sub_float4(QScriptContext *context, QScriptEngine *en
 
 static QScriptValue float4_Mul_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Mul_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Mul_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float rhs = qscriptvalue_cast<float>(context->argument(0));
     float4 ret = This.Mul(rhs);
@@ -580,7 +580,7 @@ static QScriptValue float4_Mul_float(QScriptContext *context, QScriptEngine *eng
 
 static QScriptValue float4_Div_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Div_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Div_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float rhs = qscriptvalue_cast<float>(context->argument(0));
     float4 ret = This.Div(rhs);
@@ -589,7 +589,7 @@ static QScriptValue float4_Div_float(QScriptContext *context, QScriptEngine *eng
 
 static QScriptValue float4_Neg(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Neg in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_Neg in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 ret = This.Neg();
     return qScriptValueFromValue(engine, ret);
@@ -597,7 +597,7 @@ static QScriptValue float4_Neg(QScriptContext *context, QScriptEngine *engine)
 
 static QScriptValue float4_float4_QVector4D(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_float4_QVector4D in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_float4_QVector4D in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     QVector4D other = qscriptvalue_cast<QVector4D>(context->argument(0));
     float4 ret(other);
     return qScriptValueFromValue(engine, ret);
@@ -605,7 +605,7 @@ static QScriptValue float4_float4_QVector4D(QScriptContext *context, QScriptEngi
 
 static QScriptValue float4_toString(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_toString in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_toString in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This;
     if (context->argumentCount() > 0) This = qscriptvalue_cast<float4>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
     else This = qscriptvalue_cast<float4>(context->thisObject());
@@ -615,7 +615,7 @@ static QScriptValue float4_toString(QScriptContext *context, QScriptEngine *engi
 
 static QScriptValue float4_ToQVector4D(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_ToQVector4D in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_ToQVector4D in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     QVector4D ret = This.ToQVector4D();
     return qScriptValueFromValue(engine, ret);
@@ -623,7 +623,7 @@ static QScriptValue float4_ToQVector4D(QScriptContext *context, QScriptEngine *e
 
 static QScriptValue float4_FromScalar_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_FromScalar_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_FromScalar_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float scalar = qscriptvalue_cast<float>(context->argument(0));
     float4 ret = float4::FromScalar(scalar);
     return qScriptValueFromValue(engine, ret);
@@ -631,7 +631,7 @@ static QScriptValue float4_FromScalar_float(QScriptContext *context, QScriptEngi
 
 static QScriptValue float4_FromScalar_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_FromScalar_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_FromScalar_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float scalar = qscriptvalue_cast<float>(context->argument(0));
     float w = qscriptvalue_cast<float>(context->argument(1));
     float4 ret = float4::FromScalar(scalar, w);
@@ -640,7 +640,7 @@ static QScriptValue float4_FromScalar_float_float(QScriptContext *context, QScri
 
 static QScriptValue float4_FromQVector4D_QVector4D(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_FromQVector4D_QVector4D in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_FromQVector4D_QVector4D in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     QVector4D v = qscriptvalue_cast<QVector4D>(context->argument(0));
     float4 ret = float4::FromQVector4D(v);
     return qScriptValueFromValue(engine, ret);
@@ -656,7 +656,7 @@ static QScriptValue float4_ctor(QScriptContext *context, QScriptEngine *engine)
         return float4_float4_float3_float(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<QVector4D>(context->argument(0)))
         return float4_float4_QVector4D(context, engine);
-    printf("float4_ctor failed to choose the right function to call! Did you use 'var x = float4();' instead of 'var x = new float4();'?\n"); return QScriptValue();
+    printf("float4_ctor failed to choose the right function to call! Did you use 'var x = float4();' instead of 'var x = new float4();'?\n"); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float4_Min_selector(QScriptContext *context, QScriptEngine *engine)
@@ -665,7 +665,7 @@ static QScriptValue float4_Min_selector(QScriptContext *context, QScriptEngine *
         return float4_Min_float(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float4>(context->argument(0)))
         return float4_Min_float4(context, engine);
-    printf("float4_Min_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("float4_Min_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float4_Max_selector(QScriptContext *context, QScriptEngine *engine)
@@ -674,7 +674,7 @@ static QScriptValue float4_Max_selector(QScriptContext *context, QScriptEngine *
         return float4_Max_float(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float4>(context->argument(0)))
         return float4_Max_float4(context, engine);
-    printf("float4_Max_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("float4_Max_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float4_Clamp_selector(QScriptContext *context, QScriptEngine *engine)
@@ -683,7 +683,7 @@ static QScriptValue float4_Clamp_selector(QScriptContext *context, QScriptEngine
         return float4_Clamp_float4_float4(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
         return float4_Clamp_float_float(context, engine);
-    printf("float4_Clamp_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("float4_Clamp_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float4_Dot3_selector(QScriptContext *context, QScriptEngine *engine)
@@ -692,7 +692,7 @@ static QScriptValue float4_Dot3_selector(QScriptContext *context, QScriptEngine 
         return float4_Dot3_float3(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float4>(context->argument(0)))
         return float4_Dot3_float4(context, engine);
-    printf("float4_Dot3_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("float4_Dot3_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float4_Cross3_selector(QScriptContext *context, QScriptEngine *engine)
@@ -701,7 +701,7 @@ static QScriptValue float4_Cross3_selector(QScriptContext *context, QScriptEngin
         return float4_Cross3_float3(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float4>(context->argument(0)))
         return float4_Cross3_float4(context, engine);
-    printf("float4_Cross3_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("float4_Cross3_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float4_SetFromScalar_selector(QScriptContext *context, QScriptEngine *engine)
@@ -710,7 +710,7 @@ static QScriptValue float4_SetFromScalar_selector(QScriptContext *context, QScri
         return float4_SetFromScalar_float(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
         return float4_SetFromScalar_float_float(context, engine);
-    printf("float4_SetFromScalar_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("float4_SetFromScalar_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float4_Equals_selector(QScriptContext *context, QScriptEngine *engine)
@@ -719,7 +719,7 @@ static QScriptValue float4_Equals_selector(QScriptContext *context, QScriptEngin
         return float4_Equals_float4_float(context, engine);
     if (context->argumentCount() == 5 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)) && QSVIsOfType<float>(context->argument(4)))
         return float4_Equals_float_float_float_float_float(context, engine);
-    printf("float4_Equals_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("float4_Equals_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float4_FromScalar_selector(QScriptContext *context, QScriptEngine *engine)
@@ -728,7 +728,7 @@ static QScriptValue float4_FromScalar_selector(QScriptContext *context, QScriptE
         return float4_FromScalar_float(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
         return float4_FromScalar_float_float(context, engine);
-    printf("float4_FromScalar_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
+    printf("float4_FromScalar_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 void FromScriptValue_float4(const QScriptValue &obj, float4 &value)

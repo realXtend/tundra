@@ -191,9 +191,9 @@ namespace QScriptBindings
             }
             bool isClassCtor = (functionName == classSymbol.name);
             if (isClassCtor)
-                tw.WriteLine(Indent(1) + "printf(\"" + GetScriptFunctionSelectorName(functions[0]) + " failed to choose the right function to call! Did you use 'var x = " + classSymbol.name + "();' instead of 'var x = new " + classSymbol.name + "();'?\\n\"); return QScriptValue();");
+                tw.WriteLine(Indent(1) + "printf(\"" + GetScriptFunctionSelectorName(functions[0]) + " failed to choose the right function to call! Did you use 'var x = " + classSymbol.name + "();' instead of 'var x = new " + classSymbol.name + "();'?\\n\"); PrintCallStack(context->backtrace()); return QScriptValue();");
             else
-                tw.WriteLine(Indent(1) + "printf(\"" + GetScriptFunctionSelectorName(functions[0]) + " failed to choose the right function to call in file %s, line %d!\\n\", __FILE__, __LINE__); return QScriptValue();");
+                tw.WriteLine(Indent(1) + "printf(\"" + GetScriptFunctionSelectorName(functions[0]) + " failed to choose the right function to call in file %s, line %d!\\n\", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();");
             tw.WriteLine("}");
             tw.WriteLine("");
         }
@@ -402,7 +402,7 @@ namespace QScriptBindings
 
             bool isClassCtor = (function.name == Class.name);
 
-            tw.WriteLine(Indent(1) + "if (context->argumentCount() != " + function.parameters.Count + ") { printf(\"Error! Invalid number of arguments passed to function " + GetScriptFunctionName(function) + " in file %s, line %d!\\nExpected " + function.parameters.Count + ", but got %d!\\n\", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }");
+            tw.WriteLine(Indent(1) + "if (context->argumentCount() != " + function.parameters.Count + ") { printf(\"Error! Invalid number of arguments passed to function " + GetScriptFunctionName(function) + " in file %s, line %d!\\nExpected " + function.parameters.Count + ", but got %d!\\n\", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }");
 
             // Test that we have a valid this.
             if (!function.isStatic && !isClassCtor)
