@@ -44,7 +44,7 @@ struct EC_HydraxImpl
         if (hydrax)
             hydrax->remove();
         SAFE_DELETE(hydrax);
-        //SAFE_DELETE(module); ///\todo < Possible mem leak?
+        //SAFE_DELETE(module); ///< @todo Possible mem leak?
     }
 
     Hydrax::Hydrax *hydrax;
@@ -66,7 +66,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     Hydrax::Module::ProjectedGrid *module = new Hydrax::Module::ProjectedGrid(
         impl->hydrax, // Hydrax parent pointer
         new Hydrax::Noise::Perlin(/*Generic one*/), // Noise module
-        Ogre::Plane(Ogre::Vector3(0,1,0), Ogre::Vector3(0,0,0)), // Base plane
+        Ogre::Plane(Ogre::Vector3(0.f,1.f,0.f), Ogre::Vector3(0.f,0.f,0.f)), // Base plane
         Hydrax::MaterialManager::NM_VERTEX, // Normal mode
         Hydrax::Module::ProjectedGrid::Options(/*264 /*Generic one*/)); // Projected grid options
 

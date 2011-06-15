@@ -446,8 +446,11 @@ QByteArray Scene::GetSceneXML(bool gettemporary, bool getlocal) const
 
             const Entity::ComponentVector &components = entity->Components();
             for(uint i = 0; i < components.size(); ++i)
-                components[i]->SerializeTo(scene_doc, entity_elem);
-
+            {
+                if ((!components[i]->IsTemporary()) || (gettemporary))
+                    components[i]->SerializeTo(scene_doc, entity_elem);
+            }
+            
             scene_elem.appendChild(entity_elem);
         }
     }

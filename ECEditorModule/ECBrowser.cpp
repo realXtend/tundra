@@ -72,7 +72,7 @@ void ECBrowser::AddEntity(EntityPtr entity)
     if(!entity)
         return;
 
-    //If entity is already added to browser no point to continue.
+    //If entity is already added to browser no point to continue. 
     if(HasEntity(entity))
         return;
     entities_.push_back(EntityPtr(entity));
@@ -623,7 +623,6 @@ void ECBrowser::DynamicComponentChanged()
         return;
     }
 
-//    Entity *entity = component->ParentEntity();
     RemoveComponentFromGroup(comp_ptr);
     AddNewComponentToGroup(comp_ptr);
 
@@ -789,7 +788,7 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
     {
         EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
         connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
-        connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
+        connect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
         connect(dc, SIGNAL(ComponentNameChanged(const QString &, const QString &)), SLOT(OnComponentNameChanged(const QString&)), Qt::UniqueConnection);
     }
 
@@ -821,7 +820,7 @@ void ECBrowser::RemoveComponentFromGroup(ComponentPtr comp)
                 EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(comp.get());
                 assert(dc);
                 disconnect(dc, SIGNAL(AttributeAdded(IAttribute *)), this, SLOT(DynamicComponentChanged()));
-                disconnect(dc, SIGNAL(AttributeRemoved(const QString &)), this, SLOT(DynamicComponentChanged()));
+                disconnect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), this, SLOT(DynamicComponentChanged()));
                 disconnect(dc, SIGNAL(ComponentNameChanged(const QString&, const QString &)), this, SLOT(OnComponentNameChanged(const QString&)));
             }
             comp_group->RemoveComponent(comp);

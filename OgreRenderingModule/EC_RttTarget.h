@@ -2,12 +2,8 @@
 
 #pragma once
 
-#include "StableHeaders.h"
 #include "IComponent.h"
-#include "CoreDefines.h"
 #include "OgreModuleApi.h"
-
-namespace OgreRenderer { class OgreRenderingModule; };
 
 /// Ogre render-to-texture component
 /**
@@ -20,8 +16,12 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Attributes</b>:
 <ul>
-<li>QString targettexture
-<div>Name of the target texture where to render the image
+<li>QString textureName
+<div>Name of the target texture where to render the image.
+<li>int width
+<div>Width of the texture.
+<li>int height
+<div>Height of the texture.
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -38,31 +38,32 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 Does not emit any actions.
 
-<b>Depends on a camera component.</b>.
+<b>Depends on EC_Camera.</b>.
 </table>
 */
 class OGRE_MODULE_API EC_RttTarget : public IComponent
 {
     Q_OBJECT
-    
+    COMPONENT_NAME("EC_RttTarget", 21)
+
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_RttTarget(Scene* scene);
-
     virtual ~EC_RttTarget();
 
-    Q_PROPERTY(QString targettexture READ gettargettexture WRITE settargettexture);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, targettexture);
+    /// Name of the target texture where to render the image.
+    Q_PROPERTY(QString textureName READ gettextureName WRITE settextureName);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, textureName);
 
-    Q_PROPERTY(int size_x READ getsize_x WRITE setsize_x);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, size_x);
+    /// Width of the texture.
+    Q_PROPERTY(int width READ getwidth WRITE setwidth);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, width);
 
-    Q_PROPERTY(int size_y READ getsize_y WRITE setsize_y);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, size_y);
+    /// Height of the texture.
+    Q_PROPERTY(int height READ getheight WRITE setheight);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, height);
 
-    COMPONENT_NAME("EC_RttTarget", 21)
 public slots:
-
     void PrepareRtt();
     void SetAutoUpdated(bool val);
 
@@ -71,11 +72,6 @@ private slots:
     //void UpdateRtt();
 
 private:
-    /// Owner module of this component
-    //OgreRenderer::OgreRenderingModule *owner_;
-
-    Ogre::TexturePtr tex_;
     std::string material_name_;
     //void ScheduleRender();
 };
-

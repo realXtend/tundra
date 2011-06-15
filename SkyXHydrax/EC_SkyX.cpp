@@ -35,14 +35,21 @@
 
 struct EC_SkyXImpl
 {
-    EC_SkyXImpl() : skyX(0) {}
+    EC_SkyXImpl() : skyX(0), sunlight(0) {}
     ~EC_SkyXImpl()
     {
-        skyX->remove();
+        if (skyX)
+        {
+            skyX->remove();
+            skyX->getSceneManager()->destroyLight(sunlight);
+        }
+
+        sunlight = 0;
         SAFE_DELETE(skyX)
     }
 
     SkyX::SkyX *skyX;
+    Ogre::Light *sunlight;
 };
 
 EC_SkyX::EC_SkyX(Scene* scene) :
@@ -53,20 +60,32 @@ EC_SkyX::EC_SkyX(Scene* scene) :
 {
     try
     {
-        OgreWorldPtr w = scene->GetWorld<OgreWorld>();
-        // Create Sky
         impl = new EC_SkyXImpl();
-        impl->skyX = new SkyX::SkyX(w->GetSceneManager(),
-            static_cast<EC_Camera *>(w->GetRenderer()->GetActiveCamera())->GetCamera());
+
+        OgreWorldPtr w = scene->GetWorld<OgreWorld>();
+        Ogre::SceneManager *sm = w->GetSceneManager();
+
+        // Create sunlight
+        impl->sunlight = sm->createLight(w->GetRenderer()->GetUniqueObjectName("SkyXSunlight"));
+        impl->sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
+        impl->sunlight->setDiffuseColour(1.f, 1.f, 1.f);
+        impl->sunlight->setSpecularColour(0.f,0.f,0.f);
+        impl->sunlight->setDirection(-1.f, -1.f, -1.f);
+        impl->sunlight->setCastShadows(true);
+
+        // Create Sky
+        impl->skyX = new SkyX::SkyX(sm, static_cast<EC_Camera *>(w->GetRenderer()->GetActiveCamera())->GetCamera());
         impl->skyX->create();
 
         UpdateAttribute(&volumetricClouds);
         UpdateAttribute(&timeMultiplier);
 
-        // A little change to default atmosphere settings
+        // A little change to default atmosphere settings.
         SkyX::AtmosphereManager::Options atOpt = impl->skyX->getAtmosphereManager()->getOptions();
         atOpt.RayleighMultiplier = 0.0045f;
         impl->skyX->getAtmosphereManager()->setOptions(atOpt);
+
+        sm->setAmbientLight(Ogre::ColourValue(1.f, 1.f, 1.f));
 
         connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)));
         connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)));
@@ -124,6 +143,7 @@ void EC_SkyX::Update(float frameTime)
 {
     if (impl->skyX)
     {
+        impl->sunlight->setDirection(impl->skyX->getAtmosphereManager()->getSunDirection());
         impl->skyX->update(frameTime);
         // Do not trigger AttributeChanged for time as SkyX internals are authorative for it.
         settime(OgreRenderer::ToCoreVector(impl->skyX->getAtmosphereManager()->getOptions().Time));

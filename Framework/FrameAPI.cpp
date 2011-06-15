@@ -1,13 +1,8 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   FrameAPI.h
+ *  @file   FrameAPI.cpp
  *  @brief  Frame core API. Exposes framework's update tick.
- * 
- *  FrameAPI object can be used to:
- *  -retrieve signal every time frame has been processed
- *  -retrieve the wall clock time of Framework
- *  -trigger delayed signals when spesified amount of time has elapsed.
  */
 
 #include "StableHeaders.h"
@@ -19,31 +14,28 @@
 
 #include "MemoryLeakCheck.h"
 
-DelayedSignal::DelayedSignal(boost::uint64_t startTime)
-:startTime_(startTime)
+DelayedSignal::DelayedSignal(u64 startTime_) : startTime(startTime_)
 {
 }
 
 void DelayedSignal::Expire()
 {
-    emit Triggered((float)((GetCurrentClockTime() - startTime_) / GetCurrentClockFreq()));
+    emit Triggered((float)((GetCurrentClockTime() - startTime) / GetCurrentClockFreq()));
 }
 
-FrameAPI::FrameAPI(Framework *framework)
-:QObject(framework),
-currentFrameNumber(0)
+FrameAPI::FrameAPI(Framework *framework) : QObject(framework), currentFrameNumber(0)
 {
-    startTime_ = GetCurrentClockTime();
+    startTime = GetCurrentClockTime();
 }
 
 FrameAPI::~FrameAPI()
 {
-    qDeleteAll(delayedSignals_);
+    qDeleteAll(delayedSignals);
 }
 
-float FrameAPI::GetWallClockTime() const
+float FrameAPI::WallClockTime() const
 {
-    return (GetCurrentClockTime() - startTime_) / GetCurrentClockFreq();
+    return (GetCurrentClockTime() - startTime) / GetCurrentClockFreq();
 }
 
 DelayedSignal *FrameAPI::DelayedExecute(float time)
@@ -51,7 +43,7 @@ DelayedSignal *FrameAPI::DelayedExecute(float time)
     DelayedSignal *delayed = new DelayedSignal(GetCurrentClockTime());
     QTimer::singleShot(time*1000, delayed, SLOT(Expire()));
     connect(delayed, SIGNAL(Triggered(float)), SLOT(DeleteDelayedSignal()));
-    delayedSignals_.push_back(delayed);
+    delayedSignals.push_back(delayed);
     return delayed;
 }
 
@@ -61,7 +53,7 @@ void FrameAPI::DelayedExecute(float time, const QObject *receiver, const char *m
     QTimer::singleShot(time*1000, delayed, SLOT(Expire()));
     connect(delayed, SIGNAL(Triggered(float)), receiver, member);
     connect(delayed, SIGNAL(Triggered(float)), SLOT(DeleteDelayedSignal()));
-    delayedSignals_.push_back(delayed);
+    delayedSignals.push_back(delayed);
 }
 
 void FrameAPI::Update(float frametime)
@@ -79,7 +71,7 @@ void FrameAPI::DeleteDelayedSignal()
 {
     DelayedSignal *expiredSignal = checked_static_cast<DelayedSignal *>(sender());
     assert(expiredSignal);
-    delayedSignals_.removeOne(expiredSignal);
+    delayedSignals.removeOne(expiredSignal);
     SAFE_DELETE_LATER(expiredSignal);
 }
 

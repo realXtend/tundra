@@ -11,7 +11,7 @@ if (HYDRAX)
     file (GLOB H_FILES EC_Hydrax.h)
 endif(HYDRAX)
 if (SKYX AND HYDRAX)
-    file (GLOB CPP_FILES dllmain.cpp EC_SkyX.h EC_Hydrax.cpp)
+    file (GLOB CPP_FILES dllmain.cpp EC_SkyX.cpp EC_Hydrax.cpp)
     file (GLOB H_FILES EC_SkyX.h EC_Hydrax.h)
 endif(SKYX AND HYDRAX)
 

@@ -17,18 +17,8 @@ class KeyBindingsConfigWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit KeyBindingsConfigWindow(Framework *framework_)
-    :framework(framework_),
-    configList(0)
-    {
-        ShowWindow();
-    }
-
-    // Creates and shows the configuration window.
-    void ShowWindow();
-
-    // Closes and deletes the configuration window.
-    void CloseWindow();
+    explicit KeyBindingsConfigWindow(Framework *fw);
+    ~KeyBindingsConfigWindow();
 
 public slots:
     void ApplyKeyConfig();
@@ -37,6 +27,7 @@ public slots:
     void ConfigListAdjustEditable(QTreeWidgetItem *item, int column);
 
 private:
+    void Clear();
     void PopulateBindingsList();
     void ExtractBindingsList();
 

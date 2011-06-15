@@ -40,9 +40,8 @@ public slots:
     /// Returns currently active editor.
     ECEditorWindow *ActiveEditor() const;
 
-    /// Return Tree widget item expand memory pointer, which keeps track of which items in EC editor are expanded.
-    /** When constructing new EC editor windows use this if you want to keep all editor windows' expanded and 
-        collapsed items similar. */
+    /// Returns tree widget state memory object, which keeps track which items in EC editor are expanded.
+    /** When constructing new EC editor windows use this if you want to keep all editor windows' state synchronized. */
     ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
 
     /// Sets do we want to show visual editing aids (gizmo and highlights) when EC editor is open/active.

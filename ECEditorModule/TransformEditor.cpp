@@ -200,6 +200,7 @@ void TransformEditor::CreateGizmo()
         LogError("TransformEditor: could not create gizmo entity.");
         return;
     }
+    gizmo->SetTemporary(true);
 
     EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
     if (!tg)

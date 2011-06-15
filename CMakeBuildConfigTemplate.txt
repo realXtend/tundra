@@ -11,12 +11,6 @@
 # The idea is that everyone can customize the set of modules to build using that 
 # file, without having to fear about an accidental commit of these changes.
 
-# Configure the use of Caelum. http://www.ogre3d.org/tikiwiki/Caelum
-if (MSVC OR APPLE)
-  SET(CAELUM 0)
-  configure_caelum ()
-endif()
-
 # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
 SET(HYDRAX 0)
 if (MSVC AND HYDRAX)

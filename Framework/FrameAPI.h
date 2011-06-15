@@ -3,11 +3,6 @@
  *
  *  @file   FrameAPI.h
  *  @brief  Frame core API. Exposes framework's update tick.
- * 
- *  FrameAPI object can be used to:
- *  -retrieve signal every time frame has been processed
- *  -retrieve the wall clock time of Framework
- *  -trigger delayed signals when spesified amount of time has elapsed.
  */
 
 #pragma once
@@ -18,7 +13,7 @@
 
 class Framework;
 
-/// Stores a delayed signal invocation.   
+/// Stores a delayed signal invocation.
 /** Scripting languages connect their slots when wanting to receive delayed signal when certain amount of application time has passed.
     In C++ you can ignore the existence of this class, and just give your slot to FrameAPI's DelayedExecute
     as a parameter. This class cannot be created directly, it's created by FrameAPI. */
@@ -38,7 +33,7 @@ private:
     /** @param startTime Application tick. */
     explicit DelayedSignal(u64 startTime);
 
-    u64 startTime_; ///< Application tick when object was created.
+    u64 startTime; ///< Application tick when object was created.
 
 private slots:
     /// Emits Triggered() signal
@@ -63,7 +58,7 @@ class FrameAPI : public QObject
 
 public slots:
     /// Return wall clock time of Framework in seconds.
-    float GetWallClockTime() const;
+    float WallClockTime() const;
 
     /// Triggers DelayedSignal::Triggered(float) signal when spesified amount of time has elapsed.
     /** This function is basically a wrapper for QTimer and provided for convenience for scripting languages
@@ -98,8 +93,8 @@ private:
     /** @param frametime Time elapsed since last frame. */
     void Update(float frametime);
 
-    u64 startTime_; ///< Start time time of Framework/this object;
-    QList<DelayedSignal *> delayedSignals_; ///< Delayed signals.
+    u64 startTime; ///< Start time time of Framework/this object;
+    QList<DelayedSignal *> delayedSignals; ///< Delayed signals.
     int currentFrameNumber;
 
 private slots:
