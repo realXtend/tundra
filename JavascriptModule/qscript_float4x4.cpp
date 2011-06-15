@@ -2080,6 +2080,7 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
     proto.setProperty("Mul", engine->newFunction(float4x4_Mul_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MulPos", engine->newFunction(float4x4_MulPos_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MulDir", engine->newFunction(float4x4_MulDir_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<float4x4>()));
     engine->setDefaultPrototype(qMetaTypeId<float4x4>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<float4x4*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_float4x4, FromScriptValue_float4x4, proto);

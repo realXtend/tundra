@@ -305,6 +305,7 @@ QScriptValue register_Triangle_prototype(QScriptEngine *engine)
     proto.setProperty("Intersects", engine->newFunction(Triangle_Intersects_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ProjectToAxis", engine->newFunction(Triangle_ProjectToAxis_float3_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ClosestPoint", engine->newFunction(Triangle_ClosestPoint_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Triangle>()));
     engine->setDefaultPrototype(qMetaTypeId<Triangle>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Triangle*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_Triangle, FromScriptValue_Triangle, proto);

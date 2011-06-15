@@ -106,6 +106,7 @@ QScriptValue register_ScaleOp_prototype(QScriptEngine *engine)
     proto.setProperty("ToFloat3x3", engine->newFunction(ScaleOp_ToFloat3x3, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToFloat3x4", engine->newFunction(ScaleOp_ToFloat3x4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToFloat4x4", engine->newFunction(ScaleOp_ToFloat4x4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<ScaleOp>()));
     engine->setDefaultPrototype(qMetaTypeId<ScaleOp>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<ScaleOp*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_ScaleOp, FromScriptValue_ScaleOp, proto);

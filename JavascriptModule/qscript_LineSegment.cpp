@@ -227,6 +227,7 @@ QScriptValue register_LineSegment_prototype(QScriptEngine *engine)
     proto.setProperty("Intersects", engine->newFunction(LineSegment_Intersects_Plane, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToRay", engine->newFunction(LineSegment_ToRay, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToLine", engine->newFunction(LineSegment_ToLine, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<LineSegment>()));
     engine->setDefaultPrototype(qMetaTypeId<LineSegment>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<LineSegment*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_LineSegment, FromScriptValue_LineSegment, proto);

@@ -617,6 +617,7 @@ QScriptValue register_OBB_prototype(QScriptEngine *engine)
     proto.setProperty("Contains", engine->newFunction(OBB_Contains_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<OBB>()));
     engine->setDefaultPrototype(qMetaTypeId<OBB>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<OBB*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_OBB, FromScriptValue_OBB, proto);

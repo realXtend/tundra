@@ -869,6 +869,7 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     proto.setProperty("toString", engine->newFunction(Quat_toString, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToQQuaternion", engine->newFunction(Quat_ToQQuaternion, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Mul", engine->newFunction(Quat_Mul_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Quat>()));
     engine->setDefaultPrototype(qMetaTypeId<Quat>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Quat*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_Quat, FromScriptValue_Quat, proto);

@@ -147,6 +147,7 @@ QScriptValue register_LCG_prototype(QScriptEngine *engine)
     proto.setProperty("Int", engine->newFunction(LCG_Int_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Float", engine->newFunction(LCG_Float_selector, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Float", engine->newFunction(LCG_Float_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<LCG>()));
     engine->setDefaultPrototype(qMetaTypeId<LCG>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<LCG*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_LCG, FromScriptValue_LCG, proto);

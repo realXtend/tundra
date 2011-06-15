@@ -280,6 +280,7 @@ QScriptValue register_Sphere_prototype(QScriptEngine *engine)
     proto.setProperty("ClosestPoint", engine->newFunction(Sphere_ClosestPoint_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(Sphere_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Enclose", engine->newFunction(Sphere_Enclose_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Sphere>()));
     engine->setDefaultPrototype(qMetaTypeId<Sphere>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Sphere*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_Sphere, FromScriptValue_Sphere, proto);

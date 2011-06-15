@@ -819,6 +819,7 @@ QScriptValue register_float4_prototype(QScriptEngine *engine)
     proto.setProperty("Neg", engine->newFunction(float4_Neg, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("toString", engine->newFunction(float4_toString, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToQVector4D", engine->newFunction(float4_ToQVector4D, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<float4>()));
     engine->setDefaultPrototype(qMetaTypeId<float4>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<float4*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_float4, FromScriptValue_float4, proto);

@@ -512,6 +512,7 @@ namespace QScriptBindings
 //            tw.WriteLine(Indent(1) + "proto.setScriptClass(sc);");
 //            tw.WriteLine(Indent(1) + "sc->objectPrototype = proto;");
 
+            tw.WriteLine(Indent(1) + "proto.setProperty(\"metaTypeId\", engine->toScriptValue<qint32>((qint32)qMetaTypeId<" + Class.name + ">()));");
             tw.WriteLine(Indent(1) + "engine->setDefaultPrototype(qMetaTypeId<" + Class.name + ">(), proto);");
             tw.WriteLine(Indent(1) + "engine->setDefaultPrototype(qMetaTypeId<" + Class.name + "*>(), proto);");
             tw.WriteLine(Indent(1) + "qScriptRegisterMetaType(engine, ToScriptValue_" + Class.name + ", FromScriptValue_" + Class.name + ", proto);");

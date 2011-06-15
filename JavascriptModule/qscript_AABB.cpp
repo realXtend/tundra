@@ -684,6 +684,7 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     proto.setProperty("ProjectToAxis", engine->newFunction(AABB_ProjectToAxis_float3_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Enclose", engine->newFunction(AABB_Enclose_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersection", engine->newFunction(AABB_Intersection_AABB, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<AABB>()));
     engine->setDefaultPrototype(qMetaTypeId<AABB>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<AABB*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_AABB, FromScriptValue_AABB, proto);

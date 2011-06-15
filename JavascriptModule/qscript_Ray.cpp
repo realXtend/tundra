@@ -170,6 +170,7 @@ QScriptValue register_Ray_prototype(QScriptEngine *engine)
     proto.setProperty("Contains", engine->newFunction(Ray_Contains_float3_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToLine", engine->newFunction(Ray_ToLine, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToLineSegment", engine->newFunction(Ray_ToLineSegment_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Ray>()));
     engine->setDefaultPrototype(qMetaTypeId<Ray>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Ray*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_Ray, FromScriptValue_Ray, proto);

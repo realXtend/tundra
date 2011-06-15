@@ -97,6 +97,7 @@ QScriptValue register_TranslateOp_prototype(QScriptEngine *engine)
     proto.setProperty("ToFloat3x4", engine->newFunction(TranslateOp_ToFloat3x4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToFloat4x4", engine->newFunction(TranslateOp_ToFloat4x4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Offset", engine->newFunction(TranslateOp_Offset, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<TranslateOp>()));
     engine->setDefaultPrototype(qMetaTypeId<TranslateOp>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<TranslateOp*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_TranslateOp, FromScriptValue_TranslateOp, proto);

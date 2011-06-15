@@ -37,7 +37,10 @@ Q_DECLARE_METATYPE(QScriptClass*)
 template<typename T>
 bool QSVIsOfType(const QScriptValue &value)
 {
-    return value.toVariant().canConvert<T>();
+    // For the math classes, we expose the actual type as a member property, since we are not using
+    // the opaque QVariant-based interop.
+    // For basic types, like float and int, the latter value.toVariant().canConvert<T> is used.
+    return (value.prototype().property("metaTypeId").toInt32() == qMetaTypeId<T>() || value.toVariant().canConvert<T>());
 }
 
 QScriptValue ToScriptValue_const_float3(QScriptEngine *engine, const float3 &value);

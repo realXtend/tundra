@@ -289,6 +289,7 @@ QScriptValue register_Transform_prototype(QScriptEngine *engine)
     proto.setProperty("Orientation", engine->newFunction(Transform_Orientation, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Mul", engine->newFunction(Transform_Mul_Transform, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("toString", engine->newFunction(Transform_toString, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<Transform>()));
     engine->setDefaultPrototype(qMetaTypeId<Transform>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<Transform*>(), proto);
     qScriptRegisterMetaType(engine, ToScriptValue_Transform, FromScriptValue_Transform, proto);
