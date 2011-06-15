@@ -80,6 +80,11 @@ float3x3 float3x3::FromQuat(const Quat &orientation)
     return r;
 }
 
+Quat float3x3::ToQuat() const
+{
+    return Quat(*this);
+}
+
 float3x3 float3x3::FromRS(const Quat &rotate, const float3 &scale)
 {
     return float3x3(rotate) * float3x3::Scale(scale);

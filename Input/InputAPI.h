@@ -56,6 +56,8 @@ public:
     /// The dtor saves the settings to QSettings.
     ~InputAPI();
 
+    void Reset();
+
     /// Proceeds the input system one application frame forward (Ages all double-buffered input data).
     /// Called internally by the Framework to update the polling Input API. Not for client use.
     void Update(float frametime);

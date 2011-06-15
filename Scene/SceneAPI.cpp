@@ -39,6 +39,8 @@ void SceneAPI::Reset()
     SAFE_DELETE(sceneInteract);
     defaultScene_.reset();
     scenes_.clear();
+    componentFactories.clear();
+    componentFactoriesByTypeid.clear();
 }
 
 void SceneAPI::Initialise()

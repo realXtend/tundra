@@ -98,7 +98,14 @@ framework(framework_)
 
 InputAPI::~InputAPI()
 {
-    SaveKeyBindingsToFile();
+    Reset();
+}
+
+void InputAPI::Reset()
+{
+    untrackedInputContexts.clear();
+    registeredInputContexts.clear();
+    keyboardMappings.clear();
 }
 
 void InputAPI::SetMouseCursorVisible(bool visible)

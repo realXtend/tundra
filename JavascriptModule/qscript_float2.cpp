@@ -1,527 +1,498 @@
 #include "QtScriptBindingsHelpers.h"
 
+void ToExistingScriptValue_float2(QScriptEngine *engine, const float2 &value, QScriptValue obj)
+{
+    obj.setProperty("x", qScriptValueFromValue(engine, value.x), QScriptValue::Undeletable);
+    obj.setProperty("y", qScriptValueFromValue(engine, value.y), QScriptValue::Undeletable);
+}
+
 static QScriptValue float2_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_float2 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
     float2 ret;
-    return TypeToQScriptValue(engine, ret);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_float2_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_float2_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float x = TypeFromQScriptValue<float>(context->argument(0));
-    float y = TypeFromQScriptValue<float>(context->argument(1));
+    float x = qscriptvalue_cast<float>(context->argument(0));
+    float y = qscriptvalue_cast<float>(context->argument(1));
     float2 ret(x, y);
-    return TypeToQScriptValue(engine, ret);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_LengthSq(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_LengthSq in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_LengthSq in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float ret = This->LengthSq();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float ret = This.LengthSq();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Length(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Length in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Length in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float ret = This->Length();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float ret = This.Length();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Normalize(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Normalize in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Normalize in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float ret = This->Normalize();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float ret = This.Normalize();
+    ToExistingScriptValue_float2(engine, This, context->thisObject());
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Normalized(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Normalized in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Normalized in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 ret = This->Normalized();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 ret = This.Normalized();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_ScaleToLength_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_ScaleToLength_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_ScaleToLength_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float newLength = TypeFromQScriptValue<float>(context->argument(0));
-    float ret = This->ScaleToLength(newLength);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float newLength = qscriptvalue_cast<float>(context->argument(0));
+    float ret = This.ScaleToLength(newLength);
+    ToExistingScriptValue_float2(engine, This, context->thisObject());
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_IsNormalized_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_IsNormalized_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_IsNormalized_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float epsilonSq = TypeFromQScriptValue<float>(context->argument(0));
-    bool ret = This->IsNormalized(epsilonSq);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float epsilonSq = qscriptvalue_cast<float>(context->argument(0));
+    bool ret = This.IsNormalized(epsilonSq);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_IsZero_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_IsZero_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_IsZero_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float epsilonSq = TypeFromQScriptValue<float>(context->argument(0));
-    bool ret = This->IsZero(epsilonSq);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float epsilonSq = qscriptvalue_cast<float>(context->argument(0));
+    bool ret = This.IsZero(epsilonSq);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_IsFinite(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_IsFinite in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_IsFinite in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    bool ret = This->IsFinite();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    bool ret = This.IsFinite();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_IsPerpendicular_float2_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_IsPerpendicular_float2_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_IsPerpendicular_float2_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 other = TypeFromQScriptValue<float2>(context->argument(0));
-    float epsilon = TypeFromQScriptValue<float>(context->argument(1));
-    bool ret = This->IsPerpendicular(other, epsilon);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 other = qscriptvalue_cast<float2>(context->argument(0));
+    float epsilon = qscriptvalue_cast<float>(context->argument(1));
+    bool ret = This.IsPerpendicular(other, epsilon);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Equals_float2_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_Equals_float2_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Equals_float2_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 rhs = TypeFromQScriptValue<float2>(context->argument(0));
-    float epsilon = TypeFromQScriptValue<float>(context->argument(1));
-    bool ret = This->Equals(rhs, epsilon);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 rhs = qscriptvalue_cast<float2>(context->argument(0));
+    float epsilon = qscriptvalue_cast<float>(context->argument(1));
+    bool ret = This.Equals(rhs, epsilon);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Equals_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float2_Equals_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Equals_float_float_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float x = TypeFromQScriptValue<float>(context->argument(0));
-    float y = TypeFromQScriptValue<float>(context->argument(1));
-    float epsilon = TypeFromQScriptValue<float>(context->argument(2));
-    bool ret = This->Equals(x, y, epsilon);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float x = qscriptvalue_cast<float>(context->argument(0));
+    float y = qscriptvalue_cast<float>(context->argument(1));
+    float epsilon = qscriptvalue_cast<float>(context->argument(2));
+    bool ret = This.Equals(x, y, epsilon);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_SumOfElements(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_SumOfElements in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_SumOfElements in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float ret = This->SumOfElements();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float ret = This.SumOfElements();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_ProductOfElements(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_ProductOfElements in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_ProductOfElements in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float ret = This->ProductOfElements();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float ret = This.ProductOfElements();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_AverageOfElements(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_AverageOfElements in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_AverageOfElements in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float ret = This->AverageOfElements();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float ret = This.AverageOfElements();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_MinElement(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_MinElement in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_MinElement in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float ret = This->MinElement();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float ret = This.MinElement();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_MinElementIndex(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_MinElementIndex in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_MinElementIndex in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    int ret = This->MinElementIndex();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    int ret = This.MinElementIndex();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_MaxElement(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_MaxElement in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_MaxElement in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float ret = This->MaxElement();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float ret = This.MaxElement();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_MaxElementIndex(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_MaxElementIndex in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_MaxElementIndex in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    int ret = This->MaxElementIndex();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    int ret = This.MaxElementIndex();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Abs(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Abs in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Abs in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 ret = This->Abs();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 ret = This.Abs();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Min_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Min_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Min_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float ceil = TypeFromQScriptValue<float>(context->argument(0));
-    float2 ret = This->Min(ceil);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float ceil = qscriptvalue_cast<float>(context->argument(0));
+    float2 ret = This.Min(ceil);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Min_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Min_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Min_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 ceil = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 ret = This->Min(ceil);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 ceil = qscriptvalue_cast<float2>(context->argument(0));
+    float2 ret = This.Min(ceil);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Max_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Max_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Max_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float floor = TypeFromQScriptValue<float>(context->argument(0));
-    float2 ret = This->Max(floor);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float floor = qscriptvalue_cast<float>(context->argument(0));
+    float2 ret = This.Max(floor);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Max_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Max_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Max_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 floor = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 ret = This->Max(floor);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 floor = qscriptvalue_cast<float2>(context->argument(0));
+    float2 ret = This.Max(floor);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Clamp_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_Clamp_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Clamp_float_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float floor = TypeFromQScriptValue<float>(context->argument(0));
-    float ceil = TypeFromQScriptValue<float>(context->argument(1));
-    float2 ret = This->Clamp(floor, ceil);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float floor = qscriptvalue_cast<float>(context->argument(0));
+    float ceil = qscriptvalue_cast<float>(context->argument(1));
+    float2 ret = This.Clamp(floor, ceil);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Clamp_float2_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_Clamp_float2_float2 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Clamp_float2_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 floor = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 ceil = TypeFromQScriptValue<float2>(context->argument(1));
-    float2 ret = This->Clamp(floor, ceil);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 floor = qscriptvalue_cast<float2>(context->argument(0));
+    float2 ceil = qscriptvalue_cast<float2>(context->argument(1));
+    float2 ret = This.Clamp(floor, ceil);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Clamp01(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Clamp01 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Clamp01 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 ret = This->Clamp01();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 ret = This.Clamp01();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Distance_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Distance_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Distance_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 rhs = TypeFromQScriptValue<float2>(context->argument(0));
-    float ret = This->Distance(rhs);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 rhs = qscriptvalue_cast<float2>(context->argument(0));
+    float ret = This.Distance(rhs);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_DistanceSq_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_DistanceSq_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_DistanceSq_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 rhs = TypeFromQScriptValue<float2>(context->argument(0));
-    float ret = This->DistanceSq(rhs);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 rhs = qscriptvalue_cast<float2>(context->argument(0));
+    float ret = This.DistanceSq(rhs);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Dot_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Dot_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Dot_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 rhs = TypeFromQScriptValue<float2>(context->argument(0));
-    float ret = This->Dot(rhs);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 rhs = qscriptvalue_cast<float2>(context->argument(0));
+    float ret = This.Dot(rhs);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_PerpDot_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_PerpDot_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_PerpDot_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 rhs = TypeFromQScriptValue<float2>(context->argument(0));
-    float ret = This->PerpDot(rhs);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 rhs = qscriptvalue_cast<float2>(context->argument(0));
+    float ret = This.PerpDot(rhs);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Reflect_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Reflect_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Reflect_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 normal = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 ret = This->Reflect(normal);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 normal = qscriptvalue_cast<float2>(context->argument(0));
+    float2 ret = This.Reflect(normal);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Refract_float2_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float2_Refract_float2_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Refract_float2_float_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 normal = TypeFromQScriptValue<float2>(context->argument(0));
-    float negativeSideRefractionIndex = TypeFromQScriptValue<float>(context->argument(1));
-    float positiveSideRefractionIndex = TypeFromQScriptValue<float>(context->argument(2));
-    float2 ret = This->Refract(normal, negativeSideRefractionIndex, positiveSideRefractionIndex);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 normal = qscriptvalue_cast<float2>(context->argument(0));
+    float negativeSideRefractionIndex = qscriptvalue_cast<float>(context->argument(1));
+    float positiveSideRefractionIndex = qscriptvalue_cast<float>(context->argument(2));
+    float2 ret = This.Refract(normal, negativeSideRefractionIndex, positiveSideRefractionIndex);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_ProjectTo_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_ProjectTo_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_ProjectTo_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 direction = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 ret = This->ProjectTo(direction);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 direction = qscriptvalue_cast<float2>(context->argument(0));
+    float2 ret = This.ProjectTo(direction);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_ProjectToNorm_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_ProjectToNorm_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_ProjectToNorm_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 direction = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 ret = This->ProjectToNorm(direction);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 direction = qscriptvalue_cast<float2>(context->argument(0));
+    float2 ret = This.ProjectToNorm(direction);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_AngleBetween_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_AngleBetween_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_AngleBetween_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 other = TypeFromQScriptValue<float2>(context->argument(0));
-    float ret = This->AngleBetween(other);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 other = qscriptvalue_cast<float2>(context->argument(0));
+    float ret = This.AngleBetween(other);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_AngleBetweenNorm_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_AngleBetweenNorm_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_AngleBetweenNorm_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 normalizedVector = TypeFromQScriptValue<float2>(context->argument(0));
-    float ret = This->AngleBetweenNorm(normalizedVector);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 normalizedVector = qscriptvalue_cast<float2>(context->argument(0));
+    float ret = This.AngleBetweenNorm(normalizedVector);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Decompose_float2_float2_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float2_Decompose_float2_float2_float2 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Decompose_float2_float2_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 direction = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 outParallel = TypeFromQScriptValue<float2>(context->argument(1));
-    float2 outPerpendicular = TypeFromQScriptValue<float2>(context->argument(2));
-    This->Decompose(direction, outParallel, outPerpendicular);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 direction = qscriptvalue_cast<float2>(context->argument(0));
+    float2 outParallel = qscriptvalue_cast<float2>(context->argument(1));
+    float2 outPerpendicular = qscriptvalue_cast<float2>(context->argument(2));
+    This.Decompose(direction, outParallel, outPerpendicular);
     return QScriptValue();
 }
 
 static QScriptValue float2_Lerp_float2_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_Lerp_float2_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Lerp_float2_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 b = TypeFromQScriptValue<float2>(context->argument(0));
-    float t = TypeFromQScriptValue<float>(context->argument(1));
-    float2 ret = This->Lerp(b, t);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 b = qscriptvalue_cast<float2>(context->argument(0));
+    float t = qscriptvalue_cast<float>(context->argument(1));
+    float2 ret = This.Lerp(b, t);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_SetFromScalar_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_SetFromScalar_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_SetFromScalar_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float scalar = TypeFromQScriptValue<float>(context->argument(0));
-    This->SetFromScalar(scalar);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float scalar = qscriptvalue_cast<float>(context->argument(0));
+    This.SetFromScalar(scalar);
+    ToExistingScriptValue_float2(engine, This, context->thisObject());
     return QScriptValue();
 }
 
 static QScriptValue float2_Set_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_Set_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Set_float_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float x = TypeFromQScriptValue<float>(context->argument(0));
-    float y = TypeFromQScriptValue<float>(context->argument(1));
-    This->Set(x, y);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float x = qscriptvalue_cast<float>(context->argument(0));
+    float y = qscriptvalue_cast<float>(context->argument(1));
+    This.Set(x, y);
+    ToExistingScriptValue_float2(engine, This, context->thisObject());
     return QScriptValue();
 }
 
 static QScriptValue float2_Rotate90CW(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Rotate90CW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Rotate90CW in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    This->Rotate90CW();
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    This.Rotate90CW();
+    ToExistingScriptValue_float2(engine, This, context->thisObject());
     return QScriptValue();
 }
 
 static QScriptValue float2_Rotated90CW(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Rotated90CW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Rotated90CW in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 ret = This->Rotated90CW();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 ret = This.Rotated90CW();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Rotate90CCW(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Rotate90CCW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Rotate90CCW in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    This->Rotate90CCW();
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    This.Rotate90CCW();
+    ToExistingScriptValue_float2(engine, This, context->thisObject());
     return QScriptValue();
 }
 
 static QScriptValue float2_Rotated90CCW(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Rotated90CCW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Rotated90CCW in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 ret = This->Rotated90CCW();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 ret = This.Rotated90CCW();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Add_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Add_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Add_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 rhs = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 ret = This->Add(rhs);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 rhs = qscriptvalue_cast<float2>(context->argument(0));
+    float2 ret = This.Add(rhs);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Sub_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Sub_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Sub_float2 in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 rhs = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 ret = This->Sub(rhs);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 rhs = qscriptvalue_cast<float2>(context->argument(0));
+    float2 ret = This.Sub(rhs);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Mul_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Mul_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Mul_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float rhs = TypeFromQScriptValue<float>(context->argument(0));
-    float2 ret = This->Mul(rhs);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float rhs = qscriptvalue_cast<float>(context->argument(0));
+    float2 ret = This.Mul(rhs);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Div_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Div_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Div_float in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float rhs = TypeFromQScriptValue<float>(context->argument(0));
-    float2 ret = This->Div(rhs);
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float rhs = qscriptvalue_cast<float>(context->argument(0));
+    float2 ret = This.Div(rhs);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Neg(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_Neg in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_Neg in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float2 ret = This->Neg();
-    return TypeToQScriptValue(engine, ret);
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 ret = This.Neg();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_float2_QVector2D(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_float2_QVector2D in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    QVector2D other = TypeFromQScriptValue<QVector2D>(context->argument(0));
+    QVector2D other = qscriptvalue_cast<QVector2D>(context->argument(0));
     float2 ret(other);
-    return TypeToQScriptValue(engine, ret);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_toString(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_toString in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This && context->argumentCount() > 0) This = TypeFromQScriptValue<float2*>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
-    if (!This) { printf("Error! Invalid context->thisObject in function float2_toString in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    QString ret = This->toString();
-    return TypeToQScriptValue(engine, ret);
+    float2 This;
+    if (context->argumentCount() > 0) This = qscriptvalue_cast<float2>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
+    else This = qscriptvalue_cast<float2>(context->thisObject());
+    QString ret = This.toString();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float2_ToQVector2D(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_ToQVector2D in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    QVector2D ret = This.ToQVector2D();
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_Orthogonalize_float2_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_Orthogonalize_float2_float2 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 a = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 b = TypeFromQScriptValue<float2>(context->argument(1));
+    float2 a = qscriptvalue_cast<float2>(context->argument(0));
+    float2 b = qscriptvalue_cast<float2>(context->argument(1));
     float2::Orthogonalize(a, b);
     return QScriptValue();
 }
@@ -529,8 +500,8 @@ static QScriptValue float2_Orthogonalize_float2_float2(QScriptContext *context, 
 static QScriptValue float2_Orthonormalize_float2_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_Orthonormalize_float2_float2 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 a = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 b = TypeFromQScriptValue<float2>(context->argument(1));
+    float2 a = qscriptvalue_cast<float2>(context->argument(0));
+    float2 b = qscriptvalue_cast<float2>(context->argument(1));
     float2::Orthonormalize(a, b);
     return QScriptValue();
 }
@@ -538,64 +509,36 @@ static QScriptValue float2_Orthonormalize_float2_float2(QScriptContext *context,
 static QScriptValue float2_FromScalar_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_FromScalar_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float scalar = TypeFromQScriptValue<float>(context->argument(0));
+    float scalar = qscriptvalue_cast<float>(context->argument(0));
     float2 ret = float2::FromScalar(scalar);
-    return TypeToQScriptValue(engine, ret);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_OrientedCCW_float2_float2_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float2_OrientedCCW_float2_float2_float2 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 a = TypeFromQScriptValue<float2>(context->argument(0));
-    float2 b = TypeFromQScriptValue<float2>(context->argument(1));
-    float2 c = TypeFromQScriptValue<float2>(context->argument(2));
+    float2 a = qscriptvalue_cast<float2>(context->argument(0));
+    float2 b = qscriptvalue_cast<float2>(context->argument(1));
+    float2 c = qscriptvalue_cast<float2>(context->argument(2));
     bool ret = float2::OrientedCCW(a, b, c);
-    return TypeToQScriptValue(engine, ret);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_ConvexHullInPlace_float2_ptr_int(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_ConvexHullInPlace_float2_ptr_int in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 * points = TypeFromQScriptValue<float2 *>(context->argument(0));
-    int nPoints = TypeFromQScriptValue<int>(context->argument(1));
+    float2 * points = qscriptvalue_cast<float2 *>(context->argument(0));
+    int nPoints = qscriptvalue_cast<int>(context->argument(1));
     int ret = float2::ConvexHullInPlace(points, nPoints);
-    return TypeToQScriptValue(engine, ret);
+    return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float2_x_get(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float2_FromQVector2D_QVector2D(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_x_get in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    return qScriptValueFromValue(context->engine(), This->x);
-}
-
-static QScriptValue float2_x_set(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_x_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float x = qscriptvalue_cast<float>(context->argument(0));
-    This->x = x;
-    return QScriptValue();
-}
-
-static QScriptValue float2_y_get(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_y_get in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    return qScriptValueFromValue(context->engine(), This->y);
-}
-
-static QScriptValue float2_y_set(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_y_set in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
-    float2 *This = TypeFromQScriptValue<float2*>(context->thisObject());
-    if (!This) { printf("Error! Invalid context->thisObject in file %s, line %d\n!", __FILE__, __LINE__); return QScriptValue(); }
-    float y = qscriptvalue_cast<float>(context->argument(0));
-    This->y = y;
-    return QScriptValue();
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_FromQVector2D_QVector2D in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); return QScriptValue(); }
+    QVector2D v = qscriptvalue_cast<QVector2D>(context->argument(0));
+    float2 ret = float2::FromQVector2D(v);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float2_ctor(QScriptContext *context, QScriptEngine *engine)
@@ -645,109 +588,98 @@ static QScriptValue float2_Clamp_selector(QScriptContext *context, QScriptEngine
     printf("float2_Clamp_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); return QScriptValue();
 }
 
-class float2_scriptclass : public QScriptClass
+void FromScriptValue_float2(const QScriptValue &obj, float2 &value)
 {
-public:
-    QScriptValue objectPrototype;
-    float2_scriptclass(QScriptEngine *engine):QScriptClass(engine){}
-    QScriptValue property(const QScriptValue &object, const QScriptString &name, uint id)
-    {
-        float2 *This = TypeFromQScriptValue<float2*>(object);
-        if (!This) { printf("Error! Cannot convert QScriptValue to type float2 in file %s, line %d!\nTry using float2.get%s() and float2.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return QScriptValue(); }
-        QString name_ = (QString)name;
-        if (name_ == "x_") return TypeToQScriptValue(engine(), This->x);
-        if (name_ == "y_") return TypeToQScriptValue(engine(), This->y);
-        return QScriptValue();
-    }
-    void setProperty(QScriptValue &object, const QScriptString &name, uint id, const QScriptValue &value)
-    {
-        float2 *This = TypeFromQScriptValue<float2*>(object);
-        if (!This) { printf("Error! Cannot convert QScriptValue to type float2 in file %s, line %d!\nTry using float2.get%s() and float2.set%s() to query the member variable '%s'!\n", __FILE__, __LINE__, Capitalize((QString)name).c_str(), Capitalize((QString)name).c_str(), ((QString)name).toStdString().c_str()); return; }
-        QString name_ = (QString)name;
-        if (name_ == "x_") This->x = TypeFromQScriptValue<float>(value);
-        if (name_ == "y_") This->y = TypeFromQScriptValue<float>(value);
-    }
-    QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id)
-    {
-        QString name_ = (QString)name;
-        if (name_ == "x_") return flags;
-        if (name_ == "y_") return flags;
-        return 0;
-    }
-    QScriptValue prototype() const { return objectPrototype; }
-};
+    value.x = qScriptValueToValue<float>(obj.property("x"));
+    value.y = qScriptValueToValue<float>(obj.property("y"));
+}
+
+QScriptValue ToScriptValue_float2(QScriptEngine *engine, const float2 &value)
+{
+    QScriptValue obj = engine->newObject();
+    ToExistingScriptValue_float2(engine, value, obj);
+    return obj;
+}
+
+QScriptValue ToScriptValue_const_float2(QScriptEngine *engine, const float2 &value)
+{
+    QScriptValue obj = engine->newObject();
+    obj.setPrototype(engine->defaultPrototype(qMetaTypeId<float2>()));
+    obj.setProperty("x", qScriptValueFromValue(engine, value.x), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    obj.setProperty("y", qScriptValueFromValue(engine, value.y), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    return obj;
+}
+
 QScriptValue register_float2_prototype(QScriptEngine *engine)
 {
-    engine->setDefaultPrototype(qMetaTypeId<float2*>(), QScriptValue());
-    QScriptValue proto = engine->newVariant(qVariantFromValue((float2*)0));
-    proto.setProperty("LengthSq", engine->newFunction(float2_LengthSq, 0));
-    proto.setProperty("Length", engine->newFunction(float2_Length, 0));
-    proto.setProperty("Normalize", engine->newFunction(float2_Normalize, 0));
-    proto.setProperty("Normalized", engine->newFunction(float2_Normalized, 0));
-    proto.setProperty("ScaleToLength", engine->newFunction(float2_ScaleToLength_float, 1));
-    proto.setProperty("IsNormalized", engine->newFunction(float2_IsNormalized_float, 1));
-    proto.setProperty("IsZero", engine->newFunction(float2_IsZero_float, 1));
-    proto.setProperty("IsFinite", engine->newFunction(float2_IsFinite, 0));
-    proto.setProperty("IsPerpendicular", engine->newFunction(float2_IsPerpendicular_float2_float, 2));
-    proto.setProperty("Equals", engine->newFunction(float2_Equals_selector, 2));
-    proto.setProperty("Equals", engine->newFunction(float2_Equals_selector, 3));
-    proto.setProperty("SumOfElements", engine->newFunction(float2_SumOfElements, 0));
-    proto.setProperty("ProductOfElements", engine->newFunction(float2_ProductOfElements, 0));
-    proto.setProperty("AverageOfElements", engine->newFunction(float2_AverageOfElements, 0));
-    proto.setProperty("MinElement", engine->newFunction(float2_MinElement, 0));
-    proto.setProperty("MinElementIndex", engine->newFunction(float2_MinElementIndex, 0));
-    proto.setProperty("MaxElement", engine->newFunction(float2_MaxElement, 0));
-    proto.setProperty("MaxElementIndex", engine->newFunction(float2_MaxElementIndex, 0));
-    proto.setProperty("Abs", engine->newFunction(float2_Abs, 0));
-    proto.setProperty("Min", engine->newFunction(float2_Min_selector, 1));
-    proto.setProperty("Max", engine->newFunction(float2_Max_selector, 1));
-    proto.setProperty("Clamp", engine->newFunction(float2_Clamp_selector, 2));
-    proto.setProperty("Clamp01", engine->newFunction(float2_Clamp01, 0));
-    proto.setProperty("Distance", engine->newFunction(float2_Distance_float2, 1));
-    proto.setProperty("DistanceSq", engine->newFunction(float2_DistanceSq_float2, 1));
-    proto.setProperty("Dot", engine->newFunction(float2_Dot_float2, 1));
-    proto.setProperty("PerpDot", engine->newFunction(float2_PerpDot_float2, 1));
-    proto.setProperty("Reflect", engine->newFunction(float2_Reflect_float2, 1));
-    proto.setProperty("Refract", engine->newFunction(float2_Refract_float2_float_float, 3));
-    proto.setProperty("ProjectTo", engine->newFunction(float2_ProjectTo_float2, 1));
-    proto.setProperty("ProjectToNorm", engine->newFunction(float2_ProjectToNorm_float2, 1));
-    proto.setProperty("AngleBetween", engine->newFunction(float2_AngleBetween_float2, 1));
-    proto.setProperty("AngleBetweenNorm", engine->newFunction(float2_AngleBetweenNorm_float2, 1));
-    proto.setProperty("Decompose", engine->newFunction(float2_Decompose_float2_float2_float2, 3));
-    proto.setProperty("Lerp", engine->newFunction(float2_Lerp_float2_float, 2));
-    proto.setProperty("SetFromScalar", engine->newFunction(float2_SetFromScalar_float, 1));
-    proto.setProperty("Set", engine->newFunction(float2_Set_float_float, 2));
-    proto.setProperty("Rotate90CW", engine->newFunction(float2_Rotate90CW, 0));
-    proto.setProperty("Rotated90CW", engine->newFunction(float2_Rotated90CW, 0));
-    proto.setProperty("Rotate90CCW", engine->newFunction(float2_Rotate90CCW, 0));
-    proto.setProperty("Rotated90CCW", engine->newFunction(float2_Rotated90CCW, 0));
-    proto.setProperty("Add", engine->newFunction(float2_Add_float2, 1));
-    proto.setProperty("Sub", engine->newFunction(float2_Sub_float2, 1));
-    proto.setProperty("Mul", engine->newFunction(float2_Mul_float, 1));
-    proto.setProperty("Div", engine->newFunction(float2_Div_float, 1));
-    proto.setProperty("Neg", engine->newFunction(float2_Neg, 0));
-    proto.setProperty("toString", engine->newFunction(float2_toString, 0));
-    proto.setProperty("x", engine->newFunction(float2_x_get, 1));
-    proto.setProperty("setX", engine->newFunction(float2_x_set, 1));
-    proto.setProperty("y", engine->newFunction(float2_y_get, 1));
-    proto.setProperty("setY", engine->newFunction(float2_y_set, 1));
-    float2_scriptclass *sc = new float2_scriptclass(engine);
-    engine->setProperty("float2_scriptclass", QVariant::fromValue<QScriptClass*>(sc));
-    proto.setScriptClass(sc);
-    sc->objectPrototype = proto;
+    QScriptValue proto = engine->newObject();
+    proto.setProperty("LengthSq", engine->newFunction(float2_LengthSq, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Length", engine->newFunction(float2_Length, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Normalize", engine->newFunction(float2_Normalize, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Normalized", engine->newFunction(float2_Normalized, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ScaleToLength", engine->newFunction(float2_ScaleToLength_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("IsNormalized", engine->newFunction(float2_IsNormalized_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("IsZero", engine->newFunction(float2_IsZero_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("IsFinite", engine->newFunction(float2_IsFinite, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("IsPerpendicular", engine->newFunction(float2_IsPerpendicular_float2_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Equals", engine->newFunction(float2_Equals_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Equals", engine->newFunction(float2_Equals_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("SumOfElements", engine->newFunction(float2_SumOfElements, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ProductOfElements", engine->newFunction(float2_ProductOfElements, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("AverageOfElements", engine->newFunction(float2_AverageOfElements, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("MinElement", engine->newFunction(float2_MinElement, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("MinElementIndex", engine->newFunction(float2_MinElementIndex, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("MaxElement", engine->newFunction(float2_MaxElement, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("MaxElementIndex", engine->newFunction(float2_MaxElementIndex, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Abs", engine->newFunction(float2_Abs, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Min", engine->newFunction(float2_Min_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Max", engine->newFunction(float2_Max_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Clamp", engine->newFunction(float2_Clamp_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Clamp01", engine->newFunction(float2_Clamp01, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Distance", engine->newFunction(float2_Distance_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("DistanceSq", engine->newFunction(float2_DistanceSq_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Dot", engine->newFunction(float2_Dot_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("PerpDot", engine->newFunction(float2_PerpDot_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Reflect", engine->newFunction(float2_Reflect_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Refract", engine->newFunction(float2_Refract_float2_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ProjectTo", engine->newFunction(float2_ProjectTo_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ProjectToNorm", engine->newFunction(float2_ProjectToNorm_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("AngleBetween", engine->newFunction(float2_AngleBetween_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("AngleBetweenNorm", engine->newFunction(float2_AngleBetweenNorm_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Decompose", engine->newFunction(float2_Decompose_float2_float2_float2, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Lerp", engine->newFunction(float2_Lerp_float2_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("SetFromScalar", engine->newFunction(float2_SetFromScalar_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Set", engine->newFunction(float2_Set_float_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Rotate90CW", engine->newFunction(float2_Rotate90CW, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Rotated90CW", engine->newFunction(float2_Rotated90CW, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Rotate90CCW", engine->newFunction(float2_Rotate90CCW, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Rotated90CCW", engine->newFunction(float2_Rotated90CCW, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Add", engine->newFunction(float2_Add_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Sub", engine->newFunction(float2_Sub_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Mul", engine->newFunction(float2_Mul_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Div", engine->newFunction(float2_Div_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Neg", engine->newFunction(float2_Neg, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("toString", engine->newFunction(float2_toString, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ToQVector2D", engine->newFunction(float2_ToQVector2D, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     engine->setDefaultPrototype(qMetaTypeId<float2>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<float2*>(), proto);
+    qScriptRegisterMetaType(engine, ToScriptValue_float2, FromScriptValue_float2, proto);
+
     QScriptValue ctor = engine->newFunction(float2_ctor, proto, 2);
-    ctor.setProperty("Orthogonalize", engine->newFunction(float2_Orthogonalize_float2_float2, 2));
-    ctor.setProperty("Orthonormalize", engine->newFunction(float2_Orthonormalize_float2_float2, 2));
-    ctor.setProperty("FromScalar", engine->newFunction(float2_FromScalar_float, 1));
-    ctor.setProperty("OrientedCCW", engine->newFunction(float2_OrientedCCW_float2_float2_float2, 3));
-    ctor.setProperty("ConvexHullInPlace", engine->newFunction(float2_ConvexHullInPlace_float2_ptr_int, 2));
-    ctor.setProperty("zero", TypeToQScriptValue(engine, float2::zero));
-    ctor.setProperty("one", TypeToQScriptValue(engine, float2::one));
-    ctor.setProperty("unitX", TypeToQScriptValue(engine, float2::unitX));
-    ctor.setProperty("unitY", TypeToQScriptValue(engine, float2::unitY));
-    engine->globalObject().setProperty("float2", ctor);
+    ctor.setProperty("Orthogonalize", engine->newFunction(float2_Orthogonalize_float2_float2, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("Orthonormalize", engine->newFunction(float2_Orthonormalize_float2_float2, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("FromScalar", engine->newFunction(float2_FromScalar_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("OrientedCCW", engine->newFunction(float2_OrientedCCW_float2_float2_float2, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("ConvexHullInPlace", engine->newFunction(float2_ConvexHullInPlace_float2_ptr_int, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("FromQVector2D", engine->newFunction(float2_FromQVector2D_QVector2D, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("zero", qScriptValueFromValue(engine, float2::zero), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("one", qScriptValueFromValue(engine, float2::one), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("unitX", qScriptValueFromValue(engine, float2::unitX), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("unitY", qScriptValueFromValue(engine, float2::unitY), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("nan", qScriptValueFromValue(engine, float2::nan), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("inf", qScriptValueFromValue(engine, float2::inf), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("float2", ctor, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+
     return ctor;
 }
 

@@ -53,8 +53,10 @@ class FrameAPI : public QObject
 
     friend class Framework;
 
-    /// Destructor.
     ~FrameAPI();
+
+    /// Clears all registered signals to this API.
+    void Reset();
 
 public slots:
     /// Return wall clock time of Framework in seconds.

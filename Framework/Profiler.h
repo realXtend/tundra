@@ -17,18 +17,19 @@
 #pragma warning( pop )
 
 #if (defined(_POSIX_C_SOURCE) || defined(_WINDOWS)) && defined(PROFILING)
+
 /// Profiles a block of code in current scope. Ends the profiling when it goes out of scope
 /** Name of the profiling block must be unique in the scope, so do not use the name of the function
     as the name of the profiling block!
 
     \param x Unique name for the profiling block, use without quotes, f.ex. PROFILE(name_of_the_block)
 */
-#   define PROFILE(x) ProfilerSection x ## __profiler__(#x);
+#define PROFILE(x) ProfilerSection x ## __profiler__(#x);
 
 /// Optionally ends the current profiling block
 /** Use when you wish to end a profiling block before it goes out of scope
 */
-#   define ELIFORP(x) x ## __profiler__.Destruct();
+#define ELIFORP(x) x ## __profiler__.Destruct();
 
 /// Resets profiling data per frame. Must be called at end of each frame in each thread, otherwise profiling data may be inaccurate or unavailable.
 /// \todo Currently RESETPROFILER is called in modules at end of Update(), but that will probably cause mismatched timing data if things are profiled
@@ -36,10 +37,14 @@
 ///       at the same time, at the end of the main loop. Threads are free to reset whenever they choose, as they have their own frame. -cm
 #define RESETPROFILER { ProfilerSection::GetProfiler()->ThreadedReset(); }
 
+#define STARTTIMEDBLOCK(name) tick_t timedBlock##name = GetCurrentClockTime();
+#define LOGTIMEDBLOCK(name) { float elapsed = (float)(GetCurrentClockTime() - timedBlock##name) / GetCurrentClockFreq(); printf("%s: Took %f seconds.\n", #name, elapsed); }
 #else
-#   define PROFILE(x)
-#   define ELIFORP(x)
-#   define RESETPROFILER
+#define STARTTIMEDBLOCK(name)
+#define LOGTIMEDBLOCK(name)
+#define PROFILE(x)
+#define ELIFORP(x)
+#define RESETPROFILER
 #endif
 
 class ProfilerNodeTree;
@@ -301,10 +306,6 @@ namespace
 {
     /// For boost::thread_specific_ptr, we don't want it doing automatic deletion
     void EmptyDeletor(ProfilerNodeTree *node) { }
-/*        void TSPNodeDeletor(ProfilerNodeTree *node)
-      { 
-      delete node;
-      }*/
 }
 
 /// Profiler can be used to measure execution time of a block of code.
@@ -333,10 +334,11 @@ class Profiler
 {
 public:
 Profiler()
-    :current_node_(&EmptyDeletor),
-        root_("Root")
-        {
-        }
+    :current_node_(0),
+    root_("Root")
+    {
+    }
+
 public:
     ~Profiler();
 
@@ -387,6 +389,8 @@ public:
 
     ProfilerNodeTree *GetRoot() { return &root_; }
 
+    void Reset();
+
 private:
     /// The single global root node object. This is a dummy root node that doesn't track any
     /// timing statistics, but just contains all the root blocks of each thread as its children.
@@ -396,9 +400,9 @@ private:
     ProfilerNodeTree root_;
 
     /// Contains the root profile block for each thread.
-    boost::thread_specific_ptr<ProfilerNodeTree> thread_specific_root_;
+    boost::shared_ptr<ProfilerNodeTree> thread_specific_root_;
     /// Points to the current topmost profile block in the stack for each thread.
-    boost::thread_specific_ptr<ProfilerNodeTree> current_node_;
+    ProfilerNodeTree *current_node_;
 
     /// container for all the root profile nodes for each thread.
     std::list<ProfilerNodeTree*> thread_root_nodes_;
