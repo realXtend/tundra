@@ -494,7 +494,6 @@ static QScriptValue Quat_Quat_QQuaternion(QScriptContext *context, QScriptEngine
 
 static QScriptValue Quat_toString(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Quat_toString in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Quat This;
     if (context->argumentCount() > 0) This = qscriptvalue_cast<Quat>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
     else This = qscriptvalue_cast<Quat>(context->thisObject());
@@ -727,6 +726,14 @@ static QScriptValue Quat_FromQQuaternion_QQuaternion(QScriptContext *context, QS
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Quat_FromString_QString(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_FromString_QString in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    QString str = qscriptvalue_cast<QString>(context->argument(0));
+    Quat ret = Quat::FromString(str);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Quat_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -894,6 +901,7 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     ctor.setProperty("FromEulerZXY", engine->newFunction(Quat_FromEulerZXY_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromEulerZYX", engine->newFunction(Quat_FromEulerZYX_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromQQuaternion", engine->newFunction(Quat_FromQQuaternion_QQuaternion, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("FromString", engine->newFunction(Quat_FromString_QString, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("identity", qScriptValueFromValue(engine, Quat::identity), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("nan", qScriptValueFromValue(engine, Quat::nan), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     engine->globalObject().setProperty("Quat", ctor, QScriptValue::Undeletable | QScriptValue::ReadOnly);

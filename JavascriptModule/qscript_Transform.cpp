@@ -14,9 +14,9 @@ static QScriptValue Transform_Transform(QScriptContext *context, QScriptEngine *
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Transform_Transform_Vector3df_Vector3df_Vector3df(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Transform_Transform_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_Transform_Vector3df_Vector3df_Vector3df in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_Transform_float3_float3_float3 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3 pos_ = qscriptvalue_cast<float3>(context->argument(0));
     float3 rot_ = qscriptvalue_cast<float3>(context->argument(1));
     float3 scale = qscriptvalue_cast<float3>(context->argument(2));
@@ -197,7 +197,6 @@ static QScriptValue Transform_Mul_Transform(QScriptContext *context, QScriptEngi
 
 static QScriptValue Transform_toString(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Transform_toString in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Transform This;
     if (context->argumentCount() > 0) This = qscriptvalue_cast<Transform>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
     else This = qscriptvalue_cast<Transform>(context->thisObject());
@@ -210,7 +209,7 @@ static QScriptValue Transform_ctor(QScriptContext *context, QScriptEngine *engin
     if (context->argumentCount() == 0)
         return Transform_Transform(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)))
-        return Transform_Transform_Vector3df_Vector3df_Vector3df(context, engine);
+        return Transform_Transform_float3_float3_float3(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))
         return Transform_Transform_float3x3(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3x4>(context->argument(0)))

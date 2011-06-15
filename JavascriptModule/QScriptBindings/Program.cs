@@ -402,7 +402,8 @@ namespace QScriptBindings
 
             bool isClassCtor = (function.name == Class.name);
 
-            tw.WriteLine(Indent(1) + "if (context->argumentCount() != " + function.parameters.Count + ") { printf(\"Error! Invalid number of arguments passed to function " + GetScriptFunctionName(function) + " in file %s, line %d!\\nExpected " + function.parameters.Count + ", but got %d!\\n\", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }");
+            if (function.name != "toString") // Qt oddities: It seems sometimes the hardcoded toString is called with this as the first argument and not as 'this'.
+                tw.WriteLine(Indent(1) + "if (context->argumentCount() != " + function.parameters.Count + ") { printf(\"Error! Invalid number of arguments passed to function " + GetScriptFunctionName(function) + " in file %s, line %d!\\nExpected " + function.parameters.Count + ", but got %d!\\n\", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }");
 
             // Test that we have a valid this.
             if (!function.isStatic && !isClassCtor)

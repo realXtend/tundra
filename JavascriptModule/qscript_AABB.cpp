@@ -126,14 +126,23 @@ static QScriptValue AABB_CenterPoint(QScriptContext *context, QScriptEngine *eng
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue AABB_GetPointInside_float_float_float(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue AABB_PointInside_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function AABB_GetPointInside_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function AABB_PointInside_float_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     AABB This = qscriptvalue_cast<AABB>(context->thisObject());
     float x = qscriptvalue_cast<float>(context->argument(0));
     float y = qscriptvalue_cast<float>(context->argument(1));
     float z = qscriptvalue_cast<float>(context->argument(2));
     float3 ret = This.PointInside(x, y, z);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_Edge_int(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Edge_int in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    int edgeIndex = qscriptvalue_cast<int>(context->argument(0));
+    LineSegment ret = This.Edge(edgeIndex);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -656,7 +665,8 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     proto.setProperty("IsFinite", engine->newFunction(AABB_IsFinite, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsDegenerate", engine->newFunction(AABB_IsDegenerate, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("CenterPoint", engine->newFunction(AABB_CenterPoint, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("GetPointInside", engine->newFunction(AABB_GetPointInside_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("PointInside", engine->newFunction(AABB_PointInside_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Edge", engine->newFunction(AABB_Edge_int, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("CornerPoint", engine->newFunction(AABB_CornerPoint_int, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("PointOnEdge", engine->newFunction(AABB_PointOnEdge_int_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("FaceCenterPoint", engine->newFunction(AABB_FaceCenterPoint_int, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);

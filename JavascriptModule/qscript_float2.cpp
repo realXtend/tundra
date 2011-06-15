@@ -462,6 +462,15 @@ static QScriptValue float2_Neg(QScriptContext *context, QScriptEngine *engine)
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float2_Mul_float2(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_Mul_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float2 rhs = qscriptvalue_cast<float2>(context->argument(0));
+    float2 ret = This.Mul(rhs);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float2_float2_QVector2D(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_float2_QVector2D in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -472,7 +481,6 @@ static QScriptValue float2_float2_QVector2D(QScriptContext *context, QScriptEngi
 
 static QScriptValue float2_toString(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_toString in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float2 This;
     if (context->argumentCount() > 0) This = qscriptvalue_cast<float2>(context->argument(0)); // Qt oddity (bug?): Sometimes the built-in toString() function doesn't give us this from thisObject, but as the first argument.
     else This = qscriptvalue_cast<float2>(context->thisObject());
@@ -541,6 +549,14 @@ static QScriptValue float2_FromQVector2D_QVector2D(QScriptContext *context, QScr
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float2_FromString_QString(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_FromString_QString in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    QString str = qscriptvalue_cast<QString>(context->argument(0));
+    float2 ret = float2::FromString(str);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float2_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -586,6 +602,15 @@ static QScriptValue float2_Clamp_selector(QScriptContext *context, QScriptEngine
     if (context->argumentCount() == 2 && QSVIsOfType<float2>(context->argument(0)) && QSVIsOfType<float2>(context->argument(1)))
         return float2_Clamp_float2_float2(context, engine);
     printf("float2_Clamp_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
+static QScriptValue float2_Mul_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<float>(context->argument(0)))
+        return float2_Mul_float(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float2>(context->argument(0)))
+        return float2_Mul_float2(context, engine);
+    printf("float2_Mul_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 void FromScriptValue_float2(const QScriptValue &obj, float2 &value)
@@ -656,7 +681,7 @@ QScriptValue register_float2_prototype(QScriptEngine *engine)
     proto.setProperty("Rotated90CCW", engine->newFunction(float2_Rotated90CCW, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Add", engine->newFunction(float2_Add_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Sub", engine->newFunction(float2_Sub_float2, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Mul", engine->newFunction(float2_Mul_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Mul", engine->newFunction(float2_Mul_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Div", engine->newFunction(float2_Div_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Neg", engine->newFunction(float2_Neg, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("toString", engine->newFunction(float2_toString, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -673,6 +698,7 @@ QScriptValue register_float2_prototype(QScriptEngine *engine)
     ctor.setProperty("OrientedCCW", engine->newFunction(float2_OrientedCCW_float2_float2_float2, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ConvexHullInPlace", engine->newFunction(float2_ConvexHullInPlace_float2_ptr_int, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromQVector2D", engine->newFunction(float2_FromQVector2D_QVector2D, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("FromString", engine->newFunction(float2_FromString_QString, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("zero", qScriptValueFromValue(engine, float2::zero), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("one", qScriptValueFromValue(engine, float2::one), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("unitX", qScriptValueFromValue(engine, float2::unitX), QScriptValue::Undeletable | QScriptValue::ReadOnly);
