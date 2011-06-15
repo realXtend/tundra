@@ -2,6 +2,7 @@
 
 void ToExistingScriptValue_float3x4(QScriptEngine *engine, const float3x4 &value, QScriptValue obj)
 {
+    obj.setData(engine->newVariant(QVariant::fromValue(value)));
 }
 
 static QScriptValue float3x4_float3x4(QScriptContext *context, QScriptEngine *engine)
@@ -1579,6 +1580,7 @@ static QScriptValue float3x4_MakeOrthographicProjection_selector(QScriptContext 
 
 void FromScriptValue_float3x4(const QScriptValue &obj, float3x4 &value)
 {
+    value = obj.data().toVariant().value<float3x4>();
 }
 
 QScriptValue ToScriptValue_float3x4(QScriptEngine *engine, const float3x4 &value)
@@ -1592,6 +1594,7 @@ QScriptValue ToScriptValue_const_float3x4(QScriptEngine *engine, const float3x4 
 {
     QScriptValue obj = engine->newObject();
     obj.setPrototype(engine->defaultPrototype(qMetaTypeId<float3x4>()));
+    obj.setData(engine->newVariant(QVariant::fromValue(value)));
     return obj;
 }
 

@@ -140,11 +140,11 @@ function ServerUpdatePhysics(frametime) {
     if (!flying) {
         // Apply motion force
         // If diagonal motion, normalize
-        if ((motion_x != 0) || (motion_z != 0)) {
-            var mag = 1.0 / Math.sqrt(motion_x * motion_x + motion_z * motion_z);
-            var impulseVec = new float3(mag * move_force * motion_x, 0, -mag * move_force * motion_z);
-            impulseVec = placeable.GetRelativeVector(impulseVec);
-            rigidbody.ApplyImpulse(impulseVec);
+        if (motion_x != 0 || motion_z != 0) {
+            var impulse = new float3(motion_x, 0, -motion_z).Normalized().Mul(move_force);
+            var tm = placeable.LocalToWorld();
+            impulse = tm.MulDir(impulse);
+            rigidbody.ApplyImpulse(impulse);
         }
 
         // Apply jump
@@ -176,7 +176,7 @@ function ServerUpdatePhysics(frametime) {
         var moveVec = new float3(motion_x * fly_speed_factor, motion_y * fly_speed_factor, -motion_z * fly_speed_factor);
 
         // Apply that with av looking direction to the current position
-        var offsetVec = placeable.GetRelativeVector(moveVec);
+        var offsetVec = placeable.LocalToWorld().MulDir(moveVec);
         av_transform.pos.x = av_transform.pos.x + offsetVec.x;
         av_transform.pos.y = av_transform.pos.y + offsetVec.y;
         av_transform.pos.z = av_transform.pos.z + offsetVec.z;
@@ -266,7 +266,7 @@ function ServerSetFlying(newFlying) {
         // Push avatar a bit to the fly direction
         // so the motion does not just stop to a wall
         var moveVec = new float3(motion_x * 120, motion_y * 120, -motion_z * 120);
-        var pushVec = placeable.GetRelativeVector(moveVec);
+        var pushVec = placeable.LocalToWorld().MulDir(moveVec);
         rigidbody.ApplyImpulse(pushVec);
     }
     ServerSetAnimationState();
@@ -275,7 +275,8 @@ function ServerSetFlying(newFlying) {
 function ServerHandleSetRotation(param) {
     var attrs = me.dynamiccomponent;
     if (attrs.GetAttribute("enableRotate")) {
-        me.rigidbody.SetRotation(new float3(0, parseFloat(param), 0));
+        var rot = new float3(0, parseFloat(param), 0);
+        me.rigidbody.SetRotation(rot);
     }
 }
 

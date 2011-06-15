@@ -234,10 +234,27 @@ namespace QScriptBindings
         }
         */
 
+        public static bool HasOpaqueQVariantBasedMarshalling(Symbol Class)
+        {
+            Symbol ctor = Class.FindChildByName(Class.name);
+            foreach (string s in ctor.comments)
+            {
+                if (Class.name == "float3x4")
+                    Console.WriteLine(s);
+                if (s.Contains("[opaque-qtscript]"))
+                    return true;
+            }
+            return false;
+        }
+
         static void GenerateToExistingScriptValue(Symbol Class, TextWriter tw)
         {
             tw.WriteLine("void ToExistingScriptValue_" + Class.name + "(QScriptEngine *engine, const " + Class.name + " &value, QScriptValue obj)");
             tw.WriteLine("{");
+
+            if (HasOpaqueQVariantBasedMarshalling(Class)) // If enabled, this type is marshalled opaquely.
+                tw.WriteLine(Indent(1) + "obj.setData(engine->newVariant(QVariant::fromValue(value)));");
+
             foreach (Symbol v in Class.children.Values)
                 if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public && !v.isStatic)
                 {
@@ -250,6 +267,7 @@ namespace QScriptBindings
                         tw.WriteLine(Indent(1) + "obj.setProperty(\"" + v.name + "\", qScriptValueFromValue(engine, value." + v.name
                             + "), " + flags + ");");
                 }
+
             tw.WriteLine("}");
             tw.WriteLine("");
         }
@@ -271,6 +289,10 @@ namespace QScriptBindings
             tw.WriteLine("{");
             tw.WriteLine(Indent(1) + "QScriptValue obj = engine->newObject();");
             tw.WriteLine(Indent(1) + "obj.setPrototype(engine->defaultPrototype(qMetaTypeId<" + Class.name + ">()));");
+
+            if (HasOpaqueQVariantBasedMarshalling(Class)) // If enabled, this type is marshalled opaquely.
+                tw.WriteLine(Indent(1) + "obj.setData(engine->newVariant(QVariant::fromValue(value)));");
+
             foreach (Symbol v in Class.children.Values)
                 if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public && !v.isStatic)
                 {
@@ -289,6 +311,10 @@ namespace QScriptBindings
         {
             tw.WriteLine("void FromScriptValue_" + Class.name + "(const QScriptValue &obj, " + Class.name + " &value)");
             tw.WriteLine("{");
+
+            if (HasOpaqueQVariantBasedMarshalling(Class)) // If enabled, this type is marshalled opaquely.
+                tw.WriteLine(Indent(1) + "value = obj.data().toVariant().value<" + Class.name + ">();");
+
             foreach (Symbol v in Class.children.Values)
                 if (v.kind == "variable" && IsScriptable(v) && v.visibilityLevel == VisibilityLevel.Public && !v.isStatic)
                     tw.WriteLine(Indent(1) + "value." + v.name + " = qScriptValueToValue<" + v.type + ">(obj.property(\"" + v.name + "\"));");

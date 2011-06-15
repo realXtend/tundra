@@ -76,7 +76,7 @@ public:
     static const float3x4 nan;
 
     /// Creates a new float3x4 with uninitialized member values.
-    /** [Category: Create] */
+    /** [Category: Create] [opaque-qtscript] */
     float3x4() {}
 
     /// Constructs a new float3x4 by explicitly specifying all the matrix elements.
