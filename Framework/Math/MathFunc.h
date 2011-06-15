@@ -16,9 +16,14 @@
 #include "MathConstants.h"
 #include "float3.h"
 
-#ifdef _DEBUG
+// The assume() macro can have three states, depending on which #defines are present:
+// #define MATH_ASSERT_ON_ASSUME - the assume() macro is equal to the assert() macro.
+// #define MATH_DISABLE_ASSUME   - the assume() macro is silent, and disabled altogether.
+// If neither of the above is defined, then assume() macro uses printf() to log warnings of failed math-related assumptions.
+
+#ifdef MATH_ASSERT_ON_ASSUME
 #define assume(x) assert(x)
-#else
+#elif !defined(MATH_SILENT_ASSUME)
 #define assume(x) { if (!(x)) printf("Assumption \"%s\" failed! in file %s, line %d!\n", #x, __FILE__, __LINE__); }
 #endif
 
