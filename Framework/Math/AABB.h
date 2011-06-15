@@ -106,12 +106,16 @@ public:
     /// @param x A normalized value between [0,1]. This specifies the point position along the world x axis.
     /// @param y A normalized value between [0,1]. This specifies the point position along the world y axis.
     /// @param z A normalized value between [0,1]. This specifies the point position along the world z axis.
-    float3 GetPointInside(float x, float y, float z) const;
+    float3 PointInside(float x, float y, float z) const;
+
+    /// Returns an edge of this AABB.
+    /// @param edgeIndex The index of the edge line segment to get, in the range [0, 11].
+    LineSegment Edge(int edgeIndex) const;
 
     /// Returns a corner point of this AABB.
     /** This function generates one of the eight corner points of this AABB. 
         @param cornerIndex The index of the corner point to generate, in the range [0, 7].
-         The points are returned in the order ---, --+, -+-, -++, +--, +-+, ++-, +++. (corresponding the XYZ axis directions). */
+         The points are returned in the order 0: ---, 1: --+, 2: -+-, 3: -++, 4: +--, 5: +-+, 6: ++-, 7: +++. (corresponding the XYZ axis directions). */
     float3 CornerPoint(int cornerIndex) const;
 
     /// Returns a point on an edge of this AABB.

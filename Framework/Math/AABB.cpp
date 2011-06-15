@@ -106,7 +106,7 @@ float3 AABB::CenterPoint() const
     return (minPoint + maxPoint) / 2.f;
 }
 
-float3 AABB::GetPointInside(float x, float y, float z) const
+float3 AABB::PointInside(float x, float y, float z) const
 {
     assume(0.f <= x && x <= 1.f);
     assume(0.f <= y && y <= 1.f);
@@ -114,6 +114,27 @@ float3 AABB::GetPointInside(float x, float y, float z) const
 
     float3 d = maxPoint - minPoint;
     return minPoint + float3(d.x*x, d.y*y, d.z*z);
+}
+
+LineSegment AABB::Edge(int edgeIndex) const
+{
+    assume(0 <= edgeIndex && edgeIndex <= 11);
+    switch(edgeIndex)
+    {
+        default: // For release builds where assume() is disabled, return always the first option if out-of-bounds.
+        case 0: return LineSegment(CornerPoint(0), CornerPoint(1));
+        case 1: return LineSegment(CornerPoint(0), CornerPoint(2));
+        case 2: return LineSegment(CornerPoint(0), CornerPoint(4));
+        case 3: return LineSegment(CornerPoint(1), CornerPoint(3));
+        case 4: return LineSegment(CornerPoint(1), CornerPoint(5));
+        case 5: return LineSegment(CornerPoint(2), CornerPoint(3));
+        case 6: return LineSegment(CornerPoint(2), CornerPoint(6));
+        case 7: return LineSegment(CornerPoint(3), CornerPoint(7));
+        case 8: return LineSegment(CornerPoint(4), CornerPoint(5));
+        case 9: return LineSegment(CornerPoint(4), CornerPoint(6));
+        case 10: return LineSegment(CornerPoint(5), CornerPoint(7));
+        case 11: return LineSegment(CornerPoint(6), CornerPoint(7));
+    }
 }
 
 float3 AABB::CornerPoint(int cornerIndex) const
@@ -270,7 +291,7 @@ float AABB::SurfaceArea() const
 
 float3 AABB::RandomPointInside(LCG &rng) const
 {
-    return GetPointInside(rng.Float(), rng.Float(), rng.Float());
+    return PointInside(rng.Float(), rng.Float(), rng.Float());
 }
 
 float3 AABB::RandomPointOnSurface(LCG &rng) const
