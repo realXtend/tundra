@@ -8,14 +8,9 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "Transform.h"
-#include "Vector3D.h"
 #include "Math/MathFwd.h"
 
-#include <QVector3D>
-
-#include <OgreNode.h>
-
-class EC_Mesh;
+namespace Ogre { class Bone; }
 
 /// Ogre placeable (scene node) component
 /**
@@ -72,11 +67,11 @@ public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Placeable(Scene* scene);
     virtual ~EC_Placeable();
-    
+
     /// Stores the position, rotation and scale of this sceene node in the coordinate space of its parent.
     Q_PROPERTY(Transform transform READ gettransform WRITE settransform);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, transform);
-    
+
     /// If true, the bounding box of the mesh in this entity is shown (for debugging purposes).
     Q_PROPERTY(bool drawDebug READ getdrawDebug WRITE setdrawDebug);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, drawDebug);
@@ -84,7 +79,7 @@ public:
     /// Specifies whether any objects attached to the scene node of this placeable are visible or not.
     Q_PROPERTY(bool visible READ getvisible WRITE setvisible);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, visible);
-    
+
     /// Specifies the selection layer of this object. This can be used to selectively perform raycasts.
     Q_PROPERTY(int selectionLayer READ getselectionLayer WRITE setselectionLayer)
     DEFINE_QPROPERTY_ATTRIBUTE(int, selectionLayer);
@@ -92,7 +87,7 @@ public:
     /// Specifies the parent entity of this entity. Set to 0 for no parenting.
     Q_PROPERTY(EntityReference parentRef READ getparentRef WRITE setparentRef)
     DEFINE_QPROPERTY_ATTRIBUTE(EntityReference, parentRef);
-    
+
     /// Specifies the name of the bone on the parent entity.
     /// Needs that the parent entity has a skeletal mesh. 
     /// Set to empty for no parent bone assignment, in which case this scene node is attached to the root of the parent node.
@@ -104,7 +99,6 @@ public:
     Ogre::SceneNode* GetSceneNode() const { return sceneNode_; }
 
 public slots:
-
     /// Sets the translation part of this placeable's transform.
     /// @note This function sets the Transform attribute of this component, and synchronizes to network.
     void SetPosition(float x, float y, float z);
@@ -163,22 +157,21 @@ public slots:
     float3x4 ParentToLocal() const;
 
     /// Shows the entity
-    /** @note Doesn't alter the component's attribute. */
+    /** @note Doesn't alter the component's visible attribute. */
     void Show();
 
     /// Hides the entity.
-    /** @note Doesn't alter the component's visible" attribute. */
+    /** @note Doesn't alter the component's visible attribute. */
     void Hide();
 
     /// Toggles visibility.
-    /** @note Doesn't alter the component's attribute. */
+    /** @note Doesn't alter the component's visible attribute. */
     void ToggleVisibility();
 
     /// Return whether is attached to the Ogre scene node hierarchy
     bool IsAttached() const { return attached_; }
 
 signals:
-
     /// Emitted when about to be destroyed
     void AboutToBeDestroyed();
 
