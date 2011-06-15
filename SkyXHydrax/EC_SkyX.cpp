@@ -16,15 +16,6 @@
 #include "Renderer.h"
 #include "EC_Camera.h"
 #include "LoggingFunctions.h"
-
-// The evil Windows min & max defs seems to leak here
-#ifdef min
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif
-
 #include "OgreConversionUtils.h"
 
 #include <Ogre.h>

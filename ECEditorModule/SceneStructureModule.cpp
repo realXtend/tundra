@@ -9,7 +9,6 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#define NOMINMAX
 #include "SceneStructureModule.h"
 #include "SceneStructureWindow.h"
 #include "AssetsWindow.h"

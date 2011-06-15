@@ -16,19 +16,10 @@
 #include "Renderer.h"
 #include "EC_Camera.h"
 #include "Entity.h"
+#include "OgreConversionUtils.h"
 #ifdef SKYX_ENABLED
 #include "EC_SkyX.h"
 #endif
-
-// The evil Windows min & max defs seems to leak here
-#ifdef min
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif
-
-#include "OgreConversionUtils.h"
 
 #include <Hydrax.h>
 #include <Noise/Perlin/Perlin.h>
