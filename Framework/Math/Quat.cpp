@@ -203,6 +203,8 @@ Quat Quat::Lerp(const Quat &b, float t) const
 Quat Quat::Slerp(const Quat &b, float t) const
 {
     assume(0.f <= t && t <= 1.f);
+    assume(IsNormalized());
+    assume(b.IsNormalized());
     float angle = acos(Clamp(this->Dot(b), -1.f, 1.f));
     float directionFlip = 1.f;
     if (angle > pi)
@@ -214,7 +216,7 @@ Quat Quat::Slerp(const Quat &b, float t) const
         return *this;
     float sina = 1.f / sin(angle);
 
-    return Quat(*this * (sin(angle*(1.f-t))*sina) + b * (sin(angle * t)*sina*directionFlip));
+    return (*this * (sin(angle*(1.f-t))*sina) + b * (sin(angle * t)*sina*directionFlip)).Normalized();
 }
 
 Quat Lerp(const Quat &a, const Quat &b, float t)
