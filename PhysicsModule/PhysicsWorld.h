@@ -142,9 +142,12 @@ public slots:
     bool GetRunPhysics() const { return runPhysics_; }
     
     // Debugging aids:
-    void DrawAABB(AABB *aabb, float r, float g, float b);
-    void DrawOBB(OBB *obb, float r, float g, float b);
-    void DrawLineSegment(LineSegment *l, float r, float g, float b);
+    ///\todo This is a temporary function, which will be removed in the future.
+    void DrawAABB(const AABB &aabb, float r, float g, float b);
+    ///\todo This is a temporary function, which will be removed in the future.
+    void DrawOBB(const OBB &obb, float r, float g, float b);
+    ///\todo This is a temporary function, which will be removed in the future.
+    void DrawLineSegment(const LineSegment &l, float r, float g, float b);
 
 signals:
     /// A physics collision has happened between two entities. 

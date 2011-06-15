@@ -294,52 +294,21 @@ void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const bt
         debugGeometryObject_->addLine(from, to, color);
 }
 
-void PhysicsWorld::DrawAABB(AABB *aabb, float r, float g, float b)
+void PhysicsWorld::DrawAABB(const AABB &aabb, float r, float g, float b)
 {
-    float3 color(r,g,b);
-    // Indices in order 0: ---, 1: --+, 2: -+-, 3: -++, 4: +--, 5: +-+, 6: ++-, 7: +++.
-    drawLine(aabb->CornerPoint(0), aabb->CornerPoint(1), color);
-    drawLine(aabb->CornerPoint(0), aabb->CornerPoint(2), color);
-    drawLine(aabb->CornerPoint(0), aabb->CornerPoint(4), color);
-    drawLine(aabb->CornerPoint(1), aabb->CornerPoint(3), color);
-    drawLine(aabb->CornerPoint(1), aabb->CornerPoint(5), color);
-    drawLine(aabb->CornerPoint(2), aabb->CornerPoint(3), color);
-    drawLine(aabb->CornerPoint(2), aabb->CornerPoint(6), color);
-    drawLine(aabb->CornerPoint(3), aabb->CornerPoint(7), color);
-    drawLine(aabb->CornerPoint(4), aabb->CornerPoint(5), color);
-    drawLine(aabb->CornerPoint(4), aabb->CornerPoint(6), color);
-    drawLine(aabb->CornerPoint(5), aabb->CornerPoint(7), color);
-    drawLine(aabb->CornerPoint(6), aabb->CornerPoint(7), color);
-}
-/*
-void PhysicsWorld::DrawAABBRef(AABB &aabb) { DrawAABB(aabb, float3(1,1,1)); }
-void PhysicsWorld::DrawAABBVal(AABB aabb) { DrawAABB(aabb, float3(1,1,1)); }
-void PhysicsWorld::DrawAABBPtr(AABB *aabb)  { DrawAABB(*aabb, float3(1,1,1)); }
-void PhysicsWorld::DrawAABBConstPtr(AABB * const aabb)  { DrawAABB(*aabb, float3(1,1,1)); }
-void PhysicsWorld::DrawAABBPtrConst(const AABB *aabb)  { DrawAABB(*aabb, float3(1,1,1)); }
-void PhysicsWorld::DrawAABBConstPtrConst(const AABB * const aabb)  { DrawAABB(*aabb, float3(1,1,1)); }
-*/
-void PhysicsWorld::DrawOBB(OBB *obb, float r, float g, float b)
-{
-    float3 color(r,g,b);
-    // Indices in order 0: ---, 1: --+, 2: -+-, 3: -++, 4: +--, 5: +-+, 6: ++-, 7: +++.
-    drawLine(obb->CornerPoint(0), obb->CornerPoint(1), color);
-    drawLine(obb->CornerPoint(0), obb->CornerPoint(2), color);
-    drawLine(obb->CornerPoint(0), obb->CornerPoint(4), color);
-    drawLine(obb->CornerPoint(1), obb->CornerPoint(3), color);
-    drawLine(obb->CornerPoint(1), obb->CornerPoint(5), color);
-    drawLine(obb->CornerPoint(2), obb->CornerPoint(3), color);
-    drawLine(obb->CornerPoint(2), obb->CornerPoint(6), color);
-    drawLine(obb->CornerPoint(3), obb->CornerPoint(7), color);
-    drawLine(obb->CornerPoint(4), obb->CornerPoint(5), color);
-    drawLine(obb->CornerPoint(4), obb->CornerPoint(6), color);
-    drawLine(obb->CornerPoint(5), obb->CornerPoint(7), color);
-    drawLine(obb->CornerPoint(6), obb->CornerPoint(7), color);
+    for(int i = 0; i < 12; ++i)
+        DrawLineSegment(aabb.Edge(i), r, g, b);
 }
 
-void PhysicsWorld::DrawLineSegment(LineSegment *l, float r, float g, float b)
+void PhysicsWorld::DrawOBB(const OBB &obb, float r, float g, float b)
 {
-    drawLine(l->a, l->b, float3(r,g,b));
+    for(int i = 0; i < 12; ++i)
+        DrawLineSegment(obb.Edge(i), r, g, b);
+}
+
+void PhysicsWorld::DrawLineSegment(const LineSegment &l, float r, float g, float b)
+{
+    drawLine(l.a, l.b, float3(r,g,b));
 }
 
 } // ~Physics
