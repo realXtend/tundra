@@ -5,7 +5,7 @@
 #include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "Math/Ray.h"
 
 namespace Ogre
@@ -28,7 +28,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Attributes</b>:
 <ul>
-<li>Vector3df: upVector
+<li>float3: upVector
 <div>Up vector that defines the yaw axis.</div>
 </ul>
 
@@ -78,8 +78,8 @@ public:
     virtual ~EC_Camera();
 
     /// Camera up vector. Defines the yaw axis
-    Q_PROPERTY(Vector3df upVector READ getupVector WRITE setupVector);
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, upVector);
+    Q_PROPERTY(float3 upVector READ getupVector WRITE setupVector);
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, upVector);
 
     /// Sets placeable component
     /** set a null placeable to detach the camera, otherwise will attach
@@ -96,10 +96,10 @@ public slots:
 
     /// Get an initial rotation for the camera (in Euler angles, can be assigned to a Transform) that corresponds to the up vector
     /// @note the left/right & front/back axes are unspecified
-    Vector3df GetInitialRotation() const;
+    float3 GetInitialRotation() const;
 
     /// Adjust a pitch/yaw/roll Euler rotation vector using the up vector
-    Vector3df GetAdjustedRotation(const Vector3df& rotation) const;
+    float3 GetAdjustedRotation(const float3& rotation) const;
 
     /// sets near clip distance
     /** @note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!

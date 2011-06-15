@@ -3,7 +3,7 @@
 
 #include "CoreDefines.h"
 #include "Color.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "Math/Quat.h"
 
 #include <string>
@@ -13,12 +13,12 @@ class QDomElement;
 float ParseReal(const std::string& text, float default_value = 0.0f);
 int ParseInt(const std::string& text, int default_value = 0);
 Color ParseColor(const std::string& text);
-Vector3df ParseVector3(const std::string& text);
+//float3 ParseVector3(const std::string& text);
 
 std::string WriteBool(bool value);
 std::string WriteReal(float value);
 std::string WriteInt(int value);
-std::string WriteVector3(const Vector3df& vector);
+//std::string WriteVector3(const float3& vector);
 std::string WriteColor(const Color& color);
 
 void SetAttribute(QDomElement& elem, const std::string& name, const char* value);

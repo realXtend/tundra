@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "IComponent.h"
 #include "Transform.h"
 #include "AssetReference.h"
@@ -226,9 +226,9 @@ template<> void ECAttributeEditor<bool>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<bool>::Initialize();
 template<> void ECAttributeEditor<bool>::Set(QtProperty *property);
 
-template<> void ECAttributeEditor<Vector3df>::Update(IAttribute *attr);
-template<> void ECAttributeEditor<Vector3df>::Initialize();
-template<> void ECAttributeEditor<Vector3df>::Set(QtProperty *property);
+template<> void ECAttributeEditor<float3>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<float3>::Initialize();
+template<> void ECAttributeEditor<float3>::Set(QtProperty *property);
 
 template<> void ECAttributeEditor<Color>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<Color>::Initialize();

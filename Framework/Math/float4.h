@@ -283,6 +283,9 @@ public:
     float4 Div(float rhs) const { return *this / rhs; }
     float4 Neg() const { return -*this; }
 
+    /// Multiplies this vector by rhs *element-wise*, including the w-components.
+    float4 Mul(const float4 &rhs) const;
+
 #ifdef OGRE_INTEROP
     float4(const Ogre::Vector4 &other) { x = other.x; y = other.y; z = other.z; w = other.w; }
     float4 &operator =(const Ogre::Vector4 &other) { x = other.x; y = other.y; z = other.z; w = other.w; return *this; }
@@ -295,6 +298,7 @@ public:
     QString toString() const { return (QString)*this; }
     QVector4D ToQVector4D() const { return QVector4D(x, y, z, w); }
     static float4 FromQVector4D(const QVector4D &v) { return (float4)v; }
+    static float4 FromString(const QString &str) { return FromString(str.toStdString()); }
 #endif
 #ifdef BULLET_INTEROP
     // Bullet uses the same btVector3 class for both 3- and 4 -tuples (due to SSE).

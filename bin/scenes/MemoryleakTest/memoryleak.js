@@ -18,7 +18,7 @@ function no_leak(dt) {
 function createvec(dt) {
     var v;
     for(var i=0; i < 1000; i++) {
-	v = new Vector3df();
+	v = new float3();
 	v.x = 1.2;
     }
     print(v.x);

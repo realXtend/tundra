@@ -8,7 +8,7 @@
 #pragma once
 
 #include "Color.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "Math/Quat.h"
 #include "OgreModuleApi.h"
 
@@ -24,11 +24,11 @@ namespace OgreRenderer
     /// Converts Ogre::ColourValue to Color.
     Color OGRE_MODULE_API ToCoreColor(const Ogre::ColourValue &color);
 
-    /// Converts Vector3df to Ogre::Vector3.
-    Ogre::Vector3 OGRE_MODULE_API ToOgreVector3(const Vector3df &vector);
+    /// Converts float3 to Ogre::Vector3.
+    Ogre::Vector3 OGRE_MODULE_API ToOgreVector3(const float3 &vector);
 
-    /// Converts Ogre::Vector3 to Vector3df.
-    Vector3df OGRE_MODULE_API ToCoreVector(const Ogre::Vector3&vector);
+    /// Converts Ogre::Vector3 to float3.
+    float3 OGRE_MODULE_API ToCoreVector(const Ogre::Vector3&vector);
 
     /// Sanitates an asset URL/ID for use with Ogre's parsers.
     /** Call this when you access an Ogre resource directly from Ogre, by querying for asset ID.

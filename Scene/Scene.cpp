@@ -1168,19 +1168,19 @@ QByteArray Scene::GetEntityXml(Entity *entity)
     return scene_doc.toByteArray();
 }
 
-Vector3df Scene::GetUpVector() const
+float3 Scene::GetUpVector() const
 {
-    return Vector3df::UNIT_Y;
+    return float3::unitY;
 }
 
-Vector3df Scene::GetRightVector() const
+float3 Scene::GetRightVector() const
 {
-    return Vector3df::UNIT_X;
+    return float3::unitX;
 }
 
-Vector3df Scene::GetForwardVector() const
+float3 Scene::GetForwardVector() const
 {
-    return -Vector3df::UNIT_Z;
+    return -float3::unitZ;
 }
 
 bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, float length)

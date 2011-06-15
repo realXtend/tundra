@@ -6,7 +6,7 @@
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
 #include "SceneDesc.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 
 #include <QObject>
 #include <QVariant>
@@ -176,13 +176,13 @@ public slots:
     void SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const;
 
     /// Returns scene up vector. For now it is a compile-time constant
-    Vector3df GetUpVector() const;
+    float3 GetUpVector() const;
 
     /// Returns scene right vector. For now it is a compile-time constant
-    Vector3df GetRightVector() const;
+    float3 GetRightVector() const;
 
     /// Returns scene forward vector. For now it is a compile-time constant
-    Vector3df GetForwardVector() const;
+    float3 GetForwardVector() const;
 
     /// @todo Clean these overload functions created for PythonQt and QtScript compatibility as much as possible.
     //  For documentation, see the plain C++ public methods above.

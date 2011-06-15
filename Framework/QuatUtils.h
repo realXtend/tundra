@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Math/Quat.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "CoreTypes.h"
 /*
 Quaternion UnpackQuaternionFromFloat3(float x, float y, float z);

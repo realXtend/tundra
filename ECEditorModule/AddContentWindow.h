@@ -12,7 +12,7 @@
 #include "SceneFwd.h"
 #include "AssetFwd.h"
 #include "SceneDesc.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 
 class QTreeWidget;
 class QPushButton;
@@ -51,7 +51,7 @@ public:
 
     /// Add offset position which will be applied to the created entities.
     /** @param pos Position. */
-    void AddPosition(const Vector3df &pos) { position = pos; }
+    void AddPosition(const float3 &pos) { position = pos; }
 
 signals:
     void Completed(bool contentAdded, const QString &uploadBaseUrl);
@@ -91,7 +91,7 @@ private:
     QPushButton *addContentButton; ///< Add content button.
     QPushButton *cancelButton; ///< Cancel/close button.
     QComboBox *storageComboBox; ///< Asset storage combo box.
-    Vector3df position; ///< Centralization position for instantiated context (if used).
+    float3 position; ///< Centralization position for instantiated context (if used).
 
     // Uploading
     QLabel *uploadStatus_;

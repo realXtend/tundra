@@ -41,16 +41,16 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     IComponent(scene),
     mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
-    size(this, "Size", Vector3df(1,1,1)),
+    size(this, "Size", float3(1,1,1)),
     collisionMeshRef(this, "Collision mesh ref"),
     friction(this, "Friction", 0.5f),
     restitution(this, "Restitution", 0.0f),
     linearDamping(this, "Linear damping", 0.0f),
     angularDamping(this, "Angular damping", 0.0f),
-    linearFactor(this, "Linear factor", Vector3df(1,1,1)),
-    angularFactor(this, "Angular factor", Vector3df(1,1,1)),
-    linearVelocity(this, "Linear velocity", Vector3df(0,0,0)),
-    angularVelocity(this, "Angular velocity", Vector3df(0,0,0)),
+    linearFactor(this, "Linear factor", float3(1,1,1)),
+    angularFactor(this, "Angular factor", float3(1,1,1)),
+    linearVelocity(this, "Linear velocity", float3(0,0,0)),
+    angularVelocity(this, "Angular velocity", float3(0,0,0)),
     phantom(this, "Phantom", false),
     kinematic(this, "Kinematic", false),
     drawDebug(this, "Draw Debug", false),
@@ -107,7 +107,7 @@ bool EC_RigidBody::SetShapeFromVisibleMesh()
     return true;
 }
 
-void EC_RigidBody::SetLinearVelocity(const Vector3df& velocity)
+void EC_RigidBody::SetLinearVelocity(const float3& velocity)
 {
     // Cannot modify server-authoritative physics object
     if (!HasAuthority())
@@ -116,7 +116,7 @@ void EC_RigidBody::SetLinearVelocity(const Vector3df& velocity)
     linearVelocity.Set(velocity, AttributeChange::Default);
 }
 
-void EC_RigidBody::SetAngularVelocity(const Vector3df& velocity)
+void EC_RigidBody::SetAngularVelocity(const float3& velocity)
 {
     // Cannot modify server-authoritative physics object
     if (!HasAuthority())
@@ -125,14 +125,14 @@ void EC_RigidBody::SetAngularVelocity(const Vector3df& velocity)
     angularVelocity.Set(velocity, AttributeChange::Default);
 }
 
-void EC_RigidBody::ApplyForce(const Vector3df& force, const Vector3df& position)
+void EC_RigidBody::ApplyForce(const float3& force, const float3& position)
 {
     // Cannot modify server-authoritative physics object
     if (!HasAuthority())
         return;
     
     // If force is very small, do not wake up the body and apply
-    if (force.getLength() < cForceThreshold)
+    if (force.Length() < cForceThreshold) ///\todo Use force.LengthSq() instead for optimization.
         return;
     
     if (!body_)
@@ -140,21 +140,21 @@ void EC_RigidBody::ApplyForce(const Vector3df& force, const Vector3df& position)
     if (body_)
     {
         Activate();
-        if (position == Vector3df::ZERO)
+        if (position == float3::zero)
             body_->applyCentralForce(ToBtVector3(force));
         else
             body_->applyForce(ToBtVector3(force), ToBtVector3(position));
     }
 }
 
-void EC_RigidBody::ApplyTorque(const Vector3df& torque)
+void EC_RigidBody::ApplyTorque(const float3& torque)
 {
     // Cannot modify server-authoritative physics object
     if (!HasAuthority())
         return;
     
     // If torque is very small, do not wake up the body and apply
-    if (torque.getLength() < cTorqueThreshold)
+    if (torque.Length() < cTorqueThreshold)  ///\todo Use torque.LengthSq() instead for optimization.
         return;
         
     if (!body_)
@@ -166,14 +166,14 @@ void EC_RigidBody::ApplyTorque(const Vector3df& torque)
     }
 }
 
-void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& position)
+void EC_RigidBody::ApplyImpulse(const float3& impulse, const float3& position)
 {
     // Cannot modify server-authoritative physics object
     if (!HasAuthority())
         return;
     
     // If impulse is very small, do not wake up the body and apply
-    if (impulse.getLength() < cImpulseThreshold)
+    if (impulse.Length() < cImpulseThreshold)  ///\todo Use impulse.LengthSq() instead for optimization.
         return;
     
     if (!body_)
@@ -181,21 +181,21 @@ void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& posit
     if (body_)
     {
         Activate();
-        if (position == Vector3df::ZERO)
+        if (position == float3::zero)
             body_->applyCentralImpulse(ToBtVector3(impulse));
         else
             body_->applyImpulse(ToBtVector3(impulse), ToBtVector3(position));
     }
 }
 
-void EC_RigidBody::ApplyTorqueImpulse(const Vector3df& torqueImpulse)
+void EC_RigidBody::ApplyTorqueImpulse(const float3& torqueImpulse)
 {
     // Cannot modify server-authoritative physics object
     if (!HasAuthority())
         return;
     
     // If impulse is very small, do not wake up the body and apply
-    if (torqueImpulse.getLength() < cTorqueThreshold)
+    if (torqueImpulse.Length() < cTorqueThreshold)  ///\todo Use torqueImpulse.LengthSq() instead for optimization.
         return;
         
     if (!body_)
@@ -290,7 +290,7 @@ void EC_RigidBody::CreateCollisionShape()
 {
     RemoveCollisionShape();
     
-    Vector3df sizeVec = size.Get();
+    float3 sizeVec = size.Get();
     // Sanitize the size
     if (sizeVec.x < 0)
         sizeVec.x = 0;
@@ -469,7 +469,7 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     {
         linearVelocity.Set(ToVector3(body_->getLinearVelocity()), AttributeChange::Default);
         const btVector3& angular = body_->getAngularVelocity();
-        angularVelocity.Set(Vector3df(angular.x() * RADTODEG, angular.y() * RADTODEG, angular.z() * RADTODEG), AttributeChange::Default);
+        angularVelocity.Set(float3(angular.x() * RADTODEG, angular.y() * RADTODEG, angular.z() * RADTODEG), AttributeChange::Default);
     }
     
     disconnected_ = false;
@@ -593,7 +593,7 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
     
     if (attribute == &angularVelocity)
     {
-        const Vector3df& angular = angularVelocity.Get();
+        const float3& angular = angularVelocity.Get();
         body_->setAngularVelocity(btVector3(angular.x * DEGTORAD, angular.y * DEGTORAD, angular.z * DEGTORAD));
         body_->activate();
     }
@@ -628,7 +628,7 @@ void EC_RigidBody::OnAboutToUpdate()
         UpdatePosRotFromPlaceable();
 }
 
-void EC_RigidBody::SetRotation(const Vector3df& rotation)
+void EC_RigidBody::SetRotation(const float3& rotation)
 {
     // Cannot modify server-authoritative physics object
     if (!HasAuthority())
@@ -656,7 +656,7 @@ void EC_RigidBody::SetRotation(const Vector3df& rotation)
     disconnected_ = false;
 }
 
-void EC_RigidBody::Rotate(const Vector3df& rotation)
+void EC_RigidBody::Rotate(const float3& rotation)
 {
     // Cannot modify server-authoritative physics object
     if (!HasAuthority())
@@ -684,7 +684,7 @@ void EC_RigidBody::Rotate(const Vector3df& rotation)
     disconnected_ = false;
 }
 
-Vector3df EC_RigidBody::GetLinearVelocity()
+float3 EC_RigidBody::GetLinearVelocity()
 {
     if (body_)
         return ToVector3(body_->getLinearVelocity());
@@ -692,7 +692,7 @@ Vector3df EC_RigidBody::GetLinearVelocity()
         return linearVelocity.Get();
 }
 
-Vector3df EC_RigidBody::GetAngularVelocity()
+float3 EC_RigidBody::GetAngularVelocity()
 {
     if (body_)
         return ToVector3(body_->getAngularVelocity()) * RADTODEG;
@@ -700,12 +700,12 @@ Vector3df EC_RigidBody::GetAngularVelocity()
         return angularVelocity.Get();
 }
 
-void EC_RigidBody::GetAabbox(Vector3df &outAabbMin, Vector3df &outAabbMax)
+void EC_RigidBody::GetAabbox(float3 &outAabbMin, float3 &outAabbMax)
 {
     btVector3 aabbMin, aabbMax;
     body_->getAabb(aabbMin, aabbMax);
-    outAabbMin.set(aabbMin.x(), aabbMin.y(), aabbMin.z());
-    outAabbMax.set(aabbMax.x(), aabbMax.y(), aabbMax.z());
+    outAabbMin.Set(aabbMin.x(), aabbMin.y(), aabbMin.z());
+    outAabbMax.Set(aabbMax.x(), aabbMax.y(), aabbMax.z());
 }
 
 bool EC_RigidBody::HasAuthority() const
@@ -750,7 +750,7 @@ void EC_RigidBody::RequestMesh()
 
 void EC_RigidBody::UpdateScale()
 {
-   Vector3df sizeVec = size.Get();
+   float3 sizeVec = size.Get();
     // Sanitize the size
     if (sizeVec.x < 0)
         sizeVec.x = 0;
@@ -764,7 +764,7 @@ void EC_RigidBody::UpdateScale()
     if ((placeable) && (shape_))
     {
         // Note: for now, world scale is purposefully NOT used, because it would be problematic to change the scale when a parenting change occurs
-        const Vector3df& scale = placeable->transform.Get().scale;
+        const float3& scale = placeable->transform.Get().scale;
         // Trianglemesh or convexhull does not have scaling of its own in the shape, so multiply with the size
         if ((shapeType.Get() != Shape_TriMesh) && (shapeType.Get() != Shape_ConvexHull))
             shape_->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
@@ -804,10 +804,10 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
             heightValues_[z * width + x] = value;
         }
 
-    Vector3df scale = terrain->nodeTransformation.Get().scale;
-    Vector3df bbMin(0, minY, 0);
-    Vector3df bbMax(xzSpacing * (width - 1), maxY, xzSpacing * (height - 1));
-    Vector3df bbCenter = scale * (bbMin + bbMax) * 0.5f;
+    float3 scale = terrain->nodeTransformation.Get().scale;
+    float3 bbMin(0, minY, 0);
+    float3 bbMax(xzSpacing * (width - 1), maxY, xzSpacing * (height - 1));
+    float3 bbCenter = scale.Mul((bbMin + bbMax) * 0.5f);
     
     heightField_ = new btHeightfieldTerrainShape(width, height, &heightValues_[0], ySpacing, minY, maxY, 1, PHY_FLOAT, false);
     
@@ -818,7 +818,7 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
      */
     heightField_->setLocalScaling(ToBtVector3(scale));
     
-    Vector3df positionAdjust = terrain->nodeTransformation.Get().pos;
+    float3 positionAdjust = terrain->nodeTransformation.Get().pos;
     positionAdjust += bbCenter;
     
     btCompoundShape* compound = new btCompoundShape();
@@ -899,7 +899,7 @@ void EC_RigidBody::UpdatePosRotFromPlaceable()
     KeepActive();
 }
 
-void EC_RigidBody::EmitPhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)
+void EC_RigidBody::EmitPhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision)
 {
     emit PhysicsCollision(otherEntity, position, normal, distance, impulse, newCollision);
 }

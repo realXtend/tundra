@@ -2,8 +2,10 @@
 
 #pragma once
 
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "Math/Quat.h"
+
+#include "CoreTypes.h"
 
 #include <QObject>
 #include <QVariant>
@@ -22,8 +24,8 @@ class RaycastResult : public QObject
 public:
     Q_PROPERTY(Entity* entity READ getentity);
     Entity* getentity() const { return entity; }
-    Q_PROPERTY(Vector3df pos READ getpos);
-    Vector3df getpos() const { return pos; }
+    Q_PROPERTY(float3 pos READ getpos);
+    float3 getpos() const { return pos; }
     Q_PROPERTY(unsigned submesh READ getsubmesh);
     unsigned getsubmesh() const { return submesh; }
     Q_PROPERTY(float u READ getu);
@@ -34,7 +36,7 @@ public:
     /// Entity that was hit, null if none
     Entity* entity;
     /// World coordinates of hit position
-    Vector3df pos;
+    float3 pos;
     /// Submesh index in entity, starting from 0
     unsigned submesh;
     /// U coord in entity. 0 if no texture mapping

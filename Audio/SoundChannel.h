@@ -4,7 +4,7 @@
 #include "SoundBuffer.h"
 #include "AssetFwd.h"
 #include "AudioApiExports.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "AudioFwd.h"
 #include "AudioAsset.h"
 
@@ -55,7 +55,7 @@ public:
         \param looped Whether to loop */
     void SetLooped(bool enable);
     /// Set position
-    void SetPosition(const Vector3df& pos);
+    void SetPosition(const float3& pos);
     /// Adjusts pitch of channel
     /** \param id Channel id
         \param pitch Pitch relative to sound's original pitch (1.0 = original) */
@@ -78,7 +78,7 @@ public:
     /// Stop.
     void Stop();
     /// Per-frame update with new listener position
-    void Update(const Vector3df& listener_pos);
+    void Update(const float3& listener_pos);
     /// Return current state of channel.
     SoundState GetState() const { return state_; }
     /// Return name/id of sound that's playing, empty if nothing playing
@@ -105,7 +105,7 @@ private:
     /// Delete OpenAL source
     void DeleteSource();
     /// Calculate attenuation from position, listener position & range parameters
-    void CalculateAttenuation(const Vector3df &listener_pos);
+    void CalculateAttenuation(const float3 &listener_pos);
     /// Set positionality & position
     void SetPositionAndMode();
     /// Set gain, taking attenuation into account
@@ -140,7 +140,7 @@ private:
     /// Buffered operation flag. Will never report as stopped, unless explicitly stopped
     bool buffered_mode_;
     /// Position
-    Vector3df position_;
+    float3 position_;
     /// State 
     SoundState state_;
     /// Specifies an unique ID for this sound channel. Note that this ID should not be treated as a "channel index" or anything like that.

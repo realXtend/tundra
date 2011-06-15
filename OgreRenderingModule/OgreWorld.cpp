@@ -340,7 +340,7 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
                         Ogre::Vector3 point = ray.getPoint(closest_distance);
 
                         result_.entity = entity;
-                        result_.pos = Vector3df(point.x, point.y, point.z);
+                        result_.pos = float3(point.x, point.y, point.z);
                         result_.submesh = GetSubmeshFromIndexRange(j, submeshstartindex);
                         result_.u = uv.x;
                         result_.v = uv.y;
@@ -359,7 +359,7 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
                 Ogre::Vector3 point = ray.getPoint(closest_distance);
 
                 result_.entity = entity;
-                result_.pos = Vector3df(point.x, point.y, point.z);
+                result_.pos = float3(point.x, point.y, point.z);
                 result_.submesh = 0;
                 result_.u = 0.0f;
                 result_.v = 0.0f;

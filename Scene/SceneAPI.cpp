@@ -227,7 +227,7 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
     else if (attributeTypename == "float4")
         attribute = new Attribute<float4>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "vector3df")
-        attribute = new Attribute<Vector3df>(owner, newAttributeName.toStdString().c_str());
+        attribute = new Attribute<float3>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "bool")
         attribute = new Attribute<bool>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "uint")

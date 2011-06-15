@@ -10,6 +10,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include "MathFwd.h"
 
 #ifdef QT_INTEROP
@@ -227,6 +228,9 @@ public:
     float2 Div(float rhs) const { return *this / rhs; }
     float2 Neg() const { return -*this; }
 
+    /// Multiplies this vector by rhs *element-wise*.
+    float2 Mul(const float2 &rhs) const;
+
     /// a compile-time constant float2 with value (0, 0).
     static const float2 zero;
     /// A compile-time constant float2 with value (1, 1).
@@ -254,6 +258,7 @@ public:
     QString toString() const { return (QString)*this; }
     QVector2D ToQVector2D() const { return QVector2D(x, y); }
     static float2 FromQVector2D(const QVector2D &v) { return (float2)v; }
+    static float2 FromString(const QString &str) { return FromString(str.toStdString()); }
 #endif
 };
 

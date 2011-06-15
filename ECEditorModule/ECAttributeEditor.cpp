@@ -521,18 +521,18 @@ template<> void ECAttributeEditor<bool>::Update(IAttribute *attr)
 
 //-------------------------VECTOR3DF ATTRIBUTE TYPE-------------------------
 
-template<> void ECAttributeEditor<Vector3df>::Update(IAttribute *attr)
+template<> void ECAttributeEditor<float3>::Update(IAttribute *attr)
 {
     if(!useMultiEditor_)
     {
-        Attribute<Vector3df> *attribute = 0;
+        Attribute<float3> *attribute = 0;
         if (!attr)
-            attribute = FindAttribute<Vector3df>(components_[0].lock());
+            attribute = FindAttribute<float3>(components_[0].lock());
         else
-            attribute = dynamic_cast<Attribute<Vector3df>*>(attr);
+            attribute = dynamic_cast<Attribute<float3>*>(attr);
         if (!attribute)
         {
-            LogWarning("Failed to update attribute value in ECEditor, Couldn't dynamic_cast attribute pointer to Attribute<Vector3df> format.");
+            LogWarning("Failed to update attribute value in ECEditor, Couldn't dynamic_cast attribute pointer to Attribute<float3> format.");
             return;
         }
 
@@ -542,7 +542,7 @@ template<> void ECAttributeEditor<Vector3df>::Update(IAttribute *attr)
             QList<QtProperty *> children = rootProperty_->subProperties();
             if(children.size() >= 3)
             {
-                Vector3df vectorValue = attribute->Get();
+                float3 vectorValue = attribute->Get();
                 variantManager->setValue(children[0], vectorValue.x);
                 variantManager->setValue(children[1], vectorValue.y);
                 variantManager->setValue(children[2], vectorValue.z);
@@ -553,7 +553,7 @@ template<> void ECAttributeEditor<Vector3df>::Update(IAttribute *attr)
         UpdateMultiEditorValue(attr);
 }
 
-template<> void ECAttributeEditor<Vector3df>::Initialize()
+template<> void ECAttributeEditor<float3>::Initialize()
 {
     ECAttributeEditorBase::PreInitialize();
     if(!useMultiEditor_)
@@ -587,18 +587,18 @@ template<> void ECAttributeEditor<Vector3df>::Initialize()
     emit EditorChanged(name_);
 }
 
-template<> void ECAttributeEditor<Vector3df>::Set(QtProperty *property)
+template<> void ECAttributeEditor<float3>::Set(QtProperty *property)
 {
     if(listenEditorChangedSignal_)
     {
         QList<QtProperty *> children = rootProperty_->subProperties();
         if(children.size() >= 3)
         {
-            Attribute<Vector3df> *attribute = FindAttribute<Vector3df>(components_[0].lock());
+            Attribute<float3> *attribute = FindAttribute<float3>(components_[0].lock());
             if (!attribute)
                 return;
 
-            Vector3df newValue = attribute->Get();
+            float3 newValue = attribute->Get();
             QString propertyName = property->propertyName();
             if(propertyName == "x")
                 newValue.x = ParseString<float>(property->valueText().toStdString());

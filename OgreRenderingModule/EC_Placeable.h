@@ -8,6 +8,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "Transform.h"
+#include "Math/float3.h"
 #include "Math/MathFwd.h"
 
 namespace Ogre { class Bone; }

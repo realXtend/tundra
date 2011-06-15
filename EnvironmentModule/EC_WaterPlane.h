@@ -32,7 +32,7 @@ Registered by Enviroment::EnvironmentModule.
 <div> Water plane size in y-axis. </div>
 <li> int : depth.
 <div> Depth value defines that how much below from surface water fog colour is used. Meaning this attribute defines how "deep" is our ocean/pond. </div>
-<li> Vector3df : position.
+<li> float3 : position.
 <div> Defines position of water plane in world coordinate system. </div>
 <li> Quaternion : rotation.
 <div> Defines rotation of water plane in world coordinate system. </div>
@@ -90,8 +90,8 @@ public:
     Q_PROPERTY(int depth READ getdepth WRITE setdepth);
 
     /// Water plane position (this is used if there is not EC_Placeable)
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, position);
-    Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, position);
+    Q_PROPERTY(float3 position READ getposition WRITE setposition);
 
     /// Water plane rotation
     DEFINE_QPROPERTY_ATTRIBUTE(Quat, rotation);
@@ -151,19 +151,19 @@ public slots:
 
     /// Returns true if point is inside of water cube.
     /// @param point in world coordinate system.
-    bool IsPointInsideWaterCube(const Vector3df& point) const;
+    bool IsPointInsideWaterCube(const float3& point) const;
 
     /// Returns the point on the water plane in world space that lies on top of the given world space coordinate.
     /// @param point The point in world space to get the corresponding map point (in world space) for.
-    Vector3df GetPointOnPlane(const Vector3df &point) const;
+    float3 GetPointOnPlane(const float3 &point) const;
 
     /// Returns distance from plane (note, here is assumption that point is top/or below plane), distance in here is distance from water plane surface.
     /// @param point is point in world coordinate system.
-    float GetDistanceToWaterPlane(const Vector3df& point) const;
+    float GetDistanceToWaterPlane(const float3& point) const;
 
     /// Returns true if given point is top or below water plane.
     /// @param point is in world coordinate system.
-    bool IsTopOrBelowWaterPlane(const Vector3df& point) const;
+    bool IsTopOrBelowWaterPlane(const float3& point) const;
 
     /// When called creates new water plane into world and tries to attach it.
     void CreateWaterPlane();

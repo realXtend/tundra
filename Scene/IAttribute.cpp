@@ -82,15 +82,6 @@ template<> std::string Attribute<float>::ToString() const
 {
     return ::ToString<float>(Get());
 }
-
-template<> std::string Attribute<Vector3df>::ToString() const
-{
-    Vector3df value = Get();
-    
-    return ::ToString<float>(value.x) + " " +
-        ::ToString<float>(value.y) + " " +
-        ::ToString<float>(value.z);
-}
     
 template<> std::string Attribute<Quat>::ToString() const
 {
@@ -171,7 +162,7 @@ template<> std::string Attribute<Transform>::ToString() const
 {
     QString value("");
     Transform transform = Get();
-    Vector3df editValues[3];
+    float3 editValues[3];
     editValues[0] = transform.pos;
     editValues[1] = transform.rot;
     editValues[2] = transform.scale;
@@ -255,11 +246,6 @@ template<> QString Attribute<QString>::TypeName() const
 template<> QString Attribute<bool>::TypeName() const
 {
     return "bool";
-}
-
-template<> QString Attribute<Vector3df>::TypeName() const
-{
-    return "vector3df";
 }
 
 template<> QString Attribute<Quat>::TypeName() const
@@ -387,23 +373,6 @@ template<> void Attribute<float>::FromString(const std::string& str, AttributeCh
         Set(value, change);
     }
     catch(...) {}
-}
-
-template<> void Attribute<Vector3df>::FromString(const std::string& str, AttributeChange::Type change)
-{
-    StringVector components = SplitString(str, ' ');
-    if (components.size() == 3)
-    {
-        try
-        {
-            Vector3df value;
-            value.x = ParseString<float>(components[0]);
-            value.y = ParseString<float>(components[1]);
-            value.z = ParseString<float>(components[2]);
-            Set(value, change);
-        }
-        catch(...) {}
-    }
 }
 
 template<> void Attribute<Color>::FromString(const std::string& str, AttributeChange::Type change)
@@ -633,11 +602,6 @@ template<> void Attribute<float>::FromQVariant(const QVariant &variant, Attribut
     Set(variant.toFloat(), change);
 }
 
-template<> void Attribute<Vector3df>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
-{
-    Set(qvariant_cast<Vector3df>(variant), change);
-}
-
 template<> void Attribute<Color>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
     Set(qvariant_cast<Color>(variant), change);
@@ -743,11 +707,6 @@ template<> QVariant Attribute<uint>::ToQVariant() const
 template<> QVariant Attribute<float>::ToQVariant() const
 {
     return QVariant(Get());
-}
-
-template<> QVariant Attribute<Vector3df>::ToQVariant() const
-{
-    return QVariant::fromValue<Vector3df>(Get());
 }
     
 template<> QVariant Attribute<Quat>::ToQVariant() const
@@ -855,11 +814,6 @@ template<> void Attribute<uint>::FromScriptValue(const QScriptValue &value, Attr
 template<> void Attribute<float>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
 {
     Set(qScriptValueToValue<float>(value), change);
-}
-
-template<> void Attribute<Vector3df>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<Vector3df>(value), change);
 }
     
 template<> void Attribute<Quat>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
@@ -973,13 +927,6 @@ template<> void Attribute<uint>::ToBinary(kNet::DataSerializer& dest) const
 template<> void Attribute<float>::ToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<float>(value);
-}
-
-template<> void Attribute<Vector3df>::ToBinary(kNet::DataSerializer& dest) const
-{
-    dest.Add<float>(value.x);
-    dest.Add<float>(value.y);
-    dest.Add<float>(value.z);
 }
 
 template<> void Attribute<QVector3D>::ToBinary(kNet::DataSerializer& dest) const
@@ -1123,15 +1070,6 @@ template<> void Attribute<uint>::FromBinary(kNet::DataDeserializer& source, Attr
 template<> void Attribute<float>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     Set(source.Read<float>(), change);
-}
-
-template<> void Attribute<Vector3df>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
-{
-    Vector3df value;
-    value.x = source.Read<float>();
-    value.y = source.Read<float>();
-    value.z = source.Read<float>();
-    Set(value, change);
 }
 
 template<> void Attribute<QVector3D>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
@@ -1320,16 +1258,6 @@ template<> void Attribute<float>::Interpolate(IAttribute* start, IAttribute* end
     if ((startFloat) && (endFloat))
     {
         Set(lerp(startFloat->Get(), endFloat->Get(), t), change);
-    }
-}
-
-template<> void Attribute<Vector3df>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
-{
-    Attribute<Vector3df>* startVec = dynamic_cast<Attribute<Vector3df>*>(start);
-    Attribute<Vector3df>* endVec = dynamic_cast<Attribute<Vector3df>*>(end);
-    if ((startVec) && (endVec))
-    {
-        Set(lerp(startVec->Get(), endVec->Get(), t), change);
     }
 }
 

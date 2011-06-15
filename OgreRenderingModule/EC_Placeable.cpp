@@ -229,10 +229,10 @@ EC_Placeable::~EC_Placeable()
     }
 }
 #if 0
-Vector3df EC_Placeable::GetPosition() const
+float3 EC_Placeable::GetPosition() const
 {
     const Ogre::Vector3& pos = sceneNode_->getPosition();
-    return Vector3df(pos.x, pos.y, pos.z);
+    return float3(pos.x, pos.y, pos.z);
 }
 
 Quat EC_Placeable::GetOrientation() const
@@ -240,45 +240,45 @@ Quat EC_Placeable::GetOrientation() const
     return (Quat)sceneNode_->getOrientation();
 }
 
-Vector3df EC_Placeable::GetScale() const
+float3 EC_Placeable::GetScale() const
 {
     const Ogre::Vector3& scale = sceneNode_->getScale();
-    return Vector3df(scale.x, scale.y, scale.z);
+    return float3(scale.x, scale.y, scale.z);
 }
 
-Vector3df EC_Placeable::GetLocalXAxis() const
+float3 EC_Placeable::GetLocalXAxis() const
 {
     const Ogre::Vector3& xaxis = sceneNode_->getOrientation().xAxis();
-    return Vector3df(xaxis.x, xaxis.y, xaxis.z);
+    return float3(xaxis.x, xaxis.y, xaxis.z);
 }
 
 QVector3D EC_Placeable::GetQLocalXAxis() const
 {
-    Vector3df xaxis= GetLocalXAxis();
+    float3 xaxis= GetLocalXAxis();
     return QVector3D(xaxis.x, xaxis.y, xaxis.z);
 }
 
-Vector3df EC_Placeable::GetLocalYAxis() const
+float3 EC_Placeable::GetLocalYAxis() const
 {
     const Ogre::Vector3& yaxis = sceneNode_->getOrientation().yAxis();
-    return Vector3df(yaxis.x, yaxis.y, yaxis.z);
+    return float3(yaxis.x, yaxis.y, yaxis.z);
 }
 
 QVector3D EC_Placeable::GetQLocalYAxis() const
 {
-    Vector3df yaxis= GetLocalYAxis();
+    float3 yaxis= GetLocalYAxis();
     return QVector3D(yaxis.x, yaxis.y, yaxis.z);
 }
 
-Vector3df EC_Placeable::GetLocalZAxis() const
+float3 EC_Placeable::GetLocalZAxis() const
 {
     const Ogre::Vector3& zaxis = sceneNode_->getOrientation().zAxis();
-    return Vector3df(zaxis.x, zaxis.y, zaxis.z);
+    return float3(zaxis.x, zaxis.y, zaxis.z);
 }
 
 QVector3D EC_Placeable::GetQLocalZAxis() const
 {
-    Vector3df zaxis= GetLocalZAxis();
+    float3 zaxis= GetLocalZAxis();
     return QVector3D(zaxis.x, zaxis.y, zaxis.z);
 }
 
@@ -300,15 +300,15 @@ void EC_Placeable::ConvertToObjectSpace(IComponent *comp)
         //Ogre::Vector3 resultScale = invScale * GetSceneNode()->getScale();
 
         Transform newTransform = transform.Get();
-        newTransform.pos = Vector3df(resultPos.x, resultPos.y, resultPos.z);
-        //newTransform.scale = Vector3df(resultScale.x, resultScale.y, resultScale.z);
+        newTransform.pos = float3(resultPos.x, resultPos.y, resultPos.z);
+        //newTransform.scale = float3(resultScale.x, resultScale.y, resultScale.z);
         //Quaternion(resultRot.x, resultRot.y, resultRot.z, resultRot.w).toEuler(newTransform.rotation);
         transform.Set(newTransform, AttributeChange::Default);
         SetOrientation(Quat(resultRot.x, resultRot.y, resultRot.z, resultRot.w));
     }
 }
 
-void EC_Placeable::SetPosition(const Vector3df &pos)
+void EC_Placeable::SetPosition(const float3 &pos)
 {
    if (!pos.IsFinite())
    {
@@ -328,12 +328,12 @@ void EC_Placeable::SetOrientation(const Quat &orientation)
     transform.Set(newtrans, AttributeChange::Default);
 }
 
-void EC_Placeable::SetOrientation(const Vector3df& euler)
+void EC_Placeable::SetOrientation(const float3& euler)
 {
     SetOrientation(Quat::FromEulerZYX(euler.z, euler.y, euler.x));
 }
 
-void EC_Placeable::LookAt(const Vector3df& look_at)
+void EC_Placeable::LookAt(const float3& look_at)
 {
     // Don't rely on the stability of the lookat (since it uses previous orientation), 
     // so start in identity transform
@@ -372,7 +372,7 @@ float EC_Placeable::GetRoll() const
     return orientation.getRoll().valueRadians();
 }
 
-void EC_Placeable::SetScale(const Vector3df& newscale)
+void EC_Placeable::SetScale(const float3& newscale)
 {
     sceneNode_->setScale(Ogre::Vector3(newscale.x, newscale.y, newscale.z));
 
@@ -589,7 +589,7 @@ void EC_Placeable::SetQOrientation(QQuaternion newort)
     
     Quaternion q(newort.x(), newort.y(), newort.z(), newort.scalar());
     
-    Vector3df eulers;
+    float3 eulers;
     q.toEuler(eulers);
     trans.rot.x = eulers.x * RADTODEG;
     trans.rot.y = eulers.y * RADTODEG;
@@ -637,21 +637,21 @@ QVector3D EC_Placeable::GetQOrientationEuler() const
 */
 
 /*
-Vector3df EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df& to)
+float3 EC_Placeable::GetRotationFromTo(const float3& from, const float3& to)
 {
     Quat orientation;
     orientation.rotationFromTo(from,to);
-    Vector3df result;
+    float3 result;
     orientation.toEuler(result);
     result *= RADTODEG;
     return result;
 }
 */
 
-Vector3df EC_Placeable::GetWorldPosition() const
+float3 EC_Placeable::GetWorldPosition() const
 {
     const Ogre::Vector3& pos = sceneNode_->_getDerivedPosition();
-    return Vector3df(pos.x, pos.y, pos.z);
+    return float3(pos.x, pos.y, pos.z);
 }
 
 Quaternion EC_Placeable::GetWorldOrientation() const
@@ -660,20 +660,20 @@ Quaternion EC_Placeable::GetWorldOrientation() const
     return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
 }
 
-Vector3df EC_Placeable::GetWorldOrientationEuler() const
+float3 EC_Placeable::GetWorldOrientationEuler() const
 {
     const Ogre::Quaternion& orientation = sceneNode_->_getDerivedOrientation();
     Quaternion q(orientation.x, orientation.y, orientation.z, orientation.w);
-    Vector3df eulers;
+    float3 eulers;
     q.toEuler(eulers);
     eulers *= RADTODEG;
     return eulers;
 }
 
-Vector3df EC_Placeable::GetWorldScale() const
+float3 EC_Placeable::GetWorldScale() const
 {
     const Ogre::Vector3& pos = sceneNode_->_getDerivedScale();
-    return Vector3df(pos.x, pos.y, pos.z);
+    return float3(pos.x, pos.y, pos.z);
 }
 #endif
 void EC_Placeable::Show()
@@ -713,33 +713,33 @@ void EC_Placeable::RegisterActions()
     }
 }
 #if 0
-void EC_Placeable::Translate(const Vector3df& translation)
+void EC_Placeable::Translate(const float3& translation)
 {
     Transform newTrans = transform.Get();
     newTrans.pos += translation;
     transform.Set(newTrans, AttributeChange::Default);
 }
 
-void EC_Placeable::TranslateRelative(const Vector3df& translation)
+void EC_Placeable::TranslateRelative(const float3& translation)
 {
     Transform newTrans = transform.Get();
     newTrans.pos += GetOrientation() * translation;
     transform.Set(newTrans, AttributeChange::Default);
 }
 
-void EC_Placeable::TranslateWorldRelative(const Vector3df& translation)
+void EC_Placeable::TranslateWorldRelative(const float3& translation)
 {
     Transform newTrans = transform.Get();
     newTrans.pos += GetWorldOrientation() * translation;
     transform.Set(newTrans, AttributeChange::Default);
 }
 
-Vector3df EC_Placeable::GetRelativeVector(const Vector3df& vec)
+float3 EC_Placeable::GetRelativeVector(const float3& vec)
 {
     return GetOrientation() * vec;
 }
 
-Vector3df EC_Placeable::GetWorldRelativeVector(const Vector3df& vec)
+float3 EC_Placeable::GetWorldRelativeVector(const float3& vec)
 {
     return GetWorldOrientation() * vec;
 }

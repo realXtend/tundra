@@ -96,17 +96,17 @@ void SceneStructureModule::PostInitialize()
     }
 }
 
-QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene)
+QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, float3 worldPos, bool clearScene)
 {
     return InstantiateContent(filename, worldPos, SceneDesc(), clearScene);
 }
 
-QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, const SceneDesc &desc, bool clearScene)
+QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, float3 worldPos, const SceneDesc &desc, bool clearScene)
 {
     return InstantiateContent(QStringList(QStringList() << filename), worldPos, desc, clearScene);
 }
 
-QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &filenames, Vector3df worldPos, const SceneDesc &desc, bool clearScene)
+QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &filenames, float3 worldPos, const SceneDesc &desc, bool clearScene)
 {
     QList<Entity *> ret;
 
@@ -207,7 +207,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
     {
         AddContentWindow *addContent = new AddContentWindow(framework_, scene);
         addContent->AddDescription(sceneDescs[0]);
-        if (worldPos != Vector3df())
+        if (worldPos != float3())
             addContent->AddPosition(worldPos);
         addContent->show();
     }
@@ -218,17 +218,17 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
     return ret; 
 }
 
-void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QList<Entity *> &entities)
+void SceneStructureModule::CentralizeEntitiesTo(const float3 &pos, const QList<Entity *> &entities)
 {
-    Vector3df minPos(1e9f, 1e9f, 1e9f);
-    Vector3df maxPos(-1e9f, -1e9f, -1e9f);
+    float3 minPos(1e9f, 1e9f, 1e9f);
+    float3 maxPos(-1e9f, -1e9f, -1e9f);
 
     foreach(Entity *e, entities)
     {
         EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
         if (p)
         {
-            Vector3df pos = p->transform.Get().pos;
+            float3 pos = p->transform.Get().pos;
             minPos.x = std::min(minPos.x, pos.x);
             minPos.y = std::min(minPos.y, pos.y);
             minPos.z = std::min(minPos.z, pos.z);
@@ -239,8 +239,8 @@ void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QLis
     }
 
     // We assume that world's up axis is Y-coordinate axis.
-    Vector3df importPivotPos = Vector3df((minPos.x + maxPos.x) / 2, minPos.y, (minPos.z + maxPos.z) / 2);
-    Vector3df offset = pos - importPivotPos;
+    float3 importPivotPos = float3((minPos.x + maxPos.x) / 2, minPos.y, (minPos.z + maxPos.z) / 2);
+    float3 offset = pos - importPivotPos;
 
     foreach(Entity *e, entities)
     {
@@ -545,7 +545,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         if (!renderer)
             return;
 
-        Vector3df worldPos;
+        float3 worldPos;
         RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
         if (!res->entity)
         {
@@ -562,9 +562,9 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
                     {
                         //Ogre::Ray ray = cam->GetComponent<EC_Camera>()->GetCamera()->getCameraToViewportRay(e->pos().x(), e->pos().y());
                         Quat q = placeable->WorldOrientation();
-                        Vector3df v = q * -float3::unitZ;
+                        float3 v = q * -float3::unitZ;
                         //Ogre::Vector3 oV = ray.getPoint(20);
-                        worldPos = /*Vector3df(oV.x, oV.y, oV.z);*/ placeable->Position() + v * 20;
+                        worldPos = /*float3(oV.x, oV.y, oV.z);*/ placeable->Position() + v * 20;
                         break;
                     }
                 }
@@ -576,7 +576,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         {
             QString fileRef = url.toString();
             CleanReference(fileRef);
-            importedEntities.append(InstantiateContent(fileRef, worldPos/*Vector3df()*/, false));
+            importedEntities.append(InstantiateContent(fileRef, worldPos/*float3()*/, false));
         }
 
         // Calculate import pivot and offset for new content
@@ -761,7 +761,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
     }
 
     // Resolve the adjust raycast pos of this drop
-    Vector3df adjustPos = Vector3df::ZERO;
+    float3 adjustPos = float3::zero;
     if (urlToDropPos.contains(asset->Name()))
     {
         adjustPos = urlToDropPos[asset->Name()];

@@ -77,10 +77,10 @@ float EC_VolumeTrigger::GetEntityInsidePercent(const Entity *entity) const
         boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
         if (rigidbody && otherRigidbody)
         {
-            Vector3df thisBoxMin, thisBoxMax;
+            float3 thisBoxMin, thisBoxMax;
             rigidbody->GetAabbox(thisBoxMin, thisBoxMax);
 
-            Vector3df otherBoxMin, otherBoxMax;
+            float3 otherBoxMin, otherBoxMax;
             otherRigidbody->GetAabbox(otherBoxMin, otherBoxMax);
 
             Ogre::AxisAlignedBox thisBox(thisBoxMin.x, thisBoxMin.y, thisBoxMin.z, thisBoxMax.x, thisBoxMax.y, thisBoxMax.z);
@@ -129,16 +129,16 @@ bool EC_VolumeTrigger::IsPivotInside(Entity *entity) const
     if (placeable && rigidbody)
     {
         const Transform& trans = placeable->transform.Get();
-        const Vector3df& pivot = trans.pos;
+        const float3& pivot = trans.pos;
 
-        return ( RayTestSingle(Vector3df(pivot.x, pivot.y - 1e7f, pivot.z), pivot, rigidbody->GetRigidBody()) &&
-                 RayTestSingle(Vector3df(pivot.x, pivot.y + 1e7f, pivot.z), pivot, rigidbody->GetRigidBody()) );
+        return ( RayTestSingle(float3(pivot.x, pivot.y - 1e7f, pivot.z), pivot, rigidbody->GetRigidBody()) &&
+                 RayTestSingle(float3(pivot.x, pivot.y + 1e7f, pivot.z), pivot, rigidbody->GetRigidBody()) );
     }
     LogWarning("EC_VolumeTrigger::IsPivotInside(): entity has no EC_Placeable or volume has no EC_RigidBody.");
     return false;
 }
 
-bool EC_VolumeTrigger::IsInsideVolume(const Vector3df& point) const
+bool EC_VolumeTrigger::IsInsideVolume(const float3& point) const
 {
     boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
     if (!rigidbody)
@@ -147,8 +147,8 @@ bool EC_VolumeTrigger::IsInsideVolume(const Vector3df& point) const
         return false;
     }
 
-    return RayTestSingle(Vector3df(point.x, point.y - 1e7f, point.z), point, rigidbody->GetRigidBody()) &&
-           RayTestSingle(Vector3df(point.x, point.y + 1e7f, point.z), point, rigidbody->GetRigidBody());
+    return RayTestSingle(float3(point.x, point.y - 1e7f, point.z), point, rigidbody->GetRigidBody()) &&
+           RayTestSingle(float3(point.x, point.y + 1e7f, point.z), point, rigidbody->GetRigidBody());
 }
 
 void EC_VolumeTrigger::OnAttributeUpdated(IAttribute* attribute)
@@ -185,8 +185,8 @@ void EC_VolumeTrigger::CheckForRigidBody()
         if (rigidbody)
         {
             rigidbody_ = rigidbody;
-            connect(rigidbody.get(), SIGNAL(PhysicsCollision(Entity*, const Vector3df&, const Vector3df&, float, float, bool)),
-                this, SLOT(OnPhysicsCollision(Entity*, const Vector3df&, const Vector3df&, float, float, bool)));
+            connect(rigidbody.get(), SIGNAL(PhysicsCollision(Entity*, const float3&, const float3&, float, float, bool)),
+                this, SLOT(OnPhysicsCollision(Entity*, const float3&, const float3&, float, float, bool)));
         }
     }
 }
@@ -228,7 +228,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
     }
 }
 
-void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)
+void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision)
 {
     assert (otherEntity && "Physics collision with no entity.");
 

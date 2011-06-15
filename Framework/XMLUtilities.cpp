@@ -36,7 +36,7 @@ int ParseInt(const std::string& text, int default_value)
     }        
     return ret_value;
 }    
-
+/*
 Vector3df ParseVector3(const std::string& text)
 {
     Vector3df vec(0.0f, 0.0f, 0.0f);
@@ -56,7 +56,7 @@ Vector3df ParseVector3(const std::string& text)
     }
     return vec;
 }
-
+*/
 Color ParseColor(const std::string& text)
 {
     Color color(0.0f, 0.0f, 0.0f);
@@ -147,14 +147,14 @@ std::string WriteInt(int value)
 {
     return ToString<int>(value);
 }
-
+/*
 std::string WriteVector3(const Vector3df& vector)
 {
     return ToString<float>(vector.x) + " " +
         ToString<float>(vector.y) + " " +
         ToString<float>(vector.z);
 }
-
+*/
 std::string WriteColor(const Color& color)
 {
     return ToString<float>(color.r) + " " +

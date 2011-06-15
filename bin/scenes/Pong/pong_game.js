@@ -8,17 +8,12 @@ var bat_b = scene.GetEntityByName("bat_b"); //$('bat_b') - how about?
 
 //nice to have in code to reinit correctly after live updates when devving
 var t = ball.placeable.transform;
-zerovec = new Vector3df();
-t.pos = zerovec;
-t.rot = zerovec;
+t.pos = float3.zero;
+t.rot = float3.zero;
 ball.placeable.transform = t;
 
-//r.linearVelocity = new Vector3df(1.0, 0, 0); //XXX NOTE: this fails *silently*
 //initial vel for the ball
-var v = new Vector3df();
-v.x = 10.0;
-v.y = 2;
-ball.rigidbody.SetLinearVelocity(v);
+ball.rigidbody.SetLinearVelocity(new float3(10, 2, 0));
 
 var speed = 16.0;
 
@@ -33,7 +28,7 @@ function autopilot() {
 }
 
 /*function handlecoll(other, pos, nor, dist, imp, newcoll) {
-//PhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+//PhysicsCollision(Scene::Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
   print("---coll:---");
   print(pos.x + " : " + pos.y);
 YAY not needed anymore,

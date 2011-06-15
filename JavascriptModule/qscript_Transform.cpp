@@ -17,9 +17,9 @@ static QScriptValue Transform_Transform(QScriptContext *context, QScriptEngine *
 static QScriptValue Transform_Transform_Vector3df_Vector3df_Vector3df(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Transform_Transform_Vector3df_Vector3df_Vector3df in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    Vector3df pos_ = qscriptvalue_cast<Vector3df>(context->argument(0));
-    Vector3df rot_ = qscriptvalue_cast<Vector3df>(context->argument(1));
-    Vector3df scale = qscriptvalue_cast<Vector3df>(context->argument(2));
+    float3 pos_ = qscriptvalue_cast<float3>(context->argument(0));
+    float3 rot_ = qscriptvalue_cast<float3>(context->argument(1));
+    float3 scale = qscriptvalue_cast<float3>(context->argument(2));
     Transform ret(pos_, rot_, scale);
     return qScriptValueFromValue(engine, ret);
 }
@@ -209,7 +209,7 @@ static QScriptValue Transform_ctor(QScriptContext *context, QScriptEngine *engin
 {
     if (context->argumentCount() == 0)
         return Transform_Transform(context, engine);
-    if (context->argumentCount() == 3 && QSVIsOfType<Vector3df>(context->argument(0)) && QSVIsOfType<Vector3df>(context->argument(1)) && QSVIsOfType<Vector3df>(context->argument(2)))
+    if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)))
         return Transform_Transform_Vector3df_Vector3df_Vector3df(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))
         return Transform_Transform_float3x3(context, engine);

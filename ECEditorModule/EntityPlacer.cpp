@@ -94,7 +94,7 @@ void EntityPlacer::OnMouseEvent(MouseEvent *mouse)
 
 void EntityPlacer::MouseMove(MouseEvent *mouse)
 {
-    Vector3df result;
+    float3 result;
     if(DoRayCast(mouse->x, mouse->y, result) && !finished_)
     {
         location_ = result;
@@ -103,7 +103,7 @@ void EntityPlacer::MouseMove(MouseEvent *mouse)
     }
 }
 
-bool EntityPlacer::DoRayCast(int x, int y, Vector3df &result)
+bool EntityPlacer::DoRayCast(int x, int y, float3 &result)
 {
     // do raycast into the world when user is dragging the mouse while hes holding left button down.
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();

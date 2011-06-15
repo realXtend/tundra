@@ -30,7 +30,7 @@ EC_Camera::EC_Camera(Scene* scene) :
     camera_(0),
     query_(0),
     queryFrameNumber_(-1),
-    upVector(this, "Up vector", Vector3df::UNIT_Y)
+    upVector(this, "Up vector", float3::unitY)
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
@@ -82,10 +82,12 @@ void EC_Camera::AutoSetPlaceable()
     }
 }
 
-Vector3df EC_Camera::GetInitialRotation() const
+float3 EC_Camera::GetInitialRotation() const
 {
-    Vector3df normUpVector = upVector.Get();
-    normUpVector.normalize();
+    float3 normUpVector = upVector.Get();
+    bool success = normUpVector.Normalize();
+    if (!success)
+        return float3::zero; // Pass out identity Euler angles.
     
     // Identity rotation corresponds to -Z = forward & Y = up. Calculate which rotation we need to adjust for our up vector.
     Quat rot = Quat::RotateFromTo(float3::unitY, normUpVector);
@@ -95,12 +97,14 @@ Vector3df EC_Camera::GetInitialRotation() const
     return euler;
 }
 
-Vector3df EC_Camera::GetAdjustedRotation(const Vector3df& rotVec) const
+float3 EC_Camera::GetAdjustedRotation(const float3& rotVec) const
 {
     // Optimization: if the up vector is Y-positive, no adjustment is necessary
-    Vector3df normUpVector = upVector.Get();
-    normUpVector.normalize();
-    if (normUpVector.equals(Vector3df::UNIT_Y))
+    float3 normUpVector = upVector.Get();
+    bool success = normUpVector.Normalize();
+    if (!success)
+        return float3::zero; // Pass out identity Euler angles.
+    if (normUpVector.Equals(float3::unitY))
         return rotVec;
     
     Quat adjustQuat = Quat::RotateFromTo(float3::unitY, normUpVector);

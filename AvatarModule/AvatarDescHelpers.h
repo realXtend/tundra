@@ -7,18 +7,18 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "Math/Quat.h"
 #include "AvatarModuleApi.h"
 
 /// Defines a transform for an avatar, attachment or bone
 struct AV_MODULE_API AvatarTransform
 {
-    Vector3df position_;
+    float3 position_;
     Quat orientation_;
-    Vector3df scale_;
+    float3 scale_;
     
-    AvatarTransform() : position_(Vector3df::ZERO),
+    AvatarTransform() : position_(float3::zero),
         scale_(1.0f, 1.0f, 1.0f)
     {
     }

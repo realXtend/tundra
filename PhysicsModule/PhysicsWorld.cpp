@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define BULLET_INTEROP
 #include "DebugOperatorNew.h"
 #include "btBulletDynamicsCommon.h"
 #include "PhysicsModule.h"
@@ -11,7 +12,6 @@
 #include "OgreWorld.h"
 #include "OgreBulletCollisionsDebugLines.h"
 #include "EC_RigidBody.h"
-#define BULLET_INTEROP
 #include "Math/AABB.h"
 #include "Math/OBB.h"
 #include "Math/LineSegment.h"
@@ -82,12 +82,12 @@ void PhysicsWorld::SetPhysicsUpdatePeriod(float updatePeriod)
     physicsUpdatePeriod_ = updatePeriod;
 }
 
-void PhysicsWorld::SetGravity(const Vector3df& gravity)
+void PhysicsWorld::SetGravity(const float3& gravity)
 {
     world_->setGravity(ToBtVector3(gravity));
 }
 
-Vector3df PhysicsWorld::GetGravity() const
+float3 PhysicsWorld::GetGravity() const
 {
     return ToVector3(world_->getGravity());
 }
@@ -170,8 +170,8 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             {
                 btManifoldPoint& point = contactManifold->getContactPoint(j);
                 
-                Vector3df position = ToVector3(point.m_positionWorldOnB);
-                Vector3df normal = ToVector3(point.m_normalWorldOnB);
+                float3 position = ToVector3(point.m_positionWorldOnB);
+                float3 normal = ToVector3(point.m_normalWorldOnB);
                 float distance = point.m_distance1;
                 float impulse = point.m_appliedImpulse;
                 
@@ -193,14 +193,13 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
     emit Updated(substeptime);
 }
 
-PhysicsRaycastResult* PhysicsWorld::Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup, int collisionmask)
+PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& direction, float maxdistance, int collisiongroup, int collisionmask)
 {
     PROFILE(PhysicsWorld_Raycast);
     
     static PhysicsRaycastResult result;
     
-    Vector3df normalizedDir = direction;
-    normalizedDir.normalize();
+    float3 normalizedDir = direction.Normalized();
     
     btCollisionWorld::ClosestRayResultCallback rayCallback(ToBtVector3(origin), ToBtVector3(origin + maxdistance * normalizedDir));
     rayCallback.m_collisionFilterGroup = collisiongroup;
@@ -215,7 +214,7 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const Vector3df& origin, const Vecto
     {
         result.pos_ = ToVector3(rayCallback.m_hitPointWorld);
         result.normal_ = ToVector3(rayCallback.m_hitNormalWorld);
-        result.distance_ = (result.pos_ - origin).getLength();
+        result.distance_ = (result.pos_ - origin).Length();
         if (rayCallback.m_collisionObject)
         {
             EC_RigidBody* body = static_cast<EC_RigidBody*>(rayCallback.m_collisionObject->getUserPointer());

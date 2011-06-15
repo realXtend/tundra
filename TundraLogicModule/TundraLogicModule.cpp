@@ -512,8 +512,8 @@ void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float t
     std::string dirname = path.branch_path().string();
     
     SceneImporter importer(scene);
-    EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, Transform(Vector3df(tx,ty,tz),
-        Vector3df(rx,ry,rz), Vector3df(sx,sy,sz)), std::string(), "local://", AttributeChange::Default, inspect);
+    EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, Transform(float3(tx,ty,tz),
+        float3(rx,ry,rz), float3(sx,sy,sz)), std::string(), "local://", AttributeChange::Default, inspect);
 }
 
 bool TundraLogicModule::IsServer() const

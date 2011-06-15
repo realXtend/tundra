@@ -817,7 +817,7 @@ void AddContentWindow::AddEntities()
         {
             entitiesStatus_->setText(QString(tr("Added %1 entities to scene successfully")).arg(entities.count()));
             entitiesStatus_->setText(QString(tr("%1/%2 entities created successfully")).arg(QString::number(entities.count()), QString::number(newDesc_.entities.count())));
-            if (position != Vector3df())
+            if (position != float3())
                 SceneStructureModule::CentralizeEntitiesTo(position, entities);
         }
         else

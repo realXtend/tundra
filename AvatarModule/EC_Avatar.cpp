@@ -198,7 +198,7 @@ void EC_Avatar::AdjustHeightOffset()
         }
     }
 
-    mesh->SetAdjustPosition(Vector3df(0.0f, -offset.y + FIXED_HEIGHT_OFFSET, 0.0f));
+    mesh->SetAdjustPosition(float3(0.0f, -offset.y + FIXED_HEIGHT_OFFSET, 0.0f));
 }
 
 void EC_Avatar::SetupMeshAndMaterials()
@@ -244,7 +244,7 @@ void EC_Avatar::SetupMeshAndMaterials()
     
     // Position approximately within the bounding box
     // Will be overridden by bone-based height adjust, if available
-    mesh->SetAdjustPosition(Vector3df(0.0f, FIXED_HEIGHT_OFFSET, 0.0f));
+    mesh->SetAdjustPosition(float3(0.0f, FIXED_HEIGHT_OFFSET, 0.0f));
     mesh->SetCastShadows(true);
 }
 

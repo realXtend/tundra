@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_Terrain.h"
@@ -457,12 +459,12 @@ namespace
     }
 }
 
-Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const 
+float3 EC_Terrain::GetPointOnMap(const float3 &point) const 
 {
     if (!rootNode)
     {
         LogError("GetPointOnMap called before rootNode initialized, returning zeros");
-        return Vector3df(0, 0, 0);
+        return float3(0, 0, 0);
     }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
@@ -471,15 +473,15 @@ Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const
     Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
     local.y = GetInterpolatedHeightValue(local.x, local.z);
     Ogre::Vector4 world = worldTM * local;
-    return Vector3df(world.x, world.y, world.z);
+    return float3(world.x, world.y, world.z);
 }
 
-Vector3df EC_Terrain::GetPointOnMapLocal(const Vector3df &point) const
+float3 EC_Terrain::GetPointOnMapLocal(const float3 &point) const
 {
     if (!rootNode)
     {
         LogError("GetPointOnMapLocal called before rootNode initialized, returning zeros");
-        return Vector3df(0, 0, 0);
+        return float3(0, 0, 0);
     }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
@@ -487,16 +489,16 @@ Vector3df EC_Terrain::GetPointOnMapLocal(const Vector3df &point) const
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
     Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
     local.y = GetInterpolatedHeightValue(local.x, local.z);
-    return Vector3df(local.x, local.y, local.z);
+    return float3(local.x, local.y, local.z);
 }
 
-float EC_Terrain::GetDistanceToTerrain(const Vector3df &point) const
+float EC_Terrain::GetDistanceToTerrain(const float3 &point) const
 {
-    Vector3df pointOnMap = GetPointOnMap(point);
+    float3 pointOnMap = GetPointOnMap(point);
     return point.z - pointOnMap.z;
 }
 
-bool EC_Terrain::IsOnTopOfMap(const Vector3df &point) const
+bool EC_Terrain::IsOnTopOfMap(const float3 &point) const
 {
     return GetDistanceToTerrain(point) >= 0.f;
 }
@@ -535,7 +537,7 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
     return h1 * (1.f - u - v) + h2 * u + h3 * v;
 }
 
-Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const Vector3df& direction) const
+float3 EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const float3& direction) const
 {
     ///\todo Delete this function and provide a proper replacement which returns local coordinate frames
     /// at the given point.
@@ -544,22 +546,19 @@ Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const 
     if (!rootNode)
     {
         LogError("GetTerrainRotationAngles called before rootNode initialized, returning zeros");
-        return Vector3df(0, 0, 0);
+        return float3(0, 0, 0);
     }
-    Vector3df worldPos(x,y,z);
-    Vector3df local = GetPointOnMapLocal(worldPos);
+    float3 worldPos(x,y,z);
+    float3 local = GetPointOnMapLocal(worldPos);
     // Get terrain normal.
-    Vector3df worldUp = GetInterpolatedNormal(local.x,local.y);
+    float3 worldUp = GetInterpolatedNormal(local.x,local.y).Normalized();
 
     // Get a vector which is perpendicular for direction and plane normal
-    Vector3df xVec = direction.crossProduct(worldUp);
-    Vector3df front = worldUp.crossProduct(xVec);
+    float3 xVec = direction.Cross(worldUp).Normalized();
+    float3 front = worldUp.Cross(xVec).Normalized();
     
-    xVec.normalize();  // X 
-    front.normalize(); // Y 
     xVec = -xVec;  // Why is this being done?
     front = -front; // Why is this being done?
-    worldUp.normalize(); // Z 
       
     Ogre::Matrix3 m3x3;
 
@@ -584,7 +583,7 @@ Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const 
 
 }
 
-void EC_Terrain::GetTriangleNormals(float x, float y, Vector3df &n1, Vector3df &n2, Vector3df &n3, float &u, float &v) const
+void EC_Terrain::GetTriangleNormals(float x, float y, float3 &n1, float3 &n2, float3 &n3, float &u, float &v) const
 {
     x = max(0.f, min((float)VerticesWidth()-1.f, x));
     y = max(0.f, min((float)VerticesHeight()-1.f, y));
@@ -621,7 +620,7 @@ void EC_Terrain::GetTriangleNormals(float x, float y, Vector3df &n1, Vector3df &
     v = yFrac;
 }
 
-void EC_Terrain::GetTriangleVertices(float x, float y, Vector3df &v1, Vector3df &v2, Vector3df &v3, float &u, float &v) const
+void EC_Terrain::GetTriangleVertices(float x, float y, float3 &v1, float3 &v2, float3 &v3, float &u, float &v) const
 {
     // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
     
@@ -641,62 +640,52 @@ void EC_Terrain::GetTriangleVertices(float x, float y, Vector3df &v1, Vector3df 
     float xFrac = fmod(x, 1.f);
     float yFrac = fmod(y, 1.f);
 
-    v2 = Vector3df((float)xFloor, GetPoint(xFloor, yCeil), (float)yCeil);
-    v3 = Vector3df((float)xCeil, GetPoint(xCeil, yFloor), (float)yFloor);
+    v2 = float3((float)xFloor, GetPoint(xFloor, yCeil), (float)yCeil);
+    v3 = float3((float)xCeil, GetPoint(xCeil, yFloor), (float)yFloor);
 
     if (xFrac + yFrac >= 1.f)
     {
         //if xFrac >= yFrac
-        v1 = Vector3df((float)xCeil, GetPoint(xCeil, yCeil), (float)yCeil);
+        v1 = float3((float)xCeil, GetPoint(xCeil, yCeil), (float)yCeil);
         xFrac = 1.f - xFrac;
         yFrac = 1.f - yFrac;
     }
     else
     {
-        v1 = Vector3df((float)xFloor, GetPoint(xFloor, yFloor), (float)yFloor);
+        v1 = float3((float)xFloor, GetPoint(xFloor, yFloor), (float)yFloor);
         swap(v2, v3);
     }
     u = xFrac;
     v = yFrac;
 }
 
-Vector3df EC_Terrain::GetPlaneNormal(float x, float y) const
+float3 EC_Terrain::GetPlaneNormal(float x, float y) const
 {
-    Vector3df h1, h2, h3;
+    float3 h1, h2, h3;
     float u, v;
     GetTriangleVertices(x, y, h1, h2, h3, u, v);
 
     // h1 to h3 are the three terrain height points in local coordinate space.
-    Vector3df normal = (h3-h2).crossProduct(h3-h1);
-    Ogre::Vector4 oNormal = Ogre::Vector4(normal.x, normal.y, normal.z, 0.f);
+    float3 normal = (h3-h2).Cross(h3-h1);
 
-    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
-    oNormal = worldTM * oNormal;
-    normal = Vector3df(oNormal.x, oNormal.y, oNormal.z);
-    normal.normalize();
-
-    return normal;
+    float4x4 worldTM = GetWorldTransform(rootNode);
+    return worldTM.MulDir(normal).Normalized();
 }
 
-Vector3df EC_Terrain::GetInterpolatedNormal(float x, float y) const
+float3 EC_Terrain::GetInterpolatedNormal(float x, float y) const
 {
-    Vector3df n1, n2, n3;
+    float3 n1, n2, n3;
     float u, v;
     GetTriangleNormals(x, y, n1, n2, n3, u, v);
 
     // h1 to h3 are the three terrain height points in local coordinate space.
-    Vector3df normal = (1.f - u - v) * n1 + u * n2 + v * n3;
-    Ogre::Vector4 oNormal = Ogre::Vector4(normal.x, normal.y, normal.z, 0.f);
+    float3 normal = (1.f - u - v) * n1 + u * n2 + v * n3;
 
-    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
-    oNormal = worldTM * oNormal;
-    normal = Vector3df(oNormal.x, oNormal.y, oNormal.z);
-    normal.normalize();
-
-    return normal;
+    float4x4 worldTM = GetWorldTransform(rootNode);
+    return worldTM.MulDir(normal).Normalized();
 }
 
-Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) const
+float3 EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) const
 {
     int px = x * cPatchSize + xinside;
     int py = y * cPatchSize + yinside;
@@ -714,9 +703,7 @@ Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) co
         y_slope *= 2;
 
     // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
-    Vector3df normal(x_slope, 2.0, y_slope);
-    normal.normalize();
-    return normal;
+    return float3(x_slope, 2.0, y_slope).Normalized();
 }
 
 bool EC_Terrain::SaveToFile(QString filename)

@@ -5,8 +5,9 @@
 #include "InputFwd.h"
 #include "SceneFwd.h"
 #include "OgreModuleFwd.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "Math/Quat.h"
+#include "CoreTypes.h"
 
 #include <QObject>
 
@@ -30,15 +31,15 @@ public slots:
     void MouseMove(MouseEvent *mouse);
 
 signals:
-    void Finished(Vector3df location, Quat orientation);
-    void LocationChanged(Vector3df location);
+    void Finished(float3 location, Quat orientation);
+    void LocationChanged(float3 location);
     void OrientationChanged(Quat orientation);
 
 private:
-     bool DoRayCast(int x, int y, Vector3df &result);
+     bool DoRayCast(int x, int y, float3 &result);
 
 private:
-    Vector3df location_;
+    float3 location_;
     Quat orientation_;
     InputContextPtr input_;
     EC_Placeable *placeable_;

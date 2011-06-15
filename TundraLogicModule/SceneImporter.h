@@ -5,7 +5,7 @@
 #include "TundraLogicModuleApi.h"
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "Math/Quat.h"
 #include <QPair>
 #include <QUrl>
@@ -157,7 +157,7 @@ private:
         \param prefix 
         \param replace Whether to replace contents of entities by name. If false, all entities will be created as new
      */
-    void ProcessNodeForCreation(QList<Entity *> &entities, QDomElement node_elem, Vector3df pos, Quat rot, Vector3df scale,
+    void ProcessNodeForCreation(QList<Entity *> &entities, QDomElement node_elem, float3 pos, Quat rot, float3 scale,
         AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace);
 
     /// Process node and its child nodes for creation of scene description.
@@ -169,7 +169,7 @@ private:
         \param prefix 
         \param flipyz Whether to switch y/z axes from Ogre to OpenSim convention
     */
-//    void ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+//    void ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, float3 pos, Quaternion rot, float3 scale,
 //        const QString &prefix, bool flipyz);
 
     /// Creates asset descriptions from the provided lists of OGRE resource filenames.

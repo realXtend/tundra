@@ -27,7 +27,7 @@ EC_EnvironmentLight::EC_EnvironmentLight(Scene* scene) :
     sunColorAttr(this, "Sun color", Color(0.639f,0.639f,0.639f)),
     ambientColorAttr(this, "Ambient color", Color(0.364f, 0.364f, 0.364f, 1)),
     sunDiffuseColorAttr(this, "Sun diffuse color", Color(0.93f, 0.93f, 0.93f, 1)),
-    sunDirectionAttr(this, "Sun direction vector", Vector3df(-1, -1, -1)),
+    sunDirectionAttr(this, "Sun direction vector", float3(-1, -1, -1)),
     fixedTimeAttr(this, "Use fixed time", false),
     currentTimeAttr(this, "Current time", 0.67f),
     sunCastShadowsAttr(this, "Sun cast shadows", true),

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMath.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 
 #include <QMetaType>
 #include "Math/float4.h"
@@ -34,7 +34,7 @@ public:
     {
     }
 
-    Transform(const Vector3df &pos_, const Vector3df &rot_, const Vector3df &scale)
+    Transform(const float3 &pos_, const float3 &rot_, const float3 &scale)
     :pos(pos_),
     rot(rot_),
     scale(scale)

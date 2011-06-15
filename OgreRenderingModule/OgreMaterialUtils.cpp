@@ -69,7 +69,7 @@ namespace OgreRenderer
     {
         if (variation >= MAX_MATERIAL_VARIATIONS)
         {
-            ::LogWarning("Requested suffix for non-existing material variation " + ToString<uint>(variation));
+            ::LogWarning("Requested suffix for non-existing material variation " + QString::number(variation));
             variation = 0;
         }
         
@@ -152,7 +152,7 @@ namespace OgreRenderer
     {
         if (variation >= MAX_MATERIAL_VARIATIONS)
         {
-            ::LogWarning("Requested suffix for non-existing material variation " + ToString<uint>(variation));
+            ::LogWarning("Requested suffix for non-existing material variation " + QString::number(variation));
             variation = 0;
         }
         const std::string& suffix = MaterialSuffix[variation];

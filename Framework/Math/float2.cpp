@@ -595,6 +595,12 @@ float2 &float2::operator /=(const float2 &rhs)
     return *this;
 }
 */
+
+float2 float2::Mul(const float2 &rhs) const
+{
+    return float2(x * rhs.x, y * rhs.y);
+}
+
 float2 &float2::operator /=(float scalar)
 {
     float invScalar = 1.f / scalar;

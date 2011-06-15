@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "Color.h"
 #include "Math/Quat.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "IAttribute.h"
 #include "AssetReference.h"
 #include "EntityReference.h"
@@ -81,7 +81,7 @@ QScriptValue Color_prototype_FromString(QScriptContext *ctx, QScriptEngine *engi
     Color retVal(values[0].toFloat(), values[1].toFloat(), values[2].toFloat(), values[3].toFloat());
     return toScriptValueColor(engine, retVal);
 }
-
+/*
 QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_add(QScriptContext *ctx, QScriptEngine *engine);
@@ -113,7 +113,7 @@ void createVector3Functions(QScriptValue &value, QScriptEngine *engine)
     value.setProperty("distance", engine->newFunction(Vector3df_prototype_distance));
 }
 
-QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
+QScriptValue toScriptValueFloat3(QScriptEngine *engine, const float3 &s)
 {
     QScriptValue obj = engine->newObject();
     obj.setProperty("x", QScriptValue(engine, s.x));
@@ -124,14 +124,7 @@ QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
     return obj;
 }
 
-void fromScriptValueVector3(const QScriptValue &obj, Vector3df &s)
-{
-    s.x = (float)obj.property("x").toNumber();
-    s.y = (float)obj.property("y").toNumber();
-    s.z = (float)obj.property("z").toNumber();
-}
-
-void fromScriptValueVector3(const QScriptValue &obj, float3 &s)
+void fromScriptValueFloat3(const QScriptValue &obj, float3 &s)
 {
     s.x = (float)obj.property("x").toNumber();
     s.y = (float)obj.property("y").toNumber();
@@ -140,7 +133,7 @@ void fromScriptValueVector3(const QScriptValue &obj, float3 &s)
 
 QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine)
 {
-    Vector3df vec;
+    float3 vec;
     fromScriptValueVector3(ctx->thisObject(), vec);
       
     return toScriptValueVector3(engine, vec.normalize());
@@ -148,7 +141,7 @@ QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *e
 
 QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine)
 {
-    Vector3df vec;
+    float3 vec;
     fromScriptValueVector3(ctx->thisObject(), vec);
       
     return vec.getLength();
@@ -157,10 +150,10 @@ QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *e
 QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError("Vector3df mul() takes a single number argument.");
+        return ctx->throwError("float3 mul() takes a single number argument.");
     //if (!ctx->argument(0).isNumber())
-    //    return ctx->throwError(QScriptContext::TypeError, "Vector3df mul(): argument is not a number");
-    Vector3df vec;
+    //    return ctx->throwError(QScriptContext::TypeError, "float3 mul(): argument is not a number");
+    float3 vec;
     fromScriptValueVector3(ctx->thisObject(), vec);
     if (ctx->argument(0).isNumber()) // Multiply by scalar
     {
@@ -169,42 +162,42 @@ QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine)
     }
     else if(ctx->argument(0).isObject()) // Multiply by vector3
     {
-        Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+        float3 vec2 = engine->fromScriptValue<float3>(ctx->argument(0));
         return toScriptValueVector3(engine, vec * vec2);
     }
-    return ctx->throwError(QScriptContext::TypeError, "Vector3df mul(): argument is not a number or vector3df");
+    return ctx->throwError(QScriptContext::TypeError, "float3 mul(): argument is not a number or vector3df");
 }
 
 QScriptValue Vector3df_prototype_add(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError("Vector3df add() takes a single number argument.");
+        return ctx->throwError("float3 add() takes a single number argument.");
     //if (!ctx->argument(0).isNumber())
-    //    return ctx->throwError(QScriptContext::TypeError, "Vector3df add(): argument is not a number");
-    Vector3df vec;
+    //    return ctx->throwError(QScriptContext::TypeError, "float3 add(): argument is not a number");
+    float3 vec;
     fromScriptValueVector3(ctx->thisObject(), vec);
     if(ctx->argument(0).isObject())
     {
-        Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+        float3 vec2 = engine->fromScriptValue<float3>(ctx->argument(0));
         return toScriptValueVector3(engine, vec + vec2);
     }
-    return ctx->throwError(QScriptContext::TypeError, "Vector3df add(): argument is not a vector3df");
+    return ctx->throwError(QScriptContext::TypeError, "float3 add(): argument is not a vector3df");
 }
 
 QScriptValue Vector3df_prototype_sub(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError("Vector3df sub() takes a single number argument.");
+        return ctx->throwError("float3 sub() takes a single number argument.");
     //if (!ctx->argument(0).isNumber())
-    //    return ctx->throwError(QScriptContext::TypeError, "Vector3df sub(): argument is not a number");
-    Vector3df vec;
+    //    return ctx->throwError(QScriptContext::TypeError, "float3 sub(): argument is not a number");
+    float3 vec;
     fromScriptValueVector3(ctx->thisObject(), vec);
     if(ctx->argument(0).isObject())
     {
-        Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+        float3 vec2 = engine->fromScriptValue<float3>(ctx->argument(0));
         return toScriptValueVector3(engine, vec - vec2);
     }
-    return ctx->throwError(QScriptContext::TypeError, "Vector3df sub(): argument is not a vector3df");
+    return ctx->throwError(QScriptContext::TypeError, "float3 sub(): argument is not a vector3df");
 }
 
 QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engine)
@@ -214,43 +207,43 @@ QScriptValue Vector3df_prototype_inter(QScriptContext *ctx, QScriptEngine *engin
     int argCount = ctx->argumentCount();
     if (argCount >= 2 && argCount <= 3)
     {
-        Vector3df vec, vec2;
+        float3 vec, vec2;
         fromScriptValueVector3(ctx->thisObject(), vec);
 
         // Ensure that the last argument is a number. 
         if (!ctx->argument(argCount - 1).isNumber())
-            return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): argument(" + QString::number(argCount - 1) + ") isn't a number.");
+            return ctx->throwError(QScriptContext::TypeError, "float3 interpolate(): argument(" + QString::number(argCount - 1) + ") isn't a number.");
         float d = ctx->argument(argCount - 1).toNumber();
 
         if (argCount == 2 && ctx->argument(0).isObject())
         {
-            vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+            vec2 = engine->fromScriptValue<float3>(ctx->argument(0));
             retValue = toScriptValueVector3(engine, vec.getInterpolated(vec2, d));
         }
         else if(ctx->argument(0).isObject() &&
                 ctx->argument(1).isObject())
         {
-            Vector3df vec3;
-            vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
-            vec3 = engine->fromScriptValue<Vector3df>(ctx->argument(1));
+            float3 vec3;
+            vec2 = engine->fromScriptValue<float3>(ctx->argument(0));
+            vec3 = engine->fromScriptValue<float3>(ctx->argument(1));
             vec = vec.interpolate(vec3, vec2, d);
             retValue = toScriptValueVector3(engine, vec); 
         }
         else
-            return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): argument types are invalid.");
+            return ctx->throwError(QScriptContext::TypeError, "float3 interpolate(): argument types are invalid.");
     }
     else
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df interpolate(): invalid number of arguments.");
+        return ctx->throwError(QScriptContext::TypeError, "float3 interpolate(): invalid number of arguments.");
     return retValue;
 }
 
 QScriptValue Vector3df_prototype_rotToDir(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df rotToDir(): invalid number of arguments.");
+        return ctx->throwError(QScriptContext::TypeError, "float3 rotToDir(): invalid number of arguments.");
 
-    Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
-    Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+    float3 vec1 = engine->fromScriptValue<float3>(ctx->thisObject());
+    float3 vec2 = engine->fromScriptValue<float3>(ctx->argument(0));
 
     return toScriptValueVector3(engine, vec1.rotationToDirection(vec2));
 }
@@ -258,10 +251,10 @@ QScriptValue Vector3df_prototype_rotToDir(QScriptContext *ctx, QScriptEngine *en
 QScriptValue Vector3df_prototype_cross(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df crss(): invalid number of arguments."); 
+        return ctx->throwError(QScriptContext::TypeError, "float3 crss(): invalid number of arguments."); 
 
-    Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
-    Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+    float3 vec1 = engine->fromScriptValue<float3>(ctx->thisObject());
+    float3 vec2 = engine->fromScriptValue<float3>(ctx->argument(0));
 
     return toScriptValueVector3(engine, vec1.crossProduct(vec2));
 }
@@ -269,24 +262,24 @@ QScriptValue Vector3df_prototype_cross(QScriptContext *ctx, QScriptEngine *engin
 QScriptValue Vector3df_prototype_dot(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df dot(): invalid number of arguments."); 
+        return ctx->throwError(QScriptContext::TypeError, "float3 dot(): invalid number of arguments."); 
 
-    Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
-    Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+    float3 vec1 = engine->fromScriptValue<float3>(ctx->thisObject());
+    float3 vec2 = engine->fromScriptValue<float3>(ctx->argument(0));
 
     return QScriptValue(engine, vec1.dotProduct(vec2));
 }
 
 QScriptValue Vector3df_prototype_invert(QScriptContext *ctx, QScriptEngine *engine)
 {
-    Vector3df vec = engine->fromScriptValue<Vector3df>(ctx->thisObject());
+    float3 vec = engine->fromScriptValue<float3>(ctx->thisObject());
     return toScriptValueVector3(engine, vec.invert());
 }
 
 //! @todo this code duplicates with IAttribute.
 QScriptValue Vector3df_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
 {
-    Vector3df value = engine->fromScriptValue<Vector3df>(ctx->thisObject());
+    float3 value = engine->fromScriptValue<float3>(ctx->thisObject());
     QString retVal = QString::number(value.x) + " " +
                      QString::number(value.y) + " " +
                      QString::number(value.z);
@@ -296,26 +289,26 @@ QScriptValue Vector3df_prototype_ToString(QScriptContext *ctx, QScriptEngine *en
 QScriptValue Vector3df_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df fromString(): invalid number of arguments."); 
+        return ctx->throwError(QScriptContext::TypeError, "float3 fromString(): invalid number of arguments."); 
     QStringList values = ctx->argument(0).toString().split(" ");
     if (values.count() != 3)
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df fromString(): invalid string value."); 
+        return ctx->throwError(QScriptContext::TypeError, "float3 fromString(): invalid string value."); 
     
-    Vector3df retValue(values[0].toFloat(), values[1].toFloat(), values[2].toFloat());
+    float3 retValue(values[0].toFloat(), values[1].toFloat(), values[2].toFloat());
     return toScriptValueVector3(engine, retValue);
 }
 
 QScriptValue Vector3df_prototype_distance(QScriptContext *ctx, QScriptEngine *engine)
 {
     if (ctx->argumentCount() != 1)
-        return ctx->throwError(QScriptContext::TypeError, "Vector3df distance(): invalid number of arguments.");
+        return ctx->throwError(QScriptContext::TypeError, "float3 distance(): invalid number of arguments.");
 
-    Vector3df vec1 = engine->fromScriptValue<Vector3df>(ctx->thisObject());
-    Vector3df vec2 = engine->fromScriptValue<Vector3df>(ctx->argument(0));
+    float3 vec1 = engine->fromScriptValue<float3>(ctx->thisObject());
+    float3 vec2 = engine->fromScriptValue<float3>(ctx->argument(0));
 
     return vec1.getDistanceFrom(vec2);
 }
-
+*/
 QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &s)
 {
     QScriptValue obj = engine->newObject();
@@ -546,7 +539,7 @@ QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
 
 QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
 {
-    Vector3df newVec;
+    float3 newVec;
     if (ctx->argumentCount() == 3)
     {
         if (ctx->argument(0).isNumber() &&
@@ -558,7 +551,7 @@ QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
             newVec.z = (f32)ctx->argument(2).toNumber();
         }
         else
-            return ctx->throwError(QScriptContext::TypeError, "Vector3df(): arguments aren't numbers.");
+            return ctx->throwError(QScriptContext::TypeError, "float3(): arguments aren't numbers.");
     }
     return engine->toScriptValue(newVec);
 }
@@ -600,7 +593,7 @@ void RegisterCoreMetaTypes()
     qRegisterMetaType<ScenePtr>("ScenePtr");
     qRegisterMetaType<ComponentPtr>("ComponentPtr");
     qRegisterMetaType<Color>("Color");
-    qRegisterMetaType<Vector3df>("Vector3df");
+    qRegisterMetaType<float3>("float3");
     qRegisterMetaType<AssetReference>("AssetReference");
     qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
     qRegisterMetaType<EntityReference>("EntityReference");
@@ -613,7 +606,6 @@ void RegisterCoreMetaTypes()
 void ExposeCoreTypes(QScriptEngine *engine)
 {
     qScriptRegisterMetaType(engine, toScriptValueColor, fromScriptValueColor);
-    qScriptRegisterMetaType(engine, toScriptValueVector3, fromScriptValueVector3);
     qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
     qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
     qScriptRegisterMetaType(engine, toScriptValueEntityReference, fromScriptValueEntityReference);
@@ -635,9 +627,6 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType<std::string>(engine, toScriptValueStdString, fromScriptValueStdString);
     
     // Register constructors
-    QScriptValue ctorVector3 = engine->newFunction(createVector3df);
-    engine->globalObject().setProperty("Vector3df", ctorVector3);
-    engine->globalObject().property("Vector3df").setProperty("fromString", engine->newFunction(Vector3df_prototype_FromString));
     QScriptValue ctorColor = engine->newFunction(createColor);
     engine->globalObject().setProperty("Color", ctorColor);
     engine->globalObject().property("Color").setProperty("fromString", engine->newFunction(Color_prototype_FromString));

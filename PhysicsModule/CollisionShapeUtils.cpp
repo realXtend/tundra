@@ -16,7 +16,7 @@ namespace Physics
 
 void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr)
 {
-    std::vector<Vector3df> triangles;
+    std::vector<float3> triangles;
     GetTrianglesFromMesh(mesh, triangles);
     
     for(uint i = 0; i < triangles.size(); i += 3)
@@ -25,7 +25,7 @@ void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr)
 
 void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr)
 {
-    std::vector<Vector3df> vertices;
+    std::vector<float3> vertices;
     GetTrianglesFromMesh(mesh, vertices);
     if (!vertices.size())
     {
@@ -37,7 +37,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr)
     desc.SetHullFlag(StanHull::QF_TRIANGLES);
     desc.mVcount = vertices.size();
     desc.mVertices = &vertices[0].x;
-    desc.mVertexStride = sizeof(Vector3df);
+    desc.mVertexStride = sizeof(float3);
     desc.mSkinWidth = 0.01f; // Hardcoded skin width
     
     StanHull::HullLibrary lib;
@@ -51,7 +51,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr)
     }
     
     ConvexHull hull;
-    hull.position_ = Vector3df(0,0,0);
+    hull.position_ = float3(0,0,0);
     /// \todo StanHull always produces only 1 hull. Therefore using a hull set is unnecessary and could be optimized away
     hull.hull_ = boost::shared_ptr<btConvexHullShape>(new btConvexHullShape((const btScalar*)&result.mOutputVertices[0], result.mNumOutputVertices, 3 * sizeof(float)));
     ptr->hulls_.push_back(hull);
@@ -59,7 +59,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr)
     lib.ReleaseResult(result);
 }
 
-void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest)
+void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<float3>& dest)
 {
     dest.clear();
     
@@ -90,13 +90,13 @@ void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest)
                 uint i3 = pLong[k+2];
                 
                 posElem->baseVertexPointerToElement(vertices + i1 * vertexSize, &pReal);
-                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(float3(pReal[0], pReal[1], pReal[2]));
                     
                 posElem->baseVertexPointerToElement(vertices + i2 * vertexSize, &pReal);
-                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(float3(pReal[0], pReal[1], pReal[2]));
                     
                 posElem->baseVertexPointerToElement(vertices + i3 * vertexSize, &pReal);
-                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(float3(pReal[0], pReal[1], pReal[2]));
                 
 
             }
@@ -110,13 +110,13 @@ void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest)
                 uint i3 = pShort[k+2];
                 
                 posElem->baseVertexPointerToElement(vertices + i1 * vertexSize, &pReal);
-                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(float3(pReal[0], pReal[1], pReal[2]));
                     
                 posElem->baseVertexPointerToElement(vertices + i2 * vertexSize, &pReal);
-                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(float3(pReal[0], pReal[1], pReal[2]));
                     
                 posElem->baseVertexPointerToElement(vertices + i3 * vertexSize, &pReal);
-                dest.push_back(Vector3df(pReal[0], pReal[1], pReal[2]));
+                dest.push_back(float3(pReal[0], pReal[1], pReal[2]));
             }
         }
         

@@ -4,7 +4,7 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "Color.h"
 #include "OgreModuleFwd.h"
 
@@ -24,7 +24,7 @@ Makes the entity a light source.
 
 <b>Attributes</b>:
 <ul>
-<li>Vector3df: direction.
+<li>float3: direction.
 <div>Specifies the direction vector the light is shining at.</div> 
 <li>enum: light type. 
 <div>One of the values "Point", "Spot" or "Directional".</div> 
@@ -100,8 +100,8 @@ public:
     Ogre::Light* GetLight() const { return light_; }
     
     /// Light direction
-    Q_PROPERTY(Vector3df direction READ getdirection WRITE setdirection)
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, direction);
+    Q_PROPERTY(float3 direction READ getdirection WRITE setdirection)
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, direction);
     
     /// Light type
     Q_PROPERTY(int type READ gettype WRITE settype)
