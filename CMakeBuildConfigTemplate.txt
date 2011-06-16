@@ -60,7 +60,8 @@ endif()
 SET(OGREASSETEDITOR 1)
 
 # Enables QtDeclarative, required for EC_QML
-SET(DECLARATIVE_ENABLED 0)
+# NOTE: You must have quite recent CMake for the FindQt4.cmake module to find QtDeclarative! (>=2.8.4 seems to have it)
+SET(TUNDRA_QT_DECLARATIVE_ENABLED 1)
 
 ############################################################################################################
 ###### REQUIRED FRAMEWORK ##################################################################################
@@ -128,9 +129,9 @@ AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
 AddEntityComponent(EntityComponents/EC_LaserPointer EC_LaserPointer)
 AddEntityComponent(EntityComponents/EC_Sittable EC_Sittable)
 
-if(DECLARATIVE_ENABLED)
+if (TUNDRA_QT_DECLARATIVE_ENABLED)
     AddEntityComponent(EntityComponents/EC_QML EC_QML)
-endif()
+endif ()
 
 ## The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)

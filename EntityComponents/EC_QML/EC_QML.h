@@ -15,6 +15,8 @@
 #include "IAttribute.h"
 #include "Declare_EC.h"
 #include "InputFwd.h"
+
+#include <QDeclarativeView>
 #include <QString>
 #include <QPoint>
 #include <QTimer>
@@ -22,7 +24,6 @@
 #include "EC_3DCanvas.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
-#include <QtDeclarative/QtDeclarative>
 
 /**
 <table class="header">
@@ -101,7 +102,6 @@ public:
     /// IComponent Override
     bool IsSerializable() const { return true; }
 
-
 public slots:
     void Render();
 
@@ -129,15 +129,11 @@ private slots:
     //! Get parent entitys EC_3DCanvas. Return 0 if not present.
     EC_3DCanvas* GetOrCreateSceneCanvasComponent();
 
-    EC_Placeable *GetOrCreatePlaceableComponent();
+    //! Get parent entitys EC_Placeable. Return 0 if not present.
+    EC_Placeable* GetOrCreatePlaceableComponent();
 
-    //! Handles entity action WebViewControllerChanged
-    /// \note The action signature is (string)"WebViewControllerChanged", (int)"id", (string)"name"
-    void ActionControllerChanged(QString id, QString newController);
-
-     /// Handles changes in QML-status
-    void QMLStatus(QDeclarativeView::Status);
-
+    /// Handles changes in QML-status
+    void QMLStatus(QDeclarativeView::Status qmlstatus);
 
 signals:
     void OnAttributeChanged(IAttribute*, AttributeChange::Type);

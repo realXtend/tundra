@@ -14,10 +14,13 @@
 #include "Entity.h"
 #include "LoggingFunctions.h"
 #include "RenderServiceInterface.h"
-#include <QMouseEvent>
-#include <QEvent>
+
 #include "InputAPI.h"
 #include "MemoryLeakCheck.h"
+
+#include <QApplication>
+#include <QMouseEvent>
+#include <QEvent>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_QML")
 
@@ -157,7 +160,6 @@ void EC_QML::QMLStatus(QDeclarativeView::Status qmlstatus)
         qml_ready = false;
     }
 }
-
 
 void EC_QML::HandleMouseInputEvent(MouseEvent *mouse)
 {

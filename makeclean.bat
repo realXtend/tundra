@@ -16,7 +16,7 @@ del build\telepathy-farsight.dll
 del build\telepathy-glib.dll
 
 :: Qt stuff
-del build\QtDeclarative*.dll
+:: del build\QtDeclarative*.dll
 del build\QtMultimedia*.dll
 del build\QtXmlPatterns*.dll
 del build\QtTest*.dll

@@ -58,16 +58,17 @@ macro (configure_poco)
 endmacro (configure_poco)
 
 macro (configure_qt4)
+
     sagase_configure_package (QT4 
-        NAMES Qt4 4.6.1
-        COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
+        NAMES Qt4 4.7.0
+        COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_QT_DIR})
 
     # FindQt4.cmake
     if (QT4_FOUND AND QT_USE_FILE)
-	
+
         include (${QT_USE_FILE})
-		
+
         set (QT4_INCLUDE_DIRS 
             ${QT_INCLUDE_DIR}
             ${QT_QTCORE_INCLUDE_DIR}
@@ -81,10 +82,9 @@ macro (configure_qt4)
             ${QT_PHONON_INCLUDE_DIR}
             ${QT_QTDBUS_INCLUDE_DIR})
 
-		
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
-		
+
         set (QT4_LIBRARIES 
             ${QT_LIBRARIES}
             ${QT_QTCORE_LIBRARY}
@@ -97,9 +97,9 @@ macro (configure_qt4)
             ${QT_QTWEBKIT_LIBRARY}
             ${QT_PHONON_LIBRARY}
             ${QT_QTDBUS_LIBRARY})
-            
+
         set (QT4_MKSPECS ${QT_MKSPECS_DIR})
-		
+
     endif ()
     
     sagase_configure_report (QT4)
@@ -645,23 +645,19 @@ macro(link_package_qtmobility)
 endmacro()
 
 macro(use_package_qtdeclarative)
-        message (STATUS "** Configuring QtDeclarative")
-	if(EXISTS "${QT_INCLUDE_DIR}/QtDeclarative/QtDeclarative")
-		message (STATUS "       " "QtDeclarative found!")
-		set(QTDECLARATIVE_INCLUDE ${QT_INCLUDE_DIR}/QtDeclarative)
-		set(QTDECLARATIVE_LIBRARY ${QT4_LIBRARY_DIR})
-		message (STATUS "-- Include Directories:")
-		message (STATUS "       " ${QTDECLARATIVE_INCLUDE})
-        	include_directories(${QTDECLARATIVE_INCLUDE})
-		message (STATUS "-- Library Directories:")
-		message (STATUS "       " ${QTDECLARATIVE_LIBRARY})
-		link_directories(${QTDECLARATIVE_LIBRARY})
-		message (STATUS "")
-	else ()
-		message (FATAL_ERROR "!! QtDeclarative not found!")
-	endif ()
+    message (STATUS "** Configuring QtDeclarative")
+    if (${QT_QTDECLARATIVE_FOUND})
+        message (STATUS "-- Include Directories:")
+        message (STATUS "       " ${QT_QTDECLARATIVE_INCLUDE_DIR})
+        include_directories(${QT_QTDECLARATIVE_INCLUDE_DIR})
+        message (STATUS "-- Libries:")
+        message (STATUS "       " ${QT_QTDECLARATIVE_LIBRARY})
+        message (STATUS "")
+    else ()
+        message (FATAL_ERROR "-- QtDeclarative not found when configuting Qt!")
+    endif ()
 endmacro()
 
 macro(link_package_qtdeclarative)
-    target_link_libraries(${TARGET_NAME} optimized QtDeclarative)
+    target_link_libraries(${TARGET_NAME} ${QT_QTDECLARATIVE_LIBRARY})
 endmacro()

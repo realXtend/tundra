@@ -40,8 +40,9 @@ endif ()
 
 use_package (OPENJPEG)
 
-if(DECLARATIVE_ENABLED)
+if(TUNDRA_QT_DECLARATIVE_ENABLED)
     use_package_qtdeclarative()
+    link_package_qtdeclarative()
 endif()
 
 use_modules (RexLogicModule Core Foundation Interfaces Scene OgreRenderingModule AssetModule AvatarModule RexCommon
