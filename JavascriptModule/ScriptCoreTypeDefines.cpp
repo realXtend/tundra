@@ -187,11 +187,15 @@ void fromScriptValueAssetReferenceList(const QScriptValue &obj, AssetReferenceLi
     // Clear the old content as we are appending from the start!
     s.refs.clear();
 
-    QScriptValueIterator it(obj);
-    while (it.hasNext()) 
+    if(!obj.isArray())
+        return;
+
+    QStringList reflist;
+    qScriptValueToSequence(obj, reflist);
+
+    foreach(QString ref, reflist)
     {
-        it.next();
-        AssetReference reference(it.value().toString());
+        AssetReference reference(ref);
         s.Append(reference);
     }
 }
