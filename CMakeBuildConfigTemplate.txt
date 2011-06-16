@@ -59,6 +59,9 @@ endif()
 # Enables Ogre asset editor module
 SET(OGREASSETEDITOR 1)
 
+# Enables QtDeclarative, required for EC_QML
+SET(DECLARATIVE_ENABLED 0)
+
 ############################################################################################################
 ###### REQUIRED FRAMEWORK ##################################################################################
 
@@ -124,6 +127,10 @@ AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
 AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
 AddEntityComponent(EntityComponents/EC_LaserPointer EC_LaserPointer)
 AddEntityComponent(EntityComponents/EC_Sittable EC_Sittable)
+
+if(DECLARATIVE_ENABLED)
+    AddEntityComponent(EntityComponents/EC_QML EC_QML)
+endif()
 
 ## The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)

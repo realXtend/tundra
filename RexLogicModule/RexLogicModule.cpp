@@ -173,6 +173,10 @@
 #include "EC_Sittable.h"
 #endif
 
+#ifdef EC_QML_ENABLED
+#include "EC_QML.h"
+#endif
+
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreViewport.h>
@@ -286,6 +290,9 @@ void RexLogicModule::Load()
 #endif
 #ifdef EC_Sittable_ENABLED
     DECLARE_MODULE_EC(EC_Sittable);
+#endif
+#ifdef EC_QML_ENABLED
+    DECLARE_MODULE_EC(EC_QML);
 #endif
 }
 
