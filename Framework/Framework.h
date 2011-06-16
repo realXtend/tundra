@@ -33,9 +33,6 @@ public:
     /// Returns the command line options specified as command-line options when starting up.
     boost::program_options::variables_map &ProgramOptions() { return commandLineVariables; }
 
-    /// Performs the module post-initialization steps.
-    void PostInitialize();
-
     /// Entry point for the framework.
     void Go();
 
