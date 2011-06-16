@@ -26,24 +26,6 @@ namespace OgreRenderer
 
     bool CompositionHandler::Initialize(Framework* framework, Ogre::Viewport *vp)
     {
-        postprocess_effects_.reserve(16);
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Bloom"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "UnderWater"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Glass"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "B&W"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Embossed"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Sharpen Edges"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Invert"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Posterize"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Laplace"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Tiling"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "HDR"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Strong HDR"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Gaussian Blur"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Motion Blur"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Radial Blur"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "WetLens"));
-
         framework_ = framework;
         viewport_ = vp;
         c_manager_ = Ogre::CompositorManager::getSingletonPtr();
@@ -51,41 +33,6 @@ namespace OgreRenderer
             return true;
         else
             return false;
-    }
-
-    std::string CompositionHandler::MapNumberToEffectName(const std::string &number)
-    {
-        std::string effect_name;
-        if(number == "12")
-        {
-            effect_name = "Strong HDR";
-        }else if(number == "4"){
-            effect_name = "UnderWater";
-        }
-        return effect_name;
-    }
-
-    void CompositionHandler::ExecuteServersShaderRequest(const StringVector &parameters)
-    {
-        std::string effect_number = parameters.at(0);
-        std::string enable = parameters.at(1);
-        std::string effect_name;
-
-        if(enable == "True")
-        {
-            effect_name = MapNumberToEffectName(effect_number);
-            if (!effect_name.empty())
-                AddCompositorForViewport(effect_name);
-        }
-        else if(enable == "False")
-        {
-            effect_name = MapNumberToEffectName(effect_number);
-            if (!effect_name.empty())
-                RemoveCompositorFromViewport(effect_name);
-        }
-
-        //12 (default, bloom (?))
-        //4 (water)
     }
 
     void CompositionHandler::RemoveCompositorFromViewport(const std::string &compositor, Ogre::Viewport *vp)
@@ -99,6 +46,15 @@ namespace OgreRenderer
         }
     }
 
+    void CompositionHandler::RemoveAllCompositors()
+    {
+        if (c_manager_!=0)
+        {
+            c_manager_->removeCompositorChain(viewport_);
+            priorities_.clear();
+        }
+    }
+    
     bool CompositionHandler::AddCompositorForViewportPriority(const std::string &compositor, int priority)
     {
         priorities_.insert(std::make_pair(compositor, priority));
@@ -167,7 +123,7 @@ namespace OgreRenderer
         
         if (!succesfull)
             ::LogWarning("Failed to enable effect: " + compositor);
-
+        
         return succesfull;
     }
 

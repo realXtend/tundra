@@ -46,6 +46,12 @@ OgreWorld::~OgreWorld()
     if (rayQuery_)
         sceneManager_->destroyQuery(rayQuery_);
     
+    // Remove all compositors.
+    /// \todo This does not work with a proper multiscene approach
+    OgreRenderer::CompositionHandler* comp = renderer_->GetCompositionHandler();
+    if (comp)
+        comp->RemoveAllCompositors();
+    
     Ogre::Root* root = Ogre::Root::getSingletonPtr();
     root->destroySceneManager(sceneManager_);
 }

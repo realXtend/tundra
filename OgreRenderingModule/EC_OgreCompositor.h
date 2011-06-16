@@ -38,8 +38,6 @@ F.ex. 'strength=1.2' or 'color=1 0 0 0.5'</div>
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>AvailableCompositors
-<div>Returns list of available compositor names.</div>
 </ul>
 </td>
 </tr>
@@ -74,12 +72,11 @@ public:
     COMPONENT_NAME("EC_OgreCompositor", 18)
 public slots:
 
-    /// Returns list of available compositor names.
-    QStringList AvailableCompositors() const;
-
 private slots:
     void OnAttributeUpdated(IAttribute* attribute);
 
+    void OneTimeRefresh();
+    
 private:
     /// Enables or disables and sets the priority of the specified compositor based on the attributes
     void UpdateCompositor(const QString &compositor);
@@ -93,5 +90,7 @@ private:
     OgreRenderer::CompositionHandler *handler_;
     /// Stored compositor ref for internal use
     QString previous_ref_;
+    /// Stored previous priority for internal use
+    int previous_priority_;
 };
 

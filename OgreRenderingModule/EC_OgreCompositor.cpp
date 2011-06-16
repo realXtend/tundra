@@ -5,6 +5,7 @@
 
 #include "EC_OgreCompositor.h"
 #include "Renderer.h"
+#include "FrameAPI.h"
 #include "OgreRenderingModule.h"
 #include "CompositionHandler.h"
 
@@ -18,6 +19,7 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     compositorref(this, "Compositor ref", ""),
     priority(this, "Priority", -1),
     parameters(this, "Parameters"),
+    previous_priority_(-1),
     owner_(0),
     handler_(0)
 {
@@ -27,6 +29,8 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     assert (handler_ && "No CompositionHandler.");
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
     
+    // Ogre sucks. Enable a timed one-time refresh to overcome issue with black screen.
+    framework_->Frame()->DelayedExecute(0.01f, this, SLOT(OneTimeRefresh()));
 }
 
 EC_OgreCompositor::~EC_OgreCompositor()
@@ -34,18 +38,13 @@ EC_OgreCompositor::~EC_OgreCompositor()
     UpdateCompositor("");
 }
 
-QStringList EC_OgreCompositor::AvailableCompositors() const
-{
-    return handler_->GetAvailableCompositors().toList();
-}
-
 void EC_OgreCompositor::OnAttributeUpdated(IAttribute* attribute)
 {
     if (attribute == &enabled)
     {
-        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), enabled.Get());
         UpdateCompositor(compositorref.Get());
         UpdateCompositorParams(compositorref.Get());
+        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), enabled.Get());
     }
 
     if (attribute == &compositorref)
@@ -68,18 +67,22 @@ void EC_OgreCompositor::UpdateCompositor(const QString &compositor)
 {
     if (ViewEnabled() && enabled.Get())
     {
-        if (!previous_ref_.isEmpty())
-            handler_->RemoveCompositorFromViewport(previous_ref_.toStdString());
-
-        if (!compositorref.Get().isEmpty())
+        if ((previous_ref_ != compositorref.Get()) || (previous_priority_ != priority.Get()))
         {
-            if (priority.Get() == -1)
-                handler_->AddCompositorForViewport(compositor.toStdString());
-            else
-                handler_->AddCompositorForViewportPriority(compositor.toStdString(), priority.Get());
-        }
+            if (!previous_ref_.isEmpty())
+                handler_->RemoveCompositorFromViewport(previous_ref_.toStdString());
 
-        previous_ref_ = compositor;
+            if (!compositorref.Get().isEmpty())
+            {
+                if (priority.Get() == -1)
+                    handler_->AddCompositorForViewport(compositor.toStdString());
+                else
+                    handler_->AddCompositorForViewportPriority(compositor.toStdString(), priority.Get());
+            }
+            
+            previous_ref_ = compositor;
+            previous_priority_ = priority.Get();
+        }
     }
 }
 
@@ -115,3 +118,8 @@ void EC_OgreCompositor::UpdateCompositorParams(const QString &compositor)
     }
 }
 
+void EC_OgreCompositor::OneTimeRefresh()
+{
+    if (!compositorref.Get().isEmpty())
+        OnAttributeUpdated(&enabled);
+}
