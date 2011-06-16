@@ -11,10 +11,13 @@ copy oalinst.exe build
 copy dxwebsetup.exe build
 xcopy bin\*.* build /S /C /Y
 
+del build\plugins\*d.dll
 del build\performancelogger.txt
 del build\fullmemoryleaklog.txt
 del build\scenestats.txt
 del build\ogrestats.txt
+del build\telepathy*.dll
+del build\caelum*.dll
 del build\openal32.dll
 del build\wrap_oal.dll
 del build\*d4.dll
@@ -33,26 +36,27 @@ del build\libvorbisfiled.dll
 del build\viewerd.exe
 del build\serverd.exe
 del build\modules\core\*d.dll
-del build\pymodules\*.pyc
-del build\pymodules\apitest\*.pyc
-del build\pymodules\circuits\*.pyc
-del build\pymodules\circuits\core\*.pyc
-del build\pymodules\circuits\net\*.pyc
-del build\pymodules\circuits\tools\*.pyc
-del build\pymodules\circuits\web\*.pyc
-del build\pymodules\core\*.pyc
-del build\pymodules\objectedit\*.pyc
-del build\pymodules\lib\*.pyc
-del build\pymodules\lib\webdav\*.pyc
-del build\pymodules\lib\webdav\acp\*.pyc
-del build\pymodules\lib\poster\*.pyc
-del build\pymodules\usr\*.pyc
-del build\pymodules\webdavinventory\*.pyc
-del build\pymodules\webserver\*.pyc
-del build\pymodules\mediaurlhandler\*.pyc
-del build\pymodules\localscene\*.pyc
-del build\pymodules\objecttools\*.pyc
-del build\pymodules\estatemanagement\*.pyc
-del build\pymodules\loadurlhandler\*.pyc
-del build\pymodules\DLLs\*_d.pyd
-del build\plugins\*_d.dll
+@rem for now, delete whole pymodules folder
+rmdir build\pymodules /S /Q
+@rem del build\pymodules\*.pyc
+@rem del build\pymodules\apitest\*.pyc
+@rem del build\pymodules\circuits\*.pyc
+@rem del build\pymodules\circuits\core\*.pyc
+@rem del build\pymodules\circuits\net\*.pyc
+@rem del build\pymodules\circuits\tools\*.pyc
+@rem del build\pymodules\circuits\web\*.pyc
+@rem del build\pymodules\core\*.pyc
+@rem del build\pymodules\objectedit\*.pyc
+@rem del build\pymodules\lib\*.pyc
+@rem del build\pymodules\lib\webdav\*.pyc
+@rem del build\pymodules\lib\webdav\acp\*.pyc
+@rem del build\pymodules\lib\poster\*.pyc
+@rem del build\pymodules\usr\*.pyc
+@rem del build\pymodules\webdavinventory\*.pyc
+@rem del build\pymodules\webserver\*.pyc
+@rem del build\pymodules\mediaurlhandler\*.pyc
+@rem del build\pymodules\localscene\*.pyc
+@rem del build\pymodules\objecttools\*.pyc
+@rem del build\pymodules\estatemanagement\*.pyc
+@rem del build\pymodules\loadurlhandler\*.pyc
+@rem del build\pymodules\DLLs\*_d.pyd
