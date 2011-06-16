@@ -700,6 +700,78 @@ void EC_Placeable::ToggleVisibility()
     sceneNode_->flipVisibility();
 }
 
+void EC_Placeable::SetParent(Entity *parent, bool preserveWorldTransform)
+{
+    float3x4 desiredTransform = (preserveWorldTransform ? LocalToWorld() : transform.Get().ToFloat3x4());
+
+    if (!parent)
+    {
+        EntityReference r;
+        r.Set(0);
+        parentRef.Set(r, AttributeChange::Default);
+    }
+    else
+    {
+        boost::shared_ptr<EC_Placeable> parentPlaceable = parent->GetComponent<EC_Placeable>();
+        if (!parentPlaceable)
+        {
+            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity_->ToString() + " to entity " + parent->ToString() + ", but the target entity does not have an EC_Placeable component!");
+            return;
+        }
+        if (preserveWorldTransform)
+            desiredTransform = parentPlaceable->WorldToLocal() * desiredTransform;
+        parentRef.Set(EntityReference(parent->Id()), AttributeChange::Default);
+    }
+    // Not attaching to a bone, clear any previous bone ref.
+    parentBone.Set("", AttributeChange::Default);
+
+    if (preserveWorldTransform)
+        transform.Set(Transform(desiredTransform), AttributeChange::Default);
+}
+
+void EC_Placeable::SetParent(Entity *parent, QString boneName, bool preserveWorldTransform)
+{
+    float3x4 desiredTransform = (preserveWorldTransform ? LocalToWorld() : transform.Get().ToFloat3x4());
+
+    if (!parent)
+    {
+        EntityReference r;
+        r.Set(0);
+        parentRef.Set(r, AttributeChange::Default);
+    }
+    else
+    {
+        boost::shared_ptr<EC_Placeable> parentPlaceable = parent->GetComponent<EC_Placeable>();
+        if (!parentPlaceable)
+        {
+            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity_->ToString() + " to entity " + parent->ToString() + ", but the target entity does not have an EC_Placeable component!");
+            return;
+        }
+
+        boost::shared_ptr<EC_Mesh> mesh = parent->GetComponent<EC_Mesh>();
+        if (!mesh)
+        {
+            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity_->ToString() + " to a bone \"" + boneName + "\" of entity " + parent->ToString() + ", but the target entity does not have an EC_Mesh component!");
+            return;
+        }
+
+        Ogre::Bone *parentBone = mesh->GetBone(boneName);
+        if (!parentBone)
+        {
+            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity_->ToString() + " to a bone \"" + boneName + "\" of entity " + parent->ToString() + " with mesh ref \"" + mesh->meshRef.Get().ref + "\" and skeleton ref \"" + mesh->skeletonRef.Get().ref + "\", but the target entity does not have a bone with that name!");
+            return;
+        }
+        if (preserveWorldTransform)
+            desiredTransform = float4x4(parentBone->_getFullTransform()).Float3x4Part() * desiredTransform;
+        parentRef.Set(EntityReference(parent->Id()), AttributeChange::Default);
+    }
+    // Not attaching to a bone, clear any previous bone ref.
+    parentBone.Set(boneName, AttributeChange::Default);
+
+    if (preserveWorldTransform)
+        transform.Set(Transform(desiredTransform), AttributeChange::Default);
+}
+
 void EC_Placeable::RegisterActions()
 {
     Entity *entity = ParentEntity();

@@ -290,9 +290,12 @@ public slots:
     /// Returns if this entity is local
     bool IsLocal() const { return (id_ & LocalEntity) != 0; }
 
-    /// Returns indentifier string for the entity.
+    /// Returns the identifier string for the entity.
     /** Syntax of the string: 'Entity ID <id>' or 'Entity "<name>" (ID: <id>)' if entity has a name. */
     QString ToString() const;
+
+    /// Same as ToString. This function is implemented to facilitate the automatic QtScript QScriptValue to string conversion.
+    QString toString() const { return ToString(); }
 
     /// Returns the unique id of this entity
     entity_id_t Id() const { return id_; }

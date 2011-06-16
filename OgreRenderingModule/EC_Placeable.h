@@ -172,6 +172,20 @@ public slots:
     /// Return whether is attached to the Ogre scene node hierarchy
     bool IsAttached() const { return attached_; }
 
+    /// Re-parents this scene node to the given parent scene node. The parent entity must contain an EC_Placeable component.
+    /// Detaches this placeable from its previous parent.
+    /// @param preserveWorldTransform If true, the world space position of this placeable is preserved.
+    ///                               If false, the transform attibute of this placeable is treated as the new local->parent transform for this placeable.
+    /// @note This function sets the parentRef and parentBone attributes of this component to achieve the parenting.
+    void SetParent(Entity *parent, bool preserveWorldTransform);
+
+    /// Re-parents this scene node to the named bone of the given parent scene node. The parent scene node must contain an EC_Placeable component and an EC_Mesh with a skeleton.
+    /// Detaches this placeable from its previous parent.
+    /// @param preserveWorldTransform If true, the world space position of this placeable is preserved.
+    ///                               If false, the transform attibute of this placeable is treated as the new local->parent transform for this placeable.
+    /// @note This function sets the parentRef and parentBone attributes of this component to achieve the parenting.
+    void SetParent(Entity *parent, QString boneName, bool preserveWorldTransform);
+
 signals:
     /// Emitted when about to be destroyed
     void AboutToBeDestroyed();
