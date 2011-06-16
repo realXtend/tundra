@@ -8,7 +8,7 @@
 #ifndef incl_Ui_UiWidget_h
 #define incl_Ui_UiWidget_h
 
-#include <QWidget.h>
+#include <qwidget.h>
 
 class UiWidget :  public QWidget
 {
