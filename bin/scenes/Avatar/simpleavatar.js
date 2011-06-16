@@ -263,14 +263,7 @@ function ServerSetFlying(newFlying) {
     if (flying) {
         rigidbody.mass = 0;
     } else {
-        // Reset the x rot if left
         var placeable = me.placeable;
-        var av_transform = placeable.transform;
-        if (av_transform.rot.x != 0) {
-            av_transform.rot.x = 0;
-            placeable.transform = av_transform;
-        }
-
         // Set mass back for collisions
         rigidbody.mass = avatar_mass;
         // Push avatar a bit to the fly direction
