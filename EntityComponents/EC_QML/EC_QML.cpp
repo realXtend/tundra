@@ -10,28 +10,13 @@
 
 #include "StableHeaders.h"
 #include "EC_QML.h"
-#include "EC_3DCanvas.h"
 #include "IModule.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
-
-#include <EC_OgreCamera.h>
 #include "RenderServiceInterface.h"
-
-#include <QStringListModel>
-#include <QListView>
 #include <QMouseEvent>
 #include <QEvent>
 #include "InputAPI.h"
-
-#include "SceneInteract.h"
-
-#include "SceneManager.h"
-#include "UiAPI.h"
-#include "SceneAPI.h"
-
-#include <QLabel>
-
 #include "MemoryLeakCheck.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_QML")
@@ -53,12 +38,9 @@ EC_QML::EC_QML(IModule *module) :
     QObject::connect(renderTimer_, SIGNAL(timeout()), this, SLOT(Render()));
 
     renderTimer_->setInterval(getrenderinterval());
-
-
-
     renderer_ = module->GetFramework()->GetService<Foundation::RenderServiceInterface>();
 
-    //Create a new input context that menu will use to fetch input.
+    //Create a new input context that EC_QML will use to fetch input.
     input_ = module->GetFramework()->Input()->RegisterInputContext("QMLInput", 100);
 
     // To be sure that Qt doesn't play tricks on us and miss a mouse release when we're in FPS mode,

@@ -14,19 +14,10 @@
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "Declare_EC.h"
-
-
-#include "SceneFwd.h"
 #include "InputFwd.h"
-
 #include <QString>
-#include <QSize>
-#include <QPointer>
 #include <QPoint>
 #include <QTimer>
-#include <QMenu>
-#include <QList>
-#include <QPointer>
 
 #include "EC_3DCanvas.h"
 #include "EC_Mesh.h"
@@ -62,7 +53,6 @@ Registered by RexLogic::RexLogicModule.
 class EC_Mesh;
 class EC_3DCanvas;
 class EC_Placeable;
-class QListView;
 class QMouseEvent;
 class RaycastResult;
 
