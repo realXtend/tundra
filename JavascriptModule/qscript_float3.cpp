@@ -546,6 +546,16 @@ static QScriptValue float3_ScalarTripleProduct_float3_float3_float3(QScriptConte
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float3_Lerp_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3_Lerp_float3_float3_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 a = qscriptvalue_cast<float3>(context->argument(0));
+    float3 b = qscriptvalue_cast<float3>(context->argument(1));
+    float t = qscriptvalue_cast<float>(context->argument(2));
+    float3 ret = float3::Lerp(a, b, t);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float3_Orthogonalize_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3_Orthogonalize_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -701,6 +711,15 @@ static QScriptValue float3_Clamp_selector(QScriptContext *context, QScriptEngine
     printf("float3_Clamp_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
+static QScriptValue float3_Lerp_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 2 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
+        return float3_Lerp_float3_float(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return float3_Lerp_float3_float3_float(context, engine);
+    printf("float3_Lerp_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
 static QScriptValue float3_Mul_selector(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 1 && QSVIsOfType<float>(context->argument(0)))
@@ -811,7 +830,7 @@ QScriptValue register_float3_prototype(QScriptEngine *engine)
     proto.setProperty("AngleBetween", engine->newFunction(float3_AngleBetween_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("AngleBetweenNorm", engine->newFunction(float3_AngleBetweenNorm_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Decompose", engine->newFunction(float3_Decompose_float3_float3_float3, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Lerp", engine->newFunction(float3_Lerp_float3_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Lerp", engine->newFunction(float3_Lerp_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetFromScalar", engine->newFunction(float3_SetFromScalar_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set", engine->newFunction(float3_Set_float_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToPos4", engine->newFunction(float3_ToPos4, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -830,6 +849,7 @@ QScriptValue register_float3_prototype(QScriptEngine *engine)
 
     QScriptValue ctor = engine->newFunction(float3_ctor, proto, 3);
     ctor.setProperty("ScalarTripleProduct", engine->newFunction(float3_ScalarTripleProduct_float3_float3_float3, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("Lerp", engine->newFunction(float3_Lerp_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("Orthogonalize", engine->newFunction(float3_Orthogonalize_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("Orthogonalize", engine->newFunction(float3_Orthogonalize_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("AreOrthogonal", engine->newFunction(float3_AreOrthogonal_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);

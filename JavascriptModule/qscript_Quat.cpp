@@ -553,6 +553,26 @@ static QScriptValue Quat_Mul_float4(QScriptContext *context, QScriptEngine *engi
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Quat_Lerp_Quat_Quat_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Quat_Lerp_Quat_Quat_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Quat source = qscriptvalue_cast<Quat>(context->argument(0));
+    Quat target = qscriptvalue_cast<Quat>(context->argument(1));
+    float t = qscriptvalue_cast<float>(context->argument(2));
+    Quat ret = Quat::Lerp(source, target, t);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Quat_Slerp_Quat_Quat_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Quat_Slerp_Quat_Quat_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Quat source = qscriptvalue_cast<Quat>(context->argument(0));
+    Quat target = qscriptvalue_cast<Quat>(context->argument(1));
+    float t = qscriptvalue_cast<float>(context->argument(2));
+    Quat ret = Quat::Slerp(source, target, t);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Quat_RotateX_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_RotateX_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -774,6 +794,24 @@ static QScriptValue Quat_Transform_selector(QScriptContext *context, QScriptEngi
     printf("Quat_Transform_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
+static QScriptValue Quat_Lerp_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 2 && QSVIsOfType<Quat>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
+        return Quat_Lerp_Quat_float(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<Quat>(context->argument(0)) && QSVIsOfType<Quat>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return Quat_Lerp_Quat_Quat_float(context, engine);
+    printf("Quat_Lerp_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
+static QScriptValue Quat_Slerp_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 2 && QSVIsOfType<Quat>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
+        return Quat_Slerp_Quat_float(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<Quat>(context->argument(0)) && QSVIsOfType<Quat>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return Quat_Slerp_Quat_Quat_float(context, engine);
+    printf("Quat_Slerp_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
 static QScriptValue Quat_Set_selector(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))
@@ -859,8 +897,8 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     proto.setProperty("Conjugated", engine->newFunction(Quat_Conjugated, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Transform", engine->newFunction(Quat_Transform_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Transform", engine->newFunction(Quat_Transform_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Lerp", engine->newFunction(Quat_Lerp_Quat_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Slerp", engine->newFunction(Quat_Slerp_Quat_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Lerp", engine->newFunction(Quat_Lerp_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Slerp", engine->newFunction(Quat_Slerp_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("AngleBetween", engine->newFunction(Quat_AngleBetween_Quat, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("AxisFromTo", engine->newFunction(Quat_AxisFromTo_Quat, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToAxisAngle", engine->newFunction(Quat_ToAxisAngle_float3_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -892,6 +930,8 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, ToScriptValue_Quat, FromScriptValue_Quat, proto);
 
     QScriptValue ctor = engine->newFunction(Quat_ctor, proto, 4);
+    ctor.setProperty("Lerp", engine->newFunction(Quat_Lerp_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("Slerp", engine->newFunction(Quat_Slerp_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateX", engine->newFunction(Quat_RotateX_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateY", engine->newFunction(Quat_RotateY_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateZ", engine->newFunction(Quat_RotateZ_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);

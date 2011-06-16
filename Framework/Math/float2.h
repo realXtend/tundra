@@ -159,6 +159,7 @@ public:
     /// Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
     /// Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on.
     float2 Lerp(const float2 &b, float t) const;
+    static float2 Lerp(const float2 &a, const float2 &b, float t);
 
     /// Makes the given vectors linearly independent.
     static void Orthogonalize(const float2 &a, float2 &b);

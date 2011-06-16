@@ -181,6 +181,7 @@ public:
     /// Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
     /// Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on.
     float3 Lerp(const float3 &b, float t) const;
+    static float3 Lerp(const float3 &a, const float3 &b, float t);
 
     /// Makes the given vectors linearly independent.
     /// The vector a is kept unmodified, and vector b is modified to be perpendicular to a.

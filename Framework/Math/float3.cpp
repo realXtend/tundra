@@ -385,6 +385,11 @@ float3 float3::Lerp(const float3 &b, float t) const
     return (1.f - t) * *this + t * b;
 }
 
+float3 float3::Lerp(const float3 &a, const float3 &b, float t)
+{
+    return a.Lerp(b, t);
+}
+
 void float3::Orthogonalize(const float3 &a, float3 &b)
 {
     if (!a.IsZero())

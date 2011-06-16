@@ -200,6 +200,11 @@ Quat Quat::Lerp(const Quat &b, float t) const
     return *this * (1.f - t) + b * t;
 }
 
+Quat Quat::Lerp(const Quat &a, const Quat &b, float t)
+{
+    return a.Lerp(b, t);
+}
+
 /** Implementation based on the math in the book Watt, Policarpo. 3D Games: Real-time rendering and Software Technology, pp. 383-386. */
 Quat Quat::Slerp(const Quat &q2, float t) const
 {
@@ -233,6 +238,11 @@ Quat Quat::Slerp(const Quat &q2, float t) const
     }
     
     return ((*this * a) + (q2 * (b * sign))).Normalized();
+}
+
+Quat Quat::Slerp(const Quat &a, const Quat &b, float t)
+{
+    return a.Slerp(b, t);
 }
 
 Quat Lerp(const Quat &a, const Quat &b, float t)

@@ -500,6 +500,11 @@ float4 float4::Lerp(const float4 &b, float t) const
     return (1.f - t) * *this + t * b;
 }
 
+float4 float4::Lerp(const float4 &a, const float4 &b, float t)
+{
+    return a.Lerp(b, t);
+}
+
 float4 float4::FromScalar(float scalar)
 { 
     return float4(scalar, scalar, scalar, scalar);

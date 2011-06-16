@@ -412,6 +412,16 @@ static QScriptValue float4x4_Set_float_float_float_float_float_float_float_float
     return QScriptValue();
 }
 
+static QScriptValue float4x4_Set_float4x4(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_Set_float4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float4x4 This = qscriptvalue_cast<float4x4>(context->thisObject());
+    float4x4 rhs = qscriptvalue_cast<float4x4>(context->argument(0));
+    This.Set(rhs);
+    ToExistingScriptValue_float4x4(engine, This, context->thisObject());
+    return QScriptValue();
+}
+
 static QScriptValue float4x4_Set_int_int_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float4x4_Set_int_int_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1752,6 +1762,8 @@ static QScriptValue float4x4_Set_selector(QScriptContext *context, QScriptEngine
 {
     if (context->argumentCount() == 16 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)) && QSVIsOfType<float>(context->argument(4)) && QSVIsOfType<float>(context->argument(5)) && QSVIsOfType<float>(context->argument(6)) && QSVIsOfType<float>(context->argument(7)) && QSVIsOfType<float>(context->argument(8)) && QSVIsOfType<float>(context->argument(9)) && QSVIsOfType<float>(context->argument(10)) && QSVIsOfType<float>(context->argument(11)) && QSVIsOfType<float>(context->argument(12)) && QSVIsOfType<float>(context->argument(13)) && QSVIsOfType<float>(context->argument(14)) && QSVIsOfType<float>(context->argument(15)))
         return float4x4_Set_float_float_float_float_float_float_float_float_float_float_float_float_float_float_float_float(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float4x4>(context->argument(0)))
+        return float4x4_Set_float4x4(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<int>(context->argument(0)) && QSVIsOfType<int>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
         return float4x4_Set_int_int_float(context, engine);
     printf("float4x4_Set_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
@@ -2013,6 +2025,7 @@ QScriptValue register_float4x4_prototype(QScriptEngine *engine)
     proto.setProperty("SetCol", engine->newFunction(float4x4_SetCol_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetCol", engine->newFunction(float4x4_SetCol_selector, 5), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set", engine->newFunction(float4x4_Set_selector, 16), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Set", engine->newFunction(float4x4_Set_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set", engine->newFunction(float4x4_Set_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set3x3Part", engine->newFunction(float4x4_Set3x3Part_float3x3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set3x4Part", engine->newFunction(float4x4_Set3x4Part_float3x4, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);

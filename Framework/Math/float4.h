@@ -161,6 +161,7 @@ public:
     /// Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
     /// Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on.
     float4 Lerp(const float4 &b, float t) const;
+    static float4 Lerp(const float4 &a, const float4 &b, float t);
 
     /// Computes the squared distance between the (x, y, z) parts of this and the given float4. 
     /// \note This function ignores the w component of this and rhs vector (assumes w=0 or w=1 are the same for both vectors).

@@ -296,6 +296,11 @@ float2 float2::Lerp(const float2 &b, float t) const
     return (1.f - t) * *this + t * b;
 }
 
+float2 float2::Lerp(const float2 &a, const float2 &b, float t)
+{
+    return a.Lerp(b, t);
+}
+
 void float2::Decompose(const float2 &direction, float2 &outParallel, float2 &outPerpendicular) const
 {
     assume(false && "Not implemented!"); ///\todo

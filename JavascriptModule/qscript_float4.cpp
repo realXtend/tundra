@@ -637,6 +637,16 @@ static QScriptValue float4_ToQVector4D(QScriptContext *context, QScriptEngine *e
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float4_Lerp_float4_float4_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float4_Lerp_float4_float4_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float4 a = qscriptvalue_cast<float4>(context->argument(0));
+    float4 b = qscriptvalue_cast<float4>(context->argument(1));
+    float t = qscriptvalue_cast<float>(context->argument(2));
+    float4 ret = float4::Lerp(a, b, t);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float4_FromScalar_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_FromScalar_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -710,6 +720,15 @@ static QScriptValue float4_Clamp_selector(QScriptContext *context, QScriptEngine
     if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
         return float4_Clamp_float_float(context, engine);
     printf("float4_Clamp_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
+static QScriptValue float4_Lerp_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 2 && QSVIsOfType<float4>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
+        return float4_Lerp_float4_float(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<float4>(context->argument(0)) && QSVIsOfType<float4>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return float4_Lerp_float4_float4_float(context, engine);
+    printf("float4_Lerp_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float4_Dot3_selector(QScriptContext *context, QScriptEngine *engine)
@@ -826,7 +845,7 @@ QScriptValue register_float4_prototype(QScriptEngine *engine)
     proto.setProperty("Max", engine->newFunction(float4_Max_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Clamp", engine->newFunction(float4_Clamp_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Clamp01", engine->newFunction(float4_Clamp01, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Lerp", engine->newFunction(float4_Lerp_float4_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Lerp", engine->newFunction(float4_Lerp_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Distance3Sq", engine->newFunction(float4_Distance3Sq_float4, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Distance3", engine->newFunction(float4_Distance3_float4, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Dot3", engine->newFunction(float4_Dot3_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -860,6 +879,7 @@ QScriptValue register_float4_prototype(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, ToScriptValue_float4, FromScriptValue_float4, proto);
 
     QScriptValue ctor = engine->newFunction(float4_ctor, proto, 4);
+    ctor.setProperty("Lerp", engine->newFunction(float4_Lerp_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromScalar", engine->newFunction(float4_FromScalar_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromScalar", engine->newFunction(float4_FromScalar_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromQVector4D", engine->newFunction(float4_FromQVector4D_QVector4D, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);

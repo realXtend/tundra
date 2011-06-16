@@ -218,6 +218,16 @@ static QScriptValue float3x3_Set_float_float_float_float_float_float_float_float
     return QScriptValue();
 }
 
+static QScriptValue float3x3_Set_float3x3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x3_Set_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3x3 This = qscriptvalue_cast<float3x3>(context->thisObject());
+    float3x3 rhs = qscriptvalue_cast<float3x3>(context->argument(0));
+    This.Set(rhs);
+    ToExistingScriptValue_float3x3(engine, This, context->thisObject());
+    return QScriptValue();
+}
+
 static QScriptValue float3x3_Set_int_int_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3x3_Set_int_int_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1133,6 +1143,8 @@ static QScriptValue float3x3_Set_selector(QScriptContext *context, QScriptEngine
 {
     if (context->argumentCount() == 9 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)) && QSVIsOfType<float>(context->argument(4)) && QSVIsOfType<float>(context->argument(5)) && QSVIsOfType<float>(context->argument(6)) && QSVIsOfType<float>(context->argument(7)) && QSVIsOfType<float>(context->argument(8)))
         return float3x3_Set_float_float_float_float_float_float_float_float_float(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))
+        return float3x3_Set_float3x3(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<int>(context->argument(0)) && QSVIsOfType<int>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
         return float3x3_Set_int_int_float(context, engine);
     printf("float3x3_Set_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
@@ -1257,6 +1269,7 @@ QScriptValue register_float3x3_prototype(QScriptEngine *engine)
     proto.setProperty("SetCol", engine->newFunction(float3x3_SetCol_selector, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetCol", engine->newFunction(float3x3_SetCol_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set", engine->newFunction(float3x3_Set_selector, 9), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Set", engine->newFunction(float3x3_Set_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set", engine->newFunction(float3x3_Set_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetIdentity", engine->newFunction(float3x3_SetIdentity, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SwapColumns", engine->newFunction(float3x3_SwapColumns_int_int, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);

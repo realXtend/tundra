@@ -134,7 +134,9 @@ public:
     float4 Transform(const float4 &vec) const;
 
     Quat Lerp(const Quat &target, float t) const;
+    static Quat Lerp(const Quat &source, const Quat &target, float t);
     Quat Slerp(const Quat &target, float t) const;
+    static Quat Slerp(const Quat &source, const Quat &target, float t);
 
     /// Returns the angle between this and the target orientation (the shortest route) in radians.
     float AngleBetween(const Quat &target) const;
