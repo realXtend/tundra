@@ -659,5 +659,7 @@ macro(use_package_qtdeclarative)
 endmacro()
 
 macro(link_package_qtdeclarative)
-    target_link_libraries(${TARGET_NAME} ${QT_QTDECLARATIVE_LIBRARY})
+    if (${QT_QTDECLARATIVE_FOUND})
+        target_link_libraries(${TARGET_NAME} ${QT_QTDECLARATIVE_LIBRARY})
+    endif ()
 endmacro()

@@ -61,7 +61,7 @@ SET(OGREASSETEDITOR 1)
 
 # Enables QtDeclarative, required for EC_QML
 # NOTE: You must have quite recent CMake for the FindQt4.cmake module to find QtDeclarative! (>=2.8.4 seems to have it)
-SET(TUNDRA_QT_DECLARATIVE_ENABLED 1)
+SET(TUNDRA_QT_DECLARATIVE_ENABLED 0)
 
 ############################################################################################################
 ###### REQUIRED FRAMEWORK ##################################################################################
