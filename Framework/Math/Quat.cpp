@@ -200,23 +200,39 @@ Quat Quat::Lerp(const Quat &b, float t) const
     return *this * (1.f - t) + b * t;
 }
 
-Quat Quat::Slerp(const Quat &b, float t) const
+/** Implementation based on the math in the book Watt, Policarpo. 3D Games: Real-time rendering and Software Technology, pp. 383-386. */
+Quat Quat::Slerp(const Quat &q2, float t) const
 {
     assume(0.f <= t && t <= 1.f);
     assume(IsNormalized());
-    assume(b.IsNormalized());
-    float angle = acos(Clamp(this->Dot(b), -1.f, 1.f));
-    float directionFlip = 1.f;
-    if (angle > pi)
-    {
-        angle = 2.f*pi - angle;
-        directionFlip = -1.f;
-    }
-    if (fabs(angle) < pi/16.f)
-        return *this;
-    float sina = 1.f / sin(angle);
+    assume(q2.IsNormalized());
 
-    return (*this * (sin(angle*(1.f-t))*sina) + b * (sin(angle * t)*sina*directionFlip)).Normalized();
+    float angle = this->Dot(q2);
+    float sign = 1.f; // Multiply by a sign of +/-1 to guarantee we rotate the shorter arc.
+    if (angle < 0.f)
+    {
+        angle = -angle;
+        sign = -1.f;
+    }
+
+    float a;
+    float b;
+    if (angle >= 0.99f) // If angle is close to taking the denominator to zero, resort to linear interpolation (and normalization).
+    {
+        a = 1.f - t;
+        b = t;
+        sign = 1.f;
+    }
+    else
+    {
+        angle = acos(Min(angle, 1.f)); // After this, angle is in the range pi/2 -> 0 as the original angle variable ranged from 0 -> 1.
+
+        float c = 1.f / sin(angle);
+        a = sin((1.f - t) * angle) * c;
+        b = sin(angle * t) * c;
+    }
+    
+    return ((*this * a) + (q2 * (b * sign))).Normalized();
 }
 
 Quat Lerp(const Quat &a, const Quat &b, float t)
