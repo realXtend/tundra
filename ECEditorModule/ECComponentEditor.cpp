@@ -37,7 +37,7 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         attributeEditor = new ECAttributeEditor<float>(browser, component, name, type, editor);
     else if(type == "int")
         attributeEditor = new ECAttributeEditor<int>(browser, component, name, type, editor);
-    else if(type == "vector3df")
+    else if(type == "float3")
         attributeEditor = new ECAttributeEditor<float3>(browser, component, name, type, editor);
     else if(type == "color")
         attributeEditor = new ECAttributeEditor<Color>(browser, component, name, type, editor);

@@ -519,8 +519,6 @@ template<> void ECAttributeEditor<bool>::Update(IAttribute *attr)
         UpdateMultiEditorValue(attr);
 }
 
-//-------------------------VECTOR3DF ATTRIBUTE TYPE-------------------------
-
 template<> void ECAttributeEditor<float3>::Update(IAttribute *attr)
 {
     if(!useMultiEditor_)

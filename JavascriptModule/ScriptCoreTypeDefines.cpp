@@ -536,7 +536,7 @@ QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
     }
     return engine->toScriptValue(newColor);
 }
-
+/*
 QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
 {
     float3 newVec;
@@ -555,7 +555,7 @@ QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
     }
     return engine->toScriptValue(newVec);
 }
-
+*/
 QScriptValue createAssetReference(QScriptContext *ctx, QScriptEngine *engine)
 {
     AssetReference newAssetRef;

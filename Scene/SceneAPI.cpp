@@ -226,7 +226,7 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
         attribute = new Attribute<float3>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "float4")
         attribute = new Attribute<float4>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "vector3df")
+    else if (attributeTypename == "float3")
         attribute = new Attribute<float3>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "bool")
         attribute = new Attribute<bool>(owner, newAttributeName.toStdString().c_str());
@@ -254,7 +254,7 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
 QStringList SceneAPI::GetAttributeTypes() const
 {
     QStringList attrTypes;
-    attrTypes << "string" << "int" << "real" << "color" << "vector3df" << "bool" << "uint" << "quaternion" << "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform";
+    attrTypes << "string" << "int" << "real" << "color" << "float3" << "bool" << "uint" << "quaternion" << "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform";
     return attrTypes;
 }
 
