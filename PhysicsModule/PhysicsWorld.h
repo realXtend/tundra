@@ -26,6 +26,7 @@ class btDiscreteDynamicsWorld;
 class btDispatcher;
 class btCollisionObject;
 class EC_RigidBody;
+class Transform;
 
 class DebugLines;
 
@@ -148,7 +149,8 @@ public slots:
     void DrawOBB(const OBB &obb, float r, float g, float b);
     ///\todo This is a temporary function, which will be removed in the future.
     void DrawLineSegment(const LineSegment &l, float r, float g, float b);
-
+    void DrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b);
+    void DrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b);
 signals:
     /// A physics collision has happened between two entities. 
     /** Note: both rigidbodies participating in the collision will also emit a signal separately. 

@@ -12,6 +12,8 @@
 #include "OgreWorld.h"
 #include "OgreBulletCollisionsDebugLines.h"
 #include "EC_RigidBody.h"
+#include "Transform.h"
+#include "Math/float3x4.h"
 #include "Math/AABB.h"
 #include "Math/OBB.h"
 #include "Math/LineSegment.h"
@@ -308,6 +310,21 @@ void PhysicsWorld::DrawOBB(const OBB &obb, float r, float g, float b)
 void PhysicsWorld::DrawLineSegment(const LineSegment &l, float r, float g, float b)
 {
     drawLine(l.a, l.b, float3(r,g,b));
+}
+
+void PhysicsWorld::DrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b)
+{
+    DrawFloat3x4(t.ToFloat3x4(), axisLength, boxSize, r, g, b);
+}
+
+void PhysicsWorld::DrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b)
+{
+    AABB aabb(float3::FromScalar(-boxSize/2.f), float3::FromScalar(boxSize/2.f));
+    OBB obb = aabb.Transform(t);
+    DrawOBB(obb, r, g, b);
+    DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(0)), 1, 0, 0);
+    DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(1)), 0, 1, 0);
+    DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(2)), 0, 0, 1);
 }
 
 } // ~Physics
