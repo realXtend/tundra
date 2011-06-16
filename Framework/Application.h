@@ -18,6 +18,7 @@ class Application : public QApplication
     Q_OBJECT
 
 public:
+    /// Construcs the application singleton.
     /** Qt requires its own data copy of the argc/argv parameters, so this object
         caches them. Pass in received command-line parameters here.
         @param owner Pass in the root framework pointer here. */
@@ -27,6 +28,7 @@ public:
 
     virtual bool notify(QObject *receiver, QEvent *e);
 
+    /// Starts the application execution.
     void Go();
 
     /// Displays a message to the user. Should be used when there is no usable window for displaying messages to the user.
@@ -37,24 +39,26 @@ public:
 
     static void SetCurrentWorkingDirectory(QString newCwd);
 
-    /// Returns the cwd of the current environment. This directory should not be relied, since it might change due to external
-    /// code running. Always prefer to use InstallationDirectory, UserDataDirectory and UserDocumentsDirectory instead.
-    /// The returned path contains a trailing slash.
+    /// Returns the cwd of the current environment.
+    /** This directory should not be relied, since it might change due to external code running.
+        Always prefer to use InstallationDirectory, UserDataDirectory and UserDocumentsDirectory instead.
+        The returned path contains a trailing slash. */
     static QString CurrentWorkingDirectory();
 
-    /// Returns the directory where Tundra was installed to. This is *always* the directory Tundra.exe resides in.
-    /// E.g. on Windows 7 this is usually of form "C:\Program Files (x86)\Tundra 1.0.5\".
-    /// The returned path contains a trailing slash.
+    /// Returns the directory where Tundra was installed to.
+    /** This is *always* the directory Tundra.exe resides in.
+        E.g. on Windows 7 this is usually of form "C:\Program Files (x86)\Tundra 1.0.5\".
+        The returned path contains a trailing slash. */
     static QString InstallationDirectory();
 
     /// Returns the directory that is used for Tundra data storage on the current user.
-    /// E.g. on Windows 7 this is usually of form "C:\Users\username\AppData\Roaming\Tundra\".
-    /// The returned path contains a trailing slash.
+    /** E.g. on Windows 7 this is usually of form "C:\Users\username\AppData\Roaming\Tundra\".
+        The returned path contains a trailing slash. */
     static QString UserDataDirectory();
 
     /// Returns the directory where the documents (for Tundra) of the current user are located in.
-    /// E.g. on Windows 7 this is usually of form "C:\Users\username\Documents\Tundra\".
-    /// The returned path contains a trailing slash.
+    /** E.g. on Windows 7 this is usually of form "C:\Users\username\Documents\Tundra\".
+        The returned path contains a trailing slash. */
     static QString UserDocumentsDirectory();
 
 public slots:
@@ -79,7 +83,5 @@ private:
     bool appActivated;
     QTranslator *nativeTranslator;
     QTranslator *appTranslator;
-    int argc; ///< Command line argument count as supplied by the operating system.
-    char **argv; ///< Command line arguments as supplied by the operating system.
 };
 

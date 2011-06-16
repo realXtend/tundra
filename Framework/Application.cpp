@@ -109,11 +109,11 @@ void Application::Go()
 
     QObject::connect(&frameUpdateTimer, SIGNAL(timeout()), this, SLOT(UpdateFrame()));
     frameUpdateTimer.setSingleShot(true);
-    frameUpdateTimer.start(0); 
+    frameUpdateTimer.start(0);
 
     try
     {
-        exec ();
+        exec();
     }
     catch(const std::exception &e)
     {
