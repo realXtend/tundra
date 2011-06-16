@@ -18,7 +18,7 @@
 #include "ConfigAPI.h"
 #include "IComponentFactory.h"
 #include "Scene.h"
-
+#include "Application.h"
 #include "KristalliProtocolModule.h"
 #include "CoreStringUtils.h"
 #include "AssetAPI.h"
@@ -330,42 +330,36 @@ void TundraLogicModule::LoadStartupScene()
     if (!scene)
     {
         scene = framework_->Scene()->CreateScene("TundraServer", true, true);
-
         framework_->Scene()->SetDefaultScene(scene);
     }
-    
-    const boost::program_options::variables_map &options = GetFramework()->ProgramOptions();
-    if (options.count("file") == 0)
-        return; // No startup scene specified, ignore.
 
-    std::string startupScene = QString(options["file"].as<std::string>().c_str()).trimmed().toStdString();
-    if (startupScene.empty())
-        return; // No startup scene specified, ignore.
-
-    // At this point, if we have a LocalAssetProvider, it has already also parsed the --file command line option
-    // and added the appropriate path as a local asset storage. Here we assume that is the case, so that the
-    // scene we now load will be able to refer to local:// assets in its subfolders.
-    AssetAPI::AssetRefType sceneRefType = AssetAPI::ParseAssetRef(QString::fromStdString(startupScene));
-    if (sceneRefType != AssetAPI::AssetRefLocalPath && sceneRefType != AssetAPI::AssetRefRelativePath)
+    foreach(const QString &startupScene, framework_->CommandLineParameters("--file"))
     {
-        AssetTransferPtr sceneTransfer = framework_->Asset()->RequestAsset(startupScene.c_str());
-        if (!sceneTransfer.get())
+        // At this point, if we have a LocalAssetProvider, it has already also parsed the --file command line option
+        // and added the appropriate path as a local asset storage. Here we assume that is the case, so that the
+        // scene we now load will be able to refer to local:// assets in its subfolders.
+        AssetAPI::AssetRefType sceneRefType = AssetAPI::ParseAssetRef(startupScene);
+        if (sceneRefType != AssetAPI::AssetRefLocalPath && sceneRefType != AssetAPI::AssetRefRelativePath)
         {
-            LogError("Asset transfer initialization failed for scene file " + startupScene + " failed");
-            return;
+            AssetTransferPtr sceneTransfer = framework_->Asset()->RequestAsset(startupScene);
+            if (!sceneTransfer.get())
+            {
+                LogError("Asset transfer initialization failed for scene file " + startupScene + " failed");
+                return;
+            }
+            connect(sceneTransfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(StartupSceneLoaded(AssetPtr)));
+            connect(sceneTransfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(StartupSceneTransferFailed(IAssetTransfer*, QString)));
+            LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
         }
-        connect(sceneTransfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(StartupSceneLoaded(AssetPtr)));
-        connect(sceneTransfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(StartupSceneTransferFailed(IAssetTransfer*, QString)));
-        LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
-    }
-    else
-    {
-        LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
-        bool useBinary = startupScene.find(".tbin") != std::string::npos;
-        if (!useBinary)
-            scene->LoadSceneXML(startupScene.c_str(), true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
         else
-            scene->LoadSceneBinary(startupScene.c_str(), true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+        {
+            LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
+            bool useBinary = startupScene.indexOf(".tbin") != -1;
+            if (!useBinary)
+                scene->LoadSceneXML(startupScene, false/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+            else
+                scene->LoadSceneBinary(startupScene, false/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+        }
     }
 }
 

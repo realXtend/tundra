@@ -81,17 +81,17 @@ namespace Asset
         framework_->Console()->RegisterCommand(
             "RefreshHttpStorages", "Refreshes known assetrefs for all http asset storages", 
             this, SLOT(ConsoleRefreshHttpStorages()));
-            
+
         ProcessCommandLineOptions();
 
         TundraLogic::Server *server = framework_->GetModule<TundraLogic::TundraLogicModule>()->GetServer().get();
-        QObject::connect(server, SIGNAL(UserConnected(int, UserConnection *, UserConnectedResponseData *)), this, 
+        connect(server, SIGNAL(UserConnected(int, UserConnection *, UserConnectedResponseData *)), this, 
             SLOT(ServerNewUserConnected(int, UserConnection *, UserConnectedResponseData *)));
 
         TundraLogic::Client *client = framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient().get();
-        QObject::connect(client, SIGNAL(Connected(UserConnectedResponseData *)), this, SLOT(ClientConnectedToServer(UserConnectedResponseData *)));
-        QObject::connect(client, SIGNAL(Disconnected()), this, SLOT(ClientDisconnectedFromServer()));
-        
+        connect(client, SIGNAL(Connected(UserConnectedResponseData *)), this, SLOT(ClientConnectedToServer(UserConnectedResponseData *)));
+        connect(client, SIGNAL(Disconnected()), this, SLOT(ClientDisconnectedFromServer()));
+
         KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
         connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::message_id_t, const char *, size_t)), 
             this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
@@ -105,17 +105,17 @@ namespace Asset
     {
         assert(framework_);
 
-        const boost::program_options::variables_map &options = framework_->ProgramOptions();
-
-        if (options.count("file") > 0)
+        QStringList files = framework_->CommandLineParameters("--file");
+        QStringList storages = framework_->CommandLineParameters("--storage");
+        foreach(const QString &file, files)
         {
-            AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(QString(options["file"].as<std::string>().c_str()).trimmed());
+            AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(file.trimmed());
             framework_->Asset()->SetDefaultAssetStorage(storage);
         }
-        if (options.count("storage") > 0)
+        foreach(const QString &storageName, storages)
         {
-            AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(QString(options["storage"].as<std::string>().c_str()).trimmed());
-            if (options.count("file") == 0) // If "--file" was not specified, then use "--storage" as the default. (If both are specified, "--file" takes precedence over "--storage").
+            AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(storageName.trimmed());
+            if (files.isEmpty()) // If "--file" was not specified, then use "--storage" as the default. (If both are specified, "--file" takes precedence over "--storage").
                 framework_->Asset()->SetDefaultAssetStorage(storage);
         }
     }
@@ -272,17 +272,11 @@ namespace Asset
         // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
         TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
         KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
-        bool isServer = tundra->IsServer();
-        
-        if (isServer)
-        {
+        if (tundra->IsServer())
             foreach(UserConnection* userConn, kristalli->GetUserConnections())
-            {
                 if (userConn->connection != source)
                     userConn->connection->Send(msg);
-            }
-        }
-        
+
         // Then let assetAPI handle locally
         framework_->Asset()->HandleAssetDiscovery(assetRef, assetType);
     }
@@ -298,17 +292,11 @@ namespace Asset
         // If we are server, the message had to come from a client, and we replicate it to everyone except the sender
         TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
         KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
-        bool isServer = tundra->IsServer();
-        
-        if (isServer)
-        {
+        if (tundra->IsServer())
             foreach(UserConnection* userConn, kristalli->GetUserConnections())
-            {
                 if (userConn->connection != source)
                     userConn->connection->Send(msg);
-            }
-        }
-        
+
         // Then let assetAPI handle locally
         framework_->Asset()->HandleAssetDeleted(assetRef);
     }
@@ -321,15 +309,13 @@ namespace Asset
         
         TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
         KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
-        
-        bool isServer = tundra->IsServer();
-        
+
         MsgAssetDiscovery msg;
         msg.assetRef = StringToBuffer(assetRef.toStdString());
         /// \todo Would preferably need the assettype as well
         
         // If we are server, send to everyone
-        if (isServer)
+        if (tundra->IsServer())
         {
             foreach(UserConnection* userConn, kristalli->GetUserConnections())
                 userConn->connection->Send(msg);
@@ -351,14 +337,12 @@ namespace Asset
         
         TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
         KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
-        
-        bool isServer = tundra->IsServer();
-        
+
         MsgAssetDeleted msg;
         msg.assetRef = StringToBuffer(assetRef.toStdString());
         
         // If we are server, send to everyone
-        if (isServer)
+        if (tundra->IsServer())
         {
             foreach(UserConnection* userConn, kristalli->GetUserConnections())
                 userConn->connection->Send(msg);
