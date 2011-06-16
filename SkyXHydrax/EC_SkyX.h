@@ -42,10 +42,13 @@ public slots:
     /// Returns position of the sun.
     Vector3df SunPosition() const;
 
+    void CreateSunlight();
+
 private:
     EC_SkyXImpl *impl;
 
 private slots:
+    void Create();
     void UpdateAttribute(IAttribute *attr);
     void Update(float frameTime);
 };
