@@ -79,6 +79,9 @@ public:
     /** [Category: Create] [opaque-qtscript] */
     float3x4() {}
 
+    /// The copy-ctor for float3x4 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    float3x4(const float3x4 &rhs) { Set(rhs); }
+
     /// Constructs a new float3x4 by explicitly specifying all the matrix elements.
     /// The elements are specified in row-major format, i.e. the first row first followed by the second and third row.
     /// E.g. The element _10 denotes the scalar at second (index 1) row, first (index 0) column.
@@ -342,6 +345,9 @@ public:
     void Set(float _00, float _01, float _02, float _03,
              float _10, float _11, float _12, float _13,
              float _20, float _21, float _22, float _23);
+
+    /// Sets this to be a copy of the matrix rhs.
+    void Set(const float3x4 &rhs);
 
     /// Sets all values of this matrix.
     /// @param values The values in this array will be copied over to this matrix. The source must contain 12 floats in row-major order (the same

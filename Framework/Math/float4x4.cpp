@@ -691,6 +691,11 @@ void float4x4::Set(float _00, float _01, float _02, float _03,
     v[3][0] = _30; v[3][1] = _31; v[3][2] = _32; v[3][3] = _33;
 }
 
+void float4x4::Set(const float4x4 &rhs)
+{
+    Set(rhs.ptr());
+}
+
 void float4x4::Set(const float *values)
 {
     memcpy(ptr(), values, sizeof(float) * Rows * Cols);

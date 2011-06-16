@@ -36,6 +36,9 @@ public:
     /// @note The default ctor does not initialize any member values.
     Quat() {}
 
+    /// The copy-ctor for Quat is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    Quat(const Quat &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; w = rhs.w; }
+
     /// Constructs a quaternion from the given data buffer.
     /// @param data An array of four floats to use for the quaternion, in the order 'x, y, z, w'. (== 'i, j, k, r')
     /// @note The input data is not normalized after construction, this has to be done manually.
@@ -172,7 +175,8 @@ public:
     /// Creates a new quaternion that rotates sourceDirection vector (in world space) to coincide with the 
     /// targetDirection vector (in world space).
     /// Rotation is performed around the origin.
-    /// \note There are infinite such rotations - this function returns the rotation that has the shortest angle
+    /// The vectors sourceDirection and targetDirection are assumed to be normalized.
+    /// @note There are multiple such rotations - this function returns the rotation that has the shortest angle
     /// (when decomposed to axis-angle notation).
     static Quat RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection);
 

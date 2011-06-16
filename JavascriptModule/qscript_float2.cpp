@@ -13,6 +13,14 @@ static QScriptValue float2_float2(QScriptContext *context, QScriptEngine *engine
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float2_float2_float2(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_float2_float2 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float2 rhs = qscriptvalue_cast<float2>(context->argument(0));
+    float2 ret(rhs);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float2_float2_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_float2_float_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -561,6 +569,8 @@ static QScriptValue float2_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
         return float2_float2(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float2>(context->argument(0)))
+        return float2_float2_float2(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
         return float2_float2_float_float(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<QVector2D>(context->argument(0)))

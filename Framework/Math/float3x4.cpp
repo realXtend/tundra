@@ -558,6 +558,11 @@ void float3x4::Set(float _00, float _01, float _02, float _03,
     v[2][0] = _20; v[2][1] = _21; v[2][2] = _22; v[2][3] = _23;
 }
 
+void float3x4::Set(const float3x4 &rhs)
+{
+    Set(rhs.ptr());
+}
+
 void float3x4::Set(const float *values)
 {
     memcpy(ptr(), values, sizeof(float) * Rows * Cols);

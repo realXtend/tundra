@@ -15,6 +15,14 @@ static QScriptValue Quat_Quat(QScriptContext *context, QScriptEngine *engine)
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Quat_Quat_Quat(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_Quat_Quat in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Quat rhs = qscriptvalue_cast<Quat>(context->argument(0));
+    Quat ret(rhs);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Quat_Quat_float3x3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_Quat_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -263,9 +271,9 @@ static QScriptValue Quat_Slerp_Quat_float(QScriptContext *context, QScriptEngine
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Quat_Slerp_Quat_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Quat This = qscriptvalue_cast<Quat>(context->thisObject());
-    Quat target = qscriptvalue_cast<Quat>(context->argument(0));
+    Quat q2 = qscriptvalue_cast<Quat>(context->argument(0));
     float t = qscriptvalue_cast<float>(context->argument(1));
-    Quat ret = This.Slerp(target, t);
+    Quat ret = This.Slerp(q2, t);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -738,6 +746,8 @@ static QScriptValue Quat_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
         return Quat_Quat(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Quat>(context->argument(0)))
+        return Quat_Quat_Quat(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))
         return Quat_Quat_float3x3(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3x4>(context->argument(0)))

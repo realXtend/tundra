@@ -39,6 +39,8 @@ public:
 
     /// This ctor does not initialize the x, y & z members with any value.
     float3() {}
+    /// The copy-ctor for float3 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    float3(const float3 &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; }
     /// Initializes to (x, y, z).
     float3(float x, float y, float z);
 

@@ -31,6 +31,8 @@ public:
 
     /// This ctor does not initialize the x & y members with a value.
     float2() {}
+    /// The copy-ctor for float2 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    float2(const float2 &rhs) { x = rhs.x; y = rhs.y; }
     /// Initializes to (x, y).
     float2(float x, float y);
 

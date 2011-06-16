@@ -12,6 +12,14 @@ static QScriptValue float3x3_float3x3(QScriptContext *context, QScriptEngine *en
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float3x3_float3x3_float3x3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x3_float3x3_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3x3 rhs = qscriptvalue_cast<float3x3>(context->argument(0));
+    float3x3 ret(rhs);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float3x3_float3x3_float_float_float_float_float_float_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 9) { printf("Error! Invalid number of arguments passed to function float3x3_float3x3_float_float_float_float_float_float_float_float_float in file %s, line %d!\nExpected 9, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1092,6 +1100,8 @@ static QScriptValue float3x3_ctor(QScriptContext *context, QScriptEngine *engine
 {
     if (context->argumentCount() == 0)
         return float3x3_float3x3(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))
+        return float3x3_float3x3_float3x3(context, engine);
     if (context->argumentCount() == 9 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)) && QSVIsOfType<float>(context->argument(4)) && QSVIsOfType<float>(context->argument(5)) && QSVIsOfType<float>(context->argument(6)) && QSVIsOfType<float>(context->argument(7)) && QSVIsOfType<float>(context->argument(8)))
         return float3x3_float3x3_float_float_float_float_float_float_float_float_float(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)))

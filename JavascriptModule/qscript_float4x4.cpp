@@ -12,6 +12,14 @@ static QScriptValue float4x4_float4x4(QScriptContext *context, QScriptEngine *en
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float4x4_float4x4_float4x4(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_float4x4_float4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float4x4 rhs = qscriptvalue_cast<float4x4>(context->argument(0));
+    float4x4 ret(rhs);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float4x4_float4x4_float_float_float_float_float_float_float_float_float_float_float_float_float_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 16) { printf("Error! Invalid number of arguments passed to function float4x4_float4x4_float_float_float_float_float_float_float_float_float_float_float_float_float_float_float_float in file %s, line %d!\nExpected 16, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1681,6 +1689,8 @@ static QScriptValue float4x4_ctor(QScriptContext *context, QScriptEngine *engine
 {
     if (context->argumentCount() == 0)
         return float4x4_float4x4(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float4x4>(context->argument(0)))
+        return float4x4_float4x4_float4x4(context, engine);
     if (context->argumentCount() == 16 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)) && QSVIsOfType<float>(context->argument(4)) && QSVIsOfType<float>(context->argument(5)) && QSVIsOfType<float>(context->argument(6)) && QSVIsOfType<float>(context->argument(7)) && QSVIsOfType<float>(context->argument(8)) && QSVIsOfType<float>(context->argument(9)) && QSVIsOfType<float>(context->argument(10)) && QSVIsOfType<float>(context->argument(11)) && QSVIsOfType<float>(context->argument(12)) && QSVIsOfType<float>(context->argument(13)) && QSVIsOfType<float>(context->argument(14)) && QSVIsOfType<float>(context->argument(15)))
         return float4x4_float4x4_float_float_float_float_float_float_float_float_float_float_float_float_float_float_float_float(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))

@@ -88,6 +88,9 @@ public:
     /** [Category: Create] [opaque-qtscript] */
     float4x4() {}
 
+    /// The copy-ctor for float4x4 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    float4x4(const float4x4 &rhs) { Set(rhs); }
+
     /// Constructs a new float4x4 by explicitly specifying all the matrix elements.
     /// The elements are specified in row-major format, i.e. the first row first followed by the second and third row.
     /// E.g. The element _10 denotes the scalar at second (index 1) row, first (index 0) column.
@@ -384,6 +387,9 @@ public:
              float _10, float _11, float _12, float _13,
              float _20, float _21, float _22, float _23,
              float _30, float _31, float _32, float _33);
+
+    /// Sets this to be a copy of the matrix rhs.
+    void Set(const float4x4 &rhs);
 
     /// Sets all values of this matrix.
     /// @param values The values in this array will be copied over to this matrix. The source must contain 16 floats in row-major order (the same
