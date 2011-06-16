@@ -408,3 +408,21 @@ bool Framework::RegisterDynamicObject(QString name, QObject *object)
 
     return true;
 }
+
+bool Framework::HasCommandLineParameter(const QString &value) const
+{
+    for(int i = 0; i < argc_; ++i)
+        if (QString(argv_[i]) == value)
+            return true;
+    return false;
+}
+
+QStringList Framework::CommandLineParameters(const QString &key) const
+{
+    QStringList ret;
+    for(int i = 0; i < argc_; ++i)
+        if (QString(argv_[i]) == key && i+1 < argc_ && !QString(argv_[i+1]).startsWith("--"))
+            ret.append(argv_[++i]);
+    return ret;
+}
+

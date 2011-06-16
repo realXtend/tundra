@@ -3,7 +3,7 @@
 #pragma once
 
 #include <QObject>
-#include <QString>
+#include <QStringList>
 
 #include <boost/smart_ptr.hpp>
 #include <boost/program_options.hpp>
@@ -20,16 +20,14 @@ class Framework : public QObject
 public:
     /// Constructs and initializes the framework.
     /** @param argc Command line argument count as provided by the operating system.
-        @param argv Command line arguments as provided by the operating system.
-    */
+        @param argv Command line arguments as provided by the operating system. */
     Framework(int argc, char** argv);
 
     ~Framework();
 
     /// Parse program options from command line arguments
     /** For internal use. Should be called immediately after creating the framework,
-        so all options will be taken in effect properly.
-    */
+        so all options will be taken in effect properly. */
     void ParseProgramOptions();
 
     /// Returns the command line options specified as command-line options when starting up.
@@ -146,6 +144,15 @@ public slots:
     /// Signals the framework to exit
     void Exit();
 
+    /// Returns whether or not the command line arguments contain a specific value.
+    bool HasCommandLineParameter(const QString &value) const;
+
+    /// Returns list of command line parameter values for a specific @c key, f.ex. "--file".
+    /** Value is considered to be the command line argument following the @c key.
+        If the argument following @c key is another key-type argument (--something), it's not appended to the return list.
+        @param key Key with possible prefixes. */
+    QStringList CommandLineParameters(const QString &key) const;
+
 private:
     Q_DISABLE_COPY(Framework)
 
@@ -183,7 +190,7 @@ private:
 
 template <class T>
 T *Framework::GetModule()
-{ 
+{
     for(size_t i = 0; i < modules.size(); ++i)
     {
         T *module = dynamic_cast<T*>(modules[i].get());
@@ -193,4 +200,3 @@ T *Framework::GetModule()
 
     return 0;
 }
-
