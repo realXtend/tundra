@@ -72,7 +72,7 @@ var BrowserManager = Class.extend
         this.addressBar.editable = true;
         this.progressBar = findChild(this.browser, "progressBar");
         this.progressBar.visible = false;
-	
+        
         var controlLayout = findChild(this.browser, "controlLayout");
         
         // Browser controls
@@ -164,11 +164,11 @@ var BrowserManager = Class.extend
         
         ui.AddAction.connect(this.addTool);
         ui.OpenUrl.connect(this.openUrl);
-
-	//menu entry to show/hide browser ui
-	var mainwin = ui.MainWindow();
-	var hideshowact = mainwin.AddMenuAction("&View", "Hide/Show Browser UI");
-	hideshowact.triggered.connect(this.toggleVisible);
+        
+        //menu entry to show/hide browser ui
+        var mainwin = ui.MainWindow();
+        var hideshowact = mainwin.AddMenuAction("&View", "Hide/Show Browser UI");
+        hideshowact.triggered.connect(this.toggleVisible);
     },
     
     start: function()
