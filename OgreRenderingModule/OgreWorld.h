@@ -15,32 +15,22 @@
 
 #include <boost/enable_shared_from_this.hpp>
 
-class EC_Camera;
 class Framework;
-
-namespace OgreRenderer
-{
-    class GaussianListener;
-    class Renderer;
-}
 
 /// Contains the Ogre representation of a scene, ie. the Ogre Scene
 class OGRE_MODULE_API OgreWorld : public QObject, public boost::enable_shared_from_this<OgreWorld>
 {
     Q_OBJECT
-    
+
 public:
-    /// Construct. Is called by the OgreRenderingModule upon the creation of a new scene
+    /// Called by the OgreRenderingModule upon the creation of a new scene
     OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene);
-    /// Destruct. Fully destroy the Ogre scene
+    /// Fully destroys the Ogre scene
     virtual ~OgreWorld();
-    
+
     /// Dynamic scene property name
-    static const char* PropertyNameStatic()
-    {
-        return "ogre";
-    }
-    
+    static const char* PropertyName() { return "ogre"; }
+
     /// Returns an unique name to create Ogre objects that require a mandatory name. Calls the parent Renderer
     /** @param prefix Prefix for the name. */
     std::string GetUniqueObjectName(const std::string &prefix);
@@ -49,27 +39,25 @@ public slots:
     /// Do raycast into the world from viewport coordinates, using all selection layers
     /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** The coordinates are a position in the render window, not scaled to [0,1].
-        \param x Horizontal position for the origin of the ray
-        \param y Vertical position for the origin of the ray
-        \return Raycast result structure
-    */
+        @param x Horizontal position for the origin of the ray
+        @param y Vertical position for the origin of the ray
+        @return Raycast result structure */
     RaycastResult* Raycast(int x, int y);
 
     /// Do raycast into the world from viewport coordinates, using specific selection layer(s)
     /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** The coordinates are a position in the render window, not scaled to [0,1].
-        \param x Horizontal position for the origin of the ray
-        \param y Vertical position for the origin of the ray
-        \param layerMask Which selection layer(s) to use (bitmask)
-        \return Raycast result structure
-    */
+        @param x Horizontal position for the origin of the ray
+        @param y Vertical position for the origin of the ray
+        @param layerMask Which selection layer(s) to use (bitmask)
+        @return Raycast result structure */
     RaycastResult* Raycast(int x, int y, unsigned layerMask);
     
     /// Do a frustum query to the world from viewport coordinates.
     /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** Returns the found entities as a QVariantList so that
         Python and Javascript can get the result directly from here.
-        \param viewrect The query rectangle in 2d window coords.
+        @param viewrect The query rectangle in 2d window coords.
     */
     QList<Entity*> FrustumQuery(QRect &viewrect);
     
@@ -84,8 +72,7 @@ public slots:
     
     /// Start tracking an entity's visibility within this scene, using any camera(s)
     /** After this, connect either to the EntityEnterView and EntityLeaveView signals, or the entity's EnterView & LeaveView signals,
-       to be notified of the visibility change(s)
-     */
+       to be notified of the visibility change(s). */
     void StartViewTracking(Entity* entity);
     
     /// Stop tracking an entity's visibility
@@ -97,18 +84,18 @@ public slots:
     Ogre::SceneManager* GetSceneManager() { return sceneManager_; }
     /// Return the parent scene
     ScenePtr GetScene() { return scene_.lock(); }
-    
+
 signals:
     /// An entity has entered the view
     void EntityEnterView(Entity* entity);
-    
+
     /// An entity has left the view
     void EntityLeaveView(Entity* entity);
-    
+
 private slots:
     /// Handle frame update. Used for entity visibility tracking
     void OnUpdated(float timeStep);
-    
+
 private:
     /// Setup shadows
     void SetupShadows();

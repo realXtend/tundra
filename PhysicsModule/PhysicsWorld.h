@@ -70,10 +70,7 @@ public:
     void ProcessPostTick(float substeptime);
     
     /// Dynamic scene property name
-    static const char* PropertyNameStatic()
-    {
-        return "physics";
-    }
+    static const char* PropertyName() { return "physics"; }
     
     /// IDebugDraw override
     virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);

@@ -175,7 +175,7 @@ void PhysicsModule::OnSceneAdded(const QString& name)
     boost::shared_ptr<PhysicsWorld> newWorld(new PhysicsWorld(scene, !scene->IsAuthority()));
     newWorld->SetGravity(scene->GetUpVector() * -9.81f);
     physicsWorlds_[scene.get()] = newWorld;
-    scene->setProperty(PhysicsWorld::PropertyNameStatic(), QVariant::fromValue<QObject*>(newWorld.get()));
+    scene->setProperty(PhysicsWorld::PropertyName(), QVariant::fromValue<QObject*>(newWorld.get()));
 }
 
 void PhysicsModule::OnSceneRemoved(const QString& name)
@@ -191,7 +191,7 @@ void PhysicsModule::OnSceneRemoved(const QString& name)
     PhysicsWorld* worldPtr = scene->GetWorld<PhysicsWorld>().get();
     if (worldPtr)
     {
-        scene->setProperty(PhysicsWorld::PropertyNameStatic(), QVariant());
+        scene->setProperty(PhysicsWorld::PropertyName(), QVariant());
         physicsWorlds_.erase(scene.get());
     }
 }

@@ -79,7 +79,7 @@ public:
     bool operator < (const Scene &other) const { return Name() < other.Name(); }
 
     /// Return a subsystem world (OgreWorld, PhysicsWorld)
-    template <class T> boost::shared_ptr<T> GetWorld() const { T* rawPtr = checked_static_cast<T*>(property(T::PropertyNameStatic()).value<QObject*>()); return rawPtr ? rawPtr->shared_from_this() : boost::shared_ptr<T>(); }
+    template <class T> boost::shared_ptr<T> GetWorld() const { T* rawPtr = checked_static_cast<T*>(property(T::PropertyName()).value<QObject*>()); return rawPtr ? rawPtr->shared_from_this() : boost::shared_ptr<T>(); }
 
 public slots:
     /// Creates new entity that contains the specified components
