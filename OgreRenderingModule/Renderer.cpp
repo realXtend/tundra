@@ -81,9 +81,7 @@ namespace OgreRenderer
         c_handler_(new CompositionHandler)
     {
         timerFrequency = GetCurrentClockFreq();
-
         PrepareConfig();
-        
     }
 
     Renderer::~Renderer()
@@ -406,6 +404,9 @@ namespace OgreRenderer
         {
             cameraComponent_ = camera;
             ogreCamera = camera->GetCamera();
+            OgreWorldPtr w = GetActiveOgreWorld();
+            if (w)
+                w->EmitActiveCameraChanged(camera);
         }
         else
             cameraComponent_ = 0;

@@ -57,8 +57,7 @@ public slots:
     /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** Returns the found entities as a QVariantList so that
         Python and Javascript can get the result directly from here.
-        @param viewrect The query rectangle in 2d window coords.
-    */
+        @param viewrect The query rectangle in 2d window coords. */
     QList<Entity*> FrustumQuery(QRect &viewrect);
     
     /// Return whether a single entity is visible in the currently active camera
@@ -71,8 +70,8 @@ public slots:
     bool IsActive() const;
     
     /// Start tracking an entity's visibility within this scene, using any camera(s)
-    /** After this, connect either to the EntityEnterView and EntityLeaveView signals, or the entity's EnterView & LeaveView signals,
-       to be notified of the visibility change(s). */
+    /** After this, connect either to the EntityEnterView and EntityLeaveView signals,
+        or the entity's EnterView & LeaveView signals, to be notified of the visibility change(s). */
     void StartViewTracking(Entity* entity);
     
     /// Stop tracking an entity's visibility
@@ -85,12 +84,18 @@ public slots:
     /// Return the parent scene
     ScenePtr GetScene() { return scene_.lock(); }
 
+    /// Called by the Renderer upon the change of active camera.
+    void EmitActiveCameraChanged(EC_Camera *camera);
+
 signals:
     /// An entity has entered the view
     void EntityEnterView(Entity* entity);
 
     /// An entity has left the view
     void EntityLeaveView(Entity* entity);
+
+    /// Emitted every time the active camera changes.
+    void ActiveCameraChanged(EC_Camera *camera);
 
 private slots:
     /// Handle frame update. Used for entity visibility tracking

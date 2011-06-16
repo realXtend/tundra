@@ -483,6 +483,12 @@ void OgreWorld::StopViewTracking(Entity* entity)
     }
 }
 
+void OgreWorld::EmitActiveCameraChanged(EC_Camera *camera)
+{
+    if (camera)
+        emit ActiveCameraChanged(camera);
+}
+
 void OgreWorld::OnUpdated(float timeStep)
 {
     // Do nothing if visibility not being tracked for any entities

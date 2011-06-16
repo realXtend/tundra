@@ -10,18 +10,13 @@
 
 #include <QObject>
 #include <QVariant>
-#include <QTime>
-#include <QRect>
-#include <QPixmap>
-#include <QImage>
 #include <OgrePrerequisites.h>
 
 #include <boost/enable_shared_from_this.hpp>
 
+class QRect;
 class RenderWindow;
-class OgreWorld;
 class Framework;
-class EC_Camera;
 
 namespace OgreRenderer
 {
@@ -42,17 +37,13 @@ namespace OgreRenderer
 
     /// Ogre renderer
     /** Created by OgreRenderingModule. Implements the IRenderer.
-        \ingroup OgreRenderingModuleClient
-    */
+        \ingroup OgreRenderingModuleClient */
     class OGRE_MODULE_API Renderer : public QObject, public IRenderer
     {
-        friend class OgreRenderingModule;
-
         Q_OBJECT
 
     public slots:
         /// Renders the screen.
-        //as a slot for webserver plugin to render when needed
         virtual void Render();
 
         /// Returns window width, or 0 if no render window
@@ -62,12 +53,8 @@ namespace OgreRenderer
         virtual int GetWindowHeight() const;
 
         /// Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
-        /** @param directory Directory path to add
-         */
-        //for local dotscene loading to be able to load from the dir where the export is
+        /** @param directory Directory path to add. */
         void AddResourceDirectory(const QString &directory);
-
-        //--- GUI support slots ---
 
         /// Toggles fullscreen
         void SetFullScreen(bool value);
@@ -89,46 +76,34 @@ namespace OgreRenderer
         /// Do raycast into the currently active world from viewport coordinates, using all selection layers
         /// \todo This function will be removed and replaced with a function Scene::Intersect.
         /** The coordinates are a position in the render window, not scaled to [0,1].
-            \param x Horizontal position for the origin of the ray
-            \param y Vertical position for the origin of the ray
-            \return Raycast result structure
-        */
+            @param x Horizontal position for the origin of the ray
+            @param y Vertical position for the origin of the ray
+            @return Raycast result structure */
         virtual RaycastResult* Raycast(int x, int y);
 
         /// Do raycast into the currently active world from viewport coordinates, using specific selection layer(s)
         /// \todo This function will be removed and replaced with a function Scene::Intersect.
         /** The coordinates are a position in the render window, not scaled to [0,1].
-            \param x Horizontal position for the origin of the ray
-            \param y Vertical position for the origin of the ray
-            \param layerMask Which selection layer(s) to use (bitmask)
-            \return Raycast result structure
-        */
+            @param x Horizontal position for the origin of the ray
+            @param y Vertical position for the origin of the ray
+            @param layerMask Which selection layer(s) to use (bitmask)
+            @return Raycast result structure */
         virtual RaycastResult* Raycast(int x, int y, unsigned layerMask);
-        
+
         /// Do a frustum query to the currently active world from viewport coordinates.
         /// \todo This function will be removed and replaced with a function Scene::Intersect.
-        /** Returns the found entities as a QVariantList so that
-            Python and Javascript can get the result directly from here.
-            \param viewrect The query rectangle in 2d window coords.
-        */
+        /** @param viewrect The query rectangle in 2d window coords. */
         virtual QList<Entity*> FrustumQuery(QRect &viewrect);
-        
+
         /// Returns currently active camera component. Returned as IComponent* for scripting convenience.
         IComponent* GetActiveCamera() const;
-        
-        
     public:
         /// Constructor
         /** @param framework Framework pointer.
             @param config Config filename.
             @param plugins Plugins filename.
-            @param window_title Renderer window title.
-        */
-        Renderer(
-            Framework* framework,
-            const std::string& config,
-            const std::string& plugins,
-            const std::string& window_title);
+            @param window_title Renderer window title. */
+        Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title);
 
         /// Destructor
         virtual ~Renderer();
@@ -158,7 +133,7 @@ namespace OgreRenderer
 
         /// Returns Ogre root
         OgreRootPtr GetRoot() const { return root_; }
-        
+
         /// Returns Ogre viewport
         Ogre::Viewport* GetViewport() const { return viewport_; }
 
@@ -166,30 +141,26 @@ namespace OgreRenderer
         Ogre::RenderWindow* GetCurrentRenderWindow() const;
 
         /// Returns currently active Ogre camera
-        /** Note: in case there is no active camera, will not return the default (dummy) camera, but 0
-         */
+        /** @note in case there is no active camera, will not return the default (dummy) camera, but 0 */
         Ogre::Camera* GetActiveOgreCamera() const;
-        
+
         /// Returns the OgreWorld of the currently active camera
         OgreWorldPtr GetActiveOgreWorld() const;
-        
+
         /// Returns an unique name to create Ogre objects that require a mandatory name
         /** @param prefix Prefix for the name. */
         std::string GetUniqueObjectName(const std::string &prefix);
 
         /// Initializes renderer. Called by OgreRenderingModule
-        /** Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before.
-        */
+        /** Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before. */
         void Initialize();
 
         /// Post-initializes renderer. Called by OgreRenderingModule
-        /** Queries event categories it needs
-        */
+        /** Queries event categories it needs. */
         void PostInitialize();
 
         /// Performs update. Called by OgreRenderingModule
-        /** Currently a no-op
-         */
+        /** Currently a no-op. */
         void Update(f64 frametime);
 
         /// Sets current camera component used for rendering the main viewport
@@ -214,12 +185,13 @@ namespace OgreRenderer
         RenderWindow *GetRenderWindow() const { return renderWindow; }
 
     private:
+        friend class OgreRenderingModule;
+
         /// Sleeps the main thread to throttle the main loop execution speed.
         void DoFrameTimeLimiting();
 
         /// Loads Ogre plugins in a manner which allows individual plugin loading to fail
-        /** @param plugin_filename path & filename of the Ogre plugins file
-         */
+        /** @param plugin_filename path & filename of the Ogre plugins file. */
         void LoadPlugins(const std::string& plugin_filename);
 
         /// Sets up Ogre resources based on resources.cfg
@@ -287,11 +259,6 @@ namespace OgreRenderer
         /// resized dirty count
         int resized_dirty_;
 
-        /// For render function
-        QImage ui_buffer_;
-        QRect last_view_rect_;
-        QTime ui_update_timer_;
-
         /// Visible entities
         std::set<entity_id_t> visible_entities_;
 
@@ -310,4 +277,3 @@ namespace OgreRenderer
         tick_t timerFrequency;
     };
 }
-
