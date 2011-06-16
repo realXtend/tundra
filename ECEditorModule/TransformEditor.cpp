@@ -226,6 +226,8 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
 {
 #ifdef EC_TransformGizmo_ENABLED
     ScenePtr scn = scene.lock();
+    if (!scn)
+        return;
     EC_TransformGizmo *tg = 0;
     if (gizmo && scn)
     {
