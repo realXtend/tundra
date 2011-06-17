@@ -1478,32 +1478,52 @@ float3 float4x4::ExtractScale() const
 
 void float4x4::Decompose(float3 &translate, Quat &rotate, float3 &scale) const
 {
+    assume(this->IsOrthogonal3());
+
     float3x3 r;
     Decompose(translate, r, scale);
     rotate = Quat(r);
+
+    // Test that composing back yields the original float4x4.
+    assume(float4x4::FromTRS(translate, rotate, scale).Equals(*this, 0.1f));
 }
 
 void float4x4::Decompose(float3 &translate, float3x3 &rotate, float3 &scale) const
 {
+    assume(this->IsOrthogonal3());
+
     assume(Row(3).Equals(0,0,0,1));
     Float3x4Part().Decompose(translate, rotate, scale);
+
+    // Test that composing back yields the original float4x4.
+    assume(float4x4::FromTRS(translate, rotate, scale).Equals(*this, 0.1f));
 }
 
 void float4x4::Decompose(float3 &translate, float3x4 &rotate, float3 &scale) const
 {
+    assume(this->IsOrthogonal3());
+
     float3x3 r;
     Decompose(translate, r, scale);
     rotate.SetRotatePart(r);
     rotate.SetTranslatePart(0,0,0);
+
+    // Test that composing back yields the original float4x4.
+    assume(float4x4::FromTRS(translate, rotate, scale).Equals(*this, 0.1f));
 }
 
 void float4x4::Decompose(float3 &translate, float4x4 &rotate, float3 &scale) const
 {
+    assume(this->IsOrthogonal3());
+
     float3x3 r;
     Decompose(translate, r, scale);
     rotate.SetRotatePart(r);
     rotate.SetTranslatePart(0,0,0);
     rotate.SetRow(3, 0, 0, 0, 1);
+
+    // Test that composing back yields the original float4x4.
+    assume(float4x4::FromTRS(translate, rotate, scale).Equals(*this, 0.1f));
 }
 
 std::ostream &operator <<(std::ostream &out, const float4x4 &rhs)
