@@ -102,14 +102,19 @@ assetAPI(assetAPI_)
 
 AudioAPI::~AudioAPI()
 {
-    Uninitialize();
-    delete impl;
 /*
     framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "masterGain", masterGain);
     framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "triggered_sound_gain", soundMasterGain[SoundChannel::Triggered]);
     framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "ambient_sound_gain", soundMasterGain[SoundChannel::Ambient]);
     framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "voice_sound_gain", soundMasterGain[SoundChannel::Voice]);
 */
+}
+
+void AudioAPI::Reset()
+{
+    Uninitialize();
+    delete impl;
+    impl = 0;
 }
 
 bool AudioAPI::Initialize(const QString &playbackDeviceName)

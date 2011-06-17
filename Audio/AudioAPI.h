@@ -33,6 +33,9 @@ public:
         \return true if successful */
     bool Initialize(const QString &playbackDeviceName = "");
     
+    /// Uninitialize the Audio API
+    void Reset();
+    
 public slots:
     /// Gets playback device names
     QStringList GetPlaybackDevices();

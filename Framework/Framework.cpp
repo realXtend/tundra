@@ -257,6 +257,7 @@ void Framework::Go()
     frame->Reset();
     input->SaveKeyBindingsToFile();
     input->Reset();
+    audio->Reset();
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
