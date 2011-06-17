@@ -223,7 +223,17 @@ void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QLis
     Vector3df minPos(1e9f, 1e9f, 1e9f);
     Vector3df maxPos(-1e9f, -1e9f, -1e9f);
 
+    QList<Entity*> filteredEntities;
     foreach(Entity *e, entities)
+    {
+        EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
+        // Ignore entities that doesn't have placable component or
+        // they are a child of another placable.
+        if(p && p->getparentRef().IsEmpty())
+            filteredEntities.push_back(e);
+    }
+
+    foreach(Entity *e, filteredEntities)
     {
         EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
         if (p)
@@ -242,7 +252,7 @@ void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QLis
     Vector3df importPivotPos = Vector3df((minPos.x + maxPos.x) / 2, minPos.y, (minPos.z + maxPos.z) / 2);
     Vector3df offset = pos - importPivotPos;
 
-    foreach(Entity *e, entities)
+    foreach(Entity *e, filteredEntities)
     {
         EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
         if (p)
