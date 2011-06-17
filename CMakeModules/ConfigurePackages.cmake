@@ -141,52 +141,58 @@ macro (configure_python_qt)
 endmacro (configure_python_qt)
 
 macro (configure_ogre)
-    if ("$ENV{OGRE_HOME}" STREQUAL "" OR NOT WIN32)
+   
+    if (NOT WIN32)
+        # Mac
         if (APPLE)
-    	  FIND_LIBRARY(OGRE_LIBRARY NAMES Ogre)
+    	  FIND_LIBRARY (OGRE_LIBRARY NAMES Ogre)
     	  set (OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
     	  set (OGRE_LIBRARIES ${OGRE_LIBRARY})
+        # Linux
         else ()
             sagase_configure_package (OGRE 
-            NAMES Ogre OgreSDK ogre OGRE
-            COMPONENTS Ogre ogre OGRE OgreMain 
-            PREFIXES ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+                NAMES Ogre OgreSDK ogre OGRE
+                COMPONENTS Ogre ogre OGRE OgreMain 
+                PREFIXES ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
         endif ()
-
-        sagase_configure_report (OGRE)
-    else()
-        # DX blitting define for naali
-        add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
-        include_directories($ENV{OGRE_HOME})
-        # Ogre built from sources
-        include_directories($ENV{OGRE_HOME}/include) 
-        include_directories($ENV{OGRE_HOME}/include/RenderSystems/Direct3D9/include)
-        include_directories($ENV{OGRE_HOME}/RenderSystems/Direct3D9/include)
-        # Ogre official sdk
-        include_directories($ENV{OGRE_HOME}/include/OGRE) 
-        include_directories($ENV{OGRE_HOME}/include/OGRE/RenderSystems/Direct3D9)
-        link_directories($ENV{OGRE_HOME}/lib)
         
-        # Print some fake sagase reporting as we cant fill 
-        # OGRE_INCLUDE_DIRS and OGRE_LIBRARIES lists due to link_ogre() logic
-        message (STATUS "** Configuring OGRE")
-        message (STATUS "-- Using OGRE_HOME environment variable")
-        message (STATUS "       " $ENV{OGRE_HOME})
-        message (STATUS "-- Include Directories:")
-        message (STATUS "       " $ENV{OGRE_HOME}/include)
-        message (STATUS "       " $ENV{OGRE_HOME}/include/OGRE)
-        message (STATUS "-- Library Directories:")
-        message (STATUS "       " $ENV{OGRE_HOME}/lib)
-        message (STATUS "-- Libraries:")
-        message (STATUS "        OgreMain.lib")
-        message (STATUS "        RenderSystem_Direct3D9.lib")
-        message (STATUS "-- Debug Libraries:")
-        message (STATUS "        OgreMain_d.lib")
-        message (STATUS "        RenderSystem_Direct3D9_d.lib")
-        message (STATUS "-- Defines:")
-        message (STATUS "        USE_D3D9_SUBSURFACE_BLIT")
+        sagase_configure_report (OGRE)
+        
+    else ()
+        # Find ogre
+        if (DirectX_FOUND)
+            set (TUNDRA_OGRE_NEEDED_COMPONENTS Ogre ogre OGRE OgreMain RenderSystem_Direct3D9)
+        else ()
+            set (TUNDRA_OGRE_NEEDED_COMPONENTS Ogre ogre OGRE OgreMain)
+        endif()
+        
+        sagase_configure_package (OGRE 
+            NAMES Ogre OgreSDK ogre OGRE
+            COMPONENTS ${TUNDRA_OGRE_NEEDED_COMPONENTS}
+            PREFIXES ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+
+        # Report ogre then search check directx
+        sagase_configure_report (OGRE)
+        
+        # DirectX SDK found, use DX9 surface blitting
+        message (STATUS "** Configuring DirectX")
+        if (DirectX_FOUND)
+            message (STATUS "-- Include Directories:")
+            message (STATUS "       " ${DirectX_INCLUDE_DIR})
+            message (STATUS "-- Library Directories:")
+            message (STATUS "       " ${DirectX_LIBRARY_DIR})
+            message (STATUS "-- Defines:")
+            message (STATUS "        USE_D3D9_SUBSURFACE_BLIT")
+            
+            add_definitions (-DUSE_D3D9_SUBSURFACE_BLIT)
+            include_directories (${DirectX_INCLUDE_DIR})
+            link_directories (${DirectX_LIBRARY_DIR})
+        else ()
+            message (STATUS "DirectX not found!")
+            message (STATUS "-- Install DirextX SDK to enable additional features.")
+        endif()
         message (STATUS "")
-    endif()    
+    endif ()
 endmacro (configure_ogre)
 
 macro(link_ogre)

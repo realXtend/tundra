@@ -153,6 +153,7 @@ set(KRISTALLI_CORE_PATH ${PROJECT_BINARY_DIR}/Kristalli)
 include(Sagase)
 include(ModuleSetup)
 include(ConfigurePackages)
+include(FindDirectX)
 
 # Disable unnecessary build types
 set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
