@@ -74,6 +74,8 @@ if (!framework.IsHeadless())
 		var changeMenu = multiMenu.addMenu("Change scene");
 		changeMenu.addAction("TundraClient_0").triggered.connect(change0);
 		changeMenu.addAction("TundraClient_1").triggered.connect(change1);
+		changeMenu.addAction("TundraClient_2").triggered.connect(change2);
+		changeMenu.addAction("TundraClient_3").triggered.connect(change3);
 	}    
 	function mobilitySignalHandler(value)
     {
@@ -320,14 +322,22 @@ if (!framework.IsHeadless())
 
 	function change0()
 	{
-// This is quick test
 		client.emitChangeSceneSignal("TundraClient_0");
 	}
 
     function change1()
 	{
-// This is quick test
 		client.emitChangeSceneSignal("TundraClient_1");
+	}
+
+    function change2()
+	{
+		client.emitChangeSceneSignal("TundraClient_2");
+	}
+
+    function change3()
+	{
+		client.emitChangeSceneSignal("TundraClient_3");
 	}
 
     function signalNetworkStateChanged() {      

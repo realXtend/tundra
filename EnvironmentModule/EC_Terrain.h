@@ -448,6 +448,9 @@ private:
 
     /// Stores the actual height patches.
     std::vector<Patch> patches;
+
+    // name of owning module Ogre scenemanager
+    QString scenemanagername;
 };
 }
 
