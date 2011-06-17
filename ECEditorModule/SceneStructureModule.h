@@ -12,7 +12,6 @@
 #include "SceneFwd.h"
 #include "InputFwd.h"
 #include "AssetFwd.h"
-#include "Math/float3.h"
 #include "AssetReference.h"
 
 #include <QPointer>
@@ -27,6 +26,7 @@ class QDropEvent;
 class SceneStructureWindow;
 class AssetsWindow;
 struct SceneDesc;
+class float3;
 
 class EC_Mesh;
 
@@ -44,13 +44,8 @@ class SceneStructureModule : public IModule
     Q_OBJECT
 
 public:
-    /// Default constructor.
     SceneStructureModule();
-
-    /// Destructor.
     ~SceneStructureModule();
-
-    /// IModule override.
     void PostInitialize();
 
 public slots:
@@ -58,46 +53,32 @@ public slots:
     /** @param filename File name.
         @param worldPos Destination in-world position.
         @param clearScene Do we want to clear the scene before adding new content.
-        @return List of created entities.
-    */
-    QList<Entity *> InstantiateContent(const QString &filename, float3 worldPos, bool clearScene);
+        @return List of created entities. */
+    QList<Entity *> InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene);
 
     /// This is an overloaded function
-    /** Uses scene description structure to filter unwanted content.
-        @param filename File name.
-        @param worldPos Destination in-world position.
-        @param clearScene Do we want to clear the scene before adding new content.
-        @param desc Scene description filter
-        @return List of created entities.
-    */
-    QList<Entity *> InstantiateContent(const QString &filename, float3 worldPos, const SceneDesc &desc, bool clearScene);
-
-    QList<Entity *> InstantiateContent(const QStringList &filenames, float3 worldPos, const SceneDesc &desc, bool clearScene);
+    /** @param filenames List of scene files. */
+    QList<Entity *> InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene);
 
     /// Centralizes group of entities around same center point. The entities must have EC_Placeable component present.
     /** @param pos Center point for entities.
-        @param entities List of entities.
-    */
+        @param entities List of entities. */
     static void CentralizeEntitiesTo(const float3 &pos, const QList<Entity *> &entities);
 
     /// Returns true of the file extension of @c fileRef is supported file type for importing.
-    /** @param fileRef File name or url.
-    */
+    /** @param fileRef File name or url. */
     static bool IsSupportedFileType(const QString &fileRef);
 
     /// Returns true of the file extension of @c fileRef is supported material file for importing.
-    /** @param fileRef File name or url.
-    */
+    /** @param fileRef File name or url. */
     static bool IsMaterialFile(const QString &fileRef);
 
     /// Returns true if the @c fileRef is a http:// or https:// scema url. 
-    /** @param fileRef File name or url.
-    */
+    /** @param fileRef File name or url. */
     static bool IsUrl(const QString &fileRef);
 
     /// Cleans the @c fileRef
-    /** @param fileRef File name or url.
-    */
+    /** @param fileRef File name or url. */
     static void CleanReference(QString &fileRef);
 
     /// Toggles visibility of Scene Structure window.
@@ -117,49 +98,38 @@ private:
     QWidget *toolTipWidget;
     QLabel *toolTip;
     QString currentToolTipSource;
-    QString currentToolTipDestination;   
+    QString currentToolTipDestination;
 
 private slots:
     /// Handles KeyPressed() signal from input context.
-    /** @param e Key event.
-    */
     void HandleKeyPressed(KeyEvent *e);
 
     /// Handles main window drag enter event.
-    /** If event's MIME data contains URL which path has supported file extension we accept it.
-        @param e Event.
-    */
+    /** If event's MIME data contains URL which path has supported file extension we accept it. */
     void HandleDragEnterEvent(QDragEnterEvent *e);
 
     /// Handles main window drag leave event.
     void HandleDragLeaveEvent(QDragLeaveEvent *e);
 
     /// Handles main window drag move event.
-    /** If event's MIME data contains URL which path has supported file extension we accept it.
-        @param e Event.
-    */
+    /** If event's MIME data contains URL which path has supported file extension we accept it. */
     void HandleDragMoveEvent(QDragMoveEvent *e);
 
     /// Handles drop event.
-    /** If event's MIME data contains URL which path has supported file extension we accept it.
-        @param e Event.
-    */
+    /** If event's MIME data contains URL which path has supported file extension we accept it. */
     void HandleDropEvent(QDropEvent *e);
 
     /// Handles material drop event.
     /** If event's MIME data contains a single URL which is a material the drop is redirected to this function.
         @param e Event.
-        @param materialRef Dropped material file or url.
-    */
+        @param materialRef Dropped material file or url. */
     void HandleMaterialDropEvent(QDropEvent *e, const QString &materialRef);
 
     /// Finishes a material drop
-    /** @param contentAdd If drop content should be appliead or not
-    */
+    /** @param apply If drop content should be appliead or not. */
     void FinishMaterialDrop(bool apply, const QString &materialBaseUrl);
 
     void HandleSceneDescLoaded(AssetPtr asset);
 
     void HandleSceneDescFailed(IAssetTransfer *transfer, QString reason);
 };
-

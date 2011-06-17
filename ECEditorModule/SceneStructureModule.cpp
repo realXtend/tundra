@@ -25,7 +25,6 @@
 #include "InputAPI.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "IRenderer.h"
 #include "SceneImporter.h"
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
@@ -50,11 +49,11 @@
 
 #include "MemoryLeakCheck.h"
 
-SceneStructureModule::SceneStructureModule()
-:IModule("SceneStructure"),
-sceneWindow(0),
-assetsWindow(0),
-toolTipWidget(0)
+SceneStructureModule::SceneStructureModule() :
+    IModule("SceneStructure"),
+    sceneWindow(0),
+    assetsWindow(0),
+    toolTipWidget(0)
 {
 }
 
@@ -87,26 +86,22 @@ void SceneStructureModule::PostInitialize()
         toolTipWidget->layout()->setMargin(0);
         toolTipWidget->layout()->setSpacing(0);
         toolTipWidget->setContentsMargins(0,0,0,0);
-        toolTipWidget->setStyleSheet("QWidget { background-color: transparent; } QLabel { padding: 2px; border: 0.5px solid grey; border-radius: 0px; \
-                                      background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(246, 246, 246, 255), stop:1 rgba(237, 237, 237, 255)); }");
-        
+        toolTipWidget->setStyleSheet(
+            "QWidget { background-color: transparent; } QLabel { padding: 2px; border: 0.5px solid grey; border-radius: 0px; \
+            background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(246, 246, 246, 255), stop:1 rgba(237, 237, 237, 255)); }");
+
         toolTip = new QLabel(toolTipWidget);
         toolTip->setTextFormat(Qt::RichText);
         toolTipWidget->layout()->addWidget(toolTip);
     }
 }
 
-QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, float3 worldPos, bool clearScene)
+QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, const float3 &worldPos, bool clearScene)
 {
-    return InstantiateContent(filename, worldPos, SceneDesc(), clearScene);
+    return InstantiateContent(QStringList(QStringList() << filename), worldPos, clearScene);
 }
 
-QList<Entity *> SceneStructureModule::InstantiateContent(const QString &filename, float3 worldPos, const SceneDesc &desc, bool clearScene)
-{
-    return InstantiateContent(QStringList(QStringList() << filename), worldPos, desc, clearScene);
-}
-
-QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &filenames, float3 worldPos, const SceneDesc &desc, bool clearScene)
+QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene)
 {
     QList<Entity *> ret;
 
@@ -215,7 +210,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
     /** \todo this is always empty list of entities, remove (?!) as we actually don't know the entity count yet.
      *  it is known only after the add content window selections and processing has been done 
      */
-    return ret; 
+    return ret;
 }
 
 void SceneStructureModule::CentralizeEntitiesTo(const float3 &pos, const QList<Entity *> &entities)
@@ -229,7 +224,7 @@ void SceneStructureModule::CentralizeEntitiesTo(const float3 &pos, const QList<E
         EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
         // Ignore entities that doesn't have placable component or
         // they are a child of another placable.
-        if(p && p->getparentRef().IsEmpty())
+        if (p && p->getparentRef().IsEmpty())
             filteredEntities.push_back(e);
     }
 
