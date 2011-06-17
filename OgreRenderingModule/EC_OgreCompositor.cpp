@@ -35,7 +35,8 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
 
 EC_OgreCompositor::~EC_OgreCompositor()
 {
-    UpdateCompositor("");
+    if ((handler_) && (!previous_ref_.isEmpty()))
+        handler_->RemoveCompositorFromViewport(previous_ref_.toStdString());
 }
 
 void EC_OgreCompositor::OnAttributeUpdated(IAttribute* attribute)
