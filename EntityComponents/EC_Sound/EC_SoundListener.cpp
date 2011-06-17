@@ -28,7 +28,7 @@ EC_SoundListener::EC_SoundListener(Scene* scene):
     SetNetworkSyncEnabled(false);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
-    connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
+    connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnActiveChanged()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }

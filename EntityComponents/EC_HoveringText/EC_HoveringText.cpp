@@ -64,7 +64,7 @@ EC_HoveringText::~EC_HoveringText()
 {
     if (texture_.get() != 0)
     {
-        AssetAPI* asset = framework_->Asset();
+        AssetAPI* asset = framework->Asset();
         asset->ForgetAsset(texture_,false);
     }
     Destroy();
@@ -256,7 +256,7 @@ void EC_HoveringText::Redraw()
     {
         if (texture_.get() == 0)
         {       
-            AssetAPI* asset = framework_->Asset();
+            AssetAPI* asset = framework->Asset();
 
             textureName_ = asset->GenerateUniqueAssetName("tex", "EC_HoveringText_").toStdString();
             QString name(textureName_.c_str());

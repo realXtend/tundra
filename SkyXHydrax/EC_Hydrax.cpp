@@ -85,7 +85,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     // Create water
     impl->hydrax->create();
 
-    connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)));
+    connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)));
 }
 

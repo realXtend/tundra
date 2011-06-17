@@ -8,6 +8,8 @@
 #include "Vector3D.h"
 #include "Math/Ray.h"
 
+#include <set>
+
 namespace Ogre
 {
     class PlaneBoundedVolumeListSceneQuery;

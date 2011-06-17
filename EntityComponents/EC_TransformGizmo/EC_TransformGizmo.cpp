@@ -52,8 +52,8 @@ EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
 
 //    connect(fw->Frame(), SIGNAL(Updated(float)), SLOT(DrawDebug()));
-    QString uniqueName("EC_TransformGizmo_" + framework_->Asset()->GenerateUniqueAssetName("",""));
-    input = framework_->Input()->RegisterInputContext(uniqueName, 100);
+    QString uniqueName("EC_TransformGizmo_" + framework->Asset()->GenerateUniqueAssetName("",""));
+    input = framework->Input()->RegisterInputContext(uniqueName, 100);
     connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 
     ogreWorld = scene->GetWorld<OgreWorld>();
@@ -390,18 +390,18 @@ void EC_TransformGizmo::DrawDebug()
 {
     Ogre::Vector3 xStart = xRay.getOrigin();
     Ogre::Vector3 xEnd = xRay.getOrigin()+300.f*xRay.getDirection();
-    framework_->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(xStart), OgreToBt(xEnd), btVector3(1,0,0));
+    framework->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(xStart), OgreToBt(xEnd), btVector3(1,0,0));
 
     Ogre::Vector3 yStart = yRay.getOrigin();
     Ogre::Vector3 yEnd = yRay.getOrigin()+300.f*yRay.getDirection();
-    framework_->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(yStart), OgreToBt(yEnd), btVector3(0,1,0));
+    framework->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(yStart), OgreToBt(yEnd), btVector3(0,1,0));
 
     Ogre::Vector3 zStart = zRay.getOrigin();
     Ogre::Vector3 zEnd = zRay.getOrigin()+300.f*zRay.getDirection();
-    framework_->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(zStart), OgreToBt(zEnd), btVector3(0,0,1));
+    framework->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(zStart), OgreToBt(zEnd), btVector3(0,0,1));
 
     Ogre::Vector3 mouseStart = mouseRay.getOrigin();
     Ogre::Vector3 mouseEnd = mouseRay.getOrigin()+300.f*mouseRay.getDirection();
-    framework_->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(mouseStart), OgreToBt(mouseEnd), btVector3(1,1,1));
+    framework->GetModule<Physics::PhysicsModule>()->drawLine(OgreToBt(mouseStart), OgreToBt(mouseEnd), btVector3(1,1,1));
 }
 */

@@ -130,9 +130,9 @@ void EC_WaterPlane::SetParent()
         }
     }
 
-    connect(parentEntity_,SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)),
+    connect(parentEntity,SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)),
         SLOT(ComponentAdded(IComponent*, AttributeChange::Type)));
-    connect(parentEntity_,SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)),
+    connect(parentEntity,SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)),
         SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)));
 }
 
@@ -294,11 +294,11 @@ void EC_WaterPlane::CreateWaterPlane()
             float uTile =  scaleUfactor.Get() * x; /// Default x-size 5000 --> uTile 1.0
             float vTile =  scaleVfactor.Get() * y;
             
-            Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(name_.toStdString().c_str(),
+            Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(Name().toStdString().c_str(),
                 Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::Plane(Ogre::Vector3::UNIT_Y, 0),
                 x, y, xSegments.Get(), ySegments.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
             
-            entity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EC_WaterPlane_entity"), name_.toStdString().c_str());
+            entity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EC_WaterPlane_entity"), Name().toStdString().c_str());
             entity_->setMaterialName(materialName.Get().toStdString().c_str());
             entity_->setCastShadows(false);
             // Tries to attach entity, if there is not EC_Placeable availible, it will not attach object
@@ -319,7 +319,7 @@ void EC_WaterPlane::RemoveWaterPlane()
     sceneMgr->destroyEntity(entity_);
     entity_ = 0;
     
-    Ogre::MeshManager::getSingleton().remove(name_.toStdString().c_str());
+    Ogre::MeshManager::getSingleton().remove(Name().toStdString().c_str());
 }
 
 Ogre::ColourValue EC_WaterPlane::GetFogColorAsOgreValue() const
@@ -450,7 +450,7 @@ void EC_WaterPlane::ChangeWaterPlane(IAttribute* attribute)
 
 ComponentPtr EC_WaterPlane::FindPlaceable() const
 {
-    assert(framework_);
+    assert(framework);
     ComponentPtr comp;
     if(!ParentEntity())
         return comp;

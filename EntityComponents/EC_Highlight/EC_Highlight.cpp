@@ -64,7 +64,7 @@ void  EC_Highlight::Show()
     Hide();
     
     EC_Mesh* mesh = mesh_.lock().get();
-    AssetAPI* assetAPI = framework_->Asset();
+    AssetAPI* assetAPI = framework->Asset();
     
     // Clone all valid material assets that we can find from the mesh
     /// \todo Currently will clone the same material several times if used on several submeshes
@@ -101,7 +101,7 @@ void EC_Highlight::Hide()
     }
     
     // Destroy all the highlight materials
-    AssetAPI* assetAPI = framework_->Asset();
+    AssetAPI* assetAPI = framework->Asset();
     for (unsigned i = 0; i < materials_.size(); ++i)
         assetAPI->ForgetAsset(materials_[i], false);
     materials_.clear();

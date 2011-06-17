@@ -59,7 +59,7 @@ EC_DynamicComponent::EC_DynamicComponent(Scene* scene):
 
 EC_DynamicComponent::~EC_DynamicComponent()
 {
-    foreach(IAttribute *a, attributes_)
+    foreach(IAttribute *a, attributes)
         SAFE_DELETE(a);
 }
 
@@ -67,8 +67,8 @@ void EC_DynamicComponent::SerializeTo(QDomDocument& doc, QDomElement& base_eleme
 {
     QDomElement comp_element = BeginSerialization(doc, base_element);
 
-    AttributeVector::const_iterator iter = attributes_.begin();
-    while(iter != attributes_.end())
+    AttributeVector::const_iterator iter = attributes.begin();
+    while(iter != attributes.end())
     {
         WriteAttribute(doc, comp_element, (*iter)->Name(), (*iter)->ToString().c_str(), (*iter)->TypeName());
         iter++;
@@ -99,7 +99,7 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
 void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deserializedAttributes, AttributeChange::Type change)
 {
     // Sort both lists in alphabetical order.
-    AttributeVector oldAttributes = attributes_;
+    AttributeVector oldAttributes = attributes;
     std::stable_sort(oldAttributes.begin(), oldAttributes.end(), &CmpAttributeByName);
     std::stable_sort(deserializedAttributes.begin(), deserializedAttributes.end(), &CmpAttributeDataByName);
 
@@ -130,7 +130,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         if((*iter1)->Name() == (*iter2).name_)
         {
             //SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
-            for(AttributeVector::const_iterator attr_iter = attributes_.begin(); attr_iter != attributes_.end(); attr_iter++)
+            for(AttributeVector::const_iterator attr_iter = attributes.begin(); attr_iter != attributes.end(); attr_iter++)
                 if((*attr_iter)->Name() == iter2->name_)
                     (*attr_iter)->FromString(iter2->value_.toStdString(), change);
 
@@ -172,7 +172,7 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     if(ContainsAttribute(name))
         return IComponent::GetAttribute(name);
 
-    IAttribute *attribute = framework_->Scene()->CreateAttribute(this, typeName, name);
+    IAttribute *attribute = framework->Scene()->CreateAttribute(this, typeName, name);
     if(!attribute)
     {
         LogError("Failed to create new attribute:" + name + " in dynamic component:" + Name());
@@ -192,7 +192,7 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
 
 void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::Type change)
 {
-    for(AttributeVector::iterator iter = attributes_.begin(); iter != attributes_.end(); iter++)
+    for(AttributeVector::iterator iter = attributes.begin(); iter != attributes.end(); iter++)
     {
         if((*iter)->Name() == name)
         {
@@ -204,7 +204,7 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
             // Trigger internal signal(s)
             emit AttributeAboutToBeRemoved(*iter);
             SAFE_DELETE(*iter);
-            attributes_.erase(iter);
+            attributes.erase(iter);
             break;
         }
     }
@@ -212,19 +212,19 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
 
 void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
 {
-    for(unsigned i = attributes_.size() - 1; i < attributes_.size(); --i)
+    for(unsigned i = attributes.size() - 1; i < attributes.size(); --i)
     {
         // Trigger scenemanager signal
         Scene* scene = ParentScene();
         if (scene)
-            scene->EmitAttributeRemoved(this, attributes_[i], change);
+            scene->EmitAttributeRemoved(this, attributes[i], change);
 
-        QString name(attributes_[i]->Name());
+        QString name(attributes[i]->Name());
 
         // Trigger internal signal(s)
-        emit AttributeAboutToBeRemoved(attributes_[i]);
-        SAFE_DELETE(attributes_[i]);
-        attributes_.erase(attributes_.begin() + i);
+        emit AttributeAboutToBeRemoved(attributes[i]);
+        SAFE_DELETE(attributes[i]);
+        attributes.erase(attributes.begin() + i);
     }
 }
 
@@ -243,8 +243,8 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeCha
 
 QVariant EC_DynamicComponent::GetAttribute(int index) const
 {
-    if (index < (int)attributes_.size() && index >= 0)
-        return attributes_[index]->ToQVariant();
+    if (index < (int)attributes.size() && index >= 0)
+        return attributes[index]->ToQVariant();
     return QVariant();
 }
 
@@ -255,15 +255,15 @@ QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
 
 void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, AttributeChange::Type change)
 {
-    if (index < (int)attributes_.size() && index >= 0)
-        attributes_[index]->FromQVariant(value, change);
+    if (index < (int)attributes.size() && index >= 0)
+        attributes[index]->FromQVariant(value, change);
     else
         LogWarning("Cannot get attribute name, cause index is out of range.");
 }
 
 void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change)
 {
-    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); iter++)
+    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); iter++)
         if((*iter)->Name() == name)
         {
             (*iter)->FromScriptValue(value, change);
@@ -273,7 +273,7 @@ void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScript
 
 void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change)
 {
-    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); iter++)
+    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); iter++)
         if((*iter)->Name() == name)
         {
             (*iter)->FromQVariant(value, change);
@@ -283,8 +283,8 @@ void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &valu
 
 QString EC_DynamicComponent::GetAttributeName(int index) const
 {
-    if(index < (int)attributes_.size() && index >= 0)
-        return attributes_[index]->Name();
+    if(index < (int)attributes.size() && index >= 0)
+        return attributes[index]->Name();
 
     LogWarning("Cannot get attribute name, cause index is out of range.");
     return QString();
@@ -342,8 +342,8 @@ bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp)
 
 bool EC_DynamicComponent::ContainsAttribute(const QString &name) const
 {
-    AttributeVector::const_iterator iter = attributes_.begin();
-    while(iter != attributes_.end())
+    AttributeVector::const_iterator iter = attributes.begin();
+    while(iter != attributes.end())
     {
         if((*iter)->Name() == name)
             return true;
@@ -355,10 +355,10 @@ bool EC_DynamicComponent::ContainsAttribute(const QString &name) const
 
 void EC_DynamicComponent::SerializeToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<u8>(attributes_.size());
+    dest.Add<u8>(attributes.size());
     // For now, transmit all values as strings
-    AttributeVector::const_iterator iter = attributes_.begin();
-    while(iter != attributes_.end())
+    AttributeVector::const_iterator iter = attributes.begin();
+    while(iter != attributes.end())
     {
         dest.AddString((*iter)->Name().toStdString());
         dest.AddString((*iter)->TypeName().toStdString());

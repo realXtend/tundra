@@ -82,7 +82,7 @@ EC_Sky::EC_Sky(Scene* scene) :
     for(int i = 0; i < cSkyBoxTextureCount; ++i)
     {
         connect(textureAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnTextureAssetLoaded(AssetPtr)), Qt::UniqueConnection);
-        //materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].ref);
+        //materialAssets[i]->HandleAssetRefChange(framework->Asset(), materials[i].ref);
     }
 }
 
@@ -105,7 +105,7 @@ void EC_Sky::CreateSky()
     QString currentMaterial = materialRef.Get().ref;
 
     Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
-    //Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(framework_->Asset()->LookupAssetRefToStorage(materialRef.Get().ref).toStdString().c_str());
+    //Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(framework->Asset()->LookupAssetRefToStorage(materialRef.Get().ref).toStdString().c_str());
     if (materialPtr.isNull())
     {
         LogError("Could not get SkyBox material : " + currentMaterial.toStdString());
@@ -217,7 +217,7 @@ void EC_Sky::OnAttributeUpdated(IAttribute* attribute)
         for(int i = 0; i < textures.Size(); ++i)
         {
             connect(textureAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnTextureAssetLoaded(AssetPtr)), Qt::UniqueConnection);
-            textureAssets[i]->HandleAssetRefChange(framework_->Asset(), textures[i].ref);
+            textureAssets[i]->HandleAssetRefChange(framework->Asset(), textures[i].ref);
         }
 
         //SetTextures();

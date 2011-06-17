@@ -212,7 +212,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         }
     }
     
-    if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
+    if ((change != AttributeChange::Replicate) || (!comp->NetworkSyncEnabled()))
         return;
     Entity* entity = comp->ParentEntity();
     if ((!entity) || (entity->IsLocal()))
@@ -258,7 +258,7 @@ void SyncManager::OnComponentAdded(Entity* entity, IComponent* comp, AttributeCh
     if (!entity || !comp)
         return;
 
-    if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
+    if ((change != AttributeChange::Replicate) || (!comp->NetworkSyncEnabled()))
         return;
     if (entity->IsLocal())
         return;
@@ -285,7 +285,7 @@ void SyncManager::OnComponentRemoved(Entity* entity, IComponent* comp, Attribute
     assert(entity && comp);
     if (!entity || !comp)
         return;
-    if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
+    if ((change != AttributeChange::Replicate) || (!comp->NetworkSyncEnabled()))
         return;
     if (entity->IsLocal())
         return;
@@ -507,7 +507,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             {
                 ComponentPtr component = components[j];
                 
-                if (component->GetNetworkSyncEnabled())
+                if (component->NetworkSyncEnabled())
                 {
                     // Create componentstate so we can start tracking individual attributes
                     ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeId(), component->Name());
@@ -542,7 +542,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 for(std::set<std::pair<uint, QString> >::iterator j = dirtycomps.begin(); j != dirtycomps.end(); ++j)
                 {
                     ComponentPtr component = entity->GetComponent(j->first, j->second);
-                    if (component && component->GetNetworkSyncEnabled())
+                    if (component && component->NetworkSyncEnabled())
                     {
                         ComponentSyncState* componentstate = entitystate->GetComponent(component->TypeId(), component->Name());
                         // New component

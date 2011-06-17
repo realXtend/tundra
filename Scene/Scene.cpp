@@ -270,7 +270,7 @@ void Scene::EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange
     if (change == AttributeChange::Disconnected)
         return;
     if (change == AttributeChange::Default)
-        change = comp->GetUpdateMode();
+        change = comp->UpdateMode();
     emit ComponentAdded(entity, comp, change);
 }
 
@@ -279,7 +279,7 @@ void Scene::EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChan
     if (change == AttributeChange::Disconnected)
         return;
     if (change == AttributeChange::Default)
-        change = comp->GetUpdateMode();
+        change = comp->UpdateMode();
     emit ComponentRemoved(entity, comp, change);
 }
 
@@ -288,7 +288,7 @@ void Scene::EmitAttributeChanged(IComponent* comp, IAttribute* attribute, Attrib
     if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
         return;
     if (change == AttributeChange::Default)
-        change = comp->GetUpdateMode();
+        change = comp->UpdateMode();
     emit AttributeChanged(comp, attribute, change);
 }
 
@@ -297,7 +297,7 @@ void Scene::EmitAttributeAdded(IComponent* comp, IAttribute* attribute, Attribut
     if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
         return;
     if (change == AttributeChange::Default)
-        change = comp->GetUpdateMode();
+        change = comp->UpdateMode();
     emit AttributeAdded(comp, attribute, change);
 }
 
@@ -306,7 +306,7 @@ void Scene::EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, Attrib
     if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
         return;
     if (change == AttributeChange::Default)
-        change = comp->GetUpdateMode();
+        change = comp->UpdateMode();
     emit AttributeRemoved(comp, attribute, change);
 }
 
@@ -405,9 +405,10 @@ QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bo
     QTextStream stream(&file);
     stream.setCodec("ISO 8859-1");
     QDomDocument scene_doc("Scene");
-    if (!scene_doc.setContent(stream.readAll()))
+    QString errorMsg;
+    if (!scene_doc.setContent(stream.readAll(), &errorMsg))
     {
-        LogError("Parsing scene XML from "+ filename + " failed when loading scene xml.");
+        LogError("Parsing scene XML from "+ filename + " failed when loading scene xml: " + errorMsg);
         file.close();
         return ret;
     }

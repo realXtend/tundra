@@ -23,14 +23,14 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     owner_(0),
     handler_(0)
 {
-    owner_ = framework_->GetModule<OgreRenderer::OgreRenderingModule>();
+    owner_ = framework->GetModule<OgreRenderer::OgreRenderingModule>();
     assert(owner_ && "No OgrerenderingModule.");
     handler_ = owner_->GetRenderer()->GetCompositionHandler();
     assert (handler_ && "No CompositionHandler.");
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
     
     // Ogre sucks. Enable a timed one-time refresh to overcome issue with black screen.
-    framework_->Frame()->DelayedExecute(0.01f, this, SLOT(OneTimeRefresh()));
+    framework->Frame()->DelayedExecute(0.01f, this, SLOT(OneTimeRefresh()));
 }
 
 EC_OgreCompositor::~EC_OgreCompositor()

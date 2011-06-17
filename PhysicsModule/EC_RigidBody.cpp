@@ -63,7 +63,7 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     disconnected_(false),
     cachedShapeType_(-1)
 {
-    owner_ = framework_->GetModule<PhysicsModule>();
+    owner_ = framework->GetModule<PhysicsModule>();
     
     static AttributeMetadata shapemetadata;
     static bool metadataInitialized = false;

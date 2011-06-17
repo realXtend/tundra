@@ -22,20 +22,20 @@
 #include "MemoryLeakCheck.h"
 
 IComponent::IComponent(Scene* scene) :
-    parentEntity_(0),
-    framework_(scene ? scene->GetFramework() : 0),
-    networkSync_(true),
-    updatemode_(AttributeChange::Replicate),
-    temporary_(false)
+    parentEntity(0),
+    framework(scene ? scene->GetFramework() : 0),
+    networkSync(true),
+    updateMode(AttributeChange::Replicate),
+    temporary(false)
 {
 }
 
 IComponent::IComponent(const IComponent &rhs) :
-    framework_(rhs.framework_),
-    parentEntity_(rhs.parentEntity_),
-    networkSync_(rhs.networkSync_),
-    updatemode_(rhs.updatemode_),
-    temporary_(false)
+    framework(rhs.framework),
+    parentEntity(rhs.parentEntity),
+    networkSync(rhs.networkSync),
+    updateMode(rhs.updateMode),
+    temporary(false)
 {
 }
 
@@ -43,14 +43,14 @@ IComponent::~IComponent()
 {
 }
 
-void IComponent::SetName(const QString& name)
+void IComponent::SetName(const QString& name_)
 {
     // no point to send a signal if name have stayed same as before.
-    if(name_ == name)
+    if (name == name_)
         return;
 
-    QString oldName = name_;
-    name_ = name;
+    QString oldName = name;
+    name = name_;
     emit ComponentNameChanged(name, oldName);
 }
 
@@ -58,13 +58,13 @@ void IComponent::SetUpdateMode(AttributeChange::Type defaultmode)
 {
     // Note: we can't allow default mode to be Default, because that would be meaningless
     if (defaultmode != AttributeChange::Default)
-        updatemode_ = defaultmode;
+        updateMode = defaultmode;
 }
 
 void IComponent::SetParentEntity(Entity* entity)
 {
-    parentEntity_ = entity;
-    if (parentEntity_)
+    parentEntity = entity;
+    if (parentEntity)
         emit ParentEntitySet();
     else
         emit ParentEntityDetached();
@@ -72,24 +72,24 @@ void IComponent::SetParentEntity(Entity* entity)
 
 Entity* IComponent::ParentEntity() const
 {
-    return parentEntity_;
+    return parentEntity;
 }
 
 Scene* IComponent::ParentScene() const
 {
-    if (!parentEntity_)
+    if (!parentEntity)
         return 0;
-    return parentEntity_->ParentScene();
+    return parentEntity->ParentScene();
 }
 
 void IComponent::SetNetworkSyncEnabled(bool enabled)
 {
-    networkSync_ = enabled;
+    networkSync = enabled;
 }
 
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
 {
-    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)
+    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
         if ((*iter)->Name() == name)
             return (*iter)->ToQVariant();
 
@@ -99,16 +99,16 @@ QVariant IComponent::GetAttributeQVariant(const QString &name) const
 QStringList IComponent::GetAttributeNames() const
 {
     QStringList attribute_list;
-    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)
+    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
         attribute_list.push_back((*iter)->Name());
     return attribute_list;
 }
 
 IAttribute* IComponent::GetAttribute(const QString &name) const
 {
-    for(unsigned int i = 0; i < attributes_.size(); ++i)
-        if(attributes_[i]->Name() == name)
-            return attributes_[i];
+    for(unsigned int i = 0; i < attributes.size(); ++i)
+        if(attributes[i]->Name() == name)
+            return attributes[i];
     return 0;
 }
 
@@ -116,10 +116,10 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
 {
     QDomElement comp_element = doc.createElement("component");
     comp_element.setAttribute("type", TypeName());
-    if (!name_.isEmpty())
-        comp_element.setAttribute("name", name_);
+    if (!Name().isEmpty())
+        comp_element.setAttribute("name", Name());
     // Components with no network sync are never network-serialized. However we might be serializing to a file
-    comp_element.setAttribute("sync", QString::fromStdString(ToString<bool>(networkSync_)));
+    comp_element.setAttribute("sync", QString::fromStdString(ToString<bool>(networkSync)));
     
     if (!base_element.isNull())
         base_element.appendChild(comp_element);
@@ -189,7 +189,7 @@ QString IComponent::ReadAttributeType(QDomElement& comp_element, const QString &
 void IComponent::EmitAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     if (change == AttributeChange::Default)
-        change = updatemode_;
+        change = updateMode;
     if (change == AttributeChange::Disconnected)
         return; // No signals
     
@@ -208,10 +208,10 @@ void IComponent::EmitAttributeChanged(const QString& attributeName, AttributeCha
         return; // No signals
 
     // Roll through attributes and check name match
-    for(uint i = 0; i < attributes_.size(); ++i)
-        if (attributes_[i]->Name() == attributeName)
+    for(uint i = 0; i < attributes.size(); ++i)
+        if (attributes[i]->Name() == attributeName)
         {
-            EmitAttributeChanged(attributes_[i], change);
+            EmitAttributeChanged(attributes[i], change);
             break;
         }
 }
@@ -220,8 +220,8 @@ void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
 {
     QDomElement comp_element = BeginSerialization(doc, base_element);
 
-    for(uint i = 0; i < attributes_.size(); ++i)
-        WriteAttribute(doc, comp_element, attributes_[i]->Name(), attributes_[i]->ToString().c_str());
+    for(uint i = 0; i < attributes.size(); ++i)
+        WriteAttribute(doc, comp_element, attributes[i]->Name(), attributes[i]->ToString().c_str());
 }
 
 /// Returns true if the given XML element has the given child attribute.
@@ -248,58 +248,58 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
     // is the default value for that attribute specified in ctor. If this is an existing component, the DeserializeFrom can be 
     // thought of applying the given "delta modifications" from the XML element).
 
-    for(uint i = 0; i < attributes_.size(); ++i)
+    for(uint i = 0; i < attributes.size(); ++i)
     {
-        if (HasAttribute(element, attributes_[i]->Name()))
+        if (HasAttribute(element, attributes[i]->Name()))
         {
-            std::string attr_str = ReadAttribute(element, attributes_[i]->Name()).toStdString();
-            attributes_[i]->FromString(attr_str, change);
+            std::string attr_str = ReadAttribute(element, attributes[i]->Name()).toStdString();
+            attributes[i]->FromString(attr_str, change);
         }
     }
 }
 
 void IComponent::SerializeToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<u8>(attributes_.size());
-    for(uint i = 0; i < attributes_.size(); ++i)
-        attributes_[i]->ToBinary(dest);
+    dest.Add<u8>(attributes.size());
+    for(uint i = 0; i < attributes.size(); ++i)
+        attributes[i]->ToBinary(dest);
 }
 
 void IComponent::DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     u8 num_attributes = source.Read<u8>();
-    if (num_attributes != attributes_.size())
+    if (num_attributes != attributes.size())
     {
         std::cout << "Wrong number of attributes in DeserializeFromBinary!" << std::endl;
         return;
     }
-    for(uint i = 0; i < attributes_.size(); ++i)
-        attributes_[i]->FromBinary(source, change);
+    for(uint i = 0; i < attributes.size(); ++i)
+        attributes[i]->FromBinary(source, change);
 }
 
 void IComponent::ComponentChanged(AttributeChange::Type change)
 {
-    for(uint i = 0; i < attributes_.size(); ++i)
-        EmitAttributeChanged(attributes_[i], change);
+    for(uint i = 0; i < attributes.size(); ++i)
+        EmitAttributeChanged(attributes[i], change);
 }
 
 void IComponent::SetTemporary(bool enable)
 {
-    temporary_ = enable;
+    temporary = enable;
 }
 
 bool IComponent::IsTemporary() const
 {
-    if ((parentEntity_) && (parentEntity_->IsTemporary()))
+    if ((parentEntity) && (parentEntity->IsTemporary()))
         return true;
-    return temporary_;
+    return temporary;
 }
 
 bool IComponent::ViewEnabled() const
 {
-    if (!parentEntity_)
+    if (!parentEntity)
         return true;
-    Scene* scene = parentEntity_->ParentScene();
+    Scene* scene = parentEntity->ParentScene();
     if (scene)
         return scene->ViewEnabled();
     else

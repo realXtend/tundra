@@ -25,7 +25,7 @@ EC_RttTarget::EC_RttTarget(Scene* scene) :
 
     //can't do immediately here, 'cause getcomponent crashes
     //.. is not allowed to get other components in the creation of a component. ok?
-    //framework_->Frame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
+    //framework->Frame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
     //.. resorting to manual call to PrepareRtt now
 }
 
@@ -121,7 +121,7 @@ void EC_RttTarget::SetAutoUpdated(bool val)
 
 /*void EC_RttTarget::ScheduleRender()
 {
-    framework_->Frame()->DelayedExecute(0.1f, this, SLOT(UpdateRtt()));
+    framework->Frame()->DelayedExecute(0.1f, this, SLOT(UpdateRtt()));
 }
 */
 

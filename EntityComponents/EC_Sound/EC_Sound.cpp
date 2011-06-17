@@ -49,12 +49,12 @@ EC_Sound::~EC_Sound()
 
 void EC_Sound::OnAttributeUpdated(IAttribute *attribute)
 {
-    if (framework_->IsHeadless())
+    if (framework->IsHeadless())
         return;
 
     if (attribute == &soundRef)
     {
-        AssetTransferPtr tranfer =  framework_->Asset()->RequestAsset(soundRef.Get().ref);
+        AssetTransferPtr tranfer =  framework->Asset()->RequestAsset(soundRef.Get().ref);
         if (tranfer.get())
             connect(tranfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(AudioAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
@@ -83,7 +83,7 @@ void EC_Sound::OnAttributeUpdated(IAttribute *attribute)
 
 void EC_Sound::AudioAssetLoaded(AssetPtr asset)
 {
-    if (framework_->IsHeadless())
+    if (framework->IsHeadless())
         return;
 
     if (!asset.get())
@@ -109,7 +109,7 @@ void EC_Sound::AudioAssetLoaded(AssetPtr asset)
 
 void EC_Sound::RegisterActions()
 {
-    if (framework_->IsHeadless())
+    if (framework->IsHeadless())
         return;
 
     Entity *entity = ParentEntity();
@@ -127,7 +127,7 @@ void EC_Sound::View(const QString &attributeName)
 
 void EC_Sound::PlaySound()
 {
-    if (framework_->IsHeadless())
+    if (framework->IsHeadless())
         return;
 
     // If previous sound is still playing stop it before we apply a new sound.
@@ -196,7 +196,7 @@ EntityPtr EC_Sound::GetActiveSoundListener()
     int numActiveListeners = 0; // For debugging, count how many listeners are active.
 #endif
     
-    EntityList listeners = parentEntity_->ParentScene()->GetEntitiesWithComponent("EC_SoundListener");
+    EntityList listeners = parentEntity->ParentScene()->GetEntitiesWithComponent("EC_SoundListener");
     foreach(EntityPtr listener, listeners)
     {
         EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
@@ -237,7 +237,7 @@ void EC_Sound::UpdateSignals()
 
 ComponentPtr EC_Sound::FindPlaceable() const
 {
-    assert(framework_);
+    assert(framework);
     ComponentPtr comp;
     if(!ParentEntity())
     {
@@ -255,7 +255,7 @@ ComponentPtr EC_Sound::FindPlaceable() const
 
 void EC_Sound::PlaceableUpdated(IAttribute* attribute)
 {
-    if (framework_->IsHeadless())
+    if (framework->IsHeadless())
         return;
     
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(sender());

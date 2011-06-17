@@ -24,7 +24,7 @@ EC_AnimationController::EC_AnimationController(Scene* scene) :
 {
     ResetState();
     
-    QObject::connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
+    QObject::connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 

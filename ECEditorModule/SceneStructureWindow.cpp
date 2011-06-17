@@ -427,7 +427,7 @@ void SceneStructureWindow::DecorateEntityItem(Entity *entity, QTreeWidgetItem *i
 
 void SceneStructureWindow::DecorateComponentItem(IComponent *comp, QTreeWidgetItem *item) const
 {
-    bool sync = comp->GetNetworkSyncEnabled();
+    bool sync = comp->NetworkSyncEnabled();
     bool temporary = comp->IsTemporary();
 
     QString info;
@@ -445,14 +445,14 @@ void SceneStructureWindow::DecorateComponentItem(IComponent *comp, QTreeWidgetIt
         info.append("Temporary");
     }
 
-    if (comp->GetUpdateMode() == AttributeChange::LocalOnly)
+    if (comp->UpdateMode() == AttributeChange::LocalOnly)
     {
         if (!info.isEmpty())
             info.append(" ");
         info.append("UpdateMode:LocalOnly");
     }
 
-    if (comp->GetUpdateMode() == AttributeChange::Disconnected)
+    if (comp->UpdateMode() == AttributeChange::Disconnected)
     {
         if (!info.isEmpty())
             info.append(" ");

@@ -37,8 +37,8 @@ EC_Camera::EC_Camera(Scene* scene) :
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     
-    if (framework_)
-        connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
+    if (framework)
+        connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
 }
 
 EC_Camera::~EC_Camera()
@@ -284,7 +284,7 @@ bool EC_Camera::IsEntityVisible(Entity* entity)
         return false;
     
     // Update query if not updated this frame
-    if (queryFrameNumber_ != framework_->Frame()->FrameNumber())
+    if (queryFrameNumber_ != framework->Frame()->FrameNumber())
         QueryVisibleEntities();
     
     return visibleEntities_.find(entity->Id()) != visibleEntities_.end();
@@ -294,13 +294,13 @@ QList<Entity*> EC_Camera::GetVisibleEntities()
 {
     QList<Entity*> l;
     
-    if ((!camera_) || (!parentEntity_) || (!parentEntity_->ParentScene()))
+    if ((!camera_) || (!parentEntity) || (!parentEntity->ParentScene()))
         return l;
     
-    Scene* scene = parentEntity_->ParentScene();
+    Scene* scene = parentEntity->ParentScene();
     
     // Update query if not updated this frame
-    if (queryFrameNumber_ != framework_->Frame()->FrameNumber())
+    if (queryFrameNumber_ != framework->Frame()->FrameNumber())
         QueryVisibleEntities();
     
     for (std::set<entity_id_t>::iterator i = visibleEntities_.begin(); i != visibleEntities_.end(); ++i)
@@ -318,7 +318,7 @@ const std::set<entity_id_t>& EC_Camera::GetVisibleEntityIDs()
     if (camera_)
     {
         // Update query if not updated this frame
-        if (queryFrameNumber_ != framework_->Frame()->FrameNumber())
+        if (queryFrameNumber_ != framework->Frame()->FrameNumber())
             QueryVisibleEntities();
     }
     
@@ -363,7 +363,7 @@ void EC_Camera::OnUpdated(float timeStep)
         return;
     
     // Update visible objects now if necessary
-    if (queryFrameNumber_ != framework_->Frame()->FrameNumber())
+    if (queryFrameNumber_ != framework->Frame()->FrameNumber())
         QueryVisibleEntities();
     
     for (unsigned i = visibilityTrackedEntities_.size() - 1; i < visibilityTrackedEntities_.size(); --i)
@@ -430,6 +430,6 @@ void EC_Camera::QueryVisibleEntities()
             visibleEntities_.insert(entity->Id());
     }
     
-    queryFrameNumber_ = framework_->Frame()->FrameNumber();
+    queryFrameNumber_ = framework->Frame()->FrameNumber();
 }
 

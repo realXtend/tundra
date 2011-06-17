@@ -120,7 +120,7 @@ void EC_Material::CheckForInputMaterial()
     QString inputMatName = GetInputMaterialName();
     if (inputMatName.isEmpty())
         return; // Empty material ref, and could not be interrogated from the EC_Mesh, so can't do anything
-    materialAsset->HandleAssetRefChange(framework_->Asset(), inputMatName, "OgreMaterial");
+    materialAsset->HandleAssetRefChange(framework->Asset(), inputMatName, "OgreMaterial");
 }
 
 void EC_Material::OnMaterialAssetLoaded(AssetPtr material)
@@ -133,7 +133,7 @@ void EC_Material::OnMaterialAssetLoaded(AssetPtr material)
 
 void EC_Material::ApplyParameters(OgreMaterialAsset* srcMatAsset)
 {
-    AssetAPI* assetAPI = framework_->Asset();
+    AssetAPI* assetAPI = framework->Asset();
     QString outputMatName = outputMat.Get();
     
     // If output material name contains ?, replace it with entity ID

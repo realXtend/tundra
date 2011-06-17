@@ -64,7 +64,7 @@ void Entity::AddComponent(const ComponentPtr &component, AttributeChange::Type c
         components_.push_back(component);
         
         if (change != AttributeChange::Disconnected)
-            emit ComponentAdded(component.get(), change == AttributeChange::Default ? component->GetUpdateMode() : change);
+            emit ComponentAdded(component.get(), change == AttributeChange::Default ? component->UpdateMode() : change);
         if (scene_)
             scene_->EmitComponentAdded(this, component.get(), change);
     }
@@ -95,7 +95,7 @@ void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Typ
             
 
             if (change != AttributeChange::Disconnected)
-                emit ComponentRemoved((*iter).get(), change == AttributeChange::Default ? component->GetUpdateMode() : change);
+                emit ComponentRemoved((*iter).get(), change == AttributeChange::Default ? component->UpdateMode() : change);
             if (scene_)
                 scene_->EmitComponentRemoved(this, (*iter).get(), change);
 
@@ -292,7 +292,7 @@ void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
         {
             dst.Add<u32>(comp->TypeId()); ///\todo VLE this!
             dst.AddString(comp->Name().toStdString());
-            dst.Add<u8>(comp->GetNetworkSyncEnabled() ? 1 : 0);
+            dst.Add<u8>(comp->NetworkSyncEnabled() ? 1 : 0);
             
             // Write each component to a separate buffer, then write out its size first, so we can skip unknown components
             QByteArray comp_bytes;

@@ -350,7 +350,7 @@ QString EC_Avatar::LookupAsset(const QString& ref)
     if (desc)
         descName = desc->Name();
     
-    return framework_->Asset()->ResolveAssetRef(descName, ref);
+    return framework->Asset()->ResolveAssetRef(descName, ref);
 }
 
 void ResetBones(Entity* entity)

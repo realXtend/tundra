@@ -927,7 +927,7 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
         }
         */
         if (meshRef.Get().ref.trimmed().isEmpty())
-            LogDebug("Warning: Mesh \"" + this->parentEntity_->Name().toStdString() + "\" mesh ref was set to an empty reference!");
+            LogDebug("Warning: Mesh \"" + this->parentEntity->Name().toStdString() + "\" mesh ref was set to an empty reference!");
         meshAsset->HandleAssetRefChange(&meshRef);
     }
     else if (attribute == &meshMaterial)
@@ -955,7 +955,7 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
         {
             connect(materialAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
             connect(materialAssets[i].get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
-            materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].ref);
+            materialAssets[i]->HandleAssetRefChange(framework->Asset(), materials[i].ref);
         }
     }
     else if((attribute == &skeletonRef) && (!skeletonRef.Get().ref.isEmpty()))
@@ -1073,7 +1073,7 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)
         if (materialList[i].ref == ogreMaterial->Name() ||
-            framework_->Asset()->ResolveAssetRef("", materialList[i].ref) == ogreMaterial->Name()) ///<///\todo The design of whether the ResolveAssetRef should occur here, or internal to Asset API needs to be revisited.
+            framework->Asset()->ResolveAssetRef("", materialList[i].ref) == ogreMaterial->Name()) ///<///\todo The design of whether the ResolveAssetRef should occur here, or internal to Asset API needs to be revisited.
         {
             SetMaterial(i, ogreMaterial->Name());
             assetUsed = true;
@@ -1097,7 +1097,7 @@ void EC_Mesh::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)
     {
-        QString absoluteRef = framework_->Asset()->ResolveAssetRef("", materialList[i].ref);
+        QString absoluteRef = framework->Asset()->ResolveAssetRef("", materialList[i].ref);
         if (absoluteRef == transfer->source.ref)
             SetMaterial(i, QString("AssetLoadError"));
     }
@@ -1106,7 +1106,7 @@ void EC_Mesh::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
 void EC_Mesh::ApplyMaterial()
 {
     AssetReferenceList materialList = meshMaterial.Get();
-    AssetAPI *assetAPI = framework_->Asset();
+    AssetAPI *assetAPI = framework->Asset();
     for(int i = 0; i < materialList.Size(); ++i)
     {
         if (!materialList[i].ref.isEmpty())
