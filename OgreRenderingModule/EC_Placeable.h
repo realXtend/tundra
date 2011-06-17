@@ -225,6 +225,11 @@ public slots:
     /// @note This function sets the parentRef and parentBone attributes of this component to achieve the parenting.
     void SetParent(Entity *parent, QString boneName, bool preserveWorldTransform);
 
+    /// Returns all entities that are attached to this placeable.
+    EntityList Children();
+
+    /// Prints the scene node hierarchy this scene node is part of.
+    void DumpNodeHierarhy();
 signals:
     /// Emitted when about to be destroyed
     void AboutToBeDestroyed();

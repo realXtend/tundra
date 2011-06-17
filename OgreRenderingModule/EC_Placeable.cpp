@@ -772,6 +772,59 @@ void EC_Placeable::SetParent(Entity *parent, QString boneName, bool preserveWorl
         transform.Set(Transform(desiredTransform), AttributeChange::Default);
 }
 
+void DumpChildHierarchy(EC_Placeable *placeable, int indent)
+{
+    EntityList children = placeable->Children();
+
+    std::string indentStr = "";
+    for(int i = 0; i < indent; ++i)
+        indentStr = indentStr + " ";
+
+    foreach(EntityPtr child, children)
+    {
+        boost::shared_ptr<EC_Placeable> placeable = child->GetComponent<EC_Placeable>();
+        LogInfo(indentStr + child->ToString().toStdString() + " at local->parent: " + placeable->LocalToParent().ToString() + ", world space: " + placeable->LocalToWorld().ToString());
+        DumpChildHierarchy(placeable.get(), indent + 2);
+    }
+}
+
+void EC_Placeable::DumpNodeHierarhy()
+{
+    std::vector<EC_Placeable*> parents;
+    parents.push_back(this);
+    // Print all parents
+    EC_Placeable *p = this;
+    while(p->parentPlaceable_)
+    {
+        parents.push_back(p->parentPlaceable_);
+        p = p->parentPlaceable_;
+    }
+
+    for(int i = parents.size()-1; i >= 0; --i)
+        LogInfo(parents[i]->ParentEntity()->ToString().toStdString() + " at local->parent: " + parents[i]->LocalToParent().ToString() + ", world space: " + parents[i]->LocalToWorld().ToString());
+
+    DumpChildHierarchy(this, 2);
+}
+
+EntityList EC_Placeable::Children()
+{
+    EntityList children;
+
+    Scene *scene = ParentEntity()->ParentScene();
+    ///\todo Optimize this function! The current implementation is very slow since it iterates through the whole scene! Instead, keep a list of weak_ptrs to child EC_Placeables.
+    for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    {
+        boost::shared_ptr<EC_Placeable> placeable = iter->second->GetComponent<EC_Placeable>();
+        if (placeable)
+        {
+            EntityPtr parent = placeable->parentRef.Get().Lookup(scene);
+            if (parent.get() == this->ParentEntity())
+                children.push_back(iter->second);
+        }
+    }
+    return children;
+}
+
 void EC_Placeable::RegisterActions()
 {
     Entity *entity = ParentEntity();
