@@ -18,14 +18,14 @@ void ScriptAsset::DoUnload()
     references.clear();
 }
 
-bool ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes)
+AssetLoadState ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     QByteArray arr((const char *)data, numBytes);
     scriptContent = arr;
 
     ParseReferences();
 
-    return true;
+    return ASSET_LOAD_SUCCESFULL;
 }
 
 bool ScriptAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const

@@ -61,7 +61,7 @@ macro (configure_qt4)
 
     sagase_configure_package (QT4 
         NAMES Qt4 4.7.0
-        COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
+        COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_QT_DIR})
 
     # FindQt4.cmake

@@ -5,34 +5,38 @@
 
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
-#include <OgreMesh.h>
 
-class OgreMeshAsset : public IAsset
+#include <OgreMesh.h>
+#include <OgreResourceBackgroundQueue.h>
+
+class OgreMeshAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
 {
 
 Q_OBJECT
 
 public:
-    OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-    :IAsset(owner, type_, name_)
-    {
-    }
+    /// Constructor.
+    OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_);
 
+    /// Deconstructor.
     ~OgreMeshAsset();
 
-    /// Load mesh from memory
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
+    /// Load mesh from memory. IAsset override.
+    virtual AssetLoadState DeserializeFromData(const u8 *data_, size_t numBytes);
 
-    /// Loade mesh into memory
+    /// Load mesh into memory. IAsset override.
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
-    /// Unload mesh from ogre
+    /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
+    virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);
+
+    /// Unload mesh from ogre. IAsset override.
     virtual void DoUnload();
 
-    /// Handle load errors detected by AssetAPI
+    /// Handle load errors detected by AssetAPI. IAsset override.
     virtual void HandleLoadError(const QString &loadError);
 
-    /// Returns an empty list - meshes do not refer to other assets.
+    /// Returns an empty list - meshes do not refer to other assets. IAsset override.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
 
     void SetDefaultMaterial();
@@ -41,6 +45,9 @@ public:
 
     /// This points to the loaded mesh asset, if it is present.
     Ogre::MeshPtr ogreMesh;
+
+    /// Ticket for ogres threaded loading operation.
+    Ogre::BackgroundProcessTicket loadTicket_;
 
     /// Specifies the unique mesh name Ogre uses in its asset pool for this mesh.
     //QString ogreAssetName;

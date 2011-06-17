@@ -278,9 +278,15 @@ QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
 AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
 {
     AssetPtr asset = CreateNewAsset(assetType, assetFile);
-    bool success = asset->LoadFromFile(assetFile);
-    if (success)
+    AssetLoadState success = asset->LoadFromFile(assetFile);
+    if (success == ASSET_LOAD_SUCCESFULL)
         return asset;
+    else if (success == ASSET_LOAD_PROCESSING)
+    {
+        /// \todo implement
+        LogError("CreateAssetFromFile threaded load unhandled!!!!");
+        return AssetPtr();
+    }
     else
     {
         ForgetAsset(asset, false);
@@ -835,12 +841,12 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     assert(transfer_);
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
-//    LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
+    //LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
 
     if (transfer->asset) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
     {
         transfer->EmitAssetDownloaded();
-//        transfer->asset->EmitDecoded
+        //transfer->asset->EmitDecoded
         transfer->EmitAssetDecoded();
         transfer->asset->EmitLoaded();
         transfer->EmitAssetLoaded();
@@ -876,36 +882,69 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     transfer->asset->SetAssetProvider(transfer->provider.lock());
     transfer->asset->SetAssetTransfer(transfer);
 
-    bool success = transfer->asset->LoadFromFileInMemory(&transfer->rawAssetData[0], transfer->rawAssetData.size());
-    if (!success)
+    AssetLoadState loadState = transfer->asset->LoadFromFileInMemory(&transfer->rawAssetData[0], transfer->rawAssetData.size());
+
+    // If the asset is still processing the load it will itself invoke the callback,
+    // otherwise do it here for completed or failed asset loads.
+    if (loadState != ASSET_LOAD_PROCESSING)
+        OnTransferAssetLoadCompleted(transfer->source.ref, loadState);
+}
+
+void AssetAPI::OnTransferAssetLoadCompleted(const QString assetRef, AssetLoadState result)
+{
+    // Get the corresponding AssetTransfer
+    AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
+    if (iter == currentTransfers.end())
+    {
+        LogError("Could not find corresponding asset transfer for completed asset load " + assetRef);
+        return;
+    }
+    AssetTransferPtr transfer = iter->second;
+    if (!transfer.get())
+    {
+        LogError("Found a corresponding asset transfer for completed asset load, but it was null " + assetRef);
+        currentTransfers.erase(iter);
+        return;
+    }
+
+    if (result == ASSET_LOAD_SUCCESFULL)
+    {
+        // Add the loaded asset to the internal asset map
+        AssetMap::iterator iter2 = assets.find(transfer->source.ref);
+        if (iter2 != assets.end())
+        {
+            AssetPtr existing = iter2->second;
+            LogWarning("AssetAPI: Overwriting a previously downloaded asset \"" + existing->Name() + "\", type \"" + existing->Type() + "\" with asset of same name!");
+        }
+        assets[transfer->source.ref] = transfer->asset;
+
+        // Add file watcher to the disk source
+        if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
+            diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
+        
+        // Tell everyone a new asset was loaded
+        emit AssetCreated(transfer->asset);
+
+        // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
+        RequestAssetDependencies(transfer->asset);
+
+        // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
+        transfer->EmitAssetDownloaded();
+
+        // If we don't have any outstanding dependencies, fire the Loaded signal for the asset as well.
+        if (NumPendingDependencies(transfer->asset) == 0)
+            AssetDependenciesCompleted(transfer);
+    }
+    else if (result == ASSET_LOAD_FAILED)
     {
         QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
         transfer->asset->HandleLoadError(error);
         transfer->EmitAssetFailed(error);
-        return;
+
+        // Remove this transfer from the current ongoing list, 
+        // otherwise you can't request it again without getting the same ptr back.
+        currentTransfers.erase(iter);
     }
-
-    // Remember the newly created asset in AssetAPI's internal data structure to allow clients to later fetch it without re-requesting it.
-    AssetMap::iterator iter2 = assets.find(transfer->source.ref);
-    if (iter2 != assets.end())
-    {
-        AssetPtr existing = iter2->second;
-        LogWarning("AssetAPI: Overwriting a previously downloaded asset \"" + existing->Name() + "\", type \"" + existing->Type() + "\" with asset of same name!");
-    }
-    assets[transfer->source.ref] = transfer->asset;
-    if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
-        diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
-    emit AssetCreated(transfer->asset);
-
-    // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
-    RequestAssetDependencies(transfer->asset);
-
-    // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
-    transfer->EmitAssetDownloaded();
-
-    // If we don't have any outstanding dependencies, fire the Loaded signal for the asset as well.
-    if (NumPendingDependencies(transfer->asset) == 0)
-        AssetDependenciesCompleted(transfer);
 }
 
 void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)

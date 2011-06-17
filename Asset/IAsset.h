@@ -11,6 +11,13 @@
 #include "AssetFwd.h"
 #include "AssetReference.h"
 
+enum AssetLoadState
+{
+    ASSET_LOAD_SUCCESFULL = 0,
+    ASSET_LOAD_PROCESSING,
+    ASSET_LOAD_FAILED
+};
+
 class IAsset : public QObject, public boost::enable_shared_from_this<IAsset>
 {
     Q_OBJECT
@@ -46,7 +53,7 @@ public slots:
     QString DiskSource() const { return diskSource; }
 
     /// Loads this asset from the given file on the local filesystem. Returns true if loading succeeds, false otherwise.
-    bool LoadFromFile(QString filename);
+    AssetLoadState LoadFromFile(QString filename);
 
     /// Forces a reload of this asset from its disk source. Returns true if loading succeeded, false otherwise.
     bool LoadFromCache();
@@ -107,7 +114,7 @@ signals:
 public:
     /// Loads this asset from the specified file data in memory. Loading an asset from memory cannot change its name or type.
     /// Returns true if loading succeeded, false otherwise.
-    bool LoadFromFileInMemory(const u8 *data, size_t numBytes);
+    AssetLoadState LoadFromFileInMemory(const u8 *data, size_t numBytes);
 
     /// Called whenever another asset this asset depends on is loaded.
     virtual void DependencyLoaded(AssetPtr dependee) { }
@@ -141,7 +148,7 @@ public:
 
 protected:
     /// Loads this asset by deserializing it from the given data. The data pointer that is passed in is never null, and numBytes is always greater than zero.
-    virtual bool DeserializeFromData(const u8 *data, size_t numBytes) = 0;
+    virtual AssetLoadState DeserializeFromData(const u8 *data, size_t numBytes) = 0;
 
     /// Private-implementation of the unloading of an asset.
     virtual void DoUnload() = 0;

@@ -18,18 +18,17 @@ OgreMaterialAsset::~OgreMaterialAsset()
     Unload();
 }
 
-bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
+AssetLoadState OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     // Remove old material if any
     Unload();
     references_.clear();
     ogreAssetName.clear();
-    //original_textures_.clear();
 
     // Do not go further if in headless mode
     // Ogre will throw exceptions and things go sideways
     if (assetAPI->IsHeadless())
-        return false;
+        return ASSET_LOAD_FAILED;
 
     const std::string assetName = this->Name().toStdString();
     Ogre::MaterialManager& matmgr = Ogre::MaterialManager::getSingleton(); 
@@ -38,12 +37,12 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     if (!data_)
     {
         LogError("DeserializeFromData: Null source asset data pointer");
-        return false;
+        return ASSET_LOAD_FAILED;
     }
     if (numBytes == 0)
     {
         LogError("DeserializeFromData: Zero sized material asset");
-        return false;
+        return ASSET_LOAD_FAILED;
     }
 
     std::string sanitatedname = SanitateAssetIdForOgre(assetName);
@@ -95,7 +94,6 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                             ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
                             QString absolute_tex_name = assetAPI->LookupAssetRefToStorage(tex_name.c_str());
                             references_.push_back(AssetReference(absolute_tex_name));
-//                            original_textures_.push_back(tex_name);
                             // Sanitate the asset ID
                             line = "texture " + SanitateAssetIdForOgre(absolute_tex_name.toStdString());
                         }
@@ -126,13 +124,13 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         if (ogreMaterial.isNull())
         {
             LogWarning("DeserializeFromData: Failed to create an Ogre material from material asset: " + assetName);
-            return false;
+            return ASSET_LOAD_FAILED;
         }        
         if(!ogreMaterial->getNumTechniques())
         {
             LogWarning("DeserializeFromData: Failed to create an Ogre material, no Techniques in material asset: "  + assetName);
             ogreMaterial.setNull();
-            return false;
+            return ASSET_LOAD_FAILED;
         }
         
         ShadowQuality shadowquality_ = Shadows_High; ///\todo Regression. Read this ahead of time.
@@ -180,12 +178,12 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         }
         catch (...) {}
         
-        return false;
+        return ASSET_LOAD_FAILED;
     }
     
     // Mark the valid ogre resource name
     ogreAssetName = QString::fromStdString(sanitatedname);
-    return true;
+    return ASSET_LOAD_SUCCESFULL;
 }
 
 bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const

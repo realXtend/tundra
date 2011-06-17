@@ -19,7 +19,7 @@ public:
 
     ~OgreParticleAsset();
 
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
+    virtual AssetLoadState DeserializeFromData(const u8 *data_, size_t numBytes);
 
     virtual std::vector<AssetReference> FindReferences() const;
 

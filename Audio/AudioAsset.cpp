@@ -39,16 +39,15 @@ void AudioAsset::DoUnload()
     }
 }
 
-bool AudioAsset::DeserializeFromData(const u8 *data, size_t numBytes)
+AssetLoadState AudioAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     if (WavLoader::IdentifyWavFileInMemory(data, numBytes) && this->Name().endsWith(".wav", Qt::CaseInsensitive)) // Detect whether this file is Wav data or not.
-        return LoadFromWavFileInMemory(data, numBytes);
-   else if (this->Name().endsWith(".ogg", Qt::CaseInsensitive))
-        return LoadFromOggVorbisFileInMemory(data, numBytes);
+        return (LoadFromWavFileInMemory(data, numBytes) ? ASSET_LOAD_SUCCESFULL : ASSET_LOAD_FAILED);
+    else if (this->Name().endsWith(".ogg", Qt::CaseInsensitive))
+        return (LoadFromOggVorbisFileInMemory(data, numBytes) ? ASSET_LOAD_SUCCESFULL : ASSET_LOAD_FAILED);
     else
         LogError("Unable to serialize audio asset data. Unknown format!");
-
-    return false;
+    return ASSET_LOAD_FAILED;
 }
 
 bool AudioAsset::LoadFromWavFileInMemory(const u8 *data, size_t numBytes)

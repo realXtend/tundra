@@ -31,7 +31,7 @@ void OgreParticleAsset::DoUnload()
     RemoveTemplates();
 }
 
-bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
+AssetLoadState OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     RemoveTemplates();
     references_.clear();
@@ -39,12 +39,12 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     if (!data_)
     {
         OgreRenderer::OgreRenderingModule::LogError("Null source asset data pointer");     
-        return false;
+        return ASSET_LOAD_FAILED;
     }
     if (numBytes == 0)
     {
         OgreRenderer::OgreRenderingModule::LogError("Zero sized particle system asset");     
-        return false;
+        return ASSET_LOAD_FAILED;
     }
 
     // Detected template names
@@ -173,7 +173,9 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     internal_name_ = SanitateAssetIdForOgre(Name().toStdString()) + "_0";
     
     // Theoretical success if at least one template was created
-    return GetNumTemplates() > 0;
+    if (GetNumTemplates() > 0)
+        return ASSET_LOAD_SUCCESFULL;
+    return ASSET_LOAD_FAILED;
 }
 
 int OgreParticleAsset::GetNumTemplates() const

@@ -18,7 +18,7 @@ public:
     ~ScriptAsset();
     
     /// Load script asset from memory
-    virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
+    virtual AssetLoadState DeserializeFromData(const u8 *data, size_t numBytes);
 
     /// Load script asset into memory
     virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const;

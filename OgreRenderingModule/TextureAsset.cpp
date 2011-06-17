@@ -8,27 +8,52 @@
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
 
+#include "AssetCache.h"
+#include <QFileInfo>
+
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("OgreTextureAsset")
+
+TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_) : 
+    IAsset(owner, type_, name_)
+{
+}
 
 TextureAsset::~TextureAsset()
 {
     Unload();
 }
 
-bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
+AssetLoadState TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     if (!data)
-        return false; ///\todo Log out error.
+        return ASSET_LOAD_FAILED; ///\todo Log out error.
     if (numBytes == 0)
-        return false; ///\todo Log out error.
+        return ASSET_LOAD_FAILED; ///\todo Log out error.
 
     // Don't load textures to memory in headless mode
     if (assetAPI->IsHeadless())
     {
-	    return false;
+	    return ASSET_LOAD_FAILED;
     }
 
+    if (OGRE_THREAD_SUPPORT != 0)
+    {
+        // We can only do threaded loading from disk, and not any disk location but only from asset cache.
+        // local:// refs will return empty string here and those will fall back to the non-threaded loading.
+        // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
+        QString cacheDiskSource = assetAPI->GetAssetCache()->GetDiskSource(QUrl(Name()));
+        if (!cacheDiskSource.isEmpty())
+        {
+            QFileInfo fileInfo(cacheDiskSource);
+            std::string sanitatedAssetRef = fileInfo.fileName().toStdString();             
+            loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::TextureManager::getSingleton().getResourceType(),
+                                                                             sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP,
+                                                                             false, 0, 0, this);
+            return ASSET_LOAD_PROCESSING;
+        }
+    }                                                
+    
     try
     {
         // Convert the data into Ogre's own DataStream format.
@@ -59,7 +84,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
             if (ogreTexture->getBuffer().isNull())
             {
                 LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
-                return false;
+                return ASSET_LOAD_FAILED;
             }
 
             Ogre::PixelBox pixelBox(Ogre::Box(0,0, image.getWidth(), image.getHeight()), image.getFormat(), (void*)image.getData());
@@ -68,14 +93,26 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
             ogreTexture->createInternalResources();
         }
 
-        return true;
+        return ASSET_LOAD_SUCCESFULL;
     }
     catch (Ogre::Exception &e)
     {
         LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
-        return false;
+        return ASSET_LOAD_FAILED;
     }
 }
+
+void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result)
+{
+    if (ticket != loadTicket_)
+        return;
+
+    if (result.error)
+        LogError("Ogre failed to do threaded loading: " + result.message);
+
+    assetAPI->OnTransferAssetLoadCompleted(Name(), (result.error ? ASSET_LOAD_FAILED : ASSET_LOAD_SUCCESFULL));
+}
+
 /*
 void TextureAsset::RegenerateAllMipLevels()
 {

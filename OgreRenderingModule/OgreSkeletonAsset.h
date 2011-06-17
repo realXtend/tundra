@@ -5,32 +5,47 @@
 
 #include "IAsset.h"
 #include "OgreModuleApi.h"
+
 #include <OgreSkeleton.h>
+#include <OgreResourceBackgroundQueue.h>
 
 //! An Ogre-specific skeleton resource, contains bone structure and skeletal animations
 /*! \ingroup OgreRenderingModuleClient */
-class OGRE_MODULE_API OgreSkeletonAsset : public IAsset
+
+class OGRE_MODULE_API OgreSkeletonAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
 {
-    Q_OBJECT;
+
+Q_OBJECT
+
 public:
-    OgreSkeletonAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-    :IAsset(owner, type_, name_)
-    {
-    }
+    /// Constructor.
+    OgreSkeletonAsset(AssetAPI *owner, const QString &type_, const QString &name_);
 
-    virtual ~OgreSkeletonAsset();
+    /// Deconstructor.
+    ~OgreSkeletonAsset();
 
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
+    /// IAsset override.
+    virtual AssetLoadState DeserializeFromData(const u8 *data_, size_t numBytes);
 
+    /// IAsset override.
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
+    /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
+    virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);
+
+    /// IAsset override.
     virtual void DoUnload();
 
     bool IsLoaded() const;
 
+    /// Ogre Skelton ptr.
     Ogre::SkeletonPtr ogreSkeleton;
 
+    /// Internal name for the skeleton.
     std::string internal_name_;
+
+    /// Ticket for ogres threaded loading operation.
+    Ogre::BackgroundProcessTicket loadTicket_;
 };
 
 #endif

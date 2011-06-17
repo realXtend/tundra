@@ -5,27 +5,51 @@
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include "AssetAPI.h"
+#include "AssetCache.h"
 
 #include <QFile>
+#include <QFileInfo>
 
 using namespace OgreRenderer;
+
+OgreSkeletonAsset::OgreSkeletonAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+    IAsset(owner, type_, name_)
+{
+}
 
 OgreSkeletonAsset::~OgreSkeletonAsset()
 {
     Unload();
 }
 
-bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
+AssetLoadState OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     if (!data_)
     {
         OgreRenderingModule::LogError("Null source asset data pointer");
-        return false;
+        return ASSET_LOAD_FAILED;
     }
     if (numBytes == 0)
     {
         OgreRenderingModule::LogError("Zero sized skeleton asset");
-        return false;
+        return ASSET_LOAD_FAILED;
+    }
+
+    if (OGRE_THREAD_SUPPORT != 0)
+    {
+        // We can only do threaded loading from disk, and not any disk location but only from asset cache.
+        // local:// refs will return empty string here and those will fall back to the non-threaded loading.
+        // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
+        QString cacheDiskSource = assetAPI->GetAssetCache()->GetDiskSource(QUrl(Name()));
+        if (!cacheDiskSource.isEmpty())
+        {
+            QFileInfo fileInfo(cacheDiskSource);
+            std::string sanitatedAssetRef = fileInfo.fileName().toStdString(); 
+            loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::SkeletonManager::getSingleton().getResourceType(),
+                                                                             sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP,
+                                                                             false, 0, 0, this);
+            return ASSET_LOAD_PROCESSING;
+        }
     }
 
     try
@@ -38,7 +62,7 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
             if (ogreSkeleton.isNull())
             {
                 OgreRenderingModule::LogError("Failed to create skeleton " + this->Name().toStdString());
-                return false; 
+                return ASSET_LOAD_FAILED; 
             }
         }
 
@@ -53,12 +77,23 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     {
         OgreRenderingModule::LogError("Failed to create skeleton " + this->Name().toStdString() + ": " + std::string(e.what()));
         Unload();
-        return false;
+        return ASSET_LOAD_FAILED;
     }
 
     internal_name_ = SanitateAssetIdForOgre(this->Name().toStdString());
     OgreRenderingModule::LogDebug("Ogre skeleton " + this->Name().toStdString() + " created");
-    return true;
+    return ASSET_LOAD_SUCCESFULL;
+}
+
+void OgreSkeletonAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result)
+{
+    if (ticket != loadTicket_)
+        return;
+
+    if (result.error)
+        OgreRenderingModule::LogError("OgreSkeletonAsset: Ogre failed to do threaded loading: " + result.message);
+
+    assetAPI->OnTransferAssetLoadCompleted(Name(), (result.error ? ASSET_LOAD_FAILED : ASSET_LOAD_SUCCESFULL));
 }
 
 bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const

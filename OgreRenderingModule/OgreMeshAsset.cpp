@@ -5,27 +5,51 @@
 #include "OgreConversionUtils.h"
 #include "OgreRenderingModule.h"
 #include "AssetAPI.h"
+#include "AssetCache.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <Ogre.h>
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("OgreMeshAsset")
+
+OgreMeshAsset::OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+    IAsset(owner, type_, name_)
+{
+}
 
 OgreMeshAsset::~OgreMeshAsset()
 {
     Unload();
 }
 
-bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
+AssetLoadState OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     PROFILE(OgreMeshAsset_LoadFromFileInMemory);
     assert(data_);
     if (!data_)
-        return false;
+        return ASSET_LOAD_FAILED;
     
-    /// Force an unload of this data first.
+    // Force an unload of this data first.
     Unload();
+
+    if (OGRE_THREAD_SUPPORT != 0)
+    {
+        // We can only do threaded loading from disk, and not any disk location but only from asset cache.
+        // local:// refs will return empty string here and those will fall back to the non-threaded loading.
+        // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
+        QString cacheDiskSource = assetAPI->GetAssetCache()->GetDiskSource(QUrl(Name()));
+        if (!cacheDiskSource.isEmpty())
+        {
+            QFileInfo fileInfo(cacheDiskSource);
+            std::string sanitatedAssetRef = fileInfo.fileName().toStdString(); 
+            loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::MeshManager::getSingleton().getResourceType(),
+                                                                             sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP,
+                                                                             false, 0, 0, this);
+            return ASSET_LOAD_PROCESSING;
+        }
+    }
 
     if (ogreMesh.isNull())
     {   
@@ -34,7 +58,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         if (ogreMesh.isNull())
         {
             LogError("Failed to create mesh " + Name().toStdString());
-            return false; 
+            return ASSET_LOAD_FAILED; 
         }
         ogreMesh->setAutoBuildEdgeLists(false);
     }
@@ -77,15 +101,54 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     }
     catch (Ogre::Exception &e)
     {
-        OgreRenderer::OgreRenderingModule::LogError("Failed to create mesh " + this->Name().toStdString() + ": " + std::string(e.what()));
+        LogError("Failed to create mesh " + this->Name().toStdString() + ": " + std::string(e.what()));
         Unload();
-        return false;
+        return ASSET_LOAD_FAILED;
     }
 
     //internal_name_ = SanitateAssetIdForOgre(id_);
     
     LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
-    return true;
+    return ASSET_LOAD_SUCCESFULL;
+}
+
+void OgreMeshAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result)
+{
+    if (ticket != loadTicket_)
+        return;
+
+    if (!result.error)
+    {
+        /*! \todo Verify if we need to do
+            - ogreMesh->setAutoBuildEdgeLists(false);
+            - ogreMesh->buildTangentVectors(...);
+            - smesh->generateExtremes(n);
+            for non-manual created meshes via thread loading.
+        */
+
+        ogreMesh = Ogre::MeshManager::getSingleton().getByName(OgreRenderer::SanitateAssetIdForOgre(Name().toStdString()), 
+                                                               OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
+        if (!ogreMesh.isNull())
+        {        
+            try
+            {
+                SetDefaultMaterial();
+                assetAPI->OnTransferAssetLoadCompleted(Name(), ASSET_LOAD_SUCCESFULL);
+                return;
+            }
+            catch (Ogre::Exception &e)
+            {
+                LogError("Failed to set default materials to " + this->Name().toStdString() + ": " + std::string(e.what()));
+            }
+        }
+        else   
+            LogError("Ogre::Mesh was null after threaded loading: " + this->Name().toStdString());
+    }
+    else
+        LogError("Ogre failed to do threaded loading: " + result.message);
+
+    Unload();
+    assetAPI->OnTransferAssetLoadCompleted(Name(), ASSET_LOAD_FAILED);
 }
 
 void OgreMeshAsset::HandleLoadError(const QString &loadError)

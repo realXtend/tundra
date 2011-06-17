@@ -53,6 +53,9 @@ namespace OgreRenderer
         //! callback for console command
         ConsoleCommandResult ConsoleStats(const StringVector &params);
 
+        //! Ogre resource group for cache files.
+        static std::string CACHE_RESOURCE_GROUP;
+
     private:
         //! Type name of the module.
         static std::string type_name_static_;

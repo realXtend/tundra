@@ -12,6 +12,7 @@
 #include "AssetFwd.h"
 
 class QFileSystemWatcher;
+enum AssetLoadState;
 
 /// Loads the given local file into the specified vector. Clears all data previously in the vector.
 /// Returns true on success.
@@ -73,6 +74,9 @@ public:
 
     /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed. Do not call this function from client code.
     void AssetTransferCompleted(IAssetTransfer *transfer);
+
+    /// Called by the IAsset that does asynch asset loading with ASSET_LOAD_PROCESSING.
+    void OnTransferAssetLoadCompleted(const QString assetRef, AssetLoadState result);
 
     /// Called by each AssetProvider to notify the Asset API that the asset transfer finished in a failure. The Asset API will erase this transfer and
     /// also fail any transfers of assets which depended on this transfer.
@@ -336,6 +340,7 @@ private slots:
 
 private:
     bool isHeadless_;
+
     typedef std::map<QString, AssetTransferPtr, AssetAPI::QStringLessThanNoCase> AssetTransferMap;
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;

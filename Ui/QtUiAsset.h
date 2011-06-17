@@ -21,7 +21,7 @@ public:
     virtual ~QtUiAsset();
 
     /// Loads this asset by deserializing it from the given data. The data pointer that is passed in is never null, and numBytes is always greater than zero.
-    virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
+    virtual AssetLoadState DeserializeFromData(const u8 *data, size_t numBytes);
 
     /// Saves this asset to the given data buffer. Returns true on success. If this asset is unloaded, will return false.
     /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.

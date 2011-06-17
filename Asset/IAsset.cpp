@@ -91,7 +91,7 @@ AssetPtr IAsset::Clone(QString newAssetName) const
     return newAsset;
 }
 
-bool IAsset::LoadFromFile(QString filename)
+AssetLoadState IAsset::LoadFromFile(QString filename)
 {
     filename = filename.trimmed(); ///\todo Sanitate.
     std::vector<u8> fileData;
@@ -99,25 +99,25 @@ bool IAsset::LoadFromFile(QString filename)
     if (!success)
     {
         LogDebug("LoadFromFile failed for file \"" + filename.toStdString() + "\", could not read file!");
-        return false;
+        return ASSET_LOAD_FAILED;
     }
 
     if (fileData.size() == 0)
     {
         LogDebug("LoadFromFile failed for file \"" + filename.toStdString() + "\", file size was 0!");
-        return false;
+        return ASSET_LOAD_FAILED;
     }
 
     // Invoke the actual virtual function to load the asset.
     return LoadFromFileInMemory(&fileData[0], fileData.size());
 }
 
-bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
+AssetLoadState IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
 {
     if (!data || numBytes == 0)
     {
         LogDebug("LoadFromFileInMemory failed for asset \"" + ToString().toStdString() + "\"! No data present!");
-        return false;
+        return ASSET_LOAD_FAILED;
     }
 
     // Before loading the asset, recompute the content hash for the asset data.
