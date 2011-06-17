@@ -398,13 +398,11 @@ public:
     void SetRotatePart(const float3x3 &rotation) { Set3x3Part(rotation); }
 
     /// Transforms one coordinate frame orientation to another using a LookAt rotation.
-    /** This function treats this matrix as a local->world transformation matrix for a 3D object, and applies a rotation to this
-        matrix so that the local (pre-transformed) axis specified by localForward looks towards targetPosition, taking
-        the current position of this object into account. Then tries to orient the localUp axis to point towards the
-        worldUp axis.
-        @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1])
-        or shear (the column vectors of this matrix are orthogonal to start with). */
-    void LookAt(const float3 &localForward, const float3 &targetPosition, const float3 &localUp, const float3 &worldUp);
+    /** This function generates a transformation matrix which rotates the given localForward vector to point towards
+        the vector targetPosition, and secondarily, rotates the localUp to coincide with the vector worldUp, as closely
+        as possible while still retaining the localForward->targetPosition constraint.
+        @note The resulting right vector for the matrix will be generated using the right-hand rule, to produce a right-handed matrix with determinant > 0. */
+    static float3x4 LookAtRH(const float3 &localForwardDir, const float3 &targetForwardDir, const float3 &localUp, const float3 &worldUp);
 
     /// Sets this float3x4 to represent the same transformation as the given float3x3.
     /// @important The translate part of this float3x4 is reset to zero.

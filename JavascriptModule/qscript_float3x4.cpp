@@ -446,19 +446,6 @@ static QScriptValue float3x4_SetRotatePart_float3x3(QScriptContext *context, QSc
     return QScriptValue();
 }
 
-static QScriptValue float3x4_LookAt_float3_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float3x4_LookAt_float3_float3_float3_float3 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
-    float3 localForward = qscriptvalue_cast<float3>(context->argument(0));
-    float3 targetPosition = qscriptvalue_cast<float3>(context->argument(1));
-    float3 localUp = qscriptvalue_cast<float3>(context->argument(2));
-    float3 worldUp = qscriptvalue_cast<float3>(context->argument(3));
-    This.LookAt(localForward, targetPosition, localUp, worldUp);
-    ToExistingScriptValue_float3x4(engine, This, context->thisObject());
-    return QScriptValue();
-}
-
 static QScriptValue float3x4_Determinant(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_Determinant in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1372,6 +1359,17 @@ static QScriptValue float3x4_MakeOrthographicProjectionXY(QScriptContext *contex
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float3x4_LookAtRH_float3_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float3x4_LookAtRH_float3_float3_float3_float3 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 localForwardDir = qscriptvalue_cast<float3>(context->argument(0));
+    float3 targetForwardDir = qscriptvalue_cast<float3>(context->argument(1));
+    float3 localUp = qscriptvalue_cast<float3>(context->argument(2));
+    float3 worldUp = qscriptvalue_cast<float3>(context->argument(3));
+    float3x4 ret = float3x4::LookAtRH(localForwardDir, targetForwardDir, localUp, worldUp);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float3x4_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -1657,7 +1655,6 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     proto.setProperty("SetRotatePartZ", engine->newFunction(float3x4_SetRotatePartZ_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetRotatePart", engine->newFunction(float3x4_SetRotatePart_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetRotatePart", engine->newFunction(float3x4_SetRotatePart_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("LookAt", engine->newFunction(float3x4_LookAt_float3_float3_float3_float3, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Determinant", engine->newFunction(float3x4_Determinant, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Inverse", engine->newFunction(float3x4_Inverse, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Inverted", engine->newFunction(float3x4_Inverted, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -1757,6 +1754,7 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     ctor.setProperty("MakeOrthographicProjectionYZ", engine->newFunction(float3x4_MakeOrthographicProjectionYZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("MakeOrthographicProjectionXZ", engine->newFunction(float3x4_MakeOrthographicProjectionXZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("MakeOrthographicProjectionXY", engine->newFunction(float3x4_MakeOrthographicProjectionXY, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("LookAtRH", engine->newFunction(float3x4_LookAtRH_float3_float3_float3_float3, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("zero", qScriptValueFromValue(engine, float3x4::zero), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("identity", qScriptValueFromValue(engine, float3x4::identity), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("nan", qScriptValueFromValue(engine, float3x4::nan), QScriptValue::Undeletable | QScriptValue::ReadOnly);
