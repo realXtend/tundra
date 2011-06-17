@@ -145,7 +145,8 @@ framework(fw),
 scene(dest),
 parentEntities_(0),
 parentAssets_(0),
-contentAdded_(false)
+contentAdded_(false),
+position(float3::zero)
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
     setAttribute(Qt::WA_DeleteOnClose);
