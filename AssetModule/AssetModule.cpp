@@ -105,8 +105,14 @@ namespace Asset
     {
         assert(framework_);
 
+        bool hasFile = framework_->HasCommandLineParameter("--file");
+        bool hasStorage = framework_->HasCommandLineParameter("--file");
         QStringList files = framework_->CommandLineParameters("--file");
         QStringList storages = framework_->CommandLineParameters("--storage");
+        if (hasFile && files.isEmpty())
+            LogError("AssetModule: --file specified without a value.");
+        if (hasStorage && storages.isEmpty())
+            LogError("AssetModule: --storage specified without a value.");
         foreach(const QString &file, files)
         {
             AssetStoragePtr storage = framework_->Asset()->DeserializeAssetStorageFromString(file.trimmed());
@@ -137,9 +143,8 @@ namespace Asset
 
     void AssetModule::ListAssetStorages()
     {
-        AssetStorageVector storages = framework_->Asset()->GetAssetStorages();
         LogInfo("Registered storages: ");
-        foreach(AssetStoragePtr storage, storages)
+        foreach(const AssetStoragePtr &storage, framework_->Asset()->GetAssetStorages())
         {
             QString storageString = storage->SerializeToString();
             if (framework_->Asset()->GetDefaultAssetStorage() == storage)
@@ -150,10 +155,9 @@ namespace Asset
 
     void AssetModule::LoadAllLocalAssetsWithSuffix(const QString &suffix, const QString &assetType)
     {
-        std::vector<AssetStoragePtr> storages = framework_->Asset()->GetAssetStorages();
-        for(size_t i = 0; i < storages.size(); ++i)
+        foreach(const AssetStoragePtr &s, framework_->Asset()->GetAssetStorages())
         {
-            LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(storages[i].get());
+            LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(s.get());
             if (storage)
                 storage->LoadAllAssetsOfType(framework_->Asset(), suffix, assetType);
         }
@@ -161,10 +165,9 @@ namespace Asset
     
     void AssetModule::RefreshHttpStorages()
     {
-        std::vector<AssetStoragePtr> storages = framework_->Asset()->GetAssetStorages();
-        for(size_t i = 0; i < storages.size(); ++i)
+        foreach(const AssetStoragePtr &s, framework_->Asset()->GetAssetStorages())
         {
-            HttpAssetStorage *storage = dynamic_cast<HttpAssetStorage*>(storages[i].get());
+            HttpAssetStorage *storage = dynamic_cast<HttpAssetStorage*>(s.get());
             if (storage)
                 storage->RefreshAssetRefs();
         }

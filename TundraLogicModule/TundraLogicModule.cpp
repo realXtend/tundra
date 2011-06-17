@@ -333,7 +333,12 @@ void TundraLogicModule::LoadStartupScene()
         framework_->Scene()->SetDefaultScene(scene);
     }
 
-    foreach(const QString &startupScene, framework_->CommandLineParameters("--file"))
+    bool hasFile = framework_->HasCommandLineParameter("--file");
+    QStringList files = framework_->CommandLineParameters("--file");
+    if (hasFile && files.isEmpty())
+        LogError("TundraLogicModule: --file specified without a value.");
+
+    foreach(const QString &startupScene, files)
     {
         // At this point, if we have a LocalAssetProvider, it has already also parsed the --file command line option
         // and added the appropriate path as a local asset storage. Here we assume that is the case, so that the
