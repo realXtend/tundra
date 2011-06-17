@@ -16,7 +16,6 @@
   <component type="EC_Name" sync="1">
    <attribute value="AvatarScript" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
  </entity>
  <entity id="4">
@@ -31,29 +30,33 @@
   <component type="EC_Name" sync="1">
    <attribute value="Fish" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="0.999392,0.434842,4.89735,-27.1434,57.2496,-117.604,1,1,1" name="Transform"/>
+   <attribute value="1.44998,-4.65158,5.40408,-47.9755,42.0498,-145.341,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
   </component>
   <component type="EC_RigidBody" sync="1">
    <attribute value="10" name="Mass"/>
    <attribute value="6" name="Shape type"/>
-   <attribute value="1 1 1" name="Size"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
    <attribute value="file://fish.mesh" name="Collision mesh ref"/>
    <attribute value="0.5" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
    <attribute value="0" name="Angular damping"/>
-   <attribute value="1 1 1" name="Linear factor"/>
-   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
    <attribute value="false" name="Phantom"/>
    <attribute value="false" name="Draw Debug"/>
-   <attribute value="0.0100854626 -0.00476773083 -0.00456209946" name="Linear velocity"/>
-   <attribute value="-0.897368252 -0.165160373 -0.979462624" name="Angular velocity"/>
+   <attribute value="-0.005349 -0.006437 -0.004148" name="Linear velocity"/>
+   <attribute value="0.615375 0.268105 1.221519" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
   </component>
  </entity>
  <entity id="5">
@@ -68,36 +71,39 @@
   <component type="EC_Name" sync="1">
    <attribute value="Floor" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="0,-5,0,0,0,0,100,1,100" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
   </component>
   <component type="EC_RigidBody" sync="1">
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
-   <attribute value="1 0.200000003 1" name="Size"/>
+   <attribute value="1.000000 0.200000 1.000000" name="Size"/>
    <attribute value="" name="Collision mesh ref"/>
    <attribute value="0.5" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
    <attribute value="0" name="Angular damping"/>
-   <attribute value="1 1 1" name="Linear factor"/>
-   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
    <attribute value="false" name="Phantom"/>
    <attribute value="false" name="Draw Debug"/>
-   <attribute value="0 0 0" name="Linear velocity"/>
-   <attribute value="0 0 0" name="Angular velocity"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Linear velocity"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
   </component>
  </entity>
  <entity id="6">
   <component type="EC_Name" sync="1">
    <attribute value="Instructions" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Script" sync="1">
    <attribute value="" name="Type"/>
@@ -109,13 +115,12 @@
   <component type="EC_Name" sync="1">
    <attribute value="Environment" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_EnvironmentLight" sync="1">
    <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sun color"/>
    <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient color"/>
    <attribute value="0.930000007 0.930000007 0.930000007 1" name="Sun diffuse color"/>
-   <attribute value="-1 -1 -1" name="Sun direction vector"/>
+   <attribute value="-1.000000 -1.000000 -1.000000" name="Sun direction vector"/>
    <attribute value="false" name="Use fixed time"/>
    <attribute value="0.670000017" name="Current time"/>
    <attribute value="true" name="Sun cast shadows"/>
@@ -125,7 +130,7 @@
    <attribute value="RexSkyBox" name="Material"/>
    <attribute value="rex_sky_front.dds;rex_sky_back.dds;rex_sky_left.dds;rex_sky_right.dds;rex_sky_top.dds;rex_sky_bot.dds" name="Texture"/>
    <attribute value="50" name="Distance"/>
-   <attribute value="1 0 0 0" name="Orientation"/>
+   <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
    <attribute value="true" name="Draw first"/>
   </component>
  </entity>

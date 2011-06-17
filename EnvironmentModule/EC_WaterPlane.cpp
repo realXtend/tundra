@@ -30,8 +30,8 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     xSize(this, "x-size", 5000),
     ySize(this, "y-size", 5000),
     depth(this, "Depth", 20),
-    position(this, "Position", float3()),
-    rotation(this, "Rotation", Quat()),
+    position(this, "Position", float3::zero),
+    rotation(this, "Rotation", Quat::identity),
     scaleUfactor(this, "U factor", 0.0002f),
     scaleVfactor(this, "V factor", 0.0002f),
     xSegments(this, "Segments in x", 10),
@@ -184,7 +184,7 @@ void EC_WaterPlane::ComponentRemoved(IComponent* component, AttributeChange::Typ
 float3 EC_WaterPlane::GetPointOnPlane(const float3 &point) const 
 {
     if (node_ == 0)
-        return float3();
+        return float3::nan;
 
     Ogre::Quaternion rot = node_->_getDerivedOrientation();
     Ogre::Vector3 trans = node_->_getDerivedPosition();

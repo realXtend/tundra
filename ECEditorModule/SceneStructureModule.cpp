@@ -207,7 +207,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
     {
         AddContentWindow *addContent = new AddContentWindow(framework_, scene);
         addContent->AddDescription(sceneDescs[0]);
-        if (worldPos != float3())
+        if (worldPos != float3::zero)
             addContent->AddPosition(worldPos);
         addContent->show();
     }

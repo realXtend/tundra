@@ -192,7 +192,7 @@ float3 EC_Mesh::GetAdjustScale() const
 float3 EC_Mesh::GetAttachmentPosition(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
-        return float3(0.0f, 0.0f, 0.0f);
+        return float3::nan;
         
     const Ogre::Vector3& pos = attachment_nodes_[index]->getPosition();
     return float3(pos.x, pos.y, pos.z);
@@ -201,7 +201,7 @@ float3 EC_Mesh::GetAttachmentPosition(uint index) const
 Quat EC_Mesh::GetAttachmentOrientation(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
-        return Quat();
+        return Quat::nan;
         
     return attachment_nodes_[index]->getOrientation();
 }
@@ -209,7 +209,7 @@ Quat EC_Mesh::GetAttachmentOrientation(uint index) const
 float3 EC_Mesh::GetAttachmentScale(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
-        return float3(1.0f, 1.0f, 1.0f);
+        return float3::nan;
         
     const Ogre::Vector3& scale = attachment_nodes_[index]->getScale();
     return float3(scale.x, scale.y, scale.z);

@@ -25,7 +25,7 @@ EC_Sky::EC_Sky(Scene* scene) :
     IComponent(scene),
     materialRef(this, "Material", AssetReference("RexSkyBox")), ///< \todo Add "ogre://" when AssetAPI can handle it.
     textureRefs(this, "Texture", AssetReferenceList("Texture")),
-    orientation(this, "Orientation", Quat()),
+    orientation(this, "Orientation", Quat::identity),
     distance(this, "Distance",50.0),
     drawFirst(this, "Draw first", true)
 {

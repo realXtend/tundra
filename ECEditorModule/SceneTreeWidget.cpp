@@ -187,7 +187,7 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
 #endif
             if (SceneStructureModule::IsSupportedFileType(filename))
                 if (sceneStruct)
-                    sceneStruct->InstantiateContent(filename, float3(), false);
+                    sceneStruct->InstantiateContent(filename, float3::zero, false);
         }
 
         e->acceptProposedAction();
@@ -1381,7 +1381,7 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
 
         SceneStructureModule *sceneStruct = framework->GetModule<SceneStructureModule>();
         if (sceneStruct)
-            sceneStruct->InstantiateContent(filename, float3(), clearScene);
+            sceneStruct->InstantiateContent(filename, float3::zero, clearScene);
         else
             LogError("Could not retrieve SceneStructureModule. Cannot instantiate content.");
     }
