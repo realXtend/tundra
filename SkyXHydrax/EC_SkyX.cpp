@@ -56,7 +56,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
     IComponent(scene),
     volumetricClouds(this, "Volumetric clouds", false),
     timeMultiplier(this, "Time multiplier", 0.0f),
-    time(this, "Time"),
+    time(this, "Time", Vector3df(14.f, 7.5f, 20.5f)),
     impl(0)
 {
     OgreWorldPtr w = scene->GetWorld<OgreWorld>();
@@ -70,7 +70,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
         return;
     }
 
-    Create();
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 }
 
 EC_SkyX::~EC_SkyX()
