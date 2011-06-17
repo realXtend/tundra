@@ -180,7 +180,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             // Setting cache allowed as false is very important! The items are already in our cache via the 
             // QAccessManagers QAbstractNetworkCache (same as our AssetAPI::AssetCache). Network replies will already call them
             // so the AssetAPI::AssetTransferCompletes doesn't have to.
-            // \note GetDiskSource() will return empty string if above cache remove was performed, this is wanted behaviour.
+            // @note GetDiskSource() will return empty string if above cache remove was performed, this is wanted behaviour.
             transfer->SetCachingBehavior(false, cache->FindInCache(reply->url().toString()));
 
             // Copy raw data to transfer

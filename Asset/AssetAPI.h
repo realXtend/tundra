@@ -133,7 +133,7 @@ public slots:
     /// Opens the internal Asset API asset cache to the given directory. When the Asset API starts up, the asset cache is not created. This allows
     /// the Asset API to be operated in a mode that does not perform writes to the disk when assets are fetched. This will cause assets fetched from
     /// remote hosts to have a null disk source.
-    /// \note Once the asset cache has been created with a call to this function, there is no way to close the asset cache (except to close and restart).
+    /// @note Once the asset cache has been created with a call to this function, there is no way to close the asset cache (except to close and restart).
     void OpenAssetCache(QString directory);
 
     /// Requests the given asset to be downloaded. The transfer will go to a pending transfers queue
@@ -311,7 +311,7 @@ public slots:
     /// case the asset may already have been loaded to the system (or not). It can be that an asset is loaded to the system, but one or more of its dependencies
     /// have not, in which case there exists both an IAssetTransfer and IAsset to this particular assetRef (so the existence of these two objects is not
     /// mutually exclusive).
-    /// \note Client code should not need to worry about whether a particular transfer is pending or not, but simply call RequestAsset whenever an asset
+    /// @note Client code should not need to worry about whether a particular transfer is pending or not, but simply call RequestAsset whenever an asset
     /// request is needed. AssetAPI will optimize away any duplicate transfers to the same asset.
     AssetTransferPtr GetPendingTransfer(QString assetRef);
 

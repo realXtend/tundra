@@ -8,7 +8,7 @@
 /// Generic exception class.
 /** Can be used to throw generic exceptions.
 
-    \note Uses non-safe string manipulation, so do not supply exception parameters from outside source!
+    @note Uses non-safe string manipulation, so do not supply exception parameters from outside source!
 */
 class Exception : public std::exception
 {

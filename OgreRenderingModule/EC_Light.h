@@ -92,7 +92,7 @@ public:
     
     /// Sets placeable component
     /** Set a null placeable (or do not set a placeable) to have a detached light
-        \param placeable placeable component
+        @param placeable placeable component
      */
     void SetPlaceable(ComponentPtr placeable);
     

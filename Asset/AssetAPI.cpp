@@ -1204,7 +1204,7 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
     // for this upload to complete. 
     
     // Before issuing a request, clear our cache of this data.
-    /// \note We could actually update our cache with the same version of the asset that we just uploaded,
+    /// @note We could actually update our cache with the same version of the asset that we just uploaded,
     /// to avoid downloading what we just uploaded. That can be implemented later.
     assetCache->DeleteAsset(assetRef);
 

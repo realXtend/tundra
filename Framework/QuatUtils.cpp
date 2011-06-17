@@ -42,7 +42,7 @@ Vector3D<float> PackQuaternionToFloat3(float x, float y, float z, float w)
     }
     else
     {
-        // Normalize the quaternion. \note For optimization purposes, we could only normalize if the norm is not near to one.
+        // Normalize the quaternion. @note For optimization purposes, we could only normalize if the norm is not near to one.
         norm = 1.0f / norm;
 
         if (w < 0.0f) // The server will reconstruct the w component as positive - so negate the whole quat here if w is negative.

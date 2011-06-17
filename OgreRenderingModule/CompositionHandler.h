@@ -14,7 +14,7 @@ class Framework;
 
 namespace OgreRenderer
 {
-    ///\note This class and its implementation is taken from the Ogre samples
+    ///@note This class and its implementation is taken from the Ogre samples
     class HDRListener: public Ogre::CompositorInstance::Listener
     {
     public:
@@ -36,7 +36,7 @@ namespace OgreRenderer
         float mBloomTexOffsetsVert[15][4];
     };
 
-    ///\note This class and its implementation is taken from the Ogre samples
+    ///@note This class and its implementation is taken from the Ogre samples
     class GaussianListener: public Ogre::CompositorInstance::Listener
     {
     public:

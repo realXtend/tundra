@@ -490,7 +490,7 @@ QString OgreMaterialProperties::ToString()
 QString OgreMaterialProperties::GpuConstantTypeToString(const Ogre::GpuConstantType &type)
 {
     using namespace Ogre;
-    ///\note We use GCT_UNKNOWN for texture units' texture names.
+    ///@note We use GCT_UNKNOWN for texture units' texture names.
 
     QString str("");
     switch(type)

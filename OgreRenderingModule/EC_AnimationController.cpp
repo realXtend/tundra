@@ -302,7 +302,7 @@ void EC_AnimationController::ResetState()
 }
 
 /// Finds an animation state from Ogre::AnimationStateSet by name, performing a case-insensitive name search.
-/// \note This function is O(n), while normal set search would be O(logN) or O(1).
+/// @note This function is O(n), while normal set search would be O(logN) or O(1).
 Ogre::AnimationState *OgreAnimStateSetFindNoCase(Ogre::AnimationStateSet *set, const QString &animState)
 {
     if (!set)

@@ -164,13 +164,13 @@ public:
     static float4 Lerp(const float4 &a, const float4 &b, float t);
 
     /// Computes the squared distance between the (x, y, z) parts of this and the given float4. 
-    /// \note This function ignores the w component of this and rhs vector (assumes w=0 or w=1 are the same for both vectors).
+    /// @note This function ignores the w component of this and rhs vector (assumes w=0 or w=1 are the same for both vectors).
     float Distance3Sq(const float4 &rhs) const;
     /// Computes the distance between the (x, y, z) parts of this and the given float4. 
-    /// \note This function ignores the w component of this and rhs vector (assumes w=0 or w=1 are the same for both vectors).
+    /// @note This function ignores the w component of this and rhs vector (assumes w=0 or w=1 are the same for both vectors).
     float Distance3(const float4 &rhs) const;
     /// Computes the dot product of the (x, y, z) parts of this and the given float4.
-    /// \note This function ignores the w component of this vector (assumes w=0).
+    /// @note This function ignores the w component of this vector (assumes w=0).
     float Dot3(const float3 &rhs) const;
     float Dot3(const float4 &rhs) const;
     /// Computes the dot product of this and the given float4, taking into account the w component.

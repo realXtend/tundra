@@ -40,59 +40,59 @@ Registered by OgreRenderer::OgreRenderingModule.
 <b>Exposes the following scriptable functions:</b>
 <ul>
 <li>"EnableAnimation": Enables animation with optional fade-in time
-        \param name Animation name
-        \param looped Is animation looped
-        \param fadein Animation fadein time, 0 = instant
-        \param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
-        \return true if animation exists and was enabled.
+        @param name Animation name
+        @param looped Is animation looped
+        @param fadein Animation fadein time, 0 = instant
+        @param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
+        @return true if animation exists and was enabled.
 <li>"EnableExclusiveAnimation": Enables an exclusive animation. 
         This means that other animations will start fading out with the fade-out time specified
-        \param name Animation name
-        \param looped Is animation looped
-        \param fadein Animation fadein time, 0 = instant
-        \param fadeout Other animations' fadeout time, 0 = instant
-        \param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
-        \return true if animation exists and could be enabled
+        @param name Animation name
+        @param looped Is animation looped
+        @param fadein Animation fadein time, 0 = instant
+        @param fadeout Other animations' fadeout time, 0 = instant
+        @param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
+        @return true if animation exists and could be enabled
 <li>"HasAnimationFinished": Checks whether non-looping animation has finished. If looping, returns always false
-        \return true if animation finished
+        @return true if animation finished
 <li>"IsAnimationActive": Checks whether animation is active
-        \param name Animation name
-        \param check_fade_out if true, also fade-out (until totally faded) phase is interpreted as "active"
-        \return true if animation active
+        @param name Animation name
+        @param check_fade_out if true, also fade-out (until totally faded) phase is interpreted as "active"
+        @return true if animation active
 <li>"DisableAnimation": Disables animation with optional fade-out time
-        \param name Animation name
-        \param fadeout Animation fadeout time, 0 = instant
-        \return true if animation exists and could be disabled
+        @param name Animation name
+        @param fadeout Animation fadeout time, 0 = instant
+        @return true if animation exists and could be disabled
 <li>"DisableAllAnimations": Disables all animations with the same fadeout time
-        \param fadeout Animation fadeout time
+        @param fadeout Animation fadeout time
 <li>"SetAnimationToEnd": Forwards animation to end, useful if animation is played in reverse
-        \param name Animation name
+        @param name Animation name
 <li>"SetAnimationSpeed": Sets relative speed of an active animation.
     Note that this speed will be forgotten if the animation is disabled
-        \param name Animation name
-        \param speedfactor Relative speed. 1 is default. Use negative speed to play in reverse
-        \return true if successful (animation was currently playing)
+        @param name Animation name
+        @param speedfactor Relative speed. 1 is default. Use negative speed to play in reverse
+        @return true if successful (animation was currently playing)
 <li>"SetAnimationWeight": Changes weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
-        \param name Animation name
-        \param weight Animation weight (from 0 to 1)
-        \return true if successful (animation was currently playing)
+        @param name Animation name
+        @param weight Animation weight (from 0 to 1)
+        @return true if successful (animation was currently playing)
 <li>"SetAnimationPriority": Changes animation priority.
         Can lead to fun visual effects, but provided for completeness
-        \param name Animation name
-        \param high_priority High priority bit
-        \return true if successful (animation was currently playing)
+        @param name Animation name
+        @param high_priority High priority bit
+        @return true if successful (animation was currently playing)
 <li>"SetAnimationTimePosition": Sets time position of an active animation.
-        \param name Animation name
-        \param new_position New time position
-        \return true if successful (animation was currently playing)
+        @param name Animation name
+        @param new_position New time position
+        @return true if successful (animation was currently playing)
 <li>"SetAnimationAutoStop": Sets autostop on animation
-        \param name Animation name
-        \param enable Autostop flag
-        \return true if successful
+        @param name Animation name
+        @param enable Autostop flag
+        @return true if successful
 <li>"SetAnimationNumLoops": Sets number of times the animation is repeated
-        \param name Animation name
-        \param repeats Number of repeats (0 = repeat indefinitely)
-        \return true if successful
+        @param name Animation name
+        @param repeats Number of repeats (0 = repeat indefinitely)
+        @return true if successful
 <li>"GetAvailableAnimations": Get stringlist of available animations
 <li>"GetActiveAnimations": Get active animations as a simple stringlist
 <li>"GetMeshEntity": Gets mesh entity component
@@ -203,99 +203,99 @@ public slots:
     void Update(float frametime);
     
     /// Enables animation with optional fade-in time
-    /* \param name Animation name
-       \param looped Is animation looped
-       \param fadein Animation fadein time, 0 = instant
-       \param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
-       \return true if animation exists and could be enabled
+    /* @param name Animation name
+       @param looped Is animation looped
+       @param fadein Animation fadein time, 0 = instant
+       @param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
+       @return true if animation exists and could be enabled
      */
     bool EnableAnimation(const QString& name, bool looped = true, float fadein = 0.0f, bool high_priority = false);
 
     /// Enables an exclusive animation. This means that other animations will start fading out with the fade-out time specified
-    /* \param name Animation name
-       \param looped Is animation looped
-       \param fadein Animation fadein time, 0 = instant
-       \param fadeout Other animations' fadeout time, 0 = instant
-       \param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
-       \return true if animation exists and could be enabled
+    /* @param name Animation name
+       @param looped Is animation looped
+       @param fadein Animation fadein time, 0 = instant
+       @param fadeout Other animations' fadeout time, 0 = instant
+       @param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
+       @return true if animation exists and could be enabled
      */
     bool EnableExclusiveAnimation(const QString& name, bool looped, float fadein = 0.0f, float fadeout = 0.0f, bool high_priority = false);
 
     /// Checks whether non-looping animation has finished. If looping, returns always false
-    /* \return true if animation finished
+    /* @return true if animation finished
      */
     bool HasAnimationFinished(const QString& name);
 
     /// Checks whether animation is active
-    /** \param name Animation name
-        \param check_fade_out if true, also fade-out (until totally faded) phase is interpreted as "active"
-        \return true if animation active
+    /** @param name Animation name
+        @param check_fade_out if true, also fade-out (until totally faded) phase is interpreted as "active"
+        @return true if animation active
      */
     bool IsAnimationActive(const QString& name, bool check_fadeout = true);
 
     /// Disables animation with optional fade-out time
-    /** \param name Animation name
-        \param fadeout Animation fadeout time, 0 = instant
-        \return true if animation exists and could be disabled
+    /** @param name Animation name
+        @param fadeout Animation fadeout time, 0 = instant
+        @return true if animation exists and could be disabled
      */
     bool DisableAnimation(const QString& name, float fadeout = 0.0f);
 
     /// Disables all animations with the same fadeout time
-    /** \param fadeout Animation fadeout time
+    /** @param fadeout Animation fadeout time
      */
     void DisableAllAnimations(float fadeout = 0.0f);
 
     /// Forwards animation to end, useful if animation is played in reverse
-    /** \param name Animation name
+    /** @param name Animation name
      */
     void SetAnimationToEnd(const QString& name);
 
     /// Sets relative speed of an active animation. Note that this speed will be forgotten if the animation is disabled
-    /** \param name Animation name
-        \param speedfactor Relative speed. 1 is default. Use negative speed to play in reverse
-        \return true if successful (animation was currently playing)
+    /** @param name Animation name
+        @param speedfactor Relative speed. 1 is default. Use negative speed to play in reverse
+        @return true if successful (animation was currently playing)
      */
     bool SetAnimationSpeed(const QString& name, float speedfactor);
 
     /// Changes weight of an active animation.
-    /** \param name Animation name
-        \param weight Animation weight (from 0 to 1)
-        \return true if successful (animation was currently playing)
+    /** @param name Animation name
+        @param weight Animation weight (from 0 to 1)
+        @return true if successful (animation was currently playing)
      */
     bool SetAnimationWeight(const QString& name, float weight);
     
     /// Changes animation priority. Can lead to fun visual effects, but provided for completeness
-    /** \param name Animation name
-        \param high_priority High priority bit
-        \return true if successful (animation was currently playing)
+    /** @param name Animation name
+        @param high_priority High priority bit
+        @return true if successful (animation was currently playing)
      */
     bool SetAnimationPriority(const QString& name, bool high_priority);
 
     /// Sets time position of an active animation.
-    /** \param name Animation name
-        \param new_position New time position
-        \return true if successful (animation was currently playing)
+    /** @param name Animation name
+        @param new_position New time position
+        @return true if successful (animation was currently playing)
      */
     bool SetAnimationTimePosition(const QString& name, float new_position);
 
     /// Sets length-relative time position of an active animation (ie. 0 = start, 1 = end)
-    /** \param name Animation name
-        \param new_position New time position
-        \return true if successful (animation was currently playing)
+    /** @param name Animation name
+        @param new_position New time position
+        @return true if successful (animation was currently playing)
      */
     bool SetAnimationRelativeTimePosition(const QString& name, float new_position);
     
     /// Sets autostop on animation
-    /** \param name Animation name
-        \param enable Autostop flag
-        \return true if successful
+    /** @param name Animation name
+        @param enable Autostop flag
+        @return true if successful
      */
     bool SetAnimationAutoStop(const QString& name, bool enable);
 
     /// Sets number of times the animation is repeated
-    /** \param name Animation name
-        \param repeats Number of repeats (0 = repeat indefinitely)
-        \return true if successful
+    /** @param name Animation name
+        @param repeats Number of repeats (0 = repeat indefinitely)
+        @return true if successful
      */
     bool SetAnimationNumLoops(const QString& name, unsigned repeats);
 
@@ -306,20 +306,20 @@ public slots:
     QStringList GetActiveAnimations() const;
     
     /// Returns length of animation
-    /** \param name Animation name
-        \return length of animation in seconds, or 0 if no such animation
+    /** @param name Animation name
+        @return length of animation in seconds, or 0 if no such animation
       */
     float GetAnimationLength(const QString& name);
     
     /// Returns time position of animation
-    /** \param name Animation name
-        \return time position of animation in seconds, or 0 if not active
+    /** @param name Animation name
+        @return time position of animation in seconds, or 0 if not active
       */
     float GetAnimationTimePosition(const QString& name);
     
     /// Returns relative time position of animation
-    /** \param name Animation name
-        \return time position of animation between 0 - 1, or 0 if not active
+    /** @param name Animation name
+        @return time position of animation between 0 - 1, or 0 if not active
       */
     float GetAnimationRelativeTimePosition(const QString& name);
     
@@ -363,9 +363,9 @@ private:
     Ogre::Entity* GetEntity();
 
     /// Gets animationstate from Ogre entity safely
-    /** \param entity Ogre entity
-        \param name Animation name
-        \return animationstate, or null if not found
+    /** @param entity Ogre entity
+        @param name Animation name
+        @return animationstate, or null if not found
      */
     Ogre::AnimationState* GetAnimationState(Ogre::Entity* entity, const QString& name);
     

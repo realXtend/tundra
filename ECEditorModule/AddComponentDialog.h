@@ -23,10 +23,10 @@ class ECEDITOR_MODULE_API AddComponentDialog: public QDialog
 
 public:
     /// Constructs the dialog.
-    /** \param fw Framework.
-        \param ids IDs of entities to which the component will be added.
-        \param parent Parent widget.
-        \param f Window flags.
+    /** @param fw Framework.
+        @param ids IDs of entities to which the component will be added.
+        @param parent Parent widget.
+        @param f Window flags.
     */
     AddComponentDialog(Framework *fw, const QList<entity_id_t> &ids, QWidget *parent = 0, Qt::WindowFlags f = 0);
 

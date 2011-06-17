@@ -59,7 +59,7 @@ void fromScriptValueColor(const QScriptValue &obj, Color &s)
     s.a = (float)obj.property("a").toNumber();
 }
 
-//! @todo this code duplicates with IAttribute.
+/// @todo this code duplicates with IAttribute.
 QScriptValue Color_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
 {
     Color value = engine->fromScriptValue<Color>(ctx->thisObject());
@@ -276,7 +276,7 @@ QScriptValue Vector3df_prototype_invert(QScriptContext *ctx, QScriptEngine *engi
     return toScriptValueVector3(engine, vec.invert());
 }
 
-//! @todo this code duplicates with IAttribute.
+/// @todo this code duplicates with IAttribute.
 QScriptValue Vector3df_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
 {
     float3 value = engine->fromScriptValue<float3>(ctx->thisObject());

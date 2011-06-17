@@ -166,7 +166,7 @@ public slots:
     /// Returnts the priority value this context has with respect to the other input contexts. 
     /// Higher = more urgent. Used to determine the order in which input is received by the input contexts.
     /// The priority is assigned when the context is created and may not be changed afterwards.
-    /// \note A lower priority context may still receive an event "over" a higher priority context,
+    /// @note A lower priority context may still receive an event "over" a higher priority context,
     /// if that event is going to go to Qt and the higher priority context does not
     /// capture mouse/key events over Qt, but the lover priority context does.
     int Priority() const { return priority; }

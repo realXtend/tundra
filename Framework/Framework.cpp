@@ -50,7 +50,7 @@ Framework::Framework(int argc, char** argv) :
     instance = this;
 
     // Application name and version. Can be accessed via ConfigAPI.
-    /// \note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
+    /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
     const QString applicationOrganization = "realXtend";
     const QString applicationName = "Tundra";
     const QString applicationVersion = "2.0";

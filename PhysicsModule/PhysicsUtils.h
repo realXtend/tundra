@@ -22,10 +22,10 @@ inline float3 ToVector3(const btVector3& btVector)
 
 /// Simple raycast against single rigid body
 /** 
-    \param rayFrom origin or ray
-    \param rayTo ray destination
-    \param body rigid body to test against
-    \return true if ray hit the rigid body, false otherwise
+    @param rayFrom origin or ray
+    @param rayTo ray destination
+    @param body rigid body to test against
+    @return true if ray hit the rigid body, false otherwise
 */
 inline bool RayTestSingle(const float3& rayFrom, const float3& rayTo, btRigidBody* body)
 {

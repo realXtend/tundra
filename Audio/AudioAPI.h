@@ -29,8 +29,8 @@ public:
     ~AudioAPI();
     
     /// (Re)initializes playback with specified device. Empty name uses default device.
-    /** \param playbackDeviceName Playback device name
-        \return true if successful */
+    /** @param playbackDeviceName Playback device name
+        @return true if successful */
     bool Initialize(const QString &playbackDeviceName = "");
     
     /// Uninitialize the Audio API
@@ -41,17 +41,17 @@ public slots:
     QStringList GetPlaybackDevices();
     
     /// Sets listener position & orientation
-    /** \param position Position
-        \param orientation Orientation as quaternion */
+    /** @param position Position
+        @param orientation Orientation as quaternion */
     void SetListener(const float3 &position, const Quat &orientation);
     
     /// Sets master gain of whole sound system
-    /** \param master_gain New master gain, in range 0.0 - 1.0 */
+    /** @param master_gain New master gain, in range 0.0 - 1.0 */
     void SetMasterGain(float master_gain);
     
     /// Sets master gain of certain sound types
-    /** \param type Sound channel type to adjust
-        \param master_gain New master gain, in range 0.0 - 1.0 */
+    /** @param type Sound channel type to adjust
+        @param master_gain New master gain, in range 0.0 - 1.0 */
     void SetSoundMasterGain(SoundChannel::SoundType type, float master_gain);
     
     /// Gets master gain of whole sound system
@@ -61,44 +61,44 @@ public slots:
     float GetSoundMasterGain(SoundChannel::SoundType type);        
     
     /// Plays non-positional sound
-    /** \param name Sound file name or asset id
-        \param local If true, name is interpreted as filename. Otherwise asset id
-        \param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
-        \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later) */
+    /** @param name Sound file name or asset id
+        @param local If true, name is interpreted as filename. Otherwise asset id
+        @param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
+        @return nonzero channel id, if successful (in case of loading from asset, actual sound may start later) */
     SoundChannelPtr PlaySound(AssetPtr audioAsset, SoundChannel::SoundType type = SoundChannel::Triggered, SoundChannelPtr existingChannel = SoundChannelPtr());
 
     /// Plays positional sound. Returns sound id to adjust parameters
-    /** \param name Sound file name or asset id
-        \param local If true, name is interpreted as filename. Otherwise asset id
-        \param position Position of sound
-        \param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
-        \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later) */
+    /** @param name Sound file name or asset id
+        @param local If true, name is interpreted as filename. Otherwise asset id
+        @param position Position of sound
+        @param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
+        @return nonzero channel id, if successful (in case of loading from asset, actual sound may start later) */
     SoundChannelPtr PlaySound3D(const float3 &position, AssetPtr audioAsset, SoundChannel::SoundType type = SoundChannel::Triggered, SoundChannelPtr existingChannel = SoundChannelPtr());
 
     /// Buffers sound data into a non-positional channel
     /** Note: use the returned channel id for continuing to feed the sound stream.
         Call StopSound() with channel id to free the channel, when done.
-        \param buffer Sound buffer structure
-        \param type Sound channel type, decides which mastervolume to use for the channel 
-        \param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
-        \return nonzero channel id, if successful */
+        @param buffer Sound buffer structure
+        @param type Sound channel type, decides which mastervolume to use for the channel 
+        @param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
+        @return nonzero channel id, if successful */
     SoundChannelPtr PlaySoundBuffer(const SoundBuffer& buffer, SoundChannel::SoundType type = SoundChannel::Triggered, SoundChannelPtr existingChannel = SoundChannelPtr());
     
     /// Buffers sound data into a positional channel
     /** Note: use the returned channel id for continuing to feed the sound stream.
         Call StopSound() with channel id to free the channel, when done.
-        \param buffer Sound buffer structure
-        \param type Sound channel type, decides which mastervolume to use for the channel 
-        \param position Position of sound
-        \param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
-        \return nonzero channel id, if successful */
+        @param buffer Sound buffer structure
+        @param type Sound channel type, decides which mastervolume to use for the channel 
+        @param position Position of sound
+        @param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
+        @return nonzero channel id, if successful */
     SoundChannelPtr PlaySoundBuffer3D(const SoundBuffer& buffer, SoundChannel::SoundType type = SoundChannel::Triggered, float3 position = float3(0.0f, 0.0f, 0.0f), SoundChannelPtr existingChannel = SoundChannelPtr());
 
     /// Gets all non-stopped channels id's
     std::vector<SoundChannelPtr> GetActiveSounds() const;
     
     /// Stops sound that's playing & destroys the channel
-    /** \param id Channel id */
+    /** @param id Channel id */
     void Stop(SoundChannelPtr channel);
     
     /// Get recording device names
@@ -109,12 +109,12 @@ public slots:
 public:
     
     /// Open sound recording device & start recording
-    /** \param name Device name, empty for default
-        \param frequency Sound frequency
-        \param sixteenbit Whether to use sixteen bit audio
-        \param stereo Whether to use stereo
-        \param buffer_size Buffer size in bytes. Should be multiple of sample size.
-        \return true if successful */
+    /** @param name Device name, empty for default
+        @param frequency Sound frequency
+        @param sixteenbit Whether to use sixteen bit audio
+        @param stereo Whether to use stereo
+        @param buffer_size Buffer size in bytes. Should be multiple of sample size.
+        @return true if successful */
     bool StartRecording(const QString &name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size);
     
     /// Stop recording & close sound recording device
@@ -124,9 +124,9 @@ public:
     uint GetRecordedSoundSize();
     
     /// Get sound data from recording buffer
-    /** \param buffer Buffer to receive data
-        \param size How many bytes to receive
-        \return Amount of bytes returned */
+    /** @param buffer Buffer to receive data
+        @param size How many bytes to receive
+        @return Amount of bytes returned */
     uint GetRecordedSoundData(void* buffer, uint size);
     
     /// Update. Cleans up channels not playing anymore, and checks sound cache. This function is called from the core Framework. You should not call this manually.

@@ -50,7 +50,7 @@ public slots:
 
     /// Returns the URL that should be used in a scene asset reference attribute to refer to the asset with the given localName.
     /// Example: GetFullAssetURL("my.mesh") might return "local://my.mesh".
-    /// \note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "local://my.mesh".
+    /// @note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "local://my.mesh".
     QString GetFullAssetURL(const QString &localName);
 
     /// Returns the type of this storage: "LocalAssetStorage".

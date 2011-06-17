@@ -57,12 +57,12 @@ public:
 
     /// sets placeable component
     /** set a null placeable to detach the object, otherwise will attach
-        \param placeable placeable component
+        @param placeable placeable component
      */
     void SetPlaceable(ComponentPtr placeable);
 
     /// sets draw distance
-    /** \param draw_distance New draw distance, 0.0 = draw always (default)
+    /** @param draw_distance New draw distance, 0.0 = draw always (default)
      */
     void SetDrawDistance(float draw_distance);
 
@@ -71,14 +71,14 @@ public:
 
     /// Commit changes from a manual object
     /** converts ManualObject to mesh, makes an entity out of it & clears the manualobject.
-        \return true if successful
+        @return true if successful
      */
     bool CommitChanges(Ogre::ManualObject* object);
 
     /// Sets material on already committed geometry, similar to EC_Mesh
-    /** \param index submesh index
-        \param material_name material name
-        \return true if successful
+    /** @param index submesh index
+        @param material_name material name
+        @return true if successful
      */
     bool SetMaterial(uint index, const std::string& material_name);
 
@@ -86,8 +86,8 @@ public:
     uint GetNumMaterials() const;
 
     /// gets material name from committed geometry
-    /** \param index submesh index
-        \return name if successful, empty if not committed / illegal index
+    /** @param index submesh index
+        @return name if successful, empty if not committed / illegal index
      */
     const std::string& GetMaterialName(uint index) const;
 

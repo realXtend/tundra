@@ -47,30 +47,30 @@ public:
 //    void AddBuffer(const SoundBuffer &buffer);
     
     /// Adjusts positional status of channel
-    /** \param id Channel id
-        \param positional Positional status */
+    /** @param id Channel id
+        @param positional Positional status */
     void SetPositional(bool enable);
     /// Adjusts looping status of channel
-    /** \param id Channel id
-        \param looped Whether to loop */
+    /** @param id Channel id
+        @param looped Whether to loop */
     void SetLooped(bool enable);
     /// Set position
     void SetPosition(const float3& pos);
     /// Adjusts pitch of channel
-    /** \param id Channel id
-        \param pitch Pitch relative to sound's original pitch (1.0 = original) */
+    /** @param id Channel id
+        @param pitch Pitch relative to sound's original pitch (1.0 = original) */
     void SetPitch(float pitch);
     /// Adjusts gain of channel
-    /** \param id Channel id
-        \param gain New gain value, 1.0 = full volume, 0.0 = silence */
+    /** @param id Channel id
+        @param gain New gain value, 1.0 = full volume, 0.0 = silence */
     void SetGain(float gain);
     /// Set master gain.
     void SetMasterGain(float master_gain);
     /// Adjusts range parameters of positional sound channel.
-    /** \param id Channel id
-        \param inner_radius Within inner radius, sound will be played at gain
-        \param outer_radius Outside outer radius, sound will be silent
-        \param rolloff Rolloff power factor. 1.0 = linear, 2.0 = distance squared 
+    /** @param id Channel id
+        @param inner_radius Within inner radius, sound will be played at gain
+        @param outer_radius Outside outer radius, sound will be silent
+        @param rolloff Rolloff power factor. 1.0 = linear, 2.0 = distance squared 
         Between radiuses, attenuation will be interpolated and raised to power of rolloff
         If outer_radius is 0, there will be no attenuation (sound is always played at gain)
         Also, for non-positional channels the range parameters have no effect. */
@@ -86,12 +86,12 @@ public:
     /// Gets type of sound played/pending on channel (triggered/ambient etc.)
     SoundType GetSoundType() const { return type_; }
     /// Get gain of channel. If channel wasn't found return -1.
-    /** \param id Channel id
-     *  \return Channel's gain. */
+    /** @param id Channel id
+     *  @return Channel's gain. */
     float GetGain() const {return gain_;}
     /// Get sound channel pitch.
-    /** \param id Channel id
-        \return Channel's pitch value. */
+    /** @param id Channel id
+        @return Channel's pitch value. */
     float GetPitch() const {return pitch_;}
 
     sound_id_t GetChannelId() const { return channelId; }

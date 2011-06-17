@@ -55,7 +55,7 @@ public:
 
     /// Sets this OBB to enclose the given polyhedron.        
     /** This function computes the smallest OBB (in terms of volume) that contains the given polyhedron, and stores the result in this structure.
-        \note An OBB cannot generally exactly represent a polyhedron. Converting a polyhedron to an OBB loses some features of the polyhedron.
+        @note An OBB cannot generally exactly represent a polyhedron. Converting a polyhedron to an OBB loses some features of the polyhedron.
         @return If the given polyhedron is closed, this function succeeds and returns true. If the polyhedron is uncapped (has infinite volume), this function
           does not modify this data structure, but returns false. */
 //    bool SetFrom(const Polyhedron &polyhedron);
@@ -259,7 +259,7 @@ public:
 
     /// Tests if this OBB fully contains the given object.
     /** This function returns true if the given object lies inside this OBB, and false otherwise.
-        \note The comparison is performed using less-or-equal, so the faces of this OBB count as being inside, but
+        @note The comparison is performed using less-or-equal, so the faces of this OBB count as being inside, but
         due to float inaccuracies, this cannot generally be relied upon. */
     bool Contains(const float3 &point) const;
     bool Contains(const LineSegment &lineSegment) const;

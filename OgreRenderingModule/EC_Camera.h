@@ -39,7 +39,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"AutoSetPlaceable": sets placeable from the same entity
 <li>"SetActive": sets as active camera in the viewport
 <li>"SetNearClip": sets near clip distance
-        \note EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+        @note EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
         @param nearclip new near clip distance
 <li>"SetFarClip": sets far clip distance
         note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!

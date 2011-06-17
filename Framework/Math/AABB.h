@@ -61,7 +61,7 @@ public:
     /// Computes the minimal enclosing AABB of the given polyhedron.        
     /** This function computes the smallest AABB (in terms of volume) that contains the given polyhedron, and stores 
         the result in this structure.
-        \note An AABB cannot generally exactly represent a polyhedron. Converting a polyhedron to an AABB loses some 
+        @note An AABB cannot generally exactly represent a polyhedron. Converting a polyhedron to an AABB loses some 
         features of the polyhedron.
         @return If the given polyhedron is closed, this function succeeds and returns true. If the polyhedron is uncapped 
             (has infinite volume), this function does not modify this data structure, but returns false. */
@@ -269,7 +269,7 @@ public:
 */
     /// Tests if this AABB fully contains the given object.
     /** This function returns true if the given object lies inside this AABB, and false otherwise.
-        \note The comparison is performed using less-or-equal, so the faces of this AABB count as being inside, but
+        @note The comparison is performed using less-or-equal, so the faces of this AABB count as being inside, but
         due to float inaccuracies, this cannot generally be relied upon. */
     bool Contains(const float3 &point) const;
     bool Contains(const LineSegment &lineSegment) const;

@@ -59,19 +59,19 @@ public:
     /// Do raycast into the currently active world from viewport coordinates, using all selection layers
     /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** The coordinates are a position in the render window, not scaled to [0,1].
-        \param x Horizontal position for the origin of the ray
-        \param y Vertical position for the origin of the ray
-        \return Raycast result structure
+        @param x Horizontal position for the origin of the ray
+        @param y Vertical position for the origin of the ray
+        @return Raycast result structure
     */
     virtual RaycastResult* Raycast(int x, int y) = 0;
 
     /// Do raycast into the currently active world from viewport coordinates, using specific selection layer(s)
     /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** The coordinates are a position in the render window, not scaled to [0,1].
-        \param x Horizontal position for the origin of the ray
-        \param y Vertical position for the origin of the ray
-        \param layerMask Which selection layer(s) to use (bitmask)
-        \return Raycast result structure
+        @param x Horizontal position for the origin of the ray
+        @param y Vertical position for the origin of the ray
+        @param layerMask Which selection layer(s) to use (bitmask)
+        @return Raycast result structure
     */
     virtual RaycastResult* Raycast(int x, int y, unsigned layerMask) = 0;
     
@@ -79,7 +79,7 @@ public:
     /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** Returns the found entities as a QVariantList so that
         Python and Javascript can get the result directly from here.
-        \param viewrect The query rectangle in 2d window coords.
+        @param viewrect The query rectangle in 2d window coords.
     */
     virtual QList<Entity*> FrustumQuery(QRect &viewrect) = 0;
     

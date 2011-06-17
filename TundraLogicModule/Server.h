@@ -49,7 +49,7 @@ public:
     void Update(f64 frametime);
     
     /// Create server scene & start server
-    /** \return True if successful, false otherwise. No scene will be created if starting the server fails.
+    /** @return True if successful, false otherwise. No scene will be created if starting the server fails.
      */
     bool Start(unsigned short port);
     
@@ -68,8 +68,8 @@ public:
     /// Set current action sender. Called by SyncManager
     void SetActionSender(UserConnection* user);
     
-    //! Returns the backend server object. Use this object to Broadcast messages
-    //! to all currently connected clients.
+    /// Returns the backend server object. Use this object to Broadcast messages
+    /// to all currently connected clients.
     kNet::NetworkServer *GetServer() const;
 
 signals:
@@ -85,7 +85,7 @@ signals:
     
     void MessageReceived(UserConnection *connection, kNet::message_id_t id, const char* data, size_t numBytes);
 
-    //! A user has disconnected
+    /// A user has disconnected
     void UserDisconnected(int connectionID, UserConnection* connection);
     
     /// The server has been started
@@ -102,12 +102,12 @@ public slots:
     bool IsAboutToStart() const;
 
     /// Get the running servers port.
-    /// \return int Valid port if server is running. -1 if server is not running.
+    /// @return int Valid port if server is running. -1 if server is not running.
     int GetPort() const;
 
     /// Get the running servers protocol.
-    /// \note This function returns QString due we dont want kNet::TransportLayer enum here. If the module creators feels its ok then change this.
-    /// \return QString Will return 'udp' or 'tcp' if server is running. Otherwise an empty string.
+    /// @note This function returns QString due we dont want kNet::TransportLayer enum here. If the module creators feels its ok then change this.
+    /// @return QString Will return 'udp' or 'tcp' if server is running. Otherwise an empty string.
     QString GetProtocol() const;
     
     /// Get connected users' connection ID's

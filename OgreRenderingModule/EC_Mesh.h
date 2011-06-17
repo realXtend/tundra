@@ -50,49 +50,49 @@ Registered by OgreRenderer::OgreRenderingModule.
 <ul>
 <li>"SetPlaceable": sets placeable component
         set a null placeable to detach the object, otherwise will attach
-        \param placeable placeable component
+        @param placeable placeable component
 <li>"SetDrawDistance": sets draw distance
-        \param draw_distance New draw distance, 0.0 = draw always (default)
+        @param draw_distance New draw distance, 0.0 = draw always (default)
 <li>"SetMesh":sets mesh
         if mesh already sets, removes the old one
-        \param mesh_name mesh to use
-        \param clone whether mesh should be cloned for modifying geometry uniquely
-        \return true if successful 
+        @param mesh_name mesh to use
+        @param clone whether mesh should be cloned for modifying geometry uniquely
+        @return true if successful 
 <li>"SetMeshWithSkeleton": sets mesh with custom skeleton
         if mesh already sets, removes the old one
-        \param mesh_name mesh to use
-        \param skeleton_name skeleton to use
-        \param clone whether mesh should be cloned for modifying geometry uniquely
-        \return true if successful
+        @param mesh_name mesh to use
+        @param skeleton_name skeleton to use
+        @param clone whether mesh should be cloned for modifying geometry uniquely
+        @return true if successful
 <li>"SetMaterial": sets material in mesh
-        \param index submesh index
-        \param material_name material name
-        \return true if successful
+        @param index submesh index
+        @param material_name material name
+        @return true if successful
 <li>"SetAdjustPosition": sets adjustment (offset) position
-        \param position new position
+        @param position new position
 <li>"SetAdjustOrientation": sets adjustment orientation
-        \param orientation new orientation
+        @param orientation new orientation
 <li>"SetAdjustScale": sets adjustment scale
-        \param position new scale
+        @param position new scale
 <li>"RemoveMesh": removes mesh
 <li>"SetAttachmentMesh": sets an attachment mesh
       The mesh entity must exist before attachment meshes can be set. Setting a new mesh entity removes all attachment meshes.
-      \param index attachment index starting from 0.
-      \param mesh_name mesh to use
-      \param attach_point bone in entity's skeleton to attach to. if empty or nonexistent, attaches to entity root
-      \param share_skeleton whether to link animation (for attachments that are also skeletally animated)
-      \return true if successful 
+      @param index attachment index starting from 0.
+      @param mesh_name mesh to use
+      @param attach_point bone in entity's skeleton to attach to. if empty or nonexistent, attaches to entity root
+      @param share_skeleton whether to link animation (for attachments that are also skeletally animated)
+      @return true if successful 
 <li>"SetAttachmentPosition": sets position of attachment mesh, relative to attachment poiont
 <li>"SetAttachmentOrientation": sets orientation of attachment mesh, relative to attachment point
 <li>"SetAttachmentScale": sets scale of attachment mesh, relative to attachment point
 <li>"RemoveAttachmentMesh": removes an attachment mesh
-      \param index attachment index starting from 0
+      @param index attachment index starting from 0
 <li>"RemoveAllAttachments": removes all attachments
 <li>"SetAttachmentMaterial": sets material on an attachment mesh
-     \param index attachment index starting from 0
-    \param submesh_index submesh in attachment mesh
-     \param material_name material name
-     \return true if successful 
+     @param index attachment index starting from 0
+    @param submesh_index submesh in attachment mesh
+     @param material_name material name
+     @return true if successful 
 <li>"HasMesh": returns if mesh exists
 <li>"GetNumAttachments": returns number of attachments
         note: returns just the size of attachment vector, so check individually that attachments actually exist
@@ -106,12 +106,12 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"GetNumMaterials": gets number of materials (submeshes) in mesh entity
 <li>"GetAttachmentNumMaterials": gets number of materials (submeshes) in attachment mesh entity
 <li>"GetMatName": gets material name from mesh
-    \param index submesh index
-    \return name if successful, empty if no entity / illegal index
+    @param index submesh index
+    @return name if successful, empty if no entity / illegal index
 <li>"GetAttachmentMaterialNam": gets material name from attachment mesh
-     \param index attachment index
-     \param submesh_index submesh index
-     \return name if successful, empty if no entity / illegal index
+     @param index attachment index
+     @param submesh_index submesh index
+     @return name if successful, empty if no entity / illegal index
 <li>"GetBoundingBox": returns bounding box of Ogre mesh entity
         /// returns zero box if no entity
 <li>"GetAdjustPosition": returns adjustment position
@@ -181,7 +181,7 @@ public slots:
     
     /// sets placeable component
     /** set a null placeable to detach the object, otherwise will attach
-        \param placeable placeable component
+        @param placeable placeable component
      */
     void SetPlaceable(ComponentPtr placeable);
 
@@ -189,31 +189,31 @@ public slots:
     void SetPlaceable(EC_Placeable* placeable);
 
     /// sets draw distance
-    /** \param draw_distance New draw distance, 0.0 = draw always (default)
+    /** @param draw_distance New draw distance, 0.0 = draw always (default)
      */
     void SetDrawDistance(float draw_distance);
     
     /// sets mesh
     /** if mesh already sets, removes the old one
-        \param meshResourceName The name of the mesh resource to use. This will not initiate an asset request, but assumes 
+        @param meshResourceName The name of the mesh resource to use. This will not initiate an asset request, but assumes 
             the mesh already exists as a loaded Ogre resource.
-        \param clone whether mesh should be cloned for modifying geometry uniquely.
-        \return true if successful. */
+        @param clone whether mesh should be cloned for modifying geometry uniquely.
+        @return true if successful. */
     bool SetMesh(QString meshResourceName, bool clone = false);
 
     /// sets mesh with custom skeleton
     /** if mesh already sets, removes the old one
-        \param mesh_name mesh to use
-        \param skeleton_name skeleton to use
-        \param clone whether mesh should be cloned for modifying geometry uniquely
-        \return true if successful
+        @param mesh_name mesh to use
+        @param skeleton_name skeleton to use
+        @param clone whether mesh should be cloned for modifying geometry uniquely
+        @return true if successful
      */
     bool SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone = false);
 
     /// sets material in mesh
-    /** \param index submesh index
-        \param material_name material name
-        \return true if successful
+    /** @param index submesh index
+        @param material_name material name
+        @return true if successful
      */
     bool SetMaterial(uint index, const std::string& material_name);
     bool SetMaterial(uint index, const QString& material_name);
@@ -223,17 +223,17 @@ public slots:
     void ApplyMaterial();
 
     /// sets adjustment (offset) position
-    /** \param position new position
+    /** @param position new position
      */
     void SetAdjustPosition(const float3& position);
     
     /// sets adjustment orientation
-    /** \param orientation new orientation
+    /** @param orientation new orientation
      */
     void SetAdjustOrientation(const Quat &orientation);
 
     /// sets adjustment scale
-    /** \param position new scale
+    /** @param position new scale
      */
     void SetAdjustScale(const float3& scale);
     
@@ -242,11 +242,11 @@ public slots:
     
     /// sets an attachment mesh
     /** The mesh entity must exist before attachment meshes can be set. Setting a new mesh entity removes all attachment meshes.
-        \param index attachment index starting from 0.
-        \param mesh_name mesh to use
-        \param attach_point bone in entity's skeleton to attach to. if empty or nonexistent, attaches to entity root
-        \param share_skeleton whether to link animation (for attachments that are also skeletally animated)
-        \return true if successful
+        @param index attachment index starting from 0.
+        @param mesh_name mesh to use
+        @param attach_point bone in entity's skeleton to attach to. if empty or nonexistent, attaches to entity root
+        @param share_skeleton whether to link animation (for attachments that are also skeletally animated)
+        @return true if successful
      */
     bool SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point = std::string(), bool share_skeleton = false);
     
@@ -260,7 +260,7 @@ public slots:
     void SetAttachmentScale(uint index, const float3& scale);
     
     /// removes an attachment mesh
-    /** \param index attachment index starting from 0
+    /** @param index attachment index starting from 0
      */
     void RemoveAttachmentMesh(uint index);
     
@@ -268,10 +268,10 @@ public slots:
     void RemoveAllAttachments();
     
     /// sets material on an attachment mesh
-    /** \param index attachment index starting from 0
-        \param submesh_index submesh in attachment mesh
-        \param material_name material name
-        \return true if successful
+    /** @param index attachment index starting from 0
+        @param submesh_index submesh in attachment mesh
+        @param material_name material name
+        @return true if successful
      */
     bool SetAttachmentMaterial(uint index, uint submesh_index, const std::string& material_name);
     
@@ -284,7 +284,7 @@ public slots:
     uint GetNumAttachments() const { return attachment_entities_.size(); }
     
     /// returns number of submeshes
-    /** \return returns 0 if mesh is not set, otherwise will ask Ogre::Mesh the submesh count. 
+    /** @return returns 0 if mesh is not set, otherwise will ask Ogre::Mesh the submesh count. 
     */
     const uint GetNumSubMeshes() const;
 
@@ -316,16 +316,16 @@ public slots:
     uint GetAttachmentNumMaterials(uint index) const;
     
     /// gets material name from mesh
-    /** \param index submesh index
-        \return name if successful, empty if no entity / illegal index
+    /** @param index submesh index
+        @return name if successful, empty if no entity / illegal index
      */
     const std::string& GetMaterialName(uint index) const;
     QString GetMatName(uint index) const;
 
     /// gets material name from attachment mesh
-    /** \param index attachment index
-        \param submesh_index submesh index
-        \return name if successful, empty if no entity / illegal index
+    /** @param index attachment index
+        @param submesh_index submesh index
+        @return name if successful, empty if no entity / illegal index
      */
     const std::string& GetAttachmentMaterialName(uint index, uint submesh_index) const;
 
@@ -428,9 +428,9 @@ private slots:
 private:
    
     /// prepares a mesh for creating an entity. some safeguards are needed because of Ogre "features"
-    /** \param mesh_name Mesh to prepare
-        \param clone Whether should return an uniquely named clone of the mesh, rather than the original
-        \return pointer to mesh, or 0 if could not be safely prepared
+    /** @param mesh_name Mesh to prepare
+        @param clone Whether should return an uniquely named clone of the mesh, rather than the original
+        @return pointer to mesh, or 0 if could not be safely prepared
      */
     Ogre::Mesh* PrepareMesh(const std::string& mesh_name, bool clone = false);
     

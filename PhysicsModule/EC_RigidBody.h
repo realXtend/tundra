@@ -76,30 +76,30 @@ Set to 0,0,0 to make for example an avatar capsule that does not tip over by its
 <b>Exposes the following scriptable functions:</b>
 <ul>
 <li> "SetShapeFromVisibleMesh": set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
-        \return true if successful (EC_Mesh could be found and contained a mesh reference)
+        @return true if successful (EC_Mesh could be found and contained a mesh reference)
 <li> "SetLinearVelocity": set linear velocity and activate body
         Note: sets also the attribute, signals a Default attribute change
-        \param velocity New linear velocity
+        @param velocity New linear velocity
 <li> "SetAngularVelocity": Set angular velocity and activate body
         Note: sets also the attribute, signals a Default attribute change
-        \param angularVelocity New angular velocity, specified in degrees / sec
+        @param angularVelocity New angular velocity, specified in degrees / sec
 <li> "ApplyForce": apply a force to the body
-        \param force Force
-        \param position Object space position, by default center
+        @param force Force
+        @param position Object space position, by default center
 <li> "ApplyTorque": apply a torque to the body
-        \param torque Torque
+        @param torque Torque
 <li> "ApplyImpulse": apply an impulse to the body
-        \param impulse Impulse
-        \param position Object space position, by default center
+        @param impulse Impulse
+        @param position Object space position, by default center
 <li> "ApplyTorqueImpulse": apply a torque impulse to the body
-        \param torqueImpulse Impulse
+        @param torqueImpulse Impulse
 <li> "Activate": force the body to activate (wake up)
 <li> "IsActive": return whether body is active
 <li> "ResetForces": reset accumulated force & torque
 <li> "SetRotation": forces just the rotation part of transform, while letting the position interpolate undisturbed
-        \param rotation New absolute rotation vector (eulers)
+        @param rotation New absolute rotation vector (eulers)
 <li> "Rotate": modifies just the rotation part of transform, while letting the position interpolate undisturbed
-        \param rotation Delta rotation (eulers)
+        @param rotation Delta rotation (eulers)
 <li> "GetLinearVelocity": Returns linear velocity. Should be same as accessing the attribute.
 <li> "GetAngularVelocity": Returns angular velocity. Should be same as accessing the attribute.
 </ul>
@@ -218,12 +218,12 @@ public:
 signals:
     /// A physics collision has happened between this rigid body and another entity
     /** If there are several contact points, the signal will be sent multiple times for each contact.
-        \param otherEntity The second entity
-        \param position World position of collision
-        \param normal World normal of collision
-        \param distance Contact distance
-        \param impulse Impulse applied to the objects to separate them
-        \param newCollision True if same collision did not happen on the previous frame.
+        @param otherEntity The second entity
+        @param position World position of collision
+        @param normal World normal of collision
+        @param distance Contact distance
+        @param impulse Impulse applied to the objects to separate them
+        @param newCollision True if same collision did not happen on the previous frame.
         If collision has multiple contact points, newCollision can only be true for the first of them.
      */
     void PhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
@@ -231,41 +231,41 @@ signals:
 public slots:
 
     /// Set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
-    /** \return true if successful (EC_Mesh could be found and contained a mesh reference)
+    /** @return true if successful (EC_Mesh could be found and contained a mesh reference)
      */
     bool SetShapeFromVisibleMesh();
 
     /// Set linear velocity and activate the body
     /** Note: sets also the attribute, signals a Default attribute change
-        \param velocity New linear velocity
+        @param velocity New linear velocity
      */
     void SetLinearVelocity(const float3& velocity);
     
     /// Set angular velocity and activate the body
     /** Note: sets also the attribute, signals a Default attribute change
-        \param angularVelocity New angular velocity, specified in degrees / sec
+        @param angularVelocity New angular velocity, specified in degrees / sec
      */
     void SetAngularVelocity(const float3& angularVelocity);
     
     /// Apply a force to the body
-    /** \param force Force
-        \param position Object space position, by default center
+    /** @param force Force
+        @param position Object space position, by default center
      */
     void ApplyForce(const float3& force, const float3& position = float3::zero);
     
     /// Apply a torque to the body
-    /** \param torque Torque
+    /** @param torque Torque
      */
     void ApplyTorque(const float3& torque);
     
     /// Apply an impulse to the body
-    /** \param impulse Impulse
-        \param position Object space position, by default center
+    /** @param impulse Impulse
+        @param position Object space position, by default center
      */
     void ApplyImpulse(const float3& impulse, const float3& position = float3::zero);
     
     /// Apply a torque impulse to the body
-    /** \param torqueImpulse Torque impulse
+    /** @param torqueImpulse Torque impulse
      */
     void ApplyTorqueImpulse(const float3& torqueImpulse);
     
@@ -284,14 +284,14 @@ public slots:
     /// Forcibly set rotation
     /** Use this instead of just setting the placeable's full transform to allow linear motion
         to continue uninterrupted (with proper inter-step interpolation)
-        \param rotation New rotation (eulers)
+        @param rotation New rotation (eulers)
      */
     void SetRotation(const float3& rotation);
     
     /// Rotate the body
     /** Use this instead of just setting the placeable's full transform to allow linear motion
         to continue uninterrupted (with proper inter-step interpolation)
-        \param rotation Delta rotation (eulers)
+        @param rotation Delta rotation (eulers)
      */
     void Rotate(const float3& rotation);
     
@@ -305,8 +305,8 @@ public slots:
     Physics::PhysicsWorld* GetPhysicsWorld() { return world_; }
 
     /// Constructs axis-aligned bounding box from bullet collision shape
-    /** \param outMin The minimum corner of the box
-        \param outMax The maximum corner of the box
+    /** @param outMin The minimum corner of the box
+        @param outMax The maximum corner of the box
     */
     void GetAabbox(float3 &outAabbMin, float3 &outAabbMax);
 

@@ -667,7 +667,7 @@ void ECBrowser::CreateAttribute()
     if (!(*iter)->IsDynamic())
         return;
 
-    //! @todo Should this dialog be converted to modeless?
+    /// @todo Should this dialog be converted to modeless?
     bool ok = false;
     QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"),
         framework_->Scene()->GetAttributeTypes(), 0, false, &ok);

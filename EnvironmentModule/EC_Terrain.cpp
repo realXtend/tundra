@@ -747,7 +747,7 @@ u32 ReadU32(const char *dataPtr, size_t numBytes, int &offset)
 {
     if (offset + 4 > (int)numBytes)
         throw Exception("Not enough bytes to deserialize!");
-    u32 data = *(u32*)(dataPtr + offset); ///\note Requires unaligned load support from the CPU and assumes data storage endianness to be the same for loader and saver.
+    u32 data = *(u32*)(dataPtr + offset); ///@note Requires unaligned load support from the CPU and assumes data storage endianness to be the same for loader and saver.
     offset += 4;
     return data;
 }

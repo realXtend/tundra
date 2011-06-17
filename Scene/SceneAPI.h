@@ -96,7 +96,7 @@ public slots:
     /** Manage the pointer carefully, as scenes may not get deleted properly if
         references to the pointer are left alive.
 
-        \note Returns a shared pointer, but it is preferable to use a weak pointer, SceneWeakPtr,
+        @note Returns a shared pointer, but it is preferable to use a weak pointer, SceneWeakPtr,
               to avoid dangling references that prevent scenes from being properly destroyed.
 
         @param name Name of the scene to return
@@ -161,11 +161,11 @@ private:
     explicit SceneAPI(Framework *framework);
 
     /// Frees all known scene and the scene interact object.
-    /// \note This function is called by our fried class Framework in its UnloadModules() function.
+    /// @note This function is called by our fried class Framework in its UnloadModules() function.
     void Reset();
     
     /// Initialize the scene interact object. Needs framework->Input() to be valid.
-    /// \note This function is called by our fried class Framework when InputAPI is ready.
+    /// @note This function is called by our fried class Framework when InputAPI is ready.
     void Initialise();
 
     ComponentFactoryPtr GetFactory(const QString &typeName);

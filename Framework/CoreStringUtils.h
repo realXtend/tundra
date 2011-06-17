@@ -63,30 +63,30 @@ T ParseString(const std::string &val, T default_value)
 StringVector SplitString(const std::string& str, char separator);
 
 /// Replaces all occurrences of a substring with another
-/** \param str String to modify
-    \param replace_this What substring to replace
-    \param replace_with Substring to replace with
+/** @param str String to modify
+    @param replace_this What substring to replace
+    @param replace_with Substring to replace with
  */
 std::string ReplaceSubstring(const std::string &str, const std::string &replace_this, const std::string &replace_with);    
 
 /// Replaces certain char in string with another char
-/** \param str String to modify
-    \param replace_this What char to replace
-    \param replace_with Char to replace with
+/** @param str String to modify
+    @param replace_this What char to replace
+    @param replace_with Char to replace with
  */
 std::string ReplaceChar(const std::string& str, char replace_this, char replace_with);
 
 /// Replaces all occurrences of a substring with another
-/** \param str String to modify
-    \param replace_this What substring to replace
-    \param replace_with Substring to replace with
+/** @param str String to modify
+    @param replace_this What substring to replace
+    @param replace_with Substring to replace with
  */
 void ReplaceSubstringInplace(std::string &str, const std::string &replace_this, const std::string &replace_with);    
 
 /// Replaces certain char in string with another char
-/** \param str String to modify
-    \param replace_this What char to replace
-    \param replace_with Char to replace with
+/** @param str String to modify
+    @param replace_this What char to replace
+    @param replace_with Char to replace with
  */
 void ReplaceCharInplace(std::string& str, char replace_this, char replace_with);    
 

@@ -116,23 +116,23 @@ private:
     
     /// Process one sync state for changes in the scene
     /** \todo For now, sends all changed entities/components. In the future, this shall be subject to interest management
-        \param destination MessageConnection where to send the messages
-        \param state Syncstate to process
+        @param destination MessageConnection where to send the messages
+        @param state Syncstate to process
      */
     void ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state);
     
     /// Validate the scene manipulation action. If returns false, it is ignored
-    /** \param source Where the action came from
-        \param messageID Network message id
-        \param entityID What entity it affects
+    /** @param source Where the action came from
+        @param messageID Network message id
+        @param entityID What entity it affects
      */
     bool ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID);
     
     /// Send serializable components of an entity to a connection, using either a CreateEntity or UpdateComponents packet
-    /** \param connections MessageConnection(s) to use
-        \param entity Entity
-        \param createEntity Whether to use a CreateEntity packet. If false, use a UpdateComponents packet instead
-        \param allComponents Whether to send all components, or only those that are dirty
+    /** @param connections MessageConnection(s) to use
+        @param entity Entity
+        @param createEntity Whether to use a CreateEntity packet. If false, use a UpdateComponents packet instead
+        @param allComponents Whether to send all components, or only those that are dirty
         Note: This will not reset any changeflags in the components or attributes!
      */
     void SerializeAndSendComponents(const std::vector<kNet::MessageConnection*>& connections, EntityPtr entity, bool createEntity = false, bool allComponents = false);

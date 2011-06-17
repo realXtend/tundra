@@ -48,7 +48,7 @@ public:
 public slots:
 
     /// Set the selection box dimensions.
-    /// \param view screen coordinates
+    /// @param view screen coordinates
     void SetBoundingBox(QRect &view);
 
     /// Show the selection box, clearing.

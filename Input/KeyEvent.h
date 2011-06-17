@@ -28,13 +28,13 @@ public:
 
     /// The key code associated with this key event.
     /// See Qt::Key from http://doc.trolltech.com/4.6/qt.html#Key-enum
-    /// \note This member stores the pressed key without keyboard modifiers attached.
+    /// @note This member stores the pressed key without keyboard modifiers attached.
     Qt::Key keyCode;
 
     /// How many times this key event has been pressed during the time the key has been held down. If 1, this means a new 
     /// keypress. If >1, this means that this event is being raised on a key repeat event, and this field increments by
     /// one for each time the repeat signal is received.
-    /// \note It seems that Qt sends repeats OK for character keys, but it never repeats modifier keys.
+    /// @note It seems that Qt sends repeats OK for character keys, but it never repeats modifier keys.
     int keyPressCount;
 
     /// A bitfield of the keyboard modifiers (Ctrl, Shift, ...) associated with this key event.

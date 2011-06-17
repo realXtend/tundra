@@ -125,7 +125,7 @@ QString LocalAssetProvider::GetPathForAsset(const QString &assetRef, LocalAssetS
 
 void LocalAssetProvider::Update(f64 frametime)
 {
-    ///\note It is *very* important that below we first complete all uploads, and then the downloads.
+    ///@note It is *very* important that below we first complete all uploads, and then the downloads.
     /// This is because it is a rather common code flow to upload an asset for an entity, and immediately after that
     /// generate a entity in the scene that refers to that asset, which means we do both an upload and a download of the
     /// asset into the same asset storage. If the download request was processed before the upload request, the download

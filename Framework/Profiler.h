@@ -22,7 +22,7 @@
 /** Name of the profiling block must be unique in the scope, so do not use the name of the function
     as the name of the profiling block!
 
-    \param x Unique name for the profiling block, use without quotes, f.ex. PROFILE(name_of_the_block)
+    @param x Unique name for the profiling block, use without quotes, f.ex. PROFILE(name_of_the_block)
 */
 #define PROFILE(x) ProfilerSection x ## __profiler__(#x);
 
@@ -182,8 +182,8 @@ public:
 
     /// Returns a child node
     /**
-      \param name Name of the child node
-      \return Child node or 0 if the node was not child
+      @param name Name of the child node
+      @return Child node or 0 if the node was not child
     */
     ProfilerNodeTree* GetChild(const std::string &name)
     {

@@ -35,7 +35,7 @@ namespace KristalliProtocol
         void Disconnect();
 
         /// Starts a Kristalli server at the given port/transport.
-        /// \return true if successful
+        /// @return true if successful
         bool StartServer(unsigned short port, kNet::SocketTransportLayer transport);
         
         /// Stops Kristalli server
