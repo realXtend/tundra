@@ -325,50 +325,78 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
     return true;
 }
 
-SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
+SceneDesc SceneImporter::GetSceneDescForMesh(const QString &source) const
 {
     SceneDesc sceneDesc;
 
-    if (!filename.endsWith(".mesh", Qt::CaseInsensitive))
+    if (!source.endsWith(".mesh", Qt::CaseInsensitive))
     {
-        LogError("Unsupported file type for scene description creation: " + filename.toStdString());
+        LogError("Unsupported file type for scene description creation: " + source.toStdString());
         return sceneDesc;
     }
 
-    sceneDesc.filename = filename;
+    sceneDesc.filename = source;
 
-    QString path(boost::filesystem::path(filename.toStdString()).branch_path().string().c_str());
-    QString meshleafname = boost::filesystem::path(filename.toStdString()).leaf().c_str();
-
+    // For files
     QStringList materialNames;
     QStringList skeletons;
     QString skeletonName;
-    if (!ParseMeshForMaterialsAndSkeleton(filename, materialNames, skeletonName))
-        return sceneDesc;
+    QString path;
+    QString meshleafname;
+    // For both URL and file
+    QString meshEntityName;
+    bool isUrl = source.startsWith("http://") || source.startsWith("https://");
+    if (isUrl)
+    {
+        meshEntityName = source;
+        meshEntityName = meshEntityName.split("/").last();
+        meshEntityName = meshEntityName.split(".mesh").first();
+    }
+    else
+    {
+        path = boost::filesystem::path(source.toStdString()).branch_path().string().c_str();
+        meshleafname = boost::filesystem::path(source.toStdString()).leaf().c_str();
 
-    if (!skeletonName.isEmpty())
-        skeletons << skeletonName;
+        if (!ParseMeshForMaterialsAndSkeleton(source, materialNames, skeletonName))
+            return sceneDesc;
 
-    // Construct entity name from the mesh file name.
-    int idx = meshleafname.lastIndexOf(".mesh");
-    QString meshEntityName = meshleafname;
-    meshEntityName.remove(idx, meshleafname.length() - idx);
+        if (!skeletonName.isEmpty())
+            skeletons << skeletonName;
+
+        // Construct entity name from the mesh file name.
+        int idx = meshleafname.lastIndexOf(".mesh");
+        meshEntityName = meshleafname;
+        meshEntityName.remove(idx, meshleafname.length() - idx);
+    }
 
     EntityDesc entityDesc("", meshEntityName);
     ComponentDesc meshDesc = { EC_Mesh::TypeNameStatic() };
     ComponentDesc placeableDesc = { EC_Placeable::TypeNameStatic() };
     ComponentDesc nameDesc = { EC_Name::TypeNameStatic() };
 
-    // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
-    QStringList meshFiles(QStringList() << filename);
-    QSet<QString> usedMaterials = materialNames.toSet();
-    QStringList materialFiles = GetMaterialFiles(path.toStdString());
+    if (isUrl)
+    {
+        // Create asset description
+        AssetDesc ad;
+        ad.source = source;
+        ad.dataInMemory = false;
+        ad.typeName = "mesh";
+        ad.destinationName = "";
+        sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
+    }
+    else
+    {
+        // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
+        QStringList meshFiles(QStringList() << source);
+        QSet<QString> usedMaterials = materialNames.toSet();
+        QStringList materialFiles = GetMaterialFiles(path.toStdString());
 
-    CreateAssetDescs(path, meshFiles, skeletons, materialFiles, usedMaterials, sceneDesc);
+        CreateAssetDescs(path, meshFiles, skeletons, materialFiles, usedMaterials, sceneDesc);
 
-    // mesh copied, add mesh name inside the file
-    //if (!meshName.empty())
-    //    meshleafname += std::string("/") + meshName;
+        // mesh copied, add mesh name inside the file
+        //if (!meshName.empty())
+        //    meshleafname += std::string("/") + meshName;
+    }
 
     // Create attribute descriptions.
     SceneAPI *sceneAPI = scene_->GetFramework()->Scene(); ///\todo Replace with scene_->SceneAPI();
@@ -385,10 +413,17 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>(0);
     if (mesh)
     {
-        mesh->meshRef.Set(AssetReference(path + "/" + meshleafname), AttributeChange::Disconnected);
-        mesh->meshMaterial.Set(materials, AttributeChange::Disconnected);
-        if (!skeletonName.isEmpty())
-            mesh->skeletonRef.Set(AssetReference(path + "/" + skeletonName), AttributeChange::Disconnected);
+        if (isUrl)
+        {
+            mesh->meshRef.Set(AssetReference(source), AttributeChange::Disconnected);
+        }
+        else
+        {
+            mesh->meshRef.Set(AssetReference(path + "/" + meshleafname), AttributeChange::Disconnected);
+            mesh->meshMaterial.Set(materials, AttributeChange::Disconnected);
+            if (!skeletonName.isEmpty())
+                mesh->skeletonRef.Set(AssetReference(path + "/" + skeletonName), AttributeChange::Disconnected);
+        }
 
         foreach(IAttribute *a, mesh->Attributes())
         {
@@ -404,82 +439,6 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
             AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str() };
             placeableDesc.attributes.append(attrDesc);
         }
-
-    // Name
-    boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>(0);
-    if (name)
-    {
-        name->name.Set(meshEntityName, AttributeChange::Disconnected);
-        foreach(IAttribute *a, name->Attributes())
-        {
-            AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str() };
-            nameDesc.attributes.append(attrDesc);
-        }
-    }
-
-    entityDesc.components << meshDesc << placeableDesc << nameDesc;
-    sceneDesc.entities << entityDesc;
-
-    return sceneDesc;
-}
-
-///\todo Bad code duplication. Remove the SceneImporter::GetSceneDescForMesh(QUrl) function altogether to avoid excessive code copy-paste. Have SceneImporter::GetSceneDescForMesh(QString) do the job of both. -jj.
-///\todo Delete this function.
-SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
-{
-    SceneDesc sceneDesc;
-
-    if (!meshUrl.toString().endsWith(".mesh", Qt::CaseInsensitive))
-    {
-        LogError("Unsupported file type for scene description creation: " + meshUrl.toString().toStdString());
-        return sceneDesc;
-    }
-
-    sceneDesc.filename = meshUrl.toString();
-
-    // Construct entity name from the mesh file name.
-    QString meshEntityName = meshUrl.toString();
-    meshEntityName = meshEntityName.split("/").last();
-    meshEntityName = meshEntityName.split(".mesh").first();
-
-    EntityDesc entityDesc("", meshEntityName);
-    ComponentDesc meshDesc = { EC_Mesh::TypeNameStatic() };
-    ComponentDesc placeableDesc = { EC_Placeable::TypeNameStatic() };
-    ComponentDesc nameDesc = { EC_Name::TypeNameStatic() };
-
-    // Create asset description
-    AssetDesc ad;
-    ad.source = meshUrl.toString();
-    ad.dataInMemory = false;
-    ad.typeName = "mesh";
-    ad.destinationName = "";
-    sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
-    
-    // Create attribute descriptions
-    SceneAPI *sceneAPI = scene_->GetFramework()->Scene();
-
-    // Mesh
-    boost::shared_ptr<EC_Mesh> mesh = sceneAPI->CreateComponent<EC_Mesh>(0);
-    if (mesh)
-    {
-        mesh->meshRef.Set(AssetReference(meshUrl.toString()), AttributeChange::Disconnected);
-        foreach(IAttribute *a, mesh->Attributes())
-        {
-            AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str() };
-            meshDesc.attributes.append(attrDesc);
-        }
-    }
-
-    // Placeable
-    boost::shared_ptr<EC_Placeable> placeable = sceneAPI->CreateComponent<EC_Placeable>(0);
-    if (placeable)
-    {
-        foreach(IAttribute *a, placeable->Attributes())
-        {
-            AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str() };
-            placeableDesc.attributes.append(attrDesc);
-        }
-    }
 
     // Name
     boost::shared_ptr<EC_Name> name = sceneAPI->CreateComponent<EC_Name>(0);
