@@ -396,9 +396,12 @@ void fromScriptValueTransform(const QScriptValue &obj, Transform &s)
     Vector3dfPtr rot = qscriptvalue_cast<Vector3dfPtr>(obj.property("rot"));    
     Vector3dfPtr scale = qscriptvalue_cast<Vector3dfPtr>(obj.property("scale"));    
 
-    s.position = *pos.data();
-    s.rotation = *rot.data();
-    s.scale = *scale.data();
+    if (pos.data())
+        s.position = *pos.data();
+    if (rot.data())  
+        s.rotation = *rot.data();
+    if (scale.data())
+        s.scale = *scale.data();
 // $ END_MOD $
 }
 
