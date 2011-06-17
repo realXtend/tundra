@@ -234,7 +234,6 @@ Quat Quat::Slerp(const Quat &q2, float t) const
     {
         a = 1.f - t;
         b = t;
-        sign = 1.f;
     }
     
     return (*this * (a * sign) + q2 * b).Normalized();
@@ -333,6 +332,9 @@ void Quat::Set(const float3x3 &m)
     assume(m.HasUnitaryScale());
     assume(!m.HasNegativeScale());
     SetQuatFrom(*this, m);
+
+    // Test that the conversion float3x3->Quat->float3x3 is correct.
+    assume(this->ToFloat3x3().Equals(m, 0.01f));
 }
 
 void Quat::Set(const float3x4 &m)
@@ -341,6 +343,9 @@ void Quat::Set(const float3x4 &m)
     assume(m.HasUnitaryScale());
     assume(!m.HasNegativeScale());
     SetQuatFrom(*this, m);
+
+    // Test that the conversion float3x3->Quat->float3x3 is correct.
+    assume(this->ToFloat3x3().Equals(m.Float3x3Part(), 0.01f));
 }
 
 void Quat::Set(const float4x4 &m)
@@ -350,6 +355,9 @@ void Quat::Set(const float4x4 &m)
     assume(!m.HasNegativeScale());
     assume(m.Row(3).Equals(0,0,0,1));
     SetQuatFrom(*this, m);
+
+    // Test that the conversion float3x3->Quat->float3x3 is correct.
+    assume(this->ToFloat3x3().Equals(m.Float3x3Part(), 0.01f));
 }
 
 void Quat::Set(float x_, float y_, float z_, float w_)
