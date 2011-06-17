@@ -618,14 +618,14 @@ void fromScriptValueEntityReference(const QScriptValue &obj, EntityReference &s)
                 s.ref = ""; // Empty the reference
             else if (ref.isString())
                 s.ref = ref.toString();
-            else if (ref.isNumber())
-                s.ref = QString::number(ref.toInt32());
             else if (ref.isQObject())
             {
                 // If the object is an Entity, call EntityReference::Set() with it
                 Entity* entity = dynamic_cast<Entity*>(ref.toQObject());
                 s.Set(entity);
             }
+            else if (ref.isNumber() || ref.isVariant())
+                s.ref = QString::number(ref.toInt32());
             else
                 LogError("Can't convert QScriptValue to EntityReference! Ref attribute is not null, string, a number, or an entity");
         }
