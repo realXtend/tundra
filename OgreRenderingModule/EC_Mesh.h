@@ -5,8 +5,8 @@
 #include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
-#include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/float3.h"
+#include "Math/Quat.h"
 #include "Transform.h"
 #include "AssetReference.h"
 #include "AssetRefListener.h"
@@ -225,17 +225,17 @@ public slots:
     /// sets adjustment (offset) position
     /** \param position new position
      */
-    void SetAdjustPosition(const Vector3df& position);
+    void SetAdjustPosition(const float3& position);
     
     /// sets adjustment orientation
     /** \param orientation new orientation
      */
-    void SetAdjustOrientation(const Quaternion& orientation);
+    void SetAdjustOrientation(const Quat &orientation);
 
     /// sets adjustment scale
     /** \param position new scale
      */
-    void SetAdjustScale(const Vector3df& scale);
+    void SetAdjustScale(const float3& scale);
     
     /// removes mesh
     void RemoveMesh();
@@ -251,13 +251,13 @@ public slots:
     bool SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point = std::string(), bool share_skeleton = false);
     
     /// sets position of attachment mesh, relative to attachment point
-    void SetAttachmentPosition(uint index, const Vector3df& position);
+    void SetAttachmentPosition(uint index, const float3& position);
     
     /// sets orientation of attachment mesh, relative to attachment point
-    void SetAttachmentOrientation(uint index, const Quaternion& orientation);
+    void SetAttachmentOrientation(uint index, const Quat &orientation);
     
     /// sets scale of attachment mesh, relative to attachment point
-    void SetAttachmentScale(uint index, const Vector3df& scale);
+    void SetAttachmentScale(uint index, const float3& scale);
     
     /// removes an attachment mesh
     /** \param index attachment index starting from 0
@@ -331,27 +331,27 @@ public slots:
 
     /// returns bounding box of Ogre mesh entity
     /// returns zero box if no entity
-    void GetBoundingBox(Vector3df& min, Vector3df& max) const;
+    void GetBoundingBox(float3& min, float3& max) const;
 
     QVector3D GetWorldSize() const;
 
     /// returns adjustment position
-    Vector3df GetAdjustPosition() const;
+    float3 GetAdjustPosition() const;
 
     /// returns adjustment orientation
-    Quaternion GetAdjustOrientation() const;
+    Quat GetAdjustOrientation() const;
 
     /// returns adjustment scale
-    Vector3df GetAdjustScale() const;
+    float3 GetAdjustScale() const;
 
     /// returns offset position of attachment
-    Vector3df GetAttachmentPosition(uint index) const;
+    float3 GetAttachmentPosition(uint index) const;
 
     /// returns offset orientation of attachment
-    Quaternion GetAttachmentOrientation(uint index) const;
+    Quat GetAttachmentOrientation(uint index) const;
 
     /// returns offset scale of attachment
-    Vector3df GetAttachmentScale(uint index) const;
+    float3 GetAttachmentScale(uint index) const;
 
     /// returns draw distance
     float GetDrawDistance() const { return drawDistance.Get(); }
@@ -378,17 +378,17 @@ public slots:
     /// Force a skeleton update. Call this before GetBonePosition()... to make sure bones have updated positions, even if the mesh is currently invisible
     void ForceSkeletonUpdate();
     /// Return bone's local position
-    Vector3df GetBonePosition(const QString& bone_name);
+    float3 GetBonePosition(const QString& bone_name);
     /// Return bone's root-derived position. Note: these are not world coordinates, but relative to the mesh root
-    Vector3df GetBoneDerivedPosition(const QString& bone_name);
+    float3 GetBoneDerivedPosition(const QString& bone_name);
     /// Return bone's local orientation
-    Quaternion GetBoneOrientation(const QString& bone_name);
+    Quat GetBoneOrientation(const QString& bone_name);
     /// Return bone's root-derived orientation
-    Quaternion GetBoneDerivedOrientation(const QString& bone_name);
+    Quat GetBoneDerivedOrientation(const QString& bone_name);
     /// Return bone's local orientation as Euler degrees
-    Vector3df GetBoneOrientationEuler(const QString& bone_name);
+//    float3 GetBoneOrientationEuler(const QString& bone_name);
     /// Return bone's root-derived orientation as Euler degrees
-    Vector3df GetBoneDerivedOrientationEuler(const QString& bone_name);
+//    float3 GetBoneDerivedOrientationEuler(const QString& bone_name);
     
 signals:
     /// Emitted before the Ogre mesh entity is about to be destroyed

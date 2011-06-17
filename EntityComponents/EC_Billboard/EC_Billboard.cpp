@@ -35,7 +35,7 @@ EC_Billboard::EC_Billboard(Scene* scene) :
     billboard_(0),
     attached_(false),
     materialRef(this, "Material ref"),
-    position(this, "Position", Vector3df::ZERO),
+    position(this, "Position", float3::zero),
     width(this, "Size X", 1.0f),
     height(this, "Size Y", 1.0f),
     rotation(this, "Rotation", 0.0f),

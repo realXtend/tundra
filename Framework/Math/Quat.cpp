@@ -105,7 +105,7 @@ float Quat::Normalize()
 
 Quat Quat::Normalized() const
 {
-    Quat copy;
+    Quat copy = *this;
     float success = copy.Normalize();
     assume(success > 0 && "Quat::Normalized failed!");
     return copy;
@@ -170,7 +170,7 @@ void Quat::Conjugate()
 
 Quat Quat::Conjugated() const
 {
-    Quat copy;
+    Quat copy = *this;
     copy.Conjugate();
     return copy;
 }
@@ -200,21 +200,48 @@ Quat Quat::Lerp(const Quat &b, float t) const
     return *this * (1.f - t) + b * t;
 }
 
-Quat Quat::Slerp(const Quat &b, float t) const
+Quat Quat::Lerp(const Quat &a, const Quat &b, float t)
+{
+    return a.Lerp(b, t);
+}
+
+/** Implementation based on the math in the book Watt, Policarpo. 3D Games: Real-time rendering and Software Technology, pp. 383-386. */
+Quat Quat::Slerp(const Quat &q2, float t) const
 {
     assume(0.f <= t && t <= 1.f);
-    float angle = acos(Clamp(this->Dot(b), -1.f, 1.f));
-    float directionFlip = 1.f;
-    if (angle > pi)
-    {
-        angle = 2.f*pi - angle;
-        directionFlip = -1.f;
-    }
-    if (fabs(angle) < pi/16.f)
-        return *this;
-    float sina = 1.f / sin(angle);
+    assume(IsNormalized());
+    assume(q2.IsNormalized());
 
-    return Quat(*this * (sin(angle*(1.f-t))*sina) + b * (sin(angle * t)*sina*directionFlip));
+    float angle = this->Dot(q2);
+    float sign = 1.f; // Multiply by a sign of +/-1 to guarantee we rotate the shorter arc.
+    if (angle < 0.f)
+    {
+        angle = -angle;
+        sign = -1.f;
+    }
+
+    float a;
+    float b;
+    if (angle <= 0.97f) // perform spherical linear interpolation.
+    {
+        angle = acos(angle); // After this, angle is in the range pi/2 -> 0 as the original angle variable ranged from 0 -> 1.
+
+        float c = 1.f / sin(angle);
+        a = sin((1.f - t) * angle) * c;
+        b = sin(angle * t) * c;
+    }
+    else // If angle is close to taking the denominator to zero, resort to linear interpolation (and normalization).
+    {
+        a = 1.f - t;
+        b = t;
+    }
+    
+    return (*this * (a * sign) + q2 * b).Normalized();
+}
+
+Quat Quat::Slerp(const Quat &a, const Quat &b, float t)
+{
+    return a.Slerp(b, t);
 }
 
 Quat Lerp(const Quat &a, const Quat &b, float t)
@@ -270,13 +297,31 @@ void Quat::SetFromAxisAngle(const float3 &axis, float angle)
     w = cosz;
 }
 
+/// See Eric Lengyel's Mathetmatics for 3D Game Programming and Computer Graphics 2nd ed., p. 92.
 template<typename M>
 void SetQuatFrom(Quat &q, const M &m)
 {
-    q.w = sqrt(1.f + m[0][0] + m[1][1] + m[2][2]) / 2.f;
-    q.x = (m[2][1] - m[1][2]) / (4.f * q.w);
-    q.y = (m[0][2] - m[2][0]) / (4.f * q.w);
-    q.z = (m[1][0] - m[0][1]) / (4.f * q.w);
+    // The rotation matrix is of form:
+    // 1 - 2y^2 - 2z^2     2xy - 2wz         2xz + 2wy
+    //    2xy + 2wz     1 - 2x^2 - 2z^2      2yz - 2wx
+    //    2xz - 2wy        2yz + 2wx      1 - 2x^2 - 2y^2
+
+    float r = 1.f + m[0][0] + m[1][1] + m[2][2]; // The element w is easiest picked up as a sum of the diagonals.
+    if (r > 1e-4f)
+    {
+        q.w = sqrtf(r) * 0.5f;
+        float inv4w = 1.f / (4.f * q.w);
+        q.x = (m[2][1] - m[1][2]) * inv4w;
+        q.y = (m[0][2] - m[2][0]) * inv4w;
+        q.z = (m[1][0] - m[0][1]) * inv4w;
+    }
+    else // W will be zero, so need to resort to an alternative extraction.
+    {
+        q.w = 0.f;
+        q.x = sqrtf(1.f + m[0][0] - m[1][1] - m[2][2]) * 0.5f;
+        q.y = sqrtf(1.f + m[1][1] - m[0][0] - m[2][2]) * 0.5f;
+        q.z = sqrtf(1.f + m[2][2] - m[0][0] - m[1][1]) * 0.5f;
+    }
     float oldLength = q.Normalize();
     assume(oldLength > 0.f);
 }
@@ -287,6 +332,9 @@ void Quat::Set(const float3x3 &m)
     assume(m.HasUnitaryScale());
     assume(!m.HasNegativeScale());
     SetQuatFrom(*this, m);
+
+    // Test that the conversion float3x3->Quat->float3x3 is correct.
+    assume(this->ToFloat3x3().Equals(m, 0.01f));
 }
 
 void Quat::Set(const float3x4 &m)
@@ -295,6 +343,9 @@ void Quat::Set(const float3x4 &m)
     assume(m.HasUnitaryScale());
     assume(!m.HasNegativeScale());
     SetQuatFrom(*this, m);
+
+    // Test that the conversion float3x3->Quat->float3x3 is correct.
+    assume(this->ToFloat3x3().Equals(m.Float3x3Part(), 0.01f));
 }
 
 void Quat::Set(const float4x4 &m)
@@ -304,6 +355,9 @@ void Quat::Set(const float4x4 &m)
     assume(!m.HasNegativeScale());
     assume(m.Row(3).Equals(0,0,0,1));
     SetQuatFrom(*this, m);
+
+    // Test that the conversion float3x3->Quat->float3x3 is correct.
+    assume(this->ToFloat3x3().Equals(m.Float3x3Part(), 0.01f));
 }
 
 void Quat::Set(float x_, float y_, float z_, float w_)
@@ -431,6 +485,34 @@ std::string Quat::ToString2() const
     return str;
 }
 
+std::string Quat::SerializeToString() const
+{ 
+    char str[256];
+    sprintf(str, "%f %f %f %f", x, y, z, w);
+    return std::string(str);
+}
+
+Quat Quat::FromString(const char *str)
+{
+    assume(str);
+    if (!str)
+        return Quat();
+    if (*str == '(')
+        ++str;
+    Quat q;
+    q.x = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.y = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.z = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.w = strtod(str, const_cast<char**>(&str));
+    return q;
+}
+
 Quat Quat::operator +(const Quat &rhs) const
 {
     return Quat(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w);
@@ -460,10 +542,10 @@ Quat Quat::operator /(float scalar) const
 
 Quat Quat::operator *(const Quat &r) const
 {
-    return Quat(w*r.w - x*r.x - y*r.y - z*r.z,
-                w*r.x + x*r.w + y*r.z - z*r.y,
+    return Quat(w*r.x + x*r.w + y*r.z - z*r.y,
                 w*r.y - x*r.z + y*r.w + z*r.x,
-                w*r.z + x*r.y - y*r.x + z*r.w);
+                w*r.z + x*r.y - y*r.x + z*r.w,
+                w*r.w - x*r.x - y*r.y - z*r.z);
 }
 
 Quat Quat::operator /(const Quat &rhs) const

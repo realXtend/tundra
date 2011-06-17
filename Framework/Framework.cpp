@@ -34,9 +34,9 @@ Framework::Framework(int argc, char** argv) :
     argv_(argv),
     headless_(false),
     application(0),
-    frame(new FrameAPI(this)),
+    frame(0),
     console(0),
-    scene(new SceneAPI(this)),
+    scene(0),
     input(0),
     asset(0),
     audio(0),
@@ -83,6 +83,8 @@ Framework::Framework(int argc, char** argv) :
         config->PrepareDataFolder("configuration");
 
         // Create core APIs
+        frame = new FrameAPI(this);
+        scene = new SceneAPI(this);
         asset = new AssetAPI(this, headless_);
         asset->OpenAssetCache(Application::UserDataDirectory() + "assetcache");
         ui = new UiAPI(this);
@@ -107,15 +109,17 @@ Framework::Framework(int argc, char** argv) :
 
 Framework::~Framework()
 {
-    // Delete the QObjects that don't have a parent.
-    delete input;
-    delete asset;
-    delete audio;
-    delete plugin;
-    delete ui;
+    SAFE_DELETE(input);
+    SAFE_DELETE(asset);
+    SAFE_DELETE(audio);
+    SAFE_DELETE(plugin);
+    SAFE_DELETE(ui);
 #ifdef PROFILING
-    delete profiler;
+    SAFE_DELETE(profiler);
 #endif
+    SAFE_DELETE(console);
+    SAFE_DELETE(scene);
+    SAFE_DELETE(frame);
 
     // This delete must be the last one in Framework since application derives QApplication.
     // When we delete QApplication, we must have ensured that all QObjects have been deleted.
@@ -240,14 +244,19 @@ void Framework::Go()
     // Qt main loop execution has ended, we are exiting.
     exit_signal_ = true;
 
-    // Reset SceneAPI.
-    scene->Reset();
-
     for(size_t i = 0; i < modules.size(); ++i)
     {
         LogDebug("Uninitializing module " + modules[i]->Name());
         modules[i]->Uninitialize();
     }
+
+    // Deinitialize all core APIs.
+    scene->Reset();
+    asset->Reset();
+    console->Reset();
+    frame->Reset();
+    input->SaveKeyBindingsToFile();
+    input->Reset();
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
@@ -255,8 +264,9 @@ void Framework::Go()
         modules[i]->Unload();
     }
 
-    /// Let go of all the module shared pointers, which causes a deletion of each module.
+    // Actually unload all DLLs from memory.
     modules.clear();
+    plugin->UnloadPlugins();
 }
 
 void Framework::Exit()

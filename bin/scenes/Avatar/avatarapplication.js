@@ -51,8 +51,8 @@ function ClientHandleToggleCamera() {
 
     if (avatarcamera.IsActive()) {
         var trans = freelookcameraentity.placeable.transform;
-        trans.pos = avatarcameraentity.placeable.GetWorldPosition();
-        trans.rot = avatarcameraentity.placeable.GetWorldOrientationEuler();
+        trans.pos = avatarcameraentity.placeable.WorldPosition();
+        trans.rot = avatarcameraentity.placeable.WorldOrientation().ToEulerZYX();
 
         // If there is roll in the rotation, adjust it away
         if (trans.rot.z > 170.0)

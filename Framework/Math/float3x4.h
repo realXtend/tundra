@@ -76,8 +76,11 @@ public:
     static const float3x4 nan;
 
     /// Creates a new float3x4 with uninitialized member values.
-    /** [Category: Create] */
+    /** [Category: Create] [opaque-qtscript] */
     float3x4() {}
+
+    /// The copy-ctor for float3x4 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    float3x4(const float3x4 &rhs) { Set(rhs); }
 
     /// Constructs a new float3x4 by explicitly specifying all the matrix elements.
     /// The elements are specified in row-major format, i.e. the first row first followed by the second and third row.
@@ -108,14 +111,18 @@ public:
     float3x4(const float3 &col0, const float3 &col1, const float3 &col2, const float3 &col3);
 
     /// Constructs this float3x4 from the given quaternion.
-    float3x4(const Quat &orientation);
+    explicit float3x4(const Quat &orientation);
+
+    /// Constructs this float3x4 from the given quaternion and translation.
+    /// Logically, the translation occurs after the rotation has been performed.
+    float3x4(const Quat &orientation, const float3 &translation);
 
     /// Creates a new transformation matrix that translates by the given offset.
     /** [Category: Create] */
     static TranslateOp Translate(float tx, float ty, float tz);
     static TranslateOp Translate(const float3 &offset);
 
-    /// Creates a new float3x4 that rotates about one of the principal axes by the given angle. [indexTitle: RotateX/Y/Z]
+    /// Creates a new float3x4 that rotates about one of the principal axes by the given angle (in radians). [indexTitle: RotateX/Y/Z]
     /** Calling RotateX, RotateY or RotateZ is slightly faster than calling the more generic RotateAxisAngle function. */
     static float3x4 RotateX(float angleRadians);
     /** @param pointOnAxis If specified, the rotation is performed about an axis that passes through this point, and not
@@ -130,7 +137,7 @@ public:
     /** [similarOverload: RotateX] [hideIndex] */
     static float3x4 RotateZ(float angleRadians, const float3 &pointOnAxis);
 
-    /// Creates a new float3x4 that rotates about the given axis by the given angle.
+    /// Creates a new float3x4 that rotates about the given axis by the given angle (in radians).
     static float3x4 RotateAxisAngle(const float3 &axisDirection, float angleRadians);
     /** @param pointOnAxis If specified, the rotation is performed about an axis that passes through this point, and not
         through the origin. The returned matrix will not be a pure rotation matrix, but will also contain translation. */
@@ -165,7 +172,7 @@ public:
     static float3x4 FromTRS(const float3 &translate, const float3x3 &rotate, const float3 &scale);
     static float3x4 FromTRS(const float3 &translate, const float3x4 &rotate, const float3 &scale);
 
-    /// Creates a new float3x4 from the given sequence of Euler rotation angles.
+    /// Creates a new float3x4 from the given sequence of Euler rotation angles (in radians).
     /** The FromEulerABC function returns a matrix M = A(ea) * B(eb) * C(ec). Rotation
         C is applied first, followed by B and then A. [indexTitle: FromEuler***] */
     static float3x4 FromEulerXYX(float ex, float ey, float ex2);
@@ -339,6 +346,9 @@ public:
              float _10, float _11, float _12, float _13,
              float _20, float _21, float _22, float _23);
 
+    /// Sets this to be a copy of the matrix rhs.
+    void Set(const float3x4 &rhs);
+
     /// Sets all values of this matrix.
     /// @param values The values in this array will be copied over to this matrix. The source must contain 12 floats in row-major order (the same
     ///        order as the Set() function above has its input parameters in).
@@ -368,17 +378,17 @@ public:
 
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive X axis which passes through
     /// the origin. Leaves all other entries of this matrix untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartX(float angle);
+    void SetRotatePartX(float angleRadians);
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive Y axis. Leaves all other
     /// entries untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartY(float angle);
+    void SetRotatePartY(float angleRadians);
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive Z axis. Leaves all other
     /// entries untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartZ(float angle);
+    void SetRotatePartZ(float angleRadians);
 
     /// Sets the 3-by-3 part of this matrix to perform rotation about the given axis and angle. Leaves all other
     /// entries of this matrix untouched. [indexTitle: SetRotatePart/X/Y/Z]
-    void SetRotatePart(const float3 &axisDirection, float angle);
+    void SetRotatePart(const float3 &axisDirection, float angleRadians);
     /// Sets the 3-by-3 part of this matrix to perform the rotation expressed by the given quaternion. 
     /// Leaves all other entries of this matrix untouched.
     void SetRotatePart(const Quat &orientation);
@@ -388,13 +398,11 @@ public:
     void SetRotatePart(const float3x3 &rotation) { Set3x3Part(rotation); }
 
     /// Transforms one coordinate frame orientation to another using a LookAt rotation.
-    /** This function treats this matrix as a local->world transformation matrix for a 3D object, and applies a rotation to this
-        matrix so that the local (pre-transformed) axis specified by localForward looks towards targetPosition, taking
-        the current position of this object into account. Then tries to orient the localUp axis to point towards the
-        worldUp axis.
-        @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1])
-        or shear (the column vectors of this matrix are orthogonal to start with). */
-    void LookAt(const float3 &localForward, const float3 &targetPosition, const float3 &localUp, const float3 &worldUp);
+    /** This function generates a transformation matrix which rotates the given localForward vector to point towards
+        the vector targetPosition, and secondarily, rotates the localUp to coincide with the vector worldUp, as closely
+        as possible while still retaining the localForward->targetPosition constraint.
+        @note The resulting right vector for the matrix will be generated using the right-hand rule, to produce a right-handed matrix with determinant > 0. */
+    static float3x4 LookAtRH(const float3 &localForwardDir, const float3 &targetForwardDir, const float3 &localUp, const float3 &worldUp);
 
     /// Sets this float3x4 to represent the same transformation as the given float3x3.
     /// @important The translate part of this float3x4 is reset to zero.
@@ -611,7 +619,11 @@ public:
 
     std::string ToString2() const;
 
-    /// Extracts the rotation part of this matrix into Euler rotation angles.
+    /// Extracts the rotation part of this matrix into Euler rotation angles (in radians).
+    /// @note It is better to thinkg about the returned float3 as an array of three floats, and
+    /// not as a triple of xyz, because e.g. the .y component returned by ToEulerYXZ() does
+    /// not return the amount of rotation about the y axis, but contains the amount of rotation
+    /// in the second axis, in this case the x axis.
     /// [Category: Extract] [indexTitle: ToEuler***]
     float3 ToEulerXYX() const;
     float3 ToEulerXZX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]

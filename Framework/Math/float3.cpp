@@ -140,6 +140,31 @@ std::string float3::ToString() const
     return std::string(str);
 }
 
+std::string float3::SerializeToString() const
+{ 
+    char str[256];
+    sprintf(str, "%f %f %f", x, y, z);
+    return std::string(str);
+}
+
+float3 float3::FromString(const char *str)
+{
+    assume(str);
+    if (!str)
+        return float3::nan;
+    if (*str == '(')
+        ++str;
+    float3 f;
+    f.x = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    f.y = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    f.z = strtod(str, const_cast<char**>(&str));
+    return f;
+}
+
 float float3::SumOfElements() const
 {
     return x + y + z;
@@ -360,6 +385,11 @@ float3 float3::Lerp(const float3 &b, float t) const
     return (1.f - t) * *this + t * b;
 }
 
+float3 float3::Lerp(const float3 &a, const float3 &b, float t)
+{
+    return a.Lerp(b, t);
+}
+
 void float3::Orthogonalize(const float3 &a, float3 &b)
 {
     if (!a.IsZero())
@@ -561,6 +591,12 @@ float3 &float3::operator /=(const float3 &rhs)
     return *this;
 }
 */
+
+float3 float3::Mul(const float3 &rhs) const
+{
+    return float3(x * rhs.x, y * rhs.y, z * rhs.z);
+}
+
 float3 &float3::operator /=(float scalar)
 {
     float invScalar = 1.f / scalar;

@@ -62,15 +62,11 @@ function ServerInitialize() {
 
     // Create rigid body component and set physics properties
     var rigidbody = me.GetOrCreateComponent("EC_RigidBody");
-    var sizeVec = new Vector3df();
-    sizeVec.x = 0.5;
-    sizeVec.y = 2.4;
-    sizeVec.z = 0.5;
+    var sizeVec = new float3(0.5, 2.4, 0.5);
     rigidbody.mass = avatar_mass;
     rigidbody.shapeType = 3; // Capsule
     rigidbody.size = sizeVec;
-    var zeroVec = new Vector3df();
-    rigidbody.angularFactor = zeroVec; // Set zero angular factor so that body stays upright
+    rigidbody.angularFactor = float3.zero; // Set zero angular factor so that body stays upright
 
     // Create dynamic component attributes for disabling/enabling functionality, and for camera distance / 1st/3rd mode
     var attrs = me.dynamiccomponent;
@@ -146,9 +142,7 @@ function ServerUpdatePhysics(frametime) {
         // If diagonal motion, normalize
         if ((motion_x != 0) || (motion_z != 0)) {
             var mag = 1.0 / Math.sqrt(motion_x * motion_x + motion_z * motion_z);
-            var impulseVec = new Vector3df();
-            impulseVec.x = mag * move_force * motion_x;
-            impulseVec.z = -mag * move_force * motion_z;
+            var impulseVec = new float3(mag * move_force * motion_x, 0, -mag * move_force * motion_z);
             impulseVec = placeable.GetRelativeVector(impulseVec);
             rigidbody.ApplyImpulse(impulseVec);
         }
@@ -156,8 +150,7 @@ function ServerUpdatePhysics(frametime) {
         // Apply jump
         if (motion_y == 1 && !falling) {
             if (attrs.GetAttribute("enableJump")) {
-                var jumpVec = new Vector3df();
-                jumpVec.y = 75;
+                var jumpVec = new float3(0, 75, 0);
                 motion_y = 0;
                 falling = true;
                 rigidbody.ApplyImpulse(jumpVec);
@@ -180,7 +173,7 @@ function ServerUpdatePhysics(frametime) {
         var av_transform = placeable.transform;
 
         // Make a vector where we have moved
-        var moveVec = new Vector3df();
+        var moveVec = new float3();
         moveVec.x = motion_x * fly_speed_factor;
         moveVec.y = motion_y * fly_speed_factor;
         moveVec.z = -motion_z * fly_speed_factor;
@@ -275,7 +268,7 @@ function ServerSetFlying(newFlying) {
         rigidbody.mass = avatar_mass;
         // Push avatar a bit to the fly direction
         // so the motion does not just stop to a wall
-        var moveVec = new Vector3df();
+        var moveVec = new float3();
         moveVec.x = motion_x * 120;
         moveVec.y = motion_y * 120;
         moveVec.z = -motion_z * 120;
@@ -288,8 +281,7 @@ function ServerSetFlying(newFlying) {
 function ServerHandleSetRotation(param) {
     var attrs = me.dynamiccomponent;
     if (attrs.GetAttribute("enableRotate")) {
-        var rotateVec = new Vector3df();
-        rotateVec.y = parseFloat(param);
+        var rotateVec = new float3(0, parseFloat(param), 0);
         me.rigidbody.SetRotation(rotateVec);
     }
 }
@@ -649,9 +641,7 @@ function ClientUpdateAvatarCamera() {
     cameraplaceable.transform = cameratransform;
 
     var avatartransform = avatarplaceable.transform;
-    var offsetVec = new Vector3df();
-    offsetVec.z = avatar_camera_distance;
-    offsetVec.y = avatar_camera_height;
+    var offsetVec = new float3(0, avatar_camera_height, avatar_camera_distance);
     offsetVec = cameraplaceable.GetRelativeVector(offsetVec);
     cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
     cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;

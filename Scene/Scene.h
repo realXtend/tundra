@@ -6,7 +6,7 @@
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
 #include "SceneDesc.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 
 #include <QObject>
 #include <QVariant>
@@ -90,8 +90,7 @@ public slots:
         @param id Id of the new entity. Use GetNextFreeId() or GetNextFreeIdLocal()
         @param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
-        @param defaultNetworkSync Whether components will have network sync. Default true
-    */
+        @param defaultNetworkSync Whether components will have network sync. Default true */
     EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(),
         AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
 
@@ -102,8 +101,7 @@ public slots:
 
         @param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
-        @param defaultNetworkSync Whether components will have network sync. Default true
-    */
+        @param defaultNetworkSync Whether components will have network sync. Default true */
     EntityPtr CreateLocalEntity(const QStringList &components = QStringList(),
         AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
 
@@ -111,8 +109,7 @@ public slots:
     /** Note: this is meant as a response for a server-authoritative message to change the id of a client-created entity,
         and this change in itself will not be replicated
         @param old_id Old id of the existing entity
-        @param new_id New id to set
-    */
+        @param new_id New id to set */
     void ChangeEntityId(entity_id_t old_id, entity_id_t new_id);
 
     /// Starts an attribute interpolation
@@ -121,22 +118,19 @@ public slots:
                will always take care of deleting it.
         @param length Time length
         @return true if successful (attribute must be in interpolated mode (set in metadata), must be in component, component 
-                must be static-structured, component must be in an entity which is in a scene, scene must be us)
-    */
+                must be static-structured, component must be in an entity which is in a scene, scene must be us) */
     bool StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, float length);
 
     /// Ends an attribute interpolation. The last set value will remain.
     /** @param attr Attribute inside a static-structured component.
-        @return true if an interpolation existed
-    */
+        @return true if an interpolation existed */
     bool EndAttributeInterpolation(IAttribute* attr);
 
     /// Ends all attribute interpolations
     void EndAllAttributeInterpolations();
 
     /// Processes all running attribute interpolations. LocalOnly change will be used.
-    /** @param frametime Time step
-    */
+    /** @param frametime Time step */
     void UpdateAttributeInterpolations(float frametime);
 
     /// See if scene is currently performing interpolations, to differentiate between interpolative & non-interpolative attribute changes.
@@ -146,24 +140,20 @@ public slots:
     Framework *GetFramework() const { return framework_; }
 
     /// Inspects file and returns a scene description structure from the contents of XML file.
-    /** @param filename File name.
-    */
+    /** @param filename File name. */
     SceneDesc GetSceneDescFromXml(const QString &filename) const;
 
     /// Inspects xml data and returns a scene description structure from the contents of XML data.
     /** @param data Data to be processed.
-        @param sceneDesc Initialized SceneDesc with filename and enum type prepared.
-    */
+        @param sceneDesc Initialized SceneDesc with filename and enum type prepared. */
     SceneDesc GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const;
 
     /// Inspects file and returns a scene description structure from the contents of binary file.
-    /** @param filename File name.
-    */
+    /** @param filename File name. */
     SceneDesc GetSceneDescFromBinary(const QString &filename) const;
 
     /// Inspects binary data and returns a scene description structure from the contents of binary data.
-    /** @param data Data to be processed.
-    */
+    /** @param data Data to be processed. */
     SceneDesc GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const;
 
     /// Inspects .js file content for dependencies and adds them to sceneDesc.assets
@@ -171,18 +161,17 @@ public slots:
     /** @param filePath. Path to the file that is opened for inspection.
         @param SceneDesc. Scene description struct ref, found asset dependencies will be added here.
         @todo Make one implementation of this to a common place that EC_Script and Scene can use.
-        @note If the way we introduce js dependencies (!ref: and engine.IncludeFile()) changes, this function needs to change too.
-    */
+        @note If the way we introduce js dependencies (!ref: and engine.IncludeFile()) changes, this function needs to change too. */
     void SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const;
 
     /// Returns scene up vector. For now it is a compile-time constant
-    Vector3df GetUpVector() const;
+    float3 GetUpVector() const;
 
     /// Returns scene right vector. For now it is a compile-time constant
-    Vector3df GetRightVector() const;
+    float3 GetRightVector() const;
 
     /// Returns scene forward vector. For now it is a compile-time constant
-    Vector3df GetForwardVector() const;
+    float3 GetForwardVector() const;
 
     /// @todo Clean these overload functions created for PythonQt and QtScript compatibility as much as possible.
     //  For documentation, see the plain C++ public methods above.

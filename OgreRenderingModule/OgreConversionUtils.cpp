@@ -24,19 +24,14 @@ Color ToCoreColor(const Ogre::ColourValue& color)
    return Color(color.r, color.g, color.b, color.a);
 }
 
-Ogre::Vector3 ToOgreVector3(const Vector3df &vector)
+Ogre::Vector3 ToOgreVector3(const float3 &vector)
 {
     return Ogre::Vector3(vector.x, vector.y, vector.z);
 }
 
-Vector3df ToCoreVector(const Ogre::Vector3 &vector)
+float3 ToCoreVector(const Ogre::Vector3 &vector)
 {
-    return Vector3df(vector.x, vector.y, vector.z);
-}
-
-Ogre::Quaternion ToOgreQuaternion(const Quaternion &quat)
-{
-    return Ogre::Quaternion(quat.w, quat.x, quat.y, quat.z);
+    return float3(vector.x, vector.y, vector.z);
 }
 
 std::string SanitateAssetIdForOgre(const QString& input)

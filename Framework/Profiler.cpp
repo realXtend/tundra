@@ -45,11 +45,11 @@ void Profiler::StartBlock(const std::string &name)
     // Get the current topmost profiling node in the stack, or 
     // if none exists, get the root node or create a new root node.
     // This will be the parent node of the new block we're starting.
-    ProfilerNodeTree *parent = current_node_.get();
+    ProfilerNodeTree *parent = current_node_;
     if (!parent)
     {
         parent = GetOrCreateThreadRootBlock();
-        current_node_.reset(parent);
+        current_node_ = parent;
     }
     assert(parent);
 
@@ -75,8 +75,7 @@ void Profiler::StartBlock(const std::string &name)
         parent->recursion_++; // handle recursion
     else
     {
-        current_node_.release();
-        current_node_.reset(node);
+        current_node_ = node;
 
         checked_static_cast<ProfilerNode*>(node)->block_.Start();
     }
@@ -88,7 +87,7 @@ void Profiler::EndBlock(const std::string &name)
 #ifdef PROFILING
     using namespace std;
 
-    ProfilerNodeTree *treeNode = current_node_.get();
+    ProfilerNodeTree *treeNode = current_node_;
     assert (treeNode->Name() == name && "New profiling block started before old one ended!");
 
     ProfilerNode* node = checked_static_cast<ProfilerNode*>(treeNode);
@@ -115,8 +114,7 @@ void Profiler::EndBlock(const std::string &name)
         --node->recursion_;
     else
     {
-        current_node_.release();
-        current_node_.reset(node->Parent());
+        current_node_ = node->Parent();
     }
 #endif
 }
@@ -202,7 +200,7 @@ void ProfilerNodeTree::RemoveThreadRootBlock()
         owner_->RemoveThreadRootBlock(this);
 }
 
-Profiler::~Profiler()
+void Profiler::Reset()
 {
     // We are going down.. tell all root blocks that they don't need to notify back to the Profiler that they've been deleted.
     // i.e. 'detach' all the (thread specific) root blocks so that they delete themselves at their leisure when their threads die.
@@ -210,4 +208,9 @@ Profiler::~Profiler()
     for(std::list<ProfilerNodeTree*>::iterator iter = thread_root_nodes_.begin(); iter != thread_root_nodes_.end(); ++iter)
         (*iter)->MarkAsRootBlock(0);
     mutex_.unlock();
+}
+
+Profiler::~Profiler()
+{
+    Reset();
 }

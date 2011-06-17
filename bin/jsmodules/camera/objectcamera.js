@@ -158,18 +158,18 @@ function mouseScroll(event)
 
     var zoomed = false;
 
-    var pos = new Vector3df()
+    var pos = new float3();
     pos = placeable.transform.pos;
 
-    var point = new Vector3df();
+    var point = new float3();
     point = last_clicked.placeable.transform.pos;
 
-    var dir = new Vector3df();
+    var dir = new float3();
     dir.x = point.x - pos.x;
     dir.y = point.y - pos.y;
     dir.z = point.z - pos.z;
 
-    var distance = new Vector3df();
+    var distance = new float3();
     distance = dir;
 
     var acceleration = 0.01;
@@ -251,13 +251,13 @@ function cameraZoom()
     var cameraplaceable = cameraentity.GetComponent("EC_Placeable");
     var cameratransform = cameraplaceable.transform;
 
-    var dir = new Vector3df();
+    var dir = new float3();
     dir.x = global_transform.pos.x - (camera_distance * Math.cos(cameratransform.rot.z * Math.PI/180) + cameratransform.pos.x);
     dir.y = global_transform.pos.y - (camera_distance * Math.sin(cameratransform.rot.z * Math.PI/180) + cameratransform.pos.y);
     dir.z = global_transform.pos.z - (camera_distance * Math.cos(cameratransform.rot.x * Math.PI/180) + cameratransform.pos.z);
 
     var u = Math.sqrt(Math.pow(dir.x, 2) + Math.pow(dir.y, 2) + Math.pow(dir.z, 2));
-    var dir_unit = new Vector3df();
+    var dir_unit = new float3();
     dir_unit.x = dir.x / u;
     dir_unit.y = dir.y / u;
     dir_unit.z = dir.z / u;

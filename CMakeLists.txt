@@ -139,10 +139,13 @@ include(ConfigurePackages)
 # Disable unnecessary build types
 set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
-# In Visual Studio, use unicode character set
 if (MSVC)
+    # In Visual Studio, use unicode character set
     add_definitions(-DUNICODE -D_UNICODE)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
+    #Define NOMINMAX in order to get rid of the evil WinDefs.h min&max defines.
+    add_definitions(-DNOMINMAX)
 endif()
 
 # On all platforms, we enable PCH files by default.

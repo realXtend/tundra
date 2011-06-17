@@ -43,7 +43,7 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
     fontColor(this, "Font Color"),
     fontSize(this, "Font Size", 100),    
     backgroundColor(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
-    position(this, "Position", Vector3df(0.0f, 0.0f, 0.0f)),
+    position(this, "Position", float3(0.0f, 0.0f, 0.0f)),
     gradStart(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
     gradEnd(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
     borderColor(this, "Border Color", Color(0.0f,0.0f,0.0f,0.0f)),
@@ -108,7 +108,7 @@ void EC_HoveringText::Destroy()
     materialName_ = "";
 }
 
-void EC_HoveringText::SetPosition(const Vector3df& position)
+void EC_HoveringText::SetPosition(const float3& position)
 {
     if (!ViewEnabled())
         return;
@@ -119,7 +119,7 @@ void EC_HoveringText::SetPosition(const Vector3df& position)
 
 void EC_HoveringText::SetPosition(const QVector3D &position)
 {
-    SetPosition(Vector3df(position.x(), position.y(), position.z()));
+    SetPosition(float3(position.x(), position.y(), position.z()));
 }
 
 void EC_HoveringText::SetFont(const QFont &font)

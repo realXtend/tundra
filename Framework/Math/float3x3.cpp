@@ -80,6 +80,11 @@ float3x3 float3x3::FromQuat(const Quat &orientation)
     return r;
 }
 
+Quat float3x3::ToQuat() const
+{
+    return Quat(*this);
+}
+
 float3x3 float3x3::FromRS(const Quat &rotate, const float3 &scale)
 {
     return float3x3(rotate) * float3x3::Scale(scale);
@@ -400,6 +405,11 @@ void float3x3::Set(float _00, float _01, float _02,
     v[0][0] = _00; v[0][1] = _01; v[0][2] = _02;
     v[1][0] = _10; v[1][1] = _11; v[1][2] = _12;
     v[2][0] = _20; v[2][1] = _21; v[2][2] = _22;
+}
+
+void float3x3::Set(const float3x3 &rhs)
+{
+    Set(rhs.ptr());
 }
 
 void float3x3::Set(const float *values)
@@ -964,9 +974,14 @@ float3 float3x3::ExtractScale() const
 
 void float3x3::Decompose(Quat &rotate, float3 &scale) const
 {
+    assume(this->IsOrthogonal());
+
     float3x3 r;
     Decompose(r, scale);
     rotate = Quat(r);
+
+    // Test that composing back yields the original float3x3.
+    assume(float3x3::FromRS(rotate, scale).Equals(*this, 0.1f));
 }
 
 void float3x3::Decompose(float3x3 &rotate, float3 &scale) const
@@ -983,6 +998,9 @@ void float3x3::Decompose(float3x3 &rotate, float3 &scale) const
     rotate.ScaleCol(0, 1.f / scale.x);
     rotate.ScaleCol(1, 1.f / scale.y);
     rotate.ScaleCol(2, 1.f / scale.z);
+
+    // Test that composing back yields the original float3x3.
+    assume(float3x3::FromRS(rotate, scale).Equals(*this, 0.1f));
 }
 
 float3x3 float3x3::Mul(const float3x3 &rhs) const { return *this * rhs; }

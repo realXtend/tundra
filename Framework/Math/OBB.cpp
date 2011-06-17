@@ -142,7 +142,7 @@ float3 OBB::CenterPoint() const
     return pos;
 }
 
-float3 OBB::GetPointInside(float x, float y, float z) const
+float3 OBB::PointInside(float x, float y, float z) const
 {
     assume(0.f <= x && x <= 1.f);
     assume(0.f <= y && y <= 1.f);
@@ -151,6 +151,27 @@ float3 OBB::GetPointInside(float x, float y, float z) const
     return pos + axis[0] * (2.f * r.x * x - r.x)
                + axis[1] * (2.f * r.y * y - r.y)
                + axis[2] * (2.f * r.z * z - r.z);
+}
+
+LineSegment OBB::Edge(int edgeIndex) const
+{
+    assume(0 <= edgeIndex && edgeIndex <= 11);
+    switch(edgeIndex)
+    {
+        default: // For release builds where assume() is disabled, return always the first option if out-of-bounds.
+        case 0: return LineSegment(CornerPoint(0), CornerPoint(1));
+        case 1: return LineSegment(CornerPoint(0), CornerPoint(2));
+        case 2: return LineSegment(CornerPoint(0), CornerPoint(4));
+        case 3: return LineSegment(CornerPoint(1), CornerPoint(3));
+        case 4: return LineSegment(CornerPoint(1), CornerPoint(5));
+        case 5: return LineSegment(CornerPoint(2), CornerPoint(3));
+        case 6: return LineSegment(CornerPoint(2), CornerPoint(6));
+        case 7: return LineSegment(CornerPoint(3), CornerPoint(7));
+        case 8: return LineSegment(CornerPoint(4), CornerPoint(5));
+        case 9: return LineSegment(CornerPoint(4), CornerPoint(6));
+        case 10: return LineSegment(CornerPoint(5), CornerPoint(7));
+        case 11: return LineSegment(CornerPoint(6), CornerPoint(7));
+    }
 }
 
 float3 OBB::CornerPoint(int cornerIndex) const
@@ -377,7 +398,7 @@ float OBB::SurfaceArea() const
 
 float3 OBB::RandomPointInside(LCG &rng) const
 {
-    return GetPointInside(rng.Float(), rng.Float(), rng.Float());
+    return PointInside(rng.Float(), rng.Float(), rng.Float());
 }
 
 float3 OBB::RandomPointOnSurface(LCG &rng) const

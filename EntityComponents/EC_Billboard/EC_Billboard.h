@@ -9,7 +9,7 @@
 #pragma once
 
 #include "IComponent.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "AssetReference.h"
 #include "AssetRefListener.h"
 #include "OgreModuleFwd.h"
@@ -37,7 +37,7 @@ Registered by TundraLogicModule.
 <ul>
 <li>AssetReference: materialRef
 <div>Material used by the billboard.</div>
-<li>Vector3df: position
+<li>float3: position
 <div>Position of billboard relative to the placeable component's position.</div> 
 <li>float: width
 <div>Billboard width.</div>
@@ -86,8 +86,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
     
     /// Billboard position in relation to the placeable component
-    Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, position);
+    Q_PROPERTY(float3 position READ getposition WRITE setposition);
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, position);
     
     /// Billboard width
     Q_PROPERTY(float width READ getwidth WRITE setwidth);

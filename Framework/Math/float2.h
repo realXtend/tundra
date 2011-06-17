@@ -10,6 +10,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include "MathFwd.h"
 
 #ifdef QT_INTEROP
@@ -30,11 +31,13 @@ public:
 
     /// This ctor does not initialize the x & y members with a value.
     float2() {}
+    /// The copy-ctor for float2 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    float2(const float2 &rhs) { x = rhs.x; y = rhs.y; }
     /// Initializes to (x, y).
     float2(float x, float y);
 
     /// Constructs this float2 from an array. The array must contain at least 2 elements.
-    float2(const float *data);
+    explicit float2(const float *data);
 
     /// Returns a pointer to first float2 element. The data is contiguous in memory.
     float *ptr();
@@ -77,14 +80,21 @@ public:
     bool Equals(const float2 &rhs, float epsilon = 1e-3f) const;
     bool Equals(float x, float y, float epsilon = 1e-3f) const;
 
-    /// Returns "(x, y)" .
+    /// Returns "(x, y)".
     std::string ToString() const;
 
-    /// Returns x + y .
+    /// Returns "x y". This is the preferred format for the float2 if it has to be serialized to a string for machine transfer.
+    std::string SerializeToString() const;
+
+    /// Parses a string that is of form "x,y" or "(x,y)" or "(x;y)" or "x y" to a new float2.
+    static float2 FromString(const char *str);
+    static float2 FromString(const std::string &str) { return FromString(str.c_str()); }
+
+    /// Returns x + y.
     float SumOfElements() const;
-    /// Returns x * y .
+    /// Returns x * y.
     float ProductOfElements() const;
-    /// Returns (x+y)/2 .
+    /// Returns (x+y)/2.
     float AverageOfElements() const;
     /// Returns min(x, y).
     float MinElement() const;
@@ -149,6 +159,7 @@ public:
     /// Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
     /// Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on.
     float2 Lerp(const float2 &b, float t) const;
+    static float2 Lerp(const float2 &a, const float2 &b, float t);
 
     /// Makes the given vectors linearly independent.
     static void Orthogonalize(const float2 &a, float2 &b);
@@ -220,6 +231,9 @@ public:
     float2 Div(float rhs) const { return *this / rhs; }
     float2 Neg() const { return -*this; }
 
+    /// Multiplies this vector by rhs *element-wise*.
+    float2 Mul(const float2 &rhs) const;
+
     /// a compile-time constant float2 with value (0, 0).
     static const float2 zero;
     /// A compile-time constant float2 with value (1, 1).
@@ -247,6 +261,7 @@ public:
     QString toString() const { return (QString)*this; }
     QVector2D ToQVector2D() const { return QVector2D(x, y); }
     static float2 FromQVector2D(const QVector2D &v) { return (float2)v; }
+    static float2 FromString(const QString &str) { return FromString(str.toStdString()); }
 #endif
 };
 

@@ -15,11 +15,11 @@
 #ifdef QT_INTEROP
 #include <QVector3D>
 #endif
-
+/*
 #ifdef IRRLICHT_INTEROP
-#include "Vector3D.h"
+#include "Math/float3.h"
 #endif
-
+*/
 #ifdef OGRE_INTEROP
 #include <OgreVector3.h>
 #endif
@@ -39,13 +39,15 @@ public:
 
     /// This ctor does not initialize the x, y & z members with any value.
     float3() {}
+    /// The copy-ctor for float3 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    float3(const float3 &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; }
     /// Initializes to (x, y, z).
     float3(float x, float y, float z);
 
     float3(const float2 &xy, float z);
 
     /// Constructs this float3 from an array. The array must contain at least 3 elements. [noscript]
-    float3(const float *data);
+    explicit float3(const float *data);
 
     /// Returns a pointer to first float3 element. The data is contiguous in memory. [noscript]
     float *ptr();
@@ -90,6 +92,13 @@ public:
 
     /// Returns "(x, y, z)". [noscript]
     std::string ToString() const;
+
+    /// Returns "x y z". This is the preferred format for the float3 if it has to be serialized to a string for machine transfer.
+    std::string SerializeToString() const;
+
+    /// Parses a string that is of form "x,y,z" or "(x,y,z)" or "(x;y;z)" or "x y z" to a new float3.
+    static float3 FromString(const char *str);
+    static float3 FromString(const std::string &str) { return FromString(str.c_str()); }
 
     /// Returns x + y + z.
     float SumOfElements() const;
@@ -172,6 +181,7 @@ public:
     /// Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
     /// Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on.
     float3 Lerp(const float3 &b, float t) const;
+    static float3 Lerp(const float3 &a, const float3 &b, float t);
 
     /// Makes the given vectors linearly independent.
     /// The vector a is kept unmodified, and vector b is modified to be perpendicular to a.
@@ -234,6 +244,9 @@ public:
     float3 Div(float rhs) const { return *this / rhs; }
     float3 Neg() const { return -*this; }
 
+    /// Multiplies this vector by rhs *element-wise*.
+    float3 Mul(const float3 &rhs) const;
+
     /// Specifies a compile-time constant float3 with value (0, 0, 0).
     static const float3 zero;
     /// Specifies a compile-time constant float3 with value (1, 1, 1).
@@ -256,10 +269,12 @@ public:
     float3(const Ogre::Vector3 &other) { x = other.x; y = other.y; z = other.z; }
     operator Ogre::Vector3() const { return Ogre::Vector3(x, y, z); }
 #endif
+/*
 #ifdef IRRLICHT_INTEROP
     float3(const Vector3df &other) { x = other.x; y = other.y; z = other.z; }
     operator Vector3df() const { return Vector3df(x, y, z); }
 #endif
+*/
 #ifdef QT_INTEROP
     float3(const QVector3D &other) { x = other.x(); y = other.y(); z = other.z(); }
     operator QVector3D() const { return QVector3D(x, y, z); }
@@ -267,6 +282,7 @@ public:
     QString toString() const { return (QString)*this; }
     QVector3D ToQVector3D() const { return QVector3D(x, y, z); }
     static float3 FromQVector3D(const QVector3D &v) { return (float3)v; }
+    static float3 FromString(const QString &str) { return FromString(str.toStdString()); }
 #endif
 #ifdef BULLET_INTEROP
     float3(const btVector3 &other) { x = other.x(); y = other.y(); z = other.z(); }

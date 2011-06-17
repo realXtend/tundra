@@ -12,7 +12,7 @@
 #include "SceneFwd.h"
 #include "InputFwd.h"
 #include "AssetFwd.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "AssetReference.h"
 
 #include <QPointer>
@@ -60,7 +60,7 @@ public slots:
         @param clearScene Do we want to clear the scene before adding new content.
         @return List of created entities.
     */
-    QList<Entity *> InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene);
+    QList<Entity *> InstantiateContent(const QString &filename, float3 worldPos, bool clearScene);
 
     /// This is an overloaded function
     /** Uses scene description structure to filter unwanted content.
@@ -70,15 +70,15 @@ public slots:
         @param desc Scene description filter
         @return List of created entities.
     */
-    QList<Entity *> InstantiateContent(const QString &filename, Vector3df worldPos, const SceneDesc &desc, bool clearScene);
+    QList<Entity *> InstantiateContent(const QString &filename, float3 worldPos, const SceneDesc &desc, bool clearScene);
 
-    QList<Entity *> InstantiateContent(const QStringList &filenames, Vector3df worldPos, const SceneDesc &desc, bool clearScene);
+    QList<Entity *> InstantiateContent(const QStringList &filenames, float3 worldPos, const SceneDesc &desc, bool clearScene);
 
     /// Centralizes group of entities around same center point. The entities must have EC_Placeable component present.
     /** @param pos Center point for entities.
         @param entities List of entities.
     */
-    static void CentralizeEntitiesTo(const Vector3df &pos, const QList<Entity *> &entities);
+    static void CentralizeEntitiesTo(const float3 &pos, const QList<Entity *> &entities);
 
     /// Returns true of the file extension of @c fileRef is supported file type for importing.
     /** @param fileRef File name or url.
@@ -112,7 +112,7 @@ private:
     boost::shared_ptr<InputContext> inputContext; ///< Input context.
 
     SceneMaterialDropData materialDropData;
-    QHash<QString, Vector3df> urlToDropPos;
+    QHash<QString, float3> urlToDropPos;
 
     QWidget *toolTipWidget;
     QLabel *toolTip;

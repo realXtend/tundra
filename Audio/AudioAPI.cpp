@@ -13,6 +13,7 @@
 #include "LoggingFunctions.h"
 #include "Framework.h"
 #include "Profiler.h"
+#include "Math/float3.h"
 
 #ifndef Q_WS_MAC
 #include <AL/al.h>
@@ -31,6 +32,12 @@ using namespace std;
 struct AudioApiImpl
 {
 public:
+    AudioApiImpl()
+    :listenerPosition(0,0,0),
+    listenerOrientation(Quat::identity)
+    {
+    }
+
     /// Initialized flag
     bool initialized;
     /// OpenAL context
@@ -47,9 +54,9 @@ public:
     sound_id_t nextChannelId;
     
     /// Listener position
-    Vector3df listenerPosition;
+    float3 listenerPosition;
     /// Listener orientation
-    Quaternion listenerOrientation;
+    Quat listenerOrientation;
     
     /// Master gain for whole sound system
     float masterGain;
@@ -74,7 +81,7 @@ assetAPI(assetAPI_)
     impl->soundMasterGain[SoundChannel::Triggered] = 1.f;
     impl->soundMasterGain[SoundChannel::Ambient] = 1.f;
     impl->soundMasterGain[SoundChannel::Voice] = 1.f;
-    impl->listenerPosition = Vector3df(0.0, 0.0, 0.0);
+    impl->listenerPosition = float3(0.0, 0.0, 0.0);
     
     // By default, initialize default playback device
     Initialize();
@@ -216,8 +223,8 @@ void AudioAPI::Update(f64 frametime)
     // Update listener position/orientation to sound device
     ALfloat pos[] = {impl->listenerPosition.x, impl->listenerPosition.y, impl->listenerPosition.z};
     alListenerfv(AL_POSITION, pos);
-    Vector3df front = impl->listenerOrientation * Vector3df(0.0f, -1.0f, 0.0f);
-    Vector3df up = impl->listenerOrientation * Vector3df(0.0f, 0.0f, -1.0f); 
+    float3 front = impl->listenerOrientation * float3(0.0f, -1.0f, 0.0f);
+    float3 up = impl->listenerOrientation * float3(0.0f, 0.0f, -1.0f); 
     ALfloat orient[] = {front.x, front.y, front.z, up.x, up.y, up.z};
     alListenerfv(AL_ORIENTATION, orient);
     
@@ -245,7 +252,7 @@ bool AudioAPI::IsInitialized() const
     return impl && impl->initialized;
 }
 
-void AudioAPI::SetListener(const Vector3df &position, const Quaternion &orientation)
+void AudioAPI::SetListener(const float3 &position, const Quat &orientation)
 {
     if (!impl || !impl->initialized)
         return;
@@ -278,7 +285,7 @@ SoundChannelPtr AudioAPI::PlaySound(AssetPtr audioAsset, SoundChannel::SoundType
     return channel;
 }
 
-SoundChannelPtr AudioAPI::PlaySound3D(const Vector3df &position, AssetPtr audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
+SoundChannelPtr AudioAPI::PlaySound3D(const float3 &position, AssetPtr audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
 {
     if (!impl || !impl->initialized)
         return SoundChannelPtr();
@@ -319,7 +326,7 @@ SoundChannelPtr AudioAPI::PlaySoundBuffer(const SoundBuffer &buffer, SoundChanne
     return channel;
 }
 
-SoundChannelPtr AudioAPI::PlaySoundBuffer3D(const SoundBuffer &buffer, SoundChannel::SoundType type, Vector3df position, SoundChannelPtr channel)
+SoundChannelPtr AudioAPI::PlaySoundBuffer3D(const SoundBuffer &buffer, SoundChannel::SoundType type, float3 position, SoundChannelPtr channel)
 {
     if (!impl->initialized)
         return SoundChannelPtr();

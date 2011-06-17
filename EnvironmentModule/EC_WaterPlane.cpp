@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_WaterPlane.h"
@@ -29,8 +30,8 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     xSize(this, "x-size", 5000),
     ySize(this, "y-size", 5000),
     depth(this, "Depth", 20),
-    position(this, "Position", Vector3df()),
-    rotation(this, "Rotation", Quaternion()),
+    position(this, "Position", float3::zero),
+    rotation(this, "Rotation", Quat::identity),
     scaleUfactor(this, "U factor", 0.0002f),
     scaleVfactor(this, "V factor", 0.0002f),
     xSegments(this, "Segments in x", 10),
@@ -83,7 +84,7 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
     if (placeable != 0)
     {
-        Vector3df vec = placeable->GetPosition();
+        float3 vec = placeable->GetPosition();
         position.Set(vec,AttributeChange::Default);
    
         Quaternion rot =placeable->GetOrientation();
@@ -180,10 +181,10 @@ void EC_WaterPlane::ComponentRemoved(IComponent* component, AttributeChange::Typ
     }
 }
 
-Vector3df EC_WaterPlane::GetPointOnPlane(const Vector3df &point) const 
+float3 EC_WaterPlane::GetPointOnPlane(const float3 &point) const 
 {
     if (node_ == 0)
-        return Vector3df();
+        return float3::nan;
 
     Ogre::Quaternion rot = node_->_getDerivedOrientation();
     Ogre::Vector3 trans = node_->_getDerivedPosition();
@@ -201,22 +202,22 @@ Vector3df EC_WaterPlane::GetPointOnPlane(const Vector3df &point) const
  
     local.y = 0;
     Ogre::Vector4 world = worldTM * local;
-    return Vector3df(world.x, world.y, world.z);
+    return float3(world.x, world.y, world.z);
 }
 
-float EC_WaterPlane::GetDistanceToWaterPlane(const Vector3df& point) const
+float EC_WaterPlane::GetDistanceToWaterPlane(const float3& point) const
 {
      if (node_ == 0)
         return 0;
 
-    Vector3df pointOnPlane = GetPointOnPlane(point);
+    float3 pointOnPlane = GetPointOnPlane(point);
 
     //Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
   
     return point.y - pointOnPlane.y;
 }
 
-bool EC_WaterPlane::IsTopOrBelowWaterPlane(const Vector3df& point) const
+bool EC_WaterPlane::IsTopOrBelowWaterPlane(const float3& point) const
 {
      if (node_ == 0)
         return false;
@@ -236,7 +237,7 @@ bool EC_WaterPlane::IsTopOrBelowWaterPlane(const Vector3df& point) const
     return false;
 }
 
-bool EC_WaterPlane::IsPointInsideWaterCube(const Vector3df& point) const
+bool EC_WaterPlane::IsPointInsideWaterCube(const float3& point) const
 {
     if (entity_ == 0)
         return false;
@@ -262,9 +263,9 @@ bool EC_WaterPlane::IsCameraInsideWaterCube()
         return false;
     Ogre::Vector3 posCamera = camera->getDerivedPosition();
 
-    if (IsTopOrBelowWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z)))
+    if (IsTopOrBelowWaterPlane(float3(posCamera.x, posCamera.y, posCamera.z)))
     {
-        float d = GetDistanceToWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z));
+        float d = GetDistanceToWaterPlane(float3(posCamera.x, posCamera.y, posCamera.z));
         if (d < 0 && depth.Get() >= fabs(d))
             return true;
     }
@@ -338,7 +339,7 @@ void EC_WaterPlane::SetPosition()
     if ((!node_) || (!ViewEnabled()))
         return;
     
-    Vector3df vec = position.Get();
+    float3 vec = position.Get();
     //node_->setPosition(vec.x, vec.y, vec.z);
 
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
@@ -364,15 +365,15 @@ void EC_WaterPlane::SetOrientation()
         return;
     
     // Set orientation
-    Quaternion rot = rotation.Get();
+    Quat rot = rotation.Get();
 
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
     Ogre::Quaternion current_rot = node_->_getDerivedOrientation();
     Ogre::Quaternion tmp(rot.w, rot.x, rot.y, rot.z);
-    Ogre::Quaternion rota = current_rot +  tmp;
+    Ogre::Quaternion rota = current_rot * tmp;
     node_->setOrientation(rota);
 #else
-    node_->_setDerivedOrientation(Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
+    node_->_setDerivedOrientation(rot);
 #endif
 }
 

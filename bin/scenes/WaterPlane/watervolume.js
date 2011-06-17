@@ -54,8 +54,7 @@ function ServerUpdatePhysics(frametime)
 		var rb = entity.rigidbody;
 		if (rb && mag > 0.1)
 		{
-			var impulseVec = new Vector3df();
-			impulseVec.z = mag * 0.8;
+			var impulseVec = new float3(0, 0, mag * 0.8);
 			rb.ApplyImpulse(impulseVec);
 		}
 	}

@@ -4,7 +4,7 @@
 
 #include "IComponent.h"
 #include "CoreDefines.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 
 // forward declares
 namespace Physics { class PhysicsModule; class PhysicsWorld; }
@@ -87,9 +87,9 @@ public:
 
 signals:
     /// Note: needs to be lowercase for QML to accept connections to it
-    void entityEnter(Entity* entity/*, const Vector3df& position*/);
+    void entityEnter(Entity* entity/*, const float3& position*/);
     /// Note: needs to be lowercase for QML to accept connections to it
-    void entityLeave(Entity* entity/*, const Vector3df& position*/);
+    void entityLeave(Entity* entity/*, const float3& position*/);
 
 public slots:
 
@@ -157,7 +157,7 @@ public slots:
     bool IsPivotInside(Entity *entity) const;
 
     /// Returns true if given world coordinate point is inside volume. 
-    bool IsInsideVolume(const Vector3df& point) const;
+    bool IsInsideVolume(const float3& point) const;
 
 private slots:
     /// Called when some of the attributes has been changed.
@@ -172,7 +172,7 @@ private slots:
     void OnPhysicsUpdate();
 
     /// Called when physics collisions occurs.
-    void OnPhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+    void OnPhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
 
     /// Called when entity inside this volume is removed from the scene
     void OnEntityRemoved(Entity* entity);

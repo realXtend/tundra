@@ -33,7 +33,7 @@ EC_Light::EC_Light(Scene* scene) :
     light_(0),
     attached_(false),
     type(this, "light type", LT_Point),
-    direction(this, "direction", Vector3df(0.0f, 0.0f, 1.0f)),
+    direction(this, "direction", float3(0.0f, 0.0f, 1.0f)),
     diffColor(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
     specColor(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
     castShadows(this, "cast shadows", false),

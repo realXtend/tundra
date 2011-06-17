@@ -16,8 +16,12 @@
 #include "Transform.h"
 #include "AssetReference.h"
 #include "EntityReference.h"
+#include "LoggingFunctions.h"
 #include "Color.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
+#include "Math/float2.h"
+#include "Math/float3.h"
+#include "Math/float3.h"
 
 #include <boost/algorithm/string.hpp>
 #include <QVector3D>
@@ -78,24 +82,25 @@ template<> std::string Attribute<float>::ToString() const
 {
     return ::ToString<float>(Get());
 }
-
-template<> std::string Attribute<Vector3df>::ToString() const
-{
-    Vector3df value = Get();
     
-    return ::ToString<float>(value.x) + " " +
-        ::ToString<float>(value.y) + " " +
-        ::ToString<float>(value.z);
+template<> std::string Attribute<Quat>::ToString() const
+{
+    return Get().SerializeToString();
 }
-    
-template<> std::string Attribute<Quaternion>::ToString() const
+
+template<> std::string Attribute<float2>::ToString() const
 {
-    Quaternion value = Get();
-    
-    return ::ToString<float>(value.w) + " " +
-        ::ToString<float>(value.x) + " " +
-        ::ToString<float>(value.y) + " " +
-        ::ToString<float>(value.z);
+    return Get().SerializeToString();
+}
+
+template<> std::string Attribute<float3>::ToString() const
+{
+    return Get().SerializeToString();
+}
+
+template<> std::string Attribute<float4>::ToString() const
+{
+    return Get().SerializeToString();
 }
 
 template<> std::string Attribute<Color>::ToString() const
@@ -157,7 +162,7 @@ template<> std::string Attribute<Transform>::ToString() const
 {
     QString value("");
     Transform transform = Get();
-    Vector3df editValues[3];
+    float3 editValues[3];
     editValues[0] = transform.pos;
     editValues[1] = transform.rot;
     editValues[2] = transform.scale;
@@ -243,14 +248,24 @@ template<> QString Attribute<bool>::TypeName() const
     return "bool";
 }
 
-template<> QString Attribute<Vector3df>::TypeName() const
+template<> QString Attribute<Quat>::TypeName() const
 {
-    return "vector3df";
+    return "quat";
 }
 
-template<> QString Attribute<Quaternion>::TypeName() const
+template<> QString Attribute<float2>::TypeName() const
 {
-    return "quaternion";
+    return "float2";
+}
+
+template<> QString Attribute<float3>::TypeName() const
+{
+    return "float3";
+}
+
+template<> QString Attribute<float4>::TypeName() const
+{
+    return "float4";
 }
 
 template<> QString Attribute<Color>::TypeName() const
@@ -360,23 +375,6 @@ template<> void Attribute<float>::FromString(const std::string& str, AttributeCh
     catch(...) {}
 }
 
-template<> void Attribute<Vector3df>::FromString(const std::string& str, AttributeChange::Type change)
-{
-    StringVector components = SplitString(str, ' ');
-    if (components.size() == 3)
-    {
-        try
-        {
-            Vector3df value;
-            value.x = ParseString<float>(components[0]);
-            value.y = ParseString<float>(components[1]);
-            value.z = ParseString<float>(components[2]);
-            Set(value, change);
-        }
-        catch(...) {}
-    }
-}
-
 template<> void Attribute<Color>::FromString(const std::string& str, AttributeChange::Type change)
 {
     Color value;
@@ -406,22 +404,24 @@ template<> void Attribute<Color>::FromString(const std::string& str, AttributeCh
     }
 }
 
-template<> void Attribute<Quaternion>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void Attribute<Quat>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    StringVector components = SplitString(str, ' ');
-    if (components.size() == 4)
-    {
-        try
-        {
-            Quaternion value;
-            value.w = ParseString<float>(components[0]);
-            value.x = ParseString<float>(components[1]);
-            value.y = ParseString<float>(components[2]);
-            value.z = ParseString<float>(components[3]);
-            Set(value, change);
-        }
-        catch(...) {}
-    }
+    Set(Quat::FromString(str), change);
+}
+
+template<> void Attribute<float2>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    Set(float2::FromString(str), change);
+}
+
+template<> void Attribute<float3>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    Set(float3::FromString(str), change);
+}
+
+template<> void Attribute<float4>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    Set(float4::FromString(str), change);
 }
 
 template<> void Attribute<AssetReference>::FromString(const std::string& str, AttributeChange::Type change)
@@ -470,22 +470,27 @@ template<> void Attribute<QVariantList >::FromString(const std::string& str, Att
 
 template<> void Attribute<Transform>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    QString value = QString::fromStdString(str);
-    QStringList matrixElements = value.split(',');
-    Transform result;
-    if(matrixElements.size() == 9) //Ensure that we a have right amount of elements.
+    QStringList elements = QString::fromStdString(str).split(',');
+    if (elements.size() != 9)
     {
-        float values[9];
-        for(uint i = 0; i < 3; i++)
-        {
-            uint startIndex = 3 * i;
-            for(uint j = 0; j < 3; j++)
-                values[j + startIndex] = ParseString<float>(matrixElements[j + startIndex].toStdString(), 0.0f);
-        }
-        result.SetPos(values[0], values[1], values[2]);
-        result.SetRot(values[3], values[4], values[5]);
-        result.SetScale(values[6], values[7], values[8]);
+        ::LogError("Attribute<Transform>::FromString failed: Can't deserialize string \"" + str + "\"!");
+        return;
     }
+
+    float posX = ParseString<float>(elements[0].toStdString(), 0.0f);
+    float posY = ParseString<float>(elements[1].toStdString(), 0.0f);
+    float posZ = ParseString<float>(elements[2].toStdString(), 0.0f);
+    float eulerX = ParseString<float>(elements[3].toStdString(), 0.0f);
+    float eulerY = ParseString<float>(elements[4].toStdString(), 0.0f);
+    float eulerZ = ParseString<float>(elements[5].toStdString(), 0.0f);
+    float scaleX = ParseString<float>(elements[6].toStdString(), 0.0f);
+    float scaleY = ParseString<float>(elements[7].toStdString(), 0.0f);
+    float scaleZ = ParseString<float>(elements[8].toStdString(), 0.0f);
+
+    Transform result;
+    result.SetPos(posX, posY, posZ);
+    result.SetRotation(eulerX, eulerY, eulerZ);
+    result.SetScale(scaleX, scaleY, scaleZ);
     Set(result, change);
 }
 
@@ -597,19 +602,29 @@ template<> void Attribute<float>::FromQVariant(const QVariant &variant, Attribut
     Set(variant.toFloat(), change);
 }
 
-template<> void Attribute<Vector3df>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
-{
-    Set(qvariant_cast<Vector3df>(variant), change);
-}
-
 template<> void Attribute<Color>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
     Set(qvariant_cast<Color>(variant), change);
 }
 
-template<> void Attribute<Quaternion>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+template<> void Attribute<Quat>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
-    Set(qvariant_cast<Quaternion>(variant), change);
+    Set(qvariant_cast<Quat>(variant), change);
+}
+
+template<> void Attribute<float2>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<float2>(variant), change);
+}
+
+template<> void Attribute<float3>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<float3>(variant), change);
+}
+
+template<> void Attribute<float4>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<float4>(variant), change);
 }
 
 template<> void Attribute<AssetReference>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
@@ -693,15 +708,25 @@ template<> QVariant Attribute<float>::ToQVariant() const
 {
     return QVariant(Get());
 }
-
-template<> QVariant Attribute<Vector3df>::ToQVariant() const
-{
-    return QVariant::fromValue<Vector3df>(Get());
-}
     
-template<> QVariant Attribute<Quaternion>::ToQVariant() const
+template<> QVariant Attribute<Quat>::ToQVariant() const
 {
-    return QVariant::fromValue<Quaternion>(Get());
+    return QVariant::fromValue<Quat>(Get());
+}
+
+template<> QVariant Attribute<float2>::ToQVariant() const
+{
+    return QVariant::fromValue<float2>(Get());
+}
+
+template<> QVariant Attribute<float3>::ToQVariant() const
+{
+    return QVariant::fromValue<float3>(Get());
+}
+
+template<> QVariant Attribute<float4>::ToQVariant() const
+{
+    return QVariant::fromValue<float4>(Get());
 }
 
 template<> QVariant Attribute<Color>::ToQVariant() const
@@ -790,15 +815,25 @@ template<> void Attribute<float>::FromScriptValue(const QScriptValue &value, Att
 {
     Set(qScriptValueToValue<float>(value), change);
 }
-
-template<> void Attribute<Vector3df>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<Vector3df>(value), change);
-}
     
-template<> void Attribute<Quaternion>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+template<> void Attribute<Quat>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
 {
-    Set(qScriptValueToValue<Quaternion>(value), change);
+    Set(value.data().toVariant().value<Quat>(), change);
+}
+
+template<> void Attribute<float2>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(value.data().toVariant().value<float2>(), change);
+}
+
+template<> void Attribute<float3>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(value.data().toVariant().value<float3>(), change);
+}
+
+template<> void Attribute<float4>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(value.data().toVariant().value<float4>(), change);
 }
 
 template<> void Attribute<Color>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
@@ -894,13 +929,6 @@ template<> void Attribute<float>::ToBinary(kNet::DataSerializer& dest) const
     dest.Add<float>(value);
 }
 
-template<> void Attribute<Vector3df>::ToBinary(kNet::DataSerializer& dest) const
-{
-    dest.Add<float>(value.x);
-    dest.Add<float>(value.y);
-    dest.Add<float>(value.z);
-}
-
 template<> void Attribute<QVector3D>::ToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<float>(value.x());
@@ -908,7 +936,29 @@ template<> void Attribute<QVector3D>::ToBinary(kNet::DataSerializer& dest) const
     dest.Add<float>(value.z());
 }
 
-template<> void Attribute<Quaternion>::ToBinary(kNet::DataSerializer& dest) const
+template<> void Attribute<Quat>::ToBinary(kNet::DataSerializer& dest) const
+{
+    ///\todo Optimize here by omitting the fourth scalar.
+    dest.Add<float>(value.x);
+    dest.Add<float>(value.y);
+    dest.Add<float>(value.z);
+    dest.Add<float>(value.w);
+}
+
+template<> void Attribute<float2>::ToBinary(kNet::DataSerializer& dest) const
+{
+    dest.Add<float>(value.x);
+    dest.Add<float>(value.y);
+}
+
+template<> void Attribute<float3>::ToBinary(kNet::DataSerializer& dest) const
+{
+    dest.Add<float>(value.x);
+    dest.Add<float>(value.y);
+    dest.Add<float>(value.z);
+}
+
+template<> void Attribute<float4>::ToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<float>(value.x);
     dest.Add<float>(value.y);
@@ -1022,15 +1072,6 @@ template<> void Attribute<float>::FromBinary(kNet::DataDeserializer& source, Att
     Set(source.Read<float>(), change);
 }
 
-template<> void Attribute<Vector3df>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
-{
-    Vector3df value;
-    value.x = source.Read<float>();
-    value.y = source.Read<float>();
-    value.z = source.Read<float>();
-    Set(value, change);
-}
-
 template<> void Attribute<QVector3D>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     QVector3D value;
@@ -1050,9 +1091,37 @@ template<> void Attribute<Color>::FromBinary(kNet::DataDeserializer& source, Att
     Set(value, change);
 }
 
-template<> void Attribute<Quaternion>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+template<> void Attribute<Quat>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
-    Quaternion value;
+    ///\todo Optimize here by omitting the fourth scalar.
+    Quat value;
+    value.x = source.Read<float>();
+    value.y = source.Read<float>();
+    value.z = source.Read<float>();
+    value.w = source.Read<float>();
+    Set(value, change);
+}
+
+template<> void Attribute<float2>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    float2 value;
+    value.x = source.Read<float>();
+    value.y = source.Read<float>();
+    Set(value, change);
+}
+
+template<> void Attribute<float3>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    float3 value;
+    value.x = source.Read<float>();
+    value.y = source.Read<float>();
+    value.z = source.Read<float>();
+    Set(value, change);
+}
+
+template<> void Attribute<float4>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    float4 value;
     value.x = source.Read<float>();
     value.y = source.Read<float>();
     value.z = source.Read<float>();
@@ -1192,30 +1261,46 @@ template<> void Attribute<float>::Interpolate(IAttribute* start, IAttribute* end
     }
 }
 
-template<> void Attribute<Vector3df>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
-{
-    Attribute<Vector3df>* startVec = dynamic_cast<Attribute<Vector3df>*>(start);
-    Attribute<Vector3df>* endVec = dynamic_cast<Attribute<Vector3df>*>(end);
-    if ((startVec) && (endVec))
-    {
-        Set(lerp(startVec->Get(), endVec->Get(), t), change);
-    }
-}
-
 template<> void Attribute<QVector3D>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
     // Not implemented. Favor the above instead.
 }
 
-template<> void Attribute<Quaternion>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+template<> void Attribute<Quat>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
-    Attribute<Quaternion>* startQuat = dynamic_cast<Attribute<Quaternion>*>(start);
-    Attribute<Quaternion>* endQuat = dynamic_cast<Attribute<Quaternion>*>(end);
-    if ((startQuat) && (endQuat))
+    Attribute<Quat>* startQuat = dynamic_cast<Attribute<Quat>*>(start);
+    Attribute<Quat>* endQuat = dynamic_cast<Attribute<Quat>*>(end);
+    if (startQuat && endQuat)
+        Set(Slerp(startQuat->Get(), endQuat->Get(), t), change);
+}
+
+template<> void Attribute<float2>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+    Attribute<float2>* startVec = dynamic_cast<Attribute<float2>*>(start);
+    Attribute<float2>* endVec = dynamic_cast<Attribute<float2>*>(end);
+    if (startVec && endVec)
     {
-        Quaternion newQuat;
-        newQuat.slerp(startQuat->Get(), endQuat->Get(), t);
-        Set(newQuat, change);
+        Set(Lerp(startVec->Get(), endVec->Get(), t), change);
+    }
+}
+
+template<> void Attribute<float3>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+    Attribute<float3>* startVec = dynamic_cast<Attribute<float3>*>(start);
+    Attribute<float3>* endVec = dynamic_cast<Attribute<float3>*>(end);
+    if (startVec && endVec)
+    {
+        Set(Lerp(startVec->Get(), endVec->Get(), t), change);
+    }
+}
+
+template<> void Attribute<float4>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+    Attribute<float4>* startVec = dynamic_cast<Attribute<float4>*>(start);
+    Attribute<float4>* endVec = dynamic_cast<Attribute<float4>*>(end);
+    if (startVec && endVec)
+    {
+        Set(Lerp(startVec->Get(), endVec->Get(), t), change);
     }
 }
 
@@ -1272,13 +1357,7 @@ template<> void Attribute<Transform>::Interpolate(IAttribute* start, IAttribute*
         newTrans.pos = lerp(startValue.pos, endValue.pos, t);
         
         // Rotation
-        Quaternion startRot(DEGTORAD * startValue.rot.x, DEGTORAD * startValue.rot.y, DEGTORAD * startValue.rot.z);
-        Quaternion endRot(DEGTORAD * endValue.rot.x, DEGTORAD * endValue.rot.y, DEGTORAD * endValue.rot.z);
-        Quaternion newRot;
-        newRot.slerp(startRot, endRot, t);
-        Vector3df newRotEuler;
-        newRot.toEuler(newRotEuler);
-        newTrans.SetRot(newRotEuler.x * RADTODEG, newRotEuler.y * RADTODEG, newRotEuler.z * RADTODEG);
+        newTrans.SetOrientation(Slerp(startValue.Orientation(), endValue.Orientation(), t));
         
         // Scale
         newTrans.scale = lerp(startValue.scale, endValue.scale, t);

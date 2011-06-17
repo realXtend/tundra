@@ -303,6 +303,10 @@ public slots:
         @note Do not dereference any asset pointers that might have been left over after calling this function. */
     void ForgetAllAssets();
 
+    /// Cleans up everything in the Asset API. Forgets all assets, kills all asset transfers, frees all storages, providers, and type factories.
+    /// Deletes the asset cache and the disk watcher.
+    void Reset();
+
     /// Returns a pointer to an existing asset transfer if one is in-progress for the given assetRef. Returns a null pointer if no transfer exists, in which
     /// case the asset may already have been loaded to the system (or not). It can be that an asset is loaded to the system, but one or more of its dependencies
     /// have not, in which case there exists both an IAssetTransfer and IAsset to this particular assetRef (so the existence of these two objects is not

@@ -85,8 +85,11 @@ public:
     static const float4x4 nan;
 
     /// Creates a new float4x4 with uninitialized member values.
-    /** [Category: Create] */
+    /** [Category: Create] [opaque-qtscript] */
     float4x4() {}
+
+    /// The copy-ctor for float4x4 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    float4x4(const float4x4 &rhs) { Set(rhs); }
 
     /// Constructs a new float4x4 by explicitly specifying all the matrix elements.
     /// The elements are specified in row-major format, i.e. the first row first followed by the second and third row.
@@ -116,7 +119,11 @@ public:
     float4x4(const float4 &col0, const float4 &col1, const float4 &col2, const float4 &col3);
 
     /// Constructs this float4x4 from the given quaternion.
-    float4x4(const Quat &orientation);
+    explicit float4x4(const Quat &orientation);
+
+    /// Constructs this float4x4 from the given quaternion and translation.
+    /// Logically, the translation occurs after the rotation has been performed.
+    float4x4(const Quat &orientation, const float3 &translation);
 
     /// Creates a new transformation matrix that translates by the given offset.
     /** [Category: Create] */
@@ -174,7 +181,7 @@ public:
     static float4x4 FromTRS(const float3 &translate, const float3x4 &rotate, const float3 &scale);
     static float4x4 FromTRS(const float3 &translate, const float4x4 &rotate, const float3 &scale);
 
-    /// Creates a new float4x4 from the given sequence of Euler rotation angles.
+    /// Creates a new float4x4 from the given sequence of Euler rotation angles (in radians).
     /** The FromEulerABC function returns a matrix M = A(a) * B(b) * C(c). Rotation
         C is applied first, followed by B and then A. [indexTitle: FromEuler***] */
     static float4x4 FromEulerXYX(float x2, float y, float x);
@@ -381,6 +388,9 @@ public:
              float _20, float _21, float _22, float _23,
              float _30, float _31, float _32, float _33);
 
+    /// Sets this to be a copy of the matrix rhs.
+    void Set(const float4x4 &rhs);
+
     /// Sets all values of this matrix.
     /// @param values The values in this array will be copied over to this matrix. The source must contain 16 floats in row-major order (the same
     ///        order as the Set() function above has its input parameters in).
@@ -415,17 +425,17 @@ public:
 
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive X axis which passes through
     /// the origin. Leaves all other entries of this matrix untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartX(float angle);
+    void SetRotatePartX(float angleRadians);
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive Y axis. Leaves all other
     /// entries untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartY(float angle);
+    void SetRotatePartY(float angleRadians);
     /// Sets the 3-by-3 part of this matrix to perform rotation about the positive Z axis. Leaves all other
     /// entries untouched. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartZ(float angle);
+    void SetRotatePartZ(float angleRadians);
 
-    /// Sets the 3-by-3 part of this matrix to perform rotation about the given axis and angle. Leaves all other
+    /// Sets the 3-by-3 part of this matrix to perform rotation about the given axis and angle (in radians). Leaves all other
     /// entries of this matrix untouched. [indexTitle: SetRotatePart/X/Y/Z]
-    void SetRotatePart(const float3 &axisDirection, float angle);
+    void SetRotatePart(const float3 &axisDirection, float angleRadians);
     /// Sets the 3-by-3 part of this matrix to perform the rotation expressed by the given quaternion. 
     /// Leaves all other entries of this matrix untouched.
     void SetRotatePart(const Quat &orientation);
@@ -711,7 +721,11 @@ public:
 
     std::string ToString2() const;
 
-    /// Extracts the rotation part of this matrix into Euler rotation angles.
+    /// Extracts the rotation part of this matrix into Euler rotation angles (in radians).
+    /// @note It is better to thinkg about the returned float3 as an array of three floats, and
+    /// not as a triple of xyz, because e.g. the .y component returned by ToEulerYXZ() does
+    /// not return the amount of rotation about the y axis, but contains the amount of rotation
+    /// in the second axis, in this case the x axis.
     /// [Category: Extract] [indexTitle: ToEuler***]
     float3 ToEulerXYX() const;
     float3 ToEulerXZX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]

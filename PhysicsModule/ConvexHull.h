@@ -4,7 +4,7 @@
 
 #include "CoreDefines.h"
 #include "PhysicsModuleApi.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 
 class btConvexHullShape;
 
@@ -13,7 +13,7 @@ namespace Physics
 
 struct ConvexHull
 {
-    Vector3df position_;
+    float3 position_;
     boost::shared_ptr<btConvexHullShape> hull_;
 };
 

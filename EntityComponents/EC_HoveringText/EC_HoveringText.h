@@ -9,7 +9,7 @@
 #pragma once
 
 #include "IComponent.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "OgreModuleFwd.h"
 #include "AssetFwd.h"
 
@@ -50,7 +50,7 @@ HoveringText shows a hovering text attached to an entity.
 <div>Font Size</div>
 <li>Color: backgroundColor
 <div>Color of the background</div>
-<li>Vector3df: position
+<li>float3: position
 <div>Position of the text on entity</div>
 <li>bool: usingGrad
 <div>If using Gradient color </div>
@@ -118,8 +118,8 @@ public:
     Q_PROPERTY(float borderThickness READ getborderThickness WRITE setborderThickness);
     DEFINE_QPROPERTY_ATTRIBUTE(float, borderThickness);
 
-    Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, position);
+    Q_PROPERTY(float3 position READ getposition WRITE setposition);
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, position);
     
     Q_PROPERTY(bool usingGrad READ getusingGrad WRITE setusingGrad);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, usingGrad);
@@ -165,9 +165,9 @@ public slots:
     void ShowMessage(const QString &text);
 
     /// Sets postion for the hovering text.
-    /// @param position Position as Vector3df.
+    /// @param position Position as float3.
     /// @note The position is relative to the entity to which the hovering text is attached.
-    void SetPosition(const Vector3df &position);
+    void SetPosition(const float3 &position);
 
     /// Sets postion for the hovering text.
     /// @param position Position as QVector3D.

@@ -4,7 +4,7 @@
 
 #include "CoreDefines.h"
 #include "PhysicsModuleApi.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 
 class btConvexHullShape;
 class btTriangleMesh;
@@ -19,7 +19,7 @@ namespace Physics
     struct ConvexHullSet;
 
     void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr);
-    void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest);
+    void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<float3>& dest);
     void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr);
 }
 

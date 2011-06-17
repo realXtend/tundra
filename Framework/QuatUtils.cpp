@@ -1,12 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#if 0
 
 #ifndef unix
 #include <float.h>
 #endif
 
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include "QuatUtils.h"
 
 Quaternion UnpackQuaternionFromFloat3(float x, float y, float z)
@@ -67,3 +68,5 @@ Quaternion UnpackQuaternionFromU16_4(u16 x,u16 y,u16 z,u16 w)
     rotation.w = (w / 32768.0f) - 1.0f;
     return rotation;
 }
+
+#endif

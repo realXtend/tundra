@@ -4,7 +4,7 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include "AssetReference.h"
 #include "OgreModuleFwd.h"
 #include "AssetRefListener.h"
@@ -57,8 +57,8 @@ public:
     Q_PROPERTY(float distance READ getdistance WRITE setdistance);
 
     /// Optional parameter to specify the orientation of the box.
-    DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientation);
-    Q_PROPERTY(Quaternion orientation READ getorientation WRITE setorientation);
+    DEFINE_QPROPERTY_ATTRIBUTE(Quat, orientation);
+    Q_PROPERTY(Quat orientation READ getorientation WRITE setorientation);
 
      /// Defines that is sky drawn first
     DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirst);
@@ -85,7 +85,7 @@ private:
     QString lastMaterial_;
     float lastDistance_;
     bool lastDrawFirst_;
-    Quaternion lastOrientation_;
+    Quat lastOrientation_;
 
     /// Ogre scene
     OgreWorldWeakPtr world_;

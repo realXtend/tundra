@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define BULLET_INTEROP
 #include "DebugOperatorNew.h"
 #include "btBulletDynamicsCommon.h"
 #include "PhysicsModule.h"
@@ -11,6 +12,12 @@
 #include "OgreWorld.h"
 #include "OgreBulletCollisionsDebugLines.h"
 #include "EC_RigidBody.h"
+#include "Transform.h"
+#include "Math/float3x4.h"
+#include "Math/AABB.h"
+#include "Math/OBB.h"
+#include "Math/LineSegment.h"
+#include "Math/float3.h"
 #include "MemoryLeakCheck.h"
 #include "LoggingFunctions.h"
 
@@ -77,12 +84,12 @@ void PhysicsWorld::SetPhysicsUpdatePeriod(float updatePeriod)
     physicsUpdatePeriod_ = updatePeriod;
 }
 
-void PhysicsWorld::SetGravity(const Vector3df& gravity)
+void PhysicsWorld::SetGravity(const float3& gravity)
 {
     world_->setGravity(ToBtVector3(gravity));
 }
 
-Vector3df PhysicsWorld::GetGravity() const
+float3 PhysicsWorld::GetGravity() const
 {
     return ToVector3(world_->getGravity());
 }
@@ -103,8 +110,7 @@ void PhysicsWorld::Simulate(f64 frametime)
     
     int maxSubSteps = (int)((1.0f / physicsUpdatePeriod_) / cMinFps);
     world_->stepSimulation((float)frametime, maxSubSteps, physicsUpdatePeriod_);
-    
-        
+            
     // Automatically enable debug geometry if at least one debug-enabled rigidbody. Automatically disable if no debug-enabled rigidbodies
     // However, do not do this if user has used the physicsdebug console command
     if (!drawDebugManuallySet_)
@@ -166,8 +172,8 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             {
                 btManifoldPoint& point = contactManifold->getContactPoint(j);
                 
-                Vector3df position = ToVector3(point.m_positionWorldOnB);
-                Vector3df normal = ToVector3(point.m_normalWorldOnB);
+                float3 position = ToVector3(point.m_positionWorldOnB);
+                float3 normal = ToVector3(point.m_normalWorldOnB);
                 float distance = point.m_distance1;
                 float impulse = point.m_appliedImpulse;
                 
@@ -189,14 +195,13 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
     emit Updated(substeptime);
 }
 
-PhysicsRaycastResult* PhysicsWorld::Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup, int collisionmask)
+PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& direction, float maxdistance, int collisiongroup, int collisionmask)
 {
     PROFILE(PhysicsWorld_Raycast);
     
     static PhysicsRaycastResult result;
     
-    Vector3df normalizedDir = direction;
-    normalizedDir.normalize();
+    float3 normalizedDir = direction.Normalized();
     
     btCollisionWorld::ClosestRayResultCallback rayCallback(ToBtVector3(origin), ToBtVector3(origin + maxdistance * normalizedDir));
     rayCallback.m_collisionFilterGroup = collisiongroup;
@@ -211,7 +216,7 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const Vector3df& origin, const Vecto
     {
         result.pos_ = ToVector3(rayCallback.m_hitPointWorld);
         result.normal_ = ToVector3(rayCallback.m_hitNormalWorld);
-        result.distance_ = (result.pos_ - origin).getLength();
+        result.distance_ = (result.pos_ - origin).Length();
         if (rayCallback.m_collisionObject)
         {
             EC_RigidBody* body = static_cast<EC_RigidBody*>(rayCallback.m_collisionObject->getUserPointer());
@@ -290,5 +295,37 @@ void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const bt
         debugGeometryObject_->addLine(from, to, color);
 }
 
+void PhysicsWorld::DrawAABB(const AABB &aabb, float r, float g, float b)
+{
+    for(int i = 0; i < 12; ++i)
+        DrawLineSegment(aabb.Edge(i), r, g, b);
 }
+
+void PhysicsWorld::DrawOBB(const OBB &obb, float r, float g, float b)
+{
+    for(int i = 0; i < 12; ++i)
+        DrawLineSegment(obb.Edge(i), r, g, b);
+}
+
+void PhysicsWorld::DrawLineSegment(const LineSegment &l, float r, float g, float b)
+{
+    drawLine(l.a, l.b, float3(r,g,b));
+}
+
+void PhysicsWorld::DrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b)
+{
+    DrawFloat3x4(t.ToFloat3x4(), axisLength, boxSize, r, g, b);
+}
+
+void PhysicsWorld::DrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b)
+{
+    AABB aabb(float3::FromScalar(-boxSize/2.f), float3::FromScalar(boxSize/2.f));
+    OBB obb = aabb.Transform(t);
+    DrawOBB(obb, r, g, b);
+    DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(0)), 1, 0, 0);
+    DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(1)), 0, 1, 0);
+    DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(2)), 0, 0, 1);
+}
+
+} // ~Physics
 

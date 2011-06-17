@@ -15,11 +15,11 @@
 #ifdef QT_INTEROP
 #include <QQuaternion>
 #endif
-
+/*
 #ifdef IRRLICHT_INTEROP
 #include "Quaternion.h"
 #endif
-
+*/
 #ifdef OGRE_INTEROP
 #include <OgreQuaternion.h>
 #endif
@@ -35,6 +35,9 @@ public:
 
     /// @note The default ctor does not initialize any member values.
     Quat() {}
+
+    /// The copy-ctor for Quat is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    Quat(const Quat &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; w = rhs.w; }
 
     /// Constructs a quaternion from the given data buffer.
     /// @param data An array of four floats to use for the quaternion, in the order 'x, y, z, w'. (== 'i, j, k, r')
@@ -52,7 +55,10 @@ public:
     /// @note The input data is not normalized after construction, this has to be done manually.
     Quat(float x, float y, float z, float w);
 
-    Quat(const float3 &rotationAxis, float rotationAngle);
+    /// Constructs this quaternion by specifying a rotation axis and the amount of rotation to be performed
+    /// about that axis.
+    /// @param rotationAxis The normalized rotation axis to rotate about.
+    Quat(const float3 &rotationAxis, float rotationAngleRadians);
 
     /// Returns the local +X axis in the post-transformed coordinate space. This is the same as transforming the vector (1,0,0) by this quaternion.
     float3 WorldX() const;
@@ -128,14 +134,17 @@ public:
     float4 Transform(const float4 &vec) const;
 
     Quat Lerp(const Quat &target, float t) const;
+    static Quat Lerp(const Quat &source, const Quat &target, float t);
     Quat Slerp(const Quat &target, float t) const;
+    static Quat Slerp(const Quat &source, const Quat &target, float t);
 
-    /// Returns the angle between this and the target orientation (the shortest route).
+    /// Returns the angle between this and the target orientation (the shortest route) in radians.
     float AngleBetween(const Quat &target) const;
     /// Returns the axis of rotation to get from this orientation to target orientation (the shortest route).
     float3 AxisFromTo(const Quat &target) const;
 
-    void ToAxisAngle(float3 &rotationAxis, float &rotationAngle) const;
+    /// Returns the rotation axis and angle of this quaternion.
+    void ToAxisAngle(float3 &rotationAxis, float &rotationAngleRadians) const;
     /// Sets this quaternion by specifying the axis about which the rotation is performed, and the angle of rotation.
     /// @param rotationAxis The axis of rotation. This vector must be normalized to call this function.
     /// @param rotationAngle The angle of rotation in radians.
@@ -156,19 +165,20 @@ public:
     void LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp);
 
     /// Creates a new quaternion that rotates about the positive X axis by the given angle.
-    static Quat RotateX(float angle);
+    static Quat RotateX(float angleRadians);
     /// Creates a new quaternion that rotates about the positive Y axis by the given angle.
-    static Quat RotateY(float angle);
+    static Quat RotateY(float angleRadians);
     /// Creates a new quaternion that rotates about the positive Z axis by the given angle.
-    static Quat RotateZ(float angle);
+    static Quat RotateZ(float angleRadians);
 
     /// Creates a new Quat that rotates about the given axis by the given angle.
-    static Quat RotateAxisAngle(const float3 &axisDirection, float angle);
+    static Quat RotateAxisAngle(const float3 &axisDirection, float angleRadians);
 
     /// Creates a new quaternion that rotates sourceDirection vector (in world space) to coincide with the 
     /// targetDirection vector (in world space).
     /// Rotation is performed around the origin.
-    /// \note There are infinite such rotations - this function returns the rotation that has the shortest angle
+    /// The vectors sourceDirection and targetDirection are assumed to be normalized.
+    /// @note There are multiple such rotations - this function returns the rotation that has the shortest angle
     /// (when decomposed to axis-angle notation).
     static Quat RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection);
 
@@ -179,7 +189,7 @@ public:
     static Quat RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection,
         const float3 &sourceDirection2, const float3 &targetDirection2);
 
-    /// Creates a new Quat from the given sequence of Euler rotation angles.
+    /// Creates a new Quat from the given sequence of Euler rotation angles (in radians).
     /** The FromEulerABC function returns a matrix M = A(a) * B(b) * C(c). Rotation
         C is applied first, followed by B and then A. [indexTitle: FromEuler***] */
     static Quat FromEulerXYX(float x2, float y, float x);
@@ -195,7 +205,11 @@ public:
     static Quat FromEulerZXY(float z, float x, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
     static Quat FromEulerZYX(float z, float y, float x); ///< [similarOverload: FromEulerXYX] [hideIndex]
 
-    /// Extracts the rotation part of this quaternion into Euler rotation angles.
+    /// Extracts the rotation part of this quaternion into Euler rotation angles (in radians).
+    /// @note It is better to thinkg about the returned float3 as an array of three floats, and
+    /// not as a triple of xyz, because e.g. the .y component returned by ToEulerYXZ() does
+    /// not return the amount of rotation about the y axis, but contains the amount of rotation
+    /// in the second axis, in this case the x axis.
     float3 ToEulerXYX() const;
     float3 ToEulerXZX() const;
     float3 ToEulerYXY() const;
@@ -218,6 +232,13 @@ public:
 
     /// Returns "Quat(axis:(x,y,z) angle:degrees)".
     std::string ToString2() const;
+
+    /// Returns "x y z w". This is the preferred format for the quaternion if it has to be serialized to a string for machine transfer.
+    std::string SerializeToString() const;
+
+    /// Parses a string that is of form "x,y,z,w" or "(x,y,z,w)" or "(x;y;z;w)" or "x y z w" to a new quaternion.
+    static Quat FromString(const char *str);
+    static Quat FromString(const std::string &str) { return FromString(str.c_str()); }
 
     /// Multiplies two quaternions together.
     /// The product q1 * q2 returns a quaternion that concatenates the two orientation rotations. The rotation
@@ -246,10 +267,12 @@ public:
     Quat(const Ogre::Quaternion &other) { w = other.w; x = other.x; y = other.y; z = other.z; }
     operator Ogre::Quaternion() const { return Ogre::Quaternion(w, x, y, z); }
 #endif
+/*
 #ifdef IRRLICHT_INTEROP
     Quat(const Quaternion &other) { w = other.w; x = other.x; y = other.y; z = other.z; }
     operator Quaternion() const { return Quaternion(x, y, z, w); }
 #endif
+*/
 #ifdef QT_INTEROP
     Quat(const QQuaternion &other) { w = other.scalar(); x = other.x(); y = other.y(); z = other.z(); }
     operator QQuaternion() const { return QQuaternion(w, x, y, z); }
@@ -257,6 +280,7 @@ public:
     QString toString() const { return ToString2().c_str(); }
     QQuaternion ToQQuaternion() const { return (QQuaternion)*this; }
     static Quat FromQQuaternion(const QQuaternion &q) { return (Quat)q; }
+    static Quat FromString(const QString &str) { return FromString(str.toStdString()); }
 #endif
 #ifdef BULLET_INTEROP
     Quat(const btQuaternion &other) { w = other.w(); x = other.x(); y = other.y(); z = other.z(); }

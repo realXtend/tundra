@@ -6,8 +6,8 @@
 #include "AudioAsset.h"
 #include "SoundChannel.h"
 #include "AudioApiExports.h"
-#include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/float3.h"
+#include "Math/Quat.h"
 
 class Framework;
 
@@ -40,7 +40,7 @@ public slots:
     /// Sets listener position & orientation
     /** \param position Position
         \param orientation Orientation as quaternion */
-    void SetListener(const Vector3df &position, const Quaternion &orientation);
+    void SetListener(const float3 &position, const Quat &orientation);
     
     /// Sets master gain of whole sound system
     /** \param master_gain New master gain, in range 0.0 - 1.0 */
@@ -70,7 +70,7 @@ public slots:
         \param position Position of sound
         \param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
         \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later) */
-    SoundChannelPtr PlaySound3D(const Vector3df &position, AssetPtr audioAsset, SoundChannel::SoundType type = SoundChannel::Triggered, SoundChannelPtr existingChannel = SoundChannelPtr());
+    SoundChannelPtr PlaySound3D(const float3 &position, AssetPtr audioAsset, SoundChannel::SoundType type = SoundChannel::Triggered, SoundChannelPtr existingChannel = SoundChannelPtr());
 
     /// Buffers sound data into a non-positional channel
     /** Note: use the returned channel id for continuing to feed the sound stream.
@@ -89,7 +89,7 @@ public slots:
         \param position Position of sound
         \param existingChannel Channel id. If non-zero, and is a valid channel, will use that channel instead of making a new one.
         \return nonzero channel id, if successful */
-    SoundChannelPtr PlaySoundBuffer3D(const SoundBuffer& buffer, SoundChannel::SoundType type = SoundChannel::Triggered, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), SoundChannelPtr existingChannel = SoundChannelPtr());
+    SoundChannelPtr PlaySoundBuffer3D(const SoundBuffer& buffer, SoundChannel::SoundType type = SoundChannel::Triggered, float3 position = float3(0.0f, 0.0f, 0.0f), SoundChannelPtr existingChannel = SoundChannelPtr());
 
     /// Gets all non-stopped channels id's
     std::vector<SoundChannelPtr> GetActiveSounds() const;

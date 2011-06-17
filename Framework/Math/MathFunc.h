@@ -16,9 +16,14 @@
 #include "MathConstants.h"
 #include "float3.h"
 
-#ifdef _DEBUG
+// The assume() macro can have three states, depending on which #defines are present:
+// #define MATH_ASSERT_ON_ASSUME - the assume() macro is equal to the assert() macro.
+// #define MATH_DISABLE_ASSUME   - the assume() macro is silent, and disabled altogether.
+// If neither of the above is defined, then assume() macro uses printf() to log warnings of failed math-related assumptions.
+
+#ifdef MATH_ASSERT_ON_ASSUME
 #define assume(x) assert(x)
-#else
+#elif !defined(MATH_SILENT_ASSUME)
 #define assume(x) { if (!(x)) printf("Assumption \"%s\" failed! in file %s, line %d!\n", #x, __FILE__, __LINE__); }
 #endif
 
@@ -58,8 +63,8 @@ inline float DegToRad(float degrees) { return degrees * (pi / 180.f); }
 inline float3 RadToDeg(const float3 &radians) { return radians * (180.f / pi); }
 inline float RadToDeg(float radians) { return radians * (180.f / pi); }
 
-inline float Cos(float angle) { return cos(angle); }
-inline float Sin(float angle) { return sin(angle); }
+inline float Cos(float angleRadians) { return cos(angleRadians); }
+inline float Sin(float angleRadians) { return sin(angleRadians); }
 inline float Sqrt(float v) { return sqrt(v); }
 inline float Pow(float base, float exp) { return pow(base, exp); }
 

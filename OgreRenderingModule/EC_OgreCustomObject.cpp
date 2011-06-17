@@ -214,12 +214,12 @@ void EC_OgreCustomObject::DestroyEntity()
     }
 }
 
-void EC_OgreCustomObject::GetBoundingBox(Vector3df& min, Vector3df& max) const
+void EC_OgreCustomObject::GetBoundingBox(float3& min, float3& max) const
 {
     if (!entity_)
     {
-        min = Vector3df(0.0, 0.0, 0.0);
-        max = Vector3df(0.0, 0.0, 0.0);
+        min = float3(0.0, 0.0, 0.0);
+        max = float3(0.0, 0.0, 0.0);
         return;
     }
  
@@ -227,7 +227,7 @@ void EC_OgreCustomObject::GetBoundingBox(Vector3df& min, Vector3df& max) const
     const Ogre::Vector3& bboxmin = bbox.getMinimum();
     const Ogre::Vector3& bboxmax = bbox.getMaximum();
     
-    min = Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
-    max = Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
+    min = float3(bboxmin.x, bboxmin.y, bboxmin.z);
+    max = float3(bboxmax.x, bboxmax.y, bboxmax.z);
 }
 

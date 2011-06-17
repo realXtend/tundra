@@ -52,6 +52,12 @@ float3x4::float3x4(const Quat &orientation)
     SetTranslatePart(0, 0, 0);
 }
 
+float3x4::float3x4(const Quat &orientation, const float3 &translation)
+{
+    SetRotatePart(orientation);
+    SetTranslatePart(translation);
+}
+
 TranslateOp float3x4::Translate(float tx, float ty, float tz)
 {
     return TranslateOp(tx, ty, tz);
@@ -552,6 +558,11 @@ void float3x4::Set(float _00, float _01, float _02, float _03,
     v[2][0] = _20; v[2][1] = _21; v[2][2] = _22; v[2][3] = _23;
 }
 
+void float3x4::Set(const float3x4 &rhs)
+{
+    Set(rhs.ptr());
+}
+
 void float3x4::Set(const float *values)
 {
     memcpy(ptr(), values, sizeof(float) * Rows * Cols);
@@ -616,9 +627,25 @@ void float3x4::SetRotatePart(const Quat &q)
     SetMatrixRotatePart(*this, q);
 }
 
-void float3x4::LookAt(const float3 &localForward, const float3 &targetPosition, const float3 &localUp, const float3 &worldUp)
+float3x4 float3x4::LookAtRH(const float3 &localForwardDir, const float3 &targetForwardDir, const float3 &localUp, const float3 &worldUp)
 {
-    assume(false && "Not implemented!"); ///\todo
+    assume(localForwardDir.IsNormalized());
+    assume(targetForwardDir.IsNormalized());
+    assume(localUp.IsNormalized());
+    assume(worldUp.IsNormalized());
+    assume(localForwardDir.IsPerpendicular(localUp));
+
+    float3 localRight = localUp.Cross(localForwardDir).Normalized();
+
+    float3 worldRight = worldUp.Cross(targetForwardDir);
+    float3 perpWorldUp = targetForwardDir.Cross(worldRight);
+
+    float3x4 m1(worldRight, perpWorldUp, targetForwardDir, float3::zero);
+    float3x4 m2;
+    m2.SetRow(0, localRight, 0.f);
+    m2.SetRow(1, localUp, 0.f);
+    m2.SetRow(2, localForwardDir, 0.f);
+    return m1 * m2;
 }
 
 float3x4 &float3x4::operator =(const float3x3 &rhs)
@@ -1119,9 +1146,14 @@ float3 float3x4::ExtractScale() const
 
 void float3x4::Decompose(float3 &translate, Quat &rotate, float3 &scale) const
 {
+    assume(this->IsOrthogonal());
+
     float3x3 r;
     Decompose(translate, r, scale);
     rotate = Quat(r);
+
+    // Test that composing back yields the original float3x4.
+    assume(float3x4::FromTRS(translate, rotate, scale).Equals(*this, 0.1f));
 }
 
 void float3x4::Decompose(float3 &translate, float3x3 &rotate, float3 &scale) const
@@ -1139,14 +1171,22 @@ void float3x4::Decompose(float3 &translate, float3x3 &rotate, float3 &scale) con
     rotate.ScaleCol(0, 1.f / scale.x);
     rotate.ScaleCol(1, 1.f / scale.y);
     rotate.ScaleCol(2, 1.f / scale.z);
+
+    // Test that composing back yields the original float3x4.
+    assume(float3x4::FromTRS(translate, rotate, scale).Equals(*this, 0.1f));
 }
 
 void float3x4::Decompose(float3 &translate, float3x4 &rotate, float3 &scale) const
 {
+    assume(this->IsOrthogonal());
+
     float3x3 r;
     Decompose(translate, r, scale);
     rotate.SetRotatePart(r);
     rotate.SetTranslatePart(0,0,0);
+
+    // Test that composing back yields the original float3x4.
+    assume(float3x4::FromTRS(translate, rotate, scale).Equals(*this, 0.1f));
 }
 
 std::ostream &operator <<(std::ostream &out, const float3x4 &rhs)

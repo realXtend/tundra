@@ -41,6 +41,9 @@ public:
     /// @note This ctor does not initialize the x, y, z & w members with any value.
     float4() {}
 
+    /// The copy-ctor for float4 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    float4(const float4 &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; w = rhs.w; }
+
     /// Initializes to (x, y, z, w).
     float4(float x, float y, float z, float w);
 
@@ -114,6 +117,12 @@ public:
 
     /// Returns "(x, y, z, w)".
     std::string ToString() const;
+    /// Returns "x y z w". This is the preferred format for the float4 if it has to be serialized to a string for machine transfer.
+    std::string SerializeToString() const;
+
+    /// Parses a string that is of form "x,y,z,w" or "(x,y,z,w)" or "(x;y;z;w)" or "x y z w" to a new float4.
+    static float4 FromString(const char *str);
+    static float4 FromString(const std::string &str) { return FromString(str.c_str()); }
 
     /// Returns x + y + z + w.
     float SumOfElements() const;
@@ -152,6 +161,7 @@ public:
     /// Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
     /// Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on.
     float4 Lerp(const float4 &b, float t) const;
+    static float4 Lerp(const float4 &a, const float4 &b, float t);
 
     /// Computes the squared distance between the (x, y, z) parts of this and the given float4. 
     /// \note This function ignores the w component of this and rhs vector (assumes w=0 or w=1 are the same for both vectors).
@@ -277,6 +287,9 @@ public:
     float4 Div(float rhs) const { return *this / rhs; }
     float4 Neg() const { return -*this; }
 
+    /// Multiplies this vector by rhs *element-wise*, including the w-components.
+    float4 Mul(const float4 &rhs) const;
+
 #ifdef OGRE_INTEROP
     float4(const Ogre::Vector4 &other) { x = other.x; y = other.y; z = other.z; w = other.w; }
     float4 &operator =(const Ogre::Vector4 &other) { x = other.x; y = other.y; z = other.z; w = other.w; return *this; }
@@ -289,6 +302,7 @@ public:
     QString toString() const { return (QString)*this; }
     QVector4D ToQVector4D() const { return QVector4D(x, y, z, w); }
     static float4 FromQVector4D(const QVector4D &v) { return (float4)v; }
+    static float4 FromString(const QString &str) { return FromString(str.toStdString()); }
 #endif
 #ifdef BULLET_INTEROP
     // Bullet uses the same btVector3 class for both 3- and 4 -tuples (due to SSE).

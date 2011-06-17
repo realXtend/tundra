@@ -135,6 +135,28 @@ std::string float2::ToString() const
     return std::string(str);
 }
 
+std::string float2::SerializeToString() const
+{ 
+    char str[256];
+    sprintf(str, "%f %f", x, y);
+    return std::string(str);
+}
+
+float2 float2::FromString(const char *str)
+{
+    assume(str);
+    if (!str)
+        return float2::nan;
+    if (*str == '(')
+        ++str;
+    float2 f;
+    f.x = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    f.y = strtod(str, const_cast<char**>(&str));
+    return f;
+}
+
 float float2::SumOfElements() const
 {
     return x + y;
@@ -272,6 +294,11 @@ float2 float2::Lerp(const float2 &b, float t) const
 {
     assume(0.f <= t && t <= 1.f);
     return (1.f - t) * *this + t * b;
+}
+
+float2 float2::Lerp(const float2 &a, const float2 &b, float t)
+{
+    return a.Lerp(b, t);
 }
 
 void float2::Decompose(const float2 &direction, float2 &outParallel, float2 &outPerpendicular) const
@@ -573,6 +600,12 @@ float2 &float2::operator /=(const float2 &rhs)
     return *this;
 }
 */
+
+float2 float2::Mul(const float2 &rhs) const
+{
+    return float2(x * rhs.x, y * rhs.y);
+}
+
 float2 &float2::operator /=(float scalar)
 {
     float invScalar = 1.f / scalar;

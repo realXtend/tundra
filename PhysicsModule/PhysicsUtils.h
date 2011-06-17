@@ -3,31 +3,21 @@
 #pragma once
 
 #include "CoreDefines.h"
-#include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/float3.h"
+#include "Math/Quat.h"
 #include "LinearMath/btQuaternion.h"
 #include "LinearMath/btVector3.h"
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 
-inline btVector3 ToBtVector3(const Vector3df& vector)
+inline btVector3 ToBtVector3(const float3& vector)
 {
     return btVector3(vector.x, vector.y, vector.z);
 }
 
-inline Vector3df ToVector3(const btVector3& btVector)
+inline float3 ToVector3(const btVector3& btVector)
 {
-    return Vector3df(btVector.x(), btVector.y(), btVector.z());
-}
-
-inline btQuaternion ToBtQuaternion(const Quaternion& quat)
-{
-    return btQuaternion(quat.x, quat.y, quat.z, quat.w);
-}
-
-inline Quaternion ToQuaternion(const btQuaternion& btQuat)
-{
-    return Quaternion(btQuat.x(), btQuat.y(), btQuat.z(), btQuat.w());
+    return float3(btVector.x(), btVector.y(), btVector.z());
 }
 
 /// Simple raycast against single rigid body
@@ -37,7 +27,7 @@ inline Quaternion ToQuaternion(const btQuaternion& btQuat)
     \param body rigid body to test against
     \return true if ray hit the rigid body, false otherwise
 */
-inline bool RayTestSingle(const Vector3df& rayFrom, const Vector3df& rayTo, btRigidBody* body)
+inline bool RayTestSingle(const float3& rayFrom, const float3& rayTo, btRigidBody* body)
 {
     assert (body);
 

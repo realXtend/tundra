@@ -6,7 +6,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 
-#include "Vector3D.h"
+#include "Math/float3.h"
 
 /// Ogre custom object component
 /**
@@ -94,7 +94,7 @@ public:
     /// Returns true if geometry has been committed and mesh entity created
     bool IsCommitted() const { return entity_ != 0; }
 
-    void GetBoundingBox(Vector3df& min, Vector3df& max) const;
+    void GetBoundingBox(float3& min, float3& max) const;
 
     /// Returns the Ogre entity.
     Ogre::Entity *GetEntity() const { return entity_; }

@@ -4,7 +4,7 @@
 
 #include "IComponent.h"
 #include "CoreTypes.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "OgreModuleFwd.h"
 #include "Color.h"
 
@@ -26,7 +26,7 @@
     <div> Defines scene ambient color. </div>
     <li> Color : sunDiffuseColorAttr.
     <div> Defines sun diffuse color.  </div>
-    <li> Vector3df : sunDirectionAttr.
+    <li> float3 : sunDirectionAttr.
     <div> Defines sun direction vector. </div>
     <li> bool : sunCastShadowsAttr.
     <div> Defines that does sun cast shadows (usable only if caelum is disabled) </div>
@@ -55,8 +55,8 @@ public:
     Q_PROPERTY(Color sunDiffuseColorAttr READ getsunDiffuseColorAttr WRITE setsunDiffuseColorAttr); 
 
     /// Defines sun light direction.
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, sunDirectionAttr);
-    Q_PROPERTY(Vector3df sunDirectionAttr READ getsunDirectionAttr WRITE setsunDirectionAttr); 
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, sunDirectionAttr);
+    Q_PROPERTY(float3 sunDirectionAttr READ getsunDirectionAttr WRITE setsunDirectionAttr); 
 
     /// \todo Remove
     DEFINE_QPROPERTY_ATTRIBUTE(bool, fixedTimeAttr);

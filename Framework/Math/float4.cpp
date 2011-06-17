@@ -212,8 +212,36 @@ bool float4::IsPerpendicular3(const float4 &other, float epsilon) const
 std::string float4::ToString() const
 { 
     char str[256];
-    sprintf(str, "(%f, %f, %f, %f)", x, y, z, w);
+    sprintf(str, "(%.3f, %.3f, %.3f, %.3f)", x, y, z, w);
     return std::string(str);
+}
+
+std::string float4::SerializeToString() const
+{ 
+    char str[256];
+    sprintf(str, "%f %f %f %f", x, y, z, w);
+    return std::string(str);
+}
+
+float4 float4::FromString(const char *str)
+{
+    assume(str);
+    if (!str)
+        return float4::nan;
+    if (*str == '(')
+        ++str;
+    float4 f;
+    f.x = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    f.y = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    f.z = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    f.w = strtod(str, const_cast<char**>(&str));
+    return f;
 }
 
 float float4::SumOfElements() const
@@ -472,6 +500,11 @@ float4 float4::Lerp(const float4 &b, float t) const
     return (1.f - t) * *this + t * b;
 }
 
+float4 float4::Lerp(const float4 &a, const float4 &b, float t)
+{
+    return a.Lerp(b, t);
+}
+
 float4 float4::FromScalar(float scalar)
 { 
     return float4(scalar, scalar, scalar, scalar);
@@ -618,6 +651,12 @@ float4 &float4::operator /=(const float4 &rhs)
     return *this;
 }
 */
+
+float4 float4::Mul(const float4 &rhs) const
+{
+    return float4(x * rhs.x, y * rhs.y, z * rhs.z, w * rhs.w);
+}
+
 float4 &float4::operator /=(float scalar)
 {
     float invScalar = 1.f / scalar;

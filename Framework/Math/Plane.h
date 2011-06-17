@@ -144,7 +144,7 @@ public:
     /// Tests if two planes are parallel.
     bool IsParallel(const Plane &plane, float epsilon = 1e-3f) const;
 
-    /// Returns the angle of intersection between two planes.
+    /// Returns the angle of intersection between two planes, in radians.
     float DihedralAngle(const Plane &plane) const;
 
     /// Tests if two planes are the same, up to the given epsilon.

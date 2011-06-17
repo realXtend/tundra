@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMath.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 
 #include <QMetaType>
 #include "Math/float4.h"
@@ -18,9 +18,12 @@ public:
     /// Specifies the rotation of this transform in *degrees*, using the Euler ZYX convention.
     /// This means that vertex v is processed using the formula Rz * Ry * Rx * v, where
     /// Rz, Ry and Rx are elementary counter-clockwise rotations about the cardinal axes z, y and x.
-    /// rotation.x stores the rotation angle (in degrees) of the matrix Rx,
-    /// rotation.y stores the rotation angle (in degrees) of the matrix Ry, and
-    /// rotation.z stores the rotation angle (in degrees) of the matrix Rz.
+    /// NOTE: The angles are stored in an unconventional order:
+    /// rot.x stores the rotation angle (in degrees) of the matrix Rx,
+    /// rot.y stores the rotation angle (in degrees) of the matrix Ry, and
+    /// rot.z stores the rotation angle (in degrees) of the matrix Rz.
+    /// (Instead of having rot[0] store the rotation about Rz, rot[1] about Ry, rot[2] about Rx, as
+    ///  the math libraries do).
     float3 rot; 
     float3 scale;
 
@@ -31,28 +34,35 @@ public:
     {
     }
 
-    Transform(const Vector3df &pos_, const Vector3df &rot_, const Vector3df &scale)
+    Transform(const float3 &pos_, const float3 &rot_, const float3 &scale)
     :pos(pos_),
     rot(rot_),
     scale(scale)
     {
     }
 
-    Transform(const float3x3 &m)
+    explicit Transform(const float3x3 &m)
     :pos(0,0,0),
     scale(1,1,1)
     {
-        SetRotation(m);
+        SetOrientation(m);
     }
 
-    Transform(const float3x4 &m)
+    explicit Transform(const float3x4 &m)
     {
         FromFloat3x4(m);
     }
 
-    Transform(const float4x4 &m)
+    explicit Transform(const float4x4 &m)
     {
         FromFloat4x4(m);
+    }
+
+    void SetPos(const float3 &v)
+    {
+        pos.x = v.x;
+        pos.y = v.y;
+        pos.z = v.z;
     }
 
     void SetPos(float x, float y, float z)
@@ -62,7 +72,8 @@ public:
         pos.z = z;
     }
 
-    void SetRot(float x, float y, float z)
+    /// Direcly sets the rotation angles in euler ZYX convention, in degrees.
+    void SetRotation(float x, float y, float z)
     {
         rot.x = x;
         rot.y = y;
@@ -75,6 +86,11 @@ public:
         scale.x = x;
         scale.y = y;
         scale.z = z;
+    }
+
+    void SetScale(const float3 &s)
+    {
+        scale = s;
     }
 
     float3x4 ToFloat3x4() const
@@ -107,31 +123,43 @@ public:
         float3 scl;
         m.Decompose(trans, rot_, scl);
         pos = trans;
-        rot = RadToDeg(rot_.ToEulerXYZ());
+        rot = RadToDeg(rot_.ToEulerZYX());
         std::swap(rot.x, rot.z); // The above function returns a vector with convention [0] [1] [2]: Z Y X, whereas we want to store it in [0] [1] [2] : X Y Z.
         scale = scl;
     }
 
-    void SetRotation(const float3x3 &mat)
+    void SetRotationAndScale(const float3x3 &mat)
     {
-        rot = RadToDeg(mat.ToEulerXYZ());
+        scale.x = mat.Col(0).Length();
+        scale.y = mat.Col(1).Length();
+        scale.z = mat.Col(2).Length();
+        float3x3 m = mat;
+        m.RemoveScale();
+        SetOrientation(m);
+    }
+
+    /// Sets the rotation part of this transform.
+    void SetOrientation(const float3x3 &mat)
+    {
+        rot = RadToDeg(mat.ToEulerZYX());
         std::swap(rot.x, rot.z); // The above function returns a vector with convention [0] [1] [2]: Z Y X, whereas we want to store it in [0] [1] [2] : X Y Z.
     }
 
-    void SetRotation(const Quat &q)
+    /// Sets the rotation part of this transform.
+    void SetOrientation(const Quat &q)
     {
-        rot = RadToDeg(q.ToEulerXYZ());
+        rot = RadToDeg(q.ToEulerZYX());
         std::swap(rot.x, rot.z); // The above function returns a vector with convention [0] [1] [2]: Z Y X, whereas we want to store it in [0] [1] [2] : X Y Z.
     }
 
     /// Returns the rotation part of this Transform as a float3x3.
-    float3x3 Rotation3x3() const
+    float3x3 Orientation3x3() const
     {
         return float3x3::FromEulerZYX(DegToRad(rot.z), DegToRad(rot.y), DegToRad(rot.x));
     }
 
     /// Returns the rotation part of this Transform as a quaternion.
-    Quat RotationQuat() const
+    Quat Orientation() const
     {
         return Quat::FromEulerZYX(DegToRad(rot.z), DegToRad(rot.y), DegToRad(rot.x));
     }

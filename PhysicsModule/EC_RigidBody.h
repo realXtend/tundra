@@ -8,7 +8,7 @@
 #include "AssetReference.h"
 #include "AssetFwd.h"
 
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "PhysicsModuleApi.h"
 
 #include <QVector>
@@ -44,7 +44,7 @@ Registered by Physics::PhysicsModule.
 <div>Mass of the body. Set to 0 to have a static (immovable) object</div>
 <li>int: shapeType
 <div>Shape type. Can be box, sphere, cylinder, capsule, trimesh, or heightfield (not yet supported)</div>
-<li>Vector3df: size
+<li>float3: size
 <div>Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.</div>
 <li>QString: collisionMeshRef
 <div>Asset ref of the collision mesh. Only effective if shapetype is TriMesh.</div>
@@ -56,9 +56,9 @@ Registered by Physics::PhysicsModule.
 <div>Linear damping coefficient of the object (makes it lose velocity even when no force acts on it)</div>
 <li>float: angularDamping
 <div>Angular damping coefficient of the object (makes it lose angular velocity even when no force acts on it)</div>
-<li>Vector3df: linearFactor
+<li>float3: linearFactor
 <div>Specifies the axes on which forces can act on the object, making it move</div>
-<li>Vector3df: angularFactor
+<li>float3: angularFactor
 <div>Specifies the axes on which torques can act on the object, making it rotate.
 Set to 0,0,0 to make for example an avatar capsule that does not tip over by itself.</div>
 <li>bool: kinematic
@@ -150,8 +150,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(int, shapeType);
     
     /// Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.
-    Q_PROPERTY(Vector3df size READ getsize WRITE setsize)
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, size);
+    Q_PROPERTY(float3 size READ getsize WRITE setsize)
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, size);
 
     /// Collision mesh asset reference.
     Q_PROPERTY(AssetReference collisionMeshRef READ getcollisionMeshRef WRITE setcollisionMeshRef);
@@ -174,12 +174,12 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, angularDamping);
     
     /// Linear factor. Defines in which dimensions the object can move
-    Q_PROPERTY(Vector3df linearFactor READ getlinearFactor WRITE setlinearFactor)
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, linearFactor);
+    Q_PROPERTY(float3 linearFactor READ getlinearFactor WRITE setlinearFactor)
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, linearFactor);
     
     /// Angular factor. Defines in which dimensions the object can rotate
-    Q_PROPERTY(Vector3df angularFactor READ getangularFactor WRITE setangularFactor)
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, angularFactor);
+    Q_PROPERTY(float3 angularFactor READ getangularFactor WRITE setangularFactor)
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, angularFactor);
     
     /// Kinematic flag. If true, forces don't affect the object, but it may push other objects around.
     Q_PROPERTY(bool kinematic READ getkinematic WRITE setkinematic)
@@ -194,12 +194,12 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, drawDebug)
     
     /// Linear velocity
-    Q_PROPERTY(Vector3df linearVelocity READ getlinearVelocity WRITE setlinearVelocity)
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, linearVelocity)
+    Q_PROPERTY(float3 linearVelocity READ getlinearVelocity WRITE setlinearVelocity)
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, linearVelocity)
     
     /// Angular velocity
-    Q_PROPERTY(Vector3df angularVelocity READ getangularVelocity WRITE setangularVelocity)
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, angularVelocity)
+    Q_PROPERTY(float3 angularVelocity READ getangularVelocity WRITE setangularVelocity)
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, angularVelocity)
     
     /// Collision layer
     Q_PROPERTY(int collisionLayer READ getcollisionLayer WRITE setcollisionLayer)
@@ -226,7 +226,7 @@ signals:
         \param newCollision True if same collision did not happen on the previous frame.
         If collision has multiple contact points, newCollision can only be true for the first of them.
      */
-    void PhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+    void PhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
     
 public slots:
 
@@ -239,35 +239,35 @@ public slots:
     /** Note: sets also the attribute, signals a Default attribute change
         \param velocity New linear velocity
      */
-    void SetLinearVelocity(const Vector3df& velocity);
+    void SetLinearVelocity(const float3& velocity);
     
     /// Set angular velocity and activate the body
     /** Note: sets also the attribute, signals a Default attribute change
         \param angularVelocity New angular velocity, specified in degrees / sec
      */
-    void SetAngularVelocity(const Vector3df& angularVelocity);
+    void SetAngularVelocity(const float3& angularVelocity);
     
     /// Apply a force to the body
     /** \param force Force
         \param position Object space position, by default center
      */
-    void ApplyForce(const Vector3df& force, const Vector3df& position = Vector3df::ZERO);
+    void ApplyForce(const float3& force, const float3& position = float3::zero);
     
     /// Apply a torque to the body
     /** \param torque Torque
      */
-    void ApplyTorque(const Vector3df& torque);
+    void ApplyTorque(const float3& torque);
     
     /// Apply an impulse to the body
     /** \param impulse Impulse
         \param position Object space position, by default center
      */
-    void ApplyImpulse(const Vector3df& impulse, const Vector3df& position = Vector3df::ZERO);
+    void ApplyImpulse(const float3& impulse, const float3& position = float3::zero);
     
     /// Apply a torque impulse to the body
     /** \param torqueImpulse Torque impulse
      */
-    void ApplyTorqueImpulse(const Vector3df& torqueImpulse);
+    void ApplyTorqueImpulse(const float3& torqueImpulse);
     
     /// Force the body to activate (wake up)
     void Activate();
@@ -286,20 +286,20 @@ public slots:
         to continue uninterrupted (with proper inter-step interpolation)
         \param rotation New rotation (eulers)
      */
-    void SetRotation(const Vector3df& rotation);
+    void SetRotation(const float3& rotation);
     
     /// Rotate the body
     /** Use this instead of just setting the placeable's full transform to allow linear motion
         to continue uninterrupted (with proper inter-step interpolation)
         \param rotation Delta rotation (eulers)
      */
-    void Rotate(const Vector3df& rotation);
+    void Rotate(const float3& rotation);
     
     /// Return linear velocity
-    Vector3df GetLinearVelocity();
+    float3 GetLinearVelocity();
     
     /// Return angular velocity
-    Vector3df GetAngularVelocity();
+    float3 GetAngularVelocity();
     
     /// Return physics world
     Physics::PhysicsWorld* GetPhysicsWorld() { return world_; }
@@ -308,7 +308,7 @@ public slots:
     /** \param outMin The minimum corner of the box
         \param outMax The maximum corner of the box
     */
-    void GetAabbox(Vector3df &outAabbMin, Vector3df &outAabbMax);
+    void GetAabbox(float3 &outAabbMin, float3 &outAabbMax);
 
     btRigidBody* GetRigidBody() const { return body_; }
     
@@ -377,7 +377,7 @@ private:
     void GetProperties(btVector3& localInertia, float& m, int& collisionFlags);
     
     /// Emit a physics collision. Called from PhysicsWorld
-    void EmitPhysicsCollision(Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+    void EmitPhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
     
     /// Placeable pointer
     boost::weak_ptr<EC_Placeable> placeable_;
@@ -406,7 +406,7 @@ private:
     int cachedShapeType_;
 
     /// Cached shapesize (last created)
-    Vector3df cachedSize_;
+    float3 cachedSize_;
 
     /// Bullet triangle mesh
     boost::shared_ptr<btTriangleMesh> triangleMesh_;

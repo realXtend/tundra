@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
@@ -28,7 +29,7 @@ using namespace OgreRenderer;
 
 EC_Mesh::EC_Mesh(Scene* scene) :
     IComponent(scene),
-    nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(0,0,0),Vector3df(1,1,1))),
+    nodeTransformation(this, "Transform", Transform(float3(0,0,0),float3(0,0,0),float3(1,1,1))),
     meshRef(this, "Mesh ref"),
     skeletonRef(this, "Skeleton ref"),
     meshMaterial(this, "Mesh materials", AssetReferenceList("OgreMaterial")),
@@ -125,30 +126,28 @@ void EC_Mesh::AutoSetPlaceable()
     }
 }
 
-void EC_Mesh::SetAdjustPosition(const Vector3df& position)
+void EC_Mesh::SetAdjustPosition(const float3& position)
 {
     Transform transform = nodeTransformation.Get();
     transform.SetPos(position.x, position.y, position.z);
     nodeTransformation.Set(transform, AttributeChange::LocalOnly);
 }
 
-void EC_Mesh::SetAdjustOrientation(const Quaternion& orientation)
+void EC_Mesh::SetAdjustOrientation(const Quat &orientation)
 {
     Transform transform = nodeTransformation.Get();
-    Vector3df euler;
-    orientation.toEuler(euler);
-    transform.SetRot(euler.x * RADTODEG, euler.y * RADTODEG, euler.z * RADTODEG);
+    transform.SetOrientation(orientation);
     nodeTransformation.Set(transform, AttributeChange::LocalOnly);
 }
 
-void EC_Mesh::SetAdjustScale(const Vector3df& scale)
+void EC_Mesh::SetAdjustScale(const float3& scale)
 {
     Transform transform = nodeTransformation.Get();
-    transform.SetScale(scale.x, scale.y, scale.z);
+    transform.SetScale(scale);
     nodeTransformation.Set(transform, AttributeChange::LocalOnly);
 }
 
-void EC_Mesh::SetAttachmentPosition(uint index, const Vector3df& position)
+void EC_Mesh::SetAttachmentPosition(uint index, const float3& position)
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return;
@@ -156,15 +155,15 @@ void EC_Mesh::SetAttachmentPosition(uint index, const Vector3df& position)
     attachment_nodes_[index]->setPosition(Ogre::Vector3(position.x, position.y, position.z));
 }
 
-void EC_Mesh::SetAttachmentOrientation(uint index, const Quaternion& orientation)
+void EC_Mesh::SetAttachmentOrientation(uint index, const Quat &orientation)
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return;
     
-    attachment_nodes_[index]->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
+    attachment_nodes_[index]->setOrientation(orientation);
 }
 
-void EC_Mesh::SetAttachmentScale(uint index, const Vector3df& scale)
+void EC_Mesh::SetAttachmentScale(uint index, const float3& scale)
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return;
@@ -172,52 +171,48 @@ void EC_Mesh::SetAttachmentScale(uint index, const Vector3df& scale)
     attachment_nodes_[index]->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
 }
 
-Vector3df EC_Mesh::GetAdjustPosition() const
+float3 EC_Mesh::GetAdjustPosition() const
 {
     Transform transform = nodeTransformation.Get();
     return transform.pos;
 }
 
-Quaternion EC_Mesh::GetAdjustOrientation() const
+Quat EC_Mesh::GetAdjustOrientation() const
 {
     Transform transform = nodeTransformation.Get();
-    Quaternion orientation(DEGTORAD * transform.rot.x,
-                      DEGTORAD * transform.rot.y,
-                      DEGTORAD * transform.rot.z);
-    return orientation;
+    return transform.Orientation();
 }
 
-Vector3df EC_Mesh::GetAdjustScale() const
+float3 EC_Mesh::GetAdjustScale() const
 {
     Transform transform = nodeTransformation.Get();
     return transform.scale;
 }
 
-Vector3df EC_Mesh::GetAttachmentPosition(uint index) const
+float3 EC_Mesh::GetAttachmentPosition(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
-        return Vector3df(0.0f, 0.0f, 0.0f);
+        return float3::nan;
         
     const Ogre::Vector3& pos = attachment_nodes_[index]->getPosition();
-    return Vector3df(pos.x, pos.y, pos.z);
+    return float3(pos.x, pos.y, pos.z);
 }
 
-Quaternion EC_Mesh::GetAttachmentOrientation(uint index) const
+Quat EC_Mesh::GetAttachmentOrientation(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
-        return Quaternion();
+        return Quat::nan;
         
-    const Ogre::Quaternion& orientation = attachment_nodes_[index]->getOrientation();
-    return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
+    return attachment_nodes_[index]->getOrientation();
 }
 
-Vector3df EC_Mesh::GetAttachmentScale(uint index) const
+float3 EC_Mesh::GetAttachmentScale(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
-        return Vector3df(1.0f, 1.0f, 1.0f);
+        return float3::nan;
         
     const Ogre::Vector3& scale = attachment_nodes_[index]->getScale();
-    return Vector3df(scale.x, scale.y, scale.z);
+    return float3(scale.x, scale.y, scale.z);
 }
 
 void EC_Mesh::SetDrawDistance(float draw_distance)
@@ -280,11 +275,8 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         
         // Make sure adjustment node is uptodate
         Transform newTransform = nodeTransformation.Get();
-        adjustment_node_->setPosition(newTransform.pos.x, newTransform.pos.y, newTransform.pos.z);
-        Quaternion adjust(DEGTORAD * newTransform.rot.x,
-                        DEGTORAD * newTransform.rot.y,
-                        DEGTORAD * newTransform.rot.z);
-        adjustment_node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
+        adjustment_node_->setPosition(newTransform.pos);
+        adjustment_node_->setOrientation(newTransform.Orientation());
         
         // Prevent Ogre exception from zero scale
         if (newTransform.scale.x < 0.0000001f)
@@ -294,7 +286,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         if (newTransform.scale.z < 0.0000001f)
             newTransform.scale.z = 0.0000001f;
 
-        adjustment_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
+        adjustment_node_->setScale(newTransform.scale);
             
         // Force a re-apply of all materials to this new mesh.
         ApplyMaterial();
@@ -732,12 +724,12 @@ const std::string& EC_Mesh::GetSkeletonName() const
     }
 }    
     
-void EC_Mesh::GetBoundingBox(Vector3df& min, Vector3df& max) const
+void EC_Mesh::GetBoundingBox(float3& min, float3& max) const
 {
     if (!entity_)
     {
-        min = Vector3df(0.0, 0.0, 0.0);
-        max = Vector3df(0.0, 0.0, 0.0);
+        min = float3(0.0, 0.0, 0.0);
+        max = float3(0.0, 0.0, 0.0);
         return;
     }
  
@@ -745,8 +737,8 @@ void EC_Mesh::GetBoundingBox(Vector3df& min, Vector3df& max) const
     const Ogre::Vector3& bboxmin = bbox.getMinimum();
     const Ogre::Vector3& bboxmax = bbox.getMaximum();
     
-    min = Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
-    max = Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
+    min = float3(bboxmin.x, bboxmin.y, bboxmin.z);
+    max = float3(bboxmax.x, bboxmax.y, bboxmax.z);
 }
 
 QVector3D EC_Mesh::GetWorldSize() const
@@ -763,7 +755,7 @@ QVector3D EC_Mesh::GetWorldSize() const
 
     // Get size and take placeable scale into consideration to get real in-world size
     const Ogre::Vector3& bbsize = bbox.getSize();
-    const Vector3df &placeable_scale = placeable->GetScale();
+    const float3 &placeable_scale = placeable->WorldScale();
     // Swap y and z to make it align with other vectors
     size = QVector3D(bbsize.x*placeable_scale.x, bbsize.y*placeable_scale.y, bbsize.z*placeable_scale.z);
     return size;
@@ -890,11 +882,8 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
     else if (attribute == &nodeTransformation)
     {
         Transform newTransform = nodeTransformation.Get();
-        adjustment_node_->setPosition(newTransform.pos.x, newTransform.pos.y, newTransform.pos.z);
-        Quaternion adjust(DEGTORAD * newTransform.rot.x,
-                          DEGTORAD * newTransform.rot.y,
-                          DEGTORAD * newTransform.rot.z);
-        adjustment_node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
+        adjustment_node_->setPosition(newTransform.pos);
+        adjustment_node_->setOrientation(newTransform.Orientation());
         
         // Prevent Ogre exception from zero scale
         if (newTransform.scale.x < 0.0000001f)
@@ -904,7 +893,7 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
         if (newTransform.scale.z < 0.0000001f)
             newTransform.scale.z = 0.0000001f;
         
-        adjustment_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
+        adjustment_node_->setScale(newTransform.scale);
     }
     else if (attribute == &meshRef)
     {
@@ -1163,84 +1152,78 @@ void EC_Mesh::ForceSkeletonUpdate()
         skel->setAnimationState(*entity_->getAllAnimationStates());
 }
 
-Vector3df EC_Mesh::GetBonePosition(const QString& bone_name)
+float3 EC_Mesh::GetBonePosition(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
     {
         const Ogre::Vector3& pos = bone->getPosition();
-        return Vector3df(pos.x, pos.y, pos.z);
+        return float3(pos.x, pos.y, pos.z);
     }
     else
-        return Vector3df::ZERO;
+        return float3::zero;
 }
 
-Vector3df EC_Mesh::GetBoneDerivedPosition(const QString& bone_name)
+float3 EC_Mesh::GetBoneDerivedPosition(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
     {
         Ogre::Vector3 pos = bone->_getDerivedPosition();
-        return Vector3df(pos.x, pos.y, pos.z);
+        return float3(pos.x, pos.y, pos.z);
     }
     else
-        return Vector3df::ZERO;
+        return float3::zero;
 }
 
-Quaternion EC_Mesh::GetBoneOrientation(const QString& bone_name)
+Quat EC_Mesh::GetBoneOrientation(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
-    {
-        const Ogre::Quaternion& quat = bone->getOrientation();
-        return Quaternion(quat.x, quat.y, quat.z, quat.w);
-    }
+        return bone->getOrientation();
     else
-        return Quaternion::IDENTITY;
+        return Quat::identity;
 }
 
-Quaternion EC_Mesh::GetBoneDerivedOrientation(const QString& bone_name)
+Quat EC_Mesh::GetBoneDerivedOrientation(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
-    {
-        const Ogre::Quaternion& quat = bone->_getDerivedOrientation();
-        return Quaternion(quat.x, quat.y, quat.z, quat.w);
-    }
+        return bone->_getDerivedOrientation();
     else
-        return Quaternion::IDENTITY;
+        return Quat::identity;
 }
-
-Vector3df EC_Mesh::GetBoneOrientationEuler(const QString& bone_name)
+/*
+float3 EC_Mesh::GetBoneOrientationEuler(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
     {
         const Ogre::Quaternion& quat = bone->getOrientation();
         Quaternion q(quat.x, quat.y, quat.z, quat.w);
-        Vector3df euler;
+        float3 euler;
         q.toEuler(euler);
         return euler * RADTODEG;
     }
     else
-        return Vector3df::ZERO;
+        return float3::zero;
 }
 
-Vector3df EC_Mesh::GetBoneDerivedOrientationEuler(const QString& bone_name)
+float3 EC_Mesh::GetBoneDerivedOrientationEuler(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
     {
         const Ogre::Quaternion& quat = bone->_getDerivedOrientation();
         Quaternion q(quat.x, quat.y, quat.z, quat.w);
-        Vector3df euler;
+        float3 euler;
         q.toEuler(euler);
         return euler * RADTODEG;
     }
     else
-        return Vector3df::ZERO;
+        return float3::zero;
 }
-
+*/
 bool EC_Mesh::HasMaterialsChanged() const
 {
     if(!entity_ || !meshMaterial.Get().Size())

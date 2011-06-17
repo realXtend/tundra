@@ -210,7 +210,7 @@ template<> std::string Attribute<int>::ToString() const;
 template<> std::string Attribute<uint>::ToString() const;
 template<> std::string Attribute<float>::ToString() const;
 template<> std::string Attribute<Vector3df>::ToString() const;
-template<> std::string Attribute<Quaternion>::ToString() const;
+template<> std::string Attribute<Quat>::ToString() const;
 template<> std::string Attribute<Color>::ToString() const;
 template<> std::string Attribute<AssetReference>::ToString() const;
 tempalte<> std::string Attribute<QVariant>::ToString() const;
@@ -223,7 +223,7 @@ template<> void Attribute<uint>::FromString(const std::string& str, ChangeType c
 template<> void Attribute<float>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<Vector3df>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<Color>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<Quaternion>::FromString(const std::string& str, ChangeType change);
+template<> void Attribute<Quat>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<AssetReference>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<QVariant>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<EntityReference>::FromString(const std::string& str, ChangeType change);

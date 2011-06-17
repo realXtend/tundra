@@ -90,24 +90,12 @@ function Update(frametime)
     }
 
     var placeable = me.placeable;
-    if (motion_z != 0)
-    {
-        var motionvec = new Vector3df();
-        motionvec.z = -motion_z * move_sensitivity * frametime;
-        placeable.TranslateRelative(motionvec);
-    }
-    if (motion_x != 0)
-    {
-        var motionvec = new Vector3df();
-        motionvec.x = motion_x * move_sensitivity * frametime;
-        placeable.TranslateRelative(motionvec);
-    }
-    if (motion_y != 0)
-    {
-        var motionvec = new Vector3df();
-        motionvec.y = motion_y * move_sensitivity * frametime;
-        placeable.TranslateRelative(motionvec);
-    }
+    var motionvec = new float3(motion_x * move_sensitivity * frametime,
+                               motion_y * move_sensitivity * frametime,
+                               -motion_z * move_sensitivity * frametime);
+    motionvec = placeable.Orientation().Mul(motionvec);
+    var newpos = placeable.Position().Add(motionvec);
+    placeable.SetPosition(newpos.x, newpos.y, newpos.z);
 }
 
 function HandleMove(param)

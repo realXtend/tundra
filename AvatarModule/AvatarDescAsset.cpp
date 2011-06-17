@@ -220,13 +220,15 @@ void AvatarDescAsset::ReadBoneModifierSet(const QDomElement& source)
             QDomElement translation = bone.firstChildElement("translation");
             QDomElement scale = bone.firstChildElement("scale");
             
-            modifier.start_.position_ = ParseVector3(translation.attribute("start").toStdString());
-            modifier.start_.orientation_ = ParseEulerAngles(rotation.attribute("start").toStdString());
-            modifier.start_.scale_ = ParseVector3(scale.attribute("start").toStdString());
+            modifier.start_.position_ = float3::FromString(translation.attribute("start"));
+            float3 e = float3::FromString(rotation.attribute("start"));
+            modifier.start_.orientation_ = Quat::FromEulerZYX(e.z, e.y, e.x);////ParseEulerAngles(rotation.attribute("start").toStdString());
+            modifier.start_.scale_ = float3::FromString(scale.attribute("start"));
             
-            modifier.end_.position_ = ParseVector3(translation.attribute("end").toStdString());
-            modifier.end_.orientation_ = ParseEulerAngles(rotation.attribute("end").toStdString());
-            modifier.end_.scale_ = ParseVector3(scale.attribute("end").toStdString());
+            modifier.end_.position_ = float3::FromString(translation.attribute("end"));
+            e = float3::FromString(rotation.attribute("end").toStdString());
+            modifier.end_.orientation_ = Quat::FromEulerZYX(e.z, e.y, e.x);//ParseEulerAngles(rotation.attribute("end").toStdString());
+            modifier.end_.scale_ = float3::FromString(scale.attribute("end"));
             
             std::string trans_mode = translation.attribute("mode").toStdString();
             std::string rot_mode = rotation.attribute("mode").toStdString();
@@ -430,9 +432,9 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
             attachment.bone_name_ = bone.attribute("name").toStdString();
             if (attachment.bone_name_ == "None")
                 attachment.bone_name_ = std::string();
-            attachment.transform_.position_ = ParseVector3(bone.attribute("offset").toStdString());
-            attachment.transform_.orientation_ = ParseQuaternion(bone.attribute("rotation").toStdString());
-            attachment.transform_.scale_ = ParseVector3(bone.attribute("scale").toStdString());
+            attachment.transform_.position_ = float3::FromString(bone.attribute("offset"));
+            attachment.transform_.orientation_ = Quat::FromString(bone.attribute("rotation"));
+            attachment.transform_.scale_ = float3::FromString(bone.attribute("scale"));
         }
         
         QDomElement polygon = avatar.firstChildElement("avatar_polygon");
@@ -736,18 +738,20 @@ QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& b
     SetAttribute(elem, "name", bone.bone_name_);
     
     QDomElement rotation = dest.createElement("rotation");
-    SetAttribute(rotation, "start", WriteEulerAngles(bone.start_.orientation_));
-    SetAttribute(rotation, "end", WriteEulerAngles(bone.end_.orientation_));
+    float3 e = bone.start_.orientation_.ToEulerZYX();
+    SetAttribute(rotation, "start", float3(e.z, e.y, e.x).ToString());//WriteEulerAngles(bone.start_.orientation_));
+    e = bone.end_.orientation_.ToEulerZYX();
+    SetAttribute(rotation, "end", float3(e.z, e.y, e.x).ToString());//WriteEulerAngles(bone.end_.orientation_));
     SetAttribute(rotation, "mode", modifierMode[bone.orientation_mode_]);
     
     QDomElement translation = dest.createElement("translation");
-    SetAttribute(translation, "start", WriteVector3(bone.start_.position_));
-    SetAttribute(translation, "end", WriteVector3(bone.end_.position_));
+    SetAttribute(translation, "start", bone.start_.position_.SerializeToString());
+    SetAttribute(translation, "end", bone.end_.position_.SerializeToString());
     SetAttribute(translation, "mode", modifierMode[bone.position_mode_]);
 
     QDomElement scale = dest.createElement("scale");
-    SetAttribute(scale, "start", WriteVector3(bone.start_.scale_));
-    SetAttribute(scale, "end", WriteVector3(bone.end_.scale_));
+    SetAttribute(scale, "start", bone.start_.scale_.SerializeToString());
+    SetAttribute(scale, "end", bone.end_.scale_.SerializeToString());
     
     elem.appendChild(rotation);
     elem.appendChild(translation);
@@ -834,9 +838,9 @@ QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAtt
         
         QDomElement bone_elem = dest.createElement("bone");
         SetAttribute(bone_elem, "name", bonename);
-        SetAttribute(bone_elem, "offset", WriteVector3(attachment.transform_.position_));
-        SetAttribute(bone_elem, "rotation", WriteQuaternion(attachment.transform_.orientation_));
-        SetAttribute(bone_elem, "scale", WriteVector3(attachment.transform_.scale_));
+        SetAttribute(bone_elem, "offset", attachment.transform_.position_.SerializeToString());
+        SetAttribute(bone_elem, "rotation", attachment.transform_.orientation_.SerializeToString());
+        SetAttribute(bone_elem, "scale", attachment.transform_.scale_.SerializeToString());
         
         avatar_elem.appendChild(bone_elem);
         

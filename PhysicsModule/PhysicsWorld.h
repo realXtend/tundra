@@ -6,7 +6,10 @@
 #include "CoreTypes.h"
 #include "SceneFwd.h"
 #include "PhysicsModuleApi.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
+#include "Math/MathFwd.h"
+#define BULLET_INTEROP
+#include "Math/AABB.h"
 
 #include <LinearMath/btIDebugDraw.h>
 
@@ -23,6 +26,7 @@ class btDiscreteDynamicsWorld;
 class btDispatcher;
 class btCollisionObject;
 class EC_RigidBody;
+class Transform;
 
 class DebugLines;
 
@@ -33,16 +37,16 @@ class PhysicsRaycastResult : public QObject
 public:
     Q_PROPERTY(Entity* entity READ getentity);
     Entity* getentity() const { return entity_; }
-    Q_PROPERTY(Vector3df pos READ getpos);
-    Vector3df getpos() const { return pos_; }
-    Q_PROPERTY(Vector3df normal READ getnormal);
-    Vector3df getnormal() const { return normal_; }
+    Q_PROPERTY(float3 pos READ getpos);
+    float3 getpos() const { return pos_; }
+    Q_PROPERTY(float3 normal READ getnormal);
+    float3 getnormal() const { return normal_; }
     Q_PROPERTY(float distance READ getdistance);
     float getdistance() const { return distance_; }
     
     Entity* entity_;
-    Vector3df pos_;
-    Vector3df normal_;
+    float3 pos_;
+    float3 normal_;
     float distance_;
 };
 
@@ -102,7 +106,7 @@ public slots:
     /// Set gravity that affects all moving objects of the physics world
     /** \param gravity Gravity vector
      */
-    void SetGravity(const Vector3df& gravity);
+    void SetGravity(const float3& gravity);
     
     /// Raycast to the world. Returns only a single (the closest) result.
     /** \param origin World origin position
@@ -112,10 +116,10 @@ public slots:
         \param collisionmask Collision mask. Default has all bits set.
         \return result PhysicsRaycastResult structure
      */
-    PhysicsRaycastResult* Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup = -1, int collisionmask = -1);
+    PhysicsRaycastResult* Raycast(const float3& origin, const float3& direction, float maxdistance, int collisiongroup = -1, int collisionmask = -1);
     
     /// Return gravity
-    Vector3df GetGravity() const;
+    float3 GetGravity() const;
     
     /// Return the Bullet world object
     btDiscreteDynamicsWorld* GetWorld() const;
@@ -135,6 +139,15 @@ public slots:
     /// Return whether simulation is on
     bool GetRunPhysics() const { return runPhysics_; }
     
+    // Debugging aids:
+    ///\todo This is a temporary function, which will be removed in the future.
+    void DrawAABB(const AABB &aabb, float r, float g, float b);
+    ///\todo This is a temporary function, which will be removed in the future.
+    void DrawOBB(const OBB &obb, float r, float g, float b);
+    ///\todo This is a temporary function, which will be removed in the future.
+    void DrawLineSegment(const LineSegment &l, float r, float g, float b);
+    void DrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b);
+    void DrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b);
 signals:
     /// A physics collision has happened between two entities. 
     /** Note: both rigidbodies participating in the collision will also emit a signal separately. 
@@ -147,7 +160,7 @@ signals:
         \param impulse Impulse applied to the objects to separate them
         \param newCollision True if same collision did not happen on the previous frame. If collision has multiple contact points, newCollision can only be true for the first of them.
      */
-    void PhysicsCollision(Entity* entityA, Entity* entityB, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+    void PhysicsCollision(Entity* entityA, Entity* entityB, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
     
     /// Emitted before the simulation steps. Note: emitted only once per frame, not before each substep.
     /** \param frametime Length of simulation steps

@@ -4,7 +4,7 @@
 
 #include "EnvironmentModuleApi.h"
 #include "IComponent.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "Transform.h"
 #include "AssetReference.h"
 #include "AssetFwd.h"
@@ -177,9 +177,9 @@ public:
     /// @param patchY The patch to read from, [0, PatchHeight()[.
     /// @param xinside The vertex inside the patch to compute the normal for, [0, cPatchSize[.
     /// @param yinside The vertex inside the patch to compute the normal for, [0, cPatchSize[.
-    Vector3df CalculateNormal(int x, int y, int xinside, int yinside) const;
+    float3 CalculateNormal(int x, int y, int xinside, int yinside) const;
 
-    Vector3df CalculateNormal(int mapX, int mapY) const { return CalculateNormal( (int) mapX / cPatchSize, (int) mapY / cPatchSize, mapX % cPatchSize, mapY % cPatchSize); }
+    float3 CalculateNormal(int mapX, int mapY) const { return CalculateNormal( (int) mapX / cPatchSize, (int) mapY / cPatchSize, mapX % cPatchSize, mapY % cPatchSize); }
 
     COMPONENT_NAME("EC_Terrain", 11)
 public slots:
@@ -215,21 +215,21 @@ public slots:
     
     /// Returns the point on the terrain in world space that lies on top of the given world space coordinate.
     /// @param point The point in world space to get the corresponding map point (in world space) for.
-    Vector3df GetPointOnMap(const Vector3df &point) const;
+    float3 GetPointOnMap(const float3 &point) const;
 
     /// Returns the point on the terrain in local space that lies on top of the given world space coordinate.
     /// @param point The point in world space to get the corresponding map point (in local space) for.
-    Vector3df GetPointOnMapLocal(const Vector3df &point) const;
+    float3 GetPointOnMapLocal(const float3 &point) const;
 
     /// Returns the signed distance (in world space) of the given point to the corresponding map point on the terrain.
     /// @param point The point in world space to test.
     /// @return The signed distance to the terrain. If the given point is above the terrain, the distance test returns a positive number.
     /// If the point is below the terrain, a negative number is returned. The above/below concept is measured along the
     /// local up axis of the terrain (not the global world space up axis).
-    float GetDistanceToTerrain(const Vector3df &point) const;
+    float GetDistanceToTerrain(const float3 &point) const;
     
     /// Returns true if given point in world space is on top (in terms of the local terrain up axis) of, or lying on, the terrain.
-    bool IsOnTopOfMap(const Vector3df &point) const;
+    bool IsOnTopOfMap(const float3 &point) const;
 
     /// Returns the interpolated height value of the terrain at the given fractional coordinate.
     /// @param x In the range [0, EC_Terrain::PatchWidth * EC_Terrain::cPatchSize-1.0f ].
@@ -243,7 +243,7 @@ public slots:
     /// @param u [out]
     /// @param v [out]
 
-    void GetTriangleNormals(float x, float y, Vector3df &n1, Vector3df &n2, Vector3df &n3, float &u, float &v) const;
+    void GetTriangleNormals(float x, float y, float3 &n1, float3 &n2, float3 &n3, float &u, float &v) const;
 
     /// Returns the vertices and barycentric UV of the triangle at the given map coordinate, in local space.
     /// @param n1 [out]
@@ -251,18 +251,18 @@ public slots:
     /// @param n3 [out]
     /// @param u [out]
     /// @param v [out]
-    void GetTriangleVertices(float x, float y, Vector3df &v1, Vector3df &v2, Vector3df &v3, float &u, float &v) const;
+    void GetTriangleVertices(float x, float y, float3 &v1, float3 &v2, float3 &v3, float &u, float &v) const;
 
     /// Computes the terrain plane normal (uninterpolated triangle normal) at the given map coordinate.
-    Vector3df GetPlaneNormal(float x, float y) const;
+    float3 GetPlaneNormal(float x, float y) const;
 
     /// Returns the triangle normal of the given triangle on the map, given the local space 2D map coordinates for the point.
     /// The normal is returned in *world* space.
-    Vector3df GetInterpolatedNormal(float x, float y) const;
+    float3 GetInterpolatedNormal(float x, float y) const;
 
     /// Helper function, which returns for given world coordinate point terrain rotation in Euler angles. 
     /// @note This assumes that "mesh" which is rotation for terrain is searched is orginally authored to look -y - axis.
-    Vector3df GetTerrainRotationAngles(float x, float y, float z, const Vector3df& direction) const;
+    float3 GetTerrainRotationAngles(float x, float y, float z, const float3& direction) const;
 
     /// Removes all stored terrain patches and the associated Ogre scene nodes.
     void Destroy();

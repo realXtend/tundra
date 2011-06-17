@@ -245,7 +245,7 @@ function vprint(v) {
 }
 
 function crossp(v1, v2) {
-    var result = new Vector3df();
+    var result = new float3();
 
     result.x = v1.y * v2.z - v1.z * v2.y;
     result.y = v1.z * v2.x - v1.x * v2.z;
@@ -255,7 +255,7 @@ function crossp(v1, v2) {
 }
 
 function vadd(v1, v2) {
-    var result = new Vector3df();
+    var result = new float3();
 
     result.x = v1.x + v2.x;
     result.y = v1.y + v2.y;
@@ -265,7 +265,7 @@ function vadd(v1, v2) {
 }
 
 function smul(v1, s) {
-    var result = new Vector3df();
+    var result = new float3();
     
     result.x = v1.x * s;
     result.y = v1.y * s;
@@ -275,7 +275,7 @@ function smul(v1, s) {
 }
 
 function conjg(quat, v) {
-    var qvec = new Vector3df();
+    var qvec = new float3();
     qvec.x = quat.x;
     qvec.y = quat.y;
     qvec.z = quat.z;
@@ -312,8 +312,7 @@ function createCanvas(event) {
             var q = placeable.Orientation;
 
         // create unitvector for negative Z-axis
-        var unz = new Vector3df();
-        unz.z = -1;
+        var unz = new float3(0, 0, -1);
 
         // calculate conjugate
         var v = conjg(q, unz);
@@ -337,10 +336,11 @@ function createCanvas(event) {
     
     entity.placeable.transform = transform;
 
-    rotvec = new Vector3df();
+    rotvec = new float3();
 
     rotvec.x = 187;
     rotvec.y = 180;
+    rotvec.z = 0;
 
     prev = makeButton('prev', entity.placeable, 1, rotvec);
 
@@ -359,8 +359,7 @@ function makeButton(name, placeable, dir, rotation) {
     button.mesh.meshRef = button_mesh_ref;
 
     // create unit vector for X-axis (negative or positive)
-    var unx = new Vector3df();
-    unx.x = dir;
+    var unx = new float3(dir, 0, 0);
     
     // calculate conjugate
     var v = conjg(placeable.Orientation, unx);

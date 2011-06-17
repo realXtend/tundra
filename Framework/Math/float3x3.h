@@ -88,8 +88,11 @@ public:
     static const float3x3 nan;
 
     /// Creates a new float3x3 with uninitialized member values.
-    /** [Category: Create] */
+    /** [Category: Create] [opaque-qtscript] */
     float3x3() {}
+
+    /// The copy-ctor for float3x3 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+    float3x3(const float3x3 &rhs) { Set(rhs); }
 
     /// Constructs a new float3x3 by explicitly specifying all the matrix elements.
     /// The elements are specified in row-major format, i.e. the first row first followed by the second and third row.
@@ -108,7 +111,7 @@ public:
     float3x3(const float3 &col0, const float3 &col1, const float3 &col2);
 
     /// Constructs this float3x3 from the given quaternion.
-    float3x3(const Quat &orientation);
+    explicit float3x3(const Quat &orientation);
 
     /// Creates a new float3x3 that rotates about one of the principal axes by the given angle. [indexTitle: RotateX/Y/Z]
     /** Calling RotateX, RotateY or RotateZ is slightly faster than calling the more generic RotateAxisAngle function. */
@@ -129,6 +132,10 @@ public:
     /// Creates a new float3x3 that performs the rotation expressed by the given quaternion.
     static float3x3 FromQuat(const Quat &orientation);
 
+    /// Converts this rotation matrix to a quaternion.
+    /// This function assumes that the matrix is orthonormal (no shear or scaling) and does not perform any mirroring (determinant > 0).
+    Quat ToQuat() const;
+
     /// Creates a new float3x3 as a combination of rotation and scale.
     /** This function creates a new float3x3 M of the form M = R * S, where R is a
         rotation matrix and S a scale matrix. Transforming a vector v using this matrix computes the vector
@@ -137,7 +144,7 @@ public:
     static float3x3 FromRS(const Quat &rotate, const float3 &scale);
     static float3x3 FromRS(const float3x3 &rotate, const float3 &scale);
 
-    /// Creates a new float3x3 from the given sequence of Euler rotation angles.
+    /// Creates a new float3x3 from the given sequence of Euler rotation angles (in radians).
     /** The FromEulerABC function returns a matrix M = A(ea) * B(eb) * C(ec). Rotation
         C is applied first, followed by B and then A. [indexTitle: FromEuler***] */
     static float3x3 FromEulerXYX(float ex, float ey, float ex2);
@@ -284,6 +291,9 @@ public:
              float _10, float _11, float _12,
              float _20, float _21, float _22);
 
+    /// Sets this to be a copy of the matrix rhs.
+    void Set(const float3x3 &rhs);
+
     /// Sets all values of this matrix.
     /// @param values The values in this array will be copied over to this matrix. The source must contain 9 floats in row-major order (the same
     ///        order as the Set() function above has its input parameters in).
@@ -305,14 +315,14 @@ public:
 
     /// Sets this matrix to perform rotation about the positive X axis which passes through
     /// the origin. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartX(float angle);
+    void SetRotatePartX(float angleRadians);
     /// Sets this matrix to perform rotation about the positive Y axis. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartY(float angle);
+    void SetRotatePartY(float angleRadians);
     /// Sets this matrix to perform rotation about the positive Z axis. [similarOverload: SetRotatePart] [hideIndex]
-    void SetRotatePartZ(float angle);
+    void SetRotatePartZ(float angleRadians);
 
     /// Sets this matrix to perform rotation about the given axis and angle. [indexTitle: SetRotatePart/X/Y/Z]
-    void SetRotatePart(const float3 &axisDirection, float angle);
+    void SetRotatePart(const float3 &axisDirection, float angleRadians);
     /// Sets this matrix to perform the rotation expressed by the given quaternion. 
     void SetRotatePart(const Quat &orientation);
 
@@ -516,7 +526,11 @@ public:
 
     std::string ToString2() const;
 
-    /// Extracts the rotation part of this matrix into Euler rotation angles.
+    /// Extracts the rotation part of this matrix into Euler rotation angles (in radians).
+    /// @note It is better to thinkg about the returned float3 as an array of three floats, and
+    /// not as a triple of xyz, because e.g. the .y component returned by ToEulerYXZ() does
+    /// not return the amount of rotation about the y axis, but contains the amount of rotation
+    /// in the second axis, in this case the x axis.
     /// [Category: Extract] [indexTitle: ToEuler***]
     float3 ToEulerXYX() const;
     float3 ToEulerXZX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
