@@ -19,6 +19,7 @@
 #include "EC_Camera.h"
 #include "Entity.h"
 #include "OgreConversionUtils.h"
+#include "LoggingFunctions.h"
 #ifdef SKYX_ENABLED
 #include "EC_SkyX.h"
 #endif
@@ -50,6 +51,39 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     position(this, "Position")
 {
     OgreWorldPtr w = scene->GetWorld<OgreWorld>();
+    if (!w)
+    {
+        LogError("EC_SkyX: no OgreWorld available. Cannot be created.");
+        return;
+    }
+
+    // If no active camera around, we must wait for one in order to proceed with the creation of SkyX.
+    if (!w->IsActive())
+    {
+        connect(w.get(), SIGNAL(ActiveCameraChanged(EC_Camera *)), SLOT(Create()));
+        return;
+    }
+
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
+}
+
+EC_Hydrax::~EC_Hydrax()
+{
+    SAFE_DELETE(impl);
+}
+
+void EC_Hydrax::Create()
+{
+    SAFE_DELETE(impl);
+
+    if (!ParentScene())
+    {
+        LogError("EC_Hydrax: no parent scene. Cannot be created.");
+        return;
+    }
+
+    OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
+    assert(w);
 
     impl = new EC_HydraxImpl();
     impl->hydrax = new Hydrax::Hydrax(w->GetSceneManager(), static_cast<EC_Camera *>(w->GetRenderer()->GetActiveCamera())->GetCamera(),
@@ -73,18 +107,13 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     // but due to the high number of customizable parameters, since 0.4 version, Hydrax allows save/load config files.
     impl->hydrax->loadCfg("HydraxDemo.hdx");
 
-    position.Set(OgreRenderer::ToCoreVector(impl->hydrax->getPosition()), AttributeChange::Disconnected);
+    position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
 
     // Create water
     impl->hydrax->create();
 
     connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)));
-}
-
-EC_Hydrax::~EC_Hydrax()
-{
-    delete impl;
 }
 
 void EC_Hydrax::UpdateAttribute(IAttribute *attr)

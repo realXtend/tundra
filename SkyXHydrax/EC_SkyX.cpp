@@ -54,7 +54,10 @@ EC_SkyX::EC_SkyX(Scene* scene) :
 {
     OgreWorldPtr w = scene->GetWorld<OgreWorld>();
     if (!w)
+    {
+        LogError("EC_SkyX: no OgreWorld available. Cannot be created.");
         return;
+    }
 
     // If no active camera around, we must wait for one in order to proceed with the creation of SkyX.
     if (!w->IsActive())
@@ -98,6 +101,8 @@ void EC_SkyX::CreateSunlight()
 
 void EC_SkyX::Create()
 {
+    SAFE_DELETE(impl);
+
     try
     {
         if (!ParentScene())

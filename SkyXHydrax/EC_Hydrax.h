@@ -37,6 +37,7 @@ private:
     EC_HydraxImpl *impl;
 
 private slots:
+    void Create();
     void UpdateAttribute(IAttribute *attr);
     void Update(float frameTime);
 };
