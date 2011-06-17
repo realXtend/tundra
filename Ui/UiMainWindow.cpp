@@ -62,13 +62,25 @@ void UiMainWindow::LoadWindowSettingsFromFile()
 
     setWindowTitle(owner->Config()->GetApplicationIdentifier());
 
-    width = max(1, min(DesktopWidth(), width));
-    height = max(1, min(DesktopHeight(), height));
-    windowX = max(0, min(DesktopWidth()-width, windowX));
-    windowY = max(25, min(DesktopHeight()-height, windowY));
+    if (fullscreen)
+    {
+        showFullScreen();
+    }
+    else if (maximized)
+    {
+        showMaximized();
+    }
+    else
+    {
+        showNormal();
+        width = max(1, min(DesktopWidth(), width));
+        height = max(1, min(DesktopHeight(), height));
+        windowX = max(0, min(DesktopWidth()-width, windowX));
+        windowY = max(25, min(DesktopHeight()-height, windowY));
 
-    resize(width, height);
-    move(windowX, windowY);
+        resize(width, height);
+        move(windowX, windowY);
+    }
 }
 
 void UiMainWindow::SaveWindowSettingsToFile()
