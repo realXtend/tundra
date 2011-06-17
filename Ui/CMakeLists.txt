@@ -2,6 +2,8 @@
 init_target (Ui)
 #init_target (Ui OUTPUT ./)
 
+MocFolder ()
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)

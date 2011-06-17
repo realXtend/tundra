@@ -4,6 +4,8 @@ init_target(Console)
 # Use this if building Console as a SHARED lib.
 #init_target(Console OUTPUT ./)
 
+MocFolder ()
+
 # Define source files
 file(GLOB CPP_FILES *.cpp)
 file(GLOB H_FILES *.h)

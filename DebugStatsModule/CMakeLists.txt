@@ -3,6 +3,8 @@ init_target (DebugStatsModule OUTPUT plugins)
 
 GetEntityComponents()
 
+MocFolder ()
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)

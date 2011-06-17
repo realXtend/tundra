@@ -1,6 +1,8 @@
 # Define target name
 init_target (SkyXHydrax OUTPUT plugins)
 
+MocFolder ()
+
 # Define source files
 if (SKYX)
     file (GLOB CPP_FILES dllmain.cpp EC_SkyX.cpp)

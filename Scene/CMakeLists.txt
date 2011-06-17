@@ -1,6 +1,8 @@
 # Define target name and output directory
 init_target (Scene)
 
+MocFolder ()
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)

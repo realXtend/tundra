@@ -1,6 +1,8 @@
 # Define target name and output directory
 init_target(Asset)
 
+MocFolder ()
+
 # Use this if building Asset as a SHARED lib.
 #init_target(Asset OUTPUT ./)
 

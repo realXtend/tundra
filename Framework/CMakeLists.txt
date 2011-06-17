@@ -1,6 +1,8 @@
 # Define target name
 init_target(Framework)
 
+MocFolder ()
+
 # Define source files
 file(GLOB CPP_FILES *.cpp)
 file(GLOB H_FILES *.h)
