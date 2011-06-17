@@ -38,13 +38,14 @@ var animsDetected = false;
 var listenGesture = false;
 
 // Camera variables
+var checks_per_second = 30.0;
+var time_since_check = 0;
 var visibility_detection_enabled = true;
 var avatar_camera_default_distance = 7.0;
 var avatar_camera_distance = avatar_camera_default_distance;
 var avatar_camera_preferred_distance = avatar_camera_distance;
-var avatar_camera_default_height = 1.0;
-var avatar_camera_height = avatar_camera_default_height;
-var avatar_camera_preferred_height = avatar_camera_height;
+var avatar_camera_height = 1.0;
+
 
 // Create avatar on server, and camera & inputmapper on client
 if (isserver) {
@@ -683,11 +684,7 @@ function ClientHandleMouseScroll(relativeScroll)
             moveAmount = -1;
     }
     if (moveAmount != 0)
-    {
-        // Add movement, if visibility detection is enabled check for visibility first
-        if(visibility_detection_enabled && !AvatarVisible(avatar_camera_default_distance + moveAmount))
-            return;
-        
+    {   
         avatar_camera_default_distance = avatar_camera_default_distance + moveAmount;
         // Clamp distance  to be between 1 and 500
         if (avatar_camera_default_distance < -0.5)
@@ -710,76 +707,64 @@ function ClientHandleMouseScroll(relativeScroll)
     }
 }
 
-// Shoots single ray from given location to avatarplaceable (levels the ray with z-axis)
-function AvatarVisibleFrom(location) {
-    if(first_person)
-        return true;
+// Finds visible distance for avatar camera
+// \note To get smoother camera movement we need to detect objects
+//       before they occlude the view. This should be done with
+//       with region query instead of raycasting.
+function FindVisibleCameraDistance() {
+    if(first_person || flying || !visibility_detection_enabled)
+        return;
         
-    var avatartransform = me.placeable.transform;
-        
-    avatarposition = new Vector3df();
-    avatarposition.x = avatartransform.pos.x;
-    avatarposition.y = avatartransform.pos.y;
-    avatarposition.z = avatartransform.pos.z + 0.7; // Magic offset
-    
-    location.z = avatarposition.z;
-    
-    var raycastResult = renderer.RaycastFromTo(location, avatarposition);
-    if(raycastResult.entity != null) {   
-        if(me.id == raycastResult.entity.id)
-            return true;
-    }
-    return false;
-}
-
-// Shoots three rays to avatarplaceable from given camera distance
-function AvatarVisible(distance) {
-    var avatarplaceable = me.placeable;
-    var avatartransform = avatarplaceable.transform;
-    
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var avatarplaceable = me.placeable;
+    var cameratransform = cameraentity.placeable.transform;
+    var avatartransform = me.placeable.transform;
     
+    // Give offset to the source of the ray so we don't hit our own avatar when moving.
+    var avatarposition = new Vector3df();
+    avatarposition.x = -0.1;
+    avatarposition.z = 0.7;
+    avatarposition = avatarplaceable.GetRelativeVector(avatarposition);
+    avatarposition.x += avatartransform.pos.x;
+    avatarposition.y += avatartransform.pos.y;
+    avatarposition.z += avatartransform.pos.z;
+    
+    // We don't need to calculate the actual 'default' position for the 
+    // camera since all we care about is the direction.
     var cameraposition = new Vector3df();
-    var offsetvec = new Vector3df();
+    cameraposition.x = cameratransform.pos.x;
+    cameraposition.y = cameratransform.pos.y;
+    cameraposition.z = avatarposition.z;
     
-    for(var x = -0.7; x <= 0.7; x += 0.7) {
-        offsetvec.x = -distance;
-        offsetvec.z = avatar_camera_height;
-        offsetvec.y = x;
-        
-        offsetvec = avatarplaceable.GetRelativeVector(offsetvec);
-        cameraposition.x = avatartransform.pos.x + offsetvec.x;
-        cameraposition.y = avatartransform.pos.y + offsetvec.y;
-        cameraposition.z = avatartransform.pos.z + offsetvec.z;
-        
-        if(!AvatarVisibleFrom(cameraposition))
-            return false;
-    }
-    return true;
-}
-
-// Checks if avatar is visible. If not, finds visible camera distance
-function FindVisiblePosition()  {
-    for(var x = avatar_camera_default_distance; x >= 0.4; x -= 0.4) {
-        if(AvatarVisible(x)) {
-            avatar_camera_preferred_distance = x;
-            return true;
+    var raycastResult = renderer.RaycastFromTo(avatarposition, cameraposition);
+    if(raycastResult.entity != null) {
+        avatar_camera_preferred_distance = distance(avatarposition, raycastResult.pos);
+        if(avatar_camera_preferred_distance <= 0.1) {
+            avatar_camera_preferred_distance = 0.1;
+        } else if(avatar_camera_preferred_distance >= avatar_camera_default_distance) {
+            avatar_camera_preferred_distance = avatar_camera_default_distance;
         }
     }
 }
 
-// Moves the actual distance of the camera towards the 'preferred' visible distance
-function MoveAvatarCamera() {
+function distance(v1, v2) {
+    var a = Math.pow((v1.x - v2.x), 2);
+    var b = Math.pow((v1.y - v2.y), 2);
+    var c = Math.pow((v1.z - v2.z), 2);
+    return Math.sqrt(a + b + c);
+}
+
+// Moves the actual distance of the camera towards the 'preferred' visible distance.
+// This provides smoothing to camera movement between visible distances.
+function AdjustCameraDistance() {
     if(first_person) {
         avatar_camera_distance = avatar_camera_default_distance;
         return
     }
-
-    if(Math.abs(avatar_camera_preferred_distance - avatar_camera_distance) < 0.13) {
+    if(Math.abs(avatar_camera_preferred_distance - avatar_camera_distance) < 0.4) {
         avatar_camera_distance = avatar_camera_preferred_distance;
         return
     }
-    
     if(avatar_camera_preferred_distance > avatar_camera_distance) {
         avatar_camera_distance += (avatar_camera_preferred_distance - avatar_camera_distance) / 25;
     } else if(avatar_camera_preferred_distance < avatar_camera_distance) {
@@ -787,18 +772,24 @@ function MoveAvatarCamera() {
     }
 }
 
-function ClientUpdateAvatarCamera() {
+function ClientUpdateAvatarCamera(frametime) {
     if (!tripod)
     {
+        if(frametime == null)
+            frametime = 0;
+    
         var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
         if (cameraentity == null)
             return;
         var cameraplaceable = cameraentity.placeable;
         var avatarplaceable = me.placeable;
         
-        if(visibility_detection_enabled && !first_person && !flying)
-            FindVisiblePosition();
-        MoveAvatarCamera();
+        time_since_check += frametime;
+        if(time_since_check >= 1/checks_per_second) {
+            FindVisibleCameraDistance();
+            time_since_check = 0; 
+        }
+        AdjustCameraDistance();
 
         var cameratransform = cameraplaceable.transform;
         var avatartransform = avatarplaceable.transform;
