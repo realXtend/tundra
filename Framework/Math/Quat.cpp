@@ -222,22 +222,22 @@ Quat Quat::Slerp(const Quat &q2, float t) const
 
     float a;
     float b;
-    if (angle >= 0.99f) // If angle is close to taking the denominator to zero, resort to linear interpolation (and normalization).
+    if (angle <= 0.97f) // perform spherical linear interpolation.
     {
-        a = 1.f - t;
-        b = t;
-        sign = 1.f;
-    }
-    else
-    {
-        angle = acos(Min(angle, 1.f)); // After this, angle is in the range pi/2 -> 0 as the original angle variable ranged from 0 -> 1.
+        angle = acos(angle); // After this, angle is in the range pi/2 -> 0 as the original angle variable ranged from 0 -> 1.
 
         float c = 1.f / sin(angle);
         a = sin((1.f - t) * angle) * c;
         b = sin(angle * t) * c;
     }
+    else // If angle is close to taking the denominator to zero, resort to linear interpolation (and normalization).
+    {
+        a = 1.f - t;
+        b = t;
+        sign = 1.f;
+    }
     
-    return ((*this * a) + (q2 * (b * sign))).Normalized();
+    return (*this * (a * sign) + q2 * b).Normalized();
 }
 
 Quat Quat::Slerp(const Quat &a, const Quat &b, float t)
