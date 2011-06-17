@@ -10,9 +10,9 @@
 
 #include "CoreTypes.h"
 #include "AssetFwd.h"
+#include "AssetEnum.h"
 
 class QFileSystemWatcher;
-enum AssetLoadState;
 
 /// Loads the given local file into the specified vector. Clears all data previously in the vector.
 /// Returns true on success.

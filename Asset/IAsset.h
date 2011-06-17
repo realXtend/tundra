@@ -9,14 +9,8 @@
 
 #include "CoreTypes.h"
 #include "AssetFwd.h"
+#include "AssetEnum.h"
 #include "AssetReference.h"
-
-enum AssetLoadState
-{
-    ASSET_LOAD_SUCCESFULL = 0,
-    ASSET_LOAD_PROCESSING,
-    ASSET_LOAD_FAILED
-};
 
 class IAsset : public QObject, public boost::enable_shared_from_this<IAsset>
 {
