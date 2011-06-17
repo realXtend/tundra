@@ -109,22 +109,61 @@ public slots:
     /// If you want to set the orientation of this placeable using Euler angles, use e.g. 
     /// the Quat::FromEulerZYX function.
     /// @note This function sets the Transform attribute of this component, and synchronizes to network.
+    /// @note This function preserves the previous position and scale of this transform.
     void SetOrientation(const Quat &q);
 
+    /// Sets the rotation and scale of this placeable (the local-to-parent transform).
+    /// @param rotAndScale The transformation matrix to set. This matrix is assumed to be orthogonal (no shear), 
+    ///                    and can not contain any mirroring.
+    /// @note This function sets the Transform attribute of this component, and synchronizes to network.
+    /// @note This function preserves the previous position of this transform.
+    void SetOrientationAndScale(const float3x3 &rotAndScale);
+    void SetOrientationAndScale(const Quat &q, const float3 &scale);
+
+    /// Sets the scale of this placeable's transform.
+    /// @note Due to very odd Ogre3D behavior, hierarchical nodes are concatenated in a very unstandard manner.
+    ///       The Ogre way for concatenating two Transforms T1 * R1 * S1 and T2 * R2 * S2 results in the transform
+    ///       T1 * R1 * (S1(T2)) * R2 * S1 * R2, where S1(T2) is the scale applied to the translation T2.
+    ///       The normal way would be to produce a concatenation T1 * R1 * S1 * T2 * R2 * S2.
+    ///       Therefore, expect to receive odd results if using scales in a hierarchy.
+    /// @note This function preserves the previous translation and rotation of this placeable.
     void SetScale(float x, float y, float z);
     void SetScale(const float3 &scale);
 
-    /// Sets the rotation and scale of this placeable (the local-to-parent transform).
-    /// @param mat The transformation matrix to set. This matrix is assumed to be orthogonal (no shear), 
-    ///            and can not contain any mirroring.
-    /// @note This function sets the Transform attribute of this component, and synchronizes to network.
-    void SetTransform(const float3x3 &mat);
     /// Sets the position, rotation and scale of this placeable (the local-to-parent transform).
     /// @param tm An orthogonal matrix (no shear), which cannot contain mirroring. The float4x4 version is provided
     ///           for conveniency, and the last row must be identity [0 0 0 1].
     /// @note This function sets the Transform attribute of this component, and synchronizes to network.
+    /// @note Logically, the matrix tm is applied to the object first before translating by pos.
+    void SetTransform(const float3x3 &tm, const float3 &pos);
     void SetTransform(const float3x4 &tm);
     void SetTransform(const float4x4 &tm);
+
+    /// Sets the position and rotation of this placeable (the local-to-parent transform).
+    /// @note This function RESETS the scale of this transform to (1,1,1).
+    /// @note Logically, the matrix tm is applied to the object first before translating by pos.
+    void SetTransform(const Quat &orientation, const float3 &pos);
+    /// Sets the position, rotation and scale of this placeable (the local-to-parent transform).
+    /// @note Logically, the order of transformations is T * R * S * v.
+    void SetTransform(const Quat &orientation, const float3 &pos, const float3 &scale);
+
+    /// Sets the transform of this placeable by specifying the world-space transform this scene node should have.
+    /// This function recomputes the local->parent transform for this placeable so that the resulting world transform is as given.
+    /// @param tm An orthogonal matrix (no shear), which cannot contain mirroring. The float4x4 version is provided
+    ///           for conveniency, and the last row must be identity [0 0 0 1].
+    /// @note This function sets the Transform attribute of this component, and synchronizes to network.
+    /// @note Logically, the matrix tm is applied to the object first before translating by pos.
+    void SetWorldTransform(const float3x3 &tm, const float3 &pos);
+    void SetWorldTransform(const float3x4 &tm);
+    void SetWorldTransform(const float4x4 &tm);
+
+    /// Sets the transform of this placeable by specifying the world-space transform this scene node should have.
+    /// @note This function RESETS the scale of this transform to (1,1,1).
+    /// @note Logically, the matrix tm is applied to the object first before translating by pos.
+    void SetWorldTransform(const Quat &orientation, const float3 &pos);
+    /// Sets the transform of this placeable by specifying the world-space transform this scene node should have.
+    /// @note Logically, the order of transformations is T * R * S * v.
+    void SetWorldTransform(const Quat &orientation, const float3 &pos, const float3 &scale);
 
     /// Returns the position of this placable node in world space.
     float3 WorldPosition() const;

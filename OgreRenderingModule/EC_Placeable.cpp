@@ -919,13 +919,23 @@ void EC_Placeable::SetScale(const float3 &scale)
     transform.Set(newtrans, AttributeChange::Default);
 }
 
-void EC_Placeable::SetTransform(const float3x3 &tm)
+void EC_Placeable::SetOrientationAndScale(const float3x3 &tm)
 {
     assume(tm.IsOrthogonal());
     assume(!tm.HasNegativeScale());
     Transform newtrans = transform.Get();
     newtrans.SetRotationAndScale(tm);
     transform.Set(newtrans, AttributeChange::Default);
+}
+
+void EC_Placeable::SetOrientationAndScale(const Quat &q, const float3 &scale)
+{
+    SetOrientationAndScale(q.ToFloat3x3() * float3x3::Scale(scale));
+}
+
+void EC_Placeable::SetTransform(const float3x3 &tm, const float3 &pos)
+{
+    SetTransform(float3x4(tm, pos));
 }
 
 void EC_Placeable::SetTransform(const float3x4 &tm)
@@ -941,10 +951,69 @@ void EC_Placeable::SetTransform(const float3x4 &tm)
     SetScale(scale);
 }
 
+void EC_Placeable::SetTransform(const Quat &orientation, const float3 &pos)
+{
+    SetTransform(float3x4(orientation, pos));
+}
+
+void EC_Placeable::SetTransform(const Quat &orientation, const float3 &pos, const float3 &scale)
+{
+    SetTransform(float3x4::FromTRS(pos, orientation, scale));
+}
+
 void EC_Placeable::SetTransform(const float4x4 &tm)
 {
     assume(tm.Row(3).Equals(float4(0,0,0,1)));
     SetTransform(tm.Float3x4Part());
+}
+
+void EC_Placeable::SetWorldTransform(const float3x3 &tm, const float3 &pos)
+{
+    SetWorldTransform(float3x4(tm, pos));
+}
+
+void EC_Placeable::SetWorldTransform(const float3x4 &tm)
+{
+    if (!parentPlaceable_) // No parent, the local->parent transform equals the local->world transform.
+    {
+        SetTransform(tm);
+        return;
+    }
+
+    float3x4 parentWorldTransform = float3x4::identity;
+
+    if (parentBone_)
+        parentWorldTransform = float4x4(parentBone_->_getFullTransform()).Float3x4Part();
+    else
+        parentWorldTransform = parentPlaceable_->LocalToWorld();
+
+    bool success = parentWorldTransform.Inverse();
+    if (!success)
+    {
+        if (parentEntity_)
+            LogError("Parent for entity " + parentEntity_->ToString() + " has an invalid world transform!");
+        else
+            LogError("Parent for a detached entity has an invalid world transform!");
+        return;
+    }
+        
+    SetTransform(parentWorldTransform * tm);
+}
+
+void EC_Placeable::SetWorldTransform(const float4x4 &tm)
+{
+    assume(tm.Row(3).Equals(float4(0,0,0,1)));
+    SetWorldTransform(tm.Float3x4Part());
+}
+
+void EC_Placeable::SetWorldTransform(const Quat &orientation, const float3 &pos)
+{
+    SetWorldTransform(float3x4(orientation, pos));
+}
+
+void EC_Placeable::SetWorldTransform(const Quat &orientation, const float3 &pos, const float3 &scale)
+{
+    SetWorldTransform(float3x4::FromTRS(pos, orientation, scale));
 }
 
 float3 EC_Placeable::WorldPosition() const
