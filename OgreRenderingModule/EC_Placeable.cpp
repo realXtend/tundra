@@ -715,7 +715,7 @@ void EC_Placeable::SetParent(Entity *parent, bool preserveWorldTransform)
         boost::shared_ptr<EC_Placeable> parentPlaceable = parent->GetComponent<EC_Placeable>();
         if (!parentPlaceable)
         {
-            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity_->ToString() + " to entity " + parent->ToString() + ", but the target entity does not have an EC_Placeable component!");
+            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity->ToString() + " to entity " + parent->ToString() + ", but the target entity does not have an EC_Placeable component!");
             return;
         }
         if (preserveWorldTransform)
@@ -744,21 +744,21 @@ void EC_Placeable::SetParent(Entity *parent, QString boneName, bool preserveWorl
         boost::shared_ptr<EC_Placeable> parentPlaceable = parent->GetComponent<EC_Placeable>();
         if (!parentPlaceable)
         {
-            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity_->ToString() + " to entity " + parent->ToString() + ", but the target entity does not have an EC_Placeable component!");
+            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity->ToString() + " to entity " + parent->ToString() + ", but the target entity does not have an EC_Placeable component!");
             return;
         }
 
         boost::shared_ptr<EC_Mesh> mesh = parent->GetComponent<EC_Mesh>();
         if (!mesh)
         {
-            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity_->ToString() + " to a bone \"" + boneName + "\" of entity " + parent->ToString() + ", but the target entity does not have an EC_Mesh component!");
+            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity->ToString() + " to a bone \"" + boneName + "\" of entity " + parent->ToString() + ", but the target entity does not have an EC_Mesh component!");
             return;
         }
 
         Ogre::Bone *parentBone = mesh->GetBone(boneName);
         if (!parentBone)
         {
-            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity_->ToString() + " to a bone \"" + boneName + "\" of entity " + parent->ToString() + " with mesh ref \"" + mesh->meshRef.Get().ref + "\" and skeleton ref \"" + mesh->skeletonRef.Get().ref + "\", but the target entity does not have a bone with that name!");
+            LogError("EC_Placeable::SetParent: Parenting entity " + parentEntity->ToString() + " to a bone \"" + boneName + "\" of entity " + parent->ToString() + " with mesh ref \"" + mesh->meshRef.Get().ref + "\" and skeleton ref \"" + mesh->skeletonRef.Get().ref + "\", but the target entity does not have a bone with that name!");
             return;
         }
         if (preserveWorldTransform)
@@ -1043,8 +1043,8 @@ void EC_Placeable::SetWorldTransform(const float3x4 &tm)
     bool success = parentWorldTransform.Inverse();
     if (!success)
     {
-        if (parentEntity_)
-            LogError("Parent for entity " + parentEntity_->ToString() + " has an invalid world transform!");
+        if (parentEntity)
+            LogError("Parent for entity " + parentEntity->ToString() + " has an invalid world transform!");
         else
             LogError("Parent for a detached entity has an invalid world transform!");
         return;
