@@ -8,7 +8,7 @@
 #pragma once
 
 #include "IComponent.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 
 struct EC_HydraxImpl;
 
@@ -30,8 +30,8 @@ public:
     Q_PROPERTY(bool visible READ getvisible WRITE setvisible);
 
     /// Position of the water.
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, position);
-    Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, position);
+    Q_PROPERTY(float3 position READ getposition WRITE setposition);
 
 private:
     EC_HydraxImpl *impl;

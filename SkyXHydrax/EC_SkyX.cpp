@@ -5,6 +5,8 @@
  *  @brief  A sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
  */
 
+#define OGRE_INTEROP
+
 #include "DebugOperatorNew.h"
 
 #include "EC_SkyX.h"
@@ -47,7 +49,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
     IComponent(scene),
     volumetricClouds(this, "Volumetric clouds", false),
     timeMultiplier(this, "Time multiplier", 0.0f),
-    time(this, "Time", Vector3df(14.f, 7.5f, 20.5f)),
+    time(this, "Time", float3(14.f, 7.5f, 20.5f)),
     impl(0)
 {
     OgreWorldPtr w = scene->GetWorld<OgreWorld>();
@@ -70,11 +72,11 @@ EC_SkyX::~EC_SkyX()
         delete impl;
 }
 
-Vector3df EC_SkyX::SunPosition() const
+float3 EC_SkyX::SunPosition() const
 {
     if (impl->skyX)
-        return OgreRenderer::ToCoreVector(impl->skyX->getAtmosphereManager()->getSunPosition());
-    return Vector3df();
+        return impl->skyX->getAtmosphereManager()->getSunPosition();
+    return float3();
 }
 
 void EC_SkyX::CreateSunlight()
@@ -159,7 +161,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr)
     else if (attr == &time)
     {
         SkyX::AtmosphereManager::Options atOpt = impl->skyX->getAtmosphereManager()->getOptions();
-        atOpt.Time = OgreRenderer::ToOgreVector3(time.Get());
+        atOpt.Time = time.Get();
         impl->skyX->getAtmosphereManager()->setOptions(atOpt);
     }
 }

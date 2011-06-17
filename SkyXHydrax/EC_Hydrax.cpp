@@ -5,6 +5,8 @@
  *  @brief  A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
  */
 
+#define OGRE_INTEROP
+
 #include "DebugOperatorNew.h"
 
 #include "EC_Hydrax.h"
@@ -90,13 +92,9 @@ void EC_Hydrax::UpdateAttribute(IAttribute *attr)
     if (!impl->hydrax)
         return;
     if (attr == &visible)
-    {
         impl->hydrax->setVisible(visible.Get());
-    }
     else if (attr == &position)
-    {
-        impl->hydrax->setPosition(OgreRenderer::ToOgreVector3(position.Get()));
-    }
+        impl->hydrax->setPosition(position.Get());
 }
 
 void EC_Hydrax::Update(float frameTime)
@@ -104,9 +102,10 @@ void EC_Hydrax::Update(float frameTime)
     if (impl->hydrax)
     {
 #ifdef SKYX_ENABLED
+        ///\todo Store weak_ptr to EC_SkyX
         EntityList entities = ParentEntity()->ParentScene()->GetEntitiesWithComponent(EC_SkyX::TypeNameStatic());
         if (!entities.empty())
-            impl->hydrax->setSunPosition(OgreRenderer::ToOgreVector3((*entities.begin())->GetComponent<EC_SkyX>()->SunPosition()));
+            impl->hydrax->setSunPosition((*entities.begin())->GetComponent<EC_SkyX>()->SunPosition());
 #endif
         impl->hydrax->update(frameTime);
     }
