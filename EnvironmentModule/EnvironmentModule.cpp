@@ -54,6 +54,7 @@ namespace Environment
         postprocess_dialog_(0),
         resource_event_category_(0),
         framework_event_category_(0),
+        network_in_event_category_(0),
         firstTime_(true)
     {
     }
