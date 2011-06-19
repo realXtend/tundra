@@ -173,7 +173,6 @@ namespace Asset
         }
     }
 
-    /// If we are the server, this function gets called whenever a new connection is received. Populates the response data with the known asset storages in this server.
     void AssetModule::ServerNewUserConnected(int connectionID, UserConnection *connection, UserConnectedResponseData *responseData)
     {
         QDomDocument &doc = responseData->responseData;
@@ -204,7 +203,6 @@ namespace Asset
         }
     }
 
-    /// If we are the client, this function gets called when we connect to a server.
     void AssetModule::ClientConnectedToServer(UserConnectedResponseData *responseData)
     {
         QDomDocument &doc = responseData->responseData;
