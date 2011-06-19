@@ -34,7 +34,8 @@ struct EC_SkyXImpl
         if (skyX)
         {
             skyX->remove();
-            skyX->getSceneManager()->destroyLight(sunlight);
+            if (sunlight)
+                skyX->getSceneManager()->destroyLight(sunlight);
         }
 
         sunlight = 0;
