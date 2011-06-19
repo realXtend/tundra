@@ -47,12 +47,6 @@ if (!framework.IsHeadless())
     if (framework.GetModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
-    if (framework.GetModuleByName("Environment"))
-    {
-        viewMenu.addAction("Terrain Editor").triggered.connect(OpenTerrainEditor);
-        viewMenu.addAction("Post-processing").triggered.connect(OpenPostProcessWindow);
-    }
-
     if (framework.GetModuleByName("PythonScript"))
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
 
