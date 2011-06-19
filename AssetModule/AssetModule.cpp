@@ -106,7 +106,7 @@ namespace Asset
         assert(framework_);
 
         bool hasFile = framework_->HasCommandLineParameter("--file");
-        bool hasStorage = framework_->HasCommandLineParameter("--file");
+        bool hasStorage = framework_->HasCommandLineParameter("--storage");
         QStringList files = framework_->CommandLineParameters("--file");
         QStringList storages = framework_->CommandLineParameters("--storage");
         if (hasFile && files.isEmpty())
