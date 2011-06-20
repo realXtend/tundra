@@ -38,8 +38,7 @@ struct AttributeInterpolation
 
     To create, access and remove scenes, see SceneAPI.
 
-    \ingroup Scene_group
-*/
+    \ingroup Scene_group */
 class Scene : public QObject, public boost::enable_shared_from_this<Scene>
 {
     Q_OBJECT
@@ -141,20 +140,20 @@ public slots:
 
     /// Inspects file and returns a scene description structure from the contents of XML file.
     /** @param filename File name. */
-    SceneDesc GetSceneDescFromXml(const QString &filename) const;
+    SceneDesc CreateSceneDescFromXml(const QString &filename) const;
 
     /// Inspects xml data and returns a scene description structure from the contents of XML data.
     /** @param data Data to be processed.
         @param sceneDesc Initialized SceneDesc with filename and enum type prepared. */
-    SceneDesc GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const;
+    SceneDesc CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const;
 
     /// Inspects file and returns a scene description structure from the contents of binary file.
     /** @param filename File name. */
-    SceneDesc GetSceneDescFromBinary(const QString &filename) const;
+    SceneDesc CreateSceneDescFromBinary(const QString &filename) const;
 
     /// Inspects binary data and returns a scene description structure from the contents of binary data.
     /** @param data Data to be processed. */
-    SceneDesc GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const;
+    SceneDesc CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const;
 
     /// Inspects .js file content for dependencies and adds them to sceneDesc.assets
     ///@todo This function is a duplicate copy of void ScriptAsset::ParseReferences(). Delete this code. -jj.
@@ -165,13 +164,13 @@ public slots:
     void SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const;
 
     /// Returns scene up vector. For now it is a compile-time constant
-    float3 GetUpVector() const;
+    float3 UpVector() const;
 
     /// Returns scene right vector. For now it is a compile-time constant
-    float3 GetRightVector() const;
+    float3 RightVector() const;
 
     /// Returns scene forward vector. For now it is a compile-time constant
-    float3 GetForwardVector() const;
+    float3 ForwardVector() const;
 
     /// @todo Clean these overload functions created for PythonQt and QtScript compatibility as much as possible.
     //  For documentation, see the plain C++ public methods above.
@@ -232,14 +231,12 @@ public slots:
     /// Remove entity with specified id
     /** The entity may not get deleted if dangling references to a pointer to the entity exists.
         @param id Id of the entity to remove
-        @param change Origin of change regards to network replication
-    */
+        @param change Origin of change regards to network replication. */
     void RemoveEntity(entity_id_t id, AttributeChange::Type change = AttributeChange::Default);
 
     /// Remove all entities
     /** The entities may not get deleted if dangling references to a pointer to them exist.
-        @param send_events whether to send events & signals of each delete
-    */
+        @param send_events whether to send events & signals of each delete. */
     void RemoveAllEntities(bool send_events = true, AttributeChange::Type change = AttributeChange::Default);
 
     /// Get the next free entity id. Can be used with CreateEntity(). 
@@ -252,65 +249,56 @@ public slots:
 
     /// Return list of entities with a specific component present.
     /** @param typeName Type name of the component
-        @param name Name of the component, optional.
-    */
+        @param name Name of the component, optional. */
     EntityList GetEntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
     /// Emit notification of an attribute changing. Called by IComponent.
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Network replication mode
-    */
+        @param change Network replication mode */
     void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emit notification of an attribute having been created. Called by IComponent's with dynamic structure
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Network replication mode
-    */
+        @param change Network replication mode */
     void EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emit notification of an attribute about to be deleted. Called by IComponent's with dynamic structure
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Network replication mode
-     */
+        @param change Network replication mode */
      void EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
-     
+
     /// Emit a notification of a component being added to entity. Called by the entity
     /** @param entity Entity pointer
         @param comp Component pointer
-        @param change Network replication mode
-    */
+        @param change Network replication mode */
     void EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Emit a notification of a component being removed from entity. Called by the entity
     /** @param entity Entity pointer
         @param comp Component pointer
         @param change Network replication mode
-        @note This is emitted before just before the component is removed.
-    */
+        @note This is emitted before just before the component is removed. */
     void EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Emit a notification of an entity having been created
     /** @param entity Entity pointer
-        @param change Network replication mode
-    */
+        @param change Network replication mode */
     void EmitEntityCreated(EntityPtr entity, AttributeChange::Type change = AttributeChange::Default);
 
-    /// Emit a notification of an entity being removed. 
+    /// Emit a notification of an entity being removed.
     /** Note: the entity pointer will be invalid shortly after!
         @param entity Entity pointer
-        @param change Network replication mode
-    */
+        @param change Network replication mode */
     void EmitEntityRemoved(Entity* entity, AttributeChange::Type change);
 
     /// Emits a notification of an entity action being triggered.
     /** @param entity Entity pointer
         @param action Name of the action
         @param params Parameters
-        @param type Execution type.
-    */
+        @param type Execution type. */
     void EmitActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type);
 
     /// Loads the scene from XML.
@@ -320,23 +308,20 @@ public slots:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities.
-    */
+        @return List of created entities. */
     QList<Entity *> LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Returns scene content as an XML string.
     /** @param getTemporary Are temporary entities wanted to be included.
         @param getLocal Are local entities wanted to be included.
-        @return The scene XML as a byte array string.
-    */
+        @return The scene XML as a byte array string. */
     QByteArray GetSceneXML(bool getTemporary, bool getLocal) const;
 
     /// Saves the scene to XML.
     /** @param filename File name
         @param saveTemporary Are temporary entities wanted to be included.
         @param saveLocal Are local entities wanted to be included.
-        @return true if successful
-    */
+        @return true if successful */
     bool SaveSceneXML(const QString& filename, bool saveTemporary, bool saveLocal);
 
     /// Loads the scene from a binary file.
@@ -347,16 +332,14 @@ public slots:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities.
-    */
+        @return List of created entities. */
     QList<Entity *> LoadSceneBinary(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Save the scene to binary
     /** @param filename File name
         @param saveTemporary Are temporary entities wanted to be included.
         @param saveLocal Are local entities wanted to be included.
-        @return true if successful
-    */
+        @return true if successful */
     bool SaveSceneBinary(const QString& filename, bool saveTemporary, bool saveLocal);
 
     /// Creates scene content from XML.
@@ -365,8 +348,7 @@ public slots:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities.
-    */
+        @return List of created entities. */
     QList<Entity *> CreateContentFromXml(const QString &xml, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// This is an overloaded function.
@@ -375,8 +357,7 @@ public slots:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities.
-    */
+        @return List of created entities. */
     QList<Entity *> CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Creates scene content from binary file.
@@ -385,8 +366,7 @@ public slots:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities.
-    */
+        @return List of created entities. */
     QList<Entity *> CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change);
 
 public:
@@ -397,8 +377,7 @@ public:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities.
-    */
+        @return List of created entities. */
     QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Creates scene content from scene description.
@@ -407,8 +386,7 @@ public:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities.
-    */
+        @return List of created entities. */
     QList<Entity *> CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change);
 
 signals:
@@ -445,8 +423,7 @@ signals:
         @param params Parameters of the action.
         @param type Execution type.
 
-        @note Use case-insensitive comparison for checking name of the @c action !
-    */
+        @note Use case-insensitive comparison for checking name of the @c action ! */
     void ActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type);
 
     /// Emitted when being destroyed
@@ -466,9 +443,8 @@ private:
     /** @param name Name of the scene.
         @param fw Framework Parent framework.
         @param viewEnabled Whether the scene is view enabled.
-        @param authority Whether the scene has authority ie. a singleuser or server scene, false for network client scenes
-    */
-    Scene(const QString &name, Framework *fw, bool viewEnabled, bool authority   );
+        @param authority Whether the scene has authority ie. a singleuser or server scene, false for network client scenes */
+    Scene(const QString &name, Framework *fw, bool viewEnabled, bool authority);
 
     uint gid_; ///< Current global id for networked entities
     uint gid_local_; ///< Current id for local entities.

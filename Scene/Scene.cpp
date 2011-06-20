@@ -821,13 +821,13 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
     return ret;
 }
 
-SceneDesc Scene::GetSceneDescFromXml(const QString &filename) const
+SceneDesc Scene::CreateSceneDescFromXml(const QString &filename) const
 {
     SceneDesc sceneDesc;
     if (!filename.endsWith(".txml", Qt::CaseInsensitive))
     {
         if (filename.endsWith(".tbin", Qt::CaseInsensitive))
-            LogError("Try using GetSceneDescFromBinary() instead for " + filename.toStdString());
+            LogError("Try using CreateSceneDescFromBinary() instead for " + filename.toStdString());
         else
             LogError("Unsupported file extension : " + filename.toStdString() + " when trying to create scene description.");
         return sceneDesc;
@@ -845,10 +845,10 @@ SceneDesc Scene::GetSceneDescFromXml(const QString &filename) const
     QByteArray data = file.readAll();
     file.close();
 
-    return GetSceneDescFromXml(data, sceneDesc);
+    return CreateSceneDescFromXml(data, sceneDesc);
 }
 
-SceneDesc Scene::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const
+SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const
 {
     // Set codec to ISO 8859-1 a.k.a. Latin 1
     QTextStream stream(&data);
@@ -1013,14 +1013,14 @@ void Scene::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sc
     }
 }
 
-SceneDesc Scene::GetSceneDescFromBinary(const QString &filename) const
+SceneDesc Scene::CreateSceneDescFromBinary(const QString &filename) const
 {
     SceneDesc sceneDesc;
 
     if (!filename.endsWith(".tbin", Qt::CaseInsensitive))
     {
         if (filename.endsWith(".txml", Qt::CaseInsensitive))
-            LogError("Try using GetSceneDescFromXml() instead for " + filename.toStdString());
+            LogError("Try using CreateSceneDescFromXml() instead for " + filename.toStdString());
         else
             LogError("Unsupported file extension : " + filename.toStdString() + " when trying to create scene description.");
         return sceneDesc;
@@ -1039,10 +1039,10 @@ SceneDesc Scene::GetSceneDescFromBinary(const QString &filename) const
     QByteArray bytes = file.readAll();
     file.close();
 
-    return GetSceneDescFromBinary(bytes, sceneDesc);
+    return CreateSceneDescFromBinary(bytes, sceneDesc);
 }
 
-SceneDesc Scene::GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const
+SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const
 {
     QByteArray bytes = data;
     if (!bytes.size())
@@ -1169,17 +1169,17 @@ QByteArray Scene::GetEntityXml(Entity *entity)
     return scene_doc.toByteArray();
 }
 
-float3 Scene::GetUpVector() const
+float3 Scene::UpVector() const
 {
     return float3::unitY;
 }
 
-float3 Scene::GetRightVector() const
+float3 Scene::RightVector() const
 {
     return float3::unitX;
 }
 
-float3 Scene::GetForwardVector() const
+float3 Scene::ForwardVector() const
 {
     return -float3::unitZ;
 }

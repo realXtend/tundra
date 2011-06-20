@@ -149,7 +149,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
                 }
             }
             else
-                sceneDescs.append(scene->GetSceneDescFromXml(filename));
+                sceneDescs.append(scene->CreateSceneDescFromXml(filename));
         }
         else if (filename.toLower().indexOf(cTundraBinFileExtension) != -1)
         {
@@ -166,7 +166,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
             }
             else
             {
-                sceneDescs.append(scene->GetSceneDescFromBinary(filename));
+                sceneDescs.append(scene->CreateSceneDescFromBinary(filename));
             }
         }
         else
@@ -565,7 +565,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
                     {
                         //Ogre::Ray ray = cam->GetComponent<EC_Camera>()->GetCamera()->getCameraToViewportRay(e->pos().x(), e->pos().y());
                         Quat q = placeable->WorldOrientation();
-                        float3 v = q * -float3::unitZ;
+                        float3 v = q * scene->ForwardVector();
                         //Ogre::Vector3 oV = ray.getPoint(20);
                         worldPos = /*float3(oV.x, oV.y, oV.z);*/ placeable->Position() + v * 20;
                         break;
@@ -793,9 +793,9 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
 
     // Get data
     if (sceneDesc.filename.toLower().endsWith(cTundraXmlFileExtension))
-        sceneDesc = scene->GetSceneDescFromXml(data_qt, sceneDesc); 
+        sceneDesc = scene->CreateSceneDescFromXml(data_qt, sceneDesc); 
     else if(sceneDesc.filename.toLower().endsWith(cTundraBinFileExtension))
-        sceneDesc = scene->GetSceneDescFromBinary(data_qt, sceneDesc);
+        sceneDesc = scene->CreateSceneDescFromBinary(data_qt, sceneDesc);
     else
     {
         LogError("Somehow other that " + cTundraXmlFileExtension.toStdString() + " or " + cTundraBinFileExtension.toStdString() + 
