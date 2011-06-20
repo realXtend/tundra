@@ -147,11 +147,9 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
     TundraLogicModule::LogInfo("Client::Logout method");
     QMapIterator<unsigned short, Ptr(kNet::MessageConnection)> sourceIterator = owner_->GetKristalliModule()->GetConnectionArray();
 
-    TundraLogicModule::LogInfo("Checking if sourceiterator has items!");
     if (!sourceIterator.hasNext())
         return;
 
-    TundraLogicModule::LogInfo("Yes it had!");
     // Scene to be removed is TundraClient_X | X = 0, 1, 2, 3, ..., n; n € Z+
     // removedConnection_ indicates which scene we are about to disconnect.
     QString sceneToRemove = "TundraClient_";
@@ -159,21 +157,16 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
 
     if (loginstate_list_[sceneToRemove] != NotConnected)
     {
-        TundraLogicModule::LogInfo("Loginstate was: " + ToString(loginstate_list_[sceneToRemove]));
-        TundraLogicModule::LogInfo("Client::Logout, emitting aboutToDisconnect");
         emit aboutToDisconnect(sceneToRemove);
         if (GetConnection(removedConnection_))
         {
-            TundraLogicModule::LogInfo("Client::Logout, disconnecting connection!");
             owner_->GetKristalliModule()->Disconnect(fail, removedConnection_);
             TundraLogicModule::LogInfo(sceneToRemove.toStdString() + " disconnected!");
         }
         
         loginstate_ = NotConnected;
         client_id_ = 0;
-        TundraLogicModule::LogInfo("Logout: Event tundra_disconnected!");
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
-        TundraLogicModule::LogInfo("Removing scene!");
         framework_->Scene()->RemoveScene(sceneToRemove);
 
         // We remove TundraClient_X from the scenenames_ map and when next new connection happens
@@ -184,7 +177,6 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
         client_id_list_.remove(sceneToRemove);
         properties_list_.remove(sceneToRemove);
         scenenames_.remove(removedConnection_);
-        TundraLogicModule::LogInfo("DEBUG: Scenename " + sceneToRemove.toStdString() + " now available for usage!");
 
         if (!scenenames_.isEmpty())
             owner_->changeScene(scenenames_.constBegin().value());
@@ -388,8 +380,6 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         QMutableMapIterator<QString, bool> reconnectIterator(reconnect_list_);
         QMapIterator<unsigned short, Ptr(kNet::MessageConnection)> sourceIterator = owner_->GetKristalliModule()->GetConnectionArray();
 
-        TundraLogicModule::LogInfo("DEBUG: Locating loginReply sender!");
-
         // This while loop locates which messageconnection send the message. When we know it we also know if it is a reconnect or not.
         while (sourceIterator.hasNext())
         {
@@ -400,7 +390,6 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
 
             if (sourceIterator.value().ptr() == source)
             {
-                TundraLogicModule::LogInfo("Connection sender found! It was number: " + ToString(conNumber) + " from the KPM messageconnection list!");
                 break;
             }
             conNumber++;
