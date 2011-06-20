@@ -137,9 +137,9 @@ public:
 
 	enum physicsType
     {
-		Type_Dynamic,
         Type_Static,
-        Type_Kinematic
+        Type_Kinematic,
+        Type_Dynamic
     };
     
     //! Mass of the body. Set to 0 for static

@@ -36,7 +36,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     IComponent(module->GetFramework()),
     mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
-	physicsType(this, "Physics Type", (int)Type_Dynamic),
+	physicsType(this, "Physics Type", (int)Type_Static),
     size(this, "Size", Vector3df(1,1,1)),
     collisionMeshRef(this, "Collision mesh ref"),
     friction(this, "Friction", 0.5f),
