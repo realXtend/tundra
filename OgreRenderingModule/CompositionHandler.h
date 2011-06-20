@@ -95,6 +95,9 @@ namespace OgreRenderer
         /// Disable all compositors from the viewport
         void RemoveAllCompositors();
         
+        /// Camera has been changed. Update it to the compositor chain
+        void CameraChanged(Ogre::Viewport* vp, Ogre::Camera* newCamera);
+        
     private:
         struct Compositor
         {

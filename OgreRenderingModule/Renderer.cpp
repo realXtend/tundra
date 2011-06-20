@@ -412,7 +412,11 @@ namespace OgreRenderer
             cameraComponent_ = 0;
         
         if (viewport_)
+        {
             viewport_->setCamera(ogreCamera);
+            if (c_handler_)
+                c_handler_->CameraChanged(viewport_, ogreCamera);
+        }
     }
 
     void Renderer::DoFullUIRedraw()

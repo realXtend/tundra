@@ -55,6 +55,14 @@ namespace OgreRenderer
         }
     }
     
+    void CompositionHandler::CameraChanged(Ogre::Viewport* vp, Ogre::Camera* newCamera)
+    {
+        if (c_manager_ && vp && newCamera && c_manager_->hasCompositorChain(vp))
+            //c_manager_->getCompositorChain(vp)->_notifyViewport(vp);
+            /// \todo This is very shitty logic, but Ogre does not seem to give another way to notify a compositor of main viewport camera change.
+            c_manager_->_reconstructAllCompositorResources();
+    }
+    
     bool CompositionHandler::AddCompositorForViewportPriority(const std::string &compositor, int priority)
     {
         priorities_.insert(std::make_pair(compositor, priority));
