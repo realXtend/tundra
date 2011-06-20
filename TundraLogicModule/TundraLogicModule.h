@@ -117,6 +117,8 @@ private slots:
     void AttachSyncManagerToScene(const QString&);
     // Removes syncManager object from QMap when scene removed.
     void RemoveSyncManagerFromScene(const QString&);
+    // Changes state of interpolationActive variable
+    void allowInterpolation();
 
 signals:
     // Signals which activate clients slots which again emit signals. This is because we want to catch these signals in javascript.
@@ -158,6 +160,9 @@ private:
     bool autostartserver_;
     //! Autostart server port
     short autostartserver_port_;
+
+    // Bool which allows interpolation to continue
+    bool interpolationActive;
 
 };
 

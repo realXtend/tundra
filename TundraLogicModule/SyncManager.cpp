@@ -120,6 +120,11 @@ void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
+    // Check if client's syncmanager gets messages from different sources than it's own. If so then discard it.
+    if (!owner_->IsServer())
+        if (!(source == owner_->GetKristalliModule()->GetMessageConnection(attachedConnection)))
+            return;
+
     switch (id)
     {
     case cCreateEntityMessage:

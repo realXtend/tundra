@@ -38,7 +38,8 @@ static const unsigned short cDefaultPort = 2345;
 TundraLogicModule::TundraLogicModule() : IModule(type_name_static_),
     autostartserver_(false),
     autostartserver_port_(cDefaultPort),
-    syncManager_(0)
+    syncManager_(0),
+    interpolationActive(false)
 {
     syncManagers_.clear();
 }
@@ -67,6 +68,7 @@ void TundraLogicModule::Initialize()
     connect(this, SIGNAL(setOgre(QString)), client_.get(), SLOT(emitSetOgreSignal(QString)));
     connect(client_.get(), SIGNAL(aboutToDisconnect(QString)), this, SLOT(changeScene(QString)));
     connect(client_.get(), SIGNAL(changeScene(QString)), this, SLOT(changeScene(QString)));
+    connect(client_.get(), SIGNAL(Connected()), this, SLOT(allowInterpolation()));
 
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
@@ -137,6 +139,7 @@ void TundraLogicModule::Uninitialize()
 
 void TundraLogicModule::AttachSyncManagerToScene(const QString &name)
 {
+    interpolationActive = false;
     // Grep number from scenename; list[0] = TundraClient/TundraServer and list[1] = 0, 1, 2, ..., n: n € Z+
     QStringList list = name.split("_");
     QString number = list[1];
@@ -169,13 +172,21 @@ void TundraLogicModule::changeScene(const QString &name)
         return;
     else
     {
+        interpolationActive = false;
         TundraLogicModule::LogInfo("Changing ogre scenemanager!");
         emit setOgre(name);
         TundraLogicModule::LogInfo("Changing default scene to " + name.toStdString());
         framework_->Scene()->SetDefaultScene(name);
         TundraLogicModule::LogInfo("Changing syncmanager!");
         syncManager_ = syncManagers_[name];
+        interpolationActive = true;
     }
+}
+
+void TundraLogicModule::allowInterpolation()
+{
+    LogInfo("Setting interpolation active!");
+    interpolationActive = true;
 }
 
 
@@ -231,7 +242,7 @@ void TundraLogicModule::Update(f64 frametime)
             syncManager_->Update(frametime);
         // Run scene interpolation
         Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
-        if (scene)
+        if (scene && interpolationActive)
             scene->UpdateAttributeInterpolations(frametime);
     }
     
