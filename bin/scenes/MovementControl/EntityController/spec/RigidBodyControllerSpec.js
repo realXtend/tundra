@@ -35,7 +35,9 @@ describe("Tundra-RigidBodyController", function() {
 		//Avatar
 		var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
 		expect(avatar).toBeDefined();
-		avatar.appearanceId = "http://subwiki/contenidoMV/assets/default_avatar.xml";
+	    var r = avatar.appearanceRef;
+	    r.ref = "local://default_avatar.xml";
+	    avatar.appearanceRef = r;
 		
 		//RigidBody
 		var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
@@ -44,6 +46,7 @@ describe("Tundra-RigidBodyController", function() {
 		sizeVec.z = 2.4;
 		sizeVec.x = 0.5;
 		sizeVec.y = 0.5;
+		rigidbody.physicsType = 2; //Dynamic
 		rigidbody.mass = 10;
 		rigidbody.shapeType = 3; // Capsule
 		rigidbody.size = sizeVec;
@@ -98,7 +101,7 @@ describe("Tundra-RigidBodyController", function() {
 		
 		for (i in scene_entities)
 		{
-			scene.RemoveEntityRaw(scene_entities[i].Id);
+			scene.RemoveEntityRaw(scene_entities[i].id);
 		}
 	});
 

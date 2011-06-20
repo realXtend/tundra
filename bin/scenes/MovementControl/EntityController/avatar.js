@@ -80,6 +80,7 @@ realXtend.EntityController.SimpleAvatar.prototype.ServerInitialize = function ()
     sizeVec.z = 2.4;
     sizeVec.x = 0.5;
     sizeVec.y = 0.5;
+	rigidbody.physicsType = 2; //Dynamic
     rigidbody.mass = this.avatar_mass;
     rigidbody.shapeType = 3; // Capsule
     rigidbody.size = sizeVec;
