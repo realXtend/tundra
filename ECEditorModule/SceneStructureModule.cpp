@@ -126,14 +126,14 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
         {
             ///\todo Implement ogre.scene url drops at some point?
             TundraLogic::SceneImporter importer(scene);
-            sceneDescs.append(importer.GetSceneDescForScene(filename));
+            sceneDescs.append(importer.CreateSceneDescFromScene(filename));
         }
         else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
         {
             TundraLogic::SceneImporter importer(scene);
 ///\todo Perhaps download the mesh before instantiating so we could inspect the mesh binary for materials and skeleton? The path is already there for tundra scene file web drops
             //if (IsUrl(filename)) ...
-            sceneDescs.append(importer.GetSceneDescForMesh(filename));
+            sceneDescs.append(importer.CreateSceneDescFromMesh(filename));
         }
         else if (filename.toLower().indexOf(cTundraXmlFileExtension) != -1 && filename.toLower().indexOf(cOgreMeshFileExtension) == -1)
         {

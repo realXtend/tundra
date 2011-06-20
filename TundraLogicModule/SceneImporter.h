@@ -50,7 +50,7 @@ public:
     /// Destroys the importer.
     ~SceneImporter();
 
-    /// Import a single mesh. Scans the mesh for needed skeleton & materials.
+    /// Imports a single mesh. Scans the mesh for needed skeleton & materials.
     /** @param filename Filename of mesh
         @param in_asset_dir Where to read input assets. Typically same as the input file path
         @param out_asset_dir Where to put resulting assets
@@ -88,11 +88,11 @@ public:
     /// Inspects OGRE .mesh file and returns a scene description structure of the contents of the file.
     /** @param source Mesh source, can be filename or an URL.
         @note For URLs, this will not dowload the binary data but only adds an entity with the URL mesh ref in it.*/
-    SceneDesc GetSceneDescForMesh(const QString &source) const;
+    SceneDesc CreateSceneDescFromMesh(const QString &source) const;
 
     /// Inspects OGRE .scene file and returns a scene description structure of the contents of the file.
-    /** @param filename File name. */
-    SceneDesc GetSceneDescForScene(const QString &filename);
+    /** @param filename Filename. */
+    SceneDesc CreateSceneDescFromScene(const QString &filename);
 
     /// Process a material file, searching for used materials and recording used textures
     /** @param matfilename Material file name, including full path
@@ -106,20 +106,20 @@ public:
     QSet<QString> ProcessMaterialForTextures(const QString &material) const;
 
     /// Loads single material script from material file and returns it as a string.
-    /** @param filename File name.
+    /** @param filename Filename.
         @param materialName Material name.
         @return Material script as a string, or an empty string if material was not found. */
     QString LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const;
 
     /// Loads all (uniquely named) material scripts found within a material script file.
-    /** @param filename File name.
+    /** @param filename Filename.
         @param materialNames Names of materials to be loaded.
         @return List of material names - material script pairs as strings. */
     MaterialInfoList LoadAllMaterialsFromFile(const QString &filename) const;
 
     /// Searches directory recursively and returns list of found material files.
     /** @param dir Directory to be searched. */
-    QStringList GetMaterialFiles(const std::string &dir) const;
+    QStringList FindMaterialFiles(const std::string &dir) const;
 
 private:
     /// Process the asset references of a node, and its child nodes

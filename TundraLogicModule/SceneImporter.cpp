@@ -73,7 +73,7 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     QStringList material_files;
     if (inspect)
-        material_files = GetMaterialFiles(in_asset_dir);
+        material_files = FindMaterialFiles(in_asset_dir);
 
     // mesh copied, add mesh name inside the file
     if (!meshName.empty() /*&& createMesh*/)
@@ -325,7 +325,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
     return true;
 }
 
-SceneDesc SceneImporter::GetSceneDescForMesh(const QString &source) const
+SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
 {
     SceneDesc sceneDesc;
 
@@ -389,7 +389,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &source) const
         // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
         QStringList meshFiles(QStringList() << source);
         QSet<QString> usedMaterials = materialNames.toSet();
-        QStringList materialFiles = GetMaterialFiles(path.toStdString());
+        QStringList materialFiles = FindMaterialFiles(path.toStdString());
 
         CreateAssetDescs(path, meshFiles, skeletons, materialFiles, usedMaterials, sceneDesc);
 
@@ -458,7 +458,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &source) const
     return sceneDesc;
 }
 
-SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
+SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
 {
     SceneDesc sceneDesc;
 
@@ -890,7 +890,7 @@ MaterialInfoList SceneImporter::LoadAllMaterialsFromFile(const QString &filename
     return materials;
 }
 
-QStringList SceneImporter::GetMaterialFiles(const std::string &dir) const
+QStringList SceneImporter::FindMaterialFiles(const std::string &dir) const
 {
     QStringList files;
 
