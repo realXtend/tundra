@@ -14,15 +14,17 @@ if (!me.GetComponent("EC_Camera"))
     var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
     var placeable = me.GetOrCreateComponent("EC_Placeable");
     var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
-    soundlistener.active = true;
 
     camera.AutoSetPlaceable();
 
     // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the freelookcamera right now
     var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     if (!avatarcameraentity)
+    {
         camera.SetActive();
-
+        soundlistener.active = true;
+    }
+    
     var transform = placeable.transform;
 
     // Set initial transform according to camera's up vector

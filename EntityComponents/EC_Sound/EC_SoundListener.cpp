@@ -55,22 +55,24 @@ void EC_SoundListener::Update()
 
 void EC_SoundListener::OnActiveChanged()
 {
-    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
-    if (!scene)
-    {
-        LogError("Failed on OnActiveChanged method cause default world scene wasn't set.");
-        return;
-    }
-
     if (active.Get())
     {
+        Entity* entity = ParentEntity();
+        if (!entity)
+            return;
+        Scene* scene = entity->ParentScene();
+        if (!scene)
+            return;
+        
         // Disable all the other listeners, only one can be active at a time.
         EntityList listeners = scene->GetEntitiesWithComponent("EC_SoundListener");
         foreach(EntityPtr listener, listeners)
         {
             EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
             if (ec != this)
-                listener->GetComponent<EC_SoundListener>()->active.Set(false, AttributeChange::Default);
+            {
+                ec->active.Set(false, AttributeChange::Default);
+            }
         }
     }
 }

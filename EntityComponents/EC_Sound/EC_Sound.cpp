@@ -12,6 +12,7 @@
 #include "AudioAPI.h"
 #include "AudioAsset.h"
 #include "AssetAPI.h"
+#include "FrameAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "EC_Placeable.h"
@@ -157,13 +158,20 @@ void EC_Sound::PlaySound()
 
     if (placeable && spatial.Get() && soundListenerExists)
     {
-        soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->transform.Get().pos, audioAsset, SoundChannel::Triggered);
+        soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->WorldPosition(), audioAsset, SoundChannel::Triggered);
         if (soundChannel)
             soundChannel->SetRange(soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
+        
+        // If placeable has a parent, start polling the sound position constantly
+        if (!placeable->parentRef.Get().IsEmpty())
+            connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(ConstantPositionUpdate()), Qt::UniqueConnection);
+        else
+            disconnect(this, SLOT(ConstantPositionUpdate()));
     }
     else // Play back sound as a nonpositional sound, if no EC_Placeable was found or if spatial was not set.
     {
         soundChannel = GetFramework()->Audio()->PlaySound(audioAsset, SoundChannel::Ambient);
+        disconnect(this, SLOT(ConstantPositionUpdate()));
     }
 
     if (soundChannel)
@@ -248,20 +256,43 @@ ComponentPtr EC_Sound::FindPlaceable() const
     //We need to update sound source position when placeable component has changed it's transformation.
     if (comp)
     {
-        connect(comp.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)));
+        connect(comp.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)), Qt::UniqueConnection);
     }
     return comp;
 }
 
 void EC_Sound::PlaceableUpdated(IAttribute* attribute)
 {
-    if (framework->IsHeadless())
+    if ((framework->IsHeadless()) || (!soundChannel))
         return;
     
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(sender());
     if ((attribute == &placeable->transform) && (soundChannel))
+        soundChannel->SetPosition(placeable->WorldPosition());
+    
+    if (attribute == &placeable->parentRef)
     {
-        const Transform& trans = placeable->transform.Get();
-        soundChannel->SetPosition(trans.pos);
+        // If placeable has a parent, start polling the sound position constantly
+        if (!placeable->parentRef.Get().IsEmpty())
+            connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(ConstantPositionUpdate()), Qt::UniqueConnection);
     }
+}
+
+void EC_Sound::ConstantPositionUpdate()
+{
+    if (!ParentEntity())
+    {
+        disconnect(this, SLOT(ConstantPositionUpdate()));
+        return;
+    }
+    EC_Placeable* placeable = ParentEntity()->GetComponent<EC_Placeable>().get();
+    if ((!placeable) || (!soundChannel) || (!spatial.Get()))
+    {
+        disconnect(this, SLOT(ConstantPositionUpdate()));
+        return;
+    }
+    
+    float3 pos = placeable->WorldPosition();
+    
+    soundChannel->SetPosition(placeable->WorldPosition());
 }

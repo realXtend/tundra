@@ -141,6 +141,9 @@ private slots:
     /// Update the EC_Sound position to match placeable transform, when it has changed.
     void PlaceableUpdated(IAttribute* attribute);
 
+    /// Constantly update the sound channel position if the placeable is parented
+    void ConstantPositionUpdate();
+    
 private:
     ComponentPtr FindPlaceable() const;
     SoundChannelPtr soundChannel;
