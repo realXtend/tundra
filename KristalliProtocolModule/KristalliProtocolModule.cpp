@@ -87,7 +87,7 @@ namespace
 }
 
 static const int cInitialAttempts = 1;
-static const int cReconnectAttempts = 3;
+static const int cReconnectAttempts = 5;
 
 KristalliProtocolModule::KristalliProtocolModule()
 :IModule(NameStatic())
@@ -205,7 +205,7 @@ void KristalliProtocolModule::Update(f64 frametime)
         const int cReconnectTimeout = 5 * 1000.f;
         if (reconnectTimer.Test())
         {
-            if (reconnectAttempts)
+            if (true)
             {
                 PerformConnection();
                 --reconnectAttempts;
