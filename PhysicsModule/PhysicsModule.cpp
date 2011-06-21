@@ -89,16 +89,16 @@ void PhysicsModule::PostInitialize()
 {
     framework_->Console()->RegisterCommand("physicsdebug",
         "Toggles drawing of physics debug geometry.",
-        this, SLOT(ConsoleToggleDebugGeometry()));
+        this, SLOT(ToggleDebugGeometry()));
     framework_->Console()->RegisterCommand("stopphysics",
         "Stops physics simulation.",
-        this, SLOT(ConsoleStopPhysics()));
+        this, SLOT(StopPhysics()));
     framework_->Console()->RegisterCommand("startphysics",
         "(Re)starts physics simulation.",
-        this, SLOT(ConsoleStartPhysics()));
+        this, SLOT(StartPhysics()));
     framework_->Console()->RegisterCommand("autocollisionmesh",
         "Auto-assigns static rigid bodies with collision mesh to all visible meshes.",
-        this, SLOT(ConsoleAutoCollisionMesh()));
+        this, SLOT(AutoCollisionMesh()));
 }
 
 void PhysicsModule::Uninitialize()
