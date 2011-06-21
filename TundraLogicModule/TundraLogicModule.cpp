@@ -137,10 +137,7 @@ void TundraLogicModule::Uninitialize()
 
 void TundraLogicModule::AttachSyncManagerToScene(const QString &name)
 {
-    // Grep number from scenename; list[0] = TundraClient/TundraServer and list[1] = 0, 1, 2, ..., n: n â‚¬ Z+
-    QStringList list = name.split("_");
-    QString number = list[1];
-    unsigned short attachedConnection = number.toInt();
+    unsigned short attachedConnection = Grep(name);
 
     // Tell syncManager 'attachedConnection' is the magic number when using client_->GetConnection(X)
     SyncManager *sm = new SyncManager(this, attachedConnection);
@@ -150,6 +147,8 @@ void TundraLogicModule::AttachSyncManagerToScene(const QString &name)
     // When syncmanager is created we also want to create new Ogre sceneManager
     emit createOgre(name);
     LogInfo("Registered SyncManager to scene " + name.toStdString());
+    if (client_)
+        emit setClientActiveConnection(attachedConnection);
 }
 
 void TundraLogicModule::RemoveSyncManagerFromScene(const QString &name)
@@ -164,6 +163,8 @@ void TundraLogicModule::RemoveSyncManagerFromScene(const QString &name)
 
 void TundraLogicModule::changeScene(const QString &name)
 {
+    unsigned short connection = Grep(name);
+
     // If we already have this scene selected, do nothing.
     if (framework_->Scene()->GetDefaultScene() == framework_->Scene()->GetScene(name))
         return;
@@ -172,7 +173,17 @@ void TundraLogicModule::changeScene(const QString &name)
         emit setOgre(name);
         framework_->Scene()->SetDefaultScene(name);
         syncManager_ = syncManagers_[name];
+        if (client_)
+            emit setClientActiveConnection(connection);
     }
+}
+
+unsigned short TundraLogicModule::Grep(const QString name)
+{
+    // Grep number from scenename; list[0] = TundraClient/TundraServer and list[1] = 0, 1, 2, ..., n: n ¤ Z+
+    QStringList list = name.split("_");
+    QString number = list[1];
+    return number.toInt();
 }
 
 // This method is used by server to get syncmanager registered to it's scene

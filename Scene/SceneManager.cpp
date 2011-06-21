@@ -1192,7 +1192,7 @@ namespace Scene
         newInterp.start = attr->Clone();
         newInterp.end = endvalue;
         newInterp.length = length;
-        
+
         interpolations_.push_back(newInterp);
         return true;
     }

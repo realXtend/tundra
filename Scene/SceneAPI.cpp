@@ -155,7 +155,6 @@ void SceneAPI::RemoveScene(const QString &name)
         event_category_id_t categoryId = framework_->GetEventManager()->QueryEventCategory(sceneCatergoryName_);
         framework_->GetEventManager()->SendEvent(categoryId, Scene::Events::EVENT_SCENE_DELETED, &eventData);
 
-        // Emit signal about removed scene
         emit SceneRemoved(name);
     }
 }

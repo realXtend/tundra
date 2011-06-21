@@ -149,6 +149,10 @@ public slots:
     void emitDeleteOgreSignal(const QString&);
     void emitSetOgreSignal(const QString&);
     void emitChangeSceneSignal(const QString&);
+    unsigned short getActiveConnection() const;
+
+private slots:
+    void setActiveConnection(unsigned short);
 
 private:
     // creates unique scenename TundraClientX | X = 0, 1, 2, ..., n; n € Z+
@@ -203,6 +207,9 @@ private:
     TundraLogicModule* owner_;
     /// Framework pointer
     Foundation::Framework* framework_;
+
+    // This variable saves current active connection number
+    unsigned short activeConnection;
 
 };
 

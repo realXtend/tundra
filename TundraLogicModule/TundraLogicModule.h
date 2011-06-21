@@ -123,8 +123,12 @@ signals:
     void createOgre(const QString&);
     void deleteOgre(const QString&);
     void setOgre(const QString&);
+    void setClientActiveConnection(unsigned short);
 
 private:
+    // Grep number out of connection name
+    unsigned short Grep(const QString);
+
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     

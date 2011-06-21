@@ -129,7 +129,7 @@ if (!framework.IsHeadless())
     }
 
     function Disconnect() {
-        client.Logout();
+        client.Logout(0, client.getActiveConnection());
     }
 
     function Connected() {

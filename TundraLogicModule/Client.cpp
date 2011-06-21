@@ -50,6 +50,8 @@ Client::Client(TundraLogicModule* owner) :
     client_id_list_.clear();
     reconnect_list_.clear();
     properties_list_.clear();
+
+    connect(owner_, SIGNAL(setClientActiveConnection(unsigned short)), this, SLOT(setActiveConnection(unsigned short)));
 }
 
 Client::~Client()
@@ -167,9 +169,7 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
         loginstate_ = NotConnected;
         client_id_ = 0;
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
-        TundraLogicModule::LogInfo("Removing scene!");
         framework_->Scene()->RemoveScene(sceneToRemove);
-        TundraLogicModule::LogInfo("Scene Removed!");
 
         // We remove TundraClient_X from the scenenames_ map and when next new connection happens
         // we create TundraClient_X again to fill the list.
@@ -515,6 +515,16 @@ void Client::emitChangeSceneSignal(const QString &name)
     unsigned short key = number.toInt();
     if (scenenames_.contains(key))
         emit changeScene(name);
+}
+
+void Client::setActiveConnection(unsigned short con)
+{
+    activeConnection = con;
+}
+
+unsigned short Client::getActiveConnection() const
+{
+    return activeConnection;
 }
 
 }
