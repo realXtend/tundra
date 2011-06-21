@@ -35,6 +35,11 @@ public:
         @param module Javascript module. */
     JavascriptInstance(ScriptAssetPtr scriptRef, JavascriptModule *module);
 
+    /// Creates script engine for this script instance and loads the script but doesn't run it yet.
+    /** @param scriptRefs Script asset references.
+        @param module Javascript module. */
+    JavascriptInstance(const std::vector<ScriptAssetPtr>& scriptRefs, JavascriptModule *module);
+    
     /// Destroys script engine created for this script instance.
     virtual ~JavascriptInstance();
 
@@ -46,10 +51,7 @@ public:
 
     /// IScriptInstance override.
     void Run();
-    
-    /// IScriptInstance override.
-    virtual QString GetLoadedScriptName() const { return currentScriptName; }
-    
+
     /// Register new service to java script engine.
     void RegisterService(QObject *serviceObject, const QString &name);
 
@@ -70,6 +72,9 @@ public slots:
     /// Imports the given QtScript extension plugin into the current script instance.
     void ImportExtension(const QString &scriptExtensionName);
 
+    /// Return whether has been evaluated
+    bool IsEvaluated() const { return evaluated; }
+    
 private:
     /// Creates new script context/engine.
     void CreateEngine();
@@ -85,7 +90,7 @@ private:
     // using an absolute path name from the local file system.
 
     /// If the script content is loaded using the Asset API, this points to the asset that is loaded.
-    ScriptAssetPtr scriptRef_; 
+    std::vector<ScriptAssetPtr> scriptRefs_; 
 
     /// If the script content is loaded directly from local file, this points to the actual script content.  
     QString program_;

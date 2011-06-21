@@ -143,29 +143,28 @@ void JavascriptModule::SceneAdded(const QString &name)
             SLOT(ComponentRemoved(Entity*, IComponent*, AttributeChange::Type)));
 }
 
-void JavascriptModule::ScriptAssetChanged(ScriptAssetPtr newScript)
+void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& newScripts)
 {
-    PROFILE(JSModule_ScriptAssetChanged);
+    PROFILE(JSModule_ScriptAssetsChanged);
 
     EC_Script *sender = dynamic_cast<EC_Script*>(this->sender());
-    assert(sender && "JavascriptModule::ScriptAssetChanged needs to be invoked from EC_Script!");
+    assert(sender && "JavascriptModule::ScriptAssetsChanged needs to be invoked from EC_Script!");
     if (!sender)
         return;
+    if (!newScripts.size())
+    {
+        LogError("Script asset vector was empty");
+        return;
+    }
 
     // First clean up any previous running script from EC_Script, if any exists.
-    // (but only clean up scripts of our script type, other engines can clean up theirs)
+
     if (dynamic_cast<JavascriptInstance*>(sender->GetScriptInstance()))
         sender->SetScriptInstance(0);
 
-    // EC_Script can host scripts of different types, and all script engines listen to asset changes.
-    // First we'll need to validate whether the user even specified a script file that's QtScript.
-    QString scriptType = sender->type.Get().trimmed().toLower();
-    if (scriptType != "js" && scriptType.length() > 0)
-        return; // The user enforced a foreign script type using the EC_Script type field.
-
-    if (newScript->Name().endsWith(".js") || scriptType == "js") // We're positively using QtScript.
+    if (newScripts[0]->Name().endsWith(".js")) // We're positively using QtScript.
     {
-        JavascriptInstance *jsInstance = new JavascriptInstance(newScript, this);
+        JavascriptInstance *jsInstance = new JavascriptInstance(newScripts, this);
         ComponentPtr comp;
         try
         {
@@ -183,20 +182,260 @@ void JavascriptModule::ScriptAssetChanged(ScriptAssetPtr newScript)
         PrepareScriptInstance(jsInstance, sender);
 
         if (sender->runOnLoad.Get())
+        {
             sender->Run();
+            
+            // Now create script class instances for all EC_Scripts depending on this script application
+            if (!sender->applicationName.Get().isEmpty())
+                CreateScriptClassInstances(sender);
+            /// \todo The script class instances are not created if RunOnLoad not specified
+        }
     }
+}
+
+void JavascriptModule::ScriptAppNameChanged(const QString& newAppName)
+{
+    /// \todo Currently does nothing
+}
+
+void JavascriptModule::ScriptClassNameChanged(const QString& newClassName)
+{
+    EC_Script *sender = dynamic_cast<EC_Script*>(this->sender());
+    assert(sender && "JavascriptModule::ScriptClassNameChanged needs to be invoked from EC_Script!");
+    if (!sender)
+        return;
+    
+
+    // It is possible that we do not find the script application yet. In that case, the object will be created once the app loads.
+    QString appName, className;
+    ParseAppAndClassName(sender, appName, className);
+    EC_Script* app = FindScriptApplication(sender, appName);
+    if (app)
+        CreateScriptClassInstance(app, sender, className);
+    else
+        // If we did not find the class yet, delete the existing object in any case
+        RemoveScriptClassInstance(sender);
+    
 }
 
 void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
-        connect(comp, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(ScriptAssetChanged(ScriptAssetPtr)), Qt::UniqueConnection);
+    {
+        connect(comp, SIGNAL(ScriptAssetsChanged(const std::vector<ScriptAssetPtr>&)), this, SLOT(ScriptAssetsChanged(const std::vector<ScriptAssetPtr>&)), Qt::UniqueConnection);
+        connect(comp, SIGNAL(ApplicationNameChanged(const QString&)), this, SLOT(ScriptAppNameChanged(const QString&)), Qt::UniqueConnection);
+        connect(comp, SIGNAL(ClassNameChanged(const QString&)), this, SLOT(ScriptClassNameChanged(const QString&)), Qt::UniqueConnection);
+    }
 }
 
 void JavascriptModule::ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
-        disconnect(comp, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(ScriptAssetChanged(ScriptAssetPtr)));
+    {
+        disconnect(comp, SIGNAL(ScriptAssetsChanged(const std::vector<ScriptAssetPtr>&)), this, SLOT(ScriptAssetsChanged(const std::vector<ScriptAssetPtr>&)));
+        disconnect(comp, SIGNAL(ApplicationNameChanged(const QString&)), this, SLOT(ScriptAppNameChanged(const QString&)));
+        disconnect(comp, SIGNAL(ClassNameChanged(const QString&)), this, SLOT(ScriptClassNameChanged(const QString&)));
+        EC_Script* script = dynamic_cast<EC_Script*>(comp);
+        if (script)
+        {
+            // If the component has an existing script class instance, delete it now
+            RemoveScriptClassInstance(script);
+        }
+    }
+}
+
+EC_Script* JavascriptModule::FindScriptApplication(EC_Script* instance, const QString& appName)
+{
+    if (!instance || appName.isEmpty())
+        return 0;
+    Entity* entity = instance->ParentEntity();
+    if (!entity)
+        return 0;
+    Scene* scene = entity->ParentScene();
+    if (!scene)
+        return 0;
+    // Get all script components that possibly refer to this application
+    EntityList entities = scene->GetEntitiesWithComponent(EC_Script::TypeNameStatic());
+    for (EntityList::iterator i = entities.begin(); i != entities.end(); ++i)
+    {
+        Entity* entity = i->get();
+        Entity::ComponentVector comps = entity->GetComponents(EC_Script::TypeNameStatic());
+        for (unsigned j = 0; j < comps.size(); ++j)
+        {
+            EC_Script* app = dynamic_cast<EC_Script*>(comps[j].get());
+            if (app)
+            {
+                const QString& name = app->applicationName.Get();
+                if (!name.isEmpty() && !name.trimmed().compare(appName, Qt::CaseInsensitive))
+                    return app;
+            }
+        }
+    }
+    
+    return 0;
+}
+
+void JavascriptModule::ParseAppAndClassName(EC_Script* instance, QString& appName, QString& className)
+{
+    if (!instance)
+    {
+        appName.clear();
+        className.clear();
+    }
+    else
+    {
+        QStringList strings = instance->className.Get().split(".");
+        if (strings.size() == 2)
+        {
+            appName = strings[0].trimmed();
+            className = strings[1].trimmed();
+        }
+        else
+        {
+            appName.clear();
+            className.clear();
+        }
+    }
+}
+
+void JavascriptModule::RemoveScriptClassInstance(EC_Script* instance)
+{
+    EC_Script* app = dynamic_cast<EC_Script*>(instance->scriptApplication_.lock().get());
+    if (!app)
+        return;
+        
+    JavascriptInstance* inst = dynamic_cast<JavascriptInstance*>(app->GetScriptInstance());
+    if (!inst || !inst->IsEvaluated())
+        return;
+    
+    QScriptEngine* appEngine = inst->GetEngine();
+    QScriptValue globalObject = appEngine->globalObject();
+   
+    // Get the object container that holds the created script class instances from this application
+    QScriptValue objectContainer = globalObject.property("scriptObjects");
+    // If no object container created, no need to delete anything
+    if (!objectContainer.isObject())
+        return;
+    
+    // Delete the existing object if any
+    QString objectKey = QString::number((unsigned)instance);
+    QScriptValue existingObject = objectContainer.property(objectKey);
+    if (existingObject.isObject())
+    {
+        // If the object has a "OnScriptObjectDestroyed" function, call it
+        QScriptValue destructor = existingObject.property("OnScriptObjectDestroyed");
+        if (!destructor.isUndefined())
+            destructor.call(existingObject);
+    }
+    
+    objectContainer.setProperty(objectKey, QScriptValue());
+    
+    // Forget the application
+    instance->scriptApplication_.reset();
+}
+
+void JavascriptModule::CreateScriptClassInstances(EC_Script* app)
+{
+    JavascriptInstance* inst = dynamic_cast<JavascriptInstance*>(app->GetScriptInstance());
+    // We don't log an error here, as it is possible that the script will get loaded later
+    if (!inst || !inst->IsEvaluated())
+        return;
+    
+    if (!app->GetScriptInstance())
+        return;
+    
+    const QString& thisAppName = app->applicationName.Get().trimmed();
+    
+    Entity* appEntity = app->ParentEntity();
+    if (!appEntity)
+        return;
+    Scene* scene = appEntity->ParentScene();
+    if (!scene)
+        return;
+    QString appName, className;
+    // Get all script components that possibly refer to this application
+    EntityList entities = scene->GetEntitiesWithComponent(EC_Script::TypeNameStatic());
+    for (EntityList::iterator i = entities.begin(); i != entities.end(); ++i)
+    {
+        Entity* entity = i->get();
+        Entity::ComponentVector comps = entity->GetComponents(EC_Script::TypeNameStatic());
+        for (unsigned j = 0; j < comps.size(); ++j)
+        {
+            EC_Script* script = dynamic_cast<EC_Script*>(comps[j].get());
+            if (script)
+            {
+                ParseAppAndClassName(script, appName, className);
+                if (appName == thisAppName)
+                    CreateScriptClassInstance(app, script, className);
+            }
+        }
+    }
+}
+
+void JavascriptModule::CreateScriptClassInstance(EC_Script* app, EC_Script* instance, const QString& className)
+{
+    // Delete any existing object instance, possibly in another script application
+    RemoveScriptClassInstance(instance);
+    
+    JavascriptInstance* inst = dynamic_cast<JavascriptInstance*>(app->GetScriptInstance());
+    // We don't log an error here, as it is possible that the script will get loaded later
+    if (!inst || !inst->IsEvaluated())
+        return;
+    QScriptEngine* appEngine = inst->GetEngine();
+    QScriptValue globalObject = appEngine->globalObject();
+   
+    // Get the object container that holds the created script class instances from this application
+    QScriptValue objectContainer = globalObject.property("scriptObjects");
+    if (!objectContainer.isObject())
+    {
+        objectContainer = appEngine->newArray();
+        globalObject.setProperty("scriptObjects", objectContainer);
+    }
+    
+    // If there is an existing object, delete it
+    QString objectKey = QString::number((unsigned)instance);
+    objectContainer.setProperty(objectKey, QScriptValue());
+    
+    if (className.isEmpty())
+        return;
+    
+    QScriptValue constructor = appEngine->globalObject().property(className);
+    QScriptValue object;
+    if (constructor.isFunction())
+        object = constructor.construct();
+    else
+    {
+        LogError("Failed to construct class " + className + " to script application " + app->applicationName.Get() + ": constructor is not a function");
+        return;
+    }
+    if (appEngine->hasUncaughtException())
+    {
+        LogError("Exception in constructor for for class " + className + " in script application " + app->applicationName.Get() + ": " + object.toString());
+        QStringList trace = appEngine->uncaughtExceptionBacktrace();
+        QStringList::const_iterator it;
+        for(it = trace.constBegin(); it != trace.constEnd(); ++it)
+            LogError((*it).toLocal8Bit().constData());
+
+        std::stringstream ss;
+        int linenum = appEngine->uncaughtExceptionLineNumber();
+        ss << linenum;
+        LogError(ss.str());
+        return;
+    }
+    if (!object.isObject())
+    {
+        LogError("Constructed object for class " + className + " in script application " + app->applicationName.Get() + " is not an object");
+        return;
+    }
+    
+    // Set the object's "me" property to refer to the class instance's entity
+    object.setProperty("me", appEngine->newQObject(instance->ParentEntity()));
+    
+    // Store the object to the container
+    objectContainer.setProperty(objectKey, object);
+    
+    // Remember that the component has a script object created from this application
+    instance->scriptApplication_ = app->shared_from_this();
 }
 
 QStringList JavascriptModule::ParseStartupScriptConfig()

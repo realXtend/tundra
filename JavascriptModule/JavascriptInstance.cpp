@@ -44,13 +44,30 @@ JavascriptInstance::JavascriptInstance(const QString &fileName, JavascriptModule
 
 JavascriptInstance::JavascriptInstance(ScriptAssetPtr scriptRef, JavascriptModule *module) :
     engine_(0),
-    scriptRef_(scriptRef),
     module_(module),
     evaluated(false)
 {
+    // Make sure we do not push null or empty script assets as sources
+    if (scriptRef && !scriptRef->scriptContent.isEmpty())
+        scriptRefs_.push_back(scriptRef);
+    
     CreateEngine();
     Load();
 }
+
+JavascriptInstance::JavascriptInstance(const std::vector<ScriptAssetPtr>& scriptRefs, JavascriptModule *module) :
+    engine_(0),
+    module_(module),
+    evaluated(false)
+{
+    // Make sure we do not push null or empty script assets as sources
+    for (unsigned i = 0; i < scriptRefs.size(); ++i)
+        if (scriptRefs[i] && !scriptRefs[i]->scriptContent.isEmpty()) scriptRefs_.push_back(scriptRefs[i]);
+    
+    CreateEngine();
+    Load();
+}
+
 
 JavascriptInstance::~JavascriptInstance()
 {
@@ -63,16 +80,19 @@ void JavascriptInstance::Load()
         CreateEngine();
 
     // Can't specify both a file source and an Asset API source.
-    assert(sourceFile.isEmpty() || scriptRef_.get() == 0);
+    assert(sourceFile.isEmpty() || scriptRefs_.empty());
 
     // Determine based on code origin whether it can be trusted with system access or not
-    if (scriptRef_.get()) 
+    if (!scriptRefs_.empty())
     {
-        trusted_ = false;
-        AssetProviderPtr provider = scriptRef_.get()->GetAssetProvider();
-        if (provider.get())     
-            if (provider->Name() == "Local")
-                trusted_ = true;
+        trusted_ = true;
+        for (unsigned i = 0; i < scriptRefs_.size(); ++i)
+        {
+            AssetProviderPtr provider = scriptRefs_[i]->GetAssetProvider();
+            if (provider.get())
+                if (provider->Name() != "Local")
+                    trusted_ = false;
+        }
     }
     
     // Local file: trusted
@@ -83,28 +103,30 @@ void JavascriptInstance::Load()
     }
 
     // Do we even have a script to execute?
-    if (program_.isEmpty() && (!scriptRef_.get() || scriptRef_->scriptContent.isEmpty()))
+    if (program_.isEmpty() && scriptRefs_.empty())
     {
         LogError("JavascriptInstance::Load: No script content to load!");
         return;
     }
 
-    QString scriptSourceFilename = (scriptRef_.get() ? scriptRef_->Name() : sourceFile);
-    QString &scriptContent = (scriptRef_.get() ? scriptRef_->scriptContent : program_);
+    bool useAssets = !scriptRefs_.empty();
+    unsigned numScripts = useAssets ? scriptRefs_.size() : 1;
 
-    QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(scriptContent);
-    if (syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
+    for (unsigned i = 0; i < numScripts; ++i)
     {
-        LogError("Syntax error in script " + scriptSourceFilename.toStdString() + "," + QString::number(syntaxResult.errorLineNumber()).toStdString() +
-            ": " + syntaxResult.errorMessage().toStdString());
+        QString scriptSourceFilename = (useAssets ? scriptRefs_[i]->Name() : sourceFile);
+        QString &scriptContent = (useAssets ? scriptRefs_[i]->scriptContent : program_);
 
-        // Delete our loaded script content (if any exists).
-        program_ == "";
+        QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(scriptContent);
+        if (syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
+        {
+            LogError("Syntax error in script " + scriptSourceFilename.toStdString() + "," + QString::number(syntaxResult.errorLineNumber()).toStdString() +
+                ": " + syntaxResult.errorMessage().toStdString());
+
+            // Delete our loaded script content (if any exists).
+            program_ == "";
+        }
     }
-
-    // Set the exposed currently loaded script name. 
-    // This is either IAsset::Name() or a absolute local file path.
-    currentScriptName = scriptSourceFilename;
 }
 
 QString JavascriptInstance::LoadScript(const QString &fileName)
@@ -148,14 +170,14 @@ void JavascriptInstance::Unload()
 void JavascriptInstance::Run()
 {
     // Need to have either absolute file path source or an Asset API source.
-    if (!scriptRef_.get() && program_.isEmpty())
+    if (scriptRefs_.empty() && program_.isEmpty())
     {
         LogError("JavascriptInstance::Run: Cannot run, no script reference loaded.");
         return;
     }
 
     // Can't specify both a file source and an Asset API source.
-    assert(sourceFile.isEmpty() || scriptRef_.get() == 0);
+    assert(sourceFile.isEmpty() || scriptRefs_.empty());
 
     // If we've already evaluated this script once before, create a new script engine to run it again, or otherwise
     // the effects would stack (we'd possibly register into signals twice, or other odd side effects).
@@ -173,28 +195,34 @@ void JavascriptInstance::Run()
     }
 
     // If no script specified at all, we'll have to abort.
-    if (!scriptRef_.get() && program_.isEmpty())
+    if (program_.isEmpty() && scriptRefs_.empty())
         return;
 
-    QString scriptSourceFilename = (scriptRef_.get() ? scriptRef_->Name() : sourceFile);
-    QString &scriptContent = (scriptRef_.get() ? scriptRef_->scriptContent : program_);
-
+    bool useAssets = !scriptRefs_.empty();
+    unsigned numScripts = useAssets ? scriptRefs_.size() : 1;
     included_files_.clear();
-    QScriptValue result = engine_->evaluate(scriptContent, scriptSourceFilename);
-    if (engine_->hasUncaughtException())
+    
+    for (unsigned i = 0; i < numScripts; ++i)
     {
-        LogError("In run/evaluate: " + result.toString().toStdString());
-        QStringList trace = engine_->uncaughtExceptionBacktrace();
-        QStringList::const_iterator it;
-        for(it = trace.constBegin(); it != trace.constEnd(); ++it)
-            LogError((*it).toLocal8Bit().constData());
+        QString scriptSourceFilename = (useAssets ? scriptRefs_[i]->Name() : sourceFile);
+        QString &scriptContent = (useAssets ? scriptRefs_[i]->scriptContent : program_);
 
-        std::stringstream ss;
-        int linenum = engine_->uncaughtExceptionLineNumber();
-        ss << linenum;
-        LogError(ss.str());
+        QScriptValue result = engine_->evaluate(scriptContent, scriptSourceFilename);
+        if (engine_->hasUncaughtException())
+        {
+            LogError("In run/evaluate: " + result.toString().toStdString());
+            QStringList trace = engine_->uncaughtExceptionBacktrace();
+            QStringList::const_iterator it;
+            for(it = trace.constBegin(); it != trace.constEnd(); ++it)
+                LogError((*it).toLocal8Bit().constData());
+
+            std::stringstream ss;
+            int linenum = engine_->uncaughtExceptionLineNumber();
+            ss << linenum;
+            LogError(ss.str());
+        }
     }
-
+    
     evaluated = true;
 }
 

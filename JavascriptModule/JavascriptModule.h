@@ -51,7 +51,9 @@ public slots:
     /// New scene has been added to foundation.
     void SceneAdded(const QString &name);
 
-    void ScriptAssetChanged(ScriptAssetPtr newScript);
+    void ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& newScripts);
+    void ScriptAppNameChanged(const QString& newAppName);
+    void ScriptClassNameChanged(const QString& newClassName);
 
     /// New component has been added to scene.
     void ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
@@ -80,6 +82,21 @@ private:
 
     /// Default engine for console & commandline script execution
     QScriptEngine *engine;
+
+    /// Parse the appname and classname from an EC_Script
+    void ParseAppAndClassName(EC_Script* instance, QString& appName, QString& className);
+
+    /// Find a named script application
+    EC_Script* FindScriptApplication(EC_Script* instance, const QString& appName);
+    
+    /// Remove a script class instance from an EC_Script
+    void RemoveScriptClassInstance(EC_Script* instance);
+    
+    /// Create script class instances for all EC_Scripts depending on this script application
+    void CreateScriptClassInstances(EC_Script* app);
+    
+    /// Create a script class instance into a script application. Specify an empty name to delete the instance
+    void CreateScriptClassInstance(EC_Script* app, EC_Script* instance, const QString& className);
 
     /// Engines for executing startup (possibly persistent) scripts
     std::vector<JavascriptInstance *> startupScripts_;

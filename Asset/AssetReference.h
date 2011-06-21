@@ -62,6 +62,17 @@ struct AssetReferenceList
     */
     void RemoveLast() { refs.removeLast(); }
 
+    /// Removes empty items
+    void RemoveEmpty()
+    {
+        unsigned size = refs.size();
+        for (unsigned i = size - 1; i < size; --i)
+        {
+            if (refs[i].value<AssetReference>().ref.trimmed().isEmpty())
+                refs.erase(refs.begin() + i);
+        }
+    }
+    
     /// Return size of the list.
     int Size() const { return refs.size(); }
 
