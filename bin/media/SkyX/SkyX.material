@@ -106,7 +106,7 @@ material SkyX_VolClouds
 			{
 			    param_named_auto uWorldViewProj worldviewproj_matrix
 			    param_named_auto uCameraPosition camera_position_object_space
-			    param_named uRadius 30000
+			    param_named uRadius float 30000 // "float" added by Stinkfist here
 			}
 
 			fragment_program_ref SkyX_VolClouds_FP 
