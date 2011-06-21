@@ -64,6 +64,9 @@ public:
     /// Scales this vector so that its new length is as given. This is effectively the same as normalizing the
     /// vector first and then multiplying by newLength.
     float ScaleToLength(float newLength);
+	/// Returns a scaled copy of this vector which has its new length as given.
+	/// This function assumes the length of this vector is not zero.
+	float2 ScaledToLength(float newLength) const;
 
     /// Tests if the length of this vector is one, up to the given epsilon.
     bool IsNormalized(float epsilonSq = 1e-6f) const;

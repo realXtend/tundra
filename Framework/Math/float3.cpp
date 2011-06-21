@@ -113,6 +113,15 @@ float float3::ScaleToLength(float newLength)
     return length;
 }
 
+float3 float3::ScaledToLength(float newLength) const
+{
+	assume(!IsZero());
+
+	float3 v = *this;
+	v.ScaleToLength(newLength);
+	return v;
+}
+
 bool float3::IsNormalized(float epsilonSq) const
 {
     return fabs(LengthSq()-1.f) <= epsilonSq;

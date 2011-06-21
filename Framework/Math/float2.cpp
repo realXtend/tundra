@@ -98,6 +98,15 @@ float float2::ScaleToLength(float newLength)
     return length;
 }
 
+float2 float2::ScaledToLength(float newLength) const
+{
+	assume(!IsZero());
+
+	float2 v = *this;
+	v.ScaleToLength(newLength);
+	return v;
+}
+
 bool float2::IsNormalized(float epsilonSq) const
 {
     return fabs(LengthSq()-1.f) <= epsilonSq;

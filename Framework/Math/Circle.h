@@ -11,19 +11,64 @@
 #include "float3.h"
 
 /// A two-dimensional circle in 3D space.
+/** This class represents both a hollow circle (only edge) and a solid circle (disc). */
 class Circle
 {
 public:
     /// The default ctor does not initialize the Circle to any value.
     Circle() {}
-    Circle(const float3 &center, const float3 &normal);
 
-    float3 center;
+	/// Constructs a new Circle with the given parameters.
+    Circle(const float3 &center, const float3 &normal, float radius);
+
+	/// The center position of this circle.
+    float3 pos;
+
+	/// The normal of the circle specifies the plane in which the circle lies in.
+	/// This member is always assumed to be normalized.
     float3 normal;
+
     /// The radius of the circle.
     float r;
 
-    bool Contains(const float3 &point) const;
+	/// Returns a normalized direction vector to the 'U direction' of the circle.
+	/// This vector lies on the plane of this circle.
+	float3 BasisU() const;
+
+	/// Returns a normalized direction vector to the 'V direction' of the circle.
+	/// This vector lies on the plane of this circle.
+	float3 BasisV() const;
+
+	float3 GetPoint(float angleRadians) const;
+
+	/// Returns the plane this circle is contained in.
+	Plane ContainingPlane() const;
+
+	/// Returns true if the given point lies on the edge of this circle.
+	/// @param maxDistance The epsilon threshold to test the distance against.
+    bool EdgeContains(const float3 &point, float maxDistance = 1e-6f) const;
+
+	/// Returns true if the given point lies inside this filled circle.
+	/// @param maxDistance The epsilon threshold to test the distance against.
+	bool DiscContains(const float3 &point, float maxDistance = 1e-6f) const;
+
+	/// Returns the distance of the given object to the edge of this circle.
+    float DistanceToEdge(const float3 &point) const;
+    float DistanceToEdge(const Ray &ray, float *d, float3 *closestPoint) const;
+    float DistanceToEdge(const LineSegment &lineSegment, float *d, float3 *closestPoint) const;
+    float DistanceToEdge(const Line &line, float *d, float3 *closestPoint) const;
+/*
+	/// Returns the distance of the given object to this filled circle.
+    float DistanceToDisc(const float3 &point) const;
+    float DistanceToDisc(const Ray &ray, float *d, float3 *closestPoint) const;
+    float DistanceToDisc(const LineSegment &lineSegment, float *d, float3 *closestPoint) const;
+    float DistanceToDisc(const Line &line, float *d, float3 *closestPoint) const;
+*/
+	/// Returns the closest point on the edge of this circle to the given object.
+	float3 ClosestPointToEdge(const float3 &point) const;
+	float3 ClosestPointToEdge(const Ray &ray, float *d) const;
+	float3 ClosestPointToEdge(const LineSegment &lineSegment, float *d) const;
+	float3 ClosestPointToEdge(const Line &line, float *d) const;
 };
 
 #ifdef QT_INTEROP

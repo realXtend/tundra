@@ -199,6 +199,15 @@ float float4::ScaleToLength3(float newLength)
     return length;
 }
 
+float4 float4::ScaledToLength3(float newLength) const
+{
+	assume(!IsZero3());
+
+	float4 v = *this;
+	v.ScaleToLength3(newLength);
+	return v;
+}
+
 bool float4::IsFinite() const
 {
     return isfinite(x) && isfinite(y) && isfinite(z) && isfinite(w);

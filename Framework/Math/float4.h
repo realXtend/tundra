@@ -108,6 +108,9 @@ public:
     /// normalizing the vector first and then multiplying by newLength.
     /// @return False if the length of this vector is zero, and the vector could not be scaled to the specified length.
     float ScaleToLength3(float newLength);
+	/// Returns a scaled copy of this vector which has its new length as given.
+	/// This function assumes the length of this vector is not zero.
+	float4 ScaledToLength3(float newLength) const;
 
     /// Tests if this vector contains valid finite elements.
     bool IsFinite() const;
