@@ -90,10 +90,19 @@ void OgreSkeletonAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket,
     if (ticket != loadTicket_)
         return;
 
-    if (result.error)
+    bool loadError = result.error;
+    if (loadError)
         OgreRenderingModule::LogError("OgreSkeletonAsset: Ogre failed to do threaded loading: " + result.message);
+    
+    internal_name_ = SanitateAssetIdForOgre(Name().toStdString());
+    ogreSkeleton = Ogre::SkeletonManager::getSingleton().getByName(internal_name_, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
 
-    assetAPI->OnTransferAssetLoadCompleted(Name(), (result.error ? ASSET_LOAD_FAILED : ASSET_LOAD_SUCCESFULL));
+    if (ogreSkeleton.isNull())
+    {
+        OgreRenderingModule::LogError("OgreSkeletonAsset: Could not get Skeleton from SkeletonManager after threaded loading: " + Name().toStdString());
+        loadError = true;
+    }
+    assetAPI->OnTransferAssetLoadCompleted(Name(), (loadError ? ASSET_LOAD_FAILED : ASSET_LOAD_SUCCESFULL));
 }
 
 bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
