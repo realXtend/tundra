@@ -144,19 +144,19 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
 
 void Client::Logout(bool fail, unsigned short removedConnection_)
 {
-    TundraLogicModule::LogInfo("Client::Logout method");
     QMapIterator<unsigned short, Ptr(kNet::MessageConnection)> sourceIterator = owner_->GetKristalliModule()->GetConnectionArray();
 
     if (!sourceIterator.hasNext())
         return;
 
-    // Scene to be removed is TundraClient_X | X = 0, 1, 2, 3, ..., n; n â‚¬ Z+
+    // Scene to be removed is TundraClient_X | X = 0, 1, 2, 3, ..., n; n ¤ Z+
     // removedConnection_ indicates which scene we are about to disconnect.
     QString sceneToRemove = "TundraClient_";
     sceneToRemove.append(QString("%1").arg(removedConnection_));
 
     if (loginstate_list_[sceneToRemove] != NotConnected)
     {
+        // This signal is catched in TundraLogicModule.cpp. This changes scene to soonToBeDisconnected scene.
         emit aboutToDisconnect(sceneToRemove);
         if (GetConnection(removedConnection_))
         {
@@ -167,7 +167,9 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
         loginstate_ = NotConnected;
         client_id_ = 0;
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
+        TundraLogicModule::LogInfo("Removing scene!");
         framework_->Scene()->RemoveScene(sceneToRemove);
+        TundraLogicModule::LogInfo("Scene Removed!");
 
         // We remove TundraClient_X from the scenenames_ map and when next new connection happens
         // we create TundraClient_X again to fill the list.
@@ -178,10 +180,16 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
         properties_list_.remove(sceneToRemove);
         scenenames_.remove(removedConnection_);
 
+        // Check if we have connections up and running and switch to it.
         if (!scenenames_.isEmpty())
             owner_->changeScene(scenenames_.constBegin().value());
+        else
+        {
+            TundraLogicModule::LogInfo("Emitting client.Disconnected!");
+            emit Disconnected();
+        }
 
-        emit Disconnected();
+        //emit Disconnected();
     }
     
     if (fail)

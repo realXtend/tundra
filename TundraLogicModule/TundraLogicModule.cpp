@@ -86,10 +86,10 @@ void TundraLogicModule::PostInitialize()
     framework_->Console()->RegisterCommand(CreateConsoleCommand("connect", 
         "Connects to a server. Usage: connect(address,port,username,password)",
         ConsoleBind(this, &TundraLogicModule::ConsoleConnect)));
-    framework_->Console()->RegisterCommand(CreateConsoleCommand("disconnect", 
-        "Disconnects from a server.",
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("disconnect",
+        "Disconnects from a server. Usage: disconnect(conNumber) or just disconnect",
         ConsoleBind(this, &TundraLogicModule::ConsoleDisconnect)));
-    
+
     framework_->Console()->RegisterCommand(CreateConsoleCommand("savescene",
         "Saves scene into XML or binary. Usage: savescene(filename,binary)",
         ConsoleBind(this, &TundraLogicModule::ConsoleSaveScene)));
@@ -347,7 +347,14 @@ ConsoleCommandResult TundraLogicModule::ConsoleConnect(const StringVector& param
 
 ConsoleCommandResult TundraLogicModule::ConsoleDisconnect(const StringVector& params)
 {
-    client_->Logout(false);
+    if (params.size() < 1)
+        client_->Logout(false);
+
+    else if (params.size() >= 1)
+    {
+        int conNumber = ParseString<int>(params[0]);
+        client_->Logout(false, conNumber);
+    }
     
     return ConsoleResultSuccess();
 }

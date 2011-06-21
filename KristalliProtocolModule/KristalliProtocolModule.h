@@ -149,19 +149,19 @@ namespace KristalliProtocol
         event_category_id_t frameworkEventCategory_;
 
         /// Messageconnection properties array: IP
-        QList<std::string> serverIp_list_;
+        QMap<unsigned short, std::string> serverIp_list_;
 
         /// Messageconnection properties array: Port
-        QList<unsigned short> serverPort_list_;
+        QMap<unsigned short, unsigned short> serverPort_list_;
 
         /// Messageconnection properties array: serverTransport
-        QList<kNet::SocketTransportLayer> serverTransport_list_;
+        QMap<unsigned short, kNet::SocketTransportLayer> serverTransport_list_;
 
         /// Messageconnections properties array: reconnectAttempts
-        QList<int> reconnectAttempts_list_;
+        QMap<unsigned short, int> reconnectAttempts_list_;
 
         /// Messageconnections properties array: Timers
-        QList<kNet::PolledTimer> reconnectTimer_list_;
+        QMap<unsigned short, kNet::PolledTimer> reconnectTimer_list_;
 
         /// Messageconnections properties array: Messageconnections
         QMap< unsigned short, Ptr(kNet::MessageConnection) > serverConnection_map_;

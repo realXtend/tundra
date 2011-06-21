@@ -1,10 +1,5 @@
 if (!server.IsAboutToStart())
 {
-	//engine.ImportExtension("qt.core");
-    //engine.ImportExtension("qt.gui");
-    
-	sceneAPI = framework.Scene();
-
     client.createOgre.connect(CreateScenemanager);
 	client.deleteOgre.connect(DeleteScenemanager);
 	client.setOgre.connect(SetScenemanager);

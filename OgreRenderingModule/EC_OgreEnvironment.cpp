@@ -98,7 +98,7 @@ EC_OgreEnvironment::~EC_OgreEnvironment()
     RendererPtr renderer = renderer_.lock();
     if (!renderer->GetViewport())
         return; // headless
-    SetBackgoundColor(Color(0, 0, 0));
+    //SetBackgoundColor(Color(0, 0, 0));
     DisableFog();
 
     if (sunlight_)
