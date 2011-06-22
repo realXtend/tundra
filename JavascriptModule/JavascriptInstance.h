@@ -63,6 +63,9 @@ public:
     */
     void SetOwnerComponent(const ComponentPtr &owner) { owner_ = owner; }
 
+    /// Return owner component
+    ComponentWeakPtr GetOwnerComponent() { return owner_; }
+    
 public slots:
     /// Loads a given script in engine. This function can be used to create a property as you could include js-files.
     /** Multiple inclusion of same file is prevented. (by using simple string compare)
@@ -74,6 +77,16 @@ public slots:
 
     /// Return whether has been evaluated
     bool IsEvaluated() const { return evaluated; }
+
+    /// Check and print error if the engine has an uncaught exception
+    bool CheckAndPrintException(const QString& message, const QScriptValue& result);
+
+signals:
+    /// The scripts have been run. This is the trigger to create script objects as necessary
+    void ScriptEvaluated();
+    
+    /// The script engine is about to unload. This is the trigger to delete script objects as necessary
+    void ScriptUnloading();
     
 private:
     /// Creates new script context/engine.

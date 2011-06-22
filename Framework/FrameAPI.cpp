@@ -30,12 +30,12 @@ FrameAPI::FrameAPI(Framework *framework) : QObject(framework), currentFrameNumbe
 
 FrameAPI::~FrameAPI()
 {
-    Reset();
 }
 
 void FrameAPI::Reset()
 {
     qDeleteAll(delayedSignals);
+    delayedSignals.clear();
 }
 
 float FrameAPI::WallClockTime() const

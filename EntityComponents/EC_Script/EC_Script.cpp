@@ -33,8 +33,45 @@ void EC_Script::SetScriptInstance(IScriptInstance *instance)
     scriptInstance_ = instance;
 }
 
+void EC_Script::SetScriptApplication(EC_Script* app)
+{
+    if (app)
+        scriptApplication_ = app->shared_from_this();
+    else
+        scriptApplication_.reset();
+}
+
+EC_Script* EC_Script::GetScriptApplication() const
+{
+    return dynamic_cast<EC_Script*>(scriptApplication_.lock().get());
+}
+
+bool EC_Script::ShouldRun() const
+{
+    int mode = runMode.Get();
+    if (mode == RM_Both)
+        return true;
+    if (mode == RM_Client && isClient_)
+        return true;
+    if (mode == RM_Server && isServer_)
+        return true;
+    return false;
+}
+
+void EC_Script::SetIsClientIsServer(bool isClient, bool isServer)
+{
+    isClient_ = isClient;
+    isServer_ = isServer;
+}
+
 void EC_Script::Run(const QString &name)
 {
+    if (!ShouldRun())
+    {
+        LogWarning("Run explicitly called, but RunMode does not match");
+        return;
+    }
+    
     // This function (EC_Script::Run) is invoked on the Entity Action RunScript(scriptName). To
     // allow the user to differentiate between multiple instances of EC_Script in the same entity, the first
     // parameter of RunScript allows the user to specify which EC_Script to run. So, first check
@@ -70,18 +107,30 @@ EC_Script::EC_Script(Scene* scene):
     IComponent(scene),
     scriptRef(this, "Script ref", AssetReferenceList("Script")),
     runOnLoad(this, "Run on load", false),
-    runMode(this, "Run mode", 0),
+    runMode(this, "Run mode", RM_Both),
     applicationName(this, "Script application name"),
     className(this, "Script class name"),
-    scriptInstance_(0)
+    scriptInstance_(0),
+    isClient_(false),
+    isServer_(false)
 {
     static AttributeMetadata scriptRefData;
-    AttributeMetadata::ButtonInfoList scriptRefButtons;
-    scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("runScriptButton", "P", "Run"));
-    scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("stopScriptButton", "S", "Unload"));
-    scriptRefData.buttons = scriptRefButtons;
-    scriptRefData.elementType = "assetreference";
+    static AttributeMetadata runModeData;
+    static bool metadataInitialized = false;
+    if (!metadataInitialized)
+    {
+        AttributeMetadata::ButtonInfoList scriptRefButtons;
+        scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("runScriptButton", "P", "Run"));
+        scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("stopScriptButton", "S", "Unload"));
+        scriptRefData.buttons = scriptRefButtons;
+        scriptRefData.elementType = "assetreference";
+        runModeData.enums[RM_Both] = "Both";
+        runModeData.enums[RM_Client] = "Client";
+        runModeData.enums[RM_Server] = "Server";
+        metadataInitialized = true;
+    }
     scriptRef.SetMetadata(&scriptRefData);
+    runMode.SetMetadata(&runModeData);
 
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
@@ -94,6 +143,13 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
     
     if (attribute == &scriptRef)
     {
+        // Do not even fetch the assets if we should not run
+        if (!ShouldRun())
+        {
+            scriptAssets.clear();
+            return;
+        }
+        
         AssetReferenceList scripts = scriptRef.Get();
         // Make sure that the asset ref list type stays intact.
         scripts.type = "Scripts";
@@ -132,6 +188,15 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
     else if (attribute == &className)
     {
         emit ClassNameChanged(className.Get());
+    }
+    else if (attribute == &runMode)
+    {
+        // If we had not loaded script assets previously because of runmode not allowing, load them now
+        if (ShouldRun())
+        {
+            if (scriptAssets.empty())
+                HandleAttributeChanged(&scriptRef, AttributeChange::Default);
+        }
     }
 }
 

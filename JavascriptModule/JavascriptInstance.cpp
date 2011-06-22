@@ -208,22 +208,11 @@ void JavascriptInstance::Run()
         QString &scriptContent = (useAssets ? scriptRefs_[i]->scriptContent : program_);
 
         QScriptValue result = engine_->evaluate(scriptContent, scriptSourceFilename);
-        if (engine_->hasUncaughtException())
-        {
-            LogError("In run/evaluate: " + result.toString().toStdString());
-            QStringList trace = engine_->uncaughtExceptionBacktrace();
-            QStringList::const_iterator it;
-            for(it = trace.constBegin(); it != trace.constEnd(); ++it)
-                LogError((*it).toLocal8Bit().constData());
-
-            std::stringstream ss;
-            int linenum = engine_->uncaughtExceptionLineNumber();
-            ss << linenum;
-            LogError(ss.str());
-        }
+        CheckAndPrintException("In run/evaluate: ", result);
     }
     
     evaluated = true;
+    emit ScriptEvaluated();
 }
 
 void JavascriptInstance::RegisterService(QObject *serviceObject, const QString &name)
@@ -342,6 +331,26 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
     }
 }
 
+bool JavascriptInstance::CheckAndPrintException(const QString& message, const QScriptValue& result)
+{
+    if (engine_->hasUncaughtException())
+    {
+        LogError(message + result.toString());
+        QStringList trace = engine_->uncaughtExceptionBacktrace();
+        QStringList::const_iterator it;
+        for(it = trace.constBegin(); it != trace.constEnd(); ++it)
+            LogError((*it).toLocal8Bit().constData());
+
+        std::stringstream ss;
+        int linenum = engine_->uncaughtExceptionLineNumber();
+        ss << linenum;
+        LogError(ss.str());
+        engine_->clearExceptions();
+        return true;
+    }
+    return false;
+}
+
 void JavascriptInstance::CreateEngine()
 {
     if (engine_)
@@ -375,10 +384,15 @@ void JavascriptInstance::DeleteEngine()
     // so that they can clean up their data before the script is removed from the object,
     // or when the system is unloading.
     
+    emit ScriptUnloading();
+    
     QScriptValue destructor = engine_->globalObject().property("OnScriptDestroyed");
     if (!destructor.isUndefined())
-        destructor.call();
-
+    {
+        QScriptValue result = destructor.call();
+        CheckAndPrintException("In script destructor: ", result);
+    }
+    
     // Delete all prototypes of registered objects.
     delete engine_->property("AABB_scriptclass").value<QScriptClass*>();
     delete engine_->property("float2_scriptclass").value<QScriptClass*>();

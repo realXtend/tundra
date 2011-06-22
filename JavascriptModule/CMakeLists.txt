@@ -19,16 +19,15 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} ${UI_FILES
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
-use_modules (Framework Scene Input Audio Console)
+use_modules (Framework Scene Input Audio Console TundraLogicModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 LinkEntityComponent(EntityComponents/EC_Script EC_Script)
 
-link_modules (Framework EC_Script Input Audio Console)
+link_modules (Framework EC_Script Input Audio Console TundraLogicModule)
 link_ogre()
 
 SetupCompileFlags()
-
 
 final_target ()

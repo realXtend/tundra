@@ -20,6 +20,16 @@ typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
 Provides mechanism for adding scripts to entities.
 Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
+When EC_Script has scriptRef(s) set, it will load and run the script assets in an own script engine. Optionally,
+it can define the name of the script application.
+
+EC_Script's can also create script objects within an existing script application. In this case, the scriptRef
+is left empty, and instead the className attribute tells from which script application to instantiate a specific class.
+The syntax for className attribute is ApplicationName.ClassName . The EC_Script with the matching application will be
+looked up, and the constructor function ClassName will be called, with the entity and component as parameters.
+If the classname changes, the previously created script object will be automatically destroyed. Script objects
+may optionally define a destructor called OnScriptObjectDestroyed
+
 <b>Attributes</b>:
 <ul>
 <li>AssetReferenceList: scriptRef
@@ -29,9 +39,9 @@ Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 <li>int: runMode
 <div>Whether to run on client, server or both.</div>
 <li>QString: applicationName
-<div>Name for the script application. Script components without an own engine refer to the application by name.</div>
+<div>Name for the script application.</div>
 <li>QString: className
-<div>The script class to instantiate from within an existing application. Syntax: applicationName.className</div>
+<div>The script class to instantiate from within an existing application. Syntax: ApplicationName.ClassName</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -57,6 +67,14 @@ class EC_Script: public IComponent
     Q_OBJECT
 
 public:
+    /// Runmode enumeration
+    enum RunMode
+    {
+        RM_Both = 0,
+        RM_Client,
+        RM_Server
+    };
+    
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Script(Scene* scene);
 
@@ -66,15 +84,15 @@ public:
     Q_PROPERTY(AssetReferenceList scriptRef READ getscriptRef WRITE setscriptRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, scriptRef);
 
-    /// Is the script engine run as soon as the script asset(s) are set/loaded.
+    /// Is the script engine run as soon as the script asset(s) are set/loaded
     Q_PROPERTY(bool runOnLoad READ getrunOnLoad WRITE setrunOnLoad);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, runOnLoad);
 
-    /// Whether to run on client, server or both.</div>
+    /// Whether to run on client, server or both
     Q_PROPERTY(int runMode READ getrunMode WRITE setrunMode);
     DEFINE_QPROPERTY_ATTRIBUTE(int, runMode);
     
-    /// Name for the script application. Script components without an own engine refer to the application by name.
+    /// Name for the script application
     Q_PROPERTY(QString applicationName READ getapplicationName WRITE setapplicationName);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, applicationName);
     
@@ -92,6 +110,15 @@ public:
     /// Returns the current script instance.
     IScriptInstance *GetScriptInstance() const { return scriptInstance_; }
 
+    /// Set the application script component this script component has a script object created from
+    void SetScriptApplication(EC_Script* app);
+    
+    /// Return the script application component, if it (still) exists
+    EC_Script* GetScriptApplication() const;
+
+    /// Set the IsServer and IsClient flags. Called by the parent scripting system, which has this knowledge
+    void SetIsClientIsServer(bool isClient, bool isServer);
+
     COMPONENT_NAME("EC_Script", 5)
 public slots:
 
@@ -105,6 +132,12 @@ public slots:
     */
     void Unload(const QString& name = QString());
 
+    /// Return the key for accessing the script engine's scriptObjects property map
+    QString GetScriptObjectKey() const { return QString::number((unsigned)this); }
+    
+    /// Check whether the script should run
+    bool ShouldRun() const;
+    
 signals:
     /// Emitted when changed script assets are ready to run
     void ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& newScripts);
@@ -135,8 +168,12 @@ private:
     /// Script instance.
     IScriptInstance *scriptInstance_;
     
-public:
     /// The parent script application, if an object has been instantiated from inside it
     ComponentWeakPtr scriptApplication_;
+    
+    /// IsClient flag, for checking run mode
+    bool isClient_;
+    /// IsServer flag, for checking run mode
+    bool isServer_;
 };
 

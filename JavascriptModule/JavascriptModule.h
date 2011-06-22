@@ -51,10 +51,6 @@ public slots:
     /// New scene has been added to foundation.
     void SceneAdded(const QString &name);
 
-    void ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& newScripts);
-    void ScriptAppNameChanged(const QString& newAppName);
-    void ScriptClassNameChanged(const QString& newClassName);
-
     /// New component has been added to scene.
     void ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
@@ -89,15 +85,18 @@ private:
     /// Find a named script application
     EC_Script* FindScriptApplication(EC_Script* instance, const QString& appName);
     
+    /// Create a script class instance into a script application
+    void CreateScriptObject(EC_Script* app, EC_Script* instance, const QString& className);
+
     /// Remove a script class instance from an EC_Script
-    void RemoveScriptClassInstance(EC_Script* instance);
+    void RemoveScriptObject(EC_Script* instance);
     
     /// Create script class instances for all EC_Scripts depending on this script application
-    void CreateScriptClassInstances(EC_Script* app);
+    void CreateScriptObjects(EC_Script* app);
     
-    /// Create a script class instance into a script application. Specify an empty name to delete the instance
-    void CreateScriptClassInstance(EC_Script* app, EC_Script* instance, const QString& className);
-
+    /// Remove script class instances for all EC_Scripts depending on this script application
+    void RemoveScriptObjects(EC_Script* app);
+    
     /// Engines for executing startup (possibly persistent) scripts
     std::vector<JavascriptInstance *> startupScripts_;
 
@@ -108,6 +107,12 @@ private slots:
     void ConsoleRunString(const QStringList &params);
     void ConsoleRunFile(const QStringList &params);
     void ConsoleReloadScripts();
+    
+    void ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& newScripts);
+    void ScriptAppNameChanged(const QString& newAppName);
+    void ScriptClassNameChanged(const QString& newClassName);
+    void ScriptEvaluated();
+    void ScriptUnloading();
 };
 
 // API things
