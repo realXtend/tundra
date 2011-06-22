@@ -240,7 +240,7 @@ public slots:
     /// removes mesh
     void RemoveMesh();
     
-    /// sets an attachment mesh
+    /// sets an attachment mesh. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     /** The mesh entity must exist before attachment meshes can be set. Setting a new mesh entity removes all attachment meshes.
         @param index attachment index starting from 0.
         @param mesh_name mesh to use
@@ -250,24 +250,24 @@ public slots:
      */
     bool SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point = std::string(), bool share_skeleton = false);
     
-    /// sets position of attachment mesh, relative to attachment point
+    /// sets position of attachment mesh, relative to attachment point. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     void SetAttachmentPosition(uint index, const float3& position);
     
-    /// sets orientation of attachment mesh, relative to attachment point
+    /// sets orientation of attachment mesh, relative to attachment point. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     void SetAttachmentOrientation(uint index, const Quat &orientation);
     
-    /// sets scale of attachment mesh, relative to attachment point
+    /// sets scale of attachment mesh, relative to attachment point. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     void SetAttachmentScale(uint index, const float3& scale);
     
-    /// removes an attachment mesh
+    /// removes an attachment mesh. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     /** @param index attachment index starting from 0
      */
     void RemoveAttachmentMesh(uint index);
     
-    /// removes all attachments
+    /// removes all attachments. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     void RemoveAllAttachments();
     
-    /// sets material on an attachment mesh
+    /// sets material on an attachment mesh. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     /** @param index attachment index starting from 0
         @param submesh_index submesh in attachment mesh
         @param material_name material name
@@ -278,7 +278,7 @@ public slots:
     /// returns if mesh exists
     bool HasMesh() const { return entity_ != 0; }
     
-    /// returns number of attachments
+    /// returns number of attachments. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     /** note: returns just the size of attachment vector, so check individually that attachments actually exist
      */
     uint GetNumAttachments() const { return attachment_entities_.size(); }
@@ -306,13 +306,13 @@ public slots:
     /// returns Ogre mesh entity
     Ogre::Entity* GetEntity() const { return entity_; }
 
-   /// returns Ogre attachment mesh entity
+   /// returns Ogre attachment mesh entity. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     Ogre::Entity* GetAttachmentEntity(uint index) const;
 
     /// gets number of materials (submeshes) in mesh entity
     uint GetNumMaterials() const;
     
-    /// gets number of materials (submeshes) in attachment mesh entity
+    /// gets number of materials (submeshes) in attachment mesh entity. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     uint GetAttachmentNumMaterials(uint index) const;
     
     /// gets material name from mesh
@@ -322,7 +322,7 @@ public slots:
     const std::string& GetMaterialName(uint index) const;
     QString GetMatName(uint index) const;
 
-    /// gets material name from attachment mesh
+    /// gets material name from attachment mesh. THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
     /** @param index attachment index
         @param submesh_index submesh index
         @return name if successful, empty if no entity / illegal index
@@ -389,6 +389,16 @@ public slots:
 //    float3 GetBoneOrientationEuler(const QString& bone_name);
     /// Return bone's root-derived orientation as Euler degrees
 //    float3 GetBoneDerivedOrientationEuler(const QString& bone_name);
+    
+    /// Set the weight (0.0 - 1.0) of a morph on the mesh
+    void SetMorphWeight(const QString& morphName, float weight);
+    /// Return the weight of a morph on the mesh. Returns 0.0 if not found
+    float GetMorphWeight(const QString& morphName) const;
+    
+    /// Set the weight of a morph on an attachment mesh
+    void SetAttachmentMorphWeight(unsigned index, const QString& morphName, float weight);
+    /// Return the weight of a morph on an attachment mesh. Return 0.0 if not found
+    float GetAttachmentMorphWeight(unsigned index, const QString& morphName) const;
     
 signals:
     /// Emitted before the Ogre mesh entity is about to be destroyed

@@ -285,46 +285,15 @@ void EC_Avatar::SetupMorphs()
     if (!mesh)
         return;
     
-    Ogre::Entity* ogre_entity = mesh->GetEntity();
-    if (!ogre_entity)
-        return;
-    Ogre::AnimationStateSet* anims = ogre_entity->getAllAnimationStates();
-    if (!anims)
-        return;
-        
     const std::vector<MorphModifier> morphs = desc->morphModifiers_;
     
     for (uint i = 0; i < morphs.size(); ++i)
     {
-        if (anims->hasAnimationState(morphs[i].morph_name_))
-        {
-            float timePos = morphs[i].value_;
-            if (timePos < 0.0f)
-                timePos = 0.0f;
-            // Clamp very close to 1.0, but do not actually go to 1.0 or the morph animation will wrap
-            if (timePos > 0.99995f)
-                timePos = 0.99995f;
-            
-            Ogre::AnimationState* anim = anims->getAnimationState(morphs[i].morph_name_);
-            anim->setTimePosition(timePos);
-            anim->setEnabled(timePos > 0.0f);
-            
-            // Also set position in attachment entities, if have the same morph
-            for (uint j = 0; j < mesh->GetNumAttachments(); ++j)
-            {
-                Ogre::Entity* attachment = mesh->GetAttachmentEntity(j);
-                if (!attachment)
-                    continue;
-                Ogre::AnimationStateSet* attachment_anims = attachment->getAllAnimationStates();
-                if (!attachment_anims)
-                    continue;
-                if (!attachment_anims->hasAnimationState(morphs[i].morph_name_))
-                    continue;
-                Ogre::AnimationState* attachment_anim = attachment_anims->getAnimationState(morphs[i].morph_name_);
-                attachment_anim->setTimePosition(timePos);
-                attachment_anim->setEnabled(timePos > 0.0f);
-            }
-        }
+        mesh->SetMorphWeight(QString::fromStdString(morphs[i].morph_name_), morphs[i].value_);
+        
+        // Also set position in attachment entities, if have the same morph
+        for (uint j = 0; j < mesh->GetNumAttachments(); ++j)
+            mesh->SetAttachmentMorphWeight(j, QString::fromStdString(morphs[i].morph_name_), morphs[i].value_);
     }
 }
 

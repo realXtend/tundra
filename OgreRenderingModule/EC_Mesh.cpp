@@ -130,21 +130,21 @@ void EC_Mesh::SetAdjustPosition(const float3& position)
 {
     Transform transform = nodeTransformation.Get();
     transform.SetPos(position.x, position.y, position.z);
-    nodeTransformation.Set(transform, AttributeChange::LocalOnly);
+    nodeTransformation.Set(transform, AttributeChange::Default);
 }
 
 void EC_Mesh::SetAdjustOrientation(const Quat &orientation)
 {
     Transform transform = nodeTransformation.Get();
     transform.SetOrientation(orientation);
-    nodeTransformation.Set(transform, AttributeChange::LocalOnly);
+    nodeTransformation.Set(transform, AttributeChange::Default);
 }
 
 void EC_Mesh::SetAdjustScale(const float3& scale)
 {
     Transform transform = nodeTransformation.Get();
     transform.SetScale(scale);
-    nodeTransformation.Set(transform, AttributeChange::LocalOnly);
+    nodeTransformation.Set(transform, AttributeChange::Default);
 }
 
 void EC_Mesh::SetAttachmentPosition(uint index, const float3& position)
@@ -217,7 +217,7 @@ float3 EC_Mesh::GetAttachmentScale(uint index) const
 
 void EC_Mesh::SetDrawDistance(float draw_distance)
 {
-    drawDistance.Set(draw_distance, AttributeChange::LocalOnly);
+    drawDistance.Set(draw_distance, AttributeChange::Default);
 }
 
 bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
@@ -623,7 +623,7 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
 
 void EC_Mesh::SetCastShadows(bool enabled)
 {
-    castShadows.Set(enabled, AttributeChange::LocalOnly);
+    castShadows.Set(enabled, AttributeChange::Default);
 }
 
 uint EC_Mesh::GetNumMaterials() const
@@ -1224,6 +1224,91 @@ float3 EC_Mesh::GetBoneDerivedOrientationEuler(const QString& bone_name)
         return float3::zero;
 }
 */
+
+void EC_Mesh::SetMorphWeight(const QString& morphName, float weight)
+{
+    if (!entity_)
+        return;
+    Ogre::AnimationStateSet* anims = entity_->getAllAnimationStates();
+    if (!anims)
+        return;
+    
+    std::string morphNameStd = morphName.toStdString();
+    
+    if (anims->hasAnimationState(morphNameStd))
+    {
+        if (weight < 0.0f)
+            weight = 0.0f;
+        // Clamp very close to 1.0, but do not actually go to 1.0 or the morph animation will wrap
+        if (weight > 0.99995f)
+            weight = 0.99995f;
+        
+        Ogre::AnimationState* anim = anims->getAnimationState(morphNameStd);
+        anim->setTimePosition(weight);
+        anim->setEnabled(weight > 0.0f);
+    }
+}
+
+float EC_Mesh::GetMorphWeight(const QString& morphName) const
+{
+    if (!entity_)
+        return 0.0f;
+    Ogre::AnimationStateSet* anims = entity_->getAllAnimationStates();
+    if (!anims)
+        return 0.0f;
+    
+    std::string morphNameStd = morphName.toStdString();
+    if (anims->hasAnimationState(morphNameStd))
+    {
+        Ogre::AnimationState* anim = anims->getAnimationState(morphNameStd);
+        return anim->getTimePosition();
+    }
+    else
+        return 0.0f;
+}
+
+void EC_Mesh::SetAttachmentMorphWeight(unsigned index, const QString& morphName, float weight)
+{
+    Ogre::Entity* entity = GetAttachmentEntity(index);
+    Ogre::AnimationStateSet* anims = entity->getAllAnimationStates();
+    if (!anims)
+        return;
+    
+    std::string morphNameStd = morphName.toStdString();
+    
+    if (anims->hasAnimationState(morphNameStd))
+    {
+        if (weight < 0.0f)
+            weight = 0.0f;
+        // Clamp very close to 1.0, but do not actually go to 1.0 or the morph animation will wrap
+        if (weight > 0.99995f)
+            weight = 0.99995f;
+        
+        Ogre::AnimationState* anim = anims->getAnimationState(morphNameStd);
+        anim->setTimePosition(weight);
+        anim->setEnabled(weight > 0.0f);
+    }
+}
+
+float EC_Mesh::GetAttachmentMorphWeight(unsigned index, const QString& morphName) const
+{
+    Ogre::Entity* entity = GetAttachmentEntity(index);
+    if (!entity)
+        return 0.0f;
+    Ogre::AnimationStateSet* anims = entity->getAllAnimationStates();
+    if (!anims)
+        return 0.0f;
+    
+    std::string morphNameStd = morphName.toStdString();
+    if (anims->hasAnimationState(morphNameStd))
+    {
+        Ogre::AnimationState* anim = anims->getAnimationState(morphNameStd);
+        return anim->getTimePosition();
+    }
+    else
+        return 0.0f;
+}
+
 bool EC_Mesh::HasMaterialsChanged() const
 {
     if(!entity_ || !meshMaterial.Get().Size())
