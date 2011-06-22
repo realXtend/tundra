@@ -35,12 +35,9 @@
 
 using namespace std;
 
-namespace DebugStats
-{
-
-DebugStatsModule::DebugStatsModule()
-:IModule("DebugStats"),
-profilerWindow_(0)
+DebugStatsModule::DebugStatsModule() :
+    IModule("DebugStats"),
+    profilerWindow_(0)
 {
 }
 
@@ -55,25 +52,11 @@ void DebugStatsModule::PostInitialize()
     QueryPerformanceCounter(&lastCallTime);
 #endif
 
-#ifdef PROFILING
     framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
-#endif
-
-    framework_->Console()->RegisterCommand("exec",
-        "Invokes an Entity Action on an entity (debugging).",
-        this, SLOT(Exec(const QStringList &)));
+    framework_->Console()->RegisterCommand("exec", "Invokes an Entity Action on an entity (debugging).", this, SLOT(Exec(const QStringList &)));
 
     inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
-
-
-//#ifdef Q_WS_WIN
-// 
-//    PDH::PerformanceMonitor monitor;
-//    int treads = monitor.GetThreadCount();
-//#endif 
-
-    AddProfilerWidgetToUi();
 }
 
 void DebugStatsModule::HandleKeyPressed(KeyEvent *e)
@@ -84,25 +67,6 @@ void DebugStatsModule::HandleKeyPressed(KeyEvent *e)
     const QKeySequence showProfiler = framework_->Input()->KeyBinding("ShowProfilerWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_P));
     if (QKeySequence(e->keyCode | e->modifiers) == showProfiler)
         ShowProfilingWindow();
-}
-
-void DebugStatsModule::AddProfilerWidgetToUi()
-{
-    if (profilerWindow_)
-    {
-        profilerWindow_->setVisible(!(profilerWindow_->isVisible()));
-        return;
-    }
-
-    profilerWindow_ = new TimeProfilerWindow(framework_);
-    profilerWindow_->setParent(framework_->Ui()->MainWindow());
-    profilerWindow_->setWindowFlags(Qt::Tool);
-    //profilerWindow_->move(100, 100);
-    profilerWindow_->resize(650, 530);
-    //UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
-    connect(profilerWindow_, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
-
-    //ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), Application::InstallationDirectory() + "data/ui/images/menus/edbutton_MATWIZ_hover.png");
 }
 
 void DebugStatsModule::StartProfiling(bool visible)
@@ -117,9 +81,21 @@ void DebugStatsModule::ShowProfilingWindow()
 {
     // If the window is already created, bring it to front.
     if (profilerWindow_)
-        framework_->Ui()->BringWidgetToFront(profilerWindow_);
-    else
-        LogError("Profiler window has not been initialized, something went wrong on startup!");
+    {
+        profilerWindow_->setVisible(!(profilerWindow_->isVisible()));
+        if (profilerWindow_->isVisible())
+            framework_->Ui()->BringWidgetToFront(profilerWindow_);
+        return;
+    }
+
+    profilerWindow_ = new TimeProfilerWindow(framework_);
+    profilerWindow_->setParent(framework_->Ui()->MainWindow());
+    profilerWindow_->setWindowFlags(Qt::Tool);
+    profilerWindow_->resize(650, 530);
+
+    profilerWindow_->show();
+
+    connect(profilerWindow_, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 }
 
 void DebugStatsModule::Update(f64 frametime)
@@ -141,7 +117,6 @@ void DebugStatsModule::Update(f64 frametime)
         profilerWindow_->RedrawFrameTimeHistoryGraph(frameTimes);
         profilerWindow_->DoThresholdLogging();
     }
-
 #endif
 }
 
@@ -194,14 +169,12 @@ void DebugStatsModule::Exec(const QStringList &params)
         entity->Exec(EntityAction::Local, params[1], execParameters);
 }
 
-} //~namespace TundraLogic
-
 extern "C"
 {
 __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    IModule *module = new DebugStats::DebugStatsModule();
+    IModule *module = new DebugStatsModule();
     fw->RegisterModule(module);
 }
 }

@@ -39,9 +39,6 @@
 
 using namespace std;
 
-namespace DebugStats
-{
-
 const QString DEFAULT_LOG_DIR("logs");
 
 TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
@@ -199,19 +196,14 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
         connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
     }
 
-    QCheckBox* checkBoxLogTraffic = findChild<QCheckBox*>("checkBoxLogTraffic");
-    assert(checkBoxLogTraffic);
-    if (checkBoxLogTraffic)
-        connect(checkBoxLogTraffic, SIGNAL(stateChanged (int)), this, SLOT(SetNetworkLogging(int)));
-
     // Set/init working directory for log files.
     logDirectory_ = Application::UserDataDirectory();
     if (!logDirectory_.exists(DEFAULT_LOG_DIR))
         logDirectory_.mkdir(DEFAULT_LOG_DIR);
     logDirectory_.cd(DEFAULT_LOG_DIR);
 
-    QObject::connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
-    QObject::connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
+    connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
+    connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
 
     // Add a context menu to Textures, Meshes and Materials widgets.
     if (tree_texture_assets_)
@@ -220,7 +212,7 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
         menu_texture_assets_ = new QMenu(tree_texture_assets_);
         menu_texture_assets_->setAttribute(Qt::WA_DeleteOnClose);
         QAction *copyAssetName = new QAction(tr("Copy"), menu_texture_assets_);
-        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyTextureAssetName()));
+        connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyTextureAssetName()));
         menu_texture_assets_->addAction(copyAssetName);
     }
     if (tree_mesh_assets_)
@@ -229,7 +221,7 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
         menu_mesh_assets_ = new QMenu(tree_mesh_assets_);
         menu_mesh_assets_->setAttribute(Qt::WA_DeleteOnClose);
         QAction *copyAssetName = new QAction(tr("Copy"), menu_mesh_assets_);
-        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMeshAssetName()));
+        connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMeshAssetName()));
         menu_mesh_assets_->addAction(copyAssetName);
     }
     if (tree_material_assets_)
@@ -238,7 +230,7 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
         menu_material_assets_ = new QMenu(tree_material_assets_);
         menu_material_assets_->setAttribute(Qt::WA_DeleteOnClose);
         QAction *copyAssetName = new QAction(tr("Copy"), menu_material_assets_);
-        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMaterialAssetName()));
+        connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMaterialAssetName()));
         menu_material_assets_->addAction(copyAssetName);
     }
 
@@ -324,57 +316,6 @@ void TimeProfilerWindow::ChangeLoggerThreshold()
      if (box != 0)
         logThreshold_ = box->value();
 }
-
-void TimeProfilerWindow::SetNetworkLogging(int value)
-{
-    QFile file(logDirectory_.path() + "/networking.txt");
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
-        return;
-
-    QTextStream log(&file);
-    if (value)
-        log << "========== Logging started " /*<< GetLocalTimeString().c_str()*/ << " ==========\n";
-    else if (!value)
-    {
-     // Dump packages 
-     DumpNetworkSummary(&log);
-     log << "========== Logging ended " /*<< GetLocalTimeString().c_str()*/ << "==========\n";
-    }
-}
-
-void TimeProfilerWindow::DumpNetworkSummary(QTextStream* log)
-{
-    if (log == 0)
-    {
-        QFile file(logDirectory_.path() + "/networking.txt");
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
-            return;
-    
-        // ehheh
-        DumpNetworkSummary(log);
-    }
-    else
-    {
-
-        (*log)<<endl;
-        (*log)<<" Summary of network IN packages (name, bytes, count) "<<endl;
-        
-        for(QMap<QString, NetworkLogData >::iterator iter = mapNetInData_.begin(); iter != mapNetInData_.end(); ++iter)
-        {
-            (*log)<<" "<<iter.key()<<" "<<QString::number(iter.value().bytes)<<" "<<QString::number(iter.value().packages)<<endl;
-        }
-        
-        (*log)<<endl;
-        (*log)<<" Summary of network OUT packages (name, bytes, count) "<<endl;
-        
-        for(QMap<QString, NetworkLogData >::iterator iter = mapNetOutData_.begin(); iter != mapNetOutData_.end(); ++iter)
-        {
-            (*log)<<" "<<iter.key()<<" "<<QString::number(iter.value().bytes)<<" "<<QString::number(iter.value().packages)<<endl;
-        }
-        (*log)<<endl;
-    }
- }
-
 
 struct ResNameAndSize
 {
@@ -516,37 +457,37 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
     case 2:
         RefreshOgreProfilingWindow();
         break;
-    case 5:
+    case 3:
         RefreshAssetProfilingData();
         break;
-    case 6:
+    case 4:
         RefreshSceneComplexityProfilingData();
         break;
-    case 7:
+    case 5:
         RefreshRenderTargetProfilingData();
         break;
-    case 8: // Textures
+    case 6: // Textures
         RefreshAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
         break;
-    case 9: // Meshes
+    case 7: // Meshes
         RefreshAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
         break;
-    case 10: // Material
+    case 8: // Material
         RefreshAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
         break;
-    case 11: // Skeleton
+    case 9: // Skeleton
         RefreshAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
         break;
-    case 12: // Composition
+    case 10: // Composition
         RefreshAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
         break;
-    case 13: // Gpu assets
+    case 11: // Gpu assets
         RefreshAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
         break;
-    case 14: // Font assets
+    case 12: // Font assets
         RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
         break;
-    case 15: // OgreSceneTree
+    case 13: // OgreSceneTree
         PopulateOgreSceneTree();
         break;
     }
@@ -2199,6 +2140,4 @@ void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr
     tmp.clear();
     tmp.setNum(resource->getStateCount());
     item->setText(11,tmp);
-}
-
 }

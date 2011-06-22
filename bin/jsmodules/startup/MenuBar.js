@@ -111,7 +111,7 @@ if (!framework.IsHeadless())
     }
 
     function OpenProfilerWindow() {
-        console.ExecuteCommand("prof");
+        framework.GetModuleByName("DebugStats").ShowProfilingWindow();
     }
 
     function OpenTerrainEditor() {
