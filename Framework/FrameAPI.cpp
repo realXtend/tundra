@@ -14,16 +14,7 @@
 
 #include "MemoryLeakCheck.h"
 
-DelayedSignal::DelayedSignal(u64 startTime_) : startTime(startTime_)
-{
-}
-
-void DelayedSignal::Expire()
-{
-    emit Triggered((float)((GetCurrentClockTime() - startTime) / GetCurrentClockFreq()));
-}
-
-FrameAPI::FrameAPI(Framework *framework) : QObject(framework), currentFrameNumber(0)
+FrameAPI::FrameAPI(Framework *fw) : QObject(fw), currentFrameNumber(0)
 {
     startTime = GetCurrentClockTime();
 }
@@ -83,4 +74,13 @@ void FrameAPI::DeleteDelayedSignal()
 int FrameAPI::FrameNumber() const
 {
     return currentFrameNumber;
+}
+
+DelayedSignal::DelayedSignal(u64 startTime_) : startTime(startTime_)
+{
+}
+
+void DelayedSignal::Expire()
+{
+    emit Triggered((float)((GetCurrentClockTime() - startTime) / GetCurrentClockFreq()));
 }
