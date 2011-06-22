@@ -113,10 +113,7 @@ private:
     QLabel *label_frame_time_history_;
     QLabel *label_top_frame_time_;
     QLabel *label_time_per_frame_;
-    QLabel *label_region_map_coords_;
-    QLabel *label_region_object_capacity_;
-    QLabel *label_pid_stat_;
-    QTreeWidget *tree_sim_stats_;
+
     QPushButton *push_button_toggle_tree_;
     QPushButton *push_button_collapse_all_;
     QPushButton *push_button_expand_all_;

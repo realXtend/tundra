@@ -75,28 +75,6 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
     frameTimeHistory.fill(0xFF000000);
     label_frame_time_history_->setPixmap(QPixmap::fromImage(frameTimeHistory));
 
-    QLabel *label = findChild<QLabel*>("labelDataInSecGraph");
-    QImage img(label->width(), label->height(), QImage::Format_RGB32);
-    img.fill(0xFF000000);
-    label->setPixmap(QPixmap::fromImage(img));
-
-    label = findChild<QLabel*>("labelDataOutSecGraph");
-    img = QImage(label->width(), label->height(), QImage::Format_RGB32);
-    img.fill(0xFF000000);
-    label->setPixmap(QPixmap::fromImage(img));
-
-    label = findChild<QLabel*>("labelPacketsInSecGraph");
-    img = QImage(label->width(), label->height(), QImage::Format_RGB32);
-    img.fill(0xFF000000);
-    label->setPixmap(QPixmap::fromImage(img));
-
-    label = findChild<QLabel*>("labelPacketsOutSecGraph");
-    img = QImage(label->width(), label->height(), QImage::Format_RGB32);
-    img.fill(0xFF000000);
-    label->setPixmap(QPixmap::fromImage(img));
-
-    const int headerHeight = tree_profiling_data_->headerItem()->sizeHint(0).height();
-    UNREFERENCED_PARAM(headerHeight);
     tree_profiling_data_->header()->resizeSection(0, 300);
     tree_profiling_data_->header()->resizeSection(1, 60);
     tree_profiling_data_->header()->resizeSection(2, 50);
@@ -104,18 +82,6 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
     tree_profiling_data_->header()->resizeSection(4, 50);
 
     connect(tab_widget_, SIGNAL(currentChanged(int)), this, SLOT(OnProfilerWindowTabChanged(int)));
-
-    label_region_map_coords_ = findChild<QLabel*>("labelRegionMapCoords");
-    label_region_object_capacity_ = findChild<QLabel*>("labelRegionObjectCapacity");
-    tree_sim_stats_ = findChild<QTreeWidget*>("treeSimStats");
-    label_pid_stat_ = findChild<QLabel*>("labelPidStat");
-    assert(label_pid_stat_);
-    assert(label_region_map_coords_);
-    assert(label_region_object_capacity_);
-    assert(tree_sim_stats_);
-
-    tree_sim_stats_->header()->resizeSection(0, 400);
-    tree_sim_stats_->header()->resizeSection(1, 100);
 
     show_profiler_tree_ = false;
     show_unused_ = false;

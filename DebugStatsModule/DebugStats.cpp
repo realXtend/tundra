@@ -79,7 +79,7 @@ void DebugStatsModule::StartProfiling(bool visible)
 
 void DebugStatsModule::ShowProfilingWindow()
 {
-    // If the window is already created, bring it to front.
+    // If the window is already created toggle its visibility. If visible, bring it to front.
     if (profilerWindow_)
     {
         profilerWindow_->setVisible(!(profilerWindow_->isVisible()));
@@ -92,10 +92,8 @@ void DebugStatsModule::ShowProfilingWindow()
     profilerWindow_->setParent(framework_->Ui()->MainWindow());
     profilerWindow_->setWindowFlags(Qt::Tool);
     profilerWindow_->resize(650, 530);
-
-    profilerWindow_->show();
-
     connect(profilerWindow_, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
+    profilerWindow_->show();
 }
 
 void DebugStatsModule::Update(f64 frametime)
