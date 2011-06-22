@@ -94,9 +94,6 @@ public:
     /// Return pointer to KristalliProtocolModule for convenience
     const boost::shared_ptr<KristalliProtocol::KristalliProtocolModule>& GetKristalliModule() const { return kristalliModule_; }
     
-    /// Return syncmanager
-    //const boost::shared_ptr<SyncManager>& GetSyncManager() const { return syncManager_; }
-    
     /// Return client
     const boost::shared_ptr<Client>& GetClient() const { return client_; }
     
@@ -135,8 +132,6 @@ private:
     /// Load the startup scene
     void LoadStartupScene();
     
-    // Currently active syncmanager
-    SyncManager *syncManager_;
     // Syncmanager array
     QMap<QString, SyncManager*> syncManagers_;
 
@@ -162,6 +157,9 @@ private:
     bool autostartserver_;
     //! Autostart server port
     short autostartserver_port_;
+
+    // Active syncManager
+    QString activeSyncManager;
 
 };
 
