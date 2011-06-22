@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EntityAction.h
- *  @brief  Represent an executable command on an Entity.
+ *  @brief  Represents an executable command on an Entity.
  */
 
 #pragma once
@@ -13,16 +13,14 @@
 
 class Entity;
 
-/// Represent an executable command on an Entity.
-/** Components (or other instances) can register to these actions by using Entity::ConnectAction().
+/// Represents an executable command on an Entity.
+/** Components (and other instances) can register to these actions by using Entity::ConnectAction().
     Actions allow more complicated in-world logic to be built in slightly more data-driven fashion.
-    Actions cannot be created directly, they're created by Entity::RegisterAction(). */
+    Actions cannot be created directly, they're created by Entity::Action(). */
 class EntityAction : public QObject
 {
     Q_OBJECT
     Q_ENUMS(ExecType)
-
-    friend class Entity;
 
 public:
     /// Destructor.
@@ -49,24 +47,26 @@ public:
 
 signals:
     /// Emitted when action is triggered.
-    /** @param param1 1st parameter for the action, if applicable.
-        @param param2 2nd parameter for the action, if applicable.
-        @param param3 3rd parameter for the action, if applicable.
-        @param params Rest of the parameters, if applicable. */
-    void Triggered(QString param1, QString param2, QString param3, QStringList params);
+    /** @param p1 1st parameter for the action, if applicable.
+        @param p2 2nd parameter for the action, if applicable.
+        @param p3 3rd parameter for the action, if applicable.
+        @param rest Rest of the parameters, if applicable. */
+    void Triggered(QString p1, QString p2, QString p3, QStringList rest);
 
 private:
+    Q_DISABLE_COPY(EntityAction)
+    friend class Entity;
+
     /// Constructor.
     /** @param name Name of the action. */
     explicit EntityAction(const QString &name);
 
     /// Triggers this action i.e. emits the Triggered signal.
     /** @param p1 1st parameter for the action, if applicable.
-        @param p1 2nd parameter for the action, if applicable.
-        @param p1 3rd parameter for the action, if applicable.
-        @param p1 Rest of the parameters, if applicable. */
-    void Trigger(const QString &p1 = "", const QString &p2 = "", const QString &p3 = "", const QStringList &params = QStringList());
+        @param p2 2nd parameter for the action, if applicable.
+        @param p3 3rd parameter for the action, if applicable.
+        @param rest Rest of the parameters, if applicable. */
+    void Trigger(const QString &p1 = "", const QString &p2 = "", const QString &p3 = "", const QStringList &rest = QStringList());
 
     QString name; ///< Name of the action.
 };
-
