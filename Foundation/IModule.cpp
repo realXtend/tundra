@@ -79,7 +79,8 @@ void IModule::UninitializeInternal()
         component_registrars_[n]->Unregister(framework_);
 
     // Unregister from event system
-    framework_->GetEventManager()->UnregisterEventSubscriber(this);
+    if (framework_->GetEventManager())
+        framework_->GetEventManager()->UnregisterEventSubscriber(this);
 
     Uninitialize();
 
