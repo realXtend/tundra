@@ -75,7 +75,7 @@ Scene::~Scene()
 
 EntityPtr Scene::CreateLocalEntity(const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
 {
-    return CreateEntity(GetNextFreeIdLocal(), components, change, defaultNetworkSync);
+    return CreateEntity(NextFreeIdLocal(), components, change, defaultNetworkSync);
 }
 
 EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
@@ -83,7 +83,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
     // Figure out new entity id
     entity_id_t newentityid = 0;
     if(id == 0)
-        newentityid = GetNextFreeId();
+        newentityid = NextFreeId();
     else
     {
         if(entities_.find(id) != entities_.end())
@@ -149,7 +149,7 @@ bool Scene::IsUniqueName(const QString& name) const
     return true;
 }
 
-entity_id_t Scene::GetNextFreeId()
+entity_id_t Scene::NextFreeId()
 {
     // Find the largest non-local entity ID in the scene.
     // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
@@ -171,7 +171,7 @@ entity_id_t Scene::GetNextFreeId()
     return gid_;
 }
 
-entity_id_t Scene::GetNextFreeIdLocal()
+entity_id_t Scene::NextFreeIdLocal()
 {
     // Find the largest local entity ID in the scene.
     // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
@@ -582,7 +582,7 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         QString id_str = ent_elem.attribute("id");
         entity_id_t id = !id_str.isEmpty() ? ParseString<entity_id_t>(id_str.toStdString()) : 0;
         if (!useEntityIDsFromFile || id == 0) // If we don't want to use entity IDs from file, or if file doesn't contain one, generate a new one.
-            id = ((id & LocalEntity) != 0) ? GetNextFreeIdLocal() : GetNextFreeId();
+            id = ((id & LocalEntity) != 0) ? NextFreeIdLocal() : NextFreeId();
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
         {
@@ -666,7 +666,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
         {
             entity_id_t id = source.Read<u32>();
             if (!useEntityIDsFromFile || id == 0)
-                id = ((id & LocalEntity) != 0) ? GetNextFreeIdLocal() : GetNextFreeId();
+                id = ((id & LocalEntity) != 0) ? NextFreeIdLocal() : NextFreeId();
 
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
             {
@@ -754,7 +754,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
     {
         entity_id_t id;
         if (e.id.isEmpty() || !useEntityIDsFromFile)
-            id = e.local ? GetNextFreeIdLocal() : GetNextFreeId();
+            id = e.local ? NextFreeIdLocal() : NextFreeId();
         else
             id =  ParseString<entity_id_t>(e.id.toStdString());
 
@@ -1144,28 +1144,20 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
     return sceneDesc;
 }
 
-QByteArray Scene::GetEntityXml(Entity *entity)
+QByteArray Scene::GetEntityXml(Entity *entity) const
 {
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = scene_doc.createElement("scene");
-    EntityMap::iterator it = entities_.begin();
-    
     if (entity)
     {
         QDomElement entity_elem = scene_doc.createElement("entity");
-        
-        QString id_str;
-        id_str.setNum((int)entity->Id());
-        entity_elem.setAttribute("id", id_str);
-        
-        const Entity::ComponentVector &components = entity->Components();
-        for(uint i = 0; i < components.size(); ++i)
-            components[i]->SerializeTo(scene_doc, entity_elem);
-        
+        entity_elem.setAttribute("id", QString::number((int)entity->Id()));
+        foreach(const ComponentPtr &c, entity->Components())
+            c->SerializeTo(scene_doc, entity_elem);
         scene_elem.appendChild(entity_elem);
     }
+
     scene_doc.appendChild(scene_elem);
-    
     return scene_doc.toByteArray();
 }
 

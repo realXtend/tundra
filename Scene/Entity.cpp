@@ -372,7 +372,7 @@ EntityPtr Entity::Clone(bool local, bool temporary) const
     QDomDocument doc("Scene");
     QDomElement sceneElem = doc.createElement("scene");
     QDomElement entityElem = doc.createElement("entity");
-    entityElem.setAttribute("id", QString::number((int) local ? scene_->GetNextFreeIdLocal() : scene_->GetNextFreeId()));
+    entityElem.setAttribute("id", QString::number((int) local ? scene_->NextFreeIdLocal() : scene_->NextFreeId()));
     foreach(const ComponentPtr &c, Components())
         c->SerializeTo(doc, entityElem);
     sceneElem.appendChild(entityElem);

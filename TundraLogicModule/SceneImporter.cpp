@@ -1029,7 +1029,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
 
             if (!entity)
             {
-                entity = scene_->CreateEntity(scene_->GetNextFreeId());
+                entity = scene_->CreateEntity(scene_->NextFreeId());
                 new_entity = true;
             }
             else
@@ -1217,7 +1217,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, f
                 //entity = scene_->GetEntity(node_name_qstr);
             //if (!entity)
             //{
-            //    entity = scene_->CreateEntity(scene_->GetNextFreeId());
+            //    entity = scene_->CreateEntity(scene_->NextFreeId());
             //    new_entity = true;
             //}
             //else

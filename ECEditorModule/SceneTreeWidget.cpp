@@ -734,12 +734,12 @@ void SceneTreeWidget::NewEntity()
 
     if (type == tr("Synchronized"))
     {
-        id = scene.lock()->GetNextFreeId();
+        id = scene.lock()->NextFreeId();
         changeType = AttributeChange::Replicate;
     }
     else if(type == tr("Local"))
     {
-        id = scene.lock()->GetNextFreeIdLocal();
+        id = scene.lock()->NextFreeIdLocal();
         changeType = AttributeChange::LocalOnly;
     }
     else

@@ -744,7 +744,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     {
         if (scene->GetEntity(entityID))
         {
-            entity_id_t newEntityID = scene->GetNextFreeId();
+            entity_id_t newEntityID = scene->NextFreeId();
             // Send information to the creator that the ID was taken. The reserved ID will never get replicated to others
             MsgEntityIDCollision collisionMsg;
             collisionMsg.oldEntityID = entityID;
