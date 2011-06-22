@@ -189,8 +189,13 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
             connect(jsInstance, SIGNAL(ScriptUnloading()), this, SLOT(ScriptUnloading()), Qt::UniqueConnection);
         }
         
-        if ((sender->runOnLoad.Get()) && (sender->ShouldRun()))
+        bool isApplication = !sender->applicationName.Get().trimmed().isEmpty();
+        if (sender->runOnLoad.Get() && sender->ShouldRun())
+        {
+            if (isApplication && framework_->ProgramOptions().count("disablerunonload") > 0)
+                return;
             jsInstance->Run();
+        }
     }
 }
 

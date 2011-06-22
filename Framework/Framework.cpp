@@ -136,6 +136,7 @@ void Framework::ParseProgramOptions()
     commandLineDescriptions.add_options()
         ("help", "Produce help message") // Framework
         ("headless", "Run in headless mode without any windows or rendering") // Framework & OgreRenderingModule
+        ("disablerunonload", "Do not start script applications (EC_Script's with applicationName defined) automatically")
         ("server", "Start Tundra server")
         ("port", po::value<int>(0), "Start server in the specified port") // TundraLogicModule
         ("protocol", po::value<std::string>(), "Start server with the specified protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified.") // KristalliProtocolModule
