@@ -19,6 +19,8 @@
 #include <QString>
 #include <QVariantMap>
 
+class JavascriptInstance;
+
 /// Enables Javascript execution and scripting by using QtScript.
 class JavascriptModule : public IModule
 {
@@ -95,7 +97,7 @@ private:
     void CreateScriptObjects(EC_Script* app);
     
     /// Remove script class instances for all EC_Scripts depending on this script application
-    void RemoveScriptObjects(EC_Script* app);
+    void RemoveScriptObjects(JavascriptInstance* jsInstance);
     
     /// Engines for executing startup (possibly persistent) scripts
     std::vector<JavascriptInstance *> startupScripts_;

@@ -237,9 +237,7 @@ void JavascriptModule::ScriptUnloading()
     JavascriptInstance* sender = dynamic_cast<JavascriptInstance*>(this->sender());
     if (!sender)
         return;
-    EC_Script* app = dynamic_cast<EC_Script*>(sender->GetOwnerComponent().lock().get());
-    if (app)
-        RemoveScriptObjects(app);
+    RemoveScriptObjects(sender);
 }
 
 void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
@@ -471,13 +469,12 @@ void JavascriptModule::CreateScriptObjects(EC_Script* app)
     }
 }
 
-void JavascriptModule::RemoveScriptObjects(EC_Script* app)
+void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance)
 {
-    JavascriptInstance* jsInstance = dynamic_cast<JavascriptInstance*>(app->GetScriptInstance());
-    if (!jsInstance || !jsInstance->IsEvaluated())
+    QScriptEngine* appEngine = jsInstance->GetEngine();
+    if (!appEngine)
         return;
     
-    QScriptEngine* appEngine = jsInstance->GetEngine();
     QScriptValue globalObject = appEngine->globalObject();
     
     // Get the object container that holds the created script class instances from this application
@@ -497,7 +494,10 @@ void JavascriptModule::RemoveScriptObjects(EC_Script* app)
             // If the object has a "OnScriptObjectDestroyed" function, call it
             QScriptValue destructor = existingObject.property("OnScriptObjectDestroyed");
             if (!destructor.isUndefined())
-                destructor.call(existingObject);
+            {
+                QScriptValue result = destructor.call(existingObject);
+                jsInstance->CheckAndPrintException("In script object destructor: ", result);
+            }
         }
     }
     
