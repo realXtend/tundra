@@ -39,7 +39,7 @@ public:
     /** @param scriptRefs Script asset references.
         @param module Javascript module. */
     JavascriptInstance(const std::vector<ScriptAssetPtr>& scriptRefs, JavascriptModule *module);
-    
+
     /// Destroys script engine created for this script instance.
     virtual ~JavascriptInstance();
 
@@ -56,16 +56,15 @@ public:
     void RegisterService(QObject *serviceObject, const QString &name);
 
     //void SetPrototype(QScriptable *prototype, );
-    QScriptEngine* GetEngine() const { return engine_; }
+    QScriptEngine* Engine() const { return engine_; }
 
     /// Sets owner (EC_Script) component.
-    /** @param owner Owner component.
-    */
-    void SetOwnerComponent(const ComponentPtr &owner) { owner_ = owner; }
+    /** @param owner Owner component. */
+    void SetOwner(const ComponentPtr &owner) { owner_ = owner; }
 
     /// Return owner component
-    ComponentWeakPtr GetOwnerComponent() { return owner_; }
-    
+    ComponentWeakPtr Owner() const { return owner_; }
+
 public slots:
     /// Loads a given script in engine. This function can be used to create a property as you could include js-files.
     /** Multiple inclusion of same file is prevented. (by using simple string compare)
@@ -84,10 +83,10 @@ public slots:
 signals:
     /// The scripts have been run. This is the trigger to create script objects as necessary
     void ScriptEvaluated();
-    
+
     /// The script engine is about to unload. This is the trigger to delete script objects as necessary
     void ScriptUnloading();
-    
+
 private:
     /// Creates new script context/engine.
     void CreateEngine();
@@ -95,9 +94,9 @@ private:
     /// Deletes script context/engine.
     void DeleteEngine();
 
-    QScriptEngine *engine_; ///< Qt script engine.
-    
     QString LoadScript(const QString &fileName);
+
+    QScriptEngine *engine_; ///< Qt script engine.
 
     // The script content for a JavascriptInstance is loaded either using the Asset API or 
     // using an absolute path name from the local file system.
@@ -111,7 +110,7 @@ private:
     /// Specifies the absolute path of the source file where the script is loaded from, if the content is directly loaded from file.
     QString sourceFile;
 
-    /// Current script name that is loaded into this instance. Exposed via GetCurrentScriptName().
+    /// Current script name that is loaded into this instance.
     QString currentScriptName;
 
     ComponentWeakPtr owner_; ///< Owner (EC_Script) component, if existing.
@@ -120,8 +119,8 @@ private:
     //QScriptEngineDebugger *debugger_;
 
     /// Already included files for preventing multi-inclusion
-    std::vector<QString> included_files_; 
-    
+    std::vector<QString> includedFiles;
+
 private slots:
     void OnSignalHandlerException(const QScriptValue& exception);
 };

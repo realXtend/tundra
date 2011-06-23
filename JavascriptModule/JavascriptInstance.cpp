@@ -200,7 +200,7 @@ void JavascriptInstance::Run()
 
     bool useAssets = !scriptRefs_.empty();
     unsigned numScripts = useAssets ? scriptRefs_.size() : 1;
-    included_files_.clear();
+    includedFiles.clear();
     
     for (unsigned i = 0; i < numScripts; ++i)
     {
@@ -234,9 +234,9 @@ void JavascriptInstance::RegisterService(QObject *serviceObject, const QString &
 
 void JavascriptInstance::IncludeFile(const QString &path)
 {
-    for(uint i = 0; i < included_files_.size(); ++i)
+    for(uint i = 0; i < includedFiles.size(); ++i)
     {
-        if (included_files_[i].toLower() == path.toLower())
+        if (includedFiles[i].toLower() == path.toLower())
         {
             LogDebug("JavascriptInstance::IncludeFile: Not including already included file " + path.toStdString());
             return;
@@ -273,7 +273,7 @@ void JavascriptInstance::IncludeFile(const QString &path)
 
     QScriptValue result = engine_->evaluate(script);
 
-    included_files_.push_back(path);
+    includedFiles.push_back(path);
     
     if (engine_->hasUncaughtException())
         LogError(result.toString().toStdString());

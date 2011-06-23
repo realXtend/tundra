@@ -39,11 +39,9 @@
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
-JavascriptModule *javascriptModuleInstance_ = 0;
-
-JavascriptModule::JavascriptModule()
-:IModule("Javascript"),
-engine(new QScriptEngine(this))
+JavascriptModule::JavascriptModule() :
+    IModule("Javascript"),
+    engine(new QScriptEngine(this))
 {
 }
 
@@ -60,12 +58,7 @@ void JavascriptModule::Load()
 void JavascriptModule::Initialize()
 {
     connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
-
     LogInfo("Module " + Name() + " initializing...");
-
-    assert(!javascriptModuleInstance_);
-    javascriptModuleInstance_ = this;
-
     engine->globalObject().setProperty("print", engine->newFunction(Print));
 }
 
@@ -107,12 +100,6 @@ void JavascriptModule::Uninitialize()
 
 void JavascriptModule::Update(f64 frametime)
 {
-}
-
-JavascriptModule *JavascriptModule::GetInstance()
-{
-    assert(javascriptModuleInstance_);
-    return javascriptModuleInstance_;
 }
 
 void JavascriptModule::RunString(const QString &codestr, const QVariantMap &context)
@@ -176,7 +163,7 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
             return;
         }
 
-        jsInstance->SetOwnerComponent(comp);
+        jsInstance->SetOwner(comp);
         sender->SetScriptInstance(jsInstance);
 
         // Register all core APIs and names to this script engine.
@@ -232,7 +219,7 @@ void JavascriptModule::ScriptEvaluated()
     JavascriptInstance* sender = dynamic_cast<JavascriptInstance*>(this->sender());
     if (!sender)
         return;
-    EC_Script* app = dynamic_cast<EC_Script*>(sender->GetOwnerComponent().lock().get());
+    EC_Script* app = dynamic_cast<EC_Script*>(sender->Owner().lock().get());
     if (app)
         CreateScriptObjects(app);
 }
@@ -348,7 +335,7 @@ void JavascriptModule::CreateScriptObject(EC_Script* app, EC_Script* instance, c
     if (!jsInstance || !jsInstance->IsEvaluated())
         return;
     
-    QScriptEngine* appEngine = jsInstance->GetEngine();
+    QScriptEngine* appEngine = jsInstance->Engine();
     QScriptValue globalObject = appEngine->globalObject();
    
     // Get the object container that holds the created script class instances from this application
@@ -403,7 +390,7 @@ void JavascriptModule::RemoveScriptObject(EC_Script* instance)
     if (!jsInstance || !jsInstance->IsEvaluated())
         return;
     
-    QScriptEngine* appEngine = jsInstance->GetEngine();
+    QScriptEngine* appEngine = jsInstance->Engine();
     QScriptValue globalObject = appEngine->globalObject();
    
     // Get the object container that holds the created script class instances from this application
@@ -476,7 +463,7 @@ void JavascriptModule::CreateScriptObjects(EC_Script* app)
 
 void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance)
 {
-    QScriptEngine* appEngine = jsInstance->GetEngine();
+    QScriptEngine* appEngine = jsInstance->Engine();
     if (!appEngine)
         return;
     
@@ -636,7 +623,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
         instance->RegisterService(comp->ParentEntity()->ParentScene(), "scene");
     }
 
-    emit ScriptEngineCreated(instance->GetEngine());
+    emit ScriptEngineCreated(instance->Engine());
 }
 
 void JavascriptModule::ConsoleRunString(const QStringList &params)

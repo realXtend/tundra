@@ -36,17 +36,13 @@ public:
     void Uninitialize();
     void Update(f64 frametime);
 
-    /// Returns the currently initialized JavascriptModule.
-    static JavascriptModule *GetInstance();
-
     void RunScript(const QString &scriptname);
     void RunString(const QString &codestr, const QVariantMap &context = QVariantMap());
 
     /// Prepares script instance by registering all needed services to it.
     /** If script is part of the scene, i.e. EC_Script component is present, we add some special services.
         @param instance Script istance.
-        @param comp Script component, null by default.
-    */
+        @param comp Script component, null by default. */
     void PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp = 0);
 
 public slots:
@@ -63,8 +59,7 @@ signals:
     /// A script engine has been created
     /** The purpose of this is to allow dynamic service objects (registered with FrameWork->RegisterDynamicObject())
         to perform further scriptengine initialization, such as registration of new datatypes. The slot
-        OnScriptEngineCreated() will be invoked on the dynamic service object, if it exists.
-     */
+        OnScriptEngineCreated() will be invoked on the dynamic service object, if it exists. */
     void ScriptEngineCreated(QScriptEngine* engine);
 
 private:
@@ -78,15 +73,12 @@ private:
     /// Stop & delete startup scripts
     void UnloadStartupScripts();
 
-    /// Default engine for console & commandline script execution
-    QScriptEngine *engine;
-
     /// Parse the appname and classname from an EC_Script
     void ParseAppAndClassName(EC_Script* instance, QString& appName, QString& className);
 
     /// Find a named script application
     EC_Script* FindScriptApplication(EC_Script* instance, const QString& appName);
-    
+
     /// Create a script class instance into a script application
     void CreateScriptObject(EC_Script* app, EC_Script* instance, const QString& className);
 
@@ -95,10 +87,13 @@ private:
     
     /// Create script class instances for all EC_Scripts depending on this script application
     void CreateScriptObjects(EC_Script* app);
-    
+
     /// Remove script class instances for all EC_Scripts depending on this script application
     void RemoveScriptObjects(JavascriptInstance* jsInstance);
-    
+
+    /// Default engine for console & commandline script execution
+    QScriptEngine *engine;
+
     /// Engines for executing startup (possibly persistent) scripts
     std::vector<JavascriptInstance *> startupScripts_;
 
