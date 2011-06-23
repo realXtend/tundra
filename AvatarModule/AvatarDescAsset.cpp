@@ -7,12 +7,42 @@
 #include "AssetAPI.h"
 #include "XMLUtilities.h"
 #include "Profiler.h"
+#include "Math/Quat.h"
 
 #include <QDomDocument>
 #include <cstring>
 #include "MemoryLeakCheck.h"
 
 using namespace Avatar;
+
+std::string QuatToLegacyRexString(const Quat& q)
+{
+    char str[256];
+    sprintf(str, "%f %f %f %f", q.x, q.y, q.z, q.w);
+    return str;
+}
+
+Quat QuatFromLegacyRexString(const std::string& stdStr)
+{
+    const char* str = stdStr.c_str();
+    if (!str)
+        return Quat();
+    if (*str == '(')
+        ++str;
+    Quat q;
+    q.w = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.x = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.y = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.z = strtod(str, const_cast<char**>(&str));
+    return q;
+}
+
 
 std::string modifierMode[] = {
     "relative",
@@ -221,12 +251,12 @@ void AvatarDescAsset::ReadBoneModifierSet(const QDomElement& source)
             QDomElement scale = bone.firstChildElement("scale");
             
             modifier.start_.position_ = float3::FromString(translation.attribute("start"));
-            float3 e = float3::FromString(rotation.attribute("start"));
+            float3 e = DegToRad(float3::FromString(rotation.attribute("start")));
             modifier.start_.orientation_ = Quat::FromEulerZYX(e.z, e.y, e.x);////ParseEulerAngles(rotation.attribute("start").toStdString());
             modifier.start_.scale_ = float3::FromString(scale.attribute("start"));
             
             modifier.end_.position_ = float3::FromString(translation.attribute("end"));
-            e = float3::FromString(rotation.attribute("end").toStdString());
+            e = DegToRad(float3::FromString(rotation.attribute("end").toStdString()));
             modifier.end_.orientation_ = Quat::FromEulerZYX(e.z, e.y, e.x);//ParseEulerAngles(rotation.attribute("end").toStdString());
             modifier.end_.scale_ = float3::FromString(scale.attribute("end"));
             
@@ -433,7 +463,7 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
             if (attachment.bone_name_ == "None")
                 attachment.bone_name_ = std::string();
             attachment.transform_.position_ = float3::FromString(bone.attribute("offset"));
-            attachment.transform_.orientation_ = Quat::FromString(bone.attribute("rotation"));
+            attachment.transform_.orientation_ = QuatFromLegacyRexString(bone.attribute("rotation").toStdString());
             attachment.transform_.scale_ = float3::FromString(bone.attribute("scale"));
         }
         
@@ -738,9 +768,9 @@ QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& b
     SetAttribute(elem, "name", bone.bone_name_);
     
     QDomElement rotation = dest.createElement("rotation");
-    float3 e = bone.start_.orientation_.ToEulerZYX();
+    float3 e = RadToDeg(bone.start_.orientation_.ToEulerZYX());
     SetAttribute(rotation, "start", float3(e.z, e.y, e.x).ToString());//WriteEulerAngles(bone.start_.orientation_));
-    e = bone.end_.orientation_.ToEulerZYX();
+    e = RadToDeg(bone.end_.orientation_.ToEulerZYX());
     SetAttribute(rotation, "end", float3(e.z, e.y, e.x).ToString());//WriteEulerAngles(bone.end_.orientation_));
     SetAttribute(rotation, "mode", modifierMode[bone.orientation_mode_]);
     
