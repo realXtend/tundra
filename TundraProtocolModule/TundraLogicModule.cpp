@@ -529,7 +529,7 @@ extern "C"
 __declspec(dllexport) void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    IModule *module = new TundraLogic::TundraLogicModule();
-    fw->RegisterModule(module);
+    fw->RegisterModule(new KristalliProtocol::KristalliProtocolModule());
+    fw->RegisterModule(new TundraLogic::TundraLogicModule());
 }
 }

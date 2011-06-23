@@ -26,7 +26,9 @@ EntityPlacer::EntityPlacer(Framework *framework, entity_id_t entityId, QObject *
     finished_(false),
     useCustomMesh_(false),
     meshEntity_(0),
-    previousScrollValue_(0)
+    previousScrollValue_(0),
+    location_(float3::zero),
+    orientation_(Quat::identity)
 {
     static const std::string customMeshName("Selection.mesh");
     input_ = framework_->Input()->RegisterInputContext("EntityPlacement", 110);

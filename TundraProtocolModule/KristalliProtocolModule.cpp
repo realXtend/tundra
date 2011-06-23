@@ -385,13 +385,3 @@ UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
 }
 
 } // ~KristalliProtocolModule namespace
-
-extern "C"
-{
-__declspec(dllexport) void TundraPluginMain(Framework *fw)
-{
-    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    IModule *module = new KristalliProtocol::KristalliProtocolModule();
-    fw->RegisterModule(module);
-}
-}
