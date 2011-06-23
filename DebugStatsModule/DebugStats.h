@@ -21,7 +21,6 @@
 #endif
 
 class TimeProfilerWindow;
-class ParticipantWindow;
 
 class DEBUGSTATS_MODULE_API DebugStatsModule : public IModule
 {

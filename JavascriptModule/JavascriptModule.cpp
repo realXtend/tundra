@@ -58,7 +58,6 @@ void JavascriptModule::Load()
 void JavascriptModule::Initialize()
 {
     connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
-    LogInfo("Module " + Name() + " initializing...");
     engine->globalObject().setProperty("print", engine->newFunction(Print));
 }
 
