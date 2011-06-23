@@ -2,19 +2,27 @@
 <scene>
  <entity id="2">
   <component type="EC_Script" sync="1">
-   <attribute value="js" name="Type"/>
-   <attribute value="true" name="Run on load"/>
    <attribute value="local://avatarmenu.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="AvatarMenu" name="name"/>
+   <attribute value="" name="description"/>
   </component>
  </entity>
  <entity id="3">
   <component type="EC_Script" sync="1">
-   <attribute value="js" name="Type"/>
+   <attribute value="local://avatarapplication.js;local://simpleavatar.js;local://exampleavataraddon.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value="local://avatarapplication.js" name="Script ref"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="AvatarApp" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
   </component>
   <component type="EC_Name" sync="1">
-   <attribute value="AvatarScript" name="name"/>
+   <attribute value="AvatarApp" name="name"/>
    <attribute value="" name="description"/>
   </component>
  </entity>
@@ -32,7 +40,7 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="1.44998,-4.65158,5.40408,-47.9755,42.0498,-145.341,1,1,1" name="Transform"/>
+   <attribute value="1.45142,-4.65131,5.40463,-47.8859,42.0584,-145.4,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
@@ -53,8 +61,8 @@
    <attribute value="false" name="Kinematic"/>
    <attribute value="false" name="Phantom"/>
    <attribute value="false" name="Draw Debug"/>
-   <attribute value="-0.005349 -0.006437 -0.004148" name="Linear velocity"/>
-   <attribute value="0.615375 0.268105 1.221519" name="Angular velocity"/>
+   <attribute value="0.001053 -0.000365 -0.006323" name="Linear velocity"/>
+   <attribute value="-1.131705 -0.305739 -0.875018" name="Angular velocity"/>
    <attribute value="-1" name="Collision Layer"/>
    <attribute value="-1" name="Collision Mask"/>
   </component>
@@ -106,9 +114,11 @@
    <attribute value="" name="description"/>
   </component>
   <component type="EC_Script" sync="1">
-   <attribute value="" name="Type"/>
-   <attribute value="true" name="Run on load"/>
    <attribute value="local://instructions.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
   </component>
  </entity>
  <entity id="7">

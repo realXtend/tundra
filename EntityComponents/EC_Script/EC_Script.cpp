@@ -19,6 +19,12 @@
 
 EC_Script::~EC_Script()
 {
+    // If we have a classname, empty it to trigger deletion of the script object
+    if (!className.Get().trimmed().isEmpty())
+        className.Set("", AttributeChange::LocalOnly);
+    
+    if (scriptInstance_)
+        scriptInstance_->Unload();
     SAFE_DELETE(scriptInstance_);
 }
 

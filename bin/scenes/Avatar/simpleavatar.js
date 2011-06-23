@@ -9,67 +9,82 @@ if (!server.IsRunning() && !framework.IsHeadless())
 }
 
 // A simple walking avatar with physics & 1st/3rd person camera
-var rotate_speed = 100.0;
-var mouse_rotate_sensitivity = 0.2;
-var move_force = 15.0;
-var fly_speed_factor = 0.25;
-var damping_force = 3.0;
-var walk_anim_speed = 0.5;
-var avatar_camera_height = 1.0;
-var avatar_mass = 10;
+function SimpleAvatar(entity, comp)
+{
+    // Store the entity reference
+    this.me = entity;
 
-// Tracking motion with entity actions
-var motion_x = 0;
-var motion_y = 0;
-var motion_z = 0;
+    this.rotateSpeed = 100.0;
+    this.mouseRotateSensitivity = 0.2;
+    this.moveForce = 15.0;
+    this.flySpeedFactor = 0.25;
+    this.dampingForce = 3.0;
+    this.walkAnimSpeed = 0.5;
+    this.avatarCameraHeight = 1.0;
+    this.avatarMass = 10;
 
-// Clientside yaw, pitch & rotation state
-var yaw = 0;
-var pitch = 0;
-var rotate = 0;
+    // Tracking motion with entity actions
+    this.motionX = 0;
+    this.motionY = 0;
+    this.motionZ = 0;
 
-// Needed bools for logic
-var isserver = server.IsRunning();
-var own_avatar = false;
-var flying = false;
-var falling = false;
-var crosshair = null;
+    // Clientside yaw, pitch & rotation state
+    this.yaw = 0;
+    this.pitch = 0;
+    this.rotate = 0;
 
-// Animation detection
-var standAnimName = "Stand";
-var walkAnimName = "Walk";
-var flyAnimName = "Fly";
-var hoverAnimName = "Hover";
-var animList = [standAnimName, walkAnimName, flyAnimName, hoverAnimName];
+    // Needed bools for logic
+    this.isServer = server.IsRunning();
+    this.ownAvatar = false;
+    this.flying = false;
+    this.falling = false;
+    this.crosshair = null;
 
-var animsDetected = false;
-var listenGesture = false;
+    // Animation detection
+    this.standAnimName = "Stand";
+    this.walkAnimName = "Walk";
+    this.flyAnimName = "Fly";
+    this.hoverAnimName = "Hover";
+    this.animList = [this.standAnimName, this.walkAnimName, this.flyAnimName, this.hoverAnimName];
 
-// Create avatar on server, and camera & inputmapper on client
-if (isserver) {
-    ServerInitialize();
-} else {
-    ClientInitialize();
+    this.animsDetected = false;
+    this.listenGesture = false;
+
+    // Create avatar on server, and camera & inputmapper on client
+    if (this.isServer)
+        this.ServerInitialize();
+    else
+        this.ClientInitialize();
 }
 
-function ServerInitialize() {
+SimpleAvatar.prototype.OnScriptObjectDestroyed = function() {
+    // Must remember to manually disconnect subsystem signals, otherwise they'll continue to get signalled
+    if (this.isServer)
+    {
+        frame.Updated.disconnect(this, this.ServerUpdate);
+        scene.physics.Updated.disconnect(this, this.ServerUpdatePhysics);
+    }
+    else
+        frame.Updated.disconnect(this, this.ClientUpdate);
+}
 
+SimpleAvatar.prototype.ServerInitialize = function() {
     // Create the avatar component & set the avatar appearance. The avatar component will create the mesh & animationcontroller, once the avatar asset has loaded
-    var avatar = me.GetOrCreateComponent("EC_Avatar");
+    var avatar = this.me.GetOrCreateComponent("EC_Avatar");
     var r = avatar.appearanceRef;
     r.ref = "local://default_avatar.avatar";
     avatar.appearanceRef = r;
 
     // Create rigid body component and set physics properties
-    var rigidbody = me.GetOrCreateComponent("EC_RigidBody");
+    var rigidbody = this.me.GetOrCreateComponent("EC_RigidBody");
     var sizeVec = new float3(0.5, 2.4, 0.5);
-    rigidbody.mass = avatar_mass;
+    rigidbody.mass = this.avatarMass;
     rigidbody.shapeType = 3; // Capsule
     rigidbody.size = sizeVec;
     rigidbody.angularFactor = float3.zero; // Set zero angular factor so that body stays upright
 
     // Create dynamic component attributes for disabling/enabling functionality, and for camera distance / 1st/3rd mode
-    var attrs = me.dynamiccomponent;
+    var attrs = this.me.dynamiccomponent;
     attrs.CreateAttribute("bool", "enableWalk");
     attrs.CreateAttribute("bool", "enableJump");
     attrs.CreateAttribute("bool", "enableFly");
@@ -90,69 +105,69 @@ function ServerInitialize() {
     // proxtrigger.active = false;
 
     // Hook to physics update
-    rigidbody.GetPhysicsWorld().Updated.connect(ServerUpdatePhysics);
+    scene.physics.Updated.connect(this, this.ServerUpdatePhysics);
 
     // Hook to tick update for animation update
-    frame.Updated.connect(ServerUpdate);
+    frame.Updated.connect(this, this.ServerUpdate);
 
     // Connect actions. These come from the client side inputmapper
-    me.Action("Move").Triggered.connect(ServerHandleMove);
-    me.Action("Stop").Triggered.connect(ServerHandleStop);
-    me.Action("ToggleFly").Triggered.connect(ServerHandleToggleFly);
-    me.Action("SetRotation").Triggered.connect(ServerHandleSetRotation);
+    this.me.Action("Move").Triggered.connect(this, this.ServerHandleMove);
+    this.me.Action("Stop").Triggered.connect(this, this.ServerHandleStop);
+    this.me.Action("ToggleFly").Triggered.connect(this, this.ServerHandleToggleFly);
+    this.me.Action("SetRotation").Triggered.connect(this, this.ServerHandleSetRotation);
 
-    rigidbody.PhysicsCollision.connect(ServerHandleCollision);
+    rigidbody.PhysicsCollision.connect(this, this.ServerHandleCollision);
 }
 
-function ServerUpdate(frametime) {
-    var attrs = me.dynamiccomponent;
+SimpleAvatar.prototype.ServerUpdate = function(frametime) {
+    var attrs = this.me.dynamiccomponent;
 
-    if (!animsDetected) {
-        CommonFindAnimations();
+    if (!this.animsDetected) {
+        this.CommonFindAnimations();
     }
 
     // If walk enable was toggled off, make sure the motion state is cleared
     if (!attrs.GetAttribute("enableWalk"))
     {
-        motion_x = 0;
-        motion_z = 0;
+        this.motionX = 0;
+        this.motionZ = 0;
     }
     
     // If flying enable was toggled off, but we are still flying, disable now
-    if ((flying) && (!attrs.GetAttribute("enableFly")))
-        ServerSetFlying(false);
+    if ((this.flying) && (!attrs.GetAttribute("enableFly")))
+        this.ServerSetFlying(false);
 
-    CommonUpdateAnimation(frametime);
+    this.CommonUpdateAnimation(frametime);
 }
 
-function ServerHandleCollision(ent, pos, normal, distance, impulse, newCollision) {
-    if (falling && newCollision) {
-        falling = false;
-        ServerSetAnimationState();
+SimpleAvatar.prototype.ServerHandleCollision = function(ent, pos, normal, distance, impulse, newCollision) {
+    if (this.falling && newCollision) {
+        this.falling = false;
+        this.ServerSetAnimationState();
     }
 }
 
-function ServerUpdatePhysics(frametime) {
-    var placeable = me.placeable;
-    var rigidbody = me.rigidbody;
-    var attrs = me.dynamiccomponent;
+SimpleAvatar.prototype.ServerUpdatePhysics = function(frametime) {
+    var placeable = this.me.placeable;
+    var rigidbody = this.me.rigidbody;
+    var attrs = this.me.dynamiccomponent;
 
-    if (!flying) {
+    if (!this.flying) {
         // Apply motion force
         // If diagonal motion, normalize
-        if (motion_x != 0 || motion_z != 0) {
-            var impulse = new float3(motion_x, 0, -motion_z).Normalized().Mul(move_force);
+        if (this.motionX != 0 || this.motionZ != 0) {
+            var impulse = new float3(this.motionX, 0, -this.motionZ).Normalized().Mul(this.moveForce);
             var tm = placeable.LocalToWorld();
             impulse = tm.MulDir(impulse);
             rigidbody.ApplyImpulse(impulse);
         }
 
         // Apply jump
-        if (motion_y == 1 && !falling) {
+        if (this.motionY == 1 && !this.falling) {
             if (attrs.GetAttribute("enableJump")) {
                 var jumpVec = new float3(0, 75, 0);
-                motion_y = 0;
-                falling = true;
+                this.motionY = 0;
+                this.falling = true;
                 rigidbody.ApplyImpulse(jumpVec);
             }
         }
@@ -161,130 +176,130 @@ function ServerUpdatePhysics(frametime) {
         // to a resting object wakes it up
         if (rigidbody.IsActive()) {
             var dampingVec = rigidbody.GetLinearVelocity();
-            dampingVec.x = -damping_force * dampingVec.x;
+            dampingVec.x = -this.dampingForce * dampingVec.x;
             dampingVec.y = 0;
-            dampingVec.z = -damping_force * dampingVec.z;
+            dampingVec.z = -this.dampingForce * dampingVec.z;
             rigidbody.ApplyImpulse(dampingVec);
         }
     } else {
         // Manually move the avatar placeable when flying
         // this has the downside of no collisions.
         // Feel free to reimplement properly with mass enabled.
-        var av_transform = placeable.transform;
+        var avTransform = placeable.transform;
 
         // Make a vector where we have moved
-        var moveVec = new float3(motion_x * fly_speed_factor, motion_y * fly_speed_factor, -motion_z * fly_speed_factor);
+        var moveVec = new float3(this.motionX * this.flySpeedFactor, this.motionY * this.flySpeedFactor, -this.motionZ * this.flySpeedFactor);
 
         // Apply that with av looking direction to the current position
         var offsetVec = placeable.LocalToWorld().MulDir(moveVec);
-        av_transform.pos.x = av_transform.pos.x + offsetVec.x;
-        av_transform.pos.y = av_transform.pos.y + offsetVec.y;
-        av_transform.pos.z = av_transform.pos.z + offsetVec.z;
+        avTransform.pos.x = avTransform.pos.x + offsetVec.x;
+        avTransform.pos.y = avTransform.pos.y + offsetVec.y;
+        avTransform.pos.z = avTransform.pos.z + offsetVec.z;
 
-        placeable.transform = av_transform;
+        placeable.transform = avTransform;
     }
 }
 
-function ServerHandleMove(param) {
-    var attrs = me.dynamiccomponent;
+SimpleAvatar.prototype.ServerHandleMove = function(param) {
+    var attrs = this.me.dynamiccomponent;
 
     if (attrs.GetAttribute("enableWalk")) {
         if (param == "forward") {
-            motion_z = 1;
+            this.motionZ = 1;
         }
         if (param == "back") {
-            motion_z = -1;
+            this.motionZ = -1;
         }
         if (param == "right") {
-            motion_x = 1;
+            this.motionX = 1;
         }
         if (param == "left") {
-            motion_x = -1;
+            this.motionX = -1;
         }
     }
 
     if (param == "up") {
-        motion_y = 1;
+        this.motionY = 1;
     }
     if (param == "down") {
-        motion_y = -1;
+        this.motionY = -1;
     }
 
-    ServerSetAnimationState();
+    this.ServerSetAnimationState();
 }
 
-function ServerHandleStop(param) {
-    if ((param == "forward") && (motion_z == 1)) {
-        motion_z = 0;
+SimpleAvatar.prototype.ServerHandleStop = function(param) {
+    if ((param == "forward") && (this.motionZ == 1)) {
+        this.motionZ = 0;
     }
-    if ((param == "back") && (motion_z == -1)) {
-        motion_z = 0;
+    if ((param == "back") && (this.motionZ == -1)) {
+        this.motionZ = 0;
     }
-    if ((param == "right") && (motion_x == 1)) {
-        motion_x = 0;
+    if ((param == "right") && (this.motionX == 1)) {
+        this.motionX = 0;
     }
-    if ((param == "left") && (motion_x == -1)) {
-        motion_x = 0;
+    if ((param == "left") && (this.motionX == -1)) {
+        this.motionX = 0;
     }
-    if ((param == "up") && (motion_y == 1)) {
-        motion_y = 0;
+    if ((param == "up") && (this.motionY == 1)) {
+        this.motionY = 0;
     }
-    if ((param == "down") && (motion_y == -1)) {
-        motion_y = 0;
+    if ((param == "down") && (this.motionY == -1)) {
+        this.motionY = 0;
     }
 
-    ServerSetAnimationState();
+    this.ServerSetAnimationState();
 }
 
-function ServerHandleToggleFly() {
-    ServerSetFlying(!flying);
+SimpleAvatar.prototype.ServerHandleToggleFly = function() {
+    this.ServerSetFlying(!this.flying);
 }
 
-function ServerSetFlying(newFlying) {
-    var attrs = me.dynamiccomponent;
+SimpleAvatar.prototype.ServerSetFlying = function(newFlying) {
+    var attrs = this.me.dynamiccomponent;
     if (!attrs.GetAttribute("enableFly"))
         newFlying = false;
 
-    if (flying == newFlying)
+    if (this.flying == newFlying)
         return;
 
-    var rigidbody = me.rigidbody;
-    flying = newFlying;
-    if (flying) {
+    var rigidbody = this.me.rigidbody;
+    this.flying = newFlying;
+    if (this.flying) {
         rigidbody.mass = 0;
     } else {
-        var placeable = me.placeable;
+        var placeable = this.me.placeable;
         // Set mass back for collisions
-        rigidbody.mass = avatar_mass;
+        rigidbody.mass = this.avatarMass;
         // Push avatar a bit to the fly direction
         // so the motion does not just stop to a wall
-        var moveVec = new float3(motion_x * 120, motion_y * 120, -motion_z * 120);
+        var moveVec = new float3(this.motionX * 120, this.motionY * 120, -this.motionZ * 120);
         var pushVec = placeable.LocalToWorld().MulDir(moveVec);
         rigidbody.ApplyImpulse(pushVec);
     }
-    ServerSetAnimationState();
+    this.ServerSetAnimationState();
 }
 
-function ServerHandleSetRotation(param) {
-    var attrs = me.dynamiccomponent;
+SimpleAvatar.prototype.ServerHandleSetRotation = function(param) {
+    var attrs = this.me.dynamiccomponent;
     if (attrs.GetAttribute("enableRotate")) {
         var rot = new float3(0, parseFloat(param), 0);
-        me.rigidbody.SetRotation(rot);
+        this.me.rigidbody.SetRotation(rot);
     }
 }
 
-function ServerSetAnimationState() {
+SimpleAvatar.prototype.ServerSetAnimationState = function() {
     // Not flying: Stand, Walk or Crouch
-    var animName = standAnimName;
-    if ((motion_x != 0) || (motion_z != 0)) {
-        animName = walkAnimName;
+    var animName = this.standAnimName;
+    if ((this.motionX != 0) || (this.motionZ != 0)) {
+        animName = this.walkAnimName;
     }
 
     // Flying: Fly if moving forward or back, otherwise hover
-    if (flying || falling) {
-        animName = flyAnimName;
-        if (motion_z == 0)
-            animName = hoverAnimName;
+    if (this.flying || this.falling) {
+        animName = this.flyAnimName;
+        if (this.motionZ == 0)
+            animName = this.hoverAnimName;
     }
 
     if (animName == "") {
@@ -292,7 +307,7 @@ function ServerSetAnimationState() {
     }
 
     // Update the variable to sync to client if changed
-    var animcontroller = me.animationcontroller;
+    var animcontroller = this.me.animationcontroller;
     if (animcontroller != null) {
         if (animcontroller.animationState != animName) {
             animcontroller.animationState = animName;
@@ -300,28 +315,28 @@ function ServerSetAnimationState() {
     }
 }
 
-function ClientInitialize() {
+SimpleAvatar.prototype.ClientInitialize = function() {
     // Check if this is our own avatar
     // Note: bad security. For now there's no checking who is allowed to invoke actions
     // on an entity, and we could theoretically control anyone's avatar
-    if (me.name == "Avatar" + client.GetConnectionID()) {
-        own_avatar = true;
-        ClientCreateInputMapper();
-        ClientCreateAvatarCamera();
-        crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
-        var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
+    if (this.me.name == "Avatar" + client.GetConnectionID()) {
+        this.ownAvatar = true;
+        this.ClientCreateInputMapper();
+        this.ClientCreateAvatarCamera();
+        this.crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
+        var soundlistener = this.me.GetOrCreateComponent("EC_SoundListener");
         soundlistener.active = true;
 
-        me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
-        me.Action("Zoom").Triggered.connect(ClientHandleKeyboardZoom);
-        me.Action("Rotate").Triggered.connect(ClientHandleRotate);
-        me.Action("StopRotate").Triggered.connect(ClientHandleStopRotate);
+        this.me.Action("MouseScroll").Triggered.connect(this, this.ClientHandleMouseScroll);
+        this.me.Action("Zoom").Triggered.connect(this, this.ClientHandleKeyboardZoom);
+        this.me.Action("Rotate").Triggered.connect(this, this.ClientHandleRotate);
+        this.me.Action("StopRotate").Triggered.connect(this, this.ClientHandleStopRotate);
 
         // Inspect the login avatar url property
         var avatarurl = client.GetLoginProperty("avatarurl");
         if (avatarurl && avatarurl.length > 0)
         {
-            var avatar = me.GetOrCreateComponent("EC_Avatar");
+            var avatar = this.me.GetOrCreateComponent("EC_Avatar");
             var r = avatar.appearanceRef;
             r.ref = "local://default_avatar.xml";
             avatar.appearanceRef = r;
@@ -331,34 +346,33 @@ function ClientInitialize() {
     else
     {
         // Make hovering name tag for other clients
-        var clientName = me.GetComponent("EC_Name");
+        var clientName = this.me.GetComponent("EC_Name");
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {
-                var name_tag = me.GetOrCreateComponent("EC_HoveringText", 2, false);
-                if (name_tag != null) {
-                    name_tag.SetNetworkSyncEnabled(false);
-                    name_tag.SetTemporary(true);
-                    name_tag.text = clientName.description;
-                    var pos = name_tag.position;
+                var nameTag = this.me.GetOrCreateComponent("EC_HoveringText", 2, false);
+                if (nameTag != null) {
+                    nameTag.SetNetworkSyncEnabled(false);
+                    nameTag.SetTemporary(true);
+                    nameTag.text = clientName.description;
+                    var pos = nameTag.position;
                     pos.y = 1.3;
-                    name_tag.position = pos;
-                    name_tag.fontSize = 90;
+                    nameTag.position = pos;
+                    nameTag.fontSize = 90;
                     var color = new Color(0.2, 0.2, 0.2, 1.0);
-                    name_tag.backgroundColor = color;
+                    nameTag.backgroundColor = color;
                     var font_color = new Color(1.0, 1.0, 1.0, 1.0);                
-                    name_tag.fontColor = font_color;
+                    nameTag.fontColor = font_color;
                 }
             }
         }
     }
 
     // Hook to tick update to update visual effects (both own and others' avatars)
-    frame.Updated.connect(ClientUpdate);
+    frame.Updated.connect(this, this.ClientUpdate);
 }
 
-function IsCameraActive()
-{
+SimpleAvatar.prototype.IsCameraActive = function() {
     var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
         return false;
@@ -366,31 +380,30 @@ function IsCameraActive()
     return camera.IsActive();
 }
 
-function ClientUpdate(frametime)
-{
+SimpleAvatar.prototype.ClientUpdate = function(frametime) {
     // Tie enabled state of inputmapper to the enabled state of avatar camera
-    if (own_avatar) {
+    if (this.ownAvatar) {
         var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
-        var inputmapper = me.inputmapper;
+        var inputmapper = this.me.inputmapper;
         if ((avatarcameraentity != null) && (inputmapper != null)) {
             var active = avatarcameraentity.camera.IsActive();
             if (inputmapper.enabled != active) {
                 inputmapper.enabled = active;
             }
         }
-        ClientUpdateRotation(frametime);
-        ClientUpdateAvatarCamera(frametime);
+        this.ClientUpdateRotation(frametime);
+        this.ClientUpdateAvatarCamera(frametime);
     }
 
-    if (!animsDetected) {
-        CommonFindAnimations();
+    if (!this.animsDetected) {
+        this.CommonFindAnimations();
     }
-    CommonUpdateAnimation(frametime);
+    this.CommonUpdateAnimation(frametime);
 }
 
-function ClientCreateInputMapper() {
+SimpleAvatar.prototype.ClientCreateInputMapper = function() {
     // Create a nonsynced inputmapper
-    var inputmapper = me.GetOrCreateComponent("EC_InputMapper", 2, false);
+    var inputmapper = this.me.GetOrCreateComponent("EC_InputMapper", 2, false);
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = false;
     inputmapper.takeKeyboardEventsOverQt = false;
@@ -421,12 +434,12 @@ function ClientCreateInputMapper() {
 
     // Connect mouse gestures
     var inputContext = inputmapper.GetInputContext();
-    inputContext.GestureStarted.connect(GestureStarted);
-    inputContext.GestureUpdated.connect(GestureUpdated);
-    inputContext.MouseMove.connect(ClientHandleMouseMove);
+    inputContext.GestureStarted.connect(this, this.GestureStarted);
+    inputContext.GestureUpdated.connect(this, this.GestureUpdated);
+    inputContext.MouseMove.connect(this, this.ClientHandleMouseMove);
 
     // Local mapper for mouse scroll and rotate
-    var inputmapper = me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
+    var inputmapper = this.me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
     inputmapper.SetNetworkSyncEnabled(false);
     inputmapper.contextPriority = 100;
     inputmapper.takeMouseEventsOverQt = true;
@@ -440,8 +453,7 @@ function ClientCreateInputMapper() {
     inputmapper.RegisterMapping("Right", "StopRotate(right))", 3);
 }
 
-function ClientCreateAvatarCamera() 
-{
+SimpleAvatar.prototype.ClientCreateAvatarCamera = function() {
     var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
     {
@@ -457,68 +469,66 @@ function ClientCreateAvatarCamera()
     camera.SetActive();
     
     var parentRef = placeable.parentRef;
-    parentRef.ref = me; // Parent camera to avatar, always
+    parentRef.ref = this.me; // Parent camera to avatar, always
     placeable.parentRef = parentRef;
 
     // Set initial position
-    ClientUpdateAvatarCamera();
+    this.ClientUpdateAvatarCamera();
 }
 
-function GestureStarted(gestureEvent)
-{
-    if (!IsCameraActive())
+SimpleAvatar.prototype.GestureStarted = function(gestureEvent) {
+    if (!this.IsCameraActive())
         return;
     if (gestureEvent.GestureType() == Qt.PanGesture)
     {
-        listenGesture = true;
+        this.listenGesture = true;
 
-        var attrs = me.dynamiccomponent;
+        var attrs = this.me.dynamiccomponent;
         if (attrs.GetAttribute("enableRotate")) {
             var x = new Number(gestureEvent.Gesture().offset.toPoint().x());
-            yaw += x;
-            me.Exec(2, "SetRotation", yaw.toString());
+            this.yaw += x;
+            this.me.Exec(2, "SetRotation", this.yaw.toString());
         }
-        
+
         gestureEvent.Accept();
     }
     else if (gestureEvent.GestureType() == Qt.PinchGesture)
         gestureEvent.Accept();
 }
 
-function GestureUpdated(gestureEvent)
-{
+SimpleAvatar.prototype.GestureUpdated = function(gestureEvent) {
     if (!IsCameraActive())
         return;
 
-    if (gestureEvent.GestureType() == Qt.PanGesture && listenGesture == true)
+    if (gestureEvent.GestureType() == Qt.PanGesture && this.listenGesture == true)
     {
         // Rotate avatar with X pan gesture
         delta = gestureEvent.Gesture().delta.toPoint();
-        yaw += delta.x;
-        me.Exec(2, "SetRotation", yaw.toString());
+        this.yaw += delta.x;
+        this.me.Exec(2, "SetRotation", this.yaw.toString());
 
         // Start walking or stop if total Y len of pan gesture is 100
         var walking = false;
-        if (me.animationcontroller.animationState == walkAnimName)
+        if (this.me.animationcontroller.animationState == this.walkAnimName)
             walking = true;
         var totalOffset = gestureEvent.Gesture().offset.toPoint();
         if (totalOffset.y() < -100)
         {
             if (walking) {
-                me.Exec(2, "Stop", "forward");
-                me.Exec(2, "Stop", "back");
+                this.me.Exec(2, "Stop", "forward");
+                this.me.Exec(2, "Stop", "back");
             } else
-                me.Exec(2, "Move", "forward");
+                this.me.Exec(2, "Move", "forward");
             listenGesture = false;
         }
         else if (totalOffset.y() > 100)
         {
             if (walking) {
-                me.Exec(2, "Stop", "forward");
-                me.Exec(2, "Stop", "back");
+                this.me.Exec(2, "Stop", "forward");
+                this.me.Exec(2, "Stop", "back");
             } else
-                me.Exec(2, "Move", "back");
-            listenGesture = false;
+                this.me.Exec(2, "Move", "back");
+            this.listenGesture = false;
         }
         gestureEvent.Accept();
     }
@@ -526,38 +536,37 @@ function GestureUpdated(gestureEvent)
     {
         var scaleChange = gestureEvent.Gesture().scaleFactor - gestureEvent.Gesture().lastScaleFactor;
         if (scaleChange > 0.1 || scaleChange < -0.1)
-            ClientHandleMouseScroll(scaleChange * 100);
+            this.ClientHandleMouseScroll(scaleChange * 100);
         gestureEvent.Accept();
     }
 }
 
-function ClientHandleKeyboardZoom(direction) {
+SimpleAvatar.prototype.ClientHandleKeyboardZoom = function(direction) {
     if (direction == "in") {
-        ClientHandleMouseScroll(10);
+        this.ClientHandleMouseScroll(10);
     } else if (direction == "out") {
-        ClientHandleMouseScroll(-10);
+        this.ClientHandleMouseScroll(-10);
     }
 }
 
-function ClientHandleMouseScroll(relativeScroll)
-{
-    var attrs = me.dynamiccomponent;
+SimpleAvatar.prototype.ClientHandleMouseScroll = function(relativeScroll) {
+    var attrs = this.me.dynamiccomponent;
     // Check that zoom is allowed
     if (!attrs.GetAttribute("enableZoom"))
         return;
 
-    var avatar_camera_distance = attrs.GetAttribute("cameraDistance");
+    var avatarCameraDistance = attrs.GetAttribute("cameraDistance");
 
-    if (!IsCameraActive())
+    if (!this.IsCameraActive())
         return;
 
     var moveAmount = 0;
-    if (relativeScroll < 0 && avatar_camera_distance < 500) {
+    if (relativeScroll < 0 && avatarCameraDistance < 500) {
         if (relativeScroll < -50)
             moveAmount = 2;
         else
             moveAmount = 1;
-    } else if (relativeScroll > 0 && avatar_camera_distance > 0) {
+    } else if (relativeScroll > 0 && avatarCameraDistance > 0) {
         if (relativeScroll > 50)
             moveAmount = -2
         else
@@ -566,69 +575,71 @@ function ClientHandleMouseScroll(relativeScroll)
     if (moveAmount != 0)
     {
         // Add movement
-        avatar_camera_distance = avatar_camera_distance + moveAmount;
+        avatarCameraDistance = avatarCameraDistance + moveAmount;
         // Clamp distance to be between -0.5 and 500
-        if (avatar_camera_distance < -0.5)
-            avatar_camera_distance = -0.5;
-        else if (avatar_camera_distance > 500)
-            avatar_camera_distance = 500;
+        if (avatarCameraDistance < -0.5)
+            avatarCameraDistance = -0.5;
+        else if (avatarCameraDistance > 500)
+            avatarCameraDistance = 500;
 
-        attrs.SetAttribute("cameraDistance", avatar_camera_distance);
+        attrs.SetAttribute("cameraDistance", avatarCameraDistance);
     }
 }
 
-function ClientHandleRotate(param) {
+SimpleAvatar.prototype.ClientHandleRotate = function(param) {
     if (param == "left") {
-        rotate = -1;
+        this.rotate = -1;
     }
     if (param == "right") {
-        rotate = 1;
+        this.rotate = 1;
     }
 }
 
-function ClientHandleStopRotate(param) {
+SimpleAvatar.prototype.ClientHandleStopRotate = function(param) {
     if ((param == "left") && (rotate == -1)) {
-        rotate = 0;
+        this.rotate = 0;
     }
     if ((param == "right") && (rotate == 1)) {
-        rotate = 0;
+        this.rotate = 0;
     }
 }
 
-function ClientUpdateRotation(frametime) {
-    var attrs = me.dynamiccomponent;
+SimpleAvatar.prototype.ClientUpdateRotation = function(frametime) {
+    var attrs = this.me.dynamiccomponent;
     // Check that rotation is allowed
     if (!attrs.GetAttribute("enableRotate"))
         return;
 
-    if (rotate != 0) {
-        yaw -= rotate_speed * rotate * frametime;
-        me.Exec(2, "SetRotation", yaw.toString());
+    if (this.rotate != 0) {
+        this.yaw -= this.rotateSpeed * this.rotate * frametime;
+        this.me.Exec(2, "SetRotation", this.yaw.toString());
     }
 }
 
-function ClientUpdateAvatarCamera() {
+SimpleAvatar.prototype.ClientUpdateAvatarCamera = function() {
 
     // Check 1st/3rd person mode toggle
-    ClientCheckState();
+    this.ClientCheckState();
 
-    var attrs = me.dynamiccomponent;
-    avatar_camera_distance = attrs.GetAttribute("cameraDistance");
-    var first_person = avatar_camera_distance < 0;
+    var attrs = this.me.dynamiccomponent;
+    if (attrs == null)
+        return;
+    var avatarCameraDistance = attrs.GetAttribute("cameraDistance");
+    var firstPerson = avatarCameraDistance < 0;
 
     var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
         return;
     var cameraplaceable = cameraentity.placeable;
 
-    if (!first_person)
-        pitch = 0;
+    if (!firstPerson)
+        this.pitch = 0;
     var cameratransform = cameraplaceable.transform;
-    cameratransform.rot = new float3(pitch, 0, 0);
-    cameratransform.pos = new float3(0, avatar_camera_height, avatar_camera_distance);
+    cameratransform.rot = new float3(this.pitch, 0, 0);
+    cameratransform.pos = new float3(0, this.avatarCameraHeight, avatarCameraDistance);
 
     // Track the head bone in 1st person
-    if ((first_person) && (me.mesh != null))
+    if ((firstPerson) && (me.mesh != null))
     {
         me.mesh.ForceSkeletonUpdate();
         var headPos = me.mesh.GetBoneDerivedPosition("Bip01_Head");
@@ -640,27 +651,26 @@ function ClientUpdateAvatarCamera() {
     cameraplaceable.transform = cameratransform;
 }
 
-function ClientCheckState()
-{
-    var attrs = me.dynamiccomponent;
-    var first_person = attrs.GetAttribute("cameraDistance") < 0;
+SimpleAvatar.prototype.ClientCheckState = function() {
+    var attrs = this.me.dynamiccomponent;
+    var firstPerson = attrs.GetAttribute("cameraDistance") < 0;
 
     var cameraentity = scene.GetEntityByName("AvatarCamera");
-    var avatar_placeable = me.GetComponent("EC_Placeable");
+    var avatarPlaceable = this.me.GetComponent("EC_Placeable");
 
-    if (crosshair == null)
+    if (this.crosshair == null)
         return;
     // If ent got destroyed or something fatal, return cursor
-    if (cameraentity == null || avatar_placeable == null) {
-        if (crosshair.isActive()) {
-            crosshair.hide();
+    if (cameraentity == null || avatarPlaceable == null) {
+        if (this.crosshair.isActive()) {
+            this.crosshair.hide();
         }
         return;
     }
 
-    if (!first_person) {
-        if (crosshair.isActive()) {
-            crosshair.hide();
+    if (!firstPerson) {
+        if (this.crosshair.isActive()) {
+            this.crosshair.hide();
         }
         return;
     }
@@ -669,29 +679,28 @@ function ClientCheckState()
         // We might be in 1st person mode but camera might not be active
         // hide curson and show av
         if (!cameraentity.camera.IsActive()) {
-            if (crosshair.isActive()) {
-                crosshair.hide();
+            if (this.crosshair.isActive()) {
+                this.crosshair.hide();
             }
         }
         else {
             // 1st person mode and camera is active
             // show curson and av
-            if (!crosshair.isActive()) {
-                crosshair.show();
+            if (!this.crosshair.isActive()) {
+                this.crosshair.show();
             }
         }
     }
 }
 
-function ClientHandleMouseMove(mouseevent)
-{
-    var attrs = me.dynamiccomponent;
-    var first_person = attrs.GetAttribute("cameraDistance") < 0;
+SimpleAvatar.prototype.ClientHandleMouseMove = function(mouseevent) {
+    var attrs = this.me.dynamiccomponent;
+    var firstPerson = attrs.GetAttribute("cameraDistance") < 0;
 
-    if ((first_person) && (input.IsMouseCursorVisible()))
+    if ((firstPerson) && (input.IsMouseCursorVisible()))
     {
         input.SetMouseCursorVisible(false);
-        if (!crosshair.isUsingLabel)
+        if (!this.crosshair.isUsingLabel)
             QApplication.setOverrideCursor(crosshair.cursor);
     }
         
@@ -700,7 +709,7 @@ function ClientHandleMouseMove(mouseevent)
         return;
 
     // Do not rotate in third person if right mousebutton not held down
-    if ((!first_person) && (input.IsMouseCursorVisible()))
+    if ((!firstPerson) && (input.IsMouseCursorVisible()))
         return;
 
     var cameraentity = scene.GetEntityByName("AvatarCamera");
@@ -714,63 +723,65 @@ function ClientHandleMouseMove(mouseevent)
     if (mouseevent.relativeX != 0)
     {
         // Rotate avatar or camera
-        yaw -= mouse_rotate_sensitivity * parseInt(mouseevent.relativeX);
-        me.Exec(2, "SetRotation", yaw.toString());
+        this.yaw -= this.mouseRotateSensitivity * parseInt(mouseevent.relativeX);
+        this.me.Exec(2, "SetRotation", this.yaw.toString());
     }
 
     if (mouseevent.relativeY != 0)
     {
         // Look up/down
-        var attrs = me.dynamiccomponent;
-        pitch -= mouse_rotate_sensitivity * parseInt(mouseevent.relativeY);
+        var attrs = this.me.dynamiccomponent;
+        this.pitch -= this.mouseRotateSensitivity * parseInt(mouseevent.relativeY);
 
         // Dont let the 1st person flip vertically, 180 deg view angle
-        if (pitch < -90)
-            pitch = -90;
-        if (pitch > 90)
-            pitch = 90;
+        if (this.pitch < -90)
+            this.pitch = -90;
+        if (this.pitch > 90)
+            this.pitch = 90;
     }
 }
 
-function CommonFindAnimations() {
-    var animcontrol = me.animationcontroller;
+SimpleAvatar.prototype.CommonFindAnimations = function() {
+    var animcontrol = this.me.animationcontroller;
+    if (animcontrol == null)
+        return;
     var availableAnimations = animcontrol.GetAvailableAnimations();
     if (availableAnimations.length > 0) {
         // Detect animation names
-        for(var i=0; i<animList.length; i++) {
-            var animName = animList[i];
+        for(var i=0; i<this.animList.length; i++) {
+            var animName = this.animList[i];
             if (availableAnimations.indexOf(animName) == -1) {
                 // Disable this animation by setting it to a empty string
                 print("Could not find animation for:", animName, " - disabling animation");
-                animList[i] = "";
+                this.animList[i] = "";
             }
         }
 
         // Assign the possible empty strings for
         // not found anims back to the variables
-        standAnimName = animList[0];
-        walkAnimName = animList[1];
-        flyAnimName = animList[2];
-        hoverAnimName = animList[3];
+        this.standAnimName = this.animList[0];
+        this.walkAnimName = this.animList[1];
+        this.flyAnimName = this.animList[2];
+        this.hoverAnimName = this.animList[3];
 
-        animsDetected = true;
+        this.animsDetected = true;
     }
 }
 
-function CommonUpdateAnimation(frametime) {
+SimpleAvatar.prototype.CommonUpdateAnimation = function(frametime) {
     // This function controls the known move animations, such as walk, fly, hover and stand,
     // which are replicated through the animationState attribute of the AnimationController.
     // Only one such move animation can be active at a time.
     // Other animations, such as for gestures, can be freely enabled/disabled by other scripts.
 
-    var attrs = me.dynamiccomponent;
+    var attrs = this.me.dynamiccomponent;
 
-    if (!animsDetected) {
+    if (!this.animsDetected) {
         return;
     }
 
-    var animcontroller = me.animationcontroller;
-    var rigidbody = me.rigidbody;
+    var animcontroller = this.me.animationcontroller;
+    var rigidbody = this.me.rigidbody;
     if ((animcontroller == null) || (rigidbody == null)) {
         return;
     }
@@ -779,9 +790,9 @@ function CommonUpdateAnimation(frametime) {
     {
         // When animations disabled, forcibly disable all running move animations
         // Todo: what if custom scripts want to run the move anims as well?
-        for (var i = 0; i < animList.length; ++i) {
-            if (animList[i] != "")
-                animcontroller.DisableAnimation(animList[i], 0.25);
+        for (var i = 0; i < this.animList.length; ++i) {
+            if (this.animList[i] != "")
+                animcontroller.DisableAnimation(this.animList[i], 0.25);
         }
         return;
     }
@@ -791,7 +802,7 @@ function CommonUpdateAnimation(frametime) {
     // Enable animation, skip with headless server
     if (animName != "" && !framework.IsHeadless()) {
         // Do custom speeds for certain anims
-        if (animName == hoverAnimName) {
+        if (animName == this.hoverAnimName) {
             animcontroller.SetAnimationSpeed(animName, 0.25);
         }
         // Enable animation
@@ -799,16 +810,17 @@ function CommonUpdateAnimation(frametime) {
             animcontroller.EnableAnimation(animName, true, 0.25, false);
         }
         // Disable other move animations
-        for (var i = 0; i < animList.length; ++i) {
-            if ((animList[i] != animName) && (animList[i] != "") && (animcontroller.IsAnimationActive(animList[i])))
-                animcontroller.DisableAnimation(animList[i], 0.25);
+        for (var i = 0; i < this.animList.length; ++i) {
+            if ((this.animList[i] != animName) && (this.animList[i] != "") && (animcontroller.IsAnimationActive(this.animList[i])))
+                animcontroller.DisableAnimation(this.animList[i], 0.25);
         }
     }
 
     // If walk animation is playing, adjust its speed according to the avatar rigidbody velocity
-    if (animName != ""  && animcontroller.IsAnimationActive(walkAnimName)) {
+    if (animName != ""  && animcontroller.IsAnimationActive(this.walkAnimName)) {
         var velocity = rigidbody.linearVelocity;
-        var walkspeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * walk_anim_speed;
-        animcontroller.SetAnimationSpeed(walkAnimName, walkspeed);
+        var walkspeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * this.walkAnimSpeed;
+        animcontroller.SetAnimationSpeed(this.walkAnimName, walkspeed);
     }
 }
+

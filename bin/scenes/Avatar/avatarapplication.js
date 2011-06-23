@@ -1,17 +1,14 @@
-// !ref: local://simpleavatar.js
-
 // Avatar application. Will handle switching logic between avatar & freelook camera (clientside), and
 // spawning avatars for clients (serverside). Note: this is not a startup script, but is meant to be
-// placed in an entity in a scene that wishes to implement avatar functionality.
+// placed in an entity in a scene that wishes to implement avatar functionality, with the application name
+// AvatarApp.
 
 var avatar_area_size = 10;
 var avatar_area_x = 0;
 var avatar_area_y = 5;
 var avatar_area_z = 0;
 
-var isserver = server.IsRunning();
-
-if (isserver == false) {
+if (!server.IsRunning()) {
     var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
     inputmapper.SetTemporary(true);
     inputmapper.contextPriority = 102;
@@ -100,25 +97,16 @@ function ServerHandleUserConnected(connectionID, user) {
     avatarEntity.SetTemporary(true); // We never want to save the avatar entities to disk.
     avatarEntity.SetName(avatarEntityName);
     
-    if (user != null) {
-	avatarEntity.SetDescription(user.GetProperty("username"));
-    }
+    if (user != null)
+    	avatarEntity.SetDescription(user.GetProperty("username"));
 
     var script = avatarEntity.script;
-    script.type = "js";
-    script.runOnLoad = true;
-    var r = script.scriptRef;
-    r.ref = "local://simpleavatar.js";
-    script.scriptRef = r;
-    
+    script.className = "AvatarApp.SimpleAvatar";
+
     // Simpleavatar.js implements the basic avatar movement and animation.
-    // Also load an additional script file to the same entity to demonstrate adding features to the avatar.
+    // Also load an additional script object to the same entity (ExampleAvatarAddon.js) to demonstrate adding features to the avatar.
     var script2 = avatarEntity.GetOrCreateComponent("EC_Script", "Addon", 0, true);
-    script2.type = "js"
-    script2.runOnLoad = true;
-    r = script2.scriptRef;
-    r.ref = "local://exampleavataraddon.js";
-    script2.scriptRef = r;
+    script2.className = "AvatarApp.ExampleAvatarAddon";
 
     // Set random starting position for avatar
     var placeable = avatarEntity.placeable;
@@ -130,9 +118,8 @@ function ServerHandleUserConnected(connectionID, user) {
 
     scene.EmitEntityCreatedRaw(avatarEntity);
     
-    if (user != null) {
+    if (user != null)
         print("[Avatar Application] Created avatar for " + user.GetProperty("username"));
-    }
 }
 
 function ServerHandleUserDisconnected(connectionID, user) {
