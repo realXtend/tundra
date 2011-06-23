@@ -20,7 +20,10 @@
 class Ray
 {
 public:
+    /// Specifies the origin of this ray.
     float3 pos;
+
+    /// The normalized direction vector of this ray.
     float3 dir;
 
     /// @note The default ctor does not initialize any member values.

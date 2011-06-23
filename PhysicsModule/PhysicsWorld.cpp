@@ -18,6 +18,7 @@
 #include "Math/OBB.h"
 #include "Math/LineSegment.h"
 #include "Math/float3.h"
+#include "Math/Circle.h"
 #include "MemoryLeakCheck.h"
 #include "LoggingFunctions.h"
 
@@ -325,6 +326,17 @@ void PhysicsWorld::DrawFloat3x4(const float3x4 &t, float axisLength, float boxSi
     DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(0)), 1, 0, 0);
     DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(1)), 0, 1, 0);
     DrawLineSegment(LineSegment(t.TranslatePart(), t.TranslatePart() + axisLength * t.Col(2)), 0, 0, 1);
+}
+
+void PhysicsWorld::DrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b)
+{
+    float3 p = c.GetPoint(0);
+    for(int i = 1; i <= numSubdivisions; ++i)
+    {
+        float3 p2 = c.GetPoint(i * 2.f * 3.14f / numSubdivisions);
+        DrawLineSegment(LineSegment(p, p2), r, g, b);
+        p = p2;
+    }
 }
 
 } // ~Physics

@@ -148,6 +148,9 @@ public slots:
     void DrawLineSegment(const LineSegment &l, float r, float g, float b);
     void DrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b);
     void DrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b);
+    /// Renders a hollow circle.
+    /// @param numSubdivisions The number of edges to subdivide the circle into. This value must be at least 3.
+    void DrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b);
 signals:
     /// A physics collision has happened between two entities. 
     /** Note: both rigidbodies participating in the collision will also emit a signal separately. 

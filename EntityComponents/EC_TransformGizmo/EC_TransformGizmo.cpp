@@ -25,8 +25,6 @@
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
 #include "FrameAPI.h"
-//#include "PhysicsModule.h"
-//#include "PhysicsUtils.h"
 
 #include "Math/Ray.h"
 #include "Math/Plane.h"
@@ -149,13 +147,14 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
         return;
     if (!IsVisible())
     {
-        input->ClearMouseCursorOverride();
+        if (input)
+            input->ClearMouseCursorOverride();
         return;
     }
     if (ogreWorld.expired())
         return;
     OgreWorldPtr world = ogreWorld.lock();
-    EC_Camera* cam = checked_static_cast<EC_Camera*>(world->GetRenderer()->GetActiveCamera());
+    EC_Camera *cam = checked_static_cast<EC_Camera*>(world->GetRenderer()->GetActiveCamera());
     if (!cam)
         return;
 
@@ -331,14 +330,12 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     emit Translated(curPoint-prevPoint);
                     break;
                 case EC_TransformGizmo::Rotate:
+                    if (activeAxes.size() == 1)
                     {
-                        float3 prevDir = prevPoint;
-                        float len = prevDir.Normalize();
-                        float3 curDir = curPoint;
-                        float len2 = curDir.Normalize();
-                        if (len > 0 && len2 > 0)
-                            emit Rotated(Quat::RotateFromTo(prevDir, curDir));
-//                        LogInfo("Emitting Rotated(" + ss.str() + ")");
+                        float3 delta = curPoint - prevPoint;
+                        const float sensitivity = 0.2f; // Apply a hardcoded sensitivity factor to the mouse delta values.
+                        Quat q = Quat::RotateAxisAngle(activeAxes[0].ray.dir, sensitivity * delta[delta.Abs().MaxElementIndex()]);
+                        emit Rotated(q);
                     }
                     break;
                 case EC_TransformGizmo::Scale:
@@ -359,7 +356,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                 if (a.axis == 0)
                     materials.Set(0, cAxisGreenHi);
                 else if (a.axis == 1)
-                    materials.Set(1,cAxisRedHi);
+                    materials.Set(1, cAxisRedHi);
                 else if (a.axis == 2)
                     materials.Set(2, cAxisBlueHi);
 
