@@ -135,7 +135,7 @@ material SkyX_VolClouds
 			{
 				tex_address_mode wrap
 				tex_coord_set 2
-				texture Noise.jpg
+				texture Noise.dds
 			}
 		}
 	}
@@ -259,7 +259,7 @@ material SkyX_Skydome_STARFIELD_LDR
 			
 			texture_unit Starfield
 			{
-			    texture SkyX_Starfield.png
+			    texture SkyX_Starfield.dds
 			    tex_address_mode wrap
 			    filtering linear linear none
 			    tex_coord_set 0
@@ -325,7 +325,7 @@ material SkyX_Skydome_STARFIELD_HDR
 			
 			texture_unit Starfield
 			{
-			    texture SkyX_Starfield.png
+			    texture SkyX_Starfield.dds
 			    tex_address_mode wrap
 			    filtering linear linear none
 			    tex_coord_set 0
@@ -501,7 +501,7 @@ material SkyX_Moon
 			
 			texture_unit Moon
 			{
-			    texture SkyX_Moon.png
+			    texture SkyX_Moon.dds
 			    tex_address_mode clamp
 			 //   filtering linear linear none
 			    tex_coord_set 0
