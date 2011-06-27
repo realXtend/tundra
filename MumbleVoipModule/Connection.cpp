@@ -7,13 +7,13 @@
 #include "MumbleVoipModule.h"
 #define LIBMUMBLE_BUILDING_DLL // for dll import/export declarations
 #define CreateEvent CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
-#include <mumbleclient/client.h>
-#include <mumbleclient/client_lib.h>
+#include <libmumbleclient/client.h>
+#include <libmumbleclient/client_lib.h>
 #undef LIBMUMBLE_BUILDING_DLL // for dll import/export declarations
-#include <mumbleclient/settings.h>
-#include <mumbleclient/PacketDataStream.h>
-#include <mumbleclient/channel.h>
-#include <mumbleclient/user.h>
+#include <libmumbleclient/settings.h>
+#include <libmumbleclient/PacketDataStream.h>
+#include <libmumbleclient/channel.h>
+#include <libmumbleclient/user.h>
 #include "AudioAPI.h"
 #include "Channel.h"
 #include "User.h"
@@ -251,7 +251,7 @@ namespace MumbleLib
         }
 
         QMutexLocker encoder_locker(&mutex_encoder_);
-        celt_encoder_ = celt_encoder_create(celt_mode_,MumbleVoip::NUMBER_OF_CHANNELS, NULL );
+        celt_encoder_ = celt_encoder_create_custom(celt_mode_,MumbleVoip::NUMBER_OF_CHANNELS, NULL );
         if (!celt_encoder_)
         {
             QString message = QString("Cannot create CELT encoder");
@@ -263,7 +263,7 @@ namespace MumbleLib
             return;
         }
         celt_encoder_ctl(celt_encoder_, CELT_SET_PREDICTION(0));
-	    celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(BitrateForDecoder()));
+            celt_encoder_ctl(celt_encoder_, CELT_SET_BITRATE(BitrateForDecoder()));
 
         celt_decoder_ = CreateCELTDecoder();
 
@@ -285,7 +285,7 @@ namespace MumbleLib
     CELTDecoder* Connection::CreateCELTDecoder()
     {
         int error = 0;
-        CELTDecoder* decoder = celt_decoder_create(celt_mode_,MumbleVoip::NUMBER_OF_CHANNELS, &error);
+        CELTDecoder* decoder = celt_decoder_create_custom(celt_mode_,MumbleVoip::NUMBER_OF_CHANNELS, &error);
         switch (error)
         {
         case CELT_OK:
@@ -293,14 +293,20 @@ namespace MumbleLib
         case CELT_BAD_ARG:
             MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_BAD_ARG");
             return 0;
-        case CELT_INVALID_MODE:
-            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_INVALID_MODE");
+        case CELT_BUFFER_TOO_SMALL:
+            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_BUFFER_TOO_SMALL");
             return 0;
         case CELT_INTERNAL_ERROR:
             MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_INTERNAL_ERROR");
             return 0;
+        case CELT_CORRUPTED_DATA:
+            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_CORRUPTED_DATA");
+            return 0;
         case CELT_UNIMPLEMENTED:
             MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_UNIMPLEMENTED");
+            return 0;
+        case CELT_INVALID_STATE:
+            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_INVALID_STATE");
             return 0;
         case CELT_ALLOC_FAIL:
             MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_ALLOC_FAIL");
@@ -725,7 +731,7 @@ namespace MumbleLib
         }
 
         MumbleVoip::PCMAudioFrame* audio_frame = new MumbleVoip::PCMAudioFrame(MumbleVoip::SAMPLE_RATE, MumbleVoip::SAMPLE_WIDTH, MumbleVoip::NUMBER_OF_CHANNELS, MumbleVoip::SAMPLES_IN_FRAME*MumbleVoip::SAMPLE_WIDTH/8);
-        int ret = celt_decode(celt_decoder_, data, size, (short*)audio_frame->DataPtr());
+        int ret = celt_decode(celt_decoder_, data, size, (short*)audio_frame->DataPtr(), MumbleVoip::SAMPLES_IN_FRAME);
 
         switch (ret)
         {
@@ -746,8 +752,8 @@ namespace MumbleLib
         case CELT_BAD_ARG:
             MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_BAD_ARG");
             break;
-        case CELT_INVALID_MODE:
-            MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_INVALID_MODE");
+        case CELT_BUFFER_TOO_SMALL:
+            MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_BUFFER_TOO_SMALL");
             break;
         case CELT_INTERNAL_ERROR:
             MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_INTERNAL_ERROR");
@@ -757,6 +763,12 @@ namespace MumbleLib
             break;
         case CELT_UNIMPLEMENTED:
             MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_UNIMPLEMENTED");
+            break;
+        case CELT_INVALID_STATE:
+            MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_INVALID_STATE");
+            break;
+        case CELT_ALLOC_FAIL:
+            MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_ALLOC_FAIL");
             break;
         }
         delete audio_frame;
@@ -773,7 +785,7 @@ namespace MumbleLib
         mutex_encoding_quality_.unlock();
 
         QMutexLocker encoder_locker(&mutex_encoder_);
-        celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(BitrateForDecoder()));
+        celt_encoder_ctl(celt_encoder_, CELT_SET_BITRATE(BitrateForDecoder()));
     }
     
     int Connection::BitrateForDecoder()
