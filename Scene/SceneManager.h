@@ -6,6 +6,7 @@
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
+#include "ChangeRequest.h"
 
 #include <QObject>
 #include <QVariant>
@@ -458,7 +459,7 @@ namespace Scene
         //permission hooks -- signals that are emitted before attribute modification, can be used to prevent them
         
         //! Emitted when an entity is about to be modified:
-        void AboutToModifyEntity(Scene::Entity* entity);
+        void AboutToModifyEntity(ChangeRequest* req, Scene::Entity* entity);
 
     private:
         Q_DISABLE_COPY(SceneManager);

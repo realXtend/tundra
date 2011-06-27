@@ -12,6 +12,7 @@
 
 #include "SceneAPI.h"
 #include "SceneManager.h"
+#include "ChangeRequest.h"
 #include "Entity.h"
 #include "EntityAction.h"
 
@@ -88,6 +89,7 @@ Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(EntityAction*);
 Q_DECLARE_METATYPE(EntityAction::ExecutionType);
 Q_DECLARE_METATYPE(AttributeChange*);
+Q_DECLARE_METATYPE(ChangeRequest*);
 Q_DECLARE_METATYPE(IComponent*);
 Q_DECLARE_METATYPE(AttributeChange::Type);
 
@@ -225,6 +227,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Scene::Entity*>(engine);
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);
+    qScriptRegisterQObjectMetaType<ChangeRequest*>(engine);
     qScriptRegisterQObjectMetaType<IComponent*>(engine);
     //qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
     qScriptRegisterMetaType(engine, toScriptValueEnum<AttributeChange::Type>, fromScriptValueEnum<AttributeChange::Type>);

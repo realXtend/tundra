@@ -11,6 +11,7 @@
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "EC_Name.h"
+#include "ChangeRequest.h"
 
 #include "Framework.h"
 #include "ComponentManager.h"
@@ -370,8 +371,9 @@ namespace Scene
     //before-the-fact counterparts for the modification signals above, for permission checks etc.
     bool SceneManager::AllowModifyEntity(Scene::Entity *entity)
     {
-        emit AboutToModifyEntity(entity);
-        return true;
+        ChangeRequest req;
+        emit AboutToModifyEntity(&req, entity);
+        return req.allowed;
     }
 
     QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name) const
