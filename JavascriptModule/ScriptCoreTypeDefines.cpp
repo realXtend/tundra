@@ -10,6 +10,7 @@
 #include "IAttribute.h"
 #include "AssetReference.h"
 #include "Entity.h"
+#include "SceneManager.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
 
@@ -23,6 +24,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
 
 Q_DECLARE_METATYPE(IAttribute*);
 Q_DECLARE_METATYPE(Scene::EntityPtr);
+Q_DECLARE_METATYPE(Scene::ScenePtr);
 
 QScriptValue toScriptValueEntity(QScriptEngine *engine, const Scene::EntityPtr &e)
 {
@@ -30,6 +32,16 @@ QScriptValue toScriptValueEntity(QScriptEngine *engine, const Scene::EntityPtr &
 }
 
 void fromScriptValueEntity(const QScriptValue &obj, const QPointer<Scene::Entity> &e)
+{
+  //XXX \todo
+}
+
+QScriptValue toScriptValueScene(QScriptEngine *engine, const Scene::ScenePtr &s)
+{
+    return engine->newQObject(s.get());
+}
+
+void fromScriptValueScene(const QScriptValue &obj, const QPointer<Scene::SceneManager> &s)
 {
   //XXX \todo
 }
@@ -321,6 +333,12 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType_helper(
         engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueEntity),
         reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueEntity),
+        QScriptValue());
+
+    id = qRegisterMetaType<Scene::ScenePtr>("Scene::ScenePtr");
+    qScriptRegisterMetaType_helper(
+        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueScene),
+        reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueScene),
         QScriptValue());
 
     id = qRegisterMetaType<ComponentPtr>("ComponentPtr");
