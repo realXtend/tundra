@@ -45,7 +45,9 @@ const AssetReference cAxisWhite("AxisWhite.material");
 EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
     IComponent(scene),
     gizmoType(Translate),
-    state(Inactive)
+    state(Inactive),
+    prevPoint(float3::zero),
+    curPoint(float3::zero)
 {
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
 

@@ -14,7 +14,7 @@ material Jack_Body
 
 			texture_unit baseMap
 			{
-				texture Jack_body_yellow1.jpg
+				texture Jack_body_yellow1.dds
 			}
 
 			texture_unit shadowMap0
@@ -42,7 +42,7 @@ material Jack_Body
 	    {
 	        texture_unit baseMap
 	        {
-	            texture Jack_body_yellow1.jpg
+	            texture Jack_body_yellow1.dds
 	        }
         }
 	}

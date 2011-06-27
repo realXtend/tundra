@@ -62,7 +62,8 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     childShape_(0),
     heightField_(0),
     disconnected_(false),
-    cachedShapeType_(-1)
+    cachedShapeType_(-1),
+    cachedSize_(float3::zero)
 {
     owner_ = framework->GetModule<PhysicsModule>();
     

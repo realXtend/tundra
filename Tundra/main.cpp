@@ -194,6 +194,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
 {
+    // Add a hardcoded check to guarantee we only write a dump file of the first crash exception that is received.
+    // Sometimes a crash is so bad that writing the dump below causes another exception to occur, in which case
+    // this function would be recursively called, spawning tons of error dialogs to the user.
+    static bool dumpGenerated = false;
+    if (dumpGenerated)
+    {
+        printf("WARNING: Not generating another dump, one has been generated already!\n");
+        return 0;
+    }
+    dumpGenerated = true;
+
     BOOL bMiniDumpSuccessful;
     WCHAR szPath[MAX_PATH]; 
     WCHAR szFileName[MAX_PATH];

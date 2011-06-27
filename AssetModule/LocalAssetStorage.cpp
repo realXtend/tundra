@@ -39,7 +39,7 @@ void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &s
                 if (boost::filesystem::is_regular_file(iter->status()))
                 {
                     QString str = iter->path().string().c_str();
-                    if (suffix == "" || str.endsWith(suffix))
+                    if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
                     {
                         int lastSlash = str.lastIndexOf('/');
                         if (lastSlash != -1)
@@ -59,7 +59,7 @@ void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &s
                 if (boost::filesystem::is_regular_file(iter->status()))
                 {
                     QString str = iter->path().string().c_str();
-                    if (suffix == "" || str.endsWith(suffix))
+                    if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
                     {
                         int lastSlash = str.lastIndexOf('/');
                         if (lastSlash != -1)
@@ -91,10 +91,13 @@ void LocalAssetStorage::RefreshAssetRefs()
                 if (boost::filesystem::is_regular_file(iter->status()))
                 {
                     QString str = iter->path().string().c_str();
-                    int lastSlash = str.lastIndexOf('/');
-                    if (lastSlash != -1)
-                        str = str.right(str.length() - lastSlash - 1);
-                    assetRefs.append("local://" + str);
+                    if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
+                    {
+                        int lastSlash = str.lastIndexOf('/');
+                        if (lastSlash != -1)
+                            str = str.right(str.length() - lastSlash - 1);
+                        assetRefs.append("local://" + str);
+                    }
                 }
             }
         }
@@ -108,10 +111,13 @@ void LocalAssetStorage::RefreshAssetRefs()
                 if (boost::filesystem::is_regular_file(iter->status()))
                 {
                     QString str = iter->path().string().c_str();
-                    int lastSlash = str.lastIndexOf('/');
-                    if (lastSlash != -1)
-                        str = str.right(str.length() - lastSlash - 1);
-                    assetRefs.append("local://" + str);
+                    if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
+                    {
+                        int lastSlash = str.lastIndexOf('/');
+                        if (lastSlash != -1)
+                            str = str.right(str.length() - lastSlash - 1);
+                        assetRefs.append("local://" + str);
+                    }
                 }
             }
         }
