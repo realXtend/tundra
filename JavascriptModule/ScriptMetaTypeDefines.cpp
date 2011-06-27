@@ -38,6 +38,7 @@
 
 #include <QUiLoader>
 #include <QFile>
+#include <QFontDatabase>
 
 /// Qt defines
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
@@ -151,6 +152,17 @@ QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
     return QScriptValue();
 }
 
+QScriptValue addApplicationFont(QScriptContext *ctx, QScriptEngine *eng)
+{
+    if(ctx->argumentCount() == 1)
+    {
+        QString fontName = qscriptvalue_cast<QString>(ctx->argument(0));
+        QFontDatabase::addApplicationFont(fontName);
+    }
+    return QScriptValue();
+}
+
+
 // Helper function. Added because new'ing a QPixmap in script seems to lead into growing memory use
 QScriptValue setPixmapToLabel(QScriptContext *ctx, QScriptEngine *eng)
 {
@@ -179,7 +191,8 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     object = engine->scriptValueFromQMetaObject<QTimer>();
     engine->globalObject().setProperty("QTimer", object);
     engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
-    engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));   
+    engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));
+    engine->globalObject().setProperty("addApplicationFont", engine->newFunction(addApplicationFont));
 /*
     engine->importExtension("qt.core");
     engine->importExtension("qt.gui");

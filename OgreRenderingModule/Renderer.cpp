@@ -29,6 +29,9 @@
 #include <boost/filesystem.hpp>
 #include <Ogre.h>
 
+// Clamp elapsed frame time to avoid Ogre controllers going crazy
+static const float MAX_FRAME_TIME = 0.1f;
+
 #ifdef USE_D3D9_SUBSURFACE_BLIT
 #undef SAFE_DELETE
 #undef SAFE_DELETE_ARRAY
@@ -478,13 +481,16 @@ namespace OgreRenderer
             return QList<Entity*>();
     }
 
-    void Renderer::Render()
+    void Renderer::Render(float frameTime)
     {
         using namespace std;
         
         if ((!initialized_) || (framework_->IsHeadless()))
             return;
 
+        if (frameTime > MAX_FRAME_TIME)
+            frameTime = MAX_FRAME_TIME;
+            
         PROFILE(Renderer_Render);
 
         // If rendering into different size window, dirty the UI view for now & next frame
@@ -656,7 +662,14 @@ namespace OgreRenderer
         {
             PROFILE(Renderer_Render_OgreRoot_renderOneFrame);
             if (viewport_->getCamera())
-                root_->renderOneFrame();
+            {
+                // Control the frame time manually
+                Ogre::FrameEvent evt;
+                evt.timeSinceLastFrame = frameTime;
+                root_->_fireFrameStarted(evt);
+                root_->_updateAllRenderTargets();
+                root_->_fireFrameEnded();
+            }
         } catch(const std::exception &e)
         {
             std::cout << "Ogre::Root::renderOneFrame threw an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
