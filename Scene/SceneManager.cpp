@@ -367,6 +367,13 @@ namespace Scene
         emit ActionTriggered(entity, action, params, type);
     }
 
+    //before-the-fact counterparts for the modification signals above, for permission checks etc.
+    bool SceneManager::AllowModifyEntity(Scene::Entity *entity)
+    {
+        emit AboutToModifyEntity(entity);
+        return true;
+    }
+
     QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name) const
     {
         QVariantList ret;

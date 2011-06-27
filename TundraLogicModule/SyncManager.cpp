@@ -694,6 +694,9 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     entity_id_t entityID = msg.entityID;
     if (!ValidateAction(source, msg.MessageID(), entityID))
         return;
+
+    if (!scene->AllowModifyEntity(0))
+        return;
     
     // Get matching syncstate for reflecting the changes
     SceneSyncState* state = GetSceneSyncState(source);
