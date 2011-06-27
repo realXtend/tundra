@@ -43,8 +43,8 @@ namespace OgreRenderer
         Q_OBJECT
 
     public slots:
-        /// Renders the screen.
-        virtual void Render();
+        /// Renders the screen. Advances Ogre's time internally by the frameTime specified
+        virtual void Render(float frameTime);
 
         /// Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;

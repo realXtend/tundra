@@ -54,7 +54,7 @@ public:
     virtual ~IRenderer() {}
 
     /// Renders the scene
-    virtual void Render() = 0;
+    virtual void Render(float frameTime) = 0;
     
     /// Do raycast into the currently active world from viewport coordinates, using all selection layers
     /// \todo This function will be removed and replaced with a function Scene::Intersect.

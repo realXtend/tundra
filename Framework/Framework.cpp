@@ -208,7 +208,7 @@ void Framework::ProcessOneFrame()
     frame->Update(frametime);
 
     if (renderer)
-        renderer->Render();
+        renderer->Render(frametime);
 }
 
 void Framework::Go()
