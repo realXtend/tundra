@@ -175,6 +175,7 @@ namespace Foundation
             RegisterDynamicObject("asset", asset);
             RegisterDynamicObject("audio", audio);
             RegisterDynamicObject("debug", debug);
+            RegisterDynamicObject("sceneapi", scene);
             RegisterDynamicObject("devices", devices);
             RegisterDynamicObject("application", application);
             RegisterDynamicObject("apiversion", api_versioninfo_);
