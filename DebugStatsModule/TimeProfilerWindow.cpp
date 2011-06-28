@@ -2085,6 +2085,43 @@ public:
     }
 };
 
+class OgreMeshAssetTreeWidgetItem : public QTreeWidgetItem
+{
+public:
+    OgreMeshAssetTreeWidgetItem(QTreeWidget *parent)
+    :QTreeWidgetItem(parent)
+    {
+    }
+
+    bool operator<(const QTreeWidgetItem &rhs) const
+    {
+        switch(treeWidget()->sortColumn())
+        {
+        case 5: // Sphere radius
+            return this->text(treeWidget()->sortColumn()).toFloat() > rhs.text(treeWidget()->sortColumn()).toFloat();
+        case 1: // Sort the number columns as numbers. 'Size'
+        case 2: // # submeshes
+        case 7: // # LOD levels
+        case 8: // # Morph anims
+        case 9: // # Poses
+        case 19: // 'Loading State'
+        case 20: // 'State Count'
+            return this->text(treeWidget()->sortColumn()).toInt() > rhs.text(treeWidget()->sortColumn()).toInt();
+        case 3: // # vertices
+        case 4: // # indices
+            {
+                QStringList l = this->text(treeWidget()->sortColumn()).split(" ");
+                QStringList r = rhs.text(treeWidget()->sortColumn()).split(" ");
+                if (l.size() == 0 || r.size() == 0)
+                    return false;
+                return l[0].toInt() > r[0].toInt();
+            }
+        default: // Others as text.
+            return this->text(treeWidget()->sortColumn()) < rhs.text(treeWidget()->sortColumn());
+        }
+    }
+};
+
 void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget, QString drawType)
 {
     // Clear tree.
@@ -2099,6 +2136,8 @@ void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeW
         if (item == 0)
             if (drawType == "texture")
                 item = new OgreTextureAssetTreeWidgetItem(widget);
+            else if (drawType == "mesh")
+                item = new OgreMeshAssetTreeWidgetItem(widget);
             else
                 item = new OgreAssetTreeWidgetItem(widget);
 
@@ -2159,6 +2198,63 @@ QString OgrePixelFormatToString(Ogre::PixelFormat fmt)
     }
 }
 
+void CountNumVertices(Ogre::MeshPtr mesh, int &vertices, int &indices)
+{
+    vertices = 0;
+    indices = 0;
+
+    if (mesh->sharedVertexData)
+        vertices += mesh->sharedVertexData->vertexCount;
+
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (submesh && submesh->vertexData)
+            vertices += submesh->vertexData->vertexCount;
+        if (submesh && submesh->indexData)
+            indices += submesh->indexData->indexCount;
+    }
+}
+
+// Returns a string of form "5+102+42 (shared 100)" to describe the vertex breakdown in the submeshes of this mesh.
+QString VertexSumString(Ogre::MeshPtr mesh)
+{
+    QString str;
+
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (i != 0)
+            str += "+";
+        if (submesh && submesh->vertexData)
+            str += QString::number(submesh->vertexData->vertexCount);
+        else
+            str += "(null)";
+    }
+    if (mesh->sharedVertexData)
+        str += " (shared " + QString::number(mesh->sharedVertexData->vertexCount) + ")";
+
+    return str;
+}
+
+// Returns a string of form "5+102+42" to describe the index breakdown in the submeshes of this mesh.
+QString IndexSumString(Ogre::MeshPtr mesh)
+{
+    QString str;
+
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (i != 0)
+            str += "+";
+        if (submesh && submesh->indexData)
+            str += QString::number(submesh->indexData->indexCount);
+        else
+            str += "(null)";
+    }
+    return str;
+}
+
 void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource, QString viewType)
 {
     if (item == 0)
@@ -2179,6 +2275,26 @@ void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr
         item->setText(3, QString::number(tex->getHeight()));
         item->setText(4, OgrePixelFormatToString(tex->getFormat()));
         item->setText(5, QString::number(tex->getNumMipmaps()));
+    }
+    else if (viewType == "mesh")
+    {
+        i = 11;
+        Ogre::MeshPtr mesh = Ogre::MeshPtr(resource);
+        if (mesh.get())
+        {
+            item->setText(2, QString::number(mesh->getNumSubMeshes()));
+            int numVertices;
+            int numIndices;
+            CountNumVertices(mesh, numVertices, numIndices);
+            item->setText(3, QString::number(numVertices) + " (" + VertexSumString(mesh) + ")");
+            item->setText(4, QString::number(numIndices) + " (" + IndexSumString(mesh) + ")");
+            item->setText(5, QString::number(mesh->getBoundingSphereRadius()));
+            item->setText(6, mesh->getSkeletonName().c_str());
+            item->setText(7, QString::number(mesh->getNumLodLevels()));
+            item->setText(8, QString::number(mesh->getNumAnimations()));
+            item->setText(9, QString::number(mesh->getPoseCount()));
+            item->setText(10, "todo"); ///\todo Aggregate the material names from submeshes here.
+        }
     }
 
     item->setText(i, resource->isManuallyLoaded() ? "Yes" : "No");
