@@ -637,15 +637,17 @@ float3x4 float3x4::LookAtRH(const float3 &localForwardDir, const float3 &targetF
 
     float3 localRight = localUp.Cross(localForwardDir).Normalized();
 
-    float3 worldRight = worldUp.Cross(targetForwardDir);
-    float3 perpWorldUp = targetForwardDir.Cross(worldRight);
+    float3 worldRight = worldUp.Cross(targetForwardDir).Normalized();
+    float3 perpWorldUp = targetForwardDir.Cross(worldRight).Normalized();
 
     float3x4 m1(worldRight, perpWorldUp, targetForwardDir, float3::zero);
     float3x4 m2;
     m2.SetRow(0, localRight, 0.f);
     m2.SetRow(1, localUp, 0.f);
     m2.SetRow(2, localForwardDir, 0.f);
-    return m1 * m2;
+    m2 = m1 * m2;
+    m2.Orthonormalize(0, 1, 2);
+    return m2;
 }
 
 float3x4 &float3x4::operator =(const float3x3 &rhs)
