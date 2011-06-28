@@ -82,7 +82,7 @@ float4x4 operator *(const TranslateOp &lhs, const float4x4 &rhs)
     r.SetTranslatePart(r.TranslatePart() + lhs.Offset());
 
     // Our optimized form of multiplication must be the same as this.
-    assert(r.Equals((float4x4)lhs * rhs));
+    assert(r.Equals(lhs.ToFloat4x4() * rhs));
     return r;
 }
 
@@ -92,7 +92,7 @@ float4x4 operator *(const float4x4 &lhs, const TranslateOp &rhs)
     r.SetTranslatePart(lhs.TransformPos(rhs.Offset()));
 
     // Our optimized form of multiplication must be the same as this.
-    assert(r.Equals(lhs * (float4x4)rhs));
+    assert(r.Equals(lhs * rhs.ToFloat4x4()));
     return r;
 }
 
@@ -176,25 +176,25 @@ float3x3 operator *(const float3x3 &lhs, const ScaleOp &rhs)
 float3x4 operator *(const ScaleOp &lhs, const float3x4 &rhs)
 {
     ///\todo Optimize.
-    return (float3x4)lhs * rhs;
+    return lhs.ToFloat3x4() * rhs;
 }
 
 float3x4 operator *(const float3x4 &lhs, const ScaleOp &rhs)
 {
     ///\todo Optimize.
-    return lhs * (float3x4)rhs;
+    return lhs * rhs.ToFloat3x4();
 }
 
 float4x4 operator *(const ScaleOp &lhs, const float4x4 &rhs)
 {
     ///\todo Optimize.
-    return (float4x4)lhs * rhs;
+    return lhs.ToFloat4x4() * rhs;
 }
 
 float4x4 operator *(const float4x4 &lhs, const ScaleOp &rhs)
 {
     ///\todo Optimize.
-    return lhs * (float4x4)rhs;
+    return lhs * rhs.ToFloat4x4();
 }
 
 float3 ScaleOp::Offset() const

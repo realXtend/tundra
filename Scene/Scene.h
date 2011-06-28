@@ -6,6 +6,7 @@
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
 #include "SceneDesc.h"
+#include "CoreDefines.h"
 #include "Math/float3.h"
 
 #include <QObject>
@@ -81,7 +82,9 @@ public:
     template <class T>
     boost::shared_ptr<T> GetWorld() const
     {
-        T* rawPtr = checked_static_cast<T*>(property(T::PropertyName()).value<QObject*>());
+        QVariant pr = this->property(T::PropertyName());
+        QObject *qo = pr.value<QObject*>();
+        T* rawPtr = checked_static_cast<T*>(qo);
         return rawPtr ? rawPtr->shared_from_this() : boost::shared_ptr<T>();
     }
 

@@ -6,6 +6,7 @@
 #include <boost/make_shared.hpp>
 #include <QString>
 #include "CoreTypes.h"
+#include "IComponent.h"
 #include "LoggingFunctions.h"
 
 class IComponent;

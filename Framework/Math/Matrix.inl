@@ -8,6 +8,7 @@
 #pragma once
 
 #include <utility>
+#include "Quat.h"
 
 /** Sets the top-left 3x3 area of the matrix to the rotation matrix about the X-axis. Elements
 	outside the top-left 3x3 area are ignored.
@@ -554,6 +555,8 @@ void ExtractEulerZYZ(Matrix &m, float &z2, float &y, float &z1)
     }
 }
 
+///\todo Clean this up, or remove if unused completely. -jj.
+#if 0
 /** Sets the top-left 3x3 area of the matrix to the rotation matrix about an arbitrary axis. Elements
 	outside the top-left 3x3 area are ignored.
 	@param m The matrix to store the result.
@@ -564,9 +567,9 @@ void SetRotationAxis3x3(Matrix &m, const Vector &a, float angle)
 {
 //	assert(axis is normalized);
 
-	const M c = Cos(angle);
-	const M c1 = (M(1)-c);
-	const M s = Sin(angle);
+	const float c = Cos(angle);
+	const float c1 = 1.f - c;
+	const float s = Sin(angle);
 
 	m[0][0] = c+c1*a.x*a.x;
 	m[1][0] = c1*a.x*a.y+s*a.z;
@@ -580,6 +583,8 @@ void SetRotationAxis3x3(Matrix &m, const Vector &a, float angle)
 	m[1][2] = c1*a.y*a.z-s*a.x;
 	m[2][2] = c+c1*a.z*a.z;
 }
+
+#endif
 
 template<typename Matrix>
 void SetIdentity3x3(Matrix &m)

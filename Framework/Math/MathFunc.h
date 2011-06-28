@@ -40,8 +40,14 @@ bool MathBreakOnAssume();
 
 #ifdef MATH_ASSERT_ON_ASSUME
 #define assume(x) assert(x)
-#elif !defined(MATH_SILENT_ASSUME)
+#elif !defined(MATH_SILENT_ASSUME) 
+
+#ifdef _MSC_VER
 #define assume(x) do { if (!(x)) { printf("Assumption \"%s\" failed! in file %s, line %d!\n", #x, __FILE__, __LINE__); if (MathBreakOnAssume()) DebugBreak(); } } while(0)
+#else
+#define assume(x) do { if (!(x)) { printf("Assumption \"%s\" failed! in file %s, line %d!\n", #x, __FILE__, __LINE__); } } while(0)
+#endif
+
 #endif
 
 /// Computes the dot product of two 2D vectors, the elements are accessed using array notation.

@@ -65,8 +65,8 @@ void PluginAPI::LoadPlugin(const QString &filename)
 
     path = path.replace("/", "\\");
     LogInfo("Loading plugin \"" + filename + "\".");
-    ///\todo Cross-platform -> void* & dlopen.
     ///\todo Unicode support!
+#ifdef WIN32
     HMODULE module = LoadLibraryA(path.toStdString().c_str());
     if (module == NULL)
     {
@@ -85,12 +85,17 @@ void PluginAPI::LoadPlugin(const QString &filename)
     Plugin p = { module };
     plugins.push_back(p);
     mainEntryPoint(owner);
+#else
+    ///\todo Cross-platform -> void* & dlopen.
+#endif
 }
 
 void PluginAPI::UnloadPlugins()
 {
+#ifdef WIN32
     for(std::list<Plugin>::reverse_iterator iter = plugins.rbegin(); iter != plugins.rend(); ++iter)
         FreeLibrary(iter->libraryHandle);
+#endif
     plugins.clear();
 }
 

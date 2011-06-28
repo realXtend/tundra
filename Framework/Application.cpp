@@ -7,6 +7,7 @@
 #include "Framework.h"
 #include "Profiler.h"
 #include "CoreStringUtils.h"
+#include "CoreException.h"
 #include "LoggingFunctions.h"
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -129,12 +130,22 @@ void Application::Go()
 
 void Application::Message(const std::string &title, const std::string &text)
 {
+#ifdef WIN32
     MessageBoxA(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#else
+    std::cerr << "Application::Message not implemented for current platform!" << std::endl;
+    assert(false && "Not implemented!");
+#endif
 }
 
 void Application::Message(const std::wstring &title, const std::wstring &text)
 {
+#ifdef WIN32
     MessageBoxW(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
+#else
+    std::cerr << "Application::Message not implemented for current platform!" << std::endl;
+    assert(false && "Not implemented!");
+#endif
 }
 
 void Application::SetCurrentWorkingDirectory(QString newCwd)
@@ -189,6 +200,7 @@ QString Application::InstallationDirectory()
 
 QString Application::UserDataDirectory()
 {
+    const QString applicationName = "Tundra"; ///\todo Move applicationName from Config API to the Application class. Make it static without a runtime setter.
 #ifdef _WINDOWS
     LPITEMIDLIST pidl;
 
@@ -199,7 +211,6 @@ QString Application::UserDataDirectory()
     SHGetPathFromIDListW(pidl, str);
     CoTaskMemFree(pidl);
 
-    const QString applicationName = "Tundra"; ///\todo Move applicationName from Config API to the Application class. Make it static without a runtime setter.
     return WStringToQString(str) + "\\" + applicationName;
 #else
     ///\todo Convert to QString instead of std::string.
@@ -209,7 +220,7 @@ QString Application::UserDataDirectory()
         throw Exception("Failed to get HOME environment variable.");
 
     std::string path(ppath);
-    return path + "/." + std::string(framework_->Config()->GetApplicationName().toStdString());
+    return QString((path + "/." + applicationName.toStdString()).c_str());
 #endif
 }
 

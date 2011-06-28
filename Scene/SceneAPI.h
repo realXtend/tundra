@@ -171,7 +171,6 @@ private:
     ComponentFactoryPtr GetFactory(const QString &typeName);
     ComponentFactoryPtr GetFactory(u32 typeId);
 
-    typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
     typedef std::map<QString, ComponentFactoryPtr, QStringLessThanNoCase> ComponentFactoryMap;
     typedef std::map<u32, boost::weak_ptr<IComponentFactory> > ComponentFactoryWeakMap;
 

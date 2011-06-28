@@ -216,7 +216,7 @@ public:
         If you have a non-const object, you can set values of this matrix through this 
         reference, using the notation m.At(row, col) = someValue; */
     float &At(int row, int col);
-    const float At(int row, int col) const;
+    CONST_WIN32 float At(int row, int col) const;
 
     /// Returns the given row. [noscript]
     /** @param row The zero-based index [0, 3] of the row to get. */
@@ -225,11 +225,11 @@ public:
 
     /// Returns the given column.
     /** @param col The zero-based index [0, 3] of the column to get. */
-    const float3 Col(int col) const;
+    CONST_WIN32 float3 Col(int col) const;
 
     /// Returns the main diagonal.
     /** The main diagonal consists of the elements at m[0][0], m[1][1], m[2][2]. */
-    const float3 Diagonal() const;
+    CONST_WIN32 float3 Diagonal() const;
 
     /// Scales the given row by a scalar.
     void ScaleRow(int row, float scalar);

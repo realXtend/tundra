@@ -692,7 +692,7 @@ HitInfo Intersect(const Line &line, float *outDistance) const;
 HitInfo Intersect(const LineSegment &lineSegment, float *outDistance) const;
 
 HitInfo Intersect(const OBB &obb) const;
-/*
+
 HitInfo Intersect(const Plane &plane) const;
 HitInfo Intersect(const Sphere &sphere) const;
 HitInfo Intersect(const Ellipsoid &ellipsoid) const;
