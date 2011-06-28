@@ -35,6 +35,7 @@
 #include "ConfigAPI.h"
 #include "LoggingFunctions.h"
 #include "AssetAPI.h"
+#include "Math/MathFunc.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -230,6 +231,17 @@ QScriptValue register_TranslateOp_prototype(QScriptEngine *engine);
 QScriptValue register_Transform_prototype(QScriptEngine *engine);
 QScriptValue register_Triangle_prototype(QScriptEngine *engine);
 
+static QScriptValue math_SetMathBreakOnAssume(QScriptContext *context, QScriptEngine *engine)
+{
+    SetMathBreakOnAssume(qscriptvalue_cast<bool>(context->argument(0)));
+    return QScriptValue();
+}
+
+static QScriptValue math_MathBreakOnAssume(QScriptContext *context, QScriptEngine *engine)
+{
+    return qScriptValueFromValue(engine, MathBreakOnAssume());
+}
+
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
     register_float2_prototype(engine);
@@ -250,6 +262,10 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     register_TranslateOp_prototype(engine);
     register_Triangle_prototype(engine);
     register_Transform_prototype(engine);
+    QScriptValue mathNamespace = engine->newObject();
+    mathNamespace.setProperty("SetMathBreakOnAssume", engine->newFunction(math_SetMathBreakOnAssume, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mathNamespace.setProperty("MathBreakOnAssume", engine->newFunction(math_SetMathBreakOnAssume, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("math", mathNamespace);
 
     // Input metatypes.
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
