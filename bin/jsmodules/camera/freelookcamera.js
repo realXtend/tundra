@@ -15,8 +15,6 @@ if (!me.GetComponent("EC_Camera"))
     var placeable = me.GetOrCreateComponent("EC_Placeable");
     var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
 
-    camera.AutoSetPlaceable();
-
     // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the freelookcamera right now
     var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     if (!avatarcameraentity)

@@ -83,16 +83,7 @@ public:
     Q_PROPERTY(float3 upVector READ getupVector WRITE setupVector);
     DEFINE_QPROPERTY_ATTRIBUTE(float3, upVector);
 
-    /// Sets placeable component
-    /** set a null placeable to detach the camera, otherwise will attach
-        @param placeable placeable component
-    */
-    void SetPlaceable(ComponentPtr placeable);
-
 public slots:
-    /// automatically find the placeable and set it
-    void AutoSetPlaceable();
-
     /// sets as active camera in the viewport
     void SetActive();
 
@@ -181,13 +172,18 @@ private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
 
-    /// Called when component has been removed from the parent entity. Checks if the component removed was the mesh, and autodissociates it.
-    void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
+    /// Called when component has been added or removed from the parent entity. Checks the existence of the EC_Placeable component, and attaches this camera to it.
+    void OnComponentStructureChanged();
     
     /// Handle frame update. Used for entity visibility tracking
     void OnUpdated(float timeStep);
     
 private:
+    /// Sets placeable component
+    /** set a null placeable to detach the camera, otherwise will attach
+        @param placeable placeable component */
+    void SetPlaceable(ComponentPtr placeable);
+
     /// attaches camera to placeable
     void AttachCamera();
 
