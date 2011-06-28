@@ -465,7 +465,6 @@ SimpleAvatar.prototype.ClientCreateAvatarCamera = function() {
     var camera = cameraentity.GetOrCreateComponent("EC_Camera");
     var placeable = cameraentity.GetOrCreateComponent("EC_Placeable");
 
-    camera.AutoSetPlaceable();
     camera.SetActive();
     
     var parentRef = placeable.parentRef;

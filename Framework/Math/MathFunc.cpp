@@ -13,6 +13,19 @@
 
 #include "Math/MathFunc.h"
 
+bool mathBreakOnAssume = false;
+
+void SetMathBreakOnAssume(bool isEnabled)
+{
+    mathBreakOnAssume = isEnabled;
+}
+
+/// Returns the current state of the math break-on-assume flag.
+bool MathBreakOnAssume()
+{
+    return mathBreakOnAssume;
+}
+
 /** Uses a recursive approach, not the fastest/brightest method.
     Note that 13! = 6227020800 overflows already.
     @return n! = n * (n-1) * (n-2) * ... * 1. */

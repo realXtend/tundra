@@ -509,7 +509,6 @@ function ClientCreateAvatarCamera() {
     var camera = cameraentity.GetOrCreateComponent("EC_Camera");
     var placeable = cameraentity.GetOrCreateComponent("EC_Placeable");
 
-    camera.AutoSetPlaceable();
     camera.SetActive();
 
     // Set initial position

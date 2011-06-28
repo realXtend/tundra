@@ -43,7 +43,6 @@ function createRttTarget(camname) {
     //.. adding with the GUI editing was fun and worked otherwise
     var cam = scene.GetEntityByName(camname);
     var cam_ec = cam.GetOrCreateComponent("EC_Camera");
-    cam_ec.AutoSetPlaceable();
 
     cam.GetOrCreateComponent("EC_RttTarget");
     rtt = cam.rtttarget;

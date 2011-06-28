@@ -433,25 +433,25 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
         RefreshRenderTargetProfilingData();
         break;
     case 6: // Textures
-        RefreshAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
+        RefreshAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_, "texture");
         break;
     case 7: // Meshes
-        RefreshAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
+        RefreshAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_, "mesh");
         break;
     case 8: // Material
-        RefreshAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
+        RefreshAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_, "material");
         break;
     case 9: // Skeleton
-        RefreshAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
+        RefreshAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_, "skeleton");
         break;
     case 10: // Composition
-        RefreshAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
+        RefreshAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_, "compositor");
         break;
     case 11: // Gpu assets
-        RefreshAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
+        RefreshAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_, "gpuasset");
         break;
     case 12: // Font assets
-        RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
+        RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_, "font");
         break;
     case 13: // OgreSceneTree
         PopulateOgreSceneTree();
@@ -2033,7 +2033,7 @@ void TimeProfilerWindow::RefreshTextureProfilingData()
         if (item == 0) 
             item = new QTreeWidgetItem(tree_texture_assets_);
 
-        FillItem(item, resource);
+        FillItem(item, resource, "texture");
     }
 }
 
@@ -2060,7 +2060,69 @@ public:
     }
 };
 
-void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget)
+class OgreTextureAssetTreeWidgetItem : public QTreeWidgetItem
+{
+public:
+    OgreTextureAssetTreeWidgetItem(QTreeWidget *parent)
+    :QTreeWidgetItem(parent)
+    {
+    }
+
+    bool operator<(const QTreeWidgetItem &rhs) const
+    {
+        switch(treeWidget()->sortColumn())
+        {
+        case 1: // Sort the number columns as numbers. 'Size'
+        case 2: // Width
+        case 3: // Height
+        case 5: // # mips
+        case 14: // 'Loading State'
+        case 15: // 'State Count'
+            return this->text(treeWidget()->sortColumn()).toInt() > rhs.text(treeWidget()->sortColumn()).toInt();
+        default: // Others as text.
+            return this->text(treeWidget()->sortColumn()) < rhs.text(treeWidget()->sortColumn());
+        }
+    }
+};
+
+class OgreMeshAssetTreeWidgetItem : public QTreeWidgetItem
+{
+public:
+    OgreMeshAssetTreeWidgetItem(QTreeWidget *parent)
+    :QTreeWidgetItem(parent)
+    {
+    }
+
+    bool operator<(const QTreeWidgetItem &rhs) const
+    {
+        switch(treeWidget()->sortColumn())
+        {
+        case 5: // Sphere radius
+            return this->text(treeWidget()->sortColumn()).toFloat() > rhs.text(treeWidget()->sortColumn()).toFloat();
+        case 1: // Sort the number columns as numbers. 'Size'
+        case 2: // # submeshes
+        case 7: // # LOD levels
+        case 8: // # Morph anims
+        case 9: // # Poses
+        case 19: // 'Loading State'
+        case 20: // 'State Count'
+            return this->text(treeWidget()->sortColumn()).toInt() > rhs.text(treeWidget()->sortColumn()).toInt();
+        case 3: // # vertices
+        case 4: // # indices
+            {
+                QStringList l = this->text(treeWidget()->sortColumn()).split(" ");
+                QStringList r = rhs.text(treeWidget()->sortColumn()).split(" ");
+                if (l.size() == 0 || r.size() == 0)
+                    return false;
+                return l[0].toInt() > r[0].toInt();
+            }
+        default: // Others as text.
+            return this->text(treeWidget()->sortColumn()) < rhs.text(treeWidget()->sortColumn());
+        }
+    }
+};
+
+void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget, QString drawType)
 {
     // Clear tree.
     widget->clear();
@@ -2071,16 +2133,129 @@ void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeW
         Ogre::ResourcePtr resource = iter.getNext();
         // Is there already this kind of element? 
         QTreeWidgetItem *item = FindItemByName(widget, resource->getName().c_str());
-        if (item == 0) 
-            item = new OgreAssetTreeWidgetItem(widget);
+        if (item == 0)
+            if (drawType == "texture")
+                item = new OgreTextureAssetTreeWidgetItem(widget);
+            else if (drawType == "mesh")
+                item = new OgreMeshAssetTreeWidgetItem(widget);
+            else
+                item = new OgreAssetTreeWidgetItem(widget);
 
-        FillItem(item, resource);
+        FillItem(item, resource, drawType);
     }
     for(int i = 0; i < widget->columnCount(); ++i)
         widget->resizeColumnToContents(i);
 }
 
-void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource)
+QString OgrePixelFormatToString(Ogre::PixelFormat fmt)
+{
+    switch(fmt)
+    {
+    case Ogre::PF_UNKNOWN: return "PF_UNKNOWN";
+    case Ogre::PF_L8: return "PF_L8(PF_BYTE_L)";
+    case Ogre::PF_L16: return "PF_L16(PF_SHORT_L)";
+    case Ogre::PF_A8: return "PF_A8(PF_BYTE_A)";
+    case Ogre::PF_A4L4: return "PF_A4L4";
+    case Ogre::PF_BYTE_LA: return "PF_BYTE_LA";
+    case Ogre::PF_R5G6B5: return "PF_R5G6B5";
+    case Ogre::PF_B5G6R5: return "PF_B5G6R5";
+    case Ogre::PF_R3G3B2: return "PF_R3G3B2";
+    case Ogre::PF_A4R4G4B4: return "PF_A4R4G4B4";
+    case Ogre::PF_A1R5G5B5: return "PF_A1R5G5B5";
+    case Ogre::PF_R8G8B8: return "PF_R8G8B8(PF_BYTE_BGR)";
+    case Ogre::PF_B8G8R8: return "PF_B8G8R8(PF_BYTE_RGB)";
+    case Ogre::PF_A8R8G8B8: return "PF_A8R8G8B8(PF_BYTE_BGRA)";
+    case Ogre::PF_A8B8G8R8: return "PF_A8B8G8R8(PF_BYTE_RGBA)";
+    case Ogre::PF_B8G8R8A8: return "PF_B8G8R8A8";
+    case Ogre::PF_R8G8B8A8: return "PF_R8G8B8A8";
+    case Ogre::PF_X8R8G8B8: return "PF_X8R8G8B8";
+    case Ogre::PF_X8B8G8R8: return "PF_X8B8G8R8";
+    case Ogre::PF_A2R10G10B10: return "PF_A2R10G10B10";
+    case Ogre::PF_A2B10G10R10: return "PF_A2B10G10R10";
+    case Ogre::PF_DXT1: return "PF_DXT1";
+    case Ogre::PF_DXT2: return "PF_DXT2";
+    case Ogre::PF_DXT3: return "PF_DXT3";
+    case Ogre::PF_DXT4: return "PF_DXT4";
+    case Ogre::PF_DXT5: return "PF_DXT5";
+    case Ogre::PF_FLOAT16_R: return "PF_FLOAT16_R";
+    case Ogre::PF_FLOAT16_RGB: return "PF_FLOAT16_RGB";
+    case Ogre::PF_FLOAT16_RGBA: return "PF_FLOAT16_RGBA";
+    case Ogre::PF_FLOAT32_R: return "PF_FLOAT32_R";
+    case Ogre::PF_FLOAT32_RGB: return "PF_FLOAT32_RGB";
+    case Ogre::PF_FLOAT32_RGBA: return "PF_FLOAT32_RGBA";
+    case Ogre::PF_FLOAT16_GR: return "PF_FLOAT16_GR";
+    case Ogre::PF_FLOAT32_GR: return "PF_FLOAT32_GR";
+    case Ogre::PF_DEPTH: return "PF_DEPTH";
+    case Ogre::PF_SHORT_RGBA: return "PF_SHORT_RGBA";
+    case Ogre::PF_SHORT_GR: return "PF_SHORT_GR";
+    case Ogre::PF_SHORT_RGB: return "PF_SHORT_RGB";
+    case Ogre::PF_PVRTC_RGB2: return "PF_PVRTC_RGB2";
+    case Ogre::PF_PVRTC_RGBA2: return "PF_PVRTC_RGBA2";
+    case Ogre::PF_PVRTC_RGB4: return "PF_PVRTC_RGB4";
+    case Ogre::PF_PVRTC_RGBA4: return "PF_PVRTC_RGBA4";
+    case Ogre::PF_COUNT: return "Invalid(PF_COUNT)";
+    default: return "Invalid(" + QString::number(fmt) + ")";
+    }
+}
+
+void CountNumVertices(Ogre::MeshPtr mesh, int &vertices, int &indices)
+{
+    vertices = 0;
+    indices = 0;
+
+    if (mesh->sharedVertexData)
+        vertices += mesh->sharedVertexData->vertexCount;
+
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (submesh && submesh->vertexData)
+            vertices += submesh->vertexData->vertexCount;
+        if (submesh && submesh->indexData)
+            indices += submesh->indexData->indexCount;
+    }
+}
+
+// Returns a string of form "5+102+42 (shared 100)" to describe the vertex breakdown in the submeshes of this mesh.
+QString VertexSumString(Ogre::MeshPtr mesh)
+{
+    QString str;
+
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (i != 0)
+            str += "+";
+        if (submesh && submesh->vertexData)
+            str += QString::number(submesh->vertexData->vertexCount);
+        else
+            str += "(null)";
+    }
+    if (mesh->sharedVertexData)
+        str += " (shared " + QString::number(mesh->sharedVertexData->vertexCount) + ")";
+
+    return str;
+}
+
+// Returns a string of form "5+102+42" to describe the index breakdown in the submeshes of this mesh.
+QString IndexSumString(Ogre::MeshPtr mesh)
+{
+    QString str;
+
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (i != 0)
+            str += "+";
+        if (submesh && submesh->indexData)
+            str += QString::number(submesh->indexData->indexCount);
+        else
+            str += "(null)";
+    }
+    return str;
+}
+
+void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource, QString viewType)
 {
     if (item == 0)
         return;
@@ -2090,20 +2265,46 @@ void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr
     size.setNum(resource->getSize());
     item->setText(1,size);
 
-    item->setText(2, resource->isManuallyLoaded() ? "Yes" : "No");
-    item->setText(3, resource->isReloadable() ? "Yes" : "No");
-    item->setText(4, resource->getGroup().c_str());
-    item->setText(5, resource->getOrigin().c_str());
-    item->setText(6, resource->isLoaded()  ? "Yes" : "No");
-    item->setText(7, resource->isLoading()  ? "Yes" : "No");
-    item->setText(8, resource->isBackgroundLoaded() ? "Yes" : "No");
-    item->setText(9, resource->isPrepared()  ? "Yes" : "No");
+    int i = 2;
+    if (viewType == "texture")
+    {
+        i = 6;
+        Ogre::TexturePtr tex = Ogre::TexturePtr(resource);
+        
+        item->setText(2, QString::number(tex->getWidth()));
+        item->setText(3, QString::number(tex->getHeight()));
+        item->setText(4, OgrePixelFormatToString(tex->getFormat()));
+        item->setText(5, QString::number(tex->getNumMipmaps()));
+    }
+    else if (viewType == "mesh")
+    {
+        i = 11;
+        Ogre::MeshPtr mesh = Ogre::MeshPtr(resource);
+        if (mesh.get())
+        {
+            item->setText(2, QString::number(mesh->getNumSubMeshes()));
+            int numVertices;
+            int numIndices;
+            CountNumVertices(mesh, numVertices, numIndices);
+            item->setText(3, QString::number(numVertices) + " (" + VertexSumString(mesh) + ")");
+            item->setText(4, QString::number(numIndices) + " (" + IndexSumString(mesh) + ")");
+            item->setText(5, QString::number(mesh->getBoundingSphereRadius()));
+            item->setText(6, mesh->getSkeletonName().c_str());
+            item->setText(7, QString::number(mesh->getNumLodLevels()));
+            item->setText(8, QString::number(mesh->getNumAnimations()));
+            item->setText(9, QString::number(mesh->getPoseCount()));
+            item->setText(10, "todo"); ///\todo Aggregate the material names from submeshes here.
+        }
+    }
 
-    QString tmp;
-    tmp.setNum(resource->getLoadingState());
-    item->setText(10,tmp);
-
-    tmp.clear();
-    tmp.setNum(resource->getStateCount());
-    item->setText(11,tmp);
+    item->setText(i, resource->isManuallyLoaded() ? "Yes" : "No");
+    item->setText(i+1, resource->isReloadable() ? "Yes" : "No");
+    item->setText(i+2, resource->getGroup().c_str());
+    item->setText(i+3, resource->getOrigin().c_str());
+    item->setText(i+4, resource->isLoaded()  ? "Yes" : "No");
+    item->setText(i+5, resource->isLoading()  ? "Yes" : "No");
+    item->setText(i+6, resource->isBackgroundLoaded() ? "Yes" : "No");
+    item->setText(i+7, resource->isPrepared()  ? "Yes" : "No");
+    item->setText(i+8, QString::number(resource->getLoadingState()));
+    item->setText(i+9, QString::number(resource->getStateCount()));
 }

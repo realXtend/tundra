@@ -86,8 +86,8 @@ private:
     void RefreshProfilingDataTree();
     void RefreshProfilingDataList();
     void CollectProfilerNodes(ProfilerNodeTree *node, std::vector<const ProfilerNode *> &dst);
-    void FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource);
-    void RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget);
+    void FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource, QString drawType);
+    void RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget, QString drawType);
     uint GetNumResources(Ogre::ResourceManager& manager);
     void GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint& vertices, uint& triangles);
     void GetMaterialsFromEntity(Ogre::Entity* entity, std::set<Ogre::Material*>& dest);

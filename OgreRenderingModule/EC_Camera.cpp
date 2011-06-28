@@ -71,17 +71,6 @@ EC_Camera::~EC_Camera()
     }
 }
 
-void EC_Camera::AutoSetPlaceable()
-{
-    Entity* entity = ParentEntity();
-    if (entity)
-    {
-        ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
-        if (placeable)
-            SetPlaceable(placeable);
-    }
-}
-
 float3 EC_Camera::GetInitialRotation() const
 {
     float3 normUpVector = upVector.Get();
@@ -164,9 +153,15 @@ void EC_Camera::SetVerticalFov(float fov)
 void EC_Camera::SetActive()
 {
     if (!camera_)
+    {
+        LogError("EC_Camera::SetActive failed: No Ogre camera initialized to EC_Camera!");
         return;
+    }
     if (world_.expired())
+    {
+        LogError("EC_Camera::SetActive failed: The camera component is in a scene that has already been destroyed!");
         return;
+    }
 
     world_.lock()->GetRenderer()->SetActiveCamera(this);
 }
@@ -207,7 +202,7 @@ bool EC_Camera::IsActive() const
 
 void EC_Camera::DetachCamera()
 {
-    if ((!attached_) || (!camera_) || (!placeable_))
+    if (!attached_ || !camera_ || !placeable_)
         return;
 
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
@@ -219,7 +214,7 @@ void EC_Camera::DetachCamera()
 
 void EC_Camera::AttachCamera()
 {
-    if ((attached_) || (!camera_) || (!placeable_))
+    if (attached_ || !camera_ || !placeable_)
         return;
 
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
@@ -240,47 +235,52 @@ Ray EC_Camera::GetMouseRay(float x, float y)
 void EC_Camera::UpdateSignals()
 {
     Entity* parent = ParentEntity();
-    if (parent)
-    {
-        // Connect to ComponentRemoved signal of the parent entity, so we can check if the placeable gets removed
-        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)),
-            SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
-        
-        // If scene is not view-enabled, no further action
-        if (!ViewEnabled())
-            return;
-        
-        // Create camera now if not yet created
-        if (!camera_)
-        {
-            OgreWorldPtr world = world_.lock();
-            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
-            Ogre::Viewport* viewport = world->GetRenderer()->GetViewport();
-            
-            camera_ = sceneMgr->createCamera(world->GetUniqueObjectName("EC_Camera"));
-            
-            // Set default values for the camera
-            camera_->setNearClipDistance(0.1f);
-            camera_->setFarClipDistance(2000.f);
-            camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth() / Ogre::Real(viewport->getActualHeight())));
-            camera_->setAutoAspectRatio(true);
+    if (!parent)
+        return;
 
-            // Create a reusable frustum query
-            Ogre::PlaneBoundedVolumeList dummy;
-            query_ = sceneMgr->createPlaneBoundedVolumeQuery(dummy);
-        }
+    connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentStructureChanged()), Qt::UniqueConnection);
+    connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentStructureChanged()), Qt::UniqueConnection);
+    
+    // If scene is not view-enabled, no further action
+    if (!ViewEnabled())
+        return;
+    
+    // Create camera now if not yet created
+    if (!camera_)
+    {
+        OgreWorldPtr world = world_.lock();
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::Viewport* viewport = world->GetRenderer()->GetViewport();
+        
+        camera_ = sceneMgr->createCamera(world->GetUniqueObjectName("EC_Camera"));
+        
+        // Set default values for the camera
+        camera_->setNearClipDistance(0.1f);
+        camera_->setFarClipDistance(2000.f);
+        camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth() / Ogre::Real(viewport->getActualHeight())));
+        camera_->setAutoAspectRatio(true);
+
+        // Create a reusable frustum query
+        Ogre::PlaneBoundedVolumeList dummy;
+        query_ = sceneMgr->createPlaneBoundedVolumeQuery(dummy);
     }
+
+    // Make sure we attach to the EC_Placeable if exists.
+    OnComponentStructureChanged();
 }
 
-void EC_Camera::OnComponentRemoved(IComponent* component, AttributeChange::Type change)
+void EC_Camera::OnComponentStructureChanged()
 {
-    if (component == placeable_.get())
-        SetPlaceable(ComponentPtr());
+    ComponentPtr placeable;
+    Entity *entity = ParentEntity();
+    if (entity)
+        placeable = entity->GetComponent<EC_Placeable>();
+    SetPlaceable(placeable);
 }
 
 bool EC_Camera::IsEntityVisible(Entity* entity)
 {
-    if ((!entity) || (!camera_))
+    if (!entity || !camera_)
         return false;
     
     // Update query if not updated this frame
@@ -294,7 +294,7 @@ QList<Entity*> EC_Camera::GetVisibleEntities()
 {
     QList<Entity*> l;
     
-    if ((!camera_) || (!parentEntity) || (!parentEntity->ParentScene()))
+    if (!camera_ || !parentEntity || !parentEntity->ParentScene())
         return l;
     
     Scene* scene = parentEntity->ParentScene();

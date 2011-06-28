@@ -16,15 +16,32 @@
 #include "MathConstants.h"
 #include "float3.h"
 
-// The assume() macro can have three states, depending on which #defines are present:
-// #define MATH_ASSERT_ON_ASSUME - the assume() macro is equal to the assert() macro.
-// #define MATH_DISABLE_ASSUME   - the assume() macro is silent, and disabled altogether.
-// If neither of the above is defined, then assume() macro uses printf() to log warnings of failed math-related assumptions.
+#ifdef WIN32
+#include <winsock2.h>
+#include <Windows.h> // For DebugBreak();
+#endif
+
+// The assume() macro is used to check preconditions on the math-related functions, e.g. whether vectors are normalized, check that division by zero doesn't occur, orthonormal bases, and so on.
+
+// The assume() macro operates differently depending on which #defines are present:
+// #define MATH_ASSERT_ON_ASSUME - the assume() macro resolves to the assert() macro.
+// #define MATH_DISABLE_ASSUME   - the assume() macro is silent, and disabled altogether. (no prints or breaks or anything, the checks by assume() are ignored)
+// If neither of the above is defined (default), then 
+//  - WIN32: if MathBreakOnAssume() == true, the system will break to debugger using a call to DebugBreak().
+//  - Other: if MathBreakOnAssume() == true, the assume() macro is equal to the assert() macro.
+//  -   All: if MathBreakOnAssume() == false, the assume() macro uses printf() to log warnings of failed math-related assumptions.
+
+/// Assigns mathBreakOnAssume = isEnabled;
+void SetMathBreakOnAssume(bool isEnabled);
+
+/// Returns the current state of the math break-on-assume flag.
+/// The default startup value for this flag is false.
+bool MathBreakOnAssume();
 
 #ifdef MATH_ASSERT_ON_ASSUME
 #define assume(x) assert(x)
 #elif !defined(MATH_SILENT_ASSUME)
-#define assume(x) { if (!(x)) printf("Assumption \"%s\" failed! in file %s, line %d!\n", #x, __FILE__, __LINE__); }
+#define assume(x) do { if (!(x)) { printf("Assumption \"%s\" failed! in file %s, line %d!\n", #x, __FILE__, __LINE__); if (MathBreakOnAssume()) DebugBreak(); } } while(0)
 #endif
 
 /// Computes the dot product of two 2D vectors, the elements are accessed using array notation.

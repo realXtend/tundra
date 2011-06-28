@@ -44,7 +44,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>7</number>
         </property>
         <widget class="QWidget" name="timing">
          <attribute name="title">
@@ -1051,9 +1051,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -1062,6 +1059,26 @@
             <column>
              <property name="text">
               <string>Total size</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Width</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Height</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Surface Format</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># mips</string>
              </property>
             </column>
             <column>
@@ -1150,9 +1167,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -1161,6 +1175,51 @@
             <column>
              <property name="text">
               <string>Total size</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># Submeshes</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># Vertices</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># Indices</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Sphere Radius</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Skeleton</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># LOD levels</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># Morph Anims</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># Poses</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Material</string>
              </property>
             </column>
             <column>
@@ -1246,9 +1305,6 @@
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
@@ -1348,9 +1404,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -1444,9 +1497,6 @@
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
@@ -1546,9 +1596,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -1642,9 +1689,6 @@
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>

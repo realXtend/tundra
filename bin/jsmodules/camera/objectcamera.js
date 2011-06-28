@@ -18,8 +18,6 @@ if (!me.GetComponent("EC_Camera"))
     var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
     soundlistener.active = true;    
 
-    camera.AutoSetPlaceable();
-
     var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     if (!avatarcameraentity)
         camera.SetActive();
