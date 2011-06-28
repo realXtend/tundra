@@ -457,9 +457,6 @@ namespace OgreRenderer
     {
         Ogre::String managerName = Ogre::String(name.toStdString());
         Ogre::SceneManager* sm = root_->getSceneManager(managerName);
-        //sm->getRenderQueue()->setRenderableListener(0);
-        //sm->destroyQuery(ray_query_);
-        std::cout << "Destroying scenemanager " << managerName << std::endl;
         root_->destroySceneManager(sm);
     }
 

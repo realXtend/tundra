@@ -8,7 +8,6 @@ if (!server.IsAboutToStart())
 	{
 		framework.renderer.CreateSceneManager(sceneName);
 		framework.renderer.SetSceneManager(sceneName);
-		print("Created new Ogre scenemanager " + sceneName);
 	}
 
 	function DeleteScenemanager(sceneName)
@@ -21,6 +20,5 @@ if (!server.IsAboutToStart())
 	function SetScenemanager(sceneName)
 	{
 		framework.renderer.SetSceneManager(sceneName);
-		print("Changed Ogre scenemanager to " + sceneName);
-	}	
+	}
 }

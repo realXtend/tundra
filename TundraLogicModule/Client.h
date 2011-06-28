@@ -152,9 +152,12 @@ public slots:
     unsigned short getActiveConnection() const;
 
 private slots:
-    void setActiveConnection(unsigned short);
+    void setActiveConnection(const QString&, unsigned short);
 
 private:
+    // check if connected to same IP:port and port
+    bool checkIfConnected(QString, QString);
+
     // creates unique scenename TundraClientX | X = 0, 1, 2, ..., n; n € Z+
     // If TundraClient2 is deleted from middle of the list, next scene created will be TundraClient2
     // bool value false only returns QString without saving new item to scenenames_

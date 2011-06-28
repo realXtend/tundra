@@ -105,6 +105,9 @@ public slots:
     SyncManager* GetSyncManager();
     // changeScene
     void changeScene(const QString&);
+
+    // Grep number out of connection name
+    unsigned short Grep(const QString);
     
 private slots:
     void StartupSceneLoaded(AssetPtr asset);
@@ -120,11 +123,9 @@ signals:
     void createOgre(const QString&);
     void deleteOgre(const QString&);
     void setOgre(const QString&);
-    void setClientActiveConnection(unsigned short);
+    void setClientActiveConnection(const QString&, unsigned short);
 
 private:
-    // Grep number out of connection name
-    unsigned short Grep(const QString);
 
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);

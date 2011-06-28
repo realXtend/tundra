@@ -126,12 +126,12 @@ void TundraLogicModule::PostInitialize()
 
 void TundraLogicModule::Uninitialize()
 {
+    client_.reset();
+    server_.reset();
     kristalliModule_.reset();
     foreach (SyncManager *sm, syncManagers_)
         delete sm;
     syncManagers_.clear();
-    client_.reset();
-    server_.reset();
 }
 
 void TundraLogicModule::AttachSyncManagerToScene(const QString &name)
@@ -147,7 +147,7 @@ void TundraLogicModule::AttachSyncManagerToScene(const QString &name)
     // When syncmanager is created we also want to create new Ogre sceneManager
     emit createOgre(name);
     if (!IsServer())
-        emit setClientActiveConnection(attachedConnection);
+        emit setClientActiveConnection(name, attachedConnection);
 
 }
 
@@ -172,7 +172,7 @@ void TundraLogicModule::changeScene(const QString &name)
         framework_->Scene()->SetDefaultScene(name);
         activeSyncManager = name;
         if (!IsServer())
-            emit setClientActiveConnection(connection);
+            emit setClientActiveConnection(name, connection);
     }
 }
 
@@ -514,8 +514,9 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
             client_->HandleKristalliEvent(event_id, data);
         if (server_)
             server_->HandleKristalliEvent(event_id, data);
-        if (syncManagers_[activeSyncManager])
-            syncManagers_[activeSyncManager]->HandleKristalliEvent(event_id, data);
+        foreach (SyncManager *sm, syncManagers_)
+            if (sm)
+                sm->HandleKristalliEvent(event_id, data);
     }
     
     return false;

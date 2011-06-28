@@ -449,11 +449,11 @@ namespace Foundation
         // Qt main loop execution has ended, we are existing.
         exit_signal_ = true;
 
-        // Reset SceneAPI.
-        scene->Reset();
-
         // Unload modules
         UnloadModules();
+
+        // Reset SceneAPI.
+        scene->Reset();
     }
 
     void Framework::Exit()
