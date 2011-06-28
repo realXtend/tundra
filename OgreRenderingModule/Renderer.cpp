@@ -60,6 +60,31 @@ static const float MAX_FRAME_TIME = 0.1f;
 
 namespace OgreRenderer
 {
+    class OgreLogListener : public Ogre::LogListener
+    {
+    public:
+        void messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
+        {
+            if (lml == Ogre::LML_CRITICAL)
+                LogCritical(message);
+            else if (lml == Ogre::LML_TRIVIAL)
+                LogDebug(message);
+            else // lml == Ogre::LML_NORMAL here.
+            {
+                // Because Ogre distinguishes different log levels *VERY POORLY* (practically all messages come in the LML_NORMAL), we use manual format checks to decide between Info/Warning/Error/Critical channels.
+                QString str = message.c_str();
+                if (str.contains("error", Qt::CaseInsensitive) || str.contains("critical", Qt::CaseInsensitive))
+                    LogError(message);
+                else if (str.contains("warning", Qt::CaseInsensitive) || str.contains("unexpected", Qt::CaseInsensitive) || str.contains("unknown", Qt::CaseInsensitive) || str.contains("cannot", Qt::CaseInsensitive) || str.contains("can not", Qt::CaseInsensitive))
+                    LogWarning(message);
+                else if (str.startsWith("*-*-*"))
+                    LogInfo(message);
+                else
+                    LogDebug(message);
+            }
+        }
+    };
+
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
         framework_(framework),
@@ -80,9 +105,11 @@ namespace OgreRenderer
         resized_dirty_(0),
         view_distance_(500.0f),
         shadowquality_(Shadows_High),
-        texturequality_(Texture_Normal),
-        c_handler_(new CompositionHandler)
+        texturequality_(Texture_Normal)        
     {
+        c_handler_ = new CompositionHandler;
+        logListener = new OgreLogListener; 
+
         timerFrequency = GetCurrentClockFreq();
         PrepareConfig();
     }
@@ -106,6 +133,7 @@ namespace OgreRenderer
         
         root_.reset();
         SAFE_DELETE(c_handler_);
+        SAFE_DELETE(logListener);
         SAFE_DELETE(renderWindow);
     }
 
@@ -154,6 +182,13 @@ namespace OgreRenderer
 
         logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString();
 #include "DisableMemoryLeakCheck.h"
+        static Ogre::LogManager *overriddenLogManager = 0;
+        overriddenLogManager = new Ogre::LogManager; ///\bug This pointer is never freed. We leak memory here, but cannot free due to Ogre singletons being accessed.
+        overriddenLogManager->createLog("", true, false, true);
+        Ogre::LogManager::getSingleton().getDefaultLog()->setDebugOutputEnabled(false); // Disable Ogre from outputting to std::cerr by itself.
+        Ogre::LogManager::getSingleton().getDefaultLog()->addListener(logListener); // Make all Ogre log output to come to our log listener.
+        Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_NORMAL); // This is probably the default level anyway, but be explicit.
+
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 
 // On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwareBufferManager singleton will crash.

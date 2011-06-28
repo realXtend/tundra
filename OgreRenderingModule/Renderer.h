@@ -35,6 +35,8 @@ namespace OgreRenderer
         Texture_Normal ///< Normal
     };
 
+    class OgreLogListener;
+
     /// Ogre renderer
     /** Created by OgreRenderingModule. Implements the IRenderer.
         \ingroup OgreRenderingModuleClient */
@@ -275,5 +277,9 @@ namespace OgreRenderer
         tick_t lastPresentTime;
         /// Caches the system clock frequency.
         tick_t timerFrequency;
+
+        /// We use a custom OgreLogListener to classify and filter the Ogre output.
+        /// The normal Ogre output to cerr is disabled.
+        OgreLogListener *logListener;
     };
 }
