@@ -21,6 +21,11 @@
 
 #include "MemoryLeakCheck.h"
 
+// Win32 API resolves PlaySound to PlaySoundA or PlaySoundW, which isn't used here, so remove it.
+#ifdef PlaySound
+#undef PlaySound
+#endif
+
 EC_Sound::EC_Sound(Scene* scene):
     IComponent(scene),
     soundRef(this, "Sound ref"),
