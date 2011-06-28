@@ -199,14 +199,14 @@ void FromScriptValue_LineSegment(const QScriptValue &obj, LineSegment &value)
 
 QScriptValue ToScriptValue_LineSegment(QScriptEngine *engine, const LineSegment &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     ToExistingScriptValue_LineSegment(engine, value, obj);
     return obj;
 }
 
 QScriptValue ToScriptValue_const_LineSegment(QScriptEngine *engine, const LineSegment &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     obj.setPrototype(engine->defaultPrototype(qMetaTypeId<LineSegment>()));
     obj.setProperty("a", ToScriptValue_const_float3(engine, value.a), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("b", ToScriptValue_const_float3(engine, value.b), QScriptValue::Undeletable | QScriptValue::ReadOnly);

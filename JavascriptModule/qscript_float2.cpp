@@ -73,6 +73,15 @@ static QScriptValue float2_ScaleToLength_float(QScriptContext *context, QScriptE
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float2_ScaledToLength_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_ScaledToLength_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float2 This = qscriptvalue_cast<float2>(context->thisObject());
+    float newLength = qscriptvalue_cast<float>(context->argument(0));
+    float2 ret = This.ScaledToLength(newLength);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float2_IsNormalized_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_IsNormalized_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -650,14 +659,14 @@ void FromScriptValue_float2(const QScriptValue &obj, float2 &value)
 
 QScriptValue ToScriptValue_float2(QScriptEngine *engine, const float2 &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     ToExistingScriptValue_float2(engine, value, obj);
     return obj;
 }
 
 QScriptValue ToScriptValue_const_float2(QScriptEngine *engine, const float2 &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     obj.setPrototype(engine->defaultPrototype(qMetaTypeId<float2>()));
     obj.setProperty("x", qScriptValueFromValue(engine, value.x), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("y", qScriptValueFromValue(engine, value.y), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -672,6 +681,7 @@ QScriptValue register_float2_prototype(QScriptEngine *engine)
     proto.setProperty("Normalize", engine->newFunction(float2_Normalize, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Normalized", engine->newFunction(float2_Normalized, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ScaleToLength", engine->newFunction(float2_ScaleToLength_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ScaledToLength", engine->newFunction(float2_ScaledToLength_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsNormalized", engine->newFunction(float2_IsNormalized_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsZero", engine->newFunction(float2_IsZero_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsFinite", engine->newFunction(float2_IsFinite, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);

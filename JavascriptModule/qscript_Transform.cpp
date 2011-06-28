@@ -255,14 +255,14 @@ void FromScriptValue_Transform(const QScriptValue &obj, Transform &value)
 
 QScriptValue ToScriptValue_Transform(QScriptEngine *engine, const Transform &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     ToExistingScriptValue_Transform(engine, value, obj);
     return obj;
 }
 
 QScriptValue ToScriptValue_const_Transform(QScriptEngine *engine, const Transform &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     obj.setPrototype(engine->defaultPrototype(qMetaTypeId<Transform>()));
     obj.setProperty("pos", ToScriptValue_const_float3(engine, value.pos), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("rot", ToScriptValue_const_float3(engine, value.rot), QScriptValue::Undeletable | QScriptValue::ReadOnly);
