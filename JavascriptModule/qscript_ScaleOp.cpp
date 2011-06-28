@@ -84,14 +84,14 @@ void FromScriptValue_ScaleOp(const QScriptValue &obj, ScaleOp &value)
 
 QScriptValue ToScriptValue_ScaleOp(QScriptEngine *engine, const ScaleOp &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     ToExistingScriptValue_ScaleOp(engine, value, obj);
     return obj;
 }
 
 QScriptValue ToScriptValue_const_ScaleOp(QScriptEngine *engine, const ScaleOp &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     obj.setPrototype(engine->defaultPrototype(qMetaTypeId<ScaleOp>()));
     obj.setProperty("x", qScriptValueFromValue(engine, value.x), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("y", qScriptValueFromValue(engine, value.y), QScriptValue::Undeletable | QScriptValue::ReadOnly);

@@ -1605,14 +1605,14 @@ void FromScriptValue_float3x4(const QScriptValue &obj, float3x4 &value)
 
 QScriptValue ToScriptValue_float3x4(QScriptEngine *engine, const float3x4 &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     ToExistingScriptValue_float3x4(engine, value, obj);
     return obj;
 }
 
 QScriptValue ToScriptValue_const_float3x4(QScriptEngine *engine, const float3x4 &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     obj.setPrototype(engine->defaultPrototype(qMetaTypeId<float3x4>()));
     obj.setData(engine->newVariant(QVariant::fromValue(value)));
     return obj;

@@ -639,14 +639,14 @@ void FromScriptValue_AABB(const QScriptValue &obj, AABB &value)
 
 QScriptValue ToScriptValue_AABB(QScriptEngine *engine, const AABB &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     ToExistingScriptValue_AABB(engine, value, obj);
     return obj;
 }
 
 QScriptValue ToScriptValue_const_AABB(QScriptEngine *engine, const AABB &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     obj.setPrototype(engine->defaultPrototype(qMetaTypeId<AABB>()));
     obj.setProperty("minPoint", ToScriptValue_const_float3(engine, value.minPoint), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("maxPoint", ToScriptValue_const_float3(engine, value.maxPoint), QScriptValue::Undeletable | QScriptValue::ReadOnly);

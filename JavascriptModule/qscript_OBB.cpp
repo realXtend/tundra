@@ -572,14 +572,14 @@ void FromScriptValue_OBB(const QScriptValue &obj, OBB &value)
 
 QScriptValue ToScriptValue_OBB(QScriptEngine *engine, const OBB &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     ToExistingScriptValue_OBB(engine, value, obj);
     return obj;
 }
 
 QScriptValue ToScriptValue_const_OBB(QScriptEngine *engine, const OBB &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     obj.setPrototype(engine->defaultPrototype(qMetaTypeId<OBB>()));
     obj.setProperty("pos", ToScriptValue_const_float3(engine, value.pos), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("r", ToScriptValue_const_float3(engine, value.r), QScriptValue::Undeletable | QScriptValue::ReadOnly);

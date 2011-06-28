@@ -238,6 +238,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
         billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, 0.7f));
 
         SetBillboardSize(width.Get(), height.Get());
+        SetPosition(position.Get());
     }
 
     //text.Set(text);
@@ -289,13 +290,14 @@ void EC_HoveringText::Redraw()
         borderPen.setColor(borderCol);
         borderPen.setWidthF(borderThickness.Get());
                 
+        // Disable mipmapping, as Ogre seems to bug with it
         texture_->SetContentsDrawText(texWidth.Get(), 
                                 texHeight.Get(), 
                                 text.Get(), 
                                 textColor_, 
                                 font_, 
                                 brush, 
-                                borderPen, Qt::AlignCenter | Qt::TextWordWrap, true);
+                                borderPen, Qt::AlignCenter | Qt::TextWordWrap, false);
     }
     catch(Ogre::Exception &e)
     {

@@ -48,7 +48,8 @@ struct EC_HydraxImpl
 EC_Hydrax::EC_Hydrax(Scene* scene) :
     IComponent(scene),
     visible(this, "Visible", true),
-    position(this, "Position")
+    position(this, "Position"),
+    impl(0)
 {
     OgreWorldPtr w = scene->GetWorld<OgreWorld>();
     if (!w)

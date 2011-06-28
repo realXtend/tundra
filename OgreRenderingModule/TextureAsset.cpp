@@ -218,7 +218,7 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
     return img;
 }
 
-void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps)
+void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic)
 {
     if (newWidth == 0 || newHeight == 0)
     {
@@ -228,12 +228,16 @@ void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 co
     ///\todo Could optimize a lot here, don't create this temporary vector.
     ///\todo This only works for 32bpp images.
     std::vector<u32> data(newWidth * newHeight, color);
-    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps);
+    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps, dynamic);
 }
 
-void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps)
+void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps, bool dynamic)
 {
     PROFILE(TextureAsset_SetContents);
+
+    int usage = dynamic ? Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE : Ogre::TU_STATIC_WRITE_ONLY;
+    if (regenerateMipMaps)
+        usage |= Ogre::TU_AUTOMIPMAP;
 
     if (numBytes != newWidth * newHeight * 4)
     {
@@ -245,8 +249,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
     if (!ogreTexture.get())
     {
         ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
-            newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, 
-            Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE | (regenerateMipMaps ? Ogre::TU_AUTOMIPMAP : 0));
+            newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, usage);
         if (!ogreTexture.get())
         {
             LogError("TextureAsset::SetContents failed: Cannot create texture asset \"" + ToString() + "\" to name \"" + Name() + "\" and size " + QString::number(newWidth) + "x" + QString::number(newHeight) + "!");
@@ -299,7 +302,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
                 }
             }
         }
-
+        
         /*
         ///\todo Review Ogre internals of whether the const_cast here is safe!
         Ogre::PixelBox pixelBox(Ogre::Box(0,0, newWidth, newHeight), ogreFormat, const_cast<u8*>(data));
@@ -311,7 +314,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
         ogreTexture->createInternalResources();
 }
 
-void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags, bool generateMipmaps)
+void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags, bool generateMipmaps, bool dynamic)
 {
     text = text.replace("\\n", "\n");
 
@@ -337,5 +340,5 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
         painter.drawText(rect, flags, text);
     }
 
-    SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, generateMipmaps);
+    SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, generateMipmaps, dynamic);
 }

@@ -191,6 +191,15 @@ static QScriptValue float4_ScaleToLength3_float(QScriptContext *context, QScript
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float4_ScaledToLength3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_ScaledToLength3_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float4 This = qscriptvalue_cast<float4>(context->thisObject());
+    float newLength = qscriptvalue_cast<float>(context->argument(0));
+    float4 ret = This.ScaledToLength3(newLength);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float4_IsFinite(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_IsFinite in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -795,14 +804,14 @@ void FromScriptValue_float4(const QScriptValue &obj, float4 &value)
 
 QScriptValue ToScriptValue_float4(QScriptEngine *engine, const float4 &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     ToExistingScriptValue_float4(engine, value, obj);
     return obj;
 }
 
 QScriptValue ToScriptValue_const_float4(QScriptEngine *engine, const float4 &value)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.
     obj.setPrototype(engine->defaultPrototype(qMetaTypeId<float4>()));
     obj.setProperty("x", qScriptValueFromValue(engine, value.x), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("y", qScriptValueFromValue(engine, value.y), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -831,6 +840,7 @@ QScriptValue register_float4_prototype(QScriptEngine *engine)
     proto.setProperty("IsNormalized4", engine->newFunction(float4_IsNormalized4_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Scale3", engine->newFunction(float4_Scale3_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ScaleToLength3", engine->newFunction(float4_ScaleToLength3_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ScaledToLength3", engine->newFunction(float4_ScaledToLength3_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsFinite", engine->newFunction(float4_IsFinite, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsPerpendicular3", engine->newFunction(float4_IsPerpendicular3_float4_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SumOfElements", engine->newFunction(float4_SumOfElements, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);

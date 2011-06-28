@@ -276,7 +276,9 @@ namespace QScriptBindings
         {
             tw.WriteLine("QScriptValue ToScriptValue_" + Class.name + "(QScriptEngine *engine, const " + Class.name + " &value)");
             tw.WriteLine("{");
-            tw.WriteLine(Indent(1) + "QScriptValue obj = engine->newObject();");
+//            tw.WriteLine(Indent(1) + "QScriptValue obj = engine->newObject();");
+            tw.WriteLine(Indent(1) + "QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots.");
+
             tw.WriteLine(Indent(1) + "ToExistingScriptValue_" + Class.name + "(engine, value, obj);");
             tw.WriteLine(Indent(1) + "return obj;");
             tw.WriteLine("}");
@@ -287,7 +289,9 @@ namespace QScriptBindings
         {
             tw.WriteLine("QScriptValue ToScriptValue_const_" + Class.name + "(QScriptEngine *engine, const " + Class.name + " &value)");
             tw.WriteLine("{");
-            tw.WriteLine(Indent(1) + "QScriptValue obj = engine->newObject();");
+//            tw.WriteLine(Indent(1) + "QScriptValue obj = engine->newObject();");
+            tw.WriteLine(Indent(1) + "QScriptValue obj = engine->newVariant(QVariant::fromValue(value)); // The contents of this variant are NOT used. The real data lies in the data() pointer of this QScriptValue. This only exists to enable overload resolution to work for QObject slots."); 
+
             tw.WriteLine(Indent(1) + "obj.setPrototype(engine->defaultPrototype(qMetaTypeId<" + Class.name + ">()));");
 
             if (HasOpaqueQVariantBasedMarshalling(Class)) // If enabled, this type is marshalled opaquely.

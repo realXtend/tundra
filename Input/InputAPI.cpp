@@ -214,6 +214,18 @@ InputContext *InputAPI::RegisterInputContextRaw(const QString &name, int priorit
     return context.get();
 }
 
+void InputAPI::UnRegisterInputContextRaw(const QString &name)
+{
+    for(std::list<InputContextPtr>::iterator iter = untrackedInputContexts.begin();
+        iter != untrackedInputContexts.end(); ++iter)
+        if ((*iter)->Name() == name)
+        {
+            untrackedInputContexts.erase(iter);
+            return;
+        }
+    LogError("Warning: Failed to delete non-refcounted Input Context \"" + name + "\": an Input Context with that name doesn't exist!");
+}
+
 InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
 {
     boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(this, name.toStdString().c_str(), priority);
