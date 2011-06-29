@@ -576,7 +576,10 @@ var BrowserManager = Class.extend
     onTabCloseRequest: function(index)
     {
         if (index == 0)
+		{
+			client.Logout(0, client.getActiveConnection());
             return;
+		}
         p_.tabs.widget(index).stop();
         p_.tabs.widget(index).close();
         p_.tabs.widget(index).deleteLater();
