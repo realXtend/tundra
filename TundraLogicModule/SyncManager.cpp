@@ -695,7 +695,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     if (!ValidateAction(source, msg.MessageID(), entityID))
         return;
 
-    if (!scene->AllowModifyEntity(0))
+    if (!scene->AllowModifyEntity(0)) //should be 'ModifyScene', but ModifyEntity is now the signal that covers all
         return;
     
     // Get matching syncstate for reflecting the changes
@@ -792,6 +792,10 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
     entity_id_t entityID = msg.entityID;
     if (!ValidateAction(source, msg.MessageID(), entityID))
         return;
+
+    Scene::EntityPtr entity = scene->GetEntity(entityID);
+    if (!scene->AllowModifyEntity(entity.get()))
+        return;
     
     // Get matching syncstate for reflecting the changes
     SceneSyncState* state = GetSceneSyncState(source);
@@ -840,6 +844,9 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     Scene::EntityPtr entity = scene->GetEntity(entityID);
     if (!entity)
     {
+        if (!scene->AllowModifyEntity(0)) //to check if creating entities is allowed (for this user)
+            return;
+
         TundraLogicModule::LogWarning("Entity " + ToString<int>(entityID) + " not found for CreateComponents message, creating it now");
         entity = scene->CreateEntity(entityID);
         if (!entity)
@@ -851,6 +858,9 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
         // Reflect changes back to syncstate
         state->GetOrCreateEntity(entityID);
     }
+
+    if (!scene->AllowModifyEntity(entity.get()))
+        return;
     
     // Read the components. These are not deltaserialized.
     std::vector<ComponentPtr> actually_changed_components;
@@ -922,6 +932,9 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     Scene::EntityPtr entity = scene->GetEntity(entityID);
     if (!entity)
     {
+        if (!scene->AllowModifyEntity(0)) //to check if creating entities is allowed (for this user)
+            return;
+
         TundraLogicModule::LogWarning("Entity " + ToString<int>(entityID) + " not found for UpdateComponents message, creating it now");
         entity = scene->CreateEntity(entityID);
         if (!entity)
@@ -933,6 +946,9 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
         // Reflect changes back to syncstate
         state->GetOrCreateEntity(entityID);
     }
+
+    if (!scene->AllowModifyEntity(entity.get()))
+        return;
     
     std::map<IComponent*, std::vector<bool> > partially_changed_static_components;
     std::map<IComponent*, std::vector<QString> > partially_changed_dynamic_components;
@@ -1124,6 +1140,9 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     
     Scene::EntityPtr entity = scene->GetEntity(msg.entityID);
     if (!entity)
+        return;
+
+    if (!scene->AllowModifyEntity(entity.get()))
         return;
     
     for (unsigned i = 0; i < msg.components.size(); ++i)
