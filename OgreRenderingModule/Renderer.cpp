@@ -533,7 +533,17 @@ namespace OgreRenderer
     void Renderer::SetCurrentCamera(Ogre::Camera* camera)
     {
         if (!camera)
-            camera = default_camera_;
+        {
+            // Had to make this try catch because multiconnection disconnects might cause default_camera to be something remarkable
+            // and it would crash viewer on multiple scene disconnect situations.
+            try
+            {
+                camera=GetSceneManager()->getCamera("DefaultCamera");
+            }
+            catch (Ogre::ItemIdentityException &e) {
+                camera = NULL;
+            }
+        }
 
         if (viewport_)
         {

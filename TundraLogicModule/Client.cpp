@@ -184,7 +184,8 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
         if (!scenenames_.isEmpty())
             owner_->changeScene(scenenames_.constBegin().value());
 
-        emit Disconnected();
+        else
+            emit Disconnected();
     }
     
     if (fail)
