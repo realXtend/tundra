@@ -235,6 +235,8 @@ void Client::SetLoginProperty(QString key, QString value)
 
 QString Client::GetLoginProperty(QString key)
 {
+    // Multiconnection addition. Check what connection is active and set property.
+    properties = properties_list_["TundraClient_" + QString::number(activeConnection)];
     key = key.trimmed();
     if (properties.count(key) > 0)
         return properties[key];
@@ -299,19 +301,14 @@ void Client::CheckLogin()
         case ConnectionPending:
             if ((connectionIterator.value().ptr()) && (connectionIterator.value().ptr()->GetConnectionState() == kNet::ConnectionOK))
             {
-                Ptr(kNet::MessageConnection) temppis = connectionIterator.value();
+                Ptr(kNet::MessageConnection) messageSender = connectionIterator.value();
                 loginstateIterator.value() = ConnectionEstablished;
                 MsgLogin msg;
                 emit AboutToConnect(); // This signal is used as a 'function call'. Any interested party can fill in
                 // new content to the login properties of the client object, which will then be sent out on the line below.
-                // Temporary solution. Used because LoginPropertiesAsXml uses properties variable.
-                std::map<QString, QString> temp = properties;
                 properties = propertiesIterator.value();
                 msg.loginData = StringToBuffer(LoginPropertiesAsXml().toStdString());
-                properties = temp;
-                // connectionIterator.value().ptr()->Send(msg) was not qualified statement according to compiler so had to make
-                // temporary knet::mescon to send login message.
-                temppis.ptr()->Send(msg);
+                messageSender.ptr()->Send(msg);
             }
             break;
         case LoggedIn:
