@@ -687,7 +687,7 @@ Ogre::Entity* EC_Mesh::GetAttachmentEntity(uint index) const
     return attachment_entities_[index];
 }
 
-const uint EC_Mesh::GetNumSubMeshes() const
+uint EC_Mesh::GetNumSubMeshes() const
 {
     uint count = 0;
     if (HasMesh())

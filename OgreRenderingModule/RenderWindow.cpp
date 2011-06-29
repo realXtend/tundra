@@ -172,10 +172,12 @@ void RenderWindow::UpdateOverlayImage(const QImage &src)
 void RenderWindow::ShowOverlay(bool visible)
 {
     if (overlayContainer)
+    {
         if (!visible)
             overlayContainer->hide();
         else
             overlayContainer->show();
+    }
 }
 
 void RenderWindow::Resize(int width, int height)

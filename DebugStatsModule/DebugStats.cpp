@@ -169,7 +169,7 @@ void DebugStatsModule::Exec(const QStringList &params)
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Framework *fw)
+DLLEXPORT void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new DebugStatsModule();

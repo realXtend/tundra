@@ -396,11 +396,12 @@ void EC_Camera::OnUpdated(float timeStep)
 
 void EC_Camera::QueryVisibleEntities()
 {
-    if ((!camera_) || (!query_))
+    if (!camera_ || !query_)
         return;
     
     PROFILE(OgreWorld_FrustumQuery);
-    
+
+#if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 7
     lastVisibleEntities_ = visibleEntities_;
     visibleEntities_.clear();
     
@@ -431,5 +432,10 @@ void EC_Camera::QueryVisibleEntities()
     }
     
     queryFrameNumber_ = framework->Frame()->FrameNumber();
+#else
+    visibleEntities_.clear();
+    LogWarning("EC_Camera::QueryVisibleEntities: Not supported on your Ogre version!"); ///\todo Check which exact version has the above getPlaneBoundedVolume(), 1.6.4 doesn't seem to, 1.7.1 does.
+#endif
+
 }
 

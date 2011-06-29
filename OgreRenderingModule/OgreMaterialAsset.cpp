@@ -72,6 +72,7 @@ EnumStr compareFunctions[] =
     EnumStr()
 };
 
+#if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 7
 EnumStr sceneBlendOps[] =
 {
     EnumStr("add", Ogre::SBO_ADD),
@@ -81,6 +82,7 @@ EnumStr sceneBlendOps[] =
     EnumStr("max", Ogre::SBO_MAX),
     EnumStr()
 };
+#endif
 
 EnumStr cullingModes[] =
 {
@@ -1065,6 +1067,7 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
                 (Ogre::SceneBlendFactor)GetEnumValue(values[2], sceneBlendFactors), (Ogre::SceneBlendFactor)GetEnumValue(values[3], sceneBlendFactors));
         return true;
     }
+#if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 7
     if (attr == "scene_blend_op")
     {
         pass->setSceneBlendingOperation((Ogre::SceneBlendOperation)GetEnumValue(val, sceneBlendOps));
@@ -1077,6 +1080,7 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
             pass->setSeparateSceneBlendingOperation((Ogre::SceneBlendOperation)GetEnumValue(values[0], sceneBlendOps), (Ogre::SceneBlendOperation)GetEnumValue(values[1], sceneBlendOps));
         return true;
     }
+#endif
     if (attr == "depth_check")
     {
         SetDepthCheck(techIndex, passIndex, GetBoolValue(val));
