@@ -53,6 +53,9 @@ public slots:
         @return Raycast result structure */
     RaycastResult* Raycast(int x, int y, unsigned layerMask);
     
+    /// Do raycast into the world using a ray
+    RaycastResult* Raycast(const Ray& ray, unsigned layerMask);
+    
     /// Do a frustum query to the world from viewport coordinates.
     /// \todo This function will be removed and replaced with a function Scene::Intersect.
     /** Returns the found entities as a QVariantList so that
@@ -102,6 +105,9 @@ private slots:
     void OnUpdated(float timeStep);
 
 private:
+    /// Do the actual raycast. rayQuery_ must have been set up beforehand
+    RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask);
+
     /// Setup shadows
     void SetupShadows();
     

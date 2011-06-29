@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+#define OGRE_INTEROP
+
 #include "OgreWorld.h"
 #include "Renderer.h"
 #include "Entity.h"
@@ -271,8 +274,23 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
 
     Ogre::Ray ray = camera->getCameraToViewportRay(screenx, screeny);
     rayQuery_->setRay(ray);
-    Ogre::RaySceneQueryResult &results = rayQuery_->execute();
+    
+    return RaycastInternal(layerMask);
+}
 
+RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask)
+{
+    rayQuery_->setRay(Ogre::Ray(ray.pos, ray.dir));
+    return RaycastInternal(layerMask);
+}
+
+RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
+{
+    result_.entity = 0;
+    
+    const Ogre::Ray& ray = rayQuery_->getRay();
+    
+    Ogre::RaySceneQueryResult &results = rayQuery_->execute();
     Ogre::Real closest_distance = -1.0f;
     Ogre::Vector2 closest_uv;
 
