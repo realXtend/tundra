@@ -108,7 +108,7 @@ float3 EC_Camera::GetAdjustedRotation(const float3& rotVec) const
 
 void EC_Camera::SetPlaceable(ComponentPtr placeable)
 {
-    if (!dynamic_cast<EC_Placeable*>(placeable.get()))
+    if (placeable && !dynamic_cast<EC_Placeable*>(placeable.get()))
     {
         ::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
         return;

@@ -91,7 +91,7 @@ void EC_Light::SetPlaceable(ComponentPtr placeable)
     if (!light_)
         return;
     
-    if (dynamic_cast<EC_Placeable*>(placeable.get()) == 0)
+    if (placeable && dynamic_cast<EC_Placeable*>(placeable.get()) == 0)
     {
         LogError("Attempted to set a placeable which is not a placeable");
         return;

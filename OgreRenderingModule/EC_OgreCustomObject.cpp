@@ -40,7 +40,7 @@ EC_OgreCustomObject::~EC_OgreCustomObject()
 
 void EC_OgreCustomObject::SetPlaceable(ComponentPtr placeable)
 {
-    if (!dynamic_cast<EC_Placeable*>(placeable.get()))
+    if (placeable && !dynamic_cast<EC_Placeable*>(placeable.get()))
     {
         ::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
         return;
