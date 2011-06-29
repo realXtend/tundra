@@ -58,7 +58,7 @@ public:
     /// Returns a pointer to first float4 element. The data is contiguous in memory.
     const float *ptr() const;
 
-    const float operator [](int index) const;
+    CONST_WIN32 float operator [](int index) const;
 
     float &operator [](int index);
 

@@ -266,7 +266,7 @@ public:
         If you have a non-const object, you can set values of this matrix through this 
         reference, using the notation m.At(row, col) = someValue; */
     float &At(int row, int col);
-    const float At(int row, int col) const;
+    CONST_WIN32 float At(int row, int col) const;
 
     /// Returns the given row. [noscript]
     /** @param row The zero-based index [0, 3] of the row to get. */
@@ -278,15 +278,15 @@ public:
 
     /// Returns the given column.
     /** @param col The zero-based index [0, 3] of the column to get. */
-    const float4 Col(int col) const;
+    CONST_WIN32 float4 Col(int col) const;
     /// Returns the three first entries of the given column. [similarOverload: Column] [hideIndex]
-    const float3 Col3(int col) const;
+    CONST_WIN32 float3 Col3(int col) const;
 
     /// Returns the main diagonal.
     /** The main diagonal consists of the elements at m[0][0], m[1][1], m[2][2] and m[3][3]. */
-    const float4 Diagonal() const;
+    CONST_WIN32 float4 Diagonal() const;
     /// Returns the three first entries of the main diagonal. [similarOverload: MainDiagonal] [hideIndex]
-    const float3 Diagonal3() const;
+    CONST_WIN32 float3 Diagonal3() const;
 
     /// Scales the three first elements of the given row by a scalar.
     void ScaleRow3(int row, float scalar);
@@ -314,10 +314,10 @@ public:
         after applying rotation and scale. If this matrix represents a local->world space transformation for an object, 
         then this gives the world space position of the object.
         @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]). */
-    float3 TranslatePart() const;
+    CONST_WIN32 float3 TranslatePart() const;
 
     /// Returns the top-left 3x3 part of this matrix. This stores the rotation part of this matrix (if this matrix represents a rotation).
-    float3x3 RotatePart() const;
+    CONST_WIN32 float3x3 RotatePart() const;
 
     // Returns the local right axis in the post-transformed coordinate space, according to the given convention.
     // @note The returned vector might not be normalized if this matrix contains scaling.

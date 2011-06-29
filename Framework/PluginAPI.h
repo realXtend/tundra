@@ -3,8 +3,11 @@
 
 #include <QString>
 #include <QObject>
+
+#ifdef WIN32
 #include <Winsock2.h>
 #include <Windows.h> ///\todo Cross-platform -> <dlfcn.h>
+#endif
 
 class Framework;
 
@@ -16,7 +19,10 @@ class PluginAPI : public QObject
 private:
     struct Plugin
     {
+#ifdef WIN32
         HMODULE libraryHandle; ///\todo Cross-platform -> void*.
+#endif
+        ///\todo Unix-equivalents.
     };
     std::list<Plugin> plugins;
 

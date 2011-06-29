@@ -401,7 +401,7 @@ float &float3x4::At(int row, int col)
     return v[row][col];
 }
 
-const float float3x4::At(int row, int col) const
+CONST_WIN32 float float3x4::At(int row, int col) const
 {
     return v[row][col];
 }
@@ -426,12 +426,12 @@ const float3 &float3x4::Row3(int row) const
     return reinterpret_cast<const float3 &>(v[row]);
 }
 
-const float3 float3x4::Col(int col) const
+CONST_WIN32 float3 float3x4::Col(int col) const
 {
     return float3(v[0][col], v[1][col], v[2][col]);
 }
 
-const float3 float3x4::Diagonal() const
+CONST_WIN32 float3 float3x4::Diagonal() const
 {
     return float3(v[0][0], v[1][1], v[2][2]);
 }
@@ -454,19 +454,19 @@ void float3x4::ScaleCol(int col, float scalar)
     v[3][col] *= scalar;
 }
 
-float3x3 float3x4::Float3x3Part() const
+CONST_WIN32 float3x3 float3x4::Float3x3Part() const
 {
     return float3x3(v[0][0], v[0][1], v[0][2],
                     v[1][0], v[1][1], v[1][2],
                     v[2][0], v[2][1], v[2][2]);
 }
 
-float3 float3x4::TranslatePart() const
+CONST_WIN32 float3 float3x4::TranslatePart() const
 {
     return Col(3);
 }
 
-float3x3 float3x4::RotatePart() const
+CONST_WIN32 float3x3 float3x4::RotatePart() const
 {
     return Float3x3Part();
 }

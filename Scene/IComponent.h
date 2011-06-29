@@ -30,7 +30,7 @@ public:                                                                         
         static const QString name(componentName);                                       \
         return name;                                                                    \
     }                                                                                   \
-    static const u32 TypeIdStatic()                                                     \
+    static u32 TypeIdStatic()                                                     \
     {                                                                                   \
         return componentTypeId;                                                         \
     }                                                                                   \
@@ -39,7 +39,7 @@ public slots:                                                                   
     {                                                                                   \
         return TypeNameStatic();                                                        \
     }                                                                                   \
-    virtual const u32 TypeId() const                                                    \
+    virtual u32 TypeId() const                                                    \
     {                                                                                   \
         return componentTypeId;                                                         \
     }                                                                                   \
@@ -98,7 +98,7 @@ public:
     virtual const QString &TypeName() const = 0;
 
     /// Returns the unique type ID of this component.
-    virtual const u32 TypeId() const = 0;
+    virtual u32 TypeId() const = 0;
 
     /// Returns the name of this component.
     /** The name of a component is a custom user-specified name for
@@ -127,10 +127,10 @@ public:
         @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
                 that attribute is returned, otherwise returns null. */
     template<typename T>
-    Attribute<T> *GetAttribute(const std::string &name) const
+    Attribute<T> *GetAttribute(const std::string &name) const ///\todo Replace std::string with QString to avoid std::string->QString conversion below!
     {
         for(size_t i = 0; i < attributes.size(); ++i)
-            if (attributes[i]->Name() == name)
+            if (attributes[i]->Name() == QString(name.c_str()))
                 return dynamic_cast<Attribute<T> *>(&attributes[i]);
         return 0;
     }

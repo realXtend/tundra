@@ -54,8 +54,15 @@ public:
     /// Returns a pointer to first float3 element. The data is contiguous in memory. [noscript]
     const float *ptr() const;
 
-    const float operator [](int index) const;
+    /// Returns the given element of this vector using array notation.
+    /// x: this[0], y: this[1], z: this[2].
+    /// @note Returns a *const* value to avoid accidental copying to a temporary.
+    CONST_WIN32 float operator [](int index) const;
 
+    /// Accesses the given element of this vector using array notation.
+    /// x: this[0], y: this[1], z: this[2].
+    /// @note You can use this notation to set the elements of this vector as well, e.g.
+    /// vec[1] = 10.f; would set the y-component of this vector.
     float &operator [](int index);
 
     /// Returns the (x, y) part of this vector.

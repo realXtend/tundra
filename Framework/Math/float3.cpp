@@ -45,7 +45,7 @@ const float *float3::ptr() const
     return &x;
 } 
 
-const float float3::operator [](int index) const
+CONST_WIN32 float float3::operator [](int index) const
 { 
     assert(index >= 0);
     assert(index < Size);

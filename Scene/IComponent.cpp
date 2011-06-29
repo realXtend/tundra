@@ -31,6 +31,7 @@ IComponent::IComponent(Scene* scene) :
 }
 
 IComponent::IComponent(const IComponent &rhs) :
+    QObject(), boost::enable_shared_from_this<IComponent>(),
     framework(rhs.framework),
     parentEntity(rhs.parentEntity),
     networkSync(rhs.networkSync),

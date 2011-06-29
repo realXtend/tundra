@@ -248,7 +248,7 @@ public:
         If you have a non-const object, you can set values of this matrix through this 
         reference, using the notation m.At(row, col) = someValue; */
     float &At(int row, int col);
-    const float At(int row, int col) const;
+    CONST_WIN32 float At(int row, int col) const;
 
     /// Returns the given row. [noscript]
     /** @param row The zero-based index [0, 2] of the row to get. */
@@ -262,11 +262,11 @@ public:
 
     /// Returns the given column.
     /** @param col The zero-based index [0, 3] of the column to get. */
-    const float3 Col(int col) const;
+    CONST_WIN32 float3 Col(int col) const;
 
     /// Returns the main diagonal.
     /** The main diagonal consists of the elements at m[0][0], m[1][1], m[2][2]. */
-    const float3 Diagonal() const;
+    CONST_WIN32 float3 Diagonal() const;
 
     /// Scales the three first elements of the given row by a scalar.
     void ScaleRow3(int row, float scalar);
@@ -278,7 +278,7 @@ public:
     void ScaleCol(int col, float scalar);
 
     /// Returns the upper-left 3-by-3 part.
-    float3x3 Float3x3Part() const;
+    CONST_WIN32 float3x3 Float3x3Part() const;
 
     /// Returns the translation part.
     /** The translation part is stored in the fourth column of this matrix.
@@ -286,10 +286,10 @@ public:
         after applying rotation and scale. If this matrix represents a local->world space transformation for an object, 
         then this gives the world space position of the object.
         @note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]). */
-    float3 TranslatePart() const;
+    CONST_WIN32 float3 TranslatePart() const;
 
     /// Returns the upper-left 3x3 part of this matrix. This part stores the rotation of this transform.
-    float3x3 RotatePart() const;
+    CONST_WIN32 float3x3 RotatePart() const;
 
     // Returns the local right axis in the post-transformed coordinate space, according to the given convention.
     // @note The returned vector might not be normalized if this matrix contains scaling.

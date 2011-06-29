@@ -209,6 +209,7 @@ bool Plane::Intersects(const Plane &plane, const Plane &plane2, Line *outLine, f
 
     // First check all planes for parallel pairs.
     if (this->IsParallel(plane) || this->IsParallel(plane2))
+    {
         if (EqualAbs(d, plane.d) || EqualAbs(d, plane2.d))
         {
             bool intersect = plane.Intersects(plane2, outLine);
@@ -218,7 +219,9 @@ bool Plane::Intersects(const Plane &plane, const Plane &plane2, Line *outLine, f
         }
         else
             return false;
+    }
     if (plane.IsParallel(plane2))
+    {
         if (EqualAbs(plane.d, plane2.d))
         {
             bool intersect = this->Intersects(plane, outLine);
@@ -228,6 +231,7 @@ bool Plane::Intersects(const Plane &plane, const Plane &plane2, Line *outLine, f
         }
         else
             return false;
+    }
 
     // All planes point to different directions.
     float3x3 m;

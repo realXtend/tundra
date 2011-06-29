@@ -45,7 +45,7 @@ const float *float4::ptr() const
     return &x;
 } 
 
-const float float4::operator [](int index) const
+CONST_WIN32 float float4::operator [](int index) const
 { 
     assert(index >= 0);
     assert(index < Size);

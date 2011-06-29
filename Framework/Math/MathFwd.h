@@ -7,6 +7,17 @@
 */
 #pragma once
 
+// The CONST_WIN32 is a #define which resolves to 'const' on Windows, and null on other
+// platforms. This #define is used on Windows to detect accidental programming errors
+// occurring from an expression "const float3 vec; vec[1] = 5;". Trying to return
+// const float from operator[] on GCC gives a warning "type qualifiers ignored on function return type",
+// so hence this is only enabled on Visual Studio.
+#ifdef _MSC_VER
+#define CONST_WIN32 const
+#else
+#define CONST_WIN32
+#endif
+
 class float2;
 class float3;
 class float4;

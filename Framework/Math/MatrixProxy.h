@@ -7,6 +7,8 @@
 */
 #pragma once
 
+#include "MathFwd.h"
+
 /// A proxy class for double brackets [][] element access in matrices.
 template<int Cols>
 class MatrixProxy
@@ -15,7 +17,7 @@ private:
     float v[Cols];
 
 public:
-    const float operator[](int col) const
+    CONST_WIN32 float operator[](int col) const
     {
         assert(col >= 0);
         assert(col < Cols);

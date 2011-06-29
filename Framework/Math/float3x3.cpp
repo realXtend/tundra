@@ -294,7 +294,7 @@ float &float3x3::At(int row, int col)
     return v[row][col];
 }
 
-const float float3x3::At(int row, int col) const
+CONST_WIN32 float float3x3::At(int row, int col) const
 {
     return v[row][col];
 }
@@ -309,12 +309,12 @@ const float3 &float3x3::Row(int row) const
     return reinterpret_cast<const float3 &>(v[row]);
 }
 
-const float3 float3x3::Col(int col) const
+CONST_WIN32 float3 float3x3::Col(int col) const
 {
     return float3(v[0][col], v[1][col], v[2][col]);
 }
 
-const float3 float3x3::Diagonal() const
+CONST_WIN32 float3 float3x3::Diagonal() const
 {
     return float3(v[0][0], v[1][1], v[2][2]);
 }

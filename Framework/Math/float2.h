@@ -45,7 +45,7 @@ public:
     const float *ptr() const;
 
     /// Accesses the elements (x,y) using array notation. x: *this[0], y: *this[1].
-    const float operator [](int index) const;
+    CONST_WIN32 float operator [](int index) const;
 
     /// Accesses the elements (x,y) using array notation. x: *this[0], y: *this[1].
     float &operator [](int index);
