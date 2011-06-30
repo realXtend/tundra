@@ -5,7 +5,8 @@ if (!framework.IsHeadless())
 
     var sceneAction = null;
     var assetAction = null;
-    
+    var createIcons = true;
+
     var mainwin = ui.MainWindow();
 
     // File
@@ -136,14 +137,19 @@ if (!framework.IsHeadless())
         disconnectAction.setEnabled(true);
         importWebAction.setEnabled(true);
         exportAction.setEnabled(true);
-        ui.EmitAddAction(sceneAction);
-        ui.EmitAddAction(assetAction);
+        if (createIcons)
+		{
+			ui.EmitAddAction(sceneAction);
+        	ui.EmitAddAction(assetAction);
+			createIcons = false;
+		}
     }
 
     function Disconnected() {
         disconnectAction.setEnabled(false);
         importWebAction.setEnabled(false);
         exportAction.setEnabled(false);
+		createIcons = true;
     }
 
     function Quit() {

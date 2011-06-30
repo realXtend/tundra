@@ -39,6 +39,7 @@ class ObjectEdit(Component):
     MANIPULATE_MOVE = 1
     MANIPULATE_SCALE = 2
     MANIPULATE_ROTATE = 3
+    CREATE_ICONS = True
     
     def __init__(self):
         self.sels = []  
@@ -96,6 +97,7 @@ class ObjectEdit(Component):
             self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
             if naali.server.IsAboutToStart() == False:
                 naali.client.connect("Connected()", self.on_connected_tundra)
+                naali.client.connect("Disconnected()", self.on_disconnected_tundra)
             else:
                 editMenu = mainWindow.AddMenu("Edit")
                 editMenu.addAction(self.menuToggleAction)
@@ -119,9 +121,13 @@ class ObjectEdit(Component):
             self.on_activate_editing(self.cpp_python_handler.IsBuildingActive())
         """
         
+    def on_disconnected_tundra(self):
+        self.CREATE_ICONS = True
+
     def on_connected_tundra(self):
-        naali.ui.EmitAddAction(self.menuToggleAction);
-    
+        if self.CREATE_ICONS:
+            naali.ui.EmitAddAction(self.menuToggleAction); self.CREATE_ICONS = False
+
     def toggleEditingKeyTrigger(self):
         self.toggleEditing(not self.editing)
         

@@ -534,7 +534,7 @@ namespace OgreRenderer
     {
         if (!camera)
         {
-            // Had to make this try catch because multiconnection disconnects might cause default_camera to be something remarkable
+            // Had to make this try catch because multiconnection disconnects might cause default_camera to be something remarkable (read: trash)
             // and it would crash viewer on multiple scene disconnect situations.
             try
             {

@@ -4,7 +4,6 @@ SceneAPI.DefaultWorldSceneChanged.connect(SceneChanged);
 
 function SceneChanged(scene)
 {
-	print("Default scene changed!");
 	if(scene==null)
 		return;
 
@@ -21,6 +20,5 @@ function SceneChanged(scene)
 	if(camera==null)
 		return;
 
-	print("Setting camera active!");
 	camera.SetActive();
 }
