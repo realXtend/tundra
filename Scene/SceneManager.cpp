@@ -369,10 +369,10 @@ namespace Scene
     }
 
     //before-the-fact counterparts for the modification signals above, for permission checks etc.
-    bool SceneManager::AllowModifyEntity(Scene::Entity *entity)
+    bool SceneManager::AllowModifyEntity(UserConnection* user, Scene::Entity *entity)
     {
         ChangeRequest req;
-        emit AboutToModifyEntity(&req, entity);
+        emit AboutToModifyEntity(&req, user, entity);
         return req.allowed;
     }
 

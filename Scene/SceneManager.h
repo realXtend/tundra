@@ -17,6 +17,8 @@ class SceneAPI;
 
 class QDomDocument;
 
+class UserConnection;
+
 //! Container for an ongoing attribute interpolation
 struct AttributeInterpolation
 {
@@ -187,7 +189,7 @@ namespace Scene
         void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
         void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
 
-        bool AllowModifyEntity(Entity *entity);
+        bool AllowModifyEntity(UserConnection *user, Entity *entity);
 
         void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
 
@@ -459,7 +461,7 @@ namespace Scene
         //permission hooks -- signals that are emitted before attribute modification, can be used to prevent them
         
         //! Emitted when an entity is about to be modified:
-        void AboutToModifyEntity(ChangeRequest* req, Scene::Entity* entity);
+        void AboutToModifyEntity(ChangeRequest* req, UserConnection* user, Scene::Entity* entity);
 
     private:
         Q_DISABLE_COPY(SceneManager);

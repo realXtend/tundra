@@ -695,7 +695,8 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     if (!ValidateAction(source, msg.MessageID(), entityID))
         return;
 
-    if (!scene->AllowModifyEntity(0)) //should be 'ModifyScene', but ModifyEntity is now the signal that covers all
+    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+    if (!scene->AllowModifyEntity(user, 0)) //should be 'ModifyScene', but ModifyEntity is now the signal that covers all
         return;
     
     // Get matching syncstate for reflecting the changes
@@ -794,7 +795,8 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
         return;
 
     Scene::EntityPtr entity = scene->GetEntity(entityID);
-    if (!scene->AllowModifyEntity(entity.get()))
+    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+    if (!scene->AllowModifyEntity(user, entity.get()))
         return;
     
     // Get matching syncstate for reflecting the changes
@@ -842,9 +844,10 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     
     // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
     Scene::EntityPtr entity = scene->GetEntity(entityID);
+    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
     if (!entity)
     {
-        if (!scene->AllowModifyEntity(0)) //to check if creating entities is allowed (for this user)
+        if (!scene->AllowModifyEntity(user, 0)) //to check if creating entities is allowed (for this user)
             return;
 
         TundraLogicModule::LogWarning("Entity " + ToString<int>(entityID) + " not found for CreateComponents message, creating it now");
@@ -859,7 +862,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
         state->GetOrCreateEntity(entityID);
     }
 
-    if (!scene->AllowModifyEntity(entity.get()))
+    if (!scene->AllowModifyEntity(user, entity.get()))
         return;
     
     // Read the components. These are not deltaserialized.
@@ -930,9 +933,10 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     
     // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
     Scene::EntityPtr entity = scene->GetEntity(entityID);
+    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
     if (!entity)
     {
-        if (!scene->AllowModifyEntity(0)) //to check if creating entities is allowed (for this user)
+        if (!scene->AllowModifyEntity(user, 0)) //to check if creating entities is allowed (for this user)
             return;
 
         TundraLogicModule::LogWarning("Entity " + ToString<int>(entityID) + " not found for UpdateComponents message, creating it now");
@@ -947,7 +951,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
         state->GetOrCreateEntity(entityID);
     }
 
-    if (!scene->AllowModifyEntity(entity.get()))
+    if (!scene->AllowModifyEntity(user, entity.get()))
         return;
     
     std::map<IComponent*, std::vector<bool> > partially_changed_static_components;
@@ -1142,7 +1146,8 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     if (!entity)
         return;
 
-    if (!scene->AllowModifyEntity(entity.get()))
+    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+    if (!scene->AllowModifyEntity(user, entity.get()))
         return;
     
     for (unsigned i = 0; i < msg.components.size(); ++i)

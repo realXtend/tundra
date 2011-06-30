@@ -7,8 +7,8 @@ sceneapi.SceneAdded.connect(function(scenename) {
     var s = sceneapi.GetScene(scenename);
     print("Adding all-denying perm hook to scene called: " + scenename);
 
-    s.AboutToModifyEntity.connect(function(change, entity) {
-        print("Denying change on entity: " + entity);
+    s.AboutToModifyEntity.connect(function(change, user, entity) {
+        print("Denying change by user: " + user + " on entity: " + entity);
         change.Deny();
     });
 });
