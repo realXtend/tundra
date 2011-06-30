@@ -128,7 +128,7 @@ void SetProfiler(Profiler *profiler)
 
 extern "C"
 {
-    __declspec(dllexport) void TundraPluginMain(Framework *fw)
+    DLLEXPORT void TundraPluginMain(Framework *fw)
     {
         IModule *module = new MumbleVoip::MumbleVoipModule();
         fw->GetModuleManager()->DeclareStaticModule(module);

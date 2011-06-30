@@ -4,7 +4,11 @@
 
 #include <cassert>
 
-// useful defines
+#ifdef WIN32
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT
+#endif
 
 #define SAFE_DELETE(p) { delete p; p=0; }
 #define SAFE_DELETE_ARRAY(p) { delete [] p; p=0; }

@@ -12,9 +12,13 @@
 
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
+
+#ifdef WIN32
 #include <d3d9.h>
 #include <OgreD3D9RenderSystem.h>
 #include <OgreD3D9HardwarePixelBuffer.h>
+#endif
+
 #include "MemoryLeakCheck.h"
 
 #include "LoggingFunctions.h"
@@ -276,6 +280,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
 
     if (data)
     {
+#ifdef WIN32
         Ogre::HardwarePixelBufferSharedPtr pb = ogreTexture->getBuffer();
         Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(pb.get());
         assert(pixelBuffer);
@@ -302,12 +307,11 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
                 }
             }
         }
-        
-        /*
+#else        
         ///\todo Review Ogre internals of whether the const_cast here is safe!
         Ogre::PixelBox pixelBox(Ogre::Box(0,0, newWidth, newHeight), ogreFormat, const_cast<u8*>(data));
         ogreTexture->getBuffer()->blitFromMemory(pixelBox);
-        */
+#endif
     }
 
     if (needRecreate)

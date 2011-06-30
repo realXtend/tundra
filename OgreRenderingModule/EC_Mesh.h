@@ -286,7 +286,7 @@ public slots:
     /// returns number of submeshes
     /** @return returns 0 if mesh is not set, otherwise will ask Ogre::Mesh the submesh count. 
     */
-    const uint GetNumSubMeshes() const;
+    uint GetNumSubMeshes() const;
 
     /// returns if attachment mesh exists
     bool HasAttachmentMesh(uint index) const;

@@ -160,7 +160,7 @@ void OgreAssetEditorModule::OpenAssetInEditor()
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Framework *fw)
+DLLEXPORT void TundraPluginMain(Framework *fw)
 {
     IModule *module = new OgreAssetEditorModule();
     fw->RegisterModule(module);

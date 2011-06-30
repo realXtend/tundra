@@ -32,6 +32,10 @@
 // Clamp elapsed frame time to avoid Ogre controllers going crazy
 static const float MAX_FRAME_TIME = 0.1f;
 
+#if defined(USE_D3D9_SUBSURFACE_BLIT) && !defined(WIN32)
+#undef USE_D3D9_SUBSURFACE_BLIT
+#endif
+
 #ifdef USE_D3D9_SUBSURFACE_BLIT
 #undef SAFE_DELETE
 #undef SAFE_DELETE_ARRAY
