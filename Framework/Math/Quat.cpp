@@ -6,13 +6,15 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
-#include "Math/Quat.h"
-#include "Math/float3.h"
-#include "Math/float4.h"
-#include "Math/float3x3.h"
-#include "Math/float3x4.h"
-#include "Math/float4x4.h"
-#include "Math/MathFunc.h"
+
+#include <stdlib.h>
+#include "Quat.h"
+#include "float3.h"
+#include "float4.h"
+#include "float3x3.h"
+#include "float3x4.h"
+#include "float4x4.h"
+#include "MathFunc.h"
 
 Quat::Quat(const float *data)
 :x(data[0]),
@@ -468,6 +470,7 @@ float4x4 Quat::ToFloat4x4() const
     return float4x4(*this);
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::string Quat::ToString() const
 {
     char str[256];
@@ -491,6 +494,7 @@ std::string Quat::SerializeToString() const
     sprintf(str, "%f %f %f %f", x, y, z, w);
     return std::string(str);
 }
+#endif
 
 Quat Quat::FromString(const char *str)
 {
@@ -560,4 +564,4 @@ float3 Quat::Mul(const float3 &vector) const { return this->Transform(vector); }
 float4 Quat::Mul(const float4 &vector) const { return this->Transform(vector); }
 
 const Quat Quat::identity = Quat(0.f, 0.f, 0.f, 1.f);
-const Quat Quat::nan = Quat(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
+const Quat Quat::nan = Quat(FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN);

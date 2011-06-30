@@ -9,7 +9,9 @@
 */
 #pragma once
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <cassert>
+#endif
 #include "MathFwd.h"
 #include "MatrixProxy.h"
 #include "CoordinateAxisConvention.h"
@@ -716,10 +718,12 @@ public:
     /// matrix differs from [0 0 0 1].
     bool ContainsProjection(float epsilon = 1e-3f) const;
 
+#ifdef MATH_ENABLE_STL_SUPPORT
     /// Returns a string representation of form "(m00, m01, m02, m03; m10, m11, m12, m13; ... )".
     std::string ToString() const;
 
     std::string ToString2() const;
+#endif
 
     /// Extracts the rotation part of this matrix into Euler rotation angles (in radians).
     /// @note It is better to thinkg about the returned float3 as an array of three floats, and
@@ -789,8 +793,10 @@ public:
     float4 Mul(const float4 &vector) const;
 };
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 /// Prints this float4x4 to the given stream.
 std::ostream &operator <<(std::ostream &out, const float4x4 &rhs);
+#endif
 
 /// Multiplies two transforms together.
 float4x4 operator *(const Quat &lhs, const float4x4 &rhs);

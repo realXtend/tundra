@@ -6,14 +6,16 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <cassert>
 #include <utility>
+#endif
 
-#include "Math/Polygon.h"
-#include "Math/Plane.h"
-#include "Math/Line.h"
-#include "Math/LineSegment.h"
-#include "Math/MathFunc.h"
+#include "Polygon.h"
+#include "Plane.h"
+#include "Line.h"
+#include "LineSegment.h"
+#include "MathFunc.h"
 
 int Polygon::NumEdges() const
 {

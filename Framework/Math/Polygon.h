@@ -12,7 +12,9 @@
 #include "MathFwd.h"
 #include "float3.h"
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <vector>
+#endif
 
 class Polygon
 {

@@ -7,7 +7,9 @@
 */
 #include "StableHeaders.h"
 #include "MathFunc.h"
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <utility>
+#endif
 #include "AABB.h"
 #include "LineSegment.h"
 #include "Line.h"
@@ -40,8 +42,8 @@ AABB::AABB(const Sphere &s)
 
 void AABB::SetNegativeInfinity()
 {
-    minPoint.SetFromScalar(std::numeric_limits<float>::infinity());
-    maxPoint.SetFromScalar(-std::numeric_limits<float>::infinity());
+    minPoint.SetFromScalar(FLOAT_INF);
+    maxPoint.SetFromScalar(-FLOAT_INF);
 }
 
 void AABB::SetCenter(const float3 &center, const float3 &halfSize)
@@ -88,7 +90,7 @@ Sphere AABB::MinimalEnclosingSphere() const
 Sphere AABB::MaximalContainedSphere() const
 {
     float3 size = Size();
-    return Sphere(CenterPoint(), std::min(std::min(size.x, size.y), size.z));
+    return Sphere(CenterPoint(), Min(Min(size.x, size.y), size.z));
 }
 
 bool AABB::IsFinite() const
@@ -466,8 +468,8 @@ bool AABB::Contains(const AABB &aabb) const
 	@return True if an intersection occurs, false otherwise. */
 bool IntersectRayAABB(const float3 &rayPos, const float3 &rayDir, const AABB &aabb, float &tNear, float &tFar)
 {
-    tNear = -std::numeric_limits<float>::infinity();
-    tFar = std::numeric_limits<float>::infinity();
+    tNear = -FLOAT_INF;
+    tFar = FLOAT_INF;
 
 	for(int i = 0; i < 3; ++i) // loop for each AABB plane (X,Y,Z)
 	{
@@ -480,7 +482,7 @@ bool IntersectRayAABB(const float3 &rayPos, const float3 &rayDir, const AABB &aa
         float t1 = (aabb.minPoint[i] - rayPos[i]) / rayDir[i];
 		float t2 = (aabb.maxPoint[i] - rayPos[i]) / rayDir[i];
 
-		if (t1 > t2) std::swap(t1, t2); // swap so that t1 is the distance to nearer of the two planes.
+		if (t1 > t2) Swap(t1, t2); // swap so that t1 is the distance to nearer of the two planes.
 		if (t1 > tNear) tNear = t1; // tNear tracks distance to intersect the AABB.
 		if (t2 < tFar)
 			tFar = t2; // tFar tracks the distance to exit the AABB.
@@ -495,8 +497,8 @@ bool IntersectRayAABB(const float3 &rayPos, const float3 &rayDir, const AABB &aa
 /// Computes the intersection of a line and a AABB. For reference, see IntersectRayAABB.
 bool IntersectLineAABB(const float3 &linePos, const float3 &lineDir, const AABB &aabb, float &tNear, float &tFar)
 {
-    tNear = -std::numeric_limits<float>::infinity();
-    tFar = std::numeric_limits<float>::infinity();
+    tNear = -FLOAT_INF;
+    tFar = FLOAT_INF;
 
 	for(int i = 0; i < 3; ++i) // loop for each AABB plane (X,Y,Z)
 	{
@@ -509,7 +511,7 @@ bool IntersectLineAABB(const float3 &linePos, const float3 &lineDir, const AABB 
         float t1 = (aabb.minPoint[i] - linePos[i]) / lineDir[i];
 		float t2 = (aabb.maxPoint[i] - linePos[i]) / lineDir[i];
 
-		if (t1 > t2) std::swap(t1, t2); // swap so that t1 is the distance to nearer of the two planes.
+		if (t1 > t2) Swap(t1, t2); // swap so that t1 is the distance to nearer of the two planes.
 		if (t1 > tNear) tNear = t1; // tNear tracks distance to intersect the AABB.
 		if (t2 < tFar)
 			tFar = t2; // tFar tracks the distance to exit the AABB.
@@ -593,7 +595,7 @@ void AABB::ProjectToAxis(const float3 &axis, float &dMin, float &dMax) const
     dMin = s - r;
     dMax = s + r;
     if (dMin > dMax)
-        std::swap(dMin, dMax);
+        Swap(dMin, dMax);
 }
 
 /*
@@ -660,12 +662,14 @@ void AABB::Enclose(const float3 *pointArray, int numPoints)
         Enclose(pointArray[i]);
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::string AABB::ToString() const
 {
     char str[256];
     sprintf(str, "AABB(Min:(%.2f, %.2f, %.2f) Max:(%.2f, %.2f, %.2f))", minPoint.x, minPoint.y, minPoint.z, maxPoint.x, maxPoint.y, maxPoint.z);
     return str;
 }
+#endif
 
 AABB AABB::Intersection(const AABB &aabb) const
 {

@@ -8,10 +8,12 @@
     @brief Common mathematical functions.
 */
 #include "StableHeaders.h"
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <utility>
 #include <algorithm>
+#endif
 
-#include "Math/MathFunc.h"
+#include "MathFunc.h"
 
 bool mathBreakOnAssume = false;
 
@@ -67,9 +69,9 @@ int CombinatorialTab(int n, int k)
     // Iteratively fill the tables.
     for(int i = 2; i <= n; ++i)
     {
-        for(int j = std::max(1, i-n+k); j <= std::min(k,i-1); ++j)
+        for(int j = Max(1, i-n+k); j <= Min(k,i-1); ++j)
             t1[j] = t2[j] + t2[j-1];
-        std::swap(t1, t2);
+        Swap(t1, t2);
     }
     int c = t2[k];
     delete[] table;

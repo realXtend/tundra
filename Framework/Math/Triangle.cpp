@@ -7,21 +7,21 @@
 */
 #include "StableHeaders.h"
 
-#include "Math/MathFunc.h"
-#include "Math/float2.h"
-#include "Math/float3.h"
-#include "Math/float3x3.h"
-#include "Math/float3x4.h"
-#include "Math/float4x4.h"
-#include "Math/Quat.h"
-#include "Math/Triangle.h"
-#include "Math/Plane.h"
-#include "Math/Line.h"
-#include "Math/LineSegment.h"
-#include "Math/Ray.h"
-#include "Math/Sphere.h"
-#include "Math/AABB.h"
-#include "Math/OBB.h"
+#include "MathFunc.h"
+#include "float2.h"
+#include "float3.h"
+#include "float3x3.h"
+#include "float3x4.h"
+#include "float4x4.h"
+#include "Quat.h"
+#include "Triangle.h"
+#include "Plane.h"
+#include "Line.h"
+#include "LineSegment.h"
+#include "Ray.h"
+#include "Sphere.h"
+#include "AABB.h"
+#include "OBB.h"
 
 Triangle::Triangle(const float3 &a_, const float3 &b_, const float3 &c_)
 :a(a_), b(b_), c(c_)
@@ -300,11 +300,11 @@ bool Triangle::Intersects(const Triangle &t2, LineSegment *outLine) const
     l.Distance(l2a, &d2a);
     l.Distance(l2b, &d2b);
     if (d1a > d1b)
-        std::swap(d1a, d1b);
+        Swap(d1a, d1b);
     if (d2a > d2b)
-        std::swap(d2a, d2b);
-    float rStart = std::max(d1a, d2a);
-    float rEnd = std::min(d1b, d2b);
+        Swap(d2a, d2b);
+    float rStart = Max(d1a, d2a);
+    float rEnd = Min(d1b, d2b);
     if (rStart <= rEnd)
     {
         if (outLine)

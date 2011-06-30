@@ -7,7 +7,9 @@
 */
 #pragma once
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <cassert>
+#endif
 
 bool Equal(double a, double b, double epsilon = 1e-6)
 {

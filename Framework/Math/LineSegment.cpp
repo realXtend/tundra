@@ -49,7 +49,7 @@ float3 LineSegment::CenterPoint() const
 
 void LineSegment::Reverse()
 {
-    std::swap(a, b);
+    Swap(a, b);
 }
 
 float3 LineSegment::Dir() const

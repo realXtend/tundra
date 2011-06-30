@@ -9,8 +9,11 @@
 */
 #pragma once
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <string>
 #include <vector>
+#endif
+
 #include "MathFwd.h"
 
 #ifdef QT_INTEROP
@@ -83,15 +86,19 @@ public:
     bool Equals(const float2 &rhs, float epsilon = 1e-3f) const;
     bool Equals(float x, float y, float epsilon = 1e-3f) const;
 
+#ifdef MATH_ENABLE_STL_SUPPORT
     /// Returns "(x, y)".
     std::string ToString() const;
 
     /// Returns "x y". This is the preferred format for the float2 if it has to be serialized to a string for machine transfer.
     std::string SerializeToString() const;
+#endif
 
     /// Parses a string that is of form "x,y" or "(x,y)" or "(x;y)" or "x y" to a new float2.
     static float2 FromString(const char *str);
+#ifdef MATH_ENABLE_STL_SUPPORT
     static float2 FromString(const std::string &str) { return FromString(str.c_str()); }
+#endif
 
     /// Returns x + y.
     float SumOfElements() const;
@@ -99,11 +106,11 @@ public:
     float ProductOfElements() const;
     /// Returns (x+y)/2.
     float AverageOfElements() const;
-    /// Returns min(x, y).
+    /// Returns Min(x, y).
     float MinElement() const;
     /// Returns the index that has the smallest value in this vector.
     int MinElementIndex() const;
-    /// Returns max(x, y).
+    /// Returns Max(x, y).
     float MaxElement() const;
     /// Returns the index that has the smallest value in this vector.
     int MaxElementIndex() const;
@@ -198,13 +205,16 @@ public:
     /// of the directed line AB.
     static bool OrientedCCW(const float2 &a, const float2 &b, const float2 &c);
 
+#ifdef MATH_ENABLE_STL_SUPPORT
     /// Computes the 2D convex hull of the given point set.
     static void ConvexHull(const float2 *pointArray, int numPoints, std::vector<float2> &outConvexHull);
+
     /// Computes the 2D convex hull of the given point set, in-place.
     /// This version of the algorithm works in-place, meaning that when the algorithm finishes,
     /// pointArray will contain the list of the points on the convex hull.
     /// @return The number of points on the convex hull, i.e. the number of elements used in pointArray after the operation.
     static int ConvexHullInPlace(float2 *pointArray, int numPoints);
+#endif
 
     /// Computes the minimum-area rectangle that bounds the given point set. [noscript]
     /// @param center [out] This variable will receive the center point of the rectangle.
@@ -268,8 +278,10 @@ public:
 #endif
 };
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 /// Prints this float2 to the given stream.
 std::ostream &operator <<(std::ostream &out, const float2 &rhs);
+#endif
 
 float2 operator *(float scalar, const float2 &rhs);
 //float2 operator /(float scalar, const float2 &rhs); 

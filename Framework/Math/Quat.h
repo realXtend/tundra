@@ -9,7 +9,9 @@
 */
 #pragma once
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <string>
+#endif
 #include "MathFwd.h"
 
 #ifdef QT_INTEROP
@@ -227,6 +229,7 @@ public:
     float3x4 ToFloat3x4() const;
     float4x4 ToFloat4x4() const;
 
+#ifdef MATH_ENABLE_STL_SUPPORT
     /// Returns "(x,y,z,w)".
     std::string ToString() const;
 
@@ -235,10 +238,12 @@ public:
 
     /// Returns "x y z w". This is the preferred format for the quaternion if it has to be serialized to a string for machine transfer.
     std::string SerializeToString() const;
-
+#endif
     /// Parses a string that is of form "x,y,z,w" or "(x,y,z,w)" or "(x;y;z;w)" or "x y z w" to a new quaternion.
     static Quat FromString(const char *str);
+#ifdef MATH_ENABLE_STL_SUPPORT
     static Quat FromString(const std::string &str) { return FromString(str.c_str()); }
+#endif
 
     /// Multiplies two quaternions together.
     /// The product q1 * q2 returns a quaternion that concatenates the two orientation rotations. The rotation

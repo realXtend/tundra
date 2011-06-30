@@ -9,8 +9,11 @@
 */
 #pragma once
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <ostream>
 #include <cassert>
+#endif
+
 #include "MathFwd.h"
 #include "MatrixProxy.h"
 #include "CoordinateAxisConvention.h"
@@ -521,10 +524,12 @@ public:
     /// Returns true if this float3x3 is equal to the given float3x3, up to given per-element epsilon.
     bool Equals(const float3x3 &other, float epsilon = 1e-3f) const;
 
+#ifdef MATH_ENABLE_STL_SUPPORT
     /// Returns "(m00, m01, m02; m10, m11, m12; m20, m21, m22)".
     std::string ToString() const;
 
     std::string ToString2() const;
+#endif
 
     /// Extracts the rotation part of this matrix into Euler rotation angles (in radians).
     /// @note It is better to thinkg about the returned float3 as an array of three floats, and
@@ -594,8 +599,10 @@ public:
 
 };
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 /// Prints this float3x3 to the given stream.
 std::ostream &operator <<(std::ostream &out, const float3x3 &rhs);
+#endif
 
 /// Multiplies two transforms together.
 float3x3 operator *(const Quat &lhs, const float3x3 &rhs);

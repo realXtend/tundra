@@ -9,9 +9,12 @@
 */
 #pragma once
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <cassert>
+#endif
 #include <math.h>
 #include <float.h>
+
 #include "CoreTypes.h"
 #include "MathConstants.h"
 #include "float3.h"
@@ -78,6 +81,15 @@ bool MathBreakOnAssume();
 
 #define DOT4DIR_xyz(vec4D, x, y, z) ((vec4D)[0] * (x) + (vec4D)[1] * (y) + (vec4D)[2] * (z))
 
+#ifdef MATH_ENABLE_STL_SUPPORT
+#define FLOAT_NAN std::numeric_limits<float>::quiet_NaN()
+#define FLOAT_INF std::numeric_limits<float>::infinity()
+#define FLOAT_MAX std::numeric_limits<float>::max()
+#else
+#define FLOAT_MAX FLT_MAX
+#define FLOAT_NAN NAN
+#define FLOAT_INF INFINITY
+#endif
 /// Returns the given amount of degrees in radians.
 /// 180 degrees equals pi, 360 degrees is a full circle, and equals 2pi.
 inline float3 DegToRad(const float3 &degrees) { return degrees * (pi / 180.f); }
@@ -193,6 +205,15 @@ template<typename T>
 const T Max(const T &a, const T &b)
 {
     return a >= b ? a : b;
+}
+
+/// Swaps the two values.
+template<typename T>
+void Swap(T &a, T &b)
+{
+	T temp = a;
+	a = b;
+	b = temp;
 }
 
 /** @return True if a > b. */

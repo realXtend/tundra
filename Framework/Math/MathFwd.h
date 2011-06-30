@@ -18,6 +18,11 @@
 #define CONST_WIN32
 #endif
 
+#if !defined(MATH_ENABLE_STL_SUPPORT) && !defined(assert)
+#include <stdio.h>
+#define assert(x) do { if (!(x)) { printf("Error: assert(%s) failed!\n", #x); } } while(0)
+#endif
+
 class float2;
 class float3;
 class float4;

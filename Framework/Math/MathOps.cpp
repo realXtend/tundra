@@ -6,7 +6,7 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
-#include "Math/MathFunc.h"
+#include "MathFunc.h"
 
 /** Compares the two values for equality, allowing the given amount of absolute error. */
 bool EqualAbs(float a, float b, float epsilon)

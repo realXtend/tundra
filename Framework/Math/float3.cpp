@@ -6,14 +6,17 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <cassert>
 #include <utility>
+#endif
+#include <stdlib.h>
 
-#include "Math/float2.h"
-#include "Math/float3.h"
-#include "Math/float4.h"
-#include "Math/float3x3.h"
-#include "Math/MathFunc.h"
+#include "float2.h"
+#include "float3.h"
+#include "float4.h"
+#include "float3x3.h"
+#include "MathFunc.h"
 
 using namespace std;
 
@@ -142,6 +145,7 @@ bool float3::IsPerpendicular(const float3 &other, float epsilon) const
     return fabs(Dot(other)) <= epsilon;
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::string float3::ToString() const
 { 
     char str[256];
@@ -155,6 +159,7 @@ std::string float3::SerializeToString() const
     sprintf(str, "%f %f %f", x, y, z);
     return std::string(str);
 }
+#endif
 
 float3 float3::FromString(const char *str)
 {
@@ -191,7 +196,7 @@ float float3::AverageOfElements() const
 
 float float3::MinElement() const
 {
-    return min(min(x, y), z);
+    return ::Min(::Min(x, y), z);
 }
 
 int float3::MinElementIndex() const
@@ -204,7 +209,7 @@ int float3::MinElementIndex() const
 
 float float3::MaxElement() const
 {
-    return max(max(x, y), z);
+    return ::Max(::Max(x, y), z);
 }
 
 int float3::MaxElementIndex() const
@@ -222,22 +227,22 @@ float3 float3::Abs() const
 
 float3 float3::Min(float ceil) const
 {
-    return float3(min(x, ceil), min(y, ceil), min(z, ceil));
+    return float3(::Min(x, ceil), ::Min(y, ceil), ::Min(z, ceil));
 }
 
 float3 float3::Min(const float3 &ceil) const
 {
-    return float3(min(x, ceil.x), min(y, ceil.y), min(z, ceil.z));
+    return float3(::Min(x, ceil.x), ::Min(y, ceil.y), ::Min(z, ceil.z));
 }
 
 float3 float3::Max(float floor) const
 {
-    return float3(max(x, floor), max(y, floor), max(z, floor));
+    return float3(::Max(x, floor), ::Max(y, floor), ::Max(z, floor));
 }
 
 float3 float3::Max(const float3 &floor) const
 {
-    return float3(max(x, floor.x), max(y, floor.y), max(z, floor.z));
+    return float3(::Max(x, floor.x), ::Max(y, floor.y), ::Max(z, floor.z));
 }
 
 float3 float3::Clamp(const float3 &floor, const float3 &ceil) const
@@ -616,17 +621,19 @@ float3 &float3::operator /=(float scalar)
     return *this;
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::ostream &operator <<(std::ostream &out, const float3 &rhs)
 {
     std::string str = rhs.ToString();
     out << str;
     return out;
 }
+#endif
 
 const float3 float3::zero = float3(0, 0, 0);
 const float3 float3::one = float3(1, 1, 1);
 const float3 float3::unitX = float3(1, 0, 0);
 const float3 float3::unitY = float3(0, 1, 0);
 const float3 float3::unitZ = float3(0, 0, 1);
-const float3 float3::nan = float3(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
-const float3 float3::inf = float3(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+const float3 float3::nan = float3(FLOAT_NAN, FLOAT_NAN, FLOAT_NAN);
+const float3 float3::inf = float3(FLOAT_INF, FLOAT_INF, FLOAT_INF);
