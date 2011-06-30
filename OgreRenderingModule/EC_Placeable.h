@@ -15,6 +15,11 @@
 #include <QQuaternion>
 #include <QVector3D>
 
+namespace Ogre
+{
+    class Bone;
+}
+
 //! Ogre placeable (scene node) component
 /**
 <table class="header">
@@ -31,6 +36,10 @@ Registered by OgreRenderer::OgreRenderingModule.
 <div>Sets the position, rotation and scale of the entity. Not usable and not replicated in Opensim worlds.</div>
 <li>bool: drawDebug
 <div>Shows the debug bounding box of geometry attached to the placeable.</div>
+<li>QString: parentRef
+<div>The entity to attach to (either entity ID or name.) The entity in question needs to have EC_Placeable as well to work correctly</div>
+<li>string: parentBone
+<div>The bone to attach to. The parent entity needs to have a skeletal EC_Mesh component</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -103,6 +112,16 @@ public:
     Q_PROPERTY(bool visible READ getvisible WRITE setvisible);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, visible);
 
+    /// Specifies the parent entity of this entity, either entity ID or name. Set to empty for no parenting.
+    Q_PROPERTY(QString parentRef READ getparentRef WRITE setparentRef)
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, parentRef);
+
+    /// Specifies the name of the bone on the parent entity.
+    /// Needs that the parent entity has a skeletal mesh. 
+    /// Set to empty for no parent bone assignment, in which case this scene node is attached to the root of the parent node.
+    Q_PROPERTY(QString parentBone READ getparentBone WRITE setparentBone)
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, parentBone);
+
     virtual ~EC_Placeable();
     
     //! Set component as serializable.
@@ -112,7 +131,7 @@ public:
     virtual bool IsSerializable() const { return true; }
     
     //! sets parent placeable
-    /*! set null placeable to attach to scene root (the default)
+    /*! this function is deprecated and a no-op
         \param placeable new parent
      */
     void SetParent(ComponentPtr placeable);
@@ -256,6 +275,9 @@ signals:
     //! emmitted when scale has changed.
     void ScaleChanged(const QVector3D &scale);
 
+    /// Emitted when about to be destroyed
+    void AboutToBeDestroyed();
+    
 private slots:
     //! Handle attributechange
     /*! \param attribute Attribute that changed.
@@ -265,6 +287,20 @@ private slots:
 
     /// Registers the action this EC provides to the parent entity, when it's set.
 	void RegisterActions();
+    /// Handle destruction of the parent placeable
+    void OnParentPlaceableDestroyed();
+    
+    /// Handle destruction of the parent mesh
+    void OnParentMeshDestroyed();
+    
+    /// Handle late creation of the parent entity, and try attaching to it
+    void CheckParentEntityCreated(Scene::Entity* entity, AttributeChange::Type change);
+    
+    /// Handle change of the parent mesh
+    void OnParentMeshChanged();
+    
+    /// Handle a component being added to the parent entity, in case it is the missing component we need
+    void OnComponentAdded(IComponent* component, AttributeChange::Type change);
 
 private:
     //! constructor
@@ -290,11 +326,26 @@ private:
     //! Ogre scene node for linking. position & orientation are handled here, and the geometry scene node is attached to this
     Ogre::SceneNode* link_scene_node_;
     
-    //! attached to scene hierarchy-flag
+    /// Ogre scene node for manual bone attachment
+    Ogre::SceneNode* boneAttachmentNode_;
+
+    /// The bone we are tracking in bone attachment mode
+    Ogre::Bone* parentBone_;
+    
+    /// Parent placeable, if any
+    EC_Placeable* parentPlaceable_;
+    
+    /// Parent mesh in bone attachment mode
+    EC_Mesh* parentMesh_;
+
+    /// attached to scene hierarchy-flag
     bool attached_;
     
     //! selection priority for picking
     int select_priority_;
+
+    friend class BoneAttachmentListener;
+    friend class CustomTagPoint;
 };
 
 #endif

@@ -33,7 +33,6 @@ var isserver = server.IsRunning();
 var own_avatar = false;
 var flying = false;
 var falling = false;
-var fish_created = false;
 var crosshair = null;
 
 // Animation detection
@@ -45,6 +44,9 @@ var animList = [standAnimName, walkAnimName, flyAnimName, hoverAnimName];
 
 var animsDetected = false;
 var listenGesture = false;
+
+// Set this to true to test creating an attached entity to the avatar
+var attachFishToAvatar = false;
 
 // Create avatar on server, and camera & inputmapper on client
 if (isserver) {
@@ -107,6 +109,24 @@ function ServerInitialize() {
     me.Action("SetRotation").Triggered.connect(ServerHandleSetRotation);
 
     rigidbody.PhysicsCollision.connect(ServerHandleCollision);
+    
+    // Test creating an attached object, if enabled
+    if (attachFishToAvatar)
+    {
+        var fishEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Mesh", "EC_Placeable"]);
+        var r = fishEntity.mesh.meshRef;
+        r.ref = "local://fish.mesh";
+        fishEntity.mesh.meshRef = r;
+        var t = fishEntity.placeable.transform;
+        t.scale.x = 0.2;
+        t.scale.y = 0.2;
+        t.scale.z = 0.02;
+        fishEntity.placeable.transform = t; // Set scale
+        fishEntity.placeable.parentRef = me.id; // The parent ref can be either an entity ID or entity name.
+        fishEntity.placeable.parentBone = "Bip01_Head"; // Attach to head bone. If bone is left empty, attaches to the object's pivot point instead
+
+        scene.EmitEntityCreatedRaw(fishEntity);
+    }
 }
 
 function ServerUpdate(frametime) {
@@ -441,10 +461,6 @@ function ClientUpdate(frametime)
         CommonFindAnimations();
     }
     CommonUpdateAnimation(frametime);
-
-    // Uncomment this to attach a fish to the avatar's head
-    //if (!fish_created)
-    //    CreateFish();
 }
 
 function ClientCreateInputMapper() {
@@ -875,34 +891,5 @@ function CommonUpdateAnimation(frametime) {
         var velocity = rigidbody.linearVelocity;
         var walkspeed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * walk_anim_speed;
         animcontroller.SetAnimationSpeed(walkAnimName, walkspeed);
-    }
-}
-
-function CreateFish() {
-    // Note: attaching meshes to bone of another mesh is strictly client-only! It does not replicate.
-    // Therefore this needs to be run locally on every client
-    var avatarmesh = me.GetComponentRaw("EC_Mesh", "");
-    // Do not act until the actual avatar has been created
-    if ((avatarmesh) && (avatarmesh.HasMesh())) {
-        // Create a local mesh component into the same entity
-        var fishmesh = me.GetOrCreateComponentRaw("EC_Mesh", "fish", 2, false);
-        var r = fishmesh.meshRef;
-        if (r.ref != "local://fish.mesh") {
-            r.ref = "local://fish.mesh";
-            fishmesh.meshRef = r;
-        }
-
-        // Then we must wait until the fish mesh component has actually loaded the mesh asset
-        if (fishmesh.HasMesh()) {
-            fishmesh.AttachMeshToBone(avatarmesh, "Bip01_Head");
-            fish_created = true;
-            var t = fishmesh.nodeTransformation;
-            var scaleVec = new Vector3df();
-            scaleVec.x = 0.1;
-            scaleVec.y = 0.1;
-            scaleVec.z = 0.1;
-            t.scale = scaleVec;
-            fishmesh.nodeTransformation = t;
-        }
     }
 }

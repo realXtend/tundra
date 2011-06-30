@@ -6,15 +6,144 @@
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
+#include "EC_Mesh.h"
 #include "Entity.h"
+#include "SceneManager.h"
 #include "RexNetworkUtils.h"
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
+#include <OgreTagPoint.h>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Placeable")
 
 using namespace OgreRenderer;
+
+Scene::Entity* LookupParentEntity(Scene::SceneManager* scene, const QString& parent)
+{
+    // The parent can be either an entity ID or name. Try ID first
+    bool ok = false;
+    entity_id_t parentID = parent.toInt(&ok);
+    if (ok)
+    {
+        Scene::Entity* parentEnt = scene->GetEntity(parentID).get();
+        if (parentEnt)
+            return parentEnt;
+    }
+    // Then try name if ID number was not valid or was not found
+    return scene->GetEntityByName(parent).get();
+}
+
+class CustomTagPoint : public Ogre::TagPoint
+{
+public:
+    CustomTagPoint(Ogre::Entity* entity) :
+        TagPoint(0, entity->getSkeleton())
+    {
+        setParentEntity(entity);
+        setChildObject(0);
+        setInheritOrientation(true);
+        setInheritScale(true);
+        setInheritParentEntityOrientation(true);
+        setInheritParentEntityScale(true);
+    }
+    
+    virtual void _update(bool updateChildren, bool parentHasChanged)
+    {
+        TagPoint::_update(updateChildren, parentHasChanged);
+        
+        // Update bone attached placeables manually, as Ogre does not support attaching scene nodes to bones
+        for (unsigned i = 0; i < placeables_.size(); ++i)
+        {
+            EC_Placeable* placeable = placeables_[i];
+            if (placeable->boneAttachmentNode_)
+            {
+                placeable->boneAttachmentNode_->setPosition(_getDerivedPosition());
+                placeable->boneAttachmentNode_->setOrientation(_getDerivedOrientation());
+                placeable->boneAttachmentNode_->setScale(_getDerivedScale());
+            }
+        }
+    }
+
+    std::vector<EC_Placeable*> placeables_;
+};
+
+struct BoneAttachment
+{
+    Ogre::Entity* entity_;
+    Ogre::Bone* bone_;
+    CustomTagPoint* tagPoint_;
+};
+
+class BoneAttachmentListener
+{
+public:
+    void AddAttachment(Ogre::Entity* entity, Ogre::Bone* bone, EC_Placeable* placeable)
+    {
+        if (!entity || !bone || !placeable)
+            return;
+        
+        // Check if attachment for this bone already exists
+        std::map<Ogre::Bone*, BoneAttachment>::iterator i = attachments_.find(bone);
+        if (i != attachments_.end())
+        {
+            i->second.tagPoint_->placeables_.push_back(placeable);
+            return;
+        }
+        
+        // Have to create a new entry
+        BoneAttachment newEntry;
+        newEntry.entity_ = entity;
+        newEntry.bone_ = bone;
+#include "DisableMemoryLeakCheck.h"
+        CustomTagPoint* tagPoint = new CustomTagPoint(entity);
+#include "EnableMemoryLeakCheck.h"
+        newEntry.tagPoint_ = tagPoint;
+        bone->addChild(tagPoint);
+        
+        if (placeable->boneAttachmentNode_)
+        {
+            placeable->boneAttachmentNode_->setPosition(tagPoint->_getDerivedPosition());
+            placeable->boneAttachmentNode_->setOrientation(tagPoint->_getDerivedOrientation());
+            placeable->boneAttachmentNode_->setScale(tagPoint->_getDerivedScale());
+        }
+        
+        tagPoint->placeables_.push_back(placeable);
+        
+        attachments_[bone] = newEntry;
+    }
+    
+    void RemoveAttachment(Ogre::Bone* bone, EC_Placeable* placeable)
+    {
+        std::map<Ogre::Bone*, BoneAttachment>::iterator i = attachments_.find(bone);
+        if (i != attachments_.end())
+        {
+            std::vector<EC_Placeable*>& placeables = i->second.tagPoint_->placeables_;
+            for (unsigned j = 0; j < placeables.size(); ++j)
+            {
+                if (placeables[j] == placeable)
+                {
+                    placeables.erase(placeables.begin() + j);
+                    break;
+                }
+            }
+            
+            // If attachments for this bone became empty, remove the tagpoint and the whole entry
+            if (placeables.empty())
+            {
+                bone->removeChild(i->second.tagPoint_);
+#include "DisableMemoryLeakCheck.h"
+                delete i->second.tagPoint_;
+#include "EnableMemoryLeakCheck.h"
+                attachments_.erase(i);
+            }
+        }
+    }
+    
+    std::map<Ogre::Bone*, BoneAttachment> attachments_;
+};
+
+static BoneAttachmentListener attachmentListener;
 
 void SetShowBoundingBoxRecursive(Ogre::SceneNode* node, bool enable)
 {
@@ -35,11 +164,17 @@ EC_Placeable::EC_Placeable(IModule* module) :
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     scene_node_(0),
     link_scene_node_(0),
+    boneAttachmentNode_(0),
+    parentBone_(0),
+    parentPlaceable_(0),
+    parentMesh_(0),
     attached_(false),
     select_priority_(0),
     transform(this, "Transform"),
     drawDebug(this, "Show bounding box", false),
-    visible(this, "Visible", true)
+    visible(this, "Visible", true),
+    parentRef(this, "Parent entity ref", ""),
+    parentBone(this, "Parent bone name", "")
 {
     // Enable network interpolation for the transform
     static AttributeMetadata transAttrData;
@@ -75,9 +210,12 @@ EC_Placeable::~EC_Placeable()
 {
     if (renderer_.expired())
         return;
+
+    emit AboutToBeDestroyed();
+
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-                    
+    
     if (scene_node_ && link_scene_node_)
     {
         link_scene_node_->removeChild(scene_node_);
@@ -98,16 +236,216 @@ EC_Placeable::~EC_Placeable()
     }
 }
 
-void EC_Placeable::SetParent(ComponentPtr placeable)
+void EC_Placeable::AttachNode()
 {
-    if ((placeable.get() != 0) && (!dynamic_cast<EC_Placeable*>(placeable.get())))
+    RendererPtr renderer = renderer_.lock();
+    if (!renderer)
+        return;
+    Ogre::SceneManager* sceneMgr = renderer->GetSceneManager();
+    
+    try
     {
-        LogError("Attempted to set parent placeable which is not of type \"" + TypeNameStatic() +"\"!");
+        // If already attached, detach first
+        if (attached_)
+            DetachNode();
+        
+        Ogre::SceneNode* root_node = sceneMgr->getRootSceneNode();
+        
+        // Three possible cases
+        // 1) attach to scene root node
+        // 2) attach to another EC_Placeable's scene node
+        // 3) attach to a bone on a skeletal mesh
+        // Disconnect from the EntityCreated & ParentMeshChanged signals, as responding to them might not be needed anymore.
+        // We will reconnect signals as necessary
+        disconnect(this, SLOT(CheckParentEntityCreated(Scene::Entity*, AttributeChange::Type)));
+        disconnect(this, SLOT(OnParentMeshChanged()));
+        disconnect(this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
+        
+        // Try to attach to another entity if the parent ref is non-empty
+        // Make sure we're not trying to attach to ourselves as the parent
+        QString parent = parentRef.Get().trimmed();
+        if (!parent.isEmpty())
+        {
+            Scene::Entity* ownEntity = GetParentEntity();
+            if (!ownEntity)
+                return;
+            Scene::SceneManager* scene = ownEntity->GetScene();
+            if (!scene)
+                return;
+
+            Scene::Entity* parentEntity = LookupParentEntity(scene, parent);
+            
+            if (parentEntity == ownEntity)
+            {
+                // If we refer to self, attach to the root
+                root_node->addChild(link_scene_node_);
+                attached_ = true;
+                return;
+            }
+            
+            if (parentEntity)
+            {
+                // Note: if we don't find the correct bone, we attach to the root
+                QString boneName = parentBone.Get().trimmed();
+                if (!boneName.isEmpty())
+                {
+                    EC_Mesh* parentMesh = parentEntity->GetComponent<EC_Mesh>().get();
+                    if (parentMesh)
+                    {
+                        Ogre::Bone* bone = parentMesh->GetBone(boneName);
+                        if (bone)
+                        {
+                            // Create the node for bone attachment if it did not exist already
+                            if (!boneAttachmentNode_)
+                            {
+                                boneAttachmentNode_ = sceneMgr->createSceneNode(renderer->GetUniqueObjectName("EC_Placeable_BoneAttachmentNode"));
+                                root_node->addChild(boneAttachmentNode_);
+                            }
+                            
+                            // Setup manual bone tracking, as Ogre does not allow to attach scene nodes to bones
+                            attachmentListener.AddAttachment(parentMesh->GetEntity(), bone, this);
+                            
+                            boneAttachmentNode_->addChild(link_scene_node_);
+                            
+                            parentBone_ = bone;
+                            parentMesh_ = parentMesh;
+                            connect(parentMesh, SIGNAL(MeshAboutToBeDestroyed()), this, SLOT(OnParentMeshDestroyed()), Qt::UniqueConnection);
+                            attached_ = true;
+                            return;
+                        }
+                        else
+                        {
+                            // Could not find the bone. Connect to the parent mesh MeshChanged signal to wait for the proper mesh to be assigned.
+                            connect(parentMesh, SIGNAL(MeshChanged()), this, SLOT(OnParentMeshChanged()), Qt::UniqueConnection);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        // If can't find the mesh component yet, wait for it to be created
+                        connect(parentEntity, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+                        return;
+                    }
+                }
+                
+                parentPlaceable_ = parentEntity->GetComponent<EC_Placeable>().get();
+                if (parentPlaceable_)
+                {
+                    parentPlaceable_->GetSceneNode()->addChild(link_scene_node_);
+                    
+                    // Connect to destruction of the placeable to be able to detach gracefully
+                    connect(parentPlaceable_, SIGNAL(AboutToBeDestroyed()), this, SLOT(OnParentPlaceableDestroyed()), Qt::UniqueConnection);
+                    attached_ = true;
+                    return;
+                }
+                else
+                {
+                    // If can't find the placeable component yet, wait for it to be created
+                    connect(parentEntity, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+                    return;
+                }
+            }
+            else
+            {
+                // Could not find parent entity. Check for it later, when new entities are created into the scene
+                connect(scene, SIGNAL(EntityCreated(Entity*, AttributeChange::Type)), this, SLOT(CheckParentEntityCreated(Scene::Entity*, AttributeChange::Type)), Qt::UniqueConnection);
+                return;
+            }
+        }
+        
+        root_node->addChild(link_scene_node_);
+        attached_ = true;
+    }
+    catch (Ogre::Exception& e)
+    {
+        LogError("EC_Placeable::AttachNode: Ogre exception " + std::string(e.what()));
         return;
     }
+}
+
+
+void EC_Placeable::DetachNode()
+{
+    RendererPtr renderer = renderer_.lock();
+    if (!renderer)
+        return;
+    Ogre::SceneManager* sceneMgr = renderer->GetSceneManager();
+    
+    if (!attached_)
+        return;
+    
+    try
+    {
+        Ogre::SceneNode* root_node = sceneMgr->getRootSceneNode();
+        
+        // Three possible cases
+        // 1) attached to scene root node
+        // 2) attached to another scene node
+        // 3) attached to a bone via manual tracking
+        if (parentBone_)
+        {
+            disconnect(parentMesh_, SIGNAL(MeshAboutToBeDestroyed()));
+            attachmentListener.RemoveAttachment(parentBone_, this);
+            boneAttachmentNode_->removeChild(link_scene_node_);
+            parentBone_ = 0;
+            parentMesh_ = 0;
+        }
+        else if (parentPlaceable_)
+        {
+            disconnect(parentPlaceable_, SIGNAL(AboutToBeDestroyed()));
+            parentPlaceable_->GetSceneNode()->removeChild(link_scene_node_);
+            parentPlaceable_ = 0;
+        }
+        else
+            root_node->removeChild(link_scene_node_);
+        
+        attached_ = false;
+    }
+    catch (Ogre::Exception& e)
+    {
+        LogError("EC_Placeable::DetachNode: Ogre exception " + std::string(e.what()));
+    }
+}
+
+
+void EC_Placeable::OnParentMeshDestroyed()
+{
     DetachNode();
-    parent_ = placeable;
-    AttachNode();
+    // Connect to the mesh component setting a new mesh; we might (re)find the proper bone then
+    connect(sender(), SIGNAL(MeshChanged()), this, SLOT(OnParentMeshChanged()), Qt::UniqueConnection);
+}
+
+void EC_Placeable::OnParentPlaceableDestroyed()
+{
+    DetachNode();
+}
+
+void EC_Placeable::CheckParentEntityCreated(Scene::Entity* entity, AttributeChange::Type change)
+{
+    if ((!attached_) && (entity))
+    {
+        // Check if the entity is the one we should use as parent
+        if (entity == LookupParentEntity(entity->GetScene(), parentRef.Get().trimmed()))
+            AttachNode();
+    }
+}
+
+void EC_Placeable::OnParentMeshChanged()
+{
+    if (!attached_)
+        AttachNode();
+}
+
+void EC_Placeable::OnComponentAdded(IComponent* component, AttributeChange::Type change)
+{
+    if (!attached_)
+        AttachNode();
+}
+
+void EC_Placeable::SetParent(ComponentPtr placeable)
+{
+    // Deprecated no-op
+    LogError("SetParent is deprecated and no longer supported");
 }
 
 Vector3df EC_Placeable::GetPosition() const
@@ -236,64 +574,6 @@ void EC_Placeable::SetScale(const Vector3df& newscale)
     transform.Set(newtrans, AttributeChange::Default);
 }
 
-void EC_Placeable::AttachNode()
-{
-    if (renderer_.expired())
-    {
-        LogError("EC_Placeable::AttachNode: No renderer available to call this function!");
-        return;
-    }
-    RendererPtr renderer = renderer_.lock();
-        
-    if (attached_)
-        return;
-            
-    Ogre::SceneNode* parent_node;
-    
-    if (!parent_)
-    {
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        parent_node = scene_mgr->getRootSceneNode();
-    }
-    else
-    {
-        EC_Placeable* parent = checked_static_cast<EC_Placeable*>(parent_.get());
-        parent_node = parent->GetLinkSceneNode();
-    }
-    
-    parent_node->addChild(link_scene_node_);
-    attached_ = true;
-}
-
-void EC_Placeable::DetachNode()
-{
-    if (renderer_.expired())
-    {
-        LogError("EC_Placeable::DetachNode: No renderer available to call this function!");
-        return;
-    }
-    RendererPtr renderer = renderer_.lock();
-        
-    if (!attached_)
-        return;
-        
-    Ogre::SceneNode* parent_node;
-    
-    if (!parent_)
-    {
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        parent_node = scene_mgr->getRootSceneNode();
-    }
-    else
-    {
-        EC_Placeable* parent = checked_static_cast<EC_Placeable*>(parent_.get());
-        parent_node = parent->GetLinkSceneNode();
-    }
-    
-    parent_node->removeChild(link_scene_node_);
-    attached_ = false;
-}
-
 //experimental QVector3D acessors
 QVector3D EC_Placeable::GetQPosition() const
 {
@@ -404,6 +684,10 @@ QVector3D EC_Placeable::translate(int axis, float amount)
 
 void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
+    // If parent ref or parent bone changed, reattach node to scene hierarchy
+    if ((attribute == &parentRef) || (attribute == &parentBone))
+        AttachNode();
+
     if (attribute == &transform)
     {
         if (!link_scene_node_ || !scene_node_)

@@ -16,6 +16,11 @@
 #include <QVariant>
 #include <QVector3D>
 
+namespace Ogre
+{
+    class Bone;
+}
+
 //! Ogre mesh entity component
 /**
 <table class="header">
@@ -311,7 +316,10 @@ public slots:
 
    //! returns Ogre attachment mesh entity
     Ogre::Entity* GetAttachmentEntity(uint index) const;
-
+    
+    //! returns an Ogre bone safely, or null if not found.
+    Ogre::Bone* GetBone(const QString& boneName) const;
+    
     //! gets number of materials (submeshes) in mesh entity
     uint GetNumMaterials() const;
     
@@ -369,9 +377,13 @@ public slots:
 //    float3x4 IComponent::GetWorldTransform();
     
     //! Attach this mesh to a bone on another EC_Mesh component. Client-side only. Use with caution.
+    /*! This function is deprecated. Use EC_Placeable's parentRef and parentBone attributes instead for attaching.
+     */
     bool AttachMeshToBone(QObject* targetMesh, const QString& boneName);
 
     //! Detach from the bone and reattach to placeable if was attached
+    /*! This function is deprecated. Use EC_Placeable's parentRef and parentBone attributes instead for attaching.
+     */
     void DetachMeshFromBone();
 
     //! Helper for setting asset ref from js with less code (and at all from py, due to some trouble with assetref decorator setting)
@@ -388,6 +400,9 @@ signals:
     //! Signal is emitted when skeleton has successfully applied to entity.
     void SkeletonChanged(QString skeleton_name);
 
+    /// Emitted when mesh is about to be destroyed
+    void MeshAboutToBeDestroyed();
+    
 private slots:
     //! Called when the parent entity has been set.
     void UpdateSignals();
