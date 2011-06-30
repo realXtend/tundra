@@ -111,8 +111,9 @@ public slots:
     void Login(const QString& address, unsigned short port, kNet::SocketTransportLayer protocol = kNet::InvalidTransportLayer);
 
     /// Disconnects the client from the current server, and also deletes all contents from the client scene.
-    /// @param fail Pass in true if the logout was due to connection/login failure. False, if the connection was aborted deliberately by the client.
-    void Logout(bool fail = false);
+    /** Delays the logout by one frame, so it is safe to call from scripts.
+     */
+    void Logout();
 
     /// Get client connection ID (from loginreply message). Is zero if not connected
     int GetConnectionID() const { return client_id_; }
@@ -140,12 +141,20 @@ public slots:
     /// Deletes all set login properties.
     void ClearLoginProperties() { properties.clear(); }
 
+public:
+    /// Logout immediately and delete the client scene content
+    /// @param fail Pass in true if the logout was due to connection/login failure. False, if the connection was aborted deliberately by the client.
+    void DoLogout(bool fail = false);
+    
 private slots:
     /// Handles a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
 
     void OnConnectionAttemptFailed();
 
+    /// Actually perform a delayed logout
+    void DelayedLogout();
+    
 private:
 
     /// Handles pending login to server

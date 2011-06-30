@@ -409,7 +409,7 @@ void TundraLogicModule::Connect(QString address, int port, QString username, QSt
 
 void TundraLogicModule::Disconnect()
 {
-    client_->Logout(false);
+    client_->Logout();
 }
 
 void TundraLogicModule::SaveScene(QString filename, bool asBinary, bool saveTemporaryEntities, bool saveLocalEntities)
