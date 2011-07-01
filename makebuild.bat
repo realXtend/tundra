@@ -36,7 +36,8 @@ del build\libvorbisfiled.dll
 del build\viewerd.exe
 del build\serverd.exe
 del build\modules\core\*d.dll
-@rem for now, delete whole pymodules folder
+@rem for now, delete all python stuff
+del build\python*.dll
 rmdir build\pymodules /S /Q
 @rem del build\pymodules\*.pyc
 @rem del build\pymodules\apitest\*.pyc
