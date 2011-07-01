@@ -10,9 +10,9 @@ Basically this means any component that does not contain any attributes or publi
 
 In C++ code, the components are prefixed with "EC_". In this documentation and in the EC editor, however, all the entity components are referred to without this prefix. 
 
-- \ref EC_3DCanvas "3DCanvas"
+- \ref EC_3DCanvas "3DCanvas" - show a qt widget as a texture on a 3d object. Used by e.g. WebView
 - \ref EC_3DCanvasSource "3DCanvasSource" (note: deprecated, see EC_WebView instead)
-- \ref EC_AnimationController "AnimationController"
+- \ref EC_AnimationController "AnimationController" - automatically created for objects that use an Ogre skeleton
 - \ref EC_Avatar "Avatar"
 - \ref EC_AvatarAppearance "AvatarAppearance"
 - \ref EC_Billboard "Billboard"
@@ -31,7 +31,7 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 - \ref EC_Light "Light"
 - \ref EC_Mesh "Mesh"
 - \ref EC_Movable "Movable"
-- \ref EC_Name "Name"
+- \ref EC_Name "Name" - Name of the object, as shown e.g. in the scenestruct view
 - \ref EC_NetworkPosition "NetworkPosition"
 - \ref EC_OgreCamera "OgreCamera"
 - \ref EC_OgreCustomObject "OgreCustomObject"
@@ -44,10 +44,11 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 - \ref EC_OpenSimPresence "OpenSimPresence"
 - \ref EC_OpenSimPrim "OpenSimPrim"
 - \ref EC_ParticleSystem "ParticleSystem"
-- \ref EC_Placeable "Placeable"
+- \ref EC_Placeable "Placeable" - Position, orientation and scale of the object. Everything in the 3d scene has this.
 - \ref EC_PlanarMirror "PlanarMirror"
 - \ref EC_ProximityTrigger "ProximityTrigger"
 - \ref EC_RigidBody "RigidBody"
+- \ref EC_RttTarget "RttTarget" - Render-to-texture target, creates an image of a camera view
 - \ref EC_Ruler "Ruler"
 - \ref EC_Script "Script"
 - \ref Environment::EC_SkyBox "SkyBox"
@@ -59,6 +60,7 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 - \ref EC_Touchable "Touchable"
 - \ref Environment::EC_WaterPlane "WaterPlane"
 - \ref EC_WebView "WebView"
+- \ref EC_VolumeTrigger "VolumeTrigger" - Detects whether objects are inside a given volume (object's rigidbody)
 
 <!--
 <table style="margin: 20px;">
