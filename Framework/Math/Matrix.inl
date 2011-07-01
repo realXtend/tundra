@@ -597,18 +597,18 @@ void SetIdentity3x3(Matrix &m)
 template<typename Matrix>
 void InverseAffineMatrixNoScale(Matrix &mat)
 {
-	std::swap(mat[0][1], mat[1][0]);
-	std::swap(mat[0][2], mat[2][0]);
-	std::swap(mat[1][2], mat[2][1]);
+	Swap(mat[0][1], mat[1][0]);
+	Swap(mat[0][2], mat[2][0]);
+	Swap(mat[1][2], mat[2][1]);
 	mat.SetTranslatePart(mat.TransformDir(-mat[0][3], -mat[1][3], -mat[2][3]));
 }
 
 template<typename Matrix>
 void InverseAffineMatrixUniformScale(Matrix &mat)
 {
-	std::swap(mat[0][1], mat[1][0]);
-	std::swap(mat[0][2], mat[2][0]);
-	std::swap(mat[1][2], mat[2][1]);
+	Swap(mat[0][1], mat[1][0]);
+	Swap(mat[0][2], mat[2][0]);
+	Swap(mat[1][2], mat[2][1]);
 	float scale = sqrtf(1.f / float3(mat[0][0], mat[0][1], mat[0][2]).LengthSq());
 
 	mat[0][0] *= scale; mat[0][1] *= scale; mat[0][2] *= scale;
@@ -621,9 +621,9 @@ void InverseAffineMatrixUniformScale(Matrix &mat)
 template<typename Matrix>
 void InverseAffineMatrixNonuniformScale(Matrix &mat)
 {
-	std::swap(mat[0][1], mat[1][0]);
-	std::swap(mat[0][2], mat[2][0]);
-	std::swap(mat[1][2], mat[2][1]);
+	Swap(mat[0][1], mat[1][0]);
+	Swap(mat[0][2], mat[2][0]);
+	Swap(mat[1][2], mat[2][1]);
 	for(int i = 0; i < 3; ++i)
 	{
 		float scale = sqrtf(1.f / float3(mat[i][0], mat[i][1], mat[i][2]).LengthSq());
@@ -639,7 +639,7 @@ bool InverseMatrix(Matrix &mat)
 {
     Matrix inversed = Matrix::identity; // will contain the inverse matrix
 
-    for(int column = 0; column < std::min<int>(Matrix::Rows, Matrix::Cols); ++column)
+    for(int column = 0; column < Min<int>(Matrix::Rows, Matrix::Cols); ++column)
 	{
 		// find the row i with i >= j such that M has the largest absolute value.
 		int greatest = column;

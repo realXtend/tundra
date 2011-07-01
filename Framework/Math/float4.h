@@ -9,7 +9,9 @@
 */
 #pragma once
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <string>
+#endif
 #include "MathFwd.h"
 #include "float3.h"
 
@@ -118,14 +120,18 @@ public:
     /// Tests if the (x, y, z) parts of two vectors are perpendicular to each other.
     bool IsPerpendicular3(const float4 &other, float epsilon = 1e-6f) const;
 
+#ifdef MATH_ENABLE_STL_SUPPORT
     /// Returns "(x, y, z, w)".
     std::string ToString() const;
     /// Returns "x y z w". This is the preferred format for the float4 if it has to be serialized to a string for machine transfer.
     std::string SerializeToString() const;
+#endif
 
     /// Parses a string that is of form "x,y,z,w" or "(x,y,z,w)" or "(x;y;z;w)" or "x y z w" to a new float4.
     static float4 FromString(const char *str);
+#ifdef MATH_ENABLE_STL_SUPPORT
     static float4 FromString(const std::string &str) { return FromString(str.c_str()); }
+#endif
 
     /// Returns x + y + z + w.
     float SumOfElements() const;
@@ -133,11 +139,11 @@ public:
     float ProductOfElements() const;
     /// Returns the average of x, y, z, w.
     float AverageOfElements() const;
-    /// Returns min(x, y, z, w).
+    /// Returns Min(x, y, z, w).
     float MinElement() const;
     /// Returns the index that has the smallest value in this vector.
     int MinElementIndex() const;
-    /// Returns max(x, y, z, w).
+    /// Returns Max(x, y, z, w).
     float MaxElement() const;
     /// Returns the index that has the smallest value in this vector.
     int MaxElementIndex() const;
@@ -314,8 +320,10 @@ public:
 #endif
 };
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 /// Prints this float4 to the given stream.
 std::ostream &operator <<(std::ostream &out, const float4 &rhs);
+#endif
 
 /// Multiplies the x, y, z and w components of the vector by the given scalar. Note that if w != 0, 
 /// this does NOT scale the length of the homogeneous 3D vector.

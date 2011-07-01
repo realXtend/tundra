@@ -7,9 +7,9 @@
 */
 #include "StableHeaders.h"
 
-#include <cstring>
+#include <string.h>
 
-#include "Math/BitOps.h"
+#include "BitOps.h"
 
 u32 BinaryStringToValue(const char *str)
 {

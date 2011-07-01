@@ -9,7 +9,9 @@
 */
 #pragma once
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <iostream>
+#endif
 
 namespace math
 {
@@ -276,6 +278,7 @@ bool operator!=(const FixedPoint<T, F> &a, const FixedPoint<T, F> &b)
     return !(a == b);
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 template<typename T, int F>
 std::ostream &operator<<(std::ostream &out, const FixedPoint<T, F> &f)
 {
@@ -286,6 +289,7 @@ std::ostream &operator<<(std::ostream &out, const FixedPoint<T, F> &f)
         out << f.Int() << "." << f.Frac() * 10000 / FixedPoint<T, F>::One;
     return out;
 }
+#endif
 
 } // ~math
 

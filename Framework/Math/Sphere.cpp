@@ -6,7 +6,9 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <utility>
+#endif
 #include "MathFunc.h"
 #include "OBB.h"
 #include "AABB.h"
@@ -129,7 +131,7 @@ AABB Sphere::MaximalContainedAABB() const
 void Sphere::SetNegativeInfinity()
 {
     pos = float3(0,0,0);
-    r = -std::numeric_limits<float>::infinity();
+    r = -FLOAT_INF;
 }
 
 float Sphere::Volume() const

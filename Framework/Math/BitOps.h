@@ -9,7 +9,10 @@
 */
 #pragma once
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <cassert>
+#endif
+#include "MathFwd.h"
 #include "CoreTypes.h"
 
 u32 BinaryStringToValue(const char *str);

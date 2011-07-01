@@ -336,9 +336,11 @@ public:
     /// [noscript]
     void Enclose(const float3 *pointArray, int numPoints);
 
+#ifdef MATH_ENABLE_STL_SUPPORT
     /// Returns a human-readable representation of this AABB. Most useful for debugging purposes.
     /** The returned string specifies the center point and the half-axes of this AABB. */
     std::string ToString() const;
+#endif
 
     /// Finds the set intersection of this and the given AABB.
     /** @return This function returns the AABB that is contained in both this and the given AABB. */

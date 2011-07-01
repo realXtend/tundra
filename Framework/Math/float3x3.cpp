@@ -7,15 +7,17 @@
 */
 #include "StableHeaders.h"
 
-#include "Math/MathFunc.h"
-#include "Math/float3.h"
-#include "Math/float4.h"
-#include "Math/float3x3.h"
-#include "Math/float3x4.h"
-#include "Math/float4x4.h"
-#include "Math/Matrix.inl"
-#include "Math/Quat.h"
-#include "Math/TransformOps.h"
+#include <string.h>
+
+#include "MathFunc.h"
+#include "float3.h"
+#include "float4.h"
+#include "float3x3.h"
+#include "float3x4.h"
+#include "float4x4.h"
+#include "Matrix.inl"
+#include "Quat.h"
+#include "TransformOps.h"
 
 float3x3::float3x3(float _00, float _01, float _02,
          float _10, float _11, float _12,
@@ -433,16 +435,16 @@ void float3x3::SetIdentity()
 
 void float3x3::SwapColumns(int col1, int col2)
 {
-    std::swap(v[0][col1], v[0][col2]);
-    std::swap(v[1][col1], v[1][col2]);
-    std::swap(v[2][col1], v[2][col2]);
+    Swap(v[0][col1], v[0][col2]);
+    Swap(v[1][col1], v[1][col2]);
+    Swap(v[2][col1], v[2][col2]);
 }
 
 void float3x3::SwapRows(int row1, int row2)
 {
-    std::swap(v[row1][0], v[row2][0]);
-    std::swap(v[row1][1], v[row2][1]);
-    std::swap(v[row1][2], v[row2][2]);
+    Swap(v[row1][0], v[row2][0]);
+    Swap(v[row1][1], v[row2][1]);
+    Swap(v[row1][2], v[row2][2]);
 }
 
 void float3x3::SetRotatePartX(float angle)
@@ -567,9 +569,9 @@ float3x3 float3x3::Inverted() const
 bool float3x3::InverseOrthogonal()
 {
     assume(IsOrthogonal());
-    std::swap(v[0][1], v[1][0]);
-    std::swap(v[0][2], v[2][0]);
-    std::swap(v[1][2], v[2][1]);
+    Swap(v[0][1], v[1][0]);
+    Swap(v[0][2], v[2][0]);
+    Swap(v[1][2], v[2][1]);
     float scale1 = sqrtf(1.f / float3(v[0][0], v[0][1], v[0][2]).LengthSq());
     float scale2 = sqrtf(1.f / float3(v[1][0], v[1][1], v[1][2]).LengthSq());
     float scale3 = sqrtf(1.f / float3(v[2][0], v[2][1], v[2][2]).LengthSq());
@@ -585,9 +587,9 @@ bool float3x3::InverseOrthogonalUniformScale()
 {
     assume(IsOrthogonal());
     assume(HasUniformScale());
-    std::swap(v[0][1], v[1][0]);
-    std::swap(v[0][2], v[2][0]);
-    std::swap(v[1][2], v[2][1]);
+    Swap(v[0][1], v[1][0]);
+    Swap(v[0][2], v[2][0]);
+    Swap(v[1][2], v[2][1]);
     const float scale = sqrtf(1.f / float3(v[0][0], v[0][1], v[0][2]).LengthSq());
 
     v[0][0] *= scale; v[0][1] *= scale; v[0][2] *= scale;
@@ -605,9 +607,9 @@ void float3x3::InverseOrthonormal()
 
 void float3x3::Transpose()
 {
-    std::swap(v[0][1], v[1][0]);
-    std::swap(v[0][2], v[2][0]);
-    std::swap(v[1][2], v[2][1]);
+    Swap(v[0][1], v[1][0]);
+    Swap(v[0][2], v[2][0]);
+    Swap(v[1][2], v[2][1]);
 }
 
 float3x3 float3x3::Transposed() const
@@ -932,6 +934,7 @@ bool float3x3::Equals(const float3x3 &other, float epsilon) const
     return true;
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::string float3x3::ToString() const
 {
     char str[256];
@@ -953,6 +956,7 @@ std::string float3x3::ToString2() const
 
     return std::string(str);
 }
+#endif
 
 float3 float3x3::ToEulerXYX() const { float3 f; ExtractEulerXYX(*this, f[0], f[1], f[2]); return f; }
 float3 float3x3::ToEulerXZX() const { float3 f; ExtractEulerXZX(*this, f[0], f[1], f[2]); return f; }
@@ -1028,4 +1032,4 @@ float4 operator *(const float4 &lhs, const float3x3 &rhs)
 
 const float3x3 float3x3::zero     = float3x3(0,0,0, 0,0,0, 0,0,0);
 const float3x3 float3x3::identity = float3x3(1,0,0, 0,1,0, 0,0,1);
-const float3x3 float3x3::nan = float3x3(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
+const float3x3 float3x3::nan = float3x3(FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN);

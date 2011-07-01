@@ -88,7 +88,7 @@ void Client::Login(const QString& address, unsigned short port, const QString& u
     // Make sure to logout, our scene manager gets confused when you login again
     // when already connected to another or same server.
     if (IsConnected())
-        Logout();
+        DoLogout();
 
     SetLoginProperty("address", address);
     SetLoginProperty("port", QString::number(port));
@@ -141,7 +141,17 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     client_id_ = 0;
 }
 
-void Client::Logout(bool fail)
+void Client::Logout()
+{
+    QTimer::singleShot(1, this, SLOT(DelayedLogout()));
+}
+
+void Client::DelayedLogout()
+{
+    DoLogout(false);
+}
+
+void Client::DoLogout(bool fail)
 {
     if (loginstate_ != NotConnected)
     {
@@ -252,7 +262,7 @@ kNet::MessageConnection* Client::GetConnection()
 
 void Client::OnConnectionAttemptFailed()
 {
-    Logout(true);
+    DoLogout(true);
 }
 
 void Client::HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes)
@@ -324,7 +334,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
     }
     else
     {
-        Logout(true);
+        DoLogout(true);
     }
 }
 

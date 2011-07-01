@@ -6,11 +6,13 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <cassert>
 #include <utility>
-
-#include "Math/float2.h"
-#include "Math/MathFunc.h"
+#endif
+#include <stdlib.h>
+#include "float2.h"
+#include "MathFunc.h"
 
 using namespace std;
 
@@ -137,6 +139,7 @@ bool float2::Equals(float x_, float y_, float epsilon) const
     return EqualAbs(x, x_, epsilon) && EqualAbs(y, y_, epsilon);
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::string float2::ToString() const
 { 
     char str[256];
@@ -150,6 +153,7 @@ std::string float2::SerializeToString() const
     sprintf(str, "%f %f", x, y);
     return std::string(str);
 }
+#endif
 
 float2 float2::FromString(const char *str)
 {
@@ -183,7 +187,7 @@ float float2::AverageOfElements() const
 
 float float2::MinElement() const
 {
-    return min(x, y);
+    return ::Min(x, y);
 }
 
 int float2::MinElementIndex() const
@@ -193,7 +197,7 @@ int float2::MinElementIndex() const
 
 float float2::MaxElement() const
 {
-    return max(x, y);
+    return ::Max(x, y);
 }
 
 int float2::MaxElementIndex() const
@@ -208,22 +212,22 @@ float2 float2::Abs() const
 
 float2 float2::Min(float floor) const
 {
-    return float2(min(x, floor), min(x, floor));
+    return float2(::Min(x, floor), ::Min(x, floor));
 }
 
 float2 float2::Min(const float2 &floor) const
 {
-    return float2(min(x, floor.x), min(x, floor.x));
+    return float2(::Min(x, floor.x), ::Min(x, floor.x));
 }
 
 float2 float2::Max(float ceil) const
 {
-    return float2(max(x, ceil), max(x, ceil));
+    return float2(::Max(x, ceil), ::Max(x, ceil));
 }
 
 float2 float2::Max(const float2 &ceil) const
 {
-    return float2(max(x, ceil.x), max(x, ceil.x));
+    return float2(::Max(x, ceil.x), ::Max(x, ceil.x));
 }
 
 float2 float2::Clamp(const float2 &floor, const float2 &ceil) const
@@ -385,6 +389,7 @@ public:
 	}
 };
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 void float2::ConvexHull(const float2 *pointArray, int numPoints, std::vector<float2> &outConvexHull)
 {
     outConvexHull.clear();
@@ -394,7 +399,9 @@ void float2::ConvexHull(const float2 *pointArray, int numPoints, std::vector<flo
     int convexHullSize = ConvexHullInPlace(&outConvexHull[0], outConvexHull.size());
     outConvexHull.resize(convexHullSize);
 }
+#endif
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 /** This function implements the Graham's Scan algorithm for finding the convex hull of 
     a 2D point set. The running time is O(nlogn). For details, see 
     "Introduction to Algorithms, 2nd ed.", by Cormen, Leiserson, Rivest, p.824, or
@@ -408,7 +415,7 @@ int float2::ConvexHullInPlace(float2 *points, int nPoints)
 	for(int i = 1; i < nPoints; ++i)
 		if (points[i].y < lowest->y)
 			lowest = &points[i];
-	std::swap(*lowest, points[0]);
+	Swap(*lowest, points[0]);
 	SortByPolarAngle pred;
 	pred.perspective = points[0];
     std::sort(&points[1], &points[nPoints], pred);
@@ -475,11 +482,12 @@ int float2::ConvexHullInPlace(float2 *points, int nPoints)
 
 	return nPointsInHull;
 }
+#endif
 
 /** Implementation adapted from Christer Ericson's Real-time Collision Detection, p.111. */
 float float2::MinAreaRect(const float2 *pts, int numPoints, float2 &center, float2 &uDir, float2 &vDir)
 {
-    float minArea = std::numeric_limits<float>::max();
+    float minArea = FLOAT_MAX;
 
     // Loop through all edges formed by pairs of points.
     for(int i = 0, j = numPoints -1; i < numPoints; j = i, ++i)
@@ -495,10 +503,10 @@ float float2::MinAreaRect(const float2 *pts, int numPoints, float2 &center, floa
         // Find the most extreme points along the coordinate frame { e0, e1 }.
 
         ///\todo Examine. A bug in the book? All the following are initialized to 0!.
-        float min0 = std::numeric_limits<float>::infinity();
-        float min1 = std::numeric_limits<float>::infinity();
-        float max0 = -std::numeric_limits<float>::infinity();
-        float max1 = -std::numeric_limits<float>::infinity();
+        float min0 = FLOAT_INF;
+        float min1 = FLOAT_INF;
+        float max0 = -FLOAT_INF;
+        float max1 = -FLOAT_INF;
         for(int k = 0; k < numPoints; ++k)
         {
             float2 d = pts[k] - pts[j];
@@ -624,16 +632,18 @@ float2 &float2::operator /=(float scalar)
     return *this;
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::ostream &operator <<(std::ostream &out, const float2 &rhs)
 {
     std::string str = rhs.ToString();
     out << str;
     return out;
 }
+#endif
 
 const float2 float2::zero = float2(0, 0);
 const float2 float2::one = float2(1, 1);
 const float2 float2::unitX = float2(1, 0);
 const float2 float2::unitY = float2(0, 1);
-const float2 float2::nan = float2(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
-const float2 float2::inf = float2(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+const float2 float2::nan = float2(FLOAT_NAN, FLOAT_NAN);
+const float2 float2::inf = float2(FLOAT_INF, FLOAT_INF);

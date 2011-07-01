@@ -9,7 +9,10 @@
 */
 #pragma once
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <string>
+#endif
+
 #include "MathFwd.h"
 
 #ifdef QT_INTEROP
@@ -17,7 +20,7 @@
 #endif
 /*
 #ifdef IRRLICHT_INTEROP
-#include "Math/float3.h"
+#include "float3.h"
 #endif
 */
 #ifdef OGRE_INTEROP
@@ -100,15 +103,19 @@ public:
     bool Equals(const float3 &rhs, float epsilon = 1e-3f) const;
     bool Equals(float x, float y, float z, float epsilon = 1e-3f) const;
 
+#ifdef MATH_ENABLE_STL_SUPPORT
     /// Returns "(x, y, z)". [noscript]
     std::string ToString() const;
 
     /// Returns "x y z". This is the preferred format for the float3 if it has to be serialized to a string for machine transfer.
     std::string SerializeToString() const;
+#endif
 
     /// Parses a string that is of form "x,y,z" or "(x,y,z)" or "(x;y;z)" or "x y z" to a new float3.
     static float3 FromString(const char *str);
+#ifdef MATH_ENABLE_STL_SUPPORT
     static float3 FromString(const std::string &str) { return FromString(str.c_str()); }
+#endif
 
     /// Returns x + y + z.
     float SumOfElements() const;
@@ -116,11 +123,11 @@ public:
     float ProductOfElements() const;
     /// Returns the average of x, y and z.
     float AverageOfElements() const;
-    /// Returns min(x, y, z).
+    /// Returns Min(x, y, z).
     float MinElement() const;
     /// Returns the index that has the smallest value in this vector.
     int MinElementIndex() const;
-    /// Returns max(x, y, z).
+    /// Returns Max(x, y, z).
     float MaxElement() const;
     /// Returns the index that has the smallest value in this vector.
     int MaxElementIndex() const;
@@ -301,7 +308,9 @@ public:
 };
 
 /// Prints this float3 to the given stream.
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::ostream &operator <<(std::ostream &out, const float3 &rhs);
+#endif
 
 float3 operator *(float scalar, const float3 &rhs);
 //float3 operator /(float scalar, const float3 &rhs);

@@ -8,10 +8,10 @@
  
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "Framework.h"
 #include "IModule.h"
 #include "LoggingFunctions.h"
+#include "MemoryLeakCheck.h"
 
 IModule::IModule(const std::string &name_)
 :name(name_), 

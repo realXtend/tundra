@@ -122,7 +122,7 @@ bool Plane::AreOnSameSide(const float3 &p1, const float3 &p2) const
 
 float Plane::Distance(const float3 &point) const
 {
-    return abs(SignedDistance(point));
+    return Abs(SignedDistance(point));
 }
 
 float Plane::SignedDistance(const float3 &point) const

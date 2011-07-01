@@ -6,15 +6,18 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
-#include "Math/MathFunc.h"
-#include "Math/float3.h"
-#include "Math/float4.h"
-#include "Math/float3x3.h"
-#include "Math/float3x4.h"
-#include "Math/float4x4.h"
-#include "Math/Matrix.inl"
-#include "Math/Quat.h"
-#include "Math/TransformOps.h"
+
+#include <string.h>
+
+#include "MathFunc.h"
+#include "float3.h"
+#include "float4.h"
+#include "float3x3.h"
+#include "float3x4.h"
+#include "float4x4.h"
+#include "Matrix.inl"
+#include "Quat.h"
+#include "TransformOps.h"
 
 float4x4::float4x4(float _00, float _01, float _02, float _03,
                    float _10, float _11, float _12, float _13,
@@ -732,32 +735,32 @@ void float4x4::Set3x4Part(const float3x4 &r)
 
 void float4x4::SwapColumns(int col1, int col2)
 {
-    std::swap(v[0][col1], v[0][col2]);
-    std::swap(v[1][col1], v[1][col2]);
-    std::swap(v[2][col1], v[2][col2]);
-    std::swap(v[3][col1], v[3][col2]);
+    Swap(v[0][col1], v[0][col2]);
+    Swap(v[1][col1], v[1][col2]);
+    Swap(v[2][col1], v[2][col2]);
+    Swap(v[3][col1], v[3][col2]);
 }
 
 void float4x4::SwapColumns3(int col1, int col2)
 {
-    std::swap(v[0][col1], v[0][col2]);
-    std::swap(v[1][col1], v[1][col2]);
-    std::swap(v[2][col1], v[2][col2]);
+    Swap(v[0][col1], v[0][col2]);
+    Swap(v[1][col1], v[1][col2]);
+    Swap(v[2][col1], v[2][col2]);
 }
 
 void float4x4::SwapRows(int row1, int row2)
 {
-    std::swap(v[row1][0], v[row2][0]);
-    std::swap(v[row1][1], v[row2][1]);
-    std::swap(v[row1][2], v[row2][2]);
-    std::swap(v[row1][3], v[row2][3]);
+    Swap(v[row1][0], v[row2][0]);
+    Swap(v[row1][1], v[row2][1]);
+    Swap(v[row1][2], v[row2][2]);
+    Swap(v[row1][3], v[row2][3]);
 }
 
 void float4x4::SwapRows3(int row1, int row2)
 {
-    std::swap(v[row1][0], v[row2][0]);
-    std::swap(v[row1][1], v[row2][1]);
-    std::swap(v[row1][2], v[row2][2]);
+    Swap(v[row1][0], v[row2][0]);
+    Swap(v[row1][1], v[row2][1]);
+    Swap(v[row1][2], v[row2][2]);
 }
 
 void float4x4::SetTranslatePart(float tx, float ty, float tz)
@@ -931,9 +934,9 @@ float4x4 float4x4::Inverted() const
 bool float4x4::InverseOrthogonal()
 {
     assume(IsOrthogonal3());
-    std::swap(v[0][1], v[1][0]);
-    std::swap(v[0][2], v[2][0]);
-    std::swap(v[1][2], v[2][1]);
+    Swap(v[0][1], v[1][0]);
+    Swap(v[0][2], v[2][0]);
+    Swap(v[1][2], v[2][1]);
     float scale1 = sqrtf(1.f / float3(v[0][0], v[0][1], v[0][2]).LengthSq());
     float scale2 = sqrtf(1.f / float3(v[1][0], v[1][1], v[1][2]).LengthSq());
     float scale3 = sqrtf(1.f / float3(v[2][0], v[2][1], v[2][2]).LengthSq());
@@ -951,9 +954,9 @@ bool float4x4::InverseOrthogonalUniformScale()
 {
     assume(IsOrthogonal3());
     assume(HasUniformScale());
-    std::swap(v[0][1], v[1][0]);
-    std::swap(v[0][2], v[2][0]);
-    std::swap(v[1][2], v[2][1]);
+    Swap(v[0][1], v[1][0]);
+    Swap(v[0][2], v[2][0]);
+    Swap(v[1][2], v[2][1]);
     const float scale = sqrtf(1.f / float3(v[0][0], v[0][1], v[0][2]).LengthSq());
 
     v[0][0] *= scale; v[0][1] *= scale; v[0][2] *= scale;
@@ -968,20 +971,20 @@ bool float4x4::InverseOrthogonalUniformScale()
 void float4x4::InverseOrthonormal()
 {
     assume(IsOrthonormal3());
-    std::swap(v[0][1], v[1][0]);
-    std::swap(v[0][2], v[2][0]);
-    std::swap(v[1][2], v[2][1]);
+    Swap(v[0][1], v[1][0]);
+    Swap(v[0][2], v[2][0]);
+    Swap(v[1][2], v[2][1]);
     SetTranslatePart(TransformDir(-v[0][3], -v[1][3], -v[2][3]));
 }
 
 void float4x4::Transpose()
 {
-    std::swap(v[0][1], v[1][0]);
-    std::swap(v[0][2], v[2][0]);
-    std::swap(v[0][3], v[3][0]);
-    std::swap(v[1][2], v[2][1]);
-    std::swap(v[1][3], v[3][1]);
-    std::swap(v[2][3], v[3][2]);
+    Swap(v[0][1], v[1][0]);
+    Swap(v[0][2], v[2][0]);
+    Swap(v[0][3], v[3][0]);
+    Swap(v[1][2], v[2][1]);
+    Swap(v[1][3], v[3][1]);
+    Swap(v[2][3], v[3][2]);
 }
 
 float4x4 float4x4::Transposed() const
@@ -1434,6 +1437,7 @@ bool float4x4::ContainsProjection(float epsilon) const
     return Row(3).Equals(0.f, 0.f, 0.f, 1.f, epsilon) == false;
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::string float4x4::ToString() const
 {
     char str[256];
@@ -1457,6 +1461,7 @@ std::string float4x4::ToString2() const
 
     return std::string(str);
 }
+#endif
 
 float3 float4x4::ToEulerXYX() const { float3 f; ExtractEulerXYX(*this, f[0], f[1], f[2]); return f; }
 float3 float4x4::ToEulerXZX() const { float3 f; ExtractEulerXZX(*this, f[0], f[1], f[2]); return f; }
@@ -1526,11 +1531,13 @@ void float4x4::Decompose(float3 &translate, float4x4 &rotate, float3 &scale) con
     assume(float4x4::FromTRS(translate, rotate, scale).Equals(*this, 0.1f));
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::ostream &operator <<(std::ostream &out, const float4x4 &rhs)
 {
     out << rhs.ToString();
     return out;
 }
+#endif
 
 float4x4 operator *(const Quat &lhs, const float4x4 &rhs)
 {
@@ -1617,4 +1624,4 @@ float4 float4x4::Mul(const float4 &vector) const { return *this * vector; }
 
 const float4x4 float4x4::zero     = float4x4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
 const float4x4 float4x4::identity = float4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
-const float4x4 float4x4::nan = float4x4(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
+const float4x4 float4x4::nan = float4x4(FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN);

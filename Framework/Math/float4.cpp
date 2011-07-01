@@ -6,13 +6,17 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <cassert>
 #include <utility>
+#endif
 
-#include "Math/float3.h"
-#include "Math/float4.h"
-#include "Math/float4x4.h"
-#include "Math/MathFunc.h"
+#include <stdlib.h>
+
+#include "float3.h"
+#include "float4.h"
+#include "float4x4.h"
+#include "MathFunc.h"
 
 using namespace std;
 
@@ -218,6 +222,7 @@ bool float4::IsPerpendicular3(const float4 &other, float epsilon) const
     return fabs(this->Dot3(other)) < epsilon;
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::string float4::ToString() const
 { 
     char str[256];
@@ -231,6 +236,7 @@ std::string float4::SerializeToString() const
     sprintf(str, "%f %f %f %f", x, y, z, w);
     return std::string(str);
 }
+#endif
 
 float4 float4::FromString(const char *str)
 {
@@ -270,7 +276,7 @@ float float4::AverageOfElements() const
 
 float float4::MinElement() const
 {
-    return min(min(x, y), min(z, w));
+    return ::Min(::Min(x, y), ::Min(z, w));
 }
 
 int float4::MinElementIndex() const
@@ -293,7 +299,7 @@ int float4::MinElementIndex() const
 
 float float4::MaxElement() const
 {
-    return max(max(x, y), min(z, w));
+    return ::Max(::Max(x, y), ::Min(z, w));
 }
 
 int float4::MaxElementIndex() const
@@ -321,22 +327,22 @@ float4 float4::Abs() const
 
 float4 float4::Min(float ceil) const
 {
-    return float4(min(x, ceil), min(y, ceil), min(z, ceil), min(w, ceil));
+    return float4(::Min(x, ceil), ::Min(y, ceil), ::Min(z, ceil), ::Min(w, ceil));
 }
 
 float4 float4::Min(const float4 &ceil) const
 {
-    return float4(min(x, ceil.x), min(y, ceil.y), min(z, ceil.z), min(w, ceil.w));
+    return float4(::Min(x, ceil.x), ::Min(y, ceil.y), ::Min(z, ceil.z), ::Min(w, ceil.w));
 }
 
 float4 float4::Max(float floor) const
 {
-    return float4(max(x, floor), max(y, floor), max(z, floor), max(w, floor));
+    return float4(::Max(x, floor), ::Max(y, floor), ::Max(z, floor), ::Max(w, floor));
 }
 
 float4 float4::Max(const float4 &floor) const
 {
-    return float4(max(x, floor.x), max(y, floor.y), max(z, floor.z), max(w, floor.w));
+    return float4(::Max(x, floor.x), ::Max(y, floor.y), ::Max(z, floor.z), ::Max(w, floor.w));
 }
 
 float4 float4::Clamp(const float4 &floor, const float4 &ceil) const
@@ -677,12 +683,14 @@ float4 &float4::operator /=(float scalar)
     return *this;
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::ostream &operator <<(std::ostream &out, const float4 &rhs)
 {
     std::string str = rhs.ToString();
     out << str;
     return out;
 }
+#endif
 
 const float4 float4::zero = float4(0, 0, 0, 0);
 const float4 float4::one = float4(1, 1, 1, 1);
@@ -690,5 +698,5 @@ const float4 float4::unitX = float4(1, 0, 0, 0);
 const float4 float4::unitY = float4(0, 1, 0, 0);
 const float4 float4::unitZ = float4(0, 0, 1, 0);
 const float4 float4::unitW = float4(0, 0, 0, 1);
-const float4 float4::nan = float4(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
-const float4 float4::inf = float4(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+const float4 float4::nan = float4(FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN);
+const float4 float4::inf = float4(FLOAT_INF, FLOAT_INF, FLOAT_INF, FLOAT_INF);

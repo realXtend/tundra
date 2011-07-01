@@ -6,7 +6,9 @@
     of the author(s). 
 */
 #include "StableHeaders.h"
+#ifdef MATH_ENABLE_STL_SUPPORT
 #include <utility>
+#endif
 #include "MathFunc.h"
 #include "OBB.h"
 #include "AABB.h"
@@ -31,7 +33,7 @@ OBB::OBB(const AABB &aabb)
 void OBB::SetNegativeInfinity()
 {
     pos = float3(0,0,0);
-    r.SetFromScalar(-std::numeric_limits<float>::infinity());
+    r.SetFromScalar(-FLOAT_INF);
     axis[0] = float3(1,0,0);
     axis[1] = float3(0,1,0);
     axis[2] = float3(0,0,1);
@@ -293,8 +295,8 @@ void OBB::ExtremePointsAlongDirection(const float3 &dir, const float3 *pointArra
 
     int smallest = 0;
     int largest = 0;
-    float smallestD = std::numeric_limits<float>::infinity();
-    float largestD = -std::numeric_limits<float>::infinity();
+    float smallestD = FLOAT_INF;
+    float largestD = -FLOAT_INF;
     for(int i = 0; i < numPoints; ++i)
     {
         float d = Dot(pointArray[i], dir);
@@ -619,7 +621,7 @@ bool OBB::Intersects(const OBB &b, float epsilon) const
     // A.z <cross> B.y
     ra = r.x * AbsR[1][1] + r.y * AbsR[0][1];
     rb = b.r.x * AbsR[2][2] + b.r.z * AbsR[2][0];
-    if (abs(t.y * R[0][1] - t.x * R[1][1]) > ra + rb)
+    if (Abs(t.y * R[0][1] - t.x * R[1][1]) > ra + rb)
         return false;
 
     // A.z <cross> B.z
@@ -718,6 +720,7 @@ void Enclose(const Polygon &polygon);
 bool Enclose(const Polyhedron &polyhedron);
 void Enclose(const float3 *pointArray, int numPoints);*/
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::string OBB::ToString() const
 {
     char str[256];
@@ -725,6 +728,7 @@ std::string OBB::ToString() const
         pos.x, pos.y, pos.z, r.x*2.f, r.y*2.f, r.z*2.f, axis[0].x, axis[0].y, axis[0].z, axis[1].x, axis[1].y, axis[1].z, axis[2].x, axis[2].y, axis[2].z);
     return str;
 }
+#endif
 
 //    Polyhedron Intersection(const AABB &aabb) const;
 
