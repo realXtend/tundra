@@ -65,7 +65,7 @@ void UiMainWindow::LoadWindowSettingsFromFile()
 
     setWindowTitle(QString("%1 %2.%3").arg(title.c_str(), version_major.c_str(), version_minor.c_str()));
 */
-    setWindowTitle("Tundra v1.0.5");
+    setWindowTitle("Tundra-ProViWo");
 
     width = max(1, min(DesktopWidth(), width));
     height = max(1, min(DesktopHeight(), height));

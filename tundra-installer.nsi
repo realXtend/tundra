@@ -1,5 +1,5 @@
 !include "fileassoc.nsh"
-!define VERSION "1.0.5"
+!define VERSION "ProViWo"
 
 Name "Tundra ${VERSION}"
 
@@ -50,7 +50,7 @@ Section "Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Server.lnk" "$INSTDIR\server.exe"
-  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Viewer.lnk" "$INSTDIR\viewer.exe"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Viewer.lnk" "$INSTDIR\start_release_meetingappviewer.bat"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Readme.lnk" "$INSTDIR\readme.txt"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
 
