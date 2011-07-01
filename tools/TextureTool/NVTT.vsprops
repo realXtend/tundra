@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="NVTT"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools 2\include&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="nvtt.lib"
+		AdditionalLibraryDirectories="C:\Program Files\NVIDIA Corporation\NVIDIA Texture Tools 2\lib"
+	/>
+</VisualStudioPropertySheet>
