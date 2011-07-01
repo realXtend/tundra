@@ -52,7 +52,7 @@ const char *cParticleKeywords[] = {
     "Cylinder", "Ellipsoid", "HollowEllipsoid", "inner_width", "inner_height", "inner_depth", "Ring", "inner_width",
     "inner_height", "name", "emit_emitter", "emit_emitter_quota", "affector", "LinearForce", "force_vector", "force_application",
     "ColourFader", "red", "green", "blue", "alpha", "ColourFader2", "red1", "green1", "blue1", "alpha1", "red2", "green2",
-    "blue2", "alpha2", "state_change", "Scaler", "rate", "Rotator", "vrotation_speed_range_start", "rotation_speed_range_end",
+    "blue2", "alpha2", "state_change", "Scaler", "rate", "Rotator", "rotation_speed_range_start", "rotation_speed_range_end",
     "rotation_range_start", "rotation_range_end", "ColourInterpolator", "time0", "colour0", "time1", "colour1", "time2", "colour2",
     "time3", "colour3", "time4", "colour4", "time5", "colour5", "ColourImage", "image", "DeflectorPlane", "plane_point", "plane_normal",
     "bounce", "DirectionRandomiser", "randomness", "scope", "keep_velocity"
