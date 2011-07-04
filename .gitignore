@@ -5,6 +5,8 @@
 *.pdb
 *.idb
 *.vcproj
+*.vcxproj
+*.vcxproj.*
 *.lib
 *.sln
 Application/resource*.h
@@ -36,6 +38,7 @@ ZERO_CHECK.dir/
 
 # Qt build objects
 moc_*.cxx
+moc_*.cxx.rule
 moc_*.cxx_parameters
 qrc_*.cxx
 ui_*.h

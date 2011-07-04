@@ -501,7 +501,8 @@ macro(use_package_assimp)
            set(ASSIMP_DIR ${ENV_NAALI_DEP_PATH}/assimp)
         endif()
         include_directories(${ASSIMP_DIR}/include)
-        link_directories(${ASSIMP_DIR}/lib/assimp_debug_Win32)
+        link_directories(${ASSIMP_DIR}/lib) # VC10 deps way, no subfolders, dynamic
+        link_directories(${ASSIMP_DIR}/lib/assimp_debug_Win32) # VC9 deps way, in subfolder, static
         link_directories(${ASSIMP_DIR}/lib/assimp_release_Win32)
     else() # Linux, note: mac will also come here..
         if ("$ENV{ASSIMP_DIR}" STREQUAL "")
