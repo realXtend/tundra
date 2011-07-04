@@ -1119,7 +1119,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     }
 
     // Connect to Loaded() signal of the asset to be able to notify any dependent assets
-    connect(transfer->asset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)));
+    connect(transfer->asset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)), Qt::UniqueConnection);
 
     // Save this asset to cache, and find out which file will represent a cached version of this asset.
     QString assetDiskSource = transfer->DiskSource(); // The asset provider may have specified an explicit filename to use as a disk source.
@@ -1217,9 +1217,9 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
         AssetTransferPtr transfer = RequestAsset(req.assetRef, req.assetType);
         if (!transfer)
             return; ///\todo Evaluate the path to take here.
-        connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)));
-        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), req.transfer.get(), SIGNAL(Succeeded(AssetPtr)));
-        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), req.transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)));
+        connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), Qt::UniqueConnection);
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), req.transfer.get(), SIGNAL(Succeeded(AssetPtr)), Qt::UniqueConnection);
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), req.transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), Qt::UniqueConnection);
     }
 }
 
