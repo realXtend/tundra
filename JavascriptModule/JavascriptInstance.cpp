@@ -393,26 +393,6 @@ void JavascriptInstance::DeleteEngine()
         CheckAndPrintException("In script destructor: ", result);
     }
     
-    // Delete all prototypes of registered objects.
-    delete engine_->property("AABB_scriptclass").value<QScriptClass*>();
-    delete engine_->property("float2_scriptclass").value<QScriptClass*>();
-    delete engine_->property("float3_scriptclass").value<QScriptClass*>();
-    delete engine_->property("float3x3_scriptclass").value<QScriptClass*>();
-    delete engine_->property("float3x4_scriptclass").value<QScriptClass*>();
-    delete engine_->property("float4_scriptclass").value<QScriptClass*>();
-    delete engine_->property("float4x4_scriptclass").value<QScriptClass*>();
-    delete engine_->property("LCG_scriptclass").value<QScriptClass*>();
-    delete engine_->property("Line_scriptclass").value<QScriptClass*>();
-    delete engine_->property("LineSegment_scriptclass").value<QScriptClass*>();
-    delete engine_->property("OBB_scriptclass").value<QScriptClass*>();
-    delete engine_->property("Quat_scriptclass").value<QScriptClass*>();
-    delete engine_->property("Ray_scriptclass").value<QScriptClass*>();
-    delete engine_->property("ScaleOp_scriptclass").value<QScriptClass*>();
-    delete engine_->property("Sphere_scriptclass").value<QScriptClass*>();
-    delete engine_->property("Transform_scriptclass").value<QScriptClass*>();
-    delete engine_->property("TranslateOp_scriptclass").value<QScriptClass*>();
-    delete engine_->property("Triangle_scriptclass").value<QScriptClass*>();
-
     SAFE_DELETE(engine_);
     //SAFE_DELETE(debugger_);
 }
