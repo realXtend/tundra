@@ -10,6 +10,7 @@
 #include "IComponent.h"
 #include "Math/float3.h"
 
+class EC_Camera;
 struct EC_HydraxImpl;
 
 /// A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
@@ -38,6 +39,9 @@ private:
 
 private slots:
     void Create();
+
+    /// Called when the main view active camera has changed.
+    void OnActiveCameraChanged(EC_Camera *newActiveCamera);
     void UpdateAttribute(IAttribute *attr);
     void Update(float frameTime);
 };

@@ -58,13 +58,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
         return;
     }
 
-    // If no active camera around, we must wait for one in order to proceed with the creation of SkyX.
-    if (!w->IsActive())
-    {
-        connect(w.get(), SIGNAL(ActiveCameraChanged(EC_Camera *)), SLOT(Create()));
-        return;
-    }
-
+    connect(w.get(), SIGNAL(ActiveCameraChanged(EC_Camera *)), SLOT(OnActiveCameraChanged(EC_Camera *)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 }
 
@@ -85,6 +79,9 @@ void EC_Hydrax::Create()
 
     OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
     assert(w);
+
+    if (!w->GetRenderer() || !w->GetRenderer()->GetActiveCamera())
+        return; // Can't create Hydrax just yet, no main camera set.
 
     impl = new EC_HydraxImpl();
     impl->hydrax = new Hydrax::Hydrax(w->GetSceneManager(), static_cast<EC_Camera *>(w->GetRenderer()->GetActiveCamera())->GetCamera(),
@@ -115,6 +112,16 @@ void EC_Hydrax::Create()
 
     connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)));
+}
+
+void EC_Hydrax::OnActiveCameraChanged(EC_Camera *newActiveCamera)
+{
+    // If we haven't yet initialized, do a full init.
+    if (!impl)
+        Create();
+    else // Otherwise, update the camera to an existing initialized Hydrax instance.
+        if (impl && impl->hydrax)
+            impl->hydrax->setCamera(newActiveCamera->GetCamera());
 }
 
 void EC_Hydrax::UpdateAttribute(IAttribute *attr)

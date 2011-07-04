@@ -60,13 +60,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
         return;
     }
 
-    // If no active camera around, we must wait for one in order to proceed with the creation of SkyX.
-    if (!w->IsActive())
-    {
-        connect(w.get(), SIGNAL(ActiveCameraChanged(EC_Camera *)), SLOT(Create()));
-        return;
-    }
-
+    connect(w.get(), SIGNAL(ActiveCameraChanged(EC_Camera *)), SLOT(OnActiveCameraChanged(EC_Camera*)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 }
 
@@ -114,6 +108,10 @@ void EC_SkyX::Create()
 
         OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
         assert(w);
+
+        if (!w->GetRenderer() || !w->GetRenderer()->GetActiveCamera())
+            return; // Can't create SkyX just yet, no main camera set.
+
         Ogre::SceneManager *sm = w->GetSceneManager();
 
         impl = new EC_SkyXImpl();
@@ -139,7 +137,16 @@ void EC_SkyX::Create()
         // Currently if we try to create more than one SkyX component we end up here due to Ogre internal name collision.
         LogError("Could not create EC_SkyX: " + std::string(e.what()));
     }
+}
 
+void EC_SkyX::OnActiveCameraChanged(EC_Camera *newActiveCamera)
+{
+    // If we haven't yet initialized, do a full init.
+    if (!impl)
+        Create();
+    else // Otherwise, update the camera to an existing initialized SkyX instance.
+        if (impl && impl->skyX)
+            impl->skyX->setCamera(newActiveCamera->GetCamera());
 }
 
 void EC_SkyX::UpdateAttribute(IAttribute *attr)

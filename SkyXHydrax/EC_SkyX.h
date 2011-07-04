@@ -10,10 +10,11 @@
 #include "IComponent.h"
 #include "Math/float3.h"
 
+class EC_Camera;
 struct EC_SkyXImpl;
 
 /// A Sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
-/** This is a singleton type component and only one component per scene is prohibited.
+/** This is a singleton type component and only one component per scene is allowed.
     Provides means of creating photorealistic environments together with EC_Hydrax.
     @note Requires SkyX Ogre add-on. */
 class EC_SkyX : public IComponent
@@ -49,6 +50,9 @@ private:
 
 private slots:
     void Create();
+
+    /// Called when the main view active camera has changed.
+    void OnActiveCameraChanged(EC_Camera *newActiveCamera);
     void UpdateAttribute(IAttribute *attr);
     void Update(float frameTime);
 };
