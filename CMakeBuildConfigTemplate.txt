@@ -176,12 +176,12 @@ endif()
 if (OPENASSETIMPORT)
     add_subdirectory(OpenAssetImport)       # Allows import of various mesh file formats
 endif()
-if (MSVC)
+if (MSVC AND VC90)                          # Disable from VC10 build as we don't provide the prebuilt deps yet
     add_subdirectory(MumbleVoipModule)      # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
     add_subdirectory(CameraInputModule)     # Camera input module depends on opencv library.
 else()
-                                            # \todo Include MumbleVoip and CameraInputModule on linux. For CameraInputModule ConfigurePackages.cmake 
-                                            # you can find todo comments in the opencv related macros.
+    # \todo Include MumbleVoip and CameraInputModule on linux. For CameraInputModule ConfigurePackages.cmake 
+    # you can find todo comments in the opencv related macros.
 endif()
 if (USE_UIMODULE)
     add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.

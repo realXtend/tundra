@@ -131,6 +131,25 @@ if (COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif()
 
+# Detect what compiler we are using on windows
+set (VC90 FALSE)
+set (VC100 FALSE)
+if (MSVC)
+    message (STATUS "Detecting Visual Studio compiler")
+    if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 10" OR ${CMAKE_GENERATOR} STREQUAL "Visual Studio 10 Win64")
+        set (VC100 TRUE)
+        message (STATUS "-- VC100 detected")
+    endif ()
+    if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008" OR ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Win64")
+        set (VC90 TRUE)
+        message (STATUS "-- VC90 detected")
+    endif ()
+    if (NOT VC90 AND NOT VC100)
+        message (STATUS "-- Warning: Could not determine compiler from cmake generator name. We support 'officially' Visual Studio 2008 and 2010")
+    endif ()
+    message(STATUS)
+endif ()
+
 # Set compiler warning levels.
 # On MSVC, use warning level 4 but disable the following warnings:
 # C4100 'identifier' : unreferenced formal parameter
@@ -184,8 +203,10 @@ configure_curl()
 configure_openjpeg()
 configure_qtpropertybrowser()
 
-# \todo remove the windows check when configure_package_opencv() macro has been tested on linux.
-if (WIN32)
+# \todo Remove the windows check when configure_package_opencv() macro has been tested on linux.
+# Remove 'AND VC90' when VC10 deps have opencv, same applies to CameraInputModule in CMakeBuildConfigTemplate.txt.
+# Actually remove this from here totally and put it to the CameraInputModule CMakeLists.txt to configure opencv etc.
+if (WIN32 AND VC90)
     configure_package_opencv()
 endif()
 
