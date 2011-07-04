@@ -2,7 +2,10 @@
 
 #pragma once
 
+#include "Math/float2.h"
 #include "Math/float3.h"
+#include "Math/float4.h"
+#include "Math/Quat.h"
 #include "IComponent.h"
 #include "Transform.h"
 #include "AssetReference.h"
@@ -226,9 +229,21 @@ template<> void ECAttributeEditor<bool>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<bool>::Initialize();
 template<> void ECAttributeEditor<bool>::Set(QtProperty *property);
 
+template<> void ECAttributeEditor<float2>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<float2>::Initialize();
+template<> void ECAttributeEditor<float2>::Set(QtProperty *property);
+
 template<> void ECAttributeEditor<float3>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<float3>::Initialize();
 template<> void ECAttributeEditor<float3>::Set(QtProperty *property);
+
+template<> void ECAttributeEditor<float4>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<float4>::Initialize();
+template<> void ECAttributeEditor<float4>::Set(QtProperty *property);
+
+template<> void ECAttributeEditor<Quat>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<Quat>::Initialize();
+template<> void ECAttributeEditor<Quat>::Set(QtProperty *property);
 
 template<> void ECAttributeEditor<Color>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<Color>::Initialize();

@@ -10,6 +10,9 @@
 #include "EditorButtonFactory.h"
 #include "Profiler.h"
 
+#include "Math/float2.h"
+#include "Math/float4.h"
+#include "Math/Quat.h"
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "Transform.h"
@@ -519,6 +522,93 @@ template<> void ECAttributeEditor<bool>::Update(IAttribute *attr)
         UpdateMultiEditorValue(attr);
 }
 
+// ================================ float2 ==============================
+template<> void ECAttributeEditor<float2>::Update(IAttribute *attr)
+{
+    if(!useMultiEditor_)
+    {
+        Attribute<float2> *attribute = 0;
+        if (!attr)
+            attribute = FindAttribute<float2>(components_[0].lock());
+        else
+            attribute = dynamic_cast<Attribute<float2>*>(attr);
+        if (!attribute)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, Couldn't dynamic_cast attribute pointer to Attribute<float2> format.");
+            return;
+        }
+
+        QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        if(rootProperty_)
+        {
+            QList<QtProperty *> children = rootProperty_->subProperties();
+            if(children.size() >= 2)
+            {
+                const float2 &vectorValue = attribute->Get();
+                variantManager->setValue(children[0], vectorValue.x);
+                variantManager->setValue(children[1], vectorValue.y);
+            }
+        }
+    }
+    else
+        UpdateMultiEditorValue(attr);
+}
+
+template<> void ECAttributeEditor<float2>::Initialize()
+{
+    ECAttributeEditorBase::PreInitialize();
+    if(!useMultiEditor_)
+    {
+        QtVariantPropertyManager *variantManager = new QtVariantPropertyManager(this);
+        QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
+        propertyMgr_ = variantManager;
+        factory_ = variantFactory;
+        rootProperty_ = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), name_);
+
+        if(rootProperty_)
+        {
+            QtProperty *childProperty = 0;
+            childProperty = variantManager->addProperty(QVariant::Double, "x");
+            rootProperty_->addSubProperty(childProperty);
+
+            childProperty = variantManager->addProperty(QVariant::Double, "y");
+            rootProperty_->addSubProperty(childProperty);
+
+            Update();
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+        }
+        owner_->setFactoryForManager(variantManager, variantFactory);
+    }
+    else
+    {
+        InitializeMultiEditor();
+    }
+    emit EditorChanged(name_);
+}
+
+template<> void ECAttributeEditor<float2>::Set(QtProperty *property)
+{
+    if(listenEditorChangedSignal_)
+    {
+        QList<QtProperty *> children = rootProperty_->subProperties();
+        if(children.size() >= 2)
+        {
+            Attribute<float2> *attribute = FindAttribute<float2>(components_[0].lock());
+            if (!attribute)
+                return;
+
+            float2 newValue = attribute->Get();
+            QString propertyName = property->propertyName();
+            if(propertyName == "x")
+                newValue.x = ParseString<float>(property->valueText().toStdString());
+            else if(propertyName == "y")
+                newValue.y = ParseString<float>(property->valueText().toStdString());
+            SetValue(newValue);
+        }
+    }
+}
+
+// ================================ float3 ==============================
 template<> void ECAttributeEditor<float3>::Update(IAttribute *attr)
 {
     if(!useMultiEditor_)
@@ -540,7 +630,7 @@ template<> void ECAttributeEditor<float3>::Update(IAttribute *attr)
             QList<QtProperty *> children = rootProperty_->subProperties();
             if(children.size() >= 3)
             {
-                float3 vectorValue = attribute->Get();
+                const float3 &vectorValue = attribute->Get();
                 variantManager->setValue(children[0], vectorValue.x);
                 variantManager->setValue(children[1], vectorValue.y);
                 variantManager->setValue(children[2], vectorValue.z);
@@ -604,6 +694,202 @@ template<> void ECAttributeEditor<float3>::Set(QtProperty *property)
                 newValue.y = ParseString<float>(property->valueText().toStdString());
             else if(propertyName == "z")
                 newValue.z = ParseString<float>(property->valueText().toStdString());
+            SetValue(newValue);
+        }
+    }
+}
+
+// ================================ float4 ==============================
+template<> void ECAttributeEditor<float4>::Update(IAttribute *attr)
+{
+    if(!useMultiEditor_)
+    {
+        Attribute<float4> *attribute = 0;
+        if (!attr)
+            attribute = FindAttribute<float4>(components_[0].lock());
+        else
+            attribute = dynamic_cast<Attribute<float4>*>(attr);
+        if (!attribute)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, Couldn't dynamic_cast attribute pointer to Attribute<float4> format.");
+            return;
+        }
+
+        QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        if(rootProperty_)
+        {
+            QList<QtProperty *> children = rootProperty_->subProperties();
+            if(children.size() >= 4)
+            {
+                const float4 &vectorValue = attribute->Get();
+                variantManager->setValue(children[0], vectorValue.x);
+                variantManager->setValue(children[1], vectorValue.y);
+                variantManager->setValue(children[2], vectorValue.z);
+                variantManager->setValue(children[3], vectorValue.w);
+            }
+        }
+    }
+    else
+        UpdateMultiEditorValue(attr);
+}
+
+template<> void ECAttributeEditor<float4>::Initialize()
+{
+    ECAttributeEditorBase::PreInitialize();
+    if(!useMultiEditor_)
+    {
+        QtVariantPropertyManager *variantManager = new QtVariantPropertyManager(this);
+        QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
+        propertyMgr_ = variantManager;
+        factory_ = variantFactory;
+        rootProperty_ = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), name_);
+
+        if(rootProperty_)
+        {
+            QtProperty *childProperty = 0;
+            childProperty = variantManager->addProperty(QVariant::Double, "x");
+            rootProperty_->addSubProperty(childProperty);
+
+            childProperty = variantManager->addProperty(QVariant::Double, "y");
+            rootProperty_->addSubProperty(childProperty);
+
+            childProperty = variantManager->addProperty(QVariant::Double, "z");
+            rootProperty_->addSubProperty(childProperty);
+
+            childProperty = variantManager->addProperty(QVariant::Double, "w");
+            rootProperty_->addSubProperty(childProperty);
+
+            Update();
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+        }
+        owner_->setFactoryForManager(variantManager, variantFactory);
+    }
+    else
+    {
+        InitializeMultiEditor();
+    }
+    emit EditorChanged(name_);
+}
+
+template<> void ECAttributeEditor<float4>::Set(QtProperty *property)
+{
+    if(listenEditorChangedSignal_)
+    {
+        QList<QtProperty *> children = rootProperty_->subProperties();
+        if(children.size() >= 4)
+        {
+            Attribute<float4> *attribute = FindAttribute<float4>(components_[0].lock());
+            if (!attribute)
+                return;
+
+            float4 newValue = attribute->Get();
+            QString propertyName = property->propertyName();
+            if(propertyName == "x")
+                newValue.x = ParseString<float>(property->valueText().toStdString());
+            else if(propertyName == "y")
+                newValue.y = ParseString<float>(property->valueText().toStdString());
+            else if(propertyName == "z")
+                newValue.z = ParseString<float>(property->valueText().toStdString());
+            else if(propertyName == "w")
+                newValue.w = ParseString<float>(property->valueText().toStdString());
+            SetValue(newValue);
+        }
+    }
+}
+
+// ================================ Quat ==============================
+template<> void ECAttributeEditor<Quat>::Update(IAttribute *attr)
+{
+    if(!useMultiEditor_)
+    {
+        Attribute<Quat> *attribute = 0;
+        if (!attr)
+            attribute = FindAttribute<Quat>(components_[0].lock());
+        else
+            attribute = dynamic_cast<Attribute<Quat>*>(attr);
+        if (!attribute)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, Couldn't dynamic_cast attribute pointer to Attribute<Quat> format.");
+            return;
+        }
+
+        QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        if(rootProperty_)
+        {
+            QList<QtProperty *> children = rootProperty_->subProperties();
+            if(children.size() >= 4)
+            {
+                const Quat &vectorValue = attribute->Get();
+                variantManager->setValue(children[0], vectorValue.x);
+                variantManager->setValue(children[1], vectorValue.y);
+                variantManager->setValue(children[2], vectorValue.z);
+                variantManager->setValue(children[2], vectorValue.w);
+            }
+        }
+    }
+    else
+        UpdateMultiEditorValue(attr);
+}
+
+template<> void ECAttributeEditor<Quat>::Initialize()
+{
+    ECAttributeEditorBase::PreInitialize();
+    if(!useMultiEditor_)
+    {
+        QtVariantPropertyManager *variantManager = new QtVariantPropertyManager(this);
+        QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
+        propertyMgr_ = variantManager;
+        factory_ = variantFactory;
+        rootProperty_ = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), name_);
+
+        if(rootProperty_)
+        {
+            QtProperty *childProperty = 0;
+            childProperty = variantManager->addProperty(QVariant::Double, "x");
+            rootProperty_->addSubProperty(childProperty);
+
+            childProperty = variantManager->addProperty(QVariant::Double, "y");
+            rootProperty_->addSubProperty(childProperty);
+
+            childProperty = variantManager->addProperty(QVariant::Double, "z");
+            rootProperty_->addSubProperty(childProperty);
+
+            childProperty = variantManager->addProperty(QVariant::Double, "w");
+            rootProperty_->addSubProperty(childProperty);
+
+            Update();
+            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+        }
+        owner_->setFactoryForManager(variantManager, variantFactory);
+    }
+    else
+    {
+        InitializeMultiEditor();
+    }
+    emit EditorChanged(name_);
+}
+
+template<> void ECAttributeEditor<Quat>::Set(QtProperty *property)
+{
+    if(listenEditorChangedSignal_)
+    {
+        QList<QtProperty *> children = rootProperty_->subProperties();
+        if(children.size() >= 4)
+        {
+            Attribute<Quat> *attribute = FindAttribute<Quat>(components_[0].lock());
+            if (!attribute)
+                return;
+
+            Quat newValue = attribute->Get();
+            QString propertyName = property->propertyName();
+            if (propertyName == "x")
+                newValue.x = ParseString<float>(property->valueText().toStdString());
+            else if(propertyName == "y")
+                newValue.y = ParseString<float>(property->valueText().toStdString());
+            else if(propertyName == "z")
+                newValue.z = ParseString<float>(property->valueText().toStdString());
+            else if(propertyName == "w")
+                newValue.w = ParseString<float>(property->valueText().toStdString());
             SetValue(newValue);
         }
     }

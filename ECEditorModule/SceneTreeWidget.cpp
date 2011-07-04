@@ -761,7 +761,7 @@ void SceneTreeWidget::NewComponent()
         return;
 
     AddComponentDialog *dialog = new AddComponentDialog(framework, sel.EntityIds(), this);
-    dialog->SetComponentList(framework->Scene()->GetComponentTypes());
+    dialog->SetComponentList(framework->Scene()->ComponentTypes());
     connect(dialog, SIGNAL(finished(int)), SLOT(ComponentDialogFinished(int)));
     dialog->show();
 }

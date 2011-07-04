@@ -32,6 +32,7 @@ SceneAPI::SceneAPI(Framework *framework) :
 
 SceneAPI::~SceneAPI()
 {
+    Reset();
 }
 
 void SceneAPI::Reset()
@@ -52,6 +53,7 @@ SceneInteract *SceneAPI::GetSceneInteract() const
 {
     return sceneInteract;
 }
+
 bool SceneAPI::HasScene(const QString &name) const
 {
     return scenes_.find(name) != scenes_.end();
@@ -226,8 +228,6 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
         attribute = new Attribute<float3>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "float4")
         attribute = new Attribute<float4>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "float3")
-        attribute = new Attribute<float3>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "bool")
         attribute = new Attribute<bool>(owner, newAttributeName.toStdString().c_str());
     else if (attributeTypename == "uint")
@@ -251,14 +251,15 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
     return attribute;
 }
 
-QStringList SceneAPI::GetAttributeTypes() const
+QStringList SceneAPI::AttributeTypes() const
 {
     QStringList attrTypes;
-    attrTypes << "string" << "int" << "real" << "color" << "float3" << "bool" << "uint" << "quaternion" << "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform";
+    attrTypes << "string" << "int" << "real" << "color" << "float2" << "float3" << "float4" << "bool" << "uint" << "quat" <<
+        "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform";
     return attrTypes;
 }
 
-QStringList SceneAPI::GetComponentTypes() const
+QStringList SceneAPI::ComponentTypes() const
 {
     QStringList componentTypes;
     for(ComponentFactoryMap::const_iterator iter = componentFactories.begin(); iter != componentFactories.end(); ++iter)

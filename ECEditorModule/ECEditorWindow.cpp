@@ -353,7 +353,7 @@ void ECEditorWindow::CreateComponent()
     if (ids.size())
     {
         AddComponentDialog *dialog = new AddComponentDialog(framework, ids, NULL);
-        dialog->SetComponentList(framework->Scene()->GetComponentTypes());
+        dialog->SetComponentList(framework->Scene()->ComponentTypes());
         connect(dialog, SIGNAL(finished(int)), this, SLOT(AddComponentDialogFinished(int)));
         dialog->show();
     }

@@ -33,12 +33,18 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
     const QString &type)
 {
     ECAttributeEditorBase *attributeEditor = 0;
-    if(type == "real")
+    if (type == "real")
         attributeEditor = new ECAttributeEditor<float>(browser, component, name, type, editor);
     else if(type == "int")
         attributeEditor = new ECAttributeEditor<int>(browser, component, name, type, editor);
+    else if(type == "float2")
+        attributeEditor = new ECAttributeEditor<float2>(browser, component, name, type, editor);
     else if(type == "float3")
         attributeEditor = new ECAttributeEditor<float3>(browser, component, name, type, editor);
+    else if(type == "float4")
+        attributeEditor = new ECAttributeEditor<float4>(browser, component, name, type, editor);
+    else if(type == "quat")
+        attributeEditor = new ECAttributeEditor<Quat>(browser, component, name, type, editor);
     else if(type == "color")
         attributeEditor = new ECAttributeEditor<Color>(browser, component, name, type, editor);
     else if(type == "string")

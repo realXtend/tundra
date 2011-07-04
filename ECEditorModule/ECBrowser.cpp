@@ -670,7 +670,7 @@ void ECBrowser::CreateAttribute()
     /// @todo Should this dialog be converted to modeless?
     bool ok = false;
     QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"),
-        framework_->Scene()->GetAttributeTypes(), 0, false, &ok);
+        framework_->Scene()->AttributeTypes(), 0, false, &ok);
     if (!ok)
         return;
     QString name = QInputDialog::getText(this, tr("Give attribute name"), tr("Name:"), QLineEdit::Normal, QString(), &ok);

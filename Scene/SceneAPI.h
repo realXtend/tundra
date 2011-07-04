@@ -13,27 +13,9 @@ class Framework;
 class SceneInteract;
 
 /// Gives access to the scenes in the system.
-/**
-<table class="header"><tr><td>
-<h2>SceneAPI</h2>
-
-Manages the scenes for the viewer and server. With this API you can create, remove, get and query scenes.
-You can also get and set the default scene. You can also receive Qt signals about scene events from this API.
-
-Owned by Framework.
-
-<b>Qt signals emitted by SceneAPI object:</b>
-<ul>
-<li>SceneAdded(const QString&); - Emitted when a scene is added.
-<div>Parameters: Added scenes name.</div>
-<li>SceneRemoved(const QString&); - Emitted when a scene is removed.
-<div>Parameters: Removed scenes name.</div>
-<li>DefaultWorldSceneChanged(Scene*); - Emitted when a new default world scene is set.
-<div>Parameters: The new default Scene ptr.</div>
-</ul>
-
-</td></tr></table>
-*/
+/** Manages the scenes for the viewer and server. With this API you can create, remove, get and query scenes.
+    You can also get and set the default scene. You can also receive Qt signals about scene events from this API.
+    Owned by Framework. */
 class SceneAPI : public QObject
 {
     Q_OBJECT
@@ -45,27 +27,12 @@ public:
     ~SceneAPI();
 
     /// Creates new component of the type @c T.
-    /** @param newComponentName Name for the component (optional).
-    */
+    /** @param newComponentName Name for the component (optional). */
     template<typename T>
     boost::shared_ptr<T> CreateComponent(Scene* parentScene, const QString &newComponentName = "")
     {
         return boost::dynamic_pointer_cast<T>(CreateComponentById(parentScene, T::TypeIdStatic(), newComponentName));
     }
-
-signals:
-    /// Emitted after new scene has been added to framework.
-    /// @param name new scene name.
-    void SceneAdded(const QString &name);
-
-    /// Emitted after scene has been removed from the framework.
-    /// @param name removed scene name.
-    void SceneRemoved(const QString &name);
-
-    /// Emitted when default world scene changes.
-    /// @param scene new default world scene object.
-    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
-    void DefaultWorldSceneChanged(Scene *scene);
 
 public slots:
     /// Get Scene Interact weak pointer.
@@ -102,15 +69,13 @@ public slots:
         @param name Name of the scene to return
         @return The scene, or empty pointer if the scene with the specified name could not be found 
     */
-    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene> rename GetSceneRaw() to GetScene().
     ScenePtr GetScene(const QString &name) const;
 
     /// Creates new empty scene.
     /** @param name name of the new scene
         @param viewEnabled Whether the scene is view enabled
         @param authority True for server & standalone scenes, false for network client scenes
-        @return The new scene, or empty pointer if scene with the specified name already exists.
-    */
+        @return The new scene, or empty pointer if scene with the specified name already exists. */
     ScenePtr CreateScene(const QString &name, bool viewEnabled, bool authority);
 
     /// Removes a scene with the specified name.
@@ -120,8 +85,7 @@ public slots:
 
         Does nothing if scene with the specified name doesn't exist.
 
-        @param name name of the scene to delete
-    */
+        @param name name of the scene to delete */
     void RemoveScene(const QString &name);
 
     /// Returns the scene map for self reflection / introspection.
@@ -149,23 +113,37 @@ public slots:
     /// Create new attribute for spesific component.
     IAttribute *CreateAttribute(IComponent *owner, const QString &attributeTypename, const QString &newAttributeName);
 
-    /// Returns a list of all attribute typenames that can be used in the CreateAttribute function to create an attribute.
-    QStringList GetAttributeTypes() const;
+    /// Returns a list of all attribute type names that can be used in the CreateAttribute function to create an attribute.
+    QStringList AttributeTypes() const;
 
-    /// Returns a list of all component typenames that can be used in the CreateComponentByName function to create a component.
-    QStringList GetComponentTypes() const;
+    /// Returns a list of all component type names that can be used in the CreateComponentByName function to create a component.
+    QStringList ComponentTypes() const;
+
+signals:
+    /// Emitted after new scene has been added to framework.
+    /** @param name new scene name. */
+    void SceneAdded(const QString &name);
+
+    /// Emitted after scene has been removed from the framework.
+    /** @param name removed scene name. */
+    void SceneRemoved(const QString &name);
+
+    /// Emitted when default world scene changes.
+    /// @param scene new default world scene object.
+    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
+    void DefaultWorldSceneChanged(Scene *scene);
 
 private:
     /// Constructor. Framework takes ownership of this object.
-    /// @param framework Framework ptr.
-    explicit SceneAPI(Framework *framework);
+    /** @param fw Owner Framework. */
+    explicit SceneAPI(Framework *fw);
 
     /// Frees all known scene and the scene interact object.
-    /// @note This function is called by our fried class Framework in its UnloadModules() function.
+    /** @note This function is called by our fried class Framework in its UnloadModules() function. */
     void Reset();
-    
+
     /// Initialize the scene interact object. Needs framework->Input() to be valid.
-    /// @note This function is called by our fried class Framework when InputAPI is ready.
+    ///\todo Remove when SceneInteract is moved away from SceneAPI.
     void Initialise();
 
     ComponentFactoryPtr GetFactory(const QString &typeName);
@@ -181,4 +159,3 @@ private:
     ScenePtr defaultScene_; ///< Current 'default' scene. \todo Delete this.
     SceneInteract *sceneInteract; ///< Scene interact. \todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
 };
-
