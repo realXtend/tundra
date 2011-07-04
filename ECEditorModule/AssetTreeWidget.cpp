@@ -300,9 +300,9 @@ void AssetTreeWidget::ReloadFromSource()
         if (item->Asset())
         {
             QString assetRef = item->Asset()->Name();
-            // The next line will delete IAsset from the system, so dereferencing item->Asset() after that would be invalid.
-            framework->Asset()->ForgetAsset(item->Asset(), false);
-            framework->Asset()->RequestAsset(assetRef);
+            // Make a 'forced request' of the existing asset. This will cause a full re-download of the asset
+            // and the newly downloaded data will be deserialized to the existing asset object.
+            framework->Asset()->RequestAsset(assetRef, item->Asset()->Type(), true);
         }
 }
 
