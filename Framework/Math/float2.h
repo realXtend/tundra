@@ -265,7 +265,7 @@ public:
 
 #ifdef OGRE_INTEROP
     float2(const Ogre::Vector2 &other) { x = other.x; y = other.y; }
-    operator Ogre::Vector2() const { return Ogre::Vector3(x, y); }
+    operator Ogre::Vector2() const { return Ogre::Vector2(x, y); }
 #endif
 #ifdef QT_INTEROP
     float2(const QVector2D &other) { x = other.x(); y = other.y(); }
