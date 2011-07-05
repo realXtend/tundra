@@ -57,6 +57,7 @@ void FrameAPI::Update(float frametime)
     PROFILE(FrameAPI_Update);
 
     emit Updated(frametime);
+    emit PostFrameUpdate(frametime);
 
     ++currentFrameNumber;
     if (currentFrameNumber < 0)
