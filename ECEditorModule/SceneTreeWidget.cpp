@@ -563,18 +563,13 @@ void SceneTreeWidget::Edit()
             if (editor)
             {
                 editor->AddEntities(selection.EntityIds(), true);
-                /*foreach(entity_id_t id, selection.EntityIds())
-                ecEditor->AddEntity(id, false);
-                ecEditor->SetSelectedEntities(selection.EntityIds());*/
                 editor->show();
-                //ui->BringWidgetToFront(ecEditor);
+                editor->activateWindow();
                 return;
             }
         }
 
-        ECEditorWindow *editor = 0;
-        ECEditorModule *module = framework->GetModule<ECEditorModule>();
-        editor = module->ActiveEditor();
+        ECEditorWindow *editor = framework->GetModule<ECEditorModule>()->ActiveEditor();
         if (editor && !ecEditors.contains(editor))
         {
             editor->setAttribute(Qt::WA_DeleteOnClose);
@@ -591,21 +586,16 @@ void SceneTreeWidget::Edit()
 
         //ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
         //ecEditor->hide();
-        //ecEditor->AddEntities(selection.EntityIds(), true);
-        /*foreach(entity_id_t id, selection.EntityIds())
-            ecEditor->AddEntity(id, false);
-        ecEditor->SetSelectedEntities(selection.EntityIds());*/
 
         editor->setParent(framework->Ui()->MainWindow());
         editor->setWindowFlags(Qt::Tool);
         if (!editor->isVisible())
+        {
             editor->show();
+            editor->activateWindow();
+        }
 
         editor->AddEntities(selection.EntityIds(), true);
-
-        /*ui->AddWidgetToScene(ecEditor);
-        ui->ShowWidget(ecEditor);
-        ui->BringWidgetToFront(ecEditor);*/ 
     }
 }
 
@@ -622,21 +612,12 @@ void SceneTreeWidget::EditInNew()
     //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
     editor->hide();
     editor->AddEntities(selection.EntityIds(), true);
-    /*foreach(entity_id_t id, selection.EntityIds())
-        editor->AddEntity(id);
-    editor->SetSelectedEntities(selection.EntityIds());*/
 
     editor->setParent(framework->Ui()->MainWindow());
     editor->setWindowFlags(Qt::Tool);
     editor->show();
-
+    editor->activateWindow();
     ecEditors.push_back(editor);
-    /*if (!ecEditor)
-        ecEditor = editor;*/
-
-    /*ui->AddWidgetToScene(editor); 
-    ui->ShowWidget(editor);
-    ui->BringWidgetToFront(editor);*/
 }
 
 void SceneTreeWidget::Rename()

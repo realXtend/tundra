@@ -121,6 +121,7 @@ void ECEditorModule::ShowEditorWindow()
     activeEditor->setWindowFlags(Qt::Tool);
     activeEditor->setAttribute(Qt::WA_DeleteOnClose);
     activeEditor->show();
+    activeEditor->activateWindow();
 }
 
 void ECEditorModule::ShowDocumentation(const QString &symbol)
