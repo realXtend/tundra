@@ -359,6 +359,14 @@ public slots:
     /// Returns adjustment scene node (used for scaling/offset/orientation modifications)
     Ogre::SceneNode* GetAdjustmentSceneNode() const { return adjustment_node_; }
 
+    /// Returns the affine transform that maps from the local space of this mesh to the space of the EC_Placeable
+    /// component of this mesh. If the Entity this mesh is part of does not have an EC_Placeable component,
+    /// returns the local->world transform of this mesh instance.
+    float3x4 LocalToParent() const;
+
+    /// Returns the affine transform that maps from the local space of this mesh to the world space of the scene.
+    float3x4 LocalToWorld() const;
+
     /// Returns the parent component of this component in the scene transform hierarchy.
 //    virtual IComponent *GetParentComponent();
 

@@ -215,6 +215,42 @@ float3 EC_Mesh::GetAttachmentScale(uint index) const
     return float3(scale.x, scale.y, scale.z);
 }
 
+float3x4 EC_Mesh::LocalToParent() const
+{
+    if (!entity_)
+    {
+        LogError("EC_Mesh::LocalToParent failed! No entity exists in this mesh!");
+        return float3x4::identity;
+    }
+
+    Ogre::SceneNode *node = entity_->getParentSceneNode();
+    if (!node)
+    {
+        LogError("EC_Mesh::LocalToParent failed! Ogre::Entity is not attached to a Ogre::SceneNode!");
+        return float3x4::identity;
+    }
+
+    return float3x4::FromTRS(node->getPosition(), node->getOrientation(), node->getScale());
+}
+
+float3x4 EC_Mesh::LocalToWorld() const
+{
+    if (!entity_)
+    {
+        LogError("EC_Mesh::LocalToParent failed! No entity exists in this mesh!");
+        return float3x4::identity;
+    }
+
+    Ogre::SceneNode *node = entity_->getParentSceneNode();
+    if (!node)
+    {
+        LogError("EC_Mesh::LocalToParent failed! Ogre::Entity is not attached to a Ogre::SceneNode!");
+        return float3x4::identity;
+    }
+
+    return float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
+}
+
 void EC_Mesh::SetDrawDistance(float draw_distance)
 {
     drawDistance.Set(draw_distance, AttributeChange::Default);
