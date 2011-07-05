@@ -34,7 +34,7 @@ struct EC_SkyXImpl
         if (skyX)
         {
             skyX->remove();
-            if (sunlight)
+            if (sunlight && skyX->getSceneManager())
                 skyX->getSceneManager()->destroyLight(sunlight);
         }
 
@@ -44,7 +44,7 @@ struct EC_SkyXImpl
 
     SkyX::SkyX *skyX;
     Ogre::Light *sunlight;
-    SkyX::CloudLayer *cloudLayer; ///< Currently just once cloud layer used.
+    SkyX::CloudLayer *cloudLayer; ///< Currently just one cloud layer used.
 };
 
 EC_SkyX::EC_SkyX(Scene* scene) :
@@ -70,8 +70,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
 
 EC_SkyX::~EC_SkyX()
 {
-    if (ParentScene() && ParentScene()->GetWorld<OgreWorld>())
-        delete impl;
+    SAFE_DELETE(impl);
 }
 
 float3 EC_SkyX::SunPosition() const
