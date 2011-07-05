@@ -28,7 +28,7 @@
 
 struct EC_SkyXImpl
 {
-    EC_SkyXImpl() : skyX(0), sunlight(0) {}
+    EC_SkyXImpl() : skyX(0), sunlight(0), cloudLayer(0) {}
     ~EC_SkyXImpl()
     {
         if (skyX)
@@ -44,6 +44,7 @@ struct EC_SkyXImpl
 
     SkyX::SkyX *skyX;
     Ogre::Light *sunlight;
+    SkyX::CloudLayer *cloudLayer; ///< Currently just once cloud layer used.
 };
 
 EC_SkyX::EC_SkyX(Scene* scene) :
@@ -51,6 +52,9 @@ EC_SkyX::EC_SkyX(Scene* scene) :
     volumetricClouds(this, "Volumetric clouds", false),
     timeMultiplier(this, "Time multiplier", 0.0f),
     time(this, "Time", float3(14.f, 7.5f, 20.5f)),
+    weather(this, "Weather (volumetric clouds only)", float2(1.f, 1.f)),
+//    windSpeed(this, "Wind speed", 0.0f),
+    windDirection(this, "Wind direction", 0.0f),
     impl(0)
 {
     OgreWorldPtr w = scene->GetWorld<OgreWorld>();
@@ -164,7 +168,8 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr)
         else
         {
             impl->skyX->getVCloudsManager()->remove();
-            impl->skyX->getCloudsManager()->add(SkyX::CloudLayer::Options());
+            impl->skyX->getCloudsManager()->removeAll();
+            impl->cloudLayer = impl->skyX->getCloudsManager()->add(SkyX::CloudLayer::Options());
         }
     }
     else if (attr == &timeMultiplier)
@@ -177,6 +182,39 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr)
         atOpt.Time = time.Get();
         impl->skyX->getAtmosphereManager()->setOptions(atOpt);
     }
+    else if (attr == &weather)
+    {
+        if (volumetricClouds.Get())
+        {
+            //Negative value for humidity causes crash within SkyX, so clamp value to min 0.
+            float humidity = (weather.Get().x >= 0) ? weather.Get().x : 0.f;
+            impl->skyX->getVCloudsManager()->getVClouds()->setWheater(humidity, weather.Get().y, 2);
+        }
+    }
+/*
+    else if (attr == &windSpeed)
+    {
+       if (volumetricClouds.Get())
+            impl->skyX->getVCloudsManager()->setWindSpeed(0.f);
+        else
+            ;
+    }
+*/
+    else if (attr == &windDirection)
+    {
+        if (volumetricClouds.Get())
+        {
+            impl->skyX->getVCloudsManager()->getVClouds()->setWindDirection(Ogre::Radian(DegToRad(windDirection.Get())));
+        }
+        else
+        {
+            SkyX::CloudLayer::Options options = impl->cloudLayer->getOptions();
+            Ogre::Radian r1(Ogre::Degree(windDirection.Get())), r2(Ogre::Degree(windDirection.Get()));
+            options.WindDirection = Ogre::Vector2(Ogre::Math::Cos(r1), Ogre::Math::Sin(r2));
+            impl->skyX->getCloudsManager()->removeAll();
+            impl->skyX->getCloudsManager()->add(options);
+        }
+    }
 }
 
 void EC_SkyX::Update(float frameTime)
@@ -187,6 +225,6 @@ void EC_SkyX::Update(float frameTime)
             impl->sunlight->setDirection(impl->skyX->getAtmosphereManager()->getSunDirection());
         impl->skyX->update(frameTime);
         // Do not trigger AttributeChanged for time as SkyX internals are authorative for it.
-        settime(OgreRenderer::ToCoreVector(impl->skyX->getAtmosphereManager()->getOptions().Time));
+        settime(impl->skyX->getAtmosphereManager()->getOptions().Time);
     }
 }
