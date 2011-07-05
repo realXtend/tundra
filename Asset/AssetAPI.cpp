@@ -1540,10 +1540,18 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
     if (file.endsWith(".particle", Qt::CaseInsensitive))
         return "OgreParticle";
 
-    const char *textureFileTypes[] = { ".jpg", ".jpeg", ".png", ".tga", ".bmp", ".dds", ".gif" };
+    // The following file types are from FreeImage's list of supported formats:
+    // http://freeimage.sourceforge.net/features.html
+    // The GIMP xcf is not in the list of known image formats, but detect it anyways.
+    const char *textureFileTypes[] = { ".bmp", ".cut", ".dds", ".exr", ".g3", ".gif", ".hdr", ".ico", ".iff", 
+        ".j2k", ".j2c", ".jp2", ".jif", ".jpg", ".jpeg", ".jpe", ".jng", ".koa",
+        ".lbm", ".mng", ".pbm", ".pcd", ".pcx", ".pfm", ".pict", ".psd", ".pgm", ".png", ".ppm", ".ras", ".raw", 
+        ".sgi", ".tga", ".targa", ".tif", ".tiff", ".wap", ".wbmp", ".wbm", ".xbm", ".xcf", ".xpm" };
     if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
         return "Texture";
 
+    // These file types are supported by the Open Asset Import library:
+    // http://assimp.sourceforge.net/main_features_formats.html
     const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf", 
         ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
         ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
@@ -1579,8 +1587,6 @@ QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
 
     // Unknown type, return Binary type.
     return "Binary";
-
-    // Note: There's a separate OgreImageTextureResource which isn't handled above.
 }
 
 bool CopyAssetFile(const char *sourceFile, const char *destFile)
