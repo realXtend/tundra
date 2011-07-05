@@ -110,8 +110,8 @@ void EC_Hydrax::Create()
     // Create water
     impl->hydrax->create();
 
-    connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)));
+    connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)), Qt::UniqueConnection);
 }
 
 void EC_Hydrax::OnActiveCameraChanged(EC_Camera *newActiveCamera)

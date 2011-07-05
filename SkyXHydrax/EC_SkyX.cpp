@@ -133,8 +133,8 @@ void EC_SkyX::Create()
         UpdateAttribute(&timeMultiplier);
         UpdateAttribute(&time);
 
-        connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)));
-        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)));
+        connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)), Qt::UniqueConnection);
     }
     catch(Ogre::Exception &e)
     {
