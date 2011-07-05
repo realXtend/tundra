@@ -467,7 +467,7 @@ QList<Entity*> OgreWorld::GetVisibleEntities() const
     if (!cameraComponent)
         return QList<Entity*>();
     
-    return cameraComponent->GetVisibleEntities();
+    return cameraComponent->VisibleEntities();
 }
 
 void OgreWorld::StartViewTracking(Entity* entity)
@@ -523,7 +523,7 @@ void OgreWorld::OnUpdated(float timeStep)
     lastVisibleEntities_ = visibleEntities_;
     EC_Camera* activeCamera = VerifyCurrentSceneCameraComponent();
     if (activeCamera)
-        visibleEntities_ = activeCamera->GetVisibleEntityIDs();
+        visibleEntities_ = activeCamera->VisibleEntityIDs();
     else
         visibleEntities_.clear();
     

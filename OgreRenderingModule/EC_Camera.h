@@ -83,16 +83,30 @@ public:
     Q_PROPERTY(float3 upVector READ getupVector WRITE setupVector);
     DEFINE_QPROPERTY_ATTRIBUTE(float3, upVector);
 
+    Q_PROPERTY(float nearPlane READ getnearPlane WRITE setnearPlane);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, nearPlane);
+
+    Q_PROPERTY(float farPlane READ getfarPlane WRITE setfarPlane);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, farPlane);
+
+    Q_PROPERTY(float verticalFov READ getverticalFov WRITE setverticalFov);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, verticalFov);
+
+    /// Aspect ratio is a string of form "<widthProportion>:<heightProportion>", e.g. "4:3". If
+    /// this string is empty, the aspect ratio of the main window viewport is used (default).
+    Q_PROPERTY(QString aspectRatio READ getaspectRatio WRITE setaspectRatio);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, aspectRatio);
+
 public slots:
     /// sets as active camera in the viewport
     void SetActive();
 
     /// Get an initial rotation for the camera (in Euler angles, can be assigned to a Transform) that corresponds to the up vector
     /// @note the left/right & front/back axes are unspecified
-    float3 GetInitialRotation() const;
+    float3 InitialRotation() const;
 
     /// Adjust a pitch/yaw/roll Euler rotation vector using the up vector
-    float3 GetAdjustedRotation(const float3& rotation) const;
+    float3 AdjustedRotation(const float3& rotation) const;
 
     /// sets near clip distance
     /** @note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
@@ -112,13 +126,16 @@ public slots:
     void SetVerticalFov(float fov);
 
     /// returns near clip distance
-    float GetNearClip() const;
+    float NearClip() const;
 
     /// returns far clip distance
-    float GetFarClip() const;
+    float FarClip() const;
 
     /// returns vertical fov as radians
-    float GetVerticalFov() const;
+    float VerticalFov() const;
+
+    /// Returns the currently used view aspect ratio (width/height).
+    float AspectRatio() const;
 
     /// returns whether camera is active in the viewport
     bool IsActive() const;
@@ -131,10 +148,10 @@ public slots:
     bool IsEntityVisible(Entity* entity);
     
     /// Get visible entities in the camera's frustum
-    QList<Entity*> GetVisibleEntities();
+    QList<Entity*> VisibleEntities();
     
     /// Get visible entity ID's in the camera's frustum
-    const std::set<entity_id_t>& GetVisibleEntityIDs();
+    const std::set<entity_id_t>& VisibleEntityIDs();
     
 /* The following functions moved here from IRenderer. Reimplement them:
 
@@ -175,6 +192,8 @@ private slots:
     /// Called when component has been added or removed from the parent entity. Checks the existence of the EC_Placeable component, and attaches this camera to it.
     void OnComponentStructureChanged();
     
+    void OnAttributeUpdated(IAttribute *attribute);
+
     /// Handle frame update. Used for entity visibility tracking
     void OnUpdated(float timeStep);
     

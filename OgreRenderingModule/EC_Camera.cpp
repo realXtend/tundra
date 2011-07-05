@@ -30,7 +30,11 @@ EC_Camera::EC_Camera(Scene* scene) :
     camera_(0),
     query_(0),
     queryFrameNumber_(-1),
-    upVector(this, "Up vector", float3::unitY)
+    upVector(this, "Up vector", float3::unitY),
+    nearPlane(this, "Near plane", 0.1f),
+    farPlane(this, "Far plane", 2000.f),
+    verticalFov(this, "Vertical FOV", 45.f),
+    aspectRatio(this, "Aspect ratio", "")
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
@@ -39,6 +43,8 @@ EC_Camera::EC_Camera(Scene* scene) :
     
     if (framework)
         connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
+
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_Camera::~EC_Camera()
@@ -71,7 +77,7 @@ EC_Camera::~EC_Camera()
     }
 }
 
-float3 EC_Camera::GetInitialRotation() const
+float3 EC_Camera::InitialRotation() const
 {
     float3 normUpVector = upVector.Get();
     bool success = normUpVector.Normalize();
@@ -86,7 +92,7 @@ float3 EC_Camera::GetInitialRotation() const
     return euler;
 }
 
-float3 EC_Camera::GetAdjustedRotation(const float3& rotVec) const
+float3 EC_Camera::AdjustedRotation(const float3& rotVec) const
 {
     // Optimization: if the up vector is Y-positive, no adjustment is necessary
     float3 normUpVector = upVector.Get();
@@ -166,7 +172,7 @@ void EC_Camera::SetActive()
     world_.lock()->GetRenderer()->SetActiveCamera(this);
 }
 
-float EC_Camera::GetNearClip() const
+float EC_Camera::NearClip() const
 {
     if (!camera_)
         return 0.0f;
@@ -174,7 +180,7 @@ float EC_Camera::GetNearClip() const
     return camera_->getNearClipDistance();
 }
 
-float EC_Camera::GetFarClip() const
+float EC_Camera::FarClip() const
 {
     if (!camera_)
         return 0.0f;
@@ -182,12 +188,46 @@ float EC_Camera::GetFarClip() const
     return camera_->getFarClipDistance();
 }
 
-float EC_Camera::GetVerticalFov() const
+float EC_Camera::VerticalFov() const
 {
     if (!camera_)
         return 0.0f;
 
     return camera_->getFOVy().valueRadians();
+}
+
+float EC_Camera::AspectRatio() const
+{
+    if (!aspectRatio.Get().trimmed().isEmpty())
+    {
+        if (!aspectRatio.Get().contains(":"))
+        {
+            float ar = aspectRatio.Get().toFloat();
+            if (ar > 0.f)
+                return ar;
+        }
+        else
+        {
+            QStringList str = aspectRatio.Get().split(":");
+
+            if (str.length() == 2)
+            {
+                float width = str[0].toFloat();
+                float height = str[1].toFloat();
+
+                if (width > 0.f && height > 0.f)
+                    return width / height;
+            }
+        }
+        LogError("Invalid format for the aspectRatio field: \"" + aspectRatio.Get() + "\"! Should be of form \"float\" or \"float:float\". Leave aspectRatio empty to match the current main viewport aspect ratio.");
+    }
+
+    OgreWorldPtr world = world_.lock();
+    Ogre::Viewport *viewport = world->GetRenderer()->GetViewport();
+    if (viewport)
+        return (float)viewport->getActualWidth() / viewport->getActualHeight();
+    LogWarning("EC_Camera::AspectRatio(): No viewport or aspectRatio attribute set! Don't have an aspect ratio for the camera!");
+    return 1.f;
 }
 
 bool EC_Camera::IsActive() const
@@ -250,15 +290,15 @@ void EC_Camera::UpdateSignals()
     {
         OgreWorldPtr world = world_.lock();
         Ogre::SceneManager* sceneMgr = world->GetSceneManager();
-        Ogre::Viewport* viewport = world->GetRenderer()->GetViewport();
         
         camera_ = sceneMgr->createCamera(world->GetUniqueObjectName("EC_Camera"));
         
         // Set default values for the camera
-        camera_->setNearClipDistance(0.1f);
-        camera_->setFarClipDistance(2000.f);
-        camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth() / Ogre::Real(viewport->getActualHeight())));
-        camera_->setAutoAspectRatio(true);
+		camera_->setNearClipDistance(nearPlane.Get());
+		camera_->setFarClipDistance(farPlane.Get());
+        camera_->setAspectRatio(AspectRatio());
+        camera_->setAutoAspectRatio(aspectRatio.Get().trimmed().isEmpty()); ///\note If user inputs garbage into the aspectRatio field, this will incorrectly go true. (but above line prints an error to user, so should be ok). 
+        camera_->setFOVy(Ogre::Radian(Ogre::Math::DegreesToRadians(verticalFov.Get())));
 
         // Create a reusable frustum query
         Ogre::PlaneBoundedVolumeList dummy;
@@ -278,6 +318,21 @@ void EC_Camera::OnComponentStructureChanged()
     SetPlaceable(placeable);
 }
 
+void EC_Camera::OnAttributeUpdated(IAttribute *attribute)
+{
+    if (attribute == &nearPlane)
+        SetNearClip(nearPlane.Get());
+    else if (attribute == &farPlane)
+        SetFarClip(farPlane.Get());
+    else if (attribute == &verticalFov)
+        SetVerticalFov(Ogre::Math::DegreesToRadians(verticalFov.Get()));
+    else if (attribute == &aspectRatio && camera_)
+    {
+        camera_->setAspectRatio(AspectRatio());
+        camera_->setAutoAspectRatio(aspectRatio.Get().trimmed().isEmpty()); ///\note If user inputs garbage into the aspectRatio field, this will incorrectly go true. (but above line prints an error to user, so should be ok). 
+    }
+}
+
 bool EC_Camera::IsEntityVisible(Entity* entity)
 {
     if (!entity || !camera_)
@@ -290,7 +345,7 @@ bool EC_Camera::IsEntityVisible(Entity* entity)
     return visibleEntities_.find(entity->Id()) != visibleEntities_.end();
 }
 
-QList<Entity*> EC_Camera::GetVisibleEntities()
+QList<Entity*> EC_Camera::VisibleEntities()
 {
     QList<Entity*> l;
     
@@ -313,7 +368,7 @@ QList<Entity*> EC_Camera::GetVisibleEntities()
     return l;
 }
 
-const std::set<entity_id_t>& EC_Camera::GetVisibleEntityIDs()
+const std::set<entity_id_t>& EC_Camera::VisibleEntityIDs()
 {
     if (camera_)
     {
