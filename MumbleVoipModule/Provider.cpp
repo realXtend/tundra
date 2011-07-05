@@ -266,7 +266,7 @@ namespace MumbleVoip
             session_->AddChannel(channel->getchannelname(), server_info);
 
         if (session_->GetActiveChannel() == "")
-            session_->SetActiveChannel(channel->Name());
+            session_->SetActiveChannel(channel->getchannelname());
     }
 
     void Provider::OnECVoiceChannelDestroyed(QObject* obj)
@@ -322,6 +322,9 @@ namespace MumbleVoip
 
                 channel_names_[channel] = channel->getchannelname();
                 session_->AddChannel(channel->getchannelname(), server_info);
+
+                if(session_->GetActiveChannel() == "" && channel->getchannelname() != "")
+                    session_->SetActiveChannel(channel->getchannelname());
             }
             else
             {
