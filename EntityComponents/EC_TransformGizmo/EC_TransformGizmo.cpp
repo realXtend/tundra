@@ -405,7 +405,7 @@ void EC_TransformGizmo::OnFrameUpdate(float /*dt*/)
     float3 gizmoPos = mesh->LocalToWorld().TranslatePart();
     float3 cameraPos = placeable->LocalToWorld().TranslatePart();
     float distance = gizmoPos.Distance(cameraPos);
-    mesh->SetAdjustScale(float3::FromScalar(std::max(1.f, distance)));
+    mesh->SetAdjustScale(float3::FromScalar(std::max(0.1f, 0.1f*distance)));
 }
 
 /*
