@@ -57,6 +57,8 @@ EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
     connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 
     ogreWorld = scene->GetWorld<OgreWorld>();
+
+    connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(OnFrameUpdate(float)));
 }
 
 EC_TransformGizmo::~EC_TransformGizmo()
@@ -343,7 +345,13 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                 case EC_TransformGizmo::Scale:
                     //ss << ToCoreVector(curPoint-prevPoint);
                     //LogInfo("Emitting Scaled(" + ss.str() + ")");
-                    emit Scaled(curPoint-prevPoint);
+                    if (input && input->IsKeyDown(Qt::Key_Shift))
+                        emit Scaled(curPoint-prevPoint);
+                    else
+                    {
+                        float3 scale = curPoint-prevPoint;                        
+                        emit Scaled(float3::FromScalar(scale.AverageOfElements()));
+                    }
                     break;
                 }
                 prevPoint = curPoint;
@@ -381,11 +389,26 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
         mesh->meshMaterial.Set(materials, AttributeChange::Default);
 }
 
-/*
-btVector3 OgreToBt(const Ogre::Vector3 &v)
+void EC_TransformGizmo::OnFrameUpdate(float /*dt*/)
 {
-    return btVector3(v.x, v.y, v.z);
+    if (!mesh || ogreWorld.expired())
+        return;
+    OgreWorldPtr world = ogreWorld.lock();
+    EC_Camera *cam = checked_static_cast<EC_Camera*>(world->GetRenderer()->GetActiveCamera());
+    if (!cam)
+        return;
+    boost::shared_ptr<EC_Placeable> placeable = cam->ParentEntity()->GetComponent<EC_Placeable>();
+    if (!placeable)
+        return;
+
+    // We always keep the transform gizmo constant-sized in the view.
+    float3 gizmoPos = mesh->LocalToWorld().TranslatePart();
+    float3 cameraPos = placeable->LocalToWorld().TranslatePart();
+    float distance = gizmoPos.Distance(cameraPos);
+    mesh->SetAdjustScale(float3::FromScalar(std::max(1.f, distance)));
 }
+
+/*
 
 void EC_TransformGizmo::DrawDebug()
 {

@@ -136,5 +136,7 @@ private slots:
     /** @param e Mouse event. */
     void HandleMouseEvent(MouseEvent *e);
 
+    void OnFrameUpdate(float dt);
+
 //    void DrawDebug();
 };

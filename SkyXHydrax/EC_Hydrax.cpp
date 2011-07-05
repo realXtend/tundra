@@ -110,7 +110,7 @@ void EC_Hydrax::Create()
     // Create water
     impl->hydrax->create();
 
-    connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)));
+    connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)));
 }
 

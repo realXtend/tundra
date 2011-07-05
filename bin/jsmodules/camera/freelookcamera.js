@@ -26,7 +26,7 @@ if (!me.GetComponent("EC_Camera"))
     var transform = placeable.transform;
 
     // Set initial transform according to camera's up vector
-    var initialRot = camera.GetInitialRotation();
+    var initialRot = camera.InitialRotation();
     transform.rot = initialRot;
 
     placeable.transform = transform;

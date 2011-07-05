@@ -47,9 +47,21 @@ public slots:
     int FrameNumber() const;
 
 signals:
-    /// Emitted after one frame is processed.
-    /** @param frametime Elapsed time in seconds since the last frame. */
+    /// Emitted when it is time for client code to update their applications.
+    /** Scripts and client C++ code can hook into this signal to perform custom per-frame processing.
+        This signal is typically used to perform *logic* updates for e.g. game state, networking and other processing.
+        @param frametime Elapsed time in seconds since the last frame. */
     void Updated(float frametime);
+
+    /// Emitted after all frame updates have been processed.
+    /** Scripts and client C++ code can hook into this signal to perform custom per-frame processing *after*
+        all logic-/state-related updates have been performed. This signal is invoked after the Updated() signal
+        has been invoked for all scripts. It allows users to perform processing which depend on the ordering
+        of updates of different system. This signal is typically used to perform rendering-related updates for a frame
+        that has already been processed to updated state during this frame. 
+        @param frameTime Elapsed time in seconds since the last frame. This value has the same value as in the 
+            call to the Updated(frametime) signal above. */
+    void PostFrameUpdate(float frametime);
 
 private:
     friend class Framework;
