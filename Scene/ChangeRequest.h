@@ -13,16 +13,16 @@
 class ChangeRequest : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool allowed READ IsAllowed WRITE SetAllowed)
 
 public:
-    ChangeRequest() :
-        allowed(true)
-    {
-    }
+    ChangeRequest();
 
     bool allowed;
 
 public slots:
+    bool IsAllowed();
+    void SetAllowed(bool allow);
     void Deny();
 };
 
