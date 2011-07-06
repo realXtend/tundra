@@ -7,13 +7,13 @@
 #include "MumbleVoipModule.h"
 #define BUILDING_DLL // for dll import/export declarations
 #define CreateEvent CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
-#include <libmumbleclient/client.h>
-#include <libmumbleclient/client_lib.h>
+#include <mumbleclient/client.h>
+#include <mumbleclient/client_lib.h>
 #undef BUILDING_DLL // for dll import/export declarations
-#include <libmumbleclient/settings.h>
-#include <libmumbleclient/PacketDataStream.h>
-#include <libmumbleclient/channel.h>
-#include <libmumbleclient/user.h>
+#include <mumbleclient/settings.h>
+#include <mumbleclient/PacketDataStream.h>
+#include <mumbleclient/channel.h>
+#include <mumbleclient/user.h>
 #include "AudioAPI.h"
 #include "Channel.h"
 #include "User.h"
@@ -293,8 +293,8 @@ namespace MumbleLib
         case CELT_BAD_ARG:
             MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_BAD_ARG");
             return 0;
-        case CELT_BUFFER_TOO_SMALL:
-            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_BUFFER_TOO_SMALL");
+        case CELT_INVALID_MODE:
+            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_INVALID_MODE");
             return 0;
         case CELT_INTERNAL_ERROR:
             MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_INTERNAL_ERROR");
@@ -770,8 +770,8 @@ namespace MumbleLib
             case CELT_BAD_ARG:
                 MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_BAD_ARG");
                 break;
-            case CELT_BUFFER_TOO_SMALL:
-                MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_BUFFER_TOO_SMALL");
+            case CELT_INVALID_MODE:
+                MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_INVALID_MODE");
                 break;
             case CELT_INTERNAL_ERROR:
                 MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_INTERNAL_ERROR");

@@ -25,7 +25,7 @@ namespace MumbleLib
 {
     class Channel;
 
-    //! Wrapper over libmumbleclient library's User class
+    //! Wrapper over mumbleclient library's User class
     //! Present mumble client intance on MurMur server
     class User : public QObject, public QMutex
     {

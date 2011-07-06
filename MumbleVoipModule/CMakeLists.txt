@@ -1,6 +1,3 @@
-configure_protobuf ()
-configure_openssl ()
-configure_mumbleclient ()
 configure_celt ()
 
 # Define target name and output directory
@@ -27,9 +24,7 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DMUMBLE_VOIP_MODULE_EXPORTS)
 
-use_package (PROTOBUF) # NEEDED BY MUMBLECLIENT
-use_package (OPENSSL) # NEEDED BY MUMBLECLIENT
-use_package (MUMBLECLIENT)
+use_package_mumbleclient()
 use_package (CELT)
 
 use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities OgreRenderingModule Scene Console
@@ -39,9 +34,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RE
 
 link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities OgreRenderingModule Scene Console
     EC_OpenSimPresence Audio TundraLogicModule)
-link_package (PROTOBUF) # NEEDED BY MUMBLECLIENT
-link_package (OPENSSL) # NEEDED BY MUMBLECLIENT
-link_package (MUMBLECLIENT)
+link_package_mumbleclient()
 link_package (CELT)
 
 SetupCompileFlagsWithPCH()

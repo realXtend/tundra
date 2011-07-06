@@ -410,12 +410,36 @@ endif()
 endmacro (configure_vorbis)
 
 macro (configure_mumbleclient)
+    # Not in use currently, remove later if deemed unnecessary.
     sagase_configure_package(MUMBLECLIENT
         NAMES mumbleclient
         COMPONENTS mumbleclient client
         PREFIXES ${ENV_NAALI_DEP_PATH}/libmumbleclient)
     sagase_configure_report (MUMBLECLIENT)
 endmacro (configure_mumbleclient)
+
+macro(use_package_mumbleclient)
+    message (STATUS "** Configuring mumbleclient")
+    if (WIN32)
+        # Not implemented
+        message (FATAL_ERROR "!! use_package_mumbleclient not implemented for WIN32")
+    else()
+        if ("$ENV{MUMBLECLIENT_DIR}" STREQUAL "")
+            set(MUMBLECLIENT_DIR ${ENV_NAALI_DEP_PATH})
+        endif()
+        message (STATUS "-- Include Directories:")
+        message (STATUS "       " ${MUMBLECLIENT_DIR}/include/mumbleclient)
+        include_directories(${MUMBLECLIENT_DIR}/include/mumbleclient)
+        message (STATUS "-- Library Directories:")
+        message (STATUS "       " ${MUMBLECLIENT_DIR}/lib)
+        link_directories(${MUMBLECLIENT_DIR}/lib)
+    endif()
+endmacro()
+
+macro(link_package_mumbleclient)
+    target_link_libraries(${TARGET_NAME} debug mumbleclient)
+    target_link_libraries(${TARGET_NAME} optimized mumbleclient)
+endmacro()
 
 macro (configure_openssl)
     sagase_configure_package(OPENSSL
