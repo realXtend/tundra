@@ -1,6 +1,7 @@
 @echo off
 echo.
 
+::SET NAALI_DEP_PATH=<path_to_vc9_build_deps>
 SET QTDIR=%NAALI_DEP_PATH%\Qt
 SET QMAKESPEC=%QTDIR%\mkspecs\win32-msvc2008
 
