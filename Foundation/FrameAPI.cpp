@@ -18,7 +18,8 @@
 
 #include "MemoryLeakCheck.h"
 
-DelayedSignal::DelayedSignal(boost::uint64_t startTime) : startTime_(startTime)
+DelayedSignal::DelayedSignal(f64 startTime) : 
+    startTime_(startTime)
 {
 }
 

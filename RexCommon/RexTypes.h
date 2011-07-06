@@ -10,19 +10,6 @@
 
 #include "CoreTypes.h"
 #include "Vector3D.h"
-#include <boost/cstdint.hpp>
-#include <map>
-#include <QString>
-
-///\todo Move to CoreTypes.h. Currently (2010/06/01) MumbleVoipModule causes problems with its own stdint.h
-using boost::uint8_t;
-using boost::uint16_t;
-using boost::uint32_t;
-using boost::uint64_t;
-using boost::int8_t;
-using boost::int16_t;
-using boost::int32_t;
-using boost::int64_t;
 
 typedef int asset_type_t;
 typedef int inventory_type_t;
@@ -343,12 +330,12 @@ namespace RexTypes
     const int EXTRUSION_STRAIGHT = 16;
 
     // Primitive texture entry material type
-    const uint8_t MATERIALTYPE_BUMP = 0x1f;
-    const uint8_t MATERIALTYPE_FULLBRIGHT = 0x20;
-    const uint8_t MATERIALTYPE_SHINY = 0xc0;
+    const u8 MATERIALTYPE_BUMP = 0x1f;
+    const u8 MATERIALTYPE_FULLBRIGHT = 0x20;
+    const u8 MATERIALTYPE_SHINY = 0xc0;
 
     // Attached sound flags
-    const uint8_t ATTACHED_SOUND_LOOP = 0x01;
+    const u8 ATTACHED_SOUND_LOOP = 0x01;
 
     typedef std::string RexAssetID;
 

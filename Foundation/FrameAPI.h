@@ -13,9 +13,8 @@
 #ifndef incl_Foundation_FrameAPI
 #define incl_Foundation_FrameAPI
 
+#include "CoreTypes.h"
 #include <QObject>
-
-#include <boost/cstdint.hpp>
 
 namespace Foundation
 {
@@ -43,9 +42,9 @@ private:
     /// Construct new signal delayed signal object.
     /** @param startTime Application tick.
     */
-    explicit DelayedSignal(boost::uint64_t startTime);
+    explicit DelayedSignal(f64 startTime);
 
-    boost::uint64_t startTime_; ///< Application tick when object was created.
+    f64 startTime_; ///< Application tick when object was created.
 
 private slots:
     /// Emits Triggered() signal
@@ -108,7 +107,7 @@ private:
     */
     void Update(float frametime);
 
-    boost::uint64_t startTime_; ///< Start time time of Framework/this object;
+    u64 startTime_; ///< Start time time of Framework/this object;
     QList<DelayedSignal *> delayedSignals_; ///< Delayed signals.
 
 private slots:

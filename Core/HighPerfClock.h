@@ -3,6 +3,8 @@
 #ifndef incl_Core_HighPerfClock_h
 #define incl_Core_HighPerfClock_h
 
+#include "CoreTypes.h"
+
 #include <QDateTime>
 #if defined(_WINDOWS)
 #include <Windows.h>
@@ -12,9 +14,7 @@
 #include <time.h>
 #endif
 
-#include <boost/cstdint.hpp>
-
-typedef boost::uint64_t tick_t;
+typedef u64 tick_t;
 
 inline tick_t GetCurrentClockTime()
 {
