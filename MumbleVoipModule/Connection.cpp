@@ -5,11 +5,11 @@
 
 #include "Connection.h"
 #include "MumbleVoipModule.h"
-#define BUILDING_DLL // for dll import/export declarations
+#define LIBMUMBLE_BUILDING_DLL // for dll import/export declarations
 #define CreateEvent CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/client.h>
 #include <mumbleclient/client_lib.h>
-#undef BUILDING_DLL // for dll import/export declarations
+#undef LIBMUMBLE_BUILDING_DLL // for dll import/export declarations
 #include <mumbleclient/settings.h>
 #include <mumbleclient/PacketDataStream.h>
 #include <mumbleclient/channel.h>
@@ -423,7 +423,7 @@ namespace MumbleLib
 	    int flags = 0; // target = 0
 	    flags |= (MumbleClient::UdpMessageType::UDPVoiceCELTAlpha << 5);
 	    data[0] = static_cast<unsigned char>(flags);
-        MumbleClient::PacketDataStream data_stream(data + 1, PACKET_DATA_SIZE_MAX - 1);
+        LibMumblePacketDataStream data_stream(data + 1, PACKET_DATA_SIZE_MAX - 1);
         data_stream << frame_sequence_;
 
         for (int i = 0; i < MumbleVoip::FRAMES_PER_PACKET; ++i)
@@ -545,7 +545,7 @@ namespace MumbleLib
         else
             return;
 
-        MumbleClient::PacketDataStream data_stream = MumbleClient::PacketDataStream((char*)buffer, length);
+        LibMumblePacketDataStream data_stream = LibMumblePacketDataStream((char*)buffer, length);
         bool valid = data_stream.isValid();
         UNREFERENCED_PARAM(valid);
         uint8_t first_byte = static_cast<unsigned char>(data_stream.next());

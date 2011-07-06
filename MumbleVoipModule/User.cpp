@@ -6,13 +6,14 @@
 #include "User.h"
 #include "PCMAudioFrame.h"
 #include "MumbleVoipModule.h"
-#include "stdint.h"
 #include "MumbleDefines.h"
 #include "PCMAudioFrame.h"
-#include <QTimer>
 #include "Channel.h"
+
 #include <mumbleclient/user.h>
 #include <mumbleclient/channel.h>
+
+#include <QTimer>
 
 #include "MemoryLeakCheck.h"
 

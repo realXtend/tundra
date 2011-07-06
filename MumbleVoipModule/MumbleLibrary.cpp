@@ -5,11 +5,11 @@
 
 #include "MumbleLibrary.h"
 #include "MumbleMainLoopThread.h"
-#define BUILDING_DLL // for dll import/export declarations
+#define LIBMUMBLE_BUILDING_DLL // for dll import/export declarations
 #define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <mumbleclient/client_lib.h>
 #include <mumbleclient/logging.h>
-#undef BUILDING_DLL // for dll import/export declarations
+#undef LIBMUMBLE_BUILDING_DLL // for dll import/export declarations
 
 #include "MemoryLeakCheck.h"
 
@@ -20,8 +20,6 @@ namespace MumbleLib
 
     void MumbleLibrary::Start()
     {
-        //MumbleClient::logging::SetLogLevel(MumbleClient::logging::LOG_WARNING);
-        MumbleClient::logging::SetLogLevel(MumbleClient::logging::LOG_INFO);
         StartMumbleThread();
         //emit Started();
     }
@@ -29,7 +27,7 @@ namespace MumbleLib
     void MumbleLibrary::Stop()
     {
         StopMumbleThread();
-//        emit Stoped();
+        //emit Stoped();
     }
 
     bool MumbleLibrary::IsRunning()
