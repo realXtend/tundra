@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OpenALAudioModule_AudioAsset_h
-#define incl_OpenALAudioModule_AudioAsset_h
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
@@ -9,6 +8,7 @@
 #include "AudioFwd.h"
 #include "SoundBuffer.h"
 
+/// Stores raw decoded audio data ready for playback.
 class AUDIO_API AudioAsset : public IAsset
 {
     Q_OBJECT;
@@ -53,4 +53,3 @@ private:
     ALuint handle;
 };
 
-#endif

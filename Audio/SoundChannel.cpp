@@ -44,7 +44,7 @@ SoundChannel::~SoundChannel()
     DeleteSource();
 }
 
-void SoundChannel::Update(const Vector3df& listener_pos)
+void SoundChannel::Update(const float3& listener_pos)
 {   
     CalculateAttenuation(listener_pos);
     SetAttenuatedGain();
@@ -160,7 +160,7 @@ QString SoundChannel::GetSoundName() const
     return "";
 }
 
-void SoundChannel::SetPosition(const Vector3df &position)
+void SoundChannel::SetPosition(const float3 &position)
 {
     position_ = position;
     
@@ -246,7 +246,7 @@ void SoundChannel::SetPositionAndMode()
     }
 }
 
-void SoundChannel::CalculateAttenuation(const Vector3df& listener_pos)
+void SoundChannel::CalculateAttenuation(const float3& listener_pos)
 {
     if ((outer_radius_ == 0.0f) || (outer_radius_ <= inner_radius_))
     {
@@ -254,7 +254,7 @@ void SoundChannel::CalculateAttenuation(const Vector3df& listener_pos)
         return;
     }
       
-    float distance = (position_ - listener_pos).getLength();
+    float distance = (position_ - listener_pos).Length();
     if (distance <= inner_radius_)
     {
         attenuation_ = 1.0f;
@@ -324,7 +324,7 @@ void SoundChannel::QueueBuffers()
             alSourceQueueBuffers(handle_, 1, &buffer);
             ALenum error = alGetError();
             if (error != AL_NONE)
-                LogError("Could not queue OpenAL sound buffer: " + ToString<int>(error));
+                LogError("Could not queue OpenAL sound buffer: " + QString::number(error));
             else
             {
                 playing_sounds_.push_back(sound);

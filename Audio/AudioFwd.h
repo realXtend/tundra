@@ -1,9 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
-#ifndef incl_Audio_AudioFwd_h
-#define incl_Audio_AudioFwd_h
+#pragma once
 
 #include <map>
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 class AudioAPI;
 struct AudioApiImpl;
@@ -26,4 +26,3 @@ typedef boost::weak_ptr<AudioAsset> AudioAssetWeakPtr;
 /** unsigned 32-bit integer */
 typedef unsigned int ALuint;
 
-#endif

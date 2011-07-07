@@ -1,12 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
-#ifndef incl_Audio_SoundBuffer_h
-#define incl_Audio_SoundBuffer_h
+#pragma once
 
 #include <vector>
 #include "CoreTypes.h"
 #include "AudioApiExports.h"
 
-/// SoundBuffer stores a fixed-length sound clip in raw PCM wav data.
+/// Stores a fixed-length sound clip in raw PCM wav data.
 class AUDIO_API SoundBuffer
 {
 public:
@@ -21,4 +20,3 @@ public:
     bool stereo;
 };
 
-#endif

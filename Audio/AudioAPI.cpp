@@ -3,14 +3,17 @@
 #include "DebugOperatorNew.h"
 #include <boost/algorithm/string.hpp>
 #include <QList>
-#include "MemoryLeakCheck.h"
 #include "AudioAPI.h"
 #include "CoreTypes.h"
 #include "AssetAPI.h"
 #include "AudioAsset.h"
 #include "GenericAssetFactory.h"
+#include "NullAssetFactory.h"
 #include "SoundChannel.h"
 #include "LoggingFunctions.h"
+#include "Framework.h"
+#include "Profiler.h"
+#include "Math/float3.h"
 
 #ifndef Q_WS_MAC
 #include <AL/al.h>
@@ -20,6 +23,8 @@
 #include <alc.h>
 #endif
 
+#include "MemoryLeakCheck.h"
+
 //#include <boost/thread/mutex.hpp>
 
 using namespace std;
@@ -27,6 +32,12 @@ using namespace std;
 struct AudioApiImpl
 {
 public:
+    AudioApiImpl()
+    :listenerPosition(0,0,0),
+    listenerOrientation(Quat::identity)
+    {
+    }
+
     /// Initialized flag
     bool initialized;
     /// OpenAL context
@@ -43,9 +54,9 @@ public:
     sound_id_t nextChannelId;
     
     /// Listener position
-    Vector3df listenerPosition;
+    float3 listenerPosition;
     /// Listener orientation
-    Quaternion listenerOrientation;
+    Quat listenerOrientation;
     
     /// Master gain for whole sound system
     float masterGain;
@@ -55,7 +66,7 @@ public:
 //    boost::mutex mutex;
 };
 
-AudioAPI::AudioAPI(AssetAPI *assetAPI_)
+AudioAPI::AudioAPI(Framework *fw, AssetAPI *assetAPI_)
 :impl(new AudioApiImpl),
 assetAPI(assetAPI_)
 {
@@ -70,7 +81,7 @@ assetAPI(assetAPI_)
     impl->soundMasterGain[SoundChannel::Triggered] = 1.f;
     impl->soundMasterGain[SoundChannel::Ambient] = 1.f;
     impl->soundMasterGain[SoundChannel::Voice] = 1.f;
-    impl->listenerPosition = Vector3df(0.0, 0.0, 0.0);
+    impl->listenerPosition = float3(0.0, 0.0, 0.0);
     
     // By default, initialize default playback device
     Initialize();
@@ -83,22 +94,27 @@ assetAPI(assetAPI_)
     soundMasterGain[SoundChannel::Voice] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "voice_sound_gain", 1.0f);
     */
 
-    /// \todo Is mp3 really supported? Copied over from AssetAPI where file extensions were resolved to a type.
-    QStringList supportedAudioFormats;
-    supportedAudioFormats << "wav" << "ogg" << "mp3";
-    assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio", supportedAudioFormats))); 
+    if (!fw->IsHeadless())
+        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); 
+    else
+        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Audio"))); 
 }
 
 AudioAPI::~AudioAPI()
 {
-    Uninitialize();
-    delete impl;
 /*
     framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "masterGain", masterGain);
     framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "triggered_sound_gain", soundMasterGain[SoundChannel::Triggered]);
     framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "ambient_sound_gain", soundMasterGain[SoundChannel::Ambient]);
     framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "voice_sound_gain", soundMasterGain[SoundChannel::Voice]);
 */
+}
+
+void AudioAPI::Reset()
+{
+    Uninitialize();
+    delete impl;
+    impl = 0;
 }
 
 bool AudioAPI::Initialize(const QString &playbackDeviceName)
@@ -203,15 +219,17 @@ void AudioAPI::Update(f64 frametime)
 {   
     if (!impl || !impl->initialized)
         return;
-        
+    
+    PROFILE(AudioAPI_Update);
+
 //        mutex.lock();
     std::vector<SoundChannelMap::iterator> channelsToDelete;
 
     // Update listener position/orientation to sound device
     ALfloat pos[] = {impl->listenerPosition.x, impl->listenerPosition.y, impl->listenerPosition.z};
     alListenerfv(AL_POSITION, pos);
-    Vector3df front = impl->listenerOrientation * Vector3df(0.0f, -1.0f, 0.0f);
-    Vector3df up = impl->listenerOrientation * Vector3df(0.0f, 0.0f, -1.0f); 
+    float3 front = impl->listenerOrientation * float3(0.0f, -1.0f, 0.0f);
+    float3 up = impl->listenerOrientation * float3(0.0f, 0.0f, -1.0f); 
     ALfloat orient[] = {front.x, front.y, front.z, up.x, up.y, up.z};
     alListenerfv(AL_ORIENTATION, orient);
     
@@ -239,7 +257,7 @@ bool AudioAPI::IsInitialized() const
     return impl && impl->initialized;
 }
 
-void AudioAPI::SetListener(const Vector3df &position, const Quaternion &orientation)
+void AudioAPI::SetListener(const float3 &position, const Quat &orientation)
 {
     if (!impl || !impl->initialized)
         return;
@@ -247,7 +265,12 @@ void AudioAPI::SetListener(const Vector3df &position, const Quaternion &orientat
     impl->listenerPosition = position;
     impl->listenerOrientation = orientation;
 }
-  
+
+// Remove <Windows.h> PlaySound defines.
+#ifdef PlaySound
+#undef PlaySound
+#endif
+
 SoundChannelPtr AudioAPI::PlaySound(AssetPtr audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
 {
     if (!impl || !impl->initialized)
@@ -267,7 +290,7 @@ SoundChannelPtr AudioAPI::PlaySound(AssetPtr audioAsset, SoundChannel::SoundType
     return channel;
 }
 
-SoundChannelPtr AudioAPI::PlaySound3D(const Vector3df &position, AssetPtr audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
+SoundChannelPtr AudioAPI::PlaySound3D(const float3 &position, AssetPtr audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
 {
     if (!impl || !impl->initialized)
         return SoundChannelPtr();
@@ -308,7 +331,7 @@ SoundChannelPtr AudioAPI::PlaySoundBuffer(const SoundBuffer &buffer, SoundChanne
     return channel;
 }
 
-SoundChannelPtr AudioAPI::PlaySoundBuffer3D(const SoundBuffer &buffer, SoundChannel::SoundType type, Vector3df position, SoundChannelPtr channel)
+SoundChannelPtr AudioAPI::PlaySoundBuffer3D(const SoundBuffer &buffer, SoundChannel::SoundType type, float3 position, SoundChannelPtr channel)
 {
     if (!impl->initialized)
         return SoundChannelPtr();

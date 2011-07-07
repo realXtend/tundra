@@ -3,6 +3,8 @@ init_target(Audio)
 # Use the output that only if we are building Audio project as a shared library.
 #init_target(Audio OUTPUT ./)
 
+MocFolder ()
+
 # Define source files
 file(GLOB CPP_FILES *.cpp)
 file(GLOB H_FILES *.h)
