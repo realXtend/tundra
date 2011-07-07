@@ -1,16 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_LocalAssetStorage_h
-#define incl_Asset_LocalAssetStorage_h
+#pragma once
 
 #include "AssetModuleApi.h"
 #include "IAssetStorage.h"
 
 class QFileSystemWatcher;
+class AssetAPI;
 
 namespace Asset
 {
 
+/// Represents a single (possibly recursive) directory on the local file system.
 class ASSET_MODULE_API LocalAssetStorage : public IAssetStorage
 {
 Q_OBJECT
@@ -34,6 +35,11 @@ public:
     /// Stops and deallocates the directory change listener.
     void RemoveWatcher();
 
+    /// Load all assets of specific suffix
+    void LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType);
+
+    QStringList assetRefs;
+    
 public slots:
     bool Writable() const { return true; }
 
@@ -44,16 +50,29 @@ public slots:
 
     /// Returns the URL that should be used in a scene asset reference attribute to refer to the asset with the given localName.
     /// Example: GetFullAssetURL("my.mesh") might return "local://my.mesh".
-    /// \note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "local://my.mesh".
+    /// @note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "local://my.mesh".
     QString GetFullAssetURL(const QString &localName);
 
+    /// Returns the type of this storage: "LocalAssetStorage".
+    virtual QString Type() const;
+
+    /// Returns all assetrefs currently known in this asset storage. Does not load the assets
+    virtual QStringList GetAllAssetRefs() { return assetRefs; }
+    
+    /// Refresh asset refs. Issues a directory query and emits AssetRefsChanged immediately
+    virtual void RefreshAssetRefs();
+    
 //    QFileSystemWatcher *changeWatcher;
 
     QString Name() const { return name; }
 
     QString BaseURL() const { return "local://"; }
 
+    /// Returns a convenient human-readable representation of this storage.
     QString ToString() const { return Name() + " (" + directory + ")"; }
+
+    /// Serializes this storage to a string for machine transfer.
+    virtual QString SerializeToString() const;
 
 private:
     void operator=(const LocalAssetStorage &);
@@ -62,4 +81,3 @@ private:
 
 }
 
-#endif

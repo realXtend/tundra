@@ -2,28 +2,29 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include <QMap>
 #include "MemoryLeakCheck.h"
 #include "AssetModule.h"
 #include "CoreTypes.h"
 #include "LocalAssetProvider.h"
 #include "Framework.h"
-#include "EventManager.h"
-#include "ServiceManager.h"
-#include "ConfigurationManager.h"
 #include "LocalAssetStorage.h"
 #include "IAssetUploadTransfer.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
+#include "CoreStringUtils.h"
+#include <QDir>
 #include <QByteArray>
 #include <QFile>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include "MemoryLeakCheck.h"
 
 namespace Asset
 {
 
-LocalAssetProvider::LocalAssetProvider(Foundation::Framework* framework_)
+LocalAssetProvider::LocalAssetProvider(Framework* framework_)
 :framework(framework_)
 {
 }
@@ -39,19 +40,16 @@ QString LocalAssetProvider::Name()
     return name;
 }
 
-bool LocalAssetProvider::IsValidRef(QString asset_id, QString asset_type)
+bool LocalAssetProvider::IsValidRef(QString assetRef, QString)
 {
-    QString ref = asset_id.toStdString().c_str();
-    ref = ref.trimmed();
-    if (ref.length() == 0)
-        return false;
-    if (ref.startsWith("file://") || ref.startsWith("local://"))
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed());
+    if (refType == AssetAPI::AssetRefLocalPath || refType == AssetAPI::AssetRefLocalUrl)
         return true;
 
-    if (!ref.contains("://")) // If the ref doesn't contain a protocol specifier (we do this simple check for it), try to directly find the given local file.
+    if (refType == AssetAPI::AssetRefRelativePath)
     {
-        QString path = GetPathForAsset(ref, 0);
-        return path.length() > 0;
+        QString path = GetPathForAsset(assetRef, 0);
+        return !path.isEmpty();
     }
     else
         return false;
@@ -61,6 +59,9 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
 {
     if (assetRef.isEmpty())
         return AssetTransferPtr();
+    assetType = assetType.trimmed();
+    if (assetType.isEmpty())
+        assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef.toStdString().c_str());
 
     AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer);
     transfer->source.ref = assetRef.trimmed();
@@ -71,12 +72,33 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
     return transfer;
 }
 
-QString LocalAssetProvider::GetPathForAsset(const QString &assetname, LocalAssetStoragePtr *storage)
+QString LocalAssetProvider::GetPathForAsset(const QString &assetRef, LocalAssetStoragePtr *storage) const
 {
-    // Check first all subdirs without recursion, because recursion is potentially slow
-    for(size_t i = 0; i < storages.size(); ++i)
+    QString path;
+    QString path_filename;
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed(), 0, 0, 0, 0, &path_filename, &path);
+    if (refType == AssetAPI::AssetRefLocalPath)
     {
-        QString path = storages[i]->GetFullPathForAsset(assetname.toStdString().c_str(), false);
+        // If the asset ref has already been converted to an absolute path, simply return the assetRef as is.
+        // However, lookup also the storage if wanted
+        if (storage)
+        {
+            for (size_t i = 0; i < storages.size(); ++i)
+            {
+                if (path.startsWith(storages[i]->directory, Qt::CaseInsensitive))
+                {
+                    *storage = storages[i];
+                    return path;
+                }
+            }
+        }
+        
+        return path;
+    }
+    // Check first all subdirs without recursion, because recursion is potentially slow
+    for (size_t i = 0; i < storages.size(); ++i)
+    {
+        QString path = storages[i]->GetFullPathForAsset(path_filename.toStdString().c_str(), false);
         if (path != "")
         {
             if (storage)
@@ -85,9 +107,9 @@ QString LocalAssetProvider::GetPathForAsset(const QString &assetname, LocalAsset
         }
     }
 
-    for(size_t i = 0; i < storages.size(); ++i)
+    for (size_t i = 0; i < storages.size(); ++i)
     {
-        QString path = storages[i]->GetFullPathForAsset(assetname.toStdString().c_str(), true);
+        QString path = storages[i]->GetFullPathForAsset(path_filename.toStdString().c_str(), true);
         if (path != "")
         {
             if (storage)
@@ -103,7 +125,7 @@ QString LocalAssetProvider::GetPathForAsset(const QString &assetname, LocalAsset
 
 void LocalAssetProvider::Update(f64 frametime)
 {
-    ///\note It is *very* important that below we first complete all uploads, and then the downloads.
+    ///@note It is *very* important that below we first complete all uploads, and then the downloads.
     /// This is because it is a rather common code flow to upload an asset for an entity, and immediately after that
     /// generate a entity in the scene that refers to that asset, which means we do both an upload and a download of the
     /// asset into the same asset storage. If the download request was processed before the upload request, the download
@@ -115,25 +137,54 @@ void LocalAssetProvider::Update(f64 frametime)
 void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
 {
     if (!assetRef.isEmpty())
+    {
         QFile::remove(assetRef); ///\todo Check here that the assetRef points to one of the accepted storage directories, and don't allow deleting anything else.
-
-    LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
+        
+        LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
+        framework->Asset()->EmitAssetDeletedFromStorage(assetRef);
+    }
 }
 
-void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
+bool LocalAssetProvider::RemoveAssetStorage(QString storageName)
 {
-    ///\todo Check first if the given directory exists as a storage, and don't add it as a duplicate if so.
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
+        {
+            storages.erase(storages.begin() + i);
+            return true;
+        }
+
+    return false;
+}
+
+LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &directory, QString storageName, bool recursive)
+{
+    storageName = storageName.trimmed();
+    if (storageName.isEmpty())
+        return LocalAssetStoragePtr();
+
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
+        {
+            if (storages[i]->directory != directory)
+                LogError("LocalAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName.toStdString() + "\" already exists, but points to directory \"" + storages[i]->directory.toStdString() + "\" instead of \"" + directory.toStdString() + "\"!");
+            return LocalAssetStoragePtr();
+        }
 
     LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage());
-    storage->directory = directory.c_str();
-    storage->name = storageName.c_str();
+    storage->directory = directory;
+    storage->name = storageName;
     storage->recursive = recursive;
     storage->provider = shared_from_this();
     storage->SetupWatcher(); // Start listening on file change notifications.
 //    connect(storage->changeWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(FileChanged(QString)));
 //    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
-
     storages.push_back(storage);
+
+    // Make the storage refresh itself immediately.
+    storage->RefreshAssetRefs();
+    
+    return storage;
 }
 
 std::vector<AssetStoragePtr> LocalAssetProvider::GetStorages() const
@@ -180,29 +231,36 @@ void LocalAssetProvider::CompletePendingFileDownloads()
 
         QString ref = transfer->source.ref;
 
-//        AssetModule::LogDebug("New local asset request: " + ref.toStdString());
-
-        // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
-        if (ref.startsWith("file://"))
-            ref = ref.mid(7);
-        if (ref.startsWith("local://"))
-            ref = ref.mid(8);
-
-        int lastSlash = ref.lastIndexOf('/');
-        if (lastSlash != -1)
-            ref = ref.left(lastSlash);
+        QString path_filename;
+        AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(ref.trimmed(), 0, 0, 0, 0, &path_filename);
 
         LocalAssetStoragePtr storage;
-        QString path = GetPathForAsset(ref, &storage);
-        if (path.isEmpty())
+
+        QFileInfo file;
+
+        if (refType == AssetAPI::AssetRefLocalPath)
         {
-            QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
-//            AssetModule::LogWarning(reason.toStdString());
-            framework->Asset()->AssetTransferFailed(transfer.get(), reason);
-            continue;
+            file = QFileInfo(path_filename);
         }
-    
-        QFileInfo file(GuaranteeTrailingSlash(path) + ref);
+        else // Using a local relative path, like "local://asset.ref" or "asset.ref".
+        {
+            AssetAPI::AssetRefType urlRefType = AssetAPI::ParseAssetRef(path_filename);
+            if (urlRefType == AssetAPI::AssetRefLocalPath)
+                file = QFileInfo(path_filename); // 'file://C:/path/to/asset/asset.png'.
+            else // The ref is of form 'file://relativePath/asset.png'.
+            {
+                QString path = GetPathForAsset(path_filename, &storage);
+                if (path.isEmpty())
+                {
+                    QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
+        //            AssetModule::LogWarning(reason.toStdString());
+                    framework->Asset()->AssetTransferFailed(transfer.get(), reason);
+                    continue;
+                }
+            
+                file = QFileInfo(GuaranteeTrailingSlash(path) + path_filename);
+            }
+        }
         QString absoluteFilename = file.absoluteFilePath();
 
         bool success = LoadFileToVector(absoluteFilename.toStdString().c_str(), transfer->rawAssetData);
@@ -224,6 +282,60 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         // Signal the Asset API that this asset is now successfully downloaded.
         framework->Asset()->AssetTransferCompleted(transfer.get());
     }
+}
+
+AssetStoragePtr LocalAssetProvider::TryDeserializeStorageFromString(const QString &storage)
+{
+    QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
+    if (s.contains("type") && s["type"].compare("LocalAssetStorage", Qt::CaseInsensitive) != 0)
+        return AssetStoragePtr();
+    if (!s.contains("src"))
+        return AssetStoragePtr();
+
+    QString path;
+    QString protocolPath;
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(s["src"], 0, 0, &protocolPath, 0, 0, &path);
+
+    if (refType == AssetAPI::AssetRefRelativePath)
+    {
+        path = GuaranteeTrailingSlash(QDir::currentPath()) + path;
+        refType = AssetAPI::AssetRefLocalPath;
+    }
+    if (refType != AssetAPI::AssetRefLocalPath)
+        return AssetStoragePtr();
+
+    QString name = (s.contains("name") ? s["name"] : GenerateUniqueStorageName());
+
+    bool recursive = true;
+    if (s.contains("recursive"))
+        recursive = ParseBool(s["recursive"]);
+
+    return AddStorageDirectory(path, name, recursive);
+}
+
+QString LocalAssetProvider::GenerateUniqueStorageName() const
+{
+    QString name = "Scene";
+    int counter = 2;
+    while(GetStorageByName(name) != 0)
+        name = "Scene" + counter++;
+    return name;
+}
+
+AssetStoragePtr LocalAssetProvider::GetStorageByName(const QString &name) const
+{
+    for(size_t i = 0; i < storages.size(); ++i)
+        if (storages[i]->name.compare(name, Qt::CaseInsensitive) == 0)
+            return storages[i];
+
+    return AssetStoragePtr();
+}
+
+AssetStoragePtr LocalAssetProvider::GetStorageForAssetRef(const QString &assetRef) const
+{
+    LocalAssetStoragePtr storage;
+    GetPathForAsset(assetRef, &storage);
+    return boost::static_pointer_cast<IAssetStorage>(storage);
 }
 
 void LocalAssetProvider::CompletePendingFileUploads()
@@ -260,7 +372,6 @@ void LocalAssetProvider::CompletePendingFileUploads()
         {
             LogError(("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!").toStdString());
             transfer->EmitTransferFailed();
-            /// \todo Jukka lis‰‰ failure-notifikaatio.
         }
         else
         {

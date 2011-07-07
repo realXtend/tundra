@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_LocalAssetProvider_h
-#define incl_Asset_LocalAssetProvider_h
+#pragma once
 
 #include <boost/enable_shared_from_this.hpp>
 #include "AssetModuleApi.h"
@@ -12,13 +11,15 @@ namespace Asset
 {
     class LocalAssetStorage;
 
-    /// LocalAssetProvider provides Naali scene to use assets from the local file system with 'local://' reference.
+    typedef boost::shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
+
+    /// Provides access to files on the local file system using the 'local://' URL specifier.
     class ASSET_MODULE_API LocalAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<LocalAssetProvider>
     {
         Q_OBJECT;
 
     public:
-        explicit LocalAssetProvider(Foundation::Framework* framework);
+        explicit LocalAssetProvider(Framework* framework);
         
         virtual ~LocalAssetProvider();
         
@@ -26,37 +27,49 @@ namespace Asset
         virtual QString Name();
         
         /// Checks an asset id for validity
-        /** \return true if this asset provider can handle the id */
+        /** @return true if this asset provider can handle the id */
         virtual bool IsValidRef(QString assetRef, QString assetType);
                 
         virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
 
         /// Performs time-based update 
-        /** \param frametime Seconds since last frame */
+        /** @param frametime Seconds since last frame */
         virtual void Update(f64 frametime);
 
         /// Deletes this asset from file.
         virtual void DeleteAssetFromStorage(QString assetRef);
 
+        /// @param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
+        virtual bool RemoveAssetStorage(QString storageName);
+
         /// Adds the given directory as an asset storage.
-        /** \param directory The paht name for the directory to add.
-            \param storageName A human-readable name for the storage. This is used in the UI to the user, but is not an ID of any kind.
-            \param recursive If true, all the subfolders of the given folder are added as well. */
-        void AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive);
+        /** @param directory The paht name for the directory to add.
+            @param storageName An identifier for the storage. Remember that Asset Storage names are case-insensitive.
+            @param recursive If true, all the subfolders of the given folder are added as well.
+            Returns the newly created storage, or 0 if a storage with the given name already existed, or if some other error occurred. */
+        LocalAssetStoragePtr AddStorageDirectory(const QString &directory, QString storageName, bool recursive);
 
         virtual std::vector<AssetStoragePtr> GetStorages() const;
 
+        virtual AssetStoragePtr GetStorageByName(const QString &name) const;
+
+        virtual AssetStoragePtr GetStorageForAssetRef(const QString &assetRef) const;
+
         virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
+        virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage);
+
+        QString GenerateUniqueStorageName() const;
+
+    
     private:
-        typedef boost::shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
 
         /// Finds a path where the file localFilename can be found. Searches through all local storages.
         /// @param storage [out] Receives the local storage that contains the asset.
-        QString GetPathForAsset(const QString &localFilename, LocalAssetStoragePtr *storage);
+        QString GetPathForAsset(const QString &localFilename, LocalAssetStoragePtr *storage) const;
         
         /// Framework
-        Foundation::Framework *framework;
+        Framework *framework;
         
         /// Asset directories to search, may be recursive or not
         std::vector<LocalAssetStoragePtr> storages;
@@ -80,4 +93,3 @@ namespace Asset
 }
 
 
-#endif

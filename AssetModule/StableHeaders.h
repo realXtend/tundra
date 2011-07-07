@@ -1,19 +1,18 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_AssetModule_StableHeaders_h__
-#define incl_AssetModule_StableHeaders_h__
+#pragma once
 
-#include "CoreStdIncludes.h"
+#include "CoreTypes.h"
+#include "LoggingFunctions.h"
 
 // If PCH is disabled, leave the contents of this whole file empty to avoid any compilation unit getting any unnecessary headers.
 ///\todo Refactor the above #include inside this #ifdef as well.
 #ifdef PCH_ENABLED
 
-#include "Core.h"
-#include "Foundation.h"
+#include "CoreDefines.h"
 
 #include "Framework.h"
 
 #endif
 
-#endif // incl_AssetModule_StableHeaders_h__
+// incl_AssetModule_StableHeaders_h__

@@ -7,6 +7,7 @@
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
 
+#include <boost/filesystem.hpp>
 #include <QFileSystemWatcher>
 #include <QDir>
 #include <utility>
@@ -22,6 +23,110 @@ LocalAssetStorage::LocalAssetStorage()
 LocalAssetStorage::~LocalAssetStorage()
 {
     RemoveWatcher();
+}
+
+void LocalAssetStorage::LoadAllAssetsOfType(AssetAPI *assetAPI, const QString &suffix, const QString &assetType)
+{
+    try
+    {
+        if (recursive)
+        {
+            boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
+            boost::filesystem::recursive_directory_iterator end_iter;
+            // Check the subdir
+            for(; iter != end_iter; ++iter)
+            {
+                if (boost::filesystem::is_regular_file(iter->status()))
+                {
+                    QString str = iter->path().string().c_str();
+                    if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
+                    {
+                        int lastSlash = str.lastIndexOf('/');
+                        if (lastSlash != -1)
+                            str = str.right(str.length() - lastSlash - 1);
+                        assetAPI->RequestAsset("local://" + str, assetType);
+                    }
+                }
+            }
+        }
+        else
+        {
+            boost::filesystem::directory_iterator iter(directory.toStdString());
+            boost::filesystem::directory_iterator end_iter;
+            // Check the subdir
+            for(; iter != end_iter; ++iter)
+            {
+                if (boost::filesystem::is_regular_file(iter->status()))
+                {
+                    QString str = iter->path().string().c_str();
+                    if ((suffix == "" || str.endsWith(suffix)) && !(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
+                    {
+                        int lastSlash = str.lastIndexOf('/');
+                        if (lastSlash != -1)
+                            str = str.right(str.length() - lastSlash - 1);
+                        assetAPI->RequestAsset("local://" + str, assetType);
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+    }
+}
+
+void LocalAssetStorage::RefreshAssetRefs()
+{
+    assetRefs.clear();
+    
+    try
+    {
+        if (recursive)
+        {
+            boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
+            boost::filesystem::recursive_directory_iterator end_iter;
+            // Check the subdir
+            for(; iter != end_iter; ++iter)
+            {
+                if (boost::filesystem::is_regular_file(iter->status()))
+                {
+                    QString str = iter->path().string().c_str();
+                    if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
+                    {
+                        int lastSlash = str.lastIndexOf('/');
+                        if (lastSlash != -1)
+                            str = str.right(str.length() - lastSlash - 1);
+                        assetRefs.append("local://" + str);
+                    }
+                }
+            }
+        }
+        else
+        {
+            boost::filesystem::directory_iterator iter(directory.toStdString());
+            boost::filesystem::directory_iterator end_iter;
+            // Check the subdir
+            for(; iter != end_iter; ++iter)
+            {
+                if (boost::filesystem::is_regular_file(iter->status()))
+                {
+                    QString str = iter->path().string().c_str();
+                    if (!(str.contains(".git") || str.contains(".svn") || str.contains(".hg")))
+                    {
+                        int lastSlash = str.lastIndexOf('/');
+                        if (lastSlash != -1)
+                            str = str.right(str.length() - lastSlash - 1);
+                        assetRefs.append("local://" + str);
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+    }
+    
+    emit AssetRefsChanged(this->shared_from_this());
 }
 
 QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)
@@ -41,7 +146,7 @@ QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool re
         for(; iter != end_iter; ++iter)
         {
             QDir dir(GuaranteeTrailingSlash(iter->path().string().c_str()) + assetname);
-            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
+            if (!boost::filesystem::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
                 return iter->path().string().c_str();
         }
     }
@@ -53,8 +158,21 @@ QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool re
 }
 
 QString LocalAssetStorage::GetFullAssetURL(const QString &localName)
-{    
-    return BaseURL() + AssetAPI::ExtractFilenameFromAssetRef(localName);
+{
+    QString filename;
+    QString subAssetName;
+    AssetAPI::ParseAssetRef(localName, 0, 0, 0, 0, &filename, 0, 0, &subAssetName);
+    return BaseURL() + filename + (subAssetName.isEmpty() ? "" : ("," + subAssetName));
+}
+
+QString LocalAssetStorage::Type() const
+{
+    return "LocalAssetStorage";
+}
+
+QString LocalAssetStorage::SerializeToString() const
+{
+    return "type=" + Type() + ";name=" + name + ";src=" + directory + ";recursive=" + (recursive ? "true" : "false");
 }
 
 void LocalAssetStorage::SetupWatcher()
