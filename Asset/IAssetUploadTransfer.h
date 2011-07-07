@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_IAssetUploadTransfer_h
-#define incl_Asset_IAssetUploadTransfer_h
+#pragma once
 
 #include <QObject>
 #include <QByteArray>
@@ -12,6 +11,7 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
+/// Represents a currently ongoing asset upload operation.
 class IAssetUploadTransfer : public QObject, public boost::enable_shared_from_this<IAssetUploadTransfer>
 {
     Q_OBJECT
@@ -59,4 +59,3 @@ signals:
     void Failed(IAssetUploadTransfer *transfer);
 };
 
-#endif

@@ -1,13 +1,15 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_AssetReference_h
-#define incl_Asset_AssetReference_h
+#pragma once
 
 #include <QString>
 #include <QMetaType>
 #include <QVariantList>
 
-/// Represents a reference to an asset. This structure can be used as a parameter type to an EC attribute.
+#include <cassert>
+
+/// Represents a reference to an asset.
+/** This structure can be used as a parameter type to an EC attribute. */
 struct AssetReference
 {
 public:
@@ -16,9 +18,15 @@ public:
 
     /// Constructs an asset reference pointing to the given asset.
     /// @param reference The URL of the asset to point to, e.g. "local://myasset.mesh", or "http://www.website.com/texture.png".
-    AssetReference(const QString &reference) : ref(reference) {}
-    AssetReference(const std::string &reference) : ref(QString::fromStdString(reference)) {}
-    AssetReference(const char *reference) : ref(reference) {}
+    explicit AssetReference(const QString &reference) : ref(reference) {}
+
+    /// @note This form of a ctor should not be used, since asset references can contain unicode characters, which a std::string cannot represent.
+    explicit AssetReference(const std::string &reference) : ref(QString::fromStdString(reference)) {}
+
+    /// @note This form of a ctor should not be used, since asset references can contain unicode characters, which a std::string cannot represent.
+    explicit AssetReference(const char *reference) : ref(reference) {}
+
+    AssetReference(const QString &reference, const QString &type_) : ref(reference), type(type_) {}
 
     bool operator ==(const AssetReference &rhs) const { return this->ref == rhs.ref; }
 
@@ -28,6 +36,14 @@ public:
 
     /// Specifies the URL of the asset that is being pointed to.
     QString ref;
+
+    /// Specifies the type of the asset to load from that URL. If "", the type is interpreted directly from the ref string.
+    /** Not all asset types can support this kind of interpretation. For example, avatar assets are of type .xml, which can
+        only be distinguished from generic xml files by explicitly specifying the type here.
+
+        @sa AssetAPI::GetResourceTypeFromAssetRef()
+    */
+    QString type;
 };
 
 /// Represents list of asset references.
@@ -36,11 +52,27 @@ struct AssetReferenceList
     /// Default constructor.
     AssetReferenceList() {}
 
+    /// Constructor.
+    /** @param type Preferred asset type for the list.
+    */
+    AssetReferenceList(const QString &preferredType) { type = preferredType; }
+
     /// Removes the last item in the list.
     /** The list must not be empty. If the list can be empty, call IsEmpty() before calling this function.
     */
     void RemoveLast() { refs.removeLast(); }
 
+    /// Removes empty items
+    void RemoveEmpty()
+    {
+        unsigned size = refs.size();
+        for (unsigned i = size - 1; i < size; --i)
+        {
+            if (refs[i].value<AssetReference>().ref.trimmed().isEmpty())
+                refs.erase(refs.begin() + i);
+        }
+    }
+    
     /// Return size of the list.
     int Size() const { return refs.size(); }
 
@@ -50,21 +82,34 @@ struct AssetReferenceList
     /// Returns true if the list contains no items, false otherwise.
     bool IsEmpty() const { return refs.isEmpty(); }
 
-    /// Subscript operator. If index @c i is invalid and empty AssetReference is returned.
-    AssetReference operator[] (int i)
+    /// Sets new value in the list.
+    /** @param i Index.
+        @ref New asset reference value.
+    */
+    void Set(int i, AssetReference ref)
     {
-        assert(i > 0 || i < refs.size());
-        if (i < 0 || i > refs.size())
+        assert(i >= 0 && i < refs.size());
+        if (i >= 0 && i < refs.size())
+            refs[i] = QVariant::fromValue(ref);
+    }
+
+    /// Subscript operator. If index @c i is invalid and empty AssetReference is returned.
+    /** @note Doesn't return reference for script-compatibility/safety.*/
+    const AssetReference operator[] (int i)
+    {
+        assert(i >= 0 && i < refs.size());
+        if (i < 0 || i >= refs.size())
             return AssetReference();
         else
             return refs[i].value<AssetReference>();
     }
 
     /// This is an overloaded function.
-    AssetReference operator[] (int i) const
+    /** @note Doesn't return reference for script-compatibility/safety. */
+    const AssetReference operator[] (int i) const
     {
-        assert(i > 0 || i < refs.size());
-        if (i < 0 || i > refs.size())
+        assert(i >= 0 && i < refs.size());
+        if (i < 0 || i >= refs.size())
             return AssetReference();
         else
             return refs[i].value<AssetReference>();
@@ -86,9 +131,14 @@ struct AssetReferenceList
 
     /// List of asset references.
     QVariantList refs;
+
+    /// Preferred type for asset refs in the list
+    /** @sa AssetReference::type;
+        @sa AssetAPI::GetResourceTypeFromAssetRef()
+    */
+    QString type;
 };
 
 Q_DECLARE_METATYPE(AssetReference)
 Q_DECLARE_METATYPE(AssetReferenceList)
 
-#endif

@@ -192,28 +192,25 @@ qint64 AssetCache::expire()
     return maximumCacheSize() / 2;
 }
 
-QString AssetCache::GetDiskSource(const QString &assetRef)
+QString AssetCache::FindInCache(const QString &assetRef)
 {
     // Deny http:// and https:// asset references to be gotten from cache
     // as the QAccessManager will request it from the overrides above later!
     // You can get the path if you ask directly as a url.
-    if (assetRef.startsWith("http://") || assetRef.startsWith("https://"))
+    if (assetRef.startsWith("http://") || assetRef.startsWith("https://")) ///\todo Remove this. The Asset Cache needs to be protocol agnostic. -jj.
         return "";
-    return GetDiskSource(QUrl(assetRef, QUrl::TolerantMode));
-}
 
-QString AssetCache::GetDiskSource(const QUrl &assetUrl)
-{
-    QString absolutePath = assetDataDir.absolutePath() + "/" + SanitateAssetRefForCache(assetUrl.toString());
+    QString absolutePath = assetDataDir.absolutePath() + "/" + SanitateAssetRefForCache(assetRef);
     if (QFile::exists(absolutePath))
         return absolutePath;
     return "";
 }
 
-QString AssetCache::GetDiskSourceByContentHash(const QString &contentHash)
+QString AssetCache::GetDiskSourceByRef(const QString &assetRef)
 {
-    /// \todo Implement.
-    LogWarning("AssetCache::GetDiskSourceByContentHash not implemented yet.");
+    QString absolutePath = assetDataDir.absolutePath() + "/" + SanitateAssetRefForCache(assetRef);
+    if (QFile::exists(absolutePath))
+        return absolutePath;
     return "";
 }
 
@@ -226,10 +223,10 @@ QString AssetCache::StoreAsset(AssetPtr asset)
 {
     std::vector<u8> data;
     asset->SerializeTo(data);
-    return StoreAsset(&data[0], data.size(), asset->Name(), asset->ContentHash()); /// \todo Content hash can mismatch here.
+    return StoreAsset(&data[0], data.size(), asset->Name());
 }
 
-QString AssetCache::StoreAsset(const u8 *data, size_t numBytes, const QString &assetName, const QString &assetContentHash)
+QString AssetCache::StoreAsset(const u8 *data, size_t numBytes, const QString &assetName)
 {
     QString absolutePath = GetAbsoluteDataFilePath(assetName);
     bool success = SaveAssetFromMemoryToFile(data, numBytes, absolutePath.toStdString().c_str());

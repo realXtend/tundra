@@ -4,6 +4,9 @@
 #include <boost/thread.hpp>
 #include <boost/algorithm/string.hpp>
 #include <QList>
+#include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
+#include <QMap>
 #include "MemoryLeakCheck.h"
 #include "AssetAPI.h"
 #include "Framework.h"
@@ -11,38 +14,33 @@
 #include "IAsset.h"
 #include "IAssetStorage.h"
 #include "IAssetProvider.h"
-#include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
-#include "EventManager.h"
 #include "CoreException.h"
 #include "IAssetTypeFactory.h"
 #include "IAssetUploadTransfer.h"
 #include "GenericAssetFactory.h"
+#include "NullAssetFactory.h"
 #include "AssetCache.h"
-#include "Platform.h"
-
-#include <QFileInfo>
+#include "Profiler.h"
 #include <QDir>
 #include <QFileSystemWatcher>
+#include "MemoryLeakCheck.h"
 
-using namespace Foundation;
-
-AssetAPI::AssetAPI(bool isHeadless) :
-    assetCache(0),
-    diskSourceChangeWatcher(0),
-    isHeadless_(isHeadless)
+AssetAPI::AssetAPI(Framework *fw_, bool isHeadless)
+:fw(fw_), assetCache(0),
+diskSourceChangeWatcher(0),
+isHeadless_(isHeadless)
 {
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
-    RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary", "")));
+    RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary")));
     isHeadless_ = isHeadless;
 }
 
 AssetAPI::~AssetAPI()
 {
-    delete assetCache;
-    delete diskSourceChangeWatcher;
+    Reset();
 }
 
 void AssetAPI::OpenAssetCache(QString directory)
@@ -61,7 +59,7 @@ std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
 
 void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
 {
-    for(uint i=0; i<providers.size(); ++i)
+    for(size_t i = 0; i < providers.size(); ++i)
     {
         if (providers[i]->Name() == provider->Name())
         {
@@ -72,49 +70,60 @@ void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
     providers.push_back(provider);
 }
 
-AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
+AssetStoragePtr AssetAPI::GetAssetStorageByName(const QString &name) const
 {
     foreach(AssetProviderPtr provider, GetAssetProviders())
         foreach(AssetStoragePtr storage, provider->GetStorages())
-            if (storage->Name() == name)
+            if (storage->Name().compare(name, Qt::CaseInsensitive) == 0)
                 return storage;
     return AssetStoragePtr();
 }
 
-AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &name, bool setAsDefault)
+AssetStoragePtr AssetAPI::GetStorageForAssetRef(const QString &ref) const
 {
-    AssetStoragePtr newStorage;
-    IAssetProvider *provider = GetProviderForAssetRef(url, "Binary").get();
-    if (!provider)
+    foreach(AssetProviderPtr provider, GetAssetProviders())
     {
-        LogError("AssetAPI::AddAssetStorage: Could not find a provider for the new storage location " + url);
-        return newStorage; 
+        AssetStoragePtr storage = provider->GetStorageForAssetRef(ref);
+        if (storage)
+            return storage;
     }
+    return AssetStoragePtr();
+}
 
-    // Inspect if a storage already exists for this url and name combination
-    std::vector<AssetStoragePtr> currentStorages = provider->GetStorages();
-    for(int i=0; i<currentStorages.size(); ++i)
+bool AssetAPI::RemoveAssetStorage(const QString &name)
+{
+    ///\bug Currently it is possible to have e.g. a local storage with name "Foo" and a http storage with name "Foo", and it will
+    /// not be possible to specify which storage to delete.
+    foreach(AssetProviderPtr provider, GetAssetProviders())
+        if (provider->RemoveAssetStorage(name))
+            return true;
+
+    return false;
+}
+
+AssetStoragePtr AssetAPI::DeserializeAssetStorageFromString(const QString &storage)
+{
+    for(size_t i = 0; i < providers.size(); ++i)
     {
-        newStorage = currentStorages.at(i);
-        if (!newStorage.get())
-            continue;
-        if (newStorage->BaseURL() == url && newStorage->Name() == name)
+        AssetStoragePtr assetStorage = providers[i]->TryDeserializeStorageFromString(storage);
+        if (assetStorage)
         {
-            LogDebug("AssetAPI::AddAssetStorage: Found existing storage with same url and name, returning the existing storage.");
-            break;
-        }
-        // Reset so the last valid provider wont be used! 
-        newStorage = AssetStoragePtr();
-    }
+            // Make this storage the default storage if it was requested so.
+            QMap<QString, QString> s = AssetAPI::ParseAssetStorageString(storage);
+            if (s.contains("default") && ParseBool(s["default"]))
+                SetDefaultAssetStorage(assetStorage);
 
-    // If the url name combination was not found, ask the provider to create a new one
-    if (!newStorage.get())
-        newStorage = provider->AddStorage(url, name);
-    if (newStorage.get() && setAsDefault)
-        SetDefaultAssetStorage(newStorage);
-    if (!newStorage.get())
-        LogError("AssetAPI::AddAssetStorage: Could not create new storage for " + url);
-    return newStorage;
+            // Connect to the asset storage's refs refreshed signal, so that we can create actual empty assets from its refs
+            connect(assetStorage.get(), SIGNAL(AssetRefsChanged(AssetStoragePtr)), this, SLOT(OnAssetStorageRefsChanged(AssetStoragePtr)), Qt::UniqueConnection);
+            // Get refs right now in case the storage already has them
+            OnAssetStorageRefsChanged(assetStorage),
+            
+            emit AssetStorageAdded(assetStorage);
+            return assetStorage;
+        }
+    }
+    LogError("Failed to deserialize asset storage from string \"" + storage + "\"!");
+    return AssetStoragePtr();
 }
 
 AssetStoragePtr AssetAPI::GetDefaultAssetStorage() const
@@ -151,100 +160,232 @@ std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
     return storages;
 }
 
-AssetAPI::FileQueryResult AssetAPI::QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath)
+AssetAPI::FileQueryResult AssetAPI::ResolveLocalAssetPath(QString ref, QString baseDirectoryContext, QString &outFilePath, QString *subAssetName)
 {
-    sourceRef = sourceRef.trimmed();
-    baseDirectory = GuaranteeTrailingSlash(baseDirectory.trimmed());
-    outFilePath = "";
+    // Make sure relative paths are turned into local paths.
+    QString refLocal = ResolveAssetRef("local://", ref);
 
-    // Remove both 'file://' and 'local://' specifiers in this lookup.
-    if (sourceRef.startsWith("file://"))
-        sourceRef = sourceRef.mid(7);
-    if (sourceRef.startsWith("local://"))
-        sourceRef = sourceRef.mid(8);
-
-    if (sourceRef.contains("://")) // It's an external URL with a protocol specifier?
+    QString pathFilename;
+    QString protocol;
+    AssetRefType sourceRefType = ParseAssetRef(refLocal, &protocol, 0, 0, 0, &pathFilename, 0, 0, subAssetName);
+    if (sourceRefType == AssetRefInvalid || sourceRefType == AssetRefExternalUrl || sourceRefType == AssetRefNamedStorage)
     {
-        outFilePath = sourceRef;
+        // Failed to resolve path, it is not local.
+        outFilePath = refLocal; // Return the path that was tried.
         return FileQueryExternalFile;
     }
-
-    if (QDir::isAbsolutePath(sourceRef)) // If the user specified an absolute path, don't look recursively at all, and ignore baseDirectory.
+    else if (sourceRefType == AssetRefLocalPath)
     {
-        outFilePath = sourceRef; // This is where the file should be if it exists.
-        if (QFile::exists(sourceRef))
-            return FileQueryLocalFileFound;
-        else
-            return FileQueryLocalFileMissing;
+        outFilePath = pathFilename;
+        return QFile::exists(outFilePath) ? FileQueryLocalFileFound : FileQueryLocalFileMissing;
     }
-
-    // The user did not specify an URL with a protocol specifier, and he did not specify an absolute path, so it's a relative path.
-
-    QString sourceFilename = ExtractFilenameFromAssetRef(sourceRef);
-
-    if (!baseDirectory.isEmpty())
+    else if (sourceRefType == AssetRefLocalUrl)
     {
-        // The baseDirectory has the first priority for lookup.
-        QString fullPath = RecursiveFindFile(baseDirectory, sourceFilename);
-        if (!fullPath.isEmpty())
-        {
-            outFilePath = fullPath;
+        outFilePath = pathFilename;
+        if (QFile::exists(outFilePath))
             return FileQueryLocalFileFound;
-        }
+
+        outFilePath = RecursiveFindFile(baseDirectoryContext, pathFilename);
+        if (!outFilePath.isEmpty())
+            return FileQueryLocalFileFound;
+
+        ///\todo Query all local storages for the file.
+        ///\todo Can't currently query the LocalAssetProviders here directly (wrong direction for dependency chain).
+
+        outFilePath = ref;
+        return FileQueryLocalFileMissing;
     }
-
-    // Do a recursive lookup through all local asset providers and the given base directory.
-    ///\todo Implement this. Can't query the LocalAssetProviders here directly (wrong direction for dependency chain).
-    outFilePath = sourceRef; ///<\todo review
-
-    return FileQueryLocalFileMissing;
+    else
+    {
+        // Unknown reference type.
+        outFilePath = ref;
+        return FileQueryExternalFile;
+    }
 }
 
-AssetAPI::AssetRefType AssetAPI::ParseAssetRefType(QString assetRef)
+AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outProtocolPart, QString *outNamedStorage, QString *outProtocol_Path, 
+                                               QString *outPath_Filename_SubAssetName, QString *outPath_Filename, QString *outPath, 
+                                               QString *outFilename, QString *outSubAssetName, QString *outFullRef, QString *outFullRefNoSubAssetName)
 {
+    if (outProtocolPart) *outProtocolPart = "";
+    if (outNamedStorage) *outNamedStorage = "";
+    if (outProtocol_Path) *outProtocol_Path = "";
+    QString protocol_path = "";
+    if (outPath_Filename_SubAssetName) *outPath_Filename_SubAssetName = "";
+    if (outPath_Filename) *outPath_Filename = "";
+    if (outPath) *outPath = "";
+    if (outFilename) *outFilename = "";
+    if (outSubAssetName) *outSubAssetName = "";
+    if (outFullRef) *outFullRef = "";
+    if (outFullRefNoSubAssetName) *outFullRefNoSubAssetName = "";
+
+    /* Examples of asset refs:
+
+     a1) local://asset.sfx                                      AssetRefType = AssetRefLocalUrl.
+         file:///unix/file/path/asset.sfx
+         file://C:/windows/file/path/asset.sfx
+
+     a2) http://server.com/asset.sfx                            AssetRefType = AssetRefExternalUrl.
+         someotherprotocol://some/path/specifier/asset.sfx
+
+     b0) special case: www.server.com/asset.png                 AssetRefType = AssetRefExternalUrl with 'http' hardcoded as protocol.
+         As customary with web browsers, people expect to be able to write just www.server.com/asset.png when they mean a network URL.
+         We detect this case as a string that starts with 'www.'.
+
+     b1) /unix/absolute/path/asset.sfx                          AssetRefType = AssetRefLocalPath.
+
+     b2) X:/windows/forwardslash/path/asset.sfx                 AssetRefType = AssetRefLocalPath.
+         X:\windows\backslash\path\asset.sfx
+         X:\windows/mixedupslash\path/asset.sfx
+
+     b3) namedstorage:asset.sfx                                 AssetRefType = AssetRefNamedStorage.
+
+     b4) asset.sfx                                              AssetRefType = AssetRefRelativePath.
+         ./asset.sfx
+         .\asset.sfx
+         relative/path/asset.sfx
+         ./relative/path/asset.sfx
+         ../relative/path/asset.sfx
+         
+        Each category can have an optional extra subasset specifier, separated with a comma. Examples:
+
+             asset.sfx,subAssetName.sfx2
+             asset.sfx,subAssetNameWithoutSuffix
+             asset.sfx, "subAssetName as a string with spaces"
+             http://server.com/asset.sfx,subAssetName.sfx2
+    */
+
     assetRef = assetRef.trimmed();
-    if (assetRef.startsWith("local://", Qt::CaseInsensitive) || assetRef.startsWith("file://", Qt::CaseInsensitive))
-        return AssetRefLocalUrl;
-    if (assetRef.contains("://"))
-        return AssetRefExternalUrl;
-    if (assetRef.contains(":/") || assetRef.contains(":\\"))
-        return AssetRefLocalPath; // Windows-style local path \bug This is not exact.
-    if (assetRef.startsWith("/") || assetRef.startsWith("./"))
-        return AssetRefLocalPath; // Unix-style local path.
-    if (assetRef.contains(":"))
-        return AssetRefNamedStorage;
-    return AssetRefDefaultStorage;
+    assetRef.replace("\\", "/"); // Normalize all path separators to use forward slashes.
+
+    using namespace boost;
+    using namespace std;
+
+    wstring ref = QStringToWString(assetRef);
+
+    wregex expression1(L"(.*?)://(.*)"); // a): protocolSpecifier://pathToAsset
+    wregex expression2(L"([A-Za-z]:[/\\\\].*?)"); // b2): X:\windowsPathToAsset or X:/windowsPathToAsset
+    wregex expression3(L"(.*?):(.*)"); // b3): X:\windowsPathToAsset or X:/windowsPathToAsset
+    wsmatch what;
+    wstring fullPath; // Contains the url without the "protocolPart://" prefix.
+    AssetRefType refType = AssetRefInvalid;
+    if (regex_match(ref, what, expression1)) // Is ref of type 'a)' above?
+    {
+        QString protocol = WStringToQString(what[1].str());
+        if (protocol.compare("local", Qt::CaseInsensitive) == 0 || protocol.compare("file", Qt::CaseInsensitive) == 0)
+            refType = AssetRefLocalUrl;
+        else
+            refType = AssetRefExternalUrl;
+        if (outProtocolPart)
+            *outProtocolPart = protocol;
+
+        fullPath = what[2].str();
+        protocol_path = protocol + "://";
+        if (outProtocol_Path) // Partially save the beginning of the protocol & path part. This will be completed below with the full path.
+            *outProtocol_Path = protocol_path;
+
+        if (outFullRef)
+            *outFullRef = protocol.toLower() + "://";
+    }
+    else if (assetRef.startsWith("www.", Qt::CaseInsensitive)) // Ref is of type 'b0)'?
+    {
+        refType = AssetRefExternalUrl;
+        if (outProtocolPart)
+            *outProtocolPart = "http";
+        fullPath = ref;
+
+        protocol_path = "http://";
+        if (outProtocol_Path) // Partially save the beginning of the protocol & path part. This will be completed below with the full path.
+            *outProtocol_Path = protocol_path;
+        if (outFullRef)
+            *outFullRef = "http://";
+    }
+    else if (assetRef.startsWith("/")) // Is ref of type 'b1)'?
+    {
+        refType = AssetRefLocalPath;
+        fullPath = ref;
+    }
+    else if (regex_match(ref, what, expression2)) // b2)
+    {
+        refType = AssetRefLocalPath;
+        fullPath = ref;
+    }
+    else if (regex_match(ref, what, expression3)) // b3)
+    {
+        refType = AssetRefNamedStorage;
+        QString storage = WStringToQString(what[1].str()).trimmed();
+        if (outNamedStorage)
+            *outNamedStorage = storage;
+        fullPath = what[2].str();
+
+        protocol_path = storage + ":";
+        if (outProtocol_Path)
+            *outProtocol_Path = protocol_path;
+        if (outFullRef)
+            *outFullRef = protocol_path;
+    }
+    else // We assume it must be of type b4).
+    {
+        refType = AssetRefRelativePath;
+        fullPath = ref;
+    }
+
+    // After the above check, we are left with a fullPath reference that can only contain three parts: directory, local name and subAssetName.
+    // The protocol specifier or named storage part has been stripped off.
+    if (outPath_Filename_SubAssetName)
+        *outPath_Filename_SubAssetName = WStringToQString(fullPath).trimmed();
+
+    // Parse subAssetName if it exists.
+    QString subAssetName = "";
+    wregex expression4(L"(.*?)\\s*,\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
+    if (regex_match(fullPath, what, expression4))
+    {
+        wstring assetRef = what[1].str();
+        subAssetName = WStringToQString(what[2].str()).trimmed();
+        if (outSubAssetName)
+            *outSubAssetName = subAssetName;
+        fullPath = assetRef; // Remove the subAssetName from the asset ref so that the parsing can continue without the subAssetName in it.
+    }
+
+    QString fullPathRef = WStringToQString(fullPath);
+    if (outPath_Filename) 
+        *outPath_Filename = fullPathRef;
+
+    // Now the only thing that is left is to split the base filename and the path for the asset.
+    int lastPeriodIndex = fullPathRef.lastIndexOf(".");
+    int directorySeparatorIndex = fullPathRef.lastIndexOf("/"); 
+    if (lastPeriodIndex == -1 || lastPeriodIndex < directorySeparatorIndex)
+        directorySeparatorIndex = fullPathRef.length()-1;
+
+    QString path = GuaranteeTrailingSlash(fullPathRef.left(directorySeparatorIndex+1).trimmed());
+    if (outPath)
+        *outPath = path;
+    protocol_path += path;
+    if (outProtocol_Path)
+        *outProtocol_Path += path;
+    QString assetFilename = fullPathRef.mid(directorySeparatorIndex+1);
+    if (outFilename)
+        *outFilename = assetFilename;
+    if (outFullRef)
+    {
+        *outFullRef += fullPathRef;
+        if (!subAssetName.isEmpty())
+            if (subAssetName.contains(' '))
+                *outFullRef += ", \"" + subAssetName + "\"";
+            else
+                *outFullRef += ", " + subAssetName;
+    }
+
+    if (outFullRefNoSubAssetName)
+        *outFullRefNoSubAssetName = GuaranteeTrailingSlash(protocol_path) + assetFilename;
+    return refType;
 }
 
 QString AssetAPI::ExtractFilenameFromAssetRef(QString ref)
 {
-    using namespace std;
-
-    // Try to find the local filename from the given string, e.g. "c:\data\my.mesh" -> "my.mesh", or "file://my.mesh" -> "my.mesh".
-    QString s = ref.trimmed();
-    int end = 0;
-    end = max(end, s.lastIndexOf('/')+1);
-    end = max(end, s.lastIndexOf('\\')+1);
-    return s.mid(end);
-}
-
-QString AssetAPI::ExtractAssetStorageFromAssetRef(QString ref)
-{
-// We're assuming the following here.
-//    assert(!ref.contains("://")); 
-
-    ref = ref.trimmed();
-    if (!ref.contains(":"))
-        return "";
-    return ref.left(ref.indexOf(":"));
-}
-
-QString AssetAPI::RemoveAssetStorageFromAssetRef(QString ref)
-{
-    ref = ref.trimmed();
-    if (!ref.contains(":"))
-        return ref;
-    return ref.mid(ref.indexOf(":")+1);
+    QString filename;
+    ParseAssetRef(ref, 0, 0, 0, 0, 0, 0, &filename, 0);
+    return filename;
 }
 
 QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
@@ -264,7 +405,7 @@ QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
         for(; iter != end_iter; ++iter)
         {
             QDir dir(GuaranteeTrailingSlash(iter->path().string().c_str()) + filename);
-            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
+            if (!boost::filesystem::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
                 return dir.absolutePath();
         }
     }
@@ -278,6 +419,8 @@ QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
 AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
 {
     AssetPtr asset = CreateNewAsset(assetType, assetFile);
+    if (!asset)
+        return AssetPtr();
     bool success = asset->LoadFromFile(assetFile);
     if (success)
         return asset;
@@ -361,10 +504,10 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     QString newAssetName = assetName;
     if (newAssetName.isEmpty())
         newAssetName = file.fileName().split("/").last();
-    AssetStoragePtr storage = GetAssetStorage(storageName);
+    AssetStoragePtr storage = GetAssetStorageByName(storageName);
     if (!storage.get())
     {
-        LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName + "! Use AssetAPI::AddAssetStorage to add one with this name.");
+        LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName + "! Please add a storage with this name.");
         return AssetUploadTransferPtr();
     }
 
@@ -417,10 +560,10 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &d
         LogError("AssetAPI::UploadAssetFromFileInMemory failed! QByteArray data is empty and/or null for " + assetName + " asset upload request.");
         return AssetUploadTransferPtr();
     }
-    AssetStoragePtr storage = GetAssetStorage(storageName);
+    AssetStoragePtr storage = GetAssetStorageByName(storageName);
     if (!storage.get())
     {
-        LogError("AssetAPI::UploadAssetFromFileInMemory failed! No storage found with name " + storageName + "! Use AssetAPI::AddAssetStorage to add one with this name.");
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed! No storage found with name " + storageName + "! Please add a storage with this name.");
         return AssetUploadTransferPtr();
     }
 
@@ -472,6 +615,22 @@ void AssetAPI::ForgetAllAssets()
     currentTransfers.clear();
 }
 
+void AssetAPI::Reset()
+{
+    ForgetAllAssets();
+    SAFE_DELETE(assetCache);
+    SAFE_DELETE(diskSourceChangeWatcher);
+    assets.clear();
+    pendingDownloadRequests.clear();
+    assetTypeFactories.clear();
+    defaultStorage.reset();
+    readyTransfers.clear();
+    assetDependencies.clear();
+    currentUploadTransfers.clear();
+    currentTransfers.clear();
+    providers.clear();
+}
+
 std::vector<AssetTransferPtr> AssetAPI::PendingTransfers()
 {
     std::vector<AssetTransferPtr> transfers;
@@ -494,27 +653,17 @@ AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef)
     return AssetTransferPtr();
 }
 
-AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
+AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, bool forceTransfer)
 {
-    if (assetRef.isEmpty())
-        return AssetTransferPtr();
-
-    assetType = assetType.trimmed();
-    if (assetType.isEmpty())
-        assetType = ResolveAssetType(assetRef);
-
-    assetRef = assetRef.trimmed();
-
-    if (assetRef.isEmpty())
-    {
-        // Removed this print - seems like a bad idea to print out this warning, since there are lots of scenes with null assetrefs.
-        // Perhaps have a verbose log channel for these kinds of sanity checks.
-//        LogError("AssetAPI::RequestAsset: Request by empty url \"\" of type \"" + assetType.toStdString() + " received!");
-        return AssetTransferPtr();
-    }
-
     // Turn named storage (and default storage) specifiers to absolute specifiers.
-    assetRef = LookupAssetRefToStorage(assetRef);
+    assetRef = ResolveAssetRef("", assetRef);
+    if (assetRef.isEmpty())
+        return AssetTransferPtr();
+
+    QString assetRefWithoutSubAsset;
+    assetType = assetType.trimmed();
+    QString assetFilename;
+    ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &assetFilename, 0, 0, &assetRefWithoutSubAsset);
 
     // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
     // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since
@@ -524,6 +673,16 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     {
         AssetTransferPtr transfer = iter->second;
 
+        // If forceTransfer is on, but the transfer is virtual, log error. This case can not be currently handled properly
+        if (forceTransfer && dynamic_cast<VirtualAssetTransfer*>(transfer.get()))
+        {
+            LogError("AssetAPI::RequestAsset: Received forceTransfer for asset " + assetRef + " while a virtual transfer is already going on");
+            return transfer;
+        }
+
+        if (assetType.isEmpty())
+            assetType = GetResourceTypeFromAssetRef(assetRefWithoutSubAsset);
+
         // Check that the requested types were the same. Don't know what to do if they differ, so only print a warning if so.
         if (!assetType.isEmpty() && !transfer->assetType.isEmpty() && assetType != transfer->assetType)
             LogWarning("AssetAPI::RequestAsset: Asset \"" + assetRef + "\" first requested by type " + transfer->assetType + 
@@ -532,19 +691,36 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return transfer;
     }
 
-    // Check if we've already downloaded this asset before and it already is loaded in the system. We never reload an asset we've downloaded before, unless the 
-    // client explicitly forces so, or if we get a change notification signal from the source asset provider telling the asset was changed.
+    // Check if we've already downloaded this asset before and it already is loaded in the system. We never reload an asset we've downloaded before, 
+    // unless the client explicitly forces so, or if we get a change notification signal from the source asset provider telling the asset was changed.
     AssetMap::iterator iter2 = assets.find(assetRef);
+    AssetPtr existing;
     if (iter2 != assets.end())
+    {
+        existing = iter2->second;
+        if (!assetType.isEmpty() && assetType != existing->Type())
+            LogWarning("AssetAPI::RequestAsset: Tried to request asset \"" + assetRef + "\" by type \"" + assetType + "\". Asset by that name exists, but it is of type \"" + existing->Type() + "\"!");
+        assetType = existing->Type();
+    }
+    else
+    {
+        if (assetType.isEmpty())
+            assetType = GetResourceTypeFromAssetRef(assetRefWithoutSubAsset);
+        if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(assetType).get()))
+            return AssetTransferPtr();
+    }
+    
+    ///\todo Evaluate whether existing->IsLoaded() should rather be existing->IsEmpty().
+    if (existing && existing->IsLoaded() && !forceTransfer)
     {
         // Whenever the client requests an asset that was loaded before, we create a request for that asset nevertheless.
         // The idea is to have the code path run the same independent of whether the asset existed or had to be downloaded, i.e.
         // a request is always made, and the receiver writes only a single asynchronous code path for handling the asset.
 
         // The asset was already downloaded. Generate a 'virtual asset transfer' and return it to the client.
-        AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer());
-        transfer->asset = iter2->second; // For 'normal' requests, the asset ptr is zero, but for these virtual requests, we can already fill the asset here.
-        transfer->source.ref = assetRef;        
+        AssetTransferPtr transfer = AssetTransferPtr(new VirtualAssetTransfer());
+        transfer->asset = existing; // For 'normal' requests, the asset ptr is zero, but for these virtual requests, we can already fill the asset here.
+        transfer->source.ref = assetRef;
         transfer->assetType = assetType;
         transfer->provider = transfer->asset->GetAssetProvider();
         transfer->storage = transfer->asset->GetAssetStorage();
@@ -576,12 +752,12 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     }
 
     // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the data in from the asset cache and don't go to any asset provider.
-    QString assetFileInCache = assetCache->GetDiskSource(assetRef);
+    QString assetFileInCache = assetCache->FindInCache(assetRef);
     AssetTransferPtr transfer;
 
     if (!assetFileInCache.isEmpty())
     {
-        // The asset can be found from cache. Generate a 'virtual asset transfer' and return it to the client.
+        // The asset can be found from cache. Generate a providerless transfer and return it to the client.
         transfer = AssetTransferPtr(new IAssetTransfer());
         bool success = LoadFileToVector(assetFileInCache.toStdString().c_str(), transfer->rawAssetData);
         if (!success)
@@ -608,18 +784,18 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
     transfer->provider = provider;
-
+    transfer->asset = existing; // Fill the asset if it exists in the system
+    
     // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset will return the same request pointer,
     // so we'll avoid multiple downloads to the exact same asset.
     assert(currentTransfers.find(assetRef) == currentTransfers.end());
     currentTransfers[assetRef] = transfer;
-    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)));
     return transfer;
 }
 
-AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref)
+AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref, bool forceTransfer)
 {
-    return RequestAsset(ref.ref);
+    return RequestAsset(ref.ref, ref.type, forceTransfer);
 }
 
 AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType)
@@ -627,12 +803,13 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     assetType = assetType.trimmed();
     assetRef = assetRef.trimmed();
 
-    if (assetType.isEmpty())
-        assetType = ResolveAssetType(assetRef);
+    if (assetType.length() == 0)
+        assetType = GetResourceTypeFromAssetRef(assetRef.toLower().toStdString().c_str());
 
     // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
-    AssetRefType assetRefType = ParseAssetRefType(assetRef);
-    if (assetRefType == AssetRefDefaultStorage)
+    QString namedStorage;
+    AssetRefType assetRefType = ParseAssetRef(assetRef, 0, &namedStorage);
+    if (assetRefType == AssetRefRelativePath)
     {
         AssetStoragePtr defaultStorage = GetDefaultAssetStorage();
         AssetProviderPtr defaultProvider = (defaultStorage ? defaultStorage->provider.lock() : AssetProviderPtr());
@@ -642,7 +819,7 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     }
     else if (assetRefType == AssetRefNamedStorage) // The asset ref explicitly points to a named storage. Use the provider for that storage.
     {
-        AssetStoragePtr storage = GetAssetStorage(ExtractAssetStorageFromAssetRef(assetRef));
+        AssetStoragePtr storage = GetAssetStorageByName(namedStorage);
         AssetProviderPtr provider = (storage ? storage->provider.lock() : AssetProviderPtr());
         return provider;
     }
@@ -655,30 +832,67 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     return AssetProviderPtr();
 }
 
-QString AssetAPI::LookupAssetRefToStorage(QString assetRef)
+QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
 {
+    if (assetRef.trimmed().isEmpty())
+        return "";
+
+    context = context.trimmed();
+
+    // First see if we have an exact match for the ref to an existing asset.
+    AssetMap::iterator iter = assets.find(assetRef);
+    if (iter != assets.end())
+        return assetRef; // Use the ref as-is, there's an existing asset to map this string to.
+
     // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
-    AssetRefType assetRefType = ParseAssetRefType(assetRef);
+    QString assetPath;
+    QString namedStorage;
+    QString fullRef;
+    AssetRefType assetRefType = ParseAssetRef(assetRef, 0, &namedStorage, 0, &assetPath, 0, 0, 0, 0, &fullRef);
+    assetRef = fullRef; // The first thing we do is normalize the form of the ref. This means e.g. adding 'http://' in front of refs that look like 'www.server.com/'.
     switch(assetRefType)
     {
-    case AssetRefLocalPath:
-    case AssetRefLocalUrl:
-    case AssetRefExternalUrl:
+    case AssetRefLocalPath: // Absolute path like "C:\myassets\texture.png".
+    case AssetRefLocalUrl: // Local path using "local://", like "local://file.mesh".
+    case AssetRefExternalUrl: // External path using an URL specifier, like "http://server.com/file.mesh" or "someProtocol://server.com/asset.dat".
         return assetRef;
-    case AssetRefDefaultStorage:
+    case AssetRefRelativePath:
         {
-            AssetStoragePtr defaultStorage = GetDefaultAssetStorage();
-            if (!defaultStorage)
-                return assetRef; // Failed to find the provider, just use the ref as it was, and hope. (It might still be satisfied by the local storage).
-            return defaultStorage->GetFullAssetURL(assetRef);
+            if (context.isEmpty())
+            {
+                AssetStoragePtr defaultStorage = GetDefaultAssetStorage();
+                if (!defaultStorage)
+                    return assetRef; // Failed to find the provider, just use the ref as it was, and hope. (It might still be satisfied by the local storage).
+                return defaultStorage->GetFullAssetURL(assetRef);
+            }
+            else
+            {
+                // Join the context to form a full url, e.g. context: "http://myserver.com/path/myasset.material", ref: "texture.png" returns "http://myserver.com/path/texture.png".
+                QString contextPath;
+                QString contextNamedStorage;
+                QString contextProtocolSpecifier;
+                AssetRefType contextRefType = ParseAssetRef(context, &contextProtocolSpecifier, &contextNamedStorage, 0, 0, 0, &contextPath);
+                if (contextRefType == AssetRefRelativePath || contextRefType == AssetRefInvalid)
+                {
+                    LogError("Asset ref context \"" + contextPath + "\" is a relative path and cannot be used as a context for lookup for ref \"" + assetRef + "\"!");
+                    return assetRef; // Return at least something.
+                }
+                QString newAssetRef;
+                if (!contextNamedStorage.isEmpty())
+                    newAssetRef += contextNamedStorage + ":";
+                else if (!contextProtocolSpecifier.isEmpty())
+                    newAssetRef += contextProtocolSpecifier + "://";
+                newAssetRef += QDir::cleanPath(contextPath + assetPath);
+                return newAssetRef;
+            }
         }
         break;
     case AssetRefNamedStorage: // The asset ref explicitly points to a named storage. Use the provider for that storage.
         {
-            AssetStoragePtr storage = GetAssetStorage(ExtractAssetStorageFromAssetRef(assetRef));
+            AssetStoragePtr storage = GetAssetStorageByName(namedStorage);
             if (!storage)
                 return assetRef; // Failed to find the provider, just use the ref as it was, and hope.
-            return storage->GetFullAssetURL(RemoveAssetStorageFromAssetRef(assetRef));
+            return storage->GetFullAssetURL(assetPath);
         }
         break;
     }
@@ -688,10 +902,10 @@ QString AssetAPI::LookupAssetRefToStorage(QString assetRef)
 
 void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
 {
-    AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(factory->GetType());
+    AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(factory->Type());
     if (existingFactory)
     {
-        LogWarning("AssetAPI::RegisterAssetTypeFactory: Factory with type '" + factory->GetType() + "' already registered.");
+        LogWarning("AssetAPI::RegisterAssetTypeFactory: Factory with type '" + factory->Type() + "' already registered.");
         return;
     }
 
@@ -746,6 +960,11 @@ QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuff
 
 AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
 {
+    return CreateNewAsset(type, name, AssetStoragePtr());
+}
+
+AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr storage)
+{
     type = type.trimmed();
     name = name.trimmed();
     if (name.length() == 0)
@@ -760,61 +979,65 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
         LogError("AssetAPI:CreateNewAsset: Cannot create asset of type \"" + type + "\", name: \"" + name + "\". No type factory registered for the type!");
         return AssetPtr();
     }
+    if (dynamic_cast<NullAssetFactory*>(factory.get()))
+        return AssetPtr();
     AssetPtr asset = factory->CreateEmptyAsset(this, name.toStdString().c_str());
     if (!asset)
     {
         LogError("AssetAPI:CreateNewAsset: IAssetTypeFactory::CreateEmptyAsset(type \"" + type + "\", name: \"" + name + "\") failed to create asset!");
         return AssetPtr();
     }
-    return asset;
-}
+    assert(asset->IsEmpty());
 
-QString AssetAPI::ResolveAssetType(QString assetRef)
-{
-    if (assetRef.isEmpty())
-        return "";
-
-    QString assetRefSuffix = QFileInfo(assetRef).suffix().toLower();
-    if (assetRefSuffix.isEmpty())
-        return "";
-
-    // Ask the factories which one support this file extension.
-    // If there are multiple the first one is chosen.
-    for(size_t i = 0; i < assetTypeFactories.size(); ++i)
+    // Fill the provider & storage for the new asset already heree if possible
+    if (!storage)
     {
-        QStringList supportedFormats = assetTypeFactories[i]->GetSupportedFormats();
-        if (supportedFormats.contains(assetRefSuffix))
-            return assetTypeFactories[i]->GetType();
+        asset->SetAssetProvider(GetProviderForAssetRef(type, name));
+        asset->SetAssetStorage(GetStorageForAssetRef(name));
     }
+    else
+    {
+        asset->SetAssetProvider(storage->provider.lock());
+        asset->SetAssetStorage(storage);
+    }
+    
+    // Remember this asset in the global AssetAPI storage.
+    assets[name] = asset;
 
-    // Default to "Binary" asset factory if nothing else was found.
-    return "Binary";
+    emit AssetCreated(asset);
+    
+    return asset;
 }
 
 AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
 {
     for(size_t i = 0; i < assetTypeFactories.size(); ++i)
-        if (assetTypeFactories[i]->GetType().toLower() == typeName.toLower())
+        if (assetTypeFactories[i]->Type().toLower() == typeName.toLower())
             return assetTypeFactories[i];
+
     return AssetTypeFactoryPtr();
 }
 
 AssetPtr AssetAPI::GetAsset(QString assetRef)
 {
+    // First try to see if the ref has an exact match.
     AssetMap::iterator iter = assets.find(assetRef);
+    if (iter != assets.end())
+        return iter->second;
+
+    // If not, normalize and resolve the lookup of the given asset.
+    assetRef = ResolveAssetRef("", assetRef);
+
+    iter = assets.find(assetRef);
     if (iter != assets.end())
         return iter->second;
     return AssetPtr();
 }
 
-AssetPtr AssetAPI::GetAssetByHash(QString assetHash)
-{
-    ///\todo Implement.
-    return AssetPtr();
-}
-
 void AssetAPI::Update(f64 frametime)
 {
+    PROFILE(AssetAPI_Update);
+
     for(size_t i = 0; i < providers.size(); ++i)
         providers[i]->Update(frametime);
 
@@ -842,6 +1065,23 @@ QString GuaranteeTrailingSlash(const QString &source)
     return s;
 }
 
+AssetAPI::AssetTransferMap::iterator AssetAPI::FindTransferIterator(QString assetRef)
+{
+    return currentTransfers.find(assetRef);
+}
+
+AssetAPI::AssetTransferMap::iterator AssetAPI::FindTransferIterator(IAssetTransfer *transfer)
+{
+    if (!transfer)
+        return currentTransfers.end();
+
+    for(AssetTransferMap::iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
+        if (iter->second.get() == transfer)
+            return iter;
+
+    return currentTransfers.end();
+}
+
 void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 {
     // At this point, the transfer can originate from several different things:
@@ -853,26 +1093,23 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
 //    LogDebug("Transfer of asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" succeeded.");
 
-    if (transfer->asset) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
+    if (dynamic_cast<VirtualAssetTransfer*>(transfer_) && transfer->asset && transfer->asset->IsLoaded()) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
     {
         transfer->EmitAssetDownloaded();
-//        transfer->asset->EmitDecoded
-        transfer->EmitAssetDecoded();
-        transfer->asset->EmitLoaded();
-        transfer->EmitAssetLoaded();
+        transfer->EmitTransferSucceeded();
         pendingDownloadRequests.erase(transfer->source.ref);
         currentTransfers.erase(transfer->source.ref);
-
         return;
     }
 
     // We should be tracking this transfer in an internal data structure.
-    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    AssetTransferMap::iterator iter = FindTransferIterator(transfer_);
     if (iter == currentTransfers.end())
         LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
 
-    // We've finished an asset data download, now create an actual instance of an asset of that type.
-    transfer->asset = CreateNewAsset(transfer->assetType, transfer->source.ref);
+    // We've finished an asset data download, now create an actual instance of an asset of that type if it did not exist already
+    if (!transfer->asset)
+        transfer->asset = CreateNewAsset(transfer->assetType, transfer->source.ref);
     if (!transfer->asset)
     {
         QString error("AssetAPI: Failed to create new asset of type \"" + transfer->assetType + "\" and name \"" + transfer->source.ref + "\"");
@@ -881,45 +1118,42 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         return;
     }
 
+    // Connect to Loaded() signal of the asset to be able to notify any dependent assets
+    connect(transfer->asset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+
     // Save this asset to cache, and find out which file will represent a cached version of this asset.
     QString assetDiskSource = transfer->DiskSource(); // The asset provider may have specified an explicit filename to use as a disk source.
     if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0)
-        assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref, ""); ///\todo Specify the content hash.
+        assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref);
 
+    // If disksource is still empty, forcibly look up from cache
+    if (!assetDiskSource.length())
+        assetDiskSource = assetCache->GetDiskSourceByRef(transfer->source.ref);
+    
     // Save for the asset the storage and provider it came from.
     transfer->asset->SetDiskSource(assetDiskSource.trimmed());
     transfer->asset->SetAssetStorage(transfer->storage.lock());
     transfer->asset->SetAssetProvider(transfer->provider.lock());
-    transfer->asset->SetAssetTransfer(transfer);
-
-    bool success = transfer->asset->LoadFromFileInMemory(&transfer->rawAssetData[0], transfer->rawAssetData.size());
-    if (!success)
-    {
-        QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
-        transfer->asset->HandleLoadError(error);
-        transfer->EmitAssetFailed(error);
-        return;
-    }
-
-    // Remember the newly created asset in AssetAPI's internal data structure to allow clients to later fetch it without re-requesting it.
-    AssetMap::iterator iter2 = assets.find(transfer->source.ref);
-    if (iter2 != assets.end())
-    {
-        AssetPtr existing = iter2->second;
-        LogWarning("AssetAPI: Overwriting a previously downloaded asset \"" + existing->Name() + "\", type \"" + existing->Type() + "\" with asset of same name!");
-    }
-    assets[transfer->source.ref] = transfer->asset;
-    if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
-        diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
-    emit AssetCreated(transfer->asset);
-
-    // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
-    RequestAssetDependencies(transfer->asset);
 
     // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
     transfer->EmitAssetDownloaded();
 
-    // If we don't have any outstanding dependencies, fire the Loaded signal for the asset as well.
+    const u8 *data = (transfer->rawAssetData.size() > 0 ? &transfer->rawAssetData[0] : 0);
+    bool success = transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
+    if (!success)
+    {
+        QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
+        transfer->EmitAssetFailed(error);
+        return;
+    }
+
+    if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
+        diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
+
+    // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
+    RequestAssetDependencies(transfer->asset);
+
+    // If we don't have any outstanding dependencies, succeed and remove the transfer
     if (NumPendingDependencies(transfer->asset) == 0)
         AssetDependenciesCompleted(transfer);
 }
@@ -954,7 +1188,8 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
     }
 
     pendingDownloadRequests.erase(transfer->source.ref);
-    currentTransfers.erase(iter);
+    if (iter != currentTransfers.end())
+        currentTransfers.erase(iter);
 }
 
 void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer)
@@ -962,11 +1197,14 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
     uploadTransfer->EmitTransferCompleted();
 
     QString assetRef = uploadTransfer->AssetRef();
+    
+    emit AssetUploaded(assetRef);
+    
     // We've completed an asset upload transfer. See if there is an asset download transfer that is waiting
     // for this upload to complete. 
     
     // Before issuing a request, clear our cache of this data.
-    /// \note We could actually update our cache with the same version of the asset that we just uploaded,
+    /// @note We could actually update our cache with the same version of the asset that we just uploaded,
     /// to avoid downloading what we just uploaded. That can be implemented later.
     assetCache->DeleteAsset(assetRef);
 
@@ -979,17 +1217,19 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
         AssetTransferPtr transfer = RequestAsset(req.assetRef, req.assetType);
         if (!transfer)
             return; ///\todo Evaluate the path to take here.
-        connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)));
-        connect(transfer.get(), SIGNAL(Decoded(AssetPtr)), req.transfer.get(), SIGNAL(Decoded(AssetPtr)));
-        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), req.transfer.get(), SIGNAL(Loaded(AssetPtr)));
-        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), req.transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)));
+        connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), Qt::UniqueConnection);
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), req.transfer.get(), SIGNAL(Succeeded(AssetPtr)), Qt::UniqueConnection);
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), req.transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), Qt::UniqueConnection);
     }
 }
 
 void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
 {
+    // Emit success for this transfer
+    transfer->EmitTransferSucceeded();
+    
     // This asset transfer has finished - remove it from the internal list of ongoing transfers.
-    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    AssetTransferMap::iterator iter = FindTransferIterator(transfer.get());
     if (iter != currentTransfers.end())
         currentTransfers.erase(iter);
     else // Even if we didn't know about this transfer, just print a warning and continue execution here nevertheless.
@@ -1000,13 +1240,6 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
         LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished: but data size was 0 bytes!");
         return;
     }
-
-    ///\todo Specify the following flow better.
-    transfer->EmitAssetDecoded();
-
-    // This asset is now completely finished, and all its dependencies have been loaded.
-    if (transfer->asset)
-        transfer->asset->EmitLoaded();
     
     pendingDownloadRequests.erase(transfer->source.ref);
 }
@@ -1037,16 +1270,14 @@ void AssetAPI::RequestAssetDependencies(AssetPtr asset)
     std::vector<AssetReference> refs = asset->FindReferences();
     for(size_t i = 0; i < refs.size(); ++i)
     {
-        QString ref = refs[i].ref;
-        if (ref.isEmpty())
+        AssetReference ref = refs[i];
+        if (ref.ref.isEmpty())
             continue;
 
-        AssetPtr existing = GetAsset(ref);
-        if (existing)
-            asset->DependencyLoaded(existing);
-        else // We don't have the given asset yet, request it.
+        AssetPtr existing = GetAsset(ref.ref);
+        if (!existing || !existing->IsLoaded())
         {
-            LogDebug("Asset " + asset->ToString() + " depends on asset " + ref + " which has not been loaded yet. Requesting..");
+//            LogDebug("Asset " + asset->ToString() + " depends on asset " + ref.ref + " (type=\"" + ref.type + "\") which has not been loaded yet. Requesting..");
             RequestAsset(ref);
         }
     }
@@ -1077,6 +1308,15 @@ std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
     return dependents;
 }
 
+bool AssetAPI::ShouldReplicateAssetDiscovery(const QString& assetRef)
+{
+    AssetAPI::AssetRefType type = ParseAssetRef(assetRef);
+    if ((type == AssetAPI::AssetRefInvalid) || (type == AssetAPI::AssetRefLocalPath) || (type == AssetAPI::AssetRefLocalUrl) || (type == AssetAPI::AssetRefRelativePath))
+        return false;
+    else
+        return true;
+}
+
 int AssetAPI::NumPendingDependencies(AssetPtr asset)
 {
     int numDependencies = 0;
@@ -1088,6 +1328,10 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
         if (ref.isEmpty())
             continue;
 
+        // We silently ignore this dependency if the asset type in question is disabled.
+        if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(GetResourceTypeFromAssetRef(refs[i])).get()))
+            continue;
+
         AssetPtr existing = GetAsset(refs[i].ref);
         if (!existing)
         {
@@ -1096,13 +1340,82 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
         }
         else
         {
-            // Ask the dependencies of the dependency, we want all of the asset
-            // down the chain to be loaded before we load the base asset
-            numDependencies += NumPendingDependencies(existing);
+            // If asset is empty, count it as an unloaded dependency
+            if (existing->IsEmpty())
+                ++numDependencies;
+            else
+            {
+                if (!existing->IsLoaded())
+                    ++numDependencies;
+                // Ask the dependencies of the dependency, we want all of the asset
+                // down the chain to be loaded before we load the base asset
+                // Note: if the dependency is unloaded, it may or may not be able to tell the dependencies correctly
+                numDependencies += NumPendingDependencies(existing);
+            }
         }
     }
 
     return numDependencies;
+}
+
+void AssetAPI::HandleAssetDiscovery(const QString &assetRef, const QString &assetType)
+{
+    HandleAssetDiscovery(assetRef, assetType, AssetStoragePtr());
+}
+
+void AssetAPI::HandleAssetDiscovery(const QString &assetRef, const QString &assetType, AssetStoragePtr storage)
+{
+    AssetPtr existing = GetAsset(assetRef);
+    // If asset did not exist, create new empty asset
+    if (!existing)
+    {
+        // If assettype is empty, guess it
+        QString newType = assetType;
+        if (newType.isEmpty())
+            newType = GetResourceTypeFromAssetRef(assetRef);
+        CreateNewAsset(newType, assetRef, storage);
+    }
+    // If asset exists and is already loaded, forcibly request updated data
+    else if (existing->IsLoaded())
+        RequestAsset(assetRef, assetType, true);
+}
+
+void AssetAPI::HandleAssetDeleted(const QString &assetRef)
+{
+    // If the asset is unloaded, delete it from memory. If it is loaded, it might be in use, so do nothing
+    AssetPtr existing = GetAsset(assetRef);
+    if (!existing)
+        return;
+    if (!existing->IsLoaded())
+        ForgetAsset(existing, false);
+}
+
+void AssetAPI::EmitAssetDeletedFromStorage(const QString &assetRef)
+{
+    emit AssetDeletedFromStorage(assetRef);
+}
+
+QMap<QString, QString> AssetAPI::ParseAssetStorageString(QString storageString)
+{
+    // Treat simple strings of form "http://myserver.com/" as "src=http://myserver.com/".
+    if (storageString.indexOf(';') == -1 && storageString.indexOf('=') == -1)
+        storageString = "src=" + storageString;
+
+    QMap<QString, QString> m;
+    QStringList items = storageString.split(";", QString::SkipEmptyParts);
+    foreach(QString str, items)
+    {
+        QStringList keyValue = str.split("=");
+        if (keyValue.count() > 2 || keyValue.count() == 0)
+        {
+            LogError("Failed to parse asset storage string \"" + str + "\"!");
+            return QMap<QString, QString>();
+        }
+        if (keyValue.count() == 1)
+            keyValue.push_back("1");
+        m[keyValue[0]] = keyValue[1];
+    }
+    return m;
 }
 
 void AssetAPI::OnAssetLoaded(AssetPtr asset)
@@ -1128,6 +1441,8 @@ void AssetAPI::OnAssetLoaded(AssetPtr asset)
 
 void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
 {
+    LogInfo("OnAssetDiskSourceChanged " + path_);
+    
     QDir path(path_);
     for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
     {
@@ -1144,6 +1459,20 @@ void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
             else
                 LogDebug("Reloaded changed asset \"" + asset->ToString() + "\" from file \"" + path_ + "\".");
         }
+    }
+}
+
+void AssetAPI::OnAssetStorageRefsChanged(AssetStoragePtr storage)
+{
+    QStringList refs = storage->GetAllAssetRefs();
+    
+    for (int i = 0; i < refs.size(); ++i)
+    {
+        // If the asset does not exist at all, create a new empty asset.
+        // However, if the asset already exists, do not refresh its data now (as we may be getting a huge amount of refs)
+        if (!GetAsset(refs[i]))
+            // Use optimized discovery: the storage does not have to be looked up as it is known
+            HandleAssetDiscovery(refs[i], "", storage);
     }
 }
 
@@ -1177,11 +1506,87 @@ namespace
     bool IsFileOfType(const QString &filename, const char **suffixes, int numSuffixes)
     {
         for(int i = 0;i < numSuffixes; ++i)
-            if (filename.endsWith(suffixes[i]))
+            if (filename.endsWith(suffixes[i], Qt::CaseInsensitive))
                 return true;
 
         return false;
     }
+}
+
+QString AssetAPI::GetResourceTypeFromAssetRef(const AssetReference &ref)
+{
+    QString type = ref.type.trimmed();
+    if (!type.isEmpty())
+        return type;
+    return GetResourceTypeFromAssetRef(ref.ref);
+}
+
+QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef)
+{
+    QString filename;
+    ParseAssetRef(assetRef, 0, 0, 0, 0, 0, 0, &filename);
+
+    ///\todo This whole function is to be removed, and moved into the asset type providers for separate access. -jj.
+
+    QString file = filename.trimmed().toLower();
+    if (file.endsWith(".qml", Qt::CaseInsensitive) || file.endsWith(".qmlzip", Qt::CaseInsensitive))
+        return "QML";
+    if (file.endsWith(".mesh", Qt::CaseInsensitive))
+        return "OgreMesh";
+    if (file.endsWith(".skeleton", Qt::CaseInsensitive))
+        return "OgreSkeleton";
+    if (file.endsWith(".material", Qt::CaseInsensitive))
+        return "OgreMaterial";
+    if (file.endsWith(".particle", Qt::CaseInsensitive))
+        return "OgreParticle";
+
+    // The following file types are from FreeImage's list of supported formats:
+    // http://freeimage.sourceforge.net/features.html
+    // The GIMP xcf is not in the list of known image formats, but detect it anyways.
+    const char *textureFileTypes[] = { ".bmp", ".cut", ".dds", ".exr", ".g3", ".gif", ".hdr", ".ico", ".iff", 
+        ".j2k", ".j2c", ".jp2", ".jif", ".jpg", ".jpeg", ".jpe", ".jng", ".koa",
+        ".lbm", ".mng", ".pbm", ".pcd", ".pcx", ".pfm", ".pict", ".psd", ".pgm", ".png", ".ppm", ".ras", ".raw", 
+        ".sgi", ".tga", ".targa", ".tif", ".tiff", ".wap", ".wbmp", ".wbm", ".xbm", ".xcf", ".xpm" };
+    if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
+        return "Texture";
+
+    // These file types are supported by the Open Asset Import library:
+    // http://assimp.sourceforge.net/main_features_formats.html
+    const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf", 
+        ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
+        ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
+        ".ply", ".cob", ".scn" };
+
+    if (IsFileOfType(file, openAssImpFileTypes, NUMELEMS(openAssImpFileTypes)))
+        return "OgreMesh"; // We use the OgreMeshResource type for mesh files opened using the Open Asset Import Library.
+
+    if (file.endsWith(".js", Qt::CaseInsensitive) || file.endsWith(".py", Qt::CaseInsensitive))
+        return "Script";
+
+    if (file.endsWith(".ntf", Qt::CaseInsensitive))
+        return "Terrain";
+
+    if (file.endsWith(".wav", Qt::CaseInsensitive) || file.endsWith(".ogg", Qt::CaseInsensitive) || file.endsWith(".mp3", Qt::CaseInsensitive))
+        return "Audio";
+
+    if (file.endsWith(".ui", Qt::CaseInsensitive))
+        return "QtUiFile";
+        
+    if (file.endsWith(".avatar", Qt::CaseInsensitive))
+        return "Avatar";
+
+    if (file.endsWith(".pdf", Qt::CaseInsensitive))
+        return "PdfAsset";
+
+    const char *openDocFileTypes[] = { ".odt", ".doc", ".rtf", ".txt", ".docx", ".docm", ".ods", ".xls", ".odp", ".ppt", ".odg" };
+    if (IsFileOfType(file, openDocFileTypes, NUMELEMS(openDocFileTypes)))
+        return "DocAsset";
+
+    if (file.endsWith(".xml", Qt::CaseInsensitive) || file.endsWith(".txml", Qt::CaseInsensitive) || file.endsWith(".tbin", Qt::CaseInsensitive)) 
+        return "Binary";
+
+    // Unknown type, return Binary type.
+    return "Binary";
 }
 
 bool CopyAssetFile(const char *sourceFile, const char *destFile)

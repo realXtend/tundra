@@ -1,13 +1,15 @@
 # Define target name and output directory
 init_target(Asset)
 
+MocFolder ()
+
 # Use this if building Asset as a SHARED lib.
 #init_target(Asset OUTPUT ./)
 
 # Define source files
 file(GLOB CPP_FILES *.cpp)
 file(GLOB H_FILES *.h)
-file(GLOB MOC_FILES AssetAPI.h IAsset.h IAssetTransfer.h IAssetUploadTransfer.h IAssetStorage.h AssetRefListener.h BinaryAsset.h AssetCache.h IAssetTypeFactory.h)
+file(GLOB MOC_FILES AssetAPI.h IAsset.h IAssetTransfer.h IAssetUploadTransfer.h IAssetStorage.h AssetRefListener.h BinaryAsset.h AssetCache.h)
 
 set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 

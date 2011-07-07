@@ -1,11 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_BinaryAsset_h
-#define incl_Asset_BinaryAsset_h
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 
+/// A generic data container for assets of unknown type.
 class BinaryAsset : public IAsset
 {
     Q_OBJECT;
@@ -37,7 +37,7 @@ public:
         return true;
     }
 
-    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters)
+    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
     {
         dst = data;
         return true;
@@ -55,4 +55,3 @@ public:
 
 typedef boost::shared_ptr<BinaryAsset> BinaryAssetPtr;
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_AssetFwd_h
-#define incl_Asset_AssetFwd_h
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -30,17 +29,11 @@ typedef boost::shared_ptr<IAssetUploadTransfer> AssetUploadTransferPtr;
 
 struct AssetReference;
 
-class IEventData;
-
 class IAssetTypeFactory;
 typedef boost::shared_ptr<IAssetTypeFactory> AssetTypeFactoryPtr;
 
 class AssetRefListener;
 typedef boost::shared_ptr<AssetRefListener> AssetRefListenerPtr;
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
-#endif

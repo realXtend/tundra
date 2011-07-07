@@ -2,8 +2,7 @@
 
 // A note about the filename: This file will be renamed to AssetCache_.h at the moment the old AssetCache.h from AssetModule is deleted.
 
-#ifndef incl_Asset_AssetCache_h
-#define incl_Asset_AssetCache_h
+#pragma once
 
 #include <QString>
 #include <QNetworkDiskCache>
@@ -22,8 +21,9 @@ class QNetworkDiskCache;
 /// Replaces characters / \ : * ? " ' < > | with _
 QString SanitateAssetRefForCache(QString assetRef);
 
-/// Subclassing QNetworkDiskCache has the main goal of separating metadata from the raw asset data. The basic implementation of QNetworkDiskCache
-/// will store both in the same file. That did not work very well with our asset system as we need absolute paths to loaded assets for various purpouses.
+/// Implements a disk cache for asset files to avoid re-downloading assets between runs.
+/** Subclassing QNetworkDiskCache has the main goal of separating metadata from the raw asset data. The basic implementation of QNetworkDiskCache
+    will store both in the same file. That did not work very well with our asset system as we need absolute paths to loaded assets for various purpouses. */
 class AssetCache : public QNetworkDiskCache
 {
 
@@ -67,23 +67,15 @@ public:
     virtual qint64 expire();
 
 public slots:
-    /// Returns an absolute path to a disk source of the url.
-    /// @param QString asset ref
-    /// @return QString absolute path to the assets disk source. Return empty string if asset is not in the cache.
-    /// @note this will always return an empty string for http/https assets. This will force the AssetAPI to check that it has the latest asset from the source.
-    QString GetDiskSource(const QString &assetRef);
+    /// Searches if the cache contains the asset with the given assetRef. Returns an absolute path to the asset on the local file system, if it is found.
+    /// @return An absolute path to the assets disk source, or an empty string if asset is not in the cache.
+    /// @note Currently this will always return an empty string for http/https assets. This will force the AssetAPI to check that it has the latest asset from the source.
+    QString FindInCache(const QString &assetRef);
 
-    /// Returns an absolute path to a disk source of the url.
-    /// @param QUrl url of the asset ref
-    /// @return QString absolute path to the assets disk source. Return empty string if asset is not in the cache.
-    /// @note this will return you the disk source for http/https assets unlike the QString overload.
-    QString GetDiskSource(const QUrl &assetUrl);
-
-    /// Checks whether the asset cache contains an asset with the given content hash, and returns the absolute path name to it, if so.
-    /// Otherwise returns an empty string.
-    /// @todo Implement.
-    QString GetDiskSourceByContentHash(const QString &contentHash);
-
+    /// Gets disk source for asset ref, disregarding the http protocol check in FindInCache()
+    /// This is only used by AssetAPI as an emergency mechanism for querying http asset disk source after loading
+    QString GetDiskSourceByRef(const QString &assetRef);
+    
     /// Get the cache directory. Returned path is guaranteed to have a trailing slash /.
     /// @return QString absolute path to the caches data directory
     QString GetCacheDirectory() const;
@@ -94,7 +86,7 @@ public slots:
 
     /// Saves the specified data to the asset cache.
     /// @return QString the absolute path name to the asset cache entry. If not successfull returns an empty string.
-    QString StoreAsset(const u8 *data, size_t numBytes, const QString &assetName, const QString &assetContentHash);
+    QString StoreAsset(const u8 *data, size_t numBytes, const QString &assetName);
 
     /// Deletes the asset with the given assetRef from the cache, if it exists.
     /// @param QString asset reference.
@@ -138,4 +130,3 @@ private:
     QHash<QString, QFile*> preparedItems;
 };
 
-#endif

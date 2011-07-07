@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_IAssetTransfer_h
-#define incl_Asset_IAssetTransfer_h
+#pragma once
 
 #include <boost/enable_shared_from_this.hpp>
 #include <QObject>
@@ -13,6 +12,7 @@
 
 #include <QByteArray>
 
+/// Represents a currently ongoing asset download operation.
 class IAssetTransfer : public QObject, public boost::enable_shared_from_this<IAssetTransfer>
 {
     Q_OBJECT
@@ -45,9 +45,7 @@ public:
 
     void EmitAssetDownloaded();
 
-    void EmitAssetDecoded();
-
-    void EmitAssetLoaded();
+    void EmitTransferSucceeded();
 
     void EmitAssetFailed(QString reason);
 
@@ -79,14 +77,11 @@ public slots:
     AssetPtr GetAsset() { return asset; }
 
 signals:
-    /// Emitted when the raw byte download of this asset finishes.
+    /// Emitted when the raw byte download of this asset finishes. The asset pointer is set at this point.
     void Downloaded(IAssetTransfer *transfer);
 
-    /// Emitted when a decoder plugin has decoded this asset.
-    void Decoded(AssetPtr asset);
-
-    /// Emitted when this asset is ready to be used in the system.
-    void Loaded(AssetPtr asset);
+    /// Emitted when the transfer succeeded and the asset is ready to be used in the system, with all of its dependencies loaded
+    void Succeeded(AssetPtr asset);
 
     /// Emitted when this transfer failed.
     void Failed(IAssetTransfer *transfer, QString reason);
@@ -97,4 +92,8 @@ private:
     QString diskSource;
 };
 
-#endif
+/// Virtual asset transfer for assets that have already been loaded, but are re-requested
+class VirtualAssetTransfer : public IAssetTransfer
+{
+};
+
