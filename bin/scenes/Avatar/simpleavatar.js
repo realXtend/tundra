@@ -482,18 +482,21 @@ function ClientHandleTripodLookX(param)
 
 function ClientHandleTripodLookY(param)
 {
-    if (tripod)
-    {
-        var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-        if (cameraentity == null)
-            return;
-        var cameraplaceable = cameraentity.placeable;
-        var cameratransform = cameraplaceable.transform;
+    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    if (cameraentity == null)
+        return;
+    var cameraplaceable = cameraentity.placeable;
+    var cameratransform = cameraplaceable.transform;
 
-        var move = parseInt(param);
-        cameratransform.rot.x -= mouse_rotate_sensitivity * move;
-        cameraplaceable.transform = cameratransform;
-    }
+    var move = parseInt(param);
+    cameratransform.rot.x -= mouse_rotate_sensitivity * move;
+
+    if (cameratransform.rot.x < 0)
+        cameratransform.rot.x = 0;
+    if (cameratransform.rot.x > 180)
+        cameratransform.rot.x = 180;
+
+    cameraplaceable.transform = cameratransform;
 }
 
 function ClientUpdate(frametime)
@@ -592,6 +595,11 @@ function ClientCreateAvatarCamera() {
 
     camera.AutoSetPlaceable();
     camera.SetActive();
+
+    // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
+    var cameratransform = placeable.transform;
+    cameratransform.rot.x = 90;
+    placeable.transform = cameratransform;
 
     // Set initial position
     ClientUpdateAvatarCamera();
@@ -800,9 +808,6 @@ function ClientUpdateAvatarCamera(frametime) {
         cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
         cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
         cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
-        // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
-        if(!first_person)
-            cameratransform.rot.x = 90;
         cameratransform.rot.z = avatartransform.rot.z - 90;
         cameraplaceable.transform = cameratransform;
     }
