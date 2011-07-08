@@ -1,4 +1,6 @@
 configure_celt ()
+configure_protobuf ()
+configure_openssl ()
 
 # Define target name and output directory
 init_target (MumbleVoipModule OUTPUT modules/core)
@@ -26,6 +28,8 @@ add_definitions (-DMUMBLE_VOIP_MODULE_EXPORTS)
 
 use_package_mumbleclient()
 use_package (CELT)
+use_package (PROTOBUF)
+use_package (OPENSSL)
 
 use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities OgreRenderingModule Scene Console
     EntityComponents/EC_OpenSimPresence Audio TundraLogicModule)
@@ -36,6 +40,8 @@ link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities OgreRenderi
     EC_OpenSimPresence Audio TundraLogicModule)
 link_package_mumbleclient()
 link_package (CELT)
+link_package (PROTOBUF)
+link_package (OPENSSL)
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

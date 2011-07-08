@@ -421,8 +421,16 @@ endmacro (configure_mumbleclient)
 macro(use_package_mumbleclient)
     message (STATUS "** Configuring mumbleclient")
     if (WIN32)
-        # Not implemented
-        message (FATAL_ERROR "!! use_package_mumbleclient not implemented for WIN32")
+        # This is a hack, would be better like it was earlier
+        # with configure_mumbleclient and use_package/link_package(MUMBLECLIENT)
+        sagase_configure_package(MUMBLECLIENT
+            NAMES mumbleclient
+            COMPONENTS mumbleclient client
+            PREFIXES ${ENV_NAALI_DEP_PATH}/libmumbleclient)
+        sagase_configure_report (MUMBLECLIENT)
+        
+        include_directories(${MUMBLECLIENT_INCLUDE_DIRS})
+        link_directories(${MUMBLECLIENT_LIBRARY_DIRS})
     else()
         if ("$ENV{MUMBLECLIENT_DIR}" STREQUAL "")
             set(MUMBLECLIENT_DIR ${ENV_NAALI_DEP_PATH})
@@ -437,8 +445,10 @@ macro(use_package_mumbleclient)
 endmacro()
 
 macro(link_package_mumbleclient)
-    target_link_libraries(${TARGET_NAME} debug mumbleclient)
     target_link_libraries(${TARGET_NAME} optimized mumbleclient)
+    if (WIN32)
+        target_link_libraries(${TARGET_NAME} debug mumbleclientd)
+    endif ()
 endmacro()
 
 macro (configure_openssl)
