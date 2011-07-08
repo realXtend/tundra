@@ -6,10 +6,10 @@
 #include "Channel.h"
 #include "MumbleVoipModule.h"
 
-#define LIBMUMBLE_BUILDING_DLL // for dll import/export declarations
+#define BUILDING_DLL // for dll import/export declarations
 #define CreateEvent CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
 #include <libmumbleclient/channel.h>
-#undef LIBMUMBLE_BUILDING_DLL // for dll import/export declarations
+#undef BUILDING_DLL // for dll import/export declarations
 
 #include "MemoryLeakCheck.h"
 
