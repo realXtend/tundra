@@ -20,6 +20,7 @@ namespace MumbleLib
 
     void MumbleLibrary::Start()
     {
+        MumbleClient::logging::SetLogLevel(MumbleClient::logging::LOG_INFO);
         StartMumbleThread();
         //emit Started();
     }

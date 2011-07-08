@@ -448,7 +448,9 @@ endmacro (configure_protobuf)
 macro (configure_celt)
     sagase_configure_package(CELT
         NAMES celt
-        COMPONENTS celt0 celt celt # for celt.h
+        COMPONENTS libcelt  # for libcelt
+                   celt0    # for old celt0 name (linux?)
+                   celt     # for celt.h
         PREFIXES ${ENV_NAALI_DEP_PATH}/celt)
     sagase_configure_report (CELT)
 endmacro (configure_celt)
