@@ -7,7 +7,7 @@
 
 macro (configure_boost)
     if (MSVC)
-	    set(Boost_USE_MULTITHREADED TRUE)
+        set(Boost_USE_MULTITHREADED TRUE)
         set(Boost_USE_STATIC_LIBS TRUE)
     else ()
         set(Boost_USE_STATIC_LIBS FALSE)
@@ -60,14 +60,14 @@ endmacro (configure_poco)
 macro (configure_qt4)
     sagase_configure_package (QT4 
         NAMES Qt4 4.6.1
-        COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
+        COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_QT_DIR})
 
     # FindQt4.cmake
     if (QT4_FOUND AND QT_USE_FILE)
-	
+    
         include (${QT_USE_FILE})
-		
+        
         set (QT4_INCLUDE_DIRS 
             ${QT_INCLUDE_DIR}
             ${QT_QTCORE_INCLUDE_DIR}
@@ -76,15 +76,16 @@ macro (configure_qt4)
             ${QT_QTNETWORK_INCLUDE_DIR}
             ${QT_QTXML_INCLUDE_DIR}
             ${QT_QTSCRIPT_INCLUDE_DIR}
+            ${QT_DECLARATIVE_INCLUDE_DIR}
             ${QT_QTWEBKIT_INCLUDE_DIR})
             
 #            ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
 #            ${QT_PHONON_INCLUDE_DIR}
 
-		
+        
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
-		
+        
         set (QT4_LIBRARIES 
             ${QT_LIBRARIES}
             ${QT_QTCORE_LIBRARY}
@@ -93,11 +94,12 @@ macro (configure_qt4)
             ${QT_QTNETWORK_LIBRARY}
             ${QT_QTXML_LIBRARY}
             ${QT_QTSCRIPT_LIBRARY}
+            ${QT_DECLARATIVE_LIBRARY}
             ${QT_QTWEBKIT_LIBRARY})
             
 #            ${QT_QTSCRIPTTOOLS_LIBRARY}
 #            ${QT_PHONON_LIBRARY}
-		
+        
     endif ()
     
     sagase_configure_report (QT4)
@@ -115,16 +117,16 @@ macro (configure_python)
         set (PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
         #unset (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
     endif ()
-	
+    
     # FindPythonLibs.cmake prefers the system-wide Python, which does not
     # include debug libraries, so we force to NAALI_DEP_PATH.
 
-	if (MSVC)
-		set (PYTHON_LIBRARY_DIRS ${ENV_NAALI_DEP_PATH}/Python/lib)
-		set (PYTHON_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/Python/include)
-		set (PYTHON_LIBRARIES python26)
-		set (PYTHON_DEBUG_LIBRARIES python26_d)
-	endif()
+    if (MSVC)
+        set (PYTHON_LIBRARY_DIRS ${ENV_NAALI_DEP_PATH}/Python/lib)
+        set (PYTHON_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/Python/include)
+        set (PYTHON_LIBRARIES python26)
+        set (PYTHON_DEBUG_LIBRARIES python26_d)
+    endif()
     
     sagase_configure_report (PYTHON)
 endmacro (configure_python)
@@ -139,58 +141,31 @@ macro (configure_python_qt)
 endmacro (configure_python_qt)
 
 macro (configure_ogre)
-    if ("$ENV{OGRE_HOME}" STREQUAL "" OR NOT WIN32)
-        if (APPLE)
-    	  FIND_LIBRARY(OGRE_LIBRARY NAMES Ogre)
-    	  set (OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
-    	  set (OGRE_LIBRARIES ${OGRE_LIBRARY})
-        else ()
-            sagase_configure_package (OGRE 
-            NAMES Ogre OgreSDK ogre OGRE
-            COMPONENTS Ogre ogre OGRE OgreMain 
-            PREFIXES ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
-        endif ()
+    SET(OGRE_HOME $ENV{OGRE_HOME})
+    if ("${OGRE_HOME}" STREQUAL "")
+        SET(OGRE_HOME ${ENV_NAALI_DEP_PATH}/Ogre)
+    endif()
 
-        sagase_configure_report (OGRE)
-    else()
-        # DX blitting define for naali
-        add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
-        include_directories($ENV{OGRE_HOME})
-        # Ogre built from sources
-        include_directories($ENV{OGRE_HOME}/include) 
-        include_directories($ENV{OGRE_HOME}/include/RenderSystems/Direct3D9/include)
-        include_directories($ENV{OGRE_HOME}/RenderSystems/Direct3D9/include)
-        # Ogre official sdk
-        include_directories($ENV{OGRE_HOME}/include/OGRE) 
-        include_directories($ENV{OGRE_HOME}/include/OGRE/RenderSystems/Direct3D9)
-        link_directories($ENV{OGRE_HOME}/lib)
-        
-        # Print some fake sagase reporting as we cant fill 
-        # OGRE_INCLUDE_DIRS and OGRE_LIBRARIES lists due to link_ogre() logic
-        message (STATUS "** Configuring OGRE")
-        message (STATUS "-- Using OGRE_HOME environment variable")
-        message (STATUS "       " $ENV{OGRE_HOME})
-        message (STATUS "-- Include Directories:")
-        message (STATUS "       " $ENV{OGRE_HOME}/include)
-        message (STATUS "       " $ENV{OGRE_HOME}/include/OGRE)
-        message (STATUS "-- Library Directories:")
-        message (STATUS "       " $ENV{OGRE_HOME}/lib)
-        message (STATUS "-- Libraries:")
-        message (STATUS "        OgreMain.lib")
-        message (STATUS "        RenderSystem_Direct3D9.lib")
-        message (STATUS "-- Debug Libraries:")
-        message (STATUS "        OgreMain_d.lib")
-        message (STATUS "        RenderSystem_Direct3D9_d.lib")
-        message (STATUS "-- Defines:")
-        message (STATUS "        USE_D3D9_SUBSURFACE_BLIT")
-        message (STATUS "")
-    endif()    
+    # DX blitting define for Tundra.
+    add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
+    include_directories(${OGRE_HOME})
+    # Tundra deps Ogre
+    include_directories(${OGRE_HOME}/include/RenderSystems/Direct3D9)
+    include_directories(${OGRE_HOME}/RenderSystems/Direct3D9)
+    # Ogre built from sources
+    include_directories(${OGRE_HOME}/include) 
+    include_directories(${OGRE_HOME}/include/RenderSystems/Direct3D9/include)
+    include_directories(${OGRE_HOME}/RenderSystems/Direct3D9/include)
+    # Ogre official sdk
+    include_directories(${OGRE_HOME}/include/OGRE) 
+    include_directories(${OGRE_HOME}/include/OGRE/RenderSystems/Direct3D9)
+    link_directories(${OGRE_HOME}/lib)
 endmacro (configure_ogre)
 
 macro(link_ogre)
     if (OGRE_LIBRARIES)
         link_package(OGRE)
-    else()    
+    else()
         target_link_libraries(${TARGET_NAME} debug OgreMain_d.lib)
         target_link_libraries(${TARGET_NAME} optimized OgreMain.lib)
         if (WIN32)
@@ -200,32 +175,32 @@ macro(link_ogre)
     endif()
 endmacro()
 
-macro (configure_caelum)
-    sagase_configure_package (CAELUM 
-        NAMES Caelum caelum CAELUM
-        COMPONENTS Caelum caelum CAELUM
+macro (configure_skyx)
+    sagase_configure_package (SKYX
+        NAMES SkyX SKYX skyx
+        COMPONENTS SkyX SKYX skyx
         PREFIXES ${ENV_NAALI_DEP_PATH})
     
-    sagase_configure_report (CAELUM)
-endmacro (configure_caelum)
+    sagase_configure_report (SKYX)
+endmacro (configure_skyx)
+
+macro (configure_hydrax)
+    sagase_configure_package (HYDRAX
+        NAMES Hydrax HYDRAX hydrax
+        COMPONENTS Hydrax HYDRAX hydrax
+        PREFIXES ${ENV_NAALI_DEP_PATH})
+    
+    sagase_configure_report (HYDRAX)
+endmacro (configure_hydrax)
 
 macro (configure_qtpropertybrowser)
-    sagase_configure_package (QT_PROPERTY_BROWSER 
+    sagase_configure_package (QT_PROPERTY_BROWSER
         NAMES QtPropertyBrowser QtSolutions_PropertyBrowser-2.5
         COMPONENTS QtPropertyBrowser QtSolutions_PropertyBrowser-2.5
         PREFIXES ${ENV_NAALI_DEP_PATH})
     
     sagase_configure_report (QT_PROPERTY_BROWSER)
 endmacro (configure_qtpropertybrowser)
-
-macro (configure_hydrax)
-    sagase_configure_package (HYDRAX 
-        NAMES Hydrax
-        COMPONENTS Hydrax
-        PREFIXES ${ENV_NAALI_DEP_PATH})
-    
-    sagase_configure_report (HYDRAX)
-endmacro (configure_hydrax)
 
 macro (configure_xmlrpc)
     if (APPLE)
@@ -243,14 +218,14 @@ macro (configure_xmlrpc)
             PREFIXES ${ENV_NAALI_DEP_PATH}
                 ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
                 ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug
-		${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release)
+        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release)
     endif()
    
-	if (MSVC)
-		set (XMLRPC_LIBRARIES xmlrpcepi)
-		set (XMLRPC_DEBUG_LIBRARIES xmlrpcepid)
-	endif()
-	
+    if (MSVC)
+        set (XMLRPC_LIBRARIES xmlrpcepi)
+        set (XMLRPC_DEBUG_LIBRARIES xmlrpcepid)
+    endif()
+    
     sagase_configure_report (XMLRPC)
 endmacro (configure_xmlrpc)
 
@@ -259,18 +234,18 @@ macro (configure_curl)
         NAMES Curl curl libcurl
         COMPONENTS curl libcurl_imp libcurld_imp
         PREFIXES ${ENV_NAALI_DEP_PATH}
-        ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Debug 
-        ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Release)		
+        ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Debug
+        ${ENV_NAALI_DEP_PATH}/libcurl/lib/DLL-Release)
     
-	if (MSVC)
-		set (CURL_LIBRARIES libcurl_imp)
-		set (CURL_DEBUG_LIBRARIES libcurld_imp)
-	endif()
+    if (MSVC)
+        set (CURL_LIBRARIES libcurl_imp)
+        set (CURL_DEBUG_LIBRARIES libcurld_imp)
+    endif()
 
-	if (APPLE)
-		set (CURL_LIBRARIES curl)
-	endif()
-	
+    if (APPLE)
+        set (CURL_LIBRARIES curl)
+    endif()
+    
     sagase_configure_report (CURL)
 endmacro (configure_curl)
 
@@ -363,7 +338,7 @@ macro (configure_openal)
 
         # Force include dir on MSVC
         if (MSVC)
-  		   set (OPENAL_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/OpenAL/include)
+             set (OPENAL_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/OpenAL/include)
         endif ()
     sagase_configure_report (OPENAL)
 endmacro (configure_openal)
@@ -376,7 +351,7 @@ macro (configure_ogg)
         
         # Force include dir on MSVC
         if (MSVC)
-  		   set (OGG_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libogg/include)
+             set (OGG_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libogg/include)
         endif ()
     sagase_configure_report (OGG)
 endmacro (configure_ogg)
@@ -395,10 +370,23 @@ else()
 endif()
         # Force include dir on MSVC
         if (MSVC)
-  		   set (VORBIS_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libvorbis/include)
+             set (VORBIS_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libvorbis/include)
         endif ()
     sagase_configure_report (VORBIS)
 endmacro (configure_vorbis)
+
+macro (configure_theora)
+    sagase_configure_package(THEORA
+        NAMES theora libtheora
+        COMPONENTS theora libtheora
+        PREFIXES ${ENV_NAALI_DEP_PATH}/libtheora)
+        
+        # Force include dir on MSVC
+        if (MSVC)
+             set (THEORA_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libtheora/include)
+        endif ()
+    sagase_configure_report (THEORA)
+endmacro (configure_theora)
 
 macro (configure_mumbleclient)
     sagase_configure_package(MUMBLECLIENT
@@ -413,13 +401,13 @@ macro (configure_openssl)
         NAMES openssl
         COMPONENTS libeay32 ssleay32 ssl
         PREFIXES ${ENV_NAALI_DEP_PATH}/OpenSSL)
-    # remove 'NOTFOUND' entry which makes to linking impossible	
+    # remove 'NOTFOUND' entry which makes to linking impossible    
     if (MSVC)
         list(REMOVE_ITEM OPENSSL_LIBRARIES debug optimized SSL_EAY_RELEASE-NOTFOUND LIB_EAY_RELEASE-NOTFOUND SSL_EAY_DEBUG-NOTFOUND LIB_EAY_DEBUG-NOTFOUND NOTFOUND)
     message(----------)
     message(${OPENSSL_LIBRARIES})
     message(----------)
-    endif ()		
+    endif ()        
     sagase_configure_report (OPENSSL)
 endmacro (configure_openssl)
 
@@ -430,10 +418,10 @@ macro (configure_protobuf)
         PREFIXES ${ENV_NAALI_DEP_PATH}/protobuf)
     # Force include dir and libraries on MSVC
     if (MSVC)
-  	    set (PROTOBUF_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/protobuf/include)
+          set (PROTOBUF_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/protobuf/include)
     endif ()
     sagase_configure_report (PROTOBUF)
-	
+    
 endmacro (configure_protobuf)
 
 macro (configure_celt)
@@ -445,17 +433,16 @@ macro (configure_celt)
 endmacro (configure_celt)
 
 macro(use_package_knet)
-    if ("$ENV{KNET_DIR}" STREQUAL "")
+    if ("$ENV{KNET_DIR_QT47}" STREQUAL "")
        set(KNET_DIR ${ENV_NAALI_DEP_PATH}/kNet)
     else()           
-       set(KNET_DIR $ENV{KNET_DIR})
+       set(KNET_DIR $ENV{KNET_DIR_QT47})
     endif()
     include_directories(${KNET_DIR}/include)
     link_directories(${KNET_DIR}/lib)
     if (UNIX)    
         add_definitions(-DUNIX)
     endif()
-    add_definitions(-DKNET_USE_BOOST)
 endmacro()
 
 macro(link_package_knet)
@@ -469,22 +456,20 @@ macro(use_package_bullet)
             set(BULLET_DIR ${ENV_NAALI_DEP_PATH}/Bullet)
         endif()
         include_directories(${BULLET_DIR}/include)
-        include_directories(${BULLET_DIR}/include/ConvexDecomposition)
         link_directories(${BULLET_DIR}/lib)
     else() # Linux, note: mac will also come here..
         if ("$ENV{BULLET_DIR}" STREQUAL "")
             set(BULLET_DIR ${ENV_NAALI_DEP_PATH})
         endif()
         include_directories(${BULLET_DIR}/include/bullet)
-        include_directories(${BULLET_DIR}/include/bullet/ConvexDecomposition)
         link_directories(${BULLET_DIR}/lib)
     endif()
 endmacro()
 
 macro(link_package_bullet)
-    target_link_libraries(${TARGET_NAME} optimized LinearMath optimized BulletDynamics optimized BulletCollision optimized ConvexDecomposition)
+    target_link_libraries(${TARGET_NAME} optimized LinearMath optimized BulletDynamics optimized BulletCollision)
     if (WIN32)
-        target_link_libraries(${TARGET_NAME} debug LinearMath_d debug BulletDynamics_d debug BulletCollision_d debug ConvexDecomposition_d)
+        target_link_libraries(${TARGET_NAME} debug LinearMath_d debug BulletDynamics_d debug BulletCollision_d)
     endif()
 endmacro()
 
