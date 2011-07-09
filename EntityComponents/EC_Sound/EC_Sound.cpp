@@ -1,32 +1,33 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "EC_Sound.h"
+
 #include "IModule.h"
 #include "Framework.h"
-
 #include "Entity.h"
-#include "SceneManager.h"
-
+#include "Scene.h"
+#include "AttributeMetadata.h"
 #include "AudioAPI.h"
 #include "AudioAsset.h"
-
 #include "AssetAPI.h"
+#include "FrameAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
-
 #include "EC_Placeable.h"
 #include "EC_SoundListener.h"
-
-#include <QStringList>
-
 #include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
 
-EC_Sound::EC_Sound(IModule *module):
-    IComponent(module->GetFramework()),
+// Win32 API resolves PlaySound to PlaySoundA or PlaySoundW, which isn't used here, so remove it.
+#ifdef PlaySound
+#undef PlaySound
+#endif
+
+EC_Sound::EC_Sound(Scene* scene):
+    IComponent(scene),
     soundRef(this, "Sound ref"),
     soundInnerRadius(this, "Sound radius inner", 0.0f),
     soundOuterRadius(this, "Sound radius outer", 20.0f),
@@ -39,7 +40,7 @@ EC_Sound::EC_Sound(IModule *module):
     soundGain.SetMetadata(&metaData);
     static AttributeMetadata soundRefMetadata;
     AttributeMetadata::ButtonInfoList soundRefButtons;
-    soundRefButtons.push_back(AttributeMetadata::ButtonInfo(soundRef.GetName(), "V", "View"));
+    soundRefButtons.push_back(AttributeMetadata::ButtonInfo(soundRef.Name(), "V", "View"));
     soundRefMetadata.buttons = soundRefButtons;
     soundRef.SetMetadata(&soundRefMetadata);
 
@@ -54,14 +55,14 @@ EC_Sound::~EC_Sound()
 
 void EC_Sound::OnAttributeUpdated(IAttribute *attribute)
 {
-    if (framework_->IsHeadless())
+    if (framework->IsHeadless())
         return;
 
     if (attribute == &soundRef)
     {
-        AssetTransferPtr tranfer =  framework_->Asset()->RequestAsset(soundRef.Get().ref);
+        AssetTransferPtr tranfer =  framework->Asset()->RequestAsset(soundRef.Get().ref);
         if (tranfer.get())
-            connect(tranfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AudioAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+            connect(tranfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(AudioAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
     else if (attribute == &playOnLoad)
     {
@@ -88,7 +89,7 @@ void EC_Sound::OnAttributeUpdated(IAttribute *attribute)
 
 void EC_Sound::AudioAssetLoaded(AssetPtr asset)
 {
-    if (framework_->IsHeadless())
+    if (framework->IsHeadless())
         return;
 
     if (!asset.get())
@@ -114,24 +115,15 @@ void EC_Sound::AudioAssetLoaded(AssetPtr asset)
 
 void EC_Sound::RegisterActions()
 {
-    if (framework_->IsHeadless())
+    if (framework->IsHeadless())
         return;
 
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
     if (entity)
     {
         entity->ConnectAction("PlaySound", this, SLOT(PlaySound()));
         entity->ConnectAction("StopSound", this, SLOT(StopSound()));
     }
-}
-
-void EC_Sound::PositionChange(const QVector3D &pos)
-{
-    if (framework_->IsHeadless())
-        return;
-
-    if (soundChannel)
-        soundChannel->SetPosition(Vector3df(pos.x(), pos.y(), pos.z()));
 }
 
 void EC_Sound::View(const QString &attributeName)
@@ -141,7 +133,7 @@ void EC_Sound::View(const QString &attributeName)
 
 void EC_Sound::PlaySound()
 {
-    if (framework_->IsHeadless())
+    if (framework->IsHeadless())
         return;
 
     // If previous sound is still playing stop it before we apply a new sound.
@@ -171,13 +163,20 @@ void EC_Sound::PlaySound()
 
     if (placeable && spatial.Get() && soundListenerExists)
     {
-        soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->GetPosition(), audioAsset, SoundChannel::Triggered);
+        soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->WorldPosition(), audioAsset, SoundChannel::Triggered);
         if (soundChannel)
             soundChannel->SetRange(soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
+        
+        // If placeable has a parent, start polling the sound position constantly
+        if (!placeable->parentRef.Get().IsEmpty())
+            connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(ConstantPositionUpdate()), Qt::UniqueConnection);
+        else
+            disconnect(this, SLOT(ConstantPositionUpdate()));
     }
     else // Play back sound as a nonpositional sound, if no EC_Placeable was found or if spatial was not set.
     {
         soundChannel = GetFramework()->Audio()->PlaySound(audioAsset, SoundChannel::Ambient);
+        disconnect(this, SLOT(ConstantPositionUpdate()));
     }
 
     if (soundChannel)
@@ -210,15 +209,15 @@ EntityPtr EC_Sound::GetActiveSoundListener()
     int numActiveListeners = 0; // For debugging, count how many listeners are active.
 #endif
     
-    EntityList listeners = parent_entity_->GetScene()->GetEntitiesWithComponent("EC_SoundListener");
+    EntityList listeners = parentEntity->ParentScene()->GetEntitiesWithComponent("EC_SoundListener");
     foreach(EntityPtr listener, listeners)
     {
         EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
         if (ec->active.Get())
         {
 #ifndef _DEBUG
-            assert(ec->GetParentEntity());
-            return ec->GetParentEntity()->shared_from_this();
+            assert(ec->ParentEntity());
+            return ec->ParentEntity()->shared_from_this();
 #else
             ++numActiveListeners;
 #endif
@@ -234,12 +233,12 @@ EntityPtr EC_Sound::GetActiveSoundListener()
 
 void EC_Sound::UpdateSignals()
 {
-    if (!GetParentEntity())
+    if (!ParentEntity())
     {
         LogError("Couldn't update signals cause component dont have parent entity set.");
         return;
     }
-    Scene::SceneManager *scene = GetParentEntity()->GetScene();
+    Scene *scene = ParentEntity()->ParentScene();
     if(!scene)
     {
         LogError("Fail to update signals cause parent entity's scene is null.");
@@ -251,16 +250,54 @@ void EC_Sound::UpdateSignals()
 
 ComponentPtr EC_Sound::FindPlaceable() const
 {
-    assert(framework_);
+    assert(framework);
     ComponentPtr comp;
-    if(!GetParentEntity())
+    if(!ParentEntity())
     {
         LogError("Fail to find a placeable component cause parent entity is null.");
         return comp;
     }
-    comp = GetParentEntity()->GetComponent<EC_Placeable>();
+    comp = ParentEntity()->GetComponent<EC_Placeable>();
     //We need to update sound source position when placeable component has changed it's transformation.
-    connect(comp.get(), SIGNAL(PositionChanged(const QVector3D &)),
-            SLOT(PositionChange(const QVector3D &)), Qt::UniqueConnection);
+    if (comp)
+    {
+        connect(comp.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)), Qt::UniqueConnection);
+    }
     return comp;
+}
+
+void EC_Sound::PlaceableUpdated(IAttribute* attribute)
+{
+    if ((framework->IsHeadless()) || (!soundChannel))
+        return;
+    
+    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(sender());
+    if ((attribute == &placeable->transform) && (soundChannel))
+        soundChannel->SetPosition(placeable->WorldPosition());
+    
+    if (attribute == &placeable->parentRef)
+    {
+        // If placeable has a parent, start polling the sound position constantly
+        if (!placeable->parentRef.Get().IsEmpty())
+            connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(ConstantPositionUpdate()), Qt::UniqueConnection);
+    }
+}
+
+void EC_Sound::ConstantPositionUpdate()
+{
+    if (!ParentEntity())
+    {
+        disconnect(this, SLOT(ConstantPositionUpdate()));
+        return;
+    }
+    EC_Placeable* placeable = ParentEntity()->GetComponent<EC_Placeable>().get();
+    if ((!placeable) || (!soundChannel) || (!spatial.Get()))
+    {
+        disconnect(this, SLOT(ConstantPositionUpdate()));
+        return;
+    }
+    
+    float3 pos = placeable->WorldPosition();
+    
+    soundChannel->SetPosition(placeable->WorldPosition());
 }

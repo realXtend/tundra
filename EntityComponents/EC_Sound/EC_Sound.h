@@ -1,11 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_Sound_EC_Sound_h
-#define incl_EC_Sound_EC_Sound_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Declare_EC.h"
 #include "AssetReference.h"
 #include "AssetFwd.h"
 #include "AudioFwd.h"
@@ -35,7 +33,7 @@ UpdateSoundSettings() to apply those changes into the Audio API.
 <b>Attributes</b>:
 <ul>
 <li>AssetReference: soundRef
-<div>Sound asset reference that is used to request a sound from sound service.</div> 
+<div>Sound asset reference that is used to request a sound from the AssetAPI.</div> 
 <li>float: soundInnerRadius
 <div>Sound inner radius tell the distance where sound gain value is in it's maximum.</div> 
 <li>float: soundOuterRadius
@@ -54,7 +52,7 @@ the sound is played back as a nonspatial audio clip.</div>
 <ul>
 <li>"PlaySound": Starts playing the sound.
 <li>"StopSound": Stops playing the sound.
-<li>"UpdateSoundSettings": Get each attribute value and send them over to sound service.
+<li>"UpdateSoundSettings": Refreshes all sound attributes.
 </ul>
 
 <b>Reacts on the following actions:</b>
@@ -72,12 +70,13 @@ Does not emit any actions.
 */
 class EC_Sound : public IComponent
 {
-    DECLARE_EC(EC_Sound);
     Q_OBJECT
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Sound(Scene* scene);
+
     ~EC_Sound();
-    virtual bool IsSerializable() const { return true; }
 
     /// Sound asset reference.
     Q_PROPERTY(AssetReference soundRef READ getsoundRef WRITE setsoundRef);
@@ -107,7 +106,9 @@ public:
     Q_PROPERTY(bool spatial READ getspatial WRITE setspatial);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, spatial);
 
+    COMPONENT_NAME("EC_Sound", 6)
 public slots:
+
     /// Show the asset in asset viewer window.
     ///\todo implement
     void View(const QString &attributeName);
@@ -118,7 +119,7 @@ public slots:
     /// Stops playing the sound.
     void StopSound();
 
-    /// Get each attribute value and send them over to sound service.
+    /// Updates all sound attributes.
     void UpdateSoundSettings();
 
     /// Finds from the current scene the SoundListener that is currently active, or null if no SoundListener is active.
@@ -137,13 +138,14 @@ private slots:
     /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();
 
-    /// Update the EC_Sound position to match placeable position.
-    void PositionChange(const QVector3D &pos);
+    /// Update the EC_Sound position to match placeable transform, when it has changed.
+    void PlaceableUpdated(IAttribute* attribute);
 
+    /// Constantly update the sound channel position if the placeable is parented
+    void ConstantPositionUpdate();
+    
 private:
-    explicit EC_Sound(IModule *module);
     ComponentPtr FindPlaceable() const;
     SoundChannelPtr soundChannel;
 };
 
-#endif

@@ -3,15 +3,13 @@
  *
  *  @file   EC_SoundListener.h
  *  @brief  Entity-component which provides sound listener position for in-world 3D audio.
- *          Updates parent entity's placeable component's position to the sound service each frame.
+ *          Updates parent entity's placeable component's position to the sound system each frame.
  *  @note   Only one entity can have active sound listener at a time.
  */
 
-#ifndef incl_EC_SoundListener_EC_SoundListener_h
-#define incl_EC_SoundListener_EC_SoundListener_h
+#pragma once
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 
 class EC_Placeable;
 
@@ -22,7 +20,7 @@ class EC_Placeable;
 <td>
 <h2>SoundListener</h2>
 Entity-component which provides sound listener position for in-world 3D audio.
-Updates parent entity's placeable component's position to the sound service each frame.
+Updates parent entity's placeable component's position to the sound system each frame.
 @note   Only one entity can have active sound listener at a time.
 @todo   EC_SoundListener is currently only working with avatar and freecamera. In future, there
         should be an option to apply a sound listener component to any entity that owns a
@@ -53,33 +51,31 @@ Does not emit any actions.
 */
 class EC_SoundListener : public IComponent
 {
-    DECLARE_EC(EC_SoundListener);
     Q_OBJECT
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_SoundListener(Scene* scene);
+
     /// Destructor. Detaches placeable component from this entity.
     ~EC_SoundListener();
 
     Q_PROPERTY(bool active READ getactive WRITE setactive);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, active);
 
-private slots:
-    /// Retrieves placeable component when parent entity is set.
-    void RetrievePlaceable();
-
-    /// Updates listeners position for sound service, is this listener is active. Called each frame.
-    void Update();
+    COMPONENT_NAME("EC_SoundListener", 7)
 
 private:
-    /// Constructor.
-    /** @param module Declaring module.
-    */
-    explicit EC_SoundListener(IModule *module);
-
     /// Parent entity's placeable component.
     boost::weak_ptr<EC_Placeable> placeable_;
 
 private slots:
+    /// Retrieves placeable component when parent entity is set.
+    void RetrievePlaceable();
+
+    /// Updates listeners position for sound system, is this listener is active. Called each frame.
+    void Update();
+
     /// Called when component changes.
     /** If this listener component is set active it iterates the scene and
         disables all the other sound listeners.
@@ -90,4 +86,3 @@ private slots:
     void RegisterActions();
 };
 
-#endif
