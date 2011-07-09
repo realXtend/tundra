@@ -16,7 +16,7 @@ Getting Started
 ---------------
 Tundra uses a traditional server-client architecture for networking. After installing, you can find two executables, server.exe and viewer.exe in the Tundra start menu.
 
-The Tundra Server is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the --headless command line option. See http://www.realxtend.org/doxygen/runningnaali.html for details.
+The Tundra Server is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the --headless command line option. See http://www.realxtend.org/doxygen/runningtundra.html for details.
 
 The Tundra Viewer is the client software that is used to connect to a server.        
 
