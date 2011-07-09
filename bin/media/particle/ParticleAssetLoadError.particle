@@ -1,0 +1,31 @@
+particle_system ParticleAssetLoadError
+{
+	quota	10
+	material AssetLoadError
+	particle_width	0.5
+	particle_height	0.5
+	cull_each	true
+	renderer	billboard
+	billboard_type	point
+
+	emitter Point
+	{
+		angle	90
+		direction	0 1 0
+		emission_rate	10
+		position	0 0 0
+		velocity	2
+		velocity_min  2
+		velocity_max	3
+		time_to_live	0.5
+		duration 1
+		repeat_delay 0.01
+	}
+
+  affector LinearForce
+  {
+    force_vector      0 -9.81 0
+    force_application add
+  }
+}
+
