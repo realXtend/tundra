@@ -1,16 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_InputContext_h
-#define incl_Input_InputContext_h
+#pragma once
 
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 #include "GestureEvent.h"
 #include "KeyEventSignal.h"
+#include "InputFwd.h"
 
 #include <map>
 #include <set>
 #include <boost/enable_shared_from_this.hpp>
+#include <QCursor>
 
 struct KeyPressInformation
 {
@@ -28,40 +29,44 @@ struct KeyPressInformation
 };
 typedef std::map<Qt::Key, KeyPressInformation> HeldKeysMap;
 
+/// Provides clients with input events in a priority order.
 class InputContext : public QObject, public boost::enable_shared_from_this<InputContext>
 {
     Q_OBJECT
 
 public:
-    InputContext(const char *name, int priority);
+    InputContext(InputAPI *owner, const char *name, int priority);
 
     ~InputContext();
 
-    /// Updates the buffered key presses. Called by the input service to
-    /// proceed on to the next input frame.
+    /// Updates the buffered key presses. Called by the input API to proceed on to the next input frame.
     void UpdateFrame();
 
 signals:
-    ///\todo remove On and make KeyEventReceived
     /// Emitted for each key code, for each event type.
-    void OnKeyEvent(KeyEvent *key);
-    ///\todo remove On and make MouseEventReceived
+    void KeyEventReceived(KeyEvent *key);
+
     /// Emitted for each mouse event (move, scroll, button press/release).
-    void OnMouseEvent(MouseEvent *mouse);
+    void MouseEventReceived(MouseEvent *mouse);
+
     /// Emitted for every gesture event (started, updated, finished and canceled)
     void GestureEventReceived(GestureEvent *gesture);
 
     /// This signal is emitted when any key is pressed in this context.
     void KeyPressed(KeyEvent *key);
+
     /// This signal is emitted for each application frame when this key is pressed down in this context.
     void KeyDown(KeyEvent *key);
+
     /// This signal is emitted when any key is released in this context.
     void KeyReleased(KeyEvent *key);
 
     /// Emitted when the mouse cursor is moved, independent of whether any buttons are down.
     void MouseMove(MouseEvent *mouse);
+
     /// Mouse wheel was scrolled.
     void MouseScroll(MouseEvent *mouse);
+
     /// Mouse double click
     void MouseDoubleClicked(MouseEvent *mouse);
 
@@ -76,10 +81,13 @@ signals:
     void MouseMiddleReleased(MouseEvent *mouse);
     void MouseRightReleased(MouseEvent *mouse);
 
-    /// Gesture events. Note that you need to accept a the started in order to receive updates.
-    /// Call gesture->Accept() to get updates and a finished signal for it.
+    /// @note You need to accept the started event using Accept() in order to receive update and finished events.
     void GestureStarted(GestureEvent *gesture);
+
+    /// @note You need to accept the started event in order to receive update events.
     void GestureUpdated(GestureEvent *gesture);
+
+    /// @note You need to accept the started event in order to receive update events.
     void GestureFinished(GestureEvent *gesture);
 
 public slots:
@@ -94,7 +102,7 @@ public slots:
     /// This is optional. KeyEventSignals are freed properly when the context is destroyed.
     void UnregisterKeyEvent(QKeySequence keySequence);
 
-    /// This function is called by the QtInputService whenever there is a new
+    /// This function is called by the InpuAPI whenever there is a new
     /// key event for this context to handle. The event is emitted through
     /// all relevant signals. You may call this function yourself to inject 
     /// keyboard events to this context manually.
@@ -158,7 +166,7 @@ public slots:
     /// Returnts the priority value this context has with respect to the other input contexts. 
     /// Higher = more urgent. Used to determine the order in which input is received by the input contexts.
     /// The priority is assigned when the context is created and may not be changed afterwards.
-    /// \note A lower priority context may still receive an event "over" a higher priority context,
+    /// @note A lower priority context may still receive an event "over" a higher priority context,
     /// if that event is going to go to Qt and the higher priority context does not
     /// capture mouse/key events over Qt, but the lover priority context does.
     int Priority() const { return priority; }
@@ -166,6 +174,15 @@ public slots:
     /// Convenience function to allow for simple
     /// disconnecting of all signals from Python
     void disconnectAll() { this->disconnect(); }
+
+    /// Specifies the mouse cursor to use in with this input context.
+    void SetMouseCursorOverride(QCursor cursor);
+
+    /// Returns the override cursor this context has, or 0 if this context doesn't specify one.
+    QCursor *MouseCursorOverride() const;
+
+    /// Removes mouse cursor from being set in this input context.
+    void ClearMouseCursorOverride();
 
 private:
     typedef std::map<QKeySequence, KeyEventSignal*> KeyEventSignalMap;
@@ -202,9 +219,12 @@ private:
     /// to determine the order in which input is received by the input contexts.
     int priority;
 
+    boost::shared_ptr<QCursor> mouseCursorOverride;
+   
+    InputAPI *inputApi;
+
     // InputContexts are noncopyable.
     InputContext(const InputContext &);
     void operator=(const InputContext &);
 };
 
-#endif

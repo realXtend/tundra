@@ -3,16 +3,13 @@
 #include "DebugOperatorNew.h"
 #include "InputAPI.h"
 
-#include "ServiceManager.h"
 #include "Framework.h"
-//#include "EventManager.h"
-#include "RenderServiceInterface.h"
 #include "UiAPI.h"
-#include "NaaliGraphicsView.h"
+#include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
-
+#include "CoreDefines.h"
 #include "ConfigAPI.h"
-
+#include "Profiler.h"
 #include <boost/thread.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/algorithm/string.hpp>
@@ -29,7 +26,7 @@
 
 #include "MemoryLeakCheck.h"
 
-InputAPI::InputAPI(Foundation::Framework *framework_)
+InputAPI::InputAPI(Framework *framework_)
 :lastMouseX(0),
 lastMouseY(0),
 mouseCursorVisible(true),
@@ -37,8 +34,7 @@ gesturesEnabled(false),
 //sceneMouseCapture(NoMouseCapture),
 mouseFPSModeEnterX(0),
 mouseFPSModeEnterY(0),
-topLevelInputContext("TopLevel", 100000), // The priority value for the top level context does not really matter, just put an arbitrary big value for display.
-inputCategory(0),
+topLevelInputContext(this, "TopLevel", 100000), // The priority value for the top level context does not really matter, just put an arbitrary big value for display.
 heldMouseButtons(0),
 pressedMouseButtons(0),
 releasedMouseButtons(0),
@@ -50,31 +46,8 @@ mainWindow(0),
 framework(framework_)
 {
     assert(framework_);
-//    eventManager = framework_->GetEventManager();
-//    assert(eventManager);
 
-    // We still need to register this for legacy reasons, but shouldn't have to.
-    // The 'Input' category should be removed and replaced with 'RexInput' or something
-    // similar that is world logic -centric.
-//    inputCategory = eventManager->RegisterEventCategory("Input");
-
-//    inputCategory = eventManager->RegisterEventCategory("SceneInput");
-/*
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::KeyPressed, "KeyPressed");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::KeyReleased, "KeyReleased");
-
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::MousePressed, "MousePressed");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseReleased, "MouseReleased");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseClicked, "MouseClicked");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseDoubleClicked, "MouseDoubleClicked");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseMove, "MouseMove");
-
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureStarted, "GestureStarted");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureUpdated, "GestureUpdated");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureFinished, "GestureFinished");
-    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureCanceled, "GestureCanceled");
-*/
-    // Next, set up the global widget event filters that we will use to read our scene input from.
+    // Set up the global widget event filters that we will use to read our scene input from.
     // Note: Since we set up this object as an event filter to multiple widgets, we will receive
     //       the same events several times, so care has to be taken to ignore those duplicate events.
     // Qt oddities: 
@@ -116,9 +89,6 @@ framework(framework_)
 
     LoadKeyBindingsFromFile();
 
-    lastMouseButtonReleaseTime = QTime::currentTime();
-    doubleClickDetected = false;
-
     // Accept gestures
     QList<Qt::GestureType> gestures;
     gestures << Qt::PanGesture << Qt::PinchGesture << Qt::TapAndHoldGesture;
@@ -128,7 +98,14 @@ framework(framework_)
 
 InputAPI::~InputAPI()
 {
-    SaveKeyBindingsToFile();
+    Reset();
+}
+
+void InputAPI::Reset()
+{
+    untrackedInputContexts.clear();
+    registeredInputContexts.clear();
+    keyboardMappings.clear();
 }
 
 void InputAPI::SetMouseCursorVisible(bool visible)
@@ -146,6 +123,8 @@ void InputAPI::SetMouseCursorVisible(bool visible)
         // was when mouse was hidden.
         QApplication::restoreOverrideCursor();
         QCursor::setPos(mouseFPSModeEnterX, mouseFPSModeEnterY);
+
+        ApplyMouseCursorOverride();
     }
     else
     {
@@ -202,6 +181,11 @@ QPoint InputAPI::MousePressedPos(int mouseButton) const
     return mousePressPositions.Pos(mouseButton);
 }
 
+QPoint InputAPI::MousePos() const
+{
+    return QPoint(lastMouseX, lastMouseY);
+}
+
 void InputAPI::DumpInputContexts()
 {
     int idx = 0;
@@ -223,9 +207,28 @@ void InputAPI::DumpInputContexts()
     }
 }
 
+InputContext *InputAPI::RegisterInputContextRaw(const QString &name, int priority)
+{
+    InputContextPtr context = RegisterInputContext(name, priority);
+    untrackedInputContexts.push_back(context);
+    return context.get();
+}
+
+void InputAPI::UnRegisterInputContextRaw(const QString &name)
+{
+    for(std::list<InputContextPtr>::iterator iter = untrackedInputContexts.begin();
+        iter != untrackedInputContexts.end(); ++iter)
+        if ((*iter)->Name() == name)
+        {
+            untrackedInputContexts.erase(iter);
+            return;
+        }
+    LogError("Warning: Failed to delete non-refcounted Input Context \"" + name + "\": an Input Context with that name doesn't exist!");
+}
+
 InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
 {
-    boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(name.toStdString().c_str(), priority);
+    boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(this, name.toStdString().c_str(), priority);
 
     // Do a sorted insert: Iterate and skip through all the input contexts that have a higher
     // priority than the desired new priority.
@@ -244,6 +247,38 @@ InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority
     registeredInputContexts.insert(iter, boost::weak_ptr<InputContext>(newInputContext));
 
     return newInputContext;
+}
+
+void InputAPI::ApplyMouseCursorOverride()
+{    
+    if (!IsMouseCursorVisible())
+        return;
+
+    UiGraphicsView *gv = framework->Ui()->GraphicsView();
+    if (!gv) // If the tundra is running in headless, mode no graphics view is created.
+        return;
+
+    bool is2DUiUnderMouse = gv->GetVisibleItemAtCoords(lastMouseX, lastMouseY) != 0;
+
+    for(InputContextList::iterator iter = registeredInputContexts.begin(); 
+        iter != registeredInputContexts.end(); ++iter)
+    {
+        InputContext *context = (*iter).lock().get();
+        if (context && context->MouseCursorOverride() && (!is2DUiUnderMouse || context->TakesMouseEventsOverQt()))
+        {
+            if (QApplication::overrideCursor() == 0)
+                QApplication::setOverrideCursor(*context->MouseCursorOverride());
+            else
+                QApplication::changeOverrideCursor(*context->MouseCursorOverride());
+            return;
+        }
+    }
+
+    // No context currently has anything to change on the mouse cursor, so restore the original Qt cursor.
+
+    // Note: This logic assumes exclusive control of the QApplication singleton override cursor behavior.
+    while(QApplication::overrideCursor() != 0)
+        QApplication::restoreOverrideCursor();
 }
 
 void InputAPI::SceneReleaseAllKeys()
@@ -275,8 +310,6 @@ void InputAPI::SceneReleaseMouseButtons()
             mouseEvent.globalY = 0;
 
             mouseEvent.otherButtons = 0;
-
-//            eventManager->SendEvent(inputCategory, QtInputEvents::MouseReleased, &mouseEvent);
         }
 }
 
@@ -329,8 +362,6 @@ void InputAPI::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt:
         KeyEvent keyEvent;
         keyEvent.keyCode = keyCode;
         keyEvent.eventType = KeyEvent::KeyReleased;
-
-//        eventManager->SendEvent(inputCategory, QtInputEvents::KeyReleased, &keyEvent);
     }
 }
 
@@ -347,11 +378,14 @@ void InputAPI::TriggerKeyEvent(KeyEvent &key)
     // If a widget in the QGraphicsScene has keyboard focus, don't send the keyboard message to the inworld scene (the lower contexts).
     const bool qtWidgetHasKeyboardFocus = (mainView->scene()->focusItem() && key.eventType == KeyEvent::KeyPressed);
 
+    // If the mouse cursor is hidden, we treat each InputContext as if it had TakesKeyboardEventsOverQt true.
+    // This is because when the mouse cursor is hidden, no key input should go to the main 2D UI window.
+
     // Pass the event to all input contexts in the priority order.
     for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
     {
         boost::shared_ptr<InputContext> context = iter->lock();
-        if (context.get() && (!qtWidgetHasKeyboardFocus || context->TakesKeyboardEventsOverQt()))
+        if (context.get() && (!qtWidgetHasKeyboardFocus || context->TakesKeyboardEventsOverQt() || !IsMouseCursorVisible()))
             context->TriggerKeyEvent(key);
         if (key.handled)
             key.eventType = KeyEvent::KeyReleased;
@@ -359,24 +393,10 @@ void InputAPI::TriggerKeyEvent(KeyEvent &key)
 
     if (qtWidgetHasKeyboardFocus)
         return;
-/*
-    // Finally, pass the key event to the system event tree.
-    ///\todo Track which presses and releases have been passed to the event tree, and filter redundant releases.
-    switch(key.eventType)
-    {
-    case KeyEvent::KeyPressed: 
-        eventManager->SendEvent(inputCategory, QtInputEvents::KeyPressed, &key); 
-        break;
-    case KeyEvent::KeyReleased: 
-        eventManager->SendEvent(inputCategory, QtInputEvents::KeyReleased, &key); 
-        break;
-// KeyDown events are not sent through the event tree. You should favor an input context for this.
-//        case KeyEvent::KeyDown: eventManager->SendEvent(inputCategory, QtInputEvents::KeyDown, &keyEvent); break;
-    default:
-        assert(false);
-        break;
-    }
-*/
+
+    // If the mouse cursor is hidden, all key events should go to the 'scene' - In that case, suppress all key events from going to the main 2D Qt window.
+    if (!IsMouseCursorVisible())
+        key.Suppress();
 }
 
 void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
@@ -396,42 +416,22 @@ void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
     if (mouse.handled)
         return;
 
+    // If the mouse cursor is hidden, we treat each InputContext as if it had TakesMouseEventsOverQt true.
+    // This is because when the mouse cursor is hidden, no mouse input should go to the main 2D UI window.
+
     // Pass the event to all input contexts in the priority order.
     for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
     {
         if (mouse.handled)
             break;
         boost::shared_ptr<InputContext> context = iter->lock();
-        if (context.get() && (!mouse.itemUnderMouse || context->TakesMouseEventsOverQt()))
+        if (context.get() && (!mouse.itemUnderMouse || context->TakesMouseEventsOverQt() || !IsMouseCursorVisible()))
             context->TriggerMouseEvent(mouse);
     }
-/*
-    if (!mouse.handled)
-    {
-        switch(mouse.eventType)
-        {
-        case MouseEvent::MousePressed:
-            eventManager->SendEvent(inputCategory, QtInputEvents::MousePressed, &mouse);
-            break;
-        case MouseEvent::MouseReleased:
-            eventManager->SendEvent(inputCategory, QtInputEvents::MouseReleased, &mouse);
-            break;
-        case MouseEvent::MouseMove:
-            eventManager->SendEvent(inputCategory, QtInputEvents::MouseMove, &mouse);
-            break;
-        case MouseEvent::MouseScroll:
-            eventManager->SendEvent(inputCategory, QtInputEvents::MouseScroll, &mouse);
-            break;
-        case MouseEvent::MouseDoubleClicked:
-            eventManager->SendEvent(inputCategory, QtInputEvents::MouseDoubleClicked, &mouse);
-            doubleClickDetected = false;
-            break;
-        default:
-            assert(false);
-            break;
-        }
-    }
-*/
+
+    // If the mouse cursor is hidden, all mouse events should go to the 'scene' - In that case, suppress all mouse events from going to the main 2D Qt window.
+    if (!IsMouseCursorVisible())
+        mouse.Suppress();
 }
 
 void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
@@ -452,28 +452,6 @@ void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
         if (context.get())
             context->TriggerGestureEvent(gesture);
     }
-/*
-    if (!gesture.handled)
-    {
-        switch(gesture.eventType)
-        {
-        case GestureEvent::GestureStarted:
-            eventManager->SendEvent(inputCategory, QtInputEvents::GestureStarted, &gesture);
-            break;
-        case GestureEvent::GestureUpdated:
-            eventManager->SendEvent(inputCategory, QtInputEvents::GestureUpdated, &gesture);
-            break;
-        case GestureEvent::GestureFinished:
-            eventManager->SendEvent(inputCategory, QtInputEvents::GestureFinished, &gesture);
-            break;
-        case GestureEvent::GestureCanceled:
-            eventManager->SendEvent(inputCategory, QtInputEvents::GestureCanceled, &gesture);
-            break;
-        default:
-            break;
-        }
-    }
-*/
 }
 
 /// Associates the given custom action with the given key.
@@ -569,6 +547,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         KeyEvent keyEvent;
         keyEvent.keyCode = StripModifiersFromKey(e->key());
+        keyEvent.sequence = QKeySequence(e->key() | e->modifiers());
         keyEvent.keyPressCount = 1;
         keyEvent.modifiers = e->modifiers();
         keyEvent.text = e->text();
@@ -655,6 +634,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick:
     {
         // We only take mouse button press and release events from the main QGraphicsView viewport.
 #ifndef Q_WS_MAC
@@ -673,20 +653,15 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 */
         // We always update the global polled input states, independent of whether any the mouse cursor is
         // on top of any Qt widget.
-        if (event->type() == QEvent::MouseButtonPress)
+        if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
         {
             heldMouseButtons |= (MouseEvent::MouseButton)e->button();
             newMouseButtonsPressedQueue |= (MouseEvent::MouseButton)e->button();
         }
         else
         {
-            if (lastMouseButtonReleaseTime.msecsTo(QTime::currentTime()) < 300)
-            {
-                doubleClickDetected = true;
-            }
             heldMouseButtons &= ~(MouseEvent::MouseButton)e->button();
             newMouseButtonsReleasedQueue |= (MouseEvent::MouseButton)e->button();
-            lastMouseButtonReleaseTime = QTime::currentTime();
         }
 
         // The mouse coordinates we receive can come from different widgets, and we are interested only in the coordinates
@@ -694,15 +669,15 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         QPoint mousePos = MapPointToMainGraphicsView(obj, e->pos());
 
         MouseEvent mouseEvent;
-        mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = GetItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
-        if (!doubleClickDetected)
+        switch(event->type())
         {
-            mouseEvent.eventType = (event->type() == QEvent::MouseButtonPress) ? MouseEvent::MousePressed : MouseEvent::MouseReleased;
-        } else 
-        {
-            mouseEvent.eventType = MouseEvent::MouseDoubleClicked;
+            case QEvent::MouseButtonPress: mouseEvent.eventType = MouseEvent::MousePressed; break;
+            case QEvent::MouseButtonDblClick: mouseEvent.eventType = MouseEvent::MouseDoubleClicked; break;
+            case QEvent::MouseButtonRelease: mouseEvent.eventType = MouseEvent::MouseReleased; break;
         }
+
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
         mouseEvent.x = mousePos.x();
         mouseEvent.y = mousePos.y();
@@ -723,7 +698,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.handled = false;
 
         // If the mouse press is going to the inworld scene, clear keyboard focus from the QGraphicsScene widget (if any had it) so key events also go to inworld scene.
-        if (event->type() == QEvent::MouseButtonPress && !mouseEvent.itemUnderMouse && mouseCursorVisible)
+        if ((event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) && !mouseEvent.itemUnderMouse && mouseCursorVisible)
             mainView->scene()->clearFocus();
 
         TriggerMouseEvent(mouseEvent);
@@ -749,7 +724,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         MouseEvent mouseEvent;
         mouseEvent.eventType = MouseEvent::MouseMove;
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
-        mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = GetItemAtCoords(e->x(), e->y());
         ///\todo Set whether the previous press originated over a Qt widget or scene.
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
 
@@ -812,7 +787,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         QWheelEvent *e = static_cast<QWheelEvent *>(event);
 #ifdef Q_WS_MAC
-        QGraphicsItem *itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
+        QGraphicsItem *itemUnderMouse = GetItemAtCoords(e->x(), e->y())
         if (itemUnderMouse)
         {
             mainView->removeEventFilter(this);
@@ -827,7 +802,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         MouseEvent mouseEvent;
         mouseEvent.eventType = MouseEvent::MouseScroll;
-        mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = GetItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         mouseEvent.button = MouseEvent::NoButton;
         mouseEvent.otherButtons = e->buttons();
@@ -877,8 +852,19 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
+QGraphicsItem* InputAPI::GetItemAtCoords(int x, int y) const
+{
+    // If the mouse cursor is hidden, act as if there was no item
+    if (IsMouseCursorVisible())
+        return framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(x, y);
+    else
+        return 0;
+}
+
 void InputAPI::Update(float frametime)
 {
+    PROFILE(InputAPI_Update);
+
     // If at any time we don't have main application window focus, release all input
     // so that keys don't get stuck when the window is reactivated. (The key release might be passed
     // to another window instead and our app keeps thinking that the key is being held down.)
@@ -911,4 +897,7 @@ void InputAPI::Update(float frametime)
         if (inputContext)
             inputContext->UpdateFrame();
     }
+
+    // Guarantee that we are showing the desired mouse cursor.
+    ApplyMouseCursorOverride();
 }

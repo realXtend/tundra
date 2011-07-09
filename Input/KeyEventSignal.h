@@ -1,13 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_KeyEventSignal_h
-#define incl_Input_KeyEventSignal_h
+#pragma once
 
 #include <QObject>
 
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 
+/// A signal object for input events to a specific key on the keyboard.
 class KeyEventSignal : public QObject
 {
     Q_OBJECT
@@ -36,5 +36,4 @@ private:
     void operator=(const KeyEventSignal &);
 };
 
-#endif
 

@@ -1,9 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_Input_h
-#define incl_Core_Input_h
+#pragma once
 
-#include "ForwardDefines.h"
 #include "InputFwd.h"
 #include "KeyEvent.h"
 #include "MouseEvent.h"
@@ -19,21 +17,22 @@
 class QGraphicsItem;
 class QGraphicsView;
 
+class Framework;
 
-/// The Input API provides other modules with different methods of acquiring keyboard and mouse input.
-/** The input service works with the notion of 'input contexts', which are objects that modules acquire
+/// Provides keyboard and mouse input events.
+/** The Input API works with the notion of 'input contexts', which are objects that modules acquire
     to receive input events. The contexts have a priority that determine the order in which the input 
     events are posted.
 
     Input events are processed in the following order:
         1) Very first, when a new input event is received, it is posted to the top level input context.
-           See QtInputService::TopLevelInputContext(). This is already before any Qt widgets get the
+           See TopLevelInputContext(). This is already before any Qt widgets get the
            chance to process the event.
         2) If the event is a mouse event that occurs on top of a Qt widget, or the event is a key event
            and a Qt widget has keyboard focus, the event is passed to Qt, and suppressed from going
            further.
         3) The event is posted to all the registered input contexts in their order of priority. See 
-           QtInputService::RegisterInputContext().
+           RegisterInputContext().
         4) The event is posted to the system-wide event tree. See the QtInputEvents namespace.
 
     At any level, the handler may set the handled member of a KeyEvent or MouseEvent to true to suppress
@@ -44,18 +43,20 @@ class QGraphicsView;
     IsKeyReleased, IsMouseButtonDown, IsMouseButtonPressed and IsMouseButtonReleased.
 
     The InputContext -based API utilizes Qt signals. The polling API can be used by any object that
-    has access to QtInputService, and the event tree -based API can be used by all modules.
+    has access to InpuAPI, and the event tree -based API can be used by all modules.
 */
 class InputAPI : public QObject
 {
     Q_OBJECT
 
 public:
-    /// Initializes the service and hooks it into the main application window.
-    explicit InputAPI(Foundation::Framework *owner);
+    /// Initializes the API and hooks it into the main application window.
+    explicit InputAPI(Framework *owner);
 
     /// The dtor saves the settings to QSettings.
     ~InputAPI();
+
+    void Reset();
 
     /// Proceeds the input system one application frame forward (Ages all double-buffered input data).
     /// Called internally by the Framework to update the polling Input API. Not for client use.
@@ -72,6 +73,10 @@ public slots:
     /// Remember to hold on to a shared_ptr of the input context as long as you are using the context.
     InputContextPtr RegisterInputContext(const QString &name, int priority);
 
+    InputContext *RegisterInputContextRaw(const QString &name, int priority);
+
+    void UnRegisterInputContextRaw(const QString &name);
+
     /// Sets the mouse cursor in absolute (the usual default) or relative movement (FPS-like) mode.
     /// @param visible If true, shows mouse cursor and allows free movement. If false, hides the mouse cursor 
     ///                and switches into relative mouse movement input mode.
@@ -80,14 +85,14 @@ public slots:
     /// @return True if we are in absolute movement mode, and false if we are in relative mouse movement mode.
     bool IsMouseCursorVisible() const;
 
-    /// Returns true if the given key is physically held down (to the best knowledge of the input service, which may
+    /// Returns true if the given key is physically held down (to the best knowledge of the input API, which may
     /// be wrong depending on whether Qt has managed to successfully deliver the information). This ignores all
     /// the grabs and contexts, e.g. you will get true even if a text edit has focus in a Qt widget.
     /// @param keyCode The Qt::Key to test, http://doc.trolltech.com/4.6/qt.html#Key-enum
     bool IsKeyDown(Qt::Key keyCode) const;
 
     /// Returns true if the given key was pressed down during this frame. A frame in this context means a period
-    /// between two subsequent calls to QtInputService::Update. During a single frame, calling this function
+    /// between two subsequent calls to Update. During a single frame, calling this function
     /// several times will always return true if the key was pressed down this frame, i.e. the pressed-bit is not
     /// cleared after the first query.
     /// Key repeats will not be reported through this function.
@@ -127,15 +132,18 @@ public slots:
     /// down. Note that this does not tell whether the mouse button is currently held down or not.
     QPoint MousePressedPos(int mouseButton) const;
 
-    /// Called by QtInputService internally for each generate KeyEvent. This function passes the event forward to all registered
-    /// input contexts. You may generate KeyEvent objects yourself and call this function directly to inject a custom KeyEvent
-    /// to the system.
+    /// Returns the current mouse position in the main window coordinate space.
+    QPoint MousePos() const;
+
+    /// Called internally for each generated KeyEvent.
+    /** This function passes the event forward to all registered input contexts. You may generate KeyEvent objects
+        yourself and call this function directly to inject a custom KeyEvent to the system. */
     void TriggerKeyEvent(KeyEvent &key);
 
-    /// This is the same as OnKeyEvent, but for mouse events.
+    /// This is the same as TriggerKeyEvent, but for mouse events.
     void TriggerMouseEvent(MouseEvent &mouse);
 
-    /// This emits gesture events to the input contexes
+    /// This emits gesture events to the input contexts
     void TriggerGestureEvent(GestureEvent &gesture);
 
     /// Returns the highest-priority input context that gets all events first to handle (even before going to Qt widgets).
@@ -156,6 +164,9 @@ public slots:
     /// but in this form, if the action does not exist, the default key sequence is registered for it and returned.
     QKeySequence KeyBinding(const QString &actionName, QKeySequence defaultKey);
 
+    /// Finds the InputContext that has the highest mouse priority, and applies the mouse cursor in it as the currently shown mouse cursor.
+    void ApplyMouseCursorOverride();
+
     void LoadKeyBindingsFromFile();
 
     void SaveKeyBindingsToFile();
@@ -164,11 +175,16 @@ public slots:
 
     void SetKeyBindings(const KeyActionsMap &actionMap) { keyboardMappings = actionMap; }
 
+    /// Return the item at coordinates. If the mouse cursor is hidden, always returns null
+    QGraphicsItem* GetItemAtCoords(int x, int y) const;
+    
 private:
     Q_DISABLE_COPY(InputAPI)
 
-    bool eventFilter(QObject *obj, QEvent *event);
+    /// Stores all InputContexts that have been registered from a script and can't hold strong refs on their own.
+    std::list<InputContextPtr> untrackedInputContexts;
 
+    bool eventFilter(QObject *obj, QEvent *event);
     /// Sends key release messages for each currently tracked pressed key and clears the record of all pressed keys.
     void SceneReleaseAllKeys();
     /// Sends mouse button release messages for each mouse button that was held down.
@@ -194,8 +210,6 @@ private:
     // but from the previous Qt mouse input event.
     int lastMouseX;
     int lastMouseY;
-    QTime lastMouseButtonReleaseTime;
-    bool doubleClickDetected;
 
     /// If true, the mouse cursor is visible and free to move around as usual.
     /// If false, we use mouse in relative movement mode, meaning we hide the cursor and force it to stay in the middle of the application screen.
@@ -221,10 +235,8 @@ private:
     int mouseFPSModeEnterX;
     int mouseFPSModeEnterY;
 
-    event_category_id_t inputCategory;
-
     /// Stores all the currently registered input contexts. The order these items are stored in the list corresponds to the
-    /// priority at which each context will get the events.
+    /// priority at which each context will get the events. Highest priority context is in front of the list, lowest priority is at the back.
     InputContextList registeredInputContexts;
 
     /// This input context is processed immediately as the first thing in the system. I.e. before even checking whether the
@@ -268,10 +280,8 @@ private:
     unsigned long newMouseButtonsPressedQueue;
     unsigned long newMouseButtonsReleasedQueue;
 
-    EventManagerPtr eventManager;
     QGraphicsView *mainView;
     QWidget *mainWindow;
-    Foundation::Framework *framework;
+    Framework *framework;
 };
 
-#endif

@@ -1,10 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_MouseEvent_h
-#define incl_Input_MouseEvent_h
+#pragma once
 
 #include "CoreTypes.h"
-#include "IEventData.h"
 
 #include <qnamespace.h>
 #include <QPoint>
@@ -13,24 +11,13 @@
 
 class QGraphicsItem;
 
-namespace QtInputEvents
-{
-    // These are the mouse-related input events provided by the Input API.
-    // For input events on keyboard, see \see KeyEvent.h.
-    static const event_id_t MousePressed = 3;
-    static const event_id_t MouseReleased = 4;
-    static const event_id_t MouseClicked = 5;
-    static const event_id_t MouseDoubleClicked = 6;
-    static const event_id_t MouseMove = 7;
-    static const event_id_t MouseScroll = 8;
-}
-
-/// MouseEvent is the event data structure passed as the parameter in all Naali mouse-related events.
-class MouseEvent : public QObject, public IEventData
+/// This data structure is passed as a parameter in all mouse-related input events.
+class MouseEvent : public QObject
 {
     Q_OBJECT
     Q_ENUMS(MouseButton)
     Q_ENUMS(EventType)
+    Q_ENUMS(PressOrigin)
     // Meta-information wrappers for dynamic languages.
     Q_PROPERTY(int x READ X)
     Q_PROPERTY(int y READ Y)
@@ -41,7 +28,7 @@ class MouseEvent : public QObject, public IEventData
     Q_PROPERTY(int globalX READ GlobalX)
     Q_PROPERTY(int globalY READ GlobalY)
     Q_PROPERTY(unsigned long otherButtons READ OtherButtons)
-
+    
 public:
     MouseEvent()
     :eventType(MouseEventInvalid),
@@ -72,7 +59,7 @@ public:
 
     enum EventType
     {
-        MouseEventInvalid, ///< An invalid event. Used to check for improperly filled structure.
+        MouseEventInvalid = 0, ///< An invalid event. Used to check for improperly filled structure.
         MouseMove, ///< The mouse cursor moved. This event is passed independent of which buttons were down.
         MouseScroll, ///< The mouse wheel position moved.
         MousePressed, ///< A mouse button was pressed down.
@@ -85,7 +72,7 @@ public:
     /// PressOrigin tells whether a mouse press originated on top of a Qt widget or on top of the 3D scene area.
     enum PressOrigin
     {
-        PressOriginNone, ///< No press of the given type has been registered.
+        PressOriginNone = 0, ///< No press of the given type has been registered.
         PressOriginScene,
         PressOriginQtWidget
     };
@@ -174,8 +161,12 @@ public:
     unsigned long OtherButtons() const { return otherButtons; }
 
     QGraphicsItem *ItemUnderMouse() const { return itemUnderMouse; }
-
+    
 public slots:
+    EventType GetEventType() const { return eventType; }
+    MouseButton GetMouseButton() const { return button; }
+    PressOrigin GetPressOrigin() const { return origin; }
+    
     /// Marks this event as having been handled already, which will suppress this event from
     /// going on to lower input context levels.
     void Suppress() { handled = true; }
@@ -206,4 +197,3 @@ public slots:
     bool IsItemUnderMouse() const { if (itemUnderMouse) return true; else return false; }
 };
 
-#endif

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Input_KeyBindingsConfigWindow_h
-#define incl_Input_KeyBindingsConfigWindow_h
+#pragma once
 
 #include <QWidget>
 #include <QKeySequence>
@@ -11,25 +10,15 @@
 class QTreeWidget;
 class QTreeWidgetItem;
 
-namespace Foundation { class Framework; }
+class Framework;
 
 class KeyBindingsConfigWindow : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit KeyBindingsConfigWindow(Foundation::Framework *framework_)
-    :framework(framework_),
-    configList(0)
-    {
-        ShowWindow();
-    }
-
-    // Creates and shows the configuration window.
-    void ShowWindow();
-
-    // Closes and deletes the configuration window.
-    void CloseWindow();
+    explicit KeyBindingsConfigWindow(Framework *fw);
+    ~KeyBindingsConfigWindow();
 
 public slots:
     void ApplyKeyConfig();
@@ -38,16 +27,17 @@ public slots:
     void ConfigListAdjustEditable(QTreeWidgetItem *item, int column);
 
 private:
+    void Clear();
     void PopulateBindingsList();
     void ExtractBindingsList();
 
     bool SpecialKeyPressChecker(int pressed_key);
 
-    Foundation::Framework *framework;
+    Framework *framework;
 
     QTreeWidget *configList;
 
-    /// In the UI, the user edits values in this structure. When apply or OK is pressed, we update the real values to the input service.
+    /// In the UI, the user edits values in this structure. When apply or OK is pressed, we update the real values to the input API.
     /// Edits are done here to allow Cancel to return without modifications having been done.
     std::map<std::string, QKeySequence> editedActions;
 
@@ -55,4 +45,3 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 };
 
-#endif

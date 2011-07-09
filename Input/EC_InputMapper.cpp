@@ -2,20 +2,21 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   InputMapper.h
- *  @brief  Registers an InputContext from the Naali Input subsystem and uses it to translate
+ *  @brief  Registers an InputContext from the Input API and uses it to translate
  *          given set of keys to Entity Actions on the entity the component is part of.
  */
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "EC_InputMapper.h"
+#include "Framework.h"
 
 #include "IAttribute.h"
+#include "AttributeMetadata.h"
 #include "InputAPI.h"
 #include "Entity.h"
 
 #include "LoggingFunctions.h"
+#include "MemoryLeakCheck.h"
 
 EC_InputMapper::~EC_InputMapper()
 {
@@ -58,8 +59,8 @@ void EC_InputMapper::RemoveMapping(const QString &keySeq, int eventType)
         mappings_.erase(it);
 }
 
-EC_InputMapper::EC_InputMapper(IModule *module):
-    IComponent(module->GetFramework()),
+EC_InputMapper::EC_InputMapper(Scene* scene):
+    IComponent(scene),
     contextName(this, "Input context name", "EC_InputMapper"),
     contextPriority(this, "Input context priority", 90),
     takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", false),
@@ -91,8 +92,8 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
     input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
     input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
-    connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-    connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+    connect(input_.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 }
 
 void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
@@ -101,8 +102,8 @@ void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChan
     {
         input_.reset();
         input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
-        connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-        connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+        connect(input_.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+        connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
     }
     else if(attribute == &takeKeyboardEventsOverQt)
     {
@@ -141,7 +142,7 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
     if (it == mappings_.end())
         return;
 
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
     if (!entity)
     {
         LogWarning("Parent entity not set. Cannot execute action.");
@@ -164,27 +165,27 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         parsedAction.remove('(');
         parsedAction.remove(')');
         QStringList parameters = parsedAction.split(',');
-        entity->Exec((EntityAction::ExecutionType)execType, act, parameters);
+        entity->Exec((EntityAction::ExecType)execType, act, parameters);
     }
     else
-        entity->Exec((EntityAction::ExecutionType)execType, action);
+        entity->Exec((EntityAction::ExecType)execType, action);
 }
 
 void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
 {
     if (!enabled.Get())
         return;
-    if (!GetParentEntity())
+    if (!ParentEntity())
         return;
     
     /// \todo this hard coding of look button logic is not nice!
-    if (e->IsButtonDown(MouseEvent::RightButton))
+    if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->Input()->IsMouseCursorVisible()))
     {
         if (e->relativeX != 0)
-            GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
+            ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
         if (e->relativeY != 0)
-            GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
+            ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
     }
     if (e->relativeZ != 0 && e->relativeZ != -1) // For some reason this is -1 without scroll
-        GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
+        ParentEntity()->Exec((EntityAction::ExecType)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
 }
