@@ -11,8 +11,7 @@
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
-#ifndef incl_EC_Highlight_EC_Touchable_h
-#define incl_EC_Highlight_EC_Touchable_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -94,9 +93,6 @@ public:
     /// Destructor.
     ~EC_Touchable();
 
-    /// IComponent override.
-    bool IsSerializable() const { return true; }
-
     /// Name of the material used for this EC.
 	Q_PROPERTY(QString materialName READ getmaterialName WRITE setmaterialName);
 	DEFINE_QPROPERTY_ATTRIBUTE(QString, materialName);
@@ -170,4 +166,3 @@ private slots:
     void RegisterActions();
 };
 
-#endif

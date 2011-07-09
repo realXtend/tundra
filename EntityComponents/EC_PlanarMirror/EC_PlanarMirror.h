@@ -6,16 +6,15 @@
  *  @note   The entity should have EC_Placeable available in advance.
  */
 
-#ifndef incl_EC_PlanarMirror_EC_PlanarMirror_h
-#define incl_EC_PlanarMirror_EC_PlanarMirror_h
+#pragma once
 
-#include "StableHeaders.h"
 #include "IComponent.h"
 #include "Declare_EC.h"
 #include "OgreModuleFwd.h"
 
 #include <QVector3D>
 #include <QQuaternion>
+#include <OgreTexture.h>
 
 /// EntityComponent that will create a planar mirror texture (and optionally a plane showing it).
 /**
@@ -24,7 +23,7 @@
 <td>
 <h2>PlanarMirror</h2>
 EntityComponent that will create a planar mirror texture (and optionally a plane showing it).
-NOTE: Assumes the the entity already has: EC_Placeable, EC_RttTarget and EC_OgreCamera. Otherwise EC_PlanarMirror cannot function.
+NOTE: Assumes the the entity already has: EC_Placeable, EC_RttTarget and EC_Camera. Otherwise EC_PlanarMirror cannot function.
 <b>Attributes</b>:
 <ul>
 <li>bool reflectionPlaneVisible
@@ -45,7 +44,7 @@ NOTE: Assumes the the entity already has: EC_Placeable, EC_RttTarget and EC_Ogre
 
 Does not emit any actions.
 
-<b>Depends on EC_OgreCamera, EC_Placeable and EC_RttTarget.</b>
+<b>Depends on EC_Camera, EC_Placeable and EC_RttTarget.</b>
 </table>
 */
 class EC_PlanarMirror : public IComponent
@@ -83,4 +82,3 @@ private:
     Ogre::MovablePlane* mirror_plane_;
 };
 
-#endif

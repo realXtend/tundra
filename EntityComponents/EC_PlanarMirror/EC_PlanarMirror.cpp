@@ -6,7 +6,6 @@
  *  @note   The entity should have EC_Placeable available in advance.
  */
 
-#include "StableHeaders.h"
 #include "EC_PlanarMirror.h"
 
 #include "Renderer.h"
@@ -14,10 +13,10 @@
 #include "EC_Placeable.h"
 #include "LoggingFunctions.h"
 #include "FrameAPI.h"
-#include "EC_OgreCamera.h"
+#include "EC_Camera.h"
 #include "EC_RttTarget.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 int EC_PlanarMirror::mirror_cam_num_ = 0;
 
@@ -85,11 +84,11 @@ void EC_PlanarMirror::Initialize()
     if (!entity)
         return;
 
-    EC_OgreCamera *cam = entity->GetComponent<EC_OgreCamera>().get();
+    EC_Camera *cam = entity->GetComponent<EC_Camera>().get();
     assert(cam);
     if (!cam)
     {
-        LogError("No EC_OgreCamera on this entity. EC_PlanarMirror can't function.");
+        LogError("No EC_Camera on this entity. EC_PlanarMirror can't function.");
         return;
     }
     EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();

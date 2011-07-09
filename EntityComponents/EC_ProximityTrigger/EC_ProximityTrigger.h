@@ -5,10 +5,8 @@
  *  @brief  EC_ProximityTrigger reports distance, each frame, of other entities that also have EC_ProximityTrigger component
  */
 
-#ifndef incl_EC_ProximityTrigger_EC_ProximityTrigger_h
-#define incl_EC_ProximityTrigger_EC_ProximityTrigger_h
+#pragma once
 
-#include "StableHeaders.h"
 #include "IComponent.h"
 #include "Declare_EC.h"
 
@@ -30,8 +28,8 @@ also need to have EC_Placeable component so that distance can be calculated.
 <div>If true (default), sends trigger signals with distance of other entities with EC_ProximityTrigger. The other entities' proximity triggers do not need to have 'active' set.</div>
 <li>float: thresholdDistance
 <div>If greater than 0, entities beyond the threshold distance do not trigger the signal. Default is 0. The other entities' threshold values do not matter.</div>
-<li>float: period
-<div>Period of trigger signals in seconds. If 0, the signal is sent every frame. Default is 0.</div>
+<li>float: interval
+<div>Interval of trigger signals in seconds. If 0, the signal is sent every frame. Default is 0.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -59,25 +57,23 @@ class EC_ProximityTrigger : public IComponent
 public:
     ~EC_ProximityTrigger();
 
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-
     /// Active flag. Trigger signals are only generated when this is true. Is true by default
     Q_PROPERTY(bool active READ getactive WRITE setactive);
 
     /// Threshold distance. If greater than 0, entities beyond the threshold distance do not trigger the signal. Default is 0, which means distance does not matter.
     Q_PROPERTY(float thresholdDistance READ getthresholdDistance WRITE setthresholdDistance);
     
-    /// Period between signals in seconds. If 0, the signal is sent every frame. Default is 0
-    Q_PROPERTY(float period READ getperiod WRITE setperiod)
+    /// Interval between signals in seconds. If 0, the signal is sent every frame. Default is 0
+    Q_PROPERTY(float interval READ getinterval WRITE setinterval)
 
     DEFINE_QPROPERTY_ATTRIBUTE(bool, active);
     DEFINE_QPROPERTY_ATTRIBUTE(float, thresholdDistance);
-    DEFINE_QPROPERTY_ATTRIBUTE(float, period);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, interval);
     
 signals:
     /// Trigger signal. When active flag is on, is sent each frame for every other entity that also has an EC_ProximityTrigger and is close enough.
-    void Triggered(Scene::Entity* otherEntity, float distance);
+    /// Note: needs to be lowercase for QML to accept connections to it
+    void triggered(Scene::Entity* otherEntity, float distance);
 
 public slots:
     /// Attribute has been updated
@@ -95,4 +91,3 @@ private:
     EC_ProximityTrigger(IModule *module);
 };
 
-#endif

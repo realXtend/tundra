@@ -1,6 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_ParticleSystem.h"
 #include "IModule.h"
@@ -9,31 +8,41 @@
 #include "EC_Placeable.h"
 #include "OgreParticleAsset.h"
 #include "OgreConversionUtils.h"
-#include "SceneManager.h"
+#include "OgreRenderingModule.h"
+#include "OgreWorld.h"
+#include "Scene.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "LoggingFunctions.h"
+#include "AttributeMetadata.h"
+#include "Framework.h"
 
 #include <Ogre.h>
 #include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 
-EC_ParticleSystem::EC_ParticleSystem(IModule *module):
-    IComponent(module->GetFramework()),
+EC_ParticleSystem::EC_ParticleSystem(Scene* scene):
+    IComponent(scene),
     particleRef(this, "Particle ref" ),
     castShadows(this, "Cast shadows", false),
     renderingDistance(this, "Rendering distance", 0.0f)
 {
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
+    
     static AttributeMetadata particleRefMetadata;
     AttributeMetadata::ButtonInfoList particleRefButtons;
-    particleRefButtons.push_back(AttributeMetadata::ButtonInfo(particleRef.GetName(), "V", "View"));
+    particleRefButtons.push_back(AttributeMetadata::ButtonInfo(particleRef.Name(), "V", "View"));
     particleRefMetadata.buttons = particleRefButtons;
     particleRef.SetMetadata(&particleRefMetadata);
 
-    renderer_ = GetFramework()->GetServiceManager()->GetService<Renderer>();
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(OnAttributeUpdated(IAttribute*)));
+    
+    particleAsset_ = AssetRefListenerPtr(new AssetRefListener());
+    connect(particleAsset_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnParticleAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+    connect(particleAsset_.get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnParticleAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
 }
 
 EC_ParticleSystem::~EC_ParticleSystem()
@@ -50,9 +59,9 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
 {
     if (!ViewEnabled())
         return;
-    if (renderer_.expired())
+    OgreWorldPtr world = world_.lock();
+    if (!world)
         return;
-    RendererPtr renderer = renderer_.lock();
 
     try
     {
@@ -63,8 +72,8 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
             return;
         }
 
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        Ogre::ParticleSystem* system = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName("EC_Particlesystem"), SanitateAssetIdForOgre(systemName.toStdString()));
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        Ogre::ParticleSystem* system = sceneMgr->createParticleSystem(world->GetUniqueObjectName("EC_Particlesystem"), SanitateAssetIdForOgre(systemName.toStdString()));
         if (system)
         {
             placeable->GetSceneNode()->attachObject(system);
@@ -84,12 +93,16 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
 
 void EC_ParticleSystem::DeleteParticleSystems()
 {
-    if (renderer_.expired())
+    OgreWorldPtr world = world_.lock();
+    if (!world)
+    {
+        if (particleSystems_.size())
+            LogError("EC_ParticleSystem: World has expired, skipping uninitialization!");
         return;
-    RendererPtr renderer = renderer_.lock();
-
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    if (!scene_mgr)
+    }
+    
+    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+    if (!sceneMgr)
         return;
 
     try
@@ -104,7 +117,7 @@ void EC_ParticleSystem::DeleteParticleSystems()
                 node->detachObject(particleSystems_[i]);
         }
         for(unsigned i = 0; i < particleSystems_.size(); ++i)
-            scene_mgr->destroyParticleSystem(particleSystems_[i]);
+            sceneMgr->destroyParticleSystem(particleSystems_[i]);
     }
     catch(Ogre::Exception& /*e*/)
     {
@@ -133,52 +146,47 @@ void EC_ParticleSystem::OnAttributeUpdated(IAttribute *attribute)
         if (!ViewEnabled())
             return;
 
-        // Request the new particle system resource. Once it has loaded, ParticleSystemAssetLoaded() will be called.
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(particleRef.Get());
-        if (transfer.get() != 0)
-        {
-            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
-        }
-        else
-        {
-            DeleteParticleSystems();
-        }
+        particleAsset_->HandleAssetRefChange(&particleRef);
     }
 }
 
 ComponentPtr EC_ParticleSystem::FindPlaceable() const
 {
-    if (GetParentEntity())
-        return GetParentEntity()->GetComponent<EC_Placeable>();
+    if (ParentEntity())
+        return ParentEntity()->GetComponent<EC_Placeable>();
     else
         return ComponentPtr();
 }
 
-void EC_ParticleSystem::ParticleSystemAssetLoaded()
+void EC_ParticleSystem::OnParticleAssetLoaded(AssetPtr asset)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    OgreParticleAsset *asset = dynamic_cast<OgreParticleAsset*>(transfer->asset.get());
+    assert(asset);
     if (!asset)
+        return;
+
+    OgreParticleAsset *particleAsset = dynamic_cast<OgreParticleAsset*>(asset.get());
+    if (!particleAsset)
     {
-        LogWarning("EC_ParticleSystem::ParticleSystemAssetLoaded: Asset transfer finished, but asset pointer was null!");
+        LogError("OnMaterialAssetLoaded: Material asset load finished for asset \"" +
+            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreParticleAsset!");
         return;
     }
 
-    if (asset->GetNumTemplates() > 0)
-    {
-        DeleteParticleSystems();
-        for(int i = 0 ; i< asset->GetNumTemplates(); ++i)
-            CreateParticleSystem(asset->GetTemplateName(i));
-    }
+    DeleteParticleSystems();
+    
+    for(int i = 0 ; i < particleAsset->GetNumTemplates(); ++i)
+        CreateParticleSystem(particleAsset->GetTemplateName(i));
+}
+
+void EC_ParticleSystem::OnParticleAssetFailed(IAssetTransfer* asset, QString reason)
+{
+    DeleteParticleSystems();
+    CreateParticleSystem("ParticleAssetLoadError");
 }
 
 void EC_ParticleSystem::EntitySet()
 {
-    Scene::Entity *entity = this->GetParentEntity();
+    Entity *entity = this->ParentEntity();
     if (!entity)
     {
         LogError("Failed to connect entity signals, component's parent entity is null");
