@@ -21,7 +21,7 @@
 #include <QVector>
 #include <QTextStream>
 
-//OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset)
+//OgreMaterialProperties::OgreMaterialProperties(const QString &name, AssetInterfacePtr asset)
 OgreMaterialProperties::OgreMaterialProperties(const QString &name, void *asset)
     ///\todo Regression. Reimplement using the new Asset API. -jj.
 //:material_(0)
@@ -29,7 +29,7 @@ OgreMaterialProperties::OgreMaterialProperties(const QString &name, void *asset)
     ///\todo Regression. Reimplement using the new Asset API. -jj.
     /*
     // Hack: tell the materialresource that shadows are medium quality, so that it won't create extra shadow texture units
-    material_ = new OgreRenderer::OgreMaterialResource(asset->GetId(), OgreRenderer::Shadows_Low, asset);
+    material_ = new OgreRenderer::OgreMaterialResource(asset->Id(), OgreRenderer::Shadows_Low, asset);
     if (material_)
         if (material_->IsValid())
             CreateProperties();
@@ -490,7 +490,7 @@ QString OgreMaterialProperties::ToString()
 QString OgreMaterialProperties::GpuConstantTypeToString(const Ogre::GpuConstantType &type)
 {
     using namespace Ogre;
-    ///\note We use GCT_UNKNOWN for texture units' texture names.
+    ///@note We use GCT_UNKNOWN for texture units' texture names.
 
     QString str("");
     switch(type)

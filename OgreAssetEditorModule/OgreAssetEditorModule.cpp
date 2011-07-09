@@ -16,13 +16,11 @@
 #include "AudioPreviewEditor.h"
 #include "MeshPreviewEditor.h"
 #include "MaterialWizard.h"
-
+#include "LoggingFunctions.h"
 #include "Framework.h"
-#include "ModuleManager.h"
-#include "NetworkEvents.h"
-#include "Inventory/InventoryEvents.h"
+
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #include "UiProxyWidget.h"
 #include "IAsset.h"
 #include "OgreConversionUtils.h"
@@ -38,9 +36,6 @@ std::string OgreAssetEditorModule::typeNameStatic = "OgreAssetEditor";
 
 OgreAssetEditorModule::OgreAssetEditorModule() :
     IModule(typeNameStatic),
-    frameworkEventCategory(0),
-    inventoryEventCategory(0),
-    networkStateEventCategory(0),
     materialWizard(0),
     editorManager(0)
 {
@@ -56,21 +51,22 @@ void OgreAssetEditorModule::Initialize()
 
 void OgreAssetEditorModule::PostInitialize()
 {
+/*
     materialWizard = new MaterialWizard;
     connect(materialWizard, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
 
-/*
-    uiService_ = framework_->GetServiceManager()->GetService<UiServiceInterface>(Service::ST_Gui);
+    uiService_ = framework_->Get Service Manager()->Ge  tS ervice<UiServiceInterface>(Service::ST_Gui);
     if (!uiService_.expired())
     {
         UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_);
         uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material Wizard"), tr("World Tools"),
-            "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
+            Application::InstallationDirectory + "data/ui/images/menus/edbutton_MATWIZ_normal.png");
         connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
     }
-*/
+
     editorManager = new EditorManager;
+*/
 
     connect(framework_->Ui(), SIGNAL(ContextMenuAboutToOpen(QMenu *, QList<QObject *>)), SLOT(OnContextMenuAboutToOpen(QMenu *, QList<QObject *>)));
 }
@@ -78,17 +74,11 @@ void OgreAssetEditorModule::PostInitialize()
 void OgreAssetEditorModule::Uninitialize()
 {
     SAFE_DELETE(materialWizard);
-    SAFE_DELETE(editorManager);
+//    SAFE_DELETE(editorManager);
 }
 
 void OgreAssetEditorModule::Update(f64 frametime)
 {
-    RESETPROFILER;
-}
-
-bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-{
-    return false;
 }
 
 bool OgreAssetEditorModule::IsSupportedAssetTypes(const QString &type) const
@@ -101,7 +91,6 @@ bool OgreAssetEditorModule::IsSupportedAssetTypes(const QString &type) const
 
 void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
 {
-    std::cout << targets.size()  << std::endl;
     if (targets.size())
     {
         foreach(QObject *target, targets)
@@ -113,6 +102,7 @@ void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject 
         {
             menu->addSeparator();
             EditorAction *openAction = new EditorAction(asset, tr("Open"), menu);
+            openAction->setObjectName("Edit");
             connect(openAction, SIGNAL(triggered()), SLOT(OpenAssetInEditor()));
             menu->addAction(openAction);
         }
@@ -129,22 +119,34 @@ void OgreAssetEditorModule::OpenAssetInEditor()
 
     AssetPtr asset = action->asset.lock();
     QWidget *editor = 0;
+    QString assetName = OgreRenderer::SanitateAssetIdForOgre(asset->Name()).c_str();
+
     if (asset->Type() == "OgreMesh")
     {
-        //MeshPreviewEditor *editor = new MeshPreviewEditor(framework_);
+        MeshPreviewEditor *meshEditor = new MeshPreviewEditor(framework_);
+        meshEditor->Open(assetName);
+        editor = meshEditor;
     }
-    else if (asset->Type() == "OgreMaterial" || asset->Type() == "OgreParticle")
+    else if (asset->Type() == "OgreMaterial")
     {
-        //OgreScriptEditor *editor = new OgreScriptEditor(id, at, name);
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(asset, framework_->Asset());
+        scriptEditor->Open();
+        editor = scriptEditor;
     }
-    else if (asset->Type() == "Audio")
+    else if (asset->Type() == "OgreParticle")
+    {
+        OgreScriptEditor *scriptEditor = new OgreScriptEditor(asset, framework_->Asset());
+        scriptEditor->Open();
+        editor = scriptEditor;
+    }
+    /*else if (asset->Type() == "Audio")
     {
         //AudioPreviewEditor *editor = new AudioPreviewEditor(framework_, id, at, name);
-    }
+    }*/
     else if (asset->Type() == "Texture")
     {
         TexturePreviewEditor *texEditor = new TexturePreviewEditor(0);
-        texEditor->OpenOgreTexture(QString(OgreRenderer::SanitateAssetIdForOgre(asset->Name().toStdString()).c_str()));
+        texEditor->OpenOgreTexture(assetName);
         editor = texEditor;
     }
 
@@ -156,17 +158,11 @@ void OgreAssetEditorModule::OpenAssetInEditor()
     }
 }
 
-
-void SetProfiler(Foundation::Profiler *profiler)
-{
-    Foundation::ProfilerSection::SetProfiler(profiler);
-}
-
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+DLLEXPORT void TundraPluginMain(Framework *fw)
 {
     IModule *module = new OgreAssetEditorModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
+    fw->RegisterModule(module);
 }
 }

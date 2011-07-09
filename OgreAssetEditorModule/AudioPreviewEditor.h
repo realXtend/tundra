@@ -1,43 +1,31 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   AudioPreviewEditor.h
- *  @brief  Preview window for uploaded audio clips.
- *          Window is used to play audio assets and display the infomation about that file, including the visual presentation of audio signal.
+ *  @brief  Preview window for audio assets.
  */
 
-#ifndef incl_OgreAssetEditorModule_AudioPreviewEditor_h
-#define incl_OgreAssetEditorModule_AudioPreviewEditor_h
+#pragma once
 
-#ifdef ENABLE_TAIGA_SUPPORT
-#include <RexTypes.h>
-#endif
 #include <QWidget>
 
 #include "AssetFwd.h"
 
 #include <boost/shared_ptr.hpp>
 
-QT_BEGIN_NAMESPACE
 class QPushButton;
 class QTimer;
-QT_END_NAMESPACE
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
-/// AudioPreviewEditor is used to play different audioclips from the inventory and display a audio info diagram.
+/// Preview window for audio assets.
+/** Window is used to play audio assets and display the infomation about that file, including the visual presentation of audio signal. */
 class AudioPreviewEditor: public QWidget
 {
     Q_OBJECT
+
 public:
-    AudioPreviewEditor(Foundation::Framework *framework,
-                       const QString &inventory_id,
-                       const asset_type_t &asset_type,
-                       const QString &name,
-                       QWidget *parent = 0);
+    AudioPreviewEditor(Framework *framework, const QString &name, QWidget *parent = 0);
     virtual ~AudioPreviewEditor();
 
 public slots:
@@ -50,7 +38,7 @@ public slots:
 
 signals:
     /// This signal is emitted when the editor is closed.
-    void Closed(const QString &inventory_id, asset_type_t asset_type);
+    void Closed(const QString &inventory_id);
 
     /// Signal for widget resize.
     void WidgetResized(QSize size);
@@ -59,17 +47,10 @@ protected:
     virtual void resizeEvent(QResizeEvent *ev);
 
 private:
-    void InitializeEditorWidget();
-
-    Foundation::Framework *framework_;
-    asset_type_t assetType_;
-    QString inventoryId_;
+    Framework *framework_;
     QString assetId_;
-
-    QWidget     *mainWidget_;
+    QWidget *mainWidget_;
     QPushButton *okButton_;
     QPushButton *playButton_;
-    QTimer      *playTimer_;
+    QTimer *playTimer_;
 };
-
-#endif

@@ -5,8 +5,7 @@
  *  @brief  Dynamically created QProperties for OGRE material scripts.
  */
 
-#ifndef incl_OgreAssetEditorModule_OgreMaterialProperties_h
-#define incl_OgreAssetEditorModule_OgreMaterialProperties_h
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 
@@ -19,10 +18,7 @@
 
 #include "AssetFwd.h"
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 typedef QMap<QString, QVariant> PropertyMap;
 typedef QMap<QString, QVariant> TypeValuePair;
@@ -36,7 +32,7 @@ public:
     /// Constructor.
     /// @param asset Asset pointer to the material binary data.
     explicit OgreMaterialProperties(const QString &name, void *asset); ///\todo Regression. Reimplement using the new Asset API. -jj.
-//    explicit OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset);
+//    explicit OgreMaterialProperties(const QString &name, AssetInterfacePtr asset);
 
     /// Destructor.
     ~OgreMaterialProperties();
@@ -75,4 +71,3 @@ private:
 //    OgreRenderer::OgreMaterialResource *material_;
 };
 
-#endif

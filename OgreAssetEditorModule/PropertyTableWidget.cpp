@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   PropertyTableWidget.cpp
  *  @brief  PropertyTableWidget inherits QTableWidget and add some custom drop-functionality.
  */
@@ -9,8 +9,6 @@
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 #include "PropertyTableWidget.h"
-
-#include <RexUUID.h>
 
 #include <QHeaderView>
 #include <QMimeData>
@@ -58,6 +56,8 @@ QStringList PropertyTableWidget::mimeTypes() const
 
 bool PropertyTableWidget::dropMimeData(int row, int column, const QMimeData *data, Qt::DropAction action)
 {
+    ///\todo Regression. Reimplement.
+/*
     if (action == Qt::IgnoreAction)
         return true;
 
@@ -100,6 +100,8 @@ bool PropertyTableWidget::dropMimeData(int row, int column, const QMimeData *dat
         return false;
 
     return true;
+*/
+    return false;
 }
 
 Qt::DropActions PropertyTableWidget::supportedDropActions() const

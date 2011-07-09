@@ -5,12 +5,11 @@
  *  @brief  Preview window for textures.
  */
 
-#ifndef incl_OgreAssetEditorModule_TexturePreviewEditor_h
-#define incl_OgreAssetEditorModule_TexturePreviewEditor_h
+#pragma once
 
+#include "CoreTypes.h"
 #include "OgreAssetEditorModuleApi.h"
 #include "AssetFwd.h"
-#include "RexTypes.h"
 
 #include <QWidget>
 #include <QLabel>
@@ -50,11 +49,9 @@ public:
     const static int cWindowMinimumWidth = 256;
     const static int cWindowMinimumHeight = 323;
 
-    TexturePreviewEditor(const QString &inventory_id, const asset_type_t &asset_type, const QString &name,
-        const QString &asset_id,QWidget *parent = 0);
-    virtual ~TexturePreviewEditor();
-
     explicit TexturePreviewEditor(QWidget* parent = 0);
+
+    virtual ~TexturePreviewEditor();
 
     /// Open Ogre texture
     void OpenOgreTexture(const QString& name);
@@ -64,7 +61,7 @@ public:
         @param texture texture name to open
         @param parent parent widget
     */
-    static void OpenPreviewEditor(const QString &texture, QWidget* parent = 0);
+    static TexturePreviewEditor *OpenPreviewEditor(const QString &texture, QWidget* parent = 0);
 
 public slots:
     /// Close the window.
@@ -110,7 +107,7 @@ private:
         @param channels tell how many image channels is in use.
         @return QImage and if fail return empty image.
     */
-    QImage ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels = 3);
+    QImage ConvertToQImage(const u8 *raw_image_data, uint width, uint height, uint channels = 3);
 
     QWidget *mainWidget_;
     QScrollArea *scrollAreaWidget_;
@@ -121,10 +118,7 @@ private:
     TextureLabel *imageLabel_;
     QSize imageSize_;
 
-    QString inventoryId_;
     QString assetId_;
-    asset_type_t assetType_;
     bool useOriginalImageSize_;
 };
 
-#endif

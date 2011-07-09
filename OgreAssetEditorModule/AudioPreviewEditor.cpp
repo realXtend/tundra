@@ -1,13 +1,16 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
-#include "Framework.h"
 #include "DebugOperatorNew.h"
+
 #include "AudioPreviewEditor.h"
 #include "AudioSignalLabel.h"
 #include "OgreAssetEditorModule.h"
 
-#include "UiServiceInterface.h"
+#include "Framework.h"
+#include "Application.h"
 #include "UiProxyWidget.h"
-#include "ModuleManager.h"
+
 #include "AudioAPI.h"
 
 #include <QUiLoader>
@@ -19,43 +22,73 @@
 
 #include "MemoryLeakCheck.h"
 
-AudioPreviewEditor::AudioPreviewEditor(Foundation::Framework *framework,
-                                       const QString &inventory_id,
-                                       const asset_type_t &asset_type,
-                                       const QString &name,
-                                       QWidget *parent):
+AudioPreviewEditor::AudioPreviewEditor(Framework *framework, const QString &name, QWidget *parent):
     QWidget(parent),
     framework_(framework),
-    assetType_(asset_type),
-    inventoryId_(inventory_id),
     okButton_(0),
     playButton_(0),
     playTimer_(0)
 {
     setObjectName(name);
-    InitializeEditorWidget();
+    // Get ui service and create canvas
+    ///\todo Use UiAPI
+/*
+    UiServiceInterface *ui= framework_->Get Service<UiServiceInterface>();
+    if (!ui)
+        return;
+
+    // Create widget from ui file
+    QUiLoader loader;
+    QFile file(Application::InstallationDirectory() + "data/ui/audio_preview.ui");
+    if (!file.exists())
+    {
+        LogError("Cannot find OGRE Script Editor .ui file.");
+        return;
+    }
+    mainWidget_ = loader.load(&file);
+    file.close();
+
+    resize(mainWidget_->size());
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    setLayout(layout);
+    layout->addWidget(mainWidget_);
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    okButton_ = mainWidget_->findChild<QPushButton *>("okButton");
+    QObject::connect(okButton_, SIGNAL(clicked()), this, SLOT(Closed()));
+
+    playButton_ = mainWidget_->findChild<QPushButton *>("playButton");
+    QObject::connect(playButton_, SIGNAL(clicked()), this, SLOT(PlaySound()));
+
+    // Add widget to UI via ui services module
+    setWindowTitle(tr("Audio: ") + objectName());
+    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
+    connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
+    proxy->show();
+    ui->BringWidgetToFront(proxy);
+*/
 }
 
 AudioPreviewEditor::~AudioPreviewEditor()
 {
-
 }
 
     ///\todo Regression. Reimplement using the new Asset API. -jj.
     /*
-void AudioPreviewEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
+void AudioPreviewEditor::HandleAssetReady(AssetInterfacePtr asset)
 {
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    Service ManagerPtr service_manager = framework_->Get ServiceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Sound))
         {
             boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
+                service_manager->G etS ervice<ISoundService>(Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 
-            request_tag_ = sound_service->RequestSoundResource(QString::fromStdString(asset->GetId()));
+            request_tag_ = sound_service->RequestSoundResource(QString::fromStdString(asset->Id()));
         }
     }
 }
@@ -103,7 +136,7 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
                 }
                 audioSignalLabel->SetAudioData(buffer.data_, buffer.frequency_, bits, buffer.stereo_);
             }
-            assetId_ = QString(sound->GetId().c_str());
+            assetId_ = QString(sound->Id().c_str());
         }
     }
 }
@@ -111,13 +144,7 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
 
 void AudioPreviewEditor::Closed()
 {
-    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
-
-    ui->RemoveWidgetFromScene(this);
-
-    emit Closed(inventoryId_, assetType_);
+//    emit Closed(inventoryId_, assetType_);
 }
 
 void AudioPreviewEditor::PlaySound()
@@ -126,13 +153,13 @@ void AudioPreviewEditor::PlaySound()
     if(assetId_.size() <= 0)
         return;
 
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    Service ManagerPtr service_manager = framework_->Get ServiceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Sound))
         {
             boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
+                service_manager->G et Service<ISoundService>(Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 
@@ -179,13 +206,13 @@ void AudioPreviewEditor::TimerTimeout()
     if(assetId_.size() <= 0 || soundId_ == 0)
         return;
 
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    Service ManagerPtr service_manager = framework_->Get ServiceManager();
     if(service_manager)
     {
         if(service_manager->IsRegistered(Service::ST_Sound))
         {
             boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
+                service_manager->G et Service<ISoundService>(Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 
@@ -202,43 +229,3 @@ void AudioPreviewEditor::resizeEvent(QResizeEvent *ev)
     QWidget::resizeEvent(ev);
     emit WidgetResized(ev->size());
 }
-
-void AudioPreviewEditor::InitializeEditorWidget()
-{
-    // Get ui service and create canvas
-    UiServiceInterface *ui= framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;
-
-    // Create widget from ui file
-    QUiLoader loader;
-    QFile file("./data/ui/audio_preview.ui");
-    if (!file.exists())
-    {
-        OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");
-        return;
-    }
-    mainWidget_ = loader.load(&file);
-    file.close();
-
-    resize(mainWidget_->size());
-
-    QVBoxLayout *layout = new QVBoxLayout;
-    setLayout(layout);
-    layout->addWidget(mainWidget_);
-    layout->setContentsMargins(0, 0, 0, 0);
-
-    okButton_ = mainWidget_->findChild<QPushButton *>("okButton");
-    QObject::connect(okButton_, SIGNAL(clicked()), this, SLOT(Closed()));
-
-    playButton_ = mainWidget_->findChild<QPushButton *>("playButton");
-    QObject::connect(playButton_, SIGNAL(clicked()), this, SLOT(PlaySound()));
-
-    // Add widget to UI via ui services module
-    setWindowTitle(tr("Audio: ") + objectName());
-    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
-    connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
-    proxy->show();
-    ui->BringWidgetToFront(proxy);
-}
-
