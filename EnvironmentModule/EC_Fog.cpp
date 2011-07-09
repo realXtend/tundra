@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "EC_Fog.h"
 
+#include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
 
 #include <QDebug>
@@ -13,11 +14,8 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace Environment
-{
-
-EC_Fog::EC_Fog(IModule* module) :
-    IComponent(module->GetFramework()),
+EC_Fog::EC_Fog(Scene* scene) :
+    IComponent(scene),
     startDistance(this, "Start distance", 100.f),
     endDistance(this, "End distance", 2000.f),
     color(this,"Color", Color(0.707792f,0.770537f,0.831373f,1.f)),
@@ -41,6 +39,4 @@ Ogre::ColourValue EC_Fog::GetColorAsOgreValue() const
 {
     Color col = color.Get();
     return Ogre::ColourValue(col.r, col.g, col.b, col.a);
-}
-
 }

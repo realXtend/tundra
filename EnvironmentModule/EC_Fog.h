@@ -1,10 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef EC_FOG_H_
-#define EC_FOG_H_
+#pragma once
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "Color.h"
 
 namespace Ogre
@@ -12,8 +10,6 @@ namespace Ogre
     class ColourValue;
 }
 
-namespace Environment
-{
 /// Environment fog.
 /**
 <table class="header">
@@ -21,13 +17,8 @@ namespace Environment
 <td>
 <h2>Environment fog</h2>
 
-Registered by Enviroment::EnvironmentModule. EC_Fog is a component which defines scene overall fog.
-Its values are used when camera is above of any water cube.
-
-If user wants to syncronize old world enviroment changes with other clients this component can be used.
-In those cases user needs to create to scene primitive which has EC_Name-component for that component
-attribute name must be se as "FogEnvironment" after that Naali's enviroment module will add EC_Fog for
-that primitive and it is then syncronizable with other clients. 
+Registered by Enviroment::EnvironmentModule. The EC_Fog component defines the overall fog settings for the
+whole scene. This component applies whenever the camera is outside of any water cube.
 
 <b>Attributes</b>:
 <ul>
@@ -49,12 +40,12 @@ that primitive and it is then syncronizable with other clients.
 class EC_Fog : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_Fog);
 
 public:
-    virtual ~EC_Fog() {}
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Fog(Scene* scene);
 
-    virtual bool IsSerializable() const { return true; }
+    virtual ~EC_Fog() {}
 
     /// Fog start distance 
     DEFINE_QPROPERTY_ATTRIBUTE(float, startDistance);
@@ -79,13 +70,5 @@ public:
     /// Returns fog color as Ogre colour value.
     Ogre::ColourValue GetColorAsOgreValue() const;
 
-private:
-    /// Constuctor.
-    /** @param module Module where component belongs.
-    **/
-    explicit EC_Fog(IModule *module);
+    COMPONENT_NAME("EC_Fog", 9)
 };
-
-}
-
-#endif // EC_FOG

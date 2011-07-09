@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EnvironmentModuleApi_h
-#define incl_EnvironmentModuleApi_h
+#pragma once
 
 #if defined (_WINDOWS)
 #if defined(ENVIRONMENT_MODULE_EXPORTS) 
@@ -13,4 +12,3 @@
 #define ENVIRONMENT_MODULE_API
 #endif
 
-#endif

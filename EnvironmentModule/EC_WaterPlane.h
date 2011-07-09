@@ -1,21 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EnvironmentModule_EC_WaterPlane_h
-#define incl_EnvironmentModule_EC_WaterPlane_h
+#pragma once
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "CoreTypes.h"
 #include "Color.h"
-#include "Quaternion.h"
+#include "Math/Quat.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
 
 #include <QString>
 #include <OgreColourValue.h>
-
-namespace Environment
-{
 
 /// Makes the entity a water plane.
 /**
@@ -27,13 +22,6 @@ namespace Environment
 Water plane component creates a cubic water plane. Inside the water cube scene fog is overridden by underwater fog properties.
 Despite the cubic nature, water plane is visible for the outside viewer only as a plane.
 
-<h3> Using component to synchronize ocean in Taiga </h3>
-
-Currently (not in Tundra) EC_WaterPlane component can be used to synchronize Ocean in Taiga worlds. This can be done
-so that user creates entity and sets entity EC_Name-component. If this component name is set as "WaterEnvironment" our current implementation
-will create automatically a EC_WaterPlane-component on it. This component is now usable for every users and all changes on it will be transfered 
-to all users. This synchronized water plane component can also edit through environment editor (in world tools).
-
 Registered by Enviroment::EnvironmentModule.
 
 <b>Attributes</b>:
@@ -44,7 +32,7 @@ Registered by Enviroment::EnvironmentModule.
 <div> Water plane size in y-axis. </div>
 <li> int : depth.
 <div> Depth value defines that how much below from surface water fog colour is used. Meaning this attribute defines how "deep" is our ocean/pond. </div>
-<li> Vector3df : position.
+<li> float3 : position.
 <div> Defines position of water plane in world coordinate system. </div>
 <li> Quaternion : rotation.
 <div> Defines rotation of water plane in world coordinate system. </div>
@@ -81,12 +69,13 @@ in the world space where this water plane is by default is placed at. Note compo
 class EC_WaterPlane : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_WaterPlane);
+    COMPONENT_NAME("EC_WaterPlane", 12)
 
 public:
-    virtual ~EC_WaterPlane();
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_WaterPlane(Scene* scene);
 
-    virtual bool IsSerializable() const { return true; }
+    virtual ~EC_WaterPlane();
 
     /// Water plane x-size
     DEFINE_QPROPERTY_ATTRIBUTE(int, xSize);
@@ -101,12 +90,12 @@ public:
     Q_PROPERTY(int depth READ getdepth WRITE setdepth);
 
     /// Water plane position (this is used if there is not EC_Placeable)
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, position);
-    Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, position);
+    Q_PROPERTY(float3 position READ getposition WRITE setposition);
 
     /// Water plane rotation
-    DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, rotation);
-    Q_PROPERTY(Quaternion rotation READ getrotation WRITE setrotation);
+    DEFINE_QPROPERTY_ATTRIBUTE(Quat, rotation);
+    Q_PROPERTY(Quat rotation READ getrotation WRITE setrotation);
 
     ///U Scale, factor which defines how many times the texture should be repeated in the u direction.
     DEFINE_QPROPERTY_ATTRIBUTE(float, scaleUfactor);
@@ -162,19 +151,19 @@ public slots:
 
     /// Returns true if point is inside of water cube.
     /// @param point in world coordinate system.
-    bool IsPointInsideWaterCube(const Vector3df& point) const;
+    bool IsPointInsideWaterCube(const float3& point) const;
 
     /// Returns the point on the water plane in world space that lies on top of the given world space coordinate.
     /// @param point The point in world space to get the corresponding map point (in world space) for.
-    Vector3df GetPointOnPlane(const Vector3df &point) const;
+    float3 GetPointOnPlane(const float3 &point) const;
 
     /// Returns distance from plane (note, here is assumption that point is top/or below plane), distance in here is distance from water plane surface.
     /// @param point is point in world coordinate system.
-    float GetDistanceToWaterPlane(const Vector3df& point) const;
+    float GetDistanceToWaterPlane(const float3& point) const;
 
     /// Returns true if given point is top or below water plane.
     /// @param point is in world coordinate system.
-    bool IsTopOrBelowWaterPlane(const Vector3df& point) const;
+    bool IsTopOrBelowWaterPlane(const float3& point) const;
 
     /// When called creates new water plane into world and tries to attach it.
     void CreateWaterPlane();
@@ -201,11 +190,6 @@ public slots:
     void ComponentAdded(IComponent* component, AttributeChange::Type type);
 
 private:
-    /// Constructor.
-    /** @param module Module where component belongs.
-    */
-    explicit EC_WaterPlane(IModule *module);
-
     /// Finds out that is EC_Placeable component connected to same entity where water plane component is placed. 
     /** @returns component pointer to EC_Placeable component.
     */
@@ -226,7 +210,7 @@ private:
     */
     void SetOrientation();
 
-    OgreRenderer::RendererWeakPtr renderer_;
+    OgreWorldWeakPtr world_;
     Ogre::Entity* entity_;
     Ogre::SceneNode* node_;
 
@@ -235,7 +219,3 @@ private:
     int lastXsize_;
     int lastYsize_;
 };
-
-}
-
-#endif

@@ -1,16 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
-#include "EC_Terrain.h"
 
+#define OGRE_INTEROP
+#include "DebugOperatorNew.h"
+
+#include "EC_Terrain.h"
+#include "CoreException.h"
 #include "BinaryAsset.h"
 #include "Renderer.h"
 #include "IModule.h"
-#include "ServiceManager.h"
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "AssetAPI.h"
@@ -20,23 +21,20 @@
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
 #include "TextureAsset.h"
-
+#include "AttributeMetadata.h"
+#include "Profiler.h"
+#include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 #include <Ogre.h>
 #include <utility>
+
+#include "MemoryLeakCheck.h"
 
 using namespace std;
 using namespace OgreRenderer;
 
-namespace OgreRenderer
-{
-typedef boost::shared_ptr<Renderer> RendererPtr;
-}
-
-namespace Environment
-{
-
-EC_Terrain::EC_Terrain(IModule* module) :
-    IComponent(module->GetFramework()),
+EC_Terrain::EC_Terrain(Scene* scene) :
+    IComponent(scene),
     nodeTransformation(this, "Transform"),
     xPatches(this, "Grid Width"),
     yPatches(this, "Grid Height"),
@@ -53,41 +51,44 @@ EC_Terrain::EC_Terrain(IModule* module) :
     patchHeight(1),
     rootNode(0)
 {
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
+    
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 
     static AttributeMetadata heightRefMetadata;
     AttributeMetadata::ButtonInfoList heightRefButtons;
-    heightRefButtons.push_back(AttributeMetadata::ButtonInfo(heightMap.GetName(), "V", "View"));
+    heightRefButtons.push_back(AttributeMetadata::ButtonInfo(heightMap.Name(), "V", "View"));
     heightRefMetadata.buttons = heightRefButtons;
     heightMap.SetMetadata(&heightRefMetadata);
 
     static AttributeMetadata texRefMetadata0;
     AttributeMetadata::ButtonInfoList texRefButtons;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture0.GetName(), "V", "View"));
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture0.Name(), "V", "View"));
     texRefMetadata0.buttons = texRefButtons;
     texture0.SetMetadata(&texRefMetadata0);
     texRefButtons.clear();
 
     static AttributeMetadata texRefMetadata1;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture1.GetName(), "V", "View"));
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture1.Name(), "V", "View"));
     texRefMetadata1.buttons = texRefButtons;
     texture1.SetMetadata(&texRefMetadata1);
     texRefButtons.clear();
 
     static AttributeMetadata texRefMetadata2;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture2.GetName(), "V", "View"));
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture2.Name(), "V", "View"));
     texRefMetadata2.buttons = texRefButtons;
     texture2.SetMetadata(&texRefMetadata2);
     texRefButtons.clear();
 
     static AttributeMetadata texRefMetadata3;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture3.GetName(), "V", "View"));
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture3.Name(), "V", "View"));
     texRefMetadata3.buttons = texRefButtons;
     texture3.SetMetadata(&texRefMetadata3);
     texRefButtons.clear();
 
     static AttributeMetadata texRefMetadata4;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture4.GetName(), "V", "View"));
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture4.Name(), "V", "View"));
     texRefMetadata4.buttons = texRefButtons;
     texture4.SetMetadata(&texRefMetadata4);
 
@@ -115,27 +116,27 @@ EC_Terrain::~EC_Terrain()
 
 void EC_Terrain::View(const QString &attributeName)
 {
-    if (texture0.GetName() == attributeName)
+    if (texture0.Name() == attributeName)
     {
         /// \todo add implementation
     }
-    else if(texture1.GetName() == attributeName)
+    else if(texture1.Name() == attributeName)
     {
         /// todo! add implementation.
     }
-    else if(texture2.GetName() == attributeName)
+    else if(texture2.Name() == attributeName)
     {
         /// todo! add implementation.
     }
-    else if(texture3.GetName() == attributeName)
+    else if(texture3.Name() == attributeName)
     {
         /// todo! add implementation.
     }
-    else if(texture4.GetName() == attributeName)
+    else if(texture4.Name() == attributeName)
     {
         /// todo! add implementation.
     }
-    else if(heightMap.GetName() == attributeName)
+    else if(heightMap.Name() == attributeName)
     {
         /// todo! add implementation.
     }
@@ -148,12 +149,12 @@ void EC_Terrain::UpdateSignals()
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         this, SLOT(OnAttributeUpdated(IAttribute*)), Qt::UniqueConnection);
 
-    Scene::Entity *parent = GetParentEntity();
+    Entity *parent = ParentEntity();
     CreateRootNode();
     if (parent)
     {    
         connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection);
-        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection);
+        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection); // The Attach function also handles detaches.
     }
 }
 
@@ -235,24 +236,22 @@ void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
 
 void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
 {
-    std::string changedAttribute = attribute->GetNameString();
-
-    if (changedAttribute == xPatches.GetNameString() || changedAttribute == yPatches.GetNameString())
+    if (attribute->Name() == xPatches.Name() || attribute->Name() == yPatches.Name())
     {
         ResizeTerrain(xPatches.Get(), yPatches.Get());
         // Re-do all the geometry on the GPU.
         RegenerateDirtyTerrainPatches();
     }
-    else if (changedAttribute == nodeTransformation.GetNameString())
+    else if (attribute->Name() == nodeTransformation.Name())
     {
         UpdateRootNodeTransform();
     }
-    else if (changedAttribute == material.GetNameString())
+    else if (attribute->Name() == material.Name())
     {
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(material.Get());
         if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
 /*
     else if (changedAttribute == texture0.GetNameString())
@@ -285,13 +284,13 @@ void EC_Terrain::OnAttributeUpdated(IAttribute *attribute)
         if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     } */
-    else if (changedAttribute == heightMap.GetNameString())
+    else if (attribute->Name() == heightMap.Name())
     {
         heightMapAsset->HandleAssetRefChange(attribute);
 //        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref/*, "Terrain"*/));
 //        connect(transfer, SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded()), Qt::UniqueConnection);
     }
-    else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
+    else if (attribute->Name() == uScale.Name() || attribute->Name() == vScale.Name())
     {
         // Re-do all the geometry on the GPU.
         DirtyAllTerrainPatches();
@@ -366,14 +365,10 @@ void EC_Terrain::DestroyPatch(int x, int y)
     if (!GetFramework())
         return;
 
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
-    if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
+    if (world_.expired()) // Oops! Already destroyed
         return;
-
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    if (!sceneMgr) // Oops! Same as above.
-        return;
-
+    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
+    
     EC_Terrain::Patch &patch = GetPatch(x, y);
 
     if (patch.node)
@@ -410,13 +405,9 @@ void EC_Terrain::Destroy()
     if (!GetFramework())
         return;
 
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
-    if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
+    if (world_.expired()) // Oops! Already destroyed
         return;
-
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    if (!sceneMgr) // Oops! Same as above.
-        return;
+    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
 
     if (rootNode)
     {
@@ -468,44 +459,46 @@ namespace
     }
 }
 
-Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const 
+float3 EC_Terrain::GetPointOnMap(const float3 &point) const 
 {
     if (!rootNode)
     {
         LogError("GetPointOnMap called before rootNode initialized, returning zeros");
-        return Vector3df(0, 0, 0);
+        return float3(0, 0, 0);
     }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
+    // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
     Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
-    local.z = GetInterpolatedHeightValue(local.x, local.y);
+    local.y = GetInterpolatedHeightValue(local.x, local.z);
     Ogre::Vector4 world = worldTM * local;
-    return Vector3df(world.x, world.y, world.z);
+    return float3(world.x, world.y, world.z);
 }
 
-Vector3df EC_Terrain::GetPointOnMapLocal(const Vector3df &point) const
+float3 EC_Terrain::GetPointOnMapLocal(const float3 &point) const
 {
     if (!rootNode)
     {
         LogError("GetPointOnMapLocal called before rootNode initialized, returning zeros");
-        return Vector3df(0, 0, 0);
+        return float3(0, 0, 0);
     }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
+    // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
     Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
-    local.z = GetInterpolatedHeightValue(local.x, local.y);
-    return Vector3df(local.x, local.y, local.z);
+    local.y = GetInterpolatedHeightValue(local.x, local.z);
+    return float3(local.x, local.y, local.z);
 }
 
-float EC_Terrain::GetDistanceToTerrain(const Vector3df &point) const
+float EC_Terrain::GetDistanceToTerrain(const float3 &point) const
 {
-    Vector3df pointOnMap = GetPointOnMap(point);
+    float3 pointOnMap = GetPointOnMap(point);
     return point.z - pointOnMap.z;
 }
 
-bool EC_Terrain::IsOnTopOfMap(const Vector3df &point) const
+bool EC_Terrain::IsOnTopOfMap(const float3 &point) const
 {
     return GetDistanceToTerrain(point) >= 0.f;
 }
@@ -544,29 +537,29 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
     return h1 * (1.f - u - v) + h2 * u + h3 * v;
 }
 
-Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const Vector3df& direction) const
+float3 EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const float3& direction) const
 {
+    ///\todo Delete this function and provide a proper replacement which returns local coordinate frames
+    /// at the given point.
+    ///\bug Whether this is actually working at all is a result of random tweaking.
+
     if (!rootNode)
     {
         LogError("GetTerrainRotationAngles called before rootNode initialized, returning zeros");
-        return Vector3df(0, 0, 0);
+        return float3(0, 0, 0);
     }
-    Vector3df worldPos(x,y,z);
-    Vector3df local = GetPointOnMapLocal(worldPos);
+    float3 worldPos(x,y,z);
+    float3 local = GetPointOnMapLocal(worldPos);
     // Get terrain normal.
-    Vector3df worldUp = GetInterpolatedNormal(local.x,local.y);
+    float3 worldUp = GetInterpolatedNormal(local.x,local.y).Normalized();
 
     // Get a vector which is perpendicular for direction and plane normal
-    Vector3df xVec = direction.crossProduct(worldUp);
-    Vector3df front = worldUp.crossProduct(xVec);
+    float3 xVec = direction.Cross(worldUp).Normalized();
+    float3 front = worldUp.Cross(xVec).Normalized();
     
-    xVec.normalize();  // X 
-    front.normalize(); // Y 
-    xVec = -xVec;
-    front = -front;
-    worldUp.normalize(); // Z 
-    
-  
+    xVec = -xVec;  // Why is this being done?
+    front = -front; // Why is this being done?
+      
     Ogre::Matrix3 m3x3;
 
     m3x3[0][0] = xVec.x;
@@ -580,17 +573,17 @@ Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const 
     m3x3[2][2] = worldUp.z; 
  
     Ogre::Quaternion q(m3x3);
-    Quaternion orientation(q.x, q.y,q.z, q.w);
+    Quat orientation(q.x, q.y,q.z, q.w);
     
-    Vector3df rotations;
-    orientation.toEuler(rotations);
+    float3 rotations = orientation.ToEulerZYX();
+    std::swap(rotations.x, rotations.z);
     
-    rotations*=RADTODEG;
+    rotations *= RADTODEG;
     return rotations;
 
 }
 
-void EC_Terrain::GetTriangleNormals(float x, float y, Vector3df &n1, Vector3df &n2, Vector3df &n3, float &u, float &v) const
+void EC_Terrain::GetTriangleNormals(float x, float y, float3 &n1, float3 &n2, float3 &n3, float &u, float &v) const
 {
     x = max(0.f, min((float)VerticesWidth()-1.f, x));
     y = max(0.f, min((float)VerticesHeight()-1.f, y));
@@ -627,8 +620,10 @@ void EC_Terrain::GetTriangleNormals(float x, float y, Vector3df &n1, Vector3df &
     v = yFrac;
 }
 
-void EC_Terrain::GetTriangleVertices(float x, float y, Vector3df &v1, Vector3df &v2, Vector3df &v3, float &u, float &v) const
+void EC_Terrain::GetTriangleVertices(float x, float y, float3 &v1, float3 &v2, float3 &v3, float &u, float &v) const
 {
+    // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
+    
     x = max(0.f, min((float)VerticesWidth()-1.f, x));
     y = max(0.f, min((float)VerticesHeight()-1.f, y));
 
@@ -645,62 +640,52 @@ void EC_Terrain::GetTriangleVertices(float x, float y, Vector3df &v1, Vector3df 
     float xFrac = fmod(x, 1.f);
     float yFrac = fmod(y, 1.f);
 
-    v2 = Vector3df((float)xFloor, (float)yCeil, GetPoint(xFloor, yCeil));
-    v3 = Vector3df((float)xCeil, (float)yFloor, GetPoint(xCeil, yFloor));
+    v2 = float3((float)xFloor, GetPoint(xFloor, yCeil), (float)yCeil);
+    v3 = float3((float)xCeil, GetPoint(xCeil, yFloor), (float)yFloor);
 
     if (xFrac + yFrac >= 1.f)
     {
         //if xFrac >= yFrac
-        v1 = Vector3df((float)xCeil, (float)yCeil, GetPoint(xCeil, yCeil));
+        v1 = float3((float)xCeil, GetPoint(xCeil, yCeil), (float)yCeil);
         xFrac = 1.f - xFrac;
         yFrac = 1.f - yFrac;
     }
     else
     {
-        v1 = Vector3df((float)xFloor, (float)yFloor, GetPoint(xFloor, yFloor));
+        v1 = float3((float)xFloor, GetPoint(xFloor, yFloor), (float)yFloor);
         swap(v2, v3);
     }
     u = xFrac;
     v = yFrac;
 }
 
-Vector3df EC_Terrain::GetPlaneNormal(float x, float y) const
+float3 EC_Terrain::GetPlaneNormal(float x, float y) const
 {
-    Vector3df h1, h2, h3;
+    float3 h1, h2, h3;
     float u, v;
     GetTriangleVertices(x, y, h1, h2, h3, u, v);
 
     // h1 to h3 are the three terrain height points in local coordinate space.
-    Vector3df normal = (h3-h2).crossProduct(h3-h1);
-    Ogre::Vector4 oNormal = Ogre::Vector4(normal.x, normal.y, normal.z, 0.f);
+    float3 normal = (h3-h2).Cross(h3-h1);
 
-    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
-    oNormal = worldTM * oNormal;
-    normal = Vector3df(oNormal.x, oNormal.y, oNormal.z);
-    normal.normalize();
-
-    return normal;
+    float4x4 worldTM = GetWorldTransform(rootNode);
+    return worldTM.MulDir(normal).Normalized();
 }
 
-Vector3df EC_Terrain::GetInterpolatedNormal(float x, float y) const
+float3 EC_Terrain::GetInterpolatedNormal(float x, float y) const
 {
-    Vector3df n1, n2, n3;
+    float3 n1, n2, n3;
     float u, v;
     GetTriangleNormals(x, y, n1, n2, n3, u, v);
 
     // h1 to h3 are the three terrain height points in local coordinate space.
-    Vector3df normal = (1.f - u - v) * n1 + u * n2 + v * n3;
-    Ogre::Vector4 oNormal = Ogre::Vector4(normal.x, normal.y, normal.z, 0.f);
+    float3 normal = (1.f - u - v) * n1 + u * n2 + v * n3;
 
-    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
-    oNormal = worldTM * oNormal;
-    normal = Vector3df(oNormal.x, oNormal.y, oNormal.z);
-    normal.normalize();
-
-    return normal;
+    float4x4 worldTM = GetWorldTransform(rootNode);
+    return worldTM.MulDir(normal).Normalized();
 }
 
-Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) const
+float3 EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) const
 {
     int px = x * cPatchSize + xinside;
     int py = y * cPatchSize + yinside;
@@ -717,9 +702,8 @@ Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) co
     if ((py <= 0) || (py >= patchHeight * cPatchSize))
         y_slope *= 2;
 
-    Vector3df normal(x_slope, y_slope, 2.0);
-    normal.normalize();
-    return normal;
+    // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
+    return float3(x_slope, 2.0, y_slope).Normalized();
 }
 
 bool EC_Terrain::SaveToFile(QString filename)
@@ -744,7 +728,7 @@ bool EC_Terrain::SaveToFile(QString filename)
 
     assert(sizeof(float) == 4);
 
-    for(int i = 0; i < xPatches*yPatches; ++i)
+    for(u32 i = 0; i < xPatches*yPatches; ++i)
     {
         if (patches[i].heightData.size() < cPatchSize*cPatchSize)
             patches[i].heightData.resize(cPatchSize*cPatchSize);
@@ -761,9 +745,9 @@ bool EC_Terrain::SaveToFile(QString filename)
 
 u32 ReadU32(const char *dataPtr, size_t numBytes, int &offset)
 {
-    if (offset + 4 > numBytes)
+    if (offset + 4 > (int)numBytes)
         throw Exception("Not enough bytes to deserialize!");
-    u32 data = *(u32*)(dataPtr + offset); ///\note Requires unaligned load support from the CPU and assumes data storage endianness to be the same for loader and saver.
+    u32 data = *(u32*)(dataPtr + offset); ///@note Requires unaligned load support from the CPU and assumes data storage endianness to be the same for loader and saver.
     offset += 4;
     return data;
 }
@@ -796,8 +780,8 @@ bool EC_Terrain::LoadFromDataInMemory(const char *data, size_t numBytes)
     std::vector<Patch> newPatches(xPatches*yPatches);
 
     // Initialize the new height data structure.
-    for(int y = 0; y < yPatches; ++y)
-        for(int x = 0; x < xPatches; ++x)
+    for(u32 y = 0; y < yPatches; ++y)
+        for(u32 x = 0; x < xPatches; ++x)
         {
             newPatches[y*xPatches+x].x = x;
             newPatches[y*xPatches+x].y = y;
@@ -860,8 +844,8 @@ void EC_Terrain::NormalizeImage(QString filename) const
 
     uchar *imagePos = &imageData[0];
 
-    for(int y = 0; y < image.getHeight(); ++y)
-        for(int x = 0; x < image.getWidth(); ++x)
+    for(size_t y = 0; y < image.getHeight(); ++y)
+        for(size_t x = 0; x < image.getWidth(); ++x)
         {
             Ogre::ColourValue color = image.getColourAt(x, y, 0);
             color.a = 0;
@@ -1110,15 +1094,15 @@ void ComputeAABB(const std::vector<Ogre::Vector3> &vertices, Ogre::Vector3 &minE
 
 void EC_Terrain::GenerateFromSceneEntity(QString entityName)
 {
-    Scene::Entity *parentEntity = GetParentEntity();
+    Entity *parentEntity = ParentEntity();
     if (!parentEntity)
         return;
 
-    Scene::SceneManager *scene = parentEntity->GetScene();
+    Scene *scene = parentEntity->ParentScene();
     if (!scene)
         return;
 
-    Scene::Entity *entity = scene->GetEntityByName(entityName).get();
+    Entity *entity = scene->GetEntityByName(entityName).get();
     if (!entity)
         return;
 
@@ -1182,8 +1166,10 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
     Ogre::Vector3 maxExtents;
     ComputeAABB(vertices, minExtents, maxExtents);
 
+    // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y.
+    // So we expect a mesh where Y also represent height values
     int xVertices = (int)ceil(maxExtents.x - minExtents.x);
-    int yVertices = (int)ceil(maxExtents.y - minExtents.y);
+    int yVertices = (int)ceil(maxExtents.z - minExtents.z);
     xVertices = ((xVertices + cPatchSize-1) / cPatchSize) * cPatchSize;
     yVertices = ((yVertices + cPatchSize-1) / cPatchSize) * cPatchSize;
 
@@ -1196,12 +1182,12 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
     float minHeight = std::numeric_limits<float>::max();
     float maxHeight = -std::numeric_limits<float>::max();
 
-    const float raycastHeight = maxExtents.z + 100.f;
+    const float raycastHeight = maxExtents.y + 100.f;
 
     for(int y = 0; y < yVertices; ++y)
         for(int x = 0; x < xVertices; ++x)
         {
-            Ogre::Ray r(Ogre::Vector3(minExtents.x + x, minExtents.y + y, raycastHeight), Ogre::Vector3(0,0,-1.f));
+            Ogre::Ray r(Ogre::Vector3(minExtents.x + x, raycastHeight, minExtents.z + y), Ogre::Vector3(0,-1.f,0));
             float height = FindClosestRayIntersection(r, vertices, indices);
             if (height < 1e8f)
             {
@@ -1278,7 +1264,6 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
  //   if(terrainMaterial)
 //    {
         OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
-//        emit TerrainTextureChanged(); ///\todo Regression here. Re-enable this so that the EnvironmentEditor texture viewer can see the textures?
 //    }
 //    else
 //        LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
@@ -1291,7 +1276,7 @@ void EC_Terrain::UpdateTerrainPatchMaterial(int patchX, int patchY)
     if (!patch.entity)
         return;
 
-    for(int i = 0; i < patch.entity->getNumSubEntities(); ++i)
+    for(size_t i = 0; i < patch.entity->getNumSubEntities(); ++i)
     {
         Ogre::SubEntity *sub = patch.entity->getSubEntity(i);
         if (sub)
@@ -1307,11 +1292,11 @@ void EC_Terrain::UpdateRootNodeTransform()
     const Transform &tm = nodeTransformation.Get();
 
     Ogre::Matrix3 rot_new;
-    rot_new.FromEulerAnglesXYZ(Ogre::Degree(tm.rotation.x), Ogre::Degree(tm.rotation.y), Ogre::Degree(tm.rotation.z));
+    rot_new.FromEulerAnglesXYZ(Ogre::Degree(tm.rot.x), Ogre::Degree(tm.rot.y), Ogre::Degree(tm.rot.z));
     Ogre::Quaternion q_new(rot_new);
 
     rootNode->setOrientation(Ogre::Quaternion(rot_new));
-    rootNode->setPosition(tm.position.x, tm.position.y, tm.position.z);
+    rootNode->setPosition(tm.pos.x, tm.pos.y, tm.pos.z);
     rootNode->setScale(tm.scale.x, tm.scale.y, tm.scale.z);
 }
 
@@ -1320,20 +1305,16 @@ void EC_Terrain::AttachTerrainRootNode()
     if (!rootNode)
         CreateRootNode();
 
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
-    if (!renderer)
+    if (world_.expired()) 
         return;
-
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    if (!sceneMgr)
-        return;
+    Ogre::SceneManager *sceneMgr = world_.lock()->GetSceneManager();
 
     // Detach the terrain root node from any previous EC_Placeable scenenode.
     if (rootNode->getParentSceneNode())
         rootNode->getParentSceneNode()->removeChild(rootNode);
 
     // If this entity has an EC_Placeable, make sure it is the parent of this terrain component.
-    boost::shared_ptr<EC_Placeable> pos = GetParentEntity()->GetComponent<EC_Placeable>();
+    boost::shared_ptr<EC_Placeable> pos = ParentEntity()->GetComponent<EC_Placeable>();
     if (pos)
     {
         Ogre::SceneNode *parent = pos->GetSceneNode();
@@ -1355,11 +1336,12 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
 
     EC_Terrain::Patch &patch = GetPatch(patchX, patchY);
 
-    Renderer *renderer = framework_->GetService<Renderer>();
-    if (!renderer)
-        return;
     if (!ViewEnabled())
         return;
+    if (world_.expired())
+        return;
+    OgreWorldPtr world = world_.lock();
+    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
 
     Ogre::SceneNode *node = patch.node;
     bool firstTimeFill = (node == 0);
@@ -1375,8 +1357,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     if (!terrainMaterial.get()) // If we could not find the material we were supposed to use, just use the default system terrain material.
         terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial("Rex/TerrainPCF");
 
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName("EC_Terrain_manual"));
+    Ogre::ManualObject *manual = sceneMgr->createManualObject(world->GetUniqueObjectName("EC_Terrain_manual"));
     manual->setCastShadows(false);
 
     manual->clear();
@@ -1388,8 +1369,8 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     const float vertexSpacingY = 1.f;
     const float patchSpacingX = cPatchSize * vertexSpacingX;
     const float patchSpacingY = cPatchSize * vertexSpacingY;
-//        const Ogre::Vector3 patchOrigin(patch.y * patchSpacingY, 0.f, patch.x * patchSpacingX);
-    const Ogre::Vector3 patchOrigin(patch.x * patchSpacingX, patch.y * patchSpacingY, 0.f);
+    const Ogre::Vector3 patchOrigin(patch.x * patchSpacingX, 0.f, patch.y * patchSpacingY);
+// Opensim:    const Ogre::Vector3 patchOrigin(patch.x * patchSpacingX, patch.y * patchSpacingY, 0.f);
 
     int curIndex = 0;
 
@@ -1413,10 +1394,10 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
             // These coordinates are directly generated to our Ogre coordinate system, i.e. are cycled from OpenSim XYZ -> our YZX.
             // see OpenSimToOgreCoordinateAxes.
             Ogre::Vector3 pos;
-// Ogre:                pos.x = vertexSpacingY * y;
-// Ogre:                pos.z = vertexSpacingX * x;
             pos.x = vertexSpacingX * x;
-            pos.y = vertexSpacingY * y;
+            pos.z = vertexSpacingY * y;
+// Opensim:             pos.x = vertexSpacingX * x;
+// Opensim              pos.y = vertexSpacingY * y;
 
             EC_Terrain::Patch *thisPatch;
             int X = x;
@@ -1428,13 +1409,14 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
                 if ((patch.x + 1 < patchWidth || x+1 < cPatchVertexWidth) &&
                     (patch.y + 1 < patchHeight || y+1 < cPatchVertexHeight))
                 {
+                    // Note: winding needs to be flipped when terrain X axis goes along world X axis and terrain Y axis along world Z
+                    manual->index(curIndex+stride);
+                    manual->index(curIndex+1);
                     manual->index(curIndex);
-                    manual->index(curIndex+1);
-                    manual->index(curIndex+stride);
 
-                    manual->index(curIndex+1);
-                    manual->index(curIndex+stride+1);
                     manual->index(curIndex+stride);
+                    manual->index(curIndex+stride+1);
+                    manual->index(curIndex+1);
                 }
             }
             else if (x == cPatchVertexWidth && y == cPatchVertexHeight)
@@ -1454,15 +1436,15 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
                 Y = 0;
             }
 
-// Ogre:        pos.y = thisPatch->heightData[Y*patchSize+X];
-            pos.z = thisPatch->heightData[Y*cPatchVertexWidth+X];
+            pos.y = thisPatch->heightData[Y*cPatchVertexWidth+X];
+// Opensim:            pos.z = thisPatch->heightData[Y*cPatchVertexWidth+X];
 
             manual->position(pos);
             manual->normal(OgreRenderer::ToOgreVector3(CalculateNormal(thisPatch->x, thisPatch->y, X, Y)));
 
             // The UV set 0 contains the diffuse texture UV map. Do a planar mapping with the given specified UV scale.
-// Ogre:                manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);
-            manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.y + pos.y) * vScale);
+            manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);
+// Opensim:             manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.y + pos.y) * vScale);
 
             // The UV set 1 contains the terrain blend mask UV map, which stretches once across the whole terrain.
             manual->textureCoord((float)(patch.x*cPatchSize + x)/(VerticesWidth()-1), (float)(patch.y*cPatchSize + y)/(VerticesHeight()-1)); 
@@ -1482,15 +1464,15 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
         catch(...) {}
     }
 
-    patch.meshGeometryName = renderer->GetUniqueObjectName("EC_Terrain_patchmesh");
+    patch.meshGeometryName = world->GetUniqueObjectName("EC_Terrain_patchmesh");
     Ogre::MeshPtr terrainMesh = manual->convertToMesh(patch.meshGeometryName);
 
     // Odd: destroyManualObject seems to leave behind a memory leak if we don't call manualObject->clear first.
     manual->clear();
     sceneMgr->destroyManualObject(manual);
 
-    patch.entity = sceneMgr->createEntity(renderer->GetUniqueObjectName("EC_Terrain_patchentity"), patch.meshGeometryName);
-    patch.entity->setUserAny(Ogre::Any(parent_entity_));
+    patch.entity = sceneMgr->createEntity(world->GetUniqueObjectName("EC_Terrain_patchentity"), patch.meshGeometryName);
+    patch.entity->setUserAny(Ogre::Any(parentEntity));
     patch.entity->setCastShadows(false);
     // Set UserAny also on subentities
     for(uint i = 0; i < patch.entity->getNumSubEntities(); ++i)
@@ -1508,9 +1490,6 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     node->attachObject(patch.entity);
 
     patch.patch_geometry_dirty = false;
-
-    ///\todo Regression. Re-enable this to have the EnvironmentEditor module function again.
-//    emit HeightmapGeometryUpdated();
 }
 
 void EC_Terrain::CreateRootNode()
@@ -1519,15 +1498,12 @@ void EC_Terrain::CreateRootNode()
     if (rootNode)
         return;
 
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
-    if (!renderer)
+    if (world_.expired())
         return;
+    OgreWorldPtr world = world_.lock();
+    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
 
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    if (!sceneMgr)
-        return;
-
-    rootNode = sceneMgr->createSceneNode(renderer->GetUniqueObjectName("EC_Terrain_RootNode"));
+    rootNode = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Terrain_RootNode"));
 
     // Add the newly created node to scene or to a parent EC_Placeable.
     AttachTerrainRootNode();
@@ -1537,11 +1513,11 @@ void EC_Terrain::CreateRootNode()
 
 void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
 {
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
-    if (!renderer)
+    if (world_.expired())
         return;
-
-    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+    OgreWorldPtr world = world_.lock();
+    Ogre::SceneManager *sceneMgr = world->GetSceneManager();
+    
     if (!sceneMgr || !sceneMgr->getRootSceneNode())
         return;
 
@@ -1549,7 +1525,7 @@ void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, 
         CreateRootNode();
 
     QString name = QString("EC_Terrain_Patch_") + QString::number(patchX) + "_" + QString::number(patchY);
-    node = sceneMgr->createSceneNode(renderer->GetUniqueObjectName(name.toStdString()));
+    node = sceneMgr->createSceneNode(world->GetUniqueObjectName(name.toStdString()));
     if (!node)
         return;
 
@@ -1562,7 +1538,7 @@ void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, 
     const float vertexSpacingY = 1.f;
     const float patchSpacingX = 16 * vertexSpacingX;
     const float patchSpacingY = 16 * vertexSpacingY;
-    const Ogre::Vector3 patchOrigin(patchX * patchSpacingX, patchY * patchSpacingY, 0.f);
+    const Ogre::Vector3 patchOrigin(patchX * patchSpacingX, 0.f, patchY * patchSpacingY);
 
     node->setPosition(patchOrigin);
 }
@@ -1571,8 +1547,8 @@ float EC_Terrain::GetTerrainMinHeight() const
 {
     float minHeight = std::numeric_limits<float>::max();
 
-    for(int i = 0; i < patches.size(); ++i)
-        for(int j = 0; j < patches[i].heightData.size(); ++j)
+    for(size_t i = 0; i < patches.size(); ++i)
+        for(size_t j = 0; j < patches[i].heightData.size(); ++j)
             minHeight = min(minHeight, patches[i].heightData[j]);
 
     return minHeight;
@@ -1582,8 +1558,8 @@ float EC_Terrain::GetTerrainMaxHeight() const
 {
     float maxHeight = -std::numeric_limits<float>::max();
 
-    for(int i = 0; i < patches.size(); ++i)
-        for(int j = 0; j < patches[i].heightData.size(); ++j)
+    for(size_t i = 0; i < patches.size(); ++i)
+        for(size_t j = 0; j < patches[i].heightData.size(); ++j)
             maxHeight = max(maxHeight, patches[i].heightData[j]);
 
     return maxHeight;
@@ -1645,6 +1621,4 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
     ///\todo If this terrain only exists for physics heightfield purposes, don't create GPU resources for it at all.
 
     emit TerrainRegenerated();
-}
-
 }
