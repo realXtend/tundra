@@ -6,7 +6,7 @@
   <plugin path="OgreAssetEditorModule" /> <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" /> <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
   <plugin path="TundraProtocolModule" /> <!-- TundraProtocolModule depends on KristalliProtocolModule, OgreRenderingModule and PhysicsModule -->
-  <plugin path="JavascriptModule" /> <!-- JavascriptModule depends on TundraLogicModule --> 
+  <plugin path="JavascriptModule" /> <!-- JavascriptModule depends on TundraLogicModule -->
   <plugin path="AssetModule" />	<!-- AssetModule depends on KristalliProtocolModule and TundraLogicModule -->
   <plugin path="AvatarModule" />	<!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
   <plugin path="ECEditorModule" /> <!-- ECEditorModule depends on OgreRenderingModule, TundraLogicModule, OgreRenderingModule and AssetModule -->
@@ -19,5 +19,6 @@
   <!-- Important: The file names specified here are case sensitive even on Windows! -->
   <jsplugin path="cameraapplication.js" />
   <jsplugin path="FirstPersonMouseLook.js" />
+  <jsplugin path="LoginScreen.js" />
   <jsplugin path="MenuBar.js" />
 </Tundra>
