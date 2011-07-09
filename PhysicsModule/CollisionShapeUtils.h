@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Physics_CollisionShapeUtils_h
-#define incl_Physics_CollisionShapeUtils_h
+#pragma once
 
-#include "Core.h"
+#include "CoreDefines.h"
 #include "PhysicsModuleApi.h"
+#include "Math/float3.h"
 
 class btConvexHullShape;
 class btTriangleMesh;
@@ -18,10 +18,9 @@ namespace Physics
 {
     struct ConvexHullSet;
 
-    void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr, bool flipAxes);
-    void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest, bool flipAxes);
-    void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr, bool flipAxes);
+    void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr);
+    void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<float3>& dest);
+    void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr);
 }
 
 
-#endif

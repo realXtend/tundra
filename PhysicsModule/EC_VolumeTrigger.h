@@ -1,15 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Physics_EC_VolumeTrigger_h
-#define incl_Physics_EC_VolumeTrigger_h
+#pragma once
 
 #include "IComponent.h"
-#include "Declare_EC.h"
-#include "Core.h"
+#include "CoreDefines.h"
+#include "Math/float3.h"
 
 // forward declares
 namespace Physics { class PhysicsModule; class PhysicsWorld; }
-namespace Scene { class Entity; }
+class Entity;
 class EC_RigidBody;
 
 /// Physics volume trigger component
@@ -35,15 +34,15 @@ Leave empty to get events for all entities in the scene.</div>
 <ul>
 <li> "GetNumEntitiesInside": return number of entities currently inside the volume trigger
 <li> "GetEntityInside": return an entity that is currently inside the volume trigger
-        \param idx Index
+        @param idx Index
 <li> "GetEntityInsidePercent": return an approximate percent of how much of the entity is inside this volume, returns value in the range [0,1]
-        \param entity Entity to test
+        @param entity Entity to test
 <li> "GetEntityInsidePercentByName": return an approximate percent of how much of the entity is inside this volume, returns value in the range [0,1]
-        \param name Name of the entity to test
+        @param name Name of the entity to test
 <li> "IsInterestingEntity": return true if the volume trigger events are send for this entity
-        \param name Name of the entity to test
+        @param name Name of the entity to test
 <li> "IsPivotInside": return true if the pivot point of the entity is inside this volume trigger
-        \param entity Entity to test
+        @param entity Entity to test
 </ul>
 
 <b>Reacts on the following actions:</b>
@@ -57,7 +56,7 @@ Does not emit any actions.
 
 <b>Depends on the component RigitBody.</b>.
 
-\note If you use 'byPivot' -option or use IsPivotInside-function, the pivot point shouldn't be outside the mesh (or physics collision primitive) because physics collisions are used for efficiency even in this case.
+@note If you use 'byPivot' -option or use IsPivotInside-function, the pivot point shouldn't be outside the mesh (or physics collision primitive) because physics collisions are used for efficiency even in this case.
 \todo If you add an entity to the 'interesting entities list', no signals may get send for that entity,
       and it may not show up in any list of entities contained in this volume trigger until that entity moves.
       Also if you enable/disable 'byPivot' option when entities are inside the volume, no signals may get send for those entities,
@@ -70,9 +69,14 @@ class EC_VolumeTrigger : public IComponent
     friend class Physics::PhysicsWorld;
     
     Q_OBJECT
-    DECLARE_EC(EC_VolumeTrigger)
+    COMPONENT_NAME("EC_VolumeTrigger", 24)
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_VolumeTrigger(Scene* scene);
+
+    virtual ~EC_VolumeTrigger();
+
     /// Pivot trigger flag. If false (default), triggers by entity volume. If true, triggers by entity pivot point (ie. entity pivot points enters/leaves the volume).
     Q_PROPERTY(bool byPivot READ getbyPivot WRITE setbyPivot)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, byPivot)
@@ -81,81 +85,79 @@ public:
     Q_PROPERTY(QVariantList entities READ getentities WRITE setentities);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, entities);
 
-    virtual ~EC_VolumeTrigger();
-
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-
 signals:
-    void EntityEnter(Scene::Entity* entity/*, const Vector3df& position*/);
-    void EntityLeave(Scene::Entity* entity/*, const Vector3df& position*/);
+    /// Note: needs to be lowercase for QML to accept connections to it
+    void entityEnter(Entity* entity/*, const float3& position*/);
+    /// Note: needs to be lowercase for QML to accept connections to it
+    void entityLeave(Entity* entity/*, const float3& position*/);
 
 public slots:
+
     /// Get a list of entities currently residing inside the volume.
-    /** \note Return value is invalidated by physics update.
-        \return list of entities
+    /** @note Return value is invalidated by physics update.
+        @return list of entities
      */
-    QList<Scene::EntityWeakPtr> GetEntitiesInside() const;
+    QList<EntityWeakPtr> GetEntitiesInside() const;
 
     /// Returns number of entities inside this volume trigger. 
     /** Use with GetEntityInside() to get all entities inside this volume.
-        \note Return value is invalidated by physics update.
-        \return Number of entities inside this volume
+        @note Return value is invalidated by physics update.
+        @return Number of entities inside this volume
     */
     int GetNumEntitiesInside() const;
 
     /// Gets entity that is inside this volume trigger with specified index.
     /** Use with GetNumEntitiesInside() to get all entities inside this volume.
-        \note Use together with GetNumEntitiesInside() during the same physics
+        @note Use together with GetNumEntitiesInside() during the same physics
               update frame, because physics update may change the number of 
               entities inside the volume.
     */
-    Scene::Entity* GetEntityInside(int idx) const;
+    Entity* GetEntityInside(int idx) const;
 
     /// Returns a list of entities by name which currently reside inside the volume.
-    /** \note Return value is invalidated by physics update.
-        \return list of entity names
+    /** @note Return value is invalidated by physics update.
+        @return list of entity names
      */
     QStringList GetEntityNamesInside() const;
 
     /// Returns an approximate percent of how much of the entity is inside this volume, [0,1]
     /** If entity is not inside this volume at all, returns 0, if entity is completely inside this volume, returns 1.
-        \note Uses axis aligned bounding boxes for calculations, so it is not accurate.
-        \note Return value is invalidated by physics update.
+        @note Uses axis aligned bounding boxes for calculations, so it is not accurate.
+        @note Return value is invalidated by physics update.
 
-        \param entity entity
-        \return approximated percent of how much of the entity is inside this volume
+        @param entity entity
+        @return approximated percent of how much of the entity is inside this volume
     */
-    float GetEntityInsidePercent(const Scene::Entity* entity) const;
+    float GetEntityInsidePercent(const Entity* entity) const;
 
 
     /// Returns an approximate percent of how much of the entity is inside this volume, [0,1]
     /** If entity is not inside this volume at all, returns 0, if entity is completely inside this volume, returns 1.
-        \note Uses axis aligned bounding boxes for calculations, so it is not accurate.
-        \note Return value is invalidated by physics update.
+        @note Uses axis aligned bounding boxes for calculations, so it is not accurate.
+        @note Return value is invalidated by physics update.
 
-        \param name entity name
-        \return approximated percent of how much of the entity is inside this volume
+        @param name entity name
+        @return approximated percent of how much of the entity is inside this volume
     */
     float GetEntityInsidePercentByName(const QString &name) const;
 
     /// Returns true if specified entity can be found in the 'interesting entities' list
     /** If list of entities for this volume trigger is empty, returns always true for any entity name
         (even non-existing ones)
-        \param name entity name
-        \return true if events are triggered for the names entity, false otherwise
+        @param name entity name
+        @return true if events are triggered for the names entity, false otherwise
     */
     bool IsInterestingEntity(const QString &name) const;
 
     /// Returns true if the pivot point of the specified entity is inside this volume trigger
-    /** \note Return value is invalidated by physics update.
+    /** @note Return value is invalidated by physics update.
         
-        \return true if the pivot point of the specified entity is inside the volume, false otherwise
+        @return true if the pivot point of the specified entity is inside the volume, false otherwise
     */
-    bool IsPivotInside(Scene::Entity *entity) const;
+    bool IsPivotInside(Entity *entity) const;
 
     /// Returns true if given world coordinate point is inside volume. 
-    bool IsInsideVolume(const Vector3df& point) const;
+    bool IsInsideVolume(const float3& point) const;
 
 private slots:
     /// Called when some of the attributes has been changed.
@@ -170,17 +172,12 @@ private slots:
     void OnPhysicsUpdate();
 
     /// Called when physics collisions occurs.
-    void OnPhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+    void OnPhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
 
     /// Called when entity inside this volume is removed from the scene
-    void OnEntityRemoved(Scene::Entity* entity);
+    void OnEntityRemoved(Entity* entity);
 
 private:
-    /// constructor
-    /** \param module Physics module
-     */
-    EC_VolumeTrigger(IModule* module);
-
     /// Rigid body component that is needed for collision signals
     boost::weak_ptr<EC_RigidBody> rigidbody_;
 
@@ -188,10 +185,6 @@ private:
     /** The value is used in physics update to see if the entity is still inside
         this volume or if it left the volume during last physics update.
     */
-    QMap<Scene::EntityWeakPtr, bool> entities_;
-
-    /// Owner module of this component
-    Physics::PhysicsModule *owner_;
+    QMap<EntityWeakPtr, bool> entities_;
 };
 
-#endif
