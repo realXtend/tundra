@@ -2,26 +2,23 @@
 
 #include "StableHeaders.h"
 #include "AvatarModule.h"
-#include "AvatarEditing/AvatarEditor.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "EventManager.h"
+#include "AvatarEditor.h"
 #include "InputAPI.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
+#include "NullAssetFactory.h"
 #include "AvatarDescAsset.h"
+#include "ConsoleAPI.h"
+#include "IComponentFactory.h"
 
-#include "EntityComponent/EC_Avatar.h"
+#include "EC_Avatar.h"
 
 namespace Avatar
 {
-    static std::string module_name = "AvatarModule";
-    const std::string &AvatarModule::NameStatic() { return module_name; }
-
-    AvatarModule::AvatarModule() :
-        QObject(),
-        IModule(module_name)
+    AvatarModule::AvatarModule()
+    :IModule("Avatar")
     {
     }
 
@@ -31,7 +28,15 @@ namespace Avatar
 
     void AvatarModule::Load()
     {
-        DECLARE_MODULE_EC(EC_Avatar);
+        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Avatar>));
+
+        ///\todo This doesn't need to be loaded in headless server mode.
+        // Note: need to register in Initialize(), because in PostInitialize() AssetModule refreshes the local asset storages, and that 
+        // would result in inability to create any avatar assets in unloaded state
+        if (!framework_->IsHeadless())
+            framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("Avatar")));
+        else
+            framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Avatar")));
     }
 
     void AvatarModule::Initialize()
@@ -48,11 +53,9 @@ namespace Avatar
             connect(avatar_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), SLOT(KeyReleased(KeyEvent*)));
         }
 
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("GenericAvatarXml", "xml")));
-        
-        RegisterConsoleCommand(Console::CreateCommand("editavatar",
+        framework_->Console()->RegisterCommand("editavatar",
             "Edits the avatar in a specific entity. Usage: editavatar(entityname)",
-            Console::Bind(this, &AvatarModule::EditAvatar)));
+            this, SLOT(EditAvatar(const QString &)));
     }
 
     void AvatarModule::Uninitialize()
@@ -66,11 +69,6 @@ namespace Avatar
     {
     }
 
-    bool AvatarModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-    {
-        return false;
-    }
-
     void AvatarModule::KeyPressed(KeyEvent *key)
     {
     }
@@ -80,18 +78,14 @@ namespace Avatar
     
     }
     
-    Console::CommandResult AvatarModule::EditAvatar(const StringVector &params)
+    void AvatarModule::EditAvatar(const QString &entityName)
     {
-        if (params.size() < 1)
-            return Console::ResultFailure("No entity name given");
-        
-        QString name = QString::fromStdString(params[0]);
-        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+        ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
-            return Console::ResultFailure("No scene");
-        EntityPtr entity = scene->GetEntityByName(name);
+            return;// ConsoleResultFailure("No scene");
+        EntityPtr entity = scene->GetEntityByName(entityName);
         if (!entity)
-            return Console::ResultFailure("No such entity " + params[0]);
+            return;// ConsoleResultFailure("No such entity " + entityName.toStdString());
         
         /// \todo Clone the avatar asset for editing
         /// \todo Allow avatar asset editing without an avatar entity in the scene
@@ -99,21 +93,15 @@ namespace Avatar
         
         if (avatar_editor_)
             avatar_editor_->show();
-        
-        return Console::ResultSuccess();
     }
-}
-
-void SetProfiler(Foundation::Profiler *profiler)
-{
-    Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+DLLEXPORT void TundraPluginMain(Framework *fw)
 {
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new Avatar::AvatarModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
+    fw->RegisterModule(module);
 }
 }

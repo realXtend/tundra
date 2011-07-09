@@ -1,12 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Avatar_EC_Avatar_h
-#define incl_Avatar_EC_Avatar_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAsset.h"
 #include "AvatarModuleApi.h"
-#include "Declare_EC.h"
 #include "AssetFwd.h"
 #include "SceneFwd.h"
 
@@ -47,20 +45,21 @@ Does not emit any actions.
 class AV_MODULE_API EC_Avatar : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_Avatar);
 
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Avatar(Scene* scene);
+
     /// Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
     Q_PROPERTY(AssetReference appearanceRef READ getappearanceRef WRITE setappearanceRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, appearanceRef);
 
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-
     /// Destructor
     virtual ~EC_Avatar();
 
+    COMPONENT_NAME("EC_Avatar", 1)
 public slots:
+
     /// Refresh appearance completely
     void SetupAppearance();
     /// Refresh dynamic parts of the appearance (morphs, bone modifiers)
@@ -77,11 +76,6 @@ private slots:
     void OnAvatarAppearanceLoaded(AssetPtr asset);
 
 private:
-    /// constructor
-    /** \param module avatar module
-     */
-    EC_Avatar(IModule* module);
-
     /// Adjust avatar's height offset dynamically
     void AdjustHeightOffset();
     /// Rebuild mesh and set materials
@@ -101,4 +95,3 @@ private:
     boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 };
 
-#endif

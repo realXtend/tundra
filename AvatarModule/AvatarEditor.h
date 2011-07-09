@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Avatar_AvatarEditor_h
-#define incl_Avatar_AvatarEditor_h
+#pragma once
 
 #include "AvatarModule.h"
 #include "AvatarModuleApi.h"
@@ -39,8 +38,8 @@ namespace Avatar
         /// Revert avatar edits
         void RevertAvatar();
 
-        /// Change texture
-        void ChangeTexture();
+        /// Change avatar's material
+        void ChangeMaterial();
 
         /// New attachment
         void AddAttachment();
@@ -77,7 +76,7 @@ signals:
         void InitEditorWindow();
         
         /// Get the avatar entity, avatar component, and avatar description. If all are non-null, return true
-        bool GetAvatarDesc(Scene::Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc);
+        bool GetAvatarDesc(Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc);
 
         /// Clear a panel
         void ClearPanel(QWidget* panel);
@@ -95,7 +94,7 @@ signals:
         std::string last_directory_;
 
         /// Avatar entity to edit
-        Scene::EntityWeakPtr avatarEntity_;
+        EntityWeakPtr avatarEntity_;
         /// Avatar asset to edit
         boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 
@@ -103,4 +102,3 @@ signals:
     };
 }
 
-#endif

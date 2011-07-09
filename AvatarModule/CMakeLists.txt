@@ -9,11 +9,6 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB UI_FILES ui/*.ui)
 
-# SubFolders to project with filtering
-AddSourceFolder (Avatar)
-AddSourceFolder (AvatarEditing)
-AddSourceFolder (EntityComponent)
-
 # Qt4 Moc files to "CMake Moc" subgroup
 # and ui_*.h generated .h files to "Generated UI" subgroup
 MocFolder ()
@@ -29,19 +24,17 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 add_definitions (-DAVATAR_MODULE_EXPORTS)
 
 # Includes
-use_modules(AvatarModule Framework Scene SupportModules
-    AssetModule OgreRenderingModule Input Asset)
+use_modules(Framework Scene AvatarModule AssetModule OgreRenderingModule Input Asset Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 # Linking
 link_ogre()
 
-link_modules(Framework Scene SupportModules 
-    AssetModule OgreRenderingModule Input Asset)
+link_modules(Framework Scene AssetModule OgreRenderingModule Input Asset Console)
 
 LinkEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
-LinkEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
+LinkEntityComponent(EntityComponents/EC_Sound EC_Sound)
 LinkEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition)
 
 SetupCompileFlagsWithPCH()

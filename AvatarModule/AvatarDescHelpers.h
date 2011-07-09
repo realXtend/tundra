@@ -1,25 +1,24 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_AvatarModule_AvatarDescHelpers_h
-#define incl_AvatarModule_AvatarDescHelpers_h
+#pragma once
 
 #include <QString>
 #include <QObject>
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
-#include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/float3.h"
+#include "Math/Quat.h"
 #include "AvatarModuleApi.h"
 
 /// Defines a transform for an avatar, attachment or bone
 struct AV_MODULE_API AvatarTransform
 {
-    Vector3df position_;
-    Quaternion orientation_;
-    Vector3df scale_;
+    float3 position_;
+    Quat orientation_;
+    float3 scale_;
     
-    AvatarTransform() : position_(Vector3df::ZERO),
+    AvatarTransform() : position_(float3::zero),
         scale_(1.0f, 1.0f, 1.0f)
     {
     }
@@ -229,4 +228,3 @@ struct AV_MODULE_API AvatarAttachment
     std::vector<uint> vertices_to_hide_;
 };
 
-#endif

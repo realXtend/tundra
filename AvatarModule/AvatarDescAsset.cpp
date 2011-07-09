@@ -2,22 +2,58 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "AvatarDescAsset.h"
 #include "AvatarModule.h"
 #include "AssetAPI.h"
 #include "XMLUtilities.h"
+#include "Profiler.h"
+#include "Math/Quat.h"
 
 #include <QDomDocument>
 #include <cstring>
+#include "MemoryLeakCheck.h"
 
 using namespace Avatar;
+
+std::string QuatToLegacyRexString(const Quat& q)
+{
+    char str[256];
+    sprintf(str, "%f %f %f %f", q.x, q.y, q.z, q.w);
+    return str;
+}
+
+Quat QuatFromLegacyRexString(const std::string& stdStr)
+{
+    const char* str = stdStr.c_str();
+    if (!str)
+        return Quat();
+    if (*str == '(')
+        ++str;
+    Quat q;
+    q.w = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.x = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.y = strtod(str, const_cast<char**>(&str));
+    if (*str == ',' || *str == ';')
+        ++str;
+    q.z = strtod(str, const_cast<char**>(&str));
+    return q;
+}
+
 
 std::string modifierMode[] = {
     "relative",
     "absolute",
     "cumulative"
 };
+
+AvatarDescAsset::AvatarDescAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+    IAsset(owner, type_, name_)
+{
+}
 
 AvatarDescAsset::~AvatarDescAsset()
 {
@@ -45,9 +81,15 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     
     // Then try to parse
     QDomDocument avatarDoc("Avatar");
-    avatarDoc.setContent(avatarAppearanceXML_);
+    // If invalid XML, empty it so we will report IsLoaded == false
+    if (!avatarDoc.setContent(avatarAppearanceXML_))
+    {
+        LogError("Failed to deserialize AvatarDescAsset from data.");
+        avatarAppearanceXML_ = "";
+    }
+
     ReadAvatarAppearance(avatarDoc);
-    
+
     emit AppearanceChanged();
     return true;
 }
@@ -183,6 +225,9 @@ bool AvatarDescAsset::ReadAvatarAppearance(const QDomDocument& source)
         property_elem = property_elem.nextSiblingElement("property");
     }
     
+    // Refresh slave modifiers
+    CalculateMasterModifiers();
+    
     // Assetmap not used (deprecated), as asset refs are stored directly
     return true;
 }
@@ -205,13 +250,15 @@ void AvatarDescAsset::ReadBoneModifierSet(const QDomElement& source)
             QDomElement translation = bone.firstChildElement("translation");
             QDomElement scale = bone.firstChildElement("scale");
             
-            modifier.start_.position_ = ParseVector3(translation.attribute("start").toStdString());
-            modifier.start_.orientation_ = ParseEulerAngles(rotation.attribute("start").toStdString());
-            modifier.start_.scale_ = ParseVector3(scale.attribute("start").toStdString());
+            modifier.start_.position_ = float3::FromString(translation.attribute("start"));
+            float3 e = DegToRad(float3::FromString(rotation.attribute("start")));
+            modifier.start_.orientation_ = Quat::FromEulerZYX(e.z, e.y, e.x);////ParseEulerAngles(rotation.attribute("start").toStdString());
+            modifier.start_.scale_ = float3::FromString(scale.attribute("start"));
             
-            modifier.end_.position_ = ParseVector3(translation.attribute("end").toStdString());
-            modifier.end_.orientation_ = ParseEulerAngles(rotation.attribute("end").toStdString());
-            modifier.end_.scale_ = ParseVector3(scale.attribute("end").toStdString());
+            modifier.end_.position_ = float3::FromString(translation.attribute("end"));
+            e = DegToRad(float3::FromString(rotation.attribute("end").toStdString()));
+            modifier.end_.orientation_ = Quat::FromEulerZYX(e.z, e.y, e.x);//ParseEulerAngles(rotation.attribute("end").toStdString());
+            modifier.end_.scale_ = float3::FromString(scale.attribute("end"));
             
             std::string trans_mode = translation.attribute("mode").toStdString();
             std::string rot_mode = rotation.attribute("mode").toStdString();
@@ -415,9 +462,9 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
             attachment.bone_name_ = bone.attribute("name").toStdString();
             if (attachment.bone_name_ == "None")
                 attachment.bone_name_ = std::string();
-            attachment.transform_.position_ = ParseVector3(bone.attribute("offset").toStdString());
-            attachment.transform_.orientation_ = ParseQuaternion(bone.attribute("rotation").toStdString());
-            attachment.transform_.scale_ = ParseVector3(bone.attribute("scale").toStdString());
+            attachment.transform_.position_ = float3::FromString(bone.attribute("offset"));
+            attachment.transform_.orientation_ = QuatFromLegacyRexString(bone.attribute("rotation").toStdString());
+            attachment.transform_.scale_ = float3::FromString(bone.attribute("scale"));
         }
         
         QDomElement polygon = avatar.firstChildElement("avatar_polygon");
@@ -437,7 +484,7 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
     attachments_.push_back(attachment);
 }
 
-void AvatarDescAsset::SetMasterModifierValue(QString name, float value)
+void AvatarDescAsset::SetMasterModifierValue(const QString& name, float value)
 {
     std::string nameStd = name.toStdString();
     
@@ -462,7 +509,7 @@ void AvatarDescAsset::SetMasterModifierValue(QString name, float value)
     }
 }
 
-void AvatarDescAsset::SetModifierValue(QString name, float value)
+void AvatarDescAsset::SetModifierValue(const QString& name, float value)
 {
     std::string nameStd = name.toStdString();
     
@@ -487,6 +534,15 @@ void AvatarDescAsset::SetModifierValue(QString name, float value)
     }
 }
 
+void AvatarDescAsset::SetMaterial(uint index, const QString& ref)
+{
+    if (index >= materials_.size())
+        return;
+    materials_[index] = ref;
+    
+    AssetReferencesChanged();
+}
+
 bool AvatarDescAsset::HasProperty(QString name) const
 {
     QMap<QString, QString>::const_iterator i = properties_.find(name);
@@ -496,9 +552,31 @@ bool AvatarDescAsset::HasProperty(QString name) const
     return value.length() > 0;
 }
 
-const QString& AvatarDescAsset::GetProperty(QString name)
+const QString& AvatarDescAsset::GetProperty(const QString& name)
 {
     return properties_[name];
+}
+
+void AvatarDescAsset::AssetReferencesChanged()
+{
+    unsigned assets = FindReferences().size();
+    // If no references (unlikely), send AppearanceChanged() immediately
+    if (!assets)
+        emit AppearanceChanged();
+    else
+    {
+        // Otherwise request the (possibly new) assets
+        assetAPI->RequestAssetDependencies(this->shared_from_this());
+    }
+}
+
+void AvatarDescAsset::DependencyLoaded(AssetPtr dependee)
+{
+    IAsset::DependencyLoaded(dependee);
+    
+    // Emit AppearanceChanged() when all references have been loaded, and the avatar description is ready to use
+    if (assetAPI->NumPendingDependencies(this->shared_from_this()) == 0)
+        emit AppearanceChanged();
 }
 
 void AvatarDescAsset::CalculateMasterModifiers()
@@ -543,7 +621,7 @@ void AvatarDescAsset::AddReference(std::vector<AssetReference>& refs, const QStr
 {
     if (ref.length())
     {
-        AssetReference newRef(assetAPI->LookupAssetRefToStorage(ref));
+        AssetReference newRef(assetAPI->ResolveAssetRef(Name(), ref));
         refs.push_back(newRef);
     }
 }
@@ -690,18 +768,20 @@ QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& b
     SetAttribute(elem, "name", bone.bone_name_);
     
     QDomElement rotation = dest.createElement("rotation");
-    SetAttribute(rotation, "start", WriteEulerAngles(bone.start_.orientation_));
-    SetAttribute(rotation, "end", WriteEulerAngles(bone.end_.orientation_));
+    float3 e = RadToDeg(bone.start_.orientation_.ToEulerZYX());
+    SetAttribute(rotation, "start", float3(e.z, e.y, e.x).ToString());//WriteEulerAngles(bone.start_.orientation_));
+    e = RadToDeg(bone.end_.orientation_.ToEulerZYX());
+    SetAttribute(rotation, "end", float3(e.z, e.y, e.x).ToString());//WriteEulerAngles(bone.end_.orientation_));
     SetAttribute(rotation, "mode", modifierMode[bone.orientation_mode_]);
     
     QDomElement translation = dest.createElement("translation");
-    SetAttribute(translation, "start", WriteVector3(bone.start_.position_));
-    SetAttribute(translation, "end", WriteVector3(bone.end_.position_));
+    SetAttribute(translation, "start", bone.start_.position_.SerializeToString());
+    SetAttribute(translation, "end", bone.end_.position_.SerializeToString());
     SetAttribute(translation, "mode", modifierMode[bone.position_mode_]);
 
     QDomElement scale = dest.createElement("scale");
-    SetAttribute(scale, "start", WriteVector3(bone.start_.scale_));
-    SetAttribute(scale, "end", WriteVector3(bone.end_.scale_));
+    SetAttribute(scale, "start", bone.start_.scale_.SerializeToString());
+    SetAttribute(scale, "end", bone.end_.scale_.SerializeToString());
     
     elem.appendChild(rotation);
     elem.appendChild(translation);
@@ -788,9 +868,9 @@ QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAtt
         
         QDomElement bone_elem = dest.createElement("bone");
         SetAttribute(bone_elem, "name", bonename);
-        SetAttribute(bone_elem, "offset", WriteVector3(attachment.transform_.position_));
-        SetAttribute(bone_elem, "rotation", WriteQuaternion(attachment.transform_.orientation_));
-        SetAttribute(bone_elem, "scale", WriteVector3(attachment.transform_.scale_));
+        SetAttribute(bone_elem, "offset", attachment.transform_.position_.SerializeToString());
+        SetAttribute(bone_elem, "rotation", attachment.transform_.orientation_.SerializeToString());
+        SetAttribute(bone_elem, "scale", attachment.transform_.scale_.SerializeToString());
         
         avatar_elem.appendChild(bone_elem);
         

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_AvatarModule_h
-#define incl_AvatarModule_h
+#pragma once
 
 #include "IModule.h"
 
@@ -15,7 +14,6 @@
 
 namespace Avatar
 {
-    class AvatarSceneManager;
     class AvatarHandler;
     class AvatarControllable;
     class AvatarEditor;
@@ -23,13 +21,10 @@ namespace Avatar
     typedef boost::shared_ptr<AvatarHandler> AvatarHandlerPtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
-            
-    class AV_MODULE_API AvatarModule : public QObject, public IModule
-    {
 
-    Q_OBJECT
-    
-    static const std::string &NameStatic();
+    class AV_MODULE_API AvatarModule : public IModule
+    {
+        Q_OBJECT
 
     public:
         AvatarModule();
@@ -40,12 +35,6 @@ namespace Avatar
         void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
-    
-    private slots:
-        /// Handle our key context input
-        void KeyPressed(KeyEvent *key);
-        void KeyReleased(KeyEvent *key);
 
     public slots:
 
@@ -53,10 +42,15 @@ namespace Avatar
         AvatarEditorPtr GetAvatarEditor() { return avatar_editor_; }
         AvatarControllablePtr GetAvatarControllable() { return avatar_controllable_; }
 
-    private:
         /// Console command: start editing a specific entity's avatar
-        Console::CommandResult EditAvatar(const StringVector &params);
+        void EditAvatar(const QString &entityName);
 
+    private slots:
+        /// Handle our key context input
+        void KeyPressed(KeyEvent *key);
+        void KeyReleased(KeyEvent *key);
+
+    private:
         /// AvatarModules input context
         InputContextPtr avatar_context_;
 
@@ -66,4 +60,3 @@ namespace Avatar
     };
 }
 
-#endif

@@ -1,8 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
-#include "EntityComponent/EC_Avatar.h"
+#include "EC_Avatar.h"
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
 #include "EC_Placeable.h"
@@ -11,7 +12,7 @@
 #include "AvatarDescAsset.h"
 #include "Entity.h"
 #include "OgreConversionUtils.h"
-
+#include "Profiler.h"
 #include <Ogre.h>
 #include <QDomDocument>
 
@@ -19,18 +20,18 @@
 
 #include "MemoryLeakCheck.h"
 
-void ApplyBoneModifier(Scene::Entity* entity, const BoneModifier& modifier, float value);
-void ResetBones(Scene::Entity* entity);
-Ogre::Bone* GetAvatarBone(Scene::Entity* entity, const std::string& bone_name);
+void ApplyBoneModifier(Entity* entity, const BoneModifier& modifier, float value);
+void ResetBones(Entity* entity);
+Ogre::Bone* GetAvatarBone(Entity* entity, const std::string& bone_name);
 void HideVertices(Ogre::Entity*, std::set<uint> vertices_to_hide);
 void GetInitialDerivedBonePosition(Ogre::Node* bone, Ogre::Vector3& position);
 
 // Regrettable magic value
 static const float FIXED_HEIGHT_OFFSET = -0.87f;
 
-EC_Avatar::EC_Avatar(IModule* module) :
-    IComponent(module->GetFramework()),
-    appearanceRef(this, "Appearance ref", "")
+EC_Avatar::EC_Avatar(Scene* scene) :
+    IComponent(scene),
+    appearanceRef(this, "Appearance ref", AssetReference(""))
 {
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         this, SLOT(OnAttributeUpdated(IAttribute*)));
@@ -48,7 +49,7 @@ void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
     if (!asset)
         return;
 
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     if (!entity)
         return;
 
@@ -91,7 +92,7 @@ void EC_Avatar::OnAttributeUpdated(IAttribute *attribute)
         if (ref.isEmpty())
             return;
         
-        avatarAssetListener_->HandleAssetRefChange(&appearanceRef, "GenericAvatarXml");
+        avatarAssetListener_->HandleAssetRefChange(&appearanceRef, "Avatar");
     }
 }
 
@@ -99,7 +100,7 @@ void EC_Avatar::SetupAppearance()
 {
     PROFILE(Avatar_SetupAppearance);
     
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -120,7 +121,7 @@ void EC_Avatar::SetupAppearance()
 
 void EC_Avatar::SetupDynamicAppearance()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -151,7 +152,7 @@ QString EC_Avatar::GetAvatarProperty(const QString& name)
 
 void EC_Avatar::AdjustHeightOffset()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -197,12 +198,12 @@ void EC_Avatar::AdjustHeightOffset()
         }
     }
 
-    mesh->SetAdjustPosition(Vector3df(0.0f, 0.0f, -offset.y + FIXED_HEIGHT_OFFSET));
+    mesh->SetAdjustPosition(float3(0.0f, -offset.y + FIXED_HEIGHT_OFFSET, 0.0f));
 }
 
 void EC_Avatar::SetupMeshAndMaterials()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -241,18 +242,15 @@ void EC_Avatar::SetupMeshAndMaterials()
     for (uint i = 0; i < desc->materials_.size(); ++i)
         mesh->SetMaterial(i, LookupAsset(desc->materials_[i]));
     
-    // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
-    Quaternion adjust(PI/2, 0, -PI/2);
-    mesh->SetAdjustOrientation(adjust);
     // Position approximately within the bounding box
     // Will be overridden by bone-based height adjust, if available
-    mesh->SetAdjustPosition(Vector3df(0.0f, 0.0f, FIXED_HEIGHT_OFFSET));
+    mesh->SetAdjustPosition(float3(0.0f, FIXED_HEIGHT_OFFSET, 0.0f));
     mesh->SetCastShadows(true);
 }
 
 void EC_Avatar::SetupAttachments()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -279,7 +277,7 @@ void EC_Avatar::SetupAttachments()
 
 void EC_Avatar::SetupMorphs()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -287,52 +285,21 @@ void EC_Avatar::SetupMorphs()
     if (!mesh)
         return;
     
-    Ogre::Entity* ogre_entity = mesh->GetEntity();
-    if (!ogre_entity)
-        return;
-    Ogre::AnimationStateSet* anims = ogre_entity->getAllAnimationStates();
-    if (!anims)
-        return;
-        
     const std::vector<MorphModifier> morphs = desc->morphModifiers_;
     
     for (uint i = 0; i < morphs.size(); ++i)
     {
-        if (anims->hasAnimationState(morphs[i].morph_name_))
-        {
-            float timePos = morphs[i].value_;
-            if (timePos < 0.0f)
-                timePos = 0.0f;
-            // Clamp very close to 1.0, but do not actually go to 1.0 or the morph animation will wrap
-            if (timePos > 0.99995f)
-                timePos = 0.99995f;
-            
-            Ogre::AnimationState* anim = anims->getAnimationState(morphs[i].morph_name_);
-            anim->setTimePosition(timePos);
-            anim->setEnabled(timePos > 0.0f);
-            
-            // Also set position in attachment entities, if have the same morph
-            for (uint j = 0; j < mesh->GetNumAttachments(); ++j)
-            {
-                Ogre::Entity* attachment = mesh->GetAttachmentEntity(j);
-                if (!attachment)
-                    continue;
-                Ogre::AnimationStateSet* attachment_anims = attachment->getAllAnimationStates();
-                if (!attachment_anims)
-                    continue;
-                if (!attachment_anims->hasAnimationState(morphs[i].morph_name_))
-                    continue;
-                Ogre::AnimationState* attachment_anim = attachment_anims->getAnimationState(morphs[i].morph_name_);
-                attachment_anim->setTimePosition(timePos);
-                attachment_anim->setEnabled(timePos > 0.0f);
-            }
-        }
+        mesh->SetMorphWeight(QString::fromStdString(morphs[i].morph_name_), morphs[i].value_);
+        
+        // Also set position in attachment entities, if have the same morph
+        for (uint j = 0; j < mesh->GetNumAttachments(); ++j)
+            mesh->SetAttachmentMorphWeight(j, QString::fromStdString(morphs[i].morph_name_), morphs[i].value_);
     }
 }
 
 void EC_Avatar::SetupBoneModifiers()
 {
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     AvatarDescAssetPtr desc = GetAvatarDesc();
     if ((!desc) || (!entity))
         return;
@@ -348,10 +315,15 @@ void EC_Avatar::SetupBoneModifiers()
 
 QString EC_Avatar::LookupAsset(const QString& ref)
 {
-    return framework_->Asset()->LookupAssetRefToStorage(ref);
+    QString descName;
+    AvatarDescAssetPtr desc = GetAvatarDesc();
+    if (desc)
+        descName = desc->Name();
+    
+    return framework->Asset()->ResolveAssetRef(descName, ref);
 }
 
-void ResetBones(Scene::Entity* entity)
+void ResetBones(Entity* entity)
 {
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
@@ -381,7 +353,7 @@ void ResetBones(Scene::Entity* entity)
     }
 }
 
-void ApplyBoneModifier(Scene::Entity* entity, const BoneModifier& modifier, float value)
+void ApplyBoneModifier(Entity* entity, const BoneModifier& modifier, float value)
 {
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
@@ -413,8 +385,10 @@ void ApplyBoneModifier(Scene::Entity* entity, const BoneModifier& modifier, floa
         Ogre::Radian ex, ey, ez;
         Ogre::Radian bx, by, bz;
         Ogre::Radian rx, ry, rz;
-        OgreRenderer::ToOgreQuaternion(modifier.start_.orientation_).ToRotationMatrix(rot_start);
-        OgreRenderer::ToOgreQuaternion(modifier.end_.orientation_).ToRotationMatrix(rot_end);
+        rot_start = float3x3(modifier.start_.orientation_);
+        rot_end = float3x3(modifier.end_.orientation_);
+//        OgreRenderer::ToOgreQuaternion(modifier.start_.orientation_).ToRotationMatrix(rot_start);
+ //       OgreRenderer::ToOgreQuaternion(modifier.end_.orientation_).ToRotationMatrix(rot_end);
         bone->getInitialOrientation().ToRotationMatrix(rot_orig);
         rot_start.ToEulerAnglesXYZ(sx, sy, sz);
         rot_end.ToEulerAnglesXYZ(ex, ey, ez);
@@ -534,7 +508,7 @@ void GetInitialDerivedBonePosition(Ogre::Node* bone, Ogre::Vector3& position)
     }
 }
 
-Ogre::Bone* GetAvatarBone(Scene::Entity* entity, const std::string& bone_name)
+Ogre::Bone* GetAvatarBone(Entity* entity, const std::string& bone_name)
 {
     if (!entity)
         return 0;
