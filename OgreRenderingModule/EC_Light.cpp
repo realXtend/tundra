@@ -2,30 +2,38 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include <QList>
-#include <QVector>
-#include "MemoryLeakCheck.h"
+
 #include "EC_Light.h"
-#include "IModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
-#include "Entity.h"
 #include "OgreConversionUtils.h"
-#include "XMLUtilities.h"
-#include "LoggingFunctions.h"
 
-#include <Ogre.h>
+#include "IModule.h"
+#include "Entity.h"
+#include "Scene.h"
+#include "XMLUtilities.h"
+#include "AttributeMetadata.h"
+#include "LoggingFunctions.h"
+#include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 
 #include <QDomDocument>
+#include <QList>
+#include <QVector>
+
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+
+#include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 
-EC_Light::EC_Light(IModule *module) :
-    IComponent(module->GetFramework()),
+EC_Light::EC_Light(Scene* scene) :
+    IComponent(scene),
     light_(0),
     attached_(false),
     type(this, "light type", LT_Point),
-    direction(this, "direction", Vector3df(0.0f, 0.0f, 1.0f)),
+    direction(this, "direction", float3(0.0f, 0.0f, 1.0f)),
     diffColor(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
     specColor(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
     castShadows(this, "cast shadows", false),
@@ -36,6 +44,9 @@ EC_Light::EC_Light(IModule *module) :
     innerAngle(this, "light inner angle", 30.0f),
     outerAngle(this, "light outer angle", 40.0f)
 {
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
+    
     static AttributeMetadata typeAttrData;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
@@ -47,39 +58,40 @@ EC_Light::EC_Light(IModule *module) :
     }
     type.SetMetadata(&typeAttrData);
 
-    boost::shared_ptr<Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService
-        <Renderer>(Service::ST_Renderer).lock();
-    if (!renderer)
-        return;
-
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    light_ = scene_mgr->createLight(renderer->GetUniqueObjectName("EC_Light"));
+    if (scene->ViewEnabled())
+    {
+        OgreWorldPtr world = world_.lock();
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+        light_ = sceneMgr->createLight(world->GetUniqueObjectName("EC_Light"));
+    }
     
     QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateOgreLight()));
 }
 
 EC_Light::~EC_Light()
 {
-    if (!GetFramework())
+    if (world_.expired())
+    {
+        if (light_)
+            LogError("EC_Light: World has expired, skipping uninitialization!");
         return;
-
-    boost::shared_ptr<Renderer> renderer = GetFramework()->GetServiceManager()->GetService
-        <Renderer>(Service::ST_Renderer).lock();
-    if (!renderer)
-        return;
-
+    }
+    
     if (light_)
     {
         DetachLight();
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        scene_mgr->destroyLight(light_);
+        Ogre::SceneManager* sceneMgr = world_.lock()->GetSceneManager();
+        sceneMgr->destroyLight(light_);
         light_ = 0;
     }
 }
 
 void EC_Light::SetPlaceable(ComponentPtr placeable)
 {
-    if (dynamic_cast<EC_Placeable*>(placeable.get()) == 0)
+    if (!light_)
+        return;
+    
+    if (placeable && dynamic_cast<EC_Placeable*>(placeable.get()) == 0)
     {
         LogError("Attempted to set a placeable which is not a placeable");
         return;
@@ -95,7 +107,7 @@ void EC_Light::SetPlaceable(ComponentPtr placeable)
 
 void EC_Light::AttachLight()
 {
-    if ((placeable_) && (!attached_))
+    if ((light_) && (placeable_) && (!attached_))
     {
         EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
@@ -106,7 +118,7 @@ void EC_Light::AttachLight()
 
 void EC_Light::DetachLight()
 {
-    if ((placeable_) && (attached_))
+    if ((light_) && (placeable_) && (attached_))
     {
         EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
@@ -117,10 +129,13 @@ void EC_Light::DetachLight()
 
 void EC_Light::UpdateOgreLight()
 {
+    if (!light_)
+        return;
+    
     // If placeable is not set yet, set it manually by searching it from the parent entity
     if (!placeable_)
     {
-        Scene::Entity* entity = GetParentEntity();
+        Entity* entity = ParentEntity();
         if (entity)
         {
             ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());

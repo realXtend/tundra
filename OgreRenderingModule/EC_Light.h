@@ -1,13 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_Light_EC_Light_h
-#define incl_EC_Light_EC_Light_h
+#pragma once
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Declare_EC.h"
-#include "Vector3D.h"
+#include "Math/float3.h"
 #include "Color.h"
+#include "OgreModuleFwd.h"
 
 namespace Ogre
 {
@@ -25,7 +24,7 @@ Makes the entity a light source.
 
 <b>Attributes</b>:
 <ul>
-<li>Vector3df: direction.
+<li>float3: direction.
 <div>Specifies the direction vector the light is shining at.</div> 
 <li>enum: light type. 
 <div>One of the values "Point", "Spot" or "Directional".</div> 
@@ -71,11 +70,15 @@ Does not emit any actions.
 */
 class EC_Light : public IComponent
 {
-    DECLARE_EC(EC_Light);
-    
     Q_OBJECT
+    COMPONENT_NAME("EC_Light", 16)
     
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_Light(Scene* scene);
+
+    virtual ~EC_Light();
+
     /// light type enumeration
     enum Type
     {
@@ -83,18 +86,13 @@ public:
         LT_Spot,
         LT_Directional
     };
-    
-    /// Destructor.
-    ~EC_Light();
-    
-    virtual bool IsSerializable() const { return true; }
-
+        
     /// Gets placeable component
     ComponentPtr GetPlaceable() const { return placeable_; }
     
     /// Sets placeable component
     /** Set a null placeable (or do not set a placeable) to have a detached light
-        \param placeable placeable component
+        @param placeable placeable component
      */
     void SetPlaceable(ComponentPtr placeable);
     
@@ -102,8 +100,8 @@ public:
     Ogre::Light* GetLight() const { return light_; }
     
     /// Light direction
-    Q_PROPERTY(Vector3df direction READ getdirection WRITE setdirection)
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, direction);
+    Q_PROPERTY(float3 direction READ getdirection WRITE setdirection)
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, direction);
     
     /// Light type
     Q_PROPERTY(int type READ gettype WRITE settype)
@@ -145,16 +143,11 @@ public:
     /// Spotlight outer angle (degrees)
     Q_PROPERTY(float outerAngle READ getouterAngle WRITE setouterAngle)
     DEFINE_QPROPERTY_ATTRIBUTE(float, outerAngle);
-    
 
 private slots:
     void UpdateOgreLight();
     
 private:
-    /// Constuctor.
-    /** \param module Module.
-     */
-    explicit EC_Light(IModule *module);
     
     /// Attaches light to placeable
     void AttachLight();
@@ -165,6 +158,9 @@ private:
     /// Placeable component, optional
     ComponentPtr placeable_;
     
+    /// Ogre world ptr
+    OgreWorldWeakPtr world_;
+    
     /// Ogre light
     Ogre::Light* light_;
     
@@ -174,4 +170,3 @@ private:
 
 };
 
-#endif
