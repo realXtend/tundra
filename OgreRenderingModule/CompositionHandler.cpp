@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "CompositionHandler.h"
 #include "OgreRenderingModule.h"
 
@@ -9,6 +8,7 @@
 #include <OgreTechnique.h>
 #include <OgreCompositionTechnique.h>
 #include <QApplication>
+#include "MemoryLeakCheck.h"
 
 
 namespace OgreRenderer
@@ -24,26 +24,8 @@ namespace OgreRenderer
     {
     }
 
-    bool CompositionHandler::Initialize(Foundation::Framework* framework, Ogre::Viewport *vp)
+    bool CompositionHandler::Initialize(Framework* framework, Ogre::Viewport *vp)
     {
-        postprocess_effects_.reserve(16);
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Bloom"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "UnderWater"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Glass"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "B&W"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Embossed"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Sharpen Edges"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Invert"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Posterize"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Laplace"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Tiling"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "HDR"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Strong HDR"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Gaussian Blur"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Motion Blur"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "Radial Blur"));
-        postprocess_effects_.push_back(QApplication::translate("CompositionHandler", "WetLens"));
-
         framework_ = framework;
         viewport_ = vp;
         c_manager_ = Ogre::CompositorManager::getSingletonPtr();
@@ -51,41 +33,6 @@ namespace OgreRenderer
             return true;
         else
             return false;
-    }
-
-    std::string CompositionHandler::MapNumberToEffectName(const std::string &number)
-    {
-        std::string effect_name;
-        if(number == "12")
-        {
-            effect_name = "Strong HDR";
-        }else if(number == "4"){
-            effect_name = "UnderWater";
-        }
-        return effect_name;
-    }
-
-    void CompositionHandler::ExecuteServersShaderRequest(const StringVector &parameters)
-    {
-        std::string effect_number = parameters.at(0);
-        std::string enable = parameters.at(1);
-        std::string effect_name;
-
-        if(enable == "True")
-        {
-            effect_name = MapNumberToEffectName(effect_number);
-            if (!effect_name.empty())
-                AddCompositorForViewport(effect_name);
-        }
-        else if(enable == "False")
-        {
-            effect_name = MapNumberToEffectName(effect_number);
-            if (!effect_name.empty())
-                RemoveCompositorFromViewport(effect_name);
-        }
-
-        //12 (default, bloom (?))
-        //4 (water)
     }
 
     void CompositionHandler::RemoveCompositorFromViewport(const std::string &compositor, Ogre::Viewport *vp)
@@ -99,6 +46,23 @@ namespace OgreRenderer
         }
     }
 
+    void CompositionHandler::RemoveAllCompositors()
+    {
+        if (c_manager_!=0)
+        {
+            c_manager_->removeCompositorChain(viewport_);
+            priorities_.clear();
+        }
+    }
+    
+    void CompositionHandler::CameraChanged(Ogre::Viewport* vp, Ogre::Camera* newCamera)
+    {
+        if (c_manager_ && vp && newCamera && c_manager_->hasCompositorChain(vp))
+            //c_manager_->getCompositorChain(vp)->_notifyViewport(vp);
+            /// \todo This is very shitty logic, but Ogre does not seem to give another way to notify a compositor of main viewport camera change.
+            c_manager_->_reconstructAllCompositorResources();
+    }
+    
     bool CompositionHandler::AddCompositorForViewportPriority(const std::string &compositor, int priority)
     {
         priorities_.insert(std::make_pair(compositor, priority));
@@ -118,7 +82,7 @@ namespace OgreRenderer
 
         // Get position for the compositor in compositor chain, based on the priority
         int position = -1;
-        for(int i=0 ; i<priorityOrdered.size() ; ++i)
+        for(int i=0 ; i<(int)priorityOrdered.size() ; ++i)
         {
             if (compositor == priorityOrdered[i].name)
             {
@@ -167,7 +131,7 @@ namespace OgreRenderer
         
         if (!succesfull)
             ::LogWarning("Failed to enable effect: " + compositor);
-
+        
         return succesfull;
     }
 
@@ -188,12 +152,12 @@ namespace OgreRenderer
         if (compositor.get())
         {
             compositor->load();
-            for(int t=0 ; t<compositor->getNumTechniques () ; ++t)
+            for(uint t=0 ; t<compositor->getNumTechniques () ; ++t)
             {
                 Ogre::CompositionTechnique *ct = compositor->getTechnique(t);
                 if (ct)
                 {
-                    for(int tp=0 ; tp<ct->getNumTargetPasses () ; ++tp)
+                    for(uint tp=0 ; tp<ct->getNumTargetPasses () ; ++tp)
                     {
                         Ogre:: CompositionTargetPass *ctp = ct->getTargetPass (tp);
                         SetCompositorTargetParameters(ctp, source);
@@ -213,28 +177,24 @@ namespace OgreRenderer
     void CompositionHandler::SetCompositorTargetParameters(Ogre::CompositionTargetPass *target, const QList< std::pair<std::string, Ogre::Vector4> > &source) const
     {
         if (target)
-        {
-            for(int p=0 ; p<target->getNumPasses() ; ++p)
+            for(uint p=0 ; p<target->getNumPasses() ; ++p)
             {
                 Ogre::CompositionPass *pass = target->getPass(p);
                 if (pass)
-                {
                     SetMaterialParameters(pass->getMaterial(), source);
-                }
             }
-        }
     }
 
     void CompositionHandler::SetMaterialParameters(const Ogre::MaterialPtr &material, const QList< std::pair<std::string, Ogre::Vector4> > &source) const
     {
         assert (material.get());
         material->load();
-        for(int t=0 ; t<material->getNumTechniques() ; ++t)
+        for(ushort t=0 ; t<material->getNumTechniques() ; ++t)
         {
             Ogre::Technique *technique = material->getTechnique(t);
             if (technique)
             {
-                for(int p=0 ; p<technique->getNumPasses() ; ++p)
+                for(ushort p=0 ; p<technique->getNumPasses() ; ++p)
                 {
                     Ogre::Pass *pass = technique->getPass(p);
                     if (pass)
@@ -312,7 +272,7 @@ namespace OgreRenderer
                 for(int i = 1; i < 8; ++i)
                 {
                     mBloomTexWeights[i][0] = mBloomTexWeights[i][1] =
-                        mBloomTexWeights[i][2] = 1.25f * Ogre::Math::gaussianDistribution(i, 0, deviation);
+                        mBloomTexWeights[i][2] = 1.25f * Ogre::Math::gaussianDistribution((Ogre::Real)i, 0, deviation);
                     mBloomTexWeights[i][3] = 1.0f;
                     mBloomTexOffsetsHorz[i][0] = i * texelSize;
                     mBloomTexOffsetsHorz[i][1] = 0.0f;
@@ -408,7 +368,7 @@ namespace OgreRenderer
         for(int i = 1; i < 8; ++i)
         {
             mBloomTexWeights[i][0] = mBloomTexWeights[i][1] =
-                mBloomTexWeights[i][2] = Ogre::Math::gaussianDistribution(i, 0, deviation);
+                mBloomTexWeights[i][2] = Ogre::Math::gaussianDistribution((Ogre::Real)i, 0, deviation);
             mBloomTexWeights[i][3] = 1.0f;
             mBloomTexOffsetsHorz[i][0] = i * texelSize;
             mBloomTexOffsetsHorz[i][1] = 0.0f;

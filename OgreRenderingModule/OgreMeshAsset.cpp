@@ -1,15 +1,16 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "OgreMeshAsset.h"
 #include "OgreConversionUtils.h"
 #include "OgreRenderingModule.h"
 #include "AssetAPI.h"
+#include "Profiler.h"
 
 #include <QFile>
 #include <Ogre.h>
 
 #include "LoggingFunctions.h"
+#include "MemoryLeakCheck.h"
 
 OgreMeshAsset::~OgreMeshAsset()
 {
@@ -58,7 +59,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     // Generate extremity points to submeshes, 1 should be enough
     try
     {
-        for(uint i = 0; i < ogreMesh->getNumSubMeshes(); ++i)
+        for(unsigned short i = 0; i < ogreMesh->getNumSubMeshes(); ++i)
         {
             Ogre::SubMesh *smesh = ogreMesh->getSubMesh(i);
             if (smesh)
@@ -83,13 +84,8 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 
     //internal_name_ = SanitateAssetIdForOgre(id_);
     
-    LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
+//    LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
     return true;
-}
-
-void OgreMeshAsset::HandleLoadError(const QString &loadError)
-{
-    LogDebug(loadError.toStdString());
 }
 
 void OgreMeshAsset::DoUnload()
@@ -112,7 +108,7 @@ void OgreMeshAsset::SetDefaultMaterial()
         return;
 
 //    originalMaterials.clear();
-    for(uint i = 0; i < ogreMesh->getNumSubMeshes(); ++i)
+    for(unsigned short i = 0; i < ogreMesh->getNumSubMeshes(); ++i)
     {
         Ogre::SubMesh *submesh = ogreMesh->getSubMesh(i);
         if (submesh)
@@ -128,7 +124,7 @@ bool OgreMeshAsset::IsLoaded() const
     return ogreMesh.get() != 0;
 }
 
-bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
+bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     if (ogreMesh.isNull())
     {

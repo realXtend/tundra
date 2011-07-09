@@ -1,5 +1,4 @@
-#ifndef incl_OgreLocalResourceUtils_h
-#define incl_OgreLocalResourceUtils_h
+#pragma once
 
 #include <OgreMesh.h>
 #include <OgreSkeleton.h>
@@ -23,4 +22,3 @@ namespace OgreRenderer
     Ogre::TexturePtr OGRE_MODULE_API GetLocalTexture(const std::string& name);
 };
 
-#endif

@@ -5,8 +5,7 @@
  *  @brief  Forward declarations for commonly used OgreRenderingModule and Ogre classes.
  */
 
-#ifndef incl_OgreRendereringModule_OgreModuleFwd_h
-#define incl_OgreRendereringModule_OgreModuleFwd_h
+#pragma once
 
 #include <boost/smart_ptr.hpp>
 
@@ -29,6 +28,7 @@ namespace Ogre
     class ParticleSystem;
     class Skeleton;
     class TagPoint;
+    class MaterialPtr;
 }
 
 namespace OgreRenderer
@@ -38,23 +38,26 @@ namespace OgreRenderer
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
     class OgreRenderingModule;
-    class LogListener;
     class ResourceHandler;
     class RenderableListener;
-    class QOgreUIView;
-    class QOgreWorldView;
-    class CAVEManager;
-    class StereoController;
+
     class CompositionHandler;
     class GaussianListener;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
-    typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
     typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
     typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
 }
 
-class EC_Placeable;
-class EC_Mesh;
+class OgreWorld;
+class OgreMaterialAsset;
 
-#endif
+class EC_AnimationController;
+class EC_Camera;
+class EC_Light;
+class EC_Mesh;
+class EC_Placeable;
+
+typedef boost::shared_ptr<OgreWorld> OgreWorldPtr;
+typedef boost::weak_ptr<OgreWorld> OgreWorldWeakPtr;
+

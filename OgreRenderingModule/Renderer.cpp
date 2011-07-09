@@ -3,31 +3,38 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Application.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
+#include "OgreWorld.h"
 #include "EC_Placeable.h"
-#include "EC_OgreCamera.h"
-#include "EC_OgreMovableTextOverlay.h"
-#include "NaaliRenderWindow.h"
-#include "NaaliGraphicsView.h"
+#include "EC_Camera.h"
+#include "RenderWindow.h"
+#include "UiGraphicsView.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
 #include "OgreDefaultHardwareBufferManager.h"
-#include "SceneManager.h"
-#include "EventManager.h"
-#include "Platform.h"
+#include "Scene.h"
 #include "CoreException.h"
 #include "Entity.h"
 #include "SceneAPI.h"
-
+#include "Profiler.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
-#include "NaaliGraphicsView.h"
-
+#include "UiMainWindow.h"
+#include "UiGraphicsView.h"
+#include "LoggingFunctions.h"
 #include "ConfigAPI.h"
 
+#include <boost/filesystem.hpp>
 #include <Ogre.h>
+
+// Clamp elapsed frame time to avoid Ogre controllers going crazy
+static const float MAX_FRAME_TIME = 0.1f;
+
+#if defined(USE_D3D9_SUBSURFACE_BLIT) && !defined(WIN32)
+#undef USE_D3D9_SUBSURFACE_BLIT
+#endif
 
 #ifdef USE_D3D9_SUBSURFACE_BLIT
 #undef SAFE_DELETE
@@ -55,92 +62,45 @@
 
 #include "MemoryLeakCheck.h"
 
-using namespace Foundation;
-
 namespace OgreRenderer
 {
-    /// Ogre renderable listener to find out visible objects for each frame
-    class RenderableListener : public Ogre::RenderQueue::RenderableListener
+    class OgreLogListener : public Ogre::LogListener
     {
     public:
-        RenderableListener(Renderer* renderer) :
-            renderer_(renderer)
+        void messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
         {
-        }
-        
-        ~RenderableListener()
-        {
-        }
-        
-        virtual bool renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID,
-            Ogre::ushort priority, Ogre::Technique** ppTech, Ogre::RenderQueue* pQueue)
-        {
-            Ogre::Any any = rend->getUserAny();
-            if (any.isEmpty())
-                return true;
-            
-            Scene::Entity *entity = 0;
-            try
+            if (lml == Ogre::LML_CRITICAL)
+                LogCritical(message);
+            else if (lml == Ogre::LML_TRIVIAL)
+                LogDebug(message);
+            else // lml == Ogre::LML_NORMAL here.
             {
-                entity = Ogre::any_cast<Scene::Entity*>(any);
-                if (entity)
-                    renderer_->visible_entities_.insert(entity->GetId());
+                // Because Ogre distinguishes different log levels *VERY POORLY* (practically all messages come in the LML_NORMAL), we use manual format checks to decide between Info/Warning/Error/Critical channels.
+                QString str = message.c_str();
+                if (str.contains("error", Qt::CaseInsensitive) || str.contains("critical", Qt::CaseInsensitive))
+                    LogError(message);
+                else if (str.contains("warning", Qt::CaseInsensitive) || str.contains("unexpected", Qt::CaseInsensitive) || str.contains("unknown", Qt::CaseInsensitive) || str.contains("cannot", Qt::CaseInsensitive) || str.contains("can not", Qt::CaseInsensitive))
+                    LogWarning(message);
+                else if (str.startsWith("*-*-*"))
+                    LogInfo(message);
+                else
+                    LogDebug(message);
             }
-            catch(Ogre::InvalidParametersException &/*e*/)
-            {
-            }
-            return true;
         }
-        
-    private:
-        Renderer* renderer_;
-    };
-
-    /// Ogre log listener, for passing ogre log messages
-    class LogListener : public Ogre::LogListener
-    {
-    public:
-        LogListener() : Ogre::LogListener() {}
-        virtual ~LogListener() {}
-
-        /// Subscribe new listener for ogre log messages
-        void SubscribeListener(const Foundation::LogListenerPtr &listener)
-        {
-            listeners_.push_back(listener);
-        }
-
-        /// Unsubscribe listener for ogre log messages
-        void UnsubscribeListener(const Foundation::LogListenerPtr &listener)
-        {
-            listeners_.remove(listener);
-        }
-
-        void messageLogged(const std::string& message, Ogre::LogMessageLevel lml, bool maskDebug, const std::string &logName)
-        {
-            for(ListenerList::iterator it = listeners_.begin(); it != listeners_.end(); ++it)
-                (*it)->LogMessage(message);
-        }
-
-    private:
-        typedef std::list<Foundation::LogListenerPtr> ListenerList;
-
-        /// list of subscribed listeners
-        ListenerList listeners_;
     };
 
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
         framework_(framework),
-        scenemanager_(0),
         buffermanager_(0),
-        default_camera_(0),
-        camera_(0),
+        defaultScene_(0),
+        defaultCamera_(0),
+        cameraComponent_(0),
         viewport_(0),
         object_id_(0),
         group_id_(0),
         config_filename_(config),
         plugins_filename_(plugins),
-        ray_query_(0),
         window_title_(window_title),
         renderWindow(0),
         last_width_(0),
@@ -149,80 +109,36 @@ namespace OgreRenderer
         resized_dirty_(0),
         view_distance_(500.0f),
         shadowquality_(Shadows_High),
-        texturequality_(Texture_Normal),
-        c_handler_(new CompositionHandler),
-        targetFpsLimit(60.f) // The default FPS to aim at is 60fps.
+        texturequality_(Texture_Normal)        
     {
-        timerFrequency = GetCurrentClockFreq();
+        c_handler_ = new CompositionHandler;
+        logListener = new OgreLogListener; 
 
+        timerFrequency = GetCurrentClockFreq();
         PrepareConfig();
     }
 
     Renderer::~Renderer()
     {
-        RemoveLogListener();
-
-        if ((scenemanager_) && (scenemanager_->getRenderQueue()))
-            scenemanager_->getRenderQueue()->setRenderableListener(0);
-
-        if (ray_query_)
-            if (scenemanager_) {
-                scenemanager_->destroyQuery(ray_query_);
-            } else {
-                LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
-            }
-
         if (framework_->Ui() && framework_->Ui()->MainWindow())
             framework_->Ui()->MainWindow()->SaveWindowSettingsToFile();
 
-        ///\todo Is compositorInstance->removeLister(listener) needed here?
-        foreach(GaussianListener* listener, gaussianListeners_)
-            SAFE_DELETE(listener);
-
+        // Delete all worlds that still exist
+        ogreWorlds_.clear();
+        
+        // Delete the default camera & scene
+        if (defaultScene_)
+        {
+            defaultScene_->destroyCamera(defaultCamera_);
+            defaultCamera_ = 0;
+            root_->destroySceneManager(defaultScene_);
+            defaultScene_ = 0;
+        }
+        
         root_.reset();
         SAFE_DELETE(c_handler_);
+        SAFE_DELETE(logListener);
         SAFE_DELETE(renderWindow);
-    }
-
-    void Renderer::RemoveLogListener()
-    {
-        if (log_listener_)
-        {
-            Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
-            log_listener_.reset();
-        }
-    }
-
-    void Renderer::DoFrameTimeLimiting()
-    {
-        if (targetFpsLimit > 1.f)
-        {
-            tick_t timeNow = GetCurrentClockTime();
-
-            double msecsSpentInFrame = (double)(timeNow - lastPresentTime) * 1000.0 / timerFrequency;
-            const double msecsPerFrame = 1000.0 / targetFpsLimit;
-            if (msecsSpentInFrame < msecsPerFrame)
-            {
-                PROFILE(Renderer_DoFrameTimeLimiting);
-                while(msecsSpentInFrame >= 0.0 && msecsSpentInFrame < msecsPerFrame)
-                {
-                    if (msecsSpentInFrame + 1.0 < msecsPerFrame)
-                        boost::this_thread::sleep(boost::posix_time::milliseconds(1)); // Sleep in 1msec slices (which on most systems is far from guaranteed to be 1msec, but suits the purpose here)
-
-                    msecsSpentInFrame = (double)(GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
-                }
-
-                // Busy-wait the rest of the time slice to avoid jittering and to produce smoother updates.
-                while(msecsSpentInFrame >= 0 && msecsSpentInFrame < msecsPerFrame)
-                    msecsSpentInFrame = (double)(GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
-            }
-
-            lastPresentTime = GetCurrentClockTime();
-
-//            timeSleptLastFrame = (double)((timeNow - lastPresentTime) * 1000.0 / timerFrequency);
-        }
-//        else
-//            timeSleptLastFrame = 0.0;
     }
 
     void Renderer::PrepareConfig()
@@ -258,38 +174,25 @@ namespace OgreRenderer
         std::string logfilepath, rendersystem_name;
         Ogre::RenderSystem *rendersystem = 0;
 
-        // Some pretty printing
         LogDebug("INITIALIZING OGRE");
 
-        const boost::program_options::variables_map &options = framework_->ProgramOptions();
-        if (options.count("fpslimit") > 0)
-        {
-            targetFpsLimit = options["fpslimit"].as<float>();
-            if (targetFpsLimit < 1.f)
-                targetFpsLimit = 0.f;
-        }
-        else
-#if QT_VERSION < 0x040700 && !defined(Q_WS_MAC)
-            // Default FPS limit is 60.
-            targetFpsLimit = 60.f;
-#else
-            // Dues to main window hanging up on Qt 4.7.x when fps limitter is used, that makes using the app impossible. 
-            // Default FPS limit is 0 for non-headless run on Qt 4.7.1 untill the bug can be examined.
-            // \todo Fix Qt 4.7.x hanging up the main window on focus and move events, so that FPS limitter can be set back to 60 by default.
-            if (!framework_->IsHeadless())
-                targetFpsLimit = 0.f; 
-            else
-                targetFpsLimit = 60.f;
-#endif
+        //const boost::program_options::variables_map &options = framework_->ProgramOptions();
 
         // Create Ogre root with logfile
-        QDir logDir(framework_->GetPlatform()->GetApplicationDataDirectory().c_str());
+        QDir logDir(Application::UserDataDirectory());
         if (!logDir.exists("logs"))
             logDir.mkdir("logs");
         logDir.cd("logs");
 
         logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString();
 #include "DisableMemoryLeakCheck.h"
+        static Ogre::LogManager *overriddenLogManager = 0;
+        overriddenLogManager = new Ogre::LogManager; ///\bug This pointer is never freed. We leak memory here, but cannot free due to Ogre singletons being accessed.
+        overriddenLogManager->createLog("", true, false, true);
+        Ogre::LogManager::getSingleton().getDefaultLog()->setDebugOutputEnabled(false); // Disable Ogre from outputting to std::cerr by itself.
+        Ogre::LogManager::getSingleton().getDefaultLog()->addListener(logListener); // Make all Ogre log output to come to our log listener.
+        Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_NORMAL); // This is probably the default level anyway, but be explicit.
+
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 
 // On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwareBufferManager singleton will crash.
@@ -304,11 +207,6 @@ namespace OgreRenderer
 #endif
 
 #include "EnableMemoryLeakCheck.h"
-
-        // Setup Ogre logger (use LL_NORMAL for more prints of init)
-        Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
-        log_listener_ = OgreLogListenerPtr(new LogListener);
-        Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
 
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
         view_distance_ = framework_->Config()->Get(configData, "view distance").toFloat();
@@ -363,7 +261,7 @@ namespace OgreRenderer
                 int height = framework_->Ui()->GraphicsView()->viewport()->size().height();
                 int window_left = 0;
                 int window_top = 0;
-                renderWindow = new NaaliRenderWindow();
+                renderWindow = new RenderWindow();
                 bool fullscreen = false;
 
                 renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
@@ -384,9 +282,15 @@ namespace OgreRenderer
             }
             LogDebug("Initializing resources, may take a while...");
             SetupResources();
+
+            /// Create the default scene manager, which is used for nothing but rendering emptiness in case we have no framework scenes
+            defaultScene_ = root_->createSceneManager(Ogre::ST_GENERIC, "DefaultEmptyScene");
+            defaultCamera_ = defaultScene_->createCamera("DefaultCamera");
+        
+            viewport_ = renderWindow->OgreRenderWindow()->addViewport(defaultCamera_);
+            c_handler_->Initialize(framework_ ,viewport_);
         }
 
-        SetupScene();
         initialized_ = true;
     }
 
@@ -440,6 +344,8 @@ namespace OgreRenderer
         }
 
         Ogre::String plugin_dir = file.getSetting("PluginFolder");
+        if (plugin_dir == ".")
+            plugin_dir = boost::filesystem::path(plugin_filename).branch_path().string();
         Ogre::StringVector plugins = file.getMultiSetting("Plugin");
         
         if (plugin_dir.length())
@@ -484,6 +390,9 @@ namespace OgreRenderer
             {
                 type_name = i->first;
                 arch_name = i->second;
+                if (QDir::isRelativePath(arch_name.c_str()))
+                    arch_name = QDir::cleanPath(Application::InstallationDirectory() + arch_name.c_str()).toStdString();
+
                 Ogre::ResourceGroupManager::getSingleton().addResourceLocation(arch_name, type_name, sec_name);
             }
         }
@@ -492,48 +401,19 @@ namespace OgreRenderer
         switch (shadowquality_)
         {
         case Shadows_Off:
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/materials/scripts/shadows_off", "FileSystem", "General");
+            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/materials/scripts/shadows_off", "FileSystem", "General");
             break;
         case Shadows_High:
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/materials/scripts/shadows_high", "FileSystem", "General");
+            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/materials/scripts/shadows_high", "FileSystem", "General");
             break;
         default:
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation("./media/materials/scripts/shadows_low", "FileSystem", "General");
+            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/materials/scripts/shadows_low", "FileSystem", "General");
             break;
         }
         
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
-
-    void Renderer::SetupScene()
-    {
-        scenemanager_ = root_->createSceneManager(Ogre::ST_GENERIC, "SceneManager");
-        if (framework_->IsHeadless())
-            return;
-        
-        default_camera_ = scenemanager_->createCamera("DefaultCamera");
-        viewport_ = renderWindow->OgreRenderWindow()->addViewport(default_camera_);
-
-        default_camera_->setNearClipDistance(0.1f);
-        default_camera_->setFarClipDistance(2000.f);
-        default_camera_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
-        default_camera_->roll(Ogre::Radian(Ogre::Math::HALF_PI));
-        default_camera_->setAspectRatio(Ogre::Real(viewport_->getActualWidth()) / Ogre::Real(viewport_->getActualHeight()));
-        default_camera_->setAutoAspectRatio(true);
-
-        camera_ = default_camera_;
-
-        ray_query_ = scenemanager_->createRayQuery(Ogre::Ray());
-        ray_query_->setSortByDistance(true); 
-        
-        renderable_listener_ = RenderableListenerPtr(new RenderableListener(this));
-        scenemanager_->getRenderQueue()->setRenderableListener(renderable_listener_.get());
-
-        InitShadows();
-
-        c_handler_->Initialize(framework_ ,viewport_);
-    }
-
+    
     int Renderer::GetWindowWidth() const
     {
         if (renderWindow)
@@ -547,19 +427,8 @@ namespace OgreRenderer
         return 0;
     }
 
-    void Renderer::SubscribeLogListener(const Foundation::LogListenerPtr &listener)
-    {
-        log_listener_->SubscribeListener(listener);
-    }
-
-    void Renderer::UnsubscribeLogListener(const Foundation::LogListenerPtr &listener)
-    {
-        log_listener_->UnsubscribeListener(listener);
-    }
-    
     void Renderer::Update(f64 frametime)
     {
-        Ogre::WindowEventUtilities::messagePump();
     }
     
     void Renderer::SetViewDistance(float distance)
@@ -569,15 +438,26 @@ namespace OgreRenderer
         framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)view_distance_);
     }
 
-    void Renderer::SetCurrentCamera(Ogre::Camera* camera)
+    void Renderer::SetActiveCamera(EC_Camera* camera)
     {
-        if (!camera)
-            camera = default_camera_;
-
+        Ogre::Camera* ogreCamera = defaultCamera_;
+        
+        if ((camera) && (camera->GetCamera()))
+        {
+            cameraComponent_ = camera;
+            ogreCamera = camera->GetCamera();
+            OgreWorldPtr w = GetActiveOgreWorld();
+            if (w)
+                w->EmitActiveCameraChanged(camera);
+        }
+        else
+            cameraComponent_ = 0;
+        
         if (viewport_)
         {
-            viewport_->setCamera(camera);
-            camera_ = camera;
+            viewport_->setCamera(ogreCamera);
+            if (c_handler_)
+                c_handler_->CameraChanged(viewport_, ogreCamera);
         }
     }
 
@@ -586,9 +466,9 @@ namespace OgreRenderer
         if (framework_->IsHeadless())
             return;
             
-        PROFILE(Renderer_Render_QtBlit);
+        PROFILE(Renderer_DoFullUIRedraw);
 
-        NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
+        UiGraphicsView *view = framework_->Ui()->GraphicsView();
 
         QImage *backBuffer = view->BackBuffer();
         if (!backBuffer)
@@ -602,36 +482,56 @@ namespace OgreRenderer
         QSize mainwindowSize(framework_->Ui()->MainWindow()->size());
         QSize renderWindowSize(renderWindow->OgreRenderWindow()->getWidth(), renderWindow->OgreRenderWindow()->getHeight());
 
-        backBuffer->fill(Qt::transparent);
+        {
+            PROFILE(Renderer_DoFullUIRedraw_backbufferfill);
+            backBuffer->fill(Qt::transparent);
+        }
 
         // Paint ui view into buffer
-        QPainter painter(backBuffer);
-        view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+        {
+            PROFILE(Renderer_DoFullUIRedraw_GraphicsViewPaint);
+            QPainter painter(backBuffer);
+            view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+        }
 
         renderWindow->UpdateOverlayImage(*backBuffer);
     }
 
-    void Renderer::Render()
+    RaycastResult* Renderer::Raycast(int x, int y)
+    {
+        return Raycast(x, y, 0xffffffff);
+    }
+
+    RaycastResult* Renderer::Raycast(int x, int y, unsigned layerMask)
+    {
+        OgreWorldPtr world = GetActiveOgreWorld();
+        if (world)
+            return world->Raycast(x, y, layerMask);
+        else
+            return 0;
+    }
+    
+    QList<Entity*> Renderer::FrustumQuery(QRect &viewrect)
+    {
+        OgreWorldPtr world = GetActiveOgreWorld();
+        if (world)
+            return world->FrustumQuery(viewrect);
+        else
+            return QList<Entity*>();
+    }
+
+    void Renderer::Render(float frameTime)
     {
         using namespace std;
         
-        if (!initialized_) 
+        if ((!initialized_) || (framework_->IsHeadless()))
             return;
 
-        if (framework_->IsHeadless())
-        {
-            // In headless mode, do frame time limiting here to avoid busy-spinning in the main loop and taking up 100% CPU. In headless mode this could
-            // also be safely done using Qt timers, which might be a slightly better approach.
-            DoFrameTimeLimiting(); 
-            return;
-        }
-
+        if (frameTime > MAX_FRAME_TIME)
+            frameTime = MAX_FRAME_TIME;
+            
         PROFILE(Renderer_Render);
 
-        // If fog is FOG_NONE, force it to some default ineffective settings, because otherwise SuperShader shows just white
-        if (scenemanager_->getFogMode() == Ogre::FOG_NONE)
-            scenemanager_->setFog(Ogre::FOG_LINEAR, Ogre::ColourValue::White, 0.001f, 2000.0f, 4000.0f);
-            
         // If rendering into different size window, dirty the UI view for now & next frame
         if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
         {
@@ -644,10 +544,7 @@ namespace OgreRenderer
 #endif
         }
 
-        bool applyFPSLimit = true;
-        UNREFERENCED_PARAM(applyFPSLimit);
-
-        NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
+        UiGraphicsView *view = framework_->Ui()->GraphicsView();
 
 #ifdef USE_D3D9_SUBSURFACE_BLIT
         if (view->IsViewDirty() || resized_dirty_)
@@ -710,8 +607,8 @@ namespace OgreRenderer
                     return;
                 }
 
-                if (dirty.right() > desc.Width) dirty.setRight(desc.Width);
-                if (dirty.bottom() > desc.Height) dirty.setBottom(desc.Height);
+                if ((uint)dirty.right() > desc.Width) dirty.setRight(desc.Width);
+                if ((uint)dirty.bottom() > desc.Height) dirty.setBottom(desc.Height);
                 if (dirty.left() > dirty.right()) dirty.setLeft(dirty.right());
                 if (dirty.top() > dirty.bottom()) dirty.setTop(dirty.bottom());
 
@@ -749,7 +646,7 @@ namespace OgreRenderer
                         }
 */
                     }
-                    assert(lock.Pitch >= desc.Width*4);
+                    assert((uint)lock.Pitch >= desc.Width*4);
                 }
                 char *surfacePtr = (char *)lock.pBits;
 
@@ -782,7 +679,7 @@ namespace OgreRenderer
             }
         }
 #else // Not using the subrectangle blit - just do a full UI blit.
-        if (view->IsViewDirty())
+        if (view->IsViewDirty() || resized_dirty_)
         {
             DoFullUIRedraw();
         }
@@ -790,10 +687,7 @@ namespace OgreRenderer
 
         if (resized_dirty_ > 0)
             resized_dirty_--;
-
-        // The RenderableListener will fill in visible entities for this frame
-        visible_entities_.clear();
-
+        
 #ifdef PROFILING
         // Performance debugging: Toggle the UI overlay visibility based on a debug key.
         // Allows testing whether the GPU is majorly fill rate bound.
@@ -805,9 +699,16 @@ namespace OgreRenderer
 
         try
         {
-            DoFrameTimeLimiting(); // Note: Performing limiting here is very prone to FPS jitter depending how much time renderOneFrame takes. The proper method
-                                   // would be to perform the limiting inside renderOneFrame, but Ogre does not support it.
-            root_->renderOneFrame();
+            PROFILE(Renderer_Render_OgreRoot_renderOneFrame);
+            if (viewport_->getCamera())
+            {
+                // Control the frame time manually
+                Ogre::FrameEvent evt;
+                evt.timeSinceLastFrame = frameTime;
+                root_->_fireFrameStarted(evt);
+                root_->_updateAllRenderTargets();
+                root_->_fireFrameEnded();
+            }
         } catch(const std::exception &e)
         {
             std::cout << "Ogre::Root::renderOneFrame threw an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
@@ -817,414 +718,31 @@ namespace OgreRenderer
         view->MarkViewUndirty();
     }
 
-    uint GetSubmeshFromIndexRange(uint index, const std::vector<uint>& submeshstartindex)
+    IComponent* Renderer::GetActiveCamera() const
     {
-        for(uint i = 0; i < submeshstartindex.size(); ++i)
-        {
-            uint start = submeshstartindex[i];
-            uint end;
-            if (i < submeshstartindex.size() - 1)
-                end = submeshstartindex[i+1];
-            else
-                end = 0x7fffffff;
-            if ((index >= start) && (index < end))
-                return i;
-        }
-        return 0; // should never happen
+        return cameraComponent_;
     }
 
-    // Get the mesh information for the given mesh. Version which supports animation
-    // Adapted from http://www.ogre3d.org/wiki/index.php/Raycasting_to_the_polygon_level
-    void GetMeshInformation(
-        Ogre::Entity *entity,
-        std::vector<Ogre::Vector3>& vertices,
-        std::vector<Ogre::Vector2>& texcoords,
-        std::vector<uint>& indices,
-        std::vector<uint>& submeshstartindex,
-        const Ogre::Vector3 &position,
-        const Ogre::Quaternion &orient,
-        const Ogre::Vector3 &scale)
+    OgreWorldPtr Renderer::GetActiveOgreWorld() const
     {
-        PROFILE(Renderer_GetMeshInformation);
-
-        bool added_shared = false;
-        size_t current_offset = 0;
-        size_t shared_offset = 0;
-        size_t next_offset = 0;
-        size_t index_offset = 0;
-        size_t vertex_count = 0;
-        size_t index_count = 0;
-        Ogre::MeshPtr mesh = entity->getMesh();
-
-        bool useSoftwareBlendingVertices = entity->hasSkeleton();
-        if (useSoftwareBlendingVertices)
-            entity->_updateAnimation();
-
-        submeshstartindex.resize(mesh->getNumSubMeshes());
-
-        // Calculate how many vertices and indices we're going to need
-        for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
-        {
-            Ogre::SubMesh* submesh = mesh->getSubMesh( i );
-            // We only need to add the shared vertices once
-            if (submesh->useSharedVertices)
-            {
-                if (!added_shared)
-                {
-                    vertex_count += mesh->sharedVertexData->vertexCount;
-                    added_shared = true;
-                }
-            }
-            else
-            {
-                vertex_count += submesh->vertexData->vertexCount;
-            }
-
-            // Add the indices
-            submeshstartindex[i] = index_count;
-            index_count += submesh->indexData->indexCount;
-        }
-
-        // Allocate space for the vertices and indices
-        vertices.resize(vertex_count);
-        texcoords.resize(vertex_count);
-        indices.resize(index_count);
-
-        added_shared = false;
-
-        // Run through the submeshes again, adding the data into the arrays
-        for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
-        {
-            Ogre::SubMesh* submesh = mesh->getSubMesh(i);
-
-            // Get vertex data
-            //Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-            Ogre::VertexData* vertex_data;
-
-            //When there is animation:
-            if (useSoftwareBlendingVertices)
-                vertex_data = submesh->useSharedVertices ? entity->_getSkelAnimVertexData() : entity->getSubEntity(i)->_getSkelAnimVertexData();
-            else
-                vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-
-            if ((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
-            {
-                if(submesh->useSharedVertices)
-                {
-                    added_shared = true;
-                    shared_offset = current_offset;
-                }
-
-                const Ogre::VertexElement* posElem =
-                    vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
-                const Ogre::VertexElement *texElem = 
-                    vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_TEXTURE_COORDINATES);
-
-                Ogre::HardwareVertexBufferSharedPtr vbuf =
-                    vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
-
-                unsigned char* vertex =
-                    static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-
-                // There is _no_ baseVertexPointerToElement() which takes an Ogre::Real or a double
-                //  as second argument. So make it float, to avoid trouble when Ogre::Real will
-                //  be comiled/typedefed as double:
-                //      Ogre::Real* pReal;
-                float* pReal = 0;
-
-                for(size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
-                {
-                    posElem->baseVertexPointerToElement(vertex, &pReal);
-
-                    Ogre::Vector3 pt(pReal[0], pReal[1], pReal[2]);
-
-                    vertices[current_offset + j] = (orient * (pt * scale)) + position;
-                    if (texElem)
-                    {
-                        texElem->baseVertexPointerToElement(vertex, &pReal);
-                        texcoords[current_offset + j] = Ogre::Vector2(pReal[0], pReal[1]);
-                    }
-                    else
-                        texcoords[current_offset + j] = Ogre::Vector2(0.0f, 0.0f);
-                }
-
-                vbuf->unlock();
-                next_offset += vertex_data->vertexCount;
-            }
-
-            Ogre::IndexData* index_data = submesh->indexData;
-            size_t numTris = index_data->indexCount / 3;
-            Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
-
-            unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-            unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
-            size_t offset = (submesh->useSharedVertices)? shared_offset : current_offset;
-
-            bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
-            if (use32bitindexes)
-                for(size_t k = 0; k < numTris*3; ++k)
-                    indices[index_offset++] = pLong[k] + static_cast<uint>(offset);
-            else
-                for(size_t k = 0; k < numTris*3; ++k)
-                    indices[index_offset++] = static_cast<uint>(pShort[k]) + static_cast<unsigned long>(offset);
-
-            ibuf->unlock();
-            current_offset = next_offset;
-        }
-    }
-
-    Ogre::Vector2 FindUVs(
-        const Ogre::Ray& ray,
-        float distance,
-        const std::vector<Ogre::Vector3>& vertices,
-        const std::vector<Ogre::Vector2>& texcoords,
-        const std::vector<uint> indices, uint foundindex)
-    {
-        Ogre::Vector3 point = ray.getPoint(distance);
-
-        Ogre::Vector3 t1 = vertices[indices[foundindex]];
-        Ogre::Vector3 t2 = vertices[indices[foundindex+1]];
-        Ogre::Vector3 t3 = vertices[indices[foundindex+2]];
-
-        Ogre::Vector3 v1 = point - t1;
-        Ogre::Vector3 v2 = point - t2;
-        Ogre::Vector3 v3 = point - t3;
-
-        float area1 = (v2.crossProduct(v3)).length() / 2.0f;
-        float area2 = (v1.crossProduct(v3)).length() / 2.0f;
-        float area3 = (v1.crossProduct(v2)).length() / 2.0f;
-        float sum_area = area1 + area2 + area3;
-        if (sum_area == 0.0)
-            return Ogre::Vector2(0.0f, 0.0f);
-
-        Ogre::Vector3 bary(area1 / sum_area, area2 / sum_area, area3 / sum_area);
-        Ogre::Vector2 t = texcoords[indices[foundindex]] * bary.x + texcoords[indices[foundindex+1]] * bary.y + texcoords[indices[foundindex+2]] * bary.z;
-
-        return t;
-    }
-
-    RaycastResult* Renderer::Raycast(int x, int y)
-    {
-        static RaycastResult result;
-        
-        result.entity_ = 0; 
-        if (!initialized_)
-            return &result;
-        if (!renderWindow)
-            return &result; // Headless
-
-        float screenx = x / (float)renderWindow->OgreRenderWindow()->getWidth();
-        float screeny = y / (float)renderWindow->OgreRenderWindow()->getHeight();
-
-        Ogre::Ray ray = camera_->getCameraToViewportRay(screenx, screeny);
-        ray_query_->setRay(ray);
-        Ogre::RaySceneQueryResult &results = ray_query_->execute();
-
-        // The minimum priority to use if we're picking an Entity that doesn't have the component that contains priority.
-        const int minimum_priority = -1000000;
-
-        int best_priority = minimum_priority;
-        // Prepass: get best available priority for breaking early
-        for(size_t i = 0; i < results.size(); ++i)
-        {
-            Ogre::RaySceneQueryResultEntry &entry = results[i];
-            if (!entry.movable)
-                continue;
-
-            /// \todo Do we want results for invisible entities?
-            if (!entry.movable->isVisible())
-                continue;
-            
-            Ogre::Any any = entry.movable->getUserAny();
-            if (any.isEmpty())
-                continue;
-            
-            Scene::Entity *entity = 0;
-            try
-            {
-                entity = Ogre::any_cast<Scene::Entity*>(any);
-            }
-            catch(Ogre::InvalidParametersException &/*e*/)
-            {
-                continue;
-            }
-
-            EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
-            if (!placeable)
-                continue;
-
-            int current_priority = placeable->GetSelectPriority();
-            if (current_priority > best_priority)
-                best_priority = current_priority;
-        }
-
-        // Now do the real pass
-        Ogre::Real closest_distance = -1.0f;
-        int closest_priority = minimum_priority;
-        Ogre::Vector2 closest_uv;
-
-        static std::vector<Ogre::Vector3> vertices;
-        static std::vector<Ogre::Vector2> texcoords;
-        static std::vector<uint> indices;
-        static std::vector<uint> submeshstartindex;
-        vertices.clear();
-        texcoords.clear();
-        indices.clear();
-        submeshstartindex.clear();
-
-        for(size_t i = 0; i < results.size(); ++i)
-        {
-            Ogre::RaySceneQueryResultEntry &entry = results[i];
-            // Stop checking if we have found a raycast hit that is closer
-            // than all remaining entities, and the priority found is best possible
-            if ((closest_distance >= 0.0f) && (closest_distance < entry.distance) && (closest_priority >= best_priority))
-                break;
-
-            if (!entry.movable)
-                continue;
-
-            /// \todo Do we want results for invisible entities?
-            if (!entry.movable->isVisible())
-                continue;
-            
-            Ogre::Any any = entry.movable->getUserAny();
-            if (any.isEmpty())
-                continue;
-
-            Scene::Entity *entity = 0;
-            try
-            {
-                entity = Ogre::any_cast<Scene::Entity*>(any);
-            }
-            catch(Ogre::InvalidParametersException &/*e*/)
-            {
-                continue;
-            }
-
-            int current_priority = minimum_priority;
-            {
-                EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
-                if (placeable)
-                {
-                    current_priority = placeable->GetSelectPriority();
-                    //if (current_priority < closest_priority)
-                    //  continue;
-                }
-            }
-
-            // Mesh entity check: triangle intersection
-            if (entry.movable->getMovableType().compare("Entity") == 0)
-            {
-                Ogre::Entity* ogre_entity = static_cast<Ogre::Entity*>(entry.movable);
-                assert(ogre_entity != 0);
-
-                // get the mesh information
-                GetMeshInformation(ogre_entity, vertices, texcoords, indices, submeshstartindex,
-                    ogre_entity->getParentNode()->_getDerivedPosition(),
-                    ogre_entity->getParentNode()->_getDerivedOrientation(),
-                    ogre_entity->getParentNode()->_getDerivedScale());
-
-                // test for hitting individual triangles on the mesh
-                for(int j = 0; j < ((int)indices.size())-2; j += 3)
-                {
-                    // check for a hit against this triangle
-                    std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ray, vertices[indices[j]],
-                        vertices[indices[j+1]], vertices[indices[j+2]], true, false);
-                    if (hit.first)
-                    {
-                        if ((closest_distance < 0.0f) || (hit.second < closest_distance) || (current_priority > closest_priority))
-                        {
-                            if (current_priority >= closest_priority)
-                            {
-                                // this is the closest/best so far, save it
-                                closest_distance = hit.second;
-                                closest_priority = current_priority;
-
-                                Ogre::Vector2 uv = FindUVs(ray, hit.second, vertices, texcoords, indices, j); 
-                                Ogre::Vector3 point = ray.getPoint(closest_distance);
-
-                                result.entity_ = entity;
-                                result.pos_ = Vector3df(point.x, point.y, point.z);
-                                result.submesh_ = GetSubmeshFromIndexRange(j, submeshstartindex);
-                                result.u_ = uv.x;
-                                result.v_ = uv.y;
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // Not an entity, fall back to just using the bounding box - ray intersection
-                if ((closest_distance < 0.0f) || (entry.distance < closest_distance) || (current_priority > closest_priority))
-                {
-                    if (current_priority >= closest_priority)
-                    {
-                        // this is the closest/best so far, save it
-                        closest_distance = entry.distance;
-                        closest_priority = current_priority;
-
-                        Ogre::Vector3 point = ray.getPoint(closest_distance);
-
-                        result.entity_ = entity;
-                        result.pos_ = Vector3df(point.x, point.y, point.z);
-                        result.submesh_ = 0;
-                        result.u_ = 0.0f;
-                        result.v_ = 0.0f;
-                    }
-                }
-            }
-        }
-
-        return &result;
+        if (!cameraComponent_)
+            return OgreWorldPtr();
+        Entity* entity = cameraComponent_->ParentEntity();
+        if (!entity)
+            return OgreWorldPtr();
+        Scene* scene = entity->ParentScene();
+        if (scene)
+            return scene->GetWorld<OgreWorld>();
+        else
+            return OgreWorldPtr();
     }
     
-    //qt wrapper / upcoming replacement for the one above
-    QList<Scene::Entity*> Renderer::FrustumQuery(QRect &viewrect)
+    Ogre::Camera* Renderer::GetActiveOgreCamera() const
     {
-        QList<Scene::Entity*>l;
-        float w= (float)renderWindow->OgreRenderWindow()->getWidth();
-        float h= (float)renderWindow->OgreRenderWindow()->getHeight();
-        float left = (float)(viewrect.left()) / w, right = (float)(viewrect.right()) / w;
-        float top = (float)(viewrect.top()) / h, bottom = (float)(viewrect.bottom()) / h;
-        
-        if(left > right) std::swap<float>(left, right);
-        if(top > bottom) std::swap<float>(top, bottom);
-        // don't do selection box is too small
-        if((right - left) * (bottom-top) < 0.0001) return l;
-        
-        Ogre::PlaneBoundedVolumeList volumes;
-        Ogre::PlaneBoundedVolume p = camera_->getCameraToViewportBoxVolume(left, top, right, bottom, true);
-        volumes.push_back(p);
-
-        Ogre::PlaneBoundedVolumeListSceneQuery *query = scenemanager_->createPlaneBoundedVolumeQuery(volumes);
-        assert(query);
-
-        Ogre::SceneQueryResult results = query->execute();
-        for(Ogre::SceneQueryResultMovableList::iterator iter = results.movables.begin(); iter != results.movables.end(); ++iter)
-        {
-            Ogre::MovableObject *m = *iter;
-            Scene::Entity *entity = 0;
-            try
-            {
-                entity = Ogre::any_cast<Scene::Entity*>(m->getUserAny());
-            }
-            catch(Ogre::InvalidParametersException &/*e*/)
-            {
-                continue;
-            }
-            if(entity)
-                l << entity;//->GetId();//std::cout << "Hit MovableObject:" << m << std::endl;
-        }
-
-        scenemanager_->destroyQuery(query);
-
-        return l;
-    }
-
-    bool Renderer::IsEntityVisible(uint ent_id)
-    {
-        return (visible_entities_.find(ent_id) != visible_entities_.end());
+        if (cameraComponent_)
+            return cameraComponent_->GetCamera();
+        else
+            return 0;
     }
 
     Ogre::RenderWindow *Renderer::GetCurrentRenderWindow() const
@@ -1236,7 +754,7 @@ namespace OgreRenderer
     {
         return prefix + "_" + ToString<uint>(object_id_++);
     }
-
+/*
     void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
     {
         if (renderWindow)
@@ -1249,7 +767,7 @@ namespace OgreRenderer
     void Renderer::PrepareImageRendering(int width, int height)
     {
         // Only do this once per connect as we create entitys here
-        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+        ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
         if (scene && image_rendering_texture_name_.empty())
         {
             image_rendering_texture_name_ = "ImageRenderingTexture-" + QUuid::createUuid().toString().toStdString();
@@ -1258,16 +776,16 @@ namespace OgreRenderer
                 Ogre::TEX_TYPE_2D, width, height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
             image_rendering->getBuffer()->getRenderTarget()->setAutoUpdated(false);
 
-            EntityPtr cam_entity = scene->CreateEntity(scene->GetNextFreeIdLocal());
+            EntityPtr cam_entity = scene->CreateEntity(scene->NextFreeIdLocal());
             if (!cam_entity)
                 return;
 
-            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic()));
-            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgreCamera::TypeNameStatic()));
+            cam_entity->AddComponent(framework_->Scene()->CreateComponent<EC_Placeable>());
+            cam_entity->AddComponent(framework_->Scene()->CreateComponent<EC_Camera>());
             scene->EmitEntityCreated(cam_entity);
             
             ComponentPtr component_placable = cam_entity->GetComponent(EC_Placeable::TypeNameStatic());
-            EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
+            EC_Camera *ec_camera = cam_entity->GetComponent<EC_Camera>().get();
             if (!component_placable.get() || !ec_camera)
                 return;
             ec_camera->SetPlaceable(component_placable);
@@ -1296,7 +814,7 @@ namespace OgreRenderer
         captured_pixmap.fill(Qt::gray);
 
         // Get the camera ec
-        EC_OgreCamera *ec_camera = texture_rendering_cam_entity_->GetComponent<EC_OgreCamera>().get();
+        EC_Camera *ec_camera = texture_rendering_cam_entity_->GetComponent<EC_Camera>().get();
         if (!ec_camera)
             return QPixmap::fromImage(captured_pixmap);
 
@@ -1345,30 +863,6 @@ namespace OgreRenderer
         return return_pixmap;
     }
 
-    QPixmap Renderer::RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation)
-    {
-        int window_width = renderWindow->OgreRenderWindow()->getWidth();
-        int window_height = renderWindow->OgreRenderWindow()->getHeight();
-        PrepareImageRendering(window_width, window_height);
-        if (!texture_rendering_cam_entity_)
-            return QPixmap();
-
-        // Calculate positions
-        Vector3df pos = avatar_position;
-        pos += (avatar_orientation * Vector3df::UNIT_X * 0.6f);
-        pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_Z * 0.5f);
-        Vector3df lookat = avatar_position + avatar_orientation * Vector3df(0,0,-0.4f);
-
-        EC_Placeable *cam_ec_placable = texture_rendering_cam_entity_->GetComponent<EC_Placeable>().get();
-        if (!cam_ec_placable)
-            return QPixmap();
-
-        cam_ec_placable->SetPosition(pos);
-        cam_ec_placable->LookAt(lookat);
-
-        return RenderImage(false);
-    }
-
     QImage Renderer::CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height)
     {
         SAFE_DELETE(capture_screen_pixel_data_);
@@ -1382,7 +876,7 @@ namespace OgreRenderer
             LogError("Capturing render texture to a image failed");
         return image;
     }
-
+*/
     void Renderer::AddResourceDirectory(const QString &qdirectory)
     {
         std::string directory = qdirectory.toStdString();
@@ -1427,136 +921,5 @@ namespace OgreRenderer
         catch(...) {}
 
         added_resource_directories_.push_back(directory);
-    }
-
-    void Renderer::RepaintUi()
-    {
-        if (resized_dirty_ < 1)
-            resized_dirty_  = 1;
-    }
-
-    void Renderer::InitShadows()
-    {
-        Ogre::SceneManager* sceneManager = scenemanager_;
-        // Debug mode Ogre might assert due to illegal shadow camera AABB, with empty scene. Disable shadows in debug mode.
-#ifdef _DEBUG
-            sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
-            return;
-#else
-        bool using_pssm = (shadowquality_ == Shadows_High);
-        bool soft_shadow = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "soft shadow").toBool();
-        
-        //unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  */
-        float shadowFarDist = 50;
-        unsigned short shadowTextureSize = 2048;
-        size_t shadowTextureCount = 1;
-        
-        if(using_pssm)
-        {
-            shadowTextureSize = 1024;
-            shadowTextureCount = 3;
-        }
-        
-        Ogre::ColourValue shadowColor(0.6f, 0.6f, 0.6f);
-
-        // This is the default material to use for shadow buffer rendering pass, overridable in script.
-        // Note that we use the same single material (vertex program) for each object, so we're relying on
-        // that we use Ogre software skinning. Hardware skinning would require us to do different vertex programs
-        // for skinned/nonskinned geometry.
-        std::string ogreShadowCasterMaterial = "rex/ShadowCaster";
-        
-        if (shadowquality_ == Shadows_Off)
-        {
-            sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
-            return;
-        }
-        
-        sceneManager->setShadowColour(shadowColor);
-        sceneManager->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, shadowTextureCount);
-        sceneManager->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_R);
-        sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
-        sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
-        sceneManager->setShadowTextureSelfShadow(true);
-        
-        Ogre::ShadowCameraSetupPtr shadowCameraSetup;
-        
-        if(using_pssm)
-        {
-    #include "DisableMemoryLeakCheck.h"
-            OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
-    #include "EnableMemoryLeakCheck.h"
-
-            OgreShadowCameraSetupFocusedPSSM::SplitPointList splitpoints;
-            splitpoints.push_back(default_camera_->getNearClipDistance());
-            //these splitpoints are hardcoded also to the shaders. If you modify these, also change them to shaders.
-            splitpoints.push_back(3.5);
-            splitpoints.push_back(11);
-            splitpoints.push_back(shadowFarDist);
-            pssmSetup->setSplitPoints(splitpoints);
-            shadowCameraSetup = Ogre::ShadowCameraSetupPtr(pssmSetup);
-        }
-        else
-        {
-    #include "DisableMemoryLeakCheck.h"
-            Ogre::FocusedShadowCameraSetup* focusedSetup = new Ogre::FocusedShadowCameraSetup();
-    #include "EnableMemoryLeakCheck.h"
-            shadowCameraSetup = Ogre::ShadowCameraSetupPtr(focusedSetup);
-        }
-        
-        sceneManager->setShadowCameraSetup(shadowCameraSetup);
-        sceneManager->setShadowFarDistance(shadowFarDist);
-        
-        // If set to true, problems with objects that clip into the ground
-        sceneManager->setShadowCasterRenderBackFaces(false);
-        
-        //DEBUG
-        /*if(renderer_.expired())
-            return;
-        Ogre::SceneManager *mngr = renderer_.lock()->GetSceneManager();
-        Ogre::TexturePtr shadowTex;
-        Ogre::String str("shadowDebug");
-        Ogre::Overlay* debugOverlay = Ogre::OverlayManager::getSingleton().getByName(str);
-        if(!debugOverlay)
-            debugOverlay= Ogre::OverlayManager::getSingleton().create(str);
-        for(int i = 0; i<shadowTextureCount;i++)
-        {
-                shadowTex = mngr->getShadowTexture(i);
-
-                // Set up a debug panel to display the shadow
-                Ogre::MaterialPtr debugMat = Ogre::MaterialManager::getSingleton().create(
-                    "Ogre/DebugTexture" + Ogre::StringConverter::toString(i), 
-                    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-                debugMat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-                Ogre::TextureUnitState *t = debugMat->getTechnique(0)->getPass(0)->createTextureUnitState(shadowTex->getName());
-                t->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
-                //t = debugMat->getTechnique(0)->getPass(0)->createTextureUnitState("spot_shadow_fade.png");
-                //t->setTextureAddressingMode(TextureUnitState::TAM_CLAMP);
-                //t->setColourOperation(LBO_ADD);
-
-                Ogre::OverlayContainer* debugPanel = (Ogre::OverlayContainer*)
-                    (Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "Ogre/DebugTexPanel" + Ogre::StringConverter::toString(i)));
-                debugPanel->_setPosition(0.8, i*0.25+ 0.05);
-                debugPanel->_setDimensions(0.2, 0.24);
-                debugPanel->setMaterialName(debugMat->getName());
-                debugOverlay->add2D(debugPanel);
-        }
-        debugOverlay->show();*/
-
-        if(soft_shadow)
-        {
-            for(int i=0;i<shadowTextureCount;i++)
-            {
-                GaussianListener* gaussianListener = new GaussianListener(); 
-                Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);
-                Ogre::RenderTarget* shadowRtt = shadowTex->getBuffer()->getRenderTarget();
-                Ogre::Viewport* vp = shadowRtt->getViewport(0);
-                Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "Gaussian Blur");
-                Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "Gaussian Blur", true);
-                instance->addListener(gaussianListener);
-                gaussianListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
-                gaussianListeners_.push_back(gaussianListener);
-            }
-        }
-#endif
     }
 }

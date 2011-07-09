@@ -1,7 +1,11 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
-#include "NaaliRenderWindow.h"
+#include "Profiler.h"
+
+#include "RenderWindow.h"
+#include "CoreStringUtils.h"
 
 #include <QWidget>
 #include <QImage>
@@ -12,6 +16,8 @@
 #include <QX11Info>
 #endif
 
+#include "MemoryLeakCheck.h"
+
 using namespace std;
 
 namespace
@@ -20,14 +26,14 @@ namespace
     const char rttMaterialName[] = "MainWindow Material";
 }
 
-NaaliRenderWindow::NaaliRenderWindow()
+RenderWindow::RenderWindow()
 :renderWindow(0),
 overlay(0),
 overlayContainer(0)
 {
 }
 
-void NaaliRenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen)
+void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen)
 {
     Ogre::NameValuePairList params;
 
@@ -93,7 +99,7 @@ void NaaliRenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString 
     CreateRenderTargetOverlay(width, height);
 }
 
-void NaaliRenderWindow::CreateRenderTargetOverlay(int width, int height)
+void RenderWindow::CreateRenderTargetOverlay(int width, int height)
 {
     width = max(1, width);
     height = max(1, height);
@@ -135,24 +141,24 @@ void NaaliRenderWindow::CreateRenderTargetOverlay(int width, int height)
 //    ResizeOverlay(width, height);
 }
 
-Ogre::RenderWindow *NaaliRenderWindow::OgreRenderWindow()
+Ogre::RenderWindow *RenderWindow::OgreRenderWindow() const
 {
     return renderWindow;
 }
 
-Ogre::Overlay *NaaliRenderWindow::OgreOverlay()
+Ogre::Overlay *RenderWindow::OgreOverlay() const
 {
     return overlay;
 }
 
-std::string NaaliRenderWindow::OverlayTextureName() const
+std::string RenderWindow::OverlayTextureName() const
 {
     return rttTextureName;
 }
 
-void NaaliRenderWindow::UpdateOverlayImage(const QImage &src)
+void RenderWindow::UpdateOverlayImage(const QImage &src)
 {
-    PROFILE(NaaliRenderWindow_UpdateOverlayImage);
+    PROFILE(RenderWindow_UpdateOverlayImage);
 
     Ogre::Box bounds(0, 0, src.width(), src.height());
     Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)src.bits());
@@ -163,23 +169,25 @@ void NaaliRenderWindow::UpdateOverlayImage(const QImage &src)
     texture->getBuffer()->blitFromMemory(bufbox);
 }
 
-void NaaliRenderWindow::ShowOverlay(bool visible)
+void RenderWindow::ShowOverlay(bool visible)
 {
     if (overlayContainer)
+    {
         if (!visible)
             overlayContainer->hide();
         else
             overlayContainer->show();
+    }
 }
 
-void NaaliRenderWindow::Resize(int width, int height)
+void RenderWindow::Resize(int width, int height)
 {
     renderWindow->resize(width, height);
     renderWindow->windowMovedOrResized();
 
     if (Ogre::TextureManager::getSingletonPtr() && Ogre::OverlayManager::getSingletonPtr())
     {
-        PROFILE(NaaliRenderWindow_Resize);
+        PROFILE(RenderWindow_Resize);
 
         // recenter the overlay
 //        int left = (renderWindow->getWidth() - width) / 2;
@@ -188,7 +196,7 @@ void NaaliRenderWindow::Resize(int width, int height)
         // resize the container
  //       overlayContainer->setDimensions(width, height);
   //      overlayContainer->setPosition(left, top);
-        overlayContainer->setDimensions(width, height);
+        overlayContainer->setDimensions((Ogre::Real)width, (Ogre::Real)height);
         overlayContainer->setPosition(0,0);
 
         // resize the backing texture

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_OgreSkeletonAsset_h
-#define incl_OgreRenderer_OgreSkeletonAsset_h
+#pragma once
 
 #include "IAsset.h"
 #include "OgreModuleApi.h"
@@ -22,7 +21,7 @@ public:
 
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
-    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "");
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
 
     virtual void DoUnload();
 
@@ -33,4 +32,3 @@ public:
     std::string internal_name_;
 };
 
-#endif

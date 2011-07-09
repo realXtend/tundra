@@ -1,12 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_EC_OgreCompositor_h
-#define incl_OgreRenderer_EC_OgreCompositor_h
+#pragma once
 
 #include "IComponent.h"
-#include "Declare_EC.h"
-#include "Core.h"
-
+#include "CoreDefines.h"
+#include "OgreModuleApi.h"
 
 namespace OgreRenderer { class OgreRenderingModule; class CompositionHandler; };
 
@@ -40,8 +38,6 @@ F.ex. 'strength=1.2' or 'color=1 0 0 0.5'</div>
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>AvailableCompositors
-<div>Returns list of available compositor names.</div>
 </ul>
 </td>
 </tr>
@@ -51,12 +47,16 @@ Does not emit any actions.
 <b>Doesn't depend on any components</b>.
 </table>
 */
-class EC_OgreCompositor : public IComponent
+class OGRE_MODULE_API EC_OgreCompositor : public IComponent
 {
     Q_OBJECT
     
-    DECLARE_EC(EC_OgreCompositor);
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_OgreCompositor(Scene* scene);
+
+    virtual ~EC_OgreCompositor();
+
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
 
@@ -69,18 +69,14 @@ public:
     Q_PROPERTY(QVariantList parameters READ getparameters WRITE setparameters);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, parameters);
 
-    virtual ~EC_OgreCompositor();
-
-    /// Set component as serializable.
-    virtual bool IsSerializable() const { return true; }
-
+    COMPONENT_NAME("EC_OgreCompositor", 18)
 public slots:
-    /// Returns list of available compositor names.
-    QStringList AvailableCompositors() const;
 
 private slots:
     void OnAttributeUpdated(IAttribute* attribute);
 
+    void OneTimeRefresh();
+    
 private:
     /// Enables or disables and sets the priority of the specified compositor based on the attributes
     void UpdateCompositor(const QString &compositor);
@@ -88,17 +84,13 @@ private:
     /// Updates compositor shader parameters
     void UpdateCompositorParams(const QString &compositor);
 
-    /// constructor
-    /** \param module Ogre module
-     */
-    EC_OgreCompositor(IModule* module);
-
     /// Owner module of this component
     OgreRenderer::OgreRenderingModule *owner_;
     /// Compositor handler. Used to actually add / remove post process effects.
     OgreRenderer::CompositionHandler *handler_;
     /// Stored compositor ref for internal use
     QString previous_ref_;
+    /// Stored previous priority for internal use
+    int previous_priority_;
 };
 
-#endif

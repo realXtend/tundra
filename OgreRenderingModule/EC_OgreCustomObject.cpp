@@ -2,38 +2,45 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "OgreRenderingModule.h"
+#include "OgreWorld.h"
 #include "Renderer.h"
 #include "Entity.h"
+#include "Scene.h"
 #include "EC_Placeable.h"
 #include "EC_OgreCustomObject.h"
 
 #include <Ogre.h>
+#include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 
-EC_OgreCustomObject::EC_OgreCustomObject(IModule* module) :
-    IComponent(module->GetFramework()),
-    renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
+EC_OgreCustomObject::EC_OgreCustomObject(Scene* scene) :
+    IComponent(scene),
     entity_(0),
     attached_(false),
     cast_shadows_(false),
     draw_distance_(0.0f)
 {
+    if (scene)
+        world_ = scene->GetWorld<OgreWorld>();
 }
 
 EC_OgreCustomObject::~EC_OgreCustomObject()
 {
-    if (renderer_.expired())
+    if (world_.expired())
+    {
+        if (entity_)
+            LogError("EC_OgreCustomObject: World has expired, skipping uninitialization!");
         return;
-
+    }
+    
     DestroyEntity();
 }
 
 void EC_OgreCustomObject::SetPlaceable(ComponentPtr placeable)
 {
-    if (!dynamic_cast<EC_Placeable*>(placeable.get()))
+    if (placeable && !dynamic_cast<EC_Placeable*>(placeable.get()))
     {
         ::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
         return;
@@ -49,16 +56,16 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
     if (!object)
         return false;
     
-    if (renderer_.expired())
+    if (world_.expired())
         return false;
-    RendererPtr renderer = renderer_.lock();
-            
+    OgreWorldPtr world = world_.lock();
+    
     DestroyEntity();
     
     // If placeable is not set yet, set it manually by searching it from the parent entity
     if (!placeable_)
     {
-        Scene::Entity* entity = GetParentEntity();
+        Entity* entity = ParentEntity();
         if (entity)
         {
             ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
@@ -72,19 +79,19 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
         
     try
     {
-        std::string mesh_name = renderer->GetUniqueObjectName("EC_OgreCustomObject_mesh");
+        std::string mesh_name = world->GetUniqueObjectName("EC_OgreCustomObject_mesh");
         object->convertToMesh(mesh_name);
         object->clear();
     
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+        Ogre::SceneManager* sceneMgr = world->GetSceneManager();
 
-        entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName("EC_OgreCustomObject_entity"), mesh_name);
+        entity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EC_OgreCustomObject_entity"), mesh_name);
         if (entity_)
         {
             AttachEntity();
             entity_->setRenderingDistance(draw_distance_);
             entity_->setCastShadows(cast_shadows_);
-            entity_->setUserAny(Ogre::Any(GetParentEntity()));
+            entity_->setUserAny(Ogre::Any(ParentEntity()));
             // Set UserAny also on subentities
             for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
                 entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
@@ -187,17 +194,17 @@ void EC_OgreCustomObject::DetachEntity()
 
 void EC_OgreCustomObject::DestroyEntity()
 {
-    if (renderer_.expired())
+    if (world_.expired())
         return;
-    RendererPtr renderer = renderer_.lock();
-            
-    Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
+    OgreWorldPtr world = world_.lock();
+    
+    Ogre::SceneManager* sceneMgr = world->GetSceneManager();
     
     if (entity_)
     {
         DetachEntity();
         std::string mesh_name = entity_->getMesh()->getName();
-        scene_mgr->destroyEntity(entity_);
+        sceneMgr->destroyEntity(entity_);
         entity_ = 0;
         try
         {
@@ -207,12 +214,12 @@ void EC_OgreCustomObject::DestroyEntity()
     }
 }
 
-void EC_OgreCustomObject::GetBoundingBox(Vector3df& min, Vector3df& max) const
+void EC_OgreCustomObject::GetBoundingBox(float3& min, float3& max) const
 {
     if (!entity_)
     {
-        min = Vector3df(0.0, 0.0, 0.0);
-        max = Vector3df(0.0, 0.0, 0.0);
+        min = float3(0.0, 0.0, 0.0);
+        max = float3(0.0, 0.0, 0.0);
         return;
     }
  
@@ -220,7 +227,7 @@ void EC_OgreCustomObject::GetBoundingBox(Vector3df& min, Vector3df& max) const
     const Ogre::Vector3& bboxmin = bbox.getMinimum();
     const Ogre::Vector3& bboxmax = bbox.getMaximum();
     
-    min = Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
-    max = Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
+    min = float3(bboxmin.x, bboxmin.y, bboxmin.z);
+    max = float3(bboxmax.x, bboxmax.y, bboxmax.z);
 }
 

@@ -1,6 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
-#ifndef incl_OgreRenderingModule_CompositionHandler_h
-#define incl_OgreRenderingModule_CompositionHandler_h
+#pragma once
 
 #include "OgreModuleApi.h"
 
@@ -11,14 +10,11 @@
 #include <QString>
 #include <QObject>
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 namespace OgreRenderer
 {
-    ///\note This class and its implementation is taken from the Ogre samples
+    ///@note This class and its implementation is taken from the Ogre samples
     class HDRListener: public Ogre::CompositorInstance::Listener
     {
     public:
@@ -40,7 +36,7 @@ namespace OgreRenderer
         float mBloomTexOffsetsVert[15][4];
     };
 
-    ///\note This class and its implementation is taken from the Ogre samples
+    ///@note This class and its implementation is taken from the Ogre samples
     class GaussianListener: public Ogre::CompositorInstance::Listener
     {
     public:
@@ -71,22 +67,13 @@ namespace OgreRenderer
         virtual ~CompositionHandler();
 
         /// Initialize the composition handler. This has to be called before trying to enable/disable effects
-        bool Initialize(Foundation::Framework* framework, Ogre::Viewport *vp);
-
-        /// map number to effect name (used to interpret server request since server requests composite activation with a number)
-        std::string MapNumberToEffectName(const std::string &number);
+        bool Initialize(Framework* framework, Ogre::Viewport *vp);
 
         /// Adds specified compositor for the viewport if it's found. Effect is appended last in the chain if position is not specified (Except HDR)
         bool AddCompositorForViewport(const std::string &compositor, Ogre::Viewport *vp, int position = -1);
 
         /// Remove specified compositor effect from viewport
         void RemoveCompositorFromViewport(const std::string &compositor, Ogre::Viewport *vp);
-
-        /// translates the message (RexPostP) 
-        void ExecuteServersShaderRequest(const StringVector &parameters);
-
-        /// Returns list of available post-processing effects
-        QVector<QString>  &GetAvailableCompositors() { return postprocess_effects_; }
 
         /// Convenience function that will add specified compositor for the default viewport given in initialization. HDR will always be first.
         bool AddCompositorForViewport(const std::string &compositor, int position = -1);
@@ -105,6 +92,12 @@ namespace OgreRenderer
         /// Enable or disable a compositor that has already been added to the default viewport
         void SetCompositorEnabled(const std::string &compositor, bool enable) const;
 
+        /// Disable all compositors from the viewport
+        void RemoveAllCompositors();
+        
+        /// Camera has been changed. Update it to the compositor chain
+        void CameraChanged(Ogre::Viewport* vp, Ogre::Camera* newCamera);
+        
     private:
         struct Compositor
         {
@@ -122,10 +115,6 @@ namespace OgreRenderer
         /// Set gpu program parameters for the specified material
         void SetMaterialParameters(const Ogre::MaterialPtr &material, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
 
-        //Used to specify postprocessing effects currently available. Number is needed to map server requests to the actual effect name.
-        //std::vector<std::string> postprocess_effects_;
-        QVector<QString> postprocess_effects_;
-
         /// Compositor manager
         Ogre::CompositorManager* c_manager_;
 
@@ -142,8 +131,7 @@ namespace OgreRenderer
         std::map<std::string, int> priorities_;
 
         /// handle to framework
-        Foundation::Framework* framework_;
+        Framework* framework_;
     };
 }
 
-#endif

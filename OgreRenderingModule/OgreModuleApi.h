@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreModuleApi_h
-#define incl_OgreModuleApi_h
+#pragma once
 
 #if defined (_WINDOWS)
 #if defined(OGRE_MODULE_EXPORTS) 
@@ -13,4 +12,3 @@
 #define OGRE_MODULE_API
 #endif
 
-#endif

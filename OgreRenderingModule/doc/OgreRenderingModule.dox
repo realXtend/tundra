@@ -2,6 +2,7 @@
 
 \page OgreRenderingModule Using the Ogre renderer module
 
+<b>This documentation page is deprecated and is pending a rewrite.</b>
 	Below is a description on how to use Foundation::RenderServiceInterface, which the Ogre renderer module implements, as well as the
 	rest of the public interface of the renderer.
 
@@ -10,6 +11,7 @@
 	Ogre objects (such as scene manager, rendering window etc.) directly.
 	
 	\section renderservice_ORM Acquiring and using the RenderService
+<b>This documentation page is deprecated and is pending a rewrite.</b>
 
 	The RenderService should be available whenever the Ogre renderer module is loaded and initialized. The abstract service interface 
 	itself provides some non-Ogre specific functionality, such as rendering the scene, resizing the rendering window, 
@@ -27,6 +29,7 @@ if (service_manager_->IsRegistered(Service::ST_Renderer))
 	
 
 	\section ogreresources_ORM Using renderer resources created from in-world asset data
+<b>This documentation page is deprecated and is pending a rewrite.</b>
 
 	Through the RenderService one can also request renderer-specific resources created from in-world assets (textures, meshes etc.) 
 	The Ogre resources are subclassed from the abstract interface Foundation::ResourceInterface and contain a pointer to the actual Ogre resource object.
@@ -51,6 +54,7 @@ if (service_manager_->IsRegistered(Service::ST_Renderer))
 
 		
 	\section ogrespecific_ORM Using Ogre-specific functionality
+<b>This documentation page is deprecated and is pending a rewrite.</b>
 
 	To get deeper into Ogre-related specifics, one must use directly the OgreRenderer::Renderer interface, instead of Foundation::RenderServiceInterface.
 	One can still go through the ServiceManager to get the renderer, but the class name is different.
@@ -67,6 +71,7 @@ OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->
 
 
 	\section ogreec_ORM Ogre-related entity components
+<b>This documentation page is deprecated and is pending a rewrite.</b>
 
 	There are also several Ogre-related entity components in the OgreRenderingModule; these can be used to populate the scene with Ogre objects.
 	These include for example OgreRenderer::EC_OgrePlaceable, which encapsulates an Ogre scene node, and OgreRenderer::EC_OgreMesh, which encapsulates 
@@ -76,10 +81,12 @@ OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->
 
 
 	\section rendererevents_ORM Renderer events
+<b>This documentation page is deprecated and is pending a rewrite.</b>
 	
 	The rendering module sends events of the event category "Renderer", defined in RendererEvents.h. Other modules should not send events of this category.
 
 	\subsection postrender_ORM POST_RENDER
+<b>This documentation page is deprecated and is pending a rewrite.</b>
 
 	The POST_RENDER event is sent when the rendering module has completed drawing the 3D scene, but before it swaps buffers. This event contains no event data structure. 
 	Responding to this event allows custom rendering to be added on top of the 3D scene. Normally modules handling this event should return false, so that the event will 
@@ -87,10 +94,12 @@ OgreRenderer::Renderer *renderer = owner_->GetFramework()->GetServiceManager()->
 
 	\subsection windowclosed_ORM WINDOW_CLOSED
 
+<b>This documentation page is deprecated and is pending a rewrite.</b>
 	WINDOW_CLOSED event is sent when the rendering window has been closed. This event contains no event data structure. At the point this message is sent, the viewer will 
         be exiting its main loop. Modules handling this event should return false so that it propagates to all interested receivers.
 
 	\subsection windowresized_ORM WINDOW_RESIZED
+<b>This documentation page is deprecated and is pending a rewrite.</b>
 
 	WINDOW_RESIZED event is sent when the rendering window has been resized. This event uses the OgreRenderer::Events::WindowResized data structure, which tells the new
 	dimensions of the window. Modules handling this event should return false so that it propagates to all interested receivers.

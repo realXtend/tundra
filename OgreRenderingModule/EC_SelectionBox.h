@@ -1,13 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 // Author: Nathan Letwory <nathan@letworyinteractive.com>
 
-#ifndef incl_OgreRenderer_EC_SelectionBox_h
-#define incl_OgreRenderer_EC_SelectionBox_h
+#pragma once
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
-#include "Declare_EC.h"
 
 /// Ogre selection box component
 /**
@@ -40,15 +38,17 @@ class OGRE_MODULE_API EC_SelectionBox : public IComponent
 {
     Q_OBJECT
     
-    DECLARE_EC(EC_SelectionBox);
 public:
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_SelectionBox(Scene* scene);
     
-    /// Destructor.
     virtual ~EC_SelectionBox();
 
+    COMPONENT_NAME("EC_SelectionBox", 22)
 public slots:
+
     /// Set the selection box dimensions.
-    /// \param view screen coordinates
+    /// @param view screen coordinates
     void SetBoundingBox(QRect &view);
 
     /// Show the selection box, clearing.
@@ -58,16 +58,11 @@ public slots:
 
     
 private:
-    /// constructor
-    /// \param module renderer module
-    EC_SelectionBox(IModule* module);
-
     /// The object to draw selection box with
     Ogre::ManualObject *selectionBox_;
     
-    /// renderer
-    OgreRenderer::RendererWeakPtr renderer_;
+    /// Ogre world ptr
+    OgreWorldWeakPtr world_;
     
 };
 
-#endif

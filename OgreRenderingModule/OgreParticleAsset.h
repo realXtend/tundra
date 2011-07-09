@@ -1,33 +1,33 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_OgreParticleAsset_h
-#define incl_OgreRenderer_OgreParticleAsset_h
+#pragma once
 
 #include "IAsset.h"
 #include "OgreModuleApi.h"
 
-/// An Ogre-specific particle system template resource. One resource may contain multiple templates.
-/** \ingroup OgreRenderingModuleClient */
+/// Represents an Ogre .particle file loaded to memory.
+/** An Ogre-specific particle system resource. One resource may contain multiple templates. */
 class OGRE_MODULE_API OgreParticleAsset : public IAsset
 {
     Q_OBJECT;
-public:
-    OgreParticleAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-    :IAsset(owner, type_, name_)
-    {
-    }
 
+public:
+    OgreParticleAsset(AssetAPI *owner, const QString &type, const QString &name) : IAsset(owner, type, name) {}
     ~OgreParticleAsset();
 
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
+    virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
+
+    /// IAsset overload.
+    /** The data will contain asset references in desanitated format. */
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
 
     virtual std::vector<AssetReference> FindReferences() const;
 
     virtual void DoUnload();
-    
+
     /// Returns the number of templates in this particle system asset.
     int GetNumTemplates() const;
-    
+
     /// Returns the name of the template at the given index.
     QString GetTemplateName(int index) const;
 
@@ -36,15 +36,9 @@ public:
 private:
     /// Removes all particle system templates.
     void RemoveTemplates();
-    
-    /// Stores the names of the loaded particle system templates.
-    StringVector templates_;
 
-    std::string internal_name_;
-
-    /// references to other resources this resource depends on
-    std::vector<AssetReference> references_;
-
+    StringVector templates; /// Stores the names of the loaded particle system templates.
+    std::string internalName; ///< Internal Ogre name for the particle system.
+    std::string originalData; ///< Original particle script file data, asset references are in sanitated format.
+    std::vector<AssetReference> references; ///< references to other resources this resource depends on
 };
-
-#endif

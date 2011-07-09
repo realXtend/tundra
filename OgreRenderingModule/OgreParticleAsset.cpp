@@ -2,19 +2,17 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "OgreConversionUtils.h"
 #include "OgreParticleAsset.h"
 #include "OgreRenderingModule.h"
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "AssetAPI.h"
-
+#include "LoggingFunctions.h"
 #include <Ogre.h>
+#include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
-
-void ModifyVectorParameter(Ogre::String& line, std::vector<Ogre::String>& line_vec);
 
 OgreParticleAsset::~OgreParticleAsset()
 {
@@ -23,7 +21,7 @@ OgreParticleAsset::~OgreParticleAsset()
 
 std::vector<AssetReference> OgreParticleAsset::FindReferences() const
 {
-    return references_;
+    return references;
 }
 
 void OgreParticleAsset::DoUnload()
@@ -31,28 +29,28 @@ void OgreParticleAsset::DoUnload()
     RemoveTemplates();
 }
 
-bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
+bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     RemoveTemplates();
-    references_.clear();
+    references.clear();
 
-    if (!data_)
+    if (!data)
     {
-        ::LogError("Null source asset data pointer");     
+        LogError("Null source asset data pointer");
         return false;
     }
     if (numBytes == 0)
     {
-        ::LogError("Zero sized particle system asset");     
+        LogError("Zero sized particle system asset");
         return false;
     }
 
     // Detected template names
     StringVector new_templates;
 
-    std::vector<u8> tempData(data_, data_ + numBytes);
+    std::vector<u8> tempData(data, data + numBytes);
 #include "DisableMemoryLeakCheck.h"
-    Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&tempData[0], numBytes));
+    Ogre::DataStreamPtr dataPtr = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&tempData[0], numBytes));
 #include "EnableMemoryLeakCheck.h"
     try
     {
@@ -62,36 +60,31 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         // Parsed/modified script
         std::ostringstream output;
 
-        while(!data->eof())
+        while(!dataPtr->eof())
         {
-            Ogre::String line = data->getLine();
+            Ogre::String line = dataPtr->getLine();
             // Skip empty lines & comments
             if ((line.length()) && (line.substr(0, 2) != "//"))
             {
                 // Split line to components
                 std::vector<Ogre::String> line_vec;
-
 #if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 6 
-		      line_vec = Ogre::StringUtil::split(line, "\t ");
-#else 
-		      Ogre::vector<Ogre::String>::type vec = Ogre::StringUtil::split(line,"\t ");
-		      int size = vec.size();
-		      line_vec.resize(size);
-		      
-		      for(int i = 0; i < size; ++i)
-			line_vec[i] = vec[i];
-#endif               
+                line_vec = Ogre::StringUtil::split(line, "\t ");
+#else
+                Ogre::vector<Ogre::String>::type vec = Ogre::StringUtil::split(line,"\t ");
+                int size = vec.size();
+                line_vec.resize(size);
 
-                // Check for vector parameters to be modified, so that particle scripts can be authored in typical Ogre coord system
-                ModifyVectorParameter(line, line_vec);
-
+                for(int i = 0; i < size; ++i)
+                    line_vec[i] = vec[i];
+#endif
                 // Process opening/closing braces
                 if (!ProcessBraces(line, brace_level))
                 {
                     // If not a brace and on level 0, it should be a new particlesystem; replace name with resource ID + ordinal
                     if (brace_level == 0)
                     {
-                        line = SanitateAssetIdForOgre(this->Name().toStdString()) + "_" + boost::lexical_cast<std::string>(new_templates.size());
+                        line = SanitateAssetIdForOgre(this->Name() + "_" + QString::number(new_templates.size()));
                         new_templates.push_back(line);
                         // New script compilers need this
                         line = "particle_system " + line;
@@ -100,7 +93,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                     {
                         // Check for ColourImage, which is a risky affector and may easily crash if image can't be loaded
                         if (line_vec[0] == "affector")
-                        {   
+                        {
                            if (line_vec.size() >= 2)
                             {
                                 if (line_vec[1] == "ColourImage")
@@ -112,51 +105,62 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                         }
                         // Check for material definition
                         else if (line_vec[0] == "material")
-                        {             
+                        {
                             if (line_vec.size() >= 2)
                             {
-                                // Tundra: we only support material refs in particle scripts
                                 std::string mat_name = line_vec[1];
-                                ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
-                                references_.push_back(AssetReference(assetAPI->LookupAssetRefToStorage(mat_name.c_str())));
-                                line = "material " + SanitateAssetIdForOgre(mat_name);
+                                AssetReference assetRef(assetAPI->ResolveAssetRef(Name(), mat_name.c_str()));
+                                references.push_back(assetRef);
+                                line = "material " + SanitateAssetIdForOgre(assetRef.ref);
                             }
                         }
                     }
                     // Write line to the copy
                     if (!skip_until_next)
                     {
+                        // Maintain the intendation.
+                        int numIntendations = brace_level;
+                        if (line.find("{") != std::string::npos)
+                            --numIntendations;
+                        for(int i = 0; i < numIntendations; ++i)
+                            output << "    ";
                         output << line << std::endl;
                     }
                     else
-                        ::LogDebug("Skipping risky particle effect line: " + line);
+                        LogDebug("Skipping risky particle effect line: " + line);
                 }
                 else
                 {
                     // Write line to the copy
                     if (!skip_until_next)
                     {
+                        // Maintain the intendation.
+                        int numIntendations = brace_level;
+                        if (line.find("{") != std::string::npos)
+                            --numIntendations;
+                        for(int i = 0; i < numIntendations; ++i)
+                            output << "    ";
                         output << line << std::endl;
                     }
                     else
-                        ::LogDebug("Skipping risky particle effect line: " + line);
+                        LogDebug("Skipping risky particle effect line: " + line);
 
                     if (brace_level <= skip_brace_level)
                         skip_until_next = false;
                 }
-            } 
+            }
         }
 
-        std::string output_str = output.str();
+        originalData = output.str();
 #include "DisableMemoryLeakCheck.h"
-        Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&output_str[0], output_str.size()));
+        Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&originalData[0], originalData.size()));
 #include "EnableMemoryLeakCheck.h"
         Ogre::ParticleSystemManager::getSingleton().parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     }
     catch(Ogre::Exception& e)
     {
-        ::LogWarning(e.what());
-        ::LogWarning("Failed to parse Ogre particle script " + Name().toStdString() + ".");
+        LogWarning(e.what());
+        LogWarning("Failed to parse Ogre particle script " + Name().toStdString() + ".");
     }
     
     // Check which templates actually succeeded
@@ -164,77 +168,56 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     {
         if (Ogre::ParticleSystemManager::getSingleton().getTemplate(new_templates[i]))
         {
-            templates_.push_back(new_templates[i]);
-            ::LogDebug("Ogre particle system template " + new_templates[i] + " created");
+            templates.push_back(new_templates[i]);
+            LogDebug("Ogre particle system template " + new_templates[i] + " created");
         }
     }
     
     // Give only the name of the first template
-    internal_name_ = SanitateAssetIdForOgre(Name().toStdString()) + "_0";
+    internalName = SanitateAssetIdForOgre(Name().toStdString()) + "_0";
     
     // Theoretical success if at least one template was created
     return GetNumTemplates() > 0;
 }
 
+bool OgreParticleAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
+{
+    data.clear();
+    std::string desanitatedData = originalData;
+    QStringList keywords;
+    keywords << "particle_system " << "material ";
+    DesanitateAssetIds(desanitatedData, keywords);
+    data.insert(data.end(), &desanitatedData[0], &desanitatedData[0] + desanitatedData.length());
+    return true;
+}
+
 int OgreParticleAsset::GetNumTemplates() const
 {
-    return templates_.size();
+    return templates.size();
 }
 
 QString OgreParticleAsset::GetTemplateName(int index) const
 {
-    if (index >= templates_.size())
+    if (index < 0 || index >= (int)templates.size())
         return "";
-        
-    return templates_[index].c_str();
+
+    return templates[index].c_str();
 }
 
 bool OgreParticleAsset::IsLoaded() const
 {
-    return templates_.size() > 0;
+    return templates.size() > 0;
 }
 
 void OgreParticleAsset::RemoveTemplates()
 {
-    for(unsigned i = 0; i < templates_.size(); ++i)
-    {
+    for(unsigned i = 0; i < templates.size(); ++i)
         try
         {
-            Ogre::ParticleSystemManager::getSingleton().removeTemplate(templates_[i]);
-        } catch(...) {}
-    }
-    templates_.clear();
-}
+            Ogre::ParticleSystemManager::getSingleton().removeTemplate(templates[i]);
+        }
+        catch(...) {}
 
-void ModifyVectorParameter(Ogre::String& line, std::vector<Ogre::String>& line_vec)
-{
-    static const std::string modify_these[] = {"position", "direction", "force_vector", "common_direction", "common_up_vector", "plane_point", "plane_normal", ""};
-    
-    // Line should consist of the command & 3 values
-    if (line_vec.size() != 4)
-        return;
-    
-    for(uint i = 0; modify_these[i].length(); ++i)
-    {
-        if (line_vec[0] == modify_these[i])
-        {   
-            try
-            {
-                float x = ParseString<float>(line_vec[1]);
-                float y = ParseString<float>(line_vec[2]);
-                float z = ParseString<float>(line_vec[3]);
-
-                // For compatibility with old rex assets, the Z coord has to be reversed
-                std::stringstream s;
-                s << line_vec[0] << " " << x << " " << y << " " << -z;
-                // Write back the modified string
-                line = s.str();
-            }
-            catch(...)
-            {
-            }
-            return;
-        }        
-    }
+    templates.clear();
 }
 

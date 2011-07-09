@@ -1,42 +1,36 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include <QObject>
-#include "../Input/InputFwd.h"
-namespace Foundation
-{
-    class Framework;
-}
-class KeyEvent;
+#pragma once
+
+#include "InputFwd.h"
+
+#include <QWidget>
+
+class Framework;
+
 namespace OgreRenderer
 {
-    /// Widget for rendering settings
-    class RendererSettings : public QObject
+    /// Widget for renderer settings
+    class RendererSettingsWindow : public QWidget
     {
         Q_OBJECT
 
     public:
-        RendererSettings(Foundation::Framework* framework);
-        ~RendererSettings();
+        explicit RendererSettingsWindow(Framework* fw, QWidget *parent = 0);
+        ~RendererSettingsWindow();
 
     public slots:
         void ViewDistanceChanged(double value);
         void ShadowQualityChanged(int quality);
         void TextureQualityChanged(int quality);
-        
+
         /// toggles fullscreen mode
         void SetFullScreenMode(bool value);
-
         void KeyPressed(KeyEvent* e);
 
-
     private:
-        void InitWindow();
         InputContextPtr input_context_;
-
-        Foundation::Framework* framework_;
-
-        /// Widget for renderer settings
+        Framework* framework_;
         QWidget *settings_widget_;
-
     };
 }

@@ -5,6 +5,7 @@
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include "AssetAPI.h"
+#include "LoggingFunctions.h"
 
 #include <QFile>
 
@@ -57,11 +58,11 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     }
 
     internal_name_ = SanitateAssetIdForOgre(this->Name().toStdString());
-    LogDebug("Ogre skeleton " + this->Name().toStdString() + " created");
+//    LogDebug("Ogre skeleton " + this->Name().toStdString() + " created");
     return true;
 }
 
-bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
+bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     if (ogreSkeleton.isNull())
     {

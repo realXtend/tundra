@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_OgreShadowCameraSetupFocusedPSSM_h
-#define incl_OgreRenderer_OgreShadowCameraSetupFocusedPSSM_h
+#pragma once
 
 /**
  *  This class is for PSSM focused shadow camera setup. It's mostly copy-paste from Ogre's
@@ -68,4 +67,3 @@ protected:
     mutable size_t mCurrentIteration;
 };
 
-#endif

@@ -1,51 +1,53 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-/// @file OgreConversionUtils.cpp
-/// Contains some common methods for conversions between Ogre and Core variable types.
+/** 
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   OgreConversionUtils.cpp
+ *  @brief  Contains some common methods for conversions between Ogre and Core variable types.
+ */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "CoreStringUtils.h"
 #include "OgreConversionUtils.h"
+#include "MemoryLeakCheck.h"
 
 namespace OgreRenderer
 {
 
 Ogre::ColourValue ToOgreColor(const Color& color)
 {
-	return Ogre::ColourValue(color.r, color.g, color.b, color.a);
+    return Ogre::ColourValue(color.r, color.g, color.b, color.a);
 }
 
-Color ToCoreColor(const Ogre::ColourValue& ogreColour)
+Color ToCoreColor(const Ogre::ColourValue& color)
 {
-   return Color(ogreColour.r, ogreColour.g, ogreColour.b, ogreColour.a);
+   return Color(color.r, color.g, color.b, color.a);
 }
 
-Ogre::Matrix4 OGRE_MODULE_API ToOgreMatrix4(const Matrix4 &matrix)
-{
-    return Ogre::Matrix4(
-        matrix[0], matrix[4], matrix[8], matrix[12],
-        matrix[1], matrix[5], matrix[9], matrix[13],
-        matrix[2], matrix[6], matrix[10], matrix[14],
-        matrix[3], matrix[7], matrix[11], matrix[15]);
-}
-
-Ogre::Vector3 ToOgreVector3(const Vector3df &vector)
+Ogre::Vector3 ToOgreVector3(const float3 &vector)
 {
     return Ogre::Vector3(vector.x, vector.y, vector.z);
 }
 
-Ogre::Quaternion ToOgreQuaternion(const Quaternion &quat)
+float3 ToCoreVector(const Ogre::Vector3 &vector)
 {
-    return Ogre::Quaternion(quat.w, quat.x, quat.y, quat.z);
+    return float3(vector.x, vector.y, vector.z);
+}
+
+std::string SanitateAssetIdForOgre(const QString& input)
+{
+    QString ret = input;
+    if (ret.contains('$'))
+        return ret.toStdString();
+
+    ret.replace(':', "$1");
+    ret.replace('/', "$2");
+    return ret.toStdString();
 }
 
 std::string SanitateAssetIdForOgre(const std::string& input)
 {
-    std::string ret = input;
-    ReplaceCharInplace(ret, ':', '_');
-    ReplaceCharInplace(ret, '/', '_');
-    return ret;
+    return SanitateAssetIdForOgre(QString::fromStdString(input));
 }
 
 std::string SanitateAssetIdForOgre(const char* input)
@@ -53,6 +55,59 @@ std::string SanitateAssetIdForOgre(const char* input)
     if (!input)
         return std::string();
     return SanitateAssetIdForOgre(std::string(input));
+}
+
+QString DesanitateAssetIdFromOgre(const QString &input)
+{
+    QString ret = input;
+    ret.replace("$1", ":");
+    ret.replace("$2", "/");
+    return ret;
+}
+
+QString DesanitateAssetIdFromOgre(const std::string &input)
+{
+    return DesanitateAssetIdFromOgre(QString::fromStdString(input));
+}
+
+std::string AddDoubleQuotesIfNecessary(const std::string &str)
+{
+    std::string ret = str;
+    size_t found = ret.find(' ');
+    if (found != std::string::npos)
+    {
+        ret.insert(0, "\"");
+        ret.append("\"");
+    }
+
+    return ret;
+}
+
+void DesanitateAssetIds(std::string &script, const QStringList &keywords)
+{
+    QStringList lines = QString(script.c_str()).split("\n");
+    for(int i = 0; i < lines.size(); ++i)
+    {
+        QString id;
+        int idx = -1, offset = -1;
+        foreach(const QString &keyword, keywords)
+            if (lines[i].contains(keyword))
+            {
+                idx = lines[i].indexOf(keyword);
+                offset = keyword.length();
+                id = keyword;
+                break;
+            }
+
+        if (idx != -1 && offset != -1)
+        {
+            QString desanitatedRef = DesanitateAssetIdFromOgre(lines[i].mid(idx + offset).trimmed());
+            lines[i] = lines[i].left(idx);
+            lines[i].append(id + desanitatedRef);
+        }
+    }
+
+    script = lines.join("\n").toStdString();
 }
 
 }

@@ -5,6 +5,7 @@
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
 #include "Entity.h"
+#include "FrameAPI.h"
 #include "OgreRenderingModule.h"
 #include "CoreStringUtils.h"
 
@@ -16,13 +17,14 @@
 
 using namespace OgreRenderer;
 
-EC_AnimationController::EC_AnimationController(IModule* module) :
-    IComponent(module->GetFramework()),
+EC_AnimationController::EC_AnimationController(Scene* scene) :
+    IComponent(scene),
     animationState(this, "Animation state", ""),
     mesh(0)
 {
     ResetState();
     
+    QObject::connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
@@ -65,7 +67,7 @@ QStringList EC_AnimationController::GetActiveAnimations() const
     return activeList;
 }
 
-void EC_AnimationController::Update(f64 frametime)
+void EC_AnimationController::Update(float frametime)
 {
     Ogre::Entity* entity = GetEntity();
     if (!entity) 
@@ -300,7 +302,7 @@ void EC_AnimationController::ResetState()
 }
 
 /// Finds an animation state from Ogre::AnimationStateSet by name, performing a case-insensitive name search.
-/// \note This function is O(n), while normal set search would be O(logN) or O(1).
+/// @note This function is O(n), while normal set search would be O(logN) or O(1).
 Ogre::AnimationState *OgreAnimStateSetFindNoCase(Ogre::AnimationStateSet *set, const QString &animState)
 {
     if (!set)
@@ -540,9 +542,65 @@ bool EC_AnimationController::SetAnimationTimePosition(const QString& name, float
     return false;
 }
 
+bool EC_AnimationController::SetAnimationRelativeTimePosition(const QString& name, float newPosition)
+{
+    Ogre::Entity* entity = GetEntity();
+    Ogre::AnimationState* animstate = GetAnimationState(entity, name);
+    if (!animstate) 
+        return false;
+        
+    // See if we find this animation in the list of active animations
+    AnimationMap::iterator i = animations_.find(name);
+    if (i != animations_.end())
+    {
+        animstate->setTimePosition(clamp(newPosition, 0.0f, 1.0f) * animstate->getLength());
+        return true;
+    }
+    // Animation not active
+    return false;
+}
+
+float EC_AnimationController::GetAnimationLength(const QString& name)
+{
+    Ogre::Entity* entity = GetEntity();
+    Ogre::AnimationState* animstate = GetAnimationState(entity, name);
+    if (!animstate)
+        return 0.0f;
+    else
+        return animstate->getLength();
+}
+
+float EC_AnimationController::GetAnimationTimePosition(const QString& name)
+{
+    Ogre::Entity* entity = GetEntity();
+    Ogre::AnimationState* animstate = GetAnimationState(entity, name);
+    if (!animstate)
+        return 0.0f;
+    
+    // See if we find this animation in the list of active animations
+    AnimationMap::iterator i = animations_.find(name);
+    if (i != animations_.end())
+        return animstate->getTimePosition();
+    else return 0.0f;
+}
+
+float EC_AnimationController::GetAnimationRelativeTimePosition(const QString& name)
+{
+    Ogre::Entity* entity = GetEntity();
+    Ogre::AnimationState* animstate = GetAnimationState(entity, name);
+    if (!animstate)
+        return 0.0f;
+    
+    // See if we find this animation in the list of active animations
+    AnimationMap::iterator i = animations_.find(name);
+    if (i != animations_.end())
+        return animstate->getTimePosition() / animstate->getLength();
+    else return 0.0f;
+}
+
 void EC_AnimationController::UpdateSignals()
 {
-    Scene::Entity* parent = GetParentEntity();
+    Entity* parent = ParentEntity();
     if (parent)
     {
         parent->ConnectAction("PlayAnim", this, SLOT(PlayAnim(const QString &, const QString &, const QString &)));
@@ -563,7 +621,7 @@ void EC_AnimationController::AutoSetMesh()
 {
     if (!mesh)
     {
-        Scene::Entity* parent = GetParentEntity();
+        Entity* parent = ParentEntity();
         if (parent)
         {
             EC_Mesh* mesh = parent->GetComponent<EC_Mesh>().get();

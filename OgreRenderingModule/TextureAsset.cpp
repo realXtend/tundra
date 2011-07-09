@@ -1,14 +1,33 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 
+#include "Profiler.h"
 #include "TextureAsset.h"
 #include "OgreConversionUtils.h"
+
+#include <QPixmap>
+#include <QRect>
+#include <QFontMetrics>
+#include <QPainter>
 
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
 
+#ifdef WIN32
+#include <d3d9.h>
+#include <OgreD3D9RenderSystem.h>
+#include <OgreD3D9HardwarePixelBuffer.h>
+#endif
+
+#include "MemoryLeakCheck.h"
+
 #include "LoggingFunctions.h"
+
+TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_)
+:IAsset(owner, type_, name_)
+{
+    ogreAssetName = OgreRenderer::SanitateAssetIdForOgre(this->Name().toStdString()).c_str();
+}
 
 TextureAsset::~TextureAsset()
 {
@@ -18,16 +37,25 @@ TextureAsset::~TextureAsset()
 bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     if (!data)
-        return false; ///\todo Log out error.
+    {
+        LogError("TextureAsset::DeserializeFromData failed: Cannot deserialize from input null pointer!");
+        return false;
+    }
     if (numBytes == 0)
-        return false; ///\todo Log out error.
+    {
+        LogError("TextureAsset::DeserializeFromData failed: numBytes == 0!");
+        return false;
+    }
 
+    assert(!assetAPI->IsHeadless());
+    /*
+    ///\todo This can be removed.
     // Don't load textures to memory in headless mode
     if (assetAPI->IsHeadless())
     {
-	    return false;
+        return false;
     }
-
+*/
     try
     {
         // Convert the data into Ogre's own DataStream format.
@@ -94,7 +122,7 @@ void TextureAsset::RegenerateAllMipLevels()
         }
 }
 */
-bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
+bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
     if (ogreTexture.isNull())
     {
@@ -144,14 +172,6 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
     return true;
 }
 
-void TextureAsset::HandleLoadError(const QString &loadError)
-{
-    // Don't print anything if we are headless, 
-    // not loading the texture was intentional
-    if (!assetAPI->IsHeadless())
-        LogError(loadError.toStdString());
-}
-
 void TextureAsset::DoUnload()
 {
     if (!ogreTexture.isNull())
@@ -168,4 +188,161 @@ void TextureAsset::DoUnload()
 bool TextureAsset::IsLoaded() const
 {
     return ogreTexture.get() != 0;
+}
+
+QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
+{
+    if (!ogreTexture.get())
+    {
+        LogError("TextureAsset::ToQImage: Can't convert texture to QImage, Ogre texture is not initialized for asset \"" + ToString() + "\"!");
+        return QImage();
+    }
+
+    Ogre::HardwarePixelBufferSharedPtr pixelBuffer = ogreTexture->getBuffer(faceIndex, mipmapLevel);
+    QImage::Format fmt;
+    switch(pixelBuffer->getFormat())
+    {
+    case Ogre::PF_X8R8G8B8: fmt = QImage::Format_RGB32; break;
+    case Ogre::PF_A8R8G8B8: fmt = QImage::Format_ARGB32; break;
+    case Ogre::PF_R5G6B5: fmt = QImage::Format_RGB16; break;
+    case Ogre::PF_R8G8B8: fmt = QImage::Format_RGB888; break;
+    default:
+        LogError("TextureAsset::ToQImage: Cannot convert Ogre TextureAsset \"" + Name() + "\" to QImage: Unsupported Ogre format of type " + (int)pixelBuffer->getFormat());
+        return QImage();
+    }
+
+    void *data = pixelBuffer->lock(Ogre::HardwareBuffer::HBL_READ_ONLY);
+    if (!data)
+    {
+        LogError("TextureAsset::ToQImage: Failed to lock Ogre TextureAsset \"" + Name() + "\" for reading!");
+        return QImage();
+    }
+    QImage img((uchar*)data, pixelBuffer->getWidth(), pixelBuffer->getHeight(), fmt);
+    pixelBuffer->unlock();
+    return img;
+}
+
+void TextureAsset::SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic)
+{
+    if (newWidth == 0 || newHeight == 0)
+    {
+        Unload();
+        return;
+    }
+    ///\todo Could optimize a lot here, don't create this temporary vector.
+    ///\todo This only works for 32bpp images.
+    std::vector<u32> data(newWidth * newHeight, color);
+    SetContents(newWidth, newHeight, (const u8*)&data[0], data.size() * sizeof(u32), ogreFormat, regenerateMipmaps, dynamic);
+}
+
+void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size_t numBytes, Ogre::PixelFormat ogreFormat, bool regenerateMipMaps, bool dynamic)
+{
+    PROFILE(TextureAsset_SetContents);
+
+    int usage = dynamic ? Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE : Ogre::TU_STATIC_WRITE_ONLY;
+    if (regenerateMipMaps)
+        usage |= Ogre::TU_AUTOMIPMAP;
+
+    if (numBytes != newWidth * newHeight * 4)
+    {
+        LogError("TextureAsset::SetContents failed: Inputted " + QString::number(numBytes) + " bytes of data, but " + QString::number(newWidth) + "x" + QString::number(newHeight)
+            + " at 4 bytes per pixel requires " + QString::number(newWidth * newHeight * 4) + " bytes!");
+        return;
+    }
+
+    if (!ogreTexture.get())
+    {
+        ogreTexture = Ogre::TextureManager::getSingleton().createManual(Name().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+            newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, usage);
+        if (!ogreTexture.get())
+        {
+            LogError("TextureAsset::SetContents failed: Cannot create texture asset \"" + ToString() + "\" to name \"" + Name() + "\" and size " + QString::number(newWidth) + "x" + QString::number(newHeight) + "!");
+            return;
+        }
+    }
+
+    bool needRecreate = (newWidth != ogreTexture->getWidth() || newHeight != ogreTexture->getHeight() || ogreFormat != ogreTexture->getFormat());
+//    if (newWidth == ogreTexture->getWidth() && newHeight == ogreTexture->getHeight() && ogreFormat == ogreTexture->getFormat())
+//        return;
+
+    if (needRecreate)
+    {
+        ogreTexture->freeInternalResources(); 
+        ogreTexture->setWidth(newWidth);
+        ogreTexture->setHeight(newHeight);
+        ogreTexture->setFormat(ogreFormat);
+    }
+    if (ogreTexture->getBuffer().isNull())
+    {
+        LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
+        return;
+    }
+
+    if (data)
+    {
+#ifdef WIN32
+        Ogre::HardwarePixelBufferSharedPtr pb = ogreTexture->getBuffer();
+        Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(pb.get());
+        assert(pixelBuffer);
+
+        LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(Ogre::D3D9RenderSystem::getActiveD3D9Device());
+        if (surface)
+        {
+            D3DSURFACE_DESC desc;
+            HRESULT hr = surface->GetDesc(&desc);
+            if (SUCCEEDED(hr))
+            {
+                D3DLOCKED_RECT lock;
+                HRESULT hr = surface->LockRect(&lock, 0, 0);
+                if (SUCCEEDED(hr))
+                {
+                    const int bytesPerPixel = 4; ///\todo Count from Ogre::PixelFormat!
+                    const int sourceStride = bytesPerPixel * newWidth;
+                    if (lock.Pitch == sourceStride)
+                        memcpy(lock.pBits, data, sourceStride * newHeight);
+                    else
+                        for(int y = 0; y < newHeight; ++y)
+                            memcpy((u8*)lock.pBits + lock.Pitch * y, data + sourceStride * y, sourceStride);
+                    surface->UnlockRect();
+                }
+            }
+        }
+#else        
+        ///\todo Review Ogre internals of whether the const_cast here is safe!
+        Ogre::PixelBox pixelBox(Ogre::Box(0,0, newWidth, newHeight), ogreFormat, const_cast<u8*>(data));
+        ogreTexture->getBuffer()->blitFromMemory(pixelBox);
+#endif
+    }
+
+    if (needRecreate)
+        ogreTexture->createInternalResources();
+}
+
+void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags, bool generateMipmaps, bool dynamic)
+{
+    text = text.replace("\\n", "\n");
+
+    // Create transparent pixmap
+    QImage image(newWidth, newHeight, QImage::Format_ARGB32);
+    image.fill(Qt::transparent);
+
+    {
+        // Init painter with pixmap as the paint device
+        QPainter painter(&image);
+
+        // Ask painter the rect for the text
+        painter.setFont(font);
+        QRect rect = painter.boundingRect(image.rect(), flags, text);
+
+        // Set background brush
+        painter.setBrush(backgroundBrush);
+        painter.setPen(borderPen);
+        painter.drawRoundedRect(rect, 20.0, 20.0, Qt::RelativeSize);
+
+        // Draw text
+        painter.setPen(textColor);
+        painter.drawText(rect, flags, text);
+    }
+
+    SetContents(newWidth, newHeight, image.bits(), image.byteCount(), Ogre::PF_A8R8G8B8, generateMipmaps, dynamic);
 }
