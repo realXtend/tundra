@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef GLOBALALLOCOBJECT_H_
-#define GLOBALALLOCOBJECT_H_
+#pragma once
 
 #include <cstdio>
 #include <cstdlib>
@@ -30,7 +29,7 @@ struct GlobalAllocObject
     T* handle() { return (T*) this; }
 };
 
-#include "boost/smart_ptr.hpp"
+#include <boost/smart_ptr.hpp>
 
 template <typename T>
 struct SharedGlobalObject : public boost::shared_ptr<GlobalAllocObject<T> >
@@ -41,5 +40,3 @@ struct SharedGlobalObject : public boost::shared_ptr<GlobalAllocObject<T> >
 
     operator T*() { return get()->handle(); }
 };
-
-#endif // !defined(GLOBALALLOCOBJECT_H_INCLUDED_)

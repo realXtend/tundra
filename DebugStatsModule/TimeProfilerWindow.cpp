@@ -8,18 +8,18 @@
 #include "DebugStats.h"
 #include "HighPerfClock.h"
 #include "Framework.h"
-#include "SceneManager.h"
-#include "RenderServiceInterface.h"
+#include "Application.h"
+#include "Scene.h"
+#include "OgreRenderingModule.h"
 
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
-#include "EventManager.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #include "SceneAPI.h"
 #include "Entity.h"
-
+#include "Renderer.h"
 #include <utility>
 
 #include <QVBoxLayout>
@@ -39,15 +39,12 @@
 
 using namespace std;
 
-namespace DebugStats
-{
-
 const QString DEFAULT_LOG_DIR("logs");
 
-TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(fw)
+TimeProfilerWindow::TimeProfilerWindow(Framework *fw) : framework_(fw)
 {
     QUiLoader loader;
-    QFile file("./data/ui/profiler.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/profiler.ui");
     file.open(QFile::ReadOnly);
     contents_widget_ = loader.load(&file, this);
     assert(contents_widget_);
@@ -78,28 +75,6 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     frameTimeHistory.fill(0xFF000000);
     label_frame_time_history_->setPixmap(QPixmap::fromImage(frameTimeHistory));
 
-    QLabel *label = findChild<QLabel*>("labelDataInSecGraph");
-    QImage img(label->width(), label->height(), QImage::Format_RGB32);
-    img.fill(0xFF000000);
-    label->setPixmap(QPixmap::fromImage(img));
-
-    label = findChild<QLabel*>("labelDataOutSecGraph");
-    img = QImage(label->width(), label->height(), QImage::Format_RGB32);
-    img.fill(0xFF000000);
-    label->setPixmap(QPixmap::fromImage(img));
-
-    label = findChild<QLabel*>("labelPacketsInSecGraph");
-    img = QImage(label->width(), label->height(), QImage::Format_RGB32);
-    img.fill(0xFF000000);
-    label->setPixmap(QPixmap::fromImage(img));
-
-    label = findChild<QLabel*>("labelPacketsOutSecGraph");
-    img = QImage(label->width(), label->height(), QImage::Format_RGB32);
-    img.fill(0xFF000000);
-    label->setPixmap(QPixmap::fromImage(img));
-
-    const int headerHeight = tree_profiling_data_->headerItem()->sizeHint(0).height();
-    UNREFERENCED_PARAM(headerHeight);
     tree_profiling_data_->header()->resizeSection(0, 300);
     tree_profiling_data_->header()->resizeSection(1, 60);
     tree_profiling_data_->header()->resizeSection(2, 50);
@@ -107,18 +82,6 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     tree_profiling_data_->header()->resizeSection(4, 50);
 
     connect(tab_widget_, SIGNAL(currentChanged(int)), this, SLOT(OnProfilerWindowTabChanged(int)));
-
-    label_region_map_coords_ = findChild<QLabel*>("labelRegionMapCoords");
-    label_region_object_capacity_ = findChild<QLabel*>("labelRegionObjectCapacity");
-    tree_sim_stats_ = findChild<QTreeWidget*>("treeSimStats");
-    label_pid_stat_ = findChild<QLabel*>("labelPidStat");
-    assert(label_pid_stat_);
-    assert(label_region_map_coords_);
-    assert(label_region_object_capacity_);
-    assert(tree_sim_stats_);
-
-    tree_sim_stats_->header()->resizeSection(0, 400);
-    tree_sim_stats_->header()->resizeSection(1, 100);
 
     show_profiler_tree_ = false;
     show_unused_ = false;
@@ -199,21 +162,14 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
         connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
     }
 
-    QCheckBox* checkBoxLogTraffic = findChild<QCheckBox*>("checkBoxLogTraffic");
-    assert(checkBoxLogTraffic);
-    if (checkBoxLogTraffic)
-        connect(checkBoxLogTraffic, SIGNAL(stateChanged (int)), this, SLOT(SetNetworkLogging(int)));
-
     // Set/init working directory for log files.
-    logDirectory_ = framework_->GetPlatform()->GetApplicationDataDirectory().c_str();
+    logDirectory_ = Application::UserDataDirectory();
     if (!logDirectory_.exists(DEFAULT_LOG_DIR))
         logDirectory_.mkdir(DEFAULT_LOG_DIR);
     logDirectory_.cd(DEFAULT_LOG_DIR);
 
-    QObject::connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
-    QObject::connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
-
-    boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
+    connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
+    connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
 
     // Add a context menu to Textures, Meshes and Materials widgets.
     if (tree_texture_assets_)
@@ -222,7 +178,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
         menu_texture_assets_ = new QMenu(tree_texture_assets_);
         menu_texture_assets_->setAttribute(Qt::WA_DeleteOnClose);
         QAction *copyAssetName = new QAction(tr("Copy"), menu_texture_assets_);
-        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyTextureAssetName()));
+        connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyTextureAssetName()));
         menu_texture_assets_->addAction(copyAssetName);
     }
     if (tree_mesh_assets_)
@@ -231,7 +187,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
         menu_mesh_assets_ = new QMenu(tree_mesh_assets_);
         menu_mesh_assets_->setAttribute(Qt::WA_DeleteOnClose);
         QAction *copyAssetName = new QAction(tr("Copy"), menu_mesh_assets_);
-        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMeshAssetName()));
+        connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMeshAssetName()));
         menu_mesh_assets_->addAction(copyAssetName);
     }
     if (tree_material_assets_)
@@ -240,7 +196,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
         menu_material_assets_ = new QMenu(tree_material_assets_);
         menu_material_assets_->setAttribute(Qt::WA_DeleteOnClose);
         QAction *copyAssetName = new QAction(tr("Copy"), menu_material_assets_);
-        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMaterialAssetName()));
+        connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMaterialAssetName()));
         menu_material_assets_->addAction(copyAssetName);
     }
 
@@ -326,57 +282,6 @@ void TimeProfilerWindow::ChangeLoggerThreshold()
      if (box != 0)
         logThreshold_ = box->value();
 }
-
-void TimeProfilerWindow::SetNetworkLogging(int value)
-{
-    QFile file(logDirectory_.path() + "/networking.txt");
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
-        return;
-
-    QTextStream log(&file);
-    if (value)
-        log << "========== Logging started " << GetLocalTimeString().c_str() << " ==========\n";
-    else if (!value)
-    {
-     // Dump packages 
-     DumpNetworkSummary(&log);
-     log << "========== Logging ended " << GetLocalTimeString().c_str() << "==========\n";
-    }
-}
-
-void TimeProfilerWindow::DumpNetworkSummary(QTextStream* log)
-{
-    if (log == 0)
-    {
-        QFile file(logDirectory_.path() + "/networking.txt");
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
-            return;
-    
-        // ehheh
-        DumpNetworkSummary(log);
-    }
-    else
-    {
-
-        (*log)<<endl;
-        (*log)<<" Summary of network IN packages (name, bytes, count) "<<endl;
-        
-        for(QMap<QString, NetworkLogData >::iterator iter = mapNetInData_.begin(); iter != mapNetInData_.end(); ++iter)
-        {
-            (*log)<<" "<<iter.key()<<" "<<QString::number(iter.value().bytes)<<" "<<QString::number(iter.value().packages)<<endl;
-        }
-        
-        (*log)<<endl;
-        (*log)<<" Summary of network OUT packages (name, bytes, count) "<<endl;
-        
-        for(QMap<QString, NetworkLogData >::iterator iter = mapNetOutData_.begin(); iter != mapNetOutData_.end(); ++iter)
-        {
-            (*log)<<" "<<iter.key()<<" "<<QString::number(iter.value().bytes)<<" "<<QString::number(iter.value().packages)<<endl;
-        }
-        (*log)<<endl;
-    }
- }
-
 
 struct ResNameAndSize
 {
@@ -518,37 +423,37 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
     case 2:
         RefreshOgreProfilingWindow();
         break;
-    case 5:
+    case 3:
         RefreshAssetProfilingData();
         break;
-    case 6:
+    case 4:
         RefreshSceneComplexityProfilingData();
         break;
-    case 7:
+    case 5:
         RefreshRenderTargetProfilingData();
         break;
-    case 8: // Textures
-        RefreshAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
+    case 6: // Textures
+        RefreshAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_, "texture");
         break;
-    case 9: // Meshes
-        RefreshAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
+    case 7: // Meshes
+        RefreshAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_, "mesh");
         break;
-    case 10: // Material
-        RefreshAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
+    case 8: // Material
+        RefreshAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_, "material");
         break;
-    case 11: // Skeleton
-        RefreshAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
+    case 9: // Skeleton
+        RefreshAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_, "skeleton");
         break;
-    case 12: // Composition
-        RefreshAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
+    case 10: // Composition
+        RefreshAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_, "compositor");
         break;
-    case 13: // Gpu assets
-        RefreshAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
+    case 11: // Gpu assets
+        RefreshAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_, "gpuasset");
         break;
-    case 14: // Font assets
-        RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
+    case 12: // Font assets
+        RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_, "font");
         break;
-    case 15: // OgreSceneTree
+    case 13: // OgreSceneTree
         PopulateOgreSceneTree();
         break;
     }
@@ -586,9 +491,8 @@ static QTreeWidgetItem *FindItemByName(QTreeWidget *parent, const char *name)
     return 0;
 }
 
-void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode)
+void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode)
 {
-    using namespace Foundation;
     const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
     for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
@@ -682,7 +586,7 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
         uint color = colorOdd;
 #ifdef _WINDOWS
         double age = (double)frameTimes[firstEntry + i].first / freq.QuadPart;
-        // Foundation::ProfilerBlock::ElapsedTimeSeconds(*(LARGE_INTEGER*)&frameTimes[firstEntry + i].first, now);
+        // ProfilerBlock::ElapsedTimeSeconds(*(LARGE_INTEGER*)&frameTimes[firstEntry + i].first, now);
         color = (fmod(age, 2.0) >= 1.0) ? colorOdd : colorEven;
 #endif
         if ((frameTimes[firstEntry + i].second / maxTime >= 1.0 &&
@@ -778,8 +682,6 @@ void TimeProfilerWindow::DumpNodeData()
 void TimeProfilerWindow::DoThresholdLogging()
 {
 #ifdef PROFILING
-    using namespace Foundation;
-
      QPushButton* button = findChild<QPushButton* >("loggerApply");
      if (button == 0)
          return;
@@ -800,7 +702,7 @@ void TimeProfilerWindow::DoThresholdLogging()
 
     QTextStream out(&file);
 
-    Profiler &profiler = framework_->GetProfiler();
+    Profiler &profiler = *framework_->GetProfiler();
     profiler.Lock();
 
     ProfilerNodeTree *node = profiler.GetRoot();
@@ -872,9 +774,8 @@ void TimeProfilerWindow::DoThresholdLogging()
 #endif
 }
 
-void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode)
+void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const ProfilerNodeTree *profilerNode)
 {
-    using namespace Foundation;
     const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
     for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
@@ -1200,21 +1101,19 @@ void TimeProfilerWindow::RefreshProfilingData()
 void TimeProfilerWindow::RefreshProfilingDataTree()
 {
 #ifdef PROFILING
-    using namespace Foundation;
+//    Profiler *profiler = ProfilerSection::GetProfiler();
 
-//    Foundation::Profiler *profiler = Foundation::ProfilerSection::GetProfiler();
-
-    Profiler &profiler = framework_->GetProfiler();
+    Profiler &profiler = *framework_->GetProfiler();
     profiler.Lock();
 //    ProfilerNodeTree *node = profiler.Lock().get();
-    Foundation::ProfilerNodeTree *node = profiler.GetRoot();
+    ProfilerNodeTree *node = profiler.GetRoot();
 
-    const Foundation::ProfilerNodeTree::NodeList &children = node->GetChildren();
-    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    const ProfilerNodeTree::NodeList &children = node->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
         node = iter->get();
 
-        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
         if (timings_node && timings_node->num_called_ == 0 && !show_unused_)
             continue;
 
@@ -1252,21 +1151,21 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
 #endif
 }
 
-void TimeProfilerWindow::CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst)
+void TimeProfilerWindow::CollectProfilerNodes(ProfilerNodeTree *node, std::vector<const ProfilerNode *> &dst)
 {
-    const Foundation::ProfilerNodeTree::NodeList &children = node->GetChildren();
-    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    const ProfilerNodeTree::NodeList &children = node->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
-        Foundation::ProfilerNodeTree *child = iter->get();
+        ProfilerNodeTree *child = iter->get();
 
-        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(child);
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(child);
         if (timings_node)
             dst.push_back(timings_node);
         CollectProfilerNodes(child, dst);
     }
 }
 
-bool ProfilingNodeLessThan(const Foundation::ProfilerNode *a, const Foundation::ProfilerNode *b)
+bool ProfilingNodeLessThan(const ProfilerNode *a, const ProfilerNode *b)
 {
     double aTimePerFrame = (a->num_called_custom_ == 0) ? 0 : (a->total_custom_ / a->num_called_custom_);
     double bTimePerFrame = (b->num_called_custom_ == 0) ? 0 : (b->total_custom_ / b->num_called_custom_);
@@ -1276,21 +1175,19 @@ bool ProfilingNodeLessThan(const Foundation::ProfilerNode *a, const Foundation::
 void TimeProfilerWindow::RefreshProfilingDataList()
 {
 #ifdef PROFILING
-    using namespace Foundation;
-
-    Profiler &profiler = framework_->GetProfiler();
+    Profiler &profiler = *framework_->GetProfiler();
     profiler.Lock();
 
-    Foundation::ProfilerNodeTree *root = profiler.GetRoot();
-    std::vector<const Foundation::ProfilerNode *> nodes;
+    ProfilerNodeTree *root = profiler.GetRoot();
+    std::vector<const ProfilerNode *> nodes;
     CollectProfilerNodes(root, nodes);
     std::sort(nodes.begin(), nodes.end(), ProfilingNodeLessThan);
 
     tree_profiling_data_->clear();
 
-    for(std::vector<const Foundation::ProfilerNode *>::iterator iter = nodes.begin(); iter != nodes.end(); ++iter)
+    for(std::vector<const ProfilerNode *>::iterator iter = nodes.begin(); iter != nodes.end(); ++iter)
     {
-        const Foundation::ProfilerNode *timings_node = *iter;
+        const ProfilerNode *timings_node = *iter;
         assert(timings_node);
 
         if (timings_node->num_called_custom_ == 0 && !show_unused_)
@@ -1371,13 +1268,13 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     tree_asset_transfers_->clear();
 /*     /// \todo Regression. Reimplement using the Asset API. -jj.
 
-    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
-        framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
+    boost::shared_ptr<Asset ServiceInterface> asset_service = 
+        framework_->GetS erviceM anager()->Get Service<AssetServiceInterface>(Service::ST_Asset).lock();
     if (!asset_service)
         return;
         
-    Foundation::AssetCacheInfoMap cache_map = asset_service->GetAssetCacheInfo();
-    Foundation::AssetCacheInfoMap::const_iterator i = cache_map.begin();
+    AssetCacheInfoMap cache_map = asset_service->GetAssetCacheInfo();
+    AssetCacheInfoMap::const_iterator i = cache_map.begin();
     while(i != cache_map.end())
     {
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
@@ -1390,8 +1287,8 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
         ++i;
     }
 
-    Foundation::AssetTransferInfoVector transfer_vector = asset_service->GetAssetTransferInfo();
-    Foundation::AssetTransferInfoVector::const_iterator j = transfer_vector.begin();
+    AssetTransferInfoVector transfer_vector = asset_service->GetAssetTransferInfo();
+    AssetTransferInfoVector::const_iterator j = transfer_vector.begin();
     while(j != transfer_vector.end())
     {
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
@@ -1414,12 +1311,11 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 6)
         return;
     
-    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
-    boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
-        framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     assert(renderer);
     if (!renderer)
         return;
@@ -1483,12 +1379,12 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     uint mesh_instances = 0;
     
     // Loop through entities to see mesh usage
-    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::Entity &entity = *iter->second;
+        Entity &entity = *iter->second;
         entities++;
 
-        Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
+        EC_Terrain* terrain = entity.GetComponent<EC_Terrain>().get();
         EC_Mesh* mesh = entity.GetComponent<EC_Mesh>().get();
         EC_OgreCustomObject* custom = entity.GetComponent<EC_OgreCustomObject>().get();
         Ogre::Entity* ogre_entity = 0;
@@ -1855,7 +1751,10 @@ void AddOgreTUState(QTreeWidgetItem *parent, Ogre::TextureUnitState *node, int i
 
 void AddOgrePass(QTreeWidgetItem *parent, Ogre::Pass *node, int idx)
 {
-    QString str = QString("Pass ") + QString::number(idx) + ": " + node->getName().c_str();
+    QString str = QString("Pass ") + QString::number(idx) + ": \"" + node->getName().c_str() + "\"";
+
+    if (node->getNumTextureUnitStates() == 0)
+        str += ", contains 0 TextureUnitStates";
 
     QTreeWidgetItem *item = AddNewItem(parent, str);
 
@@ -1922,6 +1821,15 @@ void AddOgreVertexElement(QTreeWidgetItem *parent, const Ogre::VertexElement *no
     /*QTreeWidgetItem *nodeItem = */AddNewItem(parent, str);
 }
 
+void AddOgreMaterial(QTreeWidgetItem *parent, Ogre::MaterialPtr material)
+{
+    if (material.get())
+    {
+        for(int i = 0; i < material->getNumTechniques(); ++i)
+            AddOgreTechnique(parent, material->getTechnique(i), i);
+    }
+}
+
 void AddOgreSubEntity(QTreeWidgetItem *parent, Ogre::SubEntity *node, int idx)
 {
     QString str = QString("SubEntity ") + QString::number(idx);
@@ -1932,18 +1840,14 @@ void AddOgreSubEntity(QTreeWidgetItem *parent, Ogre::SubEntity *node, int idx)
         str += "(not loaded)";
 
     QTreeWidgetItem *item = AddNewItem(parent, str);
-
     if (material.get())
-    {
-        for(int i = 0; i < material->getNumTechniques(); ++i)
-            AddOgreTechnique(item, material->getTechnique(i), i);
-    }
+        AddOgreMaterial(item, material);
 
     Ogre::SubMesh *submesh = node->getSubMesh();
     if (submesh && submesh->vertexData && !submesh->useSharedVertices && submesh->vertexData->vertexDeclaration)
     {
         Ogre::VertexDeclaration *vd = submesh->vertexData->vertexDeclaration;
-        for(int i = 0; i < vd->getElementCount(); ++i)
+        for(size_t i = 0; i < vd->getElementCount(); ++i)
             AddOgreVertexElement(item, vd->getElement(i), i);
     }
 }
@@ -1968,7 +1872,24 @@ void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
             str += ", (null MeshPtr)";
     }
 
+    Ogre::ParticleSystem *ps = dynamic_cast<Ogre::ParticleSystem*>(node);
+    if (ps)
+    {
+        str += QString(", material: ") + ps->getMaterialName().c_str();
+
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(ps->getMaterialName());
+        if (!material.get())
+            str += " (not loaded)";
+    }
+
     QTreeWidgetItem *nodeItem = AddNewItem(parent, str);
+
+    if (ps)
+    {
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(ps->getMaterialName());
+        if (material.get())
+            AddOgreMaterial(nodeItem, material);
+    }
 
     if (e)
     {
@@ -1976,7 +1897,7 @@ void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
             AddNewItem(nodeItem, "Ogre::SkeletonInstance: (no skeleton)");
         else
             AddNewItem(nodeItem, ("Ogre::SkeletonInstance: " + e->getSkeleton()->getName()).c_str());
-        for(int i = 0; i < e->getNumSubEntities(); ++i)
+        for(size_t i = 0; i < e->getNumSubEntities(); ++i)
             AddOgreSubEntity(nodeItem, e->getSubEntity(i), i);
     }
 }
@@ -2021,7 +1942,7 @@ void AddOgreSceneNode(QTreeWidgetItem *parent, Ogre::SceneNode *node)
 
 void AddOgreScene(QTreeWidgetItem *parent, Ogre::SceneManager *scene)
 {
-    QTreeWidgetItem *sceneItem = AddNewItem(parent, ("SceneManager: " + scene->getName()).c_str());
+    QTreeWidgetItem *sceneItem = AddNewItem(parent, ("Scene: " + scene->getName()).c_str());
     AddOgreSceneNode(sceneItem, scene->getRootSceneNode());    
 }
 
@@ -2112,7 +2033,7 @@ void TimeProfilerWindow::RefreshTextureProfilingData()
         if (item == 0) 
             item = new QTreeWidgetItem(tree_texture_assets_);
 
-        FillItem(item, resource);
+        FillItem(item, resource, "texture");
     }
 }
 
@@ -2139,24 +2060,202 @@ public:
     }
 };
 
-void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget)
+class OgreTextureAssetTreeWidgetItem : public QTreeWidgetItem
 {
+public:
+    OgreTextureAssetTreeWidgetItem(QTreeWidget *parent)
+    :QTreeWidgetItem(parent)
+    {
+    }
+
+    bool operator<(const QTreeWidgetItem &rhs) const
+    {
+        switch(treeWidget()->sortColumn())
+        {
+        case 1: // Sort the number columns as numbers. 'Size'
+        case 2: // Width
+        case 3: // Height
+        case 5: // # mips
+        case 14: // 'Loading State'
+        case 15: // 'State Count'
+            return this->text(treeWidget()->sortColumn()).toInt() > rhs.text(treeWidget()->sortColumn()).toInt();
+        default: // Others as text.
+            return this->text(treeWidget()->sortColumn()) < rhs.text(treeWidget()->sortColumn());
+        }
+    }
+};
+
+class OgreMeshAssetTreeWidgetItem : public QTreeWidgetItem
+{
+public:
+    OgreMeshAssetTreeWidgetItem(QTreeWidget *parent)
+    :QTreeWidgetItem(parent)
+    {
+    }
+
+    bool operator<(const QTreeWidgetItem &rhs) const
+    {
+        switch(treeWidget()->sortColumn())
+        {
+        case 5: // Sphere radius
+            return this->text(treeWidget()->sortColumn()).toFloat() > rhs.text(treeWidget()->sortColumn()).toFloat();
+        case 1: // Sort the number columns as numbers. 'Size'
+        case 2: // # submeshes
+        case 7: // # LOD levels
+        case 8: // # Morph anims
+        case 9: // # Poses
+        case 19: // 'Loading State'
+        case 20: // 'State Count'
+            return this->text(treeWidget()->sortColumn()).toInt() > rhs.text(treeWidget()->sortColumn()).toInt();
+        case 3: // # vertices
+        case 4: // # indices
+            {
+                QStringList l = this->text(treeWidget()->sortColumn()).split(" ");
+                QStringList r = rhs.text(treeWidget()->sortColumn()).split(" ");
+                if (l.size() == 0 || r.size() == 0)
+                    return false;
+                return l[0].toInt() > r[0].toInt();
+            }
+        default: // Others as text.
+            return this->text(treeWidget()->sortColumn()) < rhs.text(treeWidget()->sortColumn());
+        }
+    }
+};
+
+void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget, QString drawType)
+{
+    // Clear tree.
+    widget->clear();
+   
     Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
     while(iter.hasMoreElements())
     {
         Ogre::ResourcePtr resource = iter.getNext();
         // Is there already this kind of element? 
         QTreeWidgetItem *item = FindItemByName(widget, resource->getName().c_str());
-        if (item == 0) 
-            item = new OgreAssetTreeWidgetItem(widget);
+        if (item == 0)
+            if (drawType == "texture")
+                item = new OgreTextureAssetTreeWidgetItem(widget);
+            else if (drawType == "mesh")
+                item = new OgreMeshAssetTreeWidgetItem(widget);
+            else
+                item = new OgreAssetTreeWidgetItem(widget);
 
-        FillItem(item, resource);
+        FillItem(item, resource, drawType);
     }
     for(int i = 0; i < widget->columnCount(); ++i)
         widget->resizeColumnToContents(i);
 }
 
-void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource)
+QString OgrePixelFormatToString(Ogre::PixelFormat fmt)
+{
+    switch(fmt)
+    {
+    case Ogre::PF_UNKNOWN: return "PF_UNKNOWN";
+    case Ogre::PF_L8: return "PF_L8(PF_BYTE_L)";
+    case Ogre::PF_L16: return "PF_L16(PF_SHORT_L)";
+    case Ogre::PF_A8: return "PF_A8(PF_BYTE_A)";
+    case Ogre::PF_A4L4: return "PF_A4L4";
+    case Ogre::PF_BYTE_LA: return "PF_BYTE_LA";
+    case Ogre::PF_R5G6B5: return "PF_R5G6B5";
+    case Ogre::PF_B5G6R5: return "PF_B5G6R5";
+    case Ogre::PF_R3G3B2: return "PF_R3G3B2";
+    case Ogre::PF_A4R4G4B4: return "PF_A4R4G4B4";
+    case Ogre::PF_A1R5G5B5: return "PF_A1R5G5B5";
+    case Ogre::PF_R8G8B8: return "PF_R8G8B8(PF_BYTE_BGR)";
+    case Ogre::PF_B8G8R8: return "PF_B8G8R8(PF_BYTE_RGB)";
+    case Ogre::PF_A8R8G8B8: return "PF_A8R8G8B8(PF_BYTE_BGRA)";
+    case Ogre::PF_A8B8G8R8: return "PF_A8B8G8R8(PF_BYTE_RGBA)";
+    case Ogre::PF_B8G8R8A8: return "PF_B8G8R8A8";
+    case Ogre::PF_R8G8B8A8: return "PF_R8G8B8A8";
+    case Ogre::PF_X8R8G8B8: return "PF_X8R8G8B8";
+    case Ogre::PF_X8B8G8R8: return "PF_X8B8G8R8";
+    case Ogre::PF_A2R10G10B10: return "PF_A2R10G10B10";
+    case Ogre::PF_A2B10G10R10: return "PF_A2B10G10R10";
+    case Ogre::PF_DXT1: return "PF_DXT1";
+    case Ogre::PF_DXT2: return "PF_DXT2";
+    case Ogre::PF_DXT3: return "PF_DXT3";
+    case Ogre::PF_DXT4: return "PF_DXT4";
+    case Ogre::PF_DXT5: return "PF_DXT5";
+    case Ogre::PF_FLOAT16_R: return "PF_FLOAT16_R";
+    case Ogre::PF_FLOAT16_RGB: return "PF_FLOAT16_RGB";
+    case Ogre::PF_FLOAT16_RGBA: return "PF_FLOAT16_RGBA";
+    case Ogre::PF_FLOAT32_R: return "PF_FLOAT32_R";
+    case Ogre::PF_FLOAT32_RGB: return "PF_FLOAT32_RGB";
+    case Ogre::PF_FLOAT32_RGBA: return "PF_FLOAT32_RGBA";
+    case Ogre::PF_FLOAT16_GR: return "PF_FLOAT16_GR";
+    case Ogre::PF_FLOAT32_GR: return "PF_FLOAT32_GR";
+    case Ogre::PF_DEPTH: return "PF_DEPTH";
+    case Ogre::PF_SHORT_RGBA: return "PF_SHORT_RGBA";
+    case Ogre::PF_SHORT_GR: return "PF_SHORT_GR";
+    case Ogre::PF_SHORT_RGB: return "PF_SHORT_RGB";
+    case Ogre::PF_PVRTC_RGB2: return "PF_PVRTC_RGB2";
+    case Ogre::PF_PVRTC_RGBA2: return "PF_PVRTC_RGBA2";
+    case Ogre::PF_PVRTC_RGB4: return "PF_PVRTC_RGB4";
+    case Ogre::PF_PVRTC_RGBA4: return "PF_PVRTC_RGBA4";
+    case Ogre::PF_COUNT: return "Invalid(PF_COUNT)";
+    default: return "Invalid(" + QString::number(fmt) + ")";
+    }
+}
+
+void CountNumVertices(Ogre::MeshPtr mesh, int &vertices, int &indices)
+{
+    vertices = 0;
+    indices = 0;
+
+    if (mesh->sharedVertexData)
+        vertices += mesh->sharedVertexData->vertexCount;
+
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (submesh && submesh->vertexData)
+            vertices += submesh->vertexData->vertexCount;
+        if (submesh && submesh->indexData)
+            indices += submesh->indexData->indexCount;
+    }
+}
+
+// Returns a string of form "5+102+42 (shared 100)" to describe the vertex breakdown in the submeshes of this mesh.
+QString VertexSumString(Ogre::MeshPtr mesh)
+{
+    QString str;
+
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (i != 0)
+            str += "+";
+        if (submesh && submesh->vertexData)
+            str += QString::number(submesh->vertexData->vertexCount);
+        else
+            str += "(null)";
+    }
+    if (mesh->sharedVertexData)
+        str += " (shared " + QString::number(mesh->sharedVertexData->vertexCount) + ")";
+
+    return str;
+}
+
+// Returns a string of form "5+102+42" to describe the index breakdown in the submeshes of this mesh.
+QString IndexSumString(Ogre::MeshPtr mesh)
+{
+    QString str;
+
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (i != 0)
+            str += "+";
+        if (submesh && submesh->indexData)
+            str += QString::number(submesh->indexData->indexCount);
+        else
+            str += "(null)";
+    }
+    return str;
+}
+
+void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource, QString viewType)
 {
     if (item == 0)
         return;
@@ -2166,22 +2265,46 @@ void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr
     size.setNum(resource->getSize());
     item->setText(1,size);
 
-    item->setText(2, resource->isManuallyLoaded() ? "Yes" : "No");
-    item->setText(3, resource->isReloadable() ? "Yes" : "No");
-    item->setText(4, resource->getGroup().c_str());
-    item->setText(5, resource->getOrigin().c_str());
-    item->setText(6, resource->isLoaded()  ? "Yes" : "No");
-    item->setText(7, resource->isLoading()  ? "Yes" : "No");
-    item->setText(8, resource->isBackgroundLoaded() ? "Yes" : "No");
-    item->setText(9, resource->isPrepared()  ? "Yes" : "No");
+    int i = 2;
+    if (viewType == "texture")
+    {
+        i = 6;
+        Ogre::TexturePtr tex = Ogre::TexturePtr(resource);
+        
+        item->setText(2, QString::number(tex->getWidth()));
+        item->setText(3, QString::number(tex->getHeight()));
+        item->setText(4, OgrePixelFormatToString(tex->getFormat()));
+        item->setText(5, QString::number(tex->getNumMipmaps()));
+    }
+    else if (viewType == "mesh")
+    {
+        i = 11;
+        Ogre::MeshPtr mesh = Ogre::MeshPtr(resource);
+        if (mesh.get())
+        {
+            item->setText(2, QString::number(mesh->getNumSubMeshes()));
+            int numVertices;
+            int numIndices;
+            CountNumVertices(mesh, numVertices, numIndices);
+            item->setText(3, QString::number(numVertices) + " (" + VertexSumString(mesh) + ")");
+            item->setText(4, QString::number(numIndices) + " (" + IndexSumString(mesh) + ")");
+            item->setText(5, QString::number(mesh->getBoundingSphereRadius()));
+            item->setText(6, mesh->getSkeletonName().c_str());
+            item->setText(7, QString::number(mesh->getNumLodLevels()));
+            item->setText(8, QString::number(mesh->getNumAnimations()));
+            item->setText(9, QString::number(mesh->getPoseCount()));
+            item->setText(10, "todo"); ///\todo Aggregate the material names from submeshes here.
+        }
+    }
 
-    QString tmp;
-    tmp.setNum(resource->getLoadingState());
-    item->setText(10,tmp);
-
-    tmp.clear();
-    tmp.setNum(resource->getStateCount());
-    item->setText(11,tmp);
-}
-
+    item->setText(i, resource->isManuallyLoaded() ? "Yes" : "No");
+    item->setText(i+1, resource->isReloadable() ? "Yes" : "No");
+    item->setText(i+2, resource->getGroup().c_str());
+    item->setText(i+3, resource->getOrigin().c_str());
+    item->setText(i+4, resource->isLoaded()  ? "Yes" : "No");
+    item->setText(i+5, resource->isLoading()  ? "Yes" : "No");
+    item->setText(i+6, resource->isBackgroundLoaded() ? "Yes" : "No");
+    item->setText(i+7, resource->isPrepared()  ? "Yes" : "No");
+    item->setText(i+8, QString::number(resource->getLoadingState()));
+    item->setText(i+9, QString::number(resource->getStateCount()));
 }

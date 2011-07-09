@@ -6,8 +6,7 @@
  *          Useful for verifying and understanding the internal state of the application.
  */
 
-#ifndef incl_DebugStats_h
-#define incl_DebugStats_h
+#pragma once
 
 #include "DebugStatsModuleApi.h"
 #include "IModule.h"
@@ -16,66 +15,45 @@
 #include <QObject>
 #include <QPointer>
 
-#include <Windows.h>
-
-class EC_Placeable;
-
-namespace DebugStats
-{
-    class TimeProfilerWindow;
-    class ParticipantWindow;
-
-    class DEBUGSTATS_MODULE_API DebugStatsModule : public QObject, public IModule
-    {
-        Q_OBJECT
-
-    public:
-        DebugStatsModule();
-        virtual ~DebugStatsModule();
-
-        void PostInitialize();
-        void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
-
-        /// Returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return moduleName; }
-
-        /// Name of this module.
-        static const std::string moduleName;
-
-    public slots:
-        /// Creates and shows the profiling window.
-        Console::CommandResult ShowProfilingWindow(/*const StringVector &params*/);
-
-    private slots:
-        void AddProfilerWidgetToUi();
-
-        /// Starts profiling if the profiler (proxy) widget is visible.
-        /// @param bool visible Visibility.
-        void StartProfiling(bool visible);
-
-        void HandleKeyPressed(KeyEvent *e);
-
-    private:
-        Q_DISABLE_COPY(DebugStatsModule);
-
-        /// Invokes action in entity.
-        Console::CommandResult Exec(const StringVector &params);
-
-        /// A history of estimated frame times.
-        std::vector<std::pair<u64, double> > frameTimes;
-
 #ifdef _WINDOWS
-        /// Last call time of Update() function
-        LARGE_INTEGER lastCallTime;
+#include <WinSock2.h>
+#include <Windows.h>
 #endif
 
-        /// Profiler window
-        QPointer<TimeProfilerWindow> profilerWindow_;
+class TimeProfilerWindow;
 
-        /// DebugStatsModules registers an InputContext to be able to do a Shift-P - Profiler window shortcut.
-        boost::shared_ptr<InputContext> inputContext;
-    };
-}
+class DEBUGSTATS_MODULE_API DebugStatsModule : public IModule
+{
+    Q_OBJECT
 
+public:
+    DebugStatsModule();
+    virtual ~DebugStatsModule();
+
+    void PostInitialize();
+    void Update(f64 frametime);
+
+public slots:
+    /// Creates and shows the profiling window.
+    void ShowProfilingWindow();
+
+private slots:
+    /// Starts profiling if the profiler widget is visible.
+    /** @param bool visible Visibility. */
+    void StartProfiling(bool visible);
+
+    void HandleKeyPressed(KeyEvent *e);
+
+    /// Invokes action in entity.
+    void Exec(const QStringList &params);
+
+private:
+    Q_DISABLE_COPY(DebugStatsModule);
+
+    std::vector<std::pair<u64, double> > frameTimes; ///< A history of estimated frame times.
+    QPointer<TimeProfilerWindow> profilerWindow_; /// Profiler window
+    boost::shared_ptr<InputContext> inputContext; ///< InputContext for Shift-P - Profiler window shortcut.
+#ifdef _WINDOWS
+    LARGE_INTEGER lastCallTime; ///< Last call time of Update() function
 #endif
+};

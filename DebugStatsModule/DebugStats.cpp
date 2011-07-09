@@ -14,19 +14,17 @@
 
 #include "Framework.h"
 #include "UiAPI.h"
-#include "EventManager.h"
-#include "ModuleManager.h"
-#include "ConsoleCommandServiceInterface.h"
-
+#include "LoggingFunctions.h"
 #include "SceneAPI.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "UiProxyWidget.h"
 #include "ConsoleAPI.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
+#include "Profiler.h"
 
 #include <utility>
 #include <QDebug>
@@ -37,13 +35,8 @@
 
 using namespace std;
 
-namespace DebugStats
-{
-
-const std::string DebugStatsModule::moduleName = std::string("DebugStats");
-
 DebugStatsModule::DebugStatsModule() :
-    IModule(NameStatic()),
+    IModule("DebugStats"),
     profilerWindow_(0)
 {
 }
@@ -59,26 +52,11 @@ void DebugStatsModule::PostInitialize()
     QueryPerformanceCounter(&lastCallTime);
 #endif
 
-#ifdef PROFILING
     framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
-
-#endif
-
-    RegisterConsoleCommand(Console::CreateCommand("exec",
-        "Invokes action execution in entity",
-        Console::Bind(this, &DebugStatsModule::Exec)));
+    framework_->Console()->RegisterCommand("exec", "Invokes an Entity Action on an entity (debugging).", this, SLOT(Exec(const QStringList &)));
 
     inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
-
-
-//#ifdef Q_WS_WIN
-// 
-//    PDH::PerformanceMonitor monitor;
-//    int treads = monitor.GetThreadCount();
-//#endif 
-
-    AddProfilerWidgetToUi();
 }
 
 void DebugStatsModule::HandleKeyPressed(KeyEvent *e)
@@ -91,29 +69,6 @@ void DebugStatsModule::HandleKeyPressed(KeyEvent *e)
         ShowProfilingWindow();
 }
 
-void DebugStatsModule::AddProfilerWidgetToUi()
-{
-    if (profilerWindow_)
-    {
-        profilerWindow_->setVisible(!(profilerWindow_->isVisible()));
-        return;
-    }
-
-    UiAPI *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
-
-    profilerWindow_ = new TimeProfilerWindow(framework_);
-    profilerWindow_->setParent(ui->MainWindow());
-    profilerWindow_->setWindowFlags(Qt::Tool);
-    //profilerWindow_->move(100, 100);
-    profilerWindow_->resize(650, 530);
-    //UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
-    connect(profilerWindow_, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
-
-    //ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
-}
-
 void DebugStatsModule::StartProfiling(bool visible)
 {
     profilerWindow_->SetVisibility(visible);
@@ -122,26 +77,31 @@ void DebugStatsModule::StartProfiling(bool visible)
         profilerWindow_->OnProfilerWindowTabChanged(-1); 
 }
 
-Console::CommandResult DebugStatsModule::ShowProfilingWindow()
+void DebugStatsModule::ShowProfilingWindow()
 {
-    // If the window is already created, bring it to front.
+    // If the window is already created toggle its visibility. If visible, bring it to front.
     if (profilerWindow_)
     {
-        framework_->Ui()->BringWidgetToFront(profilerWindow_);
-        return Console::ResultSuccess();
+        profilerWindow_->setVisible(!(profilerWindow_->isVisible()));
+        if (profilerWindow_->isVisible())
+            framework_->Ui()->BringWidgetToFront(profilerWindow_);
+        return;
     }
-    else
-        return Console::ResultFailure("Profiler window has not been initialized, something went wrong on startup!");
+
+    profilerWindow_ = new TimeProfilerWindow(framework_);
+    profilerWindow_->setParent(framework_->Ui()->MainWindow());
+    profilerWindow_->setWindowFlags(Qt::Tool);
+    profilerWindow_->resize(650, 530);
+    connect(profilerWindow_, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
+    profilerWindow_->show();
 }
 
 void DebugStatsModule::Update(f64 frametime)
 {
-    RESETPROFILER;
-
 #ifdef _WINDOWS
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
-    double timeSpent = Foundation::ProfilerBlock::ElapsedTimeSeconds(lastCallTime.QuadPart, now.QuadPart);
+    double timeSpent = ProfilerBlock::ElapsedTimeSeconds(lastCallTime.QuadPart, now.QuadPart);
     lastCallTime = now;
 
     frameTimes.push_back(make_pair(*(boost::uint64_t*)&now, timeSpent));
@@ -155,63 +115,64 @@ void DebugStatsModule::Update(f64 frametime)
         profilerWindow_->RedrawFrameTimeHistoryGraph(frameTimes);
         profilerWindow_->DoThresholdLogging();
     }
-
 #endif
 }
 
-bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
-{
-    PROFILE(DebugStatsModule_HandleEvent);
-
-    return false;
-}
-
-Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
+void DebugStatsModule::Exec(const QStringList &params)
 {
     if (params.size() < 2)
-        return Console::ResultFailure("Not enough parameters.");
+    {
+        LogError("Not enough parameters.");
+        return;
+    }
 
-    int id = ParseString<int>(params[0], 0);
-    if (id == 0)
-        return Console::ResultFailure("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
+    bool ok;
+    int id = params[0].toInt(&ok);
+    if (!ok)
+    {
+        LogError("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
+        return;
+    }
 
-    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
+    ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
-        return Console::ResultFailure("No active scene.");
+    {
+        LogError("No active scene.");
+        return;
+    }
 
     EntityPtr entity = scene->GetEntity(id);
     if (!entity)
-        return Console::ResultFailure("No entity found for entity ID " + params[0]);
+    {
+        LogError("No entity found for entity ID " + params[0]);
+        return;
+    }
 
     QStringList execParameters;
-    
     if (params.size() >= 3)
     {
-        int type = ParseString<int>(params[2], 0);
-        for(size_t i = 3; i < params.size(); ++i)
-            execParameters << params[i].c_str();
-        
-        if (id != 0)
-            entity->Exec((EntityAction::ExecutionType)type, params[1].c_str(), execParameters);
+        int type = params[2].toInt(&ok);
+        if (!ok)
+        {
+            LogError("Invalid execution type: must be 0-7");
+            return;
+        }
+
+        for(size_t i = 3; i < (size_t)params.size(); ++i)
+            execParameters << params[i];
+
+        entity->Exec((EntityAction::ExecType)type, params[1], execParameters);
     }
     else
-        entity->Exec(EntityAction::Local, params[1].c_str(), execParameters);
-
-    return Console::ResultSuccess();
-}
-
-}
-
-void SetProfiler(Foundation::Profiler *profiler)
-{
-    Foundation::ProfilerSection::SetProfiler(profiler);
+        entity->Exec(EntityAction::Local, params[1], execParameters);
 }
 
 extern "C"
 {
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+DLLEXPORT void TundraPluginMain(Framework *fw)
 {
-    IModule *module = new DebugStats::DebugStatsModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
+    Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
+    IModule *module = new DebugStatsModule();
+    fw->RegisterModule(module);
 }
 }
