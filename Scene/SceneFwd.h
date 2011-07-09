@@ -5,8 +5,7 @@
  *  @brief  Forward declarations and typedefs for Scene-related clasess.
  */
 
-#ifndef incl_Scene_SceneFwd
-#define incl_Scene_SceneFwd
+#pragma once
 
 #include <boost/smart_ptr.hpp>
 #include <list>
@@ -17,23 +16,22 @@
 #include <QSharedPointer>
 #include <QWeakPointer>
 
-namespace Scene
-{
-    class Entity;
-    class SceneManager;
+class Entity;
+class Scene;
 
-    typedef boost::shared_ptr<SceneManager> ScenePtr;
+typedef boost::shared_ptr<Scene> ScenePtr;
+typedef boost::weak_ptr<Scene> SceneWeakPtr;
 
-    typedef boost::weak_ptr<Entity> EntityWeakPtr;
-    typedef boost::weak_ptr<SceneManager> SceneWeakPtr;
-
-}
-
-typedef boost::shared_ptr<Scene::Entity> EntityPtr;
+typedef boost::weak_ptr<Entity> EntityWeakPtr;
+typedef boost::shared_ptr<Entity> EntityPtr;
 
 typedef std::list<EntityPtr> EntityList;
 
 struct SceneDesc;
+struct EntityDesc;
+struct ComponentDesc;
+struct AttributeDesc;
+struct AssetDesc;
 
 class IComponentFactory;
 class IComponent;
@@ -43,9 +41,5 @@ typedef boost::shared_ptr<IComponent> ComponentPtr;
 typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
 typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
 typedef std::vector<IAttribute*> AttributeVector;
-typedef std::map<QString, Scene::ScenePtr> SceneMap;
+typedef std::map<QString, ScenePtr> SceneMap;
 
-class SceneInteract;
-typedef QWeakPointer<SceneInteract> SceneInteractWeakPtr;
-
-#endif
