@@ -1,0 +1,1 @@
+The presence of this file identifies that this folder is the Tundra installation directory. This file is used as a hint when running from inside the MSVC debugger to guess that the folder where Tundra.exe is stored is not the installation directory, but the current working directory is.
