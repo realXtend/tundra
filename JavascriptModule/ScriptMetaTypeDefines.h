@@ -2,11 +2,10 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   ScriptMetaTypeDefines.h
- *  @brief  Registration of Naali Core API to Javascript.
+ *  @brief  Registration of the Core API objects to Javascript.
  */
 
-#ifndef incl_JavascriptModule_ScriptMetaTypeDefines_h
-#define incl_JavascriptModule_ScriptMetaTypeDefines_h
+#pragma once
 
 #include <QtScript>
 
@@ -61,8 +60,7 @@ int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &pr
 #endif
     )
 {
-    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject,
-                                       qScriptValueToQObject, prototype);
+    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject, qScriptValueToQObject, prototype);
 }
 
 template<typename T> QScriptValue toScriptValueEnum(QScriptEngine *engine, const T &s)
@@ -91,10 +89,9 @@ void fromScriptUInt(const QScriptValue &obj, T &s)
 }
 
 /// Register Qt related stuff to QScriptEngine.
-/// @todo repalce this with qscriptgenerator.
+/// @todo replace this with qscriptgenerator.
 void ExposeQtMetaTypes(QScriptEngine *engine);
 
-/// Will register all meta data types that are needed to use Naali Core API objects.
+/// Will register all meta data types that are needed to use the Core API objects.
 void ExposeCoreApiMetaTypes(QScriptEngine *engine);
 
-#endif

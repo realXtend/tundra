@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_JavascriptModule_JavascriptFwd_h
-#define incl_JavascriptModule_JavascriptFwd_h
+#pragma once
 
 #include "boost/shared_ptr.hpp"
 
@@ -18,4 +17,3 @@ class ScriptAsset;
 
 typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
 
-#endif

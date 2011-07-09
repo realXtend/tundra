@@ -5,8 +5,7 @@
  *  @brief  Javascript script instance used wit EC_Script.
  */
 
-#ifndef incl_JavascriptModule_JavascriptInstance_h
-#define incl_JavascriptModule_JavascriptInstance_h
+#pragma once
 
 #include "IScriptInstance.h"
 #include "SceneFwd.h"
@@ -36,6 +35,11 @@ public:
         @param module Javascript module. */
     JavascriptInstance(ScriptAssetPtr scriptRef, JavascriptModule *module);
 
+    /// Creates script engine for this script instance and loads the script but doesn't run it yet.
+    /** @param scriptRefs Script asset references.
+        @param module Javascript module. */
+    JavascriptInstance(const std::vector<ScriptAssetPtr>& scriptRefs, JavascriptModule *module);
+
     /// Destroys script engine created for this script instance.
     virtual ~JavascriptInstance();
 
@@ -47,20 +51,19 @@ public:
 
     /// IScriptInstance override.
     void Run();
-    
-    /// IScriptInstance override.
-    virtual QString GetLoadedScriptName() const { return currentScriptName; }
-    
+
     /// Register new service to java script engine.
     void RegisterService(QObject *serviceObject, const QString &name);
 
     //void SetPrototype(QScriptable *prototype, );
-    QScriptEngine* GetEngine() const { return engine_; }
+    QScriptEngine* Engine() const { return engine_; }
 
     /// Sets owner (EC_Script) component.
-    /** @param owner Owner component.
-    */
-    void SetOwnerComponent(const ComponentPtr &owner) { owner_ = owner; }
+    /** @param owner Owner component. */
+    void SetOwner(const ComponentPtr &owner) { owner_ = owner; }
+
+    /// Return owner component
+    ComponentWeakPtr Owner() const { return owner_; }
 
 public slots:
     /// Loads a given script in engine. This function can be used to create a property as you could include js-files.
@@ -71,6 +74,19 @@ public slots:
     /// Imports the given QtScript extension plugin into the current script instance.
     void ImportExtension(const QString &scriptExtensionName);
 
+    /// Return whether has been evaluated
+    bool IsEvaluated() const { return evaluated; }
+
+    /// Check and print error if the engine has an uncaught exception
+    bool CheckAndPrintException(const QString& message, const QScriptValue& result);
+
+signals:
+    /// The scripts have been run. This is the trigger to create script objects as necessary
+    void ScriptEvaluated();
+
+    /// The script engine is about to unload. This is the trigger to delete script objects as necessary
+    void ScriptUnloading();
+
 private:
     /// Creates new script context/engine.
     void CreateEngine();
@@ -78,15 +94,15 @@ private:
     /// Deletes script context/engine.
     void DeleteEngine();
 
-    QScriptEngine *engine_; ///< Qt script engine.
-    
     QString LoadScript(const QString &fileName);
+
+    QScriptEngine *engine_; ///< Qt script engine.
 
     // The script content for a JavascriptInstance is loaded either using the Asset API or 
     // using an absolute path name from the local file system.
 
     /// If the script content is loaded using the Asset API, this points to the asset that is loaded.
-    ScriptAssetPtr scriptRef_; 
+    std::vector<ScriptAssetPtr> scriptRefs_; 
 
     /// If the script content is loaded directly from local file, this points to the actual script content.  
     QString program_;
@@ -94,7 +110,7 @@ private:
     /// Specifies the absolute path of the source file where the script is loaded from, if the content is directly loaded from file.
     QString sourceFile;
 
-    /// Current script name that is loaded into this instance. Exposed via GetCurrentScriptName().
+    /// Current script name that is loaded into this instance.
     QString currentScriptName;
 
     ComponentWeakPtr owner_; ///< Owner (EC_Script) component, if existing.
@@ -103,10 +119,9 @@ private:
     //QScriptEngineDebugger *debugger_;
 
     /// Already included files for preventing multi-inclusion
-    std::vector<QString> included_files_; 
-    
+    std::vector<QString> includedFiles;
+
 private slots:
     void OnSignalHandlerException(const QScriptValue& exception);
 };
 
-#endif
