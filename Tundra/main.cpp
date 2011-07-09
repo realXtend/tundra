@@ -1,9 +1,15 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "Foundation.h"
 #include "LoggingFunctions.h"
 #include "DebugOperatorNew.h"
+#include "Application.h"
+#include "Framework.h"
 #include <QDir>
+
+#ifdef _WIN32
+#include <WinSock2.h>
+#include <Windows.h>
+#endif
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
@@ -23,9 +29,9 @@
 
 #include "MemoryLeakCheck.h"
 
-void setup(Foundation::Framework &fw);
+void setup(Framework &fw);
 int run(int argc, char **argv);
-void options(int argc, char **argv, Foundation::Framework &fw);
+void options(int argc, char **argv, Framework &fw);
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
@@ -39,7 +45,7 @@ int main (int argc, char **argv)
     // Note that this file is written to the same directory where the executable resides,
     // so you can only use this in a development version where you have write access to
     // that directory.
-#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK) && defined(_DEBUG)
     int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF;
     _CrtSetDbgFlag(tmpDbgFlag);
 
@@ -60,7 +66,7 @@ int main (int argc, char **argv)
     }
 #endif
 
-#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK) && defined(_DEBUG)
     if (hLogFile != INVALID_HANDLE_VALUE)
     {
        _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
@@ -116,16 +122,13 @@ int run (int argc, char **argv)
     try
 #endif
     {
-        Foundation::Framework fw(argc, argv);
-        if (fw.Initialized())
-        {
-            fw.Go();
-        }
+        Framework fw(argc, argv);
+        fw.Go();
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch(std::exception& e)
     {
-        Foundation::Platform::Message("An exception has occurred!", e.what());
+        Application::Message("An exception has occurred!", e.what());
 #if defined(_DEBUG)
         throw;
 #else
@@ -191,15 +194,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
 {
+    // Add a hardcoded check to guarantee we only write a dump file of the first crash exception that is received.
+    // Sometimes a crash is so bad that writing the dump below causes another exception to occur, in which case
+    // this function would be recursively called, spawning tons of error dialogs to the user.
+    static bool dumpGenerated = false;
+    if (dumpGenerated)
+    {
+        printf("WARNING: Not generating another dump, one has been generated already!\n");
+        return 0;
+    }
+    dumpGenerated = true;
+
     BOOL bMiniDumpSuccessful;
     WCHAR szPath[MAX_PATH]; 
     WCHAR szFileName[MAX_PATH];
 
-    // Can't use Foundation::Application for application name and version,
+    // Can't use Application for application name and version,
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Tundra_v1.0.5";
+    WCHAR* szVersion = L"Tundra_v2.0";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
@@ -232,9 +246,9 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     message += szFileName;
 
     if (bMiniDumpSuccessful)
-        Foundation::Platform::Message(L"Minidump generated!", message);
+        Application::Message(L"Minidump generated!", message);
     else
-        Foundation::Platform::Message(szAppName, L"Unexpected error was encountered while generating minidump!");
+        Application::Message(szAppName, L"Unexpected error was encountered while generating minidump!");
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
