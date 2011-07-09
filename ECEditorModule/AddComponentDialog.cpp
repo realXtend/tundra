@@ -5,7 +5,7 @@
 
 #include "AddComponentDialog.h"
 #include "Framework.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "SceneAPI.h"
 #include "Entity.h"
 
@@ -17,7 +17,7 @@
 
 #include "MemoryLeakCheck.h"
 
-AddComponentDialog::AddComponentDialog(Foundation::Framework *fw, const QList<entity_id_t> &ids, QWidget *parent, Qt::WindowFlags f):
+AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &ids, QWidget *parent, Qt::WindowFlags f):
     QDialog(parent, f),
     framework_(fw),
     entities_(ids),
@@ -51,10 +51,10 @@ AddComponentDialog::AddComponentDialog(Foundation::Framework *fw, const QList<en
     sync_check_box_->setChecked(true);
     temp_check_box_ = new QCheckBox(tr("Temporary"), this);
 
-    layout->addWidget(component_name_label);
-    layout->addWidget(name_line_edit_);
     layout->addWidget(component_type_label);
     layout->addWidget(type_combo_box_);
+    layout->addWidget(component_name_label);
+    layout->addWidget(name_line_edit_);
     layout->addWidget(sync_check_box_);
     layout->addWidget(temp_check_box_);
 
@@ -84,7 +84,11 @@ AddComponentDialog::~AddComponentDialog()
 
 void AddComponentDialog::SetComponentList(const QStringList &component_types)
 {
-    type_combo_box_->addItems(component_types);
+    foreach(const QString &type, component_types)
+        if (type.startsWith("EC_"))
+            type_combo_box_->addItem(type.mid(3));
+        else
+            type_combo_box_->addItem(type);
 }
 
 void AddComponentDialog::SetComponentName(const QString &name)
@@ -94,7 +98,10 @@ void AddComponentDialog::SetComponentName(const QString &name)
 
 QString AddComponentDialog::GetTypeName() const
 {
-    return type_combo_box_->currentText();
+    if (!type_combo_box_->currentText().startsWith("EC_"))
+        return "EC_" + type_combo_box_->currentText();
+    else
+        return type_combo_box_->currentText();
 }
 
 QString AddComponentDialog::GetName() const
@@ -119,21 +126,21 @@ QList<entity_id_t> AddComponentDialog::GetEntityIds() const
 
 void AddComponentDialog::CheckComponentName(const QString &name)
 {
-    bool name_dublicates = false;
-    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    bool name_duplicates = false;
+    ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if(scene && type_combo_box_ && name_line_edit_)
     {
         EntityPtr entity;
-        for(uint i = 0; i < entities_.size(); i++)
+        for(uint i = 0; i < (uint)entities_.size(); i++)
         {
             entity = scene->GetEntity(entities_[i]);
-            if(entity->HasComponent(type_combo_box_->currentText(), name_line_edit_->text()))
+            if (entity->GetComponent(type_combo_box_->currentText(), name_line_edit_->text()))
             {
-                name_dublicates = true;
+                name_duplicates = true;
                 break;
             }
         }
-        if (name_dublicates)
+        if (name_duplicates)
             ok_button_->setEnabled(false);
         else
             ok_button_->setEnabled(true);

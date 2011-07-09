@@ -5,15 +5,15 @@
  *  @brief  Entity-component XML editor widget used for editing EC attributes in XML format.
  */
 
-#ifndef incl_ECEditorModule_EcXmlEditorWidget_h
-#define incl_ECEditorModule_EcXmlEditorWidget_h
+#pragma once
 
-#include "ForwardDefines.h"
 #include "SceneFwd.h"
 
 #include <QWidget>
 
 class QTextEdit;
+
+class Framework;
 
 /// Entity-component XML editor widget used for editing EC attributes in XML format.
 /// \ingroup ECEditorModuleClient.
@@ -25,7 +25,7 @@ public:
     /// Constructor.
     /// @param framework Framework.
     /// @param parent Parent widget.
-    EcXmlEditorWidget(Foundation::Framework *framework, QWidget *parent = 0);
+    EcXmlEditorWidget(Framework *framework, QWidget *parent = 0);
 
     /// Destructor.
     ~EcXmlEditorWidget();
@@ -54,16 +54,15 @@ protected:
 
 private:
     /// Framework.
-    Foundation::Framework *framework_;
+    Framework *framework_;
 
     /// XML text edit field.
     QTextEdit *xmlEdit_;
 
     /// Entities whose EC's we're editing.
-    QList<Scene::EntityWeakPtr> entities_;
+    QList<EntityWeakPtr> entities_;
 
     /// Components which we're editing.
     QList<ComponentWeakPtr > components_;
 };
 
-#endif

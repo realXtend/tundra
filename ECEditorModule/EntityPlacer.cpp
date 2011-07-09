@@ -4,52 +4,56 @@
 #include "DebugOperatorNew.h"
 
 #include "EntityPlacer.h"
-#include "SceneManager.h"
+#include "Scene.h"
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
+#include "OgreWorld.h"
 #include "Renderer.h"
 #include "InputAPI.h"
 #include "EC_Mesh.h"
 #include "OgreRenderingModule.h"
 
-#include <Ogre.h>
+#include <OgreSceneManager.h>
+#include <OgreEntity.h>
+#include <OgreSubEntity.h>
 
 #include "MemoryLeakCheck.h"
 
-EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityId, QObject *parent):
+EntityPlacer::EntityPlacer(Framework *framework, entity_id_t entityId, QObject *parent):
     framework_(framework),
     QObject(parent),
     finished_(false),
     useCustomMesh_(false),
     meshEntity_(0),
-    previousScrollValue_(0)
+    previousScrollValue_(0),
+    location_(float3::zero),
+    orientation_(Quat::identity)
 {
     static const std::string customMeshName("Selection.mesh");
     input_ = framework_->Input()->RegisterInputContext("EntityPlacement", 110);
     
-    entity_ = framework_->Scene()->GetDefaultScene()->GetEntity(entityId);
+    Scene* scene = framework_->Scene()->GetDefaultScene().get();
+    entity_ = scene->GetEntity(entityId);
     if(!entity_.expired())
     {
-        Scene::Entity *entity = entity_.lock().get();
+        Entity *entity = entity_.lock().get();
         placeable_ = entity->GetComponent<EC_Placeable>().get();
         if(!placeable_)
             return;
 
         // If entity dont hold any visual element create a custom mesh.
-        if(entity->HasComponent("EC_Mesh") == false)
+        if (!entity->GetComponent("EC_Mesh"))
         {
             useCustomMesh_ = true;
-            OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
-            if(!rendererModule)
-                return;
 
-            renderer_ = rendererModule->GetRenderer();
-            if(renderer_.expired())
+            world_ = scene->GetWorld<OgreWorld>();
+            if (world_.expired())
                 return;
-
-            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
-            meshEntity_ = scene_mgr->createEntity(renderer_.lock()->GetUniqueObjectName("EntityPlacer"), customMeshName);
+            OgreWorldPtr world = world_.lock();
+            
+            Ogre::SceneManager* sceneMgr = world->GetSceneManager();
+            meshEntity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EntityPlacer"), customMeshName);
             meshEntity_->getSubEntity(0)->setMaterialName("Clone");
             meshEntity_->setCastShadows(false);
             placeable_->GetSceneNode()->attachObject(meshEntity_);
@@ -58,7 +62,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
 
     input_->SetTakeMouseEventsOverQt(true);
 
-    connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), this, SLOT(OnMouseEvent(MouseEvent *)));
+    connect(input_.get(), SIGNAL(MouseEventReceived(MouseEvent *)), this, SLOT(OnMouseEvent(MouseEvent *)));
     connect(input_.get(), SIGNAL(MouseMove(MouseEvent *)), this, SLOT(MouseMove(MouseEvent *)));
 }
 
@@ -66,14 +70,11 @@ EntityPlacer::~EntityPlacer()
 {
     if(useCustomMesh_)
     {
-        if (renderer_.expired())
+        if (world_.expired())
             return;
-        OgreRenderer::RendererPtr renderer = renderer_.lock();
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-
         if(meshEntity_)
         {
-            scene_mgr->destroyEntity(meshEntity_);
+            world_.lock()->GetSceneManager()->destroyEntity(meshEntity_);
             meshEntity_ = 0;
         }
     }
@@ -95,7 +96,7 @@ void EntityPlacer::OnMouseEvent(MouseEvent *mouse)
 
 void EntityPlacer::MouseMove(MouseEvent *mouse)
 {
-    Vector3df result;
+    float3 result;
     if(DoRayCast(mouse->x, mouse->y, result) && !finished_)
     {
         location_ = result;
@@ -104,18 +105,18 @@ void EntityPlacer::MouseMove(MouseEvent *mouse)
     }
 }
 
-bool EntityPlacer::DoRayCast(int x, int y, Vector3df &result)
+bool EntityPlacer::DoRayCast(int x, int y, float3 &result)
 {
     // do raycast into the world when user is dragging the mouse while hes holding left button down.
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!renderer)
         return false;
 
     RaycastResult* cast_result = renderer->Raycast(x, y);
-    Scene::Entity *entity = cast_result->entity_;
+    Entity *entity = cast_result->entity;
     if (!entity) // User didn't click on terrain or other entities.
         return false;
 
-    result = cast_result->pos_;
+    result = cast_result->pos;
     return true;
 }

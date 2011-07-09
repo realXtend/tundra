@@ -5,8 +5,7 @@
  *  @brief  Struct used to storage information about invoked Entity Action or Function call.
  */
 
-#ifndef incl_ECEditorModule_InvokeItem_h
-#define incl_ECEditorModule_InvokeItem_h
+#pragma once
 
 #include "ECEditorModuleApi.h"
 #include "EntityAction.h"
@@ -21,9 +20,8 @@ struct ECEDITOR_MODULE_API InvokeItem
     InvokeItem();
 
     /// Constructor which creates InvokeItem from string read from setting file.
-    /** @param settingStr String read from setting file.
-    */
-    explicit InvokeItem(const std::string &settingStr);
+    /** @param settingStr String read from setting file. */
+    explicit InvokeItem(const QString &settingStr);
 
     /// Equality operator. Compares items by objectName, name and parameters.
     bool operator ==(const InvokeItem &rhs) const
@@ -44,12 +42,11 @@ struct ECEDITOR_MODULE_API InvokeItem
     QString ToString() const;
 
     /// Returns this items information in a form that's suitable to be saved in a setting file.
-    std::string ToSetting() const;
+    QString ToSetting() const;
 
     /// Constructs item from string read from setting file.
-    /** @param str String read from setting file.
-    */
-    void FromSetting(const std::string &str);
+    /** @param str String read from setting file. */
+    void FromSetting(const QString &str);
 
     /// Type enumeration.
     enum Type
@@ -60,12 +57,10 @@ struct ECEDITOR_MODULE_API InvokeItem
     };
 
     Type type; ///< Type of the item.
-    QString objectName; ///< Class name of the object. Always Scene::Entity for entity actions.
+    QString objectName; ///< Class name of the object. Always Entity for entity actions.
     QString name; ///< Name of the function or entity action.
     QString returnType; ///< Return type (functions only)
-    EntityAction::ExecutionTypeField execTypes; ///< Execution type (entity actions only).
+    EntityAction::ExecTypeField execTypes; ///< Execution type (entity actions only).
     QVariantList parameters; ///< "type name - value pair, e.g. "float"-0.123
     int mruOrder; ///< Most recently used order.
 };
-
-#endif

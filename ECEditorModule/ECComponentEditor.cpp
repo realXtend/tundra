@@ -11,7 +11,9 @@
 #include "IComponent.h"
 #include "Transform.h"
 #include "AssetReference.h"
+#include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include <QtTreePropertyBrowser>
 #include <QtGroupPropertyManager>
@@ -31,12 +33,18 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
     const QString &type)
 {
     ECAttributeEditorBase *attributeEditor = 0;
-    if(type == "real")
+    if (type == "real")
         attributeEditor = new ECAttributeEditor<float>(browser, component, name, type, editor);
     else if(type == "int")
         attributeEditor = new ECAttributeEditor<int>(browser, component, name, type, editor);
-    else if(type == "vector3df")
-        attributeEditor = new ECAttributeEditor<Vector3df>(browser, component, name, type, editor);
+    else if(type == "float2")
+        attributeEditor = new ECAttributeEditor<float2>(browser, component, name, type, editor);
+    else if(type == "float3")
+        attributeEditor = new ECAttributeEditor<float3>(browser, component, name, type, editor);
+    else if(type == "float4")
+        attributeEditor = new ECAttributeEditor<float4>(browser, component, name, type, editor);
+    else if(type == "quat")
+        attributeEditor = new ECAttributeEditor<Quat>(browser, component, name, type, editor);
     else if(type == "color")
         attributeEditor = new ECAttributeEditor<Color>(browser, component, name, type, editor);
     else if(type == "string")
@@ -47,10 +55,16 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         attributeEditor = new ECAttributeEditor<QVariant>(browser, component, name, type, editor);
     else if(type == "qvariantlist")
         attributeEditor = new ECAttributeEditor<QVariantList>(browser, component, name, type, editor);
+    else if(type == "entityreference")
+        attributeEditor = new ECAttributeEditor<EntityReference>(browser, component, name, type, editor);
     else if(type == "assetreference")
-        attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, type, editor);
+        // AssetReference uses own special case editor.
+        //attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, type, editor);
+        attributeEditor = new AssetReferenceAttributeEditor(browser, component, name, type, editor);
     else if(type == "assetreferencelist")
-        attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, type, editor);
+        // AssetReferenceList uses own special case editor.
+        //attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, type, editor);
+        attributeEditor = new AssetReferenceListAttributeEditor(browser, component, name, type, editor);
     else if(type == "transform")
         attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, type, editor);
     else if(type == "qsize")
@@ -62,7 +76,7 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
     else if(type == "qpointf")
         attributeEditor = new ECAttributeEditor<QPointF>(browser, component, name, type, editor);
     else
-        LogError("Unknown attribute type " + type.toStdString() + " for ECAttributeEditorBase creation.");
+        LogWarning("Unknown attribute type " + type + " for ECAttributeEditorBase creation.");
 
     return attributeEditor;
 }
@@ -106,20 +120,19 @@ ECComponentEditor::~ECComponentEditor()
 
 void ECComponentEditor::CreateAttributeEditors(ComponentPtr component)
 {
-    AttributeVector attributes = component->GetAttributes();
-    for(uint i = 0; i < attributes.size(); i++)
+    foreach(IAttribute *attr, component->Attributes())
     {
         // Check metadata if this attribute is intended to be shown in designer/editor ui
-        if (attributes[i]->HasMetadata())
-            if (!attributes[i]->GetMetadata()->designable)
+        if (attr->Metadata())
+            if (!attr->Metadata()->designable)
                 continue;
 
         ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this,
-            component, QString(attributes[i]->GetNameString().c_str()), QString(attributes[i]->TypeName().c_str()));
+            component, attr->Name(), attr->TypeName());
         if (!attributeEditor)
             continue;
 
-        attributeEditors_[attributes[i]->GetName()] = attributeEditor;
+        attributeEditors_[attr->Name()] = attributeEditor;
         groupProperty_->setToolTip("Component type is " + component->TypeName());
         groupProperty_->addSubProperty(attributeEditor->GetProperty()); 
         connect(attributeEditor, SIGNAL(EditorChanged(const QString &)), this, SLOT(OnEditorChanged(const QString &)));

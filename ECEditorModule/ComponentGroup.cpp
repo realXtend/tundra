@@ -2,14 +2,15 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "ComponentGroup.h"
 #include "ECComponentEditor.h"
 #include "Entity.h"
 #include "EC_DynamicComponent.h"
 #include "IComponent.h"
+#include "Profiler.h"
 
 #include <QtProperty>
+#include "MemoryLeakCheck.h"
 
 ComponentGroup::ComponentGroup(ComponentPtr component,
                                ECComponentEditor *editor,

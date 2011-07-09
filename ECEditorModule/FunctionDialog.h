@@ -5,11 +5,9 @@
  *  @brief  Dialog for invoking Qt slots (i.e. functions) of entities and components.
  */
 
-#ifndef incl_ECEditorModule_FunctionDialog_h
-#define incl_ECEditorModule_FunctionDialog_h
+#pragma once
 
 #include "ECEditorModuleApi.h"
-#include "ForwardDefines.h"
 #include "EntityAction.h"
 
 #include <QDialog>
@@ -45,18 +43,15 @@ class FunctionComboBox : public QComboBox
 
 public:
     /// Constructs the combo box.
-    /** @param parent Parent widget.
-    */
+    /** @param parent Parent widget. */
     FunctionComboBox(QWidget *parent = 0);
 
     /// Adds new function to the combo box
-    /** @param f Function.
-    */
+    /** @param f Function. */
 //    void AddFunction(const FunctionMetaData &f);
 
     /// Sets list of functions to the combo box. Overrides existing functions.
-    /** @param funcs List of functions.
-    */
+    /** @param funcs List of functions. */
     void SetFunctions(const QList<FunctionMetaData> &funcs);
 
     /// Set currently active.
@@ -91,15 +86,13 @@ class ECEDITOR_MODULE_API FunctionDialog : public QDialog
 public:
     /// Constructs the dialog.and populates function combo box with union of all the functions of all the objects @c objs.
     /** @param objs List of objects.
-        @param parent Parent widget.
-    */
+        @param parent Parent widget. */
     FunctionDialog(const QObjectWeakPtrList &objs, QWidget *parent = 0);
 
     /// Constructs the dialog and uses information of @c invokeItem to fill the currently active function and parameter editors.
     /** @param objs List of objects.
         @param invokeItem Invoke history item 
-        @param parent Parent widget.
-    */
+        @param parent Parent widget. */
     FunctionDialog(const QObjectWeakPtrList &objs, const InvokeItem &invokeItem, QWidget *parent = 0);
 
     /// Destructor.
@@ -108,7 +101,7 @@ public:
     /// Returns list of entities for which the action is triggered.
     QObjectWeakPtrList Objects() const;
 
-    /// Returns name of the funtion in the most simplest form, f.ex. "setValue".
+    /// Returns name of the function in the most simplest form, f.ex. "setValue".
     QString Function() const;
 
     /// Returns list of arguments for the current function.
@@ -116,13 +109,11 @@ public:
     QList<IArgumentType *> Arguments() const;
 
     /// Sets return value text.
-    /** @param text Text to be shown.
-    */
+    /** @param text Text to be shown. */
     void SetReturnValueText(const QString &text);
 
     /// Append text in the return value text field. The given @c text always starts from a new line.
-    /** @param text Text to be added.
-    */
+    /** @param text Text to be added. */
     void AppendReturnValueText(const QString &text);
 
 private:
@@ -130,43 +121,20 @@ private:
     void hideEvent(QHideEvent *);
 
     /// Creates the widget's contents.
+
     void Initialize();
-
-    /// Function invoker object.
-    FunctionInvoker *invoker;
-
-    /// Label showing the target objects.
-    QLabel *targetsLabel;
-
-    /// Function combo box
-    FunctionComboBox *functionComboBox;
-
-    /// View for doxygen documentation.
-    QTextEdit *doxygenView;
-
-    /// Layout for dynamically created parameter editors.
-    QGridLayout *editorLayout;
-
-    /// Text edit field for showing return values of functions.
-    QTextEdit *returnValueEdit;
-
-    /// "Public" function filter check box.
-    QCheckBox *publicCheckBox;
-
-    /// "Protected and private" function filter check box.
-    QCheckBox *protectedAndPrivateCheckBox;
-
-    /// "Slots" function filter check box.
-    QCheckBox *slotsCheckBox;
-
-    /// "Signals" function filter check box.
-    QCheckBox *signalsCheckBox;
-
-    /// List of objects.
-    QObjectWeakPtrList objects;
-
-    /// Argument types for currently active function in the combo box.
-    QList<IArgumentType *> currentArguments;
+    FunctionInvoker *invoker; ///< Function invoker object.
+    QLabel *targetsLabel; ///< Label showing the target objects.
+    FunctionComboBox *functionComboBox; ///< Function combo box
+    QTextEdit *doxygenView; ///< View for doxygen documentation.
+    QGridLayout *editorLayout; ///< Layout for dynamically created parameter editors.
+    QTextEdit *returnValueEdit; /// Text edit field for showing return values of functions.
+    QCheckBox *publicCheckBox; ///< "Public" function filter check box.
+    QCheckBox *protectedAndPrivateCheckBox; ///< "Protected and private" function filter check box.
+    QCheckBox *slotsCheckBox; ///< "Slots" function filter check box.
+    QCheckBox *signalsCheckBox; ///< "Signals" function filter check box.
+    QObjectWeakPtrList objects; ///< List of objects.
+    QList<IArgumentType *> currentArguments; ///< Argument types for currently active function in the combo box.
 
 private slots:
     /// Emits finished(2).
@@ -179,4 +147,3 @@ private slots:
     void GenerateTargetLabelAndFunctions();
 };
 
-#endif

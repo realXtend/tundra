@@ -9,25 +9,22 @@
 #include "DoxygenDocReader.h"
 #include "TreeWidgetItemExpandMemory.h"
 
-#include "EventManager.h"
 #include "SceneAPI.h"
-#include "SceneManager.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "ModuleManager.h"
-#include "EC_DynamicComponent.h"
+#include "Scene.h"
+#include "Entity.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
+#include "ConsoleAPI.h"
+#include "ConfigAPI.h"
 
 #include "MemoryLeakCheck.h"
 
 #include <QWebView>
 
-std::string ECEditorModule::name_static_ = "ECEditor";
+const QString cShowAidsSetting("show visual editing aids");
 
-ECEditorModule::ECEditorModule() :
-    IModule(name_static_),
-    xmlEditor_(0)
+ECEditorModule::ECEditorModule() : IModule("ECEditor")
 {
 }
 
@@ -35,40 +32,21 @@ ECEditorModule::~ECEditorModule()
 {
 }
 
-void ECEditorModule::Load()
-{
-}
-
 void ECEditorModule::Initialize()
 {
     GetFramework()->RegisterDynamicObject("eceditor", this);
-    expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(name_static_.c_str(), framework_));
+    expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(Name().c_str(), framework_));
+
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name().c_str());
+    if (!framework_->Config()->HasValue(configData, cShowAidsSetting))
+        framework_->Config()->Set(configData, cShowAidsSetting, true);
+    showVisualAids = framework_->Config()->Get(configData, cShowAidsSetting, QVariant(showVisualAids)).toBool();
 }
 
 void ECEditorModule::PostInitialize()
 {
-    /*RegisterConsoleCommand(Console::CreateCommand("ECEditor",
-        "Shows the EC editor.",
-        Console::Bind(this, &ECEditorModule::ShowWindow)));*/
-
-    RegisterConsoleCommand(Console::CreateCommand("EditDynComp",
-        "Command that will create/remove components from the dynamic component."
-        "Params:"
-        " 0 = entity id."
-        " 1 = operation (add or rem)"
-        " 2 = component type.(ec. EC_DynamicComponent)"
-        " 3 = attribute name."
-        " 4 = attribute type. (Add only)"
-        " 5 = attribute value. (Add only)",
-        Console::Bind(this, &ECEditorModule::EditDynamicComponent)));
-
-    RegisterConsoleCommand(Console::CreateCommand("ShowDocumentation",
-        "Prints the class documentation for the given symbol."
-        "Params:"
-        " 0 = The symbol to fetch the documentation for.",
-        Console::Bind(this, &ECEditorModule::ShowDocumentation)));
-
-    AddEditorWindowToUI();
+    framework_->Console()->RegisterCommand("doc", "Prints the class documentation for the given symbol.",
+        this, SLOT(ShowDocumentation(const QString &)));
 
     inputContext = framework_->Input()->RegisterInputContext("ECEditorInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -76,190 +54,113 @@ void ECEditorModule::PostInitialize()
 
 void ECEditorModule::Uninitialize()
 {
-    if (common_editor_)
-        SAFE_DELETE(common_editor_);
-    SAFE_DELETE_LATER(xmlEditor_);
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name().c_str());
+    framework_->Config()->Set(configData, cShowAidsSetting, showVisualAids);
+
+    SAFE_DELETE(commonEditor);
+    SAFE_DELETE_LATER(xmlEditor);
 }
 
 void ECEditorModule::Update(f64 frametime)
 {
-    RESETPROFILER;
 }
 
-bool ECEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
+ECEditorWindow *ECEditorModule::ActiveEditor() const
 {
-    /* Regression. Removed the dependency from ECEditorModule to ProtocolUtilities. Reimplement this by deleting
-       all ECEditors when we disconnect. -jj.
-    if (category_id == network_state_event_category_ && event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
-        if (active_editor_)
-            active_editor_->ClearEntities(); 
-    */
-    return false;
+    return activeEditor;
 }
 
-ECEditorWindow *ECEditorModule::GetActiveECEditor() const
+void ECEditorModule::ShowVisualEditingAids(bool show)
 {
-    return active_editor_;
+    if (framework_->IsHeadless())
+        return;
+
+    if (show != showVisualAids)
+    {
+        showVisualAids = show;
+        foreach(ECEditorWindow *editor, framework_->Ui()->MainWindow()->findChildren<ECEditorWindow *>())
+            if (showVisualAids && editor == activeEditor) // if showVisualAids == true, show visual aids only for active editor.
+                editor->ShowVisualEditingAids(showVisualAids);
+            else
+                editor->ShowVisualEditingAids(false);
+    }
 }
 
 void ECEditorModule::ECEditorFocusChanged(ECEditorWindow *editor)
 {
-    if (editor == active_editor_ && !editor)
+    if (editor == activeEditor && !editor)
         return;
 
     // Unfocus previously active editor and disconnect all signals from that editor.
-    if (active_editor_)
+    if (activeEditor)
     {
-        active_editor_->SetFocus(false);
-        disconnect(active_editor_, SIGNAL(destroyed(QObject*)), this, SLOT(ActiveECEditorDestroyed(QObject*)));
-        disconnect(active_editor_, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
-                   this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)));
+        activeEditor->SetFocus(false);
+        disconnect(activeEditor, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
+            this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)));
     }
-    active_editor_ = editor;
-    active_editor_->SetFocus(true);
-    connect(active_editor_, SIGNAL(destroyed(QObject*)), SLOT(ActiveECEditorDestroyed(QObject*)), Qt::UniqueConnection);
-    connect(active_editor_, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
-            this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
+
+    activeEditor = editor;
+    activeEditor->SetFocus(true);
+    connect(activeEditor, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
+        this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
 }
 
-void ECEditorModule::AddEditorWindowToUI()
+void ECEditorModule::ShowEditorWindow()
 {
-    if (active_editor_)
+    if (framework_->IsHeadless())
+        return;
+
+    if (activeEditor)
     {
-        active_editor_->setVisible(!active_editor_->isVisible());
+        activeEditor->setVisible(!activeEditor->isVisible());
         return;
     }
 
-    UiAPI *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
-
-    active_editor_ = new ECEditorWindow(GetFramework());
-    common_editor_ = active_editor_;
-    active_editor_->setParent(ui->MainWindow());
-    active_editor_->setWindowFlags(Qt::Tool);
-    active_editor_->setAttribute(Qt::WA_DeleteOnClose);
-
-    //UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
-    // We need to listen proxy widget's focus signal, because for some reason QWidget's focusInEvent wont get triggered when
-    // it's attached to QGraphicsProxyWidget.
-    //connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);
-
-    // We don't need to worry about attaching ECEditorWindow to ui scene, because ECEditorWindow's initialize operation will do it automaticly.
-    //ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
-    //ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
+    activeEditor = new ECEditorWindow(GetFramework(), framework_->Ui()->MainWindow());
+    commonEditor = activeEditor;
+    activeEditor->setWindowFlags(Qt::Tool);
+    activeEditor->setAttribute(Qt::WA_DeleteOnClose);
+    activeEditor->show();
+    activeEditor->activateWindow();
 }
 
-/*Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
+void ECEditorModule::ShowDocumentation(const QString &symbol)
 {
-    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    if (!ui)
-        return Console::ResultFailure("Failed to acquire UiModule pointer!");
-
-    if (editor_window_)
-    {
-        ui->BringWidgetToFront(editor_window_);
-        return Console::ResultSuccess();
-    }
-    else
-        return Console::ResultFailure("EC Editor window was not initialised, something went wrong on startup!");
-}*/
-
-Console::CommandResult ECEditorModule::ShowDocumentation(const StringVector &params)
-{
-    if (params.size() == 0)
-        return Console::ResultFailure("The first parameter must be the documentation symbol to find!");
-
     QUrl styleSheetPath;
     QString documentation;
-    /*bool success = */DoxygenDocReader::GetSymbolDocumentation(params[0].c_str(), &documentation, &styleSheetPath);
+    /*bool success = */DoxygenDocReader::GetSymbolDocumentation(symbol.toStdString().c_str(), &documentation, &styleSheetPath);
     if (documentation.length() == 0)
-        return Console::ResultFailure("Failed to find documentation!");
+    {
+        LogError("Failed to find documentation for symbol \"" + symbol + "\"!");
+        return;
+    }
 
     QWebView *webview = new QWebView();
+    webview->setAttribute(Qt::WA_DeleteOnClose);
     webview->setHtml(documentation, styleSheetPath);
     webview->show();
-    webview->setAttribute(Qt::WA_DeleteOnClose);
-
-    return Console::ResultSuccess();
-}
-
-/* Params
- * 0 = entity id.
- * 1 = operation (add/rem)
- * 2 = component type.
- * 3 = attribute name
- * 4 = attribute type
- * 5 = attribute value
- */
-Console::CommandResult ECEditorModule::EditDynamicComponent(const StringVector &params)
-{
-    Scene::SceneManager *sceneMgr = GetFramework()->Scene()->GetDefaultScene().get();
-    if(!sceneMgr)
-        return Console::ResultFailure("Failed to find main scene.");
-
-    if(params.size() == 6)
-    {
-        entity_id_t id = ParseString<entity_id_t>(params[0]);
-        Scene::Entity *ent = sceneMgr->GetEntity(id).get();
-        if(!ent)
-            return Console::ResultFailure("Cannot find entity by name of " + params[0]);
-
-        if(params[1] == "add")
-        {
-            ComponentPtr comp = ent->GetComponent(QString::fromStdString(params[2]));
-            EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
-            if(!dynComp)
-                return Console::ResultFailure("Invalid component type " + params[2]);
-            IAttribute *attribute = dynComp->CreateAttribute(QString::fromStdString(params[4]), params[3].c_str());
-            if(!attribute)
-                return Console::ResultFailure("Failed to create attribute type " + params[4]);
-            attribute->FromString(params[5], AttributeChange::Default);
-            //dynComp->ComponentChanged("Default");//AttributeChange::Local); 
-        }
-    }
-    if(params.size() == 4)
-    {
-        entity_id_t id = ParseString<entity_id_t>(params[0]);
-        Scene::Entity *ent = sceneMgr->GetEntity(id).get();
-        if(!ent)
-            return Console::ResultFailure("Cannot find entity by name of " + params[0]);
-
-        else if(params[1] == "rem")
-        {
-            ComponentPtr comp = ent->GetComponent(QString::fromStdString(params[2]));
-            EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
-            if(!dynComp)
-                return Console::ResultFailure("Wrong component typename " + params[2]);
-            dynComp->RemoveAttribute(QString::fromStdString(params[3]));
-            dynComp->ComponentChanged(AttributeChange::Default);
-        }
-    }
-    return Console::ResultSuccess();
 }
 
 void ECEditorModule::CreateXmlEditor(EntityPtr entity)
 {
-    QList<EntityPtr> entities;
-    entities << entity;
-    CreateXmlEditor(entities);
+    CreateXmlEditor(QList<EntityPtr>(QList<EntityPtr>() << entity));
 }
 
 QObjectList ECEditorModule::GetSelectedComponents() const
 {
-    if (active_editor_)
-        return active_editor_->GetSelectedComponents();
+    if (activeEditor)
+        return activeEditor->GetSelectedComponents();
     return QObjectList();
 }
 
 QVariantList ECEditorModule::GetSelectedEntities() const
 {
-    if (active_editor_)
+    if (activeEditor)
     {
-        QList<EntityPtr> entities = active_editor_->GetSelectedEntities();
+        QList<EntityPtr> entities = activeEditor->GetSelectedEntities();
         QVariantList retEntities;
-        for(uint i = 0; i < entities.size(); ++i)
-            retEntities.push_back(QVariant(entities[i]->GetId()));
+        for(uint i = 0; i < (uint)entities.size(); ++i)
+            retEntities.push_back(QVariant(entities[i]->Id()));
         return retEntities;
     }
     return QVariantList();
@@ -267,20 +168,19 @@ QVariantList ECEditorModule::GetSelectedEntities() const
 
 void ECEditorModule::CreateXmlEditor(const QList<EntityPtr> &entities)
 {
-    UiAPI *ui = GetFramework()->Ui();
-    if (entities.empty() || !ui)
+    if (framework_->IsHeadless())
+        return;
+    if (entities.empty())
         return;
 
-    if (!xmlEditor_)
+    if (!xmlEditor)
     {
-        xmlEditor_ = new EcXmlEditorWidget(framework_);
-        xmlEditor_->setParent(ui->MainWindow());
-        xmlEditor_->setWindowFlags(Qt::Tool);
-        //ui->AddWidgetToScene(xmlEditor_);
+        xmlEditor = new EcXmlEditorWidget(framework_);
+        xmlEditor->setParent(GetFramework()->Ui()->MainWindow());
+        xmlEditor->setWindowFlags(Qt::Tool);
     }
 
-    xmlEditor_->SetEntity(entities);
-    //ui->BringWidgetToFront(xmlEditor_);
+    xmlEditor->SetEntity(entities);
 }
 
 void ECEditorModule::CreateXmlEditor(ComponentPtr component)
@@ -292,20 +192,19 @@ void ECEditorModule::CreateXmlEditor(ComponentPtr component)
 
 void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
 {
-    UiAPI *ui = GetFramework()->Ui();
-    if (!components.empty() && !ui)
+    if (framework_->IsHeadless())
+        return;
+    if (components.empty())
         return;
 
-    if (!xmlEditor_)
+    if (!xmlEditor)
     {
-        xmlEditor_ = new EcXmlEditorWidget(framework_);
-        xmlEditor_->setParent(ui->MainWindow());
-        xmlEditor_->setWindowFlags(Qt::Tool);
-        //ui->AddWidgetToScene(xmlEditor_);
+        xmlEditor = new EcXmlEditorWidget(framework_);
+        xmlEditor->setParent(GetFramework()->Ui()->MainWindow());
+        xmlEditor->setWindowFlags(Qt::Tool);
     }
 
-    xmlEditor_->SetComponent(components);
-    //ui->BringWidgetToFront(xmlEditor_);
+    xmlEditor->SetComponent(components);
 }
 
 void ECEditorModule::HandleKeyPressed(KeyEvent *e)
@@ -314,47 +213,15 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
         return;
 
     const QKeySequence showEcEditor = framework_->Input()->KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
-    if (QKeySequence(e->keyCode | e->modifiers) == showEcEditor)
+    const QKeySequence &toggle= framework_->Input()->KeyBinding("ToggleVisualEditingAids", QKeySequence(Qt::Key_section));
+    if (e->sequence == showEcEditor)
     {
-        if (!active_editor_)
-        {
-            AddEditorWindowToUI();
-            active_editor_->show();
-        }
-        else
-            active_editor_->setVisible(!active_editor_->isVisible());
-        e->handled = true;
+        ShowEditorWindow();
+        e->Suppress();
     }
-}
-
-void ECEditorModule::ActiveECEditorDestroyed(QObject *obj)
-{
-    if (active_editor_ == obj)
-        active_editor_ = 0;
-}
-
-bool ECEditorModule::IsECEditorWindowVisible() const
-{
-    if (active_editor_)
+    else if (e->sequence == toggle)
     {
-        return active_editor_->isVisible();
+        ShowVisualEditingAids(!showVisualAids);
+        e->Suppress();
     }
-    else
-    {
-        return false;
-    }
-}
-
-void SetProfiler(Foundation::Profiler *profiler)
-{
-    Foundation::ProfilerSection::SetProfiler(profiler);
-}
-
-extern "C"
-{
-__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
-{
-    IModule *module = new ECEditorModule();
-    fw->GetModuleManager()->DeclareStaticModule(module);
-}
 }

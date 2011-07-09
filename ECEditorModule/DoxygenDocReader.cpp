@@ -8,6 +8,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
+#include "LoggingFunctions.h"
 
 #include "DoxygenDocReader.h"
 
@@ -65,7 +66,7 @@ QString ErrorDocumentation(QString doxygenDocDirectory, QString expectedDocFilen
         "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
         "<head>"
         "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>"
-        "<title>RealXtend Viewer: Foundation::Framework Class Reference</title>"
+        "<title>RealXtend Viewer: Framework Class Reference</title>"
         "<link href=\"tabs.css\" rel=\"stylesheet\" type=\"text/css\"/>"
         "<link href=\"doxygen.css\" rel=\"stylesheet\" type=\"text/css\"/>"
         "</head>"
@@ -105,7 +106,7 @@ bool DoxygenDocReader::GetSymbolDocumentation(QString doxygenDocDirectory, QStri
 
     ///\todo proper cross-platform path lookup.
     QFile file(doxygenDocDirectory + "/" + GuessFunctionDocumentationFilename(functionName));
-    std::cout << ("Trying to open file: " + doxygenDocDirectory + "/" + GuessFunctionDocumentationFilename(functionName)).toStdString() << std::endl;;
+    LogDebug("Trying to open file: " + doxygenDocDirectory + "/" + GuessFunctionDocumentationFilename(functionName));
 
     if (!file.open(QIODevice::ReadOnly))
     {
@@ -137,7 +138,7 @@ bool DoxygenDocReader::GetSymbolDocumentation(QString doxygenDocDirectory, QStri
         "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
         "<head>"
         "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>"
-        "<title>RealXtend Viewer: Foundation::Framework Class Reference</title>"
+        "<title>RealXtend Viewer: Framework Class Reference</title>"
         "<link href=\"tabs.css\" rel=\"stylesheet\" type=\"text/css\"/>"
         "<link href=\"doxygen.css\" rel=\"stylesheet\" type=\"text/css\"/>"
         "</head>"

@@ -1,17 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ECEditorModule_EntityPlacer_h
-#define incl_ECEditorModule_EntityPlacer_h
+#pragma once
 
 #include "InputFwd.h"
 #include "SceneFwd.h"
 #include "OgreModuleFwd.h"
-#include "Vector3D.h"
-#include "Quaternion.h"
+#include "Math/float3.h"
+#include "Math/Quat.h"
+#include "CoreTypes.h"
 
 #include <QObject>
 
-namespace Foundation { class Framework; }
+class Framework;
 class EC_Placeable;
 
 class EntityPlacer : public QObject
@@ -23,7 +23,7 @@ public:
     /// tell the user where hes placing his mesh (e.g. placing sound source on the scene).
     //static const std::string CustomMeshName;
 
-    EntityPlacer(Foundation::Framework *framework, entity_id_t entityId = 0, QObject *parent = 0);
+    EntityPlacer(Framework *framework, entity_id_t entityId = 0, QObject *parent = 0);
     virtual ~EntityPlacer();
 
 public slots:
@@ -31,25 +31,24 @@ public slots:
     void MouseMove(MouseEvent *mouse);
 
 signals:
-    void Finished(Vector3df location, Quaternion orientation);
-    void LocationChanged(Vector3df location);
-    void OrientationChanged(Quaternion orientation);
+    void Finished(float3 location, Quat orientation);
+    void LocationChanged(float3 location);
+    void OrientationChanged(Quat orientation);
 
 private:
-     bool DoRayCast(int x, int y, Vector3df &result);
+     bool DoRayCast(int x, int y, float3 &result);
 
 private:
-    Vector3df location_;
-    Quaternion orientation_;
+    float3 location_;
+    Quat orientation_;
     InputContextPtr input_;
     EC_Placeable *placeable_;
-    Foundation::Framework *framework_;
-    Scene::EntityWeakPtr entity_;
+    Framework *framework_;
+    EntityWeakPtr entity_;
     Ogre::Entity *meshEntity_;
-    OgreRenderer::RendererWeakPtr renderer_;
+    OgreWorldWeakPtr world_;
     int previousScrollValue_;
     bool finished_;
     bool useCustomMesh_;
 };
 
-#endif

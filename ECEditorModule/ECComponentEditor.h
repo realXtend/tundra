@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ECEditorModule_ECComponentEditor_h
-#define incl_ECEditorModule_ECComponentEditor_h
+#pragma once
 
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
@@ -82,4 +81,3 @@ private:
     QString name_;
 };
 
-#endif

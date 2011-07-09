@@ -9,12 +9,13 @@
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 #include "InvokeItem.h"
+#include "CoreException.h"
 
 InvokeItem::InvokeItem() : type(Unknown), execTypes(EntityAction::Invalid), mruOrder(0)
 {
 }
 
-InvokeItem::InvokeItem(const std::string &settingStr)
+InvokeItem::InvokeItem(const QString &settingStr)
 {
     FromSetting(settingStr);
 }
@@ -43,7 +44,7 @@ QString InvokeItem::ToString() const
     return str;
 }
 
-std::string InvokeItem::ToSetting() const
+QString InvokeItem::ToSetting() const
 {
     QString str;
     str.append(QString::number((int)type));
@@ -56,19 +57,19 @@ std::string InvokeItem::ToSetting() const
     foreach(QVariant p, parameters)
         str.append('|' + QString::number((int)p.type()) + '|' + p.toString());
 
-    return str.toStdString();
+    return str;
 }
 
-void InvokeItem::FromSetting(const std::string &str)
+void InvokeItem::FromSetting(const QString &str)
 {
-    QStringList params = QString(str.c_str()).split('|');
+    QStringList params = str.split('|');
     if (params.size() < 3)
         return;
 
     int idx = 0;
     type = (Type)params[idx++].toInt();
     if (type == Action)
-        execTypes = (EntityAction::ExecutionTypeField)params[idx++].toInt();
+        execTypes = (EntityAction::ExecTypeField)params[idx++].toInt();
     if (type == Function)
         returnType = params[idx++];
 

@@ -16,14 +16,14 @@
 #include "MemoryLeakCheck.h"
 
 
-EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, QWidget *p) :
+EntityActionDialog::EntityActionDialog(const QList<EntityWeakPtr> &entities, QWidget *p) :
     QDialog(p, 0)
 {
     this->entities = entities;
     Initialize();
 }
 
-EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *p) :
+EntityActionDialog::EntityActionDialog(const QList<EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *p) :
     QDialog(p, 0)
 {
     this->entities = entities;
@@ -51,7 +51,7 @@ EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entiti
     parametersLineEdit->setText(parameterText);
 }
 
-QList<Scene::EntityWeakPtr> EntityActionDialog::Entities() const
+QList<EntityWeakPtr> EntityActionDialog::Entities() const
 {
     return entities;
 }
@@ -61,9 +61,9 @@ QString EntityActionDialog::Action() const
     return actionComboBox->currentText();
 }
 
-EntityAction::ExecutionTypeField EntityActionDialog::ExecutionType() const
+EntityAction::ExecTypeField EntityActionDialog::ExecutionType() const
 {
-    EntityAction::ExecutionTypeField type = EntityAction::Invalid;
+    EntityAction::ExecTypeField type = EntityAction::Invalid;
     if (localCheckBox->isChecked())
         type |=  EntityAction::Local;
     if (serverComboBox->isChecked())
@@ -111,7 +111,7 @@ void EntityActionDialog::Initialize()
         EntityPtr e = entities[i].lock();
         if (e)
         {
-            targets.append(QString::number(e->GetId()));
+            targets.append(QString::number(e->Id()));
             if (i < entities.size() - 1)
                 targets.append(", ");
 
@@ -147,6 +147,7 @@ void EntityActionDialog::Initialize()
     mainLayout->addWidget(parametersLineEdit);
 
     QHBoxLayout *checkBoxLayout = new QHBoxLayout;
+    checkBoxLayout->addSpacerItem(new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum));
     checkBoxLayout->addWidget(executionTypeLabel);
     checkBoxLayout->addWidget(localCheckBox);
     checkBoxLayout->addWidget(serverComboBox);

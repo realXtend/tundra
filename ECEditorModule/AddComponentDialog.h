@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ECEditorModule_AddComponentDialog_h
-#define incl_ECEditorModule_AddComponentDialog_h
+#pragma once
 
 #include "ECEditorModuleApi.h"
 #include "CoreTypes.h"
@@ -15,10 +14,7 @@ class QComboBox;
 class QCheckBox;
 class QPushButton;
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 /// Dialog for adding new component to entity.
 class ECEDITOR_MODULE_API AddComponentDialog: public QDialog
@@ -27,17 +23,20 @@ class ECEDITOR_MODULE_API AddComponentDialog: public QDialog
 
 public:
     /// Constructs the dialog.
-    /** \param fw Framework.
-        \param ids IDs of entities to which the component will be added.
-        \param parent Parent widget.
-        \param f Window flags.
+    /** @param fw Framework.
+        @param ids IDs of entities to which the component will be added.
+        @param parent Parent widget.
+        @param f Window flags.
     */
-    AddComponentDialog(Foundation::Framework *fw, const QList<entity_id_t> &ids, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    AddComponentDialog(Framework *fw, const QList<entity_id_t> &ids, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
     /// Destroyes the dialog.
     ~AddComponentDialog();
 
     /// Sets available component types.
+    /** In order to improve readibility and usability, the "EC_" prefix is stripped from the type name.
+        GetTypeName() however returns the full type name.
+    */
     void SetComponentList(const QStringList &component_types);
 
     /// Sets default name.
@@ -76,7 +75,6 @@ private:
     QPushButton *cancel_button_;
     typedef QList<entity_id_t> EntityIdList;
     EntityIdList entities_; ///< Entities for which the new component is planned to be added.
-    Foundation::Framework *framework_;
+    Framework *framework_;
 };
 
-#endif

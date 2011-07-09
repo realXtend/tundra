@@ -5,8 +5,7 @@
  *  @brief  Data structure that hold all information that ECBrowser need to know about the component.
  */
 
-#ifndef incl_ECEditorModule_ComponentGroup_h
-#define incl_ECEditorModule_ComponentGroup_h
+#pragma once
 
 #include "SceneFwd.h"
 
@@ -62,4 +61,3 @@ struct ComponentGroup
     bool isDynamic_;
 };
 
-#endif

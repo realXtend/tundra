@@ -1,5 +1,4 @@
-#ifndef incl_ECEditorModule_MultiEditPropertyManager_h
-#define incl_ECEditorModule_MultiEditPropertyManager_h
+#pragma once
 
 #define QT_QTPROPERTYBROWSER_IMPORT
 
@@ -46,4 +45,3 @@ private:
     PropertyToDataMap values_;
 };
 
-#endif
