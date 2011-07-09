@@ -5,8 +5,7 @@
  *  @brief  Interface for different script instances, e.g. Javascript of Python.
  */
 
-#ifndef incl_EC_Script_IScriptInstance_h
-#define incl_EC_Script_IScriptInstance_h
+#pragma once
 
 #include <QObject>
 
@@ -30,9 +29,6 @@ public:
     /// Starts this script instance.
     virtual void Run() = 0;
 
-    /// Returns the current loaded script name
-    virtual QString GetLoadedScriptName() const = 0;
-
 protected:
     /// Whether this instance executed trusted code or not. 
     /** By default everything loaded remotely (with e.g. http) is untrusted,
@@ -43,4 +39,3 @@ protected:
 
 };
 
-#endif

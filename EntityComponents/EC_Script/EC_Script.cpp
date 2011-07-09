@@ -2,21 +2,29 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include <QList>
-#include "MemoryLeakCheck.h"
+
 #include "EC_Script.h"
 #include "IScriptInstance.h"
 #include "ScriptAsset.h"
-
+#include "AssetAPI.h"
+#include "Framework.h"
 #include "IAttribute.h"
+#include "AttributeMetadata.h"
 #include "IAssetTransfer.h"
 #include "Entity.h"
 #include "AssetRefListener.h"
-
 #include "LoggingFunctions.h"
+
+#include "MemoryLeakCheck.h"
 
 EC_Script::~EC_Script()
 {
+    // If we have a classname, empty it to trigger deletion of the script object
+    if (!className.Get().trimmed().isEmpty())
+        className.Set("", AttributeChange::LocalOnly);
+    
+    if (scriptInstance_)
+        scriptInstance_->Unload();
     SAFE_DELETE(scriptInstance_);
 }
 
@@ -31,13 +39,50 @@ void EC_Script::SetScriptInstance(IScriptInstance *instance)
     scriptInstance_ = instance;
 }
 
+void EC_Script::SetScriptApplication(EC_Script* app)
+{
+    if (app)
+        scriptApplication_ = app->shared_from_this();
+    else
+        scriptApplication_.reset();
+}
+
+EC_Script* EC_Script::GetScriptApplication() const
+{
+    return dynamic_cast<EC_Script*>(scriptApplication_.lock().get());
+}
+
+bool EC_Script::ShouldRun() const
+{
+    int mode = runMode.Get();
+    if (mode == RM_Both)
+        return true;
+    if (mode == RM_Client && isClient_)
+        return true;
+    if (mode == RM_Server && isServer_)
+        return true;
+    return false;
+}
+
+void EC_Script::SetIsClientIsServer(bool isClient, bool isServer)
+{
+    isClient_ = isClient;
+    isServer_ = isServer;
+}
+
 void EC_Script::Run(const QString &name)
 {
+    if (!ShouldRun())
+    {
+        LogWarning("Run explicitly called, but RunMode does not match");
+        return;
+    }
+    
     // This function (EC_Script::Run) is invoked on the Entity Action RunScript(scriptName). To
     // allow the user to differentiate between multiple instances of EC_Script in the same entity, the first
     // parameter of RunScript allows the user to specify which EC_Script to run. So, first check
     // if this Run message is meant for us.
-    if (!name.isEmpty() && name != scriptRef.Get().ref)
+    if (!name.isEmpty() && name != Name())
         return; // Not our RunScript invocation - ignore it.
 
     if (!scriptInstance_)
@@ -52,8 +97,8 @@ void EC_Script::Run(const QString &name)
 /// Invoked on the Entity Action UnloadScript(scriptName).
 void EC_Script::Unload(const QString &name)
 {
-    if (!name.isEmpty() && name != scriptRef.Get().ref)
-        return; // Not our UnloadScript invocation - ignore it.
+    if (!name.isEmpty() && name != Name())
+        return; // Not our RunScript invocation - ignore it.
 
     if (!scriptInstance_)
     {
@@ -64,65 +109,129 @@ void EC_Script::Unload(const QString &name)
     scriptInstance_->Unload();
 }
 
-EC_Script::EC_Script(IModule *module):
-    IComponent(module->GetFramework()),
-    scriptRef(this, "Script ref"),
-    type(this, "Type"),
+EC_Script::EC_Script(Scene* scene):
+    IComponent(scene),
+    scriptRef(this, "Script ref", AssetReferenceList("Script")),
     runOnLoad(this, "Run on load", false),
-    scriptInstance_(0)
+    runMode(this, "Run mode", RM_Both),
+    applicationName(this, "Script application name"),
+    className(this, "Script class name"),
+    scriptInstance_(0),
+    isClient_(false),
+    isServer_(false)
 {
     static AttributeMetadata scriptRefData;
-    AttributeMetadata::ButtonInfoList scriptRefButtons;
-    scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("runScriptButton", "P", "Run"));
-    scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("stopScriptButton", "S", "Unload"));
-    scriptRefData.buttons = scriptRefButtons;
+    static AttributeMetadata runModeData;
+    static bool metadataInitialized = false;
+    if (!metadataInitialized)
+    {
+        AttributeMetadata::ButtonInfoList scriptRefButtons;
+        scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("runScriptButton", "P", "Run"));
+        scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("stopScriptButton", "S", "Unload"));
+        scriptRefData.buttons = scriptRefButtons;
+        scriptRefData.elementType = "assetreference";
+        runModeData.enums[RM_Both] = "Both";
+        runModeData.enums[RM_Client] = "Client";
+        runModeData.enums[RM_Server] = "Server";
+        metadataInitialized = true;
+    }
     scriptRef.SetMetadata(&scriptRefData);
+    runMode.SetMetadata(&runModeData);
 
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
-
-    scriptAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
-    connect(scriptAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(ScriptAssetLoaded(AssetPtr)), Qt::UniqueConnection);
 }
 
 void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
+    AssetAPI* assetAPI = framework->Asset();
+    
     if (attribute == &scriptRef)
     {
-        if (!scriptRef.Get().ref.isEmpty())
-            scriptAsset->HandleAssetRefChange(attribute);
-        else // If the script ref is empty we need to unload script instance.
+        // Do not even fetch the assets if we should not run
+        if (!ShouldRun())
+        {
+            scriptAssets.clear();
+            return;
+        }
+        
+        AssetReferenceList scripts = scriptRef.Get();
+        // Make sure that the asset ref list type stays intact.
+        scripts.type = "Scripts";
+        scriptRef.Set(scripts, AttributeChange::Disconnected);
+
+        // Purge empty script refs
+        scripts.RemoveEmpty();
+
+        // Reallocate the number of asset ref listeners.
+        while(scriptAssets.size() > (size_t)scripts.Size())
+            scriptAssets.pop_back();
+        while(scriptAssets.size() < (size_t)scripts.Size())
+            scriptAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
+
+        if (scripts.Size() > 0)
+        {
+            QString refContext;
+            
+            for(int i = 0; i < scripts.Size(); ++i)
+            {
+                // The first script ref must be resolvable without context. Then, for each subsequent asset, the previous will be used as a reference
+                QString resolvedRef = assetAPI->ResolveAssetRef(refContext, scripts[i].ref);
+                refContext = resolvedRef;
+                
+                connect(scriptAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnScriptAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+                scriptAssets[i]->HandleAssetRefChange(assetAPI, resolvedRef);
+            }
+        }
+        else // If there are no non-empty script refs, we unload the script instance.
             SetScriptInstance(0);
+    }
+    else if (attribute == &applicationName)
+    {
+        emit ApplicationNameChanged(applicationName.Get());
+    }
+    else if (attribute == &className)
+    {
+        emit ClassNameChanged(className.Get());
+    }
+    else if (attribute == &runMode)
+    {
+        // If we had not loaded script assets previously because of runmode not allowing, load them now
+        if (ShouldRun())
+        {
+            if (scriptAssets.empty())
+                HandleAttributeChanged(&scriptRef, AttributeChange::Default);
+        }
     }
 }
 
-void EC_Script::ScriptAssetLoaded(AssetPtr asset_)
+void EC_Script::OnScriptAssetLoaded(AssetPtr asset_)
 {
-    ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(asset_);
-    if (!asset)
+    // If all asset ref listeners have valid, loaded script assets, it's time to fire up the script engine
+    std::vector<ScriptAssetPtr> loadedScriptAssets;
+    for (unsigned i = 0; i < scriptAssets.size(); ++i)
     {
-        LogError("EC_Script::ScriptAssetLoaded: Loaded asset of type other than ScriptAsset!");
-        return;
-    }
-
-    // Don't reload this script is all the following are met:
-    // 1. We already have a valid script instance (aka this is not the first load)
-    // 2. The script name has not changed (aka asset ref)
-    // 3. Assets content hash has not changed since last load (aka source code changed)
-    if (scriptInstance_) // 1.
-    {
-        if (scriptInstance_->GetLoadedScriptName() == asset_->Name()) // 2.
-            if (asset_->ContentHashChanged() == false) // 3.
+        if (scriptAssets[i]->Asset())
+        {
+            ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(scriptAssets[i]->Asset());
+            if (!asset)
+            {
+                LogError("EC_Script::ScriptAssetLoaded: Loaded asset of type other than ScriptAsset!");
                 return;
+            }
+            if (asset->IsLoaded())
+                loadedScriptAssets.push_back(asset);
+        }
     }
-
-    emit ScriptAssetChanged(asset);
+    
+    if (loadedScriptAssets.size() == scriptAssets.size())
+        emit ScriptAssetsChanged(loadedScriptAssets);
 }
 
 void EC_Script::RegisterActions()
 {
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
     assert(entity);
     if (entity)
     {
