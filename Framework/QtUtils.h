@@ -5,8 +5,7 @@
  *  @brief  Cross-platform utility functions using Qt.
  */
 
-#ifndef incl_Foundation_QtUtils_h
-#define incl_Foundation_QtUtils_h
+#pragma once
 
 #include "CoreTypes.h"
 #include <QStringList>
@@ -19,7 +18,7 @@ namespace QtUtils
     /** @param filter The files to be shown.
         @param caption Dialog's caption
         @param dir Working directory.
-        @param parent Parent widget. If you give parent widget, the file dialog will be part of the Naali UI scene.
+        @param parent Parent widget. If you give parent widget, the file dialog will be part of the UI scene.
             Give 0 if you want the dialog to be external.
         @param initiator QObject that initiated the dialog and wants the results
         @param slot Slot on initiator object, to which dialog's finished() signal will be 
@@ -41,7 +40,7 @@ namespace QtUtils
     /** @param filter The files to be shown.
         @param caption Dialog's caption
         @param dir Working directory.
-        @param parent Parent widget. If you give parent widget, the file dialog will be part of the Naali UI scene.
+        @param parent Parent widget. If you give parent widget, the file dialog will be part of the UI scene.
             Give 0 if you want the dialog to be external.
         @param initiator QObject that initiated the dialog and wants the results
         @param slot Slot on initiator object, to which dialog's finished() signal will be 
@@ -58,11 +57,11 @@ namespace QtUtils
         const char* slot);
 
     /// Opens non-modal select directory dialog.
-    /** \note Differs from other functions in that this won't send a finished signal if user closes the dialog without
+    /** @note Differs from other functions in that this won't send a finished signal if user closes the dialog without
               selecting a directory.
         @param caption Dialog's caption
         @param dir Working directory.
-        @param parent Parent widget. If you give parent widget, the file dialog will be part of the Naali UI scene.
+        @param parent Parent widget. If you give parent widget, the file dialog will be part of the UI scene.
             Give 0 if you want the dialog to be external.
         @param initiator QObject that initiated the dialog and wants the results
         @param slot Slot on initiator object, to which dialog's finished() signal will be 
@@ -111,4 +110,3 @@ namespace QtUtils
     std::string GetCurrentPath();
 };
 
-#endif

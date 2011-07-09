@@ -1,9 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_CoreDefines_h
-#define incl_CoreDefines_h
+#pragma once
 
-// useful defines
+#include <cassert>
+
+#ifdef WIN32
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT
+#endif
 
 #define SAFE_DELETE(p) { delete p; p=0; }
 #define SAFE_DELETE_ARRAY(p) { delete [] p; p=0; }
@@ -28,5 +33,4 @@ inline Dst checked_static_cast(Src src)
 /// Use for QObjects
 #define SAFE_DELETE_LATER(p) { if ((p)) (p)->deleteLater(); (p) = 0; }
 
-#endif
 

@@ -3,6 +3,61 @@
 #include "StableHeaders.h"
 #include "CoreStringUtils.h"
 
+#include <boost/algorithm/string.hpp>
+
+QString QStringfromWCharArray(const wchar_t *string, int size)
+{
+    QString qstr;
+    if (sizeof(wchar_t) == sizeof(QChar)) {
+        return qstr.fromUtf16((const ushort *)string, size);
+    } else {
+        return qstr.fromUcs4((uint *)string, size);
+    }
+}
+
+int QStringtoWCharArray(QString qstr, wchar_t *array)
+{
+    if (sizeof(wchar_t) == sizeof(QChar)) {
+        memcpy(array, qstr.utf16(), sizeof(wchar_t)*qstr.length());
+        return qstr.length();
+    } else {
+        wchar_t *a = array;
+        const unsigned short *uc = qstr.utf16();
+        for (int i = 0; i < qstr.length(); ++i) {
+            uint u = uc[i];
+            if (QChar::isHighSurrogate(u) && i + 1 < qstr.length()) {
+                ushort low = uc[i+1];
+                if (QChar::isLowSurrogate(low)) {
+                    u = QChar::surrogateToUcs4(u, low);
+                    ++i;
+                }
+            }
+            *a = wchar_t(u);
+            ++a;
+        }
+        return a - array;
+    }
+}
+
+std::wstring QStringToWString(const QString &qstr)
+{
+    if (qstr.length() == 0)
+        return L"";
+
+    std::wstring str;
+    str.resize(qstr.length());
+
+    str.resize(QStringtoWCharArray(qstr, &(*str.begin())));
+    return str;
+}
+
+QString WStringToQString(const std::wstring &str)
+{
+    if (str.length() == 0)
+        return "";
+    return QStringfromWCharArray(str.data(), str.size());
+}
+
 std::wstring ToWString(const std::string &str)
 {
     std::wstring w_str(str.length(), L' ');
@@ -25,44 +80,6 @@ std::vector<s8> StringToBuffer(const std::string& str)
     if (str.size())
         memcpy(&ret[0], &str[0], str.size());
     return ret;
-}
-
-/// Get the current time as a string.
-std::string GetLocalTimeString()
-{
-    return "";
-/*
-    Poco::LocalDateTime *time = new Poco::LocalDateTime();
-    std::stringstream ss;
-    
-    ss << std::setw(2) << time->hour() << std::setfill('0') << ":" <<
-        std::setw(2) << time->minute() << std::setfill('0') << ":" <<
-        std::setw(2) << time->second() << std::setfill('0');
-        
-    SAFE_DELETE(time);
-    
-    return ss.str();
-    */
-}
-
-/// Get the current date and time as a string.
-std::string GetLocalDateTimeString()
-{
-    return "";
-/*
-    Poco::LocalDateTime *time = new Poco::LocalDateTime();
-    std::stringstream ss;
-    
-    ss << std::setw(2) << time->day() << std::setfill('0') << "/" <<
-        std::setw(2) << time->month() << std::setfill('0') << "/" <<
-        std::setw(4) << time->year() << std::setfill('0') << " " <<
-        std::setw(2) << time->hour() << std::setfill('0') << ":" <<
-        std::setw(2) << time->minute() << std::setfill('0') << ":" <<
-        std::setw(2) << time->second() << std::setfill('0');
-    
-    SAFE_DELETE(time);
-    
-    return ss.str();*/
 }
 
 StringVector SplitString(const std::string& str, char separator)

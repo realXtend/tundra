@@ -13,8 +13,7 @@
 // Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 // This notice may not be removed or altered from any source distribution.
 
-#ifndef incl_Core_Math_h
-#define incl_Core_Math_h
+#pragma once
 
 #include "CoreTypes.h"
 #include <cmath>
@@ -78,7 +77,7 @@ const f64 RADTODEG64 = 180.0 / PI64;
 
 /// Utility function to convert a radian value to degrees
 /** Provided as it can be clearer to write radToDeg(X) than RADTODEG * X
-\param radians	The radians value to convert to degrees.
+@param radians	The radians value to convert to degrees.
 */
 inline f32 radToDeg(f32 radians)
 {
@@ -87,7 +86,7 @@ inline f32 radToDeg(f32 radians)
 
 /// Utility function to convert a radian value to degrees
 /** Provided as it can be clearer to write radToDeg(X) than RADTODEG * X
-\param radians	The radians value to convert to degrees.
+@param radians	The radians value to convert to degrees.
 */
 inline f64 radToDeg(f64 radians)
 {
@@ -96,7 +95,7 @@ inline f64 radToDeg(f64 radians)
 
 /// Utility function to convert a degrees value to radians
 /** Provided as it can be clearer to write degToRad(X) than DEGTORAD * X
-\param degrees	The degrees value to convert to radians.
+@param degrees	The degrees value to convert to radians.
 */
 inline f32 degToRad(f32 degrees)
 {
@@ -105,7 +104,7 @@ inline f32 degToRad(f32 degrees)
 
 /// Utility function to convert a degrees value to radians
 /** Provided as it can be clearer to write degToRad(X) than DEGTORAD * X
-\param degrees	The degrees value to convert to radians.
+@param degrees	The degrees value to convert to radians.
 */
 inline f64 degToRad(f64 degrees)
 {
@@ -148,7 +147,7 @@ inline T abs_(const T& a)
 }
 
 /// returns linear interpolation of a and b with ratio t
-/// \return: a if t==0, b if t==1, and the linear interpolation else
+/// @return: a if t==0, b if t==1, and the linear interpolation else
 template<class T>
 inline T lerp(const T& a, const T& b, const f32 t)
 {
@@ -506,5 +505,4 @@ inline f32 fract ( f32 x )
 	return x - floorf ( x );
 }
 
-#endif
 

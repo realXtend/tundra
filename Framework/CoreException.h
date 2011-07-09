@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_Exception_h
-#define incl_Core_Exception_h
+#pragma once
 
 #include <exception>
 #include <cstring>
@@ -9,7 +8,7 @@
 /// Generic exception class.
 /** Can be used to throw generic exceptions.
 
-    \note Uses non-safe string manipulation, so do not supply exception parameters from outside source!
+    @note Uses non-safe string manipulation, so do not supply exception parameters from outside source!
 */
 class Exception : public std::exception
 {
@@ -86,4 +85,3 @@ private:
     int do_free_;
 };
 
-#endif

@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_HighPerfClock_h
-#define incl_Core_HighPerfClock_h
+#pragma once
 
 #include <QDateTime>
 #if defined(_WINDOWS)
+#include <WinSock2.h>
 #include <Windows.h>
 #endif
 
@@ -12,9 +12,9 @@
 #include <time.h>
 #endif
 
-#include <boost/cstdint.hpp>
+#include "CoreTypes.h"
 
-typedef boost::uint64_t tick_t;
+typedef u64 tick_t;
 
 inline tick_t GetCurrentClockTime()
 {
@@ -51,4 +51,3 @@ inline tick_t GetCurrentClockFreq()
 #endif
 }
 
-#endif

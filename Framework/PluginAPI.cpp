@@ -2,6 +2,7 @@
 #include "PluginAPI.h"
 #include "LoggingFunctions.h"
 #include "Framework.h"
+#include "Application.h"
 
 #include <QtXml>
 #include <iostream>
@@ -45,23 +46,27 @@ std::string GetErrorString(int error)
 }
 
 
-PluginAPI::PluginAPI(Foundation::Framework *owner_)
+PluginAPI::PluginAPI(Framework *owner_)
 :owner(owner_)
 {
 }
 
-typedef void (*TundraPluginMainSignature)(Foundation::Framework *owner);
+typedef void (*TundraPluginMainSignature)(Framework *owner);
 
 void PluginAPI::LoadPlugin(const QString &filename)
 {
 #ifdef _DEBUG
-    QString path = "plugins/" + filename.trimmed() + "d.dll";
+    const QString pluginSuffix = "d.dll";
 #else
-    QString path = "plugins/" + filename.trimmed() + ".dll";
+    const QString pluginSuffix = ".dll";
 #endif
+
+    QString path = Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix;
+
     path = path.replace("/", "\\");
-    LogInfo("Loading up plugin \"" + filename + "\".");
-    ///\todo Cross-platform -> void* & dlopen.
+    LogInfo("Loading plugin \"" + filename + "\".");
+    ///\todo Unicode support!
+#ifdef WIN32
     HMODULE module = LoadLibraryA(path.toStdString().c_str());
     if (module == NULL)
     {
@@ -77,22 +82,62 @@ void PluginAPI::LoadPlugin(const QString &filename)
         return;
     }
 
-    LogInfo("Starting up plugin \"" + path + "\".");
+    Plugin p = { module };
+    plugins.push_back(p);
     mainEntryPoint(owner);
+#else
+    ///\todo Cross-platform -> void* & dlopen.
+#endif
 }
 
-void PluginAPI::LoadPluginsFromXML(const QString &pluginListFilename)
+void PluginAPI::UnloadPlugins()
 {
+#ifdef WIN32
+    for(std::list<Plugin>::reverse_iterator iter = plugins.rbegin(); iter != plugins.rend(); ++iter)
+        FreeLibrary(iter->libraryHandle);
+#endif
+    plugins.clear();
+}
+
+QString LookupRelativePath(QString path)
+{
+    // If a relative path was specified, lookup from cwd first, then from application installation directory.
+    if (QDir::isRelativePath(path))
+    {
+        QString cwdPath = Application::CurrentWorkingDirectory() + path;
+        if (QFile::exists(cwdPath))
+            return cwdPath;
+        else
+            return Application::InstallationDirectory() + path;
+    }
+    else
+        return path;
+}
+
+QString PluginAPI::ConfigurationFile() const
+{
+    boost::program_options::variables_map &commandLineVariables = owner->ProgramOptions();
+    QString configFilename = "plugins.xml";
+    if (commandLineVariables.count("config") > 0)
+        configFilename = commandLineVariables["config"].as<std::string>().c_str();
+    
+    return LookupRelativePath(configFilename);
+}
+
+void PluginAPI::LoadPluginsFromXML(QString pluginConfigurationFile)
+{
+    pluginConfigurationFile = LookupRelativePath(pluginConfigurationFile);
+
     QDomDocument doc("plugins");
-    QFile file(pluginListFilename);
+    QFile file(pluginConfigurationFile);
     if (!file.open(QIODevice::ReadOnly))
     {
-        LogError("PluginAPI::LoadPluginsFromXML: Failed to open file \"" + pluginListFilename + "\"!");
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to open file \"" + pluginConfigurationFile + "\"!");
         return;
     }
     if (!doc.setContent(&file))
     {
-        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + pluginListFilename + "\"!");
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + pluginConfigurationFile + "\"!");
         file.close();
         return;
     }
