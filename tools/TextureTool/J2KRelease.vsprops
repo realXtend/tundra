@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="J2KRelease"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="C:\Projects\NaaliDepsBin\bin\build_deps\OpenJpeg\include"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="OpenJPEG.lib"
+		AdditionalLibraryDirectories="C:\Projects\NaaliDepsBin\bin\build_deps\OpenJpeg\lib"
+	/>
+</VisualStudioPropertySheet>

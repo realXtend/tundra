@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="D3D9"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Include&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="D3D9.lib D3DX9.lib DxErr.lib"
+		AdditionalLibraryDirectories="&quot;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
+	/>
+</VisualStudioPropertySheet>
