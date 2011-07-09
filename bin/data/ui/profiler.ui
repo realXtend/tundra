@@ -44,7 +44,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>7</number>
         </property>
         <widget class="QWidget" name="timing">
          <attribute name="title">
@@ -805,593 +805,6 @@
           </property>
          </widget>
         </widget>
-        <widget class="QWidget" name="network">
-         <attribute name="title">
-          <string>Network</string>
-         </attribute>
-         <widget class="QLabel" name="label_20">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>10</y>
-            <width>81</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Data in:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_27">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>10</y>
-            <width>101</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Data out:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelDataInPerSec">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>10</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelDataOutPerSec">
-          <property name="geometry">
-           <rect>
-            <x>430</x>
-            <y>10</y>
-            <width>121</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelDataInSecGraph">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>30</y>
-            <width>300</width>
-            <height>130</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>DataInSecGraph</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelDataOutSecGraph">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>30</y>
-            <width>300</width>
-            <height>130</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>DataOutSecGraph</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelPacketsInSecGraph">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>190</y>
-            <width>300</width>
-            <height>130</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>PacketsInSecGraph</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelPacketsOutSecGraph">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>190</y>
-            <width>300</width>
-            <height>130</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>PacketsOutSecGraph</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelPacketsOutPerSec">
-          <property name="geometry">
-           <rect>
-            <x>430</x>
-            <y>170</y>
-            <width>131</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_21">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>170</y>
-            <width>81</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Packets in:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelPacketsInPerSec">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>170</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_28">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>170</y>
-            <width>101</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Packets out:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelRoundTripTime">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>380</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelAvgPacketSizeIn">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>330</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_46">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>440</y>
-            <width>121</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Duplicates in:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelAvgPacketSizeOut">
-          <property name="geometry">
-           <rect>
-            <x>430</x>
-            <y>330</y>
-            <width>141</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_45">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>400</y>
-            <width>121</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Packet loss in:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelPacketResends">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>420</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_36">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>380</y>
-            <width>101</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Round-trip time:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_37">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>380</y>
-            <width>101</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Last heard since:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelDataInFlightPackets">
-          <property name="geometry">
-           <rect>
-            <x>130</x>
-            <y>440</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelLastHeardSince">
-          <property name="geometry">
-           <rect>
-            <x>430</x>
-            <y>380</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_38">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>350</y>
-            <width>101</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Data goodput in:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelPacketLossOut">
-          <property name="geometry">
-           <rect>
-            <x>430</x>
-            <y>420</y>
-            <width>131</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_39">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>350</y>
-            <width>101</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Data goodput out:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelDataGoodputIn">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>350</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelDataGoodputOut">
-          <property name="geometry">
-           <rect>
-            <x>430</x>
-            <y>350</y>
-            <width>121</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_43">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>420</y>
-            <width>121</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Packet loss out:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_22">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>330</y>
-            <width>101</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Avg. packet size in:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelDuplicatesIn">
-          <property name="geometry">
-           <rect>
-            <x>430</x>
-            <y>440</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_42">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>420</y>
-            <width>121</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Packet resends:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_44">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>440</y>
-            <width>121</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Data in flight (packets):</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelPacketLossIn">
-          <property name="geometry">
-           <rect>
-            <x>430</x>
-            <y>400</y>
-            <width>131</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_29">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>330</y>
-            <width>101</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Avg. packet size out:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_47">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>400</y>
-            <width>91</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Smoothened RTT:</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelSmoothenedRoundTripTime">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>400</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_48">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>460</y>
-            <width>121</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Data in flight (bytes):</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelDataInFlightBytes">
-          <property name="geometry">
-           <rect>
-            <x>130</x>
-            <y>460</y>
-            <width>111</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>-</string>
-          </property>
-         </widget>
-         <widget class="QCheckBox" name="checkBoxLogTraffic">
-          <property name="geometry">
-           <rect>
-            <x>320</x>
-            <y>460</y>
-            <width>151</width>
-            <height>23</height>
-           </rect>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>Log network traffic to file</string>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </widget>
-        <widget class="QWidget" name="simstats">
-         <attribute name="title">
-          <string>SimStats</string>
-         </attribute>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_30">
-            <property name="text">
-             <string>Region MAP Coordinates:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="labelRegionMapCoords">
-            <property name="text">
-             <string>-</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_32">
-            <property name="text">
-             <string>Region Object Capacity:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QLabel" name="labelRegionObjectCapacity">
-            <property name="text">
-             <string>-</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4">
-           <widget class="QLabel" name="label_31">
-            <property name="text">
-             <string>PidStat:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="5">
-           <widget class="QLabel" name="labelPidStat">
-            <property name="text">
-             <string>-</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="6">
-           <widget class="QTreeWidget" name="treeSimStats">
-            <column>
-             <property name="text">
-              <string>Statistic</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Value</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-         </layout>
-        </widget>
         <widget class="QWidget" name="assets">
          <attribute name="title">
           <string>Assets</string>
@@ -1638,9 +1051,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -1649,6 +1059,26 @@
             <column>
              <property name="text">
               <string>Total size</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Width</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Height</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Surface Format</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># mips</string>
              </property>
             </column>
             <column>
@@ -1737,9 +1167,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -1748,6 +1175,51 @@
             <column>
              <property name="text">
               <string>Total size</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># Submeshes</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># Vertices</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># Indices</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Sphere Radius</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Skeleton</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># LOD levels</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># Morph Anims</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string># Poses</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Material</string>
              </property>
             </column>
             <column>
@@ -1833,9 +1305,6 @@
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
@@ -1935,9 +1404,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -2031,9 +1497,6 @@
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
@@ -2133,9 +1596,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -2229,9 +1689,6 @@
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
