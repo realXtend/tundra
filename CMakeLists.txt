@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 2.4)
 
 # The AddEntityComponent macro adds the static EC lib from the given sourceFolder directory to the build.
 # The componentName must be the name of the EC that will be added. E.g. AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
-# Use this macro when adding ECs to the build, since this macro tracks the set of ECs that are added, so that the individual Naali
+# Use this macro when adding ECs to the build, since this macro tracks the set of ECs that are added, so that the individual
 # modules get #defines in C++ code for each EC that is present. This allows conditionally excluding ECs from the build.
 macro(AddEntityComponent sourceFolder componentName)
    add_subdirectory(${sourceFolder})
@@ -118,8 +118,9 @@ endif()
 # C4127 conditional expression is constant
 # C4512 'class' : assignment operator could not be generated 
 # C4505 'function' : unreferenced local function has been removed
+# C4251 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
 if (MSVC)
-    add_definitions (/W4 /wd4100 /wd4127 /wd4512 /wd4505)
+    add_definitions (/W4 /wd4100 /wd4127 /wd4512 /wd4505 /wd4251)
 else ()
     add_definitions (-Wall -Wextra -Wno-unknown-pragmas -Wno-unused -Wno-reorder -Wno-switch -Wno-write-strings)
 endif()
@@ -138,9 +139,13 @@ include(ConfigurePackages)
 # Disable unnecessary build types
 set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
-# In Visual Studio, use unicode character set
 if (MSVC)
-    add_definitions (-DUNICODE -D_UNICODE)
+    # In Visual Studio, use unicode character set
+    add_definitions(-DUNICODE -D_UNICODE)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
+    #Define NOMINMAX in order to get rid of the evil WinDefs.h min&max defines.
+    add_definitions(-DNOMINMAX)
 endif()
 
 # On all platforms, we enable PCH files by default.
@@ -148,21 +153,21 @@ add_definitions (-DPCH_ENABLED)
 SET(PCH_ENABLED 1)
 
 # Set normalized path for common environment variables
-file(TO_CMAKE_PATH "$ENV{NAALI_DEP_PATH}" ENV_NAALI_DEP_PATH)
+file(TO_CMAKE_PATH "$ENV{TUNDRAQT47_DEP_PATH}" ENV_NAALI_DEP_PATH)
 file(TO_CMAKE_PATH "$ENV{QTDIR}" ENV_QT_DIR)
 file(TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 
 # Find needed external libraries, abort on error
 configure_boost()
-#configure_poco()
 configure_qt4()
 configure_python()
-configure_python_qt()
+#configure_python_qt()
 configure_ogre()
 configure_qtpropertybrowser()
 configure_openal ()
 configure_ogg ()
 configure_vorbis ()
+configure_theora()
 
 use_package(BOOST)
 use_package(OGRE)
@@ -189,6 +194,12 @@ if (NOT EXISTS CMakeBuildConfig.txt)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeBuildConfigTemplate.txt
         ${CMAKE_CURRENT_SOURCE_DIR}/CMakeBuildConfig.txt)
 endif ()
+
+# The following two defines are required to compile.
+# These enable implicit conversions of common math types between different libraries and our internal math library.
+add_definitions(-DQT_INTEROP)
+add_definitions(-DIRRLICHT_INTEROP)
+add_definitions(-DMATH_ENABLE_STL_SUPPORT)
 
 # Read the set of optional modules from another file
 # that is kept outside the source control. 
