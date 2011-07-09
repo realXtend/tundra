@@ -3,14 +3,16 @@
 #include "DebugOperatorNew.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
-#include "NaaliGraphicsView.h"
+#include "UiMainWindow.h"
+#include "UiGraphicsView.h"
 #include "QtUiAsset.h"
 #include "UiProxyWidget.h"
+#include "Application.h"
 
 #include "Framework.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
+#include "NullAssetFactory.h"
 #include "LoggingFunctions.h"
 
 #include <QEvent>
@@ -19,10 +21,11 @@
 #include <QScrollBar>
 #include <QUiLoader>
 #include <QFile>
+#include <QDir>
 
 #include "MemoryLeakCheck.h"
 
-/// The SuppressedPaintWidget is used as a viewport for the main Naali QGraphicsView.
+/// The SuppressedPaintWidget is used as a viewport for the main QGraphicsView.
 /** Its purpose is to disable all automatic drawing of the QGraphicsView to screen so that
     we can composite an Ogre 3D render with the Qt widgets added to a QGraphicsScene. */
 class SuppressedPaintWidget : public QWidget {
@@ -62,23 +65,28 @@ void SuppressedPaintWidget::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
 }
 
-UiAPI::UiAPI(Foundation::Framework *owner_) :
+UiAPI::UiAPI(Framework *owner_) :
     owner(owner_),
     mainWindow(0),
     graphicsView(0),
     graphicsScene(0)
 {
-    if (owner->IsHeadless())
+
+    if (owner_->IsHeadless())
+    {
+        owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("QtUiFile")));
         return;
+    }
+
+    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
     
-    // Prepare main window
-    mainWindow = new NaaliMainWindow(owner);
+    mainWindow = new UiMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
-    mainWindow->setWindowIcon(QIcon("./data/ui/images/icon/naali_logo_32px_RC1.ico"));
+    mainWindow->setWindowIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/naali_logo_32px_RC1.ico"));
     connect(mainWindow, SIGNAL(WindowCloseEvent()), owner, SLOT(Exit()));
 
     // Prepare graphics view and scene
-    graphicsView = new NaaliGraphicsView(mainWindow);
+    graphicsView = new UiGraphicsView(mainWindow);
 
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
 
@@ -92,7 +100,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
-    viewportWidget->setAttribute(Qt::WA_DontShowOnScreen, true);
+//    viewportWidget->setAttribute(Qt::WA_DontShowOnScreen, true);
     viewportWidget->setGeometry(0, 0, graphicsView->width(), graphicsView->height());
     viewportWidget->setContentsMargins(0,0,0,0);
 
@@ -125,9 +133,6 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
 
     /// Do a full repaint of the view now that we've shown it.
     graphicsView->MarkViewUndirty();
-
-    /// Register ui asset factory that support file format ".ui".
-    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile", "ui")));
 }
 
 UiAPI::~UiAPI()
@@ -136,12 +141,12 @@ UiAPI::~UiAPI()
     delete viewportWidget;
 }
 
-NaaliMainWindow *UiAPI::MainWindow() const
+UiMainWindow *UiAPI::MainWindow() const
 {
     return mainWindow;
 }
 
-NaaliGraphicsView *UiAPI::GraphicsView() const
+UiGraphicsView *UiAPI::GraphicsView() const
 {
     return graphicsView;
 }
@@ -258,7 +263,8 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
 {
     QWidget *widget = 0;
 
-    if (AssetAPI::ParseAssetRefType(filePath) != AssetAPI::AssetRefLocalPath)
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(filePath);
+    if (refType != AssetAPI::AssetRefLocalPath && refType != AssetAPI::AssetRefRelativePath)
     {
         AssetPtr asset = owner->Asset()->GetAsset(filePath);
         if (!asset)
@@ -288,7 +294,17 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
     }
     else // The file is from absolute source location.
     {
-        QFile file(filePath);
+        QString path = filePath;
+        // If the user submitted a relative path, try to lookup whether a path relative to cwd or the application installation directory was meant.
+        if (QDir::isRelativePath(path))
+        {
+            QString cwdPath = Application::CurrentWorkingDirectory() + filePath;
+            if (QFile::exists(cwdPath))
+                path = cwdPath;
+            else
+                path = Application::InstallationDirectory() + filePath;
+        }
+        QFile file(path);
         QUiLoader loader;
         file.open(QFile::ReadOnly);
         widget = loader.load(&file, parent);

@@ -2,7 +2,7 @@
 
 #include "DebugOperatorNew.h"
 
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #include "Framework.h"
 #include "ConfigAPI.h"
 
@@ -18,13 +18,13 @@
 
 using namespace std;
 
-NaaliMainWindow::NaaliMainWindow(Foundation::Framework *owner_)
+UiMainWindow::UiMainWindow(Framework *owner_)
 :owner(owner_)
 {
     setAcceptDrops(true);
 }
 
-int NaaliMainWindow::DesktopWidth()
+int UiMainWindow::DesktopWidth()
 {
     QDesktopWidget *desktop = QApplication::desktop();
     if (!desktop)
@@ -39,7 +39,7 @@ int NaaliMainWindow::DesktopWidth()
     return width;
 }
 
-int NaaliMainWindow::DesktopHeight()
+int UiMainWindow::DesktopHeight()
 {
     QDesktopWidget *desktop = QApplication::desktop();
     if (!desktop)
@@ -50,7 +50,7 @@ int NaaliMainWindow::DesktopHeight()
     return desktop->screenGeometry().height();
 }
 
-void NaaliMainWindow::LoadWindowSettingsFromFile()
+void UiMainWindow::LoadWindowSettingsFromFile()
 {
     ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_UI);
     int width = owner->Config()->Get(configData, "window width", 800).toInt();
@@ -62,16 +62,28 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 
     setWindowTitle(owner->Config()->GetApplicationIdentifier());
 
-    width = max(1, min(DesktopWidth(), width));
-    height = max(1, min(DesktopHeight(), height));
-    windowX = max(0, min(DesktopWidth()-width, windowX));
-    windowY = max(25, min(DesktopHeight()-height, windowY));
+    if (fullscreen)
+    {
+        showFullScreen();
+    }
+    else if (maximized)
+    {
+        showMaximized();
+    }
+    else
+    {
+        showNormal();
+        width = max(1, min(DesktopWidth(), width));
+        height = max(1, min(DesktopHeight(), height));
+        windowX = max(0, min(DesktopWidth()-width, windowX));
+        windowY = max(25, min(DesktopHeight()-height, windowY));
 
-    resize(width, height);
-    move(windowX, windowY);
+        resize(width, height);
+        move(windowX, windowY);
+    }
 }
 
-void NaaliMainWindow::SaveWindowSettingsToFile()
+void UiMainWindow::SaveWindowSettingsToFile()
 {
     // The values (0, 25) and (-50, -20) below serve to artificially limit the main window positioning into awkward places.
     int windowX = max(0, min(DesktopWidth()-50, pos().x()));
@@ -92,13 +104,13 @@ void NaaliMainWindow::SaveWindowSettingsToFile()
     owner->Config()->Set(configData, "fullscreen", isFullScreen());
 }
 
-void NaaliMainWindow::closeEvent(QCloseEvent *e)
+void UiMainWindow::closeEvent(QCloseEvent *e)
 {
     emit WindowCloseEvent();
     e->ignore();
 }
 
-void NaaliMainWindow::resizeEvent(QResizeEvent *e)
+void UiMainWindow::resizeEvent(QResizeEvent *e)
 {
     emit WindowResizeEvent(width(), height());
 }
