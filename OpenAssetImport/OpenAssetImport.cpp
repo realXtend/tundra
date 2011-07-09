@@ -12,6 +12,7 @@
 #include <Logger.h>
 #include <DefaultLogger.h>
 #include <Ogre.h>
+#include <boost/filesystem.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -160,7 +161,7 @@ namespace AssImp
         }
 
         // import children
-        for(int i=0 ; i<node->mNumChildren ; ++i)
+        for(uint i=0 ; i<node->mNumChildren ; ++i)
             GetNodeData(scene, node->mChildren[i], file, worldTransform, outMeshNames);
     }
 
@@ -323,7 +324,7 @@ namespace AssImp
                     {
                         u16 *idxData = static_cast<u16*>(ibuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
                         offset = 0;
-                        for(int n=0 ; n<mesh->mNumFaces ; ++n)
+                        for(uint n=0 ; n<mesh->mNumFaces ; ++n)
                         {
                             idxData[offset++] = mesh->mFaces[n].mIndices[0];
                             idxData[offset++] = mesh->mFaces[n].mIndices[1];
@@ -333,7 +334,7 @@ namespace AssImp
                     {
                         u32 *idxData = static_cast<u32*>(ibuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
                         offset = 0;
-                        for(int n=0 ; n<mesh->mNumFaces ; ++n)
+                        for(uint n=0 ; n<mesh->mNumFaces ; ++n)
                         {
                             idxData[offset++] = mesh->mFaces[n].mIndices[0];
                             idxData[offset++] = mesh->mFaces[n].mIndices[1];
@@ -364,7 +365,7 @@ namespace AssImp
         }
 
         // import children
-        for(int i=0 ; i<node->mNumChildren ; ++i)
+        for(uint i=0 ; i<node->mNumChildren ; ++i)
             ImportNode(scene, node->mChildren[i], file, nodeName, outMeshNames);
     }
     

@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_AssImp_OpenAssetImport_h
-#define incl_AssImp_OpenAssetImport_h
+#pragma once
 
 #include <assimp.hpp>
 #include <LogStream.h>
@@ -103,4 +102,3 @@ namespace AssImp
         const unsigned int default_flags_; /// Default import postprocess flags
     };
 }
-#endif
