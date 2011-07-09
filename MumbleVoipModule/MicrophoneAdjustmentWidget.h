@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_MicrophoneAdjustmentWidget_h
-#define incl_MumbleVoipModule_MicrophoneAdjustmentWidget_h
+#pragma once
 
 //#include "CommunicationsService.h"
 //#include <QGraphicsProxyWidget>
@@ -9,10 +8,7 @@
 #include "AudioAPI.h"
 #include <QTimer>
 
-namespace Foundation
-{
-    class Framework;
-}
+class Framework;
 
 namespace MumbleVoip
 {
@@ -25,7 +21,7 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
-        MicrophoneAdjustmentWidget(Foundation::Framework* framework, Settings* settings);
+        MicrophoneAdjustmentWidget(Framework* framework, Settings* settings);
         virtual ~MicrophoneAdjustmentWidget();
 
     private slots:
@@ -41,11 +37,11 @@ namespace MumbleVoip
 
         Settings* settings_;
         QTimer read_audio_timer_;
-        Foundation::Framework* framework_;
+        Framework* framework_;
         SoundChannelPtr sound_id_;
         double voice_activity_level_;
         double microphone_level_;
     };
 } // MumbleVoip
 
-#endif // incl_MumbleVoipModule_MicrophoneAdjustmentWidget_h
+// incl_MumbleVoipModule_MicrophoneAdjustmentWidget_h

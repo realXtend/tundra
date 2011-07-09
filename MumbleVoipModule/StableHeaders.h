@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_StableHeaders_h
-#define incl_MumbleVoipModule_StableHeaders_h
+#pragma once
 
 #include "CoreStdIncludes.h"
 
@@ -19,4 +18,4 @@
 
 #endif
 
-#endif // incl_MumbleVoipModule_StableHeaders_h
+// incl_MumbleVoipModule_StableHeaders_h

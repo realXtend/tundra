@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_Provider_h
-#define incl_MumbleVoipModule_Provider_h
+#pragma once
 
 #include <QObject>
 #include <QMap>
@@ -15,18 +14,13 @@ namespace TundraLogic
 }
 
 class UiProxyWidget;
-class IEventData;
 class QSignalMapper;
 class EC_VoiceChannel;
 
-namespace Foundation
-{
-    class Framework;
-}
-namespace Scene
-{
-    class Entity;
-}
+class Framework;
+
+class Entity;
+
 class IComponent;
 
 namespace MumbleVoip
@@ -40,7 +34,7 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
-        Provider(Foundation::Framework* framework, Settings* settings);
+        Provider(Framework* framework, Settings* settings);
         virtual ~Provider();
         void PostInitialize();
 
@@ -54,7 +48,7 @@ namespace MumbleVoip
         virtual void ShowMicrophoneAdjustmentDialog();
 
     private slots:
-        void OnECAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+        void OnECAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
         void OnECVoiceChannelDestroyed(QObject* obj);
         void OnSceneAdded(const QString &name);
 
@@ -66,11 +60,9 @@ namespace MumbleVoip
         QString GetAvatarUuid();
         void AddECVoiceChannel(EC_VoiceChannel* channel);
 
-        Foundation::Framework* framework_;
+        Framework* framework_;
         QString description_;
         MumbleVoip::Session* session_;  /// \todo Use shared ptr ...
-        event_category_id_t networkstate_event_category_;
-        event_category_id_t framework_event_category_;
         Settings* settings_;
         QWidget* microphone_adjustment_widget_;
         QList<EC_VoiceChannel*> ec_voice_channels_;
@@ -87,4 +79,4 @@ namespace MumbleVoip
 
 } // MumbleVoip
 
-#endif // incl_MumbleVoipModule_Provider_h
+// incl_MumbleVoipModule_Provider_h

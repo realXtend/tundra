@@ -9,14 +9,13 @@
 #include "MicrophoneAdjustmentWidget.h"
 #include "EC_VoiceChannel.h"
 
-#include "EventManager.h"
 #include "UiProxyWidget.h"
 #include "SceneManager.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include "LoggingFunctions.h"
 
@@ -29,7 +28,7 @@
 
 namespace MumbleVoip
 {
-    Provider::Provider(Foundation::Framework* framework, Settings* settings) :
+    Provider::Provider(Framework* framework, Settings* settings) :
         framework_(framework),
         description_("Mumble in-world voice"),
         session_(0),
@@ -123,8 +122,6 @@ namespace MumbleVoip
     {
         if (framework_->IsHeadless())
             return;
-        if (!framework_->Ui()->MainWindow())
-            return;
 
         if (microphone_adjustment_widget_)
         {
@@ -163,7 +160,7 @@ namespace MumbleVoip
         microphone_adjustment_widget_ = 0;
     }
 
-    void Provider::OnECAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
+    void Provider::OnECAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
     {
         if (comp->TypeName() != "EC_VoiceChannel")
             return;
@@ -234,12 +231,12 @@ namespace MumbleVoip
 
     void Provider::OnSceneAdded(const QString &name)
     {
-        Scene::SceneManager* scene = framework_->Scene()->GetScene(name).get();
+        SceneManager* scene = framework_->Scene()->GetScene(name).get();
         if (!scene)
             return;
 
-        connect(scene, SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
-            SLOT(OnECAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
+        connect(scene, SIGNAL(ComponentAdded(Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(OnECAdded(Entity*, IComponent*, AttributeChange::Type)));
     }
 
     void Provider::ECVoiceChannelChanged(const QString &pointer)
@@ -292,7 +289,7 @@ namespace MumbleVoip
     
     void Provider::PostInitialize()
     {
-        tundra_logic_ = framework_->GetModuleManager()->GetModule<TundraLogic::TundraLogicModule>().lock();
+        tundra_logic_ = framework_->GetModuleManager()->GetModule<TundraLogic::TundraLogicModule>();
         if (!tundra_logic_)
             LogError("MumbleVoip::Proviver: Could not get TundraLogicModule");
     }

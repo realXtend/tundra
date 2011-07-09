@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_h
-#define incl_MumbleVoipModule_h
+#pragma once
 
 #include "IModule.h"
 #include "MumbleVoipModuleApi.h"
@@ -34,8 +33,6 @@ namespace MumbleVoip
         void Uninitialize();
         void Update(f64 frametime);
 
-        static const std::string &NameStatic() { return module_name_; } /// returns name of this module. Needed for logging.
-
     public slots:
         void ToggleSettingsWidget();
         Provider* GetMumbleProviver() { return in_world_voice_provider_; }
@@ -45,8 +42,6 @@ namespace MumbleVoip
 
     private:
         virtual void UpdateLinkPlugin(f64 frametime);
-
-        static std::string module_name_;     
 
         LinkPlugin* link_plugin_;
         Provider* in_world_voice_provider_;
@@ -60,4 +55,4 @@ namespace MumbleVoip
 
 } // end of namespace: MumbleVoip
 
-#endif // incl_MumbleVoipModule_h
+// incl_MumbleVoipModule_h

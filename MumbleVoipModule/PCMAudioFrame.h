@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_PCMAudioFrame_h
-#define incl_MumbleVoipModule_PCMAudioFrame_h
+#pragma once
 
 namespace MumbleVoip
 {
@@ -42,4 +41,4 @@ namespace MumbleVoip
 
 }// namespace MumbleVoip
 
-#endif // incl_MumbleVoipModule_PCMAudioFrame_h
+// incl_MumbleVoipModule_PCMAudioFrame_h

@@ -1,13 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_Settings_h
-#define incl_MumbleVoipModule_Settings_h
+#pragma once
 
 #include "ui_VoiceSettings.h"
 #include <QObject>
 #include <QDebug>
 
-namespace Foundation { class Framework; }
+class Framework;
 
 namespace MumbleVoip
 {
@@ -25,7 +24,7 @@ namespace MumbleVoip
 
     public:
         enum VoiceMode { Mute, ContinuousTransmission, PushToTalk, ToggleMode };
-        Settings(Foundation::Framework *framework);
+        Settings(Framework *framework);
         virtual ~Settings();
         virtual void Load();
         virtual void Save();
@@ -50,7 +49,7 @@ namespace MumbleVoip
         void PositionalAudioEnabledChanged(bool);
 
     private:
-        Foundation::Framework *framework_;
+        Framework *framework_;
 
         double encode_quality_;
         int playback_buffer_size_ms_;
@@ -63,4 +62,4 @@ namespace MumbleVoip
 
 
 
-#endif // incl_MumbleVoipModule_Settings_h
+// incl_MumbleVoipModule_Settings_h

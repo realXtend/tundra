@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_MumbleVoipModule_Connection_h
-#define incl_MumbleVoipModule_Connection_h
+#pragma once
 
 #include <QObject>
 #include <QList>
@@ -253,4 +252,4 @@ namespace MumbleLib
 
 Q_DECLARE_METATYPE(MumbleLib::Connection::State) 
 
-#endif // incl_MumbleVoipModule_Connection_h
+// incl_MumbleVoipModule_Connection_h

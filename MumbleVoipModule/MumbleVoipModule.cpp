@@ -15,21 +15,19 @@
 #include "EC_VoiceChannel.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {
-    std::string MumbleVoipModule::module_name_ = "MumbleVoip";
-
-    MumbleVoipModule::MumbleVoipModule() : 
-        IModule(module_name_),
-        link_plugin_(0),
-        in_world_voice_provider_(0),
-        time_from_last_update_ms_(0),
-        settings_widget_(0),
-        settings_(0)
+    MumbleVoipModule::MumbleVoipModule()
+    :IModule("MumbleVoip"),
+    link_plugin_(0),
+    in_world_voice_provider_(0),
+    time_from_last_update_ms_(0),
+    settings_widget_(0),
+    settings_(0)
     {
     }
 
@@ -123,14 +121,14 @@ namespace MumbleVoip
 
 } // end of namespace: MumbleVoip
 
-void SetProfiler(Foundation::Profiler *profiler)
+void SetProfiler(Profiler *profiler)
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    ProfilerSection::SetProfiler(profiler);
 }
 
 extern "C"
 {
-    __declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+    DLLEXPORT void TundraPluginMain(Framework *fw)
     {
         IModule *module = new MumbleVoip::MumbleVoipModule();
         fw->GetModuleManager()->DeclareStaticModule(module);

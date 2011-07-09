@@ -29,7 +29,7 @@
 namespace MumbleVoip
 {
     const double Session::DEFAULT_AUDIO_QUALITY_ = 0.5; // 0 .. 1.0
-    Session::Session(Foundation::Framework* framework, Settings* settings) : 
+    Session::Session(Framework* framework, Settings* settings) : 
         state_(STATE_CLOSED),
         reason_(""),
         framework_(framework),
@@ -424,12 +424,11 @@ namespace MumbleVoip
         /** \todo Fix this for tundra. Although is there a reasonable way to do it? Maybe a script could pass the EC_Placeable*we need to follow here.
                   as it knows better what is the app spesific avatar entity. For tundra its kind of hard to determine it from here. */
 
-        using namespace Foundation;
         boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
         if (!world_logic)
             return false;
 
-        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
+        EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
         if (!user_avatar)
             return false;
 
@@ -446,12 +445,11 @@ namespace MumbleVoip
 
     QString Session::OwnAvatarId()
     {
-        using namespace Foundation;
         boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
         if (!world_logic)
             return "";
 
-        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
+        EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
         if (!user_avatar)
             return "";
 
@@ -464,12 +462,12 @@ namespace MumbleVoip
 
     QString Session::GetAvatarFullName(QString uuid) const
     {
-        Scene::ScenePtr current_scene = framework_->Scene()->GetDefaultScene();
+        ScenePtr current_scene = framework_->Scene()->GetDefaultScene();
         if (current_scene)
         {
-            for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)
+            for(SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)
             {
-                Scene::Entity &entity = *iter->second;
+                Entity &entity = *iter->second;
                 EC_OpenSimPresence *presence_component = entity.GetComponent<EC_OpenSimPresence>().get();
                 if (!presence_component)
                     continue;
