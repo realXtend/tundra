@@ -2,8 +2,8 @@
 
 #include "StableHeaders.h"
 #include "Framework.h"
-#include "Platform.h"
 #include "ConfigAPI.h"
+#include "Application.h"
 
 #include "LoggingFunctions.h"
 
@@ -19,7 +19,7 @@ QString ConfigAPI::SECTION_CLIENT = "client";
 QString ConfigAPI::SECTION_RENDERING = "rendering";
 QString ConfigAPI::SECTION_UI = "ui";
 
-ConfigAPI::ConfigAPI(Foundation::Framework *framework) :
+ConfigAPI::ConfigAPI(Framework *framework) :
     QObject(framework),
     framework_(framework),
     configFolder_("")
@@ -36,14 +36,8 @@ void ConfigAPI::SetApplication(const QString &applicationOrganization, const QSt
 
 void ConfigAPI::PrepareDataFolder(const QString &configFolderName)
 {
-    if (!framework_->GetPlatform())
-    {
-        LogFatal("ConfigAPI::PrepareDataFolder: Framworks Platform objects has not been initialized yet, aborting!");
-        return;
-    }
-
     /// \todo Should get the unicode GetApplicationDataDirectoryW() QString::fromStdWString seems to give a weird linker error, types wont match?
-    QString applicationDataDir = QString::fromStdString(framework_->GetPlatform()->GetApplicationDataDirectory());
+    QString applicationDataDir = Application::UserDataDirectory();
     
     // Prepare application data dir path
     applicationDataDir.replace("\\", "/");
@@ -113,7 +107,7 @@ bool ConfigAPI::HasValue(QString file, QString section, QString key)
     if (configFolder_.isEmpty())
     {
         LogError("ConfigAPI::Get: Config folder has not been prepared, returning empty string.");
-        return "";
+        return false;
     }
 
     PrepareString(file);
@@ -123,7 +117,7 @@ bool ConfigAPI::HasValue(QString file, QString section, QString key)
     QSettings config(GetFilePath(file), QSettings::IniFormat);
     if (!section.isEmpty())
         key = section + "/" + key;
-    return config.allKeys().contains(key);
+    return config.allKeys().contains(key) == true;
 }
 
 QVariant ConfigAPI::Get(const ConfigData &data)
