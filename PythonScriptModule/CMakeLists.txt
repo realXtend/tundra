@@ -8,7 +8,7 @@ set (PYTHON_FORCE_RELEASE_VERSION 0) # set if you want to use release version of
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h Vector3dfDecorator.h TransformDecorator.h QuaternionDecorator.h)
+file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h Vector3dfDecorator.h TransformDecorator.h QuaternionDecorator.h AssetReferenceDecorator.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -27,7 +27,7 @@ use_package (PYTHON_QT)
 
 use_modules (Framework Scene OgreRenderingModule AvatarModule KristalliProtocolModule
     EntityComponents/EC_DynamicComponent EntityComponents/EC_Ruler EntityComponents/EC_Touchable
-    EntityComponents/EC_3DCanvas EntityComponents/EC_3DCanvasSource EntityComponents/EC_Script Input Ui CommunicationsModule Audio)
+    EntityComponents/EC_3DCanvas EntityComponents/EC_3DCanvasSource EntityComponents/EC_Script Input Ui CommunicationsModule Audio Console)
 
 if (ENABLE_TAIGA_SUPPORT)
    use_modules (RexCommon RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga 
@@ -37,7 +37,7 @@ endif()
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_modules (Framework Scene OgreRenderingModule KristalliProtocolModule
-    EC_Touchable EC_DynamicComponent EC_Ruler EC_3DCanvas EC_3DCanvasSource EC_Script Input Ui Audio)
+    EC_Touchable EC_DynamicComponent EC_Ruler EC_3DCanvas EC_3DCanvasSource EC_Script Input Ui Audio Console)
 
 if (ENABLE_TAIGA_SUPPORT)
    link_modules (RexCommon RexLogicModule 

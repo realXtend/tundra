@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_PythonScriptModule_RexPythonQt_h
-#define incl_PythonScriptModule_RexPythonQt_h
+#pragma once
 
 #include <Python.h>
 
@@ -11,5 +10,4 @@ namespace PythonScript
     //PyObject* CreateCanvas(PyObject *self, PyObject *args);
 }
 
-#endif
 

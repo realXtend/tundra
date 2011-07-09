@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_PythonScriptModule_QuaternionDecorator_h
-#define incl_PythonScriptModule_QuaternionDecorator_h
+#pragma once
 
 #include <PythonQt.h>
 #include <QObject>
@@ -53,5 +52,4 @@ namespace PythonScript
     };
 }
 
-#endif
 

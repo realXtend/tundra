@@ -5,8 +5,7 @@
  *  @brief  Python script instance used with EC_Script.
  */
 
-#ifndef incl_PythonScriptModule_PythonScriptInstance_h
-#define incl_PythonScriptModule_PythonScriptInstance_h
+#pragma once
 
 #include "IScriptInstance.h"
 
@@ -50,4 +49,3 @@ private:
     QString moduleName_; ///< Python module name for the script file.
 };
 
-#endif

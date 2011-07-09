@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_PythonScriptModule_PythonEngine_h
-#define incl_PythonScriptModule_PythonEngine_h
+#pragma once
 
 //#include "ScriptServiceInterface.h"
 
@@ -69,4 +68,3 @@ namespace PythonScript
 
 }
 
-#endif
