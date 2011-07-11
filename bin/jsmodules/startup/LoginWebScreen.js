@@ -27,7 +27,9 @@ var BrowserManager = Class.extend
 ({
     init: function()
     {
-        this.connected = false;
+        this.clientTabOrderList = [];
+
+        this.connected = [];
         this.squeezeEnabled = false;
         
         this.settings = new BrowserSettings(this);
@@ -161,28 +163,24 @@ var BrowserManager = Class.extend
         
         client.Connected.connect(this.onConnected);
         client.Disconnected.connect(this.onDisconnected);
+        client.changeTab.connect(this.onTabIndexChangeRequest);
         
         ui.AddAction.connect(this.addTool);
         ui.OpenUrl.connect(this.openUrl);
-        
-        //menu entry to show/hide browser ui
-        var mainwin = ui.MainWindow();
-        var hideshowact = mainwin.AddMenuAction("&View", "Hide/Show Browser UI");
-        hideshowact.triggered.connect(this.toggleVisible);
     },
     
     start: function()
     {
         this.setVisible(true);
         
-        if (!this.connected)
+        /*if (!this.connected[)
             this.connected = client.IsConnected();
-        if (this.connected)
+        if (this.connected[0])
         {
             this.tabs.currentIndex = 0;
             this.onTabIndexChanged(this.tabs.currentIndex);
             return;
-        }
+        }*/
         
         this.onTabIndexChanged(this.tabs.currentIndex);
         
@@ -192,16 +190,14 @@ var BrowserManager = Class.extend
                 if (!this.settings.startupConnectToHomePage)
                     return;
             this.openUrl(this.settings.homepage);
+            this.tabs.currentIndex = 0;
+            this.onTabIndexChanged(this.tabs.currentIndex);
         }
     },
     
     setVisible: function(visible)
     {
         this.browser.visible = visible;
-    },
-
-    toggleVisible: function() {
-        p_.browser.visible = !p_.browser.visible;
     },
 
     getCurrentWidget: function()
@@ -278,9 +274,9 @@ var BrowserManager = Class.extend
         p_.splitter.restoreState(p_.splitterStartState);
     },
     
-    refreshSqueezer: function()
+    refreshSqueezer: function(index)
     {
-        if (this.connected && this.tabs.currentIndex == 0)
+        if (index >= 2 && this.connected[index - 2] == true)
         {
             this.browser.maximumHeight = magicHeightValue; // Here be dragons
             this.squeezeEnabled = true;
@@ -301,24 +297,40 @@ var BrowserManager = Class.extend
         tab.load(url);
     },
 
-    onConnected: function()
+    onConnected: function(conNumber)
     {
-        p_.connected = true;
-        p_.tabs.currentIndex = 0;
-        p_.refreshSqueezer();
+        // Check if there are open tab with no connection
+        for (var i = 0; i<p_.connected.length; i++)
+        {
+            if (p_.connected[i] == false)
+            {
+                p_.clientTabOrderList[i] = conNumber;
+                p_.connected[i] = true;
+                p_.tabs.currentIndex = i+2;
+                p_.refreshSqueezer(p_.tabs.currentIndex);
+                p_.onTabIndexChanged(p_.tabs.currentIndex);
+                return;
+            }
+
+        }
+        new BrowserTab(p_.tabs, "");
+        var index = p_.tabs.currentIndex;
+        p_.clientTabOrderList[index - 2 ] = conNumber;
+        p_.connected[index - 2] = true;
+        p_.refreshSqueezer(index);
         p_.onTabIndexChanged(p_.tabs.currentIndex);
     },
     
     onDisconnected: function()
     {
-        p_.connected = false;
-        p_.refreshSqueezer();
-        p_.onTabIndexChanged(p_.tabs.currentIndex);
-        if (p_.tabs.currentIndex != 0)
+        if (p_.tabs.currentIndex > 1)
         {
-            p_.tabs.setTabToolTip(0, "Login");
-            p_.tabs.setTabText(0, "Login")
+            var index = p_.tabs.currentIndex;
+            p_.connected[index - 2] = false;
+            p_.refreshSqueezer(index);
+            p_.onTabIndexChanged(p_.tabs.currentIndex);
         }
+
         
         // Clear toolbars
         for (var toolbarKey in p_.toolBarGroups)
@@ -498,7 +510,9 @@ var BrowserManager = Class.extend
     
     onTabNewRequest: function()
     {
-        if (HasTundraScheme(p_.settings.homepage))
+        p_.tabs.currentIndex = 0;
+        p_.onTabIndexChanged(p_.tabs.currentIndex);
+        /*if (HasTundraScheme(p_.settings.homepage))
         {
             // This should never happen, settings will prevent you from
             // inserting a tundra:// url as new tab url. But user might
@@ -516,12 +530,21 @@ var BrowserManager = Class.extend
         if (p_.settings.newTabOpenHomepage)
             p_.openUrl(p_.settings.homepage);
         else
-            p_.openUrl(p_.settings.newTabUrl);
+            p_.openUrl(p_.settings.newTabUrl);*/
     },
-    
+
+     onTabIndexChangeRequest: function(index)
+     {
+         var value = p_.clientTabOrderList.indexOf(index);
+         var requestedTabIndex = value + 2;
+         p_.tabs.currentIndex = requestedTabIndex;
+         p_.onTabIndexChanged(p_.tabs.currentIndex);
+     },
+
+
     onTabIndexChanged: function(index)
     {
-        if (index != 0)
+        if (index == 1) // WWW-tab
         {
             var tab = p_.tabs.widget(index);
             p_.addressBar.lineEdit().text = tab.url.toString();
@@ -531,15 +554,26 @@ var BrowserManager = Class.extend
             p_.actionForward.enabled = true;
             p_.actionRefreshStop.enabled = true;
         }
-        else
+        else    // Login-tab or scene-tab
         {
             p_.progressBar.visible = false;
             p_.actionBack.enabled = false;
             p_.actionForward.enabled = false;
             p_.actionRefreshStop.enabled = false;
-            
-            if (p_.connected)
+
+            if (index == 0) // login-tab
             {
+                p_.addressBar.lineEdit().text = "local://LoginWidget.ui";
+                p_.actionAddFavorite.enabled = false;
+                p_.tabs.setTabToolTip(index, "LoginScreen");
+                p_.tabs.setTabText(index, "LoginScreen")
+            }
+
+            else if (p_.connected[index - 2])   // scene-tab
+            {
+                client.emitChangeSceneSignal("TundraClient_" + p_.clientTabOrderList[index - 2]);
+                var clientName = "TundraClient" + client.getActiveConnection();
+
                 // Login must not end in "/" or it wont look proper
                 var loginPropAddress = client.GetLoginProperty("address");
                 if (loginPropAddress.charAt(loginPropAddress.length-1) == "/")
@@ -556,30 +590,34 @@ var BrowserManager = Class.extend
                 p_.addressBar.lineEdit().text = tundraUrl;
                 p_.actionAddFavorite.enabled = true;
                 
-                p_.tabs.setTabToolTip(0, tundraUrl);
-                var tundraUrlShortened = tundraUrl.substring(9);
-                if (tundraUrlShortened.length > 23)
-                    tundraUrlShortened = tundraUrlShortened.substring(0,20) + "...";
-                p_.tabs.setTabText(0, tundraUrlShortened);
+                p_.tabs.setTabToolTip(index, tundraUrl);
+                //var tundraUrlShortened = tundraUrl.substring(9);
+                //if (tundraUrlShortened.length > 23)
+                //    tundraUrlShortened = tundraUrlShortened.substring(0,20) + "...";
+                //p_.tabs.setTabText(index, tundraUrlShortened);
+                p_.tabs.setTabText(index, clientName);
             }
-            else
-            {
-                p_.addressBar.lineEdit().text = "local://LoginWidget.ui";
-                p_.actionAddFavorite.enabled = false;
-                p_.tabs.setTabToolTip(0, "Login");
-                p_.tabs.setTabText(0, "Login")
-            }
+
         }
-        p_.refreshSqueezer();
+        p_.refreshSqueezer(index);
     },
     
     onTabCloseRequest: function(index)
     {
-        if (index == 0)
-		{
-			client.Logout(0, client.getActiveConnection());
+        if (index == 0 || index == 1)
             return;
-		}
+        else
+        {
+            if (p_.connected[index-2] == true)
+                client.Logout(false, client.getActiveConnection());
+            p_.connected.splice(index-2,1);
+            p_.clientTabOrderList.splice(index-2,1);
+            p_.tabs.currentIndex = 0;
+            p_.onTabIndexChanged(p_.tabs.currentIndex);
+            p_.tabs.removeTab(index);
+            return;
+        }
+        // We dont close www tab. so these are now obsolete.
         p_.tabs.widget(index).stop();
         p_.tabs.widget(index).close();
         p_.tabs.widget(index).deleteLater();

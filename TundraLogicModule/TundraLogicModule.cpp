@@ -357,7 +357,7 @@ ConsoleCommandResult TundraLogicModule::ConsoleConnect(const StringVector& param
 ConsoleCommandResult TundraLogicModule::ConsoleDisconnect(const StringVector& params)
 {
     if (params.size() < 1)
-        client_->Logout(false);
+        client_->Logout(false, client_.get()->getActiveConnection());
 
     else if (params.size() >= 1)
     {
