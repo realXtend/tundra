@@ -109,7 +109,7 @@ namespace MumbleLib
         QString server = server_url.host();
 
         // \todo Handle connection error
-	    client_->SetRawUdpTunnelCallback( boost::bind(&RawUdpTunnelCallback, _1, _2, this));
+        client_->SetRawUdpTunnelCallback( boost::bind(&RawUdpTunnelCallback, _1, _2, this));
         client_->SetChannelAddCallback(boost::bind(&ChannelAddCallback, _1, this));
         client_->SetChannelRemoveCallback(boost::bind(&ChannelRemoveCallback, _1, this));
         client_->SetTextMessageCallback(boost::bind(&TextMessageCallback, _1, this));

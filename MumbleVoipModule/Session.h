@@ -72,12 +72,14 @@ namespace MumbleVoip
         virtual void AddChannel(QString name, QString username, QString server, QString password, QString version, QString channelIdBase);
         virtual void RemoveChannel(QString name);
 
+        void EnablePositionalAudio(bool enable);
+        void SetPosition(Vector3df position);
+
     private:
         static const int AUDIO_RECORDING_BUFFER_MS = 200;
         static const double DEFAULT_AUDIO_QUALITY_; // 0 .. 1.0
 
         virtual void OpenConnection(ServerInfo info);
-        bool GetOwnAvatarPosition(Vector3df& position, Vector3df& direction);
         QString OwnAvatarId();
         QString GetAvatarFullName(QString uuid) const;
         void SendRecordedAudio();
@@ -86,6 +88,8 @@ namespace MumbleVoip
         void ApplyMicrophoneLevel(PCMAudioFrame* frame);
         //virtual void AddChannel(EC_VoiceChannel* channel);
         //virtual void RemoveChannel(EC_VoiceChannel* channel);
+        void ClearParticipantList();
+        void PopulateParticipantList();
 
         Foundation::Framework* framework_;
         State state_;
@@ -96,7 +100,7 @@ namespace MumbleVoip
         bool audio_sending_enabled_;
         bool audio_receiving_enabled_;
         ParticipantList participants_;
-        ParticipantList left_participants_;
+        //ParticipantList left_participants_;
         QList<MumbleLib::User*> other_channel_users_;
         MumbleLib::Connection* connection_; // // In future session could have multiple connections
         double speaker_voice_activity_;
@@ -108,6 +112,8 @@ namespace MumbleVoip
         QString server_address_;
         QString active_channel_;
         QMap<QString, ServerInfo> channels_;
+        Vector3df user_position_;
+        bool positional_audio_enabled_;
 
     private slots:
         void CreateNewParticipant(MumbleLib::User*);

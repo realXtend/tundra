@@ -35,6 +35,8 @@ namespace MumbleVoip
     class Session;
     class Settings;
 
+    typedef boost::shared_ptr<Session> SessionPtr;
+
     /// Provides Mumble implementation of InWorldVoiceSession objects
     ///
     class Provider : public Communications::InWorldVoice::ProviderInterface
@@ -44,6 +46,7 @@ namespace MumbleVoip
         Provider(Foundation::Framework* framework, Settings* settings);
         virtual ~Provider();
         void PostInitialize();
+        SessionPtr GetSession() const { return session_; }
 
     public slots:
         virtual Communications::InWorldVoice::SessionInterface* Session();
@@ -53,38 +56,22 @@ namespace MumbleVoip
         virtual QList<QString> Statistics();
         virtual void ShowMicrophoneAdjustmentDialog();
 
-    private slots:
-        void OnECAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
-        void OnECVoiceChannelDestroyed(QObject* obj);
-        void OnSceneAdded(const QString &name);
-
     private:
         void CreateSession();
         void CloseSession();
-        void CheckChannelQueue();
-        QString GetUsername();
-        QString GetAvatarUuid();
-        void AddECVoiceChannel(EC_VoiceChannel* channel);
+
+        SessionPtr session_;
+        Settings* settings_;
 
         Foundation::Framework* framework_;
         QString description_;
-        MumbleVoip::Session* session_;  //! \todo Use shared ptr ...
-        ServerInfoProvider* server_info_provider_;
         event_category_id_t networkstate_event_category_;
-        event_category_id_t framework_event_category_;
-        Settings* settings_;
+
         QWidget* microphone_adjustment_widget_;
-        QList<EC_VoiceChannel*> ec_voice_channels_;
-        QMap<EC_VoiceChannel*, QString> channel_names_;
-        QSignalMapper* signal_mapper_;
-        ProtocolUtilities::WorldStreamPtr world_stream_;
         boost::shared_ptr<TundraLogic::TundraLogicModule> tundra_logic_;
-        QList<EC_VoiceChannel*> channel_queue_;
 
     private slots:
-        void OnMumbleServerInfoReceived(ServerInfo info);
         void OnMicrophoneAdjustmentWidgetDestroyed();
-        void ECVoiceChannelChanged(const QString &channelname);
     };
 
 } // MumbleVoip

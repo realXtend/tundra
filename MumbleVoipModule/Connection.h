@@ -73,8 +73,8 @@ namespace MumbleLib
         virtual void Close();
 
         //! Joins to given channel if channels exist
-        //! If authtorization is not completed yet the join request is queuesd
-        //! and executed again after successfullu authorization
+        //! If authorization is not completed yet the join request is queued
+        //! and executed again after successfull authorization
         //! @todo HANDLE REJOIN
         virtual void Join(QString channel);
 

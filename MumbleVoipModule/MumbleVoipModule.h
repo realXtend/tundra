@@ -63,34 +63,17 @@ namespace MumbleVoip
         static const std::string &NameStatic() { return module_name_; } //! returns name of this module. Needed for logging.
 
     private slots:
-        void StartLinkPlugin();
-        void StartMumbleClient(ServerInfo info);
         void SetupSettingsWidget();
 
     private:
         static std::string module_name_;
 
         virtual void InitializeConsoleCommands();
-        virtual ConsoleCommandResult OnConsoleMumbleLink(const StringVector &params);
-        virtual ConsoleCommandResult OnConsoleMumbleUnlink(const StringVector &params);
-        virtual ConsoleCommandResult OnConsoleMumbleStart(const StringVector &params);
-        virtual ConsoleCommandResult OnConsoleMumbleStats(const StringVector &params);
-
-        virtual void UpdateLinkPlugin(f64 frametime);
-        virtual bool GetAvatarPosition(Vector3df& position, Vector3df& direction);
-        virtual bool GetCameraPosition(Vector3df& position, Vector3df& direction);
         
-        LinkPlugin* link_plugin_;
-        ServerInfoProvider* server_info_provider_;
         Provider* in_world_voice_provider_;
 
-        static const int LINK_PLUGIN_UPDATE_INTERVAL_MS_ = 100;
         int time_from_last_update_ms_;
-        bool use_camera_position_; 
-        bool use_native_mumble_client_;
         event_category_id_t event_category_framework_;
-        QString avatar_id_for_link_plugin_;
-        QString context_id_for_link_plugin_;
         Settings settings_;
         SettingsWidget* settings_widget_;
     };
