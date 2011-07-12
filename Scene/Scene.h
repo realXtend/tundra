@@ -381,6 +381,9 @@ public slots:
     void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
     void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
     void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
+
+    bool AllowModifyEntity(Entity *entity);
+
     /// Returns IDs of loaded entities
     QVariantList LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
@@ -420,6 +423,9 @@ signals:
 
         @note Use case-insensitive comparison for checking name of the @c action ! */
     void ActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type);
+
+    /// Emitted when an entity is about to be modified:
+    void AboutToModifyEntity(Scene::Entity* entity);
 
     /// Emitted when being destroyed
     void Removed(Scene* scene);
