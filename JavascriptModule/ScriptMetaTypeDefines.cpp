@@ -11,6 +11,7 @@
 #include "ScriptMetaTypeDefines.h"
 
 #include "SceneAPI.h"
+#include "ChangeRequest.h"
 #include "Entity.h"
 #include "IModule.h"
 #include "IAssetTransfer.h"
@@ -116,6 +117,7 @@ Q_DECLARE_METATYPE(EntityAction*);
 Q_DECLARE_METATYPE(EntityAction::ExecType);
 Q_DECLARE_METATYPE(EntityAction::ExecTypeField);
 Q_DECLARE_METATYPE(AttributeChange*);
+Q_DECLARE_METATYPE(ChangeRequest*);
 Q_DECLARE_METATYPE(IComponent*);
 Q_DECLARE_METATYPE(AttributeChange::Type);
 
@@ -285,6 +287,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Entity*>(engine);
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);
+    qScriptRegisterQObjectMetaType<ChangeRequest*>(engine);
     qScriptRegisterQObjectMetaType<IComponent*>(engine);
     //qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
     qScriptRegisterMetaType(engine, toScriptValueEnum<AttributeChange::Type>, fromScriptValueEnum<AttributeChange::Type>);

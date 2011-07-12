@@ -8,6 +8,7 @@
 #include "SceneDesc.h"
 #include "CoreDefines.h"
 #include "Math/float3.h"
+#include "ChangeRequest.h"
 
 #include <QObject>
 #include <QVariant>
@@ -425,7 +426,7 @@ signals:
     void ActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type);
 
     /// Emitted when an entity is about to be modified:
-    void AboutToModifyEntity(Scene::Entity* entity);
+    void AboutToModifyEntity(ChangeRequest* req, Scene::Entity* entity);
 
     /// Emitted when being destroyed
     void Removed(Scene* scene);
