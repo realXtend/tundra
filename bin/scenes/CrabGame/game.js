@@ -116,7 +116,7 @@ ServerObjectControl.prototype.ReturnToOrig = function()
 //Control for gameObject on Client side
 function Block (blockId, name)
 {
-    this.Name = name;
+    this.name = name;
     this.BlockId = blockId;
     this.EntBlock = scene.GetEntityRaw(blockId);
 }
@@ -124,7 +124,7 @@ function Block (blockId, name)
 Block.prototype.connect = function()
 {
     if (!this.EntBlock)
-        print("Missing " + this.Name + " with ID " + this.BlockId);
+        print("Missing " + this.name + " with ID " + this.BlockId);
         
     else
     {    
@@ -144,19 +144,19 @@ Block.prototype.blockClicked = function()
 Block.prototype.playerBlockClicked = function()
 { 
     this.EntBlock.Exec(2, "PlayerMousePress", player);
-    print("player click " + player + " " + this.Name);    
+    print("player click " + player + " " + this.name);    
 }    
 
 print("Loading TestGame.");
 
 //Gamestats
-var compGameStats = me.GetComponentRaw("EC_DynamicComponent");
+var compGameStats = me.GetComponent("EC_DynamicComponent");
 var mode = compGameStats.GetUpdateMode();
 print(mode.value);
 mode.value = 3;
 compGameStats.SetUpdateMode(mode);
 
-server = me.GetComponentRaw("EC_DynamicComponent", "server");
+server = me.GetComponent("EC_DynamicComponent", "server");
 
 if (server)
 {

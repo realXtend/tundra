@@ -9,7 +9,7 @@ for( i in entityList)
 {
 
 	entity = scene.GetEntityRaw(entityList[i]);
-	if(entity.Name == "CollisionBox")
+	if(entity.name == "CollisionBox")
 	{
 		entity.rigidbody.mass = 2.0;
 		entity.rigidbody.friction = 1.0;
@@ -21,7 +21,7 @@ for( i in entityList)
 
 //Get and Set Cameraposition
 
-var cameraId = scene.GetEntityIdsWithComponent("EC_OgreCamera");
+var cameraId = scene.GetEntityIdsWithComponent("EC_Camera");
 var camera = scene.GetEntityRaw(cameraId);
 var transform = camera.placeable.transform;
 

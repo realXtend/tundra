@@ -160,7 +160,7 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     }
 
     // set source to first slide
-    canvassource = entity.GetComponentRaw('EC_3DCanvasSource')
+    canvassource = entity.GetComponent('EC_3DCanvasSource')
     canvassource.show2d = false;
     canvassource.source = slides[0];
     canvassource.submesh = 1;
@@ -169,7 +169,7 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
 
     var dyn = entity.dynamiccomponent;
 
-    dyn.Name = "Slidelist";
+    dyn.name = "Slidelist";
 
     for (s = 0; s < slides.length; s++) {
     var slidename = s;
@@ -215,11 +215,11 @@ function getSlides(ref) {
     RequestAsset(serverurl + path + '/index.txt', "Binary");
 
     // set name
-    entity.name.name = "Slideshow: " + filename;
+    entity.name = "Slideshow: " + filename;
     entity.name.description = "Simple slideshow app from " + filename;
-    prev.name.name = 'Button prev (' + entity.name.name + ' ' + entity.Id + ')';
+    prev.name = 'Button prev (' + entity.name + ' ' + entity.id + ')';
     scene.EmitEntityCreatedRaw(prev);
-    next.name.name = 'Button next (' + entity.name.name + ' ' + entity.Id + ')';
+    next.name.name = 'Button next (' + entity.name.name + ' ' + entity.id + ')';
     scene.EmitEntityCreatedRaw(next);
 }
 
@@ -245,7 +245,7 @@ function vprint(v) {
 }
 
 function crossp(v1, v2) {
-    var result = new Vector3df();
+    var result = new float3();
 
     result.x = v1.y * v2.z - v1.z * v2.y;
     result.y = v1.z * v2.x - v1.x * v2.z;
@@ -255,7 +255,7 @@ function crossp(v1, v2) {
 }
 
 function vadd(v1, v2) {
-    var result = new Vector3df();
+    var result = new float3();
 
     result.x = v1.x + v2.x;
     result.y = v1.y + v2.y;
@@ -265,7 +265,7 @@ function vadd(v1, v2) {
 }
 
 function smul(v1, s) {
-    var result = new Vector3df();
+    var result = new float3();
     
     result.x = v1.x * s;
     result.y = v1.y * s;
@@ -275,7 +275,7 @@ function smul(v1, s) {
 }
 
 function conjg(quat, v) {
-    var qvec = new Vector3df();
+    var qvec = new float3();
     qvec.x = quat.x;
     qvec.y = quat.y;
     qvec.z = quat.z;
@@ -304,16 +304,15 @@ function createCanvas(event) {
     // Calculationg the correct position for dropped slideshow
     if (!res.entity) {
         // no hit
-        var ids = scene.GetEntityIdsWithComponent('EC_OgreCamera');
+        var ids = scene.GetEntityIdsWithComponent('EC_Camera');
         for (i = 0; i < ids.length; i++) {
         var camentity = scene.GetEntityRaw(ids[i]);
-            var placeable = camentity.GetComponentRaw('EC_Placeable');
+            var placeable = camentity.GetComponent('EC_Placeable');
             if (placeable) {
             var q = placeable.Orientation;
 
         // create unitvector for negative Z-axis
-        var unz = new Vector3df();
-        unz.z = -1;
+        var unz = new float3(0, 0, -1);
 
         // calculate conjugate
         var v = conjg(q, unz);
@@ -337,10 +336,11 @@ function createCanvas(event) {
     
     entity.placeable.transform = transform;
 
-    rotvec = new Vector3df();
+    rotvec = new float3();
 
     rotvec.x = 187;
     rotvec.y = 180;
+    rotvec.z = 0;
 
     prev = makeButton('prev', entity.placeable, 1, rotvec);
 
@@ -359,8 +359,7 @@ function makeButton(name, placeable, dir, rotation) {
     button.mesh.meshRef = button_mesh_ref;
 
     // create unit vector for X-axis (negative or positive)
-    var unx = new Vector3df();
-    unx.x = dir;
+    var unx = new float3(dir, 0, 0);
     
     // calculate conjugate
     var v = conjg(placeable.Orientation, unx);

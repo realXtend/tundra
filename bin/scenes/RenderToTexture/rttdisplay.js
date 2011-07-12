@@ -12,7 +12,7 @@ function init() {
     //but is apparently executed too early -- e.g. the camera is not there yet.
     //so have to wrap in a func and make a trick to run with a delay
 
-    var $ = scene.GetEntityByNameRaw; //testing jQuery style a bit :)
+    var $ = scene.GetEntityByName; //testing jQuery style a bit :)
     $("FreeLookCamera").placeable.transform = $("startview").placeable.transform;
 
     /* create all RttTargets, i.e. the component for each cam that we want image from
@@ -31,7 +31,7 @@ function init() {
         bindButton(camname, butname);
     }
 
-    setImageSource(scene.GetEntityByNameRaw(camname));
+    setImageSource(scene.GetEntityByName(camname));
 }
 
 function createRttTarget(camname) {
@@ -39,13 +39,12 @@ function createRttTarget(camname) {
     //but here instead am using the pre-existing default cam
     //to make the demo simple, i.e. can just move the cam to see rtt working
 
-    //apparently EC_OgreCamera does not persist, so we have to create them here XXX \todo
+    //apparently EC_Camera does not persist, so we have to create them here XXX \todo
     //.. adding with the GUI editing was fun and worked otherwise
-    var cam = scene.GetEntityByNameRaw(camname);
-    var cam_ec = cam.GetOrCreateComponentRaw("EC_OgreCamera");
-    cam_ec.AutoSetPlaceable();
+    var cam = scene.GetEntityByName(camname);
+    var cam_ec = cam.GetOrCreateComponent("EC_Camera");
 
-    cam.GetOrCreateComponentRaw("EC_RttTarget");
+    cam.GetOrCreateComponent("EC_RttTarget");
     rtt = cam.rtttarget;
     rtt.targettexture = camname + "_tex";
     rtt.size_x = 800;
@@ -70,8 +69,8 @@ function setImageSource(cam) {
 }
 
 function bindButton(camname, butname) {
-    var but = scene.GetEntityByNameRaw(butname);
-    var cam = scene.GetEntityByNameRaw(camname);
+    var but = scene.GetEntityByName(butname);
+    var cam = scene.GetEntityByName(camname);
 
     but.Action("MousePress").Triggered.connect(
       function() {
@@ -80,7 +79,7 @@ function bindButton(camname, butname) {
 }
 
 function update(frametime) {
-    var vis = renderer.IsEntityVisible(me.Id);
+    var vis = renderer.IsEntityVisible(me.id);
     if(rtt != null) {
         rtt.SetAutoUpdated(vis);
     }

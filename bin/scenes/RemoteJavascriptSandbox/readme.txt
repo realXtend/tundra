@@ -1,4 +1,4 @@
-This directory has a few different examples demonstrating how the Javascript sandboxing for untrusted code works in Naali.
+This directory has a few different examples demonstrating how the Javascript sandboxing for untrusted code works in Tundra.
 
 * tooltip-httpscript.txml 
   modified ../Tooltip/ToolTipBox.txml which loads the js source with http from tooltip-httpscript.txml .

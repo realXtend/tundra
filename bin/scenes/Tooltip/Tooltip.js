@@ -5,7 +5,7 @@ var origBA;
 var origFA;
 var bc;
 var fc;
-var comp = me.GetComponentRaw("EC_HoveringText");
+var comp = me.GetComponent("EC_HoveringText");
 var bMouseIn = false;
 
 if(!comp)
@@ -21,7 +21,7 @@ me.Action("MouseHoverOut").Triggered.connect(MouseOut);
 //Checking if EC_Hoveringtext component has added after EC_Script to Entity
  function CheckComponent(entity, component, type)
 {
-	if (component.TypeName == "EC_HoveringText")
+	if (component.typeName == "EC_HoveringText")
 	GetHoveringTextComponent();
 }
 
@@ -29,7 +29,7 @@ function GetHoveringTextComponent()
 {
   if (comp == null)
   {
-  	comp = me.GetComponentRaw("EC_HoveringText");
+  	comp = me.GetComponent("EC_HoveringText");
   	if (comp != null)
   	{
     	var mode = me.hoveringtext.GetUpdateMode();

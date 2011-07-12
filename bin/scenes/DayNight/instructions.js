@@ -3,7 +3,7 @@ engine.ImportExtension("qt.gui");
 
 var label = new QLabel();
 label.indent = 10;
-label.text = "This scene demonstrates the EnvironmentLight component. This\ncomponentc ontrols the overall environmental lighting of the scene.\n\nA simple script is used to animate the day-night cycle of the scene.";
+label.text = "This scene demonstrates the EnvironmentLight component. This\ncomponent controls the overall environmental lighting of the scene.\n\nA simple script is used to animate the day-night cycle of the scene.";
 label.resize(660,150);
 label.setStyleSheet("QLabel {background-color: transparent; color: blue; font-size: 20px; }");
 

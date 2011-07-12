@@ -4,8 +4,8 @@
 print("Loading Collision Sound Script for enity");
 
 //Test that needed components excist
-var CollisionSound = me.GetComponentRaw("EC_Sound", "Collision");
-var RigidBody = me.GetComponentRaw("EC_RigidBody");
+var CollisionSound = me.GetComponent("EC_Sound", "Collision");
+var RigidBody = me.GetComponent("EC_RigidBody");
 
 if(CollisionSound && RigidBody)
 {	
@@ -23,12 +23,12 @@ else
 //Checking if needed components are added after Script component to Entity
  function CheckComponent(component, type)
 {	
-	if (component.TypeName == "EC_Sound")
+	if (component.typeName == "EC_Sound")
 	{
-		if(component.Name == "Collision")
+		if(component.name == "Collision")
 			CollisionSound = component;
 	}
-	else if(component.TypeName == "RigidBody")
+	else if(component.typeName == "RigidBody")
 		RigidBody = true;
 		
 	if(CollisionSound && RigidBody)

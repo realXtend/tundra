@@ -4,9 +4,9 @@ function Entity (position)
 {
 	this.EntityId = scene.NextFreeId();
 	ParticleEntity = scene.CreateEntityRaw(this.EntityId, "", 2, false);
-	ParticleEntity.GetOrCreateComponentRaw("EC_ParticleSystem");
+	ParticleEntity.GetOrCreateComponent("EC_ParticleSystem");
 	ParticleEntity.particlesystem.particleId = "file://splash.particle";
-	ParticleEntity.GetOrCreateComponentRaw("EC_Placeable");
+	ParticleEntity.GetOrCreateComponent("EC_Placeable");
 	var trans = ParticleEntity.placeable.transform;
 	trans.pos.x = position.x;
 	trans.pos.y = position.y;
@@ -29,8 +29,8 @@ var waterEntity = scene.GetEntityIdsWithComponent("EC_WaterPlane");
 var Water = scene.GetEntityRaw(waterEntity[0]);
 var inWater;
 
-var CollisionSound = me.GetComponentRaw("EC_Sound", "Collision");
-var RigidBody = me.GetComponentRaw("EC_RigidBody");
+var CollisionSound = me.GetComponent("EC_Sound", "Collision");
+var RigidBody = me.GetComponent("EC_RigidBody");
 
 if(CollisionSound && RigidBody && Water)
 {
@@ -45,13 +45,13 @@ else
 //Checking if needed components are added after EC_Script to Entity
  function CheckComponent(component, type)
 {
-	if (component.TypeName == "EC_Sound")
+	if (component.typeName == "EC_Sound")
 	{
-		if (component.Name == "Collision")
+		if (component.name == "Collision")
 			CollisionSound = component;
 	}
 
-	else if (component.TypeName == "RigidBody")
+	else if (component.typeName == "RigidBody")
 		RigidBody = true;
 
 	if (CollisionSound && RigidBody && Water)
