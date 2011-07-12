@@ -357,6 +357,13 @@ void Scene::EmitActionTriggered(Entity *entity, const QString &action, const QSt
     emit ActionTriggered(entity, action, params, type);
 }
 
+//before-the-fact counterparts for the modification signals above, for permission checks
+bool SceneManager::AllowModifyEntity(Scene::Entity *entity)
+{
+    emit AboutToModifyEntity(entity);
+    return true;
+}
+
 QVariantList Scene::GetEntityIdsWithComponent(const QString &type_name) const
 {
     QVariantList ret;
