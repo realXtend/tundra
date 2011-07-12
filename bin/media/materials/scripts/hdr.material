@@ -261,6 +261,9 @@ material Ogre/Compositor/HDR/ToneMapping
 			}
 			fragment_program_ref Ogre/Compositor/HDR/finaltonemapping_fp
 			{
+    			param_named LuminanceMin float 0.0
+    			param_named LuminanceMax float 1.0
+    			param_named BloomWeight float 1.0
 			}
 
 			// Scene 
@@ -396,6 +399,9 @@ material Ogre/Compositor/HDR/ToneMapping_StrongHDR
 			}
 			fragment_program_ref Ogre/Compositor/HDR/finaltonemappingStrong_fp
 			{
+    			param_named LuminanceMin float 0.0
+    			param_named LuminanceMax float 1.0
+    			param_named BloomWeight float 1.0			
 			}
 
 			// Scene 
