@@ -17,6 +17,7 @@
 
 class Framework;
 class SceneAPI;
+class UserConnection;
 class QDomDocument;
 
 /// Container for an ongoing attribute interpolation
@@ -383,7 +384,7 @@ public slots:
     void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
     void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
 
-    bool AllowModifyEntity(Entity *entity);
+    bool AllowModifyEntity(UserConnection *user, Entity *entity);
 
     /// Returns IDs of loaded entities
     QVariantList LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
@@ -426,7 +427,7 @@ signals:
     void ActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type);
 
     /// Emitted when an entity is about to be modified:
-    void AboutToModifyEntity(ChangeRequest* req, Scene::Entity* entity);
+    void AboutToModifyEntity(ChangeRequest* req, UserConnection* user, Scene::Entity* entity);
 
     /// Emitted when being destroyed
     void Removed(Scene* scene);
