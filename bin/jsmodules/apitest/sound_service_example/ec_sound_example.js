@@ -9,9 +9,9 @@ print("Loading EC_Sound example script.");
 //3. Set EC_Script name to ".\jsmodules\apitest\sound_service_example\ec_sound_example.js"
 
 var touchable_comp = 0;
-if (me.HasComponent("EC_Touchable"))
+if (me.GetComponent("EC_Touchable"))
 {
-    touchable_comp = me.GetComponentRaw("EC_Touchable");
+    touchable_comp = me.GetComponent("EC_Touchable");
     AddConnections();
 }
 else
@@ -19,14 +19,14 @@ else
 
 function OnObjectClicked()
 {
-    var sound = me.GetComponentRaw("EC_Sound");
+    var sound = me.GetComponent("EC_Sound");
     sound.triggerSound = true;
     sound.ComponentChanged(0);
 }
 
 function OnComponentAdded(entity, component)
 {
-    if (me.Id != entity.Id && component.TypeName != "EC_Touchable")
+    if (me.id != entity.id && component.typeName != "EC_Touchable")
         return;
         
     touchable_comp = component;

@@ -7,24 +7,28 @@ var motion_z = 0;
 var motion_y = 0;
 var motion_x = 0;
 
-if (!me.HasComponent("EC_OgreCamera"))
+if (!me.GetComponent("EC_Camera"))
 {
-    // Create components & setup default position/lookat for the camera, mimicing RexLogicModule::CreateOpenSimViewerCamera()
-    var camera = me.GetOrCreateComponent("EC_OgreCamera");
+    // Create components & setup default position/lookat for the camera
+    var camera = me.GetOrCreateComponent("EC_Camera");
     var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
     var placeable = me.GetOrCreateComponent("EC_Placeable");
     var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
-    soundlistener.active = true;
-
-    camera.AutoSetPlaceable();
 
     // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the freelookcamera right now
     var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     if (!avatarcameraentity)
+    {
         camera.SetActive();
-
+        soundlistener.active = true;
+    }
+    
     var transform = placeable.transform;
-    transform.rot.x = 90;
+
+    // Set initial transform according to camera's up vector
+    var initialRot = camera.InitialRotation();
+    transform.rot = initialRot;
+
     placeable.transform = transform;
 
     // Hook to update tick
@@ -64,14 +68,14 @@ if (!me.HasComponent("EC_OgreCamera"))
     var inputContext = inputmapper.GetInputContext();
     if (inputContext.GestureStarted && inputContext.GestureUpdated)
     {
-	inputContext.GestureStarted.connect(GestureStarted);
-	inputContext.GestureUpdated.connect(GestureUpdated);
+	    inputContext.GestureStarted.connect(GestureStarted);
+	    inputContext.GestureUpdated.connect(GestureUpdated);
     }
 }
 
 function IsCameraActive()
 {
-    var camera = me.GetComponent("EC_OgreCamera");
+    var camera = me.GetComponent("EC_Camera");
     return camera.IsActive();
 }
 
@@ -86,24 +90,12 @@ function Update(frametime)
     }
 
     var placeable = me.placeable;
-    if (motion_z != 0)
-    {
-        var motionvec = new Vector3df();
-        motionvec.z = -motion_z * move_sensitivity * frametime;
-        placeable.TranslateRelative(motionvec);
-    }
-    if (motion_x != 0)
-    {
-        var motionvec = new Vector3df();
-        motionvec.x = motion_x * move_sensitivity * frametime;
-        placeable.TranslateRelative(motionvec);
-    }
-    if (motion_y != 0)
-    {
-        var motionvec = new Vector3df();
-        motionvec.y = motion_y * move_sensitivity * frametime;
-        placeable.TranslateRelative(motionvec);
-    }
+    var motionvec = new float3(motion_x * move_sensitivity * frametime,
+                               motion_y * move_sensitivity * frametime,
+                               -motion_z * move_sensitivity * frametime);
+    motionvec = placeable.Orientation().Mul(motionvec);
+    var newpos = placeable.Position().Add(motionvec);
+    placeable.SetPosition(newpos.x, newpos.y, newpos.z);
 }
 
 function HandleMove(param)
@@ -145,9 +137,13 @@ function HandleMouseLookX(param)
 
     var move = parseInt(param);
     var placeable = me.GetComponent("EC_Placeable");
-    var newtransform = placeable.transform;
-    newtransform.rot.z -= rotate_sensitivity * move;
-    placeable.transform = newtransform;
+
+    var move = parseInt(param);
+    
+    var transform = me.placeable.transform;
+    transform.rot.y -= rotate_sensitivity * move;
+    
+    me.placeable.transform = transform;
 }
 
 function HandleMouseLookY(param)
@@ -156,10 +152,15 @@ function HandleMouseLookY(param)
         return;
 
     var move = parseInt(param);
-    var placeable = me.GetComponent("EC_Placeable");
-    var newtransform = placeable.transform;
-    newtransform.rot.x -= rotate_sensitivity * move;
-    placeable.transform = newtransform;
+    
+    var transform = me.placeable.transform;
+    transform.rot.x -= rotate_sensitivity * move;
+    if (transform.rot.x > 90.0)
+        transform.rot.x = 90.0;
+    if (transform.rot.x < -90.0)
+        transform.rot.x = -90.0;
+
+    me.placeable.transform = transform;
 }
 
 function GestureStarted(gestureEvent)

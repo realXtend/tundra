@@ -1,5 +1,7 @@
 // An object camera script. Enables object look using Alt+Click, rotating around object and zooming in and out
 
+// Todo: fix this for flexible coordinate axes, or remove
+
 var rotate_sensitivity = 0.5;
 var camera_distance = 7.0;
 var scroll_speed = 0.8;
@@ -8,17 +10,15 @@ var last_clicked;
 var zooming = false;
 var global_transform;
 
-if (!me.HasComponent("EC_OgreCamera"))
+if (!me.GetComponent("EC_Camera"))
 {
-    var camera = me.GetOrCreateComponentRaw("EC_OgreCamera");
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
-    var placeable = me.GetOrCreateComponentRaw("EC_Placeable");
-    var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
+    var camera = me.GetOrCreateComponent("EC_Camera");
+    var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
+    var placeable = me.GetOrCreateComponent("EC_Placeable");
+    var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
     soundlistener.active = true;    
 
-    camera.AutoSetPlaceable();
-
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     if (!avatarcameraentity)
         camera.SetActive();
     
@@ -41,11 +41,11 @@ if (!me.HasComponent("EC_OgreCamera"))
 
 function Update(frametime)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
+    var camera = me.GetComponent("EC_Camera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.GetComponent("EC_Placeable");
 
     if (zooming)
     {
@@ -62,7 +62,7 @@ function Update(frametime)
 
 function HandleMouseLookX(param)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
+    var camera = me.GetComponent("EC_Camera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
@@ -70,7 +70,7 @@ function HandleMouseLookX(param)
 	return;
 
     var move = parseInt(param);
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.GetComponent("EC_Placeable");
 
     var newtransform = placeable.transform;
     newtransform.rot.z -= rotate_sensitivity * move;
@@ -85,12 +85,12 @@ function HandleMouseLookX(param)
 
 function HandleMouseLookY(param)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
+    var camera = me.GetComponent("EC_Camera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
     var move = parseInt(param);
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.GetComponent("EC_Placeable");
 
     var newtransform = placeable.transform;
     newtransform.rot.x -= rotate_sensitivity * move;
@@ -111,13 +111,13 @@ function mouseLeftPress(event)
         var raycastResult = renderer.Raycast(event.x, event.y);
         if (raycastResult.entity !== null)
         {
-            var entityclicked = scene.GetEntityRaw(raycastResult.entity.Id);
-            var objectcameraentity = scene.GetEntityByNameRaw("ObjectCamera");
-            var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+            var entityclicked = scene.GetEntityRaw(raycastResult.entity.id);
+            var objectcameraentity = scene.GetEntityByName("ObjectCamera");
+            var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
             if ((objectcameraentity == null) || (avatarcameraentity == null))
                 return;
-            var objectcamera = objectcameraentity.ogrecamera;
-            var avatarcamera = avatarcameraentity.ogrecamera;
+            var objectcamera = objectcameraentity.camera;
+            var avatarcamera = avatarcameraentity.camera;
 
             if (objectcamera.IsActive() && last_clicked == entityclicked)
                 return;
@@ -141,11 +141,11 @@ function mouseLeftPress(event)
 
 function mouseScroll(event)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
+    var camera = me.GetComponent("EC_Camera");
     if (camera.IsActive() == false)
         return;
 
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.GetComponent("EC_Placeable");
 
     var delta;
 
@@ -156,18 +156,18 @@ function mouseScroll(event)
 
     var zoomed = false;
 
-    var pos = new Vector3df()
+    var pos = new float3();
     pos = placeable.transform.pos;
 
-    var point = new Vector3df();
+    var point = new float3();
     point = last_clicked.placeable.transform.pos;
 
-    var dir = new Vector3df();
+    var dir = new float3();
     dir.x = point.x - pos.x;
     dir.y = point.y - pos.y;
     dir.z = point.z - pos.z;
 
-    var distance = new Vector3df();
+    var distance = new float3();
     distance = dir;
 
     var acceleration = 0.01;
@@ -208,13 +208,13 @@ function keyPress(event)
         return;
     }
 
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    var freelookcameraentity = scene.GetEntityByNameRaw("FreeLookCamera");
+    var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
+    var freelookcameraentity = scene.GetEntityByName("FreeLookCamera");
     if (avatarcameraentity == null) // || freelookcameraentity == null) 
         return;
 
-    var avatarcamera = avatarcameraentity.ogrecamera;
-    var freelookcamera = freelookcameraentity.ogrecamera;
+    var avatarcamera = avatarcameraentity.camera;
+    var freelookcamera = freelookcameraentity.camera;
 
     if (freelookcamera.IsActive())
         return;
@@ -242,20 +242,20 @@ function keyRelease(event)
 
 function cameraZoom()
 {
-    var entityplaceable = last_clicked.GetComponentRaw("EC_Placeable");
-    var cameraentity = scene.GetEntityByNameRaw("ObjectCamera");
+    var entityplaceable = last_clicked.GetComponent("EC_Placeable");
+    var cameraentity = scene.GetEntityByName("ObjectCamera");
     if (cameraentity == null)
         return;
-    var cameraplaceable = cameraentity.GetComponentRaw("EC_Placeable");
+    var cameraplaceable = cameraentity.GetComponent("EC_Placeable");
     var cameratransform = cameraplaceable.transform;
 
-    var dir = new Vector3df();
+    var dir = new float3();
     dir.x = global_transform.pos.x - (camera_distance * Math.cos(cameratransform.rot.z * Math.PI/180) + cameratransform.pos.x);
     dir.y = global_transform.pos.y - (camera_distance * Math.sin(cameratransform.rot.z * Math.PI/180) + cameratransform.pos.y);
     dir.z = global_transform.pos.z - (camera_distance * Math.cos(cameratransform.rot.x * Math.PI/180) + cameratransform.pos.z);
 
     var u = Math.sqrt(Math.pow(dir.x, 2) + Math.pow(dir.y, 2) + Math.pow(dir.z, 2));
-    var dir_unit = new Vector3df();
+    var dir_unit = new float3();
     dir_unit.x = dir.x / u;
     dir_unit.y = dir.y / u;
     dir_unit.z = dir.z / u;

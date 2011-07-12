@@ -7,7 +7,7 @@ var editEntity = scene.GetEntityRaw(5000);
 if (!editEntity)
 {
     editEntity = scene.CreateEntityRaw(5000);
-    editEntity.GetOrCreateComponentRaw("EC_Gizmo");
+    editEntity.GetOrCreateComponent("EC_Gizmo");
 }
 
 function SelectionChanged(compType, compName, attrType, attrName) 
