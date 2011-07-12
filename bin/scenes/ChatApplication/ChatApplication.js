@@ -61,7 +61,7 @@ ServerControl.prototype.PrivateClientMessage = function(sender, receiver, msg)
         {
             if(server.GetUserConnection(userIDs[i]).GetProperty("username") == receiver)
             {
-                server.GetUserConnection(userIDs[i]).Exec(scene.GetEntityByNameRaw("ChatApplication"), "ServerSendPrivateMessage", sender + ": " + msg);
+                server.GetUserConnection(userIDs[i]).Exec(scene.GetEntityByName("ChatApplication"), "ServerSendPrivateMessage", sender + ": " + msg);
             }    
             
         }
@@ -87,34 +87,71 @@ function ClientControl(userName)
     
     buttonUserList.clicked.connect(this, this.ToggleUserList);
     userListWidget.itemDoubleClicked.connect(this, this.StartPrivateChat)
+   
+    this.hoveringText = null;
+    this.showTextTime = 4;
+
+    if (this.hoveringText == null) {
+        var name = "Avatar" + client.GetConnectionID();
+        var entity = scene.GetEntityByName(name);
+        if (entity != null) {
+            this.hoveringText = entity.CreateComponent("EC_HoveringText");
+            this.hoveringText.text = " ";
+            
+            // Move it over a avatar.
+            var pos = this.hoveringText.position;
+            pos.y = 2.0;
+      
+            this.hoveringText.position = pos;
+            
+            
+        }
+        else {
+            print("Error: Avatar not found");
+            return;
+        }
+
+
+    }
+    
+}
+ClientControl.prototype.HideText = function() {
+    
+    if (this.hoveringText != null) {
+        this.hoveringText.text = " ";
+    }
 }
 
-ClientControl.prototype.SendMessage = function()
-{
-  // Try to be flexible: If we specified a username field in the login
-  // properties when connecting, use that field as the username. Otherwise,
-  // we show the login screen and ask the username from there.
-  var name = client.GetLoginProperty("username");
-  if (name.length == 0)
-    name = this.name;
-     
-  var msg = lineEdit.text;
-  me.Exec(2, "ClientSendMessage", client.GetLoginProperty("username"), msg);    
-  lineEdit.text = "";
+
+
+ClientControl.prototype.SendMessage = function() {
+    // Try to be flexible: If we specified a username field in the login
+    // properties when connecting, use that field as the username. Otherwise,
+    // we show the login screen and ask the username from there.
+    var name = client.GetLoginProperty("username");
+    if (name.length == 0)
+        name = this.name;
+
+    var msg = lineEdit.text;
+    me.Exec(2, "ClientSendMessage", client.GetLoginProperty("username"), msg);
+    lineEdit.text = "";
+    this.hoveringText.text = msg;
+    frame.DelayedExecute(this.showTextTime).Triggered.connect(this, this.HideText);
 }
+
 
 ClientControl.prototype.ReceiveServerMessage = function(msg)
 {
     chatLog.append(msg);
 }
 
-ClientControl.prototype.SendPrivateMessage = function()
-{  
-    var line = findChild(this.widget.widget(), "lineEdit");
-    var ownPrivateLog = findChild(this.widget.widget(), "privateChatLog");
+ClientControl.prototype.SendPrivateMessage = function() {
+    //var line = findChild(this.widget.widget(), "lineEdit");
+    var line = findChild(this.widget, "lineEdit");
+    //var ownPrivateLog = findChild(this.widget.widget(), "privateChatLog");
+    var ownPrivateLog = findChild(this.widget, "privateChatLog");
     var msg = line.text;
-    if(msg.length > 0)
-    {
+    if (msg.length > 0) {
         ownPrivateLog.append("me: " + msg);
         me.Exec(2, "ClientSendPrivateMessage", client.GetLoginProperty("username"), this.widget.windowTitle, msg);
         line.text = "";
@@ -271,9 +308,13 @@ ClientControl.prototype.OpenPrivateChatWidget = function(userStr)
         privateChatProxies[0].y = 300;
         privateChatProxies[0].visible = true;
         
-        privateChatProxies[0].ProxyUngrabbed.connect(this, this.FocusChanged);
+        //privateChatProxies[0].ProxyUngrabbed.connect(this, this.FocusChanged);
     }
 }
+
+
+
+
 
 var chatControl;
 var users;
@@ -347,6 +388,8 @@ else
         chatControl.ToggleLog();
     }
     me.Exec(4, "NewUserConnected", client.GetLoginProperty("username"));
+    
+    
 }
 
 function CreateUser()
@@ -356,3 +399,8 @@ function CreateUser()
     proxy.visible = true;
     chatControl = new ClientControl(userName);
 }
+
+
+
+
+
