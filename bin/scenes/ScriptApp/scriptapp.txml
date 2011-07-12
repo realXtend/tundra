@@ -1,0 +1,157 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="2">
+  <component type="EC_Script" sync="1">
+   <attribute value="local://scriptapp.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="TestApp" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="ScriptApp" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+ </entity>
+ <entity id="3">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="file://fish.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="Fish" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="1.4524,-4.65233,5.40545,-47.7824,42.2248,-145.284,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="10" name="Mass"/>
+   <attribute value="6" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="file://fish.mesh" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.004477 -0.012988 0.000223" name="Linear velocity"/>
+   <attribute value="-0.434447 -0.078800 -1.347980" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+ </entity>
+ <entity id="4">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,0.14,0.2,0.14" name="Transform"/>
+   <attribute value="file://WoodPallet.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="Floor" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0,-5,0,0,0,0,100,1,100" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1.000000 0.200000 1.000000" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Linear velocity"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+ </entity>
+ <entity id="5">
+  <component type="EC_Name" sync="1">
+   <attribute value="Environment" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_EnvironmentLight" sync="1">
+   <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sun color"/>
+   <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient color"/>
+   <attribute value="0.930000007 0.930000007 0.930000007 1" name="Sun diffuse color"/>
+   <attribute value="-1.000000 -1.000000 -1.000000" name="Sun direction vector"/>
+   <attribute value="false" name="Use fixed time"/>
+   <attribute value="0.670000017" name="Current time"/>
+   <attribute value="true" name="Sun cast shadows"/>
+   <attribute value="true" name="Use Caelum"/>
+  </component>
+  <component type="EC_Sky" sync="1">
+   <attribute value="RexSkyBox" name="Material"/>
+   <attribute value="rex_sky_front.dds;rex_sky_back.dds;rex_sky_left.dds;rex_sky_right.dds;rex_sky_top.dds;rex_sky_bot.dds" name="Texture"/>
+   <attribute value="50" name="Distance"/>
+   <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
+   <attribute value="true" name="Draw first"/>
+  </component>
+ </entity>
+ <entity id="6">
+  <component type="EC_Script" sync="1">
+   <attribute value="" name="Script ref"/>
+   <attribute value="false" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="TestApp.TestClass" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="7">
+  <component type="EC_Script" sync="1">
+   <attribute value="" name="Script ref"/>
+   <attribute value="false" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="TestApp.TestClass" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="8">
+  <component type="EC_Script" sync="1">
+   <attribute value="" name="Script ref"/>
+   <attribute value="false" name="Run on load"/>
+   <attribute value="1" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="TestApp.TestClientClass" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="9">
+  <component type="EC_Script" sync="1">
+   <attribute value="" name="Script ref"/>
+   <attribute value="false" name="Run on load"/>
+   <attribute value="2" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="TestApp.TestServerClass" name="Script class name"/>
+  </component>
+ </entity>
+</scene>
