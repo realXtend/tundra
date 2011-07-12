@@ -43,7 +43,7 @@ class OgreNode:
         self.naali_ent = naali.createMeshEntity(self.object.mesh, 100002) #XXX handle name too. what about id?
 
         e = self.naali_ent
-        print "Created naali entity:", e, e.Id
+        print "Created naali entity:", e, e.id
             
         """apply pos, rot & scale. 
         dotscene.py uses qt types now directly"""

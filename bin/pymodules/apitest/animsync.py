@@ -81,7 +81,7 @@ class AnimationSync(circuits.BaseComponent):
             try:
                 t = ent.touchable
             except AttributeError:
-                print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.Id
+                print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.id
                 print ent.GetOrCreateComponentRaw("EC_Touchable")
                 t = ent.touchable
             else:

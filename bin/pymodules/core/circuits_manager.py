@@ -53,7 +53,7 @@ class ComponentRunner:
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_mousedrag', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene', 'on_entity_visuals_modified', 'on_logout', 'on_worldstreamready']
+        ignchannames = ['update', 'started', 'on_mousemove', 'on_mousedrag', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene', 'on_entity_visuals_modified', 'on_logout', 'on_worldstreamready', 'on_sceneadded']
         ignchannels = [('*', n) for n in ignchannames]
         
         # Note: instantiating Manager with debugger causes severe lag when running as a true windowed app (no console), so instantiate without debugger

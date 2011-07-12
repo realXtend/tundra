@@ -14,7 +14,7 @@ instance = None
 class LoadURLHandler(Component):
     def __init__(self):
         Component.__init__(self)
-        self.proxywidget = None
+        #self.proxywidget = None
         self.container = None
         
         self.webview = None
@@ -31,12 +31,12 @@ class LoadURLHandler(Component):
         instance = self
 
     def load_url(self, qurl):
-        if self.webview == None and self.container == None and self.proxywidget == None:
+        if self.webview == None and self.container == None: # and self.proxywidget == None:
             self.init_ui()
         self.webview.load(qurl)
         self.set_address(qurl.toString())
-        if not self.proxywidget.isVisible():
-            self.proxywidget.show()
+        if not self.container.isVisible():
+            self.container.show()
             
     def init_ui(self):
         loader = QUiLoader()
@@ -93,12 +93,13 @@ class LoadURLHandler(Component):
         self.progress_label = ui.findChild("QLabel", "label_Status")
         
         # Add to scene
-        uism = naali.ui
-        self.proxywidget = r.createUiProxyWidget(self.container)
-        self.proxywidget.setWindowTitle("Naali Web Browser")
-        self.proxywidget.connect("Visible(bool)", self.vibibility_changed)
-        if not uism.AddWidgetToScene(self.proxywidget):
-            r.logError('LoadURLHandler: Adding the ProxyWidget to the scene failed.')
+        #uism = naali.ui
+        #self.proxywidget = r.createUiProxyWidget(self.container)
+        #self.proxywidget.setWindowTitle("Naali Web Browser")
+        #self.proxywidget.connect("Visible(bool)", self.vibibility_changed)
+        #if not uism.AddWidgetToScene(self.proxywidget):
+        #    r.logError('LoadURLHandler: Adding the ProxyWidget to the scene failed.')
+        self.container.show()
 
     def vibibility_changed(self, visible):
         if not visible:
@@ -155,16 +156,16 @@ class LoadURLHandler(Component):
     def on_logout(self, id):
         if self.webview != None:
             self.webview.stop()
-        if self.proxywidget != None:
-            self.proxywidget.hide()
+        if self.container != None:
+            self.container.hide()
             
     def on_exit(self):
         if self.webview != None:
             self.webview.stop()
-        if self.proxywidget is not None:
-            self.proxywidget.hide()
-            uism = naali.ui
-            uism.RemoveWidgetFromScene(self.proxywidget)
+        # if self.proxywidget is not None:
+        #     self.proxywidget.hide()
+        #     uism = naali.ui
+        #     uism.RemoveWidgetFromScene(self.proxywidget)
 
 def loadurl(urlstring):
     url = QUrl(urlstring)

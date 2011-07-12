@@ -7,19 +7,10 @@ import PythonQt
 #the ones not listed here are added using the c++ name, e.g. ent.EC_NetworkPosition
 compshorthand = {
     'EC_OpenSimPrim': 'prim',
-    'EC_Placeable': 'placeable',
     'EC_NetworkPosition': 'network',
-    'EC_Mesh':'mesh',
     'EC_OgreCamera': 'camera',
-    'EC_AnimationController': 'animationcontroller',
-    'EC_Highlight': 'highlight',
-    'EC_Touchable': 'touchable',
     'EC_AttachedSound': 'sound',
     'EC_OpenSimPresence': 'opensimpresence',
-    'EC_SoundRuler': 'soundruler',
-    'EC_Name': 'ecname',
-    'EC_Ruler': 'ruler',
-    'EC_Gizmo': 'gizmo',
     }   
 
 class ComponentPropertyAdder(circuits.BaseComponent):
@@ -40,12 +31,12 @@ class ComponentPropertyAdder(circuits.BaseComponent):
         r.logInfo("componentpropertyaddr exiting... done")
 
     def onComponentAdded(self, ent, comp, changetype):
-        #print "Comp added:", ent, comp, comp.TypeName, comp.Name, changetype
+        #print "Comp added:", ent, comp, comp.typeName, comp.name, changetype
         
-        if comp.TypeName in compshorthand:
-            propname = compshorthand[comp.TypeName]
+        if comp.typeName in compshorthand:
+            propname = compshorthand[comp.typeName]
         else:
-            propname = comp.TypeName
+            propname = comp.typeName
 
         if propname not in ent.dynamicPropertyNames():
             #first come, first (actually: the only one) served
@@ -54,10 +45,10 @@ class ComponentPropertyAdder(circuits.BaseComponent):
 
     def onComponentRemoved(self, ent, comp, changetype):
         #r.logInfo("XXX onComponentRemoved called")
-        if comp.TypeName in compshorthand:
-            propname = compshorthand[comp.TypeName]
+        if comp.typeName in compshorthand:
+            propname = compshorthand[comp.typeName]
         else:
-            propname = comp.TypeName
+            propname = comp.typeName
         #r.logInfo("XXX propname " +str(propname))
         #r.logInfo("XXX dynamicpropertynames " + str(ent.dynamicPropertyNames()))
         if propname in ent.dynamicPropertyNames():

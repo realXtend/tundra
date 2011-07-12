@@ -20,22 +20,22 @@ av_entid = 8880000
 
 def rotate(e):
     p = e.placeable
-    o = p.Orientation    
+    o = p.orientation    
     #newort = (o.scalar(), o.x(), o.y() + 0.5, o.z())
     o.setY(o.y() + 0.5)
     print "Rotating to ort:", o
-    p.Orientation = o
+    p.orientation = o
     #assert e.orientation[2] > (oldz+0.9) #xxx some logic fail here?
     #print "TEST ORIENTATION SUCCEEDED", e.orientation[2], oldortz
     
 def move(e):
     p = e.placeable
-    pos = p.Position
+    pos = p.position
     #oldx = pos.x()
     #newpos = (p[0] - 1, p[1], p[2])
     pos.setX(pos.x() + 1) #change the x-coordinate
     print "Moving to move to pos:", pos
-    p.Position = pos
+    p.position = pos
 
 if 0:
     print "Testing taking a screenshot..."
@@ -57,7 +57,7 @@ if 0:
     
 if 0: #get entity
     #idnum = new_id
-    idnum = naali.getCamera().Id
+    idnum = naali.getCamera().id
     print "Getting entity id", idnum,
     e = naali.getEntity(idnum)
     print "got:", e
@@ -72,7 +72,7 @@ if 0: #test avatartracking, works :)
         print "could find the user avatar"
     else:
         print "<:::",
-        print "Avatar pos:", a.placeable.Position,
+        print "Avatar pos:", a.placeable.position,
         print ":::>"
         """
         perhaps some local script could track movement?
@@ -114,11 +114,11 @@ if 0: #create entity
     
     avatar = naali.getUserAvatar()
     ent = naali.createMeshEntity(meshname)
-    #print "New entity created:", ent, ent.placeable.Position
-    ent.placeable.Position = avatar.placeable.Position
+    #print "New entity created:", ent, ent.placeable.position
+    ent.placeable.position = avatar.placeable.position
 
     #from PythonQt.QtGui import QVector3D as Vec
-    #ent.placeable.Scale = Vec(0.1, 0.1, 0.1)
+    #ent.placeable.scale = Vec(0.1, 0.1, 0.1)
     #print "new pos", ent.pos, ent.scale
 
 if 0: #placeable and text tests
@@ -155,21 +155,21 @@ if 0: #print test
 if 0: #camera entity - it is an entity nowadays, and there is EC cam even
     try:
         cament = naali.getCamera()
-        print "CAM:", cament.Id
+        print "CAM:", cament.id
     except ValueError:
         print "no CAM"
     else:
         p = cament.placeable
-        print p.Position, p.Orientation
+        print p.position, p.orientation
 
         import PythonQt.QtGui
         from PythonQt.QtGui import QQuaternion as Quat
         from PythonQt.QtGui import QVector3D as Vec
-        ort = p.Orientation
+        ort = p.orientation
         rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), 10)
         #ort *= Quat(0, -.707, 0, .707)
         ort *= rot
-        p.Orientation = ort
+        p.orientation = ort
         
         #ec cam stuff:
         print "FOV:", cament.camera.GetVerticalFov()
@@ -200,9 +200,9 @@ if 0: #calcing the camera angle around up axis for web ui
     cament = naali.getCamera()
     p = cament.placeable
 
-    #print toAngleAxis(p.Orientation)
+    #print toAngleAxis(p.orientation)
 
-    ort = p.Orientation
+    ort = p.orientation
     euler = mu.quat_to_euler(ort)
     #print euler
     start = QQuaternion(0, 0, -0.707, -0.707)
@@ -211,7 +211,7 @@ if 0: #calcing the camera angle around up axis for web ui
     new = start * rot
     print ort
     print new
-    #p.Orientation = new
+    #p.orientation = new
     #print mu.euler_to_quat(euler), ort
         
 if 0: #avatar set yaw (turn)
@@ -394,7 +394,7 @@ if 0:
         print e
     #print dir(naali.inputcontext)
     #naali.inputcontext.disconnect()
-    naali.inputcontext.connect('OnKeyEvent(KeyEvent&)', keypressed)
+    naali.inputcontext.connect('KeyEventReceived(KeyEvent&)', keypressed)
 
 if 0: #QVector3D
     import PythonQt.QtGui
@@ -558,7 +558,7 @@ if 0: #ogre cam test and vectors
     cam = vp.getCamera()
     
     #print dir(cam)
-    #print cam.Orientation, cam.DerivedOrientation, cam.getOrientation()
+    #print cam.orientation, cam.Derivedorientation, cam.getorientation()
     #~ print "\n"
     #~ print cam.getRight(), cam.getUp()
 
@@ -598,7 +598,7 @@ if 0: #testing the removal of canvases
     
 if 0: #getUserAvatar 
     ent = naali.getUserAvatar()
-    print "User's avatar_id:", ent.Id
+    print "User's avatar_id:", ent.id
     #print "Avatar's mesh_name:", ent.mesh.GetMeshName(0)
     #ent.mesh = "cruncah1.mesh"
     
@@ -616,7 +616,7 @@ if 0: #test changing the mesh asset a prim is using
     print "new mesh set:", ent.mesh
     
     print "sending prim data update to server"
-    r.sendRexPrimData(ent.Id) #arkku
+    r.sendRexPrimData(ent.id) #arkku
     print "..done", ent.mesh
     
 if 0: #property editor tests
@@ -644,7 +644,7 @@ if 0: #camera FOV
     #rightvec = V3(r.getCameraRight())
     fov = naali.getCamera().camera.GetVerticalFov()
     print "FOV:", fov
-    campos = naali.getCamera().placeable.Position
+    campos = naali.getCamera().placeable.position
     #ent = naali.getUserAvatar()
     #entpos = V3(ent.pos)
     #width, height = r.getScreenSize()
@@ -739,24 +739,24 @@ if 0: #rexlogic as service with qt mechanism
     import naali
     qent = naali.worldlogic.GetUserAvatarEntityRaw()
     if qent is not None:
-        print qent.Id
-        pyent = r.getEntity(qent.Id)
+        print qent.id
+        pyent = r.getEntity(qent.id)
         print pyent, pyent.id
         
 if 0: #using entity directly to get components, without PyEntity
     import naali
     qent = naali.worldlogic.GetUserAvatarEntityRaw()
     if qent is not None:
-        print qent.Id
+        print qent.id
         print dir(qent)
         p = qent.GetComponentRaw("EC_Placeable")
-        print p, p.Position
+        print p, p.position
         
         #ent = naali.Entity(qent)
-        #print ent, ent.placeable, ent.placeable.Position
+        #print ent, ent.placeable, ent.placeable.position
         
-        ent = naali.getEntity(qent.Id)
-        print ent, ent.placeable, ent.placeable.Position
+        ent = naali.getEntity(qent.id)
+        print ent, ent.placeable, ent.placeable.position
     
 if 0: #undo tests
     e = r.getEntity(1752805599)
@@ -778,8 +778,8 @@ if 0: #updateflag checks, duplicate tests
     print e, e.prim.FullId, e.prim.UpdateFlags
     ws = r.getServerConnection()
     #print dir(ws)
-    #x, y, z = e.placeable.Position.x(), ... #didn't port this unused line to new version
-    ws.SendObjectDuplicatePacket(e.Id, e.prim.UpdateFlags, 1, 1, 1)
+    #x, y, z = e.placeable.position.x(), ... #didn't port this unused line to new version
+    ws.SendObjectDuplicatePacket(e.id, e.prim.UpdateFlags, 1, 1, 1)
     
 if 0: #proxywidget signal connecting
     #~ from PythonQt.QtUiTools import QUiLoader
@@ -896,7 +896,7 @@ if 0: #javascript service
     runjs('print("Some camera! " + x)', {'x': cam.camera})
     #py objects are not qobjects. runjs('print("Some camera, using naali :O ! " + x.getCamera())', {'x': naali})
     runjs('print("Camera Entity " + x)', {'x': cam.qent})
-    runjs('print("Camera placeable pos: " + pos)', {'pos': cam.placeable.Position})
+    runjs('print("Camera placeable pos: " + pos)', {'pos': cam.placeable.position})
     #not exposed yet. runjs('print("QVector3D: " + new QVector3D())', {})
     #runjs('var a = {"a": true, "b": 2};')
     #runjs('print(a.a + ", " + a.b)')
@@ -941,9 +941,9 @@ if 0: #qplaceable
     #qplace = r.getQPlaceable(id)
     e = naali.getEntity(id)
     qplace = e.placeable
-    print qplace, qplace.Position
+    print qplace, qplace.position
 
-    oldz = qplace.Position.z()
+    oldz = qplace.position.z()
     print oldz, "==>",
 
     import PythonQt.QtGui
@@ -951,17 +951,17 @@ if 0: #qplaceable
     change_v = QVector3D(0, 0, 0.1)
     #dir shows __add__ but for some reason doesn't work out of the box :(
     #"unsupported operand type(s) for +=: 'QVector3D' and 'QVector3D'"
-    #qplace.Position += change_v
-    #qplace.Position + change_v
+    #qplace.position += change_v
+    #qplace.position + change_v
 
     #bleh and this changes the val in the vec, but doesn't trigger the *vec* setter, 
     #so no actual change in Naali internals
-    #qplace.Position.setZ(oldz + 0.1)
+    #qplace.position.setZ(oldz + 0.1)
   
-    newpos = qplace.Position
+    newpos = qplace.position
     newpos.setZ(oldz + 0.1)
-    qplace.Position = newpos
-    print qplace.Position.z(), "."    
+    qplace.position = newpos
+    print qplace.position.z(), "."    
         
 if 0:
     from PythonQt.QtCore import QFile, QSize
@@ -1221,10 +1221,10 @@ if 0: #position as a qvec3d prop of placeable component
     id = 2703563778
     ent = naali.getEntity(id)
     changevec = PythonQt.QtGui.QVector3D(0, 0, 1)
-    print ent.placeable.Position, ent.placeable.Orientation, changevec
-    ent.placeable.Position = ent.placeable.Position + changevec
+    print ent.placeable.position, ent.placeable.orientation, changevec
+    ent.placeable.position = ent.placeable.position + changevec
     
-    print ent.placeable.Position, ent.placeable.Orientation, changevec
+    print ent.placeable.position, ent.placeable.orientation, changevec
     r.networkUpdate(id)
 
 if 0:
@@ -1280,7 +1280,7 @@ if 0: #create a new component, touchable
         t = e.touchable
     except AttributeError:
         print e.GetOrCreateComponentRaw("EC_Touchable")
-        print "created a new Touchable component", e.Id
+        print "created a new Touchable component", e.id
         t = e.touchable
 
     print type(t), t, t.GetParentEntity()
@@ -1363,16 +1363,16 @@ if 0: #local object creation, testing if local previews of .scenes would work
     print "hep"
     e = naali.createMeshEntity("Jack.mesh")
     print e
-    e.placeable.Position = Vec3(128, 128, 60)
-    e.placeable.Scale = Vec3(5, 5, 5)
-    e.placeable.Orientation = Quat(0, 0, 0, 1)
+    e.placeable.position = Vec3(128, 128, 60)
+    e.placeable.scale = Vec3(5, 5, 5)
+    e.placeable.orientation = Quat(0, 0, 0, 1)
 
 if 0: #createentity directly from the c++ scenemanager where it's a qt slot now
     #s = naali.getDefaultScene()
     #id = s.NextFreeId()
     #ent = s.CreateEntityRaw(id)
     ent = naali.createEntity()
-    print "new entity created:", ent, ent.Id
+    print "new entity created:", ent, ent.id
 
 if 0: #running localscene dotscene loader
     import localscene.loader
@@ -1382,7 +1382,7 @@ if 0: #running localscene dotscene loader
     localscene.loader.load_dotscene(filename)
 
     #avatar = r.getEntity(r.getUserAvatarId())
-    #print avatar.placeable.Position.toString()
+    #print avatar.placeable.position.toString()
 
 if 0: #loadurl handler import test
     import loadurlhandler
@@ -1458,10 +1458,10 @@ if 0: #using Scene::Entity directly. does it crash when i keep a ref and it's re
         print "Found newent", newent
 
     if 0:
-        r.removeEntity(newent.Id) #uh i'm an idiot, forgot to expose RemoveEntity in SM
+        r.removeEntity(newent.id) #uh i'm an idiot, forgot to expose RemoveEntity in SM
         print "Deleted newent"
 
-    print newent.Id
+    print newent.id
     print newent.GetComponentRaw("EC_Placeable")
 
 if 0: #Scene::Entity CreateEntity with components .. to reimplement createMeshEntity
@@ -1482,7 +1482,7 @@ if 0: #adding components as dynamic properties of Scene::Entity
 
     #print dir(qent), type(qent.EC_Placeable), qent.EC_Placeable
     print dir(ent.placeable)
-    print "Name:", ent.placeable.Name
+    print "Name:", ent.placeable.name
     print "objectName:", ent.placeable.objectName
 
     print "DynProp check:", 'myplace' in qent.dynamicPropertyNames()
@@ -1498,7 +1498,7 @@ if 0: #getting all entities with a certain component, now directly as the entity
     s = naali.getDefaultScene()
     ents = s.GetEntitiesWithComponentRaw("EC_Placeable")
     for ent in ents:
-        print ent.placeable.Position
+        print ent.placeable.position
         
 if 0: #estate management uses presence info. websocketserver too
     s = naali.getDefaultScene()

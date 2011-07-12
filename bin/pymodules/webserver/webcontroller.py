@@ -85,23 +85,23 @@ class WebController(Controller):
     def camcontrol(self, rotate=None, move=None):
         cament = naali.getCamera()
         p = cament.placeable
-        #print p.Position, p.Orientation
+        #print p.position, p.orientation
 
         if rotate is not None:
-            ort = p.Orientation
+            ort = p.orientation
             rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), float(rotate))
             ort *= rot
-            p.Orientation = ort
+            p.orientation = ort
 
         if move is not None:
-            pos = p.Position
+            pos = p.position
             pos += Vec(float(move), 0, 0)
-            p.Position = pos
+            p.position = pos
             
         baseurl, imgname = save_screenshot()
         imgurl = baseurl + imgname
         
-        #return "%s, %s" % (p.Position, p.Orientation)
+        #return "%s, %s" % (p.position, p.orientation)
         return relhtml % imgurl
 
     def render(self, camposx=None, camposy=None, camposz=None, camang=None):
@@ -111,26 +111,26 @@ class WebController(Controller):
 
         if camposx is not None:
             pos = Vec(*(float(v) for v in [camposx, camposy, camposz]))
-            p.Position = pos
+            p.position = pos
 
         if camang is not None:
-            ort = p.Orientation
+            ort = p.orientation
             start = Quat(0, 0, -0.707, -0.707)
             rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), -float(camang))
             new = start * rot
-            p.Orientation = new
+            p.orientation = new
 
         #if camortx is not None:
         #    ort = Quat(*(float(v) for v in [camortw, camortx, camorty, camortz]))
-        #    p.Orientation = ort
+        #    p.orientation = ort
 
-        #return str(p.Position), str(p.Orientation) #self.render1()
+        #return str(p.position), str(p.orientation) #self.render1()
         baseurl, imgname = save_screenshot()
         imgurl = baseurl + imgname
 
-        pos = p.Position
-        ort = p.Orientation
-        #vec, ang = toAngleAxis(p.Orientation)
+        pos = p.position
+        ort = p.orientation
+        #vec, ang = toAngleAxis(p.orientation)
         #print vec, ang
         euler = mu.quat_to_euler(ort)
         ang = euler[0]
@@ -151,16 +151,16 @@ class WebController(Controller):
 
         if camposx is not None:
             pos = Vec(*(float(v) for v in [camposx, camposy, camposz]))
-            p.Position = pos
+            p.position = pos
 
         if camortx is not None:
             ort = Quat(*(float(v) for v in [camortw, camortx, camorty, camortz]))
-            p.Orientation = ort
+            p.orientation = ort
 
         baseurl, imgname = save_screenshot()
 
-        p.Position = orgpos
-        p.Orientation = orgort
+        p.position = orgpos
+        p.orientation = orgort
         return baseurl, imgname
 
     def renderimgurl(self, camposx=None, camposy=None, camposz=None, camortx=None, camorty=None, camortz=None, camortw=None):
