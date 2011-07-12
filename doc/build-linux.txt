@@ -1,3 +1,5 @@
+TODO: This file should be deprecated and the build instructions instead be maintained as a file inside doxygen. That way, it'll keep better in sync with code changes (and give HTML formatting!).
+
 The viewer has many external libraries which may not be satisfied by default 
 on many distributions. A list of dependencies can be found in them 
 depencies.txt file. However not all of them will be missing from your 

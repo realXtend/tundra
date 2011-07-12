@@ -1,30 +1,30 @@
 /**
 
-\page NaaliScriptReference Naali Scripting Reference
+\page TundraScriptReference Tundra Scripting Reference
 
-Naali offers several mechanisms for adding scripts to your application. You can
- - write Naali modules using Python.
+Tundra offers several mechanisms for adding scripts to your application. You can
+ - write Tundra modules using Python.
  - write application scripts that are invoked on startup using QtScript.
  - embed Python and QtScript scripts into objects in the scene by using EC_Script.    
 
-\section NaaliPython Creating Naali modules using Python
+\section TundraPython Creating Tundra modules using Python
 
-PythonScriptModule manages so-called Naali Python modules, which are basically similar in purpose to the native C++ modules. They are however not visible to the C++ code like actual Naali modules are, but can only be called from C++ modules by doing tricks with either the Python module system or Qt signals. This is the first Naali scripting system, used to develop the C++ internals of the core and other modules so that they expose the APIs which are common to all scripting mechanisms now.
+PythonScriptModule manages so-called Tundra Python modules, which are basically similar in purpose to the native C++ modules. They are however not visible to the C++ code like actual Tundra modules are, but can only be called from C++ modules by doing tricks with either the Python module system or Qt signals. This is the first Tundra scripting system, used to develop the C++ internals of the core and other modules so that they expose the APIs which are common to all scripting mechanisms now.
 
-Naali Python modules are application level scripts, similar to the application level Javascripts explained below as in not being associated with any specific scenes or entities. They have some unique features: 1) Capability to receive internal Naali events (not exposed to JS at all) and 2) A plugin system which supports live reloading of code. Also Naali currently ships with a copy of the Python standard library, and of the small Circuits event library which is used to implement the forwarding Naali C++ events and the reloadable module support. Internal Naali events are currently necessary to for example handle logout & login to scenes when teleporting, when using Opensimulator servers. E.g. editing code needs to clear selection state upon logout. For the future the plan is to provide all this via Qt mechanism from the Core API.
+Tundra Python modules are application level scripts, similar to the application level Javascripts explained below as in not being associated with any specific scenes or entities. They have some unique features: 1) Capability to receive internal Tundra events (not exposed to JS at all) and 2) A plugin system which supports live reloading of code. Also Tundra currently ships with a copy of the Python standard library, and of the small Circuits event library which is used to implement the forwarding Tundra C++ events and the reloadable module support. Internal Tundra events are currently necessary to for example handle logout & login to scenes when teleporting, when using Opensimulator servers. E.g. editing code needs to clear selection state upon logout. For the future the plan is to provide all this via Qt mechanism from the Core API.
 
-These modules reside in bin/pymodules/ and the ones enabled in any *.ini file in that directory are loaded at startup (or upon pymodule reload). By convention, default.ini configures what is enabled by default in releases, and you can use whatever.ini to add your own. To register your module to the system, it must have a subclass of circuits.BaseComponent. Then add the name of that class to a .ini file. For an example of a minimal pymodule, see bin/pymodules/usr/sleeper.py . Another small example is bin/pymodules/apitest/pythonqt_gui.py which features using Naali UI API and Qt widgets.
+These modules reside in bin/pymodules/ and the ones enabled in any *.ini file in that directory are loaded at startup (or upon pymodule reload). By convention, default.ini configures what is enabled by default in releases, and you can use whatever.ini to add your own. To register your module to the system, it must have a subclass of circuits.BaseComponent. Then add the name of that class to a .ini file. For an example of a minimal pymodule, see bin/pymodules/usr/sleeper.py . Another small example is bin/pymodules/apitest/pythonqt_gui.py which features using Tundra UI API and Qt widgets.
 
-The 'naali' namespace (Python module) is used to expose Naali internals (the Core API) to Python, and 'PythonQt' exposes all of Qt. So you can say 'import naali' or 'import PythonQt' to get to use those.
-An interactive Python shell is included, which is handy for learning and testing API commands as it has an autocompletion GUI. The shell is currently not integrated to menus, but is opened with the 'alt-.' keycombo. For reloading all pymodules live, without needing to logout or restart Naali, press F11. To support reloading in your own module, you must implement a on_exit handler that removes references to your objects elsewhere in Naali (typically GUI widgets you have added) -- otherwise the code does not get refreshed.
+The 'naali' namespace (Python module) is used to expose Tundra internals (the Core API) to Python, and 'PythonQt' exposes all of Qt. So you can say 'import naali' or 'import PythonQt' to get to use those.
+An interactive Python shell is included, which is handy for learning and testing API commands as it has an autocompletion GUI. The shell is currently not integrated to menus, but is opened with the 'alt-.' keycombo. For reloading all pymodules live, without needing to logout or restart Tundra, press F11. To support reloading in your own module, you must implement a on_exit handler that removes references to your objects elsewhere in Tundra (typically GUI widgets you have added) -- otherwise the code does not get refreshed.
 
-Several bundled features of Naali releases are implemented with this system, including the 3d editing of objects, Opensimulator estate management and the Ogre scene import & publishing functionality for the Taiga server. Also the Naali web browser GUI with the basic navigation buttons, and the old means to have web pages in the scene as MediaURLs and the LSL LoadURL command are implemented in corresponding Naali pymodules. Additionally, disabled by default, there is a web (http) server for serving live camera images, and a WebSocket server to allow connecting to Naali from browser based clients.
+Several bundled features of Tundra releases are implemented with this system, including the 3d editing of objects, Opensimulator estate management and the Ogre scene import & publishing functionality for the Taiga server. Also the Tundra web browser GUI with the basic navigation buttons, and the old means to have web pages in the scene as MediaURLs and the LSL LoadURL command are implemented in corresponding Tundra pymodules. Additionally, disabled by default, there is a web (http) server for serving live camera images, and a WebSocket server to allow connecting to Tundra from browser based clients.
 
-\section NaaliApplicationQtScripts Writing Application Scripts using QtScript
+\section TundraApplicationQtScripts Writing Application Scripts using QtScript
 
 JavaScriptModule manages the execution of <b>application-level scripts</b>, which are scripts that are not attached to any scene, server or an entity. These scripts are executed once during startup from the folder /bin/jsmodules/startup at the module PostInitialize time, and their contexts stay alive until application shutdown. Each application script file is executed in a separate context.  
 
-\section ECScriptScripts Embedding scripts to a scene using EC_Script
+\section ECScriptScripts Embedding Scripts to a Scene Using EC_Script
 
 The EC_Script component holds a reference to a script file. Script files are assets like meshes and materials, and are loaded using the built-in asset system. To add a script into an entity, add the EC_Script component into it using the Scene Structure window or the EC Editor window.
 
@@ -32,11 +32,11 @@ The EC_Script component holds a reference to a script file. Script files are ass
 
 The <i>Script ref</i> attribute stores the actual asset reference address. To run the script, execute the <b>RunScript</b> Entity Action on the entity the EC_Script component is part of. If you check the <i>Run on load</i> attribute, the script will be loaded immediately when the component is added or the asset reference is changed, and manually invoking RunScript is not necessary.
 
-\section JavaScriptExtensions Naali Extensions to QtScript
+\section JavaScriptExtensions Tundra Extensions to QtScript
 
-To be able to access the Naali Core APIs and the scene from your scripts, Naali provides your scripts with a set of predefined API objects. 
+To be able to access the Tundra Core APIs and the scene from your scripts, Tundra provides your scripts with a set of predefined API objects. 
 
-Additionally, Naali provides a small utility library of pre-created .js files that can be included into your script applications. These .js files are guaranteed to exists on any Naali installation, and do not have to be downloaded through the asset system.
+Additionally, Tundra provides a small utility library of pre-created .js files that can be included into your script applications. These .js files are guaranteed to exists on any Tundra installation, and do not have to be downloaded through the asset system.
 
 \todo Document the .js file library.
 
@@ -50,7 +50,7 @@ Each script receives a predefined object called <b>engine</b>. This object repre
 
 Includes the given .js file and executes it in the current engine context. 
  
-QtScript (or ECMAScript/JavaScript) does not have a built-in <b>include</b> keyword. In Naali, you can however use this command to execute another .js file at the point where engine.IncludeFile is called.
+QtScript (or ECMAScript/JavaScript) does not have a built-in <b>include</b> keyword. In Tundra, you can however use this command to execute another .js file at the point where engine.IncludeFile is called.
 
 The parameter <i>assetRef</i> can either be an asset reference URL or an absolute path on a local filesystem, e.g. "local://myscript.js", "http://www.someserver.com/myscript.js" and "C:/Tundra/myscript.js" are all valid.  If you specify a local filename, each client looks the file up locally and there is no network asset transfers included.
 
@@ -64,9 +64,9 @@ Note that inclusion of the same file multiple times during script execution is a
 
 Imports a QtScript extension from a shared library.
  
-By default, QtScripts are not able to operate on built-in Qt types, like QWidget, or QVector3D, because these types have not been introduced to the script engine. Naali uses the <a href="http://code.google.com/p/qtscriptgenerator/">QtScriptGenerator</a> library to generate <a href="http://doc.qt.nokia.com/4.7/qtscriptextensions.html">extension libraries</a> for the built-in Qt types.
+By default, QtScripts are not able to operate on built-in Qt types, like QWidget, or QVector3D, because these types have not been introduced to the script engine. Tundra uses the <a href="http://code.google.com/p/qtscriptgenerator/">QtScriptGenerator</a> library to generate <a href="http://doc.qt.nokia.com/4.7/qtscriptextensions.html">extension libraries</a> for the built-in Qt types.
 
-Naali does not load all the possible extension libraries to each script by default, since this was profiled to cause a major performance impact on script-heavy scenes. Instead, the script issues a set of <b>engine.ImportExtension(extensionName)</b> commands on the extensions it wants to use. The possible extensions are "qt.core", "qt.gui", "qt.network", "qt.uitools", "qt.xml", "qt.xmlpatterns", "qt.phonon", "qt.webkit".
+Tundra does not load all the possible extension libraries to each script by default, since this was profiled to cause a major performance impact on script-heavy scenes. Instead, the script issues a set of <b>engine.ImportExtension(extensionName)</b> commands on the extensions it wants to use. The possible extensions are "qt.core", "qt.gui", "qt.network", "qt.uitools", "qt.xml", "qt.xmlpatterns", "qt.phonon", "qt.webkit".
 
 The extensions themselves are stored in the folder /bin/qtplugins/script. The folder /bin/qtplugins is added to Qt plugin search path on startup (only necessary on Windows).
 
@@ -75,7 +75,7 @@ Extensions cannot be loaded over the network, but are fixed to the installation.
 
 \section QtWidgetChildren The findChild function
 
-When using the qt.gui extension to operate on hierarchies of QObjects, you'll quickly notice that the function QObject::findChild is a template function and cannot be accessed from QtScript. To work around this, Naali exposes the following global scope function:
+When using the qt.gui extension to operate on hierarchies of QObjects, you'll quickly notice that the function QObject::findChild is a template function and cannot be accessed from QtScript. To work around this, Tundra exposes the following global scope function:
 
 <table style="width: 50%; margin: 20px; background-color: #F0F0FF; border: 1px solid black; border-spacing: 0px; ">
 <tr style="border-style: none;"><td style="border-style: none;">
@@ -105,13 +105,13 @@ Asset dependencies can be also explicitly speficied. This specification is store
 
 \section CoreAPIObjects The Core API Objects
 
-The whole \ref CoreAPIList "Naali Core API" is exposed to QtScript through the following variable names:
- - The UI API: \ref NaaliUi "ui".
- - The UI service: \ref UiServiceInterface "uiservice". 
+The whole \ref CoreAPIList "Tundra Core API" is exposed to QtScript through the following variable names:
+ - The UI API: \ref TundraUi "ui".
  - The Frame API: \ref Frame "frame".
  - The Input API: \ref Input "input".
  - The Console API: \ref ScriptConsole "console".
  - The Asset API: \ref AssetAPI "asset".
+ - The Audio API: \ref AudioAPI "audio".
  - The Renderer service of OgreRenderingModule: \ref Renderer "renderer".
  - The Physics subsystem: \ref PhysicsModule "physics".
  - The SceneInteract object: \ref SceneInteract "sceneinteract".
@@ -138,7 +138,7 @@ For conveniency, when embedding scripts into scene entities using EC_Script, Jav
 
 \section ScriptSamples Script Samples 
  
-This section contains a list of scripting samples that can be used as a starting point for learning Naali scripting. You can find various examples and small snippets of scripts written in Python and QtScript that demonstrate how to use the Naali Core APIs and how to interact with the different Entity-Components.
+This section contains a list of scripting samples that can be used as a starting point for learning Tundra scripting. You can find various examples and small snippets of scripts written in Python and QtScript that demonstrate how to use the Tundra Core APIs and how to interact with the different Entity-Components.
 
 <table>
 <tr>
