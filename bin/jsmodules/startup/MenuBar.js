@@ -7,7 +7,7 @@ if (!framework.IsHeadless())
     menu.clear();
 
     var fileMenu = menu.addMenu("&File");
-    if (framework.GetModuleQObj("UpdateModule"))
+    if (framework.GetModuleByName("UpdateModule"))
         fileMenu.addAction(new QIcon("./data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
     //fileMenu.addAction("New scene").triggered.connect(NewScene);
     // Reconnect menu items for client only
@@ -22,41 +22,40 @@ if (!framework.IsHeadless())
     fileMenu.addAction(new QIcon("./data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
     var viewMenu = menu.addMenu("&View");
-    if (framework.GetModuleQObj("CAVEStereo"))
-    {
-        var caveMenu = viewMenu.addMenu("&CAVE and Stereo");
-        caveMenu.addAction("CAVE").triggered.connect(OpenCaveWindow);
-        caveMenu.addAction("Stereoscopy").triggered.connect(OpenStereoscopyWindow);
-    }
 
-    if (framework.GetModuleQObj("SceneStructure"))
+    if (framework.GetModuleByName("SceneStructure"))
     {
         viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
         viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
     }
 
-    if (framework.GetModuleQObj("Console"))
-    {
-        viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
+//    if (framework.GetModuleByName("Console"))
+//        viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
+
+    if (framework.GetModuleByName("ECEditor")) {
+        viewMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
+
+        var showVisualAction = viewMenu.addAction("Show visual editing aids");
+        var showVisual = framework.Config().Get("tundra", "eceditor", "show visual editing aids");
+        if (showVisual == null)
+            showVisual = true;
+        showVisualAction.checkable = true;
+        showVisualAction.checked = !showVisual; // lolwtf: we have to put negation here to make this work right.
+        showVisualAction.triggered.connect(ShowVisualEditingAids);
     }
 
-    //var eceditorAction = viewMenu.addAction("EC Editor");
-
-    if (framework.GetModuleQObj("DebugStats"))
+    if (framework.GetModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
-    if (framework.GetModuleQObj("Environment"))
-    {
-        viewMenu.addAction("Terrain Editor").triggered.connect(OpenTerrainEditor);
-        viewMenu.addAction("Post-processing").triggered.connect(OpenPostProcessWindow);
-    }
-
-    if (framework.GetModuleQObj("PythonScript"))
+    if (framework.GetModuleByName("PythonScript"))
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
-		
-	if (framework.GetModuleQObj("MumbleVoip"))
-		viewMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
-        
+
+    if (framework.GetModuleByName("MumbleVoip"))
+        viewMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
+
+    if (framework.GetModuleByName("OgreRendering"))
+        viewMenu.addAction("Renderer Settings").triggered.connect(OpenRendererSettings);
+
     var helpMenu = menu.addMenu("&Help");
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
@@ -87,8 +86,8 @@ if (!framework.IsHeadless())
     }
 
     function CheckForUpdates() {
-        if (framework.GetModuleQObj("UpdateModule"))
-            framework.GetModuleQObj("UpdateModule").RunUpdater("/checknow");
+        if (framework.GetModuleByName("UpdateModule"))
+            framework.GetModuleByName("UpdateModule").RunUpdater("/checknow");
     }
 
     function OpenMailingListUrl() {
@@ -104,42 +103,54 @@ if (!framework.IsHeadless())
     }
 
     function OpenSceneWindow() {
-        framework.GetModuleQObj("SceneStructure").ToggleSceneStructureWindow();
+        framework.GetModuleByName("SceneStructure").ToggleSceneStructureWindow();
     }
 
     function OpenAssetsWindow() {
-        framework.GetModuleQObj("SceneStructure").ToggleAssetsWindow();
+        framework.GetModuleByName("SceneStructure").ToggleAssetsWindow();
     }
 
     function OpenProfilerWindow() {
-        console.ExecuteCommand("prof");
+        framework.GetModuleByName("DebugStats").ShowProfilingWindow();
     }
 
     function OpenTerrainEditor() {
-        framework.GetModuleQObj("Environment").ShowTerrainWeightEditor();
+        framework.GetModuleByName("Environment").ShowTerrainWeightEditor();
     }
 
     function OpenPostProcessWindow() {
-        framework.GetModuleQObj("Environment").ShowPostProcessWindow();
+        framework.GetModuleByName("Environment").ShowPostProcessWindow();
     }
 
     function OpenPythonConsole() {
         console.ExecuteCommand("pythonconsole");
     }
-	
-	function OpenVoiceSettings() {
-		framework.GetModuleQObj("MumbleVoip").ToggleSettingsWidget();
-	}
+
+    function OpenVoiceSettings() {
+        framework.GetModuleByName("MumbleVoip").ToggleSettingsWidget();
+    }
 
     function OpenConsoleWindow() {
-        framework.GetModuleQObj("Console").ToggleConsole();
+        framework.GetModuleByName("Console").ToggleConsole();
+    }
+
+    function OpenEcEditorWindow() {
+        framework.GetModuleByName("ECEditor").ShowEditorWindow();
+    }
+
+    function ShowVisualEditingAids(show) {
+        framework.GetModuleByName("ECEditor").ShowVisualEditingAids(show);
     }
 
     function OpenStereoscopyWindow() {
-        framework.GetModuleQObj("CAVEStereo").ShowStereoscopyWindow();
+        framework.GetModuleByName("CAVEStereo").ShowStereoscopyWindow();
     }
 
     function OpenCaveWindow() {
-        framework.GetModuleQObj("CAVEStereo").ShowCaveWindow();
+        framework.GetModuleByName("CAVEStereo").ShowCaveWindow();
+    }
+
+    function OpenRendererSettings() {
+        framework.GetModuleByName("OgreRendering").ShowSettingsWindow();
     }
 }
