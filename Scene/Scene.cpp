@@ -359,10 +359,10 @@ void Scene::EmitActionTriggered(Entity *entity, const QString &action, const QSt
 }
 
 //before-the-fact counterparts for the modification signals above, for permission checks
-bool SceneManager::AllowModifyEntity(Scene::Entity *entity)
+bool SceneManager::AllowModifyEntity(UserConnection* user, Scene::Entity *entity)
 {
     ChangeRequest req;
-    emit AboutToModifyEntity(&req, entity);
+    emit AboutToModifyEntity(&req, user, entity);
     return req.allowed;
 }
 
