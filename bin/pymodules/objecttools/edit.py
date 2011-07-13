@@ -122,7 +122,8 @@ class ObjectEdit(Component):
         """
         
     def on_disconnected_tundra(self):
-        self.CREATE_ICONS = True
+        if naali.client.hasConnections() == False:
+            self.CREATE_ICONS = True
 
     def on_connected_tundra(self):
         if self.CREATE_ICONS:

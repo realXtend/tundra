@@ -27,8 +27,12 @@ var BrowserManager = Class.extend
 ({
     init: function()
     {
+        // This array keeps track of client connection numbering. Helps when switching to different connection
+        // Tab indexes 0 and 1 are hardcoded to be loginscreen and WWW tabs so this array index[0] represents value for
+        // tab index 2.
         this.clientTabOrderList = [];
 
+        // This array keeps track of all the open connection tabs and connection states for them.
         this.connected = [];
         this.squeezeEnabled = false;
         
@@ -333,25 +337,28 @@ var BrowserManager = Class.extend
 
         
         // Clear toolbars
-        for (var toolbarKey in p_.toolBarGroups)
+        if (client.hasConnections() == false)
         {
-            var aToolBar = p_.toolBarGroups[toolbarKey];
-            if (aToolBar != null)
+            for (var toolbarKey in p_.toolBarGroups)
             {
-                aToolBar.clear();
-                aToolBar.deleteLater();
+                var aToolBar = p_.toolBarGroups[toolbarKey];
+                if (aToolBar != null)
+                {
+                    aToolBar.clear();
+                    aToolBar.deleteLater();
+                }
             }
+            for (var containerKey in p_.toolBarContainers)
+            {
+                var container = p_.toolBarContainers[containerKey];
+                if (container != null)
+                    container.deleteLater();
+            }
+            p_.toolBarGroups = {};
+            p_.toolBarContainers = {};
+            p_.toolBar.clear();
+            p_.refreshSplitter();
         }
-        for (var containerKey in p_.toolBarContainers)
-        {
-            var container = p_.toolBarContainers[containerKey];
-            if (container != null)
-                container.deleteLater();
-        }
-        p_.toolBarGroups = {};
-        p_.toolBarContainers = {};
-        p_.toolBar.clear();
-        p_.refreshSplitter();
     },
     
     onBookmarksPressed: function()

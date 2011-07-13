@@ -40,7 +40,8 @@ Client::Client(TundraLogicModule* owner) :
     framework_(owner->GetFramework()),
     loginstate_(NotConnected),
     reconnect_(false),
-    client_id_(0)
+    client_id_(0),
+    connectionsAvailable(false)
 {
     tundraEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
@@ -187,7 +188,10 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
             emit Disconnected(removedConnection_);
         }
         else
+        {
+            connectionsAvailable = false;
             emit Disconnected(removedConnection_);
+        }
     }
     
     if (fail)
@@ -280,20 +284,20 @@ void Client::CheckLogin()
         propertiesIterator.next();
         loginstateIterator.next();
 
-        // Grep number from scenename; list[0] = TundraClient/TundraServer and list[1] = 0, 1, 2, ..., n: n â‚¬ Z+
+        // Grep number from scenename; list[0] = TundraClient/TundraServer and list[1] = 0, 1, 2, ..., n: n ¤ Z+
         // If we have multiple connections and one of them gets disconnected, our serverconnection map has "missing" key
         // while client has properties for it if it is making new connection. When this happens we compare if serverConnection
         // key is higher of value than loginstateIterator key after we grep the number out of it. If so, we proceed to next item
         // in loginstate and properties iterator.
-        QStringList list;
-        QString number;
+        //QStringList list;
+        //QString number;
         unsigned short temp;
 
         while (true)
         {
-            list = loginstateIterator.key().split("_");
-            number = list[1];
-            temp = number.toInt();
+            //list = loginstateIterator.key().split("_");
+            //number = list[1];
+            temp = owner_->Grep(loginstateIterator.key());
 
             if (temp < connectionIterator.key())
             {
@@ -427,6 +431,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
 
         loginstateIterator.value() = LoggedIn;
         client_idIterator.value() = msg.userID;
+        connectionsAvailable = true;
         TundraLogicModule::LogInfo("Logged in successfully");
         
         // Note: create scene & send info of login success only on first connection, not on reconnect
@@ -548,6 +553,11 @@ void Client::setActiveConnection(const QString& name, unsigned short con)
 unsigned short Client::getActiveConnection() const
 {
     return activeConnection;
+}
+
+bool Client::hasConnections()
+{
+    return connectionsAvailable;
 }
 
 }

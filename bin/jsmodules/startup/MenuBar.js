@@ -140,16 +140,19 @@ if (!framework.IsHeadless())
         if (createIcons)
 		{
 			ui.EmitAddAction(sceneAction);
-        	ui.EmitAddAction(assetAction);
+                        ui.EmitAddAction(assetAction);
 			createIcons = false;
 		}
     }
 
     function Disconnected() {
-        disconnectAction.setEnabled(false);
-        importWebAction.setEnabled(false);
-        exportAction.setEnabled(false);
-		createIcons = true;
+        if (!client.hasConnections())
+        {
+            disconnectAction.setEnabled(false);
+            importWebAction.setEnabled(false);
+            exportAction.setEnabled(false);
+                    createIcons = true;
+        }
     }
 
     function Quit() {

@@ -151,6 +151,7 @@ public slots:
     void emitSetOgreSignal(const QString&);
     void emitChangeSceneSignal(const QString&);
     unsigned short getActiveConnection() const;
+    bool hasConnections();
 
 private slots:
     void setActiveConnection(const QString&, unsigned short);
@@ -214,6 +215,9 @@ private:
 
     // This variable saves current active connection number
     unsigned short activeConnection;
+
+    // Flag if any connections available
+    bool connectionsAvailable;
 
 };
 
