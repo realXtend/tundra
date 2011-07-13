@@ -615,12 +615,12 @@ var BrowserManager = Class.extend
             return;
         else
         {
+            p_.tabs.currentIndex = 0;
+            p_.onTabIndexChanged(p_.tabs.currentIndex);
             if (p_.connected[index-2] == true)
                 client.Logout(false, client.getActiveConnection());
             p_.connected.splice(index-2,1);
             p_.clientTabOrderList.splice(index-2,1);
-            p_.tabs.currentIndex = 0;
-            p_.onTabIndexChanged(p_.tabs.currentIndex);
             p_.tabs.removeTab(index);
             return;
         }

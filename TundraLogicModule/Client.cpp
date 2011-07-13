@@ -186,6 +186,10 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
         {
             owner_->changeScene(scenenames_.constBegin().value());
             emit Disconnected(removedConnection_);
+
+            // This is for LoginWebScreen.js tabChange method.
+            QList<int> key = scenenames_.keys();
+            emit changeTab(key[0]);
         }
         else
         {
@@ -228,7 +232,6 @@ bool Client::checkIfConnected(QString address, QString port, QString protocol)
             unsigned short keyInt = key[counter];
             TundraLogicModule::LogInfo("Already connected to " + tempAddress.toStdString() + ":" + tempPort.toStdString() + ". Emitting " + ToString(keyInt));
             emit changeTab(keyInt);
-            //emitChangeSceneSignal("TundraClient_" + QString::number(counter));
             return true;
         }
         counter++;
