@@ -361,6 +361,7 @@ void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
         return;
 
     LoadFromDataInMemory((const char*)&assetData->data[0], assetData->data.size());
+    disconnect(this, SLOT(TerrainAssetLoaded(AssetPtr)));
 }
 
 /// Releases all GPU resources used for the given patch.
