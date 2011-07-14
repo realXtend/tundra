@@ -18,9 +18,6 @@
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 
-#include "SceneAPI.h"
-#include "Entity.h"
-
 #include <QSignalMapper>
 
 #include "MemoryLeakCheck.h"

@@ -5,7 +5,6 @@
 
 #include "MumbleVoipModule.h"
 #include "ModuleManager.h"
-#include "EC_Placeable.h"
 #include "WorldLogicInterface.h"
 #include "Entity.h"
 #include "ConsoleCommandUtils.h"
@@ -25,7 +24,6 @@ namespace MumbleVoip
     MumbleVoipModule::MumbleVoipModule()
         : IModule(module_name_),
           in_world_voice_provider_(0),
-          time_from_last_update_ms_(0),
           settings_widget_(0)
     {
     }

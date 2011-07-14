@@ -7,11 +7,6 @@
 #include "ServerInfo.h"
 #include "PCMAudioFrame.h"
 #include "Vector3D.h"
-#include "EC_Placeable.h" // for avatar position
-#include "EC_OpenSimPresence.h" // for avatar position
-#include "ModuleManager.h"    // for avatar info
-#include "WorldLogicInterface.h" // for avatar position
-#include "Entity.h" // for avatar position
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "User.h"
@@ -65,9 +60,7 @@ namespace MumbleVoip
             reason_ = connection_->GetReason();
             return;
         }
-        current_mumble_channel_ = server_info.channel_id;
         server_address_ = server_info.server;
-        positional_audio_enabled_ = false;
 
         connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)), Qt::UniqueConnection);
         connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()), Qt::UniqueConnection);
@@ -75,7 +68,7 @@ namespace MumbleVoip
 
         connection_->Join(server_info.channel_id);
         connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
-        connection_->SendPosition(positional_audio_enabled_);
+        connection_->SendPosition(settings_->GetPositionalAudioEnabled());
         connection_->SendAudio(audio_sending_enabled_);
         connection_->ReceiveAudio(audio_receiving_enabled_);
         
@@ -208,7 +201,19 @@ namespace MumbleVoip
 
     void Session::SetPosition(Vector3df position)
     {
+        user_position_ = position;
+    }
 
+    void Session::EnablePositionalAudio(bool enable)
+    {
+        settings_->SetPositionalAudioEnabled(enable);
+        if(connection_)
+            connection_->SendPosition(enable);
+    }
+
+    bool Session::GetPositionalAudioEnabled() const
+    {
+        return settings_->GetPositionalAudioEnabled();
     }
 
     QList<Communications::InWorldVoice::ParticipantInterface*> Session::Participants() const
@@ -592,7 +597,7 @@ namespace MumbleVoip
 
     QString Session::GetActiveChannel() const
     {
-        return active_channel_;
+        return current_mumble_channel_;
     }
 
     void Session::ClearParticipantList()
@@ -603,6 +608,7 @@ namespace MumbleVoip
             other_channel_users_.push_back(p->UserPtr());
             emit ParticipantLeft(p);
         }
+        participants_.clear();
     }
 
     void Session::PopulateParticipantList()
@@ -620,7 +626,7 @@ namespace MumbleVoip
 
     void Session::SetActiveChannel(QString channel_name) 
     {
-        if (active_channel_ == channel_name)
+        if (current_mumble_channel_ == channel_name)
             return;
 
         if (!channels_.contains(channel_name))
@@ -633,9 +639,12 @@ namespace MumbleVoip
             Close();
 
         ServerInfo server_info = channels_[channel_name];
+
+
+
+        current_mumble_channel_ = channel_name;
         OpenConnection(server_info);
-        active_channel_ = channel_name;
-        MumbleVoipModule::LogInfo(QString("Active voice channel changed to: %1").arg(active_channel_).toStdString());
+        MumbleVoipModule::LogInfo(QString("Active voice channel changed to: %1").arg(current_mumble_channel_).toStdString());
         PopulateParticipantList();
         emit Communications::InWorldVoice::SessionInterface::ActiceChannelChanged(channel_name);
     }

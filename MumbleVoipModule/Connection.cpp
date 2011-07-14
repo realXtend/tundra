@@ -77,6 +77,11 @@ namespace MumbleLib
         connection->MarkUserLeft(user);
     }
 
+    void ErrorCallback(const boost::system::error_code& error, Connection* connection)
+    {
+        connection->HandleError(error);
+    }
+
     Connection::Connection(MumbleVoip::ServerInfo &info, int playback_buffer_length_ms) :
             client_(0),
             authenticated_(false),
@@ -116,6 +121,7 @@ namespace MumbleLib
         client_->SetAuthCallback(boost::bind(&AuthCallback, this));
         client_->SetUserJoinedCallback(boost::bind(&UserJoinedCallback, _1, this));
         client_->SetUserLeftCallback(boost::bind(&UserLeftCallback, _1, this));
+        client_->SetErrorCallback(boost::bind(&ErrorCallback, _1, this));
         try
         {
             client_->Connect(MumbleClient::Settings(server.toStdString(), port.toStdString(), info.user_name.toStdString(), info.password.toStdString()));
@@ -177,6 +183,13 @@ namespace MumbleLib
             SAFE_DELETE(client_);
         }
         lock_state_.unlock();
+    }
+
+    void Connection::HandleError(const boost::system::error_code &error)
+    {
+        MumbleVoip::MumbleVoipModule::LogError("Error occured in mumbleclient. Category: " + ToString(error.category().name()) + " Error: " + ToString(error.message()));
+        state_ = STATE_ERROR;
+        emit StateChanged(state_);
     }
 
     Connection::State Connection::GetState() const

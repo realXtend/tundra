@@ -14,32 +14,18 @@
 
 namespace MumbleVoip
 {
-    class LinkPlugin;
-    class ServerInfoProvider;
     class Provider;
     class SettingsWidget;
 
     /**
-     *  Mumble support for Naali viewer.
+     *  Mumble support for Tundra.
      *
-     *  Offer console commands:
-     *    'mumble link(avatar_id, context_id)'
-     *    'mumble unlink'
-     *    'mumble start(server_url)'
-     * todo 'mumble status'
-     *  
-     *  Request mumble server information when user has logged to world and establish a connection
-     *  to mumble server.
+     *  Implements InWorldVoiceProvider and InWorldVoiceSession interfaces
+     *  to provide VOIP communications.
      *
-     *  By default the nativi mumble client is used to establish the connection.
-     *  If command line argument '--usemumblelibrary' has been given then mumbleclient library is used to 
-     *  establish a connection.
+     *  Uses mumbleclient library to establish connections to Mumble servers.
      *
-     *  In future this module will implement InWorldVoiceProvider interface and is controlled by user interface and 
-     *  mumbleclient library is used to make connections.
-     *
-     *  command line argument '--use_native_mumble_client' disabled mumbleclient library and will use native mumble
-     *  client application with link plugin.
+     *  See usage example in scenes/Mumble/
      */
     class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public IModule
     {
@@ -71,8 +57,6 @@ namespace MumbleVoip
         virtual void InitializeConsoleCommands();
         
         Provider* in_world_voice_provider_;
-
-        int time_from_last_update_ms_;
         event_category_id_t event_category_framework_;
         Settings settings_;
         SettingsWidget* settings_widget_;

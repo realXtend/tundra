@@ -13,6 +13,7 @@
 #include "Core.h"
 #include "MumbleDefines.h"
 #include "StatisticsHandler.h"
+#include <boost/asio/error.hpp>
 
 class QNetworkReply;
 class QNetworkAccessManager;
@@ -162,11 +163,13 @@ namespace MumbleLib
         //! Remove user from user list if it exist
         void MarkUserLeft(const MumbleClient::User& user);
 
-
         int GetPlaybackBufferMaxLengthMs() { return encoding_quality_; }
         
         //! Set the playback buffer max length for all user object.
         void SetPlaybackBufferMaxLengthMs(int length); // {playback_buffer_length_ms_ = length; }
+
+        //! Handle errors
+        void HandleError(const boost::system::error_code& error);
         
         double GetEncodingQuality() {return encoding_quality_;}
 

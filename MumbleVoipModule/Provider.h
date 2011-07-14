@@ -6,8 +6,6 @@
 #include <QObject>
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
-#include "AttributeChangeType.h"
-#include "WorldStream.h"
 
 namespace TundraLogic
 {
@@ -17,21 +15,14 @@ namespace TundraLogic
 class UiProxyWidget;
 class IEventData;
 class QSignalMapper;
-class EC_VoiceChannel;
 
 namespace Foundation
 {
     class Framework;
 }
-namespace Scene
-{
-    class Entity;
-}
-class IComponent;
 
 namespace MumbleVoip
 {
-    class ServerInfoProvider;
     class Session;
     class Settings;
 
