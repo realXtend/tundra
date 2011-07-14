@@ -61,23 +61,6 @@ if (!framework.IsHeadless())
         signalMenu.addAction("batteryLevelChanged(int)").triggered.connect(signalBatteryLevelChanged);
     }
 
-	// Chiru Multiconnection Menu
-	if (!server.IsAboutToStart())
-	{	
-		var multiMenu = mainwin.AddMenu("&MultiCon");
-		var THEREbeDRAGONS = multiMenu.addAction("*Dragons ahead*");
-		var multiconnect = multiMenu.addMenu("&connect");
-		multiconnect.addAction("Chiru world - UDP").triggered.connect(ConnectChiruUDP);
-		multiconnect.addAction("Chiru world - TCP").triggered.connect(ConnectChiruTCP);
-		multiconnect.addAction("Local world - UDP").triggered.connect(ConnectLocalUDP);
-		multiconnect.addAction("Local world - TCP").triggered.connect(ConnectLocalTCP);
-		multiconnect.addAction("Local world - 2346").triggered.connect(ConnectLocal2346);
-		var changeMenu = multiMenu.addMenu("Change scene");
-		changeMenu.addAction("TundraClient_0").triggered.connect(change0);
-		changeMenu.addAction("TundraClient_1").triggered.connect(change1);
-		changeMenu.addAction("TundraClient_2").triggered.connect(change2);
-		changeMenu.addAction("TundraClient_3").triggered.connect(change3);
-	}    
 	function mobilitySignalHandler(value)
     {
         //print("Emitted and catched MobilityModule signal with value: " + value);
@@ -300,70 +283,6 @@ if (!framework.IsHeadless())
     function ConnectLocal() {
         console.ExecuteCommand("disconnect");
         console.ExecuteCommand("connect(localhost, 2345, 'erkki', '', udp)");
-    }
-
-	// Chiru multiconnection changes:
-
-	function ConnectChiruUDP()
-	{
-        console.ExecuteCommand("connect(chiru.cie.fi, 2345, 'multitapsa', '', udp)");
-	}
-
-	function ConnectChiruTCP()
-	{
-        console.ExecuteCommand("connect(chiru.cie.fi, 2345, 'multitapsa', '', tcp)");
-	}
-
-	function ConnectLocalUDP()
-	{
-        console.ExecuteCommand("connect(localhost, 2345, 'multitapsa', '', udp)");
-	}
-
-	function ConnectLocalTCP()
-	{
-        console.ExecuteCommand("connect(localhost, 2345, 'multitapsa', '', tcp)");
-	}
-
-	function ConnectLocal2346()
-	{
-        console.ExecuteCommand("connect(localhost, 2346, 'multitapsa', '', tcp)");
-	}
-
-	function change0()
-	{
-		client.emitChangeSceneSignal("TundraClient_0");
-	}
-
-    function change1()
-	{
-		client.emitChangeSceneSignal("TundraClient_1");
-	}
-
-    function change2()
-	{
-		client.emitChangeSceneSignal("TundraClient_2");
-	}
-
-    function change3()
-	{
-		client.emitChangeSceneSignal("TundraClient_3");
-	}
-
-    function signalNetworkStateChanged() {      
-        var options = new Array();
-        
-        options[0] = "Undetermined";
-        options[1] = "Connecting";
-        options[2] = "Connected";
-        options[3] = "Disconnected";
-        options[4] = "Roaming";
-        
-        var value = QInputDialog.getItem(0, "networkStateChanged(bool)", "value:", options, 0, false, 0);
-        
-        for(var x=0; x < options.length; x++)
-        {
-            if(value == options[x]) mobilityModule.networkStateChanged(x);
-        }
     }
     
     function signalNetworkModeChanged() {
