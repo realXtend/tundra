@@ -546,9 +546,13 @@ namespace MumbleVoip
         switch(connection_->GetState())
         {
         case STATE_ERROR:
-            if (state_ == STATE_OPEN)
+            if (state_ == STATE_OPEN) // Reconnect
             {
-                // connection lost
+                Close();
+                ServerInfo server_info = channels_[current_mumble_channel_];
+                OpenConnection(server_info);
+                MumbleVoipModule::LogInfo("Connection to server lost. Reconnecting..");
+                PopulateParticipantList();
             }
             break;
         }
@@ -639,9 +643,6 @@ namespace MumbleVoip
             Close();
 
         ServerInfo server_info = channels_[channel_name];
-
-
-
         current_mumble_channel_ = channel_name;
         OpenConnection(server_info);
         MumbleVoipModule::LogInfo(QString("Active voice channel changed to: %1").arg(current_mumble_channel_).toStdString());
