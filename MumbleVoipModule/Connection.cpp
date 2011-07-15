@@ -131,6 +131,7 @@ namespace MumbleLib
         }
         user_name_ = info.user_name;
         user_comment_ = info.avatar_id;
+        current_server_ = info.server;
 
         lock_state_.lockForWrite();
         state_ = STATE_AUTHENTICATING;
@@ -330,17 +331,20 @@ namespace MumbleLib
         QMutexLocker locker1(&mutex_authentication_);
         QMutexLocker locker2(&mutex_channels_);
 
+        QString sub_channel = channel_name.split("\\", QString::SkipEmptyParts, Qt::CaseInsensitive).last();
+
         if (!authenticated_)
         {
-            join_request_ = channel_name;
+            join_request_ = sub_channel;
             return; 
         }
 
         foreach(Channel* channel, channels_)
         {
-            if (channel->FullName() == channel_name)
+            if (channel->FullName() == sub_channel)
             {
                 Join(channel);
+                break;
             }
         }
     }

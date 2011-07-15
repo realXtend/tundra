@@ -66,7 +66,7 @@ namespace MumbleVoip
         connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()), Qt::UniqueConnection);
         connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()), Qt::UniqueConnection);
 
-        connection_->Join(server_info.channel_id);
+        connection_->Join(server_info.channel_name);
         connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
         connection_->SendPosition(settings_->GetPositionalAudioEnabled());
         connection_->SendAudio(audio_sending_enabled_);
@@ -639,12 +639,20 @@ namespace MumbleVoip
             return;
         }
 
-        if (GetState() != STATE_CLOSED)
-            Close();
-
         ServerInfo server_info = channels_[channel_name];
+
+        if(connection_ && QString::compare(server_info.server, connection_->GetCurrentServer(), Qt::CaseInsensitive) == 0 && GetState() != STATE_CLOSED)
+        {
+            connection_->Join(channel_name);
+        }
+        else
+        {
+            if (GetState() != STATE_CLOSED)
+                Close();
+            OpenConnection(server_info);
+        }
+
         current_mumble_channel_ = channel_name;
-        OpenConnection(server_info);
         MumbleVoipModule::LogInfo(QString("Active voice channel changed to: %1").arg(current_mumble_channel_).toStdString());
         PopulateParticipantList();
         emit Communications::InWorldVoice::SessionInterface::ActiceChannelChanged(channel_name);

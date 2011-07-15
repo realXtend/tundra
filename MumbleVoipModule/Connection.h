@@ -48,8 +48,8 @@ namespace MumbleLib
     //! to use this class.
     //!
     //! This is basically a wrapper over Client class of mumbleclient library.
-    //  Mumbleclient library has a main loop whitch calls callback functions in this class
-    //! so thread safaty have to be dealed within this class.
+    //! Mumbleclient library has a main loop which calls callback functions in this class
+    //! so thread safety have to be dealed within this class.
     //! 
     //! Connections has Channel and User objects.
     class Connection : public QObject
@@ -173,6 +173,8 @@ namespace MumbleLib
         
         double GetEncodingQuality() {return encoding_quality_;}
 
+        QString GetCurrentServer() { return current_server_; }
+
         virtual int GetAverageBandwithIn() const;
         virtual int GetAverageBandwithOut() const;
 
@@ -206,6 +208,7 @@ namespace MumbleLib
         QList<MumbleVoip::PCMAudioFrame*> encode_queue_;
         QList<Channel*> channels_; // @todo Use shared ptr
         QMap<int, User*> users_; // maps: session id <-> User object
+        QString current_server_;
 
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;
