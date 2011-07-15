@@ -228,6 +228,9 @@ bool Client::checkIfConnected(QString address, QString port, QString protocol)
 
         if (address == tempAddress && port == tempPort && protocol == tempProtocol)
         {
+            // If this is true, we got loginscreen connect-button smasher user. :)
+            if (scenenames_.size() < properties_list_.size())
+                return false;
             QList<int> key = scenenames_.keys();
             unsigned short keyInt = key[counter];
             TundraLogicModule::LogInfo("Already connected to " + tempAddress.toStdString() + ":" + tempPort.toStdString() + ". Emitting " + ToString(keyInt));
@@ -292,14 +295,10 @@ void Client::CheckLogin()
         // while client has properties for it if it is making new connection. When this happens we compare if serverConnection
         // key is higher of value than loginstateIterator key after we grep the number out of it. If so, we proceed to next item
         // in loginstate and properties iterator.
-        //QStringList list;
-        //QString number;
         unsigned short temp;
 
         while (true)
         {
-            //list = loginstateIterator.key().split("_");
-            //number = list[1];
             temp = owner_->Grep(loginstateIterator.key());
 
             if (temp < connectionIterator.key())
