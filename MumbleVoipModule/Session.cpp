@@ -17,6 +17,8 @@
 #include "MumbleVoipModule.h"
 #include "Settings.h"
 
+#include <QTimer>
+
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
@@ -35,6 +37,7 @@ namespace MumbleVoip
         connection_(0),
         settings_(settings),
         local_echo_mode_(false),
+        reconnect_timeout_(300),
         server_address_("")
     {
         connect(settings_, SIGNAL(PlaybackBufferSizeMsChanged(int)), this, SLOT(SetPlaybackBufferSizeMs(int)));
@@ -548,14 +551,26 @@ namespace MumbleVoip
         case STATE_ERROR:
             if (state_ == STATE_OPEN) // Reconnect
             {
-                Close();
-                ServerInfo server_info = channels_[current_mumble_channel_];
-                OpenConnection(server_info);
-                MumbleVoipModule::LogInfo("Connection to server lost. Reconnecting..");
-                PopulateParticipantList();
+                Reconnect();
             }
             break;
         }
+    }
+
+    void Session::Reconnect()
+    {
+        Close();
+        ServerInfo server_info = channels_[current_mumble_channel_];
+        OpenConnection(server_info);
+        MumbleVoipModule::LogInfo("Connection to server lost. Reconnecting..");
+
+        if(state_ == STATE_ERROR)
+        {
+            MumbleVoipModule::LogInfo("..Reconnection failed, trying again in " + ToString(reconnect_timeout_) + " seconds..");
+            QTimer::singleShot(reconnect_timeout_, this, SLOT(Reconnect()));
+        }
+        else
+            PopulateParticipantList();
     }
 
     void Session::SetPlaybackBufferSizeMs(int size)

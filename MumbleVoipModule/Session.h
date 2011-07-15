@@ -113,6 +113,7 @@ namespace MumbleVoip
         QString active_channel_;
         QMap<QString, ServerInfo> channels_;
         Vector3df user_position_;
+        int reconnect_timeout_; // how long to wait before trying to reconnect (msecs)
 
     private slots:
         void CreateNewParticipant(MumbleLib::User*);
@@ -124,6 +125,7 @@ namespace MumbleVoip
         void CheckConnectionState();
         void SetPlaybackBufferSizeMs(int);
         void SetEncodeQuality(double);
+        void Reconnect();
     };
 
 } // MumbleVoip
