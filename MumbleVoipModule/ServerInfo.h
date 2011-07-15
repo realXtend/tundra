@@ -19,6 +19,7 @@ namespace MumbleVoip
 
         //! For connecting to server
         QString server;
+        QString port;
         QString channel_id;
         QString user_name; // Value from server/EC is not user since we use avatar's name 
         QString password;

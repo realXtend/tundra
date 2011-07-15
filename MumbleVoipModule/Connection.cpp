@@ -108,11 +108,6 @@ namespace MumbleLib
         QMutexLocker client_locker(&mutex_client_);
         client_ = mumble_lib->NewClient();
 
-        QUrl server_url(QString("mumble://%1").arg(info.server));
-
-        QString port = QString::number(server_url.port(MUMBLE_DEFAULT_PORT_)); // default port name
-        QString server = server_url.host();
-
         // \todo Handle connection error
         client_->SetRawUdpTunnelCallback( boost::bind(&RawUdpTunnelCallback, _1, _2, this));
         client_->SetChannelAddCallback(boost::bind(&ChannelAddCallback, _1, this));
@@ -124,7 +119,7 @@ namespace MumbleLib
         client_->SetErrorCallback(boost::bind(&ErrorCallback, _1, this));
         try
         {
-            client_->Connect(MumbleClient::Settings(server.toStdString(), port.toStdString(), info.user_name.toStdString(), info.password.toStdString()));
+            client_->Connect(MumbleClient::Settings(info.server.toStdString(), info.port.toStdString(), info.user_name.toStdString(), info.password.toStdString()));
         }
         catch(std::exception &e)
         {
@@ -187,7 +182,7 @@ namespace MumbleLib
 
     void Connection::HandleError(const boost::system::error_code &error)
     {
-        MumbleVoip::MumbleVoipModule::LogError("Error occured in mumbleclient. Category: " + ToString(error.category().name()) + " Error: " + ToString(error.message()));
+        MumbleVoip::MumbleVoipModule::LogError("Relayed from mumbleclient (" + ToString(error.category().name()) + "\\" + ToString(error.message()) + ")");
         state_ = STATE_ERROR;
         emit StateChanged(state_);
     }

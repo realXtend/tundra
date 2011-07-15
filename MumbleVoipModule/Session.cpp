@@ -661,12 +661,13 @@ namespace MumbleVoip
         emit Communications::InWorldVoice::SessionInterface::ChannelListChanged(GetChannels());
     }
 
-    void Session::AddChannel(QString name, QString username, QString server, QString password, QString version, QString channelIdBase)
+    void Session::AddChannel(QString name, QString username, QString server, QString port, QString password, QString version, QString channelIdBase)
     {
         ServerInfo server_info;
         server_info.version = version;
         server_info.user_name = username;
         server_info.server = server;
+        server_info.port = port;
         server_info.password = password;
         server_info.channel_name = name;
         server_info.channel_id = channelIdBase + name;
