@@ -1,0 +1,4 @@
+<config>
+    <entry>KinectModule</entry>
+    <dependency>OgreRenderingModule</dependency>
+</config>
