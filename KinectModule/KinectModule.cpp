@@ -39,7 +39,7 @@ KinectModule::KinectModule() :
     videoPreviewLabel_(0),
     depthPreviewLabel_(0),
     skeletonPreviewLabel_(0),
-    debugging_(true) // Change to true to see debug widgets and prints
+    debugging_(false) // Change to true to see debug widgets and prints
 {
     if (debugging_)
     {
