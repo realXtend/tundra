@@ -707,3 +707,33 @@ macro(link_package_qtdeclarative)
         target_link_libraries(${TARGET_NAME} ${QT_QTDECLARATIVE_LIBRARY})
     endif ()
 endmacro()
+
+macro (configure_kinect)
+    if (WIN32 AND VC100)
+        message (STATUS "")
+        message (STATUS "** Configuring KINECT")
+        
+        # If your kinect sdk is not found set KINECT_ROOT to your installation
+        set (_KINECT_FIND_PATHS 
+            "$ENV{KINECT_ROOT}/inc"
+            "$ENV{KINECT_ROOT}/lib"
+            "C:/Program Files (x86)/Microsoft*Kinect*/inc"
+            "C:/Program Files (x86)/Microsoft*Kinect*/lib"
+            "C:/Program Files/Microsoft*Kinect*/inc"
+            "C:/Program Files/Microsoft*Kinect*/lib"
+        )
+        
+        find_path (KINECT_INCLUDE_DIRS MSR_NuiApi.h PATHS ${_KINECT_FIND_PATHS})   
+        find_path (KINECT_LIBRARY_DIRS MSRKinectNUI.lib PATHS ${_KINECT_FIND_PATHS})
+        find_library (KINECT_LIBRARIES MSRKinectNUI PATHS ${_KINECT_FIND_PATHS})
+
+        if (${KINECT_INCLUDE_DIRS} STREQUAL "KINECT_INCLUDE_DIRS-NOTFOUND" OR
+            ${KINECT_LIBRARY_DIRS} STREQUAL "KINECT_LIBRARY_DIRS-NOTFOUND" OR
+            ${KINECT_LIBRARIES} STREQUAL "KINECT_LIBRARIES-NOTFOUND")
+            message (WARNING "-- Could not automatically find Microsoft Kinect SDK, set KINECT_ROOT to your install directory.")
+        endif ()
+        
+        message (STATUS "")
+        sagase_configure_report (KINECT)
+    endif ()    
+endmacro ()
