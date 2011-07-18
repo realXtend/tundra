@@ -41,6 +41,7 @@ Framework::Framework(int argc, char** argv) :
     asset(0),
     audio(0),
     plugin(0),
+    config(0),
     ui(0),
 //    connection(0),
 //    server(0),
@@ -71,16 +72,13 @@ Framework::Framework(int argc, char** argv) :
         profiler = new Profiler();
         PROFILE(FW_Startup);
 #endif
-
-        // Create QApplication
-        application = new Application(this, argc_, argv_);
-
-        // Create ConfigAPI and pass application data.
+        // Create ConfigAPI, pass application data and prepare data folder.
         config = new ConfigAPI(this);
         config->SetApplication(applicationOrganization, applicationName, applicationVersion);
-
-        // Prepare ConfigAPIs working directory
         config->PrepareDataFolder("configuration");
+
+        // Create QApplication
+        application = new Application(this, argc_, argv_);       
 
         // Create core APIs
         frame = new FrameAPI(this);
