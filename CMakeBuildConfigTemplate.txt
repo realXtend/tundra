@@ -14,78 +14,65 @@
 ############################################################################################################
 ###### BUILD CONFIGURATION DEFINES #########################################################################
 
+message ("\n=========== Build Configuration ===========\n")
+
 ## Various flags/defines that configure your build
 
-set (HYDRAX 1)                      # Configure the use of Hydrax, 
-if (MSVC AND HYDRAX)                # http://www.ogre3d.org/tikiwiki/Hydrax
+set (BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
+set (WINDOWS_APP 0)                 # Only for windows: 0 = the console (output log) window is created and shown, 1 = this window is not shown.
+set (ENABLE_HYDRAX 1)               # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
+set (ENABLE_SKYX 1)                 # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
+set (ENABLE_OGRE_ASSET_EDITOR 1)    # Enables Ogre asset editor module.
+set (ENABLE_OPEN_ASSET_IMPORT 0)    # Enables Open Asset Import Library, which can be used to import various mesh formats.
+set (ENABLE_PROFILING 0)            # Enable the following flag to add compile with support for a built-in execution time profiler.
+set (ENABLE_JS_PROFILING 0)         # Enable js profiling?
+set (ENABLE_MEMORY_LEAK_CHECKS 1)   # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
+
+message (STATUS "BUILD_SDK_ONLY            = " ${BUILD_SDK_ONLY})
+message (STATUS "WINDOWS_APP               = " ${WINDOWS_APP})
+message (STATUS "ENABLE_HYDRAX             = " ${ENABLE_HYDRAX})
+message (STATUS "ENABLE_SKYX               = " ${ENABLE_SKYX})
+message (STATUS "ENABLE_OGRE_ASSET_EDITOR  = " ${ENABLE_OGRE_ASSET_EDITOR})
+message (STATUS "ENABLE_OPEN_ASSET_IMPORT  = " ${ENABLE_OPEN_ASSET_IMPORT})
+message (STATUS "ENABLE_PROFILING          = " ${ENABLE_PROFILING})
+message (STATUS "ENABLE_JS_PROFILING       = " ${ENABLE_JS_PROFILING})
+message (STATUS "ENABLE_MEMORY_LEAK_CHECKS = " ${ENABLE_MEMORY_LEAK_CHECKS})
+message ("\n")
+
+if (ENABLE_PROFILING)
+    add_definitions (-DPROFILING)
+endif ()
+if (ENABLE_JS_PROFILING)
+    add_definitions (-DENABLE_JS_PROFILING)
+endif()
+if (MSVC AND ENABLE_HYDRAX)
     configure_hydrax ()
 endif()
-
-set (SKYX 1)                        # Configure the use of SkyX,
-if (MSVC AND SKYX)                  # http://www.ogre3d.org/tikiwiki/SkyX
+if (MSVC AND ENABLE_SKYX)
     configure_skyx()
 endif()
-
-set (OPENASSETIMPORT 0)             # Enables Open Asset Import Library, which can be
-if (MSVC)                           # used to import various mesh formats.
-    #SET(OPENASSETIMPORT 1)         # Disabled for now in tundra2?
-endif()
-
-set (OGREASSETEDITOR 1)             # Enables Ogre asset editor module.
-
-# If WINDOWS_APP == 0, the console (output log) window is created and shown when the application starts on Windows.
-# If WINDOWS_APP == 1, this window is not shown. This flag only affects when building on Windows.
-set (WINDOWS_APP 0)
-
-# Enable the following flag to add compile with support for a built-in execution time profiler.
-# add_definitions(-DPROFILING)
-
-# Enable js profiling?
-# add_definitions -(DENABLE_JS_PROFILING)
-
-# If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
-if (MSVC)
+if (MSVC AND ENABLE_MEMORY_LEAK_CHECKS)
     add_definitions(-DMEMORY_LEAK_CHECK)
 endif()
 
-# duplicates are in CMakeLists.txt, can be removed??
-#use_package(OPENAL)
-#use_package(OGG)
-#use_package(VORBIS)
-
-############################################################################################################
-###### REQUIRED FRAMEWORK ##################################################################################
-
-## The following are the core modules/libs that are required 
-## for the project to build. None of these can be omitted.
-
-AddProject(Core Framework)
-AddProject(Core Scene)
-AddProject(Core Tundra)
-
-AddProject(Core Asset)
-AddProject(Core Audio)
-AddProject(Core Console)
-AddProject(Core Input)
-AddProject(Core Ui)
-
-AddProject(Core OgreRenderingModule)
-
 ############################################################################################################
 ###### ENTITY COMPONENTS ###################################################################################
+
+message ("\n=========== Configuring Entity-Components ===========\n")
 
 ## The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
 ## they will not be able to conditionally compile the EC.
 
 ## The following EC's are declared by TundraProtocolModule and are optional.
 ## You may comment these lines out to disable any ECs you do not want to include.
+
 AddEntityComponent(EC_Highlight)
 AddEntityComponent(EC_Sound)
 AddEntityComponent(EC_HoveringText)
 AddEntityComponent(EC_ParticleSystem)
 AddEntityComponent(EC_Billboard)
 AddEntityComponent(EC_TransformGizmo)
-AddEntityComponent(EC_Script)                       # Used by both PythonScriptModule and JavascriptModule. It is optional.
+AddEntityComponent(EC_Script)                       # Optional but Used by both PythonScriptModule and JavascriptModule.
 
 #AddEntityComponent(EC_Light)
 #AddEntityComponent(EC_Touchable)
@@ -93,31 +80,53 @@ AddEntityComponent(EC_Script)                       # Used by both PythonScriptM
 #AddEntityComponent(EC_ProximityTrigger)
 
 ############################################################################################################
+###### REQUIRED STATIC FRAMEWORK ###########################################################################
+
+message ("\n=========== Configuring Static Framework ===========\n")
+
+## The following are the core modules/libs that are required 
+## for the project to build. None of these can be omitted.
+
+AddProject(Core Framework)
+AddProject(Core Scene)
+AddProject(Core Tundra)
+AddProject(Core Asset)
+AddProject(Core Audio)
+AddProject(Core Console)
+AddProject(Core Input)
+AddProject(Core Ui)
+
+############################################################################################################
 ###### REQUIRED MODULES ####################################################################################
 
-## Here we should have module that are required to build the SDK at minimum (Is this the case??)
+message ("\n=========== Configuring Required Modules ===========\n")
 
+## Here we should have module that are required to build the SDK at minimum
+
+AddProject(Core OgreRenderingModule)
 AddProject(Core TundraProtocolModule)
 AddProject(Core AssetModule)
 AddProject(Core ECEditorModule)
-AddProject(Core PhysicsModule)                      # Depends on OgreRenderingModule.
+AddProject(Core PhysicsModule)                      # Depends on OgreRenderingModule and EnvironmentModule.
+AddProject(Core EnvironmentModule)                  # Depends on OgreRenderingModule.
 
 ############################################################################################################
 ###### OPTIONAL MODULES ####################################################################################
 
+message ("\n=========== Configuring Optional Modules ===========\n")
+
 AddProject(Application AvatarModule)                # Depends on OgreRenderingModule.
-AddProject(Application EnvironmentModule)           # Depends on OgreRenderingModule.
 AddProject(Application DebugStatsModule)            # Enables a developer window for debugging. Depends on OgreRenderingModule and EnvironmentModule.
 AddProject(Application SkyXHydrax)                  # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
 AddProject(Application JavascriptModule)            # Allows QtScript-created scene script instances.
 #AddProject(Application PythonScriptModule)         # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule and AvatarModule
 #AddProject(Application UpdateModule                # Windows msi installer only. Adds 'Check For Updates' functionality.
 
-if (OGREASSETEDITOR)
+if (ENABLE_OGRE_ASSET_EDITOR)
     AddProject(Application OgreAssetEditorModule)   # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
 endif()
 
-if (OPENASSETIMPORT)
+if (ENABLE_OPEN_ASSET_IMPORT)
     AddProject(Application OpenAssetImport)         # Allows import of various mesh file formats
 endif()
 
