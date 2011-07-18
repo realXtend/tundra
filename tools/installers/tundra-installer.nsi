@@ -9,7 +9,7 @@ Page instfiles
 InstallDir "$PROGRAMFILES\Tundra ${VERSION}"
 VIProductVersion "${VERSION}"
 
-OutFile "Tundra-${VERSION}.exe"
+OutFile "realXtend-Tundra-${VERSION}.exe"
 
 XPStyle on
 
@@ -17,7 +17,9 @@ RequestExecutionLevel admin
 
 Section ""
   SetOutPath $INSTDIR
-  File /r build\*.*
+  
+  # We are inside tools\installers
+  File /r ..\..\build\*.*
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tundra" \
                    "DisplayName" "Tundra ${VERSION}"
