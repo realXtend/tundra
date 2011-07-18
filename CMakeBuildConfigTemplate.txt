@@ -72,12 +72,15 @@ AddEntityComponent(EC_HoveringText)
 AddEntityComponent(EC_ParticleSystem)
 AddEntityComponent(EC_Billboard)
 AddEntityComponent(EC_TransformGizmo)
-AddEntityComponent(EC_Script)                       # Optional but Used by both PythonScriptModule and JavascriptModule.
 
-#AddEntityComponent(EC_Light)
-#AddEntityComponent(EC_Touchable)
-#AddEntityComponent(EC_PlanarMirror)
-#AddEntityComponent(EC_ProximityTrigger)
+## Here are the Application level ECs that wont be added if BUILD_SDK_ONLY is TRUE (default is FALSE)
+
+if (NOT BUILD_SDK_ONLY)
+    AddEntityComponent(EC_Script)                   # Optional but Used by both PythonScriptModule and JavascriptModule.
+    AddEntityComponent(EC_Touchable)
+    AddEntityComponent(EC_PlanarMirror)
+    AddEntityComponent(EC_ProximityTrigger)
+endif()
 
 ############################################################################################################
 ###### REQUIRED STATIC FRAMEWORK ###########################################################################

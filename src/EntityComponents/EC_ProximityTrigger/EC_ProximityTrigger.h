@@ -8,7 +8,6 @@
 #pragma once
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 
 #include <QVector3D>
 #include <QQuaternion>
@@ -52,9 +51,10 @@ Does not emit any actions.
 class EC_ProximityTrigger : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_ProximityTrigger);
+    COMPONENT_NAME("EC_ProximityTrigger", 33)
 
 public:
+    explicit EC_ProximityTrigger(Scene *scene);
     ~EC_ProximityTrigger();
 
     /// Active flag. Trigger signals are only generated when this is true. Is true by default
@@ -73,7 +73,7 @@ public:
 signals:
     /// Trigger signal. When active flag is on, is sent each frame for every other entity that also has an EC_ProximityTrigger and is close enough.
     /// Note: needs to be lowercase for QML to accept connections to it
-    void triggered(Scene::Entity* otherEntity, float distance);
+    void triggered(Entity* otherEntity, float distance);
 
 public slots:
     /// Attribute has been updated
@@ -82,12 +82,10 @@ public slots:
 private slots:
     /// Check for other triggers and emit signals
     void Update(float timeStep);
+
     /// Periodic update. Set up the next periodic update, then check triggers
     void PeriodicUpdate();
+
     /// Change update mode (periodic, or every frame)
     void SetUpdateMode();
-    
-private:
-    EC_ProximityTrigger(IModule *module);
 };
-
