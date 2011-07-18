@@ -7,14 +7,16 @@
 
 #include "EC_ProximityTrigger.h"
 
+#include "Framework.h"
+#include "Scene.h"
 #include "Entity.h"
-#include "SceneManager.h"
+
 #include "EC_Placeable.h"
 #include "LoggingFunctions.h"
 #include "FrameAPI.h"
 
-EC_ProximityTrigger::EC_ProximityTrigger(IModule *module) :
-    IComponent(module->GetFramework()),
+EC_ProximityTrigger::EC_ProximityTrigger(Scene *scene) :
+    IComponent(scene),
     active(this, "Is active", true),
     thresholdDistance(this, "Threshold distance", 0.0f),
     interval(this, "Trigger signal interval", 0.0f)
@@ -39,27 +41,27 @@ void EC_ProximityTrigger::Update(float timeStep)
         return;
     float threshold = thresholdDistance.Get();
     
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
     if (!entity)
         return;
-    Scene::SceneManager* mgr = entity->GetScene();
-    if (!mgr)
+    Scene* scene = entity->ParentScene();
+    if (!scene)
         return;
     EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
     if (!placeable)
         return;
     
-    EntityList otherTriggers = mgr->GetEntitiesWithComponent(EC_ProximityTrigger::TypeNameStatic());
+    EntityList otherTriggers = scene->GetEntitiesWithComponent(EC_ProximityTrigger::TypeNameStatic());
     for(EntityList::iterator i = otherTriggers.begin(); i != otherTriggers.end(); ++i)
     {
-        Scene::Entity* otherEntity = (*i).get();
+        Entity* otherEntity = (*i).get();
         if (otherEntity != entity)
         {
             EC_Placeable* otherPlaceable = otherEntity->GetComponent<EC_Placeable>().get();
             if (!otherPlaceable)
                 continue;
-            Vector3df offset = placeable->transform.Get().position - otherPlaceable->transform.Get().position;
-            float distance = offset.getLength();
+            float3 offset = placeable->transform.Get().pos - otherPlaceable->transform.Get().pos;
+            float distance = offset.Length();
             
             if ((threshold <= 0.0f) || (distance <= threshold))
             {
@@ -71,7 +73,7 @@ void EC_ProximityTrigger::Update(float timeStep)
 
 void EC_ProximityTrigger::SetUpdateMode()
 {
-    FrameAPI* frame = framework_->Frame();
+    FrameAPI* frame = framework->Frame();
     
     float intervalSec = interval.Get();
     if (intervalSec <= 0.0f)
@@ -92,7 +94,7 @@ void EC_ProximityTrigger::PeriodicUpdate()
     // Set up the next periodic update
     float intervalSec = interval.Get();
     if (intervalSec > 0.0f)
-        framework_->Frame()->DelayedExecute(intervalSec, this, SLOT(PeriodicUpdate()));
+        framework->Frame()->DelayedExecute(intervalSec, this, SLOT(PeriodicUpdate()));
     
     Update(intervalSec);
 }

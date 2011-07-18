@@ -8,7 +8,11 @@
 
 #include "EC_PlanarMirror.h"
 
+#include "OgreRenderingModule.h"
 #include "Renderer.h"
+#include "OgreWorld.h"
+
+#include "Framework.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "LoggingFunctions.h"
@@ -18,10 +22,18 @@
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 
+#include <OgreTextureUnitState.h>
+#include <OgreCamera.h>
+#include <OgreViewport.h>
+#include <OgreSceneManager.h>
+#include <OgreEntity.h>
+#include <OgreMeshManager.h>
+#include <OgreMaterialManager.h>
+
 int EC_PlanarMirror::mirror_cam_num_ = 0;
 
-EC_PlanarMirror::EC_PlanarMirror(IModule *module)
-    :IComponent(module->GetFramework()),
+EC_PlanarMirror::EC_PlanarMirror(Scene *scene) :
+    IComponent(scene),
     reflectionPlaneVisible(this, "Show reflection plane", true),
     mirror_texture_(0),
     tex_unit_state_(0),
@@ -36,9 +48,9 @@ EC_PlanarMirror::EC_PlanarMirror(IModule *module)
 
 EC_PlanarMirror::~EC_PlanarMirror()
 {
-    if(renderer_.expired())
+    if(!renderer_)
         return;
-    Ogre::SceneManager *mngr = renderer_.lock()->GetSceneManager();
+    Ogre::SceneManager *mngr = renderer_->GetActiveOgreWorld()->GetSceneManager();
     tex_unit_state_->setProjectiveTexturing(false);
     mngr->destroyEntity(mirror_plane_entity_);
     SAFE_DELETE(mirror_plane_);
@@ -49,7 +61,7 @@ void EC_PlanarMirror::OnAttributeUpdated(IAttribute* attr)
     if (!ViewEnabled())
         return;
 
-    if(attr->GetNameString()=="Show Reflection Plane")
+    if (attr->Name() == "Show Reflection Plane")
         mirror_plane_entity_->setVisible(getreflectionPlaneVisible());
 }
 
@@ -57,13 +69,12 @@ void EC_PlanarMirror::Update(float val)
 {
     if (!ViewEnabled())
         return;
-
-    if(renderer_.expired())
+    if (!renderer_)
         return;
 
-    const Ogre::Camera* cam = renderer_.lock()->GetCurrentCamera();
+    const Ogre::Camera* cam = renderer_->GetActiveOgreCamera();
 
-    if(mirror_cam_)
+    if (mirror_cam_)
     {
         mirror_cam_->setOrientation(cam->getRealOrientation());
         mirror_cam_->setPosition(cam->getRealPosition());
@@ -76,10 +87,16 @@ void EC_PlanarMirror::Initialize()
     if (!ViewEnabled())
         return;
 
-    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
-    assert(!renderer_.expired());
+    if (framework->GetModule<OgreRenderer::OgreRenderingModule>())
+        renderer_ = framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+
+    if (!renderer_)
+    {
+        LogError("EC_PlanarMirror could not acquire Renderer, cannot initialize.");
+        return;
+    }
     
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
     assert(entity);
     if (!entity)
         return;
@@ -107,8 +124,8 @@ void EC_PlanarMirror::Initialize()
         return;
     }
 
-    const Ogre::Camera* v_cam = renderer_.lock()->GetCurrentCamera();
-    const Ogre::Viewport* vp = renderer_.lock()->GetViewport();
+    const Ogre::Camera* v_cam = renderer_->GetActiveOgreCamera();
+    const Ogre::Viewport* vp = renderer_->GetViewport();
 
     mirror_cam_ = cam->GetCamera();
     mirror_cam_->setFarClipDistance(v_cam->getFarClipDistance());
@@ -117,7 +134,7 @@ void EC_PlanarMirror::Initialize()
     mirror_cam_->setAspectRatio(Ogre::Real(vp->getActualWidth())/Ogre::Real(vp->getActualHeight()));
     mirror_cam_->setFOVy(v_cam->getFOVy());
 
-    QString texname = target->gettargettexture();
+    QString texname = target->gettextureName();
     Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().getByName(Ogre::String(texname.toStdString()));
     
     if (!tex.get())
@@ -139,8 +156,8 @@ void EC_PlanarMirror::Initialize()
 
     mirror_cam_->getViewport()->setOverlaysEnabled(false);
 
-    connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
-    connect(framework_->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int, int)), this, SLOT(WindowResized(int,int)));
+    connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
+    connect(framework->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int, int)), this, SLOT(WindowResized(int,int)));
 }
 
 void EC_PlanarMirror::WindowResized(int w,int h)
@@ -148,9 +165,9 @@ void EC_PlanarMirror::WindowResized(int w,int h)
     if (!ViewEnabled())
         return;
 
-    if(!renderer_.expired())
+    if(renderer_)
     {
-        const Ogre::Viewport* vp = renderer_.lock()->GetViewport();
+        const Ogre::Viewport* vp = renderer_->GetViewport();
         mirror_cam_->setAspectRatio(Ogre::Real(vp->getActualWidth())/Ogre::Real(vp->getActualHeight()));
     }
 }
@@ -165,7 +182,7 @@ void EC_PlanarMirror::CreatePlane()
     mirror_plane_->normal = Ogre::Vector3::UNIT_Y;
     Ogre::MeshManager::getSingleton().createPlane("mirror_plane_mesh_" + Ogre::StringConverter::toString(mirror_cam_num_),
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, *mirror_plane_, 80, 80, 1, 1, true, 1, 1, 1, Ogre::Vector3::UNIT_Z);
-    mirror_plane_entity_ = renderer_.lock()->GetSceneManager()->createEntity("mirror_plane_entity" + Ogre::StringConverter::toString(mirror_cam_num_),
+    mirror_plane_entity_ = renderer_->GetActiveOgreWorld()->GetSceneManager()->createEntity("mirror_plane_entity" + Ogre::StringConverter::toString(mirror_cam_num_),
         "mirror_plane_mesh_" + Ogre::StringConverter::toString(mirror_cam_num_));
 
     ///for now
@@ -182,5 +199,3 @@ Ogre::Texture* EC_PlanarMirror::GetMirrorTexture() const
 {
     return mirror_texture_;
 }
-
-

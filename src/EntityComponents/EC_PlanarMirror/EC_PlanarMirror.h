@@ -9,7 +9,6 @@
 #pragma once
 
 #include "IComponent.h"
-#include "Declare_EC.h"
 #include "OgreModuleFwd.h"
 
 #include <QVector3D>
@@ -50,9 +49,10 @@ Does not emit any actions.
 class EC_PlanarMirror : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_PlanarMirror);
+    COMPONENT_NAME("EC_PlanarMirror", 34)
 
 public:
+    EC_PlanarMirror(Scene *scene);
     ~EC_PlanarMirror();
 
     /// Do we want to show the mirror plane
@@ -69,11 +69,12 @@ public slots:
     void WindowResized(int w,int h);
 
 private:
-    EC_PlanarMirror(IModule *module);
     void CreatePlane();
 
+    OgreRenderer::RendererPtr renderer_;
+    
     static int mirror_cam_num_;
-    boost::weak_ptr<OgreRenderer::Renderer> renderer_;
+    
     Ogre::Camera* mirror_cam_;
     Ogre::Texture* mirror_texture_;
     Ogre::TextureUnitState* tex_unit_state_;

@@ -15,9 +15,12 @@
 
 #include "EC_Touchable.h"
 
-#include "IModule.h"
+#include "Framework.h"
+#include "AttributeMetadata.h"
 #include "Entity.h"
+#include "OgreRenderingModule.h"
 #include "Renderer.h"
+#include "OgreWorld.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
@@ -31,13 +34,57 @@
 
 #include "MemoryLeakCheck.h"
 
+EC_Touchable::EC_Touchable(Scene* scene) :
+    IComponent(scene),
+    entityClone_(0),
+    sceneNode_(0),
+    materialName(this, "material name", "Touchable"),
+    highlightOnHover(this, "highligh on hover", true),
+    hoverCursor(this, "hover cursor", Qt::ArrowCursor)
+{
+    static AttributeMetadata metadata;
+    static bool metadataInitialized = false;
+    if(!metadataInitialized)
+    {
+        metadata.enums[Qt::ArrowCursor] = "ArrowCursor";
+        metadata.enums[Qt::UpArrow] = "UpArrowCursor";
+        metadata.enums[Qt::CrossCursor] = "CrossCursor";
+        metadata.enums[Qt::WaitCursor] = "WaitCursor";
+        metadata.enums[Qt::IBeamCursor] = "IBeamCursor";
+        metadata.enums[Qt::SizeVerCursor] = "SizeVerCursor";
+        metadata.enums[Qt::SizeHorCursor] = "SizeHorCursor";
+        metadata.enums[Qt::SizeBDiagCursor] = "SizeBDiagCursor";
+        metadata.enums[Qt::SizeFDiagCursor] = "SizeFDiagCursor";
+        metadata.enums[Qt::SizeAllCursor] = "SizeAllCursor";
+        metadata.enums[Qt::BlankCursor] = "BlankCursor";
+        metadata.enums[Qt::SplitVCursor] = "SplitVCursor";
+        metadata.enums[Qt::SplitHCursor] = "SplitHCursor";
+        metadata.enums[Qt::PointingHandCursor] = "PointingHandCursor";
+        metadata.enums[Qt::ForbiddenCursor] = "ForbiddenCursor";
+        metadata.enums[Qt::WhatsThisCursor] = "WhatsThisCursor";
+        metadata.enums[Qt::BusyCursor] = "BusyCursor";
+        metadata.enums[Qt::OpenHandCursor] = "OpenHandCursor";
+        metadata.enums[Qt::ClosedHandCursor] = "ClosedHandCursor";
+        metadataInitialized = true;
+    }
+
+    hoverCursor.SetMetadata(&metadata);
+
+    if (framework->GetModule<OgreRenderer::OgreRenderingModule>())
+        renderer_ = framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateMaterial()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
+    //    connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
+}
+
 EC_Touchable::~EC_Touchable()
 {
     // OgreRendering module might be already deleted. If so, the cloned entity is also already deleted.
     // In this case, just set pointer to 0.
-    if (!renderer_.expired())
+    if (renderer_)
     {
-        Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
+        Ogre::SceneManager *sceneMgr = renderer_->GetActiveOgreWorld()->GetSceneManager();
         if (entityClone_)
             sceneMgr->destroyEntity(entityClone_);
     }
@@ -79,54 +126,12 @@ bool EC_Touchable::IsVisible() const
     return false;
 }
 
-EC_Touchable::EC_Touchable(IModule *module) :
-    IComponent(module->GetFramework()),
-    entityClone_(0),
-    sceneNode_(0),
-    materialName(this, "material name", "Touchable"),
-    highlightOnHover(this, "highligh on hover", true),
-    hoverCursor(this, "hover cursor", Qt::ArrowCursor)
-{
-    static AttributeMetadata metadata;
-    static bool metadataInitialized = false;
-    if(!metadataInitialized)
-    {
-        metadata.enums[Qt::ArrowCursor] = "ArrowCursor";
-        metadata.enums[Qt::UpArrow] = "UpArrowCursor";
-        metadata.enums[Qt::CrossCursor] = "CrossCursor";
-        metadata.enums[Qt::WaitCursor] = "WaitCursor";
-        metadata.enums[Qt::IBeamCursor] = "IBeamCursor";
-        metadata.enums[Qt::SizeVerCursor] = "SizeVerCursor";
-        metadata.enums[Qt::SizeHorCursor] = "SizeHorCursor";
-        metadata.enums[Qt::SizeBDiagCursor] = "SizeBDiagCursor";
-        metadata.enums[Qt::SizeFDiagCursor] = "SizeFDiagCursor";
-        metadata.enums[Qt::SizeAllCursor] = "SizeAllCursor";
-        metadata.enums[Qt::BlankCursor] = "BlankCursor";
-        metadata.enums[Qt::SplitVCursor] = "SplitVCursor";
-        metadata.enums[Qt::SplitHCursor] = "SplitHCursor";
-        metadata.enums[Qt::PointingHandCursor] = "PointingHandCursor";
-        metadata.enums[Qt::ForbiddenCursor] = "ForbiddenCursor";
-        metadata.enums[Qt::WhatsThisCursor] = "WhatsThisCursor";
-        metadata.enums[Qt::BusyCursor] = "BusyCursor";
-        metadata.enums[Qt::OpenHandCursor] = "OpenHandCursor";
-        metadata.enums[Qt::ClosedHandCursor] = "ClosedHandCursor";
-        metadataInitialized = true;
-    }
-
-    hoverCursor.SetMetadata(&metadata);
-
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateMaterial()));
-    connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
-//    connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
-}
-
 void EC_Touchable::Create()
 {
-    if (renderer_.expired())
+    if (!renderer_)
         return;
 
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
     assert(entity);
     if (!entity)
         return;
@@ -170,7 +175,7 @@ void EC_Touchable::Create()
         return;
 
     // Clone the Ogre entity.
-    cloneName_ = renderer_.lock()->GetUniqueObjectName("EC_Touchable_entity");
+    cloneName_ = renderer_->GetUniqueObjectName("EC_Touchable_entity");
     entityClone_ = originalEntity->clone(cloneName_);
     assert(entityClone_);
 
@@ -299,7 +304,7 @@ void EC_Touchable::OnClick()
 
 void EC_Touchable::RegisterActions()
 {
-    Scene::Entity *entity = GetParentEntity();
+    Entity *entity = ParentEntity();
     assert(entity);
     if (entity)
     {

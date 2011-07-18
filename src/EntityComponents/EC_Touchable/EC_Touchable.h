@@ -15,20 +15,9 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Declare_EC.h"
+#include "OgreModuleFwd.h"
 
 #include <QCursor>
-
-namespace OgreRenderer
-{
-    class Renderer;
-}
-
-namespace Ogre
-{
-    class SceneNode;
-    class Entity;
-}
 
 /// Touchable enables visual effect for scene entity in cases where the entity can be 
 /// considered to have some kind of functionality when it is clicked i.e. touched.
@@ -87,9 +76,12 @@ EC_OgreCustomObject (if prim) components available in advance.</b>.
 class EC_Touchable : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_Touchable);
+    COMPONENT_NAME("EC_Touchable", 32)
 
 public:
+    /// Constructor.
+    explicit EC_Touchable(Scene* scene);
+
     /// Destructor.
     ~EC_Touchable();
 
@@ -124,12 +116,8 @@ signals:
     void MousePressed();
 
 private:
-    /// Constuctor.
-    /// @param module Owner module.
-    explicit EC_Touchable(IModule *module);
-
     /// Renderer pointer.
-    boost::weak_ptr<OgreRenderer::Renderer> renderer_;
+    OgreRenderer::RendererPtr renderer_;
 
     /// Ogre entity clone created for highlighting.
     Ogre::Entity *entityClone_;
