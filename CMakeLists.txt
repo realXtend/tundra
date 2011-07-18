@@ -8,10 +8,18 @@ cmake_minimum_required(VERSION 2.4)
 # The componentName must be the name of the EC that will be added. E.g. AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 # Use this macro when adding ECs to the build, since this macro tracks the set of ECs that are added, so that the individual
 # modules get #defines in C++ code for each EC that is present. This allows conditionally excluding ECs from the build.
-macro(AddEntityComponent sourceFolder componentName)
-   add_subdirectory(${sourceFolder})
+macro(AddEntityComponent componentName)
+   add_subdirectory(src/EntityComponents/${componentName})
    set(${componentName}_ENABLED 1)
    set(USED_ENTITYCOMPONENTS ${USED_ENTITYCOMPONENTS} ${componentName})
+endmacro()
+
+# The AddProject takes in two parameters: projectType == Core or Application and projectName that should essentially be the folder name of the project.
+macro(AddProject projectType projectName)
+    if (NOT ${projectType} STREQUAL "Core" AND NOT ${projectType} STREQUAL "Application")
+        message(FATAL_ERROR "You are trying to use AddProject macro with invalid project type parameter: " ${projectType} " with project name " ${projectName})
+    endif()
+    add_subdirectory(src/${projectType}/${projectName})
 endmacro()
 
 # Generates in the current project a #define for each EC that has been added to the build. Use this macro in your module CMakeLists.txt
@@ -20,15 +28,6 @@ macro(GetEntityComponents)
    foreach(componentName ${USED_ENTITYCOMPONENTS})
       add_definitions(-D${componentName}_ENABLED)
    endforeach()
-endmacro()
-
-# Links the current project to the given EC, if that EC has been added to the build. Otherwise omits the EC.
-macro(LinkEntityComponent sourceFolder componentName)
-   if (${componentName}_ENABLED)
-      use_modules(${sourceFolder})
-      link_modules(${componentName})
-      add_definitions(-D${componentName}_ENABLED)
-   endif()
 endmacro()
 
 macro(GetOpenAssetImport)
@@ -112,6 +111,26 @@ if (COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif()
 
+# Detect what compiler we are using on windows
+set (VC90 FALSE)
+set (VC100 FALSE)
+if (MSVC)
+    message (STATUS)
+    message (STATUS "Detecting Visual Studio compiler")
+    if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 10" OR ${CMAKE_GENERATOR} STREQUAL "Visual Studio 10 Win64")
+        set (VC100 TRUE)
+        message (STATUS "-- VC100 detected")
+    endif ()
+    if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008" OR ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Win64")
+        set (VC90 TRUE)
+        message (STATUS "-- VC90 detected")
+    endif ()
+    if (NOT VC90 AND NOT VC100)
+        message (STATUS "-- Warning: Could not determine compiler from cmake generator name. We support 'officially' Visual Studio 2008 and 2010")
+    endif ()
+    message(STATUS)
+endif ()
+
 # Set compiler warning levels.
 # On MSVC, use warning level 4 but disable the following warnings:
 # C4100 'identifier' : unreferenced formal parameter
@@ -125,13 +144,12 @@ else ()
     add_definitions (-Wall -Wextra -Wno-unknown-pragmas -Wno-unused -Wno-reorder -Wno-switch -Wno-write-strings)
 endif()
 
-# Set CMake custom module path & include them
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CMakeModules)
-
 # Set Kristalli path
 set(KRISTALLI_CORE_PATH ${PROJECT_BINARY_DIR}/Kristalli)
 
+# Set CMake custom module path & include them
 # The following CMake modules are required for the project to build.
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} cmake)
 include(Sagase)
 include(ModuleSetup)
 include(ConfigurePackages)
@@ -153,7 +171,7 @@ add_definitions (-DPCH_ENABLED)
 SET(PCH_ENABLED 1)
 
 # Set normalized path for common environment variables
-file(TO_CMAKE_PATH "$ENV{TUNDRAQT47_DEP_PATH}" ENV_NAALI_DEP_PATH)
+file(TO_CMAKE_PATH "$ENV{TUNDRA_DEP_PATH}" ENV_TUNDRA_DEP_PATH)
 file(TO_CMAKE_PATH "$ENV{QTDIR}" ENV_QT_DIR)
 file(TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 
@@ -178,15 +196,16 @@ use_package(VORBIS)
 
 use_package_knet()
 
-include_directories(Input)
-include_directories(Ui)
-include_directories(Asset)
-include_directories(Scene)
+set (CORE_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Core)
+include_directories (${CORE_MODULE_DIRECTORY}/Input)
+include_directories (${CORE_MODULE_DIRECTORY}/Ui)
+include_directories (${CORE_MODULE_DIRECTORY}/Asset)
+include_directories (${CORE_MODULE_DIRECTORY}/Scene)
 
-link_directories(Input)
-link_directories(Ui)
-link_directories(Asset)
-link_directories(Scene)
+link_directories (${CORE_MODULE_DIRECTORY}/Input)
+link_directories (${CORE_MODULE_DIRECTORY}/Ui)
+link_directories (${CORE_MODULE_DIRECTORY}/Asset)
+link_directories (${CORE_MODULE_DIRECTORY}/Scene)
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from the template file.
