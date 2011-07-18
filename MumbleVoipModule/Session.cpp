@@ -47,6 +47,7 @@ namespace MumbleVoip
     Session::~Session()
     {
         Close();
+        SAFE_DELETE(connection_);
     }
 
     void Session::OpenConnection(ServerInfo server_info)
@@ -93,9 +94,6 @@ namespace MumbleVoip
 
     void Session::Close()
     {
-        if (connection_)
-            connection_->Close();
-
         if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
         {
             State old_state = state_;

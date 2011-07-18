@@ -184,7 +184,9 @@ namespace MumbleLib
     void Connection::HandleError(const boost::system::error_code &error)
     {
         MumbleVoip::MumbleVoipModule::LogError("Relayed from mumbleclient (" + ToString(error.category().name()) + "\\" + ToString(error.message()) + ")");
+        lock_state_.lockForWrite();
         state_ = STATE_ERROR;
+        lock_state_.unlock();
         emit StateChanged(state_);
     }
 
@@ -227,12 +229,14 @@ namespace MumbleLib
         QMutexLocker client_locker(&mutex_client_);
         if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
         {
+            lock_state_.unlock();
             try
             {
                 client_->Disconnect();
             }
             catch(std::exception &e)
             {
+                lock_state_.lockForWrite();
                 state_ = STATE_ERROR;
                 reason_ = QString(e.what());
             }
