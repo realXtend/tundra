@@ -5,6 +5,7 @@
 
 #include "Application.h"
 #include "Framework.h"
+#include "ConfigAPI.h"
 #include "Profiler.h"
 #include "CoreStringUtils.h"
 #include "CoreException.h"
@@ -78,10 +79,12 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
         nativeTranslator->load(lst[0]);
 
     this->installTranslator(nativeTranslator);
-/*    ///\todo Reimplement.
-    std::string default_language = framework->GetConfigManager()->DeclareSetting(Framework::ConfigurationGroup(),
-        "language", std::string("data/translations/naali_en"));*/
-    ChangeLanguage("data/translations/naali_en");
+
+    if (!framework_->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language"))
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/naali_en");
+
+    QString default_language = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language").toString();
+    ChangeLanguage(default_language);
 
     QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enablig flash
 }
@@ -337,12 +340,10 @@ void Application::ChangeLanguage(const QString& file)
     if (appTranslator->load(filename))
     {
         installTranslator(appTranslator);
-///\todo Reimplement.
-//        framework->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "language", file.toStdString());
+        framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language", file);
     }
     
     emit LanguageChanged();
-
 }
 
 bool Application::notify(QObject *receiver, QEvent *event)
