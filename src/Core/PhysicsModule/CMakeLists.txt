@@ -18,14 +18,13 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 add_definitions (-DPHYSICS_MODULE_EXPORTS)
 
 use_package_bullet()
-use_core_modules (Framework Scene OgreRenderingModule Asset Console)
-use_app_modules (EnvironmentModule)
+use_core_modules (Framework Scene OgreRenderingModule Asset Console EnvironmentModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Framework Scene OgreRenderingModule EnvironmentModule Asset Console)
 link_ogre()
 link_package_bullet()
+link_modules (Framework Scene OgreRenderingModule EnvironmentModule Asset Console)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

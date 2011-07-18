@@ -31,6 +31,7 @@ use_core_modules (Framework Scene Input Ui Asset Console)
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 GetOpenAssetImport()
+
 link_ogre()
 link_modules (Framework Scene Ui Asset Console)
 

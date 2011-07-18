@@ -19,25 +19,17 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DDEBUGSTATS_MODULE_EXPORTS) 
 
-use_core_modules (Framework Scene OgreRenderingModule AssetModule Input Ui Console)
-use_app_modules (EnvironmentModule)
-
-if (OGREASSETEDITOR)
-    use_app_modules (OgreAssetEditorModule)
-endif()
+use_core_modules (Framework Scene OgreRenderingModule AssetModule Input Ui Console EnvironmentModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
-
 link_modules (Framework Scene OgreRenderingModule EnvironmentModule AssetModule Input Ui Console)
 
-if (OGREASSETEDITOR)
-link_modules(OgreAssetEditorModule)
-endif()
+GetOgreAssetEditor()
+GetOpenAssetImport()
 
 SetupCompileFlagsWithPCH()
-
 
 if (MSVC)
 	target_link_libraries (${TARGET_NAME} pdh.lib)

@@ -17,7 +17,6 @@ function (sagase_parse_arguments BEGIN END ARGS)
     set (${ARGS} ${out} PARENT_SCOPE)
 endfunction (sagase_parse_arguments)
 
-
 # generates a set of likely paths for a files (includes or libraries)
 # "NAMES" is a list of names by which the package is known
 # "PREFIXES" is a list of path prefixes where the components might be found
@@ -111,7 +110,7 @@ macro (sagase_configure_package PREFIX)
     sagase_parse_arguments ("COMPONENTS" "PREFIXES" PKG_COMPONENTS ${ARGN})
     sagase_parse_arguments ("PREFIXES" none PKG_PREFIXES ${ARGN})
 
-    message (STATUS "** Configuring " ${PREFIX})
+    message ("** Configuring " ${PREFIX})
 
     set (found_ FALSE)
 
@@ -328,5 +327,5 @@ macro (sagase_configure_report PREFIX)
         endforeach()
     endif ()
 	
-	message (STATUS "")
+	message ("")
 endmacro (sagase_configure_report)

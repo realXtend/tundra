@@ -24,6 +24,7 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${UI_FILES} ${H_FILES} ${CPP_FILES
 use_core_modules (Framework Scene OgreRenderingModule Asset Console)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
+
 link_modules (Framework Scene OgreRenderingModule Asset Console)
 
 link_ogre()

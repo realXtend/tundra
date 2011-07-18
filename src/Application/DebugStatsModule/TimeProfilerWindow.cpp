@@ -33,6 +33,10 @@
 #include <QTextEdit>
 #include <QMenu>
 
+#ifdef OGREASSETEDITOR_ENABLED
+#include "TexturePreviewEditor.h"
+#endif
+
 #include <OgreFontManager.h>
 
 #include "MemoryLeakCheck.h"
@@ -267,7 +271,7 @@ void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
 #ifdef OGREASSETEDITOR_ENABLED
     if (tex_preview_ == 0)
     {
-        tex_preview_ = new TexturePreviewEditor(framework_,this);
+        tex_preview_ = new TexturePreviewEditor(this);
     }
         
     tex_preview_->OpenOgreTexture(item->text(0));

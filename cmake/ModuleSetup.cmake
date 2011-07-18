@@ -22,7 +22,7 @@ macro (init_target NAME)
     set (TARGET_NAME ${NAME})
     set (${TARGET_NAME}_OUTPUT ${ARGV1})
     
-    message (STATUS "** " ${TARGET_NAME})
+    message ("** " ${TARGET_NAME})
 
     # Headers or libraries are found here will just work
     # Removed from windows due we dont have anything here directly.
@@ -65,7 +65,7 @@ macro (final_target)
         endif ()
     endif ()
     # pretty printing
-    message (STATUS)
+    message ("")
 endmacro (final_target)
 
 # build a library from internal sources
