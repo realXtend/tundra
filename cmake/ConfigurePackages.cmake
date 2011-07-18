@@ -141,39 +141,68 @@ macro (configure_python_qt)
 endmacro (configure_python_qt)
 
 macro (configure_ogre)
-    SET(OGRE_HOME $ENV{OGRE_HOME})
-    if ("${OGRE_HOME}" STREQUAL "")
-        SET(OGRE_HOME ${ENV_TUNDRA_DEP_PATH}/Ogre)
-    endif()
+    
+    if (NOT WIN32)
+        # Mac
+        if (APPLE)
+    	  FIND_LIBRARY (OGRE_LIBRARY NAMES Ogre)
+    	  set (OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
+    	  set (OGRE_LIBRARIES ${OGRE_LIBRARY})
+        # Linux
+        else ()
+            sagase_configure_package (OGRE 
+                NAMES Ogre OgreSDK ogre OGRE
+                COMPONENTS Ogre ogre OGRE OgreMain 
+                PREFIXES ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+        endif ()
+        
+        sagase_configure_report (OGRE)
+        
+    else ()
+        # Find directx
+        include(FindDirectX)
+        
+        # Find ogre
+        if (DirectX_FOUND)
+            set (TUNDRA_OGRE_NEEDED_COMPONENTS Ogre ogre OGRE OgreMain RenderSystem_Direct3D9)
+        else ()
+            set (TUNDRA_OGRE_NEEDED_COMPONENTS Ogre ogre OGRE OgreMain)
+        endif()
+        
+        sagase_configure_package (OGRE 
+            NAMES Ogre OgreSDK ogre OGRE
+            COMPONENTS ${TUNDRA_OGRE_NEEDED_COMPONENTS}
+            PREFIXES ${ENV_OGRE_HOME} ${ENV_TUNDRA_DEP_PATH})
 
-    # DX blitting define for Tundra.
-    add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
-    include_directories(${OGRE_HOME})
-    # Tundra deps Ogre
-    include_directories(${OGRE_HOME}/include/RenderSystems/Direct3D9)
-    include_directories(${OGRE_HOME}/RenderSystems/Direct3D9)
-    # Ogre built from sources
-    include_directories(${OGRE_HOME}/include) 
-    include_directories(${OGRE_HOME}/include/RenderSystems/Direct3D9/include)
-    include_directories(${OGRE_HOME}/RenderSystems/Direct3D9/include)
-    # Ogre official sdk
-    include_directories(${OGRE_HOME}/include/OGRE) 
-    include_directories(${OGRE_HOME}/include/OGRE/RenderSystems/Direct3D9)
-    link_directories(${OGRE_HOME}/lib)
+        # Report ogre then search check directx
+        sagase_configure_report (OGRE)
+        
+        # DirectX SDK found, use DX9 surface blitting
+        message ("** Configuring DirectX")
+        if (DirectX_FOUND)
+            message (STATUS "-- Include Directories:")
+            message (STATUS "       " ${DirectX_INCLUDE_DIR})
+            message (STATUS "-- Library Directories:")
+            message (STATUS "       " ${DirectX_LIBRARY_DIR})
+            message (STATUS "-- Defines:")
+            message (STATUS "        USE_D3D9_SUBSURFACE_BLIT")
+            
+            add_definitions (-DUSE_D3D9_SUBSURFACE_BLIT)
+            include_directories (${DirectX_INCLUDE_DIR})
+            link_directories (${DirectX_LIBRARY_DIR})
+        else ()
+            message (STATUS "DirectX not found!")
+            message (STATUS "-- Install DirectX SDK to enable additional features. If you already have the DirectX SDK installed")
+            message (STATUS "   please set DIRECTX_ROOT env variable as your installation directory.")
+        endif()
+        message (STATUS "")
+    endif ()
 endmacro (configure_ogre)
 
-macro(link_ogre)
-    if (OGRE_LIBRARIES)
-        link_package(OGRE)
-    else()
-        target_link_libraries(${TARGET_NAME} debug OgreMain_d.lib)
-        target_link_libraries(${TARGET_NAME} optimized OgreMain.lib)
-        if (WIN32)
-            target_link_libraries(${TARGET_NAME} debug RenderSystem_Direct3D9_d.lib)
-            target_link_libraries(${TARGET_NAME} optimized RenderSystem_Direct3D9.lib)
-        endif()
-    endif()
-endmacro()
+macro (link_ogre)
+    use_package (OGRE)
+    link_package (OGRE)
+endmacro ()
 
 macro (configure_skyx)
     sagase_configure_package (SKYX
