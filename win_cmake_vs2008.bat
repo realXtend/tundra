@@ -5,7 +5,7 @@ echo.
 ::   1. If TUNDRA_DEP_PATH is defined on the system, it will proceed with your dep path.
 ::   2. If TUNDRA_DEP_PATH is not defined it will check if the deps git submodule has been fetched.
 ::      - If deps are present set TUNDRA_DEP_PATH to point into that and run cmake.
-::      - If deps are not present prints insructions how to automatically fetch them
+::      - If deps are not present prints insructions how to automatically fetch them.
 ::
 :: Note: The suggested way of going about this is using the win_update_deps_vs2008.bat
 :: This is because it will also copy all the needed DLLs into the /bin folder so you wont have
