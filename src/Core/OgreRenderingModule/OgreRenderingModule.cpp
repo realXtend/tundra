@@ -117,6 +117,7 @@ void OgreRenderingModule::Initialize()
     QString cwd = Application::CurrentWorkingDirectory();
     Application::SetCurrentWorkingDirectory(Application::InstallationDirectory());
 
+    framework_->GetApplication()->SetSplashMessage("Initializing Ogre");
     renderer->Initialize();
 
     // Restore the original cwd to not disturb the enviroment we are running in.

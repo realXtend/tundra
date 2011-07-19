@@ -9,6 +9,7 @@
 class QDir;
 class QGraphicsView;
 class QTranslator;
+class QSplashScreen;
 
 class Framework;
 
@@ -65,6 +66,7 @@ public slots:
     void UpdateFrame();
     void ChangeLanguage(const QString& file);
     void AboutToExit();
+    void SetSplashMessage(const QString &message);
 
 signals:
     /// This signal is sent when QApplication language is changed, provided for convenience.
@@ -78,9 +80,13 @@ protected:
 
 private:
     QStringList GetQmFiles(const QDir &dir);
+    void InitializeSplash();
+
     Framework *framework;
-    QTimer frameUpdateTimer;
     bool appActivated;
+
+    QSplashScreen *splashScreen;
+    QTimer frameUpdateTimer;
     QTranslator *nativeTranslator;
     QTranslator *appTranslator;
 };

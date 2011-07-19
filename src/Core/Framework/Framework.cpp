@@ -391,8 +391,6 @@ void Framework::RegisterModule(IModule *module)
 {
     module->SetFramework(this);
     modules.push_back(boost::shared_ptr<IModule>(module));
-    LogInfo("Registered a new module " + module->Name());
-
     module->Load();
 }
 
