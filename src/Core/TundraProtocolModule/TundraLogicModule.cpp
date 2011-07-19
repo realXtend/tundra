@@ -47,14 +47,6 @@
 #include "EC_Touchable.h"
 #endif
 
-#ifdef EC_3DCanvas_ENABLED
-#include "EC_3DCanvas.h"
-#endif
-
-#ifdef EC_3DCanvasSource_ENABLED
-#include "EC_3DCanvasSource.h"
-#endif
-
 #ifdef EC_Ruler_ENABLED
 #include "EC_Ruler.h"
 #endif
@@ -144,12 +136,6 @@ void TundraLogicModule::Load()
 #endif
 #ifdef EC_Touchable_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Touchable>));
-#endif
-#ifdef EC_3DCanvas_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_3DCanvas>));
-#endif
-#ifdef EC_3DCanvasSource_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_3DCanvasSource>));
 #endif
 #ifdef EC_Ruler_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Ruler>));
