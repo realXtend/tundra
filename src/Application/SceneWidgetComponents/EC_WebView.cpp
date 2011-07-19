@@ -802,7 +802,7 @@ void EC_WebView::EntityClicked(Entity *entity, Qt::MouseButton button, RaycastRe
 
         // Entities have EC_Highlight if it is being manipulated.
         // At this situation we don't want to show any ui.
-        if (!entity->GetComponent("EC_Highlight"))
+        if (entity->GetComponent("EC_Highlight"))
             return;
 
         QMenu *popupInteract = GetInteractionMenu(false);
