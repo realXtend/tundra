@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
-#include "EC_3DCanvas.h"
+#include "EC_WidgetCanvas.h"
 
 #include "Framework.h"
 #include "IRenderer.h"
@@ -14,12 +14,16 @@
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 
-#include <OgreMaterial.h>
+#include <OgreTextureManager.h>
+#include <OgreMaterialManager.h>
+#include <OgreHardwarePixelBuffer.h>
+#include <OgreTechnique.h>
+
 #include <QWidget>
 #include <QPainter>
 #include <QDebug>
 
-EC_3DCanvas::EC_3DCanvas(Scene *scene) :
+EC_WidgetCanvas::EC_WidgetCanvas(Scene *scene) :
     IComponent(scene),
     widget_(0),
     update_internals_(false),
@@ -42,7 +46,7 @@ EC_3DCanvas::EC_3DCanvas(Scene *scene) :
             Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
         if (texture.isNull())
         {
-            LogError("EC_3DCanvas: Could not create texture for usage!");
+            LogError("EC_WidgetCanvas: Could not create texture for usage!");
             return;
         }
 
@@ -63,7 +67,7 @@ EC_3DCanvas::EC_3DCanvas(Scene *scene) :
     connect(this, SIGNAL(ParentEntitySet()), SLOT(ParentEntitySet()), Qt::UniqueConnection);
 }
 
-EC_3DCanvas::~EC_3DCanvas()
+EC_WidgetCanvas::~EC_WidgetCanvas()
 {
     if (framework->IsHeadless())
         return;
@@ -94,7 +98,7 @@ EC_3DCanvas::~EC_3DCanvas()
     }
 }
 
-void EC_3DCanvas::Start()
+void EC_WidgetCanvas::Start()
 {
     if (framework->IsHeadless())
         return;
@@ -121,7 +125,7 @@ void EC_3DCanvas::Start()
     }
 }
 
-void EC_3DCanvas::MeshMaterialsUpdated(uint index, const QString &material_name)
+void EC_WidgetCanvas::MeshMaterialsUpdated(uint index, const QString &material_name)
 {
     if (framework->IsHeadless())
         return;
@@ -141,7 +145,7 @@ void EC_3DCanvas::MeshMaterialsUpdated(uint index, const QString &material_name)
     }
 }
 
-void EC_3DCanvas::Stop()
+void EC_WidgetCanvas::Stop()
 {
     if (framework->IsHeadless())
         return;
@@ -151,7 +155,7 @@ void EC_3DCanvas::Stop()
             refresh_timer_->stop();
 }
 
-void EC_3DCanvas::Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second)
+void EC_WidgetCanvas::Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second)
 {
     if (framework->IsHeadless())
         return;
@@ -161,7 +165,7 @@ void EC_3DCanvas::Setup(QWidget *widget, const QList<uint> &submeshes, int refre
     SetRefreshRate(refresh_per_second);
 }
 
-void EC_3DCanvas::SetWidget(QWidget *widget)
+void EC_WidgetCanvas::SetWidget(QWidget *widget)
 {
     if (framework->IsHeadless())
         return;
@@ -174,7 +178,7 @@ void EC_3DCanvas::SetWidget(QWidget *widget)
     }
 }
 
-void EC_3DCanvas::SetRefreshRate(int refresh_per_second)
+void EC_WidgetCanvas::SetRefreshRate(int refresh_per_second)
 {
     if (framework->IsHeadless())
         return;
@@ -201,7 +205,7 @@ void EC_3DCanvas::SetRefreshRate(int refresh_per_second)
         update_interval_msec_ = 0;
 }
 
-void EC_3DCanvas::SetSubmesh(uint submesh)
+void EC_WidgetCanvas::SetSubmesh(uint submesh)
 {
     if (framework->IsHeadless())
         return;
@@ -211,7 +215,7 @@ void EC_3DCanvas::SetSubmesh(uint submesh)
     update_internals_ = true;
 }
 
-void EC_3DCanvas::SetSubmeshes(const QList<uint> &submeshes)
+void EC_WidgetCanvas::SetSubmeshes(const QList<uint> &submeshes)
 {
     if (framework->IsHeadless())
         return;
@@ -221,7 +225,7 @@ void EC_3DCanvas::SetSubmeshes(const QList<uint> &submeshes)
     update_internals_ = true;
 }
 
-void EC_3DCanvas::WidgetDestroyed(QObject *obj)
+void EC_WidgetCanvas::WidgetDestroyed(QObject *obj)
 {
     if (framework->IsHeadless())
         return;
@@ -232,7 +236,7 @@ void EC_3DCanvas::WidgetDestroyed(QObject *obj)
     SAFE_DELETE(refresh_timer_);
 }
 
-void EC_3DCanvas::Update()
+void EC_WidgetCanvas::Update()
 {
     if (framework->IsHeadless())
         return;
@@ -293,7 +297,7 @@ void EC_3DCanvas::Update()
     }
 }
 
-void EC_3DCanvas::UpdateSubmeshes()
+void EC_WidgetCanvas::UpdateSubmeshes()
 {
     if (framework->IsHeadless())
         return;
@@ -356,7 +360,7 @@ void EC_3DCanvas::UpdateSubmeshes()
     }
 }
 
-void EC_3DCanvas::RestoreOriginalMeshMaterials()
+void EC_WidgetCanvas::RestoreOriginalMeshMaterials()
 {
     if (framework->IsHeadless())
         return;
@@ -408,7 +412,7 @@ void EC_3DCanvas::RestoreOriginalMeshMaterials()
     update_internals_ = true;
 }
 
-void EC_3DCanvas::ParentEntitySet()
+void EC_WidgetCanvas::ParentEntitySet()
 {
     if (framework->IsHeadless())
         return;
@@ -417,7 +421,7 @@ void EC_3DCanvas::ParentEntitySet()
         connect(ParentEntity(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
 }
 
-void EC_3DCanvas::ComponentRemoved(IComponent *component, AttributeChange::Type change)
+void EC_WidgetCanvas::ComponentRemoved(IComponent *component, AttributeChange::Type change)
 {
     if (framework->IsHeadless())
         return;
@@ -431,7 +435,7 @@ void EC_3DCanvas::ComponentRemoved(IComponent *component, AttributeChange::Type 
     }
 }
 
-void EC_3DCanvas::SetSelfIllumination(bool illuminating)
+void EC_WidgetCanvas::SetSelfIllumination(bool illuminating)
 {
     if (material_name_.empty())
         return;

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_WebView_h
-#define incl_EC_WebView_h
+#ifndef incl_SceneWidgetComponents_EC_WebView_h
+#define incl_SceneWidgetComponents_EC_WebView_h
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -18,7 +18,7 @@
 class QWebView;
 
 class EC_Mesh;
-class EC_3DCanvas;
+class EC_WidgetCanvas;
 
 class RaycastResult;
 class UserConnection;
@@ -75,7 +75,7 @@ Registered by SceneWidgetComponents plugin.
 
 Does not emit any actions.
 
-<b>Depends on components EC_3DCanvas and EC_Mesh. Depends on modules TundraLogicModule for Client and Server classes and KristalliProtocolModule for UserConnection class.</b>.
+<b>Depends on components EC_WidgetCanvas and EC_Mesh. Depends on modules TundraLogicModule for Client and Server classes and KristalliProtocolModule for UserConnection class.</b>.
 
 </table>
 */
@@ -131,7 +131,7 @@ public:
     void ServerInitialize(TundraLogic::Server *server);
 
 public slots:
-    /// Render our QWebViews current state with current Attributes to our EC_3DCanvas.
+    /// Render our QWebViews current state with current Attributes to our EC_WidgetCanvas.
     void Render();
 
     /// If you want to show the interaction menu/actions in your own place, use this to retrieve the menu.
@@ -205,8 +205,8 @@ private slots:
     /// Get parent entitys EC_Mesh. Return 0 if not present.
     EC_Mesh *GetMeshComponent();
 
-    /// Get parent entitys EC_3DCanvas. Return 0 if not present.
-    EC_3DCanvas *GetSceneCanvasComponent();
+    /// Get parent entitys EC_WidgetCanvas. Return 0 if not present.
+    EC_WidgetCanvas *GetSceneCanvasComponent();
 
     /// Monitors entity mouse clicks.
     void EntityClicked(Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
@@ -235,7 +235,7 @@ private:
     /// Boolean for tracking if this component has been prepared properly.
     /** Guarantees: 
         - EC_Mesh is present and loaded to Ogre, ready for rendering.
-        - EC_3DCanvas is present.
+        - EC_WidgetCanvas is present.
         - Parent Entity is valid and set.
         Does not guarantee:
         - EC_Mesh having submesh index of our 'renderSubmeshIndex' Attribute
@@ -252,7 +252,7 @@ private:
     /// Internal QWebView for rendering the web page.
     QPointer<QWebView> webview_;
 
-    /// Internal timer for updating inworld EC_3DCanvas.
+    /// Internal timer for updating inworld EC_WidgetCanvas.
     QTimer *renderTimer_;
 
     /// Metadata for toggling UI visibility when interaction mode changes.

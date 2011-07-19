@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_EC_3DCanvas_EC_3DCanvas_h
-#define incl_EC_3DCanvas_EC_3DCanvas_h
+#ifndef incl_SceneWidgetComponents_EC_WidgetCanvas_h
+#define incl_SceneWidgetComponents_EC_WidgetCanvas_h
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -25,7 +25,7 @@ class QTimer;
 <table class="header">
 <tr>
 <td>
-<h2>3DCanvas</h2>
+<h2>WidgetCanvas</h2>
 
 \note This component will not sync to network, it is made for local rendering use. It is also not meant to be used directly from the entity-component editor, as you need to pass QWidget* etc for it to do anything. Other components utilizes it when they need QWidget painting done to a 3D object. 
 
@@ -60,14 +60,14 @@ Does not emit any actions.
 
 */
 
-class EC_3DCanvas : public IComponent
+class EC_WidgetCanvas : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_3DCanvas", 35)
+    COMPONENT_NAME("EC_WidgetCanvas", 35)
 
 public:
-    explicit EC_3DCanvas(Scene *scene);
-    ~EC_3DCanvas();
+    explicit EC_WidgetCanvas(Scene *scene);
+    ~EC_WidgetCanvas();
 
 public slots:
     void Start();

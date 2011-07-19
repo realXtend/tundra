@@ -121,6 +121,7 @@ message ("\n=========== Configuring Optional Modules ===========\n")
 AddProject(Application AvatarModule)                # Depends on OgreRenderingModule.
 AddProject(Application DebugStatsModule)            # Enables a developer window for debugging. Depends on OgreRenderingModule and EnvironmentModule.
 AddProject(Application SkyXHydrax)                  # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
+AddProject(Application SceneWidgetComponents)       # Provide ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
 AddProject(Application JavascriptModule)            # Allows QtScript-created scene script instances.
 #AddProject(Application PythonScriptModule)         # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule and AvatarModule
 #AddProject(Application UpdateModule                # Windows msi installer only. Adds 'Check For Updates' functionality.

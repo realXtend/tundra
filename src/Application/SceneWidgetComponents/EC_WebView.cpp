@@ -20,7 +20,7 @@
 #include "Server.h"
 #include "UserConnection.h"
 
-#include "EC_3DCanvas.h"
+#include "EC_WidgetCanvas.h"
 #include "EC_Mesh.h"
 #include "CoreMath.h"
 
@@ -248,10 +248,10 @@ void EC_WebView::Render()
 
     // Get needed components, something is fatally wrong if these are not present but componentPrepared_ is true.
     EC_Mesh *mesh = GetMeshComponent();
-    EC_3DCanvas *sceneCanvas = GetSceneCanvasComponent();
+    EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
     if (!mesh || !sceneCanvas)
     {
-        // In the case someone destroyed EC_3DCanvas or EC_Mesh from our entity
+        // In the case someone destroyed EC_WidgetCanvas or EC_Mesh from our entity
         // lets stop our running timer (if its running), so we don't unnecessarily poll here.
         RenderTimerStop();
         componentPrepared_ = false;
@@ -268,11 +268,11 @@ void EC_WebView::Render()
         return;
     }
     
-    // Set submesh to EC_3DCanvas if different from current
+    // Set submesh to EC_WidgetCanvas if different from current
     if (!sceneCanvas->GetSubMeshes().contains(submeshIndex))
         sceneCanvas->SetSubmesh(submeshIndex);
     
-    // Set widget to EC_3DCanvas if different from current
+    // Set widget to EC_WidgetCanvas if different from current
     if (sceneCanvas->GetWidget() != webview_)
         sceneCanvas->SetWidget(webview_);
 
@@ -343,9 +343,9 @@ void EC_WebView::ResetWidget()
 
     if (webview_)
     {
-        // Reset the EC_3DCanvas data for added safety. Restore original materials.
+        // Reset the EC_WidgetCanvas data for added safety. Restore original materials.
         // If we come here from dtor this wont happen as parent entity has been reseted.
-        EC_3DCanvas *sceneCanvas = GetSceneCanvasComponent();
+        EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
         if (sceneCanvas)
         {
             if (sceneCanvas->GetWidget() == webview_)
@@ -426,12 +426,12 @@ void EC_WebView::PrepareComponent()
     if (sceneCanvasName_.isEmpty())
         sceneCanvasName_ = "WebViewCanvas-" + QUuid::createUuid().toString().replace("{", "").replace("}", "");
 
-    // Get or create local EC_3DCanvas component
-    ComponentPtr iComponent = parent->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_, AttributeChange::LocalOnly, false);
-    EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(iComponent.get());
+    // Get or create local EC_WidgetCanvas component
+    ComponentPtr iComponent = parent->GetOrCreateComponent(EC_WidgetCanvas::TypeNameStatic(), sceneCanvasName_, AttributeChange::LocalOnly, false);
+    EC_WidgetCanvas *sceneCanvas = dynamic_cast<EC_WidgetCanvas*>(iComponent.get());
     if (!sceneCanvas)
     {
-        LogError("PrepareComponent: Could not get or create EC_3DCanvas component!");
+        LogError("PrepareComponent: Could not get or create EC_WidgetCanvas component!");
         return;
     }
     sceneCanvas->SetSelfIllumination(getilluminating());
@@ -586,8 +586,8 @@ void EC_WebView::TargetMeshMaterialChanged(uint index, const QString &material)
     if (index == getrenderSubmeshIndex())
     {
         // Don't create the canvas, if its not there yet there is nothing to re-apply
-        IComponent *comp = ParentEntity()->GetComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_).get();
-        EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(comp);
+        IComponent *comp = ParentEntity()->GetComponent(EC_WidgetCanvas::TypeNameStatic(), sceneCanvasName_).get();
+        EC_WidgetCanvas *sceneCanvas = dynamic_cast<EC_WidgetCanvas*>(comp);
         if (sceneCanvas)
         {
             // This will make 3DCanvas to update its internals, which means
@@ -610,17 +610,17 @@ void EC_WebView::ComponentAdded(IComponent *component, AttributeChange::Type cha
 void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type change)
 {
     /** If this component is being removed we need to reset to the target meshes original materials.
-        EC_3DCanvas is too stupid to do this (should be improved!) At this stage our parent
+        EC_WidgetCanvas is too stupid to do this (should be improved!) At this stage our parent
         entity is still valid. This will cease to exist if this behavior is changed in SceneManager and/or
         Entity classes. Parent entity is not valid in the dtor so this has to be done here.
-        \todo Improve EC_3DCanvas to always know when the widget that its rendering is destroyed and reset the original materials.
+        \todo Improve EC_WidgetCanvas to always know when the widget that its rendering is destroyed and reset the original materials.
         \note This implementation relies on parent entity being valid here. If this is changed in the future the above todo must be implemented.
         \note We are going to the dtor after this, it will free our objects, this is why we dont do it here.
     */
     if (component == this)
     {
-        // Reset EC_3DCanvas
-        EC_3DCanvas *canvasSource = GetSceneCanvasComponent();
+        // Reset EC_WidgetCanvas
+        EC_WidgetCanvas *canvasSource = GetSceneCanvasComponent();
         if (canvasSource && webview_)
         {
             // If the widget that its rendering is ours, restore original materials.
@@ -631,12 +631,12 @@ void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type c
                 canvasSource->SetWidget(0);
             }
 
-            // Clean up our EC_3DCanvas component from the entity
+            // Clean up our EC_WidgetCanvas component from the entity
             if (ParentEntity() && !sceneCanvasName_.isEmpty())
-                ParentEntity()->RemoveComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_, AttributeChange::LocalOnly);
+                ParentEntity()->RemoveComponent(EC_WidgetCanvas::TypeNameStatic(), sceneCanvasName_, AttributeChange::LocalOnly);
         }
     }
-    /// \todo Add check if this component has another EC_Mesh then init EC_3DCanvas again for that! Now we just blindly stop this EC.
+    /// \todo Add check if this component has another EC_Mesh then init EC_WidgetCanvas again for that! Now we just blindly stop this EC.
     else if (component->TypeName() == EC_Mesh::TypeNameStatic())
     {
         RenderTimerStop();
@@ -658,7 +658,7 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
             RenderTimerStop();
 
             // Restore the original materials from the mesh if user sets url to empty string.
-            EC_3DCanvas *sceneCanvas = GetSceneCanvasComponent();
+            EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
             if (sceneCanvas)
                 sceneCanvas->RestoreOriginalMeshMaterials();
             return;
@@ -758,7 +758,7 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
     }
     else if (attribute == &illuminating)
     {
-        EC_3DCanvas *canvas = GetSceneCanvasComponent();
+        EC_WidgetCanvas *canvas = GetSceneCanvasComponent();
         if (canvas)
             canvas->SetSelfIllumination(getilluminating());
     }
@@ -772,14 +772,14 @@ EC_Mesh *EC_WebView::GetMeshComponent()
     return mesh;
 }
 
-EC_3DCanvas *EC_WebView::GetSceneCanvasComponent()
+EC_WidgetCanvas *EC_WebView::GetSceneCanvasComponent()
 {
     if (!ParentEntity())
         return 0;
     if (sceneCanvasName_.isEmpty())
         return 0;
-    IComponent *comp = ParentEntity()->GetComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_).get();
-    EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(comp);
+    IComponent *comp = ParentEntity()->GetComponent(EC_WidgetCanvas::TypeNameStatic(), sceneCanvasName_).get();
+    EC_WidgetCanvas *sceneCanvas = dynamic_cast<EC_WidgetCanvas*>(comp);
     return sceneCanvas;
 }
 
