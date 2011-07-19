@@ -32,6 +32,10 @@ if exist "deps\vs2008\README" (
     echo -- Not Found
     echo    Could not find 'deps\vs2008\README', assuming git submodule has not been fetched yet.
     echo    Please run win_update_deps_vs2008.bat to fetch the dependencies!
+    echo.
+    echo    If you would prefer getting dependencies manually with git, do a git clone from
+    echo    https://code.google.com/p/realxtend-tundra-deps/ remember to checkout the prebuild-vs2008 branch.
+    echo    Next set TUNDRA_DEP_PATH to point at your <clone_path>\build_deps and run this script again.
     goto :end
 )
 
