@@ -5,11 +5,11 @@ echo.
 :: directorys 'bin' folder path to your PATH env variable
 
 :: If you get git curl ssl cert errors 'error: error setting certificate verify locations' you can propably 
-:: fix that by updating to a newer git (tested tp work with >=1.7.6) or doing a work around like
+:: fix that by updating to a newer git (tested to work with >=1.7.6) or doing a work around like
 :: http://lostechies.com/keithdahlby/2010/09/26/msysgit-error-setting-certificate-verify-locations/
 :: Essentialy you will be running a command below and running this batch file again
 :: git config --global http.sslcainfo "C:\Program Files (x86)\Git\bin\curl-ca-bundle.crt"
-:: this will make git find the curl certification file properly.
+:: this will make git find the curl certification file properly for the https repo clone.
 
 :update_vs2008_dependency_submodule
 echo -- Updatating git submodule path deps/vs2008
