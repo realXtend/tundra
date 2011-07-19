@@ -4,32 +4,25 @@
 #define incl_UpdateModule_h
 
 #include "IModule.h"
-
-
 #include <QObject>
 
-namespace Update
+class UpdateModule : public IModule
 {
-    class UpdateModule : public QObject, public IModule
-    {
 
-    Q_OBJECT
+Q_OBJECT
 
-    static const std::string &NameStatic();
+public:
+    UpdateModule();
+    virtual ~UpdateModule();
 
-    public:
-        UpdateModule();
-        virtual ~UpdateModule();
+    void PostInitialize();
 
-        void Load();
-        void PostInitialize();
+public slots:
+    void RunUpdater(QString parameter = "/checknow");
 
-    public slots:
-        void RunUpdater(QString parameter = "/checknow");
+private:
+    QString updateExecutable;
+    QString updateConfig;
+};
 
-    private:
-        QString updateExecutable;
-        QString updateConfig;
-    };
-}
 #endif

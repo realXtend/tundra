@@ -14,17 +14,13 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 
 # Includes
-use_core_modules (Core Foundation Interfaces Ui)
-
-# note: Core, Foundation and Interfaces are removed from tundra2 branch, need to modify this and code to make this module compile!
+use_core_modules (Framework Ui)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 # Linking
-link_modules(Core Foundation Interfaces Ui)
+link_modules(Framework Ui)
 
-SetupCompileFlagsWithPCH()
-
+SetupCompileFlags()
 
 final_target ()
-

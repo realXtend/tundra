@@ -124,7 +124,7 @@ AddProject(Application SkyXHydrax)                  # Provides photorealistic sk
 AddProject(Application SceneWidgetComponents)       # Provide ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
 AddProject(Application JavascriptModule)            # Allows QtScript-created scene script instances.
 #AddProject(Application PythonScriptModule)         # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule and AvatarModule
-#AddProject(Application UpdateModule                # Windows msi installer only. Adds 'Check For Updates' functionality.
+#AddProject(Application UpdateModule)               # Windows msi installer only. Adds 'Check For Updates' functionality.
 
 if (ENABLE_OGRE_ASSET_EDITOR)
     AddProject(Application OgreAssetEditorModule)   # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
