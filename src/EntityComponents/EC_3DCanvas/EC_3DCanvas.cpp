@@ -5,47 +5,59 @@
 #include "MemoryLeakCheck.h"
 #include "EC_3DCanvas.h"
 
-#include "Renderer.h"
-#include "IModule.h"
-#include "OgreMaterialUtils.h"
+#include "Framework.h"
+#include "IRenderer.h"
 #include "Entity.h"
+#include "LoggingFunctions.h"
 
+#include "OgreMaterialUtils.h"
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 
+#include <OgreMaterial.h>
 #include <QWidget>
 #include <QPainter>
-
 #include <QDebug>
 
-EC_3DCanvas::EC_3DCanvas(IModule *module) :
-    IComponent(module->GetFramework()),
+EC_3DCanvas::EC_3DCanvas(Scene *scene) :
+    IComponent(scene),
     widget_(0),
     update_internals_(false),
+    mesh_hooked_(false),
     refresh_timer_(0),
     update_interval_msec_(0),
     material_name_(""),
     texture_name_("")
 {
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = module->GetFramework()->GetServiceManager()->
-        GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
-    mesh_hooked_ = false;
-    if (renderer)
+    if (framework->IsHeadless())
+        return;
+	
+	if (framework->GetRenderer())
     {
-        // Create material
-        material_name_ = renderer->GetUniqueObjectName("EC_3DCanvas_mat");
-        Ogre::MaterialPtr material = OgreRenderer::GetOrCreateLitTexturedMaterial(material_name_);
-        if (material.isNull())
-            material_name_ = "";
-
         // Create texture
-        texture_name_ = renderer->GetUniqueObjectName("EC_3DCanvas_tex");
+        texture_name_ = framework->GetRenderer()->GetUniqueObjectName("EC_3DCanvas_tex");
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
             texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
             Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
             Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
         if (texture.isNull())
-            texture_name_ = "";
+        {
+            LogError("EC_3DCanvas: Could not create texture for usage!");
+            return;
+        }
+
+        // Create material: Make sure we have one tech with one pass with one texture unit.
+        // Don't use our lit textured templates here as emissive will not work there as it has vertex etc programs in it.
+        material_name_ = framework->GetRenderer()->GetUniqueObjectName("EC_3DCanvas_mat");
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        if (material->getNumTechniques() == 0)
+            material->createTechnique();
+        if (material->getTechnique(0) && 
+            material->getTechnique(0)->getNumPasses() == 0)
+            material->getTechnique(0)->createPass();
+        if (material->getTechnique(0)->getPass(0) && 
+            material->getTechnique(0)->getPass(0)->getNumTextureUnitStates() == 0)
+            material->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);        
     }
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(ParentEntitySet()), Qt::UniqueConnection);
@@ -53,6 +65,9 @@ EC_3DCanvas::EC_3DCanvas(IModule *module) :
 
 EC_3DCanvas::~EC_3DCanvas()
 {
+    if (framework->IsHeadless())
+        return;
+
     submeshes_.clear();
     widget_ = 0;
 
@@ -66,7 +81,7 @@ EC_3DCanvas::~EC_3DCanvas()
         {
             Ogre::MaterialManager::getSingleton().remove(material_name_);
         }
-        catch(...) {}
+        catch (...) {}
     }
 
     if (!texture_name_.empty())
@@ -75,12 +90,15 @@ EC_3DCanvas::~EC_3DCanvas()
         {
             Ogre::TextureManager::getSingleton().remove(texture_name_);
         }
-        catch(...) {}
+        catch (...) {}
     }
 }
 
 void EC_3DCanvas::Start()
 {
+    if (framework->IsHeadless())
+        return;
+
     update_internals_ = true;
     if (update_interval_msec_ != 0 && refresh_timer_)
     {
@@ -93,7 +111,7 @@ void EC_3DCanvas::Start()
 
     if(!mesh_hooked_)
     {
-        Scene::Entity* entity = GetParentEntity();
+        Entity* entity = ParentEntity();
         EC_Mesh* ec_mesh = entity->GetComponent<EC_Mesh>().get();
         if (ec_mesh)
         {
@@ -105,12 +123,15 @@ void EC_3DCanvas::Start()
 
 void EC_3DCanvas::MeshMaterialsUpdated(uint index, const QString &material_name)
 {
+    if (framework->IsHeadless())
+        return;
+
     if (material_name_.empty())
         return;
     if(material_name.compare(QString(material_name_.c_str())) != 0 )
     {
         bool has_index = false;
-        for(int i=0; i<submeshes_.length(); i++)
+        for (int i=0; i<submeshes_.length(); i++)
         {
             if (index == submeshes_[i])
                 has_index = true;
@@ -122,6 +143,9 @@ void EC_3DCanvas::MeshMaterialsUpdated(uint index, const QString &material_name)
 
 void EC_3DCanvas::Stop()
 {
+    if (framework->IsHeadless())
+        return;
+
     if (refresh_timer_)
         if (refresh_timer_->isActive())
             refresh_timer_->stop();
@@ -129,6 +153,9 @@ void EC_3DCanvas::Stop()
 
 void EC_3DCanvas::Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second)
 {
+    if (framework->IsHeadless())
+        return;
+
     SetWidget(widget);
     SetSubmeshes(submeshes);
     SetRefreshRate(refresh_per_second);
@@ -136,6 +163,9 @@ void EC_3DCanvas::Setup(QWidget *widget, const QList<uint> &submeshes, int refre
 
 void EC_3DCanvas::SetWidget(QWidget *widget)
 {
+    if (framework->IsHeadless())
+        return;
+
     if (widget_ != widget)
     {
         widget_ = widget;
@@ -146,6 +176,9 @@ void EC_3DCanvas::SetWidget(QWidget *widget)
 
 void EC_3DCanvas::SetRefreshRate(int refresh_per_second)
 {
+    if (framework->IsHeadless())
+        return;
+
     if (refresh_per_second < 0)
         refresh_per_second = 0;
 
@@ -170,6 +203,9 @@ void EC_3DCanvas::SetRefreshRate(int refresh_per_second)
 
 void EC_3DCanvas::SetSubmesh(uint submesh)
 {
+    if (framework->IsHeadless())
+        return;
+
     submeshes_.clear();
     submeshes_.append(submesh);
     update_internals_ = true;
@@ -177,6 +213,9 @@ void EC_3DCanvas::SetSubmesh(uint submesh)
 
 void EC_3DCanvas::SetSubmeshes(const QList<uint> &submeshes)
 {
+    if (framework->IsHeadless())
+        return;
+
     submeshes_.clear();
     submeshes_ = submeshes;
     update_internals_ = true;
@@ -184,6 +223,9 @@ void EC_3DCanvas::SetSubmeshes(const QList<uint> &submeshes)
 
 void EC_3DCanvas::WidgetDestroyed(QObject *obj)
 {
+    if (framework->IsHeadless())
+        return;
+
     widget_ = 0;
     Stop();
     RestoreOriginalMeshMaterials();
@@ -192,46 +234,71 @@ void EC_3DCanvas::WidgetDestroyed(QObject *obj)
 
 void EC_3DCanvas::Update()
 {
-    if (!widget_ || texture_name_.empty())
+    if (framework->IsHeadless())
         return;
 
-    Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(texture_name_);
-    if (texture.isNull())
+    if (!widget_.data() || texture_name_.empty())
+        return;
+    if (widget_->width() <= 0 || widget_->height() <= 0)
         return;
 
-    if (buffer_.size() != widget_->size())
-        buffer_ = QImage(widget_->size(), QImage::Format_ARGB32_Premultiplied);
-    QPainter painter(&buffer_);
-    widget_->render(&painter);
-
-    // Set texture to material
-    if (update_internals_ && !material_name_.empty())
+    try
     {
-        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name_);
-        if (material.isNull())
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(texture_name_);
+        if (texture.isNull())
             return;
-        OgreRenderer::SetTextureUnitOnMaterial(material, texture_name_);
-        UpdateSubmeshes();
-        update_internals_ = false;
-    }
 
-    if ((int)texture->getWidth() != buffer_.width() || (int)texture->getHeight() != buffer_.height())
+        if (buffer_.size() != widget_->size())
+            buffer_ = QImage(widget_->size(), QImage::Format_ARGB32_Premultiplied);
+        if (buffer_.width() <= 0 || buffer_.height() <= 0)
+            return;
+
+        QPainter painter(&buffer_);
+        widget_->render(&painter);
+
+        // Set texture to material
+        if (update_internals_ && !material_name_.empty())
+        {
+            Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name_);
+            if (material.isNull())
+                return;
+            // Just for good measure, this is done once in the ctor already if everything went well.
+            OgreRenderer::SetTextureUnitOnMaterial(material, texture_name_);
+            UpdateSubmeshes();
+            update_internals_ = false;
+        }
+
+        if ((int)texture->getWidth() != buffer_.width() || (int)texture->getHeight() != buffer_.height())
+        {
+            texture->freeInternalResources();
+            texture->setWidth(buffer_.width());
+            texture->setHeight(buffer_.height());
+            texture->createInternalResources();
+        }
+
+        if (!texture->getBuffer().isNull())
+        {
+            Ogre::Box update_box(0,0, buffer_.width(), buffer_.height());
+            Ogre::PixelBox pixel_box(update_box, Ogre::PF_A8R8G8B8, (void*)buffer_.bits());
+            texture->getBuffer()->blitFromMemory(pixel_box, update_box);
+        }
+    }
+    catch (Ogre::Exception &e) // inherits std::exception
     {
-        texture->freeInternalResources();
-        texture->setWidth(buffer_.width());
-        texture->setHeight(buffer_.height());
-        texture->createInternalResources();
+        LogError("Exception occurred while blitting texture data from memory: " + std::string(e.what()));
     }
-
-    Ogre::Box update_box(0,0, buffer_.width(), buffer_.height());
-    Ogre::PixelBox pixel_box(update_box, Ogre::PF_A8R8G8B8, (void*)buffer_.bits());
-    if (!texture->getBuffer().isNull())
-        texture->getBuffer()->blitFromMemory(pixel_box, update_box);
+    catch (...)
+    {
+        LogError("Unknown exception occurred while blitting texture data from memory.");
+    }
 }
 
 void EC_3DCanvas::UpdateSubmeshes()
 {
-    Scene::Entity* entity = GetParentEntity();
+    if (framework->IsHeadless())
+        return;
+
+    Entity* entity = ParentEntity();
     
     if (material_name_.empty() || !entity)
         return;
@@ -291,13 +358,16 @@ void EC_3DCanvas::UpdateSubmeshes()
 
 void EC_3DCanvas::RestoreOriginalMeshMaterials()
 {
+    if (framework->IsHeadless())
+        return;
+
     if (restore_materials_.empty())
     {
         update_internals_ = true;
         return;
     }
 
-    Scene::Entity* entity = GetParentEntity();
+    Entity* entity = ParentEntity();
 
     if (material_name_.empty() || !entity)
         return;
@@ -340,17 +410,54 @@ void EC_3DCanvas::RestoreOriginalMeshMaterials()
 
 void EC_3DCanvas::ParentEntitySet()
 {
-    if (GetParentEntity())
-        connect(GetParentEntity(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+    if (framework->IsHeadless())
+        return;
+
+    if (ParentEntity())
+        connect(ParentEntity(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
 }
 
 void EC_3DCanvas::ComponentRemoved(IComponent *component, AttributeChange::Type change)
 {
+    if (framework->IsHeadless())
+        return;
+
     if (component == this)
     {
         Stop();
         RestoreOriginalMeshMaterials();
         SetWidget(0);
         submeshes_.clear();
+    }
+}
+
+void EC_3DCanvas::SetSelfIllumination(bool illuminating)
+{
+    if (material_name_.empty())
+        return;
+
+    Ogre::ColourValue emissiveColor;
+    if (illuminating)
+        emissiveColor = Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f);
+    else
+        emissiveColor = Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f);
+
+    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name_);
+    if (!material.isNull())
+    {
+        Ogre::Material::TechniqueIterator iter = material->getTechniqueIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::Technique *tech = iter.getNext();
+            if (!tech)
+                continue;
+            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+            while(passIter.hasMoreElements())
+            {
+                Ogre::Pass *pass = passIter.getNext();
+                if (pass)
+                    pass->setSelfIllumination(emissiveColor);
+            }
+        }
     }
 }
