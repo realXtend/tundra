@@ -7,8 +7,8 @@
   <plugin path="PhysicsModule" />               <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
   <plugin path="TundraProtocolModule" />        <!-- TundraProtocolModule depends on KristalliProtocolModule, OgreRenderingModule and PhysicsModule -->
   <plugin path="JavascriptModule" />            <!-- JavascriptModule depends on TundraLogicModule --> 
-  <plugin path="AssetModule" />	                <!-- AssetModule depends on KristalliProtocolModule and TundraLogicModule -->
-  <plugin path="AvatarModule" />	            <!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
+  <plugin path="AssetModule" />                 <!-- AssetModule depends on KristalliProtocolModule and TundraLogicModule -->
+  <plugin path="AvatarModule" />                <!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
   <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule, TundraLogicModule, OgreRenderingModule and AssetModule -->
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
   <plugin path="MumbleVoipModule" />            <!-- MumbleVoipModule depends on OgreRenderingModule and TundraLogicModule -->
