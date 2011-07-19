@@ -5,22 +5,12 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Declare_EC.h"
+#include "OgreModuleFwd.h"
 
 #include <QMap>
 #include <QImage>
 #include <QPointer>
 #include <QWidget>
-
-namespace Scene
-{
-    class Entity;
-}
-
-namespace Foundation
-{
-    class Framework;
-}
 
 namespace Ogre
 {
@@ -36,10 +26,14 @@ class QTimer;
 <tr>
 <td>
 <h2>3DCanvas</h2>
-Makes the entity a light source.
+
+\note This component will not sync to network, it is made for local rendering use. It is also not meant to be used directly from the entity-component editor, as you need to pass QWidget* etc for it to do anything. Other components utilizes it when they need QWidget painting done to a 3D object. 
+
+Paints UI widgets on to a 3D object surface via EC_Mesh and a submesh index. So a EC_Mesh needs to be present on the entity this component is used.
+
+Registered by SceneWidgetComponents plugin.
 
 <b>No Attributes</b>
-
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
@@ -69,9 +63,10 @@ Does not emit any actions.
 class EC_3DCanvas : public IComponent
 {
     Q_OBJECT
-    DECLARE_EC(EC_3DCanvas);
+    COMPONENT_NAME("EC_3DCanvas", 35)
 
 public:
+    explicit EC_3DCanvas(Scene *scene);
     ~EC_3DCanvas();
 
 public slots:
@@ -85,13 +80,13 @@ public slots:
     void SetRefreshRate(int refresh_per_second);
     void SetSubmesh(uint submesh);
     void SetSubmeshes(const QList<uint> &submeshes);
+    void SetSelfIllumination(bool illuminating);
 
     QWidget *GetWidget() { return widget_; }
     const int GetRefreshRate() { return update_interval_msec_; }
     QList<uint> GetSubMeshes() { return submeshes_; }
 
 private:
-    explicit EC_3DCanvas(IModule *module);
     void UpdateSubmeshes();
 
 private slots:

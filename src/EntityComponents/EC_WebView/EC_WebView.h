@@ -5,7 +5,6 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "Declare_EC.h"
 
 #include "SceneFwd.h"
 
@@ -24,7 +23,9 @@ class EC_3DCanvas;
 class RaycastResult;
 class UserConnection;
 
-/// A web browser on who's content can be rendered into a 3D scene object.
+namespace TundraLogic { class Server; }
+
+//! A web browser on who's content can be rendered into a 3D scene object.
 /**
 <table class="header"><tr><td>
 <h2>WebView</h2>
@@ -42,7 +43,7 @@ everyone but the controller himself. When you want to release your control, clic
 <b>Important notes:</b> Recommended that you don't take control of shared browsing on a non headless server instance. This may in certain situation (crash or rundown of server while server has control)
 leave your components locked down so that no one can take control back. For clients leaving or crashing during control there are safe guards to never leave the control in a bad state.
 
-Registered by RexLogic::RexLogicModule.
+Registered by SceneWidgetComponents plugin.
 
 <b>Attributes</b>:
 <ul>
@@ -78,13 +79,10 @@ Does not emit any actions.
 
 </table>
 */
-
-namespace TundraLogic { class Server; }
-
 class EC_WebView : public IComponent
 {
-    DECLARE_EC(EC_WebView);
     Q_OBJECT
+    COMPONENT_NAME("EC_WebView", 36)
 
 public:
     /// Webview URL.
@@ -107,11 +105,19 @@ public:
     Q_PROPERTY(bool interactive READ getinteractive WRITE setinteractive);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, interactive);
 
+    /// Boolean for illuminating the webview. This means the materials emissive will be manipulated to show the webview with full bright always.
+    /// If illuminating is true there are no shadows affecting the light, otherwise shadows will be shown.
+    Q_PROPERTY(bool illuminating READ getilluminating WRITE setilluminating);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, illuminating);
+
     /// Interaction ID for components to exchange messages.
     /// \note this attribute is hidden from the UI layer and is not meant to be modified by normal users.
     Q_PROPERTY(int controllerId READ getcontrollerId WRITE setcontrollerId);
     DEFINE_QPROPERTY_ATTRIBUTE(int, controllerId);
     
+    /// Constuctor.
+    explicit EC_WebView(Scene *scene);
+
     /// Destructor.
     ~EC_WebView();
 
@@ -183,6 +189,10 @@ private slots:
     /// Handler when EC_Mesh emits that the mesh is ready.
     void TargetMeshReady();
 
+    /// Handler when EC_Mesh emits that a material has changed on one of its sub meshes.
+    /// We inspect if the index is same as we are rendering to. If this is detected we re-apply our material to the sub mesh.
+    void TargetMeshMaterialChanged(uint index, const QString &material);
+
     /// Monitors this entitys added components.
     void ComponentAdded(IComponent *component, AttributeChange::Type change);
 
@@ -199,7 +209,7 @@ private slots:
     EC_3DCanvas *GetSceneCanvasComponent();
 
     /// Monitors entity mouse clicks.
-    void EntityClicked(Scene::Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
+    void EntityClicked(Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
 
     /// Handles request to show the QWebView
     void InteractShowRequest();
@@ -221,10 +231,7 @@ private slots:
     /// \note The action signature is (string)"WebViewScroll", (int)"x", (int)"y"
     void ActionScroll(QString x, QString y);
 
-private:
-    /// Constuctor.
-    explicit EC_WebView(IModule *module);
-    
+private:   
     /// Boolean for tracking if this component has been prepared properly.
     /** Guarantees: 
         - EC_Mesh is present and loaded to Ogre, ready for rendering.
@@ -259,6 +266,10 @@ private:
 
     /// Tracking the scroll position when we are in control.
     QPoint controlledScrollPos_;
+
+    /// The scene canvas that we are using. This needs to be unique to enable
+    /// multiple web views in a entity. This is used to perform cleanup when this component is destroyed.
+    QString sceneCanvasName_;
 };
 
 #endif

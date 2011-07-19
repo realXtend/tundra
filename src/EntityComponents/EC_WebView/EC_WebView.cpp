@@ -8,18 +8,17 @@
 #include "SceneAPI.h"
 #include "SceneInteract.h"
 #include "Entity.h"
+#include "AttributeMetadata.h"
 
-#include "EventManager.h"
-#include "UserConnection.h"
-
-#include "RenderServiceInterface.h"
+#include "IRenderer.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include "TundraLogicModule.h"
 #include "Client.h"
 #include "Server.h"
+#include "UserConnection.h"
 
 #include "EC_3DCanvas.h"
 #include "EC_Mesh.h"
@@ -34,6 +33,7 @@
 #include <QMessageBox>
 #include <QWheelEvent>
 #include <QApplication>
+#include <QUuid>
 
 #include "LoggingFunctions.h"
 
@@ -41,8 +41,8 @@
 
 static int NoneControlID = -1;
 
-EC_WebView::EC_WebView(IModule *module) :
-    IComponent(module->GetFramework()),
+EC_WebView::EC_WebView(Scene *scene) :
+    IComponent(scene),
     webview_(0),
     renderTimer_(0),
     webviewLoading_(false),
@@ -55,7 +55,8 @@ EC_WebView::EC_WebView(IModule *module) :
     renderSubmeshIndex(this, "Render Submesh", 0),
     renderRefreshRate(this, "Render FPS", 0),
     interactive(this, "Interactive", false),
-    controllerId(this, "ControllerId", NoneControlID)
+    controllerId(this, "ControllerId", NoneControlID),
+    illuminating(this, "Illuminating", true)
 {
     interactionMetaData_ = new AttributeMetadata();
 
@@ -93,6 +94,10 @@ EC_WebView::EC_WebView(IModule *module) :
     if (!ViewEnabled() || GetFramework()->IsHeadless())
         return;
 
+    // Connect window size changes to update rendering as the ogre textures go black.
+    if (GetFramework()->Ui()->MainWindow())
+        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(RenderDelayed()), Qt::UniqueConnection);
+
     // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
@@ -102,10 +107,10 @@ EC_WebView::EC_WebView(IModule *module) :
     connect(renderTimer_, SIGNAL(timeout()), SLOT(Render()), Qt::UniqueConnection);
 
     // Prepare scene interactions
-    SceneInteractWeakPtr sceneInteract = GetFramework()->Scene()->GetSceneInteract();
-    if (!sceneInteract.isNull())
+    SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
+    if (sceneInteract)
     {
-        connect(sceneInteract.data(), SIGNAL(EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)), 
+        connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)), 
                 SLOT(EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)));
     }
 
@@ -140,7 +145,7 @@ bool EC_WebView::eventFilter(QObject *obj, QEvent *e)
                         // Send scroll position update to peers when we are in control.
                         if (getcontrollerId() == myControllerId_)
                         {
-                            GetParentEntity()->Exec(4, "WebViewScroll", 
+                            ParentEntity()->Exec(4, "WebViewScroll", 
                                 QString::number(controlledScrollPos_.x()), QString::number(controlledScrollPos_.y()));
                         }
                         RenderDelayed();
@@ -185,7 +190,7 @@ void EC_WebView::ServerHandleDisconnect(int connectionID, UserConnection* connec
         if (getcontrollerId() == connectionID)
         {
             setcontrollerId(NoneControlID);
-            GetParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
+            ParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
         }
     }
 }
@@ -214,7 +219,7 @@ void EC_WebView::ServerCheckControllerValidity(int connectionID)
             {
                 // The ID is not a valid active connection, reset the control id to all clients.
                 setcontrollerId(NoneControlID);
-                GetParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
+                ParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
             }
         }
     }
@@ -385,7 +390,7 @@ void EC_WebView::PrepareComponent()
     }
 
     // Get parent and connect to the component removed signal.
-    Scene::Entity *parent = GetParentEntity();
+    Entity *parent = ParentEntity();
     if (parent)
     {
         connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
@@ -414,16 +419,22 @@ void EC_WebView::PrepareComponent()
             connect(mesh, SIGNAL(MeshChanged()), SLOT(TargetMeshReady()), Qt::UniqueConnection);
             return;
         }
+        else
+            connect(mesh, SIGNAL(MaterialChanged(uint, const QString&)), SLOT(TargetMeshMaterialChanged(uint, const QString&)), Qt::UniqueConnection);
     }
+    
+    if (sceneCanvasName_.isEmpty())
+        sceneCanvasName_ = "WebViewCanvas-" + QUuid::createUuid().toString().replace("{", "").replace("}", "");
 
     // Get or create local EC_3DCanvas component
-    ComponentPtr iComponent = parent->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic(), AttributeChange::LocalOnly, false);
+    ComponentPtr iComponent = parent->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_, AttributeChange::LocalOnly, false);
     EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(iComponent.get());
     if (!sceneCanvas)
     {
         LogError("PrepareComponent: Could not get or create EC_3DCanvas component!");
         return;
     }
+    sceneCanvas->SetSelfIllumination(getilluminating());
     
     // All the needed components are present, mark prepared as true.
     componentPrepared_ = true;
@@ -563,6 +574,30 @@ void EC_WebView::TargetMeshReady()
         PrepareComponent();
 }
 
+void EC_WebView::TargetMeshMaterialChanged(uint index, const QString &material)
+{
+    if (!componentPrepared_)
+        return;
+    if (sceneCanvasName_.isEmpty())
+        return;
+    if (!ParentEntity())
+        return;
+
+    if (index == getrenderSubmeshIndex())
+    {
+        // Don't create the canvas, if its not there yet there is nothing to re-apply
+        IComponent *comp = ParentEntity()->GetComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_).get();
+        EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(comp);
+        if (sceneCanvas)
+        {
+            // This will make 3DCanvas to update its internals, which means
+            // our material is re-applied to the submesh.
+            sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
+            RenderDelayed();
+        }
+    }
+}
+
 void EC_WebView::ComponentAdded(IComponent *component, AttributeChange::Type change)
 {
     if (component->TypeName() == EC_Mesh::TypeNameStatic())
@@ -595,6 +630,10 @@ void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type c
                 canvasSource->RestoreOriginalMeshMaterials();
                 canvasSource->SetWidget(0);
             }
+
+            // Clean up our EC_3DCanvas component from the entity
+            if (ParentEntity() && !sceneCanvasName_.isEmpty())
+                ParentEntity()->RemoveComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_, AttributeChange::LocalOnly);
         }
     }
     /// \todo Add check if this component has another EC_Mesh then init EC_3DCanvas again for that! Now we just blindly stop this EC.
@@ -703,8 +742,8 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
         // 1. No one is controlling = show ui attributes editable
         // 2. Someone else is controlling = hide all of this components attributes, so slaves cannot modify them.
         interactionMetaData_->designable = currentControllerId == NoneControlID ? true : false;
-        AttributeVector::iterator iter = attributes_.begin();
-        AttributeVector::iterator end = attributes_.end();
+        AttributeVector::iterator iter = attributes.begin();
+        AttributeVector::iterator end = attributes.end();
         while(iter != end)
         {
             IAttribute *attr = (*iter);
@@ -717,27 +756,36 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
             ++iter;
         }
     }
+    else if (attribute == &illuminating)
+    {
+        EC_3DCanvas *canvas = GetSceneCanvasComponent();
+        if (canvas)
+            canvas->SetSelfIllumination(getilluminating());
+    }
 }
 
 EC_Mesh *EC_WebView::GetMeshComponent()
 {
-    if (!GetParentEntity())
+    if (!ParentEntity())
         return 0;
-    EC_Mesh *mesh = GetParentEntity()->GetComponent<EC_Mesh>().get();
+    EC_Mesh *mesh = ParentEntity()->GetComponent<EC_Mesh>().get();
     return mesh;
 }
 
 EC_3DCanvas *EC_WebView::GetSceneCanvasComponent()
 {
-    if (!GetParentEntity())
+    if (!ParentEntity())
         return 0;
-    EC_3DCanvas *canvas = GetParentEntity()->GetComponent<EC_3DCanvas>().get();
-    return canvas;
+    if (sceneCanvasName_.isEmpty())
+        return 0;
+    IComponent *comp = ParentEntity()->GetComponent(EC_3DCanvas::TypeNameStatic(), sceneCanvasName_).get();
+    EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(comp);
+    return sceneCanvas;
 }
 
-void EC_WebView::EntityClicked(Scene::Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult)
+void EC_WebView::EntityClicked(Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult)
 {
-    if (!getinteractive() || !GetParentEntity())
+    if (!getinteractive() || !ParentEntity())
         return;
     
     // We are only interested in left clicks on our entity.
@@ -746,15 +794,15 @@ void EC_WebView::EntityClicked(Scene::Entity *entity, Qt::MouseButton button, Ra
     if (button != Qt::LeftButton)
         return;
     
-    if (entity == GetParentEntity())
+    if (entity == ParentEntity())
     {
         // We are only interested in clicks to our target submesh index.
-        if (raycastResult->submesh_ != (unsigned)getrenderSubmeshIndex())
+        if (raycastResult->submesh != (unsigned)getrenderSubmeshIndex())
             return;
 
-        // Entities have EC_Selected if it is being manipulated.
+        // Entities have EC_Highlight if it is being manipulated.
         // At this situation we don't want to show any ui.
-        if (entity->HasComponent("EC_Selected"))
+        if (!entity->GetComponent("EC_Highlight"))
             return;
 
         QMenu *popupInteract = GetInteractionMenu(false);
@@ -816,7 +864,7 @@ void EC_WebView::InteractControlRequest()
         }
 
         // Execute entity action to peers aka other clients.
-        GetParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(myId), myControllerName);
+        ParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(myId), myControllerName);
         InteractEnableScrollbars(true);
     }
     else
@@ -829,7 +877,7 @@ void EC_WebView::InteractControlReleaseRequest()
     if (getcontrollerId() == NoneControlID)
         LogWarning("Seems like anyone does not have control? Making sure by releasing again.");
     setcontrollerId(NoneControlID);
-    GetParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
+    ParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
     InteractEnableScrollbars(true);
 }
 
