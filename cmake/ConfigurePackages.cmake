@@ -462,15 +462,33 @@ macro (configure_celt)
 endmacro (configure_celt)
 
 macro(use_package_knet)
-    if ("$ENV{KNET_DIR_QT47}" STREQUAL "")
-       set(KNET_DIR ${ENV_TUNDRA_DEP_PATH}/kNet)
-    else()           
-       set(KNET_DIR $ENV{KNET_DIR_QT47})
-    endif()
-    include_directories(${KNET_DIR}/include)
-    link_directories(${KNET_DIR}/lib)
+    message ("** Configuring KNET")
+    
+    # Extract the KNET_DIR_QT47 variable, indended 
+    # to include external dev kNet outside the deps.
+    file(TO_CMAKE_PATH "$ENV{KNET_DIR_QT47}" ENV_KNET_DIR_QT47)
+    
+    # Use KNET_DIR_QT47 if there, fallback to TUNDRA_DEP_PATH
+    if ("${ENV_KNET_DIR_QT47}" STREQUAL "")
+        set (KNET_DIR ${ENV_TUNDRA_DEP_PATH}/kNet)
+    else ()
+        message (STATUS "-- Using from env variable KNET_DIR_QT47")
+        set (KNET_DIR $ENV{KNET_DIR_QT47})
+    endif ()
+    
+    # Report findings
+    include_directories (${KNET_DIR}/include)
+    message (STATUS "-- Include Directories:")
+    message (STATUS "       " ${KNET_DIR}/include)
+    link_directories (${KNET_DIR}/lib)
+    message (STATUS "-- Library Directories:")
+    message (STATUS "       " ${KNET_DIR}/lib)
+    message (STATUS "-- Libraries:")
+    message (STATUS "       kNet")
+    message ("")
+    
     if (UNIX)    
-        add_definitions(-DUNIX)
+        add_definitions (-DUNIX)
     endif()
 endmacro()
 

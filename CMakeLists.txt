@@ -201,6 +201,9 @@ configure_ogg ()
 configure_vorbis ()
 configure_theora()
 
+# This will find kNet and set the global include and library directories
+use_package_knet() 
+
 message ("\n** Adding global include and link directories")
 use_package(BOOST)
 use_package(OGRE)
@@ -208,8 +211,6 @@ use_package(QT4)
 use_package(OPENAL)
 use_package(OGG)
 use_package(VORBIS)
-
-use_package_knet()
 
 set (CORE_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Core)
 include_directories (${CORE_MODULE_DIRECTORY}/Input)
