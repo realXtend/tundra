@@ -19,7 +19,7 @@ public:
 
     virtual void DoUnload();
 
-    virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
+    virtual bool DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous);
 
     /// Loads this audio asset from the given .wav file in memory.
     bool LoadFromWavFileInMemory(const u8 *data, size_t numBytes);

@@ -17,7 +17,7 @@ OgreMeshAsset::~OgreMeshAsset()
     Unload();
 }
 
-bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
+bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous)
 {
     PROFILE(OgreMeshAsset_LoadFromFileInMemory);
     assert(data_);
@@ -83,8 +83,10 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     }
 
     //internal_name_ = SanitateAssetIdForOgre(id_);
-    
-//    LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
+    //LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
+
+    // We did a synchronous load, must call AssetLoadCompleted here.
+    assetAPI->AssetLoadCompleted(Name());
     return true;
 }
 

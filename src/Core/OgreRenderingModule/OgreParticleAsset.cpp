@@ -29,7 +29,7 @@ void OgreParticleAsset::DoUnload()
     RemoveTemplates();
 }
 
-bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes)
+bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous)
 {
     RemoveTemplates();
     references.clear();
@@ -176,8 +176,11 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     // Give only the name of the first template
     internalName = SanitateAssetIdForOgre(Name().toStdString()) + "_0";
     
-    // Theoretical success if at least one template was created
-    return GetNumTemplates() > 0;
+    // Theoretical success if at least one template was created.
+    bool success = (GetNumTemplates() > 0);
+    if (success)
+        assetAPI->AssetLoadCompleted(Name());
+    return success;
 }
 
 bool OgreParticleAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const

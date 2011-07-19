@@ -188,7 +188,7 @@ OgreMaterialAsset::~OgreMaterialAsset()
     Unload();
 }
 
-bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
+bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous)
 {
     // Remove old material if any
     Unload();
@@ -350,6 +350,8 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     
     // Mark the valid ogre resource name
     ogreAssetName = QString::fromStdString(sanitatedname);
+
+    assetAPI->AssetLoadCompleted(Name());
     return true;
 }
 

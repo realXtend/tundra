@@ -73,7 +73,7 @@ void AvatarDescAsset::DoUnload()
     properties_.clear();
 }
 
-bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
+bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous)
 {
     // Store the raw XML as a string
     QByteArray bytes((const char *)data, numBytes);
@@ -89,8 +89,9 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     }
 
     ReadAvatarAppearance(avatarDoc);
-
     emit AppearanceChanged();
+
+    assetAPI->AssetLoadCompleted(Name());
     return true;
 }
 

@@ -106,7 +106,14 @@ public:
     /// Returns true if loading succeeded, false otherwise.
     /// @param data A pointer to the data to be loaded in. This pointer may be null if numBytes == 0, in which case
     /// this function is used to signal loading into "null data".
-    bool LoadFromFileInMemory(const u8 *data, size_t numBytes);
+    /// @param allowAsynchronous Informs the underlying load code if it can do asynchronous load. 
+    /// Typically large sized asset types want to ignore the parameter data and load from a cached disk file if possible and notify AssetAPI when its done.
+    /// This should be set to false if you are expecting the asset to be loaded when this function returns like in LoadFromFile and LoadFromCache.
+    bool LoadFromFileInMemory(const u8 *data, size_t numBytes, bool allowAsynchronous = true);
+
+    /// Called when this asset is loaded by AssetAPI::AssetLoadCompleted and DependencyLoaded functions.
+    /// Emits Loaded() signal if all the dependencies have been loaded, otherwise does nothing.
+    void LoadCompleted();
 
     /// Called whenever another asset this asset depends on is loaded. The default implementation will check if the asset itself is loaded, and the
     /// number of dependencies: if it was the last dependency, Loaded() will be mitted.
@@ -134,7 +141,12 @@ public:
 
 protected:
     /// Loads this asset by deserializing it from the given data. The data pointer that is passed in is never null, and numBytes is always greater than zero.
-    virtual bool DeserializeFromData(const u8 *data, size_t numBytes) = 0;
+    /// The allowAsynchronous boolean must be respected, if it is false you should not do asynchronous even if you have a code path for it. The parameter
+    /// is set to false when the requesting code is expecting the asset to be loaded when this function returns.
+    /// @note Implementation has to call AssetAPI::AssetLoadCompleted after loaded succesfully (both synchronous and asynchronous). 
+    /// AssetAPI::AssetLoadCompleted can be called inside this function, how ever just returning true is not enough. 
+    /// AssetAPI::AssetLoadFailed will be called automatically if false is returned.
+    virtual bool DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous) = 0;
 
     /// Private-implementation of the unloading of an asset.
     virtual void DoUnload() = 0;

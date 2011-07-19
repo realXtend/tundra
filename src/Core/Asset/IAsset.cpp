@@ -81,7 +81,9 @@ AssetPtr IAsset::Clone(QString newAssetName) const
         return AssetPtr();
     }
 
-    success = newAsset->LoadFromFileInMemory(&data[0], data.size());
+    // Do not allow asynchronous loading due the caller of this 
+    // expects the asset to be usable when this function returns.
+    success = newAsset->LoadFromFileInMemory(&data[0], data.size(), false);
     if (!success)
     {
         LogError("Cannot Clone() asset \"" + Name() + "\" to a new asset \"" + newAssetName + "\": Deserializing the new asset from bytes failed!");
@@ -110,30 +112,38 @@ bool IAsset::LoadFromFile(QString filename)
     }
 
     // Invoke the actual virtual function to load the asset.
-    return LoadFromFileInMemory(&fileData[0], fileData.size());
+    // Do not allow asynchronous loading due the caller of this 
+    // expects the asset to be usable when this function returns.
+    return LoadFromFileInMemory(&fileData[0], fileData.size(), false);
 }
 
-bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
+bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes, bool allowAsynchronous)
 {
     if (!data || numBytes == 0)
     {
         LogDebug("LoadFromFileInMemory failed for asset \"" + ToString().toStdString() + "\"! No data present!");
         return false;
     }
-
-    bool success = DeserializeFromData(data, numBytes);
     
-    AssetPtr thisAsset = this->shared_from_this();
-    // If asset was loaded successfully, and there are no pending dependencies, emit Loaded() now
-    if (success && assetAPI->NumPendingDependencies(thisAsset) == 0)
-        emit Loaded(thisAsset);
+    bool success = DeserializeFromData(data, numBytes, allowAsynchronous);
+    /// Automatically call AssetAPI::AssetLoadFailed if load failed.
+    if (!success)
+        assetAPI->AssetLoadFailed(Name());
     return success;
 }
 
 void IAsset::DependencyLoaded(AssetPtr dependee)
 {
+    // If we are loaded, and this was the last dependency, emit Loaded().
+    // No need to have exact duplicate code here even if LoadCompleted is not the most 
+    // informative name in the world for the situation.
+    LoadCompleted();
+}
+
+void IAsset::LoadCompleted()
+{
+    // If asset was loaded successfully, and there are no pending dependencies, emit Loaded() now.
     AssetPtr thisAsset = this->shared_from_this();
-    // If we are loaded, and this was the last dependency, emit Loaded()
     if (IsLoaded() && assetAPI->NumPendingDependencies(thisAsset) == 0)
         emit Loaded(thisAsset);
 }

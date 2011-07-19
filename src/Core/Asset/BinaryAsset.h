@@ -25,12 +25,7 @@ public:
         data.clear(); 
     }
 
-    bool Isloaded() const
-    {
-        return data.size() != 0;
-    }
-
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes)
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous)
     {
         data.clear();
         data.insert(data.end(), data_, data_ + numBytes);
@@ -48,7 +43,10 @@ public:
         return std::vector<AssetReference>();
     }
 
-    bool IsLoaded() const { return data.size() > 0; }
+    bool IsLoaded() const 
+    {
+        return data.size() > 0;
+    }
 
     std::vector<u8> data;
 };
