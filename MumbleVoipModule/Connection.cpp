@@ -183,6 +183,9 @@ namespace MumbleLib
 
     void Connection::HandleError(const boost::system::error_code &error)
     {
+        if(state_ == STATE_CLOSED)
+            return;
+
         MumbleVoip::MumbleVoipModule::LogError("Relayed from mumbleclient (" + ToString(error.category().name()) + "\\" + ToString(error.message()) + ")");
         lock_state_.lockForWrite();
         state_ = STATE_ERROR;
@@ -205,7 +208,10 @@ namespace MumbleLib
 
     void Connection::Close()
     {
-        if (state_ == STATE_CONNECTING)
+        if(state_ == STATE_CLOSED)
+            return;
+
+        if (state_ == STATE_CONNECTING || state_ == STATE_AUTHENTICATING)
         {
             lock_state_.lockForWrite();
             state_ = STATE_CLOSED;
@@ -213,39 +219,33 @@ namespace MumbleLib
             emit StateChanged(state_);
             return;
         }
-
-        if (state_ == STATE_AUTHENTICATING)
+        else
         {
             lock_state_.lockForWrite();
             state_ = STATE_CLOSED;
             lock_state_.unlock();
             emit StateChanged(state_);
-            return;
         }
 
         user_update_timer_.stop();
         QMutexLocker raw_udp_tunnel_locker(&mutex_raw_udp_tunnel_);
-        lock_state_.lockForWrite();
         QMutexLocker client_locker(&mutex_client_);
-        if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
+
+        try
         {
-            lock_state_.unlock();
-            try
-            {
-                client_->Disconnect();
-            }
-            catch(std::exception &e)
-            {
-                lock_state_.lockForWrite();
-                state_ = STATE_ERROR;
-                reason_ = QString(e.what());
-            }
-            state_ = STATE_CLOSED;
-            lock_state_.unlock();
-            emit StateChanged(state_);
+            client_->Disconnect();
         }
-        else
+        catch(std::exception &e)
+        {
+            lock_state_.lockForWrite();
+            state_ = STATE_ERROR;
             lock_state_.unlock();
+            reason_ = QString(e.what());
+        }
+        lock_state_.lockForWrite();
+        state_ = STATE_CLOSED;
+        lock_state_.unlock();
+        emit StateChanged(state_);
     }
 
     void Connection::InitializeCELT()

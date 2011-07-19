@@ -47,7 +47,6 @@ namespace MumbleVoip
     Session::~Session()
     {
         Close();
-        SAFE_DELETE(connection_);
     }
 
     void Session::OpenConnection(ServerInfo server_info)
@@ -98,14 +97,23 @@ namespace MumbleVoip
         {
             State old_state = state_;
             state_ = STATE_CLOSED;
+
+            if(connection_)
+                SAFE_DELETE(connection_);
+
+            current_mumble_channel_ = "";
+            emit ActiceChannelChanged(current_mumble_channel_);
+
             if (old_state != state_)
                 emit StateChanged(state_);
         }
         foreach(Participant* p, participants_)
         {
+            emit ParticipantLeft(p);
             SAFE_DELETE(p);
         }
         participants_.clear();
+        other_channel_users_.clear();
     }
 
     Communications::InWorldVoice::SessionInterface::State Session::GetState() const
@@ -557,10 +565,10 @@ namespace MumbleVoip
 
     void Session::Reconnect()
     {
+        MumbleVoipModule::LogInfo("Connection to server lost. Reconnecting..");
         Close();
         ServerInfo server_info = channels_[current_mumble_channel_];
         OpenConnection(server_info);
-        MumbleVoipModule::LogInfo("Connection to server lost. Reconnecting..");
 
         if(state_ == STATE_ERROR)
         {
@@ -654,7 +662,7 @@ namespace MumbleVoip
 
         ServerInfo server_info = channels_[channel_name];
 
-        if(connection_ && QString::compare(server_info.server, connection_->GetCurrentServer(), Qt::CaseInsensitive) == 0 && GetState() != STATE_CLOSED)
+        if(connection_ && QString::compare(server_info.server, connection_->GetCurrentServer(), Qt::CaseInsensitive) == 0 && GetState() != STATE_CLOSED && GetState() != STATE_ERROR)
         {
             connection_->Join(channel_name);
         }
