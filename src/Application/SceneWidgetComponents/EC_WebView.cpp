@@ -110,8 +110,8 @@ EC_WebView::EC_WebView(Scene *scene) :
     SceneInteract *sceneInteract = GetFramework()->Scene()->GetSceneInteract();
     if (sceneInteract)
     {
-        connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)), 
-                SLOT(EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)));
+        connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), 
+                SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
     }
 
     PrepareWebview();
