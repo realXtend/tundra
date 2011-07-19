@@ -417,6 +417,11 @@ void EC_WidgetCanvas::ParentEntitySet()
     if (framework->IsHeadless())
         return;
 
+    // Warn users if they are creating this component with sync enabled.
+    /// \todo Maybe this component should not be a component anymore as components can no longer be non-serializable. Maybe these rendering operations should be moved to some util code inside SceneWidgetComponents.
+    if (NetworkSyncEnabled())
+        LogWarning("EC_WidgetCanvas: My network sync seems to be enabled, this is not advisable in most situations! I don't have any attributes and am intended for local rendering operations.");
+
     if (ParentEntity())
         connect(ParentEntity(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
 }
