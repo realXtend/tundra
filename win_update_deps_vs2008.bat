@@ -7,7 +7,7 @@ echo.
 :update_vs2008_dependency_submodule
 echo -- Updatating git submodule path deps/vs2008
 git.exe submodule init deps/vs2008
-git.exe submodule init deps/vs2008
+git.exe submodule update deps/vs2008
 if exist "deps\vs2008\README" (
     goto :remove_all_dlls_from_bin
 ) else (
