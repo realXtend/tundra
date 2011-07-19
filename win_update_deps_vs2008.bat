@@ -18,6 +18,8 @@ if exist "deps\vs2008\README" (
 :remove_all_dlls_from_bin
 echo -- Removing all .dll files from /bin
 del bin\*.dll /q
+echo -- Removing CMakeCache.txt to get rid of cached dependency paths
+del CMakeCache.txt /q
 goto :copy_new_dlls_to_bin
 
 :copy_new_dlls_to_bin
