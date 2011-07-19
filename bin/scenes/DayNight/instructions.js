@@ -1,6 +1,11 @@
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
+var showUi = true;
+if (server.IsRunning() && framework.IsHeadless())
+    showUi = false;
 
+if (showUi)
+{
 var label = new QLabel();
 label.indent = 10;
 label.text = "This scene demonstrates the EnvironmentLight component. This\ncomponentc ontrols the overall environmental lighting of the scene.\n\nA simple script is used to animate the day-night cycle of the scene.";
@@ -13,3 +18,4 @@ proxy.x = 100;
 proxy.y = 30;
 proxy.windowFlags = 0;
 proxy.visible = true;
+}

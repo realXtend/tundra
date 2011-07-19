@@ -1,6 +1,11 @@
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
+var showUi = true;
+if (server.IsRunning() && framework.IsHeadless())
+    showUi = false;
 
+if (showUi)
+{
 var label = new QLabel();
 label.indent = 10;
 label.text = "This scene demonstrates the use of the 3DCanvas and 3DCanvasSource components.\nThese components together can be used to show a webpage as a texture on a 3D object.\nAdjust the attributes of the 3DCanvasSource to change the webpage that is displayed.";
@@ -13,3 +18,4 @@ proxy.x = 100;
 proxy.y = 30;
 proxy.windowFlags = 0;
 proxy.visible = true;
+}

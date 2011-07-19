@@ -290,9 +290,8 @@ void Client::CheckLogin()
         propertiesIterator.next();
         loginstateIterator.next();
 
-        // Grep number from scenename; list[0] = TundraClient/TundraServer and list[1] = 0, 1, 2, ..., n: n ¤ Z+
         // If we have multiple connections and one of them gets disconnected, our serverconnection map has "missing" key
-        // while client has properties for it if it is making new connection. When this happens we compare if serverConnection
+        // while client has properties for it, if it is making new connection. When this happens we compare if serverConnection
         // key is higher of value than loginstateIterator key after we grep the number out of it. If so, we proceed to next item
         // in loginstate and properties iterator.
         unsigned short temp;
