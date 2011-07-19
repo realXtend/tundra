@@ -111,7 +111,6 @@ Framework::~Framework()
     SAFE_DELETE(asset);
     SAFE_DELETE(audio);
     SAFE_DELETE(plugin);
-    SAFE_DELETE(ui);
 #ifdef PROFILING
     SAFE_DELETE(profiler);
 #endif
@@ -119,9 +118,14 @@ Framework::~Framework()
     SAFE_DELETE(scene);
     SAFE_DELETE(frame);
 
+    // Don't delete UiAPI. It is quite crash prone in certain QWidget/QObject 
+    // cases if we delete UiAPI here, core dumps at exit in QApplication::notify.
+    /// \bug Inspect the situation some more, it seems when QWebViews are present on the run we always crash here.
+    //SAFE_DELETE(ui);
+
     // This delete must be the last one in Framework since application derives QApplication.
     // When we delete QApplication, we must have ensured that all QObjects have been deleted.
-    ///\bug Framework is itself a QObject and we should delete application only after Framework has been deleted. A refactor is required.
+    /// \bug Framework is itself a QObject and we should delete application only after Framework has been deleted. A refactor is required.
     delete application;
 }
 
