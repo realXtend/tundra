@@ -1,3 +1,7 @@
+# Disallow committing anything to deps
+deps
+deps/*
+
 # Visual studio -specific ignores.
 *.suo
 *.ncb
