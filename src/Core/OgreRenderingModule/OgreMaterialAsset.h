@@ -21,7 +21,7 @@ public:
 
     /// IAsset overload.
     /// Loads material from memory.
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous);
 
     /// IAsset overload.
     /** The @c data will contain asset references in desanitated format. */

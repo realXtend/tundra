@@ -28,7 +28,7 @@ QtUiAsset::~QtUiAsset()
 {
 }
 
-bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
+bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous)
 {
     refs.clear();
     originalData.clear();
@@ -46,7 +46,10 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     // Note that this means we assume you will not show any ui on a headless run, while you
     // still could without the main window.
     if (assetAPI->IsHeadless())
+    {
+        assetAPI->AssetLoadCompleted(Name());
         return true;
+    }
 
     // Now, go through the contents of the .ui asset file and look for references to other assets (ui images),
     // and mark those down into an auxiliary structure. Later, before letting Qt load up the .ui file, 
@@ -98,6 +101,7 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
         }
     }
 
+    assetAPI->AssetLoadCompleted(Name());
     return true;
 }
 

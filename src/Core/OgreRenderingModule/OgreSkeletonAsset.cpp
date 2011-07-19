@@ -16,7 +16,7 @@ OgreSkeletonAsset::~OgreSkeletonAsset()
     Unload();
 }
 
-bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
+bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous)
 {
     if (!data_)
     {
@@ -58,7 +58,10 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     }
 
     internal_name_ = SanitateAssetIdForOgre(this->Name().toStdString());
-//    LogDebug("Ogre skeleton " + this->Name().toStdString() + " created");
+    //LogDebug("Ogre skeleton " + this->Name().toStdString() + " created");
+
+    // We did a synchronous load, must call AssetLoadCompleted here.
+    assetAPI->AssetLoadCompleted(Name());
     return true;
 }
 

@@ -19,7 +19,7 @@ public:
 
     virtual void DoUnload();
     /// Deserialize from XML data
-    virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
+    virtual bool DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous);
     /// Serialize to XML data
     virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const;
     /// Return depended upon asset references

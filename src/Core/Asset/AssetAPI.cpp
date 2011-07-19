@@ -1139,23 +1139,25 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     transfer->EmitAssetDownloaded();
 
     const u8 *data = (transfer->rawAssetData.size() > 0 ? &transfer->rawAssetData[0] : 0);
-    bool success = transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
-    if (!success)
-    {
-        QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
-        transfer->EmitAssetFailed(error);
-        return;
-    }
+    transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
 
-    if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
-        diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
+    //bool success = transfer->asset->LoadFromFileInMemory(data, transfer->rawAssetData.size());
+    //if (!success)
+    //{
+    //    QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
+    //    transfer->EmitAssetFailed(error);
+    //    return;
+    //}
 
-    // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
-    RequestAssetDependencies(transfer->asset);
+    //if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
+    //    diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
 
-    // If we don't have any outstanding dependencies, succeed and remove the transfer
-    if (NumPendingDependencies(transfer->asset) == 0)
-        AssetDependenciesCompleted(transfer);
+    //// If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
+    //RequestAssetDependencies(transfer->asset);
+
+    //// If we don't have any outstanding dependencies, succeed and remove the transfer
+    //if (NumPendingDependencies(transfer->asset) == 0)
+    //    AssetDependenciesCompleted(transfer);
 }
 
 void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
@@ -1190,6 +1192,42 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
     pendingDownloadRequests.erase(transfer->source.ref);
     if (iter != currentTransfers.end())
         currentTransfers.erase(iter);
+}
+
+void AssetAPI::AssetLoadCompleted(const QString assetRef)
+{
+    AssetTransferMap::iterator iter = FindTransferIterator(assetRef);
+    if (iter != currentTransfers.end())
+    {
+        AssetTransferPtr transfer = iter->second;
+        transfer->asset->LoadCompleted();
+
+        if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
+            diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
+
+        // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
+        RequestAssetDependencies(transfer->asset);
+
+        // If we don't have any outstanding dependencies, succeed and remove the transfer
+        if (NumPendingDependencies(transfer->asset) == 0)
+            AssetDependenciesCompleted(transfer);
+    }
+    else
+        LogError("AssetAPI: Asset \"" + assetRef + "\" load completed, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
+}
+
+void AssetAPI::AssetLoadFailed(const QString assetRef)
+{
+    AssetTransferMap::iterator iter = FindTransferIterator(assetRef);
+    if (iter != currentTransfers.end())
+    {
+        AssetTransferPtr transfer = iter->second;
+
+        QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
+        transfer->EmitAssetFailed(error);
+    }
+    else
+        LogError("AssetAPI: Asset \"" + assetRef + "\" load failed, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
 }
 
 void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer)

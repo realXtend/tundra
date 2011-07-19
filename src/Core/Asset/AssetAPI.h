@@ -72,6 +72,14 @@ public:
     /// also fail any transfers of assets which depended on this transfer.
     void AssetTransferFailed(IAssetTransfer *transfer, QString reason);
 
+    /// Called by each IAsset when it has completed loading successfully. Typically inside 
+    /// IAsset::DeserializeFromData or later on if it is loading asynchronously.
+    void AssetLoadCompleted(const QString assetRef);
+
+    /// Called by each IAsset when it has failed to load. Typically inside 
+    /// IAsset::DeserializeFromData or later on if it is loading asynchronously.
+    void AssetLoadFailed(const QString assetRef);
+
     /// Called by each AssetProvider to notify the Asset API that an asset upload transfer has completed. Do not call this function from client code.
     void AssetUploadTransferCompleted(IAssetUploadTransfer *transfer);
 

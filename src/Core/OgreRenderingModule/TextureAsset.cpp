@@ -34,7 +34,7 @@ TextureAsset::~TextureAsset()
     Unload();
 }
 
-bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
+bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bool allowAsynchronous)
 {
     if (!data)
     {
@@ -47,15 +47,10 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
         return false;
     }
 
+    // A NullAssetFactory has been registered on headless mode.
+    // We should never be here in headless mode.
     assert(!assetAPI->IsHeadless());
-    /*
-    ///\todo This can be removed.
-    // Don't load textures to memory in headless mode
-    if (assetAPI->IsHeadless())
-    {
-        return false;
-    }
-*/
+
     try
     {
         // Convert the data into Ogre's own DataStream format.
@@ -95,6 +90,8 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
             ogreTexture->createInternalResources();
         }
 
+        // We did a synchronous load, must call AssetLoadCompleted here.
+        assetAPI->AssetLoadCompleted(Name());
         return true;
     }
     catch(Ogre::Exception &e)

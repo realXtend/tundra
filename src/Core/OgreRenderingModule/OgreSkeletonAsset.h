@@ -19,7 +19,7 @@ public:
 
     virtual ~OgreSkeletonAsset();
 
-    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous);
 
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
 
