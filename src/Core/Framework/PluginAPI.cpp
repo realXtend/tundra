@@ -55,18 +55,23 @@ typedef void (*TundraPluginMainSignature)(Framework *owner);
 
 void PluginAPI::LoadPlugin(const QString &filename)
 {
-#ifdef _DEBUG
+#ifdef WIN32
+  #ifdef _DEBUG
     const QString pluginSuffix = "d.dll";
-#else
+  #else
     const QString pluginSuffix = ".dll";
+  #endif
+#elif Q_WS_X11
+    const QString pluginSuffix = ".so";
 #endif
 
+    LogInfo("Loading plugin '" + filename + "'");
+    owner->GetApplication()->SetSplashMessage("Loading plugin " + filename);
     QString path = Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix;
-
-    path = path.replace("/", "\\");
-    LogInfo("Loading plugin \"" + filename + "\".");
+    
     ///\todo Unicode support!
 #ifdef WIN32
+    path = path.replace("/", "\\");
     HMODULE module = LoadLibraryA(path.toStdString().c_str());
     if (module == NULL)
     {
