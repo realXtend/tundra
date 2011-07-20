@@ -98,38 +98,46 @@ void EC_Hydrax::Create()
 {
     SAFE_DELETE(impl);
 
-    if (!ParentScene())
+    try
     {
-        LogError("EC_Hydrax: no parent scene. Cannot be created.");
-        return;
+        if (!ParentScene())
+        {
+            LogError("EC_Hydrax: no parent scene. Cannot be created.");
+            return;
+        }
+
+        OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
+        assert(w);
+
+        if (!w->GetRenderer() || !w->GetRenderer()->GetActiveCamera())
+            return; // Can't create Hydrax just yet, no main camera set.
+
+        Ogre::Camera *cam = static_cast<EC_Camera *>(w->GetRenderer()->GetActiveCamera())->GetCamera();
+        impl = new EC_HydraxImpl();
+        impl->hydrax = new Hydrax::Hydrax(w->GetSceneManager(), cam, w->GetRenderer()->GetViewport());
+
+        // Using projected grid module by default
+        Hydrax::Module::ProjectedGrid *module = new Hydrax::Module::ProjectedGrid(impl->hydrax, new Hydrax::Noise::Perlin(),
+            Ogre::Plane(Ogre::Vector3::UNIT_Y, Ogre::Vector3::ZERO), Hydrax::MaterialManager::NM_VERTEX);
+        impl->hydrax->setModule(module);
+        impl->module = module;
+
+        // Load all parameters from config file
+        impl->hydrax->loadCfg(configRef.Get().toStdString());
+
+        position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
+
+        // Create water
+        impl->hydrax->create();
+
+        connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)), Qt::UniqueConnection);
     }
-
-    OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
-    assert(w);
-
-    if (!w->GetRenderer() || !w->GetRenderer()->GetActiveCamera())
-        return; // Can't create Hydrax just yet, no main camera set.
-
-    Ogre::Camera *cam = static_cast<EC_Camera *>(w->GetRenderer()->GetActiveCamera())->GetCamera();
-    impl = new EC_HydraxImpl();
-    impl->hydrax = new Hydrax::Hydrax(w->GetSceneManager(), cam, w->GetRenderer()->GetViewport());
-
-    // Using projected grid module by default
-    Hydrax::Module::ProjectedGrid *module = new Hydrax::Module::ProjectedGrid(impl->hydrax, new Hydrax::Noise::Perlin(),
-        Ogre::Plane(Ogre::Vector3::UNIT_Y, Ogre::Vector3::ZERO), Hydrax::MaterialManager::NM_VERTEX);
-    impl->hydrax->setModule(module);
-    impl->module = module;
-
-    // Load all parameters from config file
-    impl->hydrax->loadCfg(configRef.Get().toStdString());
-
-    position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
-
-    // Create water
-    impl->hydrax->create();
-
-    connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateAttribute(IAttribute*)), Qt::UniqueConnection);
+    catch(Ogre::Exception &e)
+    {
+        // Currently if we try to create more than one Hydrax component we end up here due to Ogre internal name collision.
+        LogError("Could not create EC_Hydrax: " + std::string(e.what()));
+    }
 }
 
 void EC_Hydrax::OnActiveCameraChanged(EC_Camera *newActiveCamera)
