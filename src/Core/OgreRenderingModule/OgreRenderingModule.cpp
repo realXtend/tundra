@@ -27,6 +27,7 @@
 #include "TextureAsset.h"
 
 #include "AssetAPI.h"
+#include "AssetCache.h"
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
 #include "ConsoleAPI.h"
@@ -41,6 +42,8 @@
 
 namespace OgreRenderer
 {
+
+std::string OgreRenderingModule::CACHE_RESOURCE_GROUP = "CACHED_ASSETS_GROUP";
 
 OgreRenderingModule::OgreRenderingModule() : IModule("OgreRendering")
 {
@@ -120,14 +123,21 @@ void OgreRenderingModule::Initialize()
     framework_->GetApplication()->SetSplashMessage("Initializing Ogre");
     renderer->Initialize();
 
-    // Restore the original cwd to not disturb the enviroment we are running in.
+    // Restore the original cwd to not disturb the environment we are running in.
     Application::SetCurrentWorkingDirectory(cwd);
 
+    // Register renderer.
     framework_->RegisterRenderer(renderer.get());
     framework_->RegisterDynamicObject("renderer", renderer.get());
     
+    // Connect to scene change signals.
     connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
     connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
+
+    // Add asset cache directory as its own resource group to ogre to support threaded loading.
+    std::string cacheResourceDir = GetFramework()->Asset()->GetAssetCache()->GetCacheDirectory().toStdString();
+    if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(cacheResourceDir, CACHE_RESOURCE_GROUP))
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(cacheResourceDir, "FileSystem", CACHE_RESOURCE_GROUP);
 }
 
 void OgreRenderingModule::PostInitialize()

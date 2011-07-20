@@ -1,14 +1,18 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "Profiler.h"
 #include "TextureAsset.h"
 #include "OgreConversionUtils.h"
+#include "AssetCache.h"
 
 #include <QPixmap>
 #include <QRect>
 #include <QFontMetrics>
 #include <QPainter>
+#include <QFileInfo>
 
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
@@ -51,6 +55,24 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bo
     // We should never be here in headless mode.
     assert(!assetAPI->IsHeadless());
 
+    // Asynchronous loading
+    if (allowAsynchronous && (OGRE_THREAD_SUPPORT != 0))
+    {
+        // We can only do threaded loading from disk, and not any disk location but only from asset cache.
+        // local:// refs will return empty string here and those will fall back to the non-threaded loading.
+        // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
+        QString cacheDiskSource = assetAPI->GetAssetCache()->GetDiskSourceByRef(Name());
+        if (!cacheDiskSource.isEmpty())
+        {
+            QFileInfo fileInfo(cacheDiskSource);
+            std::string sanitatedAssetRef = fileInfo.fileName().toStdString();             
+            loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::TextureManager::getSingleton().getResourceType(),
+                              sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
+            return true;
+        }
+    }   
+
+    // Synchronous loading
     try
     {
         // Convert the data into Ogre's own DataStream format.
@@ -100,6 +122,32 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bo
         return false;
     }
 }
+
+void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result)
+{
+    if (ticket != loadTicket_)
+        return;
+
+    const QString assetRef = Name();
+    ogreAssetName = OgreRenderer::SanitateAssetIdForOgre(assetRef).c_str();
+    if (!result.error)
+    {
+        ogreTexture = Ogre::TextureManager::getSingleton().getByName(ogreAssetName.toStdString(), OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
+        if (!ogreTexture.isNull())
+        {
+            assetAPI->AssetLoadCompleted(assetRef);
+            return;
+        }
+        else
+            LogError("TextureAsset asynch load: Ogre::Texture was null after threaded loading: " + assetRef);
+    }
+    else
+        LogError("TextureAsset asynch load: Ogre failed to do threaded loading: " + result.message);
+
+    DoUnload();
+    assetAPI->AssetLoadFailed(assetRef);
+}
+
 /*
 void TextureAsset::RegenerateAllMipLevels()
 {

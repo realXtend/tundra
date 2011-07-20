@@ -4,11 +4,13 @@
 
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
-#include <OgreMesh.h>
 #include "OgreModuleApi.h"
 
+#include <OgreMesh.h>
+#include <OgreResourceBackgroundQueue.h>
+
 /// Represents an Ogre .mesh loaded to the GPU.
-class OGRE_MODULE_API OgreMeshAsset : public IAsset
+class OGRE_MODULE_API OgreMeshAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
 {
     Q_OBJECT
 
@@ -23,8 +25,11 @@ public:
     /// Load mesh from memory
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, const bool allowAsynchronous);
 
-    /// Loade mesh into memory
+    /// Load mesh into memory
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
+
+    /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
+    virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);
 
     /// Unload mesh from ogre
     virtual void DoUnload();
@@ -38,6 +43,9 @@ public:
 
     /// This points to the loaded mesh asset, if it is present.
     Ogre::MeshPtr ogreMesh;
+
+    /// Ticket for ogres threaded loading operation.
+    Ogre::BackgroundProcessTicket loadTicket_;
 
     /// Specifies the unique mesh name Ogre uses in its asset pool for this mesh.
     //QString ogreAssetName;
