@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
@@ -5,9 +7,11 @@
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include "AssetAPI.h"
+#include "AssetCache.h"
 #include "LoggingFunctions.h"
 
 #include <QFile>
+#include <QFileInfo>
 
 using namespace OgreRenderer;
 
@@ -29,6 +33,24 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
         return false;
     }
 
+    // Asynchronous loading
+    if (allowAsynchronous && (OGRE_THREAD_SUPPORT != 0))
+    {
+        // We can only do threaded loading from disk, and not any disk location but only from asset cache.
+        // local:// refs will return empty string here and those will fall back to the non-threaded loading.
+        // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
+        QString cacheDiskSource = assetAPI->GetAssetCache()->GetDiskSourceByRef(Name());
+        if (!cacheDiskSource.isEmpty())
+        {
+            QFileInfo fileInfo(cacheDiskSource);
+            std::string sanitatedAssetRef = fileInfo.fileName().toStdString(); 
+            loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::SkeletonManager::getSingleton().getResourceType(),
+                              sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
+            return true;
+        }
+    }
+
+    // Synchronous loading
     try
     {
         if (ogreSkeleton.isNull())
@@ -63,6 +85,31 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
     // We did a synchronous load, must call AssetLoadCompleted here.
     assetAPI->AssetLoadCompleted(Name());
     return true;
+}
+
+void OgreSkeletonAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result)
+{
+    if (ticket != loadTicket_)
+        return;
+
+    const QString assetRef = Name();
+    internal_name_ = SanitateAssetIdForOgre(assetRef);
+    if (!result.error)
+    {
+        ogreSkeleton = Ogre::SkeletonManager::getSingleton().getByName(internal_name_, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
+        if (!ogreSkeleton.isNull())
+        {
+            assetAPI->AssetLoadCompleted(assetRef);
+            return;
+        }
+        else
+            LogError("OgreSkeletonAsset asynch load: Could not get Skeleton from SkeletonManager after threaded loading: " + assetRef);
+    }
+    else
+        LogError("OgreSkeletonAsset asynch load: Ogre failed to do threaded loading: " + result.message);
+
+    DoUnload();
+    assetAPI->AssetLoadFailed(assetRef);
 }
 
 bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const

@@ -36,6 +36,9 @@ namespace OgreRenderer
         /// Returns the renderer.
         RendererPtr GetRenderer() const { return renderer; }
 
+        /// Ogre resource group for cached asset files.
+        static std::string CACHE_RESOURCE_GROUP;
+
     public slots:
         /// Shows renderer settings window.
         void ShowSettingsWindow();

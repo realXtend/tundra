@@ -9,9 +9,10 @@
 #include "AssetAPI.h"
 #include <QImage>
 #include "OgreModuleApi.h"
+#include <OgreResourceBackgroundQueue.h>
 
 /// Represents a texture on the GPU.
-class OGRE_MODULE_API TextureAsset : public IAsset
+class OGRE_MODULE_API TextureAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
 {
     Q_OBJECT;
 
@@ -24,6 +25,9 @@ public:
 
     /// Load texture into memory
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
+
+    /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
+    virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);
 
     /// Unload texture from ogre
     virtual void DoUnload();
@@ -51,6 +55,9 @@ public:
 
     /// Specifies the unique texture name Ogre uses in its asset pool for this texture.
     QString ogreAssetName;
+
+    /// Ticket for ogres threaded loading operation.
+    Ogre::BackgroundProcessTicket loadTicket_;
 };
 
 typedef boost::shared_ptr<TextureAsset> TextureAssetPtr;
