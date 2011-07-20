@@ -37,16 +37,20 @@ namespace CAVEStereo
     CAVEManager::~CAVEManager()
     {
         DisableCAVE();
-        foreach(CAVEView* view, view_map_.values())
-            SAFE_DELETE(view);
+        foreach(QPointer<CAVEView> viewPtr, view_map_.values())
+        {
+            if (viewPtr)
+                viewPtr->deleteLater();
+        }
 
-        SAFE_DELETE(settings_widget_);
+        if (settings_widget_)
+            settings_widget_->deleteLater();
     }
 
-    void CAVEManager::CAVEToggled(bool val)
+    void CAVEManager::CAVEToggled(bool enabled)
     {
-        enabled_=val;
-        if(val)
+        enabled_ = enabled;
+        if (enabled_)
             EnableCAVE();
         else
             DisableCAVE();
@@ -54,115 +58,138 @@ namespace CAVEStereo
 
     void CAVEManager::AddView(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
-        if(!view_map_.contains(name))
-        {
-            CAVEView* view = new CAVEView(renderer_.lock());
-            view->Initialize(name, window_width, window_height, top_left, bottom_left, bottom_right, eye_pos);
-        
-            view_map_[name] = view;
-            if(enabled_)
-                view->GetExternalRenderWindow()->show();
-            else
-                view->GetExternalRenderWindow()->hide();
-        }
+        if (view_map_.contains(name))
+            return;
+
+        QPointer<CAVEView> viewPtr = new CAVEView(renderer_.lock());
+        if (!viewPtr)
+            return;
+
+        viewPtr->Initialize(name, window_width, window_height, top_left, bottom_left, bottom_right, eye_pos);
+        view_map_[name] = viewPtr;
+        if (enabled_)
+            viewPtr->GetExternalRenderWindow()->show();
+        else
+            viewPtr->GetExternalRenderWindow()->hide();
     }
 
     void CAVEManager::AddView(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
-        
-        if(!view_map_.contains(name))
-        {
-            CAVEView* view = new CAVEView(renderer_.lock());
-            view->Initialize(name, top_left, bottom_left, bottom_right, eye_pos);
-            view_map_[name] = view;
-            if(enabled_)
-                view->GetExternalRenderWindow()->show();
-            else
-                view->GetExternalRenderWindow()->hide();
-        }
+        if (view_map_.contains(name))
+            return;
+
+        QPointer<CAVEView> viewPtr = new CAVEView(renderer_.lock());
+        if (!viewPtr)
+            return;
+
+        viewPtr->Initialize(name, top_left, bottom_left, bottom_right, eye_pos);
+        view_map_[name] = viewPtr;
+        if (enabled_)
+            viewPtr->GetExternalRenderWindow()->show();
+        else
+            viewPtr->GetExternalRenderWindow()->hide();
     }
 
     void CAVEManager::AddPanoramaView(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int window_number)
     {
-        if(!view_map_.contains(name))
-        {
-            CAVEView* view = new CAVEView(renderer_.lock());
-            view->InitializePanorama(name, window_width, window_height, top_left, bottom_left, bottom_right, eye_pos,window_number);
-            view_map_[name] = view;
-            if(enabled_)
-                view->GetExternalRenderWindow()->show();
-            else
-                view->GetExternalRenderWindow()->hide();
-        }
+        if (view_map_.contains(name))
+            return;
+        
+        QPointer<CAVEView> viewPtr = new CAVEView(renderer_.lock());
+        if (!viewPtr)
+            return;
+
+        viewPtr->InitializePanorama(name, window_width, window_height, top_left, bottom_left, bottom_right, eye_pos,window_number);
+        view_map_[name] = viewPtr;
+        if (enabled_)
+            viewPtr->GetExternalRenderWindow()->show();
+        else
+            viewPtr->GetExternalRenderWindow()->hide();
     }
 
     void CAVEManager::AddPanoramaView(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos,int window_number)
     {
-        if(!view_map_.contains(name))
-        {
-            CAVEView* view = new CAVEView(renderer_.lock());
-            view->InitializePanorama(name, top_left, bottom_left, bottom_right, eye_pos,window_number);
-            view_map_[name] = view;
-            if(enabled_)
-                view->GetExternalRenderWindow()->show();
-            else
-                view->GetExternalRenderWindow()->hide();
-        }
+        if (view_map_.contains(name))
+            return;
+
+        QPointer<CAVEView> viewPtr = new CAVEView(renderer_.lock());
+        if (!viewPtr)
+            return;
+
+        viewPtr->InitializePanorama(name, top_left, bottom_left, bottom_right, eye_pos,window_number);
+        view_map_[name] = viewPtr;
+        if (enabled_)
+            viewPtr->GetExternalRenderWindow()->show();
+        else
+            viewPtr->GetExternalRenderWindow()->hide();
     }
 
     void CAVEManager::DisableCAVE()
     {
-        if(!view_map_.empty())
-            foreach(CAVEView* view, view_map_.values())
-                view->GetExternalRenderWindow()->hide();
+        if (view_map_.empty())
+            return;
+        foreach(QPointer<CAVEView> viewPtr, view_map_.values())
+        {
+            if (!viewPtr)
+                continue;
+            viewPtr->GetExternalRenderWindow()->hide();
+        }
     }
 
     QVector<Ogre::RenderWindow*> CAVEManager::GetExternalWindows()
     {
         QVector<Ogre::RenderWindow*> windows;
-        foreach(CAVEView *view, view_map_.values())
-            windows.push_back(view->GetExternalRenderWindow()->getRenderWindow());
+        foreach(QPointer<CAVEView> viewPtr, view_map_.values())
+        {
+            if (!viewPtr)
+                continue;
+            windows.push_back(viewPtr->GetExternalRenderWindow()->getRenderWindow());
+        }
         return windows;
     }
 
     void CAVEManager::EnableCAVE()
     {
-        if(!view_map_.empty())
-            foreach(CAVEView* view, view_map_.values())
-                view->GetExternalRenderWindow()->show();
+        if(view_map_.empty())
+            return;
+
+        foreach(QPointer<CAVEView> viewPtr, view_map_.values())
+        {
+            if (!viewPtr)
+                continue;
+            viewPtr->GetExternalRenderWindow()->show();
+        }
     }
 
     void CAVEManager::RemoveView(const QString& name)
     {
         if(!view_map_.empty())
         {
-            CAVEView* view = view_map_.take(name);
-            if(view)
+            QPointer<CAVEView> viewPtr = view_map_.take(name);
+            if (viewPtr)
             {
-                view->GetExternalRenderWindow()->hide();
-                delete view;
+                viewPtr->GetExternalRenderWindow()->close();
+                viewPtr->deleteLater();
             }
         }
     }
 
     void CAVEManager::ModifyView(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
-        if(!view_map_.empty())
-        {
-            CAVEView* view = view_map_[name];
-            if(view)
-                view->ReCalculateProjection(top_left, bottom_left, bottom_right, eye_pos);
-        }
+        if(view_map_.empty())
+            return;
+        QPointer<CAVEView> viewPtr = view_map_[name];
+        if (viewPtr)
+            viewPtr->ReCalculateProjection(top_left, bottom_left, bottom_right, eye_pos);
     }
 
     void CAVEManager::GetViewParametersView(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
-        if(!view_map_.empty())
-        {
-            CAVEView* view = view_map_[name];
-            if(view)
-                view->GetProjectionParameters(top_left, bottom_left, bottom_right, eye_pos);
-        }
+        if (view_map_.empty())
+            return;
+        QPointer<CAVEView> viewPtr = view_map_[name];
+        if (viewPtr)
+            viewPtr->GetProjectionParameters(top_left, bottom_left, bottom_right, eye_pos);
     }
 
     CAVEStereo::CAVESettingsWidget* CAVEManager::GetCaveWidget() const

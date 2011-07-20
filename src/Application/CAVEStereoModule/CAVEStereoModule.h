@@ -4,20 +4,12 @@
 #define incl_CAVEStereoModule_CAVEStereoModule_h
 
 #include "IModule.h"
-
 #include "CAVEStereoModuleApi.h"
+
 #include <QVector>
 #include <QObject>
 
-namespace Ogre
-{
-    class RenderWindow;
-}
-
-namespace Foundation
-{
-    class Framework;
-}
+namespace Ogre { class RenderWindow; }
 
 namespace CAVEStereo
 {
@@ -29,23 +21,30 @@ namespace CAVEStereo
         Q_OBJECT
 
     public:
+        /// Constructor.
         CAVEStereoModule();
+
+        /// Deconstructor.
         ~CAVEStereoModule();
+
+        /// IModule override.
         virtual void PostInitialize();
-        virtual void Update(f64 frametime);
-        static const std::string &NameStatic() { return type_name_static_; }
+
+        /// Get current Ogre renderer windows.
         QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
 
     public slots:
+        /// Show the stereoscopy widget.
         void ShowStereoscopyWindow();
+
+        /// Show the cave widget.
         void ShowCaveWindow();
 
     private:
-        /// Type name of the module.
-        static std::string type_name_static_;
-        /// Manager for stereo
+        /// Manager for stereo.
         StereoController* stereo_;
-        /// Manager for CAVE
+
+        /// Manager for CAVE.
         CAVEManager* cave_;
     };
 }

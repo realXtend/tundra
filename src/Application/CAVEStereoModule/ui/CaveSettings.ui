@@ -10,6 +10,12 @@
     <height>326</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <family>Calibri</family>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>CAVESettings</string>
   </property>
@@ -17,7 +23,10 @@
    <item>
     <widget class="QGroupBox" name="Cave_settings_group">
      <property name="title">
-      <string>CAVE Settings</string>
+      <string/>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>

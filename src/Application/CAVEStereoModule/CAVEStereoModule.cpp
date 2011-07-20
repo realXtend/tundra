@@ -3,22 +3,23 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "CoreDefines.h"
+#include "OgreRenderingModule.h"
+#include "Renderer.h"
+#include "LoggingFunctions.h"
+
 #include "CAVEStereoModule.h"
 #include "CAVEManager.h"
 #include "CAVESettingsWidget.h"
 #include "StereoController.h"
 #include "StereoWidget.h"
 
-#include "OgreRenderingModule.h"
-
 #include "MemoryLeakCheck.h"
 
 namespace CAVEStereo
 {
-    std::string CAVEStereoModule::type_name_static_ = "CAVEStereo";
-
     CAVEStereoModule::CAVEStereoModule() :
-        IModule(type_name_static_),
+        IModule("CAVEStereo"),
         stereo_(0),
         cave_(0)
     {
@@ -32,23 +33,23 @@ namespace CAVEStereo
 
     void CAVEStereoModule::PostInitialize()
     {
-        OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
-        if (rendererModule)
+        OgreRenderer::OgreRenderingModule *renderingModule = framework_->GetModule<OgreRenderer::OgreRenderingModule>();
+        if (!renderingModule)
         {
-            OgreRenderer::RendererPtr renderer = rendererModule->GetRenderer();
-            if (renderer)
-            {
-                stereo_ = new StereoController(renderer.get(),this);
-                cave_ = new CAVEManager(renderer);
-                stereo_->InitializeUi();
-                cave_->InitializeUi();
-            }
+            LogError("CAVEStereoModule: Could not acquire OgreRenderingModule for Renderer!");
+            return;
         }
-    }
 
-    void CAVEStereoModule::Update(f64 frametime)
-    {
-        RESETPROFILER;
+        OgreRenderer::RendererPtr renderer = renderingModule->GetRenderer();
+        if (renderer.get())
+        {
+            stereo_ = new StereoController(renderer.get(), this);
+            cave_ = new CAVEManager(renderer);
+            stereo_->InitializeUi();
+            cave_->InitializeUi();
+        }
+        else
+            LogError("CAVEStereoModule: Renderer is null on startup, what now!");
     }
 
     QVector<Ogre::RenderWindow*> CAVEStereoModule::GetCAVERenderWindows()
@@ -67,14 +68,12 @@ namespace CAVEStereo
     }
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
-void SetProfiler(Foundation::Profiler *profiler)
+extern "C"
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    DLLEXPORT void TundraPluginMain(Framework *fw)
+    {
+        Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
+        IModule *module = new CAVEStereo::CAVEStereoModule();
+        fw->RegisterModule(module);
+    }
 }
-
-using namespace CAVEStereo;
-
-POCO_BEGIN_MANIFEST(IModule)
-   POCO_EXPORT_CLASS(CAVEStereoModule)
-POCO_END_MANIFEST
