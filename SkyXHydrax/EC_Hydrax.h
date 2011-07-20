@@ -26,13 +26,64 @@ public:
     explicit EC_Hydrax(Scene* scene);
     ~EC_Hydrax();
 
-    /// Is the water visible.
+    /// Different noise modules supported by Hydrax.
+/*
+    enum NoiseModule
+    {
+        ProjectedGrid = 0,
+        RadialGrid,
+        SimpleGrid
+    };
+
+    /// Different noise types supported by Hydrax.
+    enum NoiseType
+    {
+        Perlin = 0,
+        FFT
+    };
+
+    ///
+    enum NormalMode
+    {
+        Texture = 0,
+        Vertex,
+        RTT
+    };
+*/
+
+    /// Config file asset reference (.hdx).
+    /** Hydrax contains a vast amount of configurable options. The easiest way is to configure these options is to use
+        the config file. You can edit the config file with a text editor of your choice. See /bin/media/Hydrax/Hydrax.hdx
+        for the example config file.
+        @note Currently only files inside the Hydrax resource group are accepted. Make sure that the config file is in
+            the bin/media/Hydrax folder before Tundra is started.
+        @todo Make Hydrax accept files outside Hydrax resource group and use AssetReference instead. */
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, configRef);
+    Q_PROPERTY(QString configRef READ getconfigRef WRITE setconfigRef);
+
+    /// Visibility of the water.
     DEFINE_QPROPERTY_ATTRIBUTE(bool, visible);
     Q_PROPERTY(bool visible READ getvisible WRITE setvisible);
 
     /// Position of the water.
     DEFINE_QPROPERTY_ATTRIBUTE(float3, position);
     Q_PROPERTY(float3 position READ getposition WRITE setposition);
+
+    /// Hydrax noise module, see NoiseModule
+//    DEFINE_QPROPERTY_ATTRIBUTE(int, noiseModule);
+//    Q_PROPERTY(int noiseModule READ getnoiseModule WRITE setnoiseModule);
+
+    /// Hydrax noise type, see NoiseType
+//    DEFINE_QPROPERTY_ATTRIBUTE(int, noiseType);
+//    Q_PROPERTY(int noiseType READ getnoiseType WRITE setnoiseType);
+
+    /// Hydrax noise module, see NormalMode
+//    DEFINE_QPROPERTY_ATTRIBUTE(int, normalMode);
+//    Q_PROPERTY(int normalMode READ getnormalMode WRITE setnormalMode);
+
+    ///\todo SaveConfig
+//public slots:
+    //SaveConfig(const QString &filename);
 
 private:
     EC_HydraxImpl *impl;
@@ -43,5 +94,6 @@ private slots:
     /// Called when the main view active camera has changed.
     void OnActiveCameraChanged(EC_Camera *newActiveCamera);
     void UpdateAttribute(IAttribute *attr);
+//    void UpdateNoiseModule();
     void Update(float frameTime);
 };
