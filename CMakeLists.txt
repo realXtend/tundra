@@ -178,10 +178,38 @@ add_definitions (-DPCH_ENABLED)
 SET(PCH_ENABLED 1)
 
 # Set normalized path for common environment variables
-file(TO_CMAKE_PATH "$ENV{TUNDRA_DEP_PATH}" ENV_TUNDRA_DEP_PATH)
-file(TO_CMAKE_PATH "$ENV{QTDIR}" ENV_QT_DIR)
-file(TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
+file (TO_CMAKE_PATH "$ENV{TUNDRA_DEP_PATH}" ENV_TUNDRA_DEP_PATH)
+file (TO_CMAKE_PATH "$ENV{QTDIR}" ENV_QT_DIR)
+file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 
+# Utilize cmakes cache for the environment variables. This is needed if eg. TUNDRA_DEP_PATH
+# was set on the first run of cmake, but once eg. Visual Studio auto runs cmake (after changes to any CMakeLists.txt)
+# it is no longer set. This will result us in losing all the acquired dependency information that was not found with
+# cmake macros find_packade, find_library etc. that automatically cache. This is more flexible for many use cases to remember
+# if we once got a valid TUNDRA_DEP_PATH. If env variable TUNDRA_DEP_PATH is present, the cache is never read but instead updated.
+if (NOT ENV_TUNDRA_DEP_PATH)
+    set (ENV_TUNDRA_DEP_PATH ${CACHED_ENV_TUNDRA_DEP_PATH})
+else ()
+    set (CACHED_ENV_TUNDRA_DEP_PATH ${ENV_TUNDRA_DEP_PATH} CACHE PATH "Tundra build dependency path" FORCE)
+endif ()
+if (NOT ENV_QT_DIR)
+    set (ENV_QT_DIR ${CACHED_ENV_QT_DIR})
+else ()
+    set (CACHED_ENV_QT_DIR ${ENV_QT_DIR} CACHE PATH "Tundra build Qt path" FORCE)
+endif ()
+if (NOT ENV_OGRE_HOME)
+    set (ENV_OGRE_HOME ${CACHED_ENV_OGRE_HOME})
+else ()
+    set (CACHED_ENV_OGRE_HOME ${ENV_OGRE_HOME} CACHE PATH "Tundra build Ogre path" FORCE)
+endif ()
+
+# If we still havent resolved TUNDRA_DEP_PATH report a fatal error.
+# ENV_QT_DIR and ENV_OGRE_HOME are not fatal if missing.
+if (NOT ENV_TUNDRA_DEP_PATH)
+    message(FATAL_ERROR "TUNDRA_DEP_PATH could not be resolved from a environment variable or from cmake cache!")
+endif ()
+
+# Print out the resolved variables
 message ("\n\n=========== Reading Environment Variables ===========\n")
 message (STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
 message (STATUS "QTDIR            = " ${ENV_QT_DIR})
