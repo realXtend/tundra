@@ -11,10 +11,12 @@
   <plugin path="AvatarModule" />                <!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
   <plugin path="ECEditorModule" />              <!-- ECEditorModule depends on OgreRenderingModule, TundraLogicModule, OgreRenderingModule and AssetModule -->
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
-  <plugin path="MumbleVoipModule" />            <!-- MumbleVoipModule depends on OgreRenderingModule and TundraLogicModule -->
   <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
   <plugin path="SceneWidgetComponents" />       <!-- SceneWidgetComponents depends on OgreRenderingModule and TundraLogicModule -->
 
+  <!-- The following are commented out as they are not a part of the default build -->
+  <!-- <plugin path="MumbleVoipModule" /> -->           <!-- MumbleVoipModule depends on OgreRenderingModule and TundraLogicModule -->
+  
   <!-- TODO: Currently the above <plugin> items are loaded in the order they are specified, but below, the jsplugin items are loaded in an undefined order. Use the order specified here as the load order. -->
   <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
   <!-- Important: The file names specified here are case sensitive even on Windows! -->
