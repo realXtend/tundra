@@ -16,7 +16,7 @@ This executable can be configured to run a set of C++ and JavaScript plugins. Yo
     Tundra --config plugins.xml --server --port 6565 --protocol udp
     Tundra --config server-headless.xml --server --headless
 
-The Tundra server is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the --headless command line option. The Tundra viewer is the client software that is used to connect to a server.
+The Tundra server mode is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the --headless command line option. The Tundra viewer mode is the client that is used to connect to a server.
 
 Compiling from sources
 ----------------------
@@ -35,11 +35,11 @@ For windows we support Visual Studio 2008 and 2010 build environments. Here are 
 4.  Run `win_cmake_vs2008.bat`, this will generate a .sln solution file.
 5.  Open the solution file with Visual Studio 2008 and build.
 
-See also doc/build-windows.txt
+See also `doc/build-windows.txt`
 
 ### Linux
 
-See doc/build-linux.txt for more details. Also check out the linux distro spesific build scripts in `/tools`.
+See `doc/build-linux.txt` for more details. Also check out the linux distro spesific build scripts in `/tools`.
 
 Documentation
 -------------
