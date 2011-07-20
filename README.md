@@ -49,16 +49,12 @@ More information about Tundra can be found online at http://www.realxtend.org/do
 Contact Information
 -------------------
 
-You can find our developers from IRC `#realxtend-dev @ freenode`
-
-Also check out the [user-oriented mailing list](http://groups.google.com/group/realxtend) and the [developer-oriented mailing list](http://groups.google.com/group/realxtend-dev).
+You can find our developers from IRC `#realxtend-dev @ freenode`. Also check out the [user-oriented mailing list](http://groups.google.com/group/realxtend) and the [developer-oriented mailing list](http://groups.google.com/group/realxtend-dev).
 
 Releases
 --------
 
-New releases are announced on the mailing lists and at the [realXtend blog].
-
-They are uploaded to our google code project site, that we use for hosting downloads. http://code.google.com/p/realxtend-naali/downloads/list
+New releases are announced on the mailing lists and at the [realXtend blog]. They are uploaded to our google code project site, that we use for hosting downloads. http://code.google.com/p/realxtend-naali/downloads/list
 
 [Qt]:          http://qt.nokia.com/                            "Qt homepage"
 [Ogre3D]:      http://www.ogre3d.org/                          "Ogre3D homepage"
