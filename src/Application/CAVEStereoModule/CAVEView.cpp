@@ -7,12 +7,17 @@
 #include "ExternalRenderWindow.h"
 
 #include "Renderer.h"
+#include "OgreWorld.h"
 
 #include <QDesktopWidget>
 #include <QResizeEvent>
 #include <QKeyEvent>
 #include <QDebug>
 #include <QApplication>
+
+#include "Framework.h"
+#include "UiAPI.h"
+#include "UiMainWindow.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -27,10 +32,10 @@ namespace CAVEStereo
 
     CAVEView::~CAVEView()
     {
-        if (!renderer_.expired())
+        if (!renderer_.expired() && camera_)
         {
             Ogre::Root::getSingleton().detachRenderTarget(render_window_->getRenderWindow()->getName());
-            renderer_.lock()->GetSceneManager()->destroyCamera(camera_);
+            renderer_.lock()->GetActiveOgreWorld()->GetSceneManager()->destroyCamera(camera_);
         }
         SAFE_DELETE(render_window_);
     }
@@ -122,12 +127,12 @@ namespace CAVEStereo
     void CAVEView::Initialize(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
         assert(renderer_.lock().get());
-        Ogre::Camera* original_cam = renderer_.lock()->GetCurrentCamera();
+        Ogre::Camera* original_cam = renderer_.lock()->GetActiveOgreCamera();
         std::string std_name = name.toStdString();
         render_window_ = new ExternalRenderWindow();
         render_window_->CreateRenderWindow(std_name, window_width, window_height,0,0,false);
         render_window_->setGeometry(20,20,window_width,window_height);
-        camera_ = renderer_.lock()->GetSceneManager()->createCamera(std_name + "_camera");
+        camera_ = renderer_.lock()->GetActiveOgreWorld()->GetSceneManager()->createCamera(std_name + "_camera");
         render_window_->getRenderWindow()->addViewport(camera_);
         camera_->getViewport()->setOverlaysEnabled(false);
         camera_->getViewport()->setShadowsEnabled(true);
@@ -148,7 +153,7 @@ namespace CAVEStereo
     void CAVEView::InitializePanorama(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int window_number)
     {
         assert(renderer_.lock().get());
-        Ogre::Camera* original_cam = renderer_.lock()->GetCurrentCamera();
+        Ogre::Camera* original_cam = renderer_.lock()->GetActiveOgreCamera();
         std::string std_name = name.toStdString();
         render_window_ = new ExternalRenderWindow();
         QRect rect = QApplication::desktop()->screenGeometry();
@@ -180,7 +185,7 @@ namespace CAVEStereo
                 break;
         }
 
-        camera_ = renderer_.lock()->GetSceneManager()->createCamera(std_name + "_camera");
+        camera_ = renderer_.lock()->GetActiveOgreWorld()->GetSceneManager()->createCamera(std_name + "_camera");
         render_window_->getRenderWindow()->addViewport(camera_);
         camera_->getViewport()->setOverlaysEnabled(false);
         camera_->getViewport()->setShadowsEnabled(true);

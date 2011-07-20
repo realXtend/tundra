@@ -1,30 +1,27 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "CAVESettingsWidget.h"
-#include "ModuleManager.h"
-#include "ServiceManager.h"
-#include "UiServiceInterface.h"
 #include "Framework.h"
-#include "NaaliMainWindow.h"
 #include "UiAPI.h"
-#include "qdesktopwidget.h"
+#include "UiMainWindow.h"
 
 #include <Ogre.h>
-#include <QDebug>
+
 #include <QApplication>
+#include <QDesktopWidget>
 
 namespace CAVEStereo
 {
-
-    CAVESettingsWidget::CAVESettingsWidget(Foundation::Framework* framework, QWidget* parent)
-        :QWidget(parent),
+    CAVESettingsWidget::CAVESettingsWidget(Framework* framework, QWidget* parent) :
+        QWidget(parent),
+        framework_(framework),
         settings_dialog_(this),
         next_view_num_(0),
         view_prefix_("View")
     {
         setupUi(this);
 
-
-        framework_ = framework;
         QObject::connect(this, SIGNAL(NewCAVEViewRequested(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&)), this, SLOT(AddViewToUi(const QString&)));
         QObject::connect(this, SIGNAL(NewCAVEPanoramaViewRequested(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, int)), this, SLOT(AddViewToUi(const QString&)));
         QObject::connect(toggle_CAVE, SIGNAL(toggled(bool)),this, SLOT(CAVEButtonToggled(bool)));
@@ -42,6 +39,7 @@ namespace CAVEStereo
     {
         show();
     }
+
     void CAVESettingsWidget::AddNewCAVEViewAdvanced()
     {
         if(settings_dialog_.exec() == QDialog::Accepted)
@@ -55,13 +53,10 @@ namespace CAVEStereo
                 emit NewCAVEViewRequested(GetNextName(), tl ,bl, br, eye); 
             }
         }
-
     }
-
 
     void CAVESettingsWidget::AddViewToUi(const QString& name)
     {
-
         QLabel* label = new QLabel(name);
         label->setObjectName(name);
         QHBoxLayout* layout = new QHBoxLayout();
@@ -80,9 +75,7 @@ namespace CAVEStereo
         layout->addWidget(modb);
         layout->addWidget(remb);
         viewslayout->addLayout(layout);
-
     }
-
 
     void CAVESettingsWidget::ModifyViewPressed(QString name)
     {
@@ -99,6 +92,7 @@ namespace CAVEStereo
         }
 
     }
+
     void CAVESettingsWidget::DeleteViewPressed(QString name)
     {
         QPushButton *button = this->findChild<QPushButton*>(name);
@@ -117,8 +111,6 @@ namespace CAVEStereo
                 button->deleteLater();
             }
 
-
-
             emit RemoveCAVEView(name);
             QLabel* label = this->findChild<QLabel*>(name);
 
@@ -129,7 +121,6 @@ namespace CAVEStereo
         }
     }
 
-
     void CAVESettingsWidget::AddNewCAVEView()
     {
         if(settings_dialog_.exec() == QDialog::Accepted)
@@ -137,8 +128,6 @@ namespace CAVEStereo
             Ogre::Vector3 bl, br, tl, eye;
             settings_dialog_.getCaveProjectionSettings(eye,bl,tl,br);
             emit NewCAVEViewRequested(GetNextName(), tl ,bl, br, eye);
-           
-
         }
     }
 
@@ -154,8 +143,8 @@ namespace CAVEStereo
         CAVEViewSettings::ConvertToVectors(0.f,0.f,2.f,80.5f,80.5f*(3.f/4.f),bl,tl,br);
         emit NewCAVEViewRequested(GetNextName(), tl ,bl, br, eye);
         toggle_CAVE->setChecked(true);
-
     }
+
     void CAVESettingsWidget::VCAVE()
     {
         toggle_CAVE->setChecked(false);
@@ -167,6 +156,7 @@ namespace CAVEStereo
         emit NewCAVEViewRequested(GetNextName(), tl ,bl, br, eye);
         toggle_CAVE->setChecked(true);
     }
+
     void CAVESettingsWidget::MiniCAVE()
     {
         toggle_CAVE->setChecked(false);
@@ -179,8 +169,8 @@ namespace CAVEStereo
         CAVEViewSettings::ConvertToVectors(0.f,0.f,2.f,60.f,60.f*(3.f/4.f),bl,tl,br);
         emit NewCAVEViewRequested(GetNextName(), tl ,bl, br, eye);
         toggle_CAVE->setChecked(true);
-
     }
+
     void CAVESettingsWidget::Panorama()
     {
         QRect rect = QApplication::desktop()->screenGeometry();
@@ -209,9 +199,7 @@ namespace CAVEStereo
         emit NewCAVEPanoramaViewRequested(GetNextName(), tl, bl,br,eye,5);
 
         toggle_CAVE->setChecked(true);
-
     }
-
 
     void CAVESettingsWidget::CAVEButtonToggled(bool v)
     {
@@ -225,5 +213,4 @@ namespace CAVEStereo
         next_view_num_++;
         return view_name;
     }
-
 }

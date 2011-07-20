@@ -22,17 +22,13 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DCAVESTEREO_MODULE_EXPORTS)
 
-use_core_modules (UiModule Core Foundation Interfaces RexCommon SupportModules OgreRenderingModule)
-
-# note: Foundation, Core, Interfaces, RexCommon, UiModule, SupportModules are removed from tundra2 branch, need to modify this and code to get it compiled!
+use_core_modules (Framework Ui OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon SupportModules OgreRenderingModule)
+link_modules (Framework Ui OgreRenderingModule)
 link_ogre()
 
 SetupCompileFlagsWithPCH()
 
-
 final_target ()
-

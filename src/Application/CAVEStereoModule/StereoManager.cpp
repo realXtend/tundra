@@ -172,14 +172,13 @@ namespace CAVEStereo
         left_mask_ = ~((Ogre::uint32)0);
 
         available_nodes_[SM_ANAGLYPH] = StereoModeDescription("ANAGLYPH_RED_CYAN", "Stereo/Anaglyph");
-        //available_nodes_[SM_INTERLACED_H] = StereoModeDescription("INTERLACED_HORIZONTAL", "Stereo/HorizontalInterlace");
-        //available_nodes_[SM_INTERLACED_V] = StereoModeDescription("INTERLACED_VERTICAL", "Stereo/VerticalInterlace");
-        //available_nodes_[SM_INTERLACED_CB] = StereoModeDescription("INTERLACED_CHECKBOARD", "Stereo/CheckboardInterlace");
-
+        available_nodes_[SM_INTERLACED_H] = StereoModeDescription("INTERLACED_HORIZONTAL", "Stereo/HorizontalInterlace");
+        available_nodes_[SM_INTERLACED_V] = StereoModeDescription("INTERLACED_VERTICAL", "Stereo/VerticalInterlace");
+        available_nodes_[SM_INTERLACED_CB] = StereoModeDescription("INTERLACED_CHECKBOARD", "Stereo/CheckboardInterlace");
         available_nodes_[SM_DUALOUTPUT] = StereoModeDescription("DUALOUTPUT");
         available_nodes_[SM_SHUTTER] = StereoModeDescription("SHUTTER");
         available_nodes_[SM_NONE] = StereoModeDescription("NONE");
-        }
+    }
 
     StereoManager::~StereoManager(void)
     {

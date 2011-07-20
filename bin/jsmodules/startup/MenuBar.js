@@ -50,11 +50,21 @@ if (!framework.IsHeadless())
     if (framework.GetModuleByName("PythonScript"))
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
 
+    // Settings
+    
+    var settingsMenu = menu.addMenu("&Settings");
+    
     if (framework.GetModuleByName("MumbleVoip"))
-        viewMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
+        settingsMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
 
     if (framework.GetModuleByName("OgreRendering"))
-        viewMenu.addAction("Renderer Settings").triggered.connect(OpenRendererSettings);
+        settingsMenu.addAction("Renderer Settings").triggered.connect(OpenRendererSettings);
+
+    if (framework.GetModuleByName("CAVEStereo"))
+    {
+        settingsMenu.addAction("Cave").triggered.connect(OpenCaveWindow);
+        settingsMenu.addAction("Stereoscopy").triggered.connect(OpenStereoscopyWindow);
+    }
 
     var helpMenu = menu.addMenu("&Help");
     helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);

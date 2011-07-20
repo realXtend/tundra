@@ -2,6 +2,8 @@
 
 #include "StableHeaders.h"
 #include "ExternalRenderWindow.h"
+#include "CoreStringUtils.h"
+
 #include <QResizeEvent>
 #include <QKeyEvent>
 

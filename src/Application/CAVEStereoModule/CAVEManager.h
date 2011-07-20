@@ -4,19 +4,17 @@
 #define incl_OgreRenderingModule_CaveManager_h
 
 #include "OgreModuleFwd.h"
+#include "CAVEView.h"
 
 #include <QObject>
+#include <QPointer>
 #include <QMap>
 
-namespace Ogre
-{
-    class Vector3;
-}
+namespace Ogre { class Vector3; }
 
 namespace CAVEStereo
 {
     class CAVESettingsWidget;
-    class CAVEView;
 
     /// This class handles the CAVE view managing
     class CAVEManager: public QObject 
@@ -70,10 +68,13 @@ namespace CAVEStereo
     private:
         /// is cave enabled
         bool enabled_;
+
         /// renderer pointer
         OgreRenderer::RendererWeakPtr renderer_;
+
         /// views
-        QMap<QString, CAVEView*> view_map_;
+        QMap<QString, QPointer<CAVEView> > view_map_;
+
         /// settings widget
         CAVESettingsWidget* settings_widget_;
     };

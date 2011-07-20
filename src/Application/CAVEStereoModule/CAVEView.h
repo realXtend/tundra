@@ -16,9 +16,12 @@ namespace CAVEStereo
 {
     class ExternalRenderWindow;
 
-    ///this class is responsible of calculating the projection matrices and manage the render window and camera of the view
-    class CAVEView: public QObject
+    /// This class is responsible of calculating the projection matrices and manage the render window and camera of the view
+    class CAVEView : public QObject
     {
+
+    Q_OBJECT
+
     public:
         explicit CAVEView(const OgreRenderer::RendererPtr &renderer);
         ~CAVEView();
