@@ -38,6 +38,9 @@ macro (init_target NAME)
     # note: CMAKE_INCLUDE_CURRENT_DIR could automate this
     include_directories (${CMAKE_CURRENT_SOURCE_DIR})
     
+    # Add the SDK static libs build location for linking
+    link_directories (${CMAKE_SOURCE_DIR}/lib)
+    
     # set TARGET_DIR
     if (${TARGET_NAME}_OUTPUT)
         set (TARGET_DIR ${PROJECT_BINARY_DIR}/bin/${ARGV2})
@@ -60,8 +63,8 @@ macro (final_target)
             if (APPLE)
                 set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flat_namespace")
             endif()
-            set (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
-            set (EXECUTABLE_OUTPUT_PATH ${TARGET_DIR})
+            set (LIBRARY_OUTPUT_DIRECTORY ${TARGET_DIR})
+            set (RUNTIME_OUTPUT_DIRECTORY ${TARGET_DIR})
         endif ()
     endif ()
     # pretty printing
@@ -73,13 +76,31 @@ macro (build_library TARGET_NAME LIB_TYPE)
 
     message (STATUS "-- build type:")
     message (STATUS "       " ${LIB_TYPE} " library")
-
+   
+    # *unix add -fPIC for static libraries
     if (UNIX AND ${LIB_TYPE} STREQUAL "STATIC")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     endif ()
 
     add_library (${TARGET_NAME} ${LIB_TYPE} ${ARGN})
 
+    # build static libraries to /lib if
+    # - Is part of the SDK (/src/Core/)
+    # - Is a static EC declared by SDK on the build (/src/EntityComponents/)
+    if (${LIB_TYPE} STREQUAL "STATIC" AND NOT TARGET_DIR)
+        string (REGEX MATCH  ".*/src/Core/?.*" TARGET_IS_CORE ${CMAKE_CURRENT_SOURCE_DIR})
+        string (REGEX MATCH  ".*/src/EntityComponents/?.*" TARGET_IS_EC ${CMAKE_CURRENT_SOURCE_DIR})
+        if (TARGET_IS_CORE)
+            message (STATUS "-- SDK lib output path:")
+        elseif (TARGET_IS_EC)
+            message (STATUS "-- SDK EC lib output path:")
+        endif ()
+        if (TARGET_IS_CORE OR TARGET_IS_EC)
+            message (STATUS "       " ${CMAKE_SOURCE_DIR}/lib)
+            set_target_properties (${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+        endif ()
+    endif ()
+    
     # internal library naming convention
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
     set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
