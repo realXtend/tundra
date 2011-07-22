@@ -127,7 +127,6 @@ void EC_Hydrax::Create()
 
         position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
 
-        // Create water
         impl->hydrax->create();
 
         connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);

@@ -14,7 +14,8 @@ class EC_Camera;
 struct EC_HydraxImpl;
 
 /// A photorealistic water plane component using Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
-/** Provides means of creating photorealistic environments together with EC_SkyX.
+/** This is a singleton type component and only one component per scene is allowed.
+    Provides means of creating photorealistic environments together with EC_SkyX.
     @note Requires Hydrax Ogre add-on. */
 class EC_Hydrax : public IComponent
 {
