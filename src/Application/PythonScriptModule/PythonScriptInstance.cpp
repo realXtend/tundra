@@ -7,26 +7,23 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "PythonScriptInstance.h"
-
 #include "Entity.h"
-#include "SceneManager.h"
+#include "Scene.h"
 
 #include <PythonQt.h>
-
 #include <QFile>
 
-PythonScriptInstance::PythonScriptInstance(const QString &filename, Scene::Entity *entity) :
+#include "MemoryLeakCheck.h"
+
+PythonScriptInstance::PythonScriptInstance(const QString &filename, Entity *entity) :
     filename_(filename)
 {
     context_ = PythonQt::self()->createUniqueModule();
-//    moduleName_ = filename_.mid(3, filename_.length() - 4);
-//    context_ = PythonQt::self()->createModuleFromScript(moduleName_);
 
     // Add parent entity and scene to the context
     PythonQt::self()->addObject(context_, "me", entity);
-    PythonQt::self()->addObject(context_, "scene", entity->GetScene());
+    PythonQt::self()->addObject(context_, "scene", entity->ParentScene());
 }
 
 void PythonScriptInstance::Load()

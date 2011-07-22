@@ -1,14 +1,15 @@
 # Define target name and output directory
 init_target (PythonScriptModule OUTPUT plugins)
 
-set (PYTHON_FORCE_RELEASE_VERSION 0) # set if you want to use release version of python when building debug version of viewer
-#doesn't work anymore now that PythonQt was introduced - attempts to build viewer in debugmode with release mode pythonqt have failed so far
+# Get EC defines that are added to this build.
+GetEntityComponents()
 
 # Define source files
+# todo: check the moc list and in general what can be removed.
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h Vector3dfDecorator.h TransformDecorator.h QuaternionDecorator.h AssetReferenceDecorator.h)
+file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h AssetReferenceDecorator.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -18,47 +19,39 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-if(PYTHON_FORCE_RELEASE_VERSION)
-    add_definitions(-DPYTHON_FORCE_RELEASE_VERSION) 
-endif(PYTHON_FORCE_RELEASE_VERSION)
+add_definitions (-DPYMODULE_MODULE_EXPORTS)
 
+# Use python and python qt. 
+# Boost/Ogre includes are autmatic.
 use_package (PYTHON)
 use_package (PYTHON_QT)
 
-# note: KristalliProtocolModule, CommunicationsModule are removed from tundra2 branch, need to modify this and code to get it compiled!
-use_core_modules (Framework Scene OgreRenderingModule KristalliProtocolModule Input Ui Audio Console)
-use_app_modules (AvatarModule CommunicationsModule)
+# Use core and app modules we need. Notice separate macros due to source locations separation.
+use_core_modules (Framework Scene Input Ui Audio Console OgreRenderingModule TundraProtocolModule)
+use_app_modules (AvatarModule SceneWidgetComponents)
 
-# ENABLE_TAIGA_SUPPORT has been deprecated afaik, this should be removed!
-if (ENABLE_TAIGA_SUPPORT)
-   use_modules (RexCommon RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga 
-                EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim)
-endif()
-
+# Build PythonScriptModule
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Framework Scene OgreRenderingModule KristalliProtocolModule Input Ui Audio Console)
+# Link to all: this include core and app (as the linking is just done by name not absolute path)
+link_modules (Framework Scene Input Ui Audio Console OgreRenderingModule TundraProtocolModule AvatarModule SceneWidgetComponents)
 
-# note: Some of these components may not be in the default build of tundra2 branch, need to modify what this module needs at bare minimum.
-# also EC_DynamicComponent is now under the Scene project, no need to add it to this list.
-link_entity_components (EC_Ruler EC_Touchable EC_3DCanvas EC_3DCanvasSource EC_Script)
+# Link to ECs. This macro will smartly opt out ECs that are not included in the build, info for this provided by GetEntityComponents() on top.
+link_entity_components (EC_Script EC_Touchable)
 
-# ENABLE_TAIGA_SUPPORT has been deprecated afaik, this should be removed!
-if (ENABLE_TAIGA_SUPPORT)
-   link_modules (RexCommon RexLogicModule ProtocolUtilities EC_OpenSimPresence EC_OpenSimPrim)
-endif()
-
+# Use python, pythonqt and ogre
 link_package (PYTHON)
 link_package (PYTHON_QT)
 link_ogre()
 
+# Use PCH with StableHeaders.h
 SetupCompileFlagsWithPCH()
 
+# Finalize our target, this will do some nice automation for us.
 final_target ()
 
-# Install files
+# make install: Install files
 setup_install_directory (${TUNDRA_BIN}/pymodules)
 
-# Install windows deps
-# Note: TEST THE BELOW REGEXP WHEN THIS MODULE BUILDS!
-setup_install_windows_deps_regexp ("[Pp]ython_+.*[^d][.]dll$" Release|RelWithDebInfo "[Pp]ython_+.*[_][d][.]dll$" Debug)
+# make install: Install windows deps
+setup_install_windows_deps ("python26.dll;PythonQt.dll;PythonQt_QtAll.dll" Release|RelWithDebInfo "python26_d.dll;PythonQt_d.dll;PythonQt_QtAll_d.dll" Debug)

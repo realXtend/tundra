@@ -7,16 +7,11 @@
 
 #pragma once
 
+#include "PythonFwd.h"
 #include "IScriptInstance.h"
 
-#include <QString>
-
 #include <PythonQtObjectPtr.h>
-
-namespace Scene
-{
-    class Entity;
-}
+#include <QString>
 
 /// Python script instance used with EC_Script.
 class PythonScriptInstance : public IScriptInstance
@@ -26,7 +21,7 @@ public:
     /** @param filename Filename of the script (include path and file extension).
         @param entity Parent entity.
     */
-    PythonScriptInstance(const QString &filename, Scene::Entity *entity);
+    PythonScriptInstance(const QString &filename, Entity *entity);
 
     /// Destructor.
     virtual ~PythonScriptInstance() {}
@@ -48,4 +43,3 @@ private:
     QString filename_; ///< Script filename.
     QString moduleName_; ///< Python module name for the script file.
 };
-
