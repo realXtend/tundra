@@ -55,3 +55,10 @@ link_ogre()
 SetupCompileFlagsWithPCH()
 
 final_target ()
+
+# Install files
+setup_install_directory (${TUNDRA_BIN}/pymodules)
+
+# Install windows deps
+# Note: TEST THE BELOW REGEXP WHEN THIS MODULE BUILDS!
+setup_install_windows_deps_regexp ("[Pp]ython_+.*[^d][.]dll$" Release|RelWithDebInfo "[Pp]ython_+.*[_][d][.]dll$" Debug)

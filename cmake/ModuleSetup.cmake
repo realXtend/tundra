@@ -39,7 +39,7 @@ macro (init_target NAME)
     include_directories (${CMAKE_CURRENT_SOURCE_DIR})
     
     # Add the SDK static libs build location for linking
-    link_directories (${CMAKE_SOURCE_DIR}/lib)
+    link_directories (${PROJECT_BINARY_DIR}/lib)
     
     # set TARGET_DIR
     if (${TARGET_NAME}_OUTPUT)
@@ -67,13 +67,20 @@ macro (final_target)
             set (RUNTIME_OUTPUT_DIRECTORY ${TARGET_DIR})
         endif ()
     endif ()
+    
     # pretty printing
     message ("")
+    
+    # run the setup install macro for everything included in this build
+    setup_install_target ()
+    
 endmacro (final_target)
 
 # build a library from internal sources
 macro (build_library TARGET_NAME LIB_TYPE)
 
+    # save for later use in other macros
+    set (TARGET_LIB_TYPE ${LIB_TYPE})
     message (STATUS "-- build type:")
     message (STATUS "       " ${LIB_TYPE} " library")
    
@@ -96,8 +103,8 @@ macro (build_library TARGET_NAME LIB_TYPE)
             message (STATUS "-- SDK EC lib output path:")
         endif ()
         if (TARGET_IS_CORE OR TARGET_IS_EC)
-            message (STATUS "       " ${CMAKE_SOURCE_DIR}/lib)
-            set_target_properties (${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+            message (STATUS "       " ${PROJECT_BINARY_DIR}/lib)
+            set_target_properties (${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
         endif ()
     endif ()
     
@@ -111,6 +118,7 @@ endmacro (build_library)
 # build an executable from internal sources 
 macro (build_executable TARGET_NAME)
 
+    set (TARGET_LIB_TYPE "EXECUTABLE")
     message (STATUS "building executable: " ${TARGET_NAME})
     
     if (MSVC AND WINDOWS_APP)

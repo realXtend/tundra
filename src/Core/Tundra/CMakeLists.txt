@@ -37,3 +37,13 @@ link_modules (Framework Scene Console)
 
 final_target ()
 
+# Install files
+setup_install_files_find (${TUNDRA_BIN} "*.xml")
+setup_install_files (${TUNDRA_BIN}/plugins/TundraInstallationDirectory.txt "plugins")
+setup_install_directory (${TUNDRA_BIN}/data)
+setup_remove_file ("data/assets/dummy.txt")
+
+# Install deps for windows
+setup_install_windows_deps_regexp ("[/][Q][t][A-Z].*[^d][4][.]dll$" Release|RelWithDebInfo "[/][Q][t][A-Z].*[d][4][.]dll$" Debug)
+setup_install_windows_deps_regexp ("[/]qtplugins[/].*[/][q].*[^d][4][.]dll$" Release|RelWithDebInfo "[/]qtplugins[/].*[/][q].*[d][4][.]dll$" Debug)
+setup_install_windows_deps ("phonon4.dll" Release|RelWithDebInfo "phonond4.dll" Debug)

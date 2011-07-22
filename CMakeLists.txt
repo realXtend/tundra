@@ -4,6 +4,30 @@ project(tundra)
 # CMake version requirement
 cmake_minimum_required(VERSION 2.4)
 
+macro (PrintUsedEnvVariables)
+    # Print out the resolved variables
+    message ("\n=========== Used Environment Variables ===========\n")
+    message (STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
+    message (STATUS "QTDIR            = " ${ENV_QT_DIR})
+    message (STATUS "OGRE_HOME        = " ${ENV_OGRE_HOME})
+endmacro ()
+
+macro (PrintUsedBuildConfig)
+    message ("\n=========== Used Build Configuration =============\n")
+    message (STATUS "BUILD_SDK_ONLY            = " ${BUILD_SDK_ONLY})
+    message (STATUS "WINDOWS_APP               = " ${WINDOWS_APP})
+    message (STATUS "ENABLE_HYDRAX             = " ${ENABLE_HYDRAX})
+    message (STATUS "ENABLE_SKYX               = " ${ENABLE_SKYX})
+    message (STATUS "ENABLE_OGRE_ASSET_EDITOR  = " ${ENABLE_OGRE_ASSET_EDITOR})
+    message (STATUS "ENABLE_OPEN_ASSET_IMPORT  = " ${ENABLE_OPEN_ASSET_IMPORT})
+    message (STATUS "ENABLE_PROFILING          = " ${ENABLE_PROFILING})
+    message (STATUS "ENABLE_JS_PROFILING       = " ${ENABLE_JS_PROFILING})
+    message (STATUS "ENABLE_MEMORY_LEAK_CHECKS = " ${ENABLE_MEMORY_LEAK_CHECKS})
+    message ("")
+    message (STATUS "Install prefix = " ${CMAKE_INSTALL_PREFIX})
+    message ("")
+endmacro ()
+
 # The AddEntityComponent macro adds the static EC lib from the given sourceFolder directory to the build.
 # The componentName must be the name of the EC that will be added. E.g. AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 # Use this macro when adding ECs to the build, since this macro tracks the set of ECs that are added, so that the individual
@@ -152,30 +176,37 @@ else ()
 endif()
 
 # Set Kristalli path
-set(KRISTALLI_CORE_PATH ${PROJECT_BINARY_DIR}/Kristalli)
+set (KRISTALLI_CORE_PATH ${PROJECT_BINARY_DIR}/Kristalli)
 
 # Set CMake custom module path & include them
 # The following CMake modules are required for the project to build.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} cmake)
-include(Sagase)
-include(ModuleSetup)
-include(ConfigurePackages)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} cmake)
+include (Sagase)
+include (ModuleSetup)
+include (ConfigurePackages)
+include (TundraInstall)
 
 # Disable unnecessary build types
-set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
+set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
 if (MSVC)
     # In Visual Studio, use unicode character set
-    add_definitions(-DUNICODE -D_UNICODE)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions (-DUNICODE -D_UNICODE)
+    add_definitions (-D_CRT_SECURE_NO_WARNINGS)
 
     #Define NOMINMAX in order to get rid of the evil WinDefs.h min&max defines.
-    add_definitions(-DNOMINMAX)
+    add_definitions (-DNOMINMAX)
 endif()
 
 # On all platforms, we enable PCH files by default.
 add_definitions (-DPCH_ENABLED)
-SET(PCH_ENABLED 1)
+set (PCH_ENABLED 1)
+
+# Set global hardcoded install prefix. User cannot change this at the moment, untill we figure how we want to use this!
+# Call the cleanup step that cleans the install prefix before every installations. This is important as module setups might change between builds.
+set (CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/build)
+set (TUNDRA_BIN ${PROJECT_BINARY_DIR}/bin)
+setup_clean_install_step()
 
 # Set normalized path for common environment variables
 file (TO_CMAKE_PATH "$ENV{TUNDRA_DEP_PATH}" ENV_TUNDRA_DEP_PATH)
@@ -209,12 +240,6 @@ if (NOT ENV_TUNDRA_DEP_PATH)
     message(FATAL_ERROR "TUNDRA_DEP_PATH could not be resolved from a environment variable or from cmake cache!")
 endif ()
 
-# Print out the resolved variables
-message ("\n\n=========== Reading Environment Variables ===========\n")
-message (STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
-message (STATUS "QTDIR            = " ${ENV_QT_DIR})
-message (STATUS "OGRE_HOME        = " ${ENV_OGRE_HOME})
-
 message ("\n\n=========== Configuring Dependencies ===========\n")
 
 # Find needed external libraries, abort on error
@@ -240,7 +265,7 @@ use_package(OPENAL)
 use_package(OGG)
 use_package(VORBIS)
 
-set (CORE_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Core)
+set (CORE_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/src/Core)
 include_directories (${CORE_MODULE_DIRECTORY}/Input)
 include_directories (${CORE_MODULE_DIRECTORY}/Ui)
 include_directories (${CORE_MODULE_DIRECTORY}/Asset)
@@ -285,3 +310,6 @@ endif()
 
 update_qm_files(TRANSLATIONS_FILES)
 message (STATUS "Language translations generated")
+
+PrintUsedEnvVariables ()
+PrintUsedBuildConfig ()
