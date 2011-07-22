@@ -9,6 +9,9 @@
 #include "Framework.h"
 #include "SceneAPI.h"
 #include "IComponentFactory.h"
+///\todo HydraxConfigFile support
+//#include "AssetAPI.h"
+//#include "HydraxConfigAsset.h"
 
 extern "C"
 {
@@ -21,6 +24,8 @@ DLLEXPORT void TundraPluginMain(Framework *fw)
 #endif
 #if HYDRAX_ENABLED
     fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Hydrax>));
+    ///\todo HydraxConfigFile support
+//    fw->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<HydraxConfigAsset>("HydraxConfigFile")));
 #endif
 }
 
