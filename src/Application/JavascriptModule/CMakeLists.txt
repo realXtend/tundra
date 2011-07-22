@@ -30,3 +30,9 @@ link_entity_components (EC_Script)
 SetupCompileFlags()
 
 final_target ()
+
+# Install files
+setup_install_directory (${TUNDRA_BIN}/jsmodules)
+
+# Install deps for windows, qtscriptgenerator plugins
+setup_install_windows_deps_regexp ("[/]script[/]qtscript_+.*[^d][.]dll$" Release|RelWithDebInfo "qtscript_+.*[d][.]dll$" Debug)

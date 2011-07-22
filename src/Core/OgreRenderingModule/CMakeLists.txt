@@ -38,3 +38,22 @@ link_modules (Framework Scene Ui Asset Console)
 SetupCompileFlagsWithPCH()
 
 final_target ()
+
+# Install files
+setup_install_directory (${TUNDRA_BIN}/media)
+
+setup_install_files_find(${TUNDRA_BIN} "resources.cfg")
+if (WIN32)
+    setup_install_files_find(${TUNDRA_BIN} "plugins.cfg" Release|RelWithDebInfo)
+    setup_install_files_find(${TUNDRA_BIN} "pluginsd.cfg" Debug)
+elseif (UNIX)
+    setup_install_files_find(${TUNDRA_BIN} "plugins-unix.cfg")
+elseif (APPLE)
+    setup_install_files_find(${TUNDRA_BIN} "plugins-mac.cfg")
+endif ()
+
+# Install windows deps
+setup_install_windows_deps ("cg.dll" Release|RelWithDebInfo|Debug)
+setup_install_windows_deps ("OgreMain.dll" Release|RelWithDebInfo "OgreMain_d.dll" Debug)
+setup_install_windows_deps_regexp ("Plugin_+.*[^d][.]dll$" Release|RelWithDebInfo "Plugin_+.*[_][d][.]dll$" Debug)
+setup_install_windows_deps_regexp ("RenderSystem_+.*[^d][.]dll$" Release|RelWithDebInfo "RenderSystem_+.*[_][d][.]dll$" Debug)

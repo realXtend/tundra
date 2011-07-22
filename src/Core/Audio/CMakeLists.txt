@@ -38,3 +38,8 @@ link_modules(Framework Asset)
 SetupCompileFlags()
 
 final_target()
+
+# Install deps for windows
+setup_install_windows_deps ("wrap_oal.dll;OpenAL32.dll" Release|RelWithDebInfo|Debug)
+setup_install_windows_deps ("libogg.dll;libvorbis.dll;libvorbisfile.dll;libtheora.dll" Release|RelWithDebInfo
+                            "liboggd.dll;libvorbisd.dll;libvorbisfiled.dll;libtheorad.dll" Debug)

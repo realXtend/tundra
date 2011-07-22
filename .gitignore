@@ -34,6 +34,7 @@ CMakeFiles
 CMakeCache.txt
 CMakeBuildConfig.txt
 ZERO_CHECK.dir/
+install_manifest.txt
 
 # Qt build objects
 moc_*.cxx

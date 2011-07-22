@@ -51,3 +51,6 @@ endif()
 SetupCompileFlags()
 
 final_target ()
+
+# Install windows deps
+setup_install_windows_deps ("Hydrax.dll;SkyX.dll" Release|RelWithDebInfo "Hydraxd.dll;SkyXd.dll" Debug)

@@ -40,3 +40,6 @@ link_entity_components (EC_TransformGizmo EC_Highlight)
 SetupCompileFlagsWithPCH()
 
 final_target ()
+
+# Install windows deps
+setup_install_windows_deps ("QtSolutions_PropertyBrowser-2.5.dll" Release|RelWithDebInfo "QtSolutions_PropertyBrowser-2.5d.dll" Debug)

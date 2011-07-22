@@ -14,8 +14,6 @@
 ############################################################################################################
 ###### BUILD CONFIGURATION DEFINES #########################################################################
 
-message ("\n=========== Build Configuration ===========\n")
-
 ## Various flags/defines that configure your build
 
 set (BUILD_SDK_ONLY 0)              # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
@@ -27,16 +25,6 @@ set (ENABLE_OPEN_ASSET_IMPORT 0)    # Enables Open Asset Import Library, which c
 set (ENABLE_PROFILING 0)            # Enable the following flag to add compile with support for a built-in execution time profiler.
 set (ENABLE_JS_PROFILING 0)         # Enable js profiling?
 set (ENABLE_MEMORY_LEAK_CHECKS 1)   # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
-
-message (STATUS "BUILD_SDK_ONLY            = " ${BUILD_SDK_ONLY})
-message (STATUS "WINDOWS_APP               = " ${WINDOWS_APP})
-message (STATUS "ENABLE_HYDRAX             = " ${ENABLE_HYDRAX})
-message (STATUS "ENABLE_SKYX               = " ${ENABLE_SKYX})
-message (STATUS "ENABLE_OGRE_ASSET_EDITOR  = " ${ENABLE_OGRE_ASSET_EDITOR})
-message (STATUS "ENABLE_OPEN_ASSET_IMPORT  = " ${ENABLE_OPEN_ASSET_IMPORT})
-message (STATUS "ENABLE_PROFILING          = " ${ENABLE_PROFILING})
-message (STATUS "ENABLE_JS_PROFILING       = " ${ENABLE_JS_PROFILING})
-message (STATUS "ENABLE_MEMORY_LEAK_CHECKS = " ${ENABLE_MEMORY_LEAK_CHECKS})
 message ("\n")
 
 if (ENABLE_PROFILING)
