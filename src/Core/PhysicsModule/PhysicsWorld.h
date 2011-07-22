@@ -61,7 +61,7 @@ class PHYSICS_MODULE_API PhysicsWorld : public QObject, public btIDebugDraw, pub
     Q_OBJECT
     
     friend class PhysicsModule;
-    friend class EC_RigidBody;
+    friend class ::EC_RigidBody;
     
 public:
     PhysicsWorld(ScenePtr scene, bool isClient);
@@ -220,7 +220,7 @@ private:
     /// Debug draw-enabled rigidbodies. Note: these pointers are never dereferenced, it is just used for counting
     std::set<EC_RigidBody*> debugRigidBodies_;
 };
-
 }
+
 
 

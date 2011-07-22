@@ -7,7 +7,7 @@
 #include "TundraLogicModuleApi.h"
 #include "UserConnectedResponseData.h"
 
-#include <kNet/Socket.h>
+#include <kNet.h>
 
 #include <map>
 #include <QObject>

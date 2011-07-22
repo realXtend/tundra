@@ -19,7 +19,7 @@
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
 #include "OgreMaterialUtils.h"
-#include "AssetApi.h"
+#include "AssetAPI.h"
 #include "TextureAsset.h"
 
 #include <Ogre.h>

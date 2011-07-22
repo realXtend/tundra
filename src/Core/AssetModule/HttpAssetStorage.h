@@ -60,7 +60,7 @@ private slots:
 
 private:
     /// Perform a PROPFIND search on a path in the http storage
-    void HttpAssetStorage::PerformSearch(QString path);
+    void PerformSearch(QString path);
 
     /// Get QNetworkAccessManager from the parent provider
     QNetworkAccessManager* GetNetworkAccessManager();

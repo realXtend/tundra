@@ -6,7 +6,11 @@
 
 #ifdef WIN32
 #include <Winsock2.h>
-#include <Windows.h> ///\todo Cross-platform -> <dlfcn.h>
+#include <Windows.h>
+typedef HMODULE PluginHandle;
+#elif defined(_POSIX_C_SOURCE)
+#include <dlfcn.h>
+typedef void * PluginHandle;
 #endif
 
 class Framework;
@@ -19,10 +23,7 @@ class PluginAPI : public QObject
 private:
     struct Plugin
     {
-#ifdef WIN32
-        HMODULE libraryHandle; ///\todo Cross-platform -> void*.
-#endif
-        ///\todo Unix-equivalents.
+        PluginHandle libraryHandle;
     };
     std::list<Plugin> plugins;
 

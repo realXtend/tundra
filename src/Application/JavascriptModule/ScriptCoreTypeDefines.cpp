@@ -383,11 +383,14 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
     qScriptRegisterMetaType(engine, toScriptValueEntityReference, fromScriptValueEntityReference);
     
+#ifdef WIN32
+    /// \todo is this really needed on windows? breaks gcc build
     int id = qRegisterMetaType<ScenePtr>("ScenePtr");
     qScriptRegisterMetaType_helper(
         engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(qScriptValueFromBoostSharedPtr<Scene>),
         reinterpret_cast<QScriptEngine::DemarshalFunction>(qScriptValueToBoostSharedPtr<Scene>),
         QScriptValue());
+#endif
 
     qScriptRegisterMetaType<ComponentPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
 

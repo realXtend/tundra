@@ -106,7 +106,7 @@ private slots:
 
 private:
     /// Do the actual raycast. rayQuery_ must have been set up beforehand
-    RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask);
+    RaycastResult* RaycastInternal(unsigned layerMask);
 
     /// Setup shadows
     void SetupShadows();

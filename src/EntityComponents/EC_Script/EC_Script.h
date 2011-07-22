@@ -135,7 +135,7 @@ public slots:
     void Unload(const QString& name = QString());
 
     /// Return the key for accessing the script engine's scriptObjects property map
-    QString GetScriptObjectKey() const { return QString::number((unsigned)this); }
+    QString GetScriptObjectKey() const { return QString::number((u64)this); }
     
     /// Check whether the script should run
     bool ShouldRun() const;

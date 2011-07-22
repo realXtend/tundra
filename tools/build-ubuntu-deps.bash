@@ -40,42 +40,12 @@ export CCACHE_DIR=$deps/ccache
 
 if lsb_release -c | egrep -q "lucid|maverick|natty"; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
-	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
-	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
-	 build-essential g++ libogre-dev libboost-all-dev libpoco-dev \
-	 ccache libqt4-dev python-dev \
-	 freeglut3-dev \
-	 libxmlrpc-epi-dev bison flex libxml2-dev cmake libalut-dev \
+	sudo aptitude -y install python-dev libogg-dev libvorbis-dev \
+	 build-essential g++ libogre-dev libboost-all-dev \
+	 ccache libqt4-dev python-dev freeglut3-dev \
+	 libxml2-dev cmake libalut-dev libtheora-dev \
 	 liboil0.3-dev mercurial unzip xsltproc libqtscript4-qtbindings
 fi
-	 #python-gtk2-dev libdbus-glib-1-dev \
-         #libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
-         #libtelepathy-qt4-dev python-gst0.10-dev \ 
-
-function build-regular {
-    urlbase=$1
-    shift
-    what=$1
-    shift
-    pkgbase=$what-$1
-    dlurl=$urlbase/$pkgbase.tar.gz    
-
-    cd $build
-    
-    if test -f $tags/$what-done; then
-	echo $what is done
-    else
-	rm -rf $pkgbase
-        zip=$tarballs/$pkgbase.tar.gz
-        test -f $zip || wget -O $zip $dlurl
-	tar xzf $zip
-	cd $pkgbase
-	./configure --disable-debug --disable-static --prefix=$prefix
-	make -j $nprocs
-	make install
-	touch $tags/$what-done
-    fi
-}
 
 what=bullet-2.77
 if test -f $tags/$what-done; then
@@ -137,27 +107,6 @@ else
     touch $tags/$what-done
 fi
 
-what=Caelum
-if test -f $tags/$what-done; then
-    echo $what is done
-else
-    cd $build
-    pkgbase=$what-0.5.0
-    rm -rf $pkgbase
-    zip=../tarballs/$pkgbase.zip
-    test -f $zip || wget -O $zip http://ovh.dl.sourceforge.net/project/caelum/caelum/0.5/$pkgbase.zip
-    unzip $zip
-    cd $pkgbase
-    sed "s/depflags.has_key/False and depflags.has_key/g" < SConstruct > SConstruct.edit
-    mv SConstruct.edit SConstruct
-    scons extra_ccflags="-fPIC -DPIC"
-    mkdir -p $prefix/etc/OGRE
-    cp plugins.cfg $prefix/etc/OGRE/
-    cp lib$what.a $prefix/lib/
-    cp main/include/* $prefix/include/
-    touch $tags/$what-done
-fi
-
 cd $build
 what=PythonQt
 ver=2.0.1
@@ -201,15 +150,6 @@ else
     touch $tags/$what-done
 fi
 
-ln -fvs /usr/include/xmlrpc-epi/*.h $prefix/include/
-
-if lsb_release -c | grep -q lucid; then
-    : # nothing
-else
-    : #build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
-fi
-
-
 if test "$1" = "--depsonly"; then
     exit 0
 fi
@@ -220,5 +160,5 @@ cat > ccache-g++-wrapper <<EOF
 exec ccache g++ -O -g \$@
 EOF
 chmod +x ccache-g++-wrapper
-NAALI_DEP_PATH=$prefix cmake -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" .
+TUNDRA_DEP_PATH=$prefix cmake -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" .
 make -j $nprocs VERBOSE=1
