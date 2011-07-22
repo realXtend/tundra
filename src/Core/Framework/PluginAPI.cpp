@@ -61,9 +61,12 @@ void PluginAPI::LoadPlugin(const QString &filename)
   #else
     const QString pluginSuffix = ".dll";
   #endif
-#elif Q_WS_X11
+#elif defined(_POSIX_C_SOURCE)
     const QString pluginSuffix = ".so";
+#elif defined(__APPLE__)
+    const QString pluginSuffix = ".dylib";
 #endif
+
 
     LogInfo("Loading plugin '" + filename + "'");
     owner->GetApplication()->SetSplashMessage("Loading plugin " + filename);
@@ -87,12 +90,24 @@ void PluginAPI::LoadPlugin(const QString &filename)
         return;
     }
 
+#else
+    PluginHandle module = dlopen(path.toStdString().c_str(), RTLD_GLOBAL|RTLD_LAZY);
+    if (module == NULL)
+    {
+        LogError("Failed to load plugin from file \"" + path + "\": Error " + dlerror() + "!");
+        return;
+    }
+    TundraPluginMainSignature mainEntryPoint = (TundraPluginMainSignature)dlsym(module, "TundraPluginMain");
+    if (mainEntryPoint == NULL)
+    {
+        LogError("Failed to find plugin startup function 'TundraPluginMain' from plugin file \"" + path + "\": Error " + dlerror() + "!");
+        return;
+    }
+
+#endif
     Plugin p = { module };
     plugins.push_back(p);
     mainEntryPoint(owner);
-#else
-    ///\todo Cross-platform -> void* & dlopen.
-#endif
 }
 
 void PluginAPI::UnloadPlugins()

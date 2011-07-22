@@ -55,7 +55,7 @@ bool ECAttributeEditor<T>::HasIdenticalAttributes() const
 }
 
 template<typename T>
-void ECAttributeEditor<T>::UpdateMultiEditorValue(IAttribute *attribute = 0)
+void ECAttributeEditor<T>::UpdateMultiEditorValue(IAttribute *attribute)
 {
     QStringList stringList;
     MultiEditPropertyManager *propertyManager = dynamic_cast<MultiEditPropertyManager *>(propertyMgr_);

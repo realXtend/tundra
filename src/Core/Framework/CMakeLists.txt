@@ -24,6 +24,11 @@ build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 link_modules(Scene Ui Input Asset Audio Console)
 
+if (UNIX)
+  # for dlopen() etc used in PluginAPI
+  target_link_libraries (${TARGET_NAME} dl)
+endif () 
+
 SetupCompileFlagsWithPCH()
 
 final_target()

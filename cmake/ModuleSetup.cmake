@@ -63,8 +63,8 @@ macro (final_target)
             if (APPLE)
                 set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flat_namespace")
             endif()
-            set (LIBRARY_OUTPUT_DIRECTORY ${TARGET_DIR})
-            set (RUNTIME_OUTPUT_DIRECTORY ${TARGET_DIR})
+            set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${TARGET_DIR})
+            set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TARGET_DIR})
         endif ()
     endif ()
     
@@ -132,6 +132,7 @@ macro (build_executable TARGET_NAME)
     endif (MSVC)
 
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
+    
 
 endmacro (build_executable)
 
