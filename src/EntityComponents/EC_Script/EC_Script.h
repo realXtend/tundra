@@ -119,7 +119,9 @@ public:
     /// Set the IsServer and IsClient flags. Called by the parent scripting system, which has this knowledge
     void SetIsClientIsServer(bool isClient, bool isServer);
 
+    /// Component macro for functions.
     COMPONENT_NAME("EC_Script", 5)
+
 public slots:
 
     /// Runs the script instance.

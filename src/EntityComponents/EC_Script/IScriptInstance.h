@@ -12,7 +12,9 @@
 /// Interface for different script instances, e.g. Javascript or Python.
 class IScriptInstance : public QObject
 {
-    Q_OBJECT
+
+Q_OBJECT
+
 public:
     /// Default constuctor.
     IScriptInstance() {}
