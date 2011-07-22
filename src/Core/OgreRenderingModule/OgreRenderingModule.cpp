@@ -265,6 +265,15 @@ extern "C"
 {
 DLLEXPORT void TundraPluginMain(Framework *fw)
 {
+    static int inited;
+
+    /// \todo PluginAPI::LoadPlugin is called only once but somehow this twice
+    inited++;
+    if (inited > 1)
+    {
+        std::cerr << "Skipping attempted reload of OgreRenderingModule" << std::endl;
+        return;
+    }
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
     IModule *module = new OgreRenderer::OgreRenderingModule();
     fw->RegisterModule(module);
