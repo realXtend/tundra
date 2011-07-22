@@ -331,8 +331,8 @@ var BrowserManager = Class.extend
         {
             var index = p_.tabs.currentIndex;
             p_.connected[index - 2] = false;
-            p_.refreshSqueezer(index);
-            p_.onTabIndexChanged(p_.tabs.currentIndex);
+            //p_.refreshSqueezer(index);
+            //p_.onTabIndexChanged(p_.tabs.currentIndex);
         }
 
         
@@ -499,18 +499,22 @@ var BrowserManager = Class.extend
         var tabsCurrentIndex = p_.tabs.currentIndex;
         if (tabsCurrentIndex == 0)
         {
-            if (HasTundraScheme(addressBarInput))
-                p_.tabCallBack("weblogin", addressBarInput, tabsCurrentIndex);
+            p_.addressBar.lineEdit().text = "local://LoginWidget.ui";
+            p_.actionAddFavorite.enabled = false;
+            p_.tabs.setTabToolTip(index, "LoginScreen");
+            p_.tabs.setTabText(index, "LoginScreen")
             return;
         }
         
-        if (!HasTundraScheme(addressBarInput))
+        else if (tabsCurrentIndex == 1)
         {
             var url = QUrl.fromUserInput(addressBarInput);
             p_.getCurrentWidget().load(url);
         }
         else
         {
+            if (p_.connected[tabsCurrentIndex-2] == true)
+                client.Logout(false, client.getActiveConnection());
             p_.tabCallBack("weblogin", addressBarInput, tabsCurrentIndex);
         }
     },
@@ -731,14 +735,14 @@ var BrowserManager = Class.extend
                 if (loginInfo["username"] != "" && loginInfo["address"] != "")
                 {
                     // Disconnect if connected
-                    if (p_.connected)
-                        client.Logout();
+                    if (p_.connected[index-2] == true)
+                        client.Logout(false, client.getActiveConnection());
                     // Focus 3D tab and close invoking tab
-                    if (index != 0)
-                    {
-                        p_.tabs.currentIndex = 0;
-                        p_.tabs.removeTab(index);
-                    }
+                    //if (index != 0)
+                    //{
+                    //    p_.tabs.currentIndex = 0;
+                    //    p_.tabs.removeTab(index);
+                    //}
                     p_.loginscreen.visible = false;
                     // Perform login
                     var qLoginUrl = new QUrl.fromUserInput(param);
