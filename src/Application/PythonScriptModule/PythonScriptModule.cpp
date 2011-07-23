@@ -65,7 +65,7 @@
 #include "PythonScriptInstance.h"
 #include "PythonEngine.h"
 #include "PythonQtScriptingConsole.h"
-#include "AssetReferenceDecorator.h"
+#include "TundraWrapper.h"
 
 // OgreRenderingModule
 #include "OgreRenderingModule.h"
@@ -290,7 +290,8 @@ namespace PythonScript
             /////////////////////////////////////////////////////////////////////////////////////////
             // Decorators
             /// \todo Reimplemented decorators for new math lib
-            PythonQt::self()->addDecorators(new AssetReferenceDecorator());
+            PythonQt::self()->addInstanceDecorators(new TundraInstanceDecorator());
+            PythonQt::self()->addDecorators(new TundraDecorator());
             PythonQt::self()->registerCPPClass("AssetReference");
         }
 

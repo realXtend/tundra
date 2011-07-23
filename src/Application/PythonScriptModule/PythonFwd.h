@@ -10,6 +10,10 @@
 #include <string>
 #include <vector>
 
+#include <QObject>
+#include <QString>
+#include <QStringList>
+
 class EC_Mesh;
 class EC_Placeable;
 class EC_Camera;
@@ -42,3 +46,5 @@ namespace TundraLogic
 }
 
 class UserConnection;
+
+struct AssetReference;

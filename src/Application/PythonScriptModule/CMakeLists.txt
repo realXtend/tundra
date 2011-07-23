@@ -9,7 +9,7 @@ GetEntityComponents()
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h AssetReferenceDecorator.h)
+file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h TundraWrapper.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap

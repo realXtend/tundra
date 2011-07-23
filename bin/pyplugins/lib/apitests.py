@@ -65,10 +65,14 @@ class ApiRunner:
             print "  >> Connecting to SceneAPI DefaultWorldSceneChanged signal..."
             tundra.Scene().connect("DefaultWorldSceneChanged(Scene*)", self.OnDefaultSceneChanged)
         if tundra.Scene().GetDefaultSceneRaw() != None:
-            print "  >> Helper().CreateEntity() local", tundra.Helper().CreateEntity([], True, False, False)
-            print "  >> Helper().CreateEntity() local temporary", tundra.Helper().CreateEntity([], True, False, True)
+            print "  >> Helper().CreateEntity([], True, False, False) local", tundra.Helper().CreateEntity([], True, False, False)
+            print "  >> Helper().CreateEntity([], True, False, True) local temporary", tundra.Helper().CreateEntity([], True, False, True)
             print "  >> Helper().CreateEntity() replicated", tundra.Helper().CreateEntity()
-            print "  >> Helper().CreateEntity() replicated with [EC_Mesh, EC_Placeable]", tundra.Helper().CreateEntity(["EC_Mesh", "EC_Placeable"])
+            ent = tundra.Helper().CreateEntity(["EC_Mesh", "EC_Placeable"])
+            print "  >> ent = Helper().CreateEntity([EC_Mesh, EC_Placeable]) replicated"
+            print "  >> ent", ent
+            print "  >> ent.GetComponentRaw(\"EC_Mesh\")", ent.GetComponentRaw("EC_Mesh")
+            print "  >> ent.GetComponentRaw(\"EC_Placeable\")", ent.GetComponentRaw("EC_Placeable")
     
     def OnDefaultSceneChanged(self, scene):
         tundra.LogInfo("-- Scene().DefaultWorldSceneChanged signal emitted")

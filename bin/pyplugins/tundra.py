@@ -107,12 +107,10 @@ class Helper:
         if temporary:
             ent.SetTemporary(True)
         # create components
-        for comptype in comptypes:
-            ent.GetOrCreateComponent(comptype)
-            # No more *Raw() funcs, it returns boost shaerd ptr, find a way to convert these!
-            #comp = ent.GetOrCreateComponentRaw(comptype)
-            #if temporary:
-            #    comp.SetTemporary(True)
+        for comptype in comptypes:            
+            comp = ent.GetOrCreateComponentRaw(comptype)
+            if temporary:
+                comp.SetTemporary(True)
         s.EmitEntityCreatedRaw(ent)
         return ent
 
