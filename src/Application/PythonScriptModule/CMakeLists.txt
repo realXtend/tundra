@@ -28,13 +28,12 @@ use_package (PYTHON_QT)
 
 # Use core and app modules we need. Notice separate macros due to source locations separation.
 use_core_modules (Framework Scene Input Ui Audio Console OgreRenderingModule TundraProtocolModule)
-use_app_modules (AvatarModule SceneWidgetComponents)
 
 # Build PythonScriptModule
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 # Link to all: this include core and app (as the linking is just done by name not absolute path)
-link_modules (Framework Scene Input Ui Audio Console OgreRenderingModule TundraProtocolModule AvatarModule SceneWidgetComponents)
+link_modules (Framework Scene Input Ui Audio Console OgreRenderingModule TundraProtocolModule)
 
 # Link to ECs. This macro will smartly opt out ECs that are not included in the build, info for this provided by GetEntityComponents() on top.
 link_entity_components (EC_Script EC_Highlight EC_HoveringText EC_Touchable EC_Sound EC_SoundListener
@@ -52,7 +51,7 @@ SetupCompileFlagsWithPCH()
 final_target ()
 
 # make install: Install files
-setup_install_directory (${TUNDRA_BIN}/pymodules)
+setup_install_directory (${TUNDRA_BIN}/pyplugins)
 
 # make install: Install windows deps
 setup_install_windows_deps ("python26.dll;PythonQt.dll;PythonQt_QtAll.dll" Release|RelWithDebInfo "python26_d.dll;PythonQt_d.dll;PythonQt_QtAll_d.dll" Debug)

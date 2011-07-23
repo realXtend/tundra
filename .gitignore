@@ -55,6 +55,8 @@ pdb-files.zip
 
 # Python files
 *.pyc
+*.pyd
+*Python26.zip
 
 # editor temporary files
 *.swp

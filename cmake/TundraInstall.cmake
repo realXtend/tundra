@@ -92,12 +92,6 @@ endfunction ()
 #
 function (setup_install_windows_deps_regexp DLL_REGEXP CONFIGURATION) # Optional params: DLL_REGEXP2 CONFIGURATION2
     if (WIN32)
-        message("RegExp 1: " ${DLL_REGEXP})
-        message("Config 1: " ${CONFIGURATION})
-        message("\nRegExp 2: " ${ARGV2})
-        message("Config 2: " ${ARGV3})
-        message("")
-        
         install (DIRECTORY ${ENV_TUNDRA_DEP_PATH}/../runtime_deps/
                  DESTINATION "bin"
                  CONFIGURATIONS ${CONFIGURATION}

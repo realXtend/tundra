@@ -2,16 +2,20 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "Application.h"
 #include "PythonEngine.h"
 #include "PythonScriptModule.h"
 #include "LoggingFunctions.h"
 
+#include <QDir>
 #include <stdio.h>
 
 #include "MemoryLeakCheck.h"
 
 namespace PythonScript
 {
+    QString PythonEngine::PYTHON_PLUGINS_DIRECTORY = "pyplugins";
+
     PythonEngine::PythonEngine(Framework* framework) :
         framework_(framework)
     {
@@ -24,24 +28,26 @@ namespace PythonScript
 
     void PythonEngine::Initialize()
     {
+        QDir pythonPlugins(Application::InstallationDirectory() + PYTHON_PLUGINS_DIRECTORY);
+        QDir pythonLibrary(pythonPlugins.absoluteFilePath("python/"));
+
         if (!Py_IsInitialized())
         {
             Py_Initialize();
-#ifdef _WIN32
-            //for some reason setting env vars has no effect when running from inside visual studio,
-            //so for VS use, the PYTHONHOME env var had to be set in the project file
-            //.. that is inconvenient, so changed the path manipulation to back here.
-            RunString("import sys; sys.path.append('pymodules/python26_Lib.zip');");
+
+            // Add Tundra python plugins source location.
+            AddSystemPath(pythonPlugins.absolutePath());
+            AddSystemPath(pythonPlugins.absoluteFilePath("lib"));
+
+            // Add Python Library DLL and on windows pass whole python as a archive file.
+            /// \todo Is the 'DLLs' really needed also outside windows?
+            AddSystemPath(pythonLibrary.absoluteFilePath("DLLs"));
+#ifdef _WIN32            
+            AddSystemPath(pythonLibrary.absoluteFilePath("Python26.zip"));
 #endif
-            RunString("import sys; sys.path.append('pymodules');"); //XXX change to the c equivalent
-            RunString("import sys; sys.path.append('pymodules/lib');"); // libraries directory
-            RunString("import sys; sys.path.append('pymodules/DLLs');"); // dll directory (PYTHONHOME doesent seem to work to get these)
         }
         else
-        {
-            //LogWarning() //XXX add module ref here to be able to do logging
             LogInfo("PythonEngine::Initialize(): Python already initialized in PythonScriptModule init!");
-        }
     }
 
     void PythonEngine::Uninitialize()
@@ -49,10 +55,15 @@ namespace PythonScript
         /// Check ~PythonEngine()
     }
 
+    void PythonEngine::AddSystemPath(const QString &path)
+    {
+        RunString("import sys; sys.path.append('" + path + "');");
+    }
+
     void PythonEngine::RunString(const QString &codestr, const QVariantMap &context)
     {
+        /// \note: Doesn't handle extra context given, that was added to the interface for js can be added here too if needed.
         PyRun_SimpleString(codestr.toAscii().data());
-        //\note: doesn't handle extra context given, that was added to the interface for js can be added here too if needed.
     }
 
     void PythonEngine::RunScript(const QString &scriptname)
