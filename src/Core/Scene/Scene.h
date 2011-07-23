@@ -374,8 +374,10 @@ public slots:
 
     Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true) 
         { return CreateEntity((entity_id_t)id, components, change, defaultNetworkSync).get(); }
+/*
     Entity* CreateEntityLocalRaw(const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::LocalOnly, bool defaultNetworkSync = false)
-        { return CreateEntity(NextFreeIdLocal(), components, change, defaultNetworkSync).get(); }
+        { return CreateEntity(NextFreeIdLocal(), components, change, defaultNetworkSync).get(); } 
+*/
     Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
     QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
     QList<Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
