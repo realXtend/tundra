@@ -13,7 +13,8 @@
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
   <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
   <plugin path="SceneWidgetComponents" />       <!-- SceneWidgetComponents depends on OgreRenderingModule and TundraLogicModule -->
-
+  <plugin path="PythonScriptModule" />          <!-- PythonScriptModule depends on OgreRenderingModule, TundraLogicModule -->
+  
   <!-- The following are commented out as they are not a part of the default build -->
   <!-- <plugin path="MumbleVoipModule" /> -->           <!-- MumbleVoipModule depends on OgreRenderingModule and TundraLogicModule -->
   <!-- <plugin path="CAVEStereoModule" /> -->           <!-- CAVEStereoModule depends on OgreRenderingModule and TundraLogicModule -->

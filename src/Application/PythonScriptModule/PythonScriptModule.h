@@ -33,6 +33,12 @@ namespace PythonScript
         /// Slot for FrameAPI::Updated signal
         void UpdatePython(float frametime);
 
+        /// Get Server
+        TundraLogic::Server *GetServer() const;
+
+        /// Get Client
+        TundraLogic::Client *GetClient() const;
+
         /// Get renderer
         OgreRenderer::Renderer* GetRenderer() const;
 
@@ -58,6 +64,11 @@ namespace PythonScript
         void ConsoleRunString(const QStringList &params);
         void ConsoleRunFile(const QStringList &params);
         void ConsoleReset(const QStringList &params);
+
+        /// Slot for our tundra.py to call on its logging implementation.
+        /// @param logType Type of login print = INFO|WARNING|DEBUG|ERROR|FATAL.
+        /// @param logMessage Message to print out.
+        void PythonPrintLog(const QString &logType, const QString &logMessage);
 
     private slots:
         /// Scene added signal handler.
@@ -92,6 +103,7 @@ namespace PythonScript
         static PythonScriptModule *GetInstance();
 
         /// Wrap QObject* to PyObject*.
+        /// \todo Remove this function, seems that we don't need these PyObjects anymore.
         PyObject *WrapQObject(QObject* qobj) const;
 
     private:
@@ -105,8 +117,8 @@ namespace PythonScript
         bool pythonQtInitialized_;
 
         /// The hook to the python-written module manager that passes events on
-        PyObject *pmmModule, *pmmDict, *pmmClass, *pmmInstance;
-        PyObject *pmmArgs, *pmmValue;
+        //PyObject *pmmModule, *pmmDict, *pmmClass, *pmmInstance;
+        //PyObject *pmmArgs, *pmmValue;
         
         /// The default input context for python code to access. This context operates below
         /// the Qt windowing priority.
