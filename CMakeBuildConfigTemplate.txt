@@ -89,7 +89,6 @@ AddProject(Core Ui)
 
 ############################################################################################################
 ###### REQUIRED MODULES ####################################################################################
-add_subdirectory(DocumentsModule)
 
 message ("\n=========== Configuring Required Modules ===========\n")
 
@@ -104,7 +103,6 @@ AddProject(Core EnvironmentModule)                  # Depends on OgreRenderingMo
 
 ############################################################################################################
 ###### OPTIONAL MODULES ####################################################################################
-AddEntityComponent(EntityComponents/EC_LaserPointer EC_LaserPointer)
 
 message ("\n=========== Configuring Optional Modules ===========\n")
 
@@ -113,7 +111,7 @@ AddProject(Application DebugStatsModule)            # Enables a developer window
 AddProject(Application SkyXHydrax)                  # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
 AddProject(Application SceneWidgetComponents)       # Provide ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
 AddProject(Application JavascriptModule)            # Allows QtScript-created scene script instances.
-#AddProject(Application PythonScriptModule)         # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule and AvatarModule
+AddProject(Application PythonScriptModule)          # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, TundraLogicModule, AvatarModule SceneWidgetComponents
 AddProject(Application BrowserUiPlugin)             # Adds a browser ui to the viewer. Features multi tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
 
 # Both are doable in linux, but need some prep work for fetching the deps etc. For vlc some code changes need to be done.

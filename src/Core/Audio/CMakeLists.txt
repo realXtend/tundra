@@ -40,6 +40,11 @@ SetupCompileFlags()
 final_target()
 
 # Install deps for windows
-setup_install_windows_deps ("wrap_oal.dll;OpenAL32.dll" Release|RelWithDebInfo|Debug)
+# todo: Verify if wrap_oal.dll is really needed for vc9/10. vs 2010 seems to run fine without the dll.
+if (VS90)
+    setup_install_windows_deps ("wrap_oal.dll;OpenAL32.dll" Release|RelWithDebInfo|Debug)
+elseif (VC100)
+    setup_install_windows_deps ("OpenAL32.dll" Release|RelWithDebInfo|Debug)
+endif ()
 setup_install_windows_deps ("libogg.dll;libvorbis.dll;libvorbisfile.dll;libtheora.dll" Release|RelWithDebInfo
                             "liboggd.dll;libvorbisd.dll;libvorbisfiled.dll;libtheorad.dll" Debug)
