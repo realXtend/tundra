@@ -1,56 +1,66 @@
-# Define target name
-init_target (SkyXHydrax OUTPUT plugins)
+# Only do something if one of the components are enabled
+if (ENABLE_SKYX OR ENABLE_HYDRAX)
 
-MocFolder ()
+    # Define target name
+    init_target (SkyXHydrax OUTPUT plugins)
 
-# Define source files
-if (ENABLE_SKYX)
-    file (GLOB CPP_FILES dllmain.cpp EC_SkyX.cpp)
-    file (GLOB H_FILES EC_SkyX.h)
-endif()
-if (ENABLE_HYDRAX)
-    file (GLOB CPP_FILES dllmain.cpp EC_Hydrax.cpp)
-    file (GLOB H_FILES EC_Hydrax.h)
-endif()
-if (ENABLE_SKYX AND ENABLE_HYDRAX)
-    file (GLOB CPP_FILES dllmain.cpp EC_SkyX.cpp EC_Hydrax.cpp)
-    file (GLOB H_FILES EC_SkyX.h EC_Hydrax.h)
-endif()
+    MocFolder ()
 
-file (GLOB MOC_FILES ${H_FILES})
-set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+    # Define source files
+    if (ENABLE_SKYX)
+        file (GLOB CPP_FILES dllmain.cpp EC_SkyX.cpp)
+        file (GLOB H_FILES EC_SkyX.h)
+    endif()
+    if (ENABLE_HYDRAX)
+        file (GLOB CPP_FILES dllmain.cpp EC_Hydrax.cpp)
+        file (GLOB H_FILES EC_Hydrax.h)
+    endif()
+    if (ENABLE_SKYX AND ENABLE_HYDRAX)
+        file (GLOB CPP_FILES dllmain.cpp EC_SkyX.cpp EC_Hydrax.cpp)
+        file (GLOB H_FILES EC_SkyX.h EC_Hydrax.h)
+    endif()
 
-QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
+    file (GLOB MOC_FILES ${H_FILES})
+    set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
+    QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-if (ENABLE_SKYX)
-    add_definitions(-DSKYX_ENABLED)
-    use_package (SKYX)
-endif()
-if (ENABLE_HYDRAX)
-    add_definitions(-DHYDRAX_ENABLED)
-    use_package (HYDRAX)
-endif()
+    set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-use_core_modules(Framework Scene OgreRenderingModule)
+    if (ENABLE_SKYX)
+        add_definitions(-DSKYX_ENABLED)
+        use_package (SKYX)
+    endif()
+    if (ENABLE_HYDRAX)
+        add_definitions(-DHYDRAX_ENABLED)
+        use_package (HYDRAX)
+    endif()
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
+    use_core_modules(Framework Scene OgreRenderingModule)
 
-link_modules(Framework Scene OgreRenderingModule)
+    build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_ogre()
+    link_modules(Framework Scene OgreRenderingModule)
 
-if (ENABLE_SKYX)
-    link_package (SKYX)
-endif()
-if (ENABLE_HYDRAX)
-    link_package (HYDRAX)
-endif()
+    link_ogre()
 
-SetupCompileFlags()
+    if (ENABLE_SKYX)
+        link_package (SKYX)
+    endif()
+    if (ENABLE_HYDRAX)
+        link_package (HYDRAX)
+    endif()
 
-final_target ()
+    SetupCompileFlags()
 
-# Install windows deps
-setup_install_windows_deps ("Hydrax.dll;SkyX.dll" Release|RelWithDebInfo "Hydraxd.dll;SkyXd.dll" Debug)
+    final_target ()
+
+    # Install windows deps
+    if (ENABLE_SKYX)
+        setup_install_windows_deps ("SkyX.dll" Release|RelWithDebInfo "SkyXd.dll" Debug)
+    endif ()
+    if (ENABLE_HYDRAX)
+        setup_install_windows_deps ("Hydrax.dll" Release|RelWithDebInfo "Hydraxd.dll" Debug)
+    endif ()
+
+endif ()

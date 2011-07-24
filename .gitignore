@@ -9,6 +9,8 @@ deps/*
 *.pdb
 *.idb
 *.vcproj
+*.vcxproj
+*.vcxproj.filters
 *.lib
 *.sln
 src/Core/Tundra/resource*.h
@@ -45,6 +47,7 @@ install_manifest.txt
 
 # Qt build objects
 moc_*.cxx
+moc_*.cxx.rule
 moc_*.cxx_parameters
 qrc_*.cxx
 ui_*.h

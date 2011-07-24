@@ -27,6 +27,14 @@ set (ENABLE_JS_PROFILING 0)         # Enable js profiling?
 set (ENABLE_MEMORY_LEAK_CHECKS 1)   # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
 message ("\n")
 
+# Force skyx and hydrax off for VC100 and linux.
+# Ludocraft has modified the libraries to have setCamera functions and 
+# we dont have the sources to build em for the other compilers :E
+if (UNIX OR VC100)
+    set (ENABLE_SKYX 0)
+    set (ENABLE_HYDRAX 0)
+endif ()
+
 if (ENABLE_PROFILING)
     add_definitions (-DPROFILING)
 endif ()
