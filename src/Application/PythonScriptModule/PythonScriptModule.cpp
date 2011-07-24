@@ -21,6 +21,7 @@
 #include "ConsoleAPI.h"
 #include "ConfigAPI.h"
 #include "AudioAPI.h"
+#include "PluginAPI.h"
 #include "UiAPI.h"
 
 /// Framework, SceneAPI and Kristalli
@@ -63,7 +64,6 @@
 #include <PythonQt.h>
 #include <PythonQt_QtAll.h>
 #include "PythonScriptInstance.h"
-#include "PythonEngine.h"
 #include "PythonQtScriptingConsole.h"
 #include "TundraWrapper.h"
 
@@ -94,42 +94,57 @@
 // Conditional ECs
 #include "EntityComponentDefines.h"
 
+// Qt
+#include <QFile>
+#include <QDomDocument>
+#include <QDomNode>
+#include <QDomElement>
+#include <QStringList>
+
 #include "MemoryLeakCheck.h" // Keep this as the last include
 
 namespace PythonScript
 {
-    //////////////// PythonScriptModule
-
-    // Static
-    /// \todo Are these really needed with the PythonQt integration?
-
-    PythonScriptModule *PythonScriptModule::pythonScriptModuleInstance_ = 0;
-    PythonScriptModule* PythonScriptModule::GetInstance() { return pythonScriptModuleInstance_; }
-
-    // Public
+    //////////////// PythonScriptModule public
 
     PythonScriptModule::PythonScriptModule() :
         IModule("PythonScriptModule"),
-        //pmmInstance(0),
-        //pmmModule(0),
-        //pmmClass(0),
-        //pmmDict(0),
-        pythonQtInitialized_(false)
+        pythonQtStarted_(false)
+        //pyTundraInstance_(0),
+        //pyTundraModule_(0),
+        //pyTundraClass_(0),
+        //pyTundraDict_(0)
     {
+        StartPythonQt();
     }
 
     PythonScriptModule::~PythonScriptModule()
     {
-        pythonScriptModuleInstance_ = 0;
-    }
-
-    PyObject *PythonScriptModule::WrapQObject(QObject* qobj) const
-    {
-        /// \todo Remove this function, seems that we don't need these PyObjects anymore.
-        return PythonQt::self()->priv()->wrapQObject(qobj);
     }
 
     //////////////// IModule overrides
+
+    void PythonScriptModule::Uninitialize()
+    {
+        // Clear script created input contexts.
+        createdInputs_.clear();
+
+        // Stop ModuleManager
+        //StopPythonModuleManager();
+
+        PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
+        if (!mainModule.isNull())
+        {
+            mainModule.removeVariable("_pythonscriptmodule");
+            mainModule.removeVariable("_tundra");
+        }
+
+        std::cout << "PythonScriptModule: Py_Finalize ";
+        Py_Finalize();
+
+        // Clean up PythonQt
+        PythonQt::cleanup();
+    }
 
     void PythonScriptModule::Load()
     {
@@ -138,45 +153,153 @@ namespace PythonScript
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory()));
     }
 
-    void PythonScriptModule::Unload()
+    void PythonScriptModule::PostInitialize()
     {
-        pythonScriptModuleInstance_ = 0;
-        input.reset();
+        // An error has occurred on startup.
+        if (!pythonQtStarted_)
+            return;
 
-        //pmmInstance = 0;
-        //pmmModule = 0;
-        //pmmClass = 0;
-        //pmmDict = 0;
+        // Get python main module.
+        PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
+        if (mainModule.isNull())
+        {
+            LogError("PythonScriptModule::StartPythonQt(): Failed to get main module from PythonQt after init!");
+            return;
+        }
+
+        // Add PythonScriptModule as '_pythonscriptmodule' 
+        // and Framework as '_tundra' to python.
+        mainModule.addObject("_pythonscriptmodule", this);
+        mainModule.addObject("_tundra", GetFramework());
+
+        QDir pythonPlugins(Application::InstallationDirectory() + "pyplugins");
+        QDir pythonLibrary(pythonPlugins.absoluteFilePath("python/"));
+
+        // Add Tundra python plugins source location.
+        AddSystemPath(pythonPlugins.absolutePath());
+        AddSystemPath(pythonPlugins.absoluteFilePath("lib"));
+
+        // Add Python Library DLL and on windows pass whole python as a archive file.
+        /// \todo Is the 'DLLs' really needed also outside windows?
+        AddSystemPath(pythonLibrary.absoluteFilePath("DLLs"));
+#ifdef _WIN32            
+        AddSystemPath(pythonLibrary.absoluteFilePath("Python26.zip"));
+#endif
+
+        // Connect to SceneAPI
+        QObject::connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
+
+        // Connect to FrameAPI
+        QObject::connect(GetFramework()->Frame(), SIGNAL(Updated(float)), this, SLOT(UpdatePythonModuleManager(float)));
+
+        // Console commands to ConsoleAPI
+        GetFramework()->Console()->RegisterCommand("PyExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
+                                                   this, SLOT(ConsoleRunString(const QStringList&)));
+        GetFramework()->Console()->RegisterCommand("PyLoad", "Execute a python file. Usage: PyLoad(mypymodule)", 
+                                                   this, SLOT(ConsoleRunFile(const QStringList&)));
+        GetFramework()->Console()->RegisterCommand("PyRestart", "Restarts the Tundra Python ModuleManager", 
+                                                   this, SLOT(ConsoleRestartPython(const QStringList&)));
+        GetFramework()->Console()->RegisterCommand("PyConsole", "Creates a new Python console window.", 
+                                                   this, SLOT(ShowConsole()));
+
+        // Done in PostInitialize() so all modules/APIs are loaded and initialized.
+        //StartPythonModuleManager();
+        
+        // --p --python --pythonapitests are special command line options that on purpose not put
+        // to the Framework program options parsing. So lets do a special parse here for there hidden variables.
+        /// \todo See if we should return --p --python as official cmd line options back to Framework. Probably best to have modules give own params somehow, 
+        /// we should not mess python specific things to core SDK params in Framework.cpp :I
+        namespace po = boost::program_options;
+
+        po::variables_map commandLineVariables;
+        po::options_description commandLineDescriptions;
+
+        commandLineDescriptions.add_options()
+            ("p", po::value<std::string>(), "Run a python script on startup")
+            ("python", po::value<std::string>(), "Run a python script on startup")
+            ("pythonapitests", "Run a python api test script on startup");
+
+        try
+        {
+            /// \note QApplication::argc() and QApplication::argv() are deprecated.
+            po::store(po::command_line_parser(QApplication::argc(), QApplication::argv()).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
+        }
+        catch(std::exception &e)
+        {
+            LogWarning(Name() + ": " + + e.what());
+        }
+        po::notify(commandLineVariables);
+
+        if (commandLineVariables.count("python"))
+            RunScript(commandLineVariables["python"].as<std::string>().c_str());
+        if (commandLineVariables.count("p"))
+            RunScript(commandLineVariables["p"].as<std::string>().c_str());
+
+        LoadStartupScripts();
     }
 
-    void PythonScriptModule::Initialize()
+    //////////////// PythonScriptModule private slots
+
+    void PythonScriptModule::LoadStartupScripts()
     {
-        // Init Python engine
-        if (!engine_)
-            engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
-        engine_->Initialize();
+        QStringList pluginsToLoad;
+        QString configFile = GetFramework()->Plugins()->ConfigurationFile();
 
-        // Set static self
-        pythonScriptModuleInstance_ = this;
-
-        if (!pythonQtInitialized_)
+        QDomDocument doc("plugins");
+        QFile file(configFile);
+        if (!file.open(QIODevice::ReadOnly))
         {
-            // Init PythonQt, implemented in RexPythonQt.cpp
-            PythonQt::init(PythonQt::PythonAlreadyInitialized);
-            PythonQt_QtAll::init();
+            LogError("PythonScriptModule::LoadStartupScripts: Failed to open file \"" + configFile + "\"!");
+            return;
+        }
+        if (!doc.setContent(&file))
+        {
+            LogError("PythonScriptModule::LoadStartupScripts: Failed to parse XML file \"" + configFile + "\"!");
+            file.close();
+            return;
+        }
+        file.close();
 
-            PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
-            if (mainModule.isNull())
+        QDomElement docElem = doc.documentElement();
+
+        QDomNode n = docElem.firstChild();
+        while(!n.isNull())
+        {
+            QDomElement e = n.toElement(); // try to convert the node to an element.
+            if (!e.isNull() && e.tagName() == "pyplugin" && e.hasAttribute("path"))
+                pluginsToLoad.push_back(e.attribute("path"));
+            n = n.nextSibling();
+        }
+       
+        QDir pythonPlugins(Application::InstallationDirectory() + "pyplugins");
+        foreach(QString pluginPath, pluginsToLoad)
+        {
+            const QString pluginFile = pythonPlugins.absoluteFilePath(pluginPath);
+            if (QFile::exists(pluginFile))
+                RunScript(pluginFile);
+            else
+                LogWarning(Name() + ": Could not locate startup pyplugin '" + pluginPath.toStdString() +"'. Make sure your path is relative to /pyplugins folder.");
+        }
+    }
+
+    void PythonScriptModule::StartPythonQt()
+    {
+        if (!pythonQtStarted_)
+        {
+            Py_NoSiteFlag = 1;
+            Py_InitializeEx(0);
+
+            PythonQt::init(PythonQt::IgnoreSiteModule | PythonQt::RedirectStdOut | PythonQt::PythonAlreadyInitialized);
+            PythonQt_QtAll::init();
+            if (!Py_IsInitialized())
             {
-                LogError("PythonScriptModule::Initialize(): Failed to get main module from PythonQt after init!");
+                LogError("PythonScriptModule::StartPythonQt(): Could not Py_Initialize python!");
                 return;
             }
 
-            // Add PythonScriptModule as '_pythonscriptmodule' 
-            // and '_tundra' as the framework to python
-            mainModule.addObject("_pythonscriptmodule", this);
-            mainModule.addObject("_tundra", GetFramework());
-
+            QObject::connect(PythonQt::self(), SIGNAL(pythonStdOut(const QString&)), this, SLOT(OnPythonQtStdOut(const QString&)));
+            QObject::connect(PythonQt::self(), SIGNAL(pythonStdErr(const QString&)), this, SLOT(OnPythonQtStdErr(const QString&)));
+            
             /// \todo We need a way for other modules to register ECs/Classes 
             /// to PythonModule so it does not have to link against everything in /src/Application.
 
@@ -210,34 +333,34 @@ namespace PythonScript
 
             /////////////////////////////////////////////////////////////////////////////////////////
             // Conditional ECs
-            #ifdef EC_Highlight_ENABLED
+#ifdef EC_Highlight_ENABLED
             PythonQt::self()->registerClass(&EC_Highlight::staticQtMetaObject);
-            #endif
-            #ifdef EC_HoveringText_ENABLED
+#endif
+#ifdef EC_HoveringText_ENABLED
             PythonQt::self()->registerClass(&EC_HoveringText::staticQtMetaObject);
-            #endif
-            #ifdef EC_Touchable_ENABLED
+#endif
+#ifdef EC_Touchable_ENABLED
             PythonQt::self()->registerClass(&EC_Touchable::staticQtMetaObject);
-            #endif
-            #ifdef EC_Sound_ENABLED
+#endif
+#ifdef EC_Sound_ENABLED
             PythonQt::self()->registerClass(&EC_Sound::staticQtMetaObject);
             PythonQt::self()->registerClass(&EC_SoundListener::staticQtMetaObject);
-            #endif
-            #ifdef EC_PlanarMirror_ENABLED
+#endif
+#ifdef EC_PlanarMirror_ENABLED
             PythonQt::self()->registerClass(&EC_PlanarMirror::staticQtMetaObject);
-            #endif
-            #ifdef EC_ProximityTrigger_ENABLED
+#endif
+#ifdef EC_ProximityTrigger_ENABLED
             PythonQt::self()->registerClass(&EC_ProximityTrigger::staticQtMetaObject);
-            #endif
-            #ifdef EC_Billboard_ENABLED
+#endif
+#ifdef EC_Billboard_ENABLED
             PythonQt::self()->registerClass(&EC_Billboard::staticQtMetaObject);
-            #endif
-            #ifdef EC_ParticleSystem_ENABLED
+#endif
+#ifdef EC_ParticleSystem_ENABLED
             PythonQt::self()->registerClass(&EC_ParticleSystem::staticQtMetaObject);
-            #endif
-            #ifdef EC_TransformGizmo_ENABLED
+#endif
+#ifdef EC_TransformGizmo_ENABLED
             PythonQt::self()->registerClass(&EC_TransformGizmo::staticQtMetaObject);
-            #endif
+#endif
 
             /////////////////////////////////////////////////////////////////////////////////////////
             // Scene
@@ -293,123 +416,117 @@ namespace PythonScript
             PythonQt::self()->addInstanceDecorators(new TundraInstanceDecorator());
             PythonQt::self()->addDecorators(new TundraDecorator());
             PythonQt::self()->registerCPPClass("AssetReference");
+
+            pythonQtStarted_ = true;
         }
-
-        LogInfo(Name() + ": Initialized Python and PythonQt successfully");
-
-        //// Load the Python written module manager using the Python C API directly
-        //pmmModule = PyImport_ImportModule("modulemanager");
-        //if (pmmModule == NULL) 
-        //{
-        //    LogError("PythonScriptModule::Initialize(): Failed to import py modulemanager");
-        //    return;
-        //}
-        //pmmDict = PyModule_GetDict(pmmModule);
-        //if (pmmDict == NULL) 
-        //{
-        //    LogError("PythonScriptModule::Initialize(): Unable to get modulemanager module namespace");
-        //    return;
-        //}
-        //pmmClass = PyDict_GetItemString(pmmDict, "ModuleManager");
-        //if (pmmClass == NULL) 
-        //{
-        //    LogError("PythonScriptModule::Initialize(): Unable get ModuleManager class from modulemanager namespace");
-        //    return;
-        //}
-
-        //LogInfo(Name() + ": Aqcuired Python ModuleManager successfully");
     }
 
-    void PythonScriptModule::PostInitialize()
+    /* Circuits Module Manager start and stop. I have implemented Tundra startup config xml parsing
+     * that can have pyplugins. I don't see that we need circuits anymore for anything. tundra.py exposing the framework
+     * plus startup py plugin loading should do the trick!
+     * 
+     * \todo Remove below funtions when decided.
+
+    void PythonScriptModule::StartPythonModuleManager()
     {
-        /// \todo Implement python pluginmanager for tundra2 (the circuits one)
-        //if (!pmmClass)
-        //{
-        //    LogError("PythonScriptModule::Initialize() was not successful in fetching Python ModuleManager, aborting PostInitialize!");
-        //    return;
-        //}
-
-        //// Now that the event constants etc are there, can instanciate the manager which triggers the loading of components
-        ///// \todo Remove?
-        //if (PyCallable_Check(pmmClass)) 
-        //{
-        //    pmmInstance = PyObject_CallObject(pmmClass, NULL); 
-        //    LogInfo(Name() + ": Initialized Python ModuleManager successfully");
-        //} 
-        //else 
-        //    LogInfo(Name() + ": Unable to Initialized Python ModuleManager");
-
-        // Connect to SceneAPI
-        QObject::connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
-
-        // Connect to FrameAPI
-        QObject::connect(GetFramework()->Frame(), SIGNAL(Updated(float)), this, SLOT(UpdatePython(float)));
-
-        // Console commands
-        GetFramework()->Console()->RegisterCommand("PyExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
-                                                   this, SLOT(ConsoleRunString(const QStringList&)));
-        GetFramework()->Console()->RegisterCommand("PyLoad", "Execute a python file. Usage: PyLoad(mypymodule)", 
-                                                   this, SLOT(ConsoleRunFile(const QStringList&)));
-        GetFramework()->Console()->RegisterCommand("PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
-                                                   this, SLOT(ConsoleReset(const QStringList&)));
-        GetFramework()->Console()->RegisterCommand("PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
-                                                   this, SLOT(ShowConsole()));
-        
-        // --p --python --pythonapitests are special command line options that on purpose not put
-        // to the Framework program options parsing. So lets do a special parse here for there hidden variables.
-        /// \todo See if we should return --p --python as official cmd line options back to Framework. Propably best to have modules give own params somehow, 
-        /// we should not mess python spesific things to core sdk params in Framework.cpp :I
-        if (engine_)
+        // Load the Python ModuleManager from tundra_core.py using the Python C API directly
+        pyTundraModule_ = PyImport_ImportModule("tundra_core");
+        if (pyTundraModule_ == NULL) 
         {
-            namespace po = boost::program_options;
+            LogError("PythonScriptModule::StartPythonModuleManager(): Failed to import tundra_core.py");
+            return;
+        }
+        pyTundraDict_ = PyModule_GetDict(pyTundraModule_);
+        if (pyTundraDict_ == NULL) 
+        {
+            LogError("PythonScriptModule::StartPythonModuleManager(): Unable to get tundra_core module namespace");
+            return;
+        }
+        pyTundraClass_ = PyDict_GetItemString(pyTundraDict_, "ModuleManager");
+        if (pyTundraClass_ == NULL) 
+        {
+            LogError("PythonScriptModule::StartPythonModuleManager(): Unable get ModuleManager class from modulemanager namespace");
+            return;
+        }
 
-            po::variables_map commandLineVariables;
-            po::options_description commandLineDescriptions;
-
-            commandLineDescriptions.add_options()
-                ("p", po::value<std::string>(), "Run a python script on startup")
-                ("python", po::value<std::string>(), "Run a python script on startup")
-                ("pythonapitests", "Run a python api test script on startup");
-
-            try
+        // Instantiate ModuleManager for the loading of python components/plugins
+        if (pyTundraClass_)
+        {
+            if (PyCallable_Check(pyTundraClass_))
             {
-                /// \note This is deprecated in QApplication
-                po::store(po::command_line_parser(QApplication::argc(), QApplication::argv()).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
+                LogInfo(Name() + ": Starting Python ModuleManager");
+                pyTundraInstance_ = PyObject_CallObject(pyTundraClass_, NULL);
             }
-            catch(std::exception &e)
-            {
-                LogWarning(Name() + ": " + + e.what());
-            }
-            po::notify(commandLineVariables);
-
-            if (commandLineVariables.count("python"))
-                engine_->RunScript(commandLineVariables["python"].as<std::string>().c_str());
-            if (commandLineVariables.count("p"))
-                engine_->RunScript(commandLineVariables["p"].as<std::string>().c_str());
-            if (commandLineVariables.count("pythonapitests"))
-                engine_->RunScript(Application::InstallationDirectory() + PythonEngine::PYTHON_PLUGINS_DIRECTORY + "/lib/apitests.py");
-            return; 
+            else 
+                LogInfo(Name() + ": Unable to start Python ModuleManager");
         }
         else
-            LogError("PythonScriptModule::ProcessCommandLineOptions(): Python engine is null!");        
+            LogError("PythonScriptModule::StartPythonModuleManager() was not successful in fetching Python ModuleManager!");
     }
 
-    void PythonScriptModule::Uninitialize()
+    void PythonScriptModule::StopPythonModuleManager()
     {
         // Make python module manager exit
-        //if (pmmInstance)
-        //    PyObject_CallMethod(pmmInstance, "exit", "");
+        LogInfo(Name() + ": Stopping Python ModuleManager");
+        if (pyTundraInstance_ != NULL)
+            PyObject_CallMethod(pyTundraInstance_, "exit", "");
 
-        // Uninitialize python engine
-        engine_->Uninitialize();
-        engine_.reset();
-
-        // Clear created input context shared ptrs, this will remove
-        // the ref count and they should be deleted.
-        createdInputs_.clear();        
+        pyTundraInstance_ = 0;
+        pyTundraModule_ = 0;
+        pyTundraClass_ = 0;
+        pyTundraDict_ = 0;
     }
-    
-    //////////////// PythonScriptModule private slots
+ 
+    void PythonScriptModule::UpdatePythonModuleManager(float frametime)
+    {
+        /// \bug Somehow this causes extreme lag in a mode without console (Still relevant in tundra2?)
+        if (pyTundraInstance_)
+            PyObject_CallMethod(pyTundraInstance_, "update", "f", frametime);
+    }
+    */
+
+    void PythonScriptModule::AddSystemPath(const QString &path)
+    {
+        RunString("import sys; sys.path.append('" + path + "');");
+    }
+
+    void PythonScriptModule::RunString(const QString &codeStr)
+    {
+        if (!Py_IsInitialized())
+            return;
+        
+        PyRun_SimpleString(codeStr.toAscii().data());
+    }
+
+    void PythonScriptModule::RunScript(const QString &scriptname)
+    {
+        if (!Py_IsInitialized())
+            return;
+
+        FILE *fp = fopen(scriptname.toAscii().data(), "r");
+        if (!fp)
+        {
+            LogInfo("PythonEngine::RunScript(): Failed to open script " + scriptname.toStdString());
+            return;
+        }
+
+        PyRun_SimpleFile(fp, scriptname.toAscii().data());
+        fclose(fp);
+    }
+
+    void PythonScriptModule::OnPythonQtStdOut(const QString &str)
+    {
+        QString strSimplified = str.trimmed();
+        if (!strSimplified.isEmpty())
+            LogInfo(Name() + ": " + strSimplified.toStdString());
+    }
+
+    void PythonScriptModule::OnPythonQtStdErr(const QString &str)
+    {
+        QString strSimplified = str.trimmed();
+        if (!strSimplified.isEmpty())
+            LogError(Name() + ": " + strSimplified.toStdString());
+    }
 
     void PythonScriptModule::OnSceneAdded(const QString &name)
     {
@@ -460,26 +577,25 @@ namespace PythonScript
         }
     }
 
-    void PythonScriptModule::UpdatePython(float frametime)
+    QObject *PythonScriptModule::GetServer() const
     {
-        /// \bug Somehow this causes extreme lag in a mode without console (?)
-        //if (pmmInstance)
-        //    PyObject_CallMethod(pmmInstance, "run", "f", frametime);
-    }
-
-    TundraLogic::Server *PythonScriptModule::GetServer() const
-    {
-        TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
-        if (tundraLogic)
-            return tundraLogic->GetServer().get();
+        QVariant serverVariant = GetFramework()->property("server");
+        if (serverVariant.canConvert<QObject*>())
+        {
+            QObject *serverPtr = serverVariant.value<QObject*>();
+            return serverPtr;
+        }
         return 0;
     }
 
-    TundraLogic::Client *PythonScriptModule::GetClient() const
+    QObject *PythonScriptModule::GetClient() const
     {
-        TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
-        if (tundraLogic)
-            return tundraLogic->GetClient().get();
+        QVariant clientVariant = GetFramework()->property("client");
+        if (clientVariant.canConvert<QObject*>())
+        {
+            QObject *clientPtr = clientVariant.value<QObject*>();
+            return clientPtr;
+        }
         return 0;
     }
 
@@ -523,20 +639,6 @@ namespace PythonScript
         return 0;
     }
 
-    Scene* PythonScriptModule::GetScene(const QString &name) const
-    {
-        ScenePtr scene = framework_->Scene()->GetScene(name);
-        if (scene.get())
-            return scene.get();
-        return 0;
-    }
-
-    void PythonScriptModule::ResetQtDynamicProperty(QObject* qobj, char* propname)
-    {
-        if (!qobj->property(propname).isNull())
-            qobj->setProperty(propname, QVariant());
-    }
-
     InputContext* PythonScriptModule::CreateInputContext(const QString &name, int priority)
     {
         InputContextPtr newInputContext = framework_->Input()->RegisterInputContext(name, priority);
@@ -546,7 +648,6 @@ namespace PythonScript
             createdInputs_ << newInputContext; 
             return newInputContext.get();
         }
-
         return 0;
     }
 
@@ -570,7 +671,7 @@ namespace PythonScript
             LogError("PythonScriptModule::ConsoleRunString: Usage: PyExec(print 1 + 1)");
             return;
         }
-        engine_->RunString(param);
+        RunString(param);
     }
 
     void PythonScriptModule::ConsoleRunFile(const QStringList &params)
@@ -581,18 +682,19 @@ namespace PythonScript
             LogError("PythonScriptModule::ConsoleRunString: Usage: PyLoad(mypymodule) (to run mypymodule.py by importing it)");
             return;
         }
-        engine_->RunScript(param);
+        RunScript(param);
     }
 
-    void PythonScriptModule::ConsoleReset(const QStringList &params)
+    void PythonScriptModule::ConsoleRestartPython(const QStringList &params)
     {
-        Uninitialize();
-        Initialize();
+        /// \todo Reset current python plugins and call LoadStartupScripts again.
+        //StopPythonModuleManager();
+        //StartPythonModuleManager();
     }
 
     void PythonScriptModule::PythonPrintLog(const QString &logType, const QString &logMessage)
     {
-        const QString message = "[" + QString::fromStdString(Name()) + "] " + logMessage;
+        const QString message = QString::fromStdString(Name()) + ": " + logMessage;
         const QString logTypeUpper = logType.toUpper();
         if (logTypeUpper == "WARNING")
             LogWarning(message);

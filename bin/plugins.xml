@@ -25,4 +25,7 @@
   <jsplugin path="cameraapplication.js" />
   <jsplugin path="FirstPersonMouseLook.js" />
   <jsplugin path="MenuBar.js" />
+  
+  <!-- Python plugins -->
+  <pyplugin path="lib/apitests.py" />
 </Tundra>

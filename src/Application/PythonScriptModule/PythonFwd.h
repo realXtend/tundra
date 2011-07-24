@@ -25,7 +25,6 @@ class EC_DynamicComponent;
 namespace PythonScript
 {
     class PythonEngine;
-    typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 }
 
 namespace OgreRenderer 
