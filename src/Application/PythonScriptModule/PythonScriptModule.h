@@ -24,31 +24,41 @@ namespace PythonScript
     
     Q_OBJECT
     
+    public:
+        /// Constuctor
+        PythonScriptModule();
+
+        /// Deconstructor. 
+        /// Stops Python and finalizes it with 
+        /// Py_Finalize() and does PythonQt cleanup.
+        virtual ~PythonScriptModule();
+
+        /// IModule override
+        virtual void Load();
+
+        /// IModule override
+        virtual void PostInitialize();
+
+        /// IModule override
+        virtual void Uninitialize();
+
     public slots:
         /// Prepares Python script instance used with EC_Script for execution.
         /// The script is executed instantly only if the runOnLoad attribute of the script EC is true.
         /// @param scriptAsset Script asset.
         void LoadScript(const std::vector<ScriptAssetPtr> &newScripts);
 
-        /// Slot for FrameAPI::Updated signal
-        void UpdatePython(float frametime);
+        /// Get Server
+        QObject *GetServer() const;
+
+        /// Get Client
+        QObject *GetClient() const;
 
         /// Get renderer
         OgreRenderer::Renderer* GetRenderer() const;
 
-        /// Get active camera Entity*
+        /// Get active camera Entity.
         Entity* GetActiveCamera() const;
-
-        /// Get Scene* by name.
-        /// \todo this function can be found directly from SceneAPI, remove this?
-        Scene* GetScene(const QString &name) const;
-
-        /// Reset a dynamic qt property value if exists.
-        /// \todo Really needed, remove?
-        void ResetQtDynamicProperty(QObject* qobj, char* propname);
-        
-        /// Get a python module InputContext*.
-        InputContext* GetInputContext() const { return input.get(); }
 
         /// Create a new InputContext* with name and priority.
         InputContext* CreateInputContext(const QString &name, int priority = 100);
@@ -57,9 +67,51 @@ namespace PythonScript
         void ShowConsole();
         void ConsoleRunString(const QStringList &params);
         void ConsoleRunFile(const QStringList &params);
-        void ConsoleReset(const QStringList &params);
+        void ConsoleRestartPython(const QStringList &params);
+
+        /// Slot for our tundra.py to call on its logging implementation.
+        /// @param logType Type of login print = INFO|WARNING|DEBUG|ERROR|FATAL.
+        /// @param logMessage Message to print out.
+        void PythonPrintLog(const QString &logType, const QString &logMessage);
 
     private slots:
+        /// Load startup plugins from runtime xml config.
+        void LoadStartupScripts();
+
+        /// Start PythonQt.
+        void StartPythonQt();
+
+        /* Circuits Module Manager start and stop. I have implemented Tundra startup config xml parsing
+         * that can have pyplugins. I don't see that we need circuits anymore for anything. tundra.py exposing the framework
+         * plus startup py plugin loading should do the trick!
+         * 
+         * \todo Remove below funtions when decided.
+
+        /// Start Python ModuleManager.
+        void StartPythonModuleManager();
+
+        /// Stop Python ModuleManager.
+        void StopPythonModuleManager();
+
+        /// Slot for FrameAPI::Updated signal
+        void UpdatePythonModuleManager(float frametime);
+        */
+
+        /// Add path to python for imports.
+        void AddSystemPath(const QString &path);
+
+        /// Run code string.
+        void RunString(const QString &codeStr);
+
+        /// Run a script file. Path can be absolute or relative.
+        void RunScript(const QString &scriptname);
+
+        /// Slot for getting python std out from PythonQt.
+        void OnPythonQtStdOut(const QString &str);
+
+        /// Slot for getting python std err from PythonQt.
+        void OnPythonQtStdErr(const QString &str);
+
         /// Scene added signal handler.
         void OnSceneAdded(const QString &name);
 
@@ -77,44 +129,17 @@ namespace PythonScript
         */
         void OnComponentRemoved(Entity *entity, IComponent *component);
 
-    public:
-        PythonScriptModule();
-        virtual ~PythonScriptModule();
-
-        // Module interface overrides
-        virtual void Load();
-        virtual void Unload();
-        virtual void Initialize();
-        virtual void PostInitialize();
-        virtual void Uninitialize();
-        
-        /// Returns the currently initialized PythonScriptModule.
-        static PythonScriptModule *GetInstance();
-
-        /// Wrap QObject* to PyObject*.
-        PyObject *WrapQObject(QObject* qobj) const;
-
     private:
-        /// Static instance of ourselves.
-        static PythonScriptModule *pythonScriptModuleInstance_;
-
-        /// Python engine.
-        PythonEnginePtr engine_;
-
         /// Tracking boolean if python qt is initialized.
-        bool pythonQtInitialized_;
+        bool pythonQtStarted_;
 
         /// The hook to the python-written module manager that passes events on
-        PyObject *pmmModule, *pmmDict, *pmmClass, *pmmInstance;
-        PyObject *pmmArgs, *pmmValue;
-        
-        /// The default input context for python code to access. This context operates below
-        /// the Qt windowing priority.
-        InputContextPtr input;
+        //PyObject *pyTundraModule_;
+        //PyObject *pyTundraDict_;
+        //PyObject *pyTundraClass_;
+        //PyObject *pyTundraInstance_;
 
         /// List of created InputContextPtrs.
         QList<InputContextPtr> createdInputs_;
     };
-
-    static PythonScriptModule *self() { return PythonScriptModule::GetInstance(); }
 }

@@ -4,6 +4,7 @@ import tundra as tundra
 class ApiRunner:
 
     def __init__(self):
+        tundra.LogInfo("***** Python ApiRunner starting *****")
         try: self.testLoggers() 
         except Exception as e: print "\n**** Python ApiRunner.testLoggers() failed ****\n", e
         try: self.testFramework() 
@@ -18,10 +19,9 @@ class ApiRunner:
         except Exception as e: print "\n**** Python ApiRunner.testRenderer() failed ****\n", e
         try: self.testHelpers() 
         except Exception as e: print "\n**** Python ApiRunner.testHelpers() failed ****\n", e
-        print "\n\n"
-
+        tundra.LogInfo("***** Python ApiRunner done *********")
+        
     def testLoggers(self):
-        tundra.LogInfo("\n\nPython ApiRunner starting...\n\n")
         tundra.LogInfo("-- Testing loggers")
         tundra.LogDebug("this should only show on debug mode")
         tundra.LogWarning("this is a warning")
@@ -30,72 +30,81 @@ class ApiRunner:
     
     def testFramework(self):
         tundra.LogInfo("-- Testing framework API presence")
-        print "  >> Framework()", tundra.Framework()
-        print "  >> Framework().IsHeadless()", tundra.Framework().IsHeadless()
-        print "  >> Frame()", tundra.Frame()
-        print "  >> Scene()", tundra.Scene()
-        print "  >> Asset()", tundra.Asset()
-        print "  >> Audio()", tundra.Audio()
-        print "  >> Input()", tundra.Input()
-        print "  >> Console()", tundra.Console()
-        print "  >> Ui()", tundra.Ui()
+        tundra.LogInfo("  >> Framework() " + str(tundra.Framework()))
+        tundra.LogInfo("  >> Framework().IsHeadless() " + str(tundra.Framework().IsHeadless()))
+        tundra.LogInfo("  >> Frame() " + str(tundra.Frame()))
+        tundra.LogInfo("  >> Scene() " + str(tundra.Scene()))
+        tundra.LogInfo("  >> Asset() " + str(tundra.Asset()))
+        tundra.LogInfo("  >> Audio() " + str(tundra.Audio()))
+        tundra.LogInfo("  >> Input() " + str(tundra.Input()))
+        tundra.LogInfo("  >> Console() " + str(tundra.Console()))
+        tundra.LogInfo("  >> Ui() " + str(tundra.Ui()))
         
     def testServer(self):
         tundra.LogInfo("-- Testing Server")
-        print "  >> IsServer()", tundra.IsServer()
-        print "  >> Server().IsRunning()", tundra.Server().IsRunning()
+        tundra.LogInfo("  >> IsServer() " + str(tundra.IsServer()))
+        tundra.LogInfo("  >> Server().IsRunning() " + str(tundra.Server().IsRunning()))
         if tundra.IsServer() and not tundra.Server().IsRunning():
-            print "  >> Connecting to server started signal..."
+            tundra.LogInfo("  >> Connecting to server started signal...")
             tundra.Server().connect("ServerStarted()", self.onServerStart)
                    
     def onServerStart(self):
         tundra.LogInfo("-- Server().ServerStarted signal emitted")
-        print "  >> Server().GetPort()", tundra.Server().GetPort()
-        print "  >> Server().GetProtocol()", tundra.Server().GetProtocol()
+        tundra.LogInfo("  >> Server().GetPort() " + str(tundra.Server().GetPort()))
+        tundra.LogInfo("  >> Server().GetProtocol() " + str(tundra.Server().GetProtocol()))
         
     def testClient(self):
         tundra.LogInfo("-- Testing Client")
-        print "  >> IsClient()", tundra.IsClient()
-        print "  >> Client().IsConnected()", tundra.Client().IsConnected()
+        tundra.LogInfo("  >> IsClient() " + str(tundra.IsClient()))
+        tundra.LogInfo("  >> Client().IsConnected() " + str(tundra.Client().IsConnected()))
+        tundra.Client().connect("Connected()", self.onClientConnected)
+        
+    def onClientConnected(self):
+        tundra.LogInfor("-- Client::Connected() emitted")
 
     def testScene(self):
         tundra.LogInfo("-- Testing Scene")
-        print "  >> Scene().GetDefaultSceneRaw()", tundra.Scene().GetDefaultSceneRaw()
+        tundra.LogInfo("  >> Scene().GetDefaultSceneRaw() " + str(tundra.Scene().GetDefaultSceneRaw()))
+        return
+        
         if tundra.IsServer() and tundra.Scene().GetDefaultSceneRaw() == None:
-            print "  >> Connecting to SceneAPI DefaultWorldSceneChanged signal..."
-            tundra.Scene().connect("DefaultWorldSceneChanged(Scene*)", self.OnDefaultSceneChanged)
+            tundra.LogInfo("  >> Connecting to SceneAPI DefaultWorldSceneChanged signal...")
+            # This single connection makes the app crash on exit, tried everything to figure it out.
+            # It is SceneAPI crashing on ~Framework() when it gets deleted. This wont happen if you dont connect any signals in python.
+            # tundra.Scene().disconnect(..) returns false on everything i tried. It is somehow the pythonqt signals/slots system doing it!
+            #tundra.Scene().connect("SceneAdded(QString)", self.OnDefaultSceneChanged)
         if tundra.Scene().GetDefaultSceneRaw() != None:
-            print "  >> Helper().CreateEntity([], True, False, False) local", tundra.Helper().CreateEntity([], True, False, False)
-            print "  >> Helper().CreateEntity([], True, False, True) local temporary", tundra.Helper().CreateEntity([], True, False, True)
-            print "  >> Helper().CreateEntity() replicated", tundra.Helper().CreateEntity()
+            tundra.LogInfo("  >> Helper().CreateEntity([] + True + False + False) local " + str(tundra.Helper().CreateEntity([], True, False, False)))
+            tundra.LogInfo("  >> Helper().CreateEntity([] + True + False + True) local temporary " + str(tundra.Helper().CreateEntity([], True, False, True)))
+            tundra.LogInfo("  >> Helper().CreateEntity() replicated" + str(tundra.Helper().CreateEntity()))
             ent = tundra.Helper().CreateEntity(["EC_Mesh", "EC_Placeable"])
-            print "  >> ent = Helper().CreateEntity([EC_Mesh, EC_Placeable]) replicated"
-            print "  >> ent", ent
-            print "  >> ent.GetComponentRaw(\"EC_Mesh\")", ent.GetComponentRaw("EC_Mesh")
-            print "  >> ent.GetComponentRaw(\"EC_Placeable\")", ent.GetComponentRaw("EC_Placeable")
+            tundra.LogInfo("  >> ent = Helper().CreateEntity([EC_Mesh + EC_Placeable]) replicated")
+            tundra.LogInfo("  >> ent " + str(ent))
+            tundra.LogInfo("  >> ent.GetComponentRaw(\"EC_Mesh\") " + str(ent.GetComponentRaw("EC_Mesh")))
+            tundra.LogInfo("  >> ent.GetComponentRaw(\"EC_Placeable\") " + str(ent.GetComponentRaw("EC_Placeable")))
     
     def OnDefaultSceneChanged(self, scene):
         tundra.LogInfo("-- Scene().DefaultWorldSceneChanged signal emitted")
-        print "  >> New default scene is", scene
-        print "  >> Running testScene() tests againg..."
-        self.testScene()
+        tundra.LogInfo("  >> New default scene is " + str(scene))
+        tundra.LogInfo("  >> Running testScene() tests againg...")
+        #self.testScene()
         
     def testRenderer(self):
         tundra.LogInfo("-- Testing Renderer")
-        print "  >> Renderer()", tundra.Renderer()
-        print "  >> Renderer().GetWindowWidth()", tundra.Renderer().GetWindowWidth()
-        print "  >> Renderer().GetWindowHeight()", tundra.Renderer().GetWindowHeight()
-        print "  >> rayResult = Renderer().Raycast(100,100)"
-        rayResult = tundra.Renderer().Raycast(100,100)
-        print "  >> rayResult", rayResult
+        tundra.LogInfo("  >> Renderer() " + str(tundra.Renderer()))
+        tundra.LogInfo("  >> Renderer().GetWindowWidth() " + str(tundra.Renderer().GetWindowWidth()))
+        tundra.LogInfo("  >> Renderer().GetWindowHeight() " + str(tundra.Renderer().GetWindowHeight()))
+        tundra.LogInfo("  >> rayResult = Renderer().Raycast(100,100)")
+        rayResult = tundra.Renderer().Raycast(100, 100)
+        tundra.LogInfo("  >> rayResult " + str(rayResult))
         if rayResult != None:
-            print "  >> rayResult.entity", rayResult.entity
-            print "  >> rayResult.submesh", rayResult.submesh
-            print "  >> rayResult.pos", rayResult.pos
+            tundra.LogInfo("  >> rayResult.entity " + str(rayResult.entity))
+            tundra.LogInfo("  >> rayResult.submesh " + str(rayResult.submesh))
+            tundra.LogInfo("  >> rayResult.pos " + str(rayResult.pos))
         
     def testHelpers(self):
         tundra.LogInfo("-- Testing Python Helper")
-        print "  >> Helper().CreateInputContext()", tundra.Helper().CreateInputContext("apirunner-context", 90)
+        tundra.LogInfo("  >> Helper().CreateInputContext() " + str(tundra.Helper().CreateInputContext("apirunner-context", 90)))
 
 if __name__ == "__main__":
     r = ApiRunner()
