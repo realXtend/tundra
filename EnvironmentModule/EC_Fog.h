@@ -54,5 +54,8 @@ public:
 
     /// Fog mode, defines how Fog density increases.
     DEFINE_QPROPERTY_ATTRIBUTE(int, mode);
-    Q_PROPERTY(int mode READ getmode WRITE setmode); 
+    Q_PROPERTY(int mode READ getmode WRITE setmode);
+
+private slots:
+    void Update();
 };

@@ -2,15 +2,18 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
+#define OGRE_INTEROP
+
 #include "EC_Fog.h"
 
+#include "Scene.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"
+#include "OgreWorld.h"
+#include "Renderer.h"
 
-#include <QDebug>
 #include <Ogre.h>
-#include <OgreCommon.h>
-#include <OgreColourValue.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -23,7 +26,7 @@ EC_Fog::EC_Fog(Scene* scene) :
 {
     static AttributeMetadata metadata;
     static bool metadataInitialized = false;
-    if(!metadataInitialized)
+    if (!metadataInitialized)
     {
         metadata.enums[Ogre::FOG_NONE] = "NoFog";
         metadata.enums[Ogre::FOG_EXP] = "Exponentially";
@@ -32,4 +35,21 @@ EC_Fog::EC_Fog(Scene* scene) :
         mode.SetMetadata(&metadata);
         metadataInitialized = true;
     }
+
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(Update()), Qt::UniqueConnection);
+
+    Update();
+}
+
+void EC_Fog::Update()
+{
+    if (!ParentScene())
+        return;
+    OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
+    if (!w)
+        return;
+
+    // Note: in Tundra1-series, if we were within EC_WaterPlane, the waterPlaneColor*fogColor was used as the scene fog color.
+    w->GetSceneManager()->setFog(static_cast<Ogre::FogMode>(mode.Get()), color.Get(), 0.001f, startDistance.Get(), endDistance.Get());
+    w->GetRenderer()->GetViewport()->setBackgroundColour(color.Get());
 }
