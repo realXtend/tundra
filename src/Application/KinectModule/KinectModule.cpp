@@ -5,9 +5,9 @@
 
 #include "KinectModule.h"
 #include "KinectDevice.h"
-
 #include "Framework.h"
-#include "DevicesAPI.h"
+#include "CoreDefines.h"
+#include "LoggingFunctions.h"
 
 #include <MMSystem.h>
 
@@ -20,13 +20,8 @@
 
 #include "MemoryLeakCheck.h"
 
-#include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("KinectModule")
-
-std::string KinectModule::module_name_ = "KinectModule";
-
 KinectModule::KinectModule() : 
-    IModule(module_name_),
+    IModule("KinectModule"),
     kinectApiInitialized_(false),
     videoSize_(640, 480),
     depthSize_(320, 240),
@@ -39,7 +34,7 @@ KinectModule::KinectModule() :
     videoPreviewLabel_(0),
     depthPreviewLabel_(0),
     skeletonPreviewLabel_(0),
-    debugging_(true) // Change to true to see debug widgets and prints
+    debugging_(false) // Change to true to see debug widgets and prints
 {
     if (debugging_)
     {
@@ -74,7 +69,7 @@ void KinectModule::PostInitialize()
                                    NUI_INITIALIZE_FLAG_USES_COLOR);
     if (SUCCEEDED(result))
     {
-        LogInfo("Successfully found a Kinect device.");
+        LogInfo(Name() + ": Successfully found a Kinect device.");
         kinectApiInitialized_ = true;
 
         // Resolve the wanted image resolution
@@ -100,38 +95,36 @@ void KinectModule::PostInitialize()
         // Skeleton
         result = NuiSkeletonTrackingEnable(eventSkeletonFrame_, 0);
         message = SUCCEEDED(result) ? "-- Skeleton tracking enabled" : "-- Skeleton tracking could not be enabled";
-        LogInfo(message);
+        LogInfo(Name() + ": " + message.toStdString());
             
         // Image
         result = NuiImageStreamOpen(NUI_IMAGE_TYPE_COLOR, videoResolution,
                                     0, 2, eventVideoFrame_, &kinectVideoStream_);
         message = SUCCEEDED(result) ? "-- Image stream enabled" : "-- Image stream could not be enabled";
-        LogInfo(message);
+        LogInfo(Name() + ": " + message.toStdString());
 
         // Depth
         result = NuiImageStreamOpen(NUI_IMAGE_TYPE_DEPTH_AND_PLAYER_INDEX, depthResolution,
                                     0, 2, eventDepthFrame_, &kinectDepthStream_);
         message = SUCCEEDED(result) ? "-- Depth stream enabled" : "-- Depth stream could not be enabled";
-        LogInfo(message);
+        LogInfo(Name() + ": " + message.toStdString());
 
         // Start the kinect processing thread
         eventKinectProcessStop_ = CreateEventA(NULL, FALSE, FALSE, NULL);
         kinectProcess_ = CreateThread(NULL, 0, KinectProcessThread, this, 0, NULL);
 
         // Register a Tundra Device
-        tundraKinectDevice_ = new KinectDevice("kinect");
-        if (GetFramework()->Devices()->RegisterDevice(tundraKinectDevice_))
-            LogInfo("-- Registered 'kinect' device to DevicesAPI");
+        // This module is its parent so it gets freed after dtor by Qt.
+        tundraKinectDevice_ = new KinectDevice(this);
+        if (GetFramework()->RegisterDynamicObject("kinect", tundraKinectDevice_))
+            LogInfo(Name() + ": -- Registered 'kinect' dynamic object to Framework");
     }
     else
-        LogWarning("Could not find a Kinect device.");
+        LogWarning(Name() + ": Could not find a Kinect device.");
 }
 
 void KinectModule::Uninitialize()
 {
-    // Kill the Tundra kinect device
-    SAFE_DELETE(tundraKinectDevice_);
-
     if (kinectApiInitialized_)
     {
         // Stop the Kinect processing thread
@@ -299,7 +292,7 @@ void KinectModule::GetDepth()
             emit DepthReady(depthImage);
     }
     else
-        LogWarning("Buffer length of received texture is bogus!");
+        LogWarning(Name() + ": Buffer length of received texture is bogus!");
 
     NuiImageStreamReleaseFrame(kinectDepthStream_, depthImage);
 }
@@ -364,7 +357,7 @@ void KinectModule::OnSkeletonTracking(bool tracking)
     tundraKinectDevice_->SetSkeletonTracking(tracking);
 
     if (debugging_)
-        LogInfo(QString("Tracking Skeletons    ") + (tracking ? "ON" : "OFF"));
+        LogInfo(Name() + QString(": Tracking Skeletons    ").toStdString() + (tracking ? "ON" : "OFF"));
 }
 
 void KinectModule::OnSkeletonReady(const QVariantMap skeletonData)
@@ -461,12 +454,12 @@ void KinectModule::DrawDebugSkeletons()
     skeletonPreviewLabel_->setPixmap(QPixmap::fromImage(manipImage.mirrored(false, true))); // Need to do a vertical flip for some reason
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
-void SetProfiler(Foundation::Profiler *profiler)
+extern "C"
 {
-    Foundation::ProfilerSection::SetProfiler(profiler);
+    DLLEXPORT void TundraPluginMain(Framework *fw)
+    {
+        Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
+        IModule *module = new KinectModule();
+        fw->RegisterModule(module);
+    }
 }
-
-POCO_BEGIN_MANIFEST(IModule)
-    POCO_EXPORT_CLASS(KinectModule)
-POCO_END_MANIFEST

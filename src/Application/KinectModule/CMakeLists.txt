@@ -1,8 +1,40 @@
+
+# Configure KinectSDK, additional dependency for this project.
+macro (configure_kinect)
+    if (WIN32 AND VC100)
+        message ("** Configuring KINECT")
+        
+        # If your kinect sdk is not found set KINECT_ROOT to your installation
+        set (_KINECT_FIND_PATHS 
+            "$ENV{KINECT_ROOT}/inc"
+            "$ENV{KINECT_ROOT}/lib"
+            "C:/Program Files (x86)/Microsoft*Kinect*/inc"
+            "C:/Program Files (x86)/Microsoft*Kinect*/lib"
+            "C:/Program Files/Microsoft*Kinect*/inc"
+            "C:/Program Files/Microsoft*Kinect*/lib"
+        )
+        
+        find_path (KINECT_INCLUDE_DIRS MSR_NuiApi.h PATHS ${_KINECT_FIND_PATHS})   
+        find_path (KINECT_LIBRARY_DIRS MSRKinectNUI.lib PATHS ${_KINECT_FIND_PATHS})
+        find_library (KINECT_LIBRARIES MSRKinectNUI PATHS ${_KINECT_FIND_PATHS})
+        set (KINECT_RUNTIME_DIR ${KINECT_LIBRARY_DIRS}/..)
+
+        if (${KINECT_INCLUDE_DIRS} STREQUAL "KINECT_INCLUDE_DIRS-NOTFOUND" OR
+            ${KINECT_LIBRARY_DIRS} STREQUAL "KINECT_LIBRARY_DIRS-NOTFOUND" OR
+            ${KINECT_LIBRARIES} STREQUAL "KINECT_LIBRARIES-NOTFOUND")
+            message (WARNING "-- Could not automatically find Microsoft Kinect SDK, set KINECT_ROOT to your install directory.")
+        endif ()
+        
+        message (STATUS "")
+        sagase_configure_report (KINECT)
+    endif ()    
+endmacro ()
+
 if (WIN32 AND VC100)
     configure_kinect ()
 
     # Define target name and output directory
-    init_target (KinectModule OUTPUT modules/core)
+    init_target (KinectModule OUTPUT plugins)
 
     # Define source files
     file (GLOB CPP_FILES *.cpp)
@@ -25,21 +57,27 @@ if (WIN32 AND VC100)
 
     add_definitions (-DKINECT_MODULE_EXPORTS)
 
-    use_modules (Core Foundation Interfaces OgreRenderingModule)
+    use_core_modules (Framework OgreRenderingModule)
     use_package (KINECT)
     
     build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-    link_modules (Core Foundation Interfaces OgreRenderingModule)
+    link_modules (Framework OgreRenderingModule)
     link_package (KINECT)
     
     SetupCompileFlagsWithPCH()
-    CopyModuleXMLFile()
 
     final_target ()
+    
+    # Kinect module install requires some DLLs from the SDK
+    if (WIN32)
+        setup_install_files_find(${KINECT_RUNTIME_DIR} "MSRKINECTNUI.DLL" Release|RelWithDebInfo|Debug)
+        setup_install_files_find(${KINECT_RUNTIME_DIR} "KINECTSQM.DLL" Release|RelWithDebInfo|Debug)
+        setup_install_files_find(${KINECT_RUNTIME_DIR} "SQMAPI.DLL" Release|RelWithDebInfo|Debug)
+    endif()
 endif ()
 
-if (WIN32 AND VC90)
-    message (WARNING "KinectModule can only be included with a VC100 compiler build at the moment.")
+if (UNIX OR VC90)
+    message (WARNING "KinectModule can only be included in Windows with a VC100 compiler build at the moment.")
     message (WARNING "Try cmake_vs2010.bat with Visual Studio 2010 installed to enable kinect functionality.")
 endif ()

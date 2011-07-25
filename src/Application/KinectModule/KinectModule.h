@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_KinectModule_h
-#define incl_KinectModule_h
+#pragma once
 
 #include "IModule.h"
 #include "KinectAPI.h"
@@ -19,13 +18,12 @@
 #include <QLabel>
 #include <QSize>
 
-/*!
-    KinectModule reads Kinect with Microsoft Kinect SDK. A device with name "kinect" is
-    created into DevicesAPI that 3rd party can utilize to get the kinect data.
+/*! KinectModule reads Kinect with Microsoft Kinect SDK. A dynamic object 'kinect' 
+    will emit the data with signals that it gathers from the kinect device.
  
-    See KinectDevice for the specific signals and instructions.
+    See KinectDevice for the specific signals and instructions how to acquire KinectDevice in C++, JavaScript and Python.
  */
-class KINECT_VOIP_MODULE_API KinectModule : public QObject, public IModule
+class KINECT_VOIP_MODULE_API KinectModule : public IModule
 {
 
 Q_OBJECT
@@ -125,6 +123,3 @@ private:
 
     QList<QVariantMap > debugSkeletons_;
 };
-
-
-#endif
