@@ -1,3 +1,6 @@
 [submodule "deps/vs2008"]
 	path = deps/vs2008
 	url = https://code.google.com/p/realxtend-tundra-deps
+[submodule "deps/vs2010"]
+	path = deps/vs2010
+	url = https://code.google.com/p/realxtend-tundra-deps
