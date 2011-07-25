@@ -6,29 +6,27 @@
 #include "Color.h"
 
 /// Environment fog.
-/**
-<table class="header">
-<tr>
-<td>
-<h2>Environment fog</h2>
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Environment fog</h2>
 
-Registered by Enviroment::EnvironmentModule. The EC_Fog component defines the overall fog settings for the
-whole scene. This component applies whenever the camera is outside of any water cube (EC_WaterPlane).
+    Registered by Enviroment::EnvironmentModule.
+    The EC_Fog component defines the overall fog settings for the whole scene.
 
-<b>Attributes</b>:
-<ul>
-<li> float : startDistance.
-<div> The start distance from the camera of fog, note this has only effect if useAttr is on (or there does not exist Caelum).  </div>
-<li> float : endDistance.
-<div> The end distance from the camera of fog, note this has only effect if useAttr is on (or there does not exist Caelum). </div>
-<li> Color : color.
-<div> Defines what is fog color, note this has only effect if useAttr is on (or there does not exist Caelum). </div>
-<li> int : mode.
-<div> Fog type ( none, linear, exp, exp2) this defines how fast fog density increases. </div>
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li> float : startDistance.
+    <div> The start distance of the fog, measured from the currently active camera.</div>
+    <li> float : endDistance.
+    <div> The end distance of the fog, measured from the currently active camera.</div>
+    <li> Color : color.
+    <div> The color of the fog.</div>
+    <li> int : mode.
+    <div> Fog type ( none, linear, exp, exp2) this defines how fast fog density increases. </div>
+    </ul>
 
-</table>
-*/
+    </table> */
 class EC_Fog : public IComponent
 {
     Q_OBJECT
