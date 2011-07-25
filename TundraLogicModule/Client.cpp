@@ -152,6 +152,7 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
     if (!sourceIterator.hasNext())
         return;
 
+    emit changeTab(removedConnection_);
     // Scene to be removed is TundraClient_X | X = 0, 1, 2, 3, ..., n; n ¤ Z+
     // removedConnection_ indicates which scene we are about to disconnect.
     QString sceneToRemove = "TundraClient_";
