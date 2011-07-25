@@ -19,8 +19,7 @@ EC_Fog::EC_Fog(Scene* scene) :
     startDistance(this, "Start distance", 100.f),
     endDistance(this, "End distance", 2000.f),
     color(this,"Color", Color(0.707792f,0.770537f,0.831373f,1.f)),
-    mode(this, "Mode", 3),
-    use(this, "Use over Caelum color", false)
+    mode(this, "Mode", 3)
 {
     static AttributeMetadata metadata;
     static bool metadataInitialized = false;
@@ -33,10 +32,4 @@ EC_Fog::EC_Fog(Scene* scene) :
         mode.SetMetadata(&metadata);
         metadataInitialized = true;
     }
-}
-
-Ogre::ColourValue EC_Fog::GetColorAsOgreValue() const
-{
-    Color col = color.Get();
-    return Ogre::ColourValue(col.r, col.g, col.b, col.a);
 }
