@@ -454,20 +454,17 @@ void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
     }
 }
 
-/// Associates the given custom action with the given key.
 void InputAPI::SetKeyBinding(const QString &actionName, QKeySequence key)
 {
     keyboardMappings[actionName.toStdString()] = QKeySequence(key);
 }
 
-/// Returns the key associated with the given action.
 QKeySequence InputAPI::KeyBinding(const QString &actionName) const
 {
     std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.find(actionName.toStdString());
     return iter != keyboardMappings.end() ? iter->second : QKeySequence();
 }
 
-/// Returns the key associated with the given action.
 QKeySequence InputAPI::KeyBinding(const QString &actionName, QKeySequence defaultKey)
 {
     std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.find(actionName.toStdString());
