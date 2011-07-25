@@ -15,8 +15,9 @@
   <plugin path="SceneWidgetComponents" />       <!-- SceneWidgetComponents depends on OgreRenderingModule and TundraLogicModule -->
 
   <!-- The following are commented out as they are not a part of the default build -->
-  <!-- <plugin path="MumbleVoipModule" /> -->           <!-- MumbleVoipModule depends on OgreRenderingModule and TundraLogicModule -->
-  <!-- <plugin path="CAVEStereoModule" /> -->           <!-- CAVEStereoModule depends on OgreRenderingModule and TundraLogicModule -->
+  <!-- <plugin path="MumbleVoipModule" /> -->           <!-- Depends on OgreRenderingModule and TundraLogicModule -->
+  <!-- <plugin path="CAVEStereoModule" /> -->           <!-- Depends on OgreRenderingModule and TundraLogicModule -->
+  <!-- <plugin path="KinectModule" /> -->               <!-- Depends on OgreRenderingModule -->
   
   <!-- TODO: Currently the above <plugin> items are loaded in the order they are specified, but below, the jsplugin items are loaded in an undefined order. Use the order specified here as the load order. -->
   <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
@@ -25,4 +26,7 @@
   <jsplugin path="FirstPersonMouseLook.js" />
   <jsplugin path="LoginScreen.js" />
   <jsplugin path="MenuBar.js" />
+  
+  <!-- Python plugins -->
+  <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
 </Tundra>
