@@ -546,40 +546,45 @@ void ECBrowser::OpenComponentXmlEditor()
 
 void ECBrowser::CopyComponent()
 {
-    QDomDocument temp_doc;
-    QDomElement entity_elem;
-    QClipboard *clipboard = QApplication::clipboard();
-
     QTreeWidgetItem *item = treeWidget_->currentItem();
     if (!item)
         return;
+
+    QDomDocument temp_doc("Scene");
+    QDomElement sceneElem = temp_doc.createElement("scene");
+    QClipboard *clipboard = QApplication::clipboard();
 
     TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.find(item);
     if (iter != itemToComponentGroups_.end())
     {
         if (!(*iter)->components_.size())
             return;
-        // Just take a first component from the componentgroup and copy it's attribute values to clipboard. 
+        ///\todo multiple component selection support
+        // Just take a first component from the componentgroup and copy its attribute values to clipboard.
         // Note! wont take account that other components might have different values in their attributes
         ComponentWeakPtr pointer = (*iter)->components_[0];
         if (!pointer.expired())
         {
-            pointer.lock()->SerializeTo(temp_doc, entity_elem);
-            QString xmlText = temp_doc.toString();
-            clipboard->setText(xmlText);
+            pointer.lock()->SerializeTo(temp_doc, sceneElem);
+            temp_doc.appendChild(sceneElem);
+            clipboard->setText(temp_doc.toString());
         }
     }
 }
 
 void ECBrowser::PasteComponent()
 {
-    QDomDocument temp_doc;
+    QDomDocument temp_doc("Scene");
     QClipboard *clipboard = QApplication::clipboard();
     if (temp_doc.setContent(clipboard->text()))
     {
+        QDomElement sceneElem = temp_doc.firstChildElement("scene");
+        if (sceneElem.isNull())
+            return;
+
         // Only single component can be pasted.
         /// @todo add suport to multi component copy/paste feature.
-        QDomElement comp_elem = temp_doc.firstChildElement("component");
+        QDomElement comp_elem = sceneElem.firstChildElement("component");
         if (comp_elem.isNull())
             return;
 
@@ -610,7 +615,7 @@ void ECBrowser::DynamicComponentChanged()
     EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender()); 
     if (!component) 
     {
-        LogError("Fail to dynamic cast sender object to EC_DynamicComponent in DynamicComponentChanged mehtod.");
+        LogError("EC_Browser::DynamicComponentChanged: Failed to dynamic cast sender object to EC_DynamicComponent.");
         return;
     }
     ComponentPtr comp_ptr;
@@ -619,7 +624,7 @@ void ECBrowser::DynamicComponentChanged()
         comp_ptr = component->shared_from_this();
     } catch(...)
     {
-        LogError("IComponent::shared_from_this failed! Component must have been deleted!");
+        LogError("EC_Browser::DynamicComponentChanged: IComponent::shared_from_this failed! Component must have been deleted!");
         return;
     }
 

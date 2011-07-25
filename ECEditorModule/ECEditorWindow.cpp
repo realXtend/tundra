@@ -465,6 +465,9 @@ void ECEditorWindow::CopyEntity()
     /// should we support multi entity copy and paste functionality.
     QDomDocument temp_doc;
 
+    // Create root Scene element always for consistency, even if we only have one entity
+    QDomDocument scene_doc("Scene");
+    QDomElement scene_elem = temp_doc.createElement("scene");
     foreach(const EntityPtr &entity, GetSelectedEntities())
         if (entity)
         {
@@ -474,8 +477,10 @@ void ECEditorWindow::CopyEntity()
             foreach(const ComponentPtr &comp, entity->Components())
                 comp->SerializeTo(temp_doc, entity_elem);
 
-            temp_doc.appendChild(entity_elem);
+            scene_elem.appendChild(entity_elem);
         }
+
+    temp_doc.appendChild(scene_elem);
 
     QApplication::clipboard()->setText(temp_doc.toString());
 }
@@ -491,57 +496,62 @@ void ECEditorWindow::PasteEntity()
     assert(scene);
     if(!scene)
         return;
-    
-    QDomDocument temp_doc;
-    QClipboard *clipboard = QApplication::clipboard();
-    if (temp_doc.setContent(clipboard->text()))
+
+    QString errorMsg;
+    QDomDocument temp_doc("Scene");
+    if (!temp_doc.setContent(QApplication::clipboard()->text(), false, &errorMsg))
     {
-        //Check if clipboard contain infomation about entity's id,
-        //which is used to find a right type of entity from the scene.
-        QDomElement ent_elem = temp_doc.firstChildElement("entity");
-        if(ent_elem.isNull())
-            return;
-        QString id = ent_elem.attribute("id");
-        EntityPtr originalEntity = scene->GetEntity(ParseString<entity_id_t>(id.toStdString()));
-        if(!originalEntity)
-        {
-            LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
-            return;
-        }
-
-        EntityPtr entity = scene->CreateEntity();
-        assert(entity);
-        if(!entity)
-            return;
-
-        bool hasPlaceable = false;
-        Entity::ComponentVector components = originalEntity->Components();
-        for(uint i = 0; i < components.size(); i++)
-        {
-            // If the entity is holding placeable component we can place it into the scene.
-            if(components[i]->TypeName() == "EC_Placeable")
-            {
-                hasPlaceable = true;
-                ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
-            }
-
-            ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
-            AttributeVector attributes = components[i]->Attributes();
-            for(uint j = 0; j < attributes.size(); j++)
-            {
-                IAttribute *attribute = component->GetAttribute(attributes[j]->Name());
-                if(attribute)
-                    attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
-            }
-        }
-        if(hasPlaceable)
-        {
-            EntityPlacer *entityPlacer = new EntityPlacer(framework, entity->Id(), this);
-            entityPlacer->setObjectName("EntityPlacer");
-        }
-        AddEntity(entity->Id());
-        scene->EmitEntityCreated(entity);
+        LogError("Parsing scene XML from clipboard failed: " + errorMsg.toStdString());
+        return;
     }
+
+    //Check if clipboard contain infomation about entity's id,
+    //which is used to find a right type of entity from the scene.
+    QDomElement ent_elem = temp_doc.firstChildElement("entity");
+    if(ent_elem.isNull())
+        return;
+    QString id = ent_elem.attribute("id");
+    EntityPtr originalEntity = scene->GetEntity(ParseString<entity_id_t>(id.toStdString()));
+    if(!originalEntity)
+    {
+        LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
+        return;
+    }
+
+    EntityPtr entity = scene->CreateEntity();
+    assert(entity);
+    if(!entity)
+        return;
+
+    bool hasPlaceable = false;
+    Entity::ComponentVector components = originalEntity->Components();
+    for(uint i = 0; i < components.size(); i++)
+    {
+        // If the entity is holding placeable component we can place it into the scene.
+        if(components[i]->TypeName() == EC_Placeable::TypeNameStatic())
+        {
+            hasPlaceable = true;
+            ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
+        }
+
+        ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
+        AttributeVector attributes = components[i]->Attributes();
+        for(uint j = 0; j < attributes.size(); j++)
+        {
+            IAttribute *attribute = component->GetAttribute(attributes[j]->Name());
+            if(attribute)
+                attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
+        }
+    }
+
+    if(hasPlaceable)
+    {
+        EntityPlacer *entityPlacer = new EntityPlacer(framework, entity->Id(), this);
+        entityPlacer->setObjectName("EntityPlacer");
+    }
+
+    AddEntity(entity->Id());
+    scene->EmitEntityCreated(entity);
 }
 
 void ECEditorWindow::OpenEntityActionDialog()
