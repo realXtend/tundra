@@ -330,9 +330,11 @@ var BrowserManager = Class.extend
         if (p_.tabs.currentIndex > 1)
         {
             var index = p_.tabs.currentIndex;
-            p_.connected[index - 2] = false;
-            //p_.refreshSqueezer(index);
-            //p_.onTabIndexChanged(p_.tabs.currentIndex);
+            if (p_.connected[index -2])
+            {
+                p_.connected[index - 2] = false;
+                p_.onTabCloseRequest(index);
+            }
         }
 
         
@@ -622,7 +624,10 @@ var BrowserManager = Class.extend
             p_.tabs.currentIndex = 0;
             p_.onTabIndexChanged(p_.tabs.currentIndex);
             if (p_.connected[index-2] == true)
+            {
+                p_.connected[index-2] = false;
                 client.Logout(false, client.getActiveConnection());
+            }
             p_.connected.splice(index-2,1);
             p_.clientTabOrderList.splice(index-2,1);
             p_.tabs.removeTab(index);
