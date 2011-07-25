@@ -388,12 +388,17 @@ namespace OgreRenderer
     void Renderer::CreateSceneManager(const QString &sceneName)
     {
         Ogre::String name= Ogre::String(sceneName.toStdString());
+        Ogre::SceneManager *scenemanagerTmp;
 
-        // Check if scenemanager already exist.
-        if (root_->hasSceneManager(name))
+        try
+        {
+            scenemanagerTmp = root_->createSceneManager(Ogre::ST_GENERIC, name);
+        }
+        catch (Ogre::ItemIdentityException &e)
+        {
+            OgreRenderingModule::LogInfo("SceneManager already exists.");
             return;
-
-        Ogre::SceneManager *scenemanagerTmp = root_->createSceneManager(Ogre::ST_GENERIC, name);
+        }
         if (framework_->IsHeadless())
             return;
 
@@ -445,10 +450,15 @@ namespace OgreRenderer
     {
         Ogre::String name= Ogre::String(sceneName.toStdString());
 
-        if(sceneName=="" || !(root_->hasSceneManager(name)))
-            return scenemanager_;
-        else
+        try
+        {
             return root_->getSceneManager(name);
+        }
+        catch (Ogre::ItemIdentityException &e)
+        {
+            OgreRenderingModule::LogInfo("No such sceneManager called: " + name);
+            return scenemanager_;
+        }
 
     }
 
