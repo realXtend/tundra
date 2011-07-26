@@ -245,7 +245,7 @@ void EC_Avatar::SetupMeshAndMaterials()
     // Position approximately within the bounding box
     // Will be overridden by bone-based height adjust, if available
     mesh->SetAdjustPosition(float3(0.0f, FIXED_HEIGHT_OFFSET, 0.0f));
-    mesh->SetCastShadows(true);
+    mesh->castShadows.Set(true, AttributeChange::Default);
 }
 
 void EC_Avatar::SetupAttachments()

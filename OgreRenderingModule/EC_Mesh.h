@@ -40,7 +40,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>AssetReferenceList: meshMaterial
 <div>Mesh material asset reference list, material requests are handled automatically.</div> 
 <li>float: drawDistance
-<div>Distance where the mesh is shown from the camera.</div> 
+<div>Distance where the mesh is shown from the camera, 0.0 = draw always (default).</div> 
 <li>bool: castShadows
 <div>Will the mesh cast shadows.</div> 
 </ul>
@@ -99,7 +99,6 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"GetPlaceable": gets placeable component
 <li>"GetMeshName": returns mesh name
 <li>"GetSkeletonName": returns mesh skeleton name
-<li>"SetCastShadows": Sets if the entity casts shadows or not.
 <li>"GetEntity": returns Ogre mesh entity 
 <li>"GetAttachmentEntity": returns Ogre attachment mesh entity
 <li>"GetNumMaterials": gets number of materials (submeshes) in mesh entity
@@ -119,7 +118,6 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"GetAttachmentPosition": returns offset position of attachment
 <li>"GetAttachmentOrientation": returns offset orientation of attachment
 <li>"GetAttachmentScale": returns offset scale of attachment
-<li>"GetDrawDistance": returns draw distance
 <li>"GetAdjustmentSceneNode": Returns adjustment scene node (used for scaling/offset/orientation modifications)
 </ul>
 
@@ -162,7 +160,7 @@ public:
     Q_PROPERTY(AssetReferenceList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, meshMaterial);
 
-    /// Mesh draw distance.
+    /// Mesh draw distance, 0.0 = draw always (default)
     Q_PROPERTY(float drawDistance READ getdrawDistance WRITE setdrawDistance);
     DEFINE_QPROPERTY_ATTRIBUTE(float, drawDistance);
 
@@ -180,10 +178,6 @@ public slots:
     void SetPlaceable(ComponentPtr placeable);
     /// @todo override for pythonqt & qtscript, the shared_ptr issue strikes again; remove if/when possible.
     void SetPlaceable(EC_Placeable* placeable);
-
-    /// Sets draw distance
-    /** @param draw_distance New draw distance, 0.0 = draw always (default) */
-    void SetDrawDistance(float draw_distance);
 
     /// Sets mesh
     /** if mesh already sets, removes the old one
@@ -305,9 +299,6 @@ public slots:
     /// Returns mesh skeleton name
     const std::string& GetSkeletonName() const;
 
-    /// Sets if the entity casts shadows or not.
-    void SetCastShadows(bool enabled);
-
     /// Returns Ogre mesh entity
     Ogre::Entity* GetEntity() const { return entity_; }
 
@@ -346,9 +337,6 @@ public slots:
     /// Returns offset scale of attachment
     float3 GetAttachmentScale(uint index) const;
 
-    /// Returns draw distance
-    float GetDrawDistance() const { return drawDistance.Get(); }
-
     /// Returns adjustment scene node (used for scaling/offset/orientation modifications)
     Ogre::SceneNode* GetAdjustmentSceneNode() const { return adjustment_node_; }
 
@@ -366,9 +354,9 @@ public slots:
 //    float3x4 IComponent::GetWorldTransform();
 
     /// Helper for setting asset ref from js with less code (and at all from py, due to some trouble with assetref decorator setting)
-    ///\todo Remove
+    ///\todo Remove when abovementioned problems are resolved.
     void SetMeshRef(const AssetReference& newref) { setmeshRef(newref); }
-    ///\todo Remove
+    ///\todo Remove when abovementioned problems are resolved.
     void SetMeshRef(const QString& newref) { setmeshRef(AssetReference(newref)); }
 
     /// Return Ogre bone safely

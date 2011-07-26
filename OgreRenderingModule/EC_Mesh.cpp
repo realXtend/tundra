@@ -243,11 +243,6 @@ float3x4 EC_Mesh::LocalToWorld() const
     return float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
 }
 
-void EC_Mesh::SetDrawDistance(float draw_distance)
-{
-    drawDistance.Set(draw_distance, AttributeChange::Default);
-}
-
 bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
 {
     if (!ViewEnabled())
@@ -647,11 +642,6 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
     }
     
     return true;
-}
-
-void EC_Mesh::SetCastShadows(bool enabled)
-{
-    castShadows.Set(enabled, AttributeChange::Default);
 }
 
 uint EC_Mesh::GetNumMaterials() const
