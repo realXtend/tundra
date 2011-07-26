@@ -205,7 +205,7 @@ void KristalliProtocolModule::Update(f64 frametime)
         const int cReconnectTimeout = 5 * 1000.f;
         if (reconnectTimer.Test())
         {
-            if (true)
+            if (reconnectAttempts)
             {
                 PerformConnection();
                 --reconnectAttempts;
