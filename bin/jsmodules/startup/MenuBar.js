@@ -37,7 +37,7 @@ if (!framework.IsHeadless())
     var viewMenu = mainwin.AddMenu("&View");
 
     // Chiru demonstration and mobility menu:
-    var demoMenu = mainwin.AddMenu("&Demo");
+    /*var demoMenu = mainwin.AddMenu("&Demo");
     var connectMenu = demoMenu.addMenu("&Connect");
     connectMenu.addAction("Chiru world").triggered.connect(ConnectRemote);
     connectMenu.addAction("Local world").triggered.connect(ConnectLocal);
@@ -59,7 +59,7 @@ if (!framework.IsHeadless())
         signalMenu.addAction("screenStateChanged(MobilityModule::ScreenState)").triggered.connect(signalScreenStateChanged);
         signalMenu.addAction("usingBattery(bool)").triggered.connect(signalUsingBattery);
         signalMenu.addAction("batteryLevelChanged(int)").triggered.connect(signalBatteryLevelChanged);
-    }
+    }*/
 
 	function mobilitySignalHandler(value)
     {
