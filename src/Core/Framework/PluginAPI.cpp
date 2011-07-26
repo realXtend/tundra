@@ -91,16 +91,20 @@ void PluginAPI::LoadPlugin(const QString &filename)
     }
 
 #else
+    char *dlerrstr;
+    dlerror();
     PluginHandle module = dlopen(path.toStdString().c_str(), RTLD_GLOBAL|RTLD_LAZY);
-    if (module == NULL)
+    if (dlerrstr=dlerror())
     {
-        LogError("Failed to load plugin from file \"" + path + "\": Error " + dlerror() + "!");
+        LogError("Failed to load plugin from file \"" + path + "\": Error " + dlerrstr + "!");
         return;
     }
+
+    dlerror();
     TundraPluginMainSignature mainEntryPoint = (TundraPluginMainSignature)dlsym(module, "TundraPluginMain");
-    if (mainEntryPoint == NULL)
+    if (dlerrstr=dlerror())
     {
-        LogError("Failed to find plugin startup function 'TundraPluginMain' from plugin file \"" + path + "\": Error " + dlerror() + "!");
+        LogError("Failed to find plugin startup function 'TundraPluginMain' from plugin file \"" + path + "\": Error " + dlerrstr + "!");
         return;
     }
 
