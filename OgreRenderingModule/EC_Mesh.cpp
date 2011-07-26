@@ -106,13 +106,7 @@ void EC_Mesh::SetPlaceable(ComponentPtr placeable)
 
 void EC_Mesh::SetPlaceable(EC_Placeable* placeable)
 {
-     ComponentPtr ptr = placeable->ParentEntity()->GetComponent(placeable->TypeName(), placeable->Name()); //hack to get the shared_ptr to this component
-     SetPlaceable(ptr);
-}
-
-void EC_Mesh::View(const QString &attributeName)
-{
-    // todo add implementation.
+    SetPlaceable(placeable->shared_from_this());
 }
 
 void EC_Mesh::AutoSetPlaceable()
@@ -152,7 +146,7 @@ void EC_Mesh::SetAttachmentPosition(uint index, const float3& position)
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return;
     
-    attachment_nodes_[index]->setPosition(Ogre::Vector3(position.x, position.y, position.z));
+    attachment_nodes_[index]->setPosition(position);
 }
 
 void EC_Mesh::SetAttachmentOrientation(uint index, const Quat &orientation)
@@ -168,7 +162,7 @@ void EC_Mesh::SetAttachmentScale(uint index, const float3& scale)
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return;
     
-    attachment_nodes_[index]->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
+    attachment_nodes_[index]->setScale(scale);
 }
 
 float3 EC_Mesh::GetAdjustPosition() const
@@ -193,9 +187,8 @@ float3 EC_Mesh::GetAttachmentPosition(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return float3::nan;
-        
-    const Ogre::Vector3& pos = attachment_nodes_[index]->getPosition();
-    return float3(pos.x, pos.y, pos.z);
+
+    return attachment_nodes_[index]->getPosition();
 }
 
 Quat EC_Mesh::GetAttachmentOrientation(uint index) const
@@ -210,9 +203,8 @@ float3 EC_Mesh::GetAttachmentScale(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return float3::nan;
-        
-    const Ogre::Vector3& scale = attachment_nodes_[index]->getScale();
-    return float3(scale.x, scale.y, scale.z);
+
+    return attachment_nodes_[index]->getScale();
 }
 
 float3x4 EC_Mesh::LocalToParent() const
@@ -691,11 +683,6 @@ const std::string& EC_Mesh::GetMaterialName(uint index) const
     return entity_->getSubEntity(index)->getMaterialName();
 }
 
-QString EC_Mesh::GetMatName(uint index) const
-{
-    return GetMaterialName(index).c_str();
-}
-
 const std::string& EC_Mesh::GetAttachmentMaterialName(uint index, uint submesh_index) const
 {
     const static std::string empty;
@@ -758,23 +745,20 @@ const std::string& EC_Mesh::GetSkeletonName() const
             return empty_name;
         return skel->getName();
     }
-}    
-    
+}
+
 void EC_Mesh::GetBoundingBox(float3& min, float3& max) const
 {
     if (!entity_)
     {
-        min = float3(0.0, 0.0, 0.0);
-        max = float3(0.0, 0.0, 0.0);
+        min = float3::zero;
+        max = float3::zero;
         return;
     }
- 
+
     const Ogre::AxisAlignedBox& bbox = entity_->getMesh()->getBounds();
-    const Ogre::Vector3& bboxmin = bbox.getMinimum();
-    const Ogre::Vector3& bboxmax = bbox.getMaximum();
-    
-    min = float3(bboxmin.x, bboxmin.y, bboxmin.z);
-    max = float3(bboxmax.x, bboxmax.y, bboxmax.z);
+    min = bbox.getMinimum();
+    max = bbox.getMaximum();
 }
 
 QVector3D EC_Mesh::GetWorldSize() const
@@ -1192,10 +1176,7 @@ float3 EC_Mesh::GetBonePosition(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
-    {
-        const Ogre::Vector3& pos = bone->getPosition();
-        return float3(pos.x, pos.y, pos.z);
-    }
+        return bone->getPosition();
     else
         return float3::zero;
 }
@@ -1204,10 +1185,7 @@ float3 EC_Mesh::GetBoneDerivedPosition(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
-    {
-        Ogre::Vector3 pos = bone->_getDerivedPosition();
-        return float3(pos.x, pos.y, pos.z);
-    }
+        return bone->_getDerivedPosition();
     else
         return float3::zero;
 }
