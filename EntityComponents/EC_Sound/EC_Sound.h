@@ -71,6 +71,7 @@ Does not emit any actions.
 class EC_Sound : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_Sound", 6)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
@@ -106,13 +107,7 @@ public:
     Q_PROPERTY(bool spatial READ getspatial WRITE setspatial);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, spatial);
 
-    COMPONENT_NAME("EC_Sound", 6)
 public slots:
-
-    /// Show the asset in asset viewer window.
-    ///\todo implement
-    void View(const QString &attributeName);
-
     /// Starts playing the sound.
     void PlaySound();
 
@@ -148,4 +143,3 @@ private:
     ComponentPtr FindPlaceable() const;
     SoundChannelPtr soundChannel;
 };
-

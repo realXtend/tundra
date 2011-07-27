@@ -31,16 +31,10 @@ EC_Sky::EC_Sky(Scene* scene) :
 {
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
-    static AttributeMetadata materialRefMetadata;
-    AttributeMetadata::ButtonInfoList materialRefButtons;
-    materialRefButtons.push_back(AttributeMetadata::ButtonInfo(materialRef.Name(), "V", "View"));
-    materialRefMetadata.buttons = materialRefButtons;
-    materialRef.SetMetadata(&materialRefMetadata);
-
-    // Find out default textures.
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
 
+    // Find out default textures.
     StringVector names;
     Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
     if (materialPtr.get() != 0)
@@ -124,11 +118,6 @@ void EC_Sky::CreateSky()
     {
         LogError("Could not set SkyBox: " + std::string(e.what()));
     }
-}
-
-void EC_Sky::View(const QString &attributeName)
-{
-    /// @todo implement this.
 }
 
 void EC_Sky::OnTextureAssetLoaded(AssetPtr tex)

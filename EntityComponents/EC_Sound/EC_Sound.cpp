@@ -38,11 +38,6 @@ EC_Sound::EC_Sound(Scene* scene):
 {
     static AttributeMetadata metaData("", "0", "1", "0.1");
     soundGain.SetMetadata(&metaData);
-    static AttributeMetadata soundRefMetadata;
-    AttributeMetadata::ButtonInfoList soundRefButtons;
-    soundRefButtons.push_back(AttributeMetadata::ButtonInfo(soundRef.Name(), "V", "View"));
-    soundRefMetadata.buttons = soundRefButtons;
-    soundRef.SetMetadata(&soundRefMetadata);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
@@ -124,11 +119,6 @@ void EC_Sound::RegisterActions()
         entity->ConnectAction("PlaySound", this, SLOT(PlaySound()));
         entity->ConnectAction("StopSound", this, SLOT(StopSound()));
     }
-}
-
-void EC_Sound::View(const QString &attributeName)
-{
-    LogWarning("View(const QString &attributeName) not implemented yet!");
 }
 
 void EC_Sound::PlaySound()

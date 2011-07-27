@@ -48,12 +48,6 @@ EC_Mesh::EC_Mesh(Scene* scene) :
     materialMetadata.elementType = "assetreference";
     meshMaterial.SetMetadata(&materialMetadata);
 
-    static AttributeMetadata meshRefMetadata;
-    AttributeMetadata::ButtonInfoList meshRefButtons;
-    meshRefButtons.push_back(AttributeMetadata::ButtonInfo(meshRef.Name(), "V", "View"));
-    meshRefMetadata.buttons = meshRefButtons;
-    meshRef.SetMetadata(&meshRefMetadata);
-
     meshAsset = AssetRefListenerPtr(new AssetRefListener());
     skeletonAsset = AssetRefListenerPtr(new AssetRefListener());
     

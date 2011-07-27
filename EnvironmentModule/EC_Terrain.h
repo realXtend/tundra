@@ -11,12 +11,7 @@
 #include "AssetRefListener.h"
 #include "OgreModuleFwd.h"
 
-namespace Ogre
-{
-    class SceneNode;
-    class Entity;
-    class Matrix4;
-}
+namespace Ogre { class Matrix4; }
 
 /// Adds a heightmap-based terrain to the scene.
 /**
@@ -65,6 +60,7 @@ to create a dependency to Placeable, so that the position of the terrain is edit
 class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_Terrain", 11)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
@@ -118,8 +114,7 @@ public:
         - not loaded. The height data nor the GPU data is present, but the Patch struct itself is initialized. heightData.size() == 0, node == entity == 0. meshGeometryName == "".
         - heightmap data loaded. The heightData vector contains the heightmap data, but the visible GPU vertex data itself has not been generated yet, due to the neighbors
           of this patch not being present yet. node == entity == 0, meshGeometryName == "". patch_geometry_dirty == true.
-        - fully loaded. The GPU data is also loaded and the node, entity and meshGeometryName fields specify the used GPU resources.
-    */
+        - fully loaded. The GPU data is also loaded and the node, entity and meshGeometryName fields specify the used GPU resources. */
     struct Patch
     {
         Patch():x(0),y(0), node(0), entity(0), patch_geometry_dirty(true) {}
@@ -181,18 +176,15 @@ public:
 
     float3 CalculateNormal(int mapX, int mapY) const { return CalculateNormal( (int) mapX / cPatchSize, (int) mapY / cPatchSize, mapX % cPatchSize, mapY % cPatchSize); }
 
-    COMPONENT_NAME("EC_Terrain", 11)
 public slots:
-
     /// Returns true if the given patch exists, i.e. whether the given coordinates are within the current terrain patch dimensions.
-    /// This function does not tell whether the data for the patch is actually loaded on the CPU or the GPU.
+    /** This function does not tell whether the data for the patch is actually loaded on the CPU or the GPU. */
     bool PatchExists(int patchX, int patchY) const
     {
         return patchX >= 0 && patchY >= 0 && patchX < patchWidth && patchY < patchHeight && patchY * patchWidth + patchX < (int)patches.size();
     }
 
-    /// Returns true if all the patches on the terrain are loaded on the CPU, i.e. if all the terrain height data has been streamed in from
-    /// the server side.
+    /// Returns true if all the patches on the terrain are loaded on the CPU, i.e. if all the terrain height data has been streamed in from the server side.
     bool AllPatchesLoaded() const
     {
         for(int y = 0; y < patchHeight; ++y)
@@ -242,7 +234,6 @@ public slots:
     /// @param n3 [out]
     /// @param u [out]
     /// @param v [out]
-
     void GetTriangleNormals(float x, float y, float3 &n1, float3 &n2, float3 &n3, float &u, float &v) const;
 
     /// Returns the vertices and barycentric UV of the triangle at the given map coordinate, in local space.
@@ -270,14 +261,16 @@ public slots:
     /// Releases all GPU resources used for the given patch.
     void DestroyPatch(int patchX, int patchY);
 
-    /// Makes all the vertices of the given patch flat with the given height value. Dirties the patch, but does not regenerate it.
+    /// Makes all the vertices of the given patch flat with the given height value.
+    /** Dirties the patch, but does not regenerate it. */
     void MakePatchFlat(int patchX, int patchY, float heightValue);
 
-    /// Makes the whole terrain flat with the given height value. Dirties the whole terrain, but does not regenerate it.
+    /// Makes the whole terrain flat with the given height value.
+    /** Dirties the whole terrain, but does not regenerate it. */
     void MakeTerrainFlat(float heightValue);
 
     /// Performs an 1D affine transform on the height values of the whole terrain, i.e. maps each vertex h' = scale*h + offset.
-    /// Dirties the whole terrain, but does not regenerate it.
+    /** Dirties the whole terrain, but does not regenerate it. */
     void AffineTransform(float scale, float offset);
 
     /// Affinely remaps the height values of the whole terrain in such a way that after the transform, the lowest point of
@@ -306,13 +299,13 @@ public slots:
     /// @return True if the save succeeded.
     bool SaveToFile(QString filename);
 
-    /// Loads the terrain height map data from the given binary dump file (.ntf). You should prefer using
-    /// the Attribute heightMap to recreate the terrain from a terrain file instead of calling this function directly,
-    /// since this function only performs a local (hidden) change, whereas the heightMap attribute change is visible both
-    /// locally and on the network.
-    /// Note: Calling this function will not update the 'heightMap' attribute. If you want to load the terrain from a file
-    /// in such a way that is synchronized to the network, just set the 'heightMap' source attribute in a replicated way.
-    /// @return True if loading succeeded.
+    /// Loads the terrain height map data from the given binary dump file (.ntf).
+    /** You should prefer using the Attribute heightMap to recreate the terrain from a terrain file instead of calling this function directly,
+        since this function only performs a local (hidden) change, whereas the heightMap attribute change is visible both
+        locally and on the network.
+        @note Calling this function will not update the 'heightMap' attribute. If you want to load the terrain from a file
+            in such a way that is synchronized to the network, just set the 'heightMap' source attribute in a replicated way.
+        @return True if loading succeeded. */
     bool LoadFromFile(QString filename);
 
     /// Loads the terrain height map data from the given in-memory .ntf file buffer.
@@ -320,18 +313,20 @@ public slots:
 
     void NormalizeImage(QString filename) const;
 
-    /// Loads the terrain from the given image file. Adjusts the xPatches and yPatches properties to that of the image file, 
-    /// and clears the heightMap source attribute. This function is intended to be used as a processing tool. Calling this  
-    /// function will get the terrain contents desynchronized between the local system and network. The file is loaded using Ogre, so
-    /// this supports all the file formats Ogre has codecs loaded for(you can see a list of those in the console at startup).
-    /// Calling this function will regenerate all terrain patches on the GPU.
+    /// Loads the terrain from the given image file.
+    /** Adjusts the xPatches and yPatches properties to that of the image file, 
+        and clears the heightMap source attribute. This function is intended to be used as a processing tool. Calling this  
+        function will get the terrain contents desynchronized between the local system and network. The file is loaded using Ogre, so
+        this supports all the file formats Ogre has codecs loaded for(you can see a list of those in the console at startup).
+        Calling this function will regenerate all terrain patches on the GPU. */
     bool LoadFromImageFile(QString filename, float offset, float scale);
 
-    /// Saves the terrain to an image file. The file format is determined from the suffix. The file is saved using Ogre, so
-    /// this supports all the file formats Ogre has codecs loaded for(you can see a list of those in the console at startup).
-    /// By default, the height range of the terrain is fitted into the [0.0, 1.0] range, i.e. the smallest position of the terrain
-    /// gets the 0.0 grayscale pixel value in the image, and the largest position gets the 1.0 value.
-    /// The file that is saved will be a three-channel color image, but will only contain grayscale values.
+    /// Saves the terrain to an image file.
+    /** The file format is determined from the suffix. The file is saved using Ogre, so
+        this supports all the file formats Ogre has codecs loaded for(you can see a list of those in the console at startup).
+        By default, the height range of the terrain is fitted into the [0.0, 1.0] range, i.e. the smallest position of the terrain
+        gets the 0.0 grayscale pixel value in the image, and the largest position gets the 1.0 value.
+        The file that is saved will be a three-channel color image, but will only contain grayscale values. */
     bool SaveToImageFile(QString filename, float minHeight = -1e9f, float maxHeight = 1e9f);
 
     /// Converts the given Ogre Mesh to a terrain grid.
@@ -339,20 +334,17 @@ public slots:
         Uses the default identity matrix for the transform.
         @note The Mesh resource must be previously loaded into the Ogre Mesh resource pool.
         Use SanitateAssetIdForOgre() for the asset's name in order to generate the proper resource name.
-        @param ogreMeshResourceName Internal Ogre resource name. 
-    */
+        @param ogreMeshResourceName Internal Ogre resource name. */
     void GenerateFromOgreMesh(QString ogreMeshResourceName);
 
     /// This is an overloaded function.
     /** @param ogreMeshResourceName Internal Ogre resource name.
-        @param transform Desired tranform for the generated terrain.
-    */
+        @param transform Desired tranform for the generated terrain. */
     void GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::Matrix4 &transform);
 
     /// Converts entity's mesh to a terrain grid.
     /** @note Then entity has to have EC_Name, EC_Mesh and EC_Placeable present.
-        @param entityName Name of the entity.
-    */
+        @param entityName Name of the entity. */
     void GenerateFromSceneEntity(QString entityName);
 
     /// Marks all terrain patches dirty.
@@ -373,9 +365,6 @@ signals:
     void TerrainRegenerated();
 
 private slots:
-    /// Open asset editor for given asset attribute.
-    void View(const QString &attributeName);
-
     /// Emitted when the parrent entity has been set.
     void UpdateSignals();
 
@@ -387,11 +376,10 @@ private slots:
     void TerrainAssetLoaded(AssetPtr asset);
 
     /// (Re)checks whether this entity has EC_Placeable (or if it was just added or removed), and reparents the rootNode of this component to it or the scene root.
-    /// Additionally re-applies the visibility of each terrain patch that is currently attached to the terrain node.s
+    /** Additionally re-applies the visibility of each terrain patch that is currently attached to the terrain node. */
     void AttachTerrainRootNode();
 
 private:
-
     /// Creates the patch parent/root node if it does not exist.
     /** After this function returns, the 'root' member node will exist, unless Ogre rendering subsystem fails. */
     void CreateRootNode();
@@ -406,8 +394,7 @@ private:
 
     /// Readjusts the terrain to contain the given number of patches in the horizontal and vertical directions.
     /** Preserves as much of the terrain height data as possible. Dirties the patches, but does not regenerate them.
-        @note This function does not adjust the xPatches or yPatches attributes.
-    */
+        @note This function does not adjust the xPatches or yPatches attributes. */
     void ResizeTerrain(int newPatchWidth, int newPatchHeight);
 
     /// Updates the terrain material with the new texture on the given texture unit index.
