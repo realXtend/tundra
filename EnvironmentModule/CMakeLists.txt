@@ -6,7 +6,7 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB UI_FILES ui/*.ui)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES EnvironmentModule.h TerrainLabel.h EC_*.h TerrainWeightEditor.h)
+file (GLOB MOC_FILES EnvironmentModule.h TerrainLabel.h EC_*.h)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 

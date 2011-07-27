@@ -18,20 +18,12 @@ namespace Environment
         Q_OBJECT
 
     public:
-        /// Constructor.
         EnvironmentModule();
-
-        /// Destructor 
         virtual ~EnvironmentModule();
 
         void Load();
-        void Initialize();
-        void PostInitialize();
-        void Uninitialize();
-        void Update(f64 frametime);
 
     private:
         Q_DISABLE_COPY(EnvironmentModule);
     };
 }
-
