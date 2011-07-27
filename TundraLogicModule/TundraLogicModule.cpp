@@ -106,6 +106,10 @@ void TundraLogicModule::PostInitialize()
         "Usage: importmesh(filename,x,y,z,xrot,yrot,zrot,xscale,yscale,zscale)",
         ConsoleBind(this, &TundraLogicModule::ConsoleImportMesh)));
         
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("listcons",
+        "Lists all established connections.",
+        ConsoleBind(this, &TundraLogicModule::ConsoleListConnections)));
+        
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
     if (!kristalliModule_)
@@ -365,6 +369,13 @@ ConsoleCommandResult TundraLogicModule::ConsoleDisconnect(const StringVector& pa
         client_->Logout(false, conNumber);
     }
     
+    return ConsoleResultSuccess();
+}
+
+ConsoleCommandResult TundraLogicModule::ConsoleListConnections(const StringVector &params)
+{
+    client_->printConnections();
+
     return ConsoleResultSuccess();
 }
 

@@ -87,6 +87,9 @@ public:
     
     /// Imports one mesh as a new entity
     ConsoleCommandResult ConsoleImportMesh(const StringVector& params);
+
+    /// Lists all established connections
+    ConsoleCommandResult ConsoleListConnections(const StringVector& params);
     
     /// Check whether we are a server
     bool IsServer() const;

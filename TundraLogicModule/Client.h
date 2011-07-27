@@ -152,6 +152,7 @@ public slots:
     void emitChangeSceneSignal(const QString&);
     unsigned short getActiveConnection() const;
     bool hasConnections();
+    void printConnections();
 
 private slots:
     void setActiveConnection(const QString&, unsigned short);

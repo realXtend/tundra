@@ -193,6 +193,7 @@ var BrowserManager = Class.extend
             if (HasTundraScheme(this.settings.homepage))
                 if (!this.settings.startupConnectToHomePage)
                     return;
+            tab = new BrowserTab(p_.tabs, p_.tabCallBack);
             this.openUrl(this.settings.homepage);
             this.tabs.currentIndex = 0;
             this.onTabIndexChanged(this.tabs.currentIndex);
@@ -297,7 +298,9 @@ var BrowserManager = Class.extend
     openUrl: function(url)
     {
         // Check if current is classic login/3d tab
-        tab = new BrowserTab(p_.tabs, p_.tabCallBack);
+        //tab = new BrowserTab(p_.tabs, p_.tabCallBack);
+        p_.tabs.currentIndex = 1;
+        p_.onTabIndexChanged(p_.tabs.currentIndex);
         tab.load(url);
     },
 
@@ -419,6 +422,8 @@ var BrowserManager = Class.extend
         {
             var url = clickedAct.data();
             if (url != null && url != "")
+                p_.tabs.currentIndex = 1;
+                p_.onTabIndexChanged(p_.tabs.currentIndex);
                 p_.openUrl(url);
         }
     },

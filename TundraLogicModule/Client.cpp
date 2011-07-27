@@ -152,7 +152,6 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
     if (!sourceIterator.hasNext())
         return;
 
-    emit changeTab(removedConnection_);
     // Scene to be removed is TundraClient_X | X = 0, 1, 2, 3, ..., n; n ¤ Z+
     // removedConnection_ indicates which scene we are about to disconnect.
     QString sceneToRemove = "TundraClient_";
@@ -160,6 +159,7 @@ void Client::Logout(bool fail, unsigned short removedConnection_)
 
     if (loginstate_list_[sceneToRemove] != NotConnected)
     {
+        emit changeTab(removedConnection_);
         // This signal is catched in TundraLogicModule.cpp. This changes scene to soonToBeDisconnected scene.
         emit aboutToDisconnect(sceneToRemove);
         if (GetConnection(removedConnection_))
@@ -560,6 +560,28 @@ unsigned short Client::getActiveConnection() const
 bool Client::hasConnections()
 {
     return connectionsAvailable;
+}
+
+void Client::printConnections()
+{
+    unsigned short counter = 0;
+    QMapIterator<QString, std::map<QString, QString> > propertiesIterator(properties_list_);
+    std::map<QString, QString> temp;
+
+    while (propertiesIterator.hasNext())
+    {
+        propertiesIterator.next();
+        // Properties_list might contain properties for connection that is pending. This skips over it.
+        if (scenenames_.contains(owner_->Grep(propertiesIterator.key())))
+        {
+            temp = propertiesIterator.value();
+            QString address = temp["address"];
+            QString port = temp["port"];
+            QString protocol = temp["protocol"];
+            TundraLogicModule::LogInfo("[" + ToString(counter) + "]: " + address.toStdString() + ":" + port.toStdString() + ":" + protocol.toStdString());
+            counter++;
+        }
+    }
 }
 
 }
