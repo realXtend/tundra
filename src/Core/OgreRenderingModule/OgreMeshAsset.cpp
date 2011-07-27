@@ -61,12 +61,19 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
         ogreMesh->setAutoBuildEdgeLists(false);
     }
 
-    std::vector<u8> tempData(data_, data_ + numBytes);
+    try
+    {
+        std::vector<u8> tempData(data_, data_ + numBytes);
 #include "DisableMemoryLeakCheck.h"
-    Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&tempData[0], numBytes, false));
+        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&tempData[0], numBytes, false));
 #include "EnableMemoryLeakCheck.h"
-    Ogre::MeshSerializer serializer;
-    serializer.importMesh(stream, ogreMesh.getPointer()); // Note: importMesh *adds* submeshes to an existing mesh. It doesn't replace old ones.
+        Ogre::MeshSerializer serializer;
+        serializer.importMesh(stream, ogreMesh.getPointer()); // Note: importMesh *adds* submeshes to an existing mesh. It doesn't replace old ones.
+    }
+    catch (Ogre::Exception &e)
+    {
+        return false;
+    }
     
     // Generate tangents to mesh
     try

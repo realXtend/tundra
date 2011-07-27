@@ -118,7 +118,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bo
     }
     catch(Ogre::Exception &e)
     {
-        LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
+        LogError("TextureAsset::DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
         return false;
     }
 }
