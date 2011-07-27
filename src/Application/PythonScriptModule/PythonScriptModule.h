@@ -46,7 +46,7 @@ namespace PythonScript
         /// Prepares Python script instance used with EC_Script for execution.
         /// The script is executed instantly only if the runOnLoad attribute of the script EC is true.
         /// @param scriptAsset Script asset.
-        void LoadScript(const std::vector<ScriptAssetPtr> &newScripts);
+        void LoadScripts(const std::vector<ScriptAssetPtr> &newScripts);
 
         /// Get Server
         QObject *GetServer() const;
