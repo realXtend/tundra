@@ -191,7 +191,11 @@ namespace OgreRenderer
         overriddenLogManager->createLog("", true, false, true);
         Ogre::LogManager::getSingleton().getDefaultLog()->setDebugOutputEnabled(false); // Disable Ogre from outputting to std::cerr by itself.
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(logListener); // Make all Ogre log output to come to our log listener.
+#ifdef _DEBUG
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_NORMAL); // This is probably the default level anyway, but be explicit.
+#else
+        Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
+#endif
 
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 

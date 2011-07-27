@@ -93,7 +93,7 @@ void OgreSkeletonAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket,
         return;
 
     const QString assetRef = Name();
-    internal_name_ = SanitateAssetIdForOgre(assetRef);
+    internal_name_ = OgreRenderer::SanitateAssetIdForOgre(assetRef);
     if (!result.error)
     {
         ogreSkeleton = Ogre::SkeletonManager::getSingleton().getByName(internal_name_, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);

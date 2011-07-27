@@ -129,7 +129,7 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
         return;
 
     const QString assetRef = Name();
-    ogreAssetName = OgreRenderer::SanitateAssetIdForOgre(assetRef).c_str();
+    ogreAssetName = QString::fromStdString(OgreRenderer::SanitateAssetIdForOgre(assetRef));
     if (!result.error)
     {
         ogreTexture = Ogre::TextureManager::getSingleton().getByName(ogreAssetName.toStdString(), OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP);
