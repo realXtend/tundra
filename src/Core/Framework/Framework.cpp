@@ -117,10 +117,6 @@ Framework::~Framework()
     SAFE_DELETE(console);
     SAFE_DELETE(scene);
     SAFE_DELETE(frame);
-
-    // Don't delete UiAPI. It is quite crash prone in certain QWidget/QObject 
-    // cases if we delete UiAPI here, core dumps at exit in QApplication::notify.
-    /// \bug Inspect the situation some more, it seems when QWebViews are present on the run we always crash here.
     SAFE_DELETE(ui);
 
     // This delete must be the last one in Framework since application derives QApplication.

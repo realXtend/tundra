@@ -137,8 +137,20 @@ UiAPI::UiAPI(Framework *owner_) :
 
 UiAPI::~UiAPI()
 {
-    delete mainWindow;
-    delete viewportWidget;
+    // If we have a mainwindow delete it, note this will be null on headless mode
+    // so this if check needs to be here.
+    if (mainWindow)
+    {
+        mainWindow->close();
+        SAFE_DELETE(mainWindow);
+    }
+    // viewportWidget will be null after main window is deleted above
+    // as it is inside the main window (is a child so gets deleted)
+    if (viewportWidget)
+    {
+        viewportWidget->close();
+        SAFE_DELETE(viewportWidget);
+    }
 }
 
 UiMainWindow *UiAPI::MainWindow() const
