@@ -19,10 +19,11 @@
 
 EC_Fog::EC_Fog(Scene* scene) :
     IComponent(scene),
+    mode(this, "Mode", 3),
+    color(this,"Color", Color(0.707792f,0.770537f,0.831373f,1.f)),
     startDistance(this, "Start distance", 100.f),
     endDistance(this, "End distance", 2000.f),
-    color(this,"Color", Color(0.707792f,0.770537f,0.831373f,1.f)),
-    mode(this, "Mode", 3)
+    expDensity(this, "Exponential density", 0.001f)
 {
     static AttributeMetadata metadata;
     static bool metadataInitialized = false;
@@ -41,6 +42,17 @@ EC_Fog::EC_Fog(Scene* scene) :
     Update();
 }
 
+EC_Fog::~EC_Fog()
+{
+    if (!ParentScene())
+        return;
+    OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
+    if (!w)
+        return;
+
+    w->GetSceneManager()->setFog(Ogre::FOG_NONE);
+}
+
 void EC_Fog::Update()
 {
     if (!ParentScene())
@@ -50,6 +62,6 @@ void EC_Fog::Update()
         return;
 
     // Note: in Tundra1-series, if we were within EC_WaterPlane, the waterPlaneColor*fogColor was used as the scene fog color.
-    w->GetSceneManager()->setFog(static_cast<Ogre::FogMode>(mode.Get()), color.Get(), 0.001f, startDistance.Get(), endDistance.Get());
+    w->GetSceneManager()->setFog((Ogre::FogMode)mode.Get(), color.Get(), expDensity.Get(), startDistance.Get(), endDistance.Get());
     w->GetRenderer()->GetViewport()->setBackgroundColour(color.Get());
 }
