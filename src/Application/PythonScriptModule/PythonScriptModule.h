@@ -81,22 +81,6 @@ namespace PythonScript
         /// Start PythonQt.
         void StartPythonQt();
 
-        /* Circuits Module Manager start and stop. I have implemented Tundra startup config xml parsing
-         * that can have pyplugins. I don't see that we need circuits anymore for anything. tundra.py exposing the framework
-         * plus startup py plugin loading should do the trick!
-         * 
-         * \todo Remove below funtions when decided.
-
-        /// Start Python ModuleManager.
-        void StartPythonModuleManager();
-
-        /// Stop Python ModuleManager.
-        void StopPythonModuleManager();
-
-        /// Slot for FrameAPI::Updated signal
-        void UpdatePythonModuleManager(float frametime);
-        */
-
         /// Add path to python for imports.
         void AddSystemPath(const QString &path);
 
@@ -132,12 +116,6 @@ namespace PythonScript
     private:
         /// Tracking boolean if python qt is initialized.
         bool pythonQtStarted_;
-
-        /// The hook to the python-written module manager that passes events on
-        //PyObject *pyTundraModule_;
-        //PyObject *pyTundraDict_;
-        //PyObject *pyTundraClass_;
-        //PyObject *pyTundraInstance_;
 
         /// List of created InputContextPtrs.
         QList<InputContextPtr> createdInputs_;

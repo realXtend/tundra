@@ -110,10 +110,6 @@ namespace PythonScript
     PythonScriptModule::PythonScriptModule() :
         IModule("PythonScriptModule"),
         pythonQtStarted_(false)
-        //pyTundraInstance_(0),
-        //pyTundraModule_(0),
-        //pyTundraClass_(0),
-        //pyTundraDict_(0)
     {
         StartPythonQt();
     }
@@ -421,70 +417,6 @@ namespace PythonScript
         }
     }
 
-    /* Circuits Module Manager start and stop. I have implemented Tundra startup config xml parsing
-     * that can have pyplugins. I don't see that we need circuits anymore for anything. tundra.py exposing the framework
-     * plus startup py plugin loading should do the trick!
-     * 
-     * \todo Remove below funtions when decided.
-
-    void PythonScriptModule::StartPythonModuleManager()
-    {
-        // Load the Python ModuleManager from tundra_core.py using the Python C API directly
-        pyTundraModule_ = PyImport_ImportModule("tundra_core");
-        if (pyTundraModule_ == NULL) 
-        {
-            LogError("PythonScriptModule::StartPythonModuleManager(): Failed to import tundra_core.py");
-            return;
-        }
-        pyTundraDict_ = PyModule_GetDict(pyTundraModule_);
-        if (pyTundraDict_ == NULL) 
-        {
-            LogError("PythonScriptModule::StartPythonModuleManager(): Unable to get tundra_core module namespace");
-            return;
-        }
-        pyTundraClass_ = PyDict_GetItemString(pyTundraDict_, "ModuleManager");
-        if (pyTundraClass_ == NULL) 
-        {
-            LogError("PythonScriptModule::StartPythonModuleManager(): Unable get ModuleManager class from modulemanager namespace");
-            return;
-        }
-
-        // Instantiate ModuleManager for the loading of python components/plugins
-        if (pyTundraClass_)
-        {
-            if (PyCallable_Check(pyTundraClass_))
-            {
-                LogInfo(Name() + ": Starting Python ModuleManager");
-                pyTundraInstance_ = PyObject_CallObject(pyTundraClass_, NULL);
-            }
-            else 
-                LogInfo(Name() + ": Unable to start Python ModuleManager");
-        }
-        else
-            LogError("PythonScriptModule::StartPythonModuleManager() was not successful in fetching Python ModuleManager!");
-    }
-
-    void PythonScriptModule::StopPythonModuleManager()
-    {
-        // Make python module manager exit
-        LogInfo(Name() + ": Stopping Python ModuleManager");
-        if (pyTundraInstance_ != NULL)
-            PyObject_CallMethod(pyTundraInstance_, "exit", "");
-
-        pyTundraInstance_ = 0;
-        pyTundraModule_ = 0;
-        pyTundraClass_ = 0;
-        pyTundraDict_ = 0;
-    }
- 
-    void PythonScriptModule::UpdatePythonModuleManager(float frametime)
-    {
-        /// \bug Somehow this causes extreme lag in a mode without console (Still relevant in tundra2?)
-        if (pyTundraInstance_)
-            PyObject_CallMethod(pyTundraInstance_, "update", "f", frametime);
-    }
-    */
-
     void PythonScriptModule::AddSystemPath(const QString &path)
     {
         RunString("import sys; sys.path.append('" + path + "');");
@@ -688,8 +620,7 @@ namespace PythonScript
     void PythonScriptModule::ConsoleRestartPython(const QStringList &params)
     {
         /// \todo Reset current python plugins and call LoadStartupScripts again.
-        //StopPythonModuleManager();
-        //StartPythonModuleManager();
+        LogWarning("PythonScriptModule::ConsoleRestartPython not implemented yet!");
     }
 
     void PythonScriptModule::PythonPrintLog(const QString &logType, const QString &logMessage)
