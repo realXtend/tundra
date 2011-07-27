@@ -119,6 +119,7 @@ EC_WebView::EC_WebView(Scene *scene) :
 
 EC_WebView::~EC_WebView()
 {
+    disconnect();
     ResetWidget();
 }
 
@@ -365,7 +366,7 @@ void EC_WebView::ResetWidget()
             webview_->stop();
             webviewLoading_ = false;
         }
-        webview_->deleteLater();
+        delete webview_.data();
         webview_ = 0;
     }
 
@@ -471,8 +472,11 @@ void EC_WebView::PrepareWebview()
 
     ResetWidget();
 
+    // Do not set our main window as the parent so we can our selves delete
+    // the widget on dtor. This will result in the Qt::Tool window going behind the main win
+    // when you set focus on it, but this is something we have to accept on the ui side of things.
+    // Otherwise we cant delete the webview on exit, or if we do crash on UiAPI::~UiAPI()!
     webview_ = new QWebView();
-    webview_->setParent(GetFramework()->Ui()->MainWindow());
     webview_->setWindowFlags(Qt::Tool);
     webview_->setFixedSize(getwebviewSize());
     webview_->installEventFilter(this);
