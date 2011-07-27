@@ -185,9 +185,6 @@ namespace PythonScript
         // Connect to SceneAPI
         QObject::connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
 
-        // Connect to FrameAPI
-        QObject::connect(GetFramework()->Frame(), SIGNAL(Updated(float)), this, SLOT(UpdatePythonModuleManager(float)));
-
         // Console commands to ConsoleAPI
         GetFramework()->Console()->RegisterCommand("PyExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
                                                    this, SLOT(ConsoleRunString(const QStringList&)));
@@ -475,19 +472,19 @@ namespace PythonScript
     void PythonScriptModule::OnComponentAdded(Entity *entity, IComponent *component)
     {
         if (component->TypeName() == EC_Script::TypeNameStatic())
-            QObject::connect(component, SIGNAL(ScriptAssetChanged(const std::vector<ScriptAssetPtr>&)), 
-                             this, SLOT(LoadScript(const std::vector<ScriptAssetPtr>&)), Qt::UniqueConnection);
+            QObject::connect(component, SIGNAL(ScriptAssetsChanged(const std::vector<ScriptAssetPtr>&)), 
+                             this, SLOT(LoadScripts(const std::vector<ScriptAssetPtr>&)), Qt::UniqueConnection);
     }
 
     void PythonScriptModule::OnComponentRemoved(Entity *entity, IComponent *component)
     {
         if (component->TypeName() == EC_Script::TypeNameStatic())
-            QObject::disconnect(component, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(LoadScript(ScriptAssetPtr)));
+            QObject::disconnect(component, SIGNAL(ScriptAssetsChanged(const std::vector<ScriptAssetPtr>&)), this, SLOT(LoadScripts(const std::vector<ScriptAssetPtr>&)));
     }
 
     //////////////// PythonScriptModule public slots
 
-    void PythonScriptModule::LoadScript(const std::vector<ScriptAssetPtr> &newScripts)
+    void PythonScriptModule::LoadScripts(const std::vector<ScriptAssetPtr> &newScripts)
     {
         EC_Script *script = dynamic_cast<EC_Script*>(this->sender());
         if (!script)
