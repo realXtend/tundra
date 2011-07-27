@@ -142,14 +142,14 @@ UiAPI::~UiAPI()
     if (mainWindow)
     {
         mainWindow->close();
-        SAFE_DELETE(mainWindow);
+        delete mainWindow.data();
     }
     // viewportWidget will be null after main window is deleted above
     // as it is inside the main window (is a child so gets deleted)
-    if (viewportWidget)
+    if (!viewportWidget.isNull())
     {
         viewportWidget->close();
-        SAFE_DELETE(viewportWidget);
+        delete viewportWidget.data();
     }
 }
 
