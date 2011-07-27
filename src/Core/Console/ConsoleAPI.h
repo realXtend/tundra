@@ -116,6 +116,13 @@ public slots:
     /// This command is invoked by typing 'help' to the console.
     void ListCommands();
 
+    /// Log printing funtionality for scripts.
+    void LogInfo(const QString &message);
+    void LogWarning(const QString &message);
+    void LogError(const QString &message);
+    void LogFatal(const QString &message);
+    void LogDebug(const QString &message);
+
 private:
     Framework *framework;
     CommandMap commands; ///< Stores all the registered console commands.
