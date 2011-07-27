@@ -62,8 +62,7 @@ float3x4 operator *(const TranslateOp &lhs, const float3x4 &rhs)
     float3x4 r = rhs;
     r.SetTranslatePart(r.TranslatePart() + lhs.Offset());
     // Our optimized form of multiplication must be the same as this.
-    /// \bug This assert is failing and crashes the app.
-    //assert(r.Equals((float3x4)lhs * rhs));
+    assert(r.Equals((float3x4)lhs * rhs));
     return r;
 }
 
