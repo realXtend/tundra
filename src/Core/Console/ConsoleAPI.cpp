@@ -169,3 +169,30 @@ void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
     if (e->sequence == toggleConsole)
         ToggleConsole();
 }
+
+void ConsoleAPI::LogInfo(const QString &message)
+{
+    Print(message);
+}
+
+void ConsoleAPI::LogWarning(const QString &message)
+{
+    Print("Warning: " + message);
+}
+
+void ConsoleAPI::LogError(const QString &message)
+{
+    Print("Error: " + message);
+}
+
+void ConsoleAPI::LogFatal(const QString &message)
+{
+    Print("Fatal: " + message);
+}
+
+void ConsoleAPI::LogDebug(const QString &message)
+{
+#ifdef _DEBUG
+    Print("Debug: " + message);
+#endif
+}
