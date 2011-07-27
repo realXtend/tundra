@@ -36,12 +36,24 @@ float3 ToCoreVector(const Ogre::Vector3 &vector)
 
 std::string SanitateAssetIdForOgre(const QString& input)
 {
+    /// \bug Why is this new $1 $2 logic needed? It breaks asynch asset loads
+    /// as the filename wont match the cache file entry!
     QString ret = input;
-    if (ret.contains('$'))
-        return ret.toStdString();
+    //if (ret.contains('$'))
+    //    return ret.toStdString();
 
-    ret.replace(':', "$1");
-    ret.replace('/', "$2");
+    //ret.replace(':', "$1");
+    //ret.replace('/', "$2");
+    ret.replace("/", "_");
+    ret.replace("\\", "_");
+    ret.replace(":", "_");
+    ret.replace("*", "_");
+    ret.replace("?", "_");
+    ret.replace("\"", "_");
+    ret.replace("'", "_");
+    ret.replace("<", "_");
+    ret.replace(">", "_");
+    ret.replace("|", "_");
     return ret.toStdString();
 }
 
