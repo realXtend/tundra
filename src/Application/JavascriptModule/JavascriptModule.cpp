@@ -561,6 +561,7 @@ void JavascriptModule::LoadStartupScripts()
     QStringList startupScriptsToLoad = ParseStartupScriptConfig();
 
     // Create a script instance for each of the files, register services for it and try to run.
+    LogInfo(Name() + ": Loading startup scripts");
     for(uint i = 0; i < scripts.size(); ++i)
     {
         QString startupScript = scripts[i].c_str();
@@ -568,12 +569,42 @@ void JavascriptModule::LoadStartupScripts()
         QString baseName = startupScript.mid(startupScript.lastIndexOf("/")+1);
         if (startupScriptsToLoad.contains(startupScript) || startupScriptsToLoad.contains(baseName))
         {
-            LogInfo("Loading .js startup script \"" + baseName + "\".");
+            LogInfo(Name() + ": ** " + baseName.toStdString());
             JavascriptInstance* jsInstance = new JavascriptInstance(startupScript, this);
             PrepareScriptInstance(jsInstance);
             startupScripts_.push_back(jsInstance);
             jsInstance->Run();
+
+            // Remove from the list so we can check relative paths next.
+            startupScriptsToLoad.removeAll(startupScript);
+            startupScriptsToLoad.removeAll(baseName);
         }
+    }
+
+    // Allow relative paths from '/<install_dir>' and '/<install_dir>/jsmodules'  to start also
+    QDir jsPluginsDir("./jsmodules");
+    foreach(QString startupScript, startupScriptsToLoad)
+    {
+        // Only allow relative paths, maybe allow absolute paths as well, maybe even URLs at some point?
+        if (!QDir::isRelativePath(startupScript))
+            continue;
+
+        QString pathToFile;
+        if (jsPluginsDir.exists(startupScript))
+            pathToFile = jsPluginsDir.filePath(startupScript);
+        else if (QFile::exists(startupScript))
+            pathToFile = startupScript;
+        else
+        {
+            LogWarning(Name() + "** Could not find startup file for: " + startupScript.toStdString());
+            continue;
+        }
+
+        LogInfo(Name() + ": ** " + startupScript.toStdString());
+        JavascriptInstance* jsInstance = new JavascriptInstance(pathToFile, this);
+        PrepareScriptInstance(jsInstance);
+        startupScripts_.push_back(jsInstance);
+        jsInstance->Run();
     }
 }
 
