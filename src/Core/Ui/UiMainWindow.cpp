@@ -9,7 +9,7 @@
 #include <QCloseEvent>
 #include <QDesktopWidget>
 #include <QApplication>
-#include <QIcon>
+#include <QMenuBar>
 
 #include <utility>
 #include <iostream>
@@ -115,3 +115,49 @@ void UiMainWindow::resizeEvent(QResizeEvent *e)
     emit WindowResizeEvent(width(), height());
 }
 
+bool UiMainWindow::HasMenu(const QString &name)
+{
+    if (!menuBar())
+        return false;
+
+    QList<QString> menuNames = menus_.keys();
+    return menuNames.contains(name);
+}
+
+QMenu *UiMainWindow::GetMenu(const QString &name)
+{
+    if (!menuBar())
+        return 0;
+
+    if (HasMenu(name))
+        return menus_[name];
+    return 0;
+}
+
+QMenu *UiMainWindow::AddMenu(const QString &name)
+{
+    if (!menuBar())
+        return 0;
+
+    if (HasMenu(name))
+        return menus_[name];
+    QMenu *menu = menuBar()->addMenu(name);
+    menus_[name] = menu;
+    return menu;
+}
+
+QAction *UiMainWindow::AddMenuAction(const QString &menuName, const QString &actionName, const QIcon &icon)
+{
+    if (!menuBar())
+        return 0;
+
+    QMenu *menu = 0;
+    if (HasMenu(menuName))
+        menu = menus_[menuName];
+    else
+        menu = AddMenu(menuName);
+
+    if (!menu)
+        return 0;
+    return menu->addAction(icon, actionName);
+}
