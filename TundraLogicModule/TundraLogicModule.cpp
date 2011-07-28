@@ -365,7 +365,15 @@ ConsoleCommandResult TundraLogicModule::ConsoleDisconnect(const StringVector& pa
 
     else if (params.size() >= 1)
     {
-        int conNumber = ParseString<int>(params[0]);
+        int conNumber;
+        try {
+            conNumber = ParseString<int>(params[0]);
+        }
+        catch (std::exception &e)
+        {
+            return ConsoleResultInvalidParameters();
+        }
+
         client_->Logout(false, conNumber);
     }
     
