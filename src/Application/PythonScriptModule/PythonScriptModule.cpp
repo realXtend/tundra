@@ -125,9 +125,6 @@ namespace PythonScript
         // Clear script created input contexts.
         createdInputs_.clear();
 
-        // Stop ModuleManager
-        //StopPythonModuleManager();
-
         PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
         if (!mainModule.isNull())
         {
@@ -135,7 +132,6 @@ namespace PythonScript
             mainModule.removeVariable("_tundra");
         }
 
-        std::cout << "PythonScriptModule: Py_Finalize ";
         Py_Finalize();
 
         // Clean up PythonQt
@@ -263,16 +259,22 @@ namespace PythonScript
                 pluginsToLoad.push_back(e.attribute("path"));
             n = n.nextSibling();
         }
-       
+
+        LogInfo(Name() + ": Loading startup scripts");
         QDir pythonPlugins(Application::InstallationDirectory() + "pyplugins");
         foreach(QString pluginPath, pluginsToLoad)
         {
             const QString pluginFile = pythonPlugins.absoluteFilePath(pluginPath);
             if (QFile::exists(pluginFile))
+            {
+                LogInfo(Name() + ": ** " + pluginPath.toStdString());
                 RunScript(pluginFile);
+            }
             else
-                LogWarning(Name() + ": Could not locate startup pyplugin '" + pluginPath.toStdString() +"'. Make sure your path is relative to /pyplugins folder.");
+                LogWarning(Name() + ": ** Could not locate startup pyplugin '" + pluginPath.toStdString() +"'. Make sure your path is relative to /pyplugins folder.");
         }
+        if (pluginsToLoad.empty())
+            LogInfo(Name() + ": ** No python scripts in startup config");
     }
 
     void PythonScriptModule::StartPythonQt()
