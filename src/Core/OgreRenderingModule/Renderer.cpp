@@ -174,9 +174,7 @@ namespace OgreRenderer
         std::string logfilepath, rendersystem_name;
         Ogre::RenderSystem *rendersystem = 0;
 
-        LogDebug("INITIALIZING OGRE");
-
-        //const boost::program_options::variables_map &options = framework_->ProgramOptions();
+        LogInfo("Renderer: Initializing Ogre");
 
         // Create Ogre root with logfile
         QDir logDir(Application::UserDataDirectory());
@@ -203,11 +201,11 @@ namespace OgreRenderer
 // On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwareBufferManager singleton will crash.
 ///\todo Perhaps this #ifdef should instead be if(Ogre Render System == OpenGL) (test how Windows + OpenGL behaves)
 #ifdef UNIX 
-    if (framework_->IsHeadless())
-    {
-        // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
-        new Ogre::DefaultHardwareBufferManager();
-    }
+        if (framework_->IsHeadless())
+        {
+            // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
+            new Ogre::DefaultHardwareBufferManager();
+        }
 #endif
 
 #include "EnableMemoryLeakCheck.h"
