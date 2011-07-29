@@ -39,16 +39,24 @@ message (STATUS "ENABLE_JS_PROFILING       = " ${ENABLE_JS_PROFILING})
 message (STATUS "ENABLE_MEMORY_LEAK_CHECKS = " ${ENABLE_MEMORY_LEAK_CHECKS})
 message ("\n")
 
+# Force skyx and hydrax off for VC100 and linux.
+# Ludocraft has modified the libraries to have setCamera functions and 
+# we dont have the sources to build em for the other compilers :E
+if (VC100)
+    set (ENABLE_SKYX 0)
+    set (ENABLE_HYDRAX 0)
+endif ()
+
 if (ENABLE_PROFILING)
     add_definitions (-DPROFILING)
 endif ()
 if (ENABLE_JS_PROFILING)
     add_definitions (-DENABLE_JS_PROFILING)
 endif()
-if (MSVC AND ENABLE_HYDRAX)
+if (ENABLE_HYDRAX)
     configure_hydrax ()
 endif()
-if (MSVC AND ENABLE_SKYX)
+if (ENABLE_SKYX)
     configure_skyx()
 endif()
 if (MSVC AND ENABLE_MEMORY_LEAK_CHECKS)
