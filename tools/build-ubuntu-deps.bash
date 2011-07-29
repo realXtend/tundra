@@ -62,6 +62,44 @@ else
     touch $tags/$what-done
 fi
 
+
+what=hydrax
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    cd $build
+    rm -rf $what
+    tarballname=libhydrax_0.5.4-5.tar.gz
+    url=https://launchpad.net/~sonsilentsea-team/+archive/sonsilentsea/+files/$tarballname
+    test -f $tarballs/$tarballname || wget -P $tarballs $url
+    tar zxf $tarballs/$tarballname
+    cd libhydrax-0.5.4
+    sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
+    sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
+    make -j $nprocs PREFIX=$prefix
+    make PREFIX=$prefix install
+    touch $tags/$what-done
+fi
+
+
+what=skyx
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    cd $build
+    rm -rf $what
+    tarballname=libskyx_0.1.1.orig.tar.gz
+    url=https://launchpad.net/~sonsilentsea-team/+archive/sonsilentsea/+files/$tarballname
+    test -f $tarballs/$tarballname || wget -P $tarballs $url
+    tar zxf $tarballs/$tarballname
+    cd skyx-0.1.1.orig
+    sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
+    sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
+    make -j $nprocs PREFIX=$prefix
+    make PREFIX=$prefix install
+    touch $tags/$what-done
+fi
+
 what=qtscriptgenerator
 if test -f $tags/$what-done; then 
    echo $what is done

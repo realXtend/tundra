@@ -190,9 +190,13 @@ endmacro ()
 
 macro (configure_skyx)
     sagase_configure_package (SKYX
-        NAMES SkyX SKYX skyx
-        COMPONENTS SkyX SKYX skyx
-        PREFIXES ${ENV_TUNDRA_DEP_PATH})
+      NAMES SkyX SKYX skyx
+      COMPONENTS SkyX SKYX skyx
+      PREFIXES ${ENV_TUNDRA_DEP_PATH})
+
+    if (NOT WIN32)
+      set (SKYX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/SkyX)
+    endif ()
     
     sagase_configure_report (SKYX)
 endmacro (configure_skyx)
@@ -203,6 +207,10 @@ macro (configure_hydrax)
         COMPONENTS Hydrax HYDRAX hydrax
         PREFIXES ${ENV_TUNDRA_DEP_PATH})
     
+    if (NOT WIN32)
+       set (HYDRAX_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include/Hydrax)
+    endif ()
+
     sagase_configure_report (HYDRAX)
 endmacro (configure_hydrax)
 
