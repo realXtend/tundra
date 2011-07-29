@@ -323,38 +323,38 @@ namespace PythonScript
             PythonQt::self()->registerClass(&EC_Name::staticMetaObject);
             PythonQt::self()->registerClass(&EC_OgreCompositor::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Sound::staticMetaObject);
-            PythonQt::self()->registerClass(&EC_InputMapper::staticQtMetaObject);
-            PythonQt::self()->registerClass(&EC_SelectionBox::staticQtMetaObject);
+            PythonQt::self()->registerClass(&EC_InputMapper::staticMetaObject);
+            PythonQt::self()->registerClass(&EC_SelectionBox::staticMetaObject);
 
             /////////////////////////////////////////////////////////////////////////////////////////
             // Conditional ECs
 #ifdef EC_Highlight_ENABLED
-            PythonQt::self()->registerClass(&EC_Highlight::staticQtMetaObject);
+            PythonQt::self()->registerClass(&EC_Highlight::staticMetaObject);
 #endif
 #ifdef EC_HoveringText_ENABLED
-            PythonQt::self()->registerClass(&EC_HoveringText::staticQtMetaObject);
+            PythonQt::self()->registerClass(&EC_HoveringText::staticMetaObject);
 #endif
 #ifdef EC_Touchable_ENABLED
-            PythonQt::self()->registerClass(&EC_Touchable::staticQtMetaObject);
+            PythonQt::self()->registerClass(&EC_Touchable::staticMetaObject);
 #endif
 #ifdef EC_Sound_ENABLED
-            PythonQt::self()->registerClass(&EC_Sound::staticQtMetaObject);
-            PythonQt::self()->registerClass(&EC_SoundListener::staticQtMetaObject);
+            PythonQt::self()->registerClass(&EC_Sound::staticMetaObject);
+            PythonQt::self()->registerClass(&EC_SoundListener::staticMetaObject);
 #endif
 #ifdef EC_PlanarMirror_ENABLED
-            PythonQt::self()->registerClass(&EC_PlanarMirror::staticQtMetaObject);
+            PythonQt::self()->registerClass(&EC_PlanarMirror::staticMetaObject);
 #endif
 #ifdef EC_ProximityTrigger_ENABLED
-            PythonQt::self()->registerClass(&EC_ProximityTrigger::staticQtMetaObject);
+            PythonQt::self()->registerClass(&EC_ProximityTrigger::staticMetaObject);
 #endif
 #ifdef EC_Billboard_ENABLED
-            PythonQt::self()->registerClass(&EC_Billboard::staticQtMetaObject);
+            PythonQt::self()->registerClass(&EC_Billboard::staticMetaObject);
 #endif
 #ifdef EC_ParticleSystem_ENABLED
-            PythonQt::self()->registerClass(&EC_ParticleSystem::staticQtMetaObject);
+            PythonQt::self()->registerClass(&EC_ParticleSystem::staticMetaObject);
 #endif
 #ifdef EC_TransformGizmo_ENABLED
-            PythonQt::self()->registerClass(&EC_TransformGizmo::staticQtMetaObject);
+            PythonQt::self()->registerClass(&EC_TransformGizmo::staticMetaObject);
 #endif
 
             /////////////////////////////////////////////////////////////////////////////////////////
@@ -377,7 +377,7 @@ namespace PythonScript
             // Rendering
             PythonQt::self()->registerClass(&OgreRenderer::OgreRenderingModule::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::Renderer::staticMetaObject);
-            PythonQt::self()->registerClass(&RaycastResult::staticQtMetaObject);
+            PythonQt::self()->registerClass(&RaycastResult::staticMetaObject);
 
             /////////////////////////////////////////////////////////////////////////////////////////
             // Ui
