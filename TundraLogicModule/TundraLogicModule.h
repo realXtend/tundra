@@ -91,6 +91,9 @@ public:
     /// Lists all established connections
     ConsoleCommandResult ConsoleListConnections(const StringVector& params);
     
+    /// Change primary view to another already established connection
+    ConsoleCommandResult ConsoleChangeConnection(const StringVector& params);
+    
     /// Check whether we are a server
     bool IsServer() const;
     

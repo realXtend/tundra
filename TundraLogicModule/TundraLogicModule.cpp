@@ -110,6 +110,10 @@ void TundraLogicModule::PostInitialize()
         "Lists all established connections.",
         ConsoleBind(this, &TundraLogicModule::ConsoleListConnections)));
         
+    framework_->Console()->RegisterCommand(CreateConsoleCommand("changecon",
+        "Change primary view to another connection already established. Meant to be used without webkit UI.",
+        ConsoleBind(this, &TundraLogicModule::ConsoleChangeConnection)));
+        
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
     if (!kristalliModule_)
@@ -383,6 +387,25 @@ ConsoleCommandResult TundraLogicModule::ConsoleDisconnect(const StringVector& pa
 ConsoleCommandResult TundraLogicModule::ConsoleListConnections(const StringVector &params)
 {
     client_->printConnections();
+
+    return ConsoleResultSuccess();
+}
+
+ConsoleCommandResult TundraLogicModule::ConsoleChangeConnection(const StringVector &params)
+{
+    QString sceneName = "TundraClient_";
+    int conNumber = 0;
+
+    try {
+        conNumber = ParseString<int>(params[0]);
+    }
+    catch (std::exception &e)
+    {
+        return ConsoleResultInvalidParameters();
+    }
+
+    sceneName.append(QString("%1").arg(conNumber));
+    client_->emitChangeSceneSignal(sceneName);
 
     return ConsoleResultSuccess();
 }
