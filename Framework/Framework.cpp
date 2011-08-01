@@ -44,6 +44,9 @@ Framework::Framework(int argc, char** argv) :
     ui(0),
 //    connection(0),
 //    server(0),
+#ifdef PROFILING
+    profiler(0),
+#endif
     renderer(0)
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
