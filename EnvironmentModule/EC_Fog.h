@@ -12,12 +12,13 @@
     <h2>Environment fog</h2>
 
     Registered by Enviroment::EnvironmentModule.
-    The EC_Fog component defines the overall fog settings for the whole scene.
+    The EC_Fog component defines the overall fog settings for the whole scene,
+    hence only one component per scene is applicable.
 
     <b>Attributes</b>:
     <ul>
     <li> int : mode.
-    <div> Fog type ( none, linear, exp, exp2) this defines how fast fog density increases. </div>
+    <div> Fog type (see FogMode) this defines how fast fog density increases. </div>
     <li> Color : color.
     <div> The color of the fog.</div>
     <li> float : startDistance.
