@@ -746,9 +746,9 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
         {
             EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
             connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
-            connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
+            connect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
             connect(dc, SIGNAL(ComponentNameChanged(const QString&, const QString&)),
-                    SLOT(ComponentNameChanged(const QString&)), Qt::UniqueConnection);
+                    SLOT(OnComponentNameChanged(const QString&)), Qt::UniqueConnection);
         }
         return;
     }
