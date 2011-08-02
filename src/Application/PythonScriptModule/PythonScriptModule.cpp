@@ -63,6 +63,7 @@
 // Python and PythonQt
 #include <PythonQt.h>
 #include <PythonQt_QtAll.h>
+#include <PythonQtSignalReceiver.h>
 #include "PythonScriptInstance.h"
 #include "PythonQtScriptingConsole.h"
 #include "TundraWrapper.h"
@@ -132,9 +133,16 @@ namespace PythonScript
             mainModule.removeVariable("_tundra");
         }
 
-        Py_Finalize();
+        // This will remove all the signal handlers in PythonQt.
+        // This function is only available in the modified PythonQt realXtend Tundra made.
+        // Otherwise our app will crash when deleting the framework APIs as there are connected signals still to python slots.
+        LogInfo("PythonScriptModule: Disconnecting all PythonQt connected signals");
+        PythonQt::priv()->disconnectAllSignalReceivers();
+        PythonQt::priv()->deleteAllSignalReceivers();
 
-        // Clean up PythonQt
+        // Note that we do not call Py_Finalize() before or after PythonQt::cleanup()
+        // as this will crash either way after doing the above. Let python release its memory when the dll is unloaded.
+        LogInfo("PythonScriptModule: Running PythonQt cleanup");
         PythonQt::cleanup();
     }
 
