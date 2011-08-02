@@ -21,15 +21,15 @@
     <b>Attributes</b>:
     <ul>
     <li> Color : sunColor.
-    <div> Defines sun color (in Caelum) </div>
+    <div> Defines sunlight color. </div>
     <li> Color : ambientColor.
-    <div> Defines scene ambient color. </div>
+    <div> Defines scene ambient light color. </div>
     <li> Color : sunDiffuseColor.
-    <div> Defines sun diffuse color.  </div>
+    <div> Defines sunlight diffuse color.  </div>
     <li> float3 : sunDirection.
-    <div> Defines sun direction vector. </div>
+    <div> Defines sunlight direction vector. </div>
     <li> bool : sunCastShadows.
-    <div> Defines that does sun cast shadows (usable only if caelum is disabled) </div>
+    <div> Defines that does sun cast shadows. </div>
     </table>
 */
 class EC_EnvironmentLight : public IComponent
