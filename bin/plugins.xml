@@ -5,10 +5,10 @@
   <plugin path="EnvironmentModule" /> <!-- EnvironmentModule depends on OgreRenderingModule -->
   <plugin path="OgreAssetEditorModule" /> <!-- OgreAssetEditorModule depends on OgreRenderingModule -->
   <plugin path="PhysicsModule" /> <!-- PhysicsModule depends on OgreRenderingModule and EnvironmentModule -->
-  <plugin path="OpenDocuments" />
   <plugin path="TundraProtocolModule" /> <!-- TundraProtocolModule depends on KristalliProtocolModule, OgreRenderingModule and PhysicsModule -->
-  <plugin path="JavascriptModule" /> <!-- JavascriptModule depends on TundraLogicModule --> 
+  <plugin path="JavascriptModule" /> <!-- JavascriptModule depends on TundraLogicModule -->
   <plugin path="AssetModule" />	<!-- AssetModule depends on KristalliProtocolModule and TundraLogicModule -->
+  <plugin path="OpenDocuments" /> <!-- OpenDocuments depends on KristalliProtocolModule and AssetModule -->
   <plugin path="AvatarModule" />	<!-- AvatarModule depends on AssetModule and OgreRenderingModule -->
   <plugin path="ECEditorModule" /> <!-- ECEditorModule depends on OgreRenderingModule, TundraLogicModule, OgreRenderingModule and AssetModule -->
   <plugin path="DebugStatsModule" /> <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->

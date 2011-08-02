@@ -60,7 +60,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     }
     QNetworkRequest request;
     request.setUrl(QUrl(assetRef));
-    request.setRawHeader("User-Agent", "realXtend");
+    request.setRawHeader("User-Agent", "realXtend Tundra");
 
     QNetworkReply *reply = networkAccessManager->get(request);
 
@@ -78,7 +78,7 @@ AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *
     QString dstUrl = destination->GetFullAssetURL(assetName);
     QNetworkRequest request;
     request.setUrl(QUrl(dstUrl));
-    request.setRawHeader("User-Agent", "realXtend");
+    request.setRawHeader("User-Agent", "realXtend Tundra");
 
     QByteArray dataArray((const char*)data, numBytes);
     QNetworkReply *reply = networkAccessManager->put(request, dataArray);
@@ -104,7 +104,7 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
     QUrl assetUrl(assetRef);
     QNetworkRequest request;
     request.setUrl(QUrl(assetRef));
-    request.setRawHeader("User-Agent", "realXtend");
+    request.setRawHeader("User-Agent", "realXtend Tundra");
 
     networkAccessManager->deleteResource(request);
 }
@@ -138,7 +138,13 @@ AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString
 
     QString name = (s.contains("name") ? s["name"] : GenerateUniqueStorageName());
 
-    return AddStorageAddress(protocolPath, name);
+    HttpAssetStoragePtr newStorage = AddStorageAddress(protocolPath, name);
+
+    // Set local dir if specified
+    if (newStorage && s.contains("localdir"))
+        newStorage->localDir = GuaranteeTrailingSlash(s["localdir"]);
+    
+    return newStorage;
 }
 
 QString HttpAssetProvider::GenerateUniqueStorageName() const
