@@ -65,14 +65,11 @@ class ApiRunner:
     def testScene(self):
         tundra.LogInfo("-- Testing Scene")
         tundra.LogInfo("  >> Scene().GetDefaultSceneRaw() " + str(tundra.Scene().GetDefaultSceneRaw()))
-        return
-        
+        if tundra.IsClient() and tundra.Scene().GetDefaultSceneRaw() == None:
+            tundra.LogInfo("  >> Scene not yet there and this is a client run, nothing to test for scene.")
         if tundra.IsServer() and tundra.Scene().GetDefaultSceneRaw() == None:
             tundra.LogInfo("  >> Connecting to SceneAPI DefaultWorldSceneChanged signal...")
-            # This single connection makes the app crash on exit, tried everything to figure it out.
-            # It is SceneAPI crashing on ~Framework() when it gets deleted. This wont happen if you dont connect any signals in python.
-            # tundra.Scene().disconnect(..) returns false on everything i tried. It is somehow the pythonqt signals/slots system doing it!
-            #tundra.Scene().connect("SceneAdded(QString)", self.OnDefaultSceneChanged)
+            tundra.Scene().connect("DefaultWorldSceneChanged(Scene*)", self.OnDefaultSceneChanged)
         if tundra.Scene().GetDefaultSceneRaw() != None:
             tundra.LogInfo("  >> Helper().CreateEntity([] + True + False + False) local " + str(tundra.Helper().CreateEntity([], True, False, False)))
             tundra.LogInfo("  >> Helper().CreateEntity([] + True + False + True) local temporary " + str(tundra.Helper().CreateEntity([], True, False, True)))
@@ -87,7 +84,7 @@ class ApiRunner:
         tundra.LogInfo("-- Scene().DefaultWorldSceneChanged signal emitted")
         tundra.LogInfo("  >> New default scene is " + str(scene))
         tundra.LogInfo("  >> Running testScene() tests againg...")
-        #self.testScene()
+        self.testScene()
         
     def testRenderer(self):
         tundra.LogInfo("-- Testing Renderer")
