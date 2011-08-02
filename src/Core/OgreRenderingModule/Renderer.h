@@ -10,6 +10,7 @@
 
 #include <QObject>
 #include <QVariant>
+#include <QStringList>
 #include <OgrePrerequisites.h>
 
 #include <boost/enable_shared_from_this.hpp>
@@ -193,8 +194,9 @@ namespace OgreRenderer
         void DoFrameTimeLimiting();
 
         /// Loads Ogre plugins in a manner which allows individual plugin loading to fail
-        /** @param plugin_filename path & filename of the Ogre plugins file. */
-        void LoadPlugins(const std::string& plugin_filename);
+        /** @param plugin_filename path & filename of the Ogre plugins file. 
+            @return Successfully loaded plugin names in a QStringList */
+        QStringList LoadPlugins(const std::string& plugin_filename);
 
         /// Sets up Ogre resources based on resources.cfg
         void SetupResources();
