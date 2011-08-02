@@ -48,9 +48,6 @@ Framework::Framework(int argc, char** argv) :
     profiler(0),
 #endif
     renderer(0)
-#ifdef PROFILING
-    ,profiler(0)
-#endif
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
