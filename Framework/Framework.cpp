@@ -48,6 +48,9 @@ Framework::Framework(int argc, char** argv) :
     profiler(0),
 #endif
     renderer(0)
+#ifdef PROFILING
+    ,profiler(0)
+#endif
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
@@ -118,7 +121,8 @@ Framework::~Framework()
     SAFE_DELETE(plugin);
     SAFE_DELETE(ui);
 #ifdef PROFILING
-    SAFE_DELETE(profiler);
+    /// \todo Deleting the profiler currently causes a crash, therefore disabled
+    //SAFE_DELETE(profiler);
 #endif
     SAFE_DELETE(console);
     SAFE_DELETE(scene);

@@ -122,8 +122,9 @@ int run (int argc, char **argv)
     try
 #endif
     {
-        Framework fw(argc, argv);
-        fw.Go();
+        Framework* fw = new Framework(argc, argv);
+        fw->Go();
+        delete fw;
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch(std::exception& e)
