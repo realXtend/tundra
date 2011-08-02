@@ -1,8 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
+
 #include "EC_EnvironmentLight.h"
 #include "EnvironmentModule.h"
 
@@ -61,9 +62,9 @@ void EC_EnvironmentLight::UpdateSun()
     {
         if (sunlight != 0)
         {
-            sunlight->setDiffuseColour(OgreRenderer::ToOgreColor(sunColorAttr.Get()));
+            sunlight->setDiffuseColour(sunColorAttr.Get());
             sunlight->setCastShadows(sunCastShadowsAttr.Get());
-            sunlight->setDirection(OgreRenderer::ToOgreVector3(sunDirectionAttr.Get()));
+            sunlight->setDirection(sunDirectionAttr.Get());
         }
         else
             CreateOgreLight();
@@ -96,10 +97,10 @@ void EC_EnvironmentLight::CreateOgreLight()
     
     sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
     
-    sunlight->setDirection(OgreRenderer::ToOgreVector3(sunDirectionAttr.Get()));
+    sunlight->setDirection(sunDirectionAttr.Get());
     sunlight->setCastShadows(sunCastShadowsAttr.Get());
-    sunlight->setDiffuseColour(OgreRenderer::ToOgreColor(sunDiffuseColorAttr.Get()));
-    sunlight->setSpecularColour(0.0,0.0,0.0);
+    sunlight->setDiffuseColour(sunDiffuseColorAttr.Get());
+    sunlight->setSpecularColour(0.0f,0.0f,0.0f);
     ///\todo Read parameters from config file?
     //sunlight->setDiffuseColour(0.93f, 1, 0.13f);
     //sunlight->setDirection(-1, -1, -1);
@@ -120,6 +121,6 @@ void EC_EnvironmentLight::UpdateAmbientLight()
     {
         Ogre::SceneManager *sceneMgr = ogreWorld.lock()->GetSceneManager();
         assert(sceneMgr);
-        sceneMgr->setAmbientLight(OgreRenderer::ToOgreColor(ambientColorAttr.Get()));
+        sceneMgr->setAmbientLight(ambientColorAttr.Get());
     }
 }

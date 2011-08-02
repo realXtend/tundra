@@ -18,18 +18,6 @@
 
 namespace OgreRenderer
 {
-    /// Converts Color to Ogre::ColourValue.
-    Ogre::ColourValue OGRE_MODULE_API ToOgreColor(const Color &color);
-
-    /// Converts Ogre::ColourValue to Color.
-    Color OGRE_MODULE_API ToCoreColor(const Ogre::ColourValue &color);
-
-    /// Converts float3 to Ogre::Vector3.
-    Ogre::Vector3 OGRE_MODULE_API ToOgreVector3(const float3 &vector);
-
-    /// Converts Ogre::Vector3 to float3.
-    float3 OGRE_MODULE_API ToCoreVector(const Ogre::Vector3&vector);
-
     /// Sanitates an asset URL/ID for use with Ogre's parsers.
     /** Call this when you access an Ogre resource directly from Ogre, by querying for asset ID.
         Replaces '/' with "$1" and ':' with "$2". If @c input contains '$', it's returned as is.

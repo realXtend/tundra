@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
 #include "OgreMaterialAsset.h"
 #include "OgreRenderingModule.h"
@@ -915,7 +916,7 @@ bool OgreMaterialAsset::SetDiffuseColor(int techIndex, int passIndex, const Colo
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
-    pass->setDiffuse(ToOgreColor(color));
+    pass->setDiffuse(color);
     return true;
 }
 
@@ -924,7 +925,7 @@ bool OgreMaterialAsset::SetAmbientColor(int techIndex, int passIndex, const Colo
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
-    pass->setAmbient(ToOgreColor(color));
+    pass->setAmbient(color);
     return true;
 }
 
@@ -933,7 +934,7 @@ bool OgreMaterialAsset::SetSpecularColor(int techIndex, int passIndex, const Col
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
-    pass->setSpecular(ToOgreColor(color));
+    pass->setSpecular(color);
     return true;
 }
 
@@ -942,7 +943,7 @@ bool OgreMaterialAsset::SetEmissiveColor(int techIndex, int passIndex, const Col
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
         return false;
-    pass->setSelfIllumination(ToOgreColor(color));
+    pass->setSelfIllumination(color);
     return true;
 }
 
@@ -1197,7 +1198,7 @@ bool OgreMaterialAsset::SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit,
     }
     if (attr == "tex_border_colour")
     {
-        texUnit->setTextureBorderColour(ToOgreColor(ParseColor(val.toStdString())));
+        texUnit->setTextureBorderColour(ParseColor(val.toStdString()));
         return true;
     }
     

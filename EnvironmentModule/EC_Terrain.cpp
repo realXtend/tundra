@@ -1376,7 +1376,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
 // Opensim:            pos.z = thisPatch->heightData[Y*cPatchVertexWidth+X];
 
             manual->position(pos);
-            manual->normal(OgreRenderer::ToOgreVector3(CalculateNormal(thisPatch->x, thisPatch->y, X, Y)));
+            manual->normal(CalculateNormal(thisPatch->x, thisPatch->y, X, Y));
 
             // The UV set 0 contains the diffuse texture UV map. Do a planar mapping with the given specified UV scale.
             manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);

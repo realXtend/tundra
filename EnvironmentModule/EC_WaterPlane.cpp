@@ -222,7 +222,7 @@ bool EC_WaterPlane::IsTopOrBelowWaterPlane(const float3& point) const
      if (node_ == 0)
         return false;
      
-    Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
+    Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( point - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
  
     int x = xSize.Get(), y = ySize.Get();
 
