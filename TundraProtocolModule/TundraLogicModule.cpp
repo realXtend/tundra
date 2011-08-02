@@ -98,6 +98,10 @@
 #include "EC_TransformGizmo.h"
 #endif
 
+#ifdef EC_LaserPointer_ENABLED
+#include "EC_LaserPointer.h"
+#endif
+
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
 #include "EC_AnimationController.h"
@@ -189,6 +193,9 @@ void TundraLogicModule::Load()
 #endif
 #ifdef EC_TransformGizmo_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_TransformGizmo>));
+#endif
+#ifdef EC_LaserPointer_ENABLED
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_LaserPointer>));
 #endif
 }
 
