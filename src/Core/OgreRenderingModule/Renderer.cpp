@@ -214,12 +214,13 @@ namespace OgreRenderer
         view_distance_ = framework_->Config()->Get(configData, "view distance").toFloat();
 
         // Load plugins
-        LoadPlugins(plugins_filename_);
+        QStringList loadedPlugins = LoadPlugins(plugins_filename_);
 
 #ifdef _WINDOWS
         // WIN default to DirectX
         rendersystem_name = framework_->Config()->Get(configData, "rendering plugin").toString().toStdString();
-        
+        if (framework_->IsHeadless() && (loadedPlugins.contains("RenderSystem_NULL", Qt::CaseInsensitive) || loadedPlugins.contains("RenderSystem_NULL_d", Qt::CaseInsensitive)))
+            rendersystem_name = "NULL Rendering Subsystem";
 #else
         // X11/MAC default to OpenGL
         rendersystem_name = framework_->Config()->Get(configData, "rendering plugin").toString().toStdString();
@@ -244,6 +245,9 @@ namespace OgreRenderer
         if (!rendersystem)
             throw Exception("Could not find Ogre rendersystem.");
 
+        // Report rendering plugin to log so user can check what actually got loaded
+        LogInfo("Renderer: Using " + rendersystem->getName());
+
         // This is needed for QWebView to not lock up!!!
         Ogre::ConfigOptionMap& map = rendersystem->getConfigOptions();
         if (map.find("Floating-point mode") != map.end())
@@ -252,7 +256,7 @@ namespace OgreRenderer
         // Set the found rendering system
         root_->setRenderSystem(rendersystem);
 
-        // Initialise but dont create rendering window yet
+        // Initialise but don't create rendering window yet
         root_->initialise(false);
 
         if (!framework_->IsHeadless())
@@ -270,10 +274,8 @@ namespace OgreRenderer
                 connect(framework_->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
                 renderWindow->Resize(framework_->Ui()->GraphicsView()->width(), framework_->Ui()->GraphicsView()->height());
 
-                if(fullscreen)
-                {
+                if (fullscreen)
                     framework_->Ui()->MainWindow()->showFullScreen();
-                }
                 else
                     framework_->Ui()->MainWindow()->show();
             }
@@ -282,7 +284,8 @@ namespace OgreRenderer
                 LogError("Could not create ogre rendering window!");
                 throw;
             }
-            LogDebug("Initializing resources, may take a while...");
+
+            LogInfo("Renderer: Loading Ogre resources");
             SetupResources();
 
             /// Create the default scene manager, which is used for nothing but rendering emptiness in case we have no framework scenes
@@ -332,8 +335,10 @@ namespace OgreRenderer
         framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture quality", (int)newquality);
     }
 
-    void Renderer::LoadPlugins(const std::string& plugin_filename)
+    QStringList Renderer::LoadPlugins(const std::string& plugin_filename)
     {
+        QStringList loadedPlugins;
+
         Ogre::ConfigFile file;
         try
         {
@@ -342,7 +347,7 @@ namespace OgreRenderer
         catch(Ogre::Exception &/*e*/)
         {
             LogError("Could not load Ogre plugins configuration file");
-            return;
+            return loadedPlugins;
         }
 
         Ogre::String plugin_dir = file.getSetting("PluginFolder");
@@ -367,12 +372,15 @@ namespace OgreRenderer
             try
             {
                 root_->loadPlugin(plugin_dir + plugins[i]);
+                loadedPlugins.append(QString::fromStdString(plugins[i]));
             }
             catch(Ogre::Exception &/*e*/)
             {
                 LogError("Plugin " + plugins[i] + " failed to load");
             }
         }
+
+        return loadedPlugins;
     }
 
     void Renderer::SetupResources()
