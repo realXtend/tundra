@@ -104,7 +104,7 @@ void DebugStatsModule::Update(f64 frametime)
     double timeSpent = ProfilerBlock::ElapsedTimeSeconds(lastCallTime.QuadPart, now.QuadPart);
     lastCallTime = now;
 
-    frameTimes.push_back(make_pair(*(boost::uint64_t*)&now, timeSpent));
+    frameTimes.push_back(make_pair(*(u64*)&now, timeSpent));
     if (frameTimes.size() > 2048) // Maintain an upper bound in the frame history.
         frameTimes.erase(frameTimes.begin());
 

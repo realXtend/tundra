@@ -36,8 +36,8 @@ bool ProfilerBlock::QueryCapability()
     return supported_;
 }
 
-boost::int64_t ProfilerBlock::frequency_;
-boost::int64_t ProfilerBlock::api_overhead_;
+s64 ProfilerBlock::frequency_;
+s64 ProfilerBlock::api_overhead_;
 
 void Profiler::StartBlock(const std::string &name)
 {

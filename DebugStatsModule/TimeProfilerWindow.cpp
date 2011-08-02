@@ -536,12 +536,12 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
     }
 }
 
-void TimeProfilerWindow::RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes)
+void TimeProfilerWindow::RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<u64, double> > &frameTimes)
 {
     ///\todo Implement.
 }
 
-void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes)
+void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair<u64, double> > &frameTimes)
 {
     if (!tab_widget_ || tab_widget_->currentIndex() != 1)
         return;

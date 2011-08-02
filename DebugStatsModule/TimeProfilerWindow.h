@@ -38,8 +38,8 @@ class TimeProfilerWindow : public QWidget
 public:
     /// The ctor adds this window to scene, but does not show it.
     explicit TimeProfilerWindow(Framework *fw);
-    void RedrawFrameTimeHistoryGraph(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
-    void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
+    void RedrawFrameTimeHistoryGraph(const std::vector<std::pair<u64, double> > &frameTimes);
+    void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<u64, double> > &frameTimes);
     void DoThresholdLogging();
 
 public slots:
