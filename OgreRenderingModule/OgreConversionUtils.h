@@ -7,14 +7,7 @@
 
 #pragma once
 
-#include "Color.h"
-#include "Math/float3.h"
-#include "Math/Quat.h"
 #include "OgreModuleApi.h"
-
-#include <OgreColourValue.h>
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
 
 namespace OgreRenderer
 {
