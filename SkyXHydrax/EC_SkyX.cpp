@@ -18,7 +18,7 @@
 #include "Renderer.h"
 #include "EC_Camera.h"
 #include "LoggingFunctions.h"
-#include "OgreConversionUtils.h"
+#include "Math/MathFunc.h"
 
 #include <Ogre.h>
 
@@ -53,7 +53,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
     timeMultiplier(this, "Time multiplier", 0.0f),
     time(this, "Time", float3(14.f, 7.5f, 20.5f)),
     weather(this, "Weather (volumetric clouds only)", float2(1.f, 1.f)),
-//    windSpeed(this, "Wind speed", 0.0f),
+//    windSpeed(this, "Wind speed (volumetric clouds only)", 800.f),
     windDirection(this, "Wind direction", 0.0f),
     impl(0)
 {
@@ -185,21 +185,17 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr)
     {
         if (volumetricClouds.Get())
         {
-            //Negative value for humidity causes crash within SkyX, so clamp value to min 0.
+            // Negative value for humidity causes crash within SkyX, so clamp value to min 0.
             float humidity = (weather.Get().x >= 0) ? weather.Get().x : 0.f;
             impl->skyX->getVCloudsManager()->getVClouds()->setWheater(humidity, weather.Get().y, 2);
         }
     }
-/*
-    else if (attr == &windSpeed)
+/*    else if (attr == &windSpeed)
     {
        if (volumetricClouds.Get())
-            impl->skyX->getVCloudsManager()->setWindSpeed(0.f);
-        else
-            ;
+           impl->skyX->getVCloudsManager()->setWindSpeed(windSpeed.Get());
     }
-*/
-    else if (attr == &windDirection)
+*/    else if (attr == &windDirection)
     {
         if (volumetricClouds.Get())
         {
