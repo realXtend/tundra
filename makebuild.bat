@@ -1,4 +1,4 @@
-@rem Makes a build directory of the viewer, so that you can run the NSIS install script
+@rem Makes a build directory of the Tundra, so that you can run the NSIS install script
 @rem You should have VS2008 redistributable (vcredist_x86.exe) in your viewer trunk root
 @rem as well as OpenAL installer (oalinst.exe)
 @echo off
@@ -11,7 +11,6 @@ copy oalinst.exe build
 copy dxwebsetup.exe build
 xcopy bin\*.* build /S /C /Y
 
-del build\plugins\*d.dll
 del build\performancelogger.txt
 del build\fullmemoryleaklog.txt
 del build\scenestats.txt
@@ -33,9 +32,10 @@ del build\QtPropertyBrowserd.dll
 del build\liboggd.dll
 del build\libvorbisd.dll
 del build\libvorbisfiled.dll
-del build\viewerd.exe
-del build\serverd.exe
-del build\modules\core\*d.dll
+del build\Tundrad.exe
+del build\plugins\*d.dll
+del build\Hydraxd.dll
+del build\SkyXd.dll
 @rem for now, delete all python stuff
 del build\python*.dll
 rmdir build\pymodules /S /Q
