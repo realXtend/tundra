@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_LaserPointer.cpp
- *  @brief  EC_LaserPointer adds laser pointer to entities.
- *  @note   The entity must have EC_Placeable available in advance.
+ *  @brief  Adds laser pointer to entity.
  */
 
 #define OGRE_INTEROP
@@ -82,7 +81,8 @@ void EC_LaserPointer::CreateLaser()
 
     EC_Placeable *placeable = parentEntity->GetComponent<EC_Placeable>().get();
     if (placeable)
-        connect(placeable, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(HandlePlaceableAttributeChange(IAttribute*, AttributeChange::Type)));
+        connect(placeable, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(HandlePlaceableAttributeChange(IAttribute*, AttributeChange::Type)));
     else
         LogWarning("Placeable is not preset, cannot connect to position changes!");
 
@@ -97,15 +97,10 @@ void EC_LaserPointer::CreateLaser()
     laserObjectNode->attachObject(laserObject_);
 
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(HandleAttributeChange(IAttribute*, AttributeChange::Type)));
-    
+
     input_ = framework->Input()->RegisterInputContext(QString::fromStdString(id_), 90);
-    if (input_.get())
-    {
-        input_->SetTakeMouseEventsOverQt(true);
-        connect(input_.get(), SIGNAL(MouseMove(MouseEvent*)), this, SLOT(Update(MouseEvent*)));
-    }
-    else
-        LogError("Could not register a input context, cannot track mouse movement!");
+    input_->SetTakeMouseEventsOverQt(true);
+    connect(input_.get(), SIGNAL(MouseMove(MouseEvent*)), this, SLOT(Update(MouseEvent*)));
 }
 
 void EC_LaserPointer::DestroyLaser()
@@ -146,8 +141,8 @@ void EC_LaserPointer::Update(MouseEvent *e)
     {
         if (canUpdate_)
         {
-            // See if we are inside the main window or there is a graphics item under the mouse
-            if (!IsMouseInsideWindow() || IsItemUnderMouse())
+            // If mouse cursor is visible (not in first-person mode), see if we are inside the main window or there is a graphics item under the mouse
+            if (framework->Input()->IsMouseCursorVisible() && (!IsMouseInsideWindow() || IsItemUnderMouse()))
             {
                 laserObject_->clear();
                 return;
@@ -155,7 +150,7 @@ void EC_LaserPointer::Update(MouseEvent *e)
 
             OgreRenderer::Renderer *renderer = world_.lock()->GetRenderer();
             RaycastResult *result = renderer->Raycast(e->x, e->y);
-            if (result && result->getentity() && result->getentity() != ParentEntity())
+            if (result && result->entity && result->entity != ParentEntity())
             {
                 EC_Placeable *placeable = ParentEntity()->GetComponent<EC_Placeable>().get();
                 if (placeable)
@@ -224,8 +219,8 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
         if (position != startPos.Get())
             startPos.Set(position, AttributeChange::Default);
 
-        // See if we are inside the main window or there is a graphics item under the mouse
-        if (!IsMouseInsideWindow() || IsItemUnderMouse())
+        // If mouse cursor is visible (not in first-person mode), see if we are inside the main window or there is a graphics item under the mouse
+        if (framework->Input()->IsMouseCursorVisible() && (!IsMouseInsideWindow() || IsItemUnderMouse()))
         {
             laserObject_->clear();
             return;
