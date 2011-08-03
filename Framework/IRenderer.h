@@ -28,6 +28,8 @@ public:
     float3 getpos() const { return pos; }
     Q_PROPERTY(unsigned submesh READ getsubmesh);
     unsigned getsubmesh() const { return submesh; }
+    Q_PROPERTY(unsigned index READ getindex);
+    unsigned getindex() const { return index; }
     Q_PROPERTY(float u READ getu);
     float getu() const { return u; }
     Q_PROPERTY(float v READ getv);
@@ -39,6 +41,8 @@ public:
     float3 pos;
     /// Submesh index in entity, starting from 0
     unsigned submesh;
+    /// Triangle index in mesh
+    unsigned index;
     /// U coord in entity. 0 if no texture mapping
     float u;
     /// V coord in entity. 0 if no texture mapping

@@ -366,6 +366,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                         result_.entity = entity;
                         result_.pos = float3(point.x, point.y, point.z);
                         result_.submesh = GetSubmeshFromIndexRange(j, submeshstartindex);
+                        result_.index = j;
                         result_.u = uv.x;
                         result_.v = uv.y;
                     }
@@ -385,6 +386,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 result_.entity = entity;
                 result_.pos = float3(point.x, point.y, point.z);
                 result_.submesh = 0;
+                result_.index = 0;
                 result_.u = 0.0f;
                 result_.v = 0.0f;
             }
