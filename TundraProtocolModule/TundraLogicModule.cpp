@@ -396,7 +396,7 @@ void TundraLogicModule::StartupSceneLoaded(AssetPtr asset)
 
 void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason)
 {
-    LogError("Failed to load startup scene from " + transfer->GetSourceUrl().toStdString() + " reason: " + reason.toStdString());
+    LogError("Failed to load startup scene from " + transfer->SourceUrl() + " reason: " + reason);
 }
 
 void TundraLogicModule::StartServer(int port)

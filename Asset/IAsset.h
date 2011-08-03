@@ -23,6 +23,36 @@ public:
         types into internal Ogre pools must guarantee that at dtor (and at Unload()) these resources from Ogre pools are completely cleared. */
     virtual ~IAsset() {}
 
+    /// Loads this asset from the specified file data in memory. Loading an asset from memory cannot change its name or type.
+    /// Returns true if loading succeeded, false otherwise.
+    /// @param data A pointer to the data to be loaded in. This pointer may be null if numBytes == 0, in which case
+    /// this function is used to signal loading into "null data".
+    bool LoadFromFileInMemory(const u8 *data, size_t numBytes);
+
+    /// Called whenever another asset this asset depends on is loaded. The default implementation will check if the asset itself is loaded, and the
+    /// number of dependencies: if it was the last dependency, Loaded() will be mitted.
+    virtual void DependencyLoaded(AssetPtr dependee);
+
+    /// Returns all the assets this asset refers to (but not the references those assets refer to).
+    /// The default implementation of this function returns an empty list of dependencies.
+    virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
+
+    /// Returns true if the replace succeeds.
+    //bool ReplaceReference(const QString &oldRef, const QString &newRef);
+
+    /// Returns all the assets this asset refers to, and the assets those assets refer to, and so on.
+    std::vector<AssetReference> FindReferencesRecursive() const;
+
+    /// Saves the provider this asset was downloaded from. Intended to be only called internally by Asset API at asset load time.
+    void SetAssetProvider(AssetProviderPtr provider);
+
+    /// Saves the storage this asset was downloaded from. Intended to be only called internally by Asset API at asset load time.
+    void SetAssetStorage(AssetStoragePtr storage); 
+
+    /// Saves this asset to the given data buffer. Returns true on success. If this asset is unloaded, will return false.
+    /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
+
 public slots:
     /// Returns the type of this asset. The type of an asset cannot change during the lifetime of the instance of an asset.
     QString Type() const { return type; }
@@ -100,37 +130,6 @@ signals:
         \todo The dependencies may not have been loaded in if the reload changes them! fix!
         @param asset A pointer to this will be passed in. The signature of this signal deliberately contains this member to be unified with AssetAPI. */
     void Loaded(AssetPtr asset);
-
-public:
-    /// Loads this asset from the specified file data in memory. Loading an asset from memory cannot change its name or type.
-    /// Returns true if loading succeeded, false otherwise.
-    /// @param data A pointer to the data to be loaded in. This pointer may be null if numBytes == 0, in which case
-    /// this function is used to signal loading into "null data".
-    bool LoadFromFileInMemory(const u8 *data, size_t numBytes);
-
-    /// Called whenever another asset this asset depends on is loaded. The default implementation will check if the asset itself is loaded, and the
-    /// number of dependencies: if it was the last dependency, Loaded() will be mitted.
-    virtual void DependencyLoaded(AssetPtr dependee);
-
-    /// Returns all the assets this asset refers to (but not the references those assets refer to).
-    /// The default implementation of this function returns an empty list of dependencies.
-    virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
-
-    /// Returns true if the replace succeeds.
-    //bool ReplaceReference(const QString &oldRef, const QString &newRef);
-
-    /// Returns all the assets this asset refers to, and the assets those assets refer to, and so on.
-    std::vector<AssetReference> FindReferencesRecursive() const;
-
-    /// Saves the provider this asset was downloaded from. Intended to be only called internally by Asset API at asset load time.
-    void SetAssetProvider(AssetProviderPtr provider);
-
-    /// Saves the storage this asset was downloaded from. Intended to be only called internally by Asset API at asset load time.
-    void SetAssetStorage(AssetStoragePtr storage); 
-
-    /// Saves this asset to the given data buffer. Returns true on success. If this asset is unloaded, will return false.
-    /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.
-    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
 
 protected:
     /// Loads this asset by deserializing it from the given data. The data pointer that is passed in is never null, and numBytes is always greater than zero.

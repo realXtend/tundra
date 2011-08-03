@@ -48,10 +48,10 @@ public slots:
         return storage->GetFullAssetURL(destinationName);
     }
 
-    QByteArray GetRawData() { return QByteArray::fromRawData((const char*)&assetData[0], assetData.size()); }
+    QByteArray RawData() const { return QByteArray::fromRawData((const char*)&assetData[0], assetData.size()); }
 
-    QString GetSourceFilename() { return sourceFilename; }
-    QString GetDesticationName() { return destinationName; }
+    QString SourceFilename() const { return sourceFilename; }
+    QString DesticationName() const { return destinationName; }
 
 signals:
     void Completed(IAssetUploadTransfer *transfer);

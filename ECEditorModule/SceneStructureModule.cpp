@@ -816,6 +816,6 @@ void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QStri
     QString error = QString("Failed to download %1 with reason %2").arg(transfer->source.ref, reason);
     LogError(error.toStdString());
 
-    if (urlToDropPos.contains(transfer->GetSourceUrl()))
-        urlToDropPos.remove(transfer->GetSourceUrl());
+    if (urlToDropPos.contains(transfer->SourceUrl()))
+        urlToDropPos.remove(transfer->SourceUrl());
 }
