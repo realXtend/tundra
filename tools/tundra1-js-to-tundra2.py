@@ -49,7 +49,7 @@ Notes for manual converions that cant be automated (easily at least):
 if __name__ == "__main__":
 
     # Add a list of folders you want to look for .js files and convert.
-    sourceDirs = [""]
+    sourceDirs = ["chat"]
 
     # Add your desination sub folder here.
     # "coverted" is the default.
@@ -87,9 +87,10 @@ if __name__ == "__main__":
                 o = replace(o, "debug.LogWarning(", "console.LogWarning(")
                 o = replace(o, "debug.LogDebug(", "console.LogDebug(")
 
-                # scene / entity
+                # entity
                 o = replace(o, ".GetOrCreateComponentRaw(", ".GetOrCreateComponent(")
                 o = replace(o, ".GetComponentRaw(", ".GetComponent(")
+                o = replace(o, ".HasComponent(", ".GetComponent(")
                 o = replace(o, ".GetEntityByNameRaw(", ".GetEntityByName(")
 
                 # asset
@@ -98,7 +99,23 @@ if __name__ == "__main__":
 
                 # ec name changes
                 o = replace(o, "\"EC_OgreCamera\"", "\"EC_Camera\"")
-
+                o = replace(o, ".ogrecamera.", ".camera.")
+                
+                # ec attribute changes
+                # * EC_HighLight
+                #   hopefully this wont create too much false positives :E as in you naming normal vars .*Attr
+                o = replace(o, ".textAttr", ".text")
+                o = replace(o, ".fontAttr", ".font")
+                o = replace(o, ".fontSizeAttr", ".fontSize")
+                o = replace(o, ".fontColorAttr", ".fontColor")
+                o = replace(o, ".backgroundColorAttr", ".backgroundColor")
+                o = replace(o, ".borderColorAttr", ".borderColor")
+                o = replace(o, ".borderThicknessAttr", ".borderThickness")
+                o = replace(o, ".positionAttr", ".position")
+                o = replace(o, ".usingGradAttr", ".usingGrad")
+                o = replace(o, ".gradStartAttr", ".gradStart")
+                o = replace(o, ".gradEndAttr", ".gradEnd")
+                
                 # new math lib
                 o = replace(o, "new Vector3df()", "new float3()")
 
