@@ -721,7 +721,7 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
         // If we have control, leave ui so that we can modify the attributes
         if (currentControllerId == myControllerId_)
         {
-            InteractEnableScrollbars(true);
+            EnableScrollbars(true);
             return;
         }
 
@@ -729,7 +729,7 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
         // Disable scroll bars from local UI if someone else is controlling.
         if (currentControllerId == NoneControlID)
         {
-            InteractEnableScrollbars(true);
+            EnableScrollbars(true);
             QString urlString = getwebviewUrl().simplified();
             if (urlString.isEmpty())
                 return;
@@ -740,7 +740,7 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
                 LogWarning("User given url invalid: " + urlString.toStdString());
         }
         else
-            InteractEnableScrollbars(false);
+            EnableScrollbars(false);
 
         // If control is not on us
         // 1. No one is controlling = show ui attributes editable
@@ -869,7 +869,7 @@ void EC_WebView::InteractControlRequest()
 
         // Execute entity action to peers aka other clients.
         ParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(myId), myControllerName);
-        InteractEnableScrollbars(true);
+        EnableScrollbars(true);
     }
     else
         QMessageBox::information(GetFramework()->Ui()->MainWindow(),
@@ -882,10 +882,10 @@ void EC_WebView::InteractControlReleaseRequest()
         LogWarning("Seems like anyone does not have control? Making sure by releasing again.");
     setcontrollerId(NoneControlID);
     ParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
-    InteractEnableScrollbars(true);
+    EnableScrollbars(true);
 }
 
-void EC_WebView::InteractEnableScrollbars(bool enabled)
+void EC_WebView::EnableScrollbars(bool enabled)
 {
     if (!webview_)
         return;
