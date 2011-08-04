@@ -18,10 +18,13 @@ connections = dict()
 
 class NaaliWebsocketServer(circuits.BaseComponent):
     instance = None
-    def __init__(self):
-
+    def __init__(self, cfsection=None):
         circuits.BaseComponent.__init__(self)
-        self.sock = eventlet.listen(('0.0.0.0', 9999))
+
+        self.config = cfsection or dict()
+        self.port = int(self.config.get('port', 9999))
+        
+        self.sock = eventlet.listen(('0.0.0.0', self.port))
         self.server = async_eventlet_wsgiserver.server(self.sock, handle_clients)
         print "websocket server started."
 
