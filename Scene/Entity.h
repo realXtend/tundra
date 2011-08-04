@@ -82,14 +82,14 @@ public:
         @return Pointer to the attribute.
         @note Always remember to check for null pointer. */
     template<typename T>
-    Attribute<T> *GetAttribute(const std::string &name) const;
+    Attribute<T> *GetAttribute(const QString &name) const;
 
     /// Returns list of attributes with specific name.
     /** @param T Type name/class of the attribute.
         @param name Name of the attribute.
         @return List of attributes, or empty list if no attributes are found. */
     template<typename T>
-    std::vector<Attribute<T> > GetAttributes(const std::string &name) const;
+    std::vector<Attribute<T> > GetAttributes(const QString &name) const;
 
     /// In the following, deserialization functions are now disabled since deserialization can't safely
     /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.
@@ -196,12 +196,12 @@ public slots:
     /** @param name Name of the attribute.
         @return IAttribute pointer to the attribute.
         @note Always remember to check for null pointer. */
-    IAttribute *GetAttribute(const std::string &name) const;
+    IAttribute *GetAttribute(const QString  &name) const;
 
     /// Returns list of attributes with specific name.
     /** @param name Name of the attribute.
         @return List of attribute interface pointers, or empty list if no attributes are found. */
-    AttributeVector GetAttributes(const std::string &name) const;
+    AttributeVector GetAttributes(const QString &name) const;
 
     /// Creates clone of the entity.
     /** @param local If true, the new entity will be local entity. If false, the entity will be replicated.
