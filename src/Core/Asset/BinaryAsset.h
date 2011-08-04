@@ -3,6 +3,8 @@
 #pragma once
 
 #include <boost/shared_ptr.hpp>
+
+#include "AssetAPI.h"
 #include "IAsset.h"
 
 /// A generic data container for assets of unknown type.
@@ -29,6 +31,7 @@ public:
     {
         data.clear();
         data.insert(data.end(), data_, data_ + numBytes);
+        assetAPI->AssetLoadCompleted(Name());
         return true;
     }
 
