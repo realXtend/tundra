@@ -37,7 +37,6 @@ EC_LaserPointer::EC_LaserPointer(Scene *scene) :
     endPos(this, "End position"),
     color(this, "Color", Color(1.0f,0.0f,0.0f,1.0f)),
     enabled(this, "Enabled", false),
-    tracking(false),
     laserObject_(0),
     canUpdate_(true),
     updateInterval_(20),
@@ -86,11 +85,11 @@ void EC_LaserPointer::CreateLaser()
     else
         LogWarning("Placeable is not preset, cannot connect to position changes!");
 
-    id_ = world_.lock()->GetRenderer()->GetUniqueObjectName("");
+    id_ = world_.lock()->GetRenderer()->GetUniqueObjectName("laser");
 
-    laserObject_ = scene->createManualObject("laser" + id_);
-    Ogre::SceneNode* laserObjectNode = scene->getRootSceneNode()->createChildSceneNode("laser" + id_ + "_node");
-    laserMaterial_ = Ogre::MaterialManager::getSingleton().create("laser" + id_ + "Material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME); 
+    laserObject_ = scene->createManualObject(id_);
+    Ogre::SceneNode* laserObjectNode = scene->getRootSceneNode()->createChildSceneNode(id_ + "_node");
+    laserMaterial_ = Ogre::MaterialManager::getSingleton().create(id_ + "Material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME); 
     laserMaterial_->setReceiveShadows(false);
     laserMaterial_->getTechnique(0)->setLightingEnabled(true);
     UpdateColor();
@@ -113,17 +112,17 @@ void EC_LaserPointer::DestroyLaser()
     try
     {
         Ogre::SceneManager* scene = world_.lock()->GetSceneManager();
-        Ogre::SceneNode* node = dynamic_cast<Ogre::SceneNode*>(scene->getRootSceneNode()->getChild("laser" + id_ + "_node"));
+        Ogre::SceneNode* node = dynamic_cast<Ogre::SceneNode*>(scene->getRootSceneNode()->getChild(id_ + "_node"));
         if (node)
-            node->detachObject("laser" + id_);
-        scene->getRootSceneNode()->removeAndDestroyChild("laser" + id_ + "_node");
-        scene->destroyManualObject("laser" + id_);
+            node->detachObject(id_);
+        scene->getRootSceneNode()->removeAndDestroyChild(id_ + "_node");
+        scene->destroyManualObject(id_);
     }
     catch (...) { }
 
     try
     {
-       Ogre::MaterialManager::getSingleton().remove("laser" + id_ + "Material");
+       Ogre::MaterialManager::getSingleton().remove(id_ + "Material");
     }
     catch(...) { }
 }
@@ -133,8 +132,6 @@ void EC_LaserPointer::Update(MouseEvent *e)
     if (!ViewEnabled())
         return;
     if (!ParentEntity())
-        return;
-    if (!tracking)
         return;
 
     if (enabled.Get())
@@ -189,7 +186,7 @@ void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChan
         if (enabled.Get())
         {
             laserObject_->clear();
-            laserObject_->begin("laser" + id_ + "Material", Ogre::RenderOperation::OT_LINE_LIST);
+            laserObject_->begin(id_ + "Material", Ogre::RenderOperation::OT_LINE_LIST);
             laserObject_->position(startPos.Get());
             laserObject_->position(endPos.Get());
             laserObject_->end();
@@ -205,7 +202,7 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
     {
         if (!ViewEnabled())
             return;
-        if (!tracking || !enabled.Get())
+        if (enabled.Get())
             return;
         if (!canUpdate_)
             return;

@@ -22,8 +22,6 @@ class EC_LaserPointer : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_LaserPointer", 888);
-    /// Track placeable and mouse, this is not synced over network
-    Q_PROPERTY(bool tracking READ IsTracking WRITE SetTracking)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
@@ -45,16 +43,6 @@ public:
     /// If laser drawing is enabled
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
-
-public slots:
-    bool IsTracking() const { return tracking; }
-    void SetTracking(bool t) { tracking = t; }
-
-    /// Creates laser object and laser (child) node
-    void CreateLaser();
-
-    /// Destroys the laser and laser node
-    void DestroyLaser();
 
 private:
     /// Laser object (3d line)
@@ -79,6 +67,12 @@ private:
     OgreWorldWeakPtr world_;
 
 private slots:
+    /// Creates laser object and laser (child) node
+    void CreateLaser();
+
+    /// Destroys the laser and laser node
+    void DestroyLaser();
+
     /// (If it is allowed) updates start and end points on mousemove
     void Update(MouseEvent *e);
 
