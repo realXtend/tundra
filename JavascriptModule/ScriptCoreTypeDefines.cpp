@@ -90,6 +90,7 @@ QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &
         obj.setProperty("name", QScriptValue(engine, s->Name()));
         obj.setProperty("typename", QScriptValue(engine, s->TypeName()));
         obj.setProperty("value", QScriptValue(engine, QString::fromStdString(s->ToString())));
+        obj.setProperty("owner", qScriptValueFromQObject(engine, s->Owner()));
     }
     else
     {
