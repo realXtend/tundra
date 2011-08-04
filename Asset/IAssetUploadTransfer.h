@@ -51,7 +51,7 @@ public slots:
     QByteArray RawData() const { return QByteArray::fromRawData((const char*)&assetData[0], assetData.size()); }
 
     QString SourceFilename() const { return sourceFilename; }
-    QString DesticationName() const { return destinationName; }
+    QString DestinationName() const { return destinationName; }
 
 signals:
     void Completed(IAssetUploadTransfer *transfer);
