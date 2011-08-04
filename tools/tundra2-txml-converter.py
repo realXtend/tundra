@@ -86,10 +86,29 @@ class Transform:
         
 if __name__ == "__main__":
 
-    fileName = "putFileNameHere.txml"
-    newFileName = fileName[:fileName.index(".txml")] + "_.txml"
+    try:
+        import getopt
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "i:o:", ["input=", "output="])
+        except getopt.GetoptError, err:
+            # print help information and exit:
+            print str(err)
+            print "Usage: tundra2-txml-converter.py [-i|--input=inputTXML] [-o|--output=outputTXML]"
+            sys.exit(2)
+        # Set defaults first:
+        fileName = "putFileNameHere.txml"
+        newFileName = fileName[:fileName.index(".txml")] + "_.txml"
+        for o, a in opts:
+            if o in ("-i", "--input"):
+                fileName = a
+            elif o in ("-o", "--output"):
+                newFileName = a
+    except ImportError:
+        fileName = "putFileNameHere.txml"
+        newFileName = fileName[:fileName.index(".txml")] + "_.txml"
 
     c = getFileContent(fileName)
+    if c == None: sys.exit(2)
     lines = c.splitlines(True)
 
     parentName = "GeneratedGrandParentEntity"
