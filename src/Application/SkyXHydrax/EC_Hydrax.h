@@ -8,6 +8,8 @@
 #pragma once
 
 #include "IComponent.h"
+#include "AssetFwd.h"
+#include "AssetReference.h"
 #include "Math/float3.h"
 
 class EC_Camera;
@@ -34,6 +36,10 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float3, position);
     Q_PROPERTY(float3 position READ getposition WRITE setposition);
 
+    /// Hydrax config asset ref
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, configRef);
+    Q_PROPERTY(AssetReference configRef READ getconfigRef WRITE setconfigRef);
+
 private:
     EC_HydraxImpl *impl;
 
@@ -44,4 +50,7 @@ private slots:
     void OnActiveCameraChanged(EC_Camera *newActiveCamera);
     void UpdateAttribute(IAttribute *attr);
     void Update(float frameTime);
+
+    void ConfigLoadSucceeded(AssetPtr asset);
+    void LoadDefaultConfig();
 };

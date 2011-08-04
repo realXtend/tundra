@@ -14,20 +14,26 @@
 #include "Scene.h"
 #include "Framework.h"
 #include "FrameAPI.h"
+#include "AssetAPI.h"
+#include "IAssetTransfer.h"
+#include "IAsset.h"
+
 #include "OgreWorld.h"
 #include "Renderer.h"
 #include "EC_Camera.h"
 #include "Entity.h"
 #include "OgreConversionUtils.h"
-#include "LoggingFunctions.h"
+
 #ifdef SKYX_ENABLED
 #include "EC_SkyX.h"
 #endif
 
 #include <Hydrax.h>
 #include <Noise/Perlin/Perlin.h>
+#include <Noise/FFT/FFT.h>
 #include <Modules/ProjectedGrid/ProjectedGrid.h>
 
+#include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
 struct EC_HydraxImpl
@@ -49,6 +55,7 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     IComponent(scene),
     visible(this, "Visible", true),
     position(this, "Position"),
+    configRef(this, "Config ref"),
     impl(0)
 {
     OgreWorldPtr w = scene->GetWorld<OgreWorld>();
@@ -99,12 +106,10 @@ void EC_Hydrax::Create()
     impl->hydrax->setModule(module);
     impl->module = module;
 
-    // Load all parameters from config file
-    // Remarks: The config file must be in Hydrax resource group.
-    // All parameters can be set/updated directly by code(Like previous versions),
-    // but due to the high number of customizable parameters, since 0.4 version, Hydrax allows save/load config files.
-    impl->hydrax->loadCfg("HydraxDemo.hdx");
+    // Load our default config
+    LoadDefaultConfig();
 
+    // Set initial position for the component
     position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
 
     // Create water
@@ -131,6 +136,19 @@ void EC_Hydrax::OnActiveCameraChanged(EC_Camera *newActiveCamera)
 
 void EC_Hydrax::UpdateAttribute(IAttribute *attr)
 {
+    if (attr == &configRef)
+    {
+        QString assetRef = getconfigRef().ref;
+        if (!assetRef.isEmpty())
+        {
+            AssetTransferPtr transfer = framework->Asset()->RequestAsset(getconfigRef().ref, "Binary");
+            if (transfer.get())
+                connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(ConfigLoadSucceeded(AssetPtr)), Qt::UniqueConnection);
+        }
+        else
+            LoadDefaultConfig();
+    }
+
     if (!impl->hydrax)
         return;
     if (attr == &visible)
@@ -151,4 +169,68 @@ void EC_Hydrax::Update(float frameTime)
 #endif
         impl->hydrax->update(frameTime);
     }
+}
+
+void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
+{
+    if (!impl || !impl->hydrax || !impl->module)
+    {
+        LogError("EC_Hydrax: Could not apply loaded config, hydrax not initialized.");
+        return;
+    }
+
+    std::vector<u8> rawData;
+    asset->SerializeTo(rawData);
+    QString configData = QString::fromAscii((const char*)&rawData[0], rawData.size());
+
+    if (configData.isEmpty())
+    {
+        LogInfo("EC_Hydrax: Downloaded config is empty!");
+        return;
+    }
+
+    try
+    {
+        // Update the noise module
+        if (configData.contains("noise=fft", Qt::CaseInsensitive))
+        {
+            /// \note Using the FFT noise plugin seems to crash somewhere after we leave this function. 
+            /// FFT looks better so would be nice to investigate further!
+            if (impl->module->getNoise()->getName() != "FFT")
+                impl->module->setNoise(new Hydrax::Noise::FFT());
+        }
+        else if (configData.contains("noise=perlin", Qt::CaseInsensitive))
+        {
+            if (impl->module->getNoise()->getName() != "Perlin")
+                impl->module->setNoise(new Hydrax::Noise::Perlin());
+        }
+        else
+        {
+            LogError("EC_Hydrax: Unknown noise param in loaded config, acceptable = FFT/Perlin.");
+            return;
+        }
+
+        // Load config from the asset data string.
+        impl->hydrax->loadCfgString(configData.toStdString());
+    }
+    catch (Ogre::Exception &e)
+    {
+        LogError(std::string("EC_Hydrax: Ogre threw exception while loading new config: ") + e.what());
+    }
+}
+
+void EC_Hydrax::LoadDefaultConfig()
+{
+    if (!impl || !impl->hydrax || !impl->module)
+    {
+        LogError("EC_Hydrax: Could not apply default config, hydrax not initialized.");
+        return;
+    }
+
+    if (impl->module->getNoise()->getName() != "Perlin")
+        impl->module->setNoise(new Hydrax::Noise::Perlin());
+
+    // Load all parameters from the default config file we ship in /media/hydrax
+    /// \todo Inspect if we can change the current SharedMode to HLSL or GLSL on the fly here, depending on the platform!
+    impl->hydrax->loadCfg("HydraxDefault.hdx");
 }
