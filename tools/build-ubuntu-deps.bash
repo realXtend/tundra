@@ -63,42 +63,42 @@ else
 fi
 
 
-what=hydrax
-if test -f $tags/$what-done; then
-    echo $what is done
-else
-    cd $build
-    rm -rf $what
-    tarballname=libhydrax_0.5.4-5.tar.gz
-    url=https://launchpad.net/~sonsilentsea-team/+archive/sonsilentsea/+files/$tarballname
-    test -f $tarballs/$tarballname || wget -P $tarballs $url
-    tar zxf $tarballs/$tarballname
-    cd libhydrax-0.5.4
-    sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
-    sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
-    make -j $nprocs PREFIX=$prefix
-    make PREFIX=$prefix install
-    touch $tags/$what-done
-fi
+#what=hydrax
+#if test -f $tags/$what-done; then
+#    echo $what is done
+#else
+#    cd $build
+#    rm -rf $what
+#    tarballname=libhydrax_0.5.4-5.tar.gz
+#    url=https://launchpad.net/~sonsilentsea-team/+archive/sonsilentsea/+files/$tarballname
+#    test -f $tarballs/$tarballname || wget -P $tarballs $url
+#    tar zxf $tarballs/$tarballname
+#    cd libhydrax-0.5.4
+#    sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
+#    sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
+#    make -j $nprocs PREFIX=$prefix
+#    make PREFIX=$prefix install
+#    touch $tags/$what-done
+#fi
 
 
-what=skyx
-if test -f $tags/$what-done; then
-    echo $what is done
-else
-    cd $build
-    rm -rf $what
-    tarballname=libskyx_0.1.1.orig.tar.gz
-    url=https://launchpad.net/~sonsilentsea-team/+archive/sonsilentsea/+files/$tarballname
-    test -f $tarballs/$tarballname || wget -P $tarballs $url
-    tar zxf $tarballs/$tarballname
-    cd skyx-0.1.1.orig
-    sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
-    sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
-    make -j $nprocs PREFIX=$prefix
-    make PREFIX=$prefix install
-    touch $tags/$what-done
-fi
+#what=skyx
+#if test -f $tags/$what-done; then
+#    echo $what is done
+#else
+#    cd $build
+#    rm -rf $what
+#    tarballname=libskyx_0.1.1.orig.tar.gz
+#    url=https://launchpad.net/~sonsilentsea-team/+archive/sonsilentsea/+files/$tarballname
+#    test -f $tarballs/$tarballname || wget -P $tarballs $url
+#    tar zxf $tarballs/$tarballname
+#    cd skyx-0.1.1.orig
+#    sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
+#    sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
+#    make -j $nprocs PREFIX=$prefix
+#    make PREFIX=$prefix install
+#    touch $tags/$what-done
+#fi
 
 what=qtscriptgenerator
 if test -f $tags/$what-done; then 
@@ -145,27 +145,79 @@ else
     touch $tags/$what-done
 fi
 
+#cd $build
+#what=PythonQt
+#ver=2.0.1
+#if test -f $tags/$what-done; then
+#    echo $what is done
+#else
+#    rm -rf $what$ver
+#    zip=../tarballs/$what$ver.zip
+#    test -f $zip || wget -O $zip http://downloads.sourceforge.net/project/pythonqt/pythonqt/$what-$ver/$what$ver.zip
+#    unzip $zip
+#    cd $what$ver
+#    fn=generated_cpp/com_trolltech_qt_core/com_trolltech_qt_core0.h
+#    sed 's/CocoaRequestModal = QEvent::CocoaRequestModal,//' < $fn > x
+#    mv x $fn
+#    qmake
+#    make -j$nprocs
+#    rm -f $prefix/lib/lib$what*
+#    cp -a lib/lib$what* $prefix/lib/
+#    cp src/PythonQt*.h $prefix/include/
+#    cp extensions/PythonQt_QtAll/PythonQt*.h $prefix/include/
+#    touch $tags/$what-done
+#fi
+
+# HydraX, SkyX and PythonQT are build from the realxtend own dependencies.
+# At least for the time being, until changes to those components flow into
+# upstream..
+
 cd $build
-what=PythonQt
-ver=2.0.1
-if test -f $tags/$what-done; then
-    echo $what is done
+depdir=realxtend-tundra-deps
+if [ ! -e $depdir ]
+then
+    echo "Cloning source of HydraX/SkyX/PythonQT/NullRenderer..."
+    git clone https://code.google.com/p/realxtend-tundra-deps
+fi
+cd $depdir
+git pull
+git checkout sources
+# HydraX build:
+if test -f $tags/hydrax-done; then
+    echo "Hydrax-done"
 else
-    rm -rf $what$ver
-    zip=../tarballs/$what$ver.zip
-    test -f $zip || wget -O $zip http://downloads.sourceforge.net/project/pythonqt/pythonqt/$what-$ver/$what$ver.zip
-    unzip $zip
-    cd $what$ver
-    fn=generated_cpp/com_trolltech_qt_core/com_trolltech_qt_core0.h
-    sed 's/CocoaRequestModal = QEvent::CocoaRequestModal,//' < $fn > x
-    mv x $fn
+    cd $build/$depdir/hydrax
+    sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
+    sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
+    make -j $nprocs PREFIX=$prefix
+    make PREFIX=$prefix install
+    touch $tags/hydrax-done
+fi
+# SkyX build
+if test -f $tags/skyx-done; then
+    echo "SkyX-done"
+else
+    cd $build/$depdir/skyx
+    sed -i "s!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(pkg-config OGRE --cflags)!" makefile
+    sed -i "s!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(pkg-config OGRE --libs)!" makefile
+    make -j $nprocs PREFIX=$prefix
+    # Media should be media, linux files case sensitive..
+    sed -i "s/Media/media/" makefile
+    make PREFIX=$prefix install
+    touch $tags/skyx-done
+fi
+# PythonQT build
+if test -f $tags/pythonqt-done; then
+    echo "PythonQt-done"
+else
+    cd $build/$depdir/PythonQt
     qmake
-    make -j$nprocs
-    rm -f $prefix/lib/lib$what*
-    cp -a lib/lib$what* $prefix/lib/
+    make -j $nprocs
+    rm -f $prefix/lib/libPythonQt*
+    cp -a lib/libPythonQt* $prefix/lib/
     cp src/PythonQt*.h $prefix/include/
     cp extensions/PythonQt_QtAll/PythonQt*.h $prefix/include/
-    touch $tags/$what-done
+    touch $tags/pythonqt-done
 fi
 
 cd $build
