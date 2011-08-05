@@ -233,6 +233,9 @@ public slots:
         @param name Name of the component, optional. */
     EntityList GetEntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
+    /// Returns all entities as a list for scripting
+    EntityList GetAllEntities() const;
+
     /// Emits notification of an attribute changing. Called by IComponent.
     /** @param comp Component pointer
         @param attribute Attribute pointer

@@ -265,6 +265,19 @@ EntityList Scene::GetEntitiesWithComponent(const QString &typeName, const QStrin
     return entities;
 }
 
+EntityList Scene::GetAllEntities() const
+{
+    std::list<EntityPtr> entities;
+    EntityMap::const_iterator it = entities_.begin();
+    while(it != entities_.end())
+    {
+        entities.push_back(it->second);
+        ++it;
+    }
+
+    return entities;
+}
+
 void Scene::EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
