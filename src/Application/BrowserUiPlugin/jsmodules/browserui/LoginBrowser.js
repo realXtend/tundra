@@ -830,16 +830,33 @@ var BrowserSettings = Class.extend
         this.widget.setParent(ui.MainWindow());
         this.widget.setWindowFlags(Qt.Tool);
         this.widget.visible = false;
-        
+
+        var prxyhst = findChild(this.widget, "proxyHostLineEdit");
+        var prxyprt = findChild(this.widget, "proxyPortLineEdit");
+        var proxycheckbox = findChild(this.widget, "enableProxy");
+
+        prxyhst.setEnabled(proxycheckbox.checked);
+        prxyprt.setEnabled(proxycheckbox.checked);
+
         var button = null;
         button = findChild(this.widget, "buttonSave");
         button.clicked.connect(this.onSettingsSave);
         button = findChild(this.widget, "buttonCancel");
         button.clicked.connect(this.onSettingsCancel);
+        proxycheckbox.clicked.connect(this.onSettingsProxyClick);
         
         this.readConfig();
     },
-    
+	
+    onSettingsProxyClick: function() 
+    {
+        var p_s = p_.settings;
+        var prxyhst = findChild(p_s.widget, "proxyHostLineEdit");       	
+        var prxyprt = findChild(p_s.widget, "proxyPortLineEdit");
+        var proxycheckbox = findChild(p_s.widget, "enableProxy");
+        prxyhst.setEnabled(proxycheckbox.checked);
+        prxyprt.setEnabled(proxycheckbox.checked);
+    },
    
     onSettingsPressed: function()
     {
@@ -880,7 +897,27 @@ var BrowserSettings = Class.extend
         
         child = findChild(p_s.widget, "homePageLineEdit");
         p_s.homepage = QUrl.fromUserInput(child.text).toString();
-               
+
+        child = findChild(p_s.widget, "enableProxy");
+        p_s.proxyEnabled = child.checked;
+
+        child = findChild(p_s.widget, "proxyHostLineEdit");
+        p_s.proxyhost = child.text;
+
+        if (p_s.proxyhost.search(":") != -1)
+        {
+            var errorBox = new QMessageBox(QMessageBox.Warning, "Invalid proxy host",
+                                           "The proxy host cannot have port, you should put it in to the port field!\nGiven host: " + p_s.proxyhost, 
+                                           QMessageBox.NoButton,
+                                           p_s.widget, Qt.Tool);
+            errorBox.addButton("Close", QMessageBox.NoRole);
+            errorBox.exec();
+            return;
+        }
+
+        child = findChild(p_s.widget, "proxyPortLineEdit");
+        p_s.proxyport = child.text;
+ 
         child = findChild(p_s.widget, "openHomePageOnNewTab");
         p_s.newTabOpenHomepage = child.checked;
         
@@ -898,6 +935,27 @@ var BrowserSettings = Class.extend
         
         p_.settings.widget.visible = false;
         p_s.writeConfig();
+        p_s.applyProxySettings();
+    },
+    
+    applyProxySettings: function()
+    {
+        var p_s = this;
+        var child = null;
+        var proxy = new QNetworkProxy;
+    
+        if (p_s.proxyEnabled)
+        {    
+            proxy.setType(QNetworkProxy.HttpProxy);
+            proxy.setHostName(p_s.proxyhost);
+            proxy.setPort(p_s.proxyport);	
+            QNetworkProxy.setApplicationProxy(proxy);
+        }
+        else 
+        {
+            proxy.setType(QNetworkProxy.NoProxy);
+            QNetworkProxy.setApplicationProxy(proxy);
+        }
     },
     
     onSettingsCancel: function()
@@ -915,6 +973,12 @@ var BrowserSettings = Class.extend
 
         child = findChild(p_s.widget, "newTabPageLineEdit");
         child.text = p_s.newTabUrl;
+
+        child = findChild(p_s.widget, "proxyHostLineEdit");
+        child.text = p_s.proxyhost;
+
+        child = findChild(p_s.widget, "proxyPortLineEdit");
+        child.text = p_s.proxyport;
         
         child = findChild(p_s.widget, "openHomePageOnNewTab");
         child.checked = p_s.newTabOpenHomepage;
@@ -930,6 +994,10 @@ var BrowserSettings = Class.extend
         
         child = findChild(p_s.widget, "enableCache");
         child.checked = p_s.cacheEnabled;
+		
+        child = findChild(p_s.widget, "enableProxy");
+        child.checked = p_s.proxyEnabled;
+        p_s.onSettingsProxyClick();
     },
     
     readConfig: function()
@@ -941,6 +1009,14 @@ var BrowserSettings = Class.extend
         if (!config.HasValue(this.configFile, this.urlSection, "newtab"))
             config.Set(this.configFile, this.urlSection, "newtab", QUrl.fromUserInput("http://login.realxtend.org/").toString());
         this.newTabUrl = config.Get(this.configFile, this.urlSection, "newtab");
+
+        if (!config.HasValue(this.configFile, this.urlSection, "proxyhost"))
+            config.Set(this.configFile, this.urlSection, "proxyhost", "");
+        this.proxyhost = config.Get(this.configFile, this.urlSection, "proxyhost");
+
+        if (!config.HasValue(this.configFile, this.urlSection, "proxyport"))
+            config.Set(this.configFile, this.urlSection, "proxyport", "");
+        this.proxyport = config.Get(this.configFile, this.urlSection, "proxyport");
         
         // Note: QSettings/QVariant and js booleans dont mix up too well. It will give you a string back of the config value.
         // new Boolean("false") in js will be true, so it cant be used. Inspect the string value and set the booleans right.
@@ -985,6 +1061,16 @@ var BrowserSettings = Class.extend
             this.cacheEnabled = true;
         else
             this.cacheEnabled = false;
+	
+        if (!config.HasValue(this.configFile, this.behaviourSection, "enable_proxy"))
+            config.Set(this.configFile, this.behaviourSection, "enable_proxy", "false");
+        this.proxyEnabled = config.Get(this.configFile, this.behaviourSection, "enable_proxy");
+        if (this.proxyEnabled == "true")
+            this.proxyEnabled = true;
+        else
+            this.proxyEnabled = false;
+            
+        this.applyProxySettings();
     },
     
     writeConfig: function()
@@ -996,6 +1082,9 @@ var BrowserSettings = Class.extend
         config.Set(this.configFile, this.behaviourSection, "startup_load_homeserver", this.startupConnectToHomePage);
         config.Set(this.configFile, this.behaviourSection, "enable_cookies", this.cookiesEnabled);
         config.Set(this.configFile, this.behaviourSection, "enable_cache", this.cacheEnabled);
+        config.Set(this.configFile, this.urlSection, "proxyhost", this.proxyhost);
+        config.Set(this.configFile, this.urlSection, "proxyport", this.proxyport);
+        config.Set(this.configFile, this.behaviourSection, "enable_proxy", this.proxyEnabled);
 
         this.browserManager.actionHome.toolTip = "Go to home page " + this.homepage;
     },
