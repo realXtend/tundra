@@ -63,5 +63,8 @@ void EC_Fog::Update()
 
     // Note: in Tundra1-series, if we were within EC_WaterPlane, the waterPlaneColor*fogColor was used as the scene fog color.
     w->GetSceneManager()->setFog((Ogre::FogMode)mode.Get(), color.Get(), expDensity.Get(), startDistance.Get(), endDistance.Get());
-    w->GetRenderer()->GetViewport()->setBackgroundColour(color.Get());
+    if ((FogMode)mode.Get() == None)
+        w->GetRenderer()->GetViewport()->setBackgroundColour(Color()); // Color default ctor == black
+    else
+        w->GetRenderer()->GetViewport()->setBackgroundColour(color.Get());
 }

@@ -12,8 +12,8 @@
     <h2>Environment fog</h2>
 
     Registered by Enviroment::EnvironmentModule.
-    The EC_Fog component defines the overall fog settings for the whole scene,
-    hence only one component per scene is applicable.
+    Defines the overall fog settings for the whole scene, hence only one component per scene is applicable.
+    Sets also the background color of the viewport same as the fog color.
 
     <b>Attributes</b>:
     <ul>
