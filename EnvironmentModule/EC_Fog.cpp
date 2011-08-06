@@ -38,8 +38,7 @@ EC_Fog::EC_Fog(Scene* scene) :
     }
 
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(Update()), Qt::UniqueConnection);
-
-    Update();
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(Update()));
 }
 
 EC_Fog::~EC_Fog()
