@@ -51,6 +51,7 @@ EC_Fog::~EC_Fog()
         return;
 
     w->GetSceneManager()->setFog(Ogre::FOG_NONE);
+    w->GetRenderer()->GetViewport()->setBackgroundColour(Color()); // Color default ctor == black
 }
 
 void EC_Fog::Update()
