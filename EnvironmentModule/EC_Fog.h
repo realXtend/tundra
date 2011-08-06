@@ -18,7 +18,7 @@
     <b>Attributes</b>:
     <ul>
     <li> int : mode.
-    <div> Fog type (see FogMode) this defines how fast fog density increases. </div>
+    <div> Fog mode (see FogMode), defines how fast the fog density increases, Linear by default. </div>
     <li> Color : color.
     <div> The color of the fog.</div>
     <li> float : startDistance.
@@ -40,7 +40,7 @@ public:
     /// Sets fog to None.
     ~EC_Fog();
 
-    /// Fog modes, copied from Ogre::FogMode. Use when setting @c mode attiribute.
+    /// Fog modes, copied from Ogre::FogMode. Use when setting @c mode attribute.
     enum FogMode
     {
         None = 0, ///< No fog
@@ -49,7 +49,7 @@ public:
         Linear ///< Fog density increases linearly between the start and end distances
     };
 
-    /// Fog mode, defines how Fog density increases, FOG_LINEAR by default.
+    /// Fog mode (see FogMode), defines how fast the fog density increases, Linear by default.
     DEFINE_QPROPERTY_ATTRIBUTE(int, mode);
     Q_PROPERTY(int mode READ getmode WRITE setmode);
 
