@@ -73,7 +73,7 @@ public slots:
     bool Initialized();
 
     /// Force to emit the idle image.
-    void ForceIdleImage();
+    void ForceUpdateImage();
 
 protected:
 	/// Internal impl for providing memory
@@ -135,8 +135,11 @@ private:
 	/// Caches the video frame for widget painting.
 	QPixmap onScreenPixmap_;
 
-    /// Pause pixmap for pretty rendering on pause state
+    /// Pause pixmap for pretty rendering on pause state.
     QPixmap pausePixmap_;
+
+    /// Buffering pixmap for pretty rendering on buffering state.
+    QPixmap bufferingPixmap_;
 
     /// Buffer used by VLC to draw into.
 	QImage renderPixmap_;

@@ -26,7 +26,6 @@ void VlcPlugin::Uninitialize()
 
 void VlcPlugin::Unload()
 {
-
 }
 
 extern "C"

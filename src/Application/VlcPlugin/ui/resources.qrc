@@ -13,5 +13,6 @@
     <file>playpause.png</file>
     <file>vlc-cone.png</file>
     <file>audio.png</file>
+    <file>buffering.png</file>
   </qresource>
 </RCC>

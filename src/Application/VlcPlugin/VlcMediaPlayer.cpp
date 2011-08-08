@@ -33,8 +33,6 @@ VlcMediaPlayer::VlcMediaPlayer() :
         connect(ui_.timeSlider, SIGNAL(sliderReleased()), SLOT(Seek()));
         
         ui_.verticalLayout->insertWidget(0, videoWidget_, 2);
-
-        LogInfo(QString("VlcMediaPlayer: libVLC ") + libvlc_get_version());
     }
     catch (std::exception &e)
     {
@@ -99,6 +97,7 @@ void VlcMediaPlayer::Stop()
     ui_.timeSlider->setEnabled(false);
     ui_.playButton->setVisible(true);
     ui_.pauseButton->setVisible(false);
+    ui_.timeLabel->setText("0:0" + totalTime_);
 }
 
 void VlcMediaPlayer::Seek()
@@ -109,12 +108,12 @@ void VlcMediaPlayer::Seek()
     videoWidget_->Seek(ui_.timeSlider->value());
 }
 
-void VlcMediaPlayer::ForceIdleImage()
+void VlcMediaPlayer::ForceUpdateImage()
 {
     if (!Initialized())
         return;
 
-    videoWidget_->ForceIdleImage();
+    videoWidget_->ForceUpdateImage();
 }
 
 void VlcMediaPlayer::OnStatusUpdate(const PlayerStatus status)
@@ -138,16 +137,11 @@ void VlcMediaPlayer::OnStatusUpdate(const PlayerStatus status)
             }
             if (status.paused)
             {
-                ui_.playButton->setIcon(QIcon(":/images/start.png"));
                 ui_.timeSlider->setEnabled(false);
                 ui_.playButton->setVisible(status.paused);
                 ui_.pauseButton->setVisible(!status.paused);
             }
-            ForceIdleImage();
-            break;
-        }
-        case PlayerStatus::MediaProperty:
-        {
+            ForceUpdateImage();
             break;
         }
         case PlayerStatus::MediaTime:
@@ -175,15 +169,15 @@ void VlcMediaPlayer::OnStatusUpdate(const PlayerStatus status)
             ui_.pauseButton->setVisible(false);
             break;
         }
-        case PlayerStatus::MediaSize:
-        {
-            break;
-        }
         case PlayerStatus::PlayerError:
         {
             LogError(status.error);
             break;
         }
+        case PlayerStatus::MediaSize:
+            break;
+        case PlayerStatus::MediaProperty:
+            break;
         case PlayerStatus::NoChange:
             break;
     }

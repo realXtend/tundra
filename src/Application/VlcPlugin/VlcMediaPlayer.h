@@ -50,7 +50,7 @@ public slots:
     void Seek();
 
     /// Force to emit the idle image
-    void ForceIdleImage();
+    void ForceUpdateImage();
 
 signals:
     /// Rendering frame update.

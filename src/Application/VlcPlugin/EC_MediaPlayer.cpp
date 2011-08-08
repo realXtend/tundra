@@ -226,7 +226,7 @@ void EC_MediaPlayer::PrepareComponent()
     componentPrepared_ = true;
 
     // Update to get the start image.
-    mediaPlayer_->ForceIdleImage();
+    mediaPlayer_->ForceUpdateImage();
 }
 
 void EC_MediaPlayer::TargetMeshReady()
@@ -253,7 +253,7 @@ void EC_MediaPlayer::TargetMeshMaterialChanged(uint index, const QString &materi
             // our material is re-applied to the submesh.
             sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
             if (mediaPlayer_)
-                mediaPlayer_->ForceIdleImage();
+                mediaPlayer_->ForceUpdateImage();
         }
     }
 }

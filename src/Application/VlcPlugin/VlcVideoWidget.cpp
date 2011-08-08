@@ -12,6 +12,7 @@ VlcVideoWidget::VlcVideoWidget(const QList<QByteArray> &args) :
     QFrame(0),
     vlcInstance_(0),
     vlcPlayer_(0),
+    vlcMedia_(0),
     hasVideoOut_(false)
 {
     /// Convert the arguments into a proper form
@@ -67,8 +68,11 @@ VlcVideoWidget::VlcVideoWidget(const QList<QByteArray> &args) :
 
     audioLogo_ = QImage(":/images/audio.png");
     audioLogo_ = audioLogo_.convertToFormat(QImage::Format_ARGB32);
+    
+    pausePixmap_ = QPixmap(":/images/pause-big.png");
+    bufferingPixmap_ = QPixmap(":/images/buffering.png");
 
-    QSize startSize(320, 240);
+    QSize startSize(600, 360);
     renderPixmap_ = QImage(startSize.width(), startSize.height(), QImage::Format_RGB32);
     libvlc_video_set_format(vlcPlayer_, "RV32", renderPixmap_.width(), renderPixmap_.height(), renderPixmap_.bytesPerLine());
 
@@ -82,8 +86,6 @@ VlcVideoWidget::VlcVideoWidget(const QList<QByteArray> &args) :
     // Connect and start status poller
     connect(&pollTimer_, SIGNAL(timeout()), SLOT(StatusPoller()));
     pollTimer_.start(10);
-
-    pausePixmap_ = QPixmap(":/images/pause-big.png");
 }
 
 VlcVideoWidget::~VlcVideoWidget() 
@@ -133,7 +135,6 @@ bool VlcVideoWidget::OpenSource(const QString &videoUrl)
         status.Reset();
         status.source = videoUrl;
         status.change = PlayerStatus::MediaSource;
-        LogInfo("VlcVideoWidget: Source received '" + status.source + "'");
         statusAccess.unlock();
 
         return true;
@@ -193,7 +194,7 @@ void VlcVideoWidget::Stop()
         libvlc_media_player_stop(vlcPlayer_);
 
         update();
-        ForceIdleImage();
+        ForceUpdateImage();
     }
 }
 
@@ -207,21 +208,43 @@ void VlcVideoWidget::Seek(boost::uint_least64_t time)
     }
 }
 
-void VlcVideoWidget::ForceIdleImage()
+void VlcVideoWidget::ForceUpdateImage()
 {
     statusAccess.lock();
     onScreenPixmapMutex_.lock();
 
-    if (!status.source.isEmpty())
-    {
-        if (!status.stopped && status.sourceSize.isNull() && !hasVideoOut_)
-            emit FrameUpdate(audioLogo_);
-        else if (status.stopped)
-            emit FrameUpdate(idleLogo_);
-    }
+    QImage image;
+    QPixmap addition;
+    QPoint additionPos(10, 10);
+
+    // No media or stopped
+    if (status.source.isEmpty() || status.stopped)
+        image = idleLogo_;
+    // Has media and is being played/paused/buffered
     else
-        emit FrameUpdate(idleLogo_);
-    
+    {
+        // Has video
+        if (hasVideoOut_)
+            image = rgbaBuffer_;
+        // Has audio
+        else
+            image = audioLogo_;
+        // Addition
+        if (status.paused)
+            addition = pausePixmap_;
+        if (status.buffering)
+            addition = bufferingPixmap_;
+    }    
+    // Add additional image if there is one
+    if (!addition.isNull())
+    {
+        QPainter p(&image);
+        p.drawPixmap(additionPos, addition, addition.rect());
+        p.end();
+    }
+    // Emit image
+    emit FrameUpdate(image);
+
     onScreenPixmapMutex_.unlock();
     statusAccess.unlock();
 
@@ -265,8 +288,6 @@ void VlcVideoWidget::DetermineVideoSize()
         status.doRestart = true;
         status.doStop = true;
         status.change = PlayerStatus::MediaSize;
-
-        LogInfo("VlcVideoWidget: Determined video size: " + QString::number(w) + " x " + QString::number(h));
     }
 }
 
@@ -322,6 +343,7 @@ void VlcVideoWidget::StatusPoller()
             status.doRestart = false;
         }
 
+        // Emit a status update if there is one
         if (status.change != PlayerStatus::NoChange)
         {
             emit StatusUpdate(status);
@@ -346,15 +368,43 @@ void VlcVideoWidget::InternalUnlock(void* picture, void*const *pixelPlane)
 
 void VlcVideoWidget::InternalRender(void* picture) 
 {
+    statusAccess.lock();
+    bool stopped = status.stopped;
+    bool paused = status.paused;
+    bool buffering = status.buffering;
+    QSize sourceSize = status.sourceSize;
+    statusAccess.unlock();
+
     // Lock on screen pixmap and update it.
     // It is ok to miss some frames, so use tryLock() instead.
     // Otherwise paintEvent and this may trigger some nasty dead locks.
     if (onScreenPixmapMutex_.tryLock())
     {
         hasVideoOut_ = true;
-
         onScreenPixmap_ = QPixmap::fromImage(renderPixmap_);
         rgbaBuffer_ = renderPixmap_.convertToFormat(QImage::Format_ARGB32);
+
+        // Paused
+        if (paused)
+        {
+            QPainter p(&rgbaBuffer_);
+            p.drawPixmap(QPoint(10, 10), pausePixmap_, pausePixmap_.rect());
+            p.end();
+        }
+        // Waiting to determine true size.
+        else if (sourceSize.isNull())
+        {
+            rgbaBuffer_.fill(Qt::black);
+            QPoint centerPos = rgbaBuffer_.rect().center();
+            QRect center(centerPos.x() - (bufferingPixmap_.width()/2), centerPos.y() - (bufferingPixmap_.height()/2),
+                         bufferingPixmap_.width(), bufferingPixmap_.height());
+            QPainter p(&rgbaBuffer_);
+            p.setPen(Qt::white);
+            p.drawPixmap(center, bufferingPixmap_, bufferingPixmap_.rect());
+            p.drawText(5, 12, "Loading Media");
+            p.end();
+        }
+
         emit FrameUpdate(rgbaBuffer_);
         onScreenPixmapMutex_.unlock();
 
@@ -371,17 +421,21 @@ void VlcVideoWidget::paintEvent(QPaintEvent *e)
     statusAccess.lock();
     bool stopped = status.stopped;
     bool paused = status.paused;
+    bool buffering = status.buffering;
     statusAccess.unlock();
+
+    QSize widgetSize = size();
+    QRect targetRect = rect();
 
     QPainter p(this);
 
     if (!stopped)
     {
+        // Playing/paused/buffering state, try to get a lock, but skip if cant.
+        // This lock might fail occasionally, this is when we lose a frame in the 2D preview widget.
         if (onScreenPixmapMutex_.tryLock())
         {
             QSize videoSize = (hasVideoOut_ ? onScreenPixmap_.size() : audioLogo_.size());
-            QSize widgetSize = size();
-            QRect targetRect = rect();
 
             double sourceAspectRatio = double(videoSize.height()) / videoSize.width();
             double displayAspectRatio = double(widgetSize.height()) / widgetSize.width();
@@ -394,22 +448,25 @@ void VlcVideoWidget::paintEvent(QPaintEvent *e)
             else
                 targetRect = QRect((widgetSize.width() - scaled.width()) / 2, 0, scaled.width(), widgetSize.height());
 
+            // Render audio logo for non video sources, the video image for others.
             if (hasVideoOut_)
                 p.drawPixmap(targetRect, onScreenPixmap_, onScreenPixmap_.rect());
             else
                 p.drawPixmap(targetRect, QPixmap::fromImage(audioLogo_), audioLogo_.rect());
 
+            // Add some eye candy for paused and buffering states
             if (paused)
                 p.drawPixmap(QPoint(10,10), pausePixmap_, pausePixmap_.rect());
-            
+            if (buffering)
+                p.drawPixmap(QPoint(10,10), bufferingPixmap_, bufferingPixmap_.rect());
+
             onScreenPixmapMutex_.unlock();
         }
     }
     else
     {
+        // Stopped state, render the default idle state logo
         QSize videoSize = idleLogo_.size();
-        QSize widgetSize = size();
-        QRect targetRect = rect();
 
         double sourceAspectRatio = double(videoSize.height()) / videoSize.width();
         double displayAspectRatio = double(widgetSize.height()) / widgetSize.width();
@@ -565,7 +622,18 @@ void VlcVideoWidget::VlcEventHandler(const libvlc_event_t *event, void *widget)
         case libvlc_MediaFreed:
             break;
         case libvlc_MediaStateChanged:
+        {
+            if (event->u.media_state_changed.new_state == libvlc_Buffering)
+            {
+                w->DetermineVideoSize();
+                w->status.buffering = true;
+                w->status.playing = false;
+                w->status.paused = false;
+                w->status.stopped = false;
+                w->status.change = PlayerStatus::MediaState;
+            }
             break;
+        }
         // Default
         default:
             break;
