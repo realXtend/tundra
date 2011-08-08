@@ -262,9 +262,15 @@ void UiAPI::OnProxyDestroyed(QObject* obj)
 QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *parent)
 {
     QWidget *widget = 0;
-
+    QString resolvedRef;
+    
     /// \todo Should be able to specify asset ref context
-    QString resolvedRef = owner->Asset()->ResolveAssetRef("", filePath);
+    // Hack: here, we interpret anything that begins with . to be a locally relative path, that is not resolved
+    if (!filePath.startsWith('.'))
+        resolvedRef = owner->Asset()->ResolveAssetRef("", filePath);
+    else
+        resolvedRef = filePath;
+    
     AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(resolvedRef);
     if (refType != AssetAPI::AssetRefLocalPath && refType != AssetAPI::AssetRefRelativePath)
     {
