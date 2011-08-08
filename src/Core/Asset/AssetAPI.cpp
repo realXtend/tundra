@@ -976,7 +976,8 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     AssetTypeFactoryPtr factory = GetAssetTypeFactory(type);
     if (!factory)
     {
-        LogError("AssetAPI:CreateNewAsset: Cannot create asset of type \"" + type + "\", name: \"" + name + "\". No type factory registered for the type!");
+        // This spams too much with the server giving us storages, debug should be fine for things we dont have a factory.
+        LogDebug("AssetAPI:CreateNewAsset: Cannot create asset of type \"" + type + "\", name: \"" + name + "\". No type factory registered for the type!");
         return AssetPtr();
     }
     if (dynamic_cast<NullAssetFactory*>(factory.get()))

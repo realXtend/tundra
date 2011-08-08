@@ -23,6 +23,7 @@
 #include "UiMainWindow.h"
 
 #include <iostream>
+#include <QDir>
 
 #include "MemoryLeakCheck.h"
 
@@ -84,7 +85,7 @@ Framework::Framework(int argc, char** argv) :
         frame = new FrameAPI(this);
         scene = new SceneAPI(this);
         asset = new AssetAPI(this, headless_);
-        asset->OpenAssetCache(Application::UserDataDirectory() + "/assetcache");
+        asset->OpenAssetCache(Application::UserDataDirectory() + QDir::separator() + "assetcache");
         ui = new UiAPI(this);
         audio = new AudioAPI(this, asset); // AudioAPI epends on the AssetAPI, so must be loaded after it.
         input = new InputAPI(this);

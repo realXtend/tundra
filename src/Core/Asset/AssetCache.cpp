@@ -33,9 +33,9 @@ QString SanitateAssetRefForCache(QString assetRef)
 AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) : 
     QNetworkDiskCache(owner),
     assetAPI(owner),
-    cacheDirectory(GuaranteeTrailingSlash(assetCacheDirectory))
+    cacheDirectory(GuaranteeTrailingSlash(QDir::fromNativeSeparators(assetCacheDirectory)))
 {
-    LogInfo("Using AssetCache in directory '" + assetCacheDirectory.toStdString() + "'");
+    LogInfo("AssetCache: Using directory '" + cacheDirectory + "'");
 
     // Check that the main directory exists
     QDir assetDir(cacheDirectory);
@@ -104,7 +104,7 @@ QIODevice* AssetCache::prepare(const QNetworkCacheMetaData &metaData)
     QScopedPointer<QFile> dataFile(new QFile(GetAbsoluteFilePath(false, metaData.url())));
     if (!dataFile->open(QIODevice::ReadWrite))
     {
-        LogError("Failed not open data file QIODevice::ReadWrite mode for " + metaData.url().toString().toStdString());
+        LogError("AssetCache: Failed not open data file QIODevice::ReadWrite mode for " + metaData.url().toString().toStdString());
         dataFile.reset();
         remove(metaData.url());
         return 0;
@@ -113,7 +113,7 @@ QIODevice* AssetCache::prepare(const QNetworkCacheMetaData &metaData)
     {
         if (!dataFile->resize(0))
         {
-            LogError("Failed not reset existing data from cache entry. Skipping cache store for " + metaData.url().toString().toStdString());
+            LogError("AssetCache: Failed not reset existing data from cache entry. Skipping cache store for " + metaData.url().toString().toStdString());
             dataFile->close();
             dataFile.reset();
             remove(metaData.url());
@@ -243,7 +243,7 @@ void AssetCache::DeleteAsset(const QString &assetRef)
 void AssetCache::DeleteAsset(const QUrl &assetUrl)
 {
     if (!remove(assetUrl))
-        LogWarning("AssetCache::DeleteAsset Failed to delete asset " + assetUrl.toString().toStdString());
+        LogWarning("AssetCache: AssetCache::DeleteAsset Failed to delete asset " + assetUrl.toString().toStdString());
 }
 
 void AssetCache::ClearAssetCache()
