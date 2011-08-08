@@ -14,11 +14,18 @@
 #include "IRenderer.h"
 #include "LoggingFunctions.h"
 
+#include "AssetAPI.h"
+#include "IAsset.h"
+#include "IAssetTransfer.h"
+
 #include "EC_WidgetCanvas.h"
 #include "EC_Mesh.h"
 
 #include <QUuid>
 #include <QString>
+#include <QPainter>
+#include <QPixmap>
+#include <QDir>
 
 #include "MemoryLeakCheck.h"
 
@@ -26,10 +33,12 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
     IComponent(scene),
     mediaPlayer_(0),
     componentPrepared_(false),
+    pendingMediaDownload_(false),
     sourceRef(this, "Media Source", AssetReference("", "")),
     renderSubmeshIndex(this, "Render Submesh", 0),
     interactive(this, "Interactive", false),
-    illuminating(this, "Illuminating", true)
+    illuminating(this, "Illuminating", true),
+    streamingAllowed(this, "Streaming Allowed", true)
 {
     if (!ViewEnabled() || GetFramework()->IsHeadless())
         return;
@@ -60,6 +69,23 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
         connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), 
                 SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
     }
+
+    // Prepare media downloader
+    mediaDownloader_ = new AssetRefListener();
+    connect(mediaDownloader_, SIGNAL(Loaded(AssetPtr)), SLOT(OnMediaLoaded(AssetPtr)));
+    connect(mediaDownloader_, SIGNAL(TransferFailed(IAssetTransfer*, QString)), SLOT(OnMediaFailed(IAssetTransfer*, QString)));
+
+    // Construct loading image
+    downloadingLogo_ = QImage(500, 300, QImage::Format_ARGB32);
+    downloadingLogo_.fill(Qt::black);
+    QPixmap bufferingIcon(":/images/buffering.png");
+    QPoint centerPos = downloadingLogo_.rect().center();
+    QRect target(centerPos.x() - (bufferingIcon.width()/2), centerPos.y() - (bufferingIcon.height()/2), bufferingIcon.width(), bufferingIcon.height());
+    QPainter p(&downloadingLogo_);
+    p.setPen(Qt::white);
+    p.drawPixmap(target, bufferingIcon, bufferingIcon.rect());
+    p.drawText(5, 12, "Downloading media...");
+    p.end();
 }
 
 EC_MediaPlayer::~EC_MediaPlayer()
@@ -225,8 +251,15 @@ void EC_MediaPlayer::PrepareComponent()
     // All the needed components are present, mark prepared as true.
     componentPrepared_ = true;
 
-    // Update to get the start image.
-    mediaPlayer_->ForceUpdateImage();
+    // Show downloading info icon or if not downloading, 
+    // ask for a image update from the player
+    if (pendingMediaDownload_)
+    {
+        LogInfo("Thworing a download notification");
+        OnFrameUpdate(downloadingLogo_);
+    }
+    else
+        mediaPlayer_->ForceUpdateImage();
 }
 
 void EC_MediaPlayer::TargetMeshReady()
@@ -249,11 +282,16 @@ void EC_MediaPlayer::TargetMeshMaterialChanged(uint index, const QString &materi
         EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
         if (sceneCanvas)
         {
-            // This will make 3DCanvas to update its internals, which means
-            // our material is re-applied to the submesh.
-            sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
-            if (mediaPlayer_)
-                mediaPlayer_->ForceUpdateImage();
+            if (material != sceneCanvas->GetMaterialName())
+            {
+                // This will make 3DCanvas to update its internals, which means
+                // our material is re-applied to the submesh.
+                sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
+                if (pendingMediaDownload_)
+                    OnFrameUpdate(downloadingLogo_);
+                else if (mediaPlayer_)
+                    mediaPlayer_->ForceUpdateImage();
+            }
         }
     }
 }
@@ -306,7 +344,7 @@ void EC_MediaPlayer::AttributeChanged(IAttribute *attribute, AttributeChange::Ty
             return;
 
         // Load the 'getwebviewUrl' page to our QWebView if it's not empty.
-        QString source = getsourceRef().ref.simplified();
+        QString source = getsourceRef().ref.trimmed();
         if (source.isEmpty())
         {
             mediaPlayer_->Stop();
@@ -318,9 +356,31 @@ void EC_MediaPlayer::AttributeChanged(IAttribute *attribute, AttributeChange::Ty
             return;
         }
 
-        // Only load source if source if not the same.
-        if (!mediaPlayer_->LoadMedia(source))
-            LogError("EC_MediaPlayer: Source not supported: " + source.toStdString());
+        /// http(s):// and local:// assets are the only ones we can fetch with
+        /// AssetAPI and access from asset cache as a disk media source.
+        /// Absolute and relative [file://]path/to/file refs are automatically handled by VLC as filesystem sources.
+        bool canDownload = source.startsWith("http");
+        if (!canDownload)
+            canDownload = source.startsWith("local://");
+
+        // If streaming is allowed, we pass the media to VLC to handle
+        if (getstreamingAllowed() || !canDownload)
+        {
+            if (!mediaPlayer_->LoadMedia(source))
+                LogError("EC_MediaPlayer: Source not supported: " + source.toStdString());
+            else
+            {
+                LogInfo("EC_MediaPlayer: Loaded source media '" + source + "'");
+                mediaPlayer_->ForceUpdateImage();
+            }
+        }
+        // If streaming is not allowed, download the media via AssetAPI,
+        // and playback from hard drive (asset cache) on completion.
+        else
+        {
+            pendingMediaDownload_ = true;
+            mediaDownloader_->HandleAssetRefChange(framework->Asset(), source, "Binary");
+        }
     }
     else if (attribute == &illuminating)
     {
@@ -375,4 +435,35 @@ void EC_MediaPlayer::EntityClicked(Entity *entity, Qt::MouseButton button, Rayca
         if (!popupInteract->actions().empty())
             popupInteract->exec(QCursor::pos());
     }
+}
+
+void EC_MediaPlayer::OnMediaLoaded(AssetPtr asset)
+{
+    pendingMediaDownload_ = false;
+
+    // Double check that same source finished as we have in the attribute.
+    if (asset->Name() != getsourceRef().ref.trimmed())
+        return;
+
+    // Load media from local file
+    QString diskSource = asset->DiskSource();
+    if (!diskSource.isEmpty())
+    {
+        // Feed native separators for VLC
+        if (!mediaPlayer_->LoadMedia(QDir::toNativeSeparators(diskSource)))
+            LogError("EC_MediaPlayer: Source not supported: " + diskSource.toStdString());
+        else
+        {
+            LogInfo("EC_MediaPlayer: Loaded source media '" + diskSource + "'");
+            mediaPlayer_->ForceUpdateImage();
+        }
+    }
+    else
+        LogError("EC_MediaPlayer: Downloaded medias disk source is empty! Broken/disabled asset cache?");
+}
+
+void EC_MediaPlayer::OnMediaFailed(IAssetTransfer *transfer, QString reason)
+{
+    LogError("EC_MediaPlayer: Failed to download media from '" + transfer->source.ref + "' with reason: " + reason);
+    pendingMediaDownload_ = false;
 }

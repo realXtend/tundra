@@ -2,8 +2,10 @@
 
 #pragma once
 
-#include "SceneFwd.h"
 #include "VlcFwd.h"
+#include "SceneFwd.h"
+#include "AssetFwd.h"
+#include "AssetRefListener.h"
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -28,7 +30,17 @@ public:
     /// Destructor.
     virtual ~EC_MediaPlayer();
 
-    /// Media source reference.
+    /*! Media source reference. Accepted formats are.
+        [file://]filename              Plain media file
+        http://ip:port/file            HTTP URL
+        ftp://ip:port/file             FTP URL
+        mms://ip:port/file             MMS URL
+        screen://                      Screen capture
+        [dvd://][device][@raw_device]  DVD device
+        [vcd://][device]               VCD device
+        [cdda://][device]              Audio CD device
+        udp:[[<source address>]@[<bind address>][:<bind port>]]
+	*/
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, sourceRef);
     Q_PROPERTY(AssetReference sourceRef READ getsourceRef WRITE setsourceRef);
 
@@ -44,6 +56,12 @@ public:
     /// If you want finer control how and where to show the menu, use GetContextMenu().
     Q_PROPERTY(bool interactive READ getinteractive WRITE setinteractive);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, interactive);
+
+    /// If we should let VLC stream or download the whole file before allowing playback.
+    /// Setting this to false has the benefit of using our asset cache and you don't have to buffer during playback.
+    /// @note The media will only be directly downloaded from http/https sources, other wise passed to VLC to handle streaming.
+    Q_PROPERTY(bool streamingAllowed READ getstreamingAllowed WRITE setstreamingAllowed);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, streamingAllowed);
     
     COMPONENT_NAME("EC_MediaPlayer", 37)
 
@@ -96,6 +114,12 @@ private slots:
     /// Monitors entity mouse clicks.
     void EntityClicked(Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
 
+    /// Callback for mediaDownloader_
+    void OnMediaLoaded(AssetPtr asset);
+
+    /// Callback for mediaDownloader_
+    void OnMediaFailed(IAssetTransfer *transfer, QString reason);
+
 private:
     /// Vlc media player widget.
     VlcMediaPlayer *mediaPlayer_;
@@ -115,4 +139,13 @@ private:
     /// multiple media players in a entity (rendering to different submesh indexes). 
     /// This is used to perform cleanup when this component is destroyed.
     QString sceneCanvasName_;
+
+    /// Helper for manual downloads via asset api, this will be used if attribute 'streamingAllowed' is false.
+    AssetRefListener *mediaDownloader_;
+
+    /// Download indicator logo to inworld object.
+    QImage downloadingLogo_;
+
+    /// Track if we havea pending download operation.
+    bool pendingMediaDownload_;
 };
