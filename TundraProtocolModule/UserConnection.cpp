@@ -48,7 +48,8 @@ QString UserConnection::GetProperty(const QString& key) const
         return empty;
 }
 
-void UserConnection::DenyConnection()
+void UserConnection::DenyConnection(const QString &reason)
 {
     properties["authenticated"] = "false";
+    properties["reason"] = reason;
 }

@@ -316,6 +316,8 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         MsgLoginReply reply;
         reply.success = 0;
         reply.userID = 0;
+        QByteArray responseByteData = user->properties["reason"].toAscii();
+        reply.loginReplyData.insert(reply.loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());
         user->connection->Send(reply);
         return;
     }

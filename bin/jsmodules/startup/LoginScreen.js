@@ -12,6 +12,7 @@ var loginButton;
 var exitButton;
 var tcpButton;
 var udpButton;
+var infotext;
 
 var configFile = "tundra";
 var configSection = "client";
@@ -46,6 +47,8 @@ function SetupLoginScreen() {
     passwordLineEdit = findChild(widget, "lineEdit_Password");
     tcpButton = findChild(widget, "radioButton_ProtocolTCP");
     udpButton = findChild(widget, "radioButton_ProtocolUDP");
+    infotext = findChild(widget, "label_infotext");
+    infotext.hide();
 
     var logoLabel = findChild(widget, "label_ClientLogo");
     logoLabel.pixmap = new QPixmap("./data/ui/images/realxtend_logo.png");
@@ -53,6 +56,7 @@ function SetupLoginScreen() {
     client.Connected.connect(HideLoginScreen);
     client.Connected.connect(WriteConfigFromUi);
     client.Disconnected.connect(ShowLoginScreen);
+    client.LoginFailed.connect(LoginFailed);
 
     ReadConfigToUi();
 }
@@ -119,6 +123,9 @@ function LoginPressed() {
     }
 
     client.Login(strings[0], port, username, password, protocol);
+    
+    infotext.text = "Connecting...";
+    infotext.show();
 }
 
 function HideLoginScreen() {
@@ -127,6 +134,12 @@ function HideLoginScreen() {
 
 function ShowLoginScreen() {
     widget.setVisible(true);
+}
+
+function LoginFailed() {
+    infotext.text = "Failed to connect: " + client.GetLoginProperty("LoginFailed");
+    infotext.show();
+    frame.DelayedExecute(5.0).Triggered.connect(function(){infotext.hide();});
 }
 
 function Exit() {

@@ -66,7 +66,7 @@ public slots:
     QString GetProperty(const QString& key) const;
     
     /// Deny connection. Call as a response to server.UserAboutToConnect() if necessary
-    void DenyConnection();
+    void DenyConnection(const QString& reason);
     
 signals:
     void ActionTriggered(UserConnection* connection, Entity* entity, const QString& action, const QStringList& params);

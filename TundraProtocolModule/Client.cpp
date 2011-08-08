@@ -334,6 +334,9 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
     }
     else
     {
+        QString response(QByteArray((const char *)&msg.loginReplyData[0], (int)msg.loginReplyData.size()));
+        if (!response.isEmpty())
+            SetLoginProperty("LoginFailed", response);
         DoLogout(true);
     }
 }
