@@ -210,19 +210,19 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& 
     
     world_->rayTest(rayCallback.m_rayFromWorld, rayCallback.m_rayToWorld, rayCallback);
     
-    result.entity_ = 0;
-    result.distance_ = 0;
+    result.entity = 0;
+    result.distance = 0;
     
     if (rayCallback.hasHit())
     {
-        result.pos_ = ToVector3(rayCallback.m_hitPointWorld);
-        result.normal_ = ToVector3(rayCallback.m_hitNormalWorld);
-        result.distance_ = (result.pos_ - origin).Length();
+        result.pos = ToVector3(rayCallback.m_hitPointWorld);
+        result.normal = ToVector3(rayCallback.m_hitNormalWorld);
+        result.distance = (result.pos - origin).Length();
         if (rayCallback.m_collisionObject)
         {
             EC_RigidBody* body = static_cast<EC_RigidBody*>(rayCallback.m_collisionObject->getUserPointer());
             if (body)
-                result.entity_ = body->ParentEntity();
+                result.entity = body->ParentEntity();
         }
     }
     

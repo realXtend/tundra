@@ -2,14 +2,11 @@
 
 #pragma once
 
-#include "CoreDefines.h"
 #include "CoreTypes.h"
 #include "SceneFwd.h"
 #include "PhysicsModuleApi.h"
 #include "Math/float3.h"
 #include "Math/MathFwd.h"
-#define BULLET_INTEROP
-#include "Math/AABB.h"
 
 #include <LinearMath/btIDebugDraw.h>
 
@@ -30,24 +27,25 @@ class Transform;
 
 class DebugLines;
 
+///\todo Remove the QObject inheritance here, and expose as a struct to scripts.
 class PhysicsRaycastResult : public QObject
 {
     Q_OBJECT
-    
-public:
     Q_PROPERTY(Entity* entity READ getentity);
-    Entity* getentity() const { return entity_; }
     Q_PROPERTY(float3 pos READ getpos);
-    float3 getpos() const { return pos_; }
     Q_PROPERTY(float3 normal READ getnormal);
-    float3 getnormal() const { return normal_; }
     Q_PROPERTY(float distance READ getdistance);
-    float getdistance() const { return distance_; }
+
+public:
+    Entity* getentity() const { return entity; }
+    float3 getpos() const { return pos; }
+    float3 getnormal() const { return normal; }
+    float getdistance() const { return distance; }
     
-    Entity* entity_;
-    float3 pos_;
-    float3 normal_;
-    float distance_;
+    Entity* entity;
+    float3 pos;
+    float3 normal;
+    float distance;
 };
 
 namespace Physics
@@ -96,16 +94,14 @@ public:
     
 public slots:
     /// Set physics update period (= length of each simulation step.) By default 1/60th of a second.
-    /** @param updatePeriod Update period
-     */
+    /** @param updatePeriod Update period */
     void SetPhysicsUpdatePeriod(float updatePeriod);
     
     /// Return internal physics timestep
     float GetPhysicsUpdatePeriod() const { return physicsUpdatePeriod_; }
     
     /// Set gravity that affects all moving objects of the physics world
-    /** @param gravity Gravity vector
-     */
+    /** @param gravity Gravity vector */
     void SetGravity(const float3& gravity);
     
     /// Raycast to the world. Returns only a single (the closest) result.
@@ -114,8 +110,7 @@ public slots:
         @param maxdistance Length of ray
         @param collisionlayer Collision layer. Default has all bits set.
         @param collisionmask Collision mask. Default has all bits set.
-        @return result PhysicsRaycastResult structure
-     */
+        @return result PhysicsRaycastResult structure */
     PhysicsRaycastResult* Raycast(const float3& origin, const float3& direction, float maxdistance, int collisiongroup = -1, int collisionmask = -1);
     
     /// Return gravity
@@ -151,6 +146,7 @@ public slots:
     /// Renders a hollow circle.
     /// @param numSubdivisions The number of edges to subdivide the circle into. This value must be at least 3.
     void DrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b);
+
 signals:
     /// A physics collision has happened between two entities. 
     /** Note: both rigidbodies participating in the collision will also emit a signal separately. 
@@ -161,18 +157,16 @@ signals:
         @param normal World normal of collision
         @param distance Contact distance
         @param impulse Impulse applied to the objects to separate them
-        @param newCollision True if same collision did not happen on the previous frame. If collision has multiple contact points, newCollision can only be true for the first of them.
-     */
+        @param newCollision True if same collision did not happen on the previous frame.
+                If collision has multiple contact points, newCollision can only be true for the first of them. */
     void PhysicsCollision(Entity* entityA, Entity* entityB, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
     
     /// Emitted before the simulation steps. Note: emitted only once per frame, not before each substep.
-    /** @param frametime Length of simulation steps
-     */
+    /** @param frametime Length of simulation steps */
     void AboutToUpdate(float frametime);
     
     /// Emitted after each simulation step
-    /** @param frametime Length of simulation step
-     */
+    /** @param frametime Length of simulation step */
     void Updated(float frametime);
     
 private:
@@ -222,5 +216,3 @@ private:
 };
 
 }
-
-

@@ -1865,7 +1865,7 @@ ConvexH *ConvexHCrop(ConvexH &convex,const Plane &slice)
 		}
 	}
 	int vertcountunderold = vertcountunder; // for debugging only
-
+    UNREFERENCED_PARAM(vertcountunderold);
 	int under_edge_count =0;
 	int underplanescount=0;
 	int e0=0;
@@ -2363,7 +2363,9 @@ void checkit(Tri *t)
 		int i1=(i+1)%3;
 		int i2=(i+2)%3;
 		int a = (*t)[i1];
+        UNREFERENCED_PARAM(a);
 		int b = (*t)[i2];
+        UNREFERENCED_PARAM(b);
 		assert(a!=b);
 		assert( tris[t->n[i]]->neib(b,a) == t->id);
 	}
