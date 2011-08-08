@@ -306,33 +306,32 @@ void TimeProfilerWindow::Arrange()
     if (!tab_widget_)
         return;
 
-    int index = tab_widget_->currentIndex();
     QString name = QObject::sender()->objectName();
 
     QTreeWidget* widget = 0;
-    switch (index)
+    switch (tab_widget_->currentIndex())
     {
-        case 8:  // Texture
-            widget =  tree_texture_assets_;
-            break;
-        case 9: // Mesh
-            widget =  tree_mesh_assets_;
-            break;
-        case 10: // Material
-            widget =  tree_material_assets_;
-            break;
-        case 11:
-            widget =  tree_skeleton_assets_;
-            break;
-        case 12:
-            widget = tree_compositor_assets_ ;
-            break;
-        case 13:
-            widget = tree_gpu_assets_;
-            break;
-        case 14:
-            widget = tree_font_assets_;
-            break;
+    case 8:  // Texture
+        widget =  tree_texture_assets_;
+        break;
+    case 9: // Mesh
+        widget =  tree_mesh_assets_;
+        break;
+    case 10: // Material
+        widget =  tree_material_assets_;
+        break;
+    case 11:
+        widget =  tree_skeleton_assets_;
+        break;
+    case 12:
+        widget = tree_compositor_assets_ ;
+        break;
+    case 13:
+        widget = tree_gpu_assets_;
+        break;
+    case 14:
+        widget = tree_font_assets_;
+        break;
     }
 
     if (widget == 0)
@@ -1261,7 +1260,7 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
 
 void TimeProfilerWindow::RefreshAssetProfilingData()
 {
-    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 5)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 3)
         return;
 
     tree_asset_cache_->clear();
@@ -1308,7 +1307,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
 
 void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
 {
-    if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 6)
+    if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 4)
         return;
     
     ScenePtr scene = framework_->Scene()->GetDefaultScene();
@@ -1968,7 +1967,7 @@ void TimeProfilerWindow::PopulateOgreSceneTree()
 
 void TimeProfilerWindow::RefreshRenderTargetProfilingData()
 {
-    if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 7)
+    if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 5)
         return;
     
     tree_rendertargets_->clear();
@@ -2020,7 +2019,7 @@ void TimeProfilerWindow::RefreshRenderTargetProfilingData()
 
 void TimeProfilerWindow::RefreshTextureProfilingData()
 {
-    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 8)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 6)
         return;
 
     Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();
