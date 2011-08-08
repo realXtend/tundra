@@ -3,6 +3,7 @@
 #ifndef incl_SceneWidgetComponents_EC_WidgetCanvas_h
 #define incl_SceneWidgetComponents_EC_WidgetCanvas_h
 
+#include "SceneWidgetComponentsApi.h"
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "OgreModuleFwd.h"
@@ -60,7 +61,7 @@ Does not emit any actions.
 
 */
 
-class EC_WidgetCanvas : public IComponent
+class SCENEWIDGET_MODULE_API EC_WidgetCanvas : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_WidgetCanvas", 35)
@@ -72,6 +73,7 @@ public:
 public slots:
     void Start();
     void Stop();
+    void Update(QImage &buffer);
     void Update();
     void Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second);
     void RestoreOriginalMeshMaterials();

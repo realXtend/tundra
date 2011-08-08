@@ -3,6 +3,7 @@
 #ifndef incl_SceneWidgetComponents_EC_WebView_h
 #define incl_SceneWidgetComponents_EC_WebView_h
 
+#include "SceneWidgetComponentsApi.h"
 #include "IComponent.h"
 #include "IAttribute.h"
 
@@ -79,7 +80,7 @@ Does not emit any actions.
 
 </table>
 */
-class EC_WebView : public IComponent
+class SCENEWIDGET_MODULE_API EC_WebView : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_WebView", 36)

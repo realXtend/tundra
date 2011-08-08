@@ -435,6 +435,7 @@ void EC_WebView::PrepareComponent()
         LogError("PrepareComponent: Could not get or create EC_WidgetCanvas component!");
         return;
     }
+    sceneCanvas->SetTemporary(true);
     sceneCanvas->SetSelfIllumination(getilluminating());
     
     // All the needed components are present, mark prepared as true.

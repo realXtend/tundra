@@ -236,6 +236,57 @@ void EC_WidgetCanvas::WidgetDestroyed(QObject *obj)
     SAFE_DELETE(refresh_timer_);
 }
 
+void EC_WidgetCanvas::Update(QImage &buffer)
+{
+    if (framework->IsHeadless())
+        return;
+
+    if (buffer.width() <= 0 || buffer.height() <= 0)
+        return;
+
+    try
+    {
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(texture_name_);
+        if (texture.isNull())
+            return;
+
+        // Set texture to material if need be
+        if (update_internals_ && !material_name_.empty())
+        {
+            Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(material_name_);
+            if (material.isNull())
+                return;
+            // Just for good measure, this is done once in the ctor already if everything went well.
+            OgreRenderer::SetTextureUnitOnMaterial(material, texture_name_);
+            UpdateSubmeshes();
+            update_internals_ = false;
+        }
+
+        if ((int)texture->getWidth() != buffer.width() || (int)texture->getHeight() != buffer.height())
+        {
+            texture->freeInternalResources();
+            texture->setWidth(buffer.width());
+            texture->setHeight(buffer.height());
+            texture->createInternalResources();
+        }
+
+        if (!texture->getBuffer().isNull())
+        {
+            Ogre::Box update_box(0,0, buffer.width(), buffer.height());
+            Ogre::PixelBox pixel_box(update_box, Ogre::PF_A8R8G8B8, (void*)buffer.bits());
+            texture->getBuffer()->blitFromMemory(pixel_box, update_box);
+        }
+    }
+    catch (Ogre::Exception &e) // inherits std::exception
+    {
+        LogError("Exception occurred while blitting texture data from memory: " + std::string(e.what()));
+    }
+    catch (...)
+    {
+        LogError("Unknown exception occurred while blitting texture data from memory.");
+    }
+}
+
 void EC_WidgetCanvas::Update()
 {
     if (framework->IsHeadless())
