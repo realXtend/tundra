@@ -263,25 +263,27 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
 {
     QWidget *widget = 0;
 
-    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(filePath);
+    /// \todo Should be able to specify asset ref context
+    QString resolvedRef = owner->Asset()->ResolveAssetRef("", filePath);
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(resolvedRef);
     if (refType != AssetAPI::AssetRefLocalPath && refType != AssetAPI::AssetRefRelativePath)
     {
-        AssetPtr asset = owner->Asset()->GetAsset(filePath);
+        AssetPtr asset = owner->Asset()->GetAsset(resolvedRef);
         if (!asset)
         {
-            LogError(("LoadFromFile: Asset \"" + filePath + "\" is not loaded to the asset system. Call RequestAsset prior to use!").toStdString());
+            LogError(("LoadFromFile: Asset \"" + resolvedRef + "\" is not loaded to the asset system. Call RequestAsset prior to use!").toStdString());
             return 0;
         }
 
         QtUiAsset *uiAsset = dynamic_cast<QtUiAsset*>(asset.get());
         if (!uiAsset)
         {
-            LogError(("LoadFromFile: Asset \"" + filePath + "\" is not of type QtUiFile!").toStdString());
+            LogError(("LoadFromFile: Asset \"" + resolvedRef + "\" is not of type QtUiFile!").toStdString());
             return 0;
         }
         if (!uiAsset->IsLoaded())
         {
-            LogError(("LoadFromFile: Asset \"" + filePath + "\" data is not valid!").toStdString());
+            LogError(("LoadFromFile: Asset \"" + resolvedRef + "\" data is not valid!").toStdString());
             return 0;
         }
 
@@ -294,15 +296,15 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
     }
     else // The file is from absolute source location.
     {
-        QString path = filePath;
+        QString path = resolvedRef;
         // If the user submitted a relative path, try to lookup whether a path relative to cwd or the application installation directory was meant.
         if (QDir::isRelativePath(path))
         {
-            QString cwdPath = Application::CurrentWorkingDirectory() + filePath;
+            QString cwdPath = Application::CurrentWorkingDirectory() + resolvedRef;
             if (QFile::exists(cwdPath))
                 path = cwdPath;
             else
-                path = Application::InstallationDirectory() + filePath;
+                path = Application::InstallationDirectory() + resolvedRef;
         }
         QFile file(path);
         QUiLoader loader;
@@ -312,7 +314,7 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
 
     if (!widget)
     {
-        LogError(("LoadFromFile: Failed to load widget from file \"" + filePath + "\"!").toStdString());
+        LogError(("LoadFromFile: Failed to load widget from file \"" + resolvedRef + "\"!").toStdString());
         return 0;
     }
 
