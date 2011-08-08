@@ -184,6 +184,9 @@ void SyncManager::NewUserConnected(UserConnection* user)
     Scene::ScenePtr scene = scene_.lock();
     if (!scene)
         return;
+
+    if(!user) //HACK: the py websocket server pass in a 0 conn - needs to emit for e.g. av app to work, but this sync biz is not needed.
+        return;
     
     // Connect to actions sent to specifically to this user
     connect(user, SIGNAL(ActionTriggered(UserConnection*, Scene::Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Scene::Entity*, const QString&, const QStringList&)));
