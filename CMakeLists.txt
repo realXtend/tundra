@@ -74,6 +74,13 @@ macro(MocFolder)
     source_group("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
 endmacro()
 
+# Moves all Qt ui copmiler-generated .h files into their own folder in the Visual Studio project. Call this once after having added all source files in the build in your module.
+# This macro is optional and for "conveniency" only. If you omit this call, you will have all the generated moc files in the Visual Studio project root.
+macro(UiFolder)
+    file(GLOB GENERATED_UI_H ui_*.h)
+    source_group("Generated UI" FILES ${GENERATED_UI_H})
+endmacro()
+
 # Enables the use of Precompiled Headers in the project this macro is invoked in. Also adds the DEBUG_CPP_NAME to each .cpp file that specifies the name of that compilation unit. MSVC only.
 macro(SetupCompileFlagsWithPCH)
     if (MSVC)
@@ -104,13 +111,6 @@ macro(SetupCompileFlags)
             endif()
         endforeach()
     endif()
-endmacro()
-
-# Moves all Qt ui copmiler-generated .h files into their own folder in the Visual Studio project. Call this once after having added all source files in the build in your module.
-# This macro is optional and for "conveniency" only. If you omit this call, you will have all the generated moc files in the Visual Studio project root.
-macro(UiFolder)
-    file(GLOB GENERATED_UI_H ui_*.h)
-    source_group("Generated UI" FILES ${GENERATED_UI_H})
 endmacro()
 
 # Set CMake library search policy

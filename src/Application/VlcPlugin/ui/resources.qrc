@@ -1,0 +1,17 @@
+<RCC>
+  <qresource prefix="images">
+    <file>pause-hover.png</file>
+    <file>pause-pressed.png</file>
+    <file>start-hover.png</file>
+    <file>start-pressed.png</file>
+    <file>stop-hover.png</file>
+    <file>stop-pressed.png</file>
+    <file>pause.png</file>
+    <file>pause-big.png</file>
+    <file>start.png</file>
+    <file>stop.png</file>
+    <file>playpause.png</file>
+    <file>vlc-cone.png</file>
+    <file>audio.png</file>
+  </qresource>
+</RCC>
