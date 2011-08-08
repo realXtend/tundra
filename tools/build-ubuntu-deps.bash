@@ -180,7 +180,10 @@ then
     git clone https://code.google.com/p/realxtend-tundra-deps
 fi
 cd $depdir
-git pull
+if [ -z "`git pull|grep "Already up\-to\-date"`" ]; then
+    echo "Changes in GIT detected, rebuilding HydraX, SkyX and PythonQT"
+    rm -f $tags/hydrax-done $tags/skyx-done $tags/pythonqt-done
+fi
 git checkout sources
 # HydraX build:
 if test -f $tags/hydrax-done; then
