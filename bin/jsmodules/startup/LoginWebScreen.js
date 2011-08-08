@@ -508,8 +508,8 @@ var BrowserManager = Class.extend
         {
             p_.addressBar.lineEdit().text = "local://LoginWidget.ui";
             p_.actionAddFavorite.enabled = false;
-            p_.tabs.setTabToolTip(index, "LoginScreen");
-            p_.tabs.setTabText(index, "LoginScreen")
+            p_.tabs.setTabToolTip(tabsCurrentIndex, "LoginScreen");
+            p_.tabs.setTabText(tabsCurrentIndex, "LoginScreen")
             return;
         }
         
