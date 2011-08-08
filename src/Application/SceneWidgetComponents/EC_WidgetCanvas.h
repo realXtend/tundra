@@ -12,6 +12,7 @@
 #include <QImage>
 #include <QPointer>
 #include <QWidget>
+#include <QString>
 
 namespace Ogre
 {
@@ -87,6 +88,8 @@ public slots:
     QWidget *GetWidget() { return widget_; }
     const int GetRefreshRate() { return update_interval_msec_; }
     QList<uint> GetSubMeshes() { return submeshes_; }
+
+    QString GetMaterialName() { return QString::fromStdString(material_name_); }
 
 private:
     void UpdateSubmeshes();

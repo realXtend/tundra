@@ -595,10 +595,13 @@ void EC_WebView::TargetMeshMaterialChanged(uint index, const QString &material)
         EC_WidgetCanvas *sceneCanvas = dynamic_cast<EC_WidgetCanvas*>(comp);
         if (sceneCanvas)
         {
-            // This will make 3DCanvas to update its internals, which means
-            // our material is re-applied to the submesh.
-            sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
-            RenderDelayed();
+            if (material != sceneCanvas->GetMaterialName())
+            {
+                // This will make 3DCanvas to update its internals, which means
+                // our material is re-applied to the submesh.
+                sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
+                RenderDelayed();
+            }
         }
     }
 }
