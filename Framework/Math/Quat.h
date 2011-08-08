@@ -26,6 +26,10 @@
 #include <OgreQuaternion.h>
 #endif
 
+#ifdef BULLET_INTEROP
+#include <LinearMath/btQuaternion.h>
+#endif
+
 /// Represents a rotation or an orientation of a 3D object.
 class Quat
 {
