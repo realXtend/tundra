@@ -89,6 +89,12 @@ signals:
     */
     void ProxyUngrabbed(QGraphicsProxyWidget *widget, const QPointF &pos);
 
+     /// Emitted when drop event occurs on proxy widget.
+    /** @param widget
+        @param event Drop Event.
+    */
+    void DropEventOnProxy(QGraphicsProxyWidget *widget, QGraphicsSceneDragDropEvent *event);
+
 protected:
     /// QGraphicsProxyWidget override.
     /** Emits Visible(true) signal.
@@ -127,6 +133,11 @@ protected:
     /** Emits ProxyUngrabbed() signal.
     */
     void ungrabMouseEvent(QEvent *e);
+
+    /// QGraphicsProxyWidget override.
+    /** Emits DropEventOnProxy() signal.
+    */
+    void dropEvent(QGraphicsSceneDragDropEvent *e);
 
 private slots:
     /// Hides proxy widget after animated hide is complete.

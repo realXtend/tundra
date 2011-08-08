@@ -209,6 +209,12 @@ void UiProxyWidget::ungrabMouseEvent(QEvent *e)
     QGraphicsProxyWidget::ungrabMouseEvent(e);
 }
 
+void UiProxyWidget::dropEvent(QGraphicsSceneDragDropEvent *e)
+{
+    emit DropEventOnProxy(this, e);
+    QGraphicsProxyWidget::dropEvent(e);
+}
+
 void UiProxyWidget::FinishHide()
 {
     if (animations_->direction() == QAbstractAnimation::Backward)
