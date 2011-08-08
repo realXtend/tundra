@@ -133,6 +133,8 @@ void EC_LaserPointer::Update(MouseEvent *e)
         return;
     if (!ParentEntity())
         return;
+    if (world_.expired())
+        return;
 
     if (enabled.Get())
     {
@@ -145,8 +147,7 @@ void EC_LaserPointer::Update(MouseEvent *e)
                 return;
             }
 
-            OgreRenderer::Renderer *renderer = world_.lock()->GetRenderer();
-            RaycastResult *result = renderer->Raycast(e->x, e->y);
+            RaycastResult *result = world_.lock()->GetRenderer()->Raycast(e->x, e->y);
             if (result && result->entity && result->entity != ParentEntity())
             {
                 EC_Placeable *placeable = ParentEntity()->GetComponent<EC_Placeable>().get();
@@ -202,6 +203,8 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
     {
         if (!ViewEnabled())
             return;
+        if (world_.expired())
+            return;
         if (enabled.Get())
             return;
         if (!canUpdate_)
@@ -223,12 +226,8 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
             return;
         }
 
-        OgreRenderer::Renderer *renderer = world_.lock()->GetRenderer();
-        if (!renderer)
-            return;
-
         QPoint scenePos = framework->Ui()->GraphicsView()->mapFromGlobal(QCursor::pos());
-        RaycastResult *result = renderer->Raycast(scenePos.x(), scenePos.y());
+        RaycastResult *result = world_.lock()->GetRenderer()->Raycast(scenePos.x(), scenePos.y());
         if (result && result->entity && result->entity != ParentEntity())
         {
             endPos.Set(result->pos, AttributeChange::Default);

@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define BULLET_INTEROP
 #include "DebugOperatorNew.h"
 #include "CollisionShapeUtils.h"
 #include "ConvexHull.h"
@@ -20,7 +21,7 @@ void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr)
     GetTrianglesFromMesh(mesh, triangles);
     
     for(uint i = 0; i < triangles.size(); i += 3)
-        ptr->addTriangle(ToBtVector3(triangles[i]), ToBtVector3(triangles[i+1]), ToBtVector3(triangles[i+2]));
+        ptr->addTriangle(triangles[i], triangles[i+1], triangles[i+2]);
 }
 
 void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr)
