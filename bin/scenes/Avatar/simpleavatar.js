@@ -26,6 +26,7 @@ var fish_created = false;
 var tripod = false;
 var first_person = false;
 var crosshair = null;
+var is_mouse_look_locked_x = true;
 
 // Animation detection
 var standAnimName = "Stand";
@@ -480,8 +481,12 @@ function ClientHandleTripodLookX(param)
     }
 }
 
+// Note: this function also handles mouse look Y for third person mode
 function ClientHandleTripodLookY(param)
 {
+    if (!tripod && is_mouse_look_locked_x)
+        return;
+
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if (cameraentity == null)
         return;
@@ -892,6 +897,10 @@ function ClientCheckState()
 
 function ClientHandleMouseMove(mouseevent)
 {
+    if (mouseevent.IsRightButtonDown())
+        LockMouseMove(mouseevent.relativeX, mouseevent.relativeY);
+    else
+        is_mouse_look_locked_x = true;
     ClientCheckState();
     
     if (mouseevent.IsItemUnderMouse())
@@ -952,6 +961,14 @@ function ClientHandleMouseMove(mouseevent)
         cameratransform.rot.x = 180;
 
     cameraplaceable.transform = cameratransform;
+}
+
+function LockMouseMove(x,y)
+{
+    if (Math.abs(y) > Math.abs(x))
+        is_mouse_look_locked_x = false;
+    else
+        is_mouse_look_locked_x = true;
 }
 
 function CommonFindAnimations() {
