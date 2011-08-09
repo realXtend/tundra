@@ -253,7 +253,7 @@ void TexturePreviewEditor::OpenOgreTexture(const QString& name)
     Ogre::Texture* tex = static_cast<Ogre::Texture* >(res.get());
     if (!tex)
     {
-        LogWarning("Failed to open Ogre texture " + name.toStdString() + " .");
+        LogWarning("Failed to open Ogre texture " + name + " .");
         return;
     }
 

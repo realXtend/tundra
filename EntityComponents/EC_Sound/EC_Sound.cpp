@@ -216,7 +216,7 @@ EntityPtr EC_Sound::GetActiveSoundListener()
 
 #ifdef _DEBUG
     if (numActiveListeners != 1)
-        LogWarning("Warning: When playing back positional 3D audio, " + QString::number(numActiveListeners).toStdString() + " active sound listeners were found!");
+        LogWarning("Warning: When playing back positional 3D audio, " + QString::number(numActiveListeners) + " active sound listeners were found!");
 #endif
     return EntityPtr();
 }

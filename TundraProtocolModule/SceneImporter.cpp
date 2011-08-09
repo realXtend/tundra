@@ -64,11 +64,11 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
     QSet<QString> material_names_set;
     for(uint i = 0; i < (uint)material_names.size(); ++i)
     {
-        LogDebug("Material ref: " + material_names[i].toStdString());
+        LogDebug("Material ref: " + material_names[i]);
         material_names_set.insert(material_names[i]);
     }
 
-    LogDebug("Skeleton ref: " + skeleton_name.toStdString());
+    LogDebug("Skeleton ref: " + skeleton_name);
 
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     QStringList material_files;
@@ -267,7 +267,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
     QFile mesh_in(meshname);
     if (!mesh_in.open(QFile::ReadOnly))
     {
-        LogError("Could not open input mesh file " + meshname.toStdString());
+        LogError("Could not open input mesh file " + meshname);
         return false;
     }
     else
@@ -317,7 +317,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
         }
         catch(...)
         {
-            LogError("Exception while inspecting mesh " + meshname.toStdString());
+            LogError("Exception while inspecting mesh " + meshname);
             return false;
         }
     }
@@ -331,7 +331,7 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
 
     if (!source.endsWith(".mesh", Qt::CaseInsensitive))
     {
-        LogError("Unsupported file type for scene description creation: " + source.toStdString());
+        LogError("Unsupported file type for scene description creation: " + source);
         return sceneDesc;
     }
 
@@ -464,7 +464,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
 
     if (!filename.endsWith(".scene", Qt::CaseInsensitive))
     {
-        LogError("Unsupported file type for scene description creation: " + filename.toStdString());
+        LogError("Unsupported file type for scene description creation: " + filename);
         return sceneDesc;
     }
 
@@ -474,7 +474,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     if (!file.open(QFile::ReadOnly))
     {
         file.close();
-        LogError("Failed to open file " + filename.toStdString());
+        LogError("Failed to open file " + filename);
         return sceneDesc;
     }
 
@@ -641,7 +641,7 @@ QSet<QString> SceneImporter::ProcessMaterialFileForTextures(const QString& matfi
     QFile matfile(matfilename);
     if (!matfile.open(QFile::ReadOnly))
     {
-        LogError("Could not open material file " + matfilename.toStdString());
+        LogError("Could not open material file " + matfilename);
         return used_textures;
     }
     else
@@ -730,7 +730,7 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
     QFile matfile(filename);
     if (!matfile.open(QFile::ReadOnly))
     {
-        LogError("Could not open material file " + filename.toStdString());
+        LogError("Could not open material file " + filename);
         return material;
     }
     else
@@ -739,7 +739,7 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
         matfile.close();
         if (bytes.size() == 0)
         {
-            LogError("Empty material file: " + filename.toStdString());
+            LogError("Empty material file: " + filename);
             return material;
         }
 
@@ -820,7 +820,7 @@ MaterialInfoList SceneImporter::LoadAllMaterialsFromFile(const QString &filename
     QFile matfile(filename);
     if (!matfile.open(QFile::ReadOnly))
     {
-        LogError("Could not open material file " + filename.toStdString());
+        LogError("Could not open material file " + filename);
         return materials;
     }
     else
@@ -829,7 +829,7 @@ MaterialInfoList SceneImporter::LoadAllMaterialsFromFile(const QString &filename
         matfile.close();
         if (bytes.size() == 0)
         {
-            LogError("Empty material file: " + filename.toStdString());
+            LogError("Empty material file: " + filename);
             return materials;
         }
 
@@ -1400,7 +1400,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         ad.dataInMemory = false;
         AssetAPI::FileQueryResult result = scene_->GetFramework()->Asset()->ResolveLocalAssetPath(tex, path, ad.source);
         if (result == AssetAPI::FileQueryLocalFileMissing)
-            LogWarning("Texture file \"" + tex.toStdString() + "\" cannot be found from path \"" + path.toStdString() + "\"!");
+            LogWarning("Texture file \"" + tex + "\" cannot be found from path \"" + path + "\"!");
         ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(tex); // The destination name must be local to the destination asset storage.
         desc.assets[qMakePair(ad.source, ad.subname)] = ad;
     }

@@ -149,7 +149,7 @@ namespace Asset
             QString storageString = storage->SerializeToString();
             if (framework_->Asset()->GetDefaultAssetStorage() == storage)
                 storageString += ";default";
-            LogInfo(storageString.toStdString());
+            LogInfo(storageString);
         }
     }
 

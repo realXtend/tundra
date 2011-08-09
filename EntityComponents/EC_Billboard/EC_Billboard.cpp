@@ -218,7 +218,7 @@ void EC_Billboard::OnMaterialAssetLoaded(AssetPtr asset)
     if (!ogreMaterial)
     {
         LogError("OnMaterialAssetLoaded: Material asset load finished for asset \"" +
-            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreMaterialAsset!");
+            asset->Name() + "\", but downloaded asset was not of type OgreMaterialAsset!");
         return;
     }
 

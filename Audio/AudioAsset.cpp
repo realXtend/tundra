@@ -99,7 +99,7 @@ bool AudioAsset::LoadFromRawPCMWavData(const u8 *data, size_t numBytes, bool ste
         const ALchar *errorString = alGetString(error);
         if (!errorString)
             errorString = unknownError;
-        LogError("Could not set OpenAL sound buffer data: OpenAL error number " + QString::number(error).toStdString() + ": " + errorString);
+        LogError("Could not set OpenAL sound buffer data: OpenAL error number " + QString::number(error) + ": " + errorString);
         DoUnload();
         return false;
     }

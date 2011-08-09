@@ -277,19 +277,19 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
         AssetPtr asset = owner->Asset()->GetAsset(resolvedRef);
         if (!asset)
         {
-            LogError(("LoadFromFile: Asset \"" + resolvedRef + "\" is not loaded to the asset system. Call RequestAsset prior to use!").toStdString());
+            LogError("LoadFromFile: Asset \"" + resolvedRef + "\" is not loaded to the asset system. Call RequestAsset prior to use!");
             return 0;
         }
 
         QtUiAsset *uiAsset = dynamic_cast<QtUiAsset*>(asset.get());
         if (!uiAsset)
         {
-            LogError(("LoadFromFile: Asset \"" + resolvedRef + "\" is not of type QtUiFile!").toStdString());
+            LogError("LoadFromFile: Asset \"" + resolvedRef + "\" is not of type QtUiFile!");
             return 0;
         }
         if (!uiAsset->IsLoaded())
         {
-            LogError(("LoadFromFile: Asset \"" + resolvedRef + "\" data is not valid!").toStdString());
+            LogError("LoadFromFile: Asset \"" + resolvedRef + "\" data is not valid!");
             return 0;
         }
 
@@ -320,7 +320,7 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
 
     if (!widget)
     {
-        LogError(("LoadFromFile: Failed to load widget from file \"" + resolvedRef + "\"!").toStdString());
+        LogError("LoadFromFile: Failed to load widget from file \"" + resolvedRef + "\"!");
         return 0;
     }
 

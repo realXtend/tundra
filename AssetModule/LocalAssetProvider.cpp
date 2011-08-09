@@ -61,7 +61,7 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
         return AssetTransferPtr();
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
-        assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef.toStdString().c_str());
+        assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef);
 
     AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer);
     transfer->source.ref = assetRef.trimmed();
@@ -98,7 +98,7 @@ QString LocalAssetProvider::GetPathForAsset(const QString &assetRef, LocalAssetS
     // Check first all subdirs without recursion, because recursion is potentially slow
     for (size_t i = 0; i < storages.size(); ++i)
     {
-        QString path = storages[i]->GetFullPathForAsset(path_filename.toStdString().c_str(), false);
+        QString path = storages[i]->GetFullPathForAsset(path_filename, false);
         if (path != "")
         {
             if (storage)
@@ -109,7 +109,7 @@ QString LocalAssetProvider::GetPathForAsset(const QString &assetRef, LocalAssetS
 
     for (size_t i = 0; i < storages.size(); ++i)
     {
-        QString path = storages[i]->GetFullPathForAsset(path_filename.toStdString().c_str(), true);
+        QString path = storages[i]->GetFullPathForAsset(path_filename, true);
         if (path != "")
         {
             if (storage)
@@ -140,7 +140,7 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
     {
         QFile::remove(assetRef); ///\todo Check here that the assetRef points to one of the accepted storage directories, and don't allow deleting anything else.
         
-        LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
+        LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef + "\" from disk.");
         framework->Asset()->EmitAssetDeletedFromStorage(assetRef);
     }
 }
@@ -167,7 +167,8 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &dire
         if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
         {
             if (storages[i]->directory != directory)
-                LogError("LocalAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName.toStdString() + "\" already exists, but points to directory \"" + storages[i]->directory.toStdString() + "\" instead of \"" + directory.toStdString() + "\"!");
+                LogError("LocalAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName + 
+                    "\" already exists, but points to directory \"" + storages[i]->directory + "\" instead of \"" + directory + "\"!");
             return LocalAssetStoragePtr();
         }
 
@@ -253,7 +254,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
                 if (path.isEmpty())
                 {
                     QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
-        //            AssetModule::LogWarning(reason.toStdString());
+        //            AssetModule::LogWarning(reason);
                     framework->Asset()->AssetTransferFailed(transfer.get(), reason);
                     continue;
                 }
@@ -267,17 +268,17 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         if (!success)
         {
             QString reason = "Failed to read asset data for asset \"" + ref + "\" from file \"" + absoluteFilename + "\"";
-//            AssetModule::LogError(reason.toStdString());
+//            AssetModule::LogError(reason);
             framework->Asset()->AssetTransferFailed(transfer.get(), reason);
             continue;
         }
         
         // Tell the Asset API that this asset should not be cached into the asset cache, and instead the original filename should be used
         // as a disk source, rather than generating a cache file for it.
-        transfer->SetCachingBehavior(false, absoluteFilename.toStdString().c_str());
+        transfer->SetCachingBehavior(false, absoluteFilename);
 
         transfer->storage = storage;
-//        AssetModule::LogDebug("Downloaded asset \"" + ref.toStdString() + "\" from file " + absoluteFilename.toStdString());
+//        AssetModule::LogDebug("Downloaded asset \"" + ref + "\" from file " + absoluteFilename.toStdString());
 
         // Signal the Asset API that this asset is now successfully downloaded.
         framework->Asset()->AssetTransferCompleted(transfer.get());
@@ -370,7 +371,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
 
         if (!success)
         {
-            LogError(("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!").toStdString());
+            LogError("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!");
             transfer->EmitTransferFailed();
         }
         else
@@ -382,7 +383,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
 
 void LocalAssetProvider::FileChanged(const QString &path)
 {
-    LogInfo(("File " + path + " changed.").toStdString());
+    LogInfo("File " + path + " changed.");
 }
 
 } // ~Asset

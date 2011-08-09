@@ -116,7 +116,7 @@ void EC_Camera::SetPlaceable(ComponentPtr placeable)
 {
     if (placeable && !dynamic_cast<EC_Placeable*>(placeable.get()))
     {
-        ::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
+        ::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic());
         return;
     }
 

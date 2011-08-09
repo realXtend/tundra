@@ -258,7 +258,7 @@ template<> void ECAttributeEditor<float>::Initialize()
         IAttribute *attribute = FindAttribute(comp);
         if (!attribute) 
         {
-            LogError("Could not find attribute by " + name_.toStdString());
+            LogError("Could not find attribute by " + name_);
             return;
         }
 
@@ -340,7 +340,7 @@ template<> void ECAttributeEditor<int>::Initialize()
         IAttribute *attribute = FindAttribute(comp);
         if (!attribute)
         {
-            LogError("Could not find attribute by " + name_.toStdString());
+            LogError("Could not find attribute by " + name_);
             return;
         }
 
@@ -443,7 +443,7 @@ template<> void ECAttributeEditor<int>::Set(QtProperty *property)
             IAttribute *attribute = FindAttribute(comp);
             if (!attribute)
             {
-                LogError("Could not find attribute by " + name_.toStdString());
+                LogError("Could not find attribute by " + name_);
                 return;
             }
 
@@ -489,7 +489,7 @@ template<> void ECAttributeEditor<bool>::Set(QtProperty *property)
 {
     if(listenEditorChangedSignal_)
     {
-        if(property->valueText().toStdString() == "True")
+        if(property->valueText() == "True")
             SetValue(true);
         else
             SetValue(false);
@@ -2134,7 +2134,7 @@ void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
 
     if (asset)
     {
-        LogInfo("AssetReferenceListAttributeEditor: Setting new value " + asset->Name().toStdString() + " for index " + ToString(currentIndex));
+        LogInfo("AssetReferenceListAttributeEditor: Setting new value " + asset->Name() + " for index " + QString::number(currentIndex));
         AssetReferenceList newRefList = refList->Get();
         if (newRefList.IsEmpty())
             newRefList.Append(AssetReference(asset->Name()));

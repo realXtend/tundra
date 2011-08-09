@@ -49,5 +49,3 @@ __forceinline void operator delete[](void *ptr)
 }
 
 #endif // ~_MSC_VER
-
-// ~incl_Framework_DebugOperatorNew_h

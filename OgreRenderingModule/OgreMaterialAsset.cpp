@@ -1288,7 +1288,7 @@ void OgreMaterialAsset::OnTransferSucceeded(AssetPtr asset)
                     }
                     catch (Ogre::Exception& e)
                     {
-                        LogError("SetTexture exception for " + Name().toStdString() + ", reason: " + std::string(e.what()));
+                        LogError("SetTexture exception for " + Name() + ", reason: " + QString(e.what()));
                     }
                 }
             }
@@ -1313,7 +1313,7 @@ void OgreMaterialAsset::OnTransferFailed(IAssetTransfer* transfer, QString reaso
                 }
                 catch (Ogre::Exception& e)
                 {
-                    LogError("SetTexture exception for " + Name().toStdString() + ", reason: " + std::string(e.what()));
+                    LogError("SetTexture exception for " + Name() + ", reason: " + QString(e.what()));
                 }
             }
             pendingApplies.erase(pendingApplies.begin() + i);

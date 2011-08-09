@@ -47,7 +47,7 @@ void AssetAPI::OpenAssetCache(QString directory)
 {
     SAFE_DELETE(assetCache);
     SAFE_DELETE(diskSourceChangeWatcher);
-    assetCache = new AssetCache(this, directory.toStdString().c_str());
+    assetCache = new AssetCache(this, directory);
     diskSourceChangeWatcher = new QFileSystemWatcher();
     connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)));
 }

@@ -772,7 +772,7 @@ void EC_Terrain::NormalizeImage(QString filename) const
         image.load(stream);
     } catch(...)
     {
-        LogError("Execption catched when trying load image file" + filename.toStdString() + ".");
+        LogError("Execption catched when trying load image file" + filename + ".");
         return;
     }
 
@@ -817,7 +817,7 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
         image.load(stream);
     } catch(...)
     {
-        LogError("Execption catched when trying load terrain from image file" + filename.toStdString() + ".");
+        LogError("Execption catched when trying load terrain from image file" + filename + ".");
         return false;
     }
 
@@ -1082,7 +1082,7 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
     Ogre::Mesh *mesh = dynamic_cast<Ogre::Mesh*>(Ogre::MeshManager::getSingleton().getByName(ogreMeshResourceName.toStdString().c_str()).get());
     if (!mesh)
     {
-        LogError("Could not get mesh " + ogreMeshResourceName.toStdString() + ".");
+        LogError("Could not get mesh " + ogreMeshResourceName + ".");
         return;
     }
 
@@ -1192,7 +1192,7 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
     Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
     if (!terrainMaterial.get())
     {
-//        LogWarning("Ogre material " + material.Get().toStdString() + " not found!");
+//        LogWarning("Ogre material " + material.Get() + " not found!");
         return;
     }
 //    Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);

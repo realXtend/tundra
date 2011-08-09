@@ -52,5 +52,3 @@ __forceinline void operator delete[](void *ptr, const char *, int)
 #define new new (__FILE__, __LINE__)
 
 #endif // ~_MSC_VER
-
-// ~incl_Framework_MemoryLeakCheck_h

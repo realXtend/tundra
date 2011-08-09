@@ -486,7 +486,8 @@ void EC_RigidBody::OnCollisionMeshAssetLoaded(AssetPtr asset)
 {
     OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(asset.get());
     if (!meshAsset || !meshAsset->ogreMesh.get())
-        LogError("EC_RigidBody::OnCollisionMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
+        LogError("EC_RigidBody::OnCollisionMeshAssetLoaded: Mesh asset load finished for asset \"" +
+            asset->Name() + "\", but Ogre::Mesh pointer was null!");
 
     Ogre::Mesh *mesh = meshAsset->ogreMesh.get();
 

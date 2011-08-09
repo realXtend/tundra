@@ -99,13 +99,13 @@ bool IAsset::LoadFromFile(QString filename)
     bool success = LoadFileToVector(filename.toStdString().c_str(), fileData);
     if (!success)
     {
-        LogDebug("LoadFromFile failed for file \"" + filename.toStdString() + "\", could not read file!");
+        LogDebug("LoadFromFile failed for file \"" + filename + "\", could not read file!");
         return false;
     }
 
     if (fileData.size() == 0)
     {
-        LogDebug("LoadFromFile failed for file \"" + filename.toStdString() + "\", file size was 0!");
+        LogDebug("LoadFromFile failed for file \"" + filename + "\", file size was 0!");
         return false;
     }
 
@@ -117,7 +117,7 @@ bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
 {
     if (!data || numBytes == 0)
     {
-        LogDebug("LoadFromFileInMemory failed for asset \"" + ToString().toStdString() + "\"! No data present!");
+        LogDebug("LoadFromFileInMemory failed for asset \"" + ToString() + "\"! No data present!");
         return false;
     }
 
@@ -154,7 +154,7 @@ std::vector<AssetReference> IAsset::FindReferencesRecursive() const
             if (asset)
             {
                 std::vector<AssetReference> newRefs = asset->FindReferences();
-                unwalkedRefs.insert(unwalkedRefs.end(), newRefs.begin(), newRefs.end());                
+                unwalkedRefs.insert(unwalkedRefs.end(), newRefs.begin(), newRefs.end());
             }
         }
     }
@@ -165,7 +165,7 @@ std::vector<AssetReference> IAsset::FindReferencesRecursive() const
 
 bool IAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
-    LogError("IAsset::SerializeTo: Asset serialization not implemented for asset \"" + ToString().toStdString() + "\"!");
+    LogError("IAsset::SerializeTo: Asset serialization not implemented for asset \"" + ToString() + "\"!");
     return false;
 }
 
@@ -175,7 +175,7 @@ bool IAsset::SaveToFile(const QString &filename, const QString &serializationPar
     bool success = SerializeTo(data, serializationParameters);
     if (!success || data.size() == 0)
     {
-        LogError("IAsset::SaveToFile: SerializeTo returned no data for asset \"" + ToString().toStdString() + "\"!");
+        LogError("IAsset::SaveToFile: SerializeTo returned no data for asset \"" + ToString() + "\"!");
         return false;
     }
 

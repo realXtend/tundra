@@ -50,7 +50,7 @@ void HttpAssetStorage::PerformSearch(QString path)
     QUrl searchUrl(baseAddress);
     searchUrl.setPath(path);
     
-    LogDebug("Performing PROPFIND on " + searchUrl.toString().toStdString());
+    LogDebug("Performing PROPFIND on " + searchUrl.toString());
     
     QNetworkRequest request;
     request.setUrl(searchUrl);
@@ -96,7 +96,7 @@ void HttpAssetStorage::OnHttpTransferFinished(QNetworkReply *reply)
         {
             QByteArray response = reply->readAll();
             if (reply->error() != QNetworkReply::NoError)
-                LogError("PROPFIND failed for url " + reply->url().toString().toStdString());
+                LogError("PROPFIND failed for url " + reply->url().toString());
             else
             {
                 QDomDocument doc;

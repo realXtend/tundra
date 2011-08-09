@@ -325,8 +325,8 @@ void SyncManager::OnEntityCreated(Entity* entity, AttributeChange::Type change)
             {
                 if (state->removed_entities_.find(entity->Id()) != state->removed_entities_.end())
                 {
-                    LogWarning("An entity with ID " + QString::number(entity->Id()).toStdString() + " is queued to be deleted, but a new entity \"" + 
-                        entity->Name().toStdString() + "\" is to be added to the scene!");
+                    LogWarning("An entity with ID " + QString::number(entity->Id()) + " is queued to be deleted, but a new entity \"" + 
+                        entity->Name() + "\" is to be added to the scene!");
                 }
                 state->OnEntityChanged(entity->Id());
             }
@@ -375,7 +375,7 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
     bool isServer = owner_->IsServer();
     if (isServer && (type & EntityAction::Server) != 0)
     {
-        //LogInfo("EntityAction " + action.toStdString() + " type Server on server.");
+        //LogInfo("EntityAction " + action. + " type Server on server.");
         entity->Exec(EntityAction::Local, action, params);
     }
 
@@ -393,7 +393,7 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
     if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0) && owner_->GetClient()->GetConnection())
     {
         // send without Local flag
-        //LogInfo("Tundra client sending EntityAction " + action.toStdString() + " type " + ToString(type));
+        //LogInfo("Tundra client sending EntityAction " + action + " type " + ToString(type));
         msg.executionType = (u8)(type & ~EntityAction::Local);
         owner_->GetClient()->GetConnection()->Send(msg);
     }
@@ -405,7 +405,7 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
         {
             if (c->properties["authenticated"] == "true" && c->connection)
             {
-                //LogInfo("peer " + action.toStdString());
+                //LogInfo("peer " + action);
                 c->connection->Send(msg);
             }
         }
@@ -491,8 +491,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
 
         if (state->removed_entities_.find(*i) != state->removed_entities_.end())
         {
-            LogWarning("Potentially buggy behavior! Sending entity update for ID " + QString::number(*i).toStdString() + ", name: " + entity->Name().toStdString()
-                + " but the entity with that ID is queued for deletion later!");
+            LogWarning("Potentially buggy behavior! Sending entity update for ID " + QString::number(*i) + ", name: " +
+                entity->Name() + " but the entity with that ID is queued for deletion later!");
         }
 
         const Entity::ComponentVector &components =  entity->Components();
@@ -1087,7 +1087,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                             partially_changed_dynamic_components[dynComp].push_back(attrName);
                         }
                         else
-                            LogWarning("Could not create attribute type " + attrTypeName.toStdString() + " to dynamic component");
+                            LogWarning("Could not create attribute type " + attrTypeName + " to dynamic component");
                     }
                 }
             }
@@ -1269,7 +1269,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     }
     
     if (!handled)
-        LogWarning("SyncManager: Received MsgEntityAction message \"" + action.toStdString() + "\", but it went unhandled because of its type=" + QString::number(type).toStdString());
+        LogWarning("SyncManager: Received MsgEntityAction message \"" + action + "\", but it went unhandled because of its type=" + QString::number(type));
 
     // Clear the action sender after action handling
     Server *server = owner_->GetServer().get();

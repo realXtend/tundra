@@ -303,7 +303,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     QDomElement keyvalueElem = rootElem.firstChildElement();
     while(!keyvalueElem.isNull())
     {
-        //::LogInfo("Logindata contains keyvalue pair " + keyvalueElem.tagName().toStdString() + " = " + keyvalueElem.attribute("value").toStdString());
+        //::LogInfo("Logindata contains keyvalue pair " + keyvalueElem.tagName() + " = " + keyvalueElem.attribute("value);
         user->SetProperty(keyvalueElem.tagName(), keyvalueElem.attribute("value"));
         keyvalueElem = keyvalueElem.nextSiblingElement();
     }

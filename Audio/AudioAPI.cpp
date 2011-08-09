@@ -129,7 +129,7 @@ bool AudioAPI::Initialize(const QString &playbackDeviceName)
     
     if (!impl->device)
     {
-        LogWarning("Could not open OpenAL playback device " + playbackDeviceName.toStdString());
+        LogWarning("Could not open OpenAL playback device " + playbackDeviceName);
         return false;
     } 
       
@@ -141,7 +141,7 @@ bool AudioAPI::Initialize(const QString &playbackDeviceName)
     }
        
     alcMakeContextCurrent(impl->context);
-    LogInfo("Opened OpenAL playback device " + playbackDeviceName.toStdString());
+    LogInfo("Opened OpenAL playback device " + playbackDeviceName);
     impl->initialized = true;
     return true;
 }
@@ -464,13 +464,13 @@ bool AudioAPI::StartRecording(const QString &name, uint frequency, bool sixteenb
     
     if (!impl->captureDevice)
     {
-        LogError("Could not open OpenAL recording device " + name.toStdString());
+        LogError("Could not open OpenAL recording device " + name);
         return false;
     }
     
     alcCaptureStart(impl->captureDevice);
     
-    LogInfo("Opened OpenAL recording device " + name.toStdString());
+    LogInfo("Opened OpenAL recording device " + name);
     return true;
 }
 

@@ -725,7 +725,7 @@ void SceneTreeWidget::NewEntity()
     }
     else
     {
-        LogError("Invalid entity type:" + type.toStdString());
+        LogError("Invalid entity type:" + type);
         return;
     }
 
@@ -830,7 +830,7 @@ void SceneTreeWidget::Paste()
     QDomDocument scene_doc("Scene");
     if (!scene_doc.setContent(QApplication::clipboard()->text(), false, &errorMsg))
     {
-        LogError("Parsing scene XML from clipboard failed: " + errorMsg.toStdString());
+        LogError("Parsing scene XML from clipboard failed: " + errorMsg);
         return;
     }
 
@@ -1157,7 +1157,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
     QFile file(files[0]);
     if (!file.open(QIODevice::WriteOnly))
     {
-        LogError("Could not open file " + files[0].toStdString() + " for writing.");
+        LogError("Could not open file " + files[0] + " for writing.");
         return;
     }
 
@@ -1445,7 +1445,7 @@ void SceneTreeWidget::InvokeActionTriggered()
             {
                 QVariant retVal;
                 invoker.Invoke(obj, invokedItem->name, invokedItem->parameters, &retVal);
-                LogInfo("Invoked function returned " + retVal.toString().toStdString());
+                LogInfo("Invoked function returned " + retVal.toString());
             }
         }
     }
@@ -1528,7 +1528,7 @@ void SceneTreeWidget::AssetLoaded(AssetPtr asset)
             param = filename.right(filename.size() - filename.lastIndexOf('.') - 1);
         if (!asset->SaveToFile(filename, param))
         {
-            LogError("Could not save asset to file " + filename.toStdString() + ".");
+            LogError("Could not save asset to file " + filename + ".");
             QMessageBox box(QMessageBox::Warning, tr("Save asset"), tr("Failed to save asset."), QMessageBox::Ok);
             box.setInformativeText(tr("Please check the selected storage device can be written to."));
             box.exec();

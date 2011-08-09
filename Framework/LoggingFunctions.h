@@ -43,5 +43,3 @@ static void LogDebug(const std::string &msg) {}
 static void LogDebug(const char *msg) {}
 static void LogDebug(const QString &msg) {}
 #endif
-
-// incl_Framework_LoggingFunctions_h

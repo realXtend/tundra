@@ -62,7 +62,7 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
         }
 
         Ogre::SceneManager* sceneMgr = world->GetSceneManager();
-        Ogre::ParticleSystem* system = sceneMgr->createParticleSystem(world->GetUniqueObjectName("EC_Particlesystem"), SanitateAssetIdForOgre(systemName.toStdString()));
+        Ogre::ParticleSystem* system = sceneMgr->createParticleSystem(world->GetUniqueObjectName("EC_Particlesystem"), SanitateAssetIdForOgre(systemName));
         if (system)
         {
             placeable->GetSceneNode()->attachObject(system);
@@ -74,7 +74,7 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
     }
     catch(Ogre::Exception& e)
     {
-        LogError("Could not add particle system " + Name().toStdString() + ": " + std::string(e.what()));
+        LogError("Could not add particle system " + Name() + ": " + QString(e.what()));
     }
 
     return;
@@ -157,7 +157,7 @@ void EC_ParticleSystem::OnParticleAssetLoaded(AssetPtr asset)
     if (!particleAsset)
     {
         LogError("OnMaterialAssetLoaded: Material asset load finished for asset \"" +
-            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreParticleAsset!");
+            asset->Name() + "\", but downloaded asset was not of type OgreParticleAsset!");
         return;
     }
 

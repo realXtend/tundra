@@ -85,7 +85,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 
             if (ogreTexture->getBuffer().isNull())
             {
-                LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
+                LogError("DeserializeFromData: Failed to create texture " + this->Name() + ": OgreTexture::getBuffer() was null!");
                 return false;
             }
 
@@ -99,7 +99,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     }
     catch(Ogre::Exception &e)
     {
-        LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
+        LogError("DeserializeFromData: Failed to create texture " + this->Name() + ": " + QString(e.what()));
         return false;
     }
 }
@@ -126,7 +126,7 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
 {
     if (ogreTexture.isNull())
     {
-        LogWarning("SerializeTo: Called on an unloaded texture \"" + Name().toStdString() + "\".");
+        LogWarning("SerializeTo: Called on an unloaded texture \"" + Name() + "\".");
         return false;
     }
 
@@ -164,7 +164,7 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
         }
     } catch(std::exception &e)
     {
-        LogError("SerializeTo: Failed to export Ogre texture " + Name().toStdString() + ":");
+        LogError("SerializeTo: Failed to export Ogre texture " + Name() + ":");
         if (e.what())
             LogError(e.what());
         return false;
@@ -274,7 +274,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
     }
     if (ogreTexture->getBuffer().isNull())
     {
-        LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
+        LogError("DeserializeFromData: Failed to create texture " + this->Name() + ": OgreTexture::getBuffer() was null!");
         return;
     }
 

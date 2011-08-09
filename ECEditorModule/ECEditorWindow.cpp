@@ -501,7 +501,7 @@ void ECEditorWindow::PasteEntity()
     QDomDocument temp_doc("Scene");
     if (!temp_doc.setContent(QApplication::clipboard()->text(), false, &errorMsg))
     {
-        LogError("Parsing scene XML from clipboard failed: " + errorMsg.toStdString());
+        LogError("Parsing scene XML from clipboard failed: " + errorMsg);
         return;
     }
 
@@ -514,7 +514,7 @@ void ECEditorWindow::PasteEntity()
     EntityPtr originalEntity = scene->GetEntity(ParseString<entity_id_t>(id.toStdString()));
     if(!originalEntity)
     {
-        LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
+        LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id + ").");
         return;
     }
 

@@ -116,12 +116,10 @@ void QtUiAsset::DoUnload()
 }
 
 std::vector<AssetReference> QtUiAsset::FindReferences() const
-{  
+{
     std::vector<AssetReference> assetRefs;
     for(size_t i = 0; i < refs.size(); ++i)
-    {
         assetRefs.push_back(AssetReference(refs[i].parsedRef));
-    }
     return assetRefs;
 }
 
@@ -141,13 +139,13 @@ QByteArray QtUiAsset::GetRefReplacedAssetData() const
         AssetPtr asset = assetAPI->GetAsset(refs[i].parsedRef);
         if (!asset.get())
         {
-            LogError("ReplaceAssetReferences: Asset not found from asset system even when it was marked as a dependency earlier, skipping: " + refs[i].parsedRef.toStdString());
+            LogError("ReplaceAssetReferences: Asset not found from asset system even when it was marked as a dependency earlier, skipping: " + refs[i].parsedRef);
         }
         else
         {
             assetDiskSource = asset->DiskSource();
             if (assetDiskSource.isEmpty())
-                LogWarning("ReplaceAssetReferences: Asset disk source empty, skipping: " + refs[i].parsedRef.toStdString());
+                LogWarning("ReplaceAssetReferences: Asset disk source empty, skipping: " + refs[i].parsedRef);
         }
         assetDiskSource = assetDiskSource.trimmed();
         if (!assetDiskSource.isEmpty() && QFile::exists(assetDiskSource))
@@ -158,7 +156,7 @@ QByteArray QtUiAsset::GetRefReplacedAssetData() const
         }
         else
         {
-            LogWarning("ReplaceAssetReferences: Asset disk source does not exist, skipping: " + refs[i].parsedRef.toStdString());
+            LogWarning("ReplaceAssetReferences: Asset disk source does not exist, skipping: " + refs[i].parsedRef);
         }
     }
     return refRewrittenData;
@@ -173,20 +171,20 @@ QWidget *QtUiAsset::Instantiate(bool addToScene, QWidget *parent)
 {
     if (!IsLoaded())
     {
-        LogError("QtUiAsset::Instantiate: Cannot instantiate an unloaded UI Asset \"" + Name().toStdString() + "\"!");
+        LogError("QtUiAsset::Instantiate: Cannot instantiate an unloaded UI Asset \"" + Name() + "\"!");
         return 0;
     }
 
     // Get the asset data with the assetrefs replaced to point to the disk sources on the current local system.
     QByteArray data = GetRefReplacedAssetData();
-        
+
     QUiLoader loader;
     QDataStream dataStream(&data, QIODevice::ReadOnly);
     QWidget *widget = loader.load(dataStream.device(), parent);
 
     if (!widget)
     {
-        LogError("QtUiAsset::Instantiate: Failed to instantiate widget from UI asset \"" + Name().toStdString() + "\"!");
+        LogError("QtUiAsset::Instantiate: Failed to instantiate widget from UI asset \"" + Name() + "\"!");
         return 0;
     }
 
@@ -194,7 +192,7 @@ QWidget *QtUiAsset::Instantiate(bool addToScene, QWidget *parent)
     {
         UiProxyWidget *proxy = assetAPI->GetFramework()->Ui()->AddWidgetToScene(widget);
         if (!proxy)
-            LogError("QtUiAsset::Instantiate: Failed to add widget to main QGraphicsScene in UI asset \"" + Name().toStdString() + "\"!");
+            LogError("QtUiAsset::Instantiate: Failed to add widget to main QGraphicsScene in UI asset \"" + Name() + "\"!");
     }
 
     return widget;

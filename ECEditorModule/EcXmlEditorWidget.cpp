@@ -231,7 +231,7 @@ void EcXmlEditorWidget::Save()
             LogWarning("No entity elements in XML data");
     }
     else
-        LogWarning("Could not parse XML data: " + errorMsg.toStdString());
+        LogWarning("Could not parse XML data: " + errorMsg);
 }
 
 void EcXmlEditorWidget::changeEvent(QEvent *event)

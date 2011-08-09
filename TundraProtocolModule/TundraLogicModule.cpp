@@ -391,7 +391,7 @@ void TundraLogicModule::StartupSceneLoaded(AssetPtr asset)
             scene->LoadSceneBinary(sceneDiskSource, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
     }
     else
-        LogError("Could not resolve disk source for loaded scene file " + asset->Name().toStdString());
+        LogError("Could not resolve disk source for loaded scene file " + asset->Name());
 }
 
 void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason)

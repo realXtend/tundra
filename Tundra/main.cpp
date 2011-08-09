@@ -91,7 +91,7 @@ int run (int argc, char **argv)
 
     // Initilizing prints
     LogInfo("Starting up Tundra");
-    LogInfo("* Working directory: " + QDir::currentPath().toStdString());
+    LogInfo("* Working directory: " + QDir::currentPath());
 
     // Parse and print command arguments
     QStringList arguments;

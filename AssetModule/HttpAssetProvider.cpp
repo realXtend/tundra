@@ -55,7 +55,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     assetRef = assetRefWithoutSubAssetName;
     if (!IsValidRef(assetRef))
     {
-        LogError("HttpAssetProvider::RequestAsset: Cannot get asset from invalid URL \"" + assetRef.toStdString() + "\"!");
+        LogError("HttpAssetProvider::RequestAsset: Cannot get asset from invalid URL \"" + assetRef + "\"!");
         return AssetTransferPtr();
     }
     QNetworkRequest request;
@@ -98,7 +98,7 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
     assetRef = assetRef.trimmed();
     if (!IsValidRef(assetRef))
     {
-        LogError("HttpAssetProvider::DeleteAssetFromStorage: Cannot delete asset from invalid URL \"" + assetRef.toStdString() + "\"!");
+        LogError("HttpAssetProvider::DeleteAssetFromStorage: Cannot delete asset from invalid URL \"" + assetRef + "\"!");
         return;
     }
     QUrl assetUrl(assetRef);
@@ -215,14 +215,14 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         if (reply->error() == QNetworkReply::NoError)
         {
             QString ref = reply->url().toString();
-            LogDebug("Http upload to address \"" + ref.toStdString() + "\" returned successfully.");
+            LogDebug("Http upload to address \"" + ref + "\" returned successfully.");
             framework->Asset()->AssetUploadTransferCompleted(transfer.get());
             // Add the assetref to matching storage(s)
             AddAssetRefToStorages(ref);
         }
         else
         {
-            LogError("Http upload to address \"" + reply->url().toString().toStdString() + "\" failed with an error: \"" + reply->errorString().toStdString() + "\"");
+            LogError("Http upload to address \"" + reply->url().toString() + "\" failed with an error: \"" + reply->errorString() + "\"");
             ///\todo Call the following when implemented:
 //            framework->Asset()->AssetUploadTransferFailed(transfer);
         }
@@ -233,16 +233,16 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         if (reply->error() == QNetworkReply::NoError)
         {
             QString ref = reply->url().toString();
-            LogInfo("Http DELETE to address \"" + ref.toStdString() + "\" returned successfully.");
+            LogInfo("Http DELETE to address \"" + ref + "\" returned successfully.");
             DeleteAssetRefFromStorages(ref);
             framework->Asset()->EmitAssetDeletedFromStorage(ref);
         }
         else
-            LogError("Http DELETE to address \"" + reply->url().toString().toStdString() + "\" failed with an error: \"" + reply->errorString().toStdString() + "\"");
+            LogError("Http DELETE to address \"" + reply->url().toString() + "\" failed with an error: \"" + reply->errorString().toStdString() + "\"");
         break;
         /*
     default:
-        LogInfo("Unknown operation for address \"" + reply->url().toString().toStdString() + "\" finished with result: \"" + reply->errorString().toStdString() + "\"");
+        LogInfo("Unknown operation for address \"" + reply->url().toString() + "\" finished with result: \"" + reply->errorString().toStdString() + "\"");
         break;
         */
     }

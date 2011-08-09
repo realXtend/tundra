@@ -89,7 +89,7 @@ void EC_Mesh::SetPlaceable(ComponentPtr placeable)
 {
     if (placeable && !dynamic_cast<EC_Placeable*>(placeable.get()))
     {
-        LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
+        LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic());
         return;
     }
     
@@ -920,7 +920,7 @@ void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
         }
         */
         if (meshRef.Get().ref.trimmed().isEmpty())
-            LogDebug("Warning: Mesh \"" + this->parentEntity->Name().toStdString() + "\" mesh ref was set to an empty reference!");
+            LogDebug("Warning: Mesh \"" + this->parentEntity->Name() + "\" mesh ref was set to an empty reference!");
         meshAsset->HandleAssetRefChange(&meshRef);
     }
     else if (attribute == &meshMaterial)
@@ -978,7 +978,8 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
     OgreMeshAsset *mesh = dynamic_cast<OgreMeshAsset*>(asset.get());
     if (!mesh)
     {
-        LogError("OnMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but downloaded asset was not of type OgreMeshAsset!");
+        LogError("OnMeshAssetLoaded: Mesh asset load finished for asset \"" +
+            asset->Name() + "\", but downloaded asset was not of type OgreMeshAsset!");
         return;
     }
 
@@ -988,7 +989,8 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
         if (mesh->ogreMesh.get())
             ogreMeshName = QString::fromStdString(mesh->ogreMesh->getName()).trimmed();
         else
-            LogError("OnMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
+            LogError("OnMeshAssetLoaded: Mesh asset load finished for asset \"" +
+                asset->Name() + "\", but Ogre::Mesh pointer was null!");
     }
 
     SetMesh(ogreMeshName);
@@ -1012,7 +1014,7 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
     if (!skeletonAsset)
     {
         LogError("OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" +
-            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
+            asset->Name() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
         return;
     }
 
@@ -1020,7 +1022,7 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
     if (skeleton.isNull())
     {
         LogError("OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" +
-            asset->Name().toStdString() + "\", but Ogre::Skeleton pointer was null!");
+            asset->Name() + "\", but Ogre::Skeleton pointer was null!");
         return;
     }
 
@@ -1056,7 +1058,7 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     if (!ogreMaterial)
     {
         LogError("OnMaterialAssetLoaded: Material asset load finished for asset \"" +
-            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreMaterialAsset!");
+            asset->Name() + "\", but downloaded asset was not of type OgreMaterialAsset!");
         return;
     }
 
@@ -1076,10 +1078,10 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     #ifdef _DEBUG
     if (!assetUsed)
     {
-        LogDebug("OnMaterialAssetLoaded: Trying to apply material \"" + ogreMaterial->Name().toStdString() + "\" to mesh " +
-            meshRef.Get().ref.toStdString() + ", but no submesh refers to the given material! The references are: ");
+        LogDebug("OnMaterialAssetLoaded: Trying to apply material \"" + ogreMaterial->Name() + "\" to mesh " +
+            meshRef.Get().ref + ", but no submesh refers to the given material! The references are: ");
         for(int i = 0; i < materialList.Size(); ++i)
-            LogDebug(QString::number(i).toStdString() + ": " + materialList[i].ref.toStdString());
+            LogDebug(QString::number(i) + ": " + materialList[i].ref);
     }
     #endif
 }
