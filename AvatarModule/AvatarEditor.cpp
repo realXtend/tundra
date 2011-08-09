@@ -37,7 +37,8 @@ namespace Avatar
         avatar_module_(avatar_module)
     {
         InitEditorWindow();
-        last_directory_ = avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory", QString::fromStdString(QtUtils::GetCurrentPath())).toString().toStdString();
+        last_directory_ = avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory",
+            QtUtils::GetCurrentPath().c_str()).toString().toStdString();
     }
 
     AvatarEditor::~AvatarEditor()
@@ -435,10 +436,12 @@ namespace Avatar
 
     void AvatarEditor::LoadAvatar()
     {
+        ///\todo Remove or re-implement this function?
+        LogError("AvatarEditor::LoadAvatar deprecated and not implemented.");
+        /*
         const std::string filter = "Avatar description file (*.xml);;Avatar mesh (*.mesh)";
         std::string filename = GetOpenFileName(filter, "Choose avatar file");
 
-        /*
         if (!filename.empty())
         {
             AvatarHandlerPtr avatar_handler = avatar_module_->GetAvatarHandler();
@@ -496,10 +499,9 @@ namespace Avatar
 
     void AvatarEditor::RemoveAttachment()
     {
-        ///\todo Remove this function?
+        ///\todo Remove or re-implement this function?
         LogError("AvatarEditor::RemoveAttachment deprecated and not implemented.");
         /*
-        LogError("RemoveAttachment::AddAttachment deprecated and not implemented.");
         QPushButton* button = qobject_cast<QPushButton*>(sender());
         if (!button)
             return;
@@ -525,7 +527,7 @@ namespace Avatar
     
     void AvatarEditor::AddAttachment()
     {
-        ///\todo Remove this function?
+        ///\todo Remove or re-implement this function?
         LogError("AvatarEditor::AddAttachment deprecated and not implemented.");
         /*
         const std::string filter = "Attachment description file (*.xml)";
