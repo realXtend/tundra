@@ -933,7 +933,6 @@ void AddContentWindow::RewriteDestinationNames()
     while(*it)
     {
         AssetWidgetItem *aitem = dynamic_cast<AssetWidgetItem *>(*it);
-        assert(aitem);
         if (aitem /*&& !aitem->isDisabled()*/)
         {
             if (useDefault)
@@ -941,12 +940,12 @@ void AddContentWindow::RewriteDestinationNames()
             else if (dest)
                 aitem->desc.destinationName = dest->GetFullAssetURL(aitem->text(cColumnAssetDestName).trimmed());
             aitem->setText(cColumnAssetDestName, aitem->desc.destinationName);
+            
+            aitem->setDisabled(doNotAlter ? true : false);
+            // Deselect possible disabled items
+            if (aitem->isDisabled() && aitem->isSelected())
+                aitem->setSelected(false);
         }
-
-        aitem->setDisabled(doNotAlter ? true : false);
-        // Deselect possible disabled items
-        if (aitem->isDisabled() && aitem->isSelected())
-            aitem->setSelected(false);
         ++it;
     }
 

@@ -15,8 +15,8 @@
 namespace Asset
 {
 
-LocalAssetStorage::LocalAssetStorage()
-//:changeWatcher(0)
+LocalAssetStorage::LocalAssetStorage()  :
+    recursive(true) /// \todo This was uninitialized so set to true, which one do we want as default behavior?
 {
 }
 

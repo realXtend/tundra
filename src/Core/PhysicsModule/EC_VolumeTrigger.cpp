@@ -224,7 +224,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
         {
             entities_.insert(i.key(), false);
         }
-        i++;
+        ++i;
     }
 }
 

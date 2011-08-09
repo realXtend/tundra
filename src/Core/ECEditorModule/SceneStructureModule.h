@@ -32,6 +32,7 @@ class EC_Mesh;
 
 struct SceneMaterialDropData
 {
+    SceneMaterialDropData() : mesh(0) {}
     EC_Mesh *mesh;
     AssetReferenceList materials;
     QList<uint> affectedIndexes;

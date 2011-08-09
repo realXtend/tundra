@@ -53,7 +53,8 @@ SceneStructureModule::SceneStructureModule() :
     IModule("SceneStructure"),
     sceneWindow(0),
     assetsWindow(0),
-    toolTipWidget(0)
+    toolTipWidget(0),
+    toolTip(0)
 {
 }
 

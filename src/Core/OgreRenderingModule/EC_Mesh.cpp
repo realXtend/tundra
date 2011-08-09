@@ -488,7 +488,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         {
             mesh->_notifySkeleton(entity_skel);
         }
-        catch(Ogre::Exception e)
+        catch(const Ogre::Exception &e)
         {
             LogError("Could not set shared skeleton for attachment");
             return false;
@@ -1093,7 +1093,6 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     }
 
     Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
-    bool assetUsed = false;
 
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)

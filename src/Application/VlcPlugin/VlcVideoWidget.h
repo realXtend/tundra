@@ -105,7 +105,7 @@ protected:
 
 signals:
     /// Status update, see status.change for the type.
-    void StatusUpdate(const PlayerStatus status);
+    void StatusUpdate(const PlayerStatus &status);
 
     /// Rendering frame update.
     void FrameUpdate(QImage frame);

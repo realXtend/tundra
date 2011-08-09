@@ -146,7 +146,7 @@ QString HttpAssetProvider::GenerateUniqueStorageName() const
     QString name = "Web";
     int counter = 2;
     while(GetStorageByName(name) != 0)
-        name = "Web" + counter++;
+        name = "Web" + QString::number(counter++);
     return name;
 }
 

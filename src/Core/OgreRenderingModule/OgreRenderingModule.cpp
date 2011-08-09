@@ -45,7 +45,9 @@ namespace OgreRenderer
 
 std::string OgreRenderingModule::CACHE_RESOURCE_GROUP = "CACHED_ASSETS_GROUP";
 
-OgreRenderingModule::OgreRenderingModule() : IModule("OgreRendering")
+OgreRenderingModule::OgreRenderingModule() : 
+    IModule("OgreRendering"), 
+    settingsWindow(0)
 {
 }
 

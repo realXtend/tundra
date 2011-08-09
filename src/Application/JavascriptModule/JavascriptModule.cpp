@@ -139,7 +139,7 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
     assert(sender && "JavascriptModule::ScriptAssetsChanged needs to be invoked from EC_Script!");
     if (!sender)
         return;
-    if (!newScripts.size())
+    if (newScripts.empty())
     {
         LogError("Script asset vector was empty");
         return;

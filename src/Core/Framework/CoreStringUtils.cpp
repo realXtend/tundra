@@ -67,7 +67,7 @@ std::wstring ToWString(const std::string &str)
 
 std::string BufferToString(const std::vector<s8>& buffer)
 {
-    if (buffer.size())
+    if (!buffer.empty())
         return std::string((const char*)&buffer[0], buffer.size());
     else
         return std::string();

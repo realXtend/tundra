@@ -77,7 +77,7 @@ public slots:
 
     /// Get the context menu. This can be handy if you don't want to have interactive attribute on,
     /// but still want to show the context menu in your own code.
-    QMenu *GetContextMenu();
+    QMenu GetContextMenu();
 
 private slots:
     /// Callback to render content to the 3D target.

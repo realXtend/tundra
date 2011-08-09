@@ -1,7 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-// POTENTIALLY OLD COMMENTS/INFO MOVED AT THE END OF THIS FILE
-
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 

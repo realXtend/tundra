@@ -104,7 +104,7 @@ bool ComponentGroup::RemoveComponent(ComponentPtr comp)
         return false;
 
     std::vector<ComponentWeakPtr>::iterator iter = components_.begin();
-    for(; iter != components_.end(); iter++)
+    for(; iter != components_.end(); ++iter)
     {
         ComponentPtr comp_ptr = iter->lock();
         if (comp.get() == comp_ptr.get())

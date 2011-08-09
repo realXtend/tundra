@@ -17,7 +17,7 @@ Q_OBJECT
 
 public:
     /// Default constuctor.
-    IScriptInstance() {}
+    IScriptInstance() : trusted_(false) {}
 
     /// Destructor.
     virtual ~IScriptInstance() {}

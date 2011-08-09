@@ -24,7 +24,7 @@ VlcMediaPlayer::VlcMediaPlayer() :
     {
         videoWidget_ = new VlcVideoWidget(GenerateVlcParameters());
 
-        connect(videoWidget_, SIGNAL(StatusUpdate(const PlayerStatus)), SLOT(OnStatusUpdate(const PlayerStatus)));
+        connect(videoWidget_, SIGNAL(StatusUpdate(const PlayerStatus&)), SLOT(OnStatusUpdate(const PlayerStatus&)));
         connect(videoWidget_, SIGNAL(FrameUpdate(QImage)), SIGNAL(FrameUpdate(QImage)), Qt::QueuedConnection);
         
         connect(ui_.playButton, SIGNAL(clicked()), SLOT(PlayPause()));
@@ -116,7 +116,7 @@ void VlcMediaPlayer::ForceUpdateImage()
     videoWidget_->ForceUpdateImage();
 }
 
-void VlcMediaPlayer::OnStatusUpdate(const PlayerStatus status)
+void VlcMediaPlayer::OnStatusUpdate(const PlayerStatus &status)
 {
     switch (status.change)
     {

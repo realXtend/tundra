@@ -369,9 +369,7 @@ void VlcVideoWidget::InternalUnlock(void* picture, void*const *pixelPlane)
 void VlcVideoWidget::InternalRender(void* picture) 
 {
     statusAccess.lock();
-    bool stopped = status.stopped;
     bool paused = status.paused;
-    bool buffering = status.buffering;
     QSize sourceSize = status.sourceSize;
     statusAccess.unlock();
 

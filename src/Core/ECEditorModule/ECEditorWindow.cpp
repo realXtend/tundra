@@ -617,14 +617,14 @@ void ECEditorWindow::RefreshPropertyBrowser()
         // No point to continue the iteration if old_entities list is empty. We can just push all new entitites into the browser.
         if (iter1 == old_entities.end())
         {
-            for(;iter2 != entities.end(); iter2++)
+            for(;iter2 != entities.end(); ++iter2)
                 ecBrowser->AddEntity(*iter2);
             break;
         }
         // Only old entities are left and they can just be removed from the browser.
         else if(iter2 == entities.end())
         {
-            for(;iter1 != old_entities.end(); iter1++)
+            for(;iter1 != old_entities.end(); ++iter1)
                 ecBrowser->RemoveEntity(*iter1);
             break;
         }
@@ -632,20 +632,20 @@ void ECEditorWindow::RefreshPropertyBrowser()
         // Entity has already added to the browser.
         if((*iter1)->Id() == (*iter2)->Id())
         {
-            iter2++;
-            iter1++;
+            ++iter2;
+            ++iter1;
         }
         // Found new entity that that need to be added to the browser.
         else if((*iter1)->Id() > (*iter2)->Id())
         {
             ecBrowser->AddEntity(*iter2);
-            iter2++;
+            ++iter2;
         }
         // Couldn't find entity in new entities list, so it need to be removed from the browser.
         else
         {
             ecBrowser->RemoveEntity(*iter1);
-            iter1++;
+            ++iter1;
         }
     }
 

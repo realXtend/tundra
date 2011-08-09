@@ -32,9 +32,16 @@ using namespace std;
 struct AudioApiImpl
 {
 public:
-    AudioApiImpl()
-    :listenerPosition(0,0,0),
-    listenerOrientation(Quat::identity)
+    AudioApiImpl() :
+        listenerPosition(0,0,0),
+        listenerOrientation(Quat::identity),
+        initialized(false),
+        context(0),
+        device(0),
+        captureDevice(0),
+        captureSampleSize(0),
+        nextChannelId(0),
+        masterGain(0.0f)
     {
     }
 

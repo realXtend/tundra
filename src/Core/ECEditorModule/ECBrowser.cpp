@@ -162,7 +162,7 @@ void ECBrowser::UpdateBrowser()
     // Sorting tends to be a heavy operation so we disable it until we have made all changes to a tree structure.
     treeWidget_->setSortingEnabled(false);
 
-    for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); iter++)
+    for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
     {
         if((*iter).expired())
             continue;
@@ -174,7 +174,7 @@ void ECBrowser::UpdateBrowser()
 
     for(TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.begin();
         iter != itemToComponentGroups_.end();
-        iter++)
+        ++iter)
     {
         (*iter)->editor_->UpdateUi();
     }
@@ -482,7 +482,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
     }
 
     TreeItemToComponentGroup::iterator iterComp = itemToComponentGroups_.begin();
-    for(; iterComp != itemToComponentGroups_.end(); iterComp++)
+    for(; iterComp != itemToComponentGroups_.end(); ++iterComp)
         if((*iterComp)->ContainsComponent(comp_ptr))
         {
             LogWarning("Fail to add new component to a component group, because component was already added.");
@@ -514,7 +514,7 @@ void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
     } 
 
     TreeItemToComponentGroup::iterator iterComp = itemToComponentGroups_.begin();
-    for(; iterComp != itemToComponentGroups_.end(); iterComp++)
+    for(; iterComp != itemToComponentGroups_.end(); ++iterComp)
     {
         if(!(*iterComp)->ContainsComponent(comp_ptr))
             continue;
@@ -583,7 +583,7 @@ void ECBrowser::PasteComponent()
         if (comp_elem.isNull())
             return;
 
-        for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); iter++)
+        for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
         {
             if((*iter).expired())
                 continue;
@@ -715,7 +715,7 @@ ComponentGroup *ECBrowser::FindSuitableGroup(ComponentPtr comp)
     PROFILE(ECBrowser_FindSuitableGroup);
 
     TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.begin();
-    for(; iter != itemToComponentGroups_.end(); iter++)
+    for(; iter != itemToComponentGroups_.end(); ++iter)
         if((*iter)->IsSameComponent(comp))
             return (*iter);
     return 0;
@@ -810,7 +810,7 @@ void ECBrowser::RemoveComponentFromGroup(ComponentPtr comp)
 {
     PROFILE(ECBrowser_RemoveComponentFromGroup);
     TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.begin();
-    for(; iter != itemToComponentGroups_.end(); iter++)
+    for(; iter != itemToComponentGroups_.end(); ++iter)
     {
         ComponentGroup *comp_group = *iter;
         if (comp_group->ContainsComponent(comp))
@@ -841,7 +841,7 @@ void ECBrowser::RemoveComponentGroup(ComponentGroup *componentGroup)
 {
     PROFILE(ECBrowser_RemoveComponentGroup);
     TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.begin();
-    for(; iter != itemToComponentGroups_.end(); iter++)
+    for(; iter != itemToComponentGroups_.end(); ++iter)
         if (componentGroup == *iter)
         {
             SAFE_DELETE(*iter);

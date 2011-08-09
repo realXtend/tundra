@@ -148,7 +148,7 @@ struct AV_MODULE_API SlaveModifier
     /// Type
     AppearanceModifier::ModifierType type_;
     
-    SlaveModifier() : mode_(Average)
+    SlaveModifier() : mode_(Average), type_(AppearanceModifier::Undefined)
     {
     }
 };

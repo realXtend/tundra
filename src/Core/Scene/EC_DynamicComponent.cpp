@@ -71,7 +71,7 @@ void EC_DynamicComponent::SerializeTo(QDomDocument& doc, QDomElement& base_eleme
     while(iter != attributes.end())
     {
         WriteAttribute(doc, comp_element, (*iter)->Name(), (*iter)->ToString().c_str(), (*iter)->TypeName());
-        iter++;
+        ++iter;
     }
 }
 
@@ -114,14 +114,14 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         // No point to continue the iteration if other list is empty. We can just push all new attributes into the dynamic component.
         if(iter1 == oldAttributes.end())
         {
-            for(;iter2 != deserializedAttributes.end(); iter2++)
+            for(;iter2 != deserializedAttributes.end(); ++iter2)
                 addAttributes.push_back(*iter2);
             break;
         }
         // Only old attributes are left and they can be removed from the dynamic component.
         else if(iter2 == deserializedAttributes.end())
         {
-            for(;iter1 != oldAttributes.end(); iter1++)
+            for(;iter1 != oldAttributes.end(); ++iter1)
                 remAttributes.push_back(DeserializeData((*iter1)->Name()));
             break;
         }
@@ -130,24 +130,24 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         if((*iter1)->Name() == (*iter2).name_)
         {
             //SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
-            for(AttributeVector::const_iterator attr_iter = attributes.begin(); attr_iter != attributes.end(); attr_iter++)
+            for(AttributeVector::const_iterator attr_iter = attributes.begin(); attr_iter != attributes.end(); ++attr_iter)
                 if((*attr_iter)->Name() == iter2->name_)
                     (*attr_iter)->FromString(iter2->value_.toStdString(), change);
 
-            iter2++;
-            iter1++;
+            ++iter2;
+            ++iter1;
         }
         // Found a new attribute that need to be created and added to the component.
         else if((*iter1)->Name() > (*iter2).name_)
         {
             addAttributes.push_back(*iter2);
-            iter2++;
+            ++iter2;
         }
         // Couldn't find the attribute in a new list so it need to be removed from the component.
         else
         {
             remAttributes.push_back(DeserializeData((*iter1)->Name()));
-            iter1++;
+            ++iter1;
         }
     }
 
@@ -192,7 +192,7 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
 
 void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::Type change)
 {
-    for(AttributeVector::iterator iter = attributes.begin(); iter != attributes.end(); iter++)
+    for(AttributeVector::iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
     {
         if((*iter)->Name() == name)
         {
@@ -263,7 +263,7 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
 
 void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change)
 {
-    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); iter++)
+    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
         if((*iter)->Name() == name)
         {
             (*iter)->FromScriptValue(value, change);
@@ -273,7 +273,7 @@ void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScript
 
 void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change)
 {
-    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); iter++)
+    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
         if((*iter)->Name() == name)
         {
             (*iter)->FromQVariant(value, change);
@@ -310,9 +310,9 @@ bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp)
         if ((*iter1)->Name() == (*iter2)->Name() && (*iter1)->TypeName() == (*iter2)->TypeName())
         {
             if(iter1 != myAttributeVector.end())
-                iter1++;
+                ++iter1;
             if(iter2 != attributeVector.end())
-                iter2++;
+                ++iter2;
         }
         else
         {
@@ -347,7 +347,7 @@ bool EC_DynamicComponent::ContainsAttribute(const QString &name) const
     {
         if((*iter)->Name() == name)
             return true;
-        iter++;
+        ++iter;
     }
 
     return false;

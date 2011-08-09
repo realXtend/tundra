@@ -95,11 +95,13 @@ namespace
 static const int cInitialAttempts = 1;
 static const int cReconnectAttempts = 5;
 
-KristalliProtocolModule::KristalliProtocolModule()
-:IModule("KristalliProtocol"),
-serverConnection(0),
-server(0),
-reconnectAttempts(0)
+KristalliProtocolModule::KristalliProtocolModule() :
+    IModule("KristalliProtocol"),
+    serverConnection(0),
+    server(0),
+    reconnectAttempts(0),
+    connectionPending(false),
+    serverPort(0)
 {
 }
 

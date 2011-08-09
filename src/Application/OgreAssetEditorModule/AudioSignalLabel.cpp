@@ -9,7 +9,9 @@
 
 AudioSignalLabel::AudioSignalLabel(QWidget *parent, Qt::WindowFlags flags):
     QLabel(parent, flags),
-    widget_resized_(false)
+    widget_resized_(false),
+    stereo_(false),
+    duration_(0.0f)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setScaledContents(true);

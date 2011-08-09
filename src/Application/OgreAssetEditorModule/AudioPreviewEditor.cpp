@@ -27,7 +27,8 @@ AudioPreviewEditor::AudioPreviewEditor(Framework *framework, const QString &name
     framework_(framework),
     okButton_(0),
     playButton_(0),
-    playTimer_(0)
+    playTimer_(0),
+    mainWidget_(0)
 {
     setObjectName(name);
     // Get ui service and create canvas

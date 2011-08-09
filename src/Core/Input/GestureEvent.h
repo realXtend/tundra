@@ -25,7 +25,8 @@ class GestureEvent : public QObject
 public:
     GestureEvent() :
         eventType(GestureInvalid),
-        handled(false)
+        handled(false),
+        gesture(0)
     {
     }
 

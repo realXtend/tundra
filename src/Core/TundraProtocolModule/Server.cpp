@@ -65,7 +65,8 @@ Server::Server(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
     current_port_(-1),
-    current_protocol_("")
+    current_protocol_(""),
+    actionsender_(0)
 {
 }
 

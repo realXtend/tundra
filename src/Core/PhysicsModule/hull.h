@@ -82,9 +82,9 @@ public:
 	};
 
 	HullDesc(HullFlag flag,
-						 unsigned int vcount,
-						 const float *vertices,
-						 unsigned int stride)
+		     unsigned int vcount,
+		     const float *vertices,
+		     unsigned int stride)
 	{
 		mFlags          = flag;
 		mVcount         = vcount;

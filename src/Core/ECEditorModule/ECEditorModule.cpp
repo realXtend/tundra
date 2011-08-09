@@ -24,7 +24,9 @@
 
 const QString cShowAidsSetting("show visual editing aids");
 
-ECEditorModule::ECEditorModule() : IModule("ECEditor")
+ECEditorModule::ECEditorModule() : 
+    IModule("ECEditor"),
+    showVisualAids(false)
 {
 }
 

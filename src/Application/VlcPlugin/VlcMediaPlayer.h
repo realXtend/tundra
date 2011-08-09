@@ -61,7 +61,7 @@ private slots:
     bool Initialized();
 
     /// Slot for player status
-    void OnStatusUpdate(const PlayerStatus status);
+    void OnStatusUpdate(const PlayerStatus &status);
 
     /// Generate media player startup parameters
     const QList<QByteArray> GenerateVlcParameters();

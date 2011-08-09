@@ -91,7 +91,7 @@ class int3
 {
 public:
 	int x,y,z;
-	int3(){};
+	int3() : x(0),y(0),z(0) {};
 	int3(int _x,int _y, int _z){x=_x;y=_y;z=_z;}
 	const int& operator[](int i) const {return (&x)[i];}
 	int& operator[](int i) {return (&x)[i];}
@@ -2401,7 +2401,7 @@ class int4
 {
 public:
 	int x,y,z,w;
-	int4(){};
+	int4() : x(0),y(0),z(0),w(0) {};
 	int4(int _x,int _y, int _z,int _w){x=_x;y=_y;z=_z;w=_w;}
 	const int& operator[](int i) const {return (&x)[i];}
 	int& operator[](int i) {return (&x)[i];}

@@ -318,7 +318,7 @@ QString LocalAssetProvider::GenerateUniqueStorageName() const
     QString name = "Scene";
     int counter = 2;
     while(GetStorageByName(name) != 0)
-        name = "Scene" + counter++;
+        name = "Scene" + QString::number(counter++);
     return name;
 }
 

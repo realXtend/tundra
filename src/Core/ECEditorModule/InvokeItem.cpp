@@ -11,11 +11,17 @@
 #include "InvokeItem.h"
 #include "CoreException.h"
 
-InvokeItem::InvokeItem() : type(Unknown), execTypes(EntityAction::Invalid), mruOrder(0)
+InvokeItem::InvokeItem() : 
+    type(Unknown), 
+    execTypes(EntityAction::Invalid), 
+    mruOrder(0)
 {
 }
 
-InvokeItem::InvokeItem(const QString &settingStr)
+InvokeItem::InvokeItem(const QString &settingStr) : 
+    type(Unknown), 
+    execTypes(EntityAction::Invalid), 
+    mruOrder(0)
 {
     FromSetting(settingStr);
 }

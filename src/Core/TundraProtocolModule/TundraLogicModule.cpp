@@ -103,10 +103,11 @@ namespace TundraLogic
 
 static const unsigned short cDefaultPort = 2345;
 
-TundraLogicModule::TundraLogicModule()
-:IModule("TundraLogic"),
-autostartserver_(false),
-autostartserver_port_(cDefaultPort)
+TundraLogicModule::TundraLogicModule() :
+    IModule("TundraLogic"),
+    autostartserver_(false),
+    autostartserver_port_(cDefaultPort),
+    kristalliModule_(0)
 {
 }
 
