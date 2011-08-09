@@ -120,8 +120,8 @@ void JavascriptInstance::Load()
         QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(scriptContent);
         if (syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
         {
-            LogError("Syntax error in script " + scriptSourceFilename.toStdString() + "," + QString::number(syntaxResult.errorLineNumber()).toStdString() +
-                ": " + syntaxResult.errorMessage().toStdString());
+            LogError("Syntax error in script " + scriptSourceFilename + "," + QString::number(syntaxResult.errorLineNumber()) +
+                ": " + syntaxResult.errorMessage());
 
             // Delete our loaded script content (if any exists).
             program_ == "";
@@ -146,7 +146,7 @@ QString JavascriptInstance::LoadScript(const QString &fileName)
     QFile scriptFile(filename);
     if (!scriptFile.open(QIODevice::ReadOnly))
     {
-        LogError(("JavascriptInstance::LoadScript: Failed to load script from file " + filename + "!").toStdString());
+        LogError("JavascriptInstance::LoadScript: Failed to load script from file " + filename + "!");
         return "";
     }
 
@@ -156,7 +156,7 @@ QString JavascriptInstance::LoadScript(const QString &fileName)
     QString trimmedResult = result.trimmed();
     if (trimmedResult.isEmpty())
     {
-        LogWarning(("JavascriptInstance::LoadScript: Warning Loaded script from file " + filename + ", but the content was empty.").toStdString());
+        LogWarning("JavascriptInstance::LoadScript: Warning Loaded script from file " + filename + ", but the content was empty.");
         return "";
     }
     return result;
@@ -235,14 +235,12 @@ void JavascriptInstance::RegisterService(QObject *serviceObject, const QString &
 void JavascriptInstance::IncludeFile(const QString &path)
 {
     for(uint i = 0; i < includedFiles.size(); ++i)
-    {
         if (includedFiles[i].toLower() == path.toLower())
         {
-            LogDebug("JavascriptInstance::IncludeFile: Not including already included file " + path.toStdString());
+            LogDebug("JavascriptInstance::IncludeFile: Not including already included file " + path);
             return;
         }
-    }
-    
+
     QString script = LoadScript(path);
 
     QScriptContext *context = engine_->currentContext();
@@ -266,8 +264,8 @@ void JavascriptInstance::IncludeFile(const QString &path)
     QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(script);
     if(syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
     {
-        LogError("JavascriptInstance::IncludeFile: Syntax error in " + path.toStdString() + syntaxResult.errorMessage().toStdString()
-            + " In line:" + QString::number(syntaxResult.errorLineNumber()).toStdString());
+        LogError("JavascriptInstance::IncludeFile: Syntax error in " + path + ". " + syntaxResult.errorMessage() +
+            " In line:" + QString::number(syntaxResult.errorLineNumber()));
         return;
     }
 
@@ -276,7 +274,7 @@ void JavascriptInstance::IncludeFile(const QString &path)
     includedFiles.push_back(path);
     
     if (engine_->hasUncaughtException())
-        LogError(result.toString().toStdString());
+        LogError(result.toString());
 }
 
 void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
@@ -284,7 +282,7 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
     assert(engine_);
     if (!engine_)
     {
-        LogWarning(("JavascriptInstance::ImportExtension(" + scriptExtensionName + ") failed, QScriptEngine==null!").toStdString());
+        LogWarning("JavascriptInstance::ImportExtension(" + scriptExtensionName + ") failed, QScriptEngine == null!");
         return;
     }
 
@@ -308,13 +306,13 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
 
     if (!trusted_ && !qt_extension_whitelist.contains(scriptExtensionName, Qt::CaseInsensitive))
     {
-        LogWarning("JavascriptInstance::ImportExtension: refusing to load a QtScript plugin for an untrusted instance: " + scriptExtensionName.toStdString());
+        LogWarning("JavascriptInstance::ImportExtension: refusing to load a QtScript plugin for an untrusted instance: " + scriptExtensionName);
         return;
     }
 
     QScriptValue success = engine_->importExtension(scriptExtensionName);
     if (!success.isUndefined()) // Yes, importExtension returns undefinedValue if the import succeeds. http://doc.qt.nokia.com/4.7/qscriptengine.html#importExtension
-        LogWarning(std::string("JavascriptInstance::ImportExtension: Failed to load ") + scriptExtensionName.toStdString() + " plugin for QtScript!");
+        LogWarning("JavascriptInstance::ImportExtension: Failed to load " + scriptExtensionName + " plugin for QtScript!");
     
     if (!trusted_)
     {
@@ -325,7 +323,7 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
             if (exposed.isValid())
             {
                 engine_->globalObject().setProperty(blacktype, QScriptValue()); //passing an invalid val removes the property, http://doc.qt.nokia.com/4.6/qscriptvalue.html#setProperty
-                //LogInfo("JavascriptInstance::ImportExtension: removed a type from the untrusted context: " + blacktype.toStdString());
+                //LogInfo("JavascriptInstance::ImportExtension: removed a type from the untrusted context: " + blacktype);
             }
         }
     }
@@ -336,15 +334,9 @@ bool JavascriptInstance::CheckAndPrintException(const QString& message, const QS
     if (engine_->hasUncaughtException())
     {
         LogError(message + result.toString());
-        QStringList trace = engine_->uncaughtExceptionBacktrace();
-        QStringList::const_iterator it;
-        for(it = trace.constBegin(); it != trace.constEnd(); ++it)
-            LogError((*it).toLocal8Bit().constData());
-
-        std::stringstream ss;
-        int linenum = engine_->uncaughtExceptionLineNumber();
-        ss << linenum;
-        LogError(ss.str());
+        foreach(const QString &error, engine_->uncaughtExceptionBacktrace())
+            LogError(error);
+        LogError("Line " + QString::number(engine_->uncaughtExceptionLineNumber()) + ".");
         engine_->clearExceptions();
         return true;
     }
@@ -399,16 +391,8 @@ void JavascriptInstance::DeleteEngine()
 
 void JavascriptInstance::OnSignalHandlerException(const QScriptValue& exception)
 {
-    LogError(exception.toString().toStdString());
-
-    QStringList trace = engine_->uncaughtExceptionBacktrace();
-    QStringList::const_iterator it;
-    for(it = trace.constBegin(); it != trace.constEnd(); ++it)
-        LogError((*it).toStdString());
-
-    std::stringstream ss;
-    int linenum = engine_->uncaughtExceptionLineNumber();
-    ss << linenum;
-    LogError(ss.str());
+    LogError(exception.toString());
+    foreach(const QString &error, engine_->uncaughtExceptionBacktrace())
+        LogError(error);
+    LogError("Line " + QString::number(engine_->uncaughtExceptionLineNumber()) + ".");
 }
-
