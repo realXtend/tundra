@@ -496,14 +496,17 @@ namespace Avatar
 
     void AvatarEditor::RemoveAttachment()
     {
+        ///\todo Remove this function?
+        LogError("AvatarEditor::RemoveAttachment deprecated and not implemented.");
+        /*
+        LogError("RemoveAttachment::AddAttachment deprecated and not implemented.");
         QPushButton* button = qobject_cast<QPushButton*>(sender());
         if (!button)
             return;
 
         std::string index_str = button->objectName().toStdString();
-        uint index = ParseString<uint>(index_str);    
-        
-        /*
+        uint index = ParseString<uint>(index_str);
+
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!appearance)
             return;
@@ -522,9 +525,11 @@ namespace Avatar
     
     void AvatarEditor::AddAttachment()
     {
+        ///\todo Remove this function?
+        LogError("AvatarEditor::AddAttachment deprecated and not implemented.");
+        /*
         const std::string filter = "Attachment description file (*.xml)";
         std::string filename = GetOpenFileName(filter, "Choose attachment file");
-        /*
         if (!filename.empty())
         {
             EntityPtr entity = GetAvatarEntity();
