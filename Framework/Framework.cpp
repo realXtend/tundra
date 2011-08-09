@@ -299,26 +299,9 @@ void Framework::CancelExit()
         application->UpdateFrame();
 }
 
-Application *Framework::GetApplication() const
+Application *Framework::App() const
 {
     return application;
-}
-
-static std::string FormatTime(double time)
-{
-    char str[128];
-    if (time >= 60.0)
-    {
-        double seconds = fmod(time, 60.0);
-        int minutes = (int)(time / 60.0);
-        sprintf(str, "%dmin %2.2fs", minutes, (float)seconds);
-    }
-    else if (time >= 1.0)
-        sprintf(str, "%2.2fs", (float)time);
-    else
-        sprintf(str, "%2.2fms", (float)time*1000.f);
-
-    return std::string(str);
 }
 
 #ifdef PROFILING
@@ -383,7 +366,7 @@ PluginAPI *Framework::Plugins() const
     return plugin;
 }
 
-IRenderer *Framework::GetRenderer() const
+IRenderer *Framework::Renderer() const
 {
     return renderer;
 }
@@ -402,7 +385,7 @@ void Framework::RegisterModule(IModule *module)
     module->Load();
 }
 
-IModule *Framework::GetModuleByName(const QString &name)
+IModule *Framework::GetModuleByName(const QString &name) const
 {
     for(size_t i = 0; i < modules.size(); ++i)
         if (modules[i]->Name() == name.toStdString())

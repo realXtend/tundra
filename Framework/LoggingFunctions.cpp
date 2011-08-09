@@ -6,7 +6,7 @@
 
 void PrintLogMessage(const char *str)
 {
-    Framework *instance = Framework::GetInstance();
+    Framework *instance = Framework::Instance();
     ConsoleAPI *console = (instance ? instance->Console() : 0);
 
     // The console and stdout prints are equivalent.

@@ -58,8 +58,8 @@ public:
     /// Unloads all available modules. Do not call normally.
     void UnloadModules();
 
-    /// Get main QApplication
-    Application *GetApplication() const;
+    /// Returns the main QApplication
+    Application *App() const;
 
     /// Returns module by class T.
     /** @param T class type of the module.
@@ -102,27 +102,31 @@ public slots:
 
     PluginAPI *Plugins() const;
 
-    /// Returns the system Renderer object.
-    /// @note Please don't use this function. It exists for dependency inversion purposes only.
-    /// Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer(); to directly obtain the renderer,
-    /// as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation.
-    IRenderer *GetRenderer() const;
+    void RegisterRenderer(IRenderer *renderer);
 
-    /// Returns the global Framework instance.
-    /// @note DO NOT CALL THIS FUNCTION. Every point where this function is called
-    ///       will cause a serious portability issue when we intend to run multiple instances inside a single process (inside a browser memory space).
-    ///       This function is intended to serve only for carefully crafted re-entrant code (currently only logging and profiling).
-    static Framework *GetInstance() { return instance; }
+    /// Returns the system Renderer object.
+    /** @note Please don't use this function. It exists for dependency inversion purposes only.
+        Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer(); to directly obtain the renderer,
+        as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation. */
+    IRenderer *Renderer() const;
 
     /// Stores the Framework instance. Call this inside each plugin DLL main function that will have a copy of the static instance pointer.
     static void SetInstance(Framework *fw) { instance = fw; }
 
-    /// Registers a new module into the Framework. Framework will take ownership of the module pointer, so it is safe to pass in a raw pointer.
+    /// Returns the global Framework instance.
+    /** @note DO NOT CALL THIS FUNCTION. Every point where this function is called
+              will cause a serious portability issue when we intend to run multiple instances inside a single process (inside a browser memory space).
+              This function is intended to serve only for carefully crafted re-entrant code (currently only logging and profiling). */
+    static Framework *Instance() { return instance; }
+
+    /// Registers a new module into the Framework.
+    /** Framework will take ownership of the module pointer, so it is safe to pass in a raw pointer. */
     void RegisterModule(IModule *module);
 
-    void RegisterRenderer(IRenderer *renderer);
-
-    IModule *GetModuleByName(const QString &name);
+    /// Returns raw module pointer.
+    /** @param name Name of the module.
+        @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it. */
+    IModule *GetModuleByName(const QString &name) const;
 
     /// Returns if we're running the application in headless or not.
     bool IsHeadless() const { return headless_; }
@@ -134,8 +138,7 @@ public slots:
         @return If the registration succeeds, this returns true. Otherwise either 'object' pointer was null,
                or a property with that name was registered already.
         @note There is no unregister option. It can be implemented if someone finds it useful, but at this point
-         we are going with a "unload-only-on-close" behavior.
-    */
+         we are going with a "unload-only-on-close" behavior. */
     bool RegisterDynamicObject(QString name, QObject *object);
 
     /// Signals the framework to exit

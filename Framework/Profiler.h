@@ -406,7 +406,7 @@ class ProfilerSection
 public:
     explicit ProfilerSection(const std::string &name) : name_(name), destroyed_(false)
     {
-        assert(Framework::GetInstance() && "Cannot get Framework instance! Did you forget to call Framework::SetInstance(fw); in your TundraPluginMain?");
+        assert(Framework::Instance() && "Cannot get Framework instance! Did you forget to call Framework::SetInstance(fw); in your TundraPluginMain?");
         GetProfiler()->StartBlock(name);
     }
 
@@ -421,16 +421,16 @@ public:
     /// Explicitly destroy this section before it runs out of scope
     __inline void Destruct()
     {
-        assert (Framework::GetInstance() && "Trying to profile before profiler initialized.");
+        assert (Framework::Instance() && "Trying to profile before profiler initialized.");
 
         GetProfiler()->EndBlock(name_);
         destroyed_ = true;
     }
     static Profiler *GetProfiler()
     {
-        assert(Framework::GetInstance());
+        assert(Framework::Instance());
 #ifdef PROFILING
-        return Framework::GetInstance()->GetProfiler();
+        return Framework::Instance()->GetProfiler();
 #else
         return 0;
 #endif
