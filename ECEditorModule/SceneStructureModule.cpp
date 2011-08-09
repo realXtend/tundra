@@ -813,7 +813,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
 void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QString reason)
 {
     QApplication::restoreOverrideCursor();
-    LogError("Failed to download %1 with reason %2").arg(transfer->source.ref, reason);
+    LogError(QString("Failed to download %1 with reason %2").arg(transfer->source.ref).arg(reason));
     if (urlToDropPos.contains(transfer->SourceUrl()))
         urlToDropPos.remove(transfer->SourceUrl());
 }

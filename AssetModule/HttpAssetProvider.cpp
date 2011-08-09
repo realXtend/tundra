@@ -238,11 +238,11 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             framework->Asset()->EmitAssetDeletedFromStorage(ref);
         }
         else
-            LogError("Http DELETE to address \"" + reply->url().toString() + "\" failed with an error: \"" + reply->errorString().toStdString() + "\"");
+            LogError("Http DELETE to address \"" + reply->url().toString() + "\" failed with an error: \"" + reply->errorString() + "\"");
         break;
         /*
     default:
-        LogInfo("Unknown operation for address \"" + reply->url().toString() + "\" finished with result: \"" + reply->errorString().toStdString() + "\"");
+        LogInfo("Unknown operation for address \"" + reply->url().toString() + "\" finished with result: \"" + reply->errorString() + "\"");
         break;
         */
     }
