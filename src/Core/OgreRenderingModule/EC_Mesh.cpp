@@ -1093,6 +1093,7 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     }
 
     Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
+    bool assetUsed = false;
 
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)

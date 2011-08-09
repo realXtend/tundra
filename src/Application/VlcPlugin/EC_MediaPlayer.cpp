@@ -139,13 +139,13 @@ void EC_MediaPlayer::ShowPlayer(bool visible)
         mediaPlayer_->setVisible(visible);
 }
 
-QMenu EC_MediaPlayer::GetContextMenu()
+QMenu *EC_MediaPlayer::GetContextMenu()
 {
-    QMenu actionMenu(0);
-    actionMenu.setAttribute(Qt::WA_DeleteOnClose, true);
-    actionMenu.addAction(QIcon(":/images/playpause.png"), "Play/Pause", this, SLOT(PlayPauseToggle()));
-    actionMenu.addAction(QIcon(":/images/stop.png"), "Stop", this, SLOT(Stop()));
-    actionMenu.addAction("Show Player", this, SLOT(ShowPlayer()));
+    QMenu *actionMenu = new QMenu(0);
+    actionMenu->setAttribute(Qt::WA_DeleteOnClose, true);
+    actionMenu->addAction(QIcon(":/images/playpause.png"), "Play/Pause", this, SLOT(PlayPauseToggle()));
+    actionMenu->addAction(QIcon(":/images/stop.png"), "Stop", this, SLOT(Stop()));
+    actionMenu->addAction("Show Player", this, SLOT(ShowPlayer()));
     return actionMenu;
 }
 
@@ -277,7 +277,7 @@ void EC_MediaPlayer::TargetMeshMaterialChanged(uint index, const QString &materi
     if (!ParentEntity())
         return;
 
-    if (index == getrenderSubmeshIndex())
+    if (index == (uint)getrenderSubmeshIndex())
     {
         EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
         if (sceneCanvas)
@@ -431,9 +431,9 @@ void EC_MediaPlayer::EntityClicked(Entity *entity, Qt::MouseButton button, Rayca
         if (entity->GetComponent("EC_Highlight"))
             return;
 
-        QMenu popupInteract = GetContextMenu();
-        if (!popupInteract.actions().empty())
-            popupInteract.exec(QCursor::pos());
+        QMenu *popupInteract = GetContextMenu();
+        if (!popupInteract->actions().empty())
+            popupInteract->exec(QCursor::pos());
     }
 }
 
