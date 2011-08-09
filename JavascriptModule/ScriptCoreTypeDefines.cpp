@@ -3,21 +3,15 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "Color.h"
-#include "Math/Quat.h"
-#include "Math/float3.h"
 #include "IAttribute.h"
 #include "AssetReference.h"
 #include "EntityReference.h"
 #include "Entity.h"
 #include "ScriptMetaTypeDefines.h"
 #include "Scene.h"
-#include "Transform.h"
 #include "LoggingFunctions.h"
 
 #include <QScriptEngine>
-#include <QColor>
-#include <QVector3D>
-#include <QQuaternion>
 #include <QScriptValueIterator>
 
 #include "MemoryLeakCheck.h"
@@ -33,6 +27,7 @@ Q_DECLARE_METATYPE(EntityList);
 
 QScriptValue Color_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Color_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine);
+
 void createColorFunctions(QScriptValue &value, QScriptEngine *engine)
 {
     // Expose native functions to script value.
@@ -146,6 +141,7 @@ QScriptValue toScriptValueAssetReferenceList(QScriptEngine *engine, const AssetR
 }
 
 QScriptValue EntityReference_prototype_Lookup(QScriptContext *ctx, QScriptEngine *engine);
+
 void createEntityReferenceFunctions(QScriptValue &value, QScriptEngine *engine)
 {
     // Expose native functions to script value.
@@ -310,26 +306,7 @@ QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
     }
     return engine->toScriptValue(newColor);
 }
-/*
-QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
-{
-    float3 newVec;
-    if (ctx->argumentCount() == 3)
-    {
-        if (ctx->argument(0).isNumber() &&
-            ctx->argument(1).isNumber() &&
-            ctx->argument(2).isNumber())
-        {
-            newVec.x = (f32)ctx->argument(0).toNumber();
-            newVec.y = (f32)ctx->argument(1).toNumber();
-            newVec.z = (f32)ctx->argument(2).toNumber();
-        }
-        else
-            return ctx->throwError(QScriptContext::TypeError, "float3(): arguments aren't numbers.");
-    }
-    return engine->toScriptValue(newVec);
-}
-*/
+
 QScriptValue createAssetReference(QScriptContext *ctx, QScriptEngine *engine)
 {
     AssetReference newAssetRef;
@@ -367,7 +344,6 @@ void RegisterCoreMetaTypes()
     qRegisterMetaType<ScenePtr>("ScenePtr");
     qRegisterMetaType<ComponentPtr>("ComponentPtr");
     qRegisterMetaType<Color>("Color");
-    qRegisterMetaType<float3>("float3");
     qRegisterMetaType<AssetReference>("AssetReference");
     qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
     qRegisterMetaType<EntityReference>("EntityReference");
