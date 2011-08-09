@@ -60,14 +60,13 @@ public slots:
     /// Refresh dynamic parts of the appearance (morphs, bone modifiers)
     void SetupDynamicAppearance();
     /// Return the avatar description asset, if set
-    AvatarDescAssetPtr GetAvatarDesc();
-    /// Get a generic property from the avatar description, or empty string if not found
-    QString GetAvatarProperty(const QString& name);
+    AvatarDescAssetPtr AvatarDesc() const;
+    /// Returns a generic property from the avatar description, or an empty string if not found
+    QString AvatarProperty(const QString& name) const;
 
 private slots:
     /// Called when some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute *attribute);
-    
     void OnAvatarAppearanceLoaded(AssetPtr asset);
 
 private:

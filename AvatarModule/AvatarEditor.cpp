@@ -416,7 +416,7 @@ namespace Avatar
             EC_Avatar* avatar = entity->GetComponent<EC_Avatar>().get();
             if (avatar)
             {
-                avatarAsset_ = avatar->GetAvatarDesc();
+                avatarAsset_ = avatar->AvatarDesc();
                 AvatarDescAsset* newDesc = avatarAsset_.lock().get();
                 if (newDesc)
                     connect(newDesc, SIGNAL(AppearanceChanged()), this, SLOT(RebuildEditView()));
