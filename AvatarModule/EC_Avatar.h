@@ -3,63 +3,58 @@
 #pragma once
 
 #include "IComponent.h"
-#include "IAsset.h"
+#include "AssetReference.h"
 #include "AvatarModuleApi.h"
 #include "AssetFwd.h"
-#include "SceneFwd.h"
 
 struct BoneModifier;
 class AvatarDescAsset;
 typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
 /// Avatar component.
-/**
-<table class="header">
-<tr>
-<td>
-<h2>Avatar</h2>
-This component generates the required Mesh, Placeable and AnimationController
-components to an entity to display an avatar.
+/** <table class="header">
+    <tr>
+    <td>
+    <h2>Avatar</h2>
+    Note: this component no longer generates the required EC_Mesh, EC_Placeable and EC_AnimationController
+    components to an entity to display an avatar.
+    ///\todo Write better description!
 
-Registered by Avatar::AvatarModule.
+    Registered by Avatar::AvatarModule.
 
-<b>Attributes</b>:
-<ul>
-<li>QString: appearanceRef
-<div>Asset id for the avatar appearance file that will be used to generate the visible avatar.</div>
-</ul>
+    <b>Attributes</b>:
+    <ul>
+    <li>QString: appearanceRef
+    <div>Asset id for the avatar appearance file that will be used to generate the visible avatar.</div>
+    </ul>
 
-<b>Exposes the following scriptable functions:</b>
-<ul>
-</ul>
+    <b>Exposes the following scriptable functions:</b>
+    <ul>
+    </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-</ul>
+    <b>Reacts on the following actions:</b>
+    <ul>
+    </ul>
 
-Does not emit any actions.
+    Does not emit any actions.
 
-<b>Depends on the components Mesh, Placeable and AnimationController</b>.
-</table>
-*/
+    <b>Depends on the components EC_Mesh, EC_Placeable and EC_AnimationController</b>.
+    </table> */
 class AV_MODULE_API EC_Avatar : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_Avatar", 1)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Avatar(Scene* scene);
+    virtual ~EC_Avatar();
 
     /// Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
     Q_PROPERTY(AssetReference appearanceRef READ getappearanceRef WRITE setappearanceRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, appearanceRef);
 
-    /// Destructor
-    virtual ~EC_Avatar();
-
-    COMPONENT_NAME("EC_Avatar", 1)
 public slots:
-
     /// Refresh appearance completely
     void SetupAppearance();
     /// Refresh dynamic parts of the appearance (morphs, bone modifiers)
@@ -68,7 +63,7 @@ public slots:
     AvatarDescAssetPtr GetAvatarDesc();
     /// Get a generic property from the avatar description, or empty string if not found
     QString GetAvatarProperty(const QString& name);
-    
+
 private slots:
     /// Called when some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute *attribute);
@@ -94,4 +89,3 @@ private:
     /// Last set avatar asset
     boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 };
-
