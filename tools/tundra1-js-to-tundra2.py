@@ -128,7 +128,6 @@ if __name__ == "__main__":
                 o = replace(o, "ui.OpenUrl.connect(", "browserplugin.OpenUrlRequest.connect(")
 
                 # mumble voip
-                # note: this is subject to change!
                 o = replace(o, "communications_service.InWorldVoiceSession(", "mumblevoip.Session(")
 
                 # Only replace the file if something was reaplced
