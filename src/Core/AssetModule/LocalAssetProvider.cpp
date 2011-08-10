@@ -161,13 +161,20 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(const QString &dire
 {
     storageName = storageName.trimmed();
     if (storageName.isEmpty())
+    {
+        LogInfo("LocalAssetProvider: Cannot add storage with an empty name.");
         return LocalAssetStoragePtr();
+    }
 
     for(size_t i = 0; i < storages.size(); ++i)
         if (storages[i]->name.compare(storageName, Qt::CaseInsensitive) == 0)
         {
-            if (storages[i]->directory != directory)
-                LogError("LocalAssetProvider::AddStorageAddress failed: A storage by name \"" + storageName.toStdString() + "\" already exists, but points to directory \"" + storages[i]->directory.toStdString() + "\" instead of \"" + directory.toStdString() + "\"!");
+            // Don't print the warning if paths are eg. C:\mydir\subdir to C:\mydir/subdir or C:\mydir\subdir\, convert to native separators
+            // they are essentially the same paths so do some checks!
+            if (QDir::fromNativeSeparators(GuaranteeTrailingSlash(storages[i]->directory)) != QDir::fromNativeSeparators(GuaranteeTrailingSlash(directory)))
+                LogInfo("LocalAssetProvider: Storage '" + storageName.toStdString() + "' already exist in '" + storages[i]->directory.toStdString() + "', not adding with '" + directory.toStdString() + "'.");
+            else
+                LogInfo("LocalAssetProvider: Storage '" + storageName.toStdString() + "' already exists, ignoring add request.");
             return LocalAssetStoragePtr();
         }
 
