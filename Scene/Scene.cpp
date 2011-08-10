@@ -323,37 +323,23 @@ void Scene::EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, Attrib
     emit AttributeRemoved(comp, attribute, change);
 }
 
-/*void Scene::EmitComponentInitialized(IComponent* comp)
-{
-    emit ComponentInitialized(comp);
-    }*/
-
 void Scene::EmitEntityCreated(Entity *entity, AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
         return;
     if (change == AttributeChange::Default)
         change = AttributeChange::Replicate;
+    ///@note This is not enough, it might be that entity is deleted after this call so we have dangling pointer in queue. 
     if (entity)
         emit EntityCreated(entity, change);
 }
 
-void Scene::EmitEntityCreated(EntityPtr entity, AttributeChange::Type change)
-{
-    if (change == AttributeChange::Disconnected)
-        return;
-    if (change == AttributeChange::Default)
-        change = AttributeChange::Replicate;
-    
-    //@note This is not enough, it might be that entity is deleted after this call so we have dangling pointer in queue. 
-    if (entity.get() != 0 )
-        emit EntityCreated(entity.get(), change);
-}
-
+/*
 void Scene::EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change)
 {
     return EmitEntityCreated(dynamic_cast<Entity*>(entity), change);
 }
+*/
 
 void Scene::EmitEntityRemoved(Entity* entity, AttributeChange::Type change)
 {
@@ -370,6 +356,7 @@ void Scene::EmitActionTriggered(Entity *entity, const QString &action, const QSt
     emit ActionTriggered(entity, action, params, type);
 }
 
+/*
 QVariantList Scene::GetEntityIdsWithComponent(const QString &type_name) const
 {
     QVariantList ret;
@@ -380,7 +367,8 @@ QVariantList Scene::GetEntityIdsWithComponent(const QString &type_name) const
 
     return ret;
 }
-
+*/
+/*
 QList<Entity*> Scene::GetEntitiesWithComponentRaw(const QString &type_name) const
 {
     QList<Entity*> ret;
@@ -391,7 +379,8 @@ QList<Entity*> Scene::GetEntitiesWithComponentRaw(const QString &type_name) cons
 
     return ret;
 }
-
+*/
+/*
 QVariantList Scene::LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QVariantList ret;
@@ -402,6 +391,7 @@ QVariantList Scene::LoadSceneXMLRaw(const QString &filename, bool clearScene, bo
 
     return ret;
 }
+*/
 
 QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
 {

@@ -803,9 +803,9 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
         else
             LogWarning("Could not create component with type " + framework_->Scene()->GetComponentTypeName(typeId));
     }
- 
+
     // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
-    scene->EmitEntityCreated(entity, change);
+    scene->EmitEntityCreated(entity.get(), change);
     const Entity::ComponentVector &components = entity->Components();
     for(uint i = 0; i < components.size(); ++i)
         components[i]->ComponentChanged(change);

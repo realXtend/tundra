@@ -732,7 +732,7 @@ void SceneTreeWidget::NewEntity()
     // Create entity.
     EntityPtr entity = scene.lock()->CreateEntity(id, QStringList(), changeType);
     assert(entity);
-    scene.lock()->EmitEntityCreated(entity, changeType);
+    scene.lock()->EmitEntityCreated(entity.get(), changeType);
 }
 
 void SceneTreeWidget::NewComponent()

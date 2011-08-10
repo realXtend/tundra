@@ -85,7 +85,7 @@ function RequestAsset(ref, type)
 
 function DownloadReady(/* IAssetTransfer* */ transfer)
 {
-    var data = transfer.GetRawData();
+    var data = transfer.RawData();
     print("Download ready");
     print("  >> Source    :", transfer.GetSourceUrl());
     print("  >> Type      :", transfer.GetAssetType());
@@ -95,7 +95,7 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
 function AssetReady(/* IAssetPtr* */ assetptr)
 {
     var asset = assetptr.get();
-    var data = asset.GetRawData();
+    var data = asset.RawData();
     print("Asset ready");
     print("  >> Class ptr :", asset);
     print("  >> Type      :", asset.Type());

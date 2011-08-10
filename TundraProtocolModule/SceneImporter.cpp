@@ -147,7 +147,7 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
     foreach(ComponentPtr c, newentity->Components())
         c->ComponentChanged(change);
 
-    scene_->EmitEntityCreated(newentity, change);
+    scene_->EmitEntityCreated(newentity.get(), change);
 
     return newentity;
 }
@@ -1111,7 +1111,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                     meshPtr->castShadows.Set(cast_shadows, change);
 
                     if (new_entity)
-                        scene_->EmitEntityCreated(entity, change);
+                        scene_->EmitEntityCreated(entity.get(), change);
                     placeablePtr->ComponentChanged(change);
                     meshPtr->ComponentChanged(change);
                     namePtr->ComponentChanged(change);

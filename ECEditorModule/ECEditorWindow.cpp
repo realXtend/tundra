@@ -551,7 +551,7 @@ void ECEditorWindow::PasteEntity()
     }
 
     AddEntity(entity->Id());
-    scene->EmitEntityCreated(entity);
+    scene->EmitEntityCreated(entity.get());
 }
 
 void ECEditorWindow::OpenEntityActionDialog()

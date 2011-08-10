@@ -3,7 +3,7 @@ var myscene;
 
 function init() {
     myscene = framework.DefaultScene();
-    ent = myscene.CreateEntityRaw(myscene.NextFreeId(), ['EC_Placeable']);
+    ent = myscene.CreateEntity(myscene.NextFreeId(), ['EC_Placeable']);
 }
 
 //doesn't actually leak -- couldn't reproduce a leak here yet.
@@ -11,7 +11,7 @@ function init() {
 function no_leak(dt) {
     if (!myscene) init();
 
-    ent = myscene.GetEntityRaw(ent.id);
+    ent = myscene.GetEntity(ent.id);
     var x;
     for(var i=0; i < 1000; i++) {
 	var t = ent.placeable.transform;
