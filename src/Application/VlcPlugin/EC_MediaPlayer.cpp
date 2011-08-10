@@ -254,10 +254,7 @@ void EC_MediaPlayer::PrepareComponent()
     // Show downloading info icon or if not downloading, 
     // ask for a image update from the player
     if (pendingMediaDownload_)
-    {
-        LogInfo("Thworing a download notification");
         OnFrameUpdate(downloadingLogo_);
-    }
     else
         mediaPlayer_->ForceUpdateImage();
 }
@@ -451,15 +448,15 @@ void EC_MediaPlayer::OnMediaLoaded(AssetPtr asset)
     {
         // Feed native separators for VLC
         if (!mediaPlayer_->LoadMedia(QDir::toNativeSeparators(diskSource)))
-            LogError("EC_MediaPlayer: Source not supported: " + diskSource.toStdString());
+            LogError("EC_MediaPlayer: Source not supported: " + asset->Name());
         else
         {
-            LogInfo("EC_MediaPlayer: Loaded source media '" + diskSource + "'");
+            LogInfo("EC_MediaPlayer: Loaded source media after download '" + asset->Name() + "'");
             mediaPlayer_->ForceUpdateImage();
         }
     }
     else
-        LogError("EC_MediaPlayer: Downloaded medias disk source is empty! Broken/disabled asset cache?");
+        LogError("EC_MediaPlayer: Downloaded media '" + asset->Name() + "' disk source is empty! Broken/disabled asset cache?");
 }
 
 void EC_MediaPlayer::OnMediaFailed(IAssetTransfer *transfer, QString reason)

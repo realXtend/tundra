@@ -42,4 +42,5 @@ final_target ()
 # Install vlcplugins to install prefix for windows
 if (WIN32)
     setup_install_directory (${TUNDRA_BIN}/vlcplugins)
+    setup_install_windows_deps ("libvlc.dll;libvlccore.dll" Release|RelWithDebInfo|Debug)
 endif ()
