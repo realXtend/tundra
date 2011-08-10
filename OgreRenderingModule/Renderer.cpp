@@ -524,7 +524,7 @@ namespace OgreRenderer
     {
         using namespace std;
         
-        if ((!initialized_) || (framework_->IsHeadless()))
+        if (!initialized_)
             return;
 
         if (frameTime > MAX_FRAME_TIME)
@@ -532,6 +532,22 @@ namespace OgreRenderer
             
         PROFILE(Renderer_Render);
 
+        // If we are headless, only update the scenegraphs of all Ogre worlds
+        if (framework_->IsHeadless())
+        {
+            for (std::map<Scene*, OgreWorldPtr>::const_iterator i = ogreWorlds_.begin(); i != ogreWorlds_.end(); ++i)
+            {
+                OgreWorld* world = i->second.get();
+                if (world)
+                {
+                    Ogre::SceneManager* mgr = world->GetSceneManager();
+                    if (mgr)
+                        mgr->_updateSceneGraph(0);
+                }
+            }
+            return;
+        }
+        
         // If rendering into different size window, dirty the UI view for now & next frame
         if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
         {
