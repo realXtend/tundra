@@ -2,18 +2,19 @@
 
 #pragma once
 
+#include "MumbleFwd.h"
+
 #include "ui_VoiceSettings.h"
 #include <QTimer>
 
 namespace MumbleVoip
 {
-    class Settings;
-    class Provider;
-
     /// Provide UI for Mumble Voip module settings. The widget is used with Settings service.
     class SettingsWidget : public QWidget, private Ui::VoiceSettings
     {
-        Q_OBJECT
+
+    Q_OBJECT
+
     public:
         SettingsWidget(Provider* provider, Settings* settings);
         virtual ~SettingsWidget();
@@ -31,11 +32,10 @@ namespace MumbleVoip
         virtual void UpdateUI();
         virtual void UpdateMicrophoneLevel();
         virtual void OnSessionProviderDestroyed();
+
     private:
         Settings* settings_;
         Provider* provider_;
         QTimer update_timer_;
     };
-} // MumbleVoip
-
-// incl_MumbleVoipModule_SettingsWidget_h
+}

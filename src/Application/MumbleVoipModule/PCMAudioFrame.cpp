@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "CoreDefines.h"
 
 #include "PCMAudioFrame.h"
 #include "CoreException.h"

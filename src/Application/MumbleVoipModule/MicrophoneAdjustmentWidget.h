@@ -2,19 +2,14 @@
 
 #pragma once
 
-//#include "CommunicationsService.h"
-//#include <QGraphicsProxyWidget>
-#include "ui_MicrophoneAdjustment.h"
-#include "AudioAPI.h"
-#include <QTimer>
+#include "MumbleFwd.h"
+#include "AudioFwd.h"
 
-class Framework;
+#include "ui_MicrophoneAdjustment.h"
+#include <QTimer>
 
 namespace MumbleVoip
 {
-    class Settings;
-    class PCMAudioFrame;
-
     /// Read audio data from SoundService adjust volume and playback locally.
     /// Shows graphical view for audio level.
     class MicrophoneAdjustmentWidget : public QWidget, private Ui::MicrophoneAdjustmentWidget
@@ -42,6 +37,4 @@ namespace MumbleVoip
         double voice_activity_level_;
         double microphone_level_;
     };
-} // MumbleVoip
-
-// incl_MumbleVoipModule_MicrophoneAdjustmentWidget_h
+}

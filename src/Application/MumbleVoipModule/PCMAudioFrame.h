@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#pragma once
+#ifndef incl_MumbleVoipModule_PCMAudioFrame_h
+#define incl_MumbleVoipModule_PCMAudioFrame_h
 
 namespace MumbleVoip
 {
@@ -11,13 +12,13 @@ namespace MumbleVoip
     class PCMAudioFrame
     {
     public:
-        /// Allocates memory for data
+        //! Allocates memory for data
         PCMAudioFrame(int sample_rate, int sample_width, int channels, int data_size);
 
-        /// Copies data from given source
+        //! Copies data from given source
         PCMAudioFrame(int sample_rate, int sample_widh, int channels, char* data, int data_size);
 
-        /// Copies data from given audio frame
+        //! Copies data from given audio frame
         PCMAudioFrame(PCMAudioFrame* frame);
 
         virtual ~PCMAudioFrame();
@@ -41,4 +42,4 @@ namespace MumbleVoip
 
 }// namespace MumbleVoip
 
-// incl_MumbleVoipModule_PCMAudioFrame_h
+#endif // incl_MumbleVoipModule_PCMAudioFrame_h

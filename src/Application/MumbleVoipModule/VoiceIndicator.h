@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#pragma once
+#ifndef incl_MumbleVoipModule_VoiceIndicator_h
+#define incl_MumbleVoipModule_VoiceIndicator_h
 
 #include <QObject>
 #include "PCMAudioFrame.h"
@@ -25,11 +26,11 @@ namespace MumbleVoip
         void StopSpeaking();
     };
 
-    /// A very simple voice indicator 
-    /// 
-    /// Analyzes every audio packet for average absolute sample value.
-    /// Positive audio packet sets speaking on for a certain time and if
-    /// no voice is detect during that time then speaking is set to false.
+    //! A very simple voice indicator 
+    //! 
+    //! Analyzes every audio packet for average absolute sample value.
+    //! Positive audio packet sets speaking on for a certain time and if
+    //! no voice is detect during that time then speaking is set to false.
     class SimpleVoiceIndicator : public VoiceIndicatorInterface
     {
         Q_OBJECT
@@ -46,4 +47,4 @@ namespace MumbleVoip
 
 } // MumbleVoip
 
-// incl_MumbleVoipModule_VoiceIndicator_h
+#endif // incl_MumbleVoipModule_VoiceIndicator_h

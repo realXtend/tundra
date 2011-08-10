@@ -2,81 +2,54 @@
 
 #pragma once
 
-#include <QObject>
-#include <QMap>
-#include "CommunicationsService.h"
+#include "MumbleFwd.h"
+#include "IMumble.h"
+#include "Session.h"
 #include "ServerInfo.h"
-#include "AttributeChangeType.h"
 
-namespace TundraLogic
-{
-    class TundraLogicModule;
-}
-
-class UiProxyWidget;
-class QSignalMapper;
-class EC_VoiceChannel;
-
-class Framework;
-
-class Entity;
-
-class IComponent;
+#include <QObject>
 
 namespace MumbleVoip
 {
-    class ServerInfoProvider;
-    class Session;
-    class Settings;
-
-    /// Provides Mumble implementation of InWorldVoiceSession objects
-    class Provider : public Communications::InWorldVoice::ProviderInterface
+    class Provider : public IProvider
     {
-        Q_OBJECT
+        
+    Q_OBJECT
+
     public:
         Provider(Framework* framework, Settings* settings);
         virtual ~Provider();
-        void PostInitialize();
 
     public slots:
-        bool HasSession();
-        virtual Communications::InWorldVoice::SessionInterface* Session();
-
-        virtual QString& Description();
         virtual void Update(f64 frametime);
+
+        /// IProvider override.
+        virtual ISession* Session();
+
+        /// IProvider override.
+        virtual bool HasSession();
+
+        /// IProvider override.
+        virtual QString& Description();
         virtual QList<QString> Statistics();
+
+        // Show the mumble audio config widget.
         virtual void ShowMicrophoneAdjustmentDialog();
 
     private slots:
-        void OnECAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
-        void OnECVoiceChannelDestroyed(QObject* obj);
-        void OnSceneAdded(const QString &name);
-
-    private:
         void CreateSession();
         void CloseSession();
-        void CheckChannelQueue();
-        QString GetUsername();
-        QString GetAvatarUuid();
-        void AddECVoiceChannel(EC_VoiceChannel* channel);
+        void ResetSession();
 
-        Framework* framework_;
-        QString description_;
-        MumbleVoip::Session* session_;  /// \todo Use shared ptr ...
-        Settings* settings_;
-        QWidget* microphone_adjustment_widget_;
-        QList<EC_VoiceChannel*> ec_voice_channels_;
-        QMap<EC_VoiceChannel*, QString> channel_names_;
-        QSignalMapper* signal_mapper_;
-
-        boost::shared_ptr<TundraLogic::TundraLogicModule> tundra_logic_;
-        QList<EC_VoiceChannel*> channel_queue_;
-
-    private slots:
         void OnMicrophoneAdjustmentWidgetDestroyed();
-        void ECVoiceChannelChanged(const QString &channelname);
+
+    private:
+        SessionPtr session_;
+        Settings *settings_;
+
+        Framework *framework_;
+        QString description_;
+
+        QWidget *microphone_adjustment_widget_;
     };
-
-} // MumbleVoip
-
-// incl_MumbleVoipModule_Provider_h
+}

@@ -7,10 +7,7 @@
 #include "MumbleMainLoopThread.h"
 #include "MumbleVoipModule.h"
 
-#define BUILDING_DLL // for dll import/export declarations
-#define CreateEvent  CreateEventW // for \boost\asio\detail\win_event.hpp and \boost\asio\detail\win_iocp_handle_service.hpp
-#include <mumbleclient/client_lib.h>
-#undef BUILDING_DLL // for dll import/export declarations
+#include "LibMumbleClient.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -18,28 +15,27 @@ namespace MumbleLib
 {
     void MumbleMainLoopThread::run()
     {
-        MumbleClient::MumbleClientLib* mumble_lib = MumbleClient::MumbleClientLib::instance();
+        ::MumbleClient::MumbleClientLib* mumble_lib = ::MumbleClient::MumbleClientLib::instance();
         if (!mumble_lib)
-        {
             return;
-        }
-        LogDebug("Mumble library mainloop started");
+        
+        LogDebug("Mumble library main loop started");
+        
         try
         {
+            mumble_lib->SetLogLevel(::MumbleClient::logging::LOG_FATAL);
             mumble_lib->Run();
         }
         catch(std::exception &e)
         {
-            QString message = QString("Mumble library mainloop stopped by exception: %1").arg(e.what());
-            LogError(message);
+            LogError(QString("Mumble library mainloop stopped by exception: %1").arg(e.what()));
         }
         catch(...)
         {
-            QString message = QString("Mumble library mainloop stopped by unknown exception.");
-            LogError(message);
-            reason_ = message;
+            reason_ = "Mumble library mainloop stopped by unknown exception.";
+            LogError(reason_);
         }
-        LogDebug("Mumble library mainloop stopped");
+        LogDebug("Mumble library main loop stopped");
     }
 
     QString MumbleMainLoopThread::Reason() const
@@ -47,4 +43,4 @@ namespace MumbleLib
         return reason_;
     }
 
-} // MumbleLib
+}

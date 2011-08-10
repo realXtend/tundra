@@ -3,56 +3,56 @@
 #pragma once
 
 #include "IModule.h"
+
 #include "MumbleVoipModuleApi.h"
-#include "CommunicationsService.h"
-#include "Core.h"
-#include "ServerInfo.h"
+#include "MumbleFwd.h"
 
 #include <QObject>
 
+class QScriptEngine;
+
 namespace MumbleVoip
 {
-    class LinkPlugin;
-    class Provider;
-    class Settings;
-    class SettingsWidget;
-
-    /// Mumble support for Tundra. Look more from MumbleVoip::Provider and its Session object.
-    class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public IModule
+    /**
+     *  Mumble support for Tundra that provides VOIP communications.
+     *
+     *  Implements a mumble voice provider and a mumble voice session that can be obtained from the provider.
+     *  The provider can be acquired as a dynamic Framework object/property with name "mumbleprovider".
+     *
+     *  Uses mumbleclient library to establish connections to Mumble servers.
+     *
+     *  See usage example in scenes/Mumble/
+     */
+    class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public IModule
     {
-        Q_OBJECT
+        
+    Q_OBJECT
 
     public:
+        /// Constructor.
         MumbleVoipModule();
+
+        /// Deconstructor.
         virtual ~MumbleVoipModule();
 
-        void Load();
-        void Unload();
-        void Initialize();
+        /// IModule override.
         void PostInitialize();
+
+        /// IModule override.
         void Uninitialize();
+
+        /// IModule override.
         void Update(f64 frametime);
 
     public slots:
         void ToggleSettingsWidget();
-        Provider* GetMumbleProviver() { return in_world_voice_provider_; }
 
     private slots:
-        void SetupSettingsWidget();
+        void OnScriptEngineCreated(QScriptEngine *engine);
 
-    private:
-        virtual void UpdateLinkPlugin(f64 frametime);
-
-        LinkPlugin* link_plugin_;
-        Provider* in_world_voice_provider_;
-
-        static const int LINK_PLUGIN_UPDATE_INTERVAL_MS_ = 100;
-        int time_from_last_update_ms_;
-        QString context_id_for_link_plugin_;
+    private:       
+        Provider* provider_;
+        SettingsWidget* settingsWidget_;
         Settings *settings_;
-        SettingsWidget* settings_widget_;
     };
-
-} // end of namespace: MumbleVoip
-
-// incl_MumbleVoipModule_h
+}

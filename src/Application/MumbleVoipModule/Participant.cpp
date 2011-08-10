@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "Participant.h"
 #include "User.h"
@@ -22,22 +24,11 @@ namespace MumbleVoip
 
     Participant::~Participant()
     {
-
     }
 
     QString Participant::Name() const
     {
         return name_;
-    }
-
-    QString Participant::AvatarUUID() const
-    {
-        return avatar_uuid_;
-    }
-
-    void Participant::SetAvatarUUID(QString uuid)
-    {
-        avatar_uuid_ = uuid;
     }
 
     bool Participant::IsSpeaking() const
@@ -55,7 +46,7 @@ namespace MumbleVoip
         return muted_;
     }
 
-    Vector3df Participant::Position() const
+    float3 Participant::Position() const
     {
         return position_;
     }
@@ -68,18 +59,18 @@ namespace MumbleVoip
     void Participant::OnStartSpeaking()
     {
         speaking_ = true;
-        emit Communications::InWorldVoice::ParticipantInterface::StartSpeaking();
+        emit StartSpeaking();
     }
 
     void Participant::OnStopSpeaking()
     {
         speaking_ = false;
-        emit Communications::InWorldVoice::ParticipantInterface::StopSpeaking();
+        emit StopSpeaking();
     }
 
     void Participant::OnPositionUpdated()
     {
-        /// @todo ENSURE THAT user_ OBJECT IS NOT DELETED
+        //! @todo ENSURE THAT user_ OBJECT IS NOT DELETED
         if (!user_)
             return;
         
@@ -93,13 +84,13 @@ namespace MumbleVoip
 
     void Participant::OnUserLeft()
     {
-        emit Communications::InWorldVoice::ParticipantInterface::Left();
+        emit Left();
     }
 
     void Participant::SetName(QString name)
     {
         name_ = name;
-        emit Communications::InWorldVoice::ParticipantInterface::StateChanged();
+        emit StateChanged();
     }
 
     double Participant::VoiceActivity() const

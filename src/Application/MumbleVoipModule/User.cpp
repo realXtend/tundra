@@ -2,23 +2,24 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "CoreDefines.h"
 
 #include "User.h"
 #include "PCMAudioFrame.h"
 #include "MumbleVoipModule.h"
-#include "stdint.h"
 #include "MumbleDefines.h"
 #include "PCMAudioFrame.h"
-#include <QTimer>
 #include "Channel.h"
-#include <mumbleclient/user.h>
-#include <mumbleclient/channel.h>
+
+#include "LibMumbleClient.h"
+
+#include <QTimer>
 
 #include "MemoryLeakCheck.h"
 
 namespace MumbleLib
 {
-    User::User(const MumbleClient::User& user, MumbleLib::Channel* channel)
+    User::User(const ::MumbleClient::User& user, ::MumbleLib::Channel* channel)
         : user_(user),
           speaking_(false),
           position_known_(false),
@@ -105,7 +106,7 @@ namespace MumbleLib
         }
     }
 
-    void User::UpdatePosition(Vector3df position)
+    void User::UpdatePosition(float3 position)
     {
         position_known_ = true;
         position_ = position;
@@ -113,7 +114,7 @@ namespace MumbleLib
         emit PositionUpdated();
     }
 
-    Vector3df User::Position() const
+    float3 User::Position() const
     {
         return position_;
     }
@@ -165,7 +166,7 @@ namespace MumbleLib
     {
         if (left_)
             return -1;
-        boost::shared_ptr<MumbleClient::Channel> mumble_channel = user_.channel.lock();
+        boost::shared_ptr<::MumbleClient::Channel> mumble_channel = user_.channel.lock();
         if (mumble_channel)
             return user_.channel.lock()->id;
         else

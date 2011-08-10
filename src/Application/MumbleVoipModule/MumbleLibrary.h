@@ -2,37 +2,36 @@
 
 #pragma once
 
+#include "MumbleFwd.h"
+
 #include <QObject>
 #include <QString>
 
 namespace MumbleLib
 {
-    class MumbleMainLoopThread;
-
-    /// @todo Singleton instance
+    //! @todo Singleton instance
     class MumbleLibrary : public QObject
     {
-        Q_OBJECT
-        MumbleLibrary();
+
+    Q_OBJECT
+    
     public:
-        /// Start Mumble library in separate thread if it isn't alraedy running
+        MumbleLibrary();
+
+        //! Start Mumble library in separate thread if it isn't alraedy running
         static void Start();
 
-        /// Stop Mumble library thread if it's running
+        //! Stop Mumble library thread if it's running
         static void Stop();
 
-        /// @return true if mumble library thread is running, otherwise false
+        //! @return true if mumble library thread is running, otherwise false
         static bool IsRunning();
 
-        /// Return reason for current state
+        //! Return reason for current state
         static QString Reason();
 
+        //! Return the main thread
         static QThread* MainLoopThread();
-
-    //signals:
-    //    static void Started();
-    //    static void Stoped(); 
-    //    static void InternalError();
 
     private:
         static void StartMumbleThread();
@@ -40,7 +39,4 @@ namespace MumbleLib
         static QString reason_;
         static MumbleMainLoopThread* mumble_main_loop_;
     };
-
-} // MumbleLib
-
-// incl_MumbleVoipModule_MumbleLibrary_h
+}

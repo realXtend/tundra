@@ -2,27 +2,19 @@
 
 #pragma once
 
-#include <QObject>
-#include <QThread>
 #include "CoreTypes.h"
-#include "Framework.h"
+#include <QThread>
 
 namespace MumbleLib
 {
-    /**
-     * Thread for running the lib mumble mainloop
-     * 
-     */
+    /// Thread for running the lib mumble mainloop
     class MumbleMainLoopThread : public QThread 
     {
     public:
         virtual void run();
-
-        /// \return information about current state
+        //! \return information about current state
         virtual QString Reason() const;
     private:
         QString reason_;
     };
-} // end of namespace: MumbleLib
-
-// incl_MumbleVoipModule_MumbleMainLoopThread_h
+}

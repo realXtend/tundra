@@ -45,11 +45,6 @@ namespace MumbleVoip
         if (!framework_)
             return;
 
-        ServiceManagerPtr service_manager = framework_->GetServiceManager();
-
-        if (!service_manager)
-            return;
-
         int frequency = SAMPLE_RATE;
         bool sixteenbit = true;
         bool stereo = false;
@@ -62,21 +57,11 @@ namespace MumbleVoip
         if (!framework_)
             return;
 
-        ServiceManagerPtr service_manager = framework_->GetServiceManager();
-
-        if (!service_manager)
-            return;
-
-        AudioAPI *sound_service = framework_->Audio();
-
-        if (!sound_service)
-            return;
-
         int bytes_per_frame = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
         PCMAudioFrame frame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_per_frame );
-        while(sound_service->GetRecordedSoundSize() > (uint)bytes_per_frame)
+        while (framework_->Audio()->GetRecordedSoundSize() > bytes_per_frame)
         {
-            int bytes = sound_service->GetRecordedSoundData(frame.DataPtr(), bytes_per_frame);
+            int bytes = framework_->Audio()->GetRecordedSoundData(frame.DataPtr(), bytes_per_frame);
             if (bytes != bytes_per_frame)
             {
                 return;
@@ -92,13 +77,7 @@ namespace MumbleVoip
         if (!framework_ || !framework_->Audio())
             return ;
 
-        ServiceManagerPtr service_manager = framework_->GetServiceManager();
-
-        if (!service_manager)
-            return ;
-
         SoundBuffer sound_buffer;
-        
         sound_buffer.data.resize(frame->DataSize());
         memcpy(&sound_buffer.data[0], frame->DataPtr(), frame->DataSize());
 

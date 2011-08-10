@@ -12,7 +12,10 @@
 
 namespace MumbleVoip
 {
-    SettingsWidget::SettingsWidget(Provider* provider, Settings* settings) : QWidget(), provider_(provider), settings_(settings)
+    SettingsWidget::SettingsWidget(Provider* provider, Settings* settings) : 
+        QWidget(), 
+        provider_(provider), 
+        settings_(settings)
     {
         InitializeUI();
         UpdateUI();
@@ -95,7 +98,7 @@ namespace MumbleVoip
         encodeQualityLabel->setText(QString("%1 %").arg(encodeQualitySlider->value(), 3));
         microphoneLevelLabel->setText(QString("%1 %").arg(microphoneLevelSlider->value(), 3));
 
-        if (provider_ && provider_->Session() && provider_->Session()->GetState() == Communications::InWorldVoice::SessionInterface::STATE_OPEN)
+        if (provider_ && provider_->Session() && provider_->Session()->GetState() == ISession::STATE_OPEN)
         {
             Session* session = dynamic_cast<Session*>(provider_->Session());
             if (session)

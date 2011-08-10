@@ -286,46 +286,6 @@ macro (configure_theora)
     sagase_configure_report (THEORA)
 endmacro (configure_theora)
 
-macro (configure_mumbleclient)
-    sagase_configure_package(MUMBLECLIENT
-        NAMES mumbleclient
-        COMPONENTS mumbleclient client
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/libmumbleclient)
-    sagase_configure_report (MUMBLECLIENT)
-endmacro (configure_mumbleclient)
-
-macro (configure_openssl)
-    sagase_configure_package(OPENSSL
-        NAMES openssl
-        COMPONENTS libeay32 ssleay32 ssl
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/OpenSSL)
-    # remove 'NOTFOUND' entry which makes to linking impossible    
-    if (MSVC)
-        list(REMOVE_ITEM OPENSSL_LIBRARIES debug optimized SSL_EAY_RELEASE-NOTFOUND LIB_EAY_RELEASE-NOTFOUND SSL_EAY_DEBUG-NOTFOUND LIB_EAY_DEBUG-NOTFOUND NOTFOUND)
-    endif ()
-    sagase_configure_report (OPENSSL)
-endmacro (configure_openssl)
-
-macro (configure_protobuf)
-    sagase_configure_package(PROTOBUF
-        NAMES google protobuf
-        COMPONENTS protobuf libprotobuf
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/protobuf)
-    # Force include dir and libraries on MSVC
-    if (MSVC)
-          set (PROTOBUF_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/protobuf/include)
-    endif ()
-    sagase_configure_report (PROTOBUF)
-endmacro (configure_protobuf)
-
-macro (configure_celt)
-    sagase_configure_package(CELT
-        NAMES celt
-        COMPONENTS celt0 celt celt # for celt.h
-        PREFIXES ${ENV_TUNDRA_DEP_PATH}/celt)
-    sagase_configure_report (CELT)
-endmacro (configure_celt)
-
 macro(use_package_knet)
     message ("** Configuring KNET")
     
