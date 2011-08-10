@@ -71,7 +71,6 @@ UiAPI::UiAPI(Framework *owner_) :
     graphicsView(0),
     graphicsScene(0)
 {
-
     if (owner_->IsHeadless())
     {
         owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("QtUiFile")));
@@ -100,7 +99,7 @@ UiAPI::UiAPI(Framework *owner_) :
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
-//    viewportWidget->setAttribute(Qt::WA_DontShowOnScreen, true);
+    //viewportWidget->setAttribute(Qt::WA_DontShowOnScreen, true);
     viewportWidget->setGeometry(0, 0, graphicsView->width(), graphicsView->height());
     viewportWidget->setContentsMargins(0,0,0,0);
 
@@ -170,6 +169,11 @@ QGraphicsScene *UiAPI::GraphicsScene() const
 
 UiProxyWidget *UiAPI::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
 {
+    if (owner->IsHeadless())
+    {
+        LogWarning("UiAPI: You are trying to add widgets to scene on a headless run, check your code!");
+        return 0;
+    }
     if (!widget)
     {
         LogError("AddWidgetToScene called with a null proxy widget!");
@@ -199,6 +203,12 @@ UiProxyWidget *UiAPI::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
 
 bool UiAPI::AddProxyWidgetToScene(UiProxyWidget *widget)
 {
+    if (owner->IsHeadless())
+    {
+        LogWarning("UiAPI: You are trying to add widgets to scene on a headless run, check your code!");
+        return false;
+    }
+
     if (!widget)
     {
         LogError("AddWidgetToScene called with a null proxy widget!");
@@ -242,6 +252,12 @@ bool UiAPI::AddProxyWidgetToScene(UiProxyWidget *widget)
 
 void UiAPI::RemoveWidgetFromScene(QWidget *widget)
 {
+    if (owner->IsHeadless())
+    {
+        LogWarning("UiAPI: You are trying to remove widgets from scene on a headless run, check your code!");
+        return;
+    }
+
     if (!widget)
         return;
 
@@ -253,6 +269,11 @@ void UiAPI::RemoveWidgetFromScene(QWidget *widget)
 
 void UiAPI::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
 {
+    if (owner->IsHeadless())
+    {
+        LogWarning("UiAPI: You are trying to remove widgets from scene on a headless run, check your code!");
+        return;
+    }
     if (!widget)
         return;
 
@@ -329,7 +350,12 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
     }
 
     if (addToScene && widget)
-        AddWidgetToScene(widget);
+    {
+        if (!owner->IsHeadless())
+            AddWidgetToScene(widget);
+        else
+            LogWarning("UiAPI::LoadFromFile: You have addToScene = true, but this is a headless run (hence no ui scene).");
+    }
 
     return widget;
 }
