@@ -41,6 +41,9 @@ public:
     ~AssetAPI();
 
 public:
+    /// Returns if a asset type factory has been registered for a type name.
+    bool IsAssetTypeFactoryRegistered(const QString &typeName);
+
     /// Registers a type factory for creating assets of the type governed by the factory.
     void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
 

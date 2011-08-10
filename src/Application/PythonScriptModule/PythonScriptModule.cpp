@@ -146,9 +146,10 @@ namespace PythonScript
 
     void PythonScriptModule::Load()
     {
-        /// \todo This should print a error as PythonScriptModule::Load might have done this already! How to avoid?
-        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Script>));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory()));
+        if (!framework_->Scene()->IsComponentFactoryRegistered(EC_Script::TypeNameStatic()))
+            framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Script>));
+        if (!framework_->Asset()->IsAssetTypeFactoryRegistered("Script"))
+            framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory()));
     }
 
     void PythonScriptModule::PostInitialize()

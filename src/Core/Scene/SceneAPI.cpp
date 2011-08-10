@@ -135,6 +135,12 @@ const SceneMap &SceneAPI::Scenes() const
     return scenes_;
 }
 
+bool SceneAPI::IsComponentFactoryRegistered(const QString &typeName)
+{
+    ComponentFactoryMap::iterator existing = componentFactories.find(typeName);
+    return (existing != componentFactories.end() ? true : false);
+}
+
 void SceneAPI::RegisterComponentFactory(ComponentFactoryPtr factory)
 {
     if (factory->TypeName().trimmed() != factory->TypeName() || factory->TypeName().isEmpty() || factory->TypeId() == 0)

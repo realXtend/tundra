@@ -902,6 +902,12 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef)
     return assetRef;
 }
 
+bool AssetAPI::IsAssetTypeFactoryRegistered(const QString &typeName)
+{
+    AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(typeName);
+    return (existingFactory.get() ? true : false);
+}
+
 void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
 {
     AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(factory->Type());

@@ -91,6 +91,9 @@ public slots:
     /// Returns the scene map for self reflection / introspection.
     const SceneMap &Scenes() const;
 
+    /// Return if a component factory has been registered for a type name.
+    bool IsComponentFactoryRegistered(const QString &typeName);
+
     /// Registers a new factory to create new components of type 'componentTypename' and id 'componentTypeid'.
     void RegisterComponentFactory(ComponentFactoryPtr factory);
 
