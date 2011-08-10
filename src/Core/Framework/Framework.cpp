@@ -55,7 +55,7 @@ Framework::Framework(int argc, char** argv) :
     /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
     const QString applicationOrganization = "realXtend";
     const QString applicationName = "Tundra";
-    const QString applicationVersion = "2.0";
+    const QString applicationVersion = "2.0-beta";
 
     ParseProgramOptions();
 

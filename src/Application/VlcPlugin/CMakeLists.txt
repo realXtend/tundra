@@ -13,6 +13,9 @@ configure_vlc()
 
 init_target (VlcPlugin OUTPUT plugins)
 
+MocFolder ()
+UiFolder ()
+
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB UI_FILES ui/*.ui)
@@ -36,5 +39,7 @@ link_package (VLC)
 
 final_target ()
 
-MocFolder ()
-UiFolder ()
+# Install vlcplugins to install prefix for windows
+if (WIN32)
+    setup_install_directory (${TUNDRA_BIN}/vlcplugins)
+endif ()
