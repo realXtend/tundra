@@ -149,22 +149,6 @@ public slots:
     /// @return QString. Absolute path to config storage folder.
     QString GetConfigFolder() const { return configFolder_; }
 
-    /// Get the application organization.
-    /// @return QString. Application organization.
-    QString GetApplicationOrganization() const { return applicationOrganization_; }
-
-    /// Get the application name.
-    /// @return QString. Application name.
-    QString GetApplicationName() const { return applicationName_; }
-
-    /// Get the application version.
-    /// @return QString. Application version.
-    QString GetApplicationVersion() const { return applicationVersion_; }
-
-    /// Get the application identifier
-    /// @return QString of ApplicationOrganization + " " + ApplicationName + " " ApplicationVersion
-    QString GetApplicationIdentifier() const { return applicationOrganization_ + " " + applicationName_ + " " + applicationVersion_; }
-
 private slots:
     /// Get absolute file path for file. Guarantees that it ends with .ini.
     QString GetFilePath(const QString &file);
@@ -180,12 +164,6 @@ private:
     /// @param framework Framework. Takes ownership of the object.
     ConfigAPI(Framework *framework);
 
-    /// Setter the application data. Get called by friend class framework.
-    /// @param applicationOrganizaion QString. Application organization.
-    /// @param applicationName QString. Application name.
-    /// @param applicationVersion QString. Application version.
-    void SetApplication(const QString &applicationOrganization, const QString &applicationName, const QString &applicationVersion);
-
     /// Prepares the data directory where config api will be working. This call will make sure that the folder path exists.
     /// @param configFolderName QString. The sub folder name on where to store configs.
     void PrepareDataFolder(const QString &configFolderName);
@@ -196,13 +174,4 @@ private:
     /// Absolute path to the folder where to store the config files.
     QString configFolder_;
 
-    /// Application organization.
-    QString applicationOrganization_;
-
-    /// Application name.
-    QString applicationName_;
-
-    /// Application version.
-    QString applicationVersion_;
 };
-

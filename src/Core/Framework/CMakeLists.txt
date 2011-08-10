@@ -6,7 +6,7 @@ MocFolder ()
 # Define source files
 file(GLOB CPP_FILES *.cpp)
 file(GLOB H_FILES *.h)
-file(GLOB MOC_FILES Framework.h Application.h FrameAPI.h ConsoleAPI.h DebugAPI.h ConfigAPI.h IRenderer.h IModule.h PluginAPI.h)
+file(GLOB MOC_FILES Framework.h Application.h FrameAPI.h ConsoleAPI.h DebugAPI.h ConfigAPI.h IRenderer.h IModule.h PluginAPI.h VersionInfo.h)
 
 AddSourceFolder(Math)
 

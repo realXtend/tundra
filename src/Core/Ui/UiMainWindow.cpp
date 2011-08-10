@@ -4,6 +4,7 @@
 
 #include "UiMainWindow.h"
 #include "Framework.h"
+#include "VersionInfo.h"
 #include "ConfigAPI.h"
 
 #include <QCloseEvent>
@@ -60,7 +61,7 @@ void UiMainWindow::LoadWindowSettingsFromFile()
     bool maximized = owner->Config()->Get(configData, "window maximized", false).toBool();
     bool fullscreen = owner->Config()->Get(configData, "fullscreen", false).toBool();
 
-    setWindowTitle(owner->Config()->GetApplicationIdentifier());
+    setWindowTitle(owner->ApplicationVersion()->GetFullIdentifier());
 
     if (fullscreen)
     {

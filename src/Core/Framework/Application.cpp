@@ -5,6 +5,7 @@
 
 #include "Application.h"
 #include "Framework.h"
+#include "VersionInfo.h"
 #include "ConfigAPI.h"
 #include "Profiler.h"
 #include "CoreStringUtils.h"
@@ -134,7 +135,7 @@ void Application::SetSplashMessage(const QString &message)
     if (splashScreen && splashScreen->isVisible())
     {
         // Call QApplication::processEvents() to update splash painting as at this point main loop is not running yet
-        QString finalMessage = "v" + framework->Config()->GetApplicationVersion() + " - " + message.toUpper();
+        QString finalMessage = "v" + framework->ApplicationVersion()->GetVersion() + " - " + message.toUpper();
         splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(240, 240, 240));
         processEvents();
     }

@@ -108,6 +108,12 @@ public slots:
     /// as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation.
     IRenderer *GetRenderer() const;
 
+    /// Returns Tundra API version info object.
+    ApiVersionInfo *ApiVersion() const;
+
+    /// Returns Tundra application version info object.
+    ApplicationVersionInfo *ApplicationVersion() const;
+
     /// Returns the global Framework instance.
     /// @note DO NOT CALL THIS FUNCTION. Every point where this function is called
     ///       will cause a serious portability issue when we intend to run multiple instances inside a single process (inside a browser memory space).
@@ -176,6 +182,13 @@ private:
     IRenderer *renderer;
 //    ConnectionAPI *connection; ///< The Connection API.
 //    ServerAPI *server; ///< The Server API, null if we're not operating as a server.
+
+    /// The Tundra API version info of this build. May differ from the end user 
+    /// application version of the default distribution, i.e. app may change when api stays same.
+    ApiVersionInfo *apiVersionInfo;
+
+    /// The Tundra application version info for this build.
+    ApplicationVersionInfo *applicationVersionInfo;
 
     /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.
     std::vector<boost::shared_ptr<IModule> > modules;

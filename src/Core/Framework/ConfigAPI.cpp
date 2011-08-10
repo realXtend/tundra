@@ -27,13 +27,6 @@ ConfigAPI::ConfigAPI(Framework *framework) :
     framework_->RegisterDynamicObject("config", this);
 }
 
-void ConfigAPI::SetApplication(const QString &applicationOrganization, const QString &applicationName, const QString &applicationVersion)
-{
-    applicationOrganization_ = applicationOrganization;
-    applicationName_ = applicationName;
-    applicationVersion_ = applicationVersion;
-}
-
 void ConfigAPI::PrepareDataFolder(const QString &configFolderName)
 {
     /// \todo Should get the unicode GetApplicationDataDirectoryW() QString::fromStdWString seems to give a weird linker error, types wont match?

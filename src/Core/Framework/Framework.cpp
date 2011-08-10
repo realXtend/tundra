@@ -8,6 +8,7 @@
 #include "IRenderer.h"
 #include "CoreException.h"
 #include "Application.h"
+#include "VersionInfo.h"
 #include "ConfigAPI.h"
 #include "PluginAPI.h"
 #include "LoggingFunctions.h"
@@ -44,18 +45,19 @@ Framework::Framework(int argc, char** argv) :
     plugin(0),
     config(0),
     ui(0),
-//    connection(0),
-//    server(0),
-    renderer(0)
+    //connection(0),
+    //server(0),
+    renderer(0),
+    apiVersionInfo(0),
+    applicationVersionInfo(0)
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
 
-    // Application name and version. Can be accessed via ConfigAPI.
+    // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
     /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
-    const QString applicationOrganization = "realXtend";
-    const QString applicationName = "Tundra";
-    const QString applicationVersion = "2.0-beta";
+    apiVersionInfo = new ApiVersionInfo(1, 0, 0, 0);
+    applicationVersionInfo = new ApplicationVersionInfo(2, 0, 0, 0, "realXtend", "Tundra");
 
     ParseProgramOptions();
 
@@ -75,7 +77,6 @@ Framework::Framework(int argc, char** argv) :
 #endif
         // Create ConfigAPI, pass application data and prepare data folder.
         config = new ConfigAPI(this);
-        config->SetApplication(applicationOrganization, applicationName, applicationVersion);
         config->PrepareDataFolder("configuration");
 
         // Create QApplication
@@ -87,7 +88,7 @@ Framework::Framework(int argc, char** argv) :
         asset = new AssetAPI(this, headless_);
         asset->OpenAssetCache(Application::UserDataDirectory() + QDir::separator() + "assetcache");
         ui = new UiAPI(this);
-        audio = new AudioAPI(this, asset); // AudioAPI epends on the AssetAPI, so must be loaded after it.
+        audio = new AudioAPI(this, asset); // AudioAPI depends on the AssetAPI, so must be loaded after it.
         input = new InputAPI(this);
         plugin = new PluginAPI(this);
         console = new ConsoleAPI(this);
@@ -103,6 +104,8 @@ Framework::Framework(int argc, char** argv) :
         RegisterDynamicObject("asset", asset);
         RegisterDynamicObject("audio", audio);
         RegisterDynamicObject("application", application);
+        RegisterDynamicObject("apiversion", apiVersionInfo);
+        RegisterDynamicObject("applicationversion", applicationVersionInfo);
     }
 }
 
@@ -119,6 +122,9 @@ Framework::~Framework()
     SAFE_DELETE(scene);
     SAFE_DELETE(frame);
     SAFE_DELETE(ui);
+
+    SAFE_DELETE(apiVersionInfo);
+    SAFE_DELETE(applicationVersionInfo);
 
     // This delete must be the last one in Framework since application derives QApplication.
     // When we delete QApplication, we must have ensured that all QObjects have been deleted.
@@ -381,6 +387,16 @@ PluginAPI *Framework::Plugins() const
 IRenderer *Framework::GetRenderer() const
 {
     return renderer;
+}
+
+ApiVersionInfo *Framework::ApiVersion() const
+{
+    return apiVersionInfo;
+}
+
+ApplicationVersionInfo *Framework::ApplicationVersion() const
+{
+    return applicationVersionInfo;   
 }
 
 void Framework::RegisterRenderer(IRenderer *renderer_)

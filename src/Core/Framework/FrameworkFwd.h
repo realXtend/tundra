@@ -12,7 +12,6 @@
 class Framework;
 class Profiler;
 class RaycastResult;
-
 class IRenderer;
 
 class UiAPI;
@@ -24,6 +23,10 @@ class ConsoleAPI;
 class SceneAPI;
 class ConfigAPI;
 class PluginAPI;
+
 class Application;
+class ApiVersionInfo;
+class ApplicationVersionInfo;
+
 class Profiler;
 class IModule;

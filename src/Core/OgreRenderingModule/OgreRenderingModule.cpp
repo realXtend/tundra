@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "Application.h"
+#include "VersionInfo.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
@@ -106,7 +107,7 @@ void OgreRenderingModule::PreInitialize()
     plugins_filename = Application::InstallationDirectory().toStdString() + plugins_filename; ///\todo Unicode support!
 
     // Create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
-    std::string window_title = framework_->Config()->GetApplicationIdentifier().toStdString();
+    std::string window_title = framework_->ApplicationVersion()->GetFullIdentifier().toStdString();
 
     renderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
 
