@@ -5,6 +5,7 @@
 #include "AssetCache.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
+#include "Framework.h"
 #include "LoggingFunctions.h"
 
 #include <QUrl>
@@ -35,7 +36,7 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
     assetAPI(owner),
     cacheDirectory(GuaranteeTrailingSlash(QDir::fromNativeSeparators(assetCacheDirectory)))
 {
-    LogInfo("AssetCache: Using directory '" + cacheDirectory + "'");
+    LogInfo("AssetCache: Using directory '" + cacheDirectory + "'");  
 
     // Check that the main directory exists
     QDir assetDir(cacheDirectory);
@@ -58,6 +59,14 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
 
     // Set for QNetworkDiskCache
     setCacheDirectory(cacheDirectory);
+
+    // Check --clear-asset-cache start param
+    boost::program_options::variables_map commandLineVariables = owner->GetFramework()->ProgramOptions();
+    if (commandLineVariables.count("clear-asset-cache"))
+    {
+        LogInfo("AssetCache: Removing all data and metadata files from cache, found 'clear-asset-cache' from start params!");
+        ClearAssetCache();
+    }
 }
 
 QIODevice* AssetCache::data(const QUrl &url)

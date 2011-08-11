@@ -56,7 +56,7 @@ Framework::Framework(int argc, char** argv) :
 
     // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
     /// @note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
-    apiVersionInfo = new ApiVersionInfo(1, 0, 0, 0);
+    apiVersionInfo = new ApiVersionInfo(2, 0, 0, 0);
     applicationVersionInfo = new ApplicationVersionInfo(2, 0, 0, 0, "realXtend", "Tundra");
 
     ParseProgramOptions();
@@ -150,7 +150,8 @@ void Framework::ParseProgramOptions()
         ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
         ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
         ("config", po::value<std::string>(), "Specifies the startup configration file to use") // Framework
-        ("login", po::value<std::string>(), "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username");
+        ("login", po::value<std::string>(), "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username")
+        ("clear-asset-cache", "At the start of Tundra, remove all data and metadata files from asset cache.");
 
     try
     {
