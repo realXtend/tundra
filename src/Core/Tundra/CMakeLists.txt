@@ -60,4 +60,5 @@ endif ()
 # Install deps for windows
 setup_install_windows_deps_regexp ("[/][Q][t][A-Z].*[^d][4][.]dll$" Release|RelWithDebInfo "[/][Q][t][A-Z].*[d][4][.]dll$" Debug)
 setup_install_windows_deps_regexp ("[/]qtplugins[/].*[/][q].*[^d][4][.]dll$" Release|RelWithDebInfo "[/]qtplugins[/].*[/][q].*[d][4][.]dll$" Debug)
-setup_install_windows_deps ("phonon4.dll" Release|RelWithDebInfo "phonond4.dll" Debug)
+setup_install_windows_deps ("libeay32.dll;ssleay32.dll" Release|RelWithDebInfo|Debug)   # OpenSSL DLLs for SSL support in QNetwork
+setup_install_windows_deps ("phonon4.dll;ssleay32.dll" Release|RelWithDebInfo "phonond4.dll" Debug)   # OpenSSL DLLs for SSL support in QNetwork
