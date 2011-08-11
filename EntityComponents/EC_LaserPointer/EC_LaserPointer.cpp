@@ -59,7 +59,6 @@ EC_LaserPointer::EC_LaserPointer(Scene *scene) :
 
 EC_LaserPointer::~EC_LaserPointer()
 {
-    disconnect(this, SIGNAL(ParentEntitySet()), this, SLOT(CreateLaser()));
     DestroyLaser();
 }
 
@@ -76,6 +75,11 @@ void EC_LaserPointer::CreateLaser()
         return;
     if (world_.expired())
         return;
+    if (laserObject_)
+    {
+        LogError("EC_LaserPointer::CreateLaser: Laser pointer already created.");
+        return;
+    }
     Entity *parentEntity = ParentEntity();
     if (!parentEntity)
         return;
@@ -86,21 +90,28 @@ void EC_LaserPointer::CreateLaser()
     else
         LogWarning("Placeable is not preset, cannot connect to position changes!");
 
-    Ogre::SceneManager *scene = world_.lock()->GetSceneManager();
-    id_ = world_.lock()->GetRenderer()->GetUniqueObjectName("laser");
-    laserObject_ = scene->createManualObject(id_);
-    Ogre::SceneNode* laserObjectNode = scene->getRootSceneNode()->createChildSceneNode(id_ + "_node");
-    laserMaterial_ = Ogre::MaterialManager::getSingleton().create(id_ + "Material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME); 
-    laserMaterial_->setReceiveShadows(false);
-    laserMaterial_->getTechnique(0)->setLightingEnabled(true);
-    UpdateColor();
-    laserObjectNode->attachObject(laserObject_);
+    try
+    {
+        Ogre::SceneManager *scene = world_.lock()->GetSceneManager();
+        id_ = world_.lock()->GetRenderer()->GetUniqueObjectName("laser");
+        laserObject_ = scene->createManualObject(id_);
+        Ogre::SceneNode* laserObjectNode = scene->getRootSceneNode()->createChildSceneNode(id_ + "_node");
+        laserMaterial_ = Ogre::MaterialManager::getSingleton().create(id_ + "Material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME); 
+        laserMaterial_->setReceiveShadows(false);
+        laserMaterial_->getTechnique(0)->setLightingEnabled(true);
+        UpdateColor();
+        laserObjectNode->attachObject(laserObject_);
 
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(HandleAttributeChange(IAttribute*, AttributeChange::Type)));
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(HandleAttributeChange(IAttribute*, AttributeChange::Type)));
 
-    input_ = framework->Input()->RegisterInputContext(QString::fromStdString(id_), 90);
-    input_->SetTakeMouseEventsOverQt(true);
-    connect(input_.get(), SIGNAL(MouseMove(MouseEvent*)), this, SLOT(Update(MouseEvent*)));
+        input_ = framework->Input()->RegisterInputContext(QString::fromStdString(id_), 90);
+        input_->SetTakeMouseEventsOverQt(true);
+        connect(input_.get(), SIGNAL(MouseMove(MouseEvent*)), this, SLOT(Update(MouseEvent*)));
+    }
+    catch(const Ogre::Exception &ex)
+    {
+        LogError("EC_LaserPointer::CreateLaser: an expection occurred: " + std::string(ex.what()));
+    }
 }
 
 void EC_LaserPointer::DestroyLaser()
@@ -126,6 +137,8 @@ void EC_LaserPointer::DestroyLaser()
        Ogre::MaterialManager::getSingleton().remove(id_ + "Material");
     }
     catch(...) { }
+
+    laserObject_ = 0;
 }
 
 void EC_LaserPointer::Update(MouseEvent *e)
