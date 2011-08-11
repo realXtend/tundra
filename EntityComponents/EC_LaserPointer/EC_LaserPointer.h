@@ -44,12 +44,18 @@ public:
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
 
+public slots:
+    /// Returns whether or not the laser pointer is visible.
+    /** Note that is not the same thing as the enabled attribute, as laser pointer can be enabled but hidden
+        when e.g. mouse cursor is not on top of the applicataion window.*/
+    bool IsVisible() const;
+
 private:
     /// Laser object (3d line)
     Ogre::ManualObject* laserObject_;
     Ogre::MaterialPtr laserMaterial_;
 
-    /// Laser id, same as this EC's owner id, used to differentiate laser object and node names from one another
+    /// Unique laser id, same as this EC's owner id, used to differentiate laser object and node names from one another
     std::string id_;
 
     /// Parent entity input context

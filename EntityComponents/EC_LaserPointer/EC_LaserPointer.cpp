@@ -63,21 +63,22 @@ EC_LaserPointer::~EC_LaserPointer()
     DestroyLaser();
 }
 
+bool EC_LaserPointer::IsVisible() const
+{
+    if (laserObject_)
+        return laserObject_->isVisible();
+    return false;
+}
+
 void EC_LaserPointer::CreateLaser()
 {
     if (!ViewEnabled())
         return;
     if (world_.expired())
         return;
-
-    Ogre::SceneManager *scene = world_.lock()->GetSceneManager();
-    if (!scene)
-        return;
-
     Entity *parentEntity = ParentEntity();
     if (!parentEntity)
         return;
-
     EC_Placeable *placeable = parentEntity->GetComponent<EC_Placeable>().get();
     if (placeable)
         connect(placeable, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
@@ -85,8 +86,8 @@ void EC_LaserPointer::CreateLaser()
     else
         LogWarning("Placeable is not preset, cannot connect to position changes!");
 
+    Ogre::SceneManager *scene = world_.lock()->GetSceneManager();
     id_ = world_.lock()->GetRenderer()->GetUniqueObjectName("laser");
-
     laserObject_ = scene->createManualObject(id_);
     Ogre::SceneNode* laserObjectNode = scene->getRootSceneNode()->createChildSceneNode(id_ + "_node");
     laserMaterial_ = Ogre::MaterialManager::getSingleton().create(id_ + "Material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME); 
@@ -144,9 +145,11 @@ void EC_LaserPointer::Update(MouseEvent *e)
             if (framework->Input()->IsMouseCursorVisible() && (!IsMouseInsideWindow() || IsItemUnderMouse()))
             {
                 laserObject_->clear();
+                laserObject_->setVisible(false);
                 return;
             }
 
+            laserObject_->setVisible(true);
             RaycastResult *result = world_.lock()->GetRenderer()->Raycast(e->x, e->y);
             if (result && result->entity && result->entity != ParentEntity())
             {
@@ -161,7 +164,10 @@ void EC_LaserPointer::Update(MouseEvent *e)
                 DisableUpdate();
             }
             else
+            {
                 laserObject_->clear();
+                laserObject_->setVisible(false);
+            }
         }
     }
 }
@@ -191,9 +197,13 @@ void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChan
             laserObject_->position(startPos.Get());
             laserObject_->position(endPos.Get());
             laserObject_->end();
+            laserObject_->setVisible(true);
         }
         else
+        {
             laserObject_->clear();
+            laserObject_->setVisible(false);
+        }
     }
 }
 
