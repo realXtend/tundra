@@ -6,6 +6,9 @@
 # remain generic.
 
 macro (configure_boost)
+    #boost filesystem version used
+    add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
+
     if (MSVC)
         set(Boost_USE_MULTITHREADED TRUE)
         set(Boost_USE_STATIC_LIBS TRUE)
@@ -13,7 +16,7 @@ macro (configure_boost)
         set(Boost_USE_STATIC_LIBS FALSE)
     endif ()
 
-    if (APPLE)
+    if (UNIX)
             set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_regex boost_program_options)
     else ()
             set (BOOST_COMPONENTS date_time filesystem system thread regex program_options)
