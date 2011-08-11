@@ -60,41 +60,38 @@ public:
 
     void Start()
     {
-        if (supported_) {
-            // yield time to other threads, to potentially reduce chance of another thread pre-empting our profiling effort.
-            // Commented out because can in itself skew pofiling data.
-            // boost::this_thread::yield();
+        if (supported_)
             start_time_ = GetCurrentClockTime();
-        }
     }
 
     void Stop()
     {
-        if (supported_) {
+        if (supported_)
             end_time_ = GetCurrentClockTime();
-        }
     }
 
     /// Returns elapsed time between start and stop in seconds
     double ElapsedTimeSeconds()
     {
-        if (supported_) {
+        if (supported_) 
+        {
             time_elapsed_ = end_time_ - start_time_;
             double elapsed_s = (double)time_elapsed_ / (double)GetCurrentClockFreq();
             return (elapsed_s < 0 ? 0 : elapsed_s);
-        } else {
+        } 
+        else
             return 0.0;
-        }
     }
 
     static double ElapsedTimeSeconds(const s64 &start, const s64 &end)
     {
-        if (supported_) {
+        if (supported_)
+        {
             double elapsed_s = (double)(end - start) / (double)GetCurrentClockFreq();
             return (elapsed_s < 0 ? 0 : elapsed_s);
-        } else {
-            return 0.0;
         }
+        else
+            return 0.0;
     }
 
     /// Returns elapsed time in microseconds
@@ -120,7 +117,6 @@ private:
 
     /// performance counter frequency
     static s64 frequency_;
-    static s64 api_overhead_;
 
     s64 start_time_;
     s64 end_time_;
@@ -390,9 +386,9 @@ private:
     ProfilerNodeTree root_;
 
     /// Contains the root profile block for each thread.
-    boost::shared_ptr<ProfilerNodeTree> thread_specific_root_;
+    boost::thread_specific_ptr<ProfilerNodeTree> thread_specific_root_;
     /// Points to the current topmost profile block in the stack for each thread.
-    ProfilerNodeTree *current_node_;
+    boost::thread_specific_ptr<ProfilerNodeTree> current_node_;
 
     /// container for all the root profile nodes for each thread.
     std::list<ProfilerNodeTree*> thread_root_nodes_;

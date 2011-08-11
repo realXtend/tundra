@@ -56,6 +56,22 @@ public:
         }
     }
 
+    void FirstFrameUpdate()
+    {
+        // Forcibly update on first frame to get approximate position in case the parent is offscreen, otherwise we'll be at world origin
+        _updateFromParent();
+        for (unsigned i = 0; i < placeables_.size(); ++i)
+        {
+            EC_Placeable* placeable = placeables_[i];
+            if (placeable->boneAttachmentNode_)
+            {
+                placeable->boneAttachmentNode_->setPosition(_getDerivedPosition());
+                placeable->boneAttachmentNode_->setOrientation(_getDerivedOrientation());
+                placeable->boneAttachmentNode_->setScale(_getDerivedScale());
+            }
+        }
+    }
+    
     std::vector<EC_Placeable*> placeables_;
 };
 
@@ -79,6 +95,7 @@ public:
         if (i != attachments_.end())
         {
             i->second.tagPoint_->placeables_.push_back(placeable);
+            i->second.tagPoint_->FirstFrameUpdate();
             return;
         }
         
@@ -91,15 +108,8 @@ public:
 #include "EnableMemoryLeakCheck.h"
         newEntry.tagPoint_ = tagPoint;
         bone->addChild(tagPoint);
-        
-        if (placeable->boneAttachmentNode_)
-        {
-            placeable->boneAttachmentNode_->setPosition(tagPoint->_getDerivedPosition());
-            placeable->boneAttachmentNode_->setOrientation(tagPoint->_getDerivedOrientation());
-            placeable->boneAttachmentNode_->setScale(tagPoint->_getDerivedScale());
-        }
-        
         tagPoint->placeables_.push_back(placeable);
+        tagPoint->FirstFrameUpdate();
         
         attachments_[bone] = newEntry;
     }
@@ -297,8 +307,8 @@ void EC_Placeable::AttachNode()
                             }
                             
                             // Setup manual bone tracking, as Ogre does not allow to attach scene nodes to bones
+                            parentMesh->ForceSkeletonUpdate();
                             attachmentListener.AddAttachment(parentMesh->GetEntity(), bone, this);
-                            
                             boneAttachmentNode_->addChild(sceneNode_);
                             
                             parentBone_ = bone;
