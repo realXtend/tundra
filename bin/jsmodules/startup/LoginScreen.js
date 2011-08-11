@@ -130,6 +130,8 @@ function LoginPressed() {
 
 function HideLoginScreen() {
     widget.setVisible(false);
+    infotext.text = "";
+    infotext.hide();
 }
 
 function ShowLoginScreen() {
