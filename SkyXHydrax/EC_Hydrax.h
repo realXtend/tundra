@@ -20,7 +20,7 @@ struct EC_HydraxImpl;
 class EC_Hydrax : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Hydrax", 777)
+    COMPONENT_NAME("EC_Hydrax", 33)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.

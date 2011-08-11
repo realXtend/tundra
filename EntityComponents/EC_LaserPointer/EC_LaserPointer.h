@@ -21,7 +21,7 @@
 class EC_LaserPointer : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_LaserPointer", 888);
+    COMPONENT_NAME("EC_LaserPointer", 34);
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
@@ -51,32 +51,19 @@ public slots:
     bool IsVisible() const;
 
 private:
-    /// Laser object (3d line)
-    Ogre::ManualObject* laserObject_;
+    Ogre::ManualObject* laserObject_; ///< Laser object (3d line)
     Ogre::MaterialPtr laserMaterial_;
-
-    /// Unique laser id, same as this EC's owner id, used to differentiate laser object and node names from one another
-    std::string id_;
-
-    /// Parent entity input context
-    InputContextPtr input_;
-
-    /// Update limiter so that we do not overload the server
-    bool canUpdate_;
-
-    /// Tracking boolean
-    bool tracking;
-
-    /// Update interval (default is 20ms)
-    int updateInterval_;
-
+    std::string id_; ///< Unique Ogre resource ID.
+    InputContextPtr input_; ///< Input context for tracking mouse events.
+    bool canUpdate_; ///< Update limiter so that we do not overload the server
+    int updateInterval_; ///< Update interval (default is 20ms)
     OgreWorldWeakPtr world_;
 
 private slots:
-    /// Creates laser object and laser (child) node
+    /// Creates laser object.
     void CreateLaser();
 
-    /// Destroys the laser and laser node
+    /// Destroys the laser object.
     void DestroyLaser();
 
     /// (If it is allowed) updates start and end points on mousemove
