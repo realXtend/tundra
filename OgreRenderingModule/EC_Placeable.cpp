@@ -52,10 +52,11 @@ public:
                 placeable->boneAttachmentNode_->setPosition(_getDerivedPosition());
                 placeable->boneAttachmentNode_->setOrientation(_getDerivedOrientation());
                 placeable->boneAttachmentNode_->setScale(_getDerivedScale());
+                placeable->boneAttachmentNode_->_update(true, true);
             }
         }
     }
-
+    
     void FirstFrameUpdate()
     {
         // Forcibly update on first frame to get approximate position in case the parent is offscreen, otherwise we'll be at world origin

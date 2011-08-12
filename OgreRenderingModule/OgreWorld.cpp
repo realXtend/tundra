@@ -104,8 +104,8 @@ void GetMeshInformation(
     Ogre::MeshPtr mesh = entity->getMesh();
 
     bool useSoftwareBlendingVertices = entity->hasSkeleton();
-    if (useSoftwareBlendingVertices)
-        entity->_updateAnimation();
+    //if (useSoftwareBlendingVertices)
+    //    entity->_updateAnimation();
 
     submeshstartindex.resize(mesh->getNumSubMeshes());
 
