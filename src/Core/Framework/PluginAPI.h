@@ -8,7 +8,7 @@
 #include <Winsock2.h>
 #include <Windows.h>
 typedef HMODULE PluginHandle;
-#elif defined(_POSIX_C_SOURCE)
+#elif defined(_POSIX_C_SOURCE) || defined(Q_WS_MAC)
 #include <dlfcn.h>
 typedef void * PluginHandle;
 #endif
