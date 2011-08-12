@@ -49,7 +49,7 @@ void AssetAPI::OpenAssetCache(QString directory)
     SAFE_DELETE(diskSourceChangeWatcher);
     assetCache = new AssetCache(this, directory.toStdString().c_str());
     diskSourceChangeWatcher = new QFileSystemWatcher();
-    connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)));
+    connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)), Qt::UniqueConnection);
 }
 
 std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
@@ -1205,29 +1205,48 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
 
 void AssetAPI::AssetLoadCompleted(const QString assetRef)
 {
+    AssetPtr asset;
     AssetTransferMap::iterator iter = FindTransferIterator(assetRef);
+    AssetMap::iterator iter2 = assets.find(assetRef);   
+    
+    // Check for new transfer: not in the assets map yet
     if (iter != currentTransfers.end())
-    {
-        AssetTransferPtr transfer = iter->second;
-        transfer->asset->LoadCompleted();
+        asset = iter->second->asset;
+    // Check for a reload: is in the known asset map
+    else if (iter2 != assets.end())
+        asset = iter2->second;
 
-        if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
-            diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
+    if (asset.get())
+    {
+        asset->LoadCompleted();
+
+        // Add to watch this path for changed, note this does nothing if the path is already added
+        // so we should not be having duplicate paths and/or double emits on changes.
+        const QString diskSource = asset->DiskSource();
+        if (diskSourceChangeWatcher && !diskSource.isEmpty())
+        {
+            diskSourceChangeWatcher->removePath(diskSource);
+            diskSourceChangeWatcher->addPath(diskSource);
+        }
 
         // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
-        RequestAssetDependencies(transfer->asset);
+        RequestAssetDependencies(asset);
 
-        // If we don't have any outstanding dependencies, succeed and remove the transfer
-        if (NumPendingDependencies(transfer->asset) == 0)
-            AssetDependenciesCompleted(transfer);
+        // If we don't have any outstanding dependencies 
+        // for the transfer, succeed and remove the transfer
+        if (iter != currentTransfers.end())
+            if (NumPendingDependencies(asset) == 0)
+                AssetDependenciesCompleted(iter->second);
     }
     else
-        LogError("AssetAPI: Asset \"" + assetRef + "\" load completed, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
+        LogError("AssetAPI: Asset \"" + assetRef + "\" load completed, but no corresponding transfer or existing asset is being tracked!");
 }
 
 void AssetAPI::AssetLoadFailed(const QString assetRef)
 {
     AssetTransferMap::iterator iter = FindTransferIterator(assetRef);
+    AssetMap::iterator iter2 = assets.find(assetRef);   
+
     if (iter != currentTransfers.end())
     {
         AssetTransferPtr transfer = iter->second;
@@ -1235,8 +1254,10 @@ void AssetAPI::AssetLoadFailed(const QString assetRef)
         QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
         transfer->EmitAssetFailed(error);
     }
+    else if (iter2 != assets.end())
+        LogError("AssetAPI: Failed to reload asset '" + iter2->second->Name());
     else
-        LogError("AssetAPI: Asset \"" + assetRef + "\" load failed, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
+        LogError("AssetAPI: Asset \"" + assetRef + "\" load failed, but no corresponding transfer or existing asset is being tracked!");
 }
 
 void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer)
@@ -1488,16 +1509,13 @@ void AssetAPI::OnAssetLoaded(AssetPtr asset)
 
 void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
 {
-    LogInfo("OnAssetDiskSourceChanged " + path_);
-    
     QDir path(path_);
     for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
     {
-        if (!iter->second->DiskSource().isEmpty() && QDir(iter->second->DiskSource()) == path)
+        QString assetDiskSource = iter->second->DiskSource();
+        if (!assetDiskSource.isEmpty() && QDir(assetDiskSource) == path && QFile::exists(assetDiskSource))
         {
-            // Return if file does not exists at the moment, no need to try asset->LoadFromCache()
-            if (!QFile::exists(iter->second->DiskSource()))
-                return;
+            LogInfo("AssetAPI: Detected file changes in '" + path_ + "', reloading asset.");
 
             AssetPtr asset = iter->second;
             bool success = asset->LoadFromCache();
