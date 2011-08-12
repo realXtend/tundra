@@ -69,6 +69,7 @@ public:
                 placeable->boneAttachmentNode_->setPosition(_getDerivedPosition());
                 placeable->boneAttachmentNode_->setOrientation(_getDerivedOrientation());
                 placeable->boneAttachmentNode_->setScale(_getDerivedScale());
+                placeable->boneAttachmentNode_->_update(true, true);
             }
         }
     }
