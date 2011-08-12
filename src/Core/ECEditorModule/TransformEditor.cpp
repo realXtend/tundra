@@ -153,12 +153,12 @@ void TransformEditor::RotateTargets(const Quat &delta)
         if (transform)
         {
             Transform t = transform->Get();
-            float3x4 f = t.ToFloat3x4();
-            Transform q;
-            q.FromFloat3x4(f);
-            float4x4 g = t.ToFloat4x4();
-            Transform w;
-            w.FromFloat4x4(g);
+            //float3x4 f = t.ToFloat3x4(); //\todo XXX these variables are unused - leaving commented if Jukka needs these as a note, please remove if not.
+            //Transform q; 
+            //q.FromFloat3x4(f); 
+            //float4x4 g = t.ToFloat4x4();
+            //Transform w;
+            //w.FromFloat4x4(g);
 //            std::cout << "Org: " << t.ToQString().toStdString() << std::endl;
             t.FromFloat3x4(rotation * t.ToFloat3x4());
 //            std::cout << "TMed: " << t.ToQString().toStdString() << std::endl;
