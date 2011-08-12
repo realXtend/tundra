@@ -117,7 +117,16 @@ namespace DocGenerator
         /// </summary>
         public List<Parameter> parameters = new List<Parameter>();
         public Dictionary<string, Symbol> children = new Dictionary<string,Symbol>();
+        /// <summary>
+        ///  The symbol this symbol is contained in.
+        /// </summary>
         public Symbol parent;
+
+        /// <summary>
+        /// If this symbol is a class or a struct, this refers to the symbols that are the base classes of this class, or an empty list if no inheritance is used.
+        /// \todo This has not been implemented yet. Doxygen has <base>BaseclassName</base> elements, implement this!
+        /// </summary>
+        public List<Symbol> baseClasses = new List<Symbol>();
         /// <summary>
         /// If non-null, this member specifies an overload of this function that is shown in the
         /// doc webpage instead of this symbol. (This is to make the docs look shorter).
@@ -134,6 +143,22 @@ namespace DocGenerator
         /// Specifies the documentation for the @return field.
         /// </summary>
         public string returnComment;
+
+        /// <summary>
+        /// If this Symbol is a class or a struct, returns the child symbol that is considered to be the ctor of this class.
+        /// </summary>
+        /// <returns></returns>
+        public Symbol ClassCtor()
+        {
+            foreach (Symbol s in children.Values)
+                if (s.NameWithoutNamespace() == this.name)
+                    if (s.similarOverload != null)
+                        return s.similarOverload;
+                    else
+                        return s;
+
+            return children.First().Value;
+        }
 
         public string BriefComment()
         {
@@ -281,7 +306,10 @@ namespace DocGenerator
         {
             if (similarOverload != null)
                 return similarOverload.MemberDocumentationFilename();
-            return EscapeFilename(anchorFile) + "_" + EscapeFilename(name) + ".html";
+            if (anchorFile == null || anchorFile == "")
+                return EscapeFilename(name) + ".html";
+            else
+                return EscapeFilename(anchorFile) + "_" + EscapeFilename(name) + ".html";
         }
 
         public static bool IsPODType(string type)
@@ -464,14 +492,21 @@ namespace DocGenerator
 
         private void ParseFileCompound(Dictionary<string, Symbol> symbols, XmlElement fileNode)
         {
-            Symbol newSymbol = new Symbol();
-            newSymbol.kind = "file";
-            newSymbol.type = "";
-            newSymbol.name = GetXmlElementChildNodeValue(fileNode, "name").StripHtmlCharacters();
-            newSymbol.path = GetXmlElementChildNodeValue(fileNode, "path").StripHtmlCharacters();
-            newSymbol.filename = GetXmlElementChildNodeValue(fileNode, "filename").StripHtmlCharacters();
-            newSymbol.includes = new List<string>();
-            symbols.Add(newSymbol.name, newSymbol);
+            string newSymbolName = GetXmlElementChildNodeValue(fileNode, "name").StripHtmlCharacters();
+            Symbol newSymbol = null;
+            if (symbols.ContainsKey(newSymbolName))
+                newSymbol = symbols[newSymbolName];
+            else
+            {
+                newSymbol = new Symbol();
+                newSymbol.kind = "file";
+                newSymbol.type = "";
+                newSymbol.name = GetXmlElementChildNodeValue(fileNode, "name").StripHtmlCharacters();
+                newSymbol.path = GetXmlElementChildNodeValue(fileNode, "path").StripHtmlCharacters();
+                newSymbol.filename = GetXmlElementChildNodeValue(fileNode, "filename").StripHtmlCharacters();
+                newSymbol.includes = new List<string>();
+                symbols.Add(newSymbol.name, newSymbol);
+            }
             List<XmlElement> includes = GetChildElementsByName(fileNode, "includes");
             foreach (XmlElement include in includes)
             {
@@ -481,7 +516,7 @@ namespace DocGenerator
             List<XmlElement> classes = GetChildElementsByName(fileNode, "class");
             foreach (XmlElement classElem in classes)
             {
-                if (symbols.ContainsKey(classElem.InnerText.StripHtmlCharacters()))
+                if (symbols.ContainsKey(classElem.InnerText.StripHtmlCharacters()) && !newSymbol.children.ContainsKey(classElem.InnerText.StripHtmlCharacters()))
                     newSymbol.children.Add(classElem.InnerText, symbols[classElem.InnerText.StripHtmlCharacters()]);
             }
         }
@@ -895,7 +930,15 @@ namespace DocGenerator
         private void ParseDocumentationFile(string filename)
         {
 //            Console.WriteLine("Parsing documentation from file \"" + filename + "\"");
-            TextReader t = new StreamReader(filename);
+            TextReader t;
+            try
+            {
+                t = new StreamReader(filename);
+            } catch(System.IO.FileNotFoundException)
+            {
+                return;
+            }
+
             string dataString = t.ReadToEnd();
 
             ParseDocumentationFileForClassComments(dataString);

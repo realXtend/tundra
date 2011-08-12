@@ -109,7 +109,7 @@ static QScriptValue float4x4_At_int_int(QScriptContext *context, QScriptEngine *
     float4x4 This = qscriptvalue_cast<float4x4>(context->thisObject());
     int row = qscriptvalue_cast<int>(context->argument(0));
     int col = qscriptvalue_cast<int>(context->argument(1));
-    const float ret = This.At(row, col);
+    CONST_WIN32 float ret = This.At(row, col);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -136,7 +136,7 @@ static QScriptValue float4x4_Col_int(QScriptContext *context, QScriptEngine *eng
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_Col_int in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4x4 This = qscriptvalue_cast<float4x4>(context->thisObject());
     int col = qscriptvalue_cast<int>(context->argument(0));
-    const float4 ret = This.Col(col);
+    CONST_WIN32 float4 ret = This.Col(col);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -145,7 +145,7 @@ static QScriptValue float4x4_Col3_int(QScriptContext *context, QScriptEngine *en
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4x4_Col3_int in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4x4 This = qscriptvalue_cast<float4x4>(context->thisObject());
     int col = qscriptvalue_cast<int>(context->argument(0));
-    const float3 ret = This.Col3(col);
+    CONST_WIN32 float3 ret = This.Col3(col);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -153,7 +153,7 @@ static QScriptValue float4x4_Diagonal(QScriptContext *context, QScriptEngine *en
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4x4_Diagonal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4x4 This = qscriptvalue_cast<float4x4>(context->thisObject());
-    const float4 ret = This.Diagonal();
+    CONST_WIN32 float4 ret = This.Diagonal();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -161,7 +161,7 @@ static QScriptValue float4x4_Diagonal3(QScriptContext *context, QScriptEngine *e
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4x4_Diagonal3 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4x4 This = qscriptvalue_cast<float4x4>(context->thisObject());
-    const float3 ret = This.Diagonal3();
+    CONST_WIN32 float3 ret = This.Diagonal3();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -229,7 +229,7 @@ static QScriptValue float4x4_TranslatePart(QScriptContext *context, QScriptEngin
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4x4_TranslatePart in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4x4 This = qscriptvalue_cast<float4x4>(context->thisObject());
-    float3 ret = This.TranslatePart();
+    CONST_WIN32 float3 ret = This.TranslatePart();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -237,7 +237,7 @@ static QScriptValue float4x4_RotatePart(QScriptContext *context, QScriptEngine *
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4x4_RotatePart in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4x4 This = qscriptvalue_cast<float4x4>(context->thisObject());
-    float3x3 ret = This.RotatePart();
+    CONST_WIN32 float3x3 ret = This.RotatePart();
     return qScriptValueFromValue(engine, ret);
 }
 

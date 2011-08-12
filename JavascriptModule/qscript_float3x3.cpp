@@ -76,7 +76,7 @@ static QScriptValue float3x3_At_int_int(QScriptContext *context, QScriptEngine *
     float3x3 This = qscriptvalue_cast<float3x3>(context->thisObject());
     int row = qscriptvalue_cast<int>(context->argument(0));
     int col = qscriptvalue_cast<int>(context->argument(1));
-    const float ret = This.At(row, col);
+    CONST_WIN32 float ret = This.At(row, col);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -94,7 +94,7 @@ static QScriptValue float3x3_Col_int(QScriptContext *context, QScriptEngine *eng
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x3_Col_int in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x3 This = qscriptvalue_cast<float3x3>(context->thisObject());
     int col = qscriptvalue_cast<int>(context->argument(0));
-    const float3 ret = This.Col(col);
+    CONST_WIN32 float3 ret = This.Col(col);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -102,7 +102,7 @@ static QScriptValue float3x3_Diagonal(QScriptContext *context, QScriptEngine *en
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x3_Diagonal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x3 This = qscriptvalue_cast<float3x3>(context->thisObject());
-    const float3 ret = This.Diagonal();
+    CONST_WIN32 float3 ret = This.Diagonal();
     return qScriptValueFromValue(engine, ret);
 }
 
