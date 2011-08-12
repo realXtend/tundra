@@ -18,15 +18,19 @@
 #include "ConsoleAPI.h"
 #include "ConfigAPI.h"
 
+#include "EC_Placeable.h"
+
 #include "MemoryLeakCheck.h"
 
 #include <QWebView>
+#include <QList>
 
 const QString cShowAidsSetting("show visual editing aids");
 
 ECEditorModule::ECEditorModule() : 
     IModule("ECEditor"),
-    showVisualAids(false)
+    showVisualAids(false),
+    toggleSelectAllEntities(false)
 {
 }
 
@@ -216,6 +220,7 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
 
     const QKeySequence showEcEditor = framework_->Input()->KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
     const QKeySequence &toggle= framework_->Input()->KeyBinding("ToggleVisualEditingAids", QKeySequence(Qt::Key_section));
+    const QKeySequence toggleSelectAll = framework_->Input()->KeyBinding("ToggleSelectAllEntities", QKeySequence(Qt::ControlModifier + Qt::Key_A));
     if (e->sequence == showEcEditor)
     {
         ShowEditorWindow();
@@ -224,6 +229,40 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
     else if (e->sequence == toggle)
     {
         ShowVisualEditingAids(!showVisualAids);
+        e->Suppress();
+    }
+    else if (e->sequence == toggleSelectAll)
+    {
+        // Only if visual editing is enabled
+        if (showVisualAids && !activeEditor.isNull())
+        {
+            // Select/deselect all entities for the current editor
+            toggleSelectAllEntities = !toggleSelectAllEntities;
+            if (toggleSelectAllEntities)
+            {
+                ScenePtr activeScene = framework_->Scene()->GetDefaultScene();
+                if (activeScene.get())
+                {
+                    // We can only manipulate entities that have placeable, but exclude temporarys (avatar, cameras etc.)
+                    QList<entity_id_t> entIdsSelection;
+                    QVariantList entIds = activeScene->GetEntityIdsWithComponent(EC_Placeable::TypeNameStatic());
+                    foreach(QVariant entId, entIds)
+                    {
+                        Entity *ent = activeScene->GetEntity(entId.toUInt()).get();
+                        if (ent)
+                        {
+                            if (ent->IsTemporary())
+                                continue;
+                            entIdsSelection.append(entId.toUInt());
+                        }
+                    }
+                    if (!entIdsSelection.isEmpty())
+                        activeEditor->AddEntities(entIdsSelection, true);
+                }
+            }
+            else
+                activeEditor->ClearEntities();
+        }
         e->Suppress();
     }
 }

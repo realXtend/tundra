@@ -99,6 +99,7 @@ private:
     QPointer<ECEditorWindow> activeEditor; ///< Currently active ECEditorWindow.
     QPointer<ECEditorWindow> commonEditor; ///< ECEditorModule has one common editor for all parties to use.
     bool showVisualAids; ///< Do we want to show visual editing aids (gizmo and highlights) when EC editor is open/active.
+    bool toggleSelectAllEntities;
 
 private slots:
     /// Handles KeyPressed() signal from input context.
