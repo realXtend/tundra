@@ -26,6 +26,8 @@ public:
     Entity* getentity() const { return entity; }
     Q_PROPERTY(float3 pos READ getpos);
     float3 getpos() const { return pos; }
+    Q_PROPERTY(float3 normal READ getnormal);
+    float3 getnormal() const { return normal; }
     Q_PROPERTY(unsigned submesh READ getsubmesh);
     unsigned getsubmesh() const { return submesh; }
     Q_PROPERTY(unsigned index READ getindex);
@@ -39,6 +41,8 @@ public:
     Entity* entity;
     /// World coordinates of hit position
     float3 pos;
+    /// World face normal of hit
+    float3 normal;
     /// Submesh index in entity, starting from 0
     unsigned submesh;
     /// Triangle index in mesh
