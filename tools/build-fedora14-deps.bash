@@ -2,12 +2,9 @@
 set -e
 set -x
 
-# script to build naali and most deps.
-#
-# if you want to use caelum, install ogre and nvidia cg from
-# ppa:andrewfenn/ogredev, change the caelum setting to 1 in
-# top-level CMakeBuildConfig.txt and enable Cg module in bin/plugins-unix.cfg
-
+# script to build naali and most deps. first manually add the
+# following ppa sources using add-apt-repository or the software
+# sources gui tool: ppa:mapopa/qt4.6 ppa:andrewfenn/ogredev
 
 viewer=$(dirname $(readlink -f $0))/..
 deps=$viewer/../naali-deps
@@ -24,11 +21,11 @@ tags=$deps/tags
 
 # -j<n> param for make, for how many processes to run concurrently
 
-nprocs=`grep -c "^processor" /proc/cpuinfo` 
+nprocs=`grep -c "^processor" /proc/cpuinfo`
 
 mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
 
-export PATH=$prefix/bin:$PATH
+export PATH=$prefix/bin:/usr/lib64:$PATH
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
 export LDFLAGS="-L$prefix/lib -Wl,-rpath -Wl,$prefix/lib"
 export LIBRARY_PATH=$prefix/lib
@@ -41,24 +38,25 @@ export CCACHE_DIR=$deps/ccache
 private_ogre=false
 
 if [ x$private_ogre != xtrue ]; then
-   more="$more libogre-dev"
+            more="$more ogre-devel"
 fi
 
-if lsb_release -c | egrep -q "lucid|maverick|natty"; then
-        which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
-	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
-	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
-	 build-essential g++ libboost-all-dev libpoco-dev \
-	 ccache libqt4-dev python-dev \
-	 freeglut3-dev \
-	 libxmlrpc-epi-dev bison flex libxml2-dev cmake libalut-dev \
-	 liboil0.3-dev mercurial unzip xsltproc libqtscript4-qtbindings \
-	 nvidia-cg-toolkit libfreetype6-dev libxaw7-dev libois-dev doxygen libcppunit-dev \
-     libzzip-dev libxrandr-dev libfreeimage-dev $more
+yum localinstall -y --nogpgcheck http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm
+
+yum groupinstall -y "Development Tools"
+yum install -y scons libogg-devel python-devel libvorbis-devel openjpeg-devel \
+libcurl-devel expat-devel phonon-devel boost-devel poco-devel \
+pygtk2-devel dbus-devel ccache qt-devel telepathy-farsight-devel libnice-devel \
+bison flex libxml2-devel ois-devel cmake freealut-devel liboil-devel pango-devel \
+wget qt qt4 mercurial unzip libxslt qtscriptbindings freeglut-devel xmlrpc-epi-devel \
+qt-webkit-devel Cg libXaw-devel freetype-devel \
+ois-devel doxygen cppunit-devel zziplib-devel libXrandr-devel freeimage-devel $more\
+
+if test -f /usr/bin/qmake; then
+	echo qmake exists
+else
+	ln -s /usr/bin/qmake-qt4 /usr/bin/qmake
 fi
-	 #python-gtk2-dev libdbus-glib-1-dev \
-         #libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
-         #libtelepathy-qt4-dev python-gst0.10-dev \ 
 
 function build-regular {
     urlbase=$1
@@ -100,43 +98,16 @@ else
     touch $tags/$what-done
 fi
 
-what=qtscriptgenerator
-if test -f $tags/$what-done; then 
-   echo $what is done
-else
-    cd $build
-    rm -rf $what
-    git clone git://gitorious.org/qt-labs/$what.git
-    cd $what
-
-    cd generator
-    qmake
-    make -j $nprocs
-    ./generator --include-paths=/usr/include/qt4
-    cd ..
-
-    cd qtbindings
-    sed -i 's/qtscript_phonon //' qtbindings.pro 
-    sed -i 's/qtscript_webkit //' qtbindings.pro 
-    qmake
-    make -j $nprocs
-    cd ..
-    cd ..
-    touch $tags/$what-done
-fi
-mkdir -p $viewer/bin/qtscript-plugins/script
-cp -lf $build/$what/plugins/script/* $viewer/bin/qtscript-plugins/script/
-
-
 what=knet
-if false && test -f $tags/$what-done; then 
+if test -f $tags/$what-done; then 
    echo $what is done
 else
     cd $build
     rm -rf knet
     hg clone -r stable http://bitbucket.org/clb/knet
     cd knet
-    sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
+    sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/"  < CMakeLists.txt > x
+#-e "s/#set(USE_QT/set(USE_QT/"
     mv x CMakeLists.txt
     cmake . -DCMAKE_BUILD_TYPE=Debug
     make -j $nprocs
@@ -174,8 +145,6 @@ else
     test -f $zip || wget -O $zip http://ovh.dl.sourceforge.net/project/caelum/caelum/0.5/$pkgbase.zip
     unzip $zip
     cd $pkgbase
-    sed "s/depflags.has_key/False and depflags.has_key/g" < SConstruct > SConstruct.edit
-    mv SConstruct.edit SConstruct
     scons extra_ccflags="-fPIC -DPIC"
     mkdir -p $prefix/etc/OGRE
     cp plugins.cfg $prefix/etc/OGRE/
@@ -196,13 +165,14 @@ else
     test -f $zip || wget -O $zip http://downloads.sourceforge.net/project/pythonqt/pythonqt/$what-$ver/$what$ver.zip
     unzip $zip
     cd $what$ver
-    pyver=$(python -c 'import sys; print sys.version[:3]')
-    sed -i "s/PYTHON_VERSION=.*/PYTHON_VERSION=$pyver/" build/python.prf
-    fn=generated_cpp/com_trolltech_qt_core/com_trolltech_qt_core0.h
-    sed 's/CocoaRequestModal = QEvent::CocoaRequestModal,//' < $fn > x
-    mv x $fn
+
+	if [ ! -f /usr/bin/python2.6-config ]; then
+		ln -s /usr/bin/python2.7-config /usr/bin/python2.6-config
+	fi
+
     qmake
-    make -j$nprocs
+	sed -i 's/CocoaRequestModal = QEvent::CocoaRequestModal,//g' generated_cpp/com_trolltech_qt_core/com_trolltech_qt_core0.h
+    make -j2
     rm -f $prefix/lib/lib$what*
     cp -a lib/lib$what* $prefix/lib/
     cp src/PythonQt*.h $prefix/include/
@@ -223,21 +193,27 @@ else
     cd $pkgbase
     echo yes | ./configure -library
     qmake
-    make -j$nprocs
+    make
     cp lib/lib* $prefix/lib/
     # luckily only extensionless headers under src match Qt*:
     cp src/qt*.h src/Qt* $prefix/include/
     touch $tags/$what-done
 fi
 
+
+
 ln -fvs /usr/include/xmlrpc-epi/*.h $prefix/include/
 
-if lsb_release -c | grep -q lucid; then
-    : # nothing
-else
-    : #build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
-fi
-
+    build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
+#    build-regular http://gstreamer.freedesktop.org/src/gstreamer/ gstreamer 0.10.33
+#    build-regular http://gstreamer.freedesktop.org/src/gst-plugins-base/ gst-plugins-base 0.10.25
+#    build-regular http://gstreamer.freedesktop.org/src/gst-python/ gst-python 0.10.17
+#    build-regular http://farsight.freedesktop.org/releases/farsight2/ farsight2 0.0.17
+#    build-regular http://farsight.freedesktop.org/releases/obsolete/gst-plugins-farsight/ gst-plugins-farsight 0.12.11
+#    build-regular http://telepathy.freedesktop.org/releases/telepathy-glib/ telepathy-glib 0.13.0
+#    build-regular http://telepathy.freedesktop.org/releases/telepathy-farsight/ telepathy-farsight 0.0.13
+#    build-regular http://telepathy.freedesktop.org/releases/telepathy-qt4/ telepathy-qt4 0.2.1
+    build-regular http://downloads.sourceforge.net/project/poco/sources/poco-1.3.6/ poco 1.3.6p1
 
 if test "$1" = "--depsonly"; then
     exit 0
@@ -246,12 +222,12 @@ fi
 cd $viewer
 cat > ccache-g++-wrapper <<EOF
 #!/bin/sh
-exec ccache g++ -O -g \$@
+exec ccache g++ -O \$@
 EOF
 chmod +x ccache-g++-wrapper
-NAALI_DEP_PATH=$prefix cmake -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" .
+NAALI_DEP_PATH=$prefix cmake -DCMAKE_CXX_FLAGS:STRING="-lrt -lboost_filesystem -lboost_thread-mt" -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" .
 make -j $nprocs VERBOSE=1
 
-if [ x$private_ogre = xtrue ]; then
 sed '/PluginFolder/c \PluginFolder=lib/OGRE' $viewer/bin/plugins-unix.cfg > tmpfile ; mv tmpfile /$viewer/bin/plugins-unix.cfg
-fi
+
+

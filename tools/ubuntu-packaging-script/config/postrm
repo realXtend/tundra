@@ -1,0 +1,5 @@
+#!/bin/bash
+export DBUS_SESSION=$(grep -v "^#" /home/$SUDO_USER/.dbus/session-bus/`cat /var/lib/dbus/machine-id`-0)
+
+sudo -u $SUDO_USER "DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS gconftool-2 -u /desktop/gnome/url-handlers/tundra/command '/opt/realXtend/run-viewer.sh'
+sudo -u $SUDO_USER "DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS gconftool-2 -u /desktop/gnome/url-handlers/tundra/enabled

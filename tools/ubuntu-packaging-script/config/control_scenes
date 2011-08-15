@@ -1,0 +1,10 @@
+Package: realxtend-naali-scenes
+Version: 0.3.69
+Section: base
+Priority: optional
+Architecture: all
+Installed-Size: 5000
+Depends: 
+Maintainer: Joni Mikkola <joni.mikkola@gmail.com>
+Description: realXtend naali scenes package
+ Tundra installer
