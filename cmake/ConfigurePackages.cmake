@@ -146,15 +146,19 @@ macro (configure_ogre)
         sagase_configure_report (OGRE)
         
     else ()
-        # Find directx
-        include(FindDirectX)
-        
-        # Find ogre
-        if (DirectX_FOUND)
-            set (TUNDRA_OGRE_NEEDED_COMPONENTS Ogre ogre OGRE OgreMain RenderSystem_Direct3D9)
+        # Find and use DirectX if enabled in the build config
+        if (ENABLE_DIRECTX)
+            configure_directx ()
+            link_directx ()
         else ()
-            set (TUNDRA_OGRE_NEEDED_COMPONENTS Ogre ogre OGRE OgreMain)
+            message (STATUS "DirectX disabled from the build")
         endif()
+
+        # Needed components from Ogre
+        set (TUNDRA_OGRE_NEEDED_COMPONENTS Ogre ogre OGRE OgreMain)
+        if (ENABLE_DIRECTX AND DirectX_FOUND)
+            set (TUNDRA_OGRE_NEEDED_COMPONENTS ${TUNDRA_OGRE_NEEDED_COMPONENTS} RenderSystem_Direct3D9)
+        endif ()
         
         sagase_configure_package (OGRE 
             NAMES Ogre OgreSDK ogre OGRE
@@ -164,25 +168,6 @@ macro (configure_ogre)
         # Report ogre then search check directx
         sagase_configure_report (OGRE)
         
-        # DirectX SDK found, use DX9 surface blitting
-        message ("** Configuring DirectX")
-        if (DirectX_FOUND)
-            message (STATUS "-- Include Directories:")
-            message (STATUS "       " ${DirectX_INCLUDE_DIR})
-            message (STATUS "-- Library Directories:")
-            message (STATUS "       " ${DirectX_LIBRARY_DIR})
-            message (STATUS "-- Defines:")
-            message (STATUS "        USE_D3D9_SUBSURFACE_BLIT")
-            
-            add_definitions (-DUSE_D3D9_SUBSURFACE_BLIT)
-            include_directories (${DirectX_INCLUDE_DIR})
-            link_directories (${DirectX_LIBRARY_DIR})
-        else ()
-            message (STATUS "DirectX not found!")
-            message (STATUS "-- Install DirectX SDK to enable additional features. If you already have the DirectX SDK installed")
-            message (STATUS "   please set DIRECTX_ROOT env variable as your installation directory.")
-        endif()
-        message (STATUS "")
     endif ()
 endmacro (configure_ogre)
 

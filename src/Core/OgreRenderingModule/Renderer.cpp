@@ -32,11 +32,11 @@
 // Clamp elapsed frame time to avoid Ogre controllers going crazy
 static const float MAX_FRAME_TIME = 0.1f;
 
-#if defined(USE_D3D9_SUBSURFACE_BLIT) && !defined(WIN32)
-#undef USE_D3D9_SUBSURFACE_BLIT
+#if defined(DIRECTX_ENABLED) && !defined(WIN32)
+#undef DIRECTX_ENABLED
 #endif
 
-#ifdef USE_D3D9_SUBSURFACE_BLIT
+#ifdef DIRECTX_ENABLED
 #undef SAFE_DELETE
 #undef SAFE_DELETE_ARRAY
 
@@ -556,7 +556,7 @@ namespace OgreRenderer
 
         UiGraphicsView *view = framework_->Ui()->GraphicsView();
 
-#ifdef USE_D3D9_SUBSURFACE_BLIT
+#ifdef DIRECTX_ENABLED
         if (view->IsViewDirty() || resized_dirty_)
         {
             PROFILE(Renderer_Render_QtBlit);

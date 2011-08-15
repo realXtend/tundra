@@ -147,7 +147,7 @@ void UiGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)
 {
     using namespace std;
 
-#ifndef USE_D3D9_SUBSURFACE_BLIT
+#ifndef DIRECTX_ENABLED
     // We received an unknown-sized scene change message. Mark everything dirty! (I've no idea what Qt
     // means when it sends a message saying 'nothing changed').
     if (rectangles.size() == 0)
