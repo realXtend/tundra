@@ -60,6 +60,10 @@ void UiMainWindow::LoadWindowSettingsFromFile()
     bool maximized = owner->Config()->Get(configData, "window maximized", false).toBool();
     bool fullscreen = owner->Config()->Get(configData, "fullscreen", false).toBool();
 
+    // Round up width to next 16 to avoid startup artifacts with the Ogre blit
+    width += 15;
+    width &= 0xfffffff0;
+    
     setWindowTitle(owner->Config()->GetApplicationIdentifier());
 
     if (fullscreen)
