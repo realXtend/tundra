@@ -595,10 +595,10 @@ SimpleAvatar.prototype.ClientHandleRotate = function(param) {
 }
 
 SimpleAvatar.prototype.ClientHandleStopRotate = function(param) {
-    if ((param == "left") && (rotate == -1)) {
+    if ((param == "left") && (this.rotate == -1)) {
         this.rotate = 0;
     }
-    if ((param == "right") && (rotate == 1)) {
+    if ((param == "right") && (this.rotate == 1)) {
         this.rotate = 0;
     }
 }
