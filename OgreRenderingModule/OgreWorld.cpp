@@ -368,7 +368,8 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
 
                         result_.entity = entity;
                         result_.pos = point;
-                        result_.normal = edge1.Cross(edge2).Normalized();
+                        result_.normal = edge1.Cross(edge2);
+                        result_.normal.Normalize();
                         result_.submesh = GetSubmeshFromIndexRange(j, submeshstartindex);
                         result_.index = j;
                         result_.u = uv.x;
