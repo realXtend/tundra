@@ -21,6 +21,8 @@
 class EC_LaserPointer : public IComponent
 {
     Q_OBJECT
+    /// Track placeable and mouse, this is not synced over network
+    Q_PROPERTY(bool tracking READ IsTracking WRITE SetTracking)
     COMPONENT_NAME("EC_LaserPointer", 34);
 
 public:
@@ -40,14 +42,19 @@ public:
     Q_PROPERTY(Color color READ getcolor WRITE setcolor)
     DEFINE_QPROPERTY_ATTRIBUTE(Color, color);
 
-    /// If laser drawing is enabled
+    /// Is laser drawing is enabled
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
+
+    // Tracking getter/setter
+    ///\todo This is hackish, remove this boolean and implement better solution.
+    bool IsTracking() const { return tracking; }
+    void SetTracking(bool t) { tracking = t; }
 
 public slots:
     /// Returns whether or not the laser pointer is visible.
     /** Note that is not the same thing as the enabled attribute, as laser pointer can be enabled but hidden
-        when e.g. mouse cursor is not on top of the applicataion window.*/
+        when e.g. mouse cursor is not on top of the application window. */
     bool IsVisible() const;
 
 private:
@@ -58,6 +65,7 @@ private:
     bool canUpdate_; ///< Update limiter so that we do not overload the server
     int updateInterval_; ///< Update interval (default is 20ms)
     OgreWorldWeakPtr world_;
+    bool tracking;
 
 private slots:
     /// Creates laser object.

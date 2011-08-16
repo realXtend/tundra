@@ -40,7 +40,8 @@ EC_LaserPointer::EC_LaserPointer(Scene *scene) :
     laserObject_(0),
     canUpdate_(true),
     updateInterval_(20),
-    id_("")
+    id_(""),
+    tracking(false)
 {
     world_ = scene->GetWorld<OgreWorld>();
 
@@ -147,6 +148,8 @@ void EC_LaserPointer::Update(MouseEvent *e)
         return;
     if (!ParentEntity())
         return;
+    if (!tracking)
+        return;
     if (world_.expired())
         return;
 
@@ -191,17 +194,15 @@ void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChan
         return;
     if (world_.expired())
         return;
+    if (!laserObject_)
+        return;
 
     if (attribute == &color)
     {
         UpdateColor();
         return;
     }
-
-    if (!laserObject_)
-        return;
-
-    if (attribute == &startPos || attribute == &endPos || attribute == &enabled)
+    else if (attribute == &startPos || attribute == &endPos || attribute == &enabled)
     {
         if (enabled.Get())
         {
@@ -222,13 +223,13 @@ void EC_LaserPointer::HandleAttributeChange(IAttribute *attribute, AttributeChan
 
 void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, AttributeChange::Type change)
 {
-    if (attribute->Name() == "Transform")
+    if (attribute->Name() == "Transform") ///< \todo attribute name string comparison is risky - what if the name changes for some reason?
     {
         if (!ViewEnabled())
             return;
         if (world_.expired())
             return;
-        if (enabled.Get())
+        if (!tracking || !enabled.Get())
             return;
         if (!canUpdate_)
             return;
