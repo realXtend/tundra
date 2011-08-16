@@ -25,4 +25,5 @@
   
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
+  <!-- pyplugin path="pythonqt_console.py" /-->         <!-- shows qt py console. could enable by default when add to menu etc. for controls, now just shows directly when is enabled here -->
 </Tundra>
