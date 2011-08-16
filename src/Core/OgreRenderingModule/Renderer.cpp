@@ -542,6 +542,8 @@ namespace OgreRenderer
             
         PROFILE(Renderer_Render);
 
+        Ogre::WindowEventUtilities::messagePump(); //this was in the Update func here in tundra1. apparently critical on linux/x11 only, but should be safe always (and good/necessary even?)
+
         // If rendering into different size window, dirty the UI view for now & next frame
         if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
         {
