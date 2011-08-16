@@ -71,8 +71,31 @@ SimpleAvatar.prototype.OnScriptObjectDestroyed = function() {
 SimpleAvatar.prototype.ServerInitialize = function() {
     // Create the avatar component & set the avatar appearance. The avatar component will create the mesh & animationcontroller, once the avatar asset has loaded
     var avatar = this.me.GetOrCreateComponent("EC_Avatar");
+    
+    // Try to dig login param avatar. This seemed like the easiest way to do it.
+    // Parse the connection id from the entity name and get a connection for him,
+    // check if a custom av url was passed when this client logged in.
+    var entName = this.me.name;
+    var indexNum = entName.substring(6); // 'Avatar' == 6, we want the number after that
+    var clientPtr = server.GetUserConnection(parseInt(indexNum, 10));
+    
+    // Default avatar ref
+    var avatarurl = "local://default_avatar.avatar";
+    
+    // This is done here (server side) because it seems changing the avatar 
+    // appearance ref right after this in the client actually does not take effect at all.
+    if (clientPtr != null)
+    {
+        var avatarurlProp = clientPtr.GetProperty("avatarurl");
+        if (avatarurlProp && avatarurlProp.length > 0)
+        {
+            debug.Log("Avatar from login parameters enabled: " + avatarurlProp);
+            avatarurl = avatarurlProp;
+        }
+    }
+    
     var r = avatar.appearanceRef;
-    r.ref = "local://default_avatar.avatar";
+    r.ref = avatarurl;
     avatar.appearanceRef = r;
 
     // Create rigid body component and set physics properties
@@ -335,17 +358,6 @@ SimpleAvatar.prototype.ClientInitialize = function() {
         this.me.Action("Zoom").Triggered.connect(this, this.ClientHandleKeyboardZoom);
         this.me.Action("Rotate").Triggered.connect(this, this.ClientHandleRotate);
         this.me.Action("StopRotate").Triggered.connect(this, this.ClientHandleStopRotate);
-
-        // Inspect the login avatar url property
-        var avatarurl = client.GetLoginProperty("avatarurl");
-        if (avatarurl && avatarurl.length > 0)
-        {
-            var avatar = this.me.GetOrCreateComponent("EC_Avatar");
-            var r = avatar.appearanceRef;
-            r.ref = "local://default_avatar.xml";
-            avatar.appearanceRef = r;
-            print("Avatar from login parameters enabled:", avatarAssetRef);
-        }
     }
     else
     {
