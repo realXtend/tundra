@@ -34,7 +34,10 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
     }
 
     // Asynchronous loading
-    if (allowAsynchronous && (OGRE_THREAD_SUPPORT != 0))
+    // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.
+    // 2. We have a rendering window for Ogre as Ogre::ResourceBackgroundQueue does not work otherwise. Its not properly initialized without a rendering window.
+    // 3. The Ogre we are building against has thread support.
+    if (allowAsynchronous && !assetAPI->IsHeadless() && (OGRE_THREAD_SUPPORT != 0))
     {
         // We can only do threaded loading from disk, and not any disk location but only from asset cache.
         // local:// refs will return empty string here and those will fall back to the non-threaded loading.
