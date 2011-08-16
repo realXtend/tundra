@@ -897,4 +897,6 @@ void InputAPI::Update(float frametime)
 
     // Guarantee that we are showing the desired mouse cursor.
     ApplyMouseCursorOverride();
+
+    PruneDeadInputContexts();
 }
