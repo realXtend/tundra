@@ -107,7 +107,7 @@ namespace PythonScript
     //////////////// PythonScriptModule public
 
     PythonScriptModule::PythonScriptModule() :
-        IModule("PythonScriptModule"),
+        IModule("PythonScript"),
         pythonQtStarted_(false)
     {
         StartPythonQt();
@@ -179,9 +179,8 @@ namespace PythonScript
         AddSystemPath(pythonPlugins.absoluteFilePath("lib"));
 
         // Add Python Library DLL and on windows pass whole python as a archive file.
-        /// \todo Is the 'DLLs' really needed also outside windows?
-        AddSystemPath(pythonLibrary.absoluteFilePath("DLLs"));
 #ifdef _WIN32            
+        AddSystemPath(pythonLibrary.absoluteFilePath("DLLs"));
         AddSystemPath(pythonLibrary.absoluteFilePath("Python26.zip"));
 #endif
 

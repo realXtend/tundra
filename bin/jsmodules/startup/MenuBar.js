@@ -133,7 +133,7 @@ if (!framework.IsHeadless())
     }
 
     function OpenPythonConsole() {
-        console.ExecuteCommand("pythonconsole");
+        framework.GetModuleByName("PythonScript").ShowConsole();
     }
 
     function OpenVoiceSettings() {
