@@ -100,7 +100,7 @@ void EC_OgreCompositor::UpdateCompositorParams(const QString &compositor)
             {
                 try
                 {
-                    Ogre::Vector4 value;
+                    Ogre::Vector4 value(0, 0, 0, 0);
                     QStringList valueList = sepParams[1].split(" ", QString::SkipEmptyParts);
                     if (valueList.size() > 0) value.x = boost::lexical_cast<Ogre::Real>(valueList[0].toStdString());
                     if (valueList.size() > 1) value.y = boost::lexical_cast<Ogre::Real>(valueList[1].toStdString());
