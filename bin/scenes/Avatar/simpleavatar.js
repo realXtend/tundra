@@ -316,6 +316,10 @@ SimpleAvatar.prototype.ServerSetAnimationState = function() {
 }
 
 SimpleAvatar.prototype.ClientInitialize = function() {
+    // Set all avatar entities as temprary also on the clients.
+    // This is already done in the server but the info seems to not travel to the clients!
+    this.me.SetTemporary(true);
+    
     // Check if this is our own avatar
     // Note: bad security. For now there's no checking who is allowed to invoke actions
     // on an entity, and we could theoretically control anyone's avatar
