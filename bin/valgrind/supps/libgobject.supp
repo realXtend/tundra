@@ -1,0 +1,21 @@
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   ...
+   obj:/usr/lib/libgobject-2.0.so.0.2400.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:realloc
+   ...
+   obj:/usr/lib/libgobject-2.0.so.0.2400.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:calloc
+   ...
+   obj:/usr/lib/libgobject-2.0.so.0.2400.1
+}

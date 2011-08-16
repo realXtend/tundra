@@ -1,0 +1,39 @@
+{
+   <QTJSC_memory_allocation_value8>
+   Memcheck:Value8
+   ...
+   fun:_ZN5QTJSC4Heap18markConservativelyERNS_9MarkStackEPvS3_
+   fun:_ZN5QTJSC4Heap39markCurrentThreadConservativelyInternalERNS_9MarkStackE
+   fun:_ZN5QTJSC4Heap31markCurrentThreadConservativelyERNS_9MarkStackE
+   fun:_ZN5QTJSC4Heap30markStackObjectsConservativelyERNS_9MarkStackE
+   fun:_ZN5QTJSC4Heap9markRootsEv
+   fun:_ZN5QTJSC4Heap5resetEv
+   fun:_ZN5QTJSC4Heap8allocateEm
+   ...
+}
+{
+   <QTJSC_memory_allocation_cond>
+   Memcheck:Cond
+   ...
+   fun:_ZN5QTJSC4Heap18markConservativelyERNS_9MarkStackEPvS3_
+   fun:_ZN5QTJSC4Heap39markCurrentThreadConservativelyInternalERNS_9MarkStackE
+   fun:_ZN5QTJSC4Heap31markCurrentThreadConservativelyERNS_9MarkStackE
+   fun:_ZN5QTJSC4Heap30markStackObjectsConservativelyERNS_9MarkStackE
+   fun:_ZN5QTJSC4Heap9markRootsEv
+   fun:_ZN5QTJSC4Heap5resetEv
+   fun:_ZN5QTJSC4Heap8allocateEm
+   ...
+}
+{
+   <QTJSC_memory_allocation_cond_leak>
+   Memcheck:Leak
+   ...
+   fun:_ZN5QTJSC4Heap18markConservativelyERNS_9MarkStackEPvS3_
+   fun:_ZN5QTJSC4Heap39markCurrentThreadConservativelyInternalERNS_9MarkStackE
+   fun:_ZN5QTJSC4Heap31markCurrentThreadConservativelyERNS_9MarkStackE
+   fun:_ZN5QTJSC4Heap30markStackObjectsConservativelyERNS_9MarkStackE
+   fun:_ZN5QTJSC4Heap9markRootsEv
+   fun:_ZN5QTJSC4Heap5resetEv
+   fun:_ZN5QTJSC4Heap8allocateEm
+   ...
+}

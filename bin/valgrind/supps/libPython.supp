@@ -1,0 +1,135 @@
+{
+   <PyObject_free_Addr4>
+   Memcheck:Addr4
+   fun:PyObject_Free
+   obj:/usr/lib/libpython2.6.so.*
+   ...
+   fun:PyImport_ImportModuleLevel
+   ...
+}
+{
+   <PyObject_free_Cond>
+   Memcheck:Cond
+   fun:PyObject_Free
+   obj:/usr/lib/libpython2.6.so.*
+   ...
+   fun:PyImport_ImportModuleLevel
+   ...
+}
+{
+   <PyObject_free_Value8>
+   Memcheck:Value8
+   fun:PyObject_Free
+   obj:/usr/lib/libpython2.6.so.*
+   ...
+   fun:PyImport_ImportModuleLevel
+   ...
+}
+{
+   <PyImport_ExecCodeModuleEx>
+   Memcheck:Addr4
+   ...
+   fun:PyImport_ExecCodeModuleEx
+}
+{
+   <PyImport_ExecCodeModuleEx>
+   Memcheck:Cond
+   ...
+   fun:PyImport_ExecCodeModuleEx
+}
+{
+   <PyImport_ExecCodeModuleEx>
+   Memcheck:Value8
+   ...
+   fun:PyImport_ExecCodeModuleEx
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr4
+   ...
+   obj:/usr/lib/libpython2.6.so.*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   obj:/usr/lib/libpython2.6.so.*
+   ...
+   fun:PyEval_EvalFrameEx
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   obj:/usr/lib/libpython2.6.so.*
+   ...
+   fun:PyEval_EvalFrameEx
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/libpython2.6.so.*
+   ...
+   fun:PyEval_EvalFrameEx
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/libpython2.6.so.*
+   ...
+   fun:PyEval_EvalCodeEx
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr4
+   ...
+   obj:/usr/lib/libpython2.6.so.*
+   ...
+   fun:PyEval_EvalFrameEx
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:PyObject_Free
+   ...
+   obj:/usr/lib/libpython2.6.so.*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:PyObject_Free
+   ...
+   obj:/usr/lib/libpython2.6.so.*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:PyObject_Free
+   obj:/usr/lib/libpython2.6.so.*
+   ...
+   fun:_ZN13ModuleManager17InitializeModulesEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:PyObject_Free
+   obj:/usr/lib/libpython2.6.so.*
+   ...
+   fun:_ZN13ModuleManager17InitializeModulesEv
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

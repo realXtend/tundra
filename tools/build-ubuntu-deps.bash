@@ -39,6 +39,9 @@ export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
 private_ogre=false
+# Set build_valgrind true if you want zero optimizations build-options and valgrind installed.
+# Also kNet messageConnection.cpp is modified so that server keepAliveTimeout is 3min instead of 15s.
+build_valgrind=false
 
 if [ x$private_ogre != xtrue ]; then
    more="$more libogre-dev"
@@ -46,6 +49,9 @@ fi
 
 if lsb_release -c | egrep -q "lucid|maverick|natty"; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
+        if [ x$build_valgrind != xfalse ]; then
+            more="$more libc6 libc6-dbg valgrind"
+        fi
 	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
 	 build-essential g++ libboost-all-dev libpoco-dev \
@@ -138,12 +144,21 @@ else
     cd knet
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
     mv x CMakeLists.txt
+    # If valgrind build: Change connection timeout to 3min.
+    if [ x$build_valgrind != xtrue ]; then
+        sed -e "s/180.f/30.f/" < src/MessageConnection.cpp > x
+        mv x src/MessageConnection.cpp
+    else
+        sed -e "s/30.f/180.f/" < src/MessageConnection.cpp > x
+        mv x src/MessageConnection.cpp
+    fi
     cmake . -DCMAKE_BUILD_TYPE=Debug
     make -j $nprocs
     cp lib/libkNet.so $prefix/lib/
     rsync -r include/* $prefix/include/
     touch $tags/$what-done
 fi
+
 
 if [ x$private_ogre = xtrue ]; then
     what=ogre
@@ -243,10 +258,34 @@ if test "$1" = "--depsonly"; then
     exit 0
 fi
 
+if [ x$build_valgrind != xtrue ]; then
+    options="-O -g"
+else
+    options="-O0 -fno-inline -Wall -g"
+    cd $viewer/bin/
+    cat > ./.valgrindrc <<EOF
+--memcheck:leak-check=full
+--memcheck:error-limit=no
+--memcheck:track-origins=yes
+--memcheck:suppressions=$viewer/bin/valgrind/supps/gtk_init.supp
+--memcheck:suppressions=$viewer/bin/valgrind/supps/libgdk.supp
+--memcheck:suppressions=$viewer/bin/valgrind/supps/libgobject.supp
+--memcheck:suppressions=$viewer/bin/valgrind/supps/libPython.supp
+--memcheck:suppressions=$viewer/bin/valgrind/supps/nVidia-libGL.supp
+--memcheck:suppressions=$viewer/bin/valgrind/supps/qt47supp.supp
+--memcheck:suppressions=$viewer/bin/valgrind/supps/qtjsc.supp
+--memcheck:log-file=$viewer/bin/valgrind/logs/valgrindMemcheck.log
+--massif:stacks=yes
+--massif:depth=40
+--massif:massif-out-file=valgrind/logs/massif.out
+--smc-check=all
+EOF
+fi
+
 cd $viewer
 cat > ccache-g++-wrapper <<EOF
 #!/bin/sh
-exec ccache g++ -O -g \$@
+exec ccache g++ $options \$@
 EOF
 chmod +x ccache-g++-wrapper
 NAALI_DEP_PATH=$prefix cmake -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" .

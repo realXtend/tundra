@@ -1,0 +1,18 @@
+{
+   <libPocoFoundation>
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/libPocoFoundation.so.*
+   obj:/usr/lib/libPocoFoundation.so.*
+   obj:/usr/lib/libPocoFoundation.so.*
+   ...
+}
+{
+   <libPocoNet>
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/libPocoNet.so.*
+   obj:/usr/lib/libPocoNet.so.*
+   obj:/usr/lib/libPocoNet.so.*
+   ...
+}

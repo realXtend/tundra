@@ -1,0 +1,49 @@
+
+Valgrind integration for naali
+------------------------------
+
+1. Introduction:
+----------------
+
+$path_to_naali/bin/ now contains valgrind.sh bash script which runs naali viewer under Valgrind.
+Script uses two of the Valgrind profiler tools called memcheck and massif. Memcheck-tool finds
+and analyses possible memory leaks and massif profiles naali heap-memory usage.
+
+Purpose of this script is to help naali developers spot possible memory hogs/leaks in the code and
+this way make naali more memory efficient and run better.
+
+Valgrind.sh script is not meant to be 'make all do all' type of script. Purpose is that you make 
+your own test scenario in javascript and give that file as parameter for valgrind.sh. This way 
+you get test data meaningfull for your particular scenario. Make your script and place it in 
+bin/valgrind/startupScripts/.
+
+NOTICE: Running naali under Valgrind is extremely slow because every memory operation is analyzed 
+by Valgrind. Therefore memcheck-tool runs ~100x slower than running standalone naali. Massif-tool
+slows down naali by factor of ~50x. Running a test script which made two connections with naali
+took circa 30 minutes to finish.
+
+2. Valgrind related files:
+--------------------------
+
+bin/valgrind.sh: Main script to run tests under valgrind
+bin/valgrind/logs/: Directory for valgrind produced log files.
+bin/valgrind/supps/: Directory for valgrind memcheck-tool suppression files.
+bin/valgrind/startupScripts/: Directory for test scenario javascripts.
+
+3. Usage:
+---------
+
+To use valgrind test script you need valgrind installed on your system and build naali without optimizations.
+All this is handled by setting 'valgrind_build'-variable to 'true' in tools/build-naali-deps.bash. When you have
+done this and naali is built just run valgrind.sh script in bin/ directory:
+
+./valgrind.sh <startupScript_path/filename>
+
+There are few example startup scripts in bin/valgrind/startupScripts/.
+
+4. Need more info?
+------------------
+
+This script was made by Jukka Vatjus-Anttila at Center for Internet Excellence / JIC.
+You can find me at realxtend-dev @ freenode irc or you can mail jukka.vatjus-anttila@cie.fi.
+If you find any bugs please let me know.

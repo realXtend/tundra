@@ -1,0 +1,14 @@
+{
+   <name_here>
+   fun:malloc
+   ...
+   fun:gtk_init
+   ...
+}
+{
+   <name_here>
+   fun:calloc
+   ...
+   fun:gtk_init
+   ...
+}

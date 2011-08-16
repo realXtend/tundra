@@ -1,0 +1,46 @@
+{
+   <nvidia_libGL_leakCheck>
+   Memcheck:Leak
+   fun:calloc
+   ...
+   obj:/usr/lib/nvidia-current/libGL.so.*
+   ...
+}
+{
+   <nvidia_libGL_leakCheck>
+   Memcheck:Leak
+   fun:malloc
+   ...
+   obj:/usr/lib/nvidia-current/libGL.so.*
+   ...
+}
+{
+   <libnVidia-glcore_Leak_malloc>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/nvidia-current/libnvidia-glcore.so.*
+   ...
+}
+{
+   <libnVidia-glcore_Leak_calloc>
+   Memcheck:Leak
+   fun:calloc
+   ...
+   obj:/usr/lib/nvidia-current/libnvidia-glcore.so.*
+   ...
+}
+{
+   <libnVidia-glcore_Leak_realloc>
+   Memcheck:Leak
+   fun:realloc
+   ...
+   obj:/usr/lib/nvidia-current/libnvidia-glcore.so.260.19.06
+   ...
+}
+{
+   <libnVidia-glcore_Cond>
+   Memcheck:Cond
+   ...
+   obj:/usr/lib/nvidia-current/libnvidia-glcore.so.260.19.06
+   ...
+}
