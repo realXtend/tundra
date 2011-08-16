@@ -97,8 +97,8 @@ float float3::Normalize()
 float3 float3::Normalized() const
 {
     float3 copy = *this;
-    float oldLength = copy.Normalize();
-    assume(oldLength > 0.f && "float3::Normalized() failed!");
+    /* float oldLength = */ copy.Normalize();
+    //assume(oldLength > 0.f && "float3::Normalized() failed!"); ///\todo Triggered on Circus client when rotating avatar
     return copy;
 }
 

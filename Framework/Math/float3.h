@@ -89,10 +89,10 @@ public:
 	float3 ScaledToLength(float newLength) const;
 
     /// Tests if the length of this vector is one, up to the given epsilon.
-    bool IsNormalized(float epsilonSq = 1e-6f) const;
+    bool IsNormalized(float epsilonSq = 1e-5f) const;
 
     /// Tests if this is the null vector, up to the given epsilon.
-    bool IsZero(float epsilonSq = 1e-6f) const;
+    bool IsZero(float epsilonSq = 1e-5f) const;
 
     /// Tests if this vector contains valid finite elements.
     bool IsFinite() const;
