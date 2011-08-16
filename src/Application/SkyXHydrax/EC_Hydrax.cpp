@@ -121,17 +121,12 @@ void EC_Hydrax::Create()
 
 void EC_Hydrax::OnActiveCameraChanged(EC_Camera *newActiveCamera)
 {
-#if defined(_WINDOWS)
     // If we haven't yet initialized, do a full init.
     if (!impl)
         Create();
     else // Otherwise, update the camera to an existing initialized Hydrax instance.
         if (impl && impl->hydrax)
             impl->hydrax->setCamera(newActiveCamera->GetCamera());
-#else
-    /// \todo No setCamera method in my copy of HydraX -erno
-    Create();
-#endif
 }
 
 void EC_Hydrax::UpdateAttribute(IAttribute *attr)

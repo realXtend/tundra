@@ -144,17 +144,12 @@ void EC_SkyX::Create()
 
 void EC_SkyX::OnActiveCameraChanged(EC_Camera *newActiveCamera)
 {
-#if defined(_WINDOWS)
     // If we haven't yet initialized, do a full init.
     if (!impl)
         Create();
     else // Otherwise, update the camera to an existing initialized SkyX instance.
         if (impl && impl->skyX)
             impl->skyX->setCamera(newActiveCamera->GetCamera());
-#else
-    /// \todo No setCamera method in my copy of SkyX -erno
-    Create();
-#endif
 }
 
 void EC_SkyX::UpdateAttribute(IAttribute *attr)
