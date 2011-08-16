@@ -90,10 +90,13 @@ framework(framework_)
     LoadKeyBindingsFromFile();
 
     // Accept gestures
+    // [Mac OS X] bug: Pan gesture is triggered if the (left) mouse button is long-pressed and not moved at all. Disabling gestures for now on Mac
+#ifndef Q_WS_MAC
     QList<Qt::GestureType> gestures;
     gestures << Qt::PanGesture << Qt::PinchGesture << Qt::TapAndHoldGesture;
     foreach(Qt::GestureType type, gestures)
         mainWindow->grabGesture(type);
+#endif
 }
 
 InputAPI::~InputAPI()
