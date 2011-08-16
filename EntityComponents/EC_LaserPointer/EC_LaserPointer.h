@@ -92,7 +92,7 @@ private slots:
     /// Updates color if it is changed
     void UpdateColor();
 
-    bool IsMouseInsideWindow();
+    bool IsMouseInsideWindow() const;
 
-    bool IsItemUnderMouse();
+    bool IsItemUnderMouse() const;
 };

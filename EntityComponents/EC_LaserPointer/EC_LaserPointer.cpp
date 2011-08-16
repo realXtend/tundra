@@ -247,6 +247,7 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
         if (framework->Input()->IsMouseCursorVisible() && (!IsMouseInsideWindow() || IsItemUnderMouse()))
         {
             laserObject_->clear();
+            laserObject_->setVisible(false);
             return;
         }
 
@@ -258,7 +259,10 @@ void EC_LaserPointer::HandlePlaceableAttributeChange(IAttribute *attribute, Attr
             DisableUpdate();
         }
         else
+        {
             laserObject_->clear();
+            laserObject_->setVisible(false);
+        }
     }
 }
 
@@ -287,14 +291,14 @@ void EC_LaserPointer::UpdateColor()
     laserMaterial_->getTechnique(0)->getPass(0)->setSelfIllumination(color.Get());
 }
 
-bool EC_LaserPointer::IsMouseInsideWindow()
+bool EC_LaserPointer::IsMouseInsideWindow() const
 {
     if (!framework->Ui()->MainWindow())
         return false;
     return framework->Ui()->MainWindow()->geometry().contains(QCursor::pos(), true);
 }
 
-bool EC_LaserPointer::IsItemUnderMouse()
+bool EC_LaserPointer::IsItemUnderMouse() const
 {
     if (!framework->Ui()->GraphicsView() || !framework->Ui()->MainWindow())
         return true;
