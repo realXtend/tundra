@@ -62,14 +62,10 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     if (!boost::filesystem::exists(path))
         boost::filesystem::create_directory(path);
 
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
-        // If under windows, add run_dir/plugins as library path
-        // unix users will get plugins from their OS Qt installation folder automatically
-
-        QString runDirectory = InstallationDirectory() + "/qtplugins";
-        runDirectory.replace('\\', '/');
-        addLibraryPath(runDirectory);
-#endif
+    // Add <install_dir>/qtplugins for qt to search plugins
+    QString runDirectory = InstallationDirectory() + "/qtplugins";
+    runDirectory.replace('\\', '/');
+    addLibraryPath(runDirectory);
 
     QDir dir("data/translations/qt_native_translations");
     QStringList qmFiles = GetQmFiles(dir);
