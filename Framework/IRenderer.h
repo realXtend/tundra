@@ -104,7 +104,7 @@ public:
     virtual void SetViewDistance(float distance) = 0;
 
     /// get maximum view distance
-    virtual float GetViewDistance() const = 0;
+    virtual float ViewDistance() const = 0;
 
     /// get visible entities last frame
     virtual const std::set<entity_id_t>& GetVisibleEntities() = 0;

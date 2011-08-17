@@ -114,7 +114,7 @@ namespace OgreRenderer
         virtual void SetViewDistance(float distance);
 
         /// get maximum view distance
-        virtual float GetViewDistance()const { return view_distance_; }
+        virtual float ViewDistance()const { return view_distance_; }
 
         ///Is window fullscreen?
         bool IsFullScreen() const;
