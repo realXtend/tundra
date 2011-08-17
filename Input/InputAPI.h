@@ -43,8 +43,7 @@ class Framework;
     IsKeyReleased, IsMouseButtonDown, IsMouseButtonPressed and IsMouseButtonReleased.
 
     The InputContext -based API utilizes Qt signals. The polling API can be used by any object that
-    has access to InpuAPI, and the event tree -based API can be used by all modules.
-*/
+    has access to InpuAPI, and the event tree -based API can be used by all modules. */
 class InputAPI : public QObject
 {
     Q_OBJECT
@@ -68,14 +67,18 @@ public:
     typedef std::map<std::string, QKeySequence> KeyActionsMap;
 
 public slots:
-    /// Creates a new input context with the given name. The name is not an ID, i.e. it does not have to be unique with 
-    /// existing contexts (although it is encouraged). When you no longer need the context, free all refcounts to it.
-    /// Remember to hold on to a shared_ptr of the input context as long as you are using the context.
+    /// Creates a new input context with the given name.
+    /** The name is not an ID, i.e. it does not have to be unique with 
+        existing contexts (although it is encouraged). When you no longer need the context, free all refcounts to it.
+        Remember to hold on to a shared_ptr of the input context as long as you are using the context. */
     InputContextPtr RegisterInputContext(const QString &name, int priority);
 
+    /// For scripting languages.
+    /** Use UnregisterInputContextRaw() to free the input context. */
     InputContext *RegisterInputContextRaw(const QString &name, int priority);
 
-    void UnRegisterInputContextRaw(const QString &name);
+    /// For scripting languages.
+    void UnregisterInputContextRaw(const QString &name);
 
     /// Sets the mouse cursor in absolute (the usual default) or relative movement (FPS-like) mode.
     /// @param visible If true, shows mouse cursor and allows free movement. If false, hides the mouse cursor 

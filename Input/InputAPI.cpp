@@ -207,25 +207,6 @@ void InputAPI::DumpInputContexts()
     }
 }
 
-InputContext *InputAPI::RegisterInputContextRaw(const QString &name, int priority)
-{
-    InputContextPtr context = RegisterInputContext(name, priority);
-    untrackedInputContexts.push_back(context);
-    return context.get();
-}
-
-void InputAPI::UnRegisterInputContextRaw(const QString &name)
-{
-    for(std::list<InputContextPtr>::iterator iter = untrackedInputContexts.begin();
-        iter != untrackedInputContexts.end(); ++iter)
-        if ((*iter)->Name() == name)
-        {
-            untrackedInputContexts.erase(iter);
-            return;
-        }
-    LogError("Warning: Failed to delete non-refcounted Input Context \"" + name + "\": an Input Context with that name doesn't exist!");
-}
-
 InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
 {
     boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(this, name.toStdString().c_str(), priority);
@@ -249,8 +230,27 @@ InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority
     return newInputContext;
 }
 
+InputContext *InputAPI::RegisterInputContextRaw(const QString &name, int priority)
+{
+    InputContextPtr context = RegisterInputContext(name, priority);
+    untrackedInputContexts.push_back(context);
+    return context.get();
+}
+
+void InputAPI::UnregisterInputContextRaw(const QString &name)
+{
+    for(std::list<InputContextPtr>::iterator iter = untrackedInputContexts.begin();
+        iter != untrackedInputContexts.end(); ++iter)
+        if ((*iter)->Name() == name)
+        {
+            untrackedInputContexts.erase(iter);
+            return;
+        }
+    LogWarning("Failed to delete non-refcounted Input Context \"" + name + "\": an Input Context with that name doesn't exist!");
+}
+
 void InputAPI::ApplyMouseCursorOverride()
-{    
+{
     if (!IsMouseCursorVisible())
         return;
 
