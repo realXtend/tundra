@@ -10,6 +10,7 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("IAsset")
 
 #include "IAsset.h"
+#include "AssetEnum.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
 
@@ -26,10 +27,12 @@ void IAsset::SetDiskSource(QString diskSource_)
 
 bool IAsset::LoadFromCache()
 {
-    bool success = LoadFromFile(DiskSource());
-    if (!success)
+    AssetLoadState loadstate = LoadFromFile(DiskSource());
+    if (loadstate == ASSET_LOAD_FAILED)
+    {
+        LogDebug("LoadFromCache: LoadFromFile failed");
         return false;
-
+    }
     AssetPtr thisAsset = shared_from_this();
 
     if (assetAPI->NumPendingDependencies(thisAsset) == 0)
@@ -37,7 +40,7 @@ bool IAsset::LoadFromCache()
     else
         assetAPI->RequestAssetDependencies(thisAsset);
 
-    return success;
+    return loadstate == ASSET_LOAD_SUCCESFULL;
 }
 
 void IAsset::Unload()
@@ -80,8 +83,8 @@ AssetPtr IAsset::Clone(QString newAssetName) const
         return AssetPtr();
     }
 
-    success = newAsset->LoadFromFileInMemory(&data[0], data.size());
-    if (!success)
+    AssetLoadState loadstate = newAsset->LoadFromFileInMemory(&data[0], data.size());
+    if (loadstate == ASSET_LOAD_SUCCESFULL)
     {
         LogError("Cannot Clone() asset \"" + Name() + "\" to a new asset \"" + newAssetName + "\": Deserializing the new asset from bytes failed!");
         assetAPI->ForgetAsset(newAsset, false);
