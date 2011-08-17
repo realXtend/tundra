@@ -19,4 +19,5 @@ if (showUi)
     proxy.y = 50;
     proxy.windowFlags = 0;
     proxy.visible = true;
+    proxy.focusPolicy = Qt.NoFocus;
 }

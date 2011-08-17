@@ -181,6 +181,9 @@ public slots:
     /// Return the item at coordinates. If the mouse cursor is hidden, always returns null
     QGraphicsItem* GetItemAtCoords(int x, int y) const;
     
+    /// Explicitly defocus any widgets and return key focus to the 3D world
+    void ClearFocus();
+    
 private:
     Q_DISABLE_COPY(InputAPI)
 

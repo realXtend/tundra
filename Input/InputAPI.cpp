@@ -856,6 +856,12 @@ QGraphicsItem* InputAPI::GetItemAtCoords(int x, int y) const
         return 0;
 }
 
+void InputAPI::ClearFocus()
+{
+    if (mainView)
+        mainView->scene()->clearFocus();
+}
+
 void InputAPI::Update(float frametime)
 {
     PROFILE(InputAPI_Update);
