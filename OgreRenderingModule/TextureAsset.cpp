@@ -93,7 +93,7 @@ AssetLoadState TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes
             ogreTexture->createInternalResources();
         }
 
-        return ASSET_LOAD_SUCCESFULL;
+        return ASSET_LOAD_SUCCESSFUL;
     }
     catch (Ogre::Exception &e)
     {
@@ -110,7 +110,7 @@ void TextureAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, cons
     if (result.error)
         LogError("Ogre failed to do threaded loading: " + result.message);
 
-    assetAPI->OnTransferAssetLoadCompleted(Name(), (result.error ? ASSET_LOAD_FAILED : ASSET_LOAD_SUCCESFULL));
+    assetAPI->OnTransferAssetLoadCompleted(Name(), (result.error ? ASSET_LOAD_FAILED : ASSET_LOAD_SUCCESSFUL));
 }
 
 /*

@@ -177,7 +177,7 @@ namespace TaigaProtocol
             loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_CONNECTED);
             connected_ = true;
 
-            // Send event indicating a succesfull connection.
+            // Send event indicating a successful connection.
             ProtocolUtilities::AuthenticationEventData auth_data(authenticationType_);
             auth_data.inventorySkeleton = GetClientParameters().inventory;
             auth_data.type = ProtocolUtilities::AT_OpenSim;

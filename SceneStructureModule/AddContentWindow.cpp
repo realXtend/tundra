@@ -1011,10 +1011,10 @@ void AddContentWindow::HandleUploadFailed(IAssetUploadTransfer *transfer)
     CheckUploadTotals();
 }
 
-void AddContentWindow::UpdateUploadStatus(bool succesfull, const QString &assetRef)
+void AddContentWindow::UpdateUploadStatus(bool successful, const QString &assetRef)
 {
     QColor statusColor;
-    if (succesfull)
+    if (successful)
         statusColor = QColor(0, 255, 0, 75);
     else
         statusColor = QColor(255, 0, 0, 75);

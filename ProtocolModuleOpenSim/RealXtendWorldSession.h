@@ -37,7 +37,7 @@ namespace OpenSimProtocol
          * @param auth_server_address_noport is authentication server ip-address 
          * @param auth_server_port
          * @param auth_login is a login name which will be used to login authentication server. 
-         * @return true if login was successfull false if not. 
+         * @return true if login was successful false if not. 
          *
          * */
         bool LoginToServer(

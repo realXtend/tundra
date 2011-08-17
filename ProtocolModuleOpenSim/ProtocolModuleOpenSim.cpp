@@ -186,7 +186,7 @@ namespace OpenSimProtocol
             loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_CONNECTED);
             connected_ = true;
 
-            // Send event indicating a succesfull connection
+            // Send event indicating a successful connection
             ProtocolUtilities::AuthenticationEventData auth_data(authenticationType_, "", loginWorker_.GetClientParameters().gridUrl);
             auth_data.inventorySkeleton = loginWorker_.GetClientParameters().inventory;
             if (authenticationType_ == ProtocolUtilities::AT_RealXtend)

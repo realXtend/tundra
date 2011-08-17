@@ -109,7 +109,7 @@ AssetLoadState OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numByt
     //internal_name_ = SanitateAssetIdForOgre(id_);
     
     LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
-    return ASSET_LOAD_SUCCESFULL;
+    return ASSET_LOAD_SUCCESSFUL;
 }
 
 void OgreMeshAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result)
@@ -133,7 +133,7 @@ void OgreMeshAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, con
             try
             {
                 SetDefaultMaterial();
-                assetAPI->OnTransferAssetLoadCompleted(Name(), ASSET_LOAD_SUCCESFULL);
+                assetAPI->OnTransferAssetLoadCompleted(Name(), ASSET_LOAD_SUCCESSFUL);
                 return;
             }
             catch (Ogre::Exception &e)

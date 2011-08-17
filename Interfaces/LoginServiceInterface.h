@@ -47,7 +47,7 @@ namespace Foundation
          */
         virtual void ProcessLoginData(const QString &url) = 0;
 
-        /// Starts world session i.e. creates UDP connection after succesfull login.
+        /// Starts world session i.e. creates UDP connection after successful login.
         virtual void StartWorldSession() = 0;
 
         /// Performs logout.

@@ -232,7 +232,7 @@ void KristalliProtocolModule::Update(f64 frametime)
             if (!serverConnection_map_.contains(connection))
             {
                 // Associative QMap stores all items sorted by Key. If array has one item terminated,
-                // we fill it with next succesfull connection. Same is done in client.
+                // we fill it with next successful connection. Same is done in client.
                 serverConnection_map_.insert(connection, serverConnection);
                 serverIp_list_.insert(connection,serverIp);
                 serverPort_list_.insert(connection,serverPort);

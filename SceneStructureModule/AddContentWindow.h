@@ -198,7 +198,7 @@ private slots:
     */
     void HandleUploadFailed(IAssetUploadTransfer *trasnfer);
 
-    void UpdateUploadStatus(bool succesfull, const QString &assetRef);
+    void UpdateUploadStatus(bool successful, const QString &assetRef);
 
     void CheckUploadTotals();
 };

@@ -809,7 +809,7 @@ UploadResult OpenSimInventoryDataModel::UploadBuffer(
 
     event_mgr->SendDelayedEvent<InventoryItemEventData>(event_category, Inventory::Events::EVENT_INVENTORY_DESCENDENT, asset_data);
 
-    InventoryModule::LogInfo("Upload succesfull. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
+    InventoryModule::LogInfo("Upload successful. Asset id: " + asset_id + ", inventory id: " + inventory_id + ".");
     upload_result.first = true;
     upload_result.second = QString::fromStdString(asset_id);
     return upload_result;

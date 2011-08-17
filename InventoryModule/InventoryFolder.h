@@ -86,7 +86,7 @@ namespace Inventory
         ///\todo Refactor so that we don't use count.
         /// @param position 
         /// @param count 
-        /// @return True if removing is succesfull, false otherwise.
+        /// @return True if removing is successful, false otherwise.
         /// @note It's not recommended to use this directly. This function is used by InventoryItemModel::removeRows().
         bool RemoveChildren(int position, int count);
 

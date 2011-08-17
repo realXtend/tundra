@@ -174,7 +174,7 @@ AssetLoadState OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t nu
     
     // Theoretical success if at least one template was created
     if (GetNumTemplates() > 0)
-        return ASSET_LOAD_SUCCESFULL;
+        return ASSET_LOAD_SUCCESSFUL;
     return ASSET_LOAD_FAILED;
 }
 

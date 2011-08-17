@@ -279,7 +279,7 @@ AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
 {
     AssetPtr asset = CreateNewAsset(assetType, assetFile);
     AssetLoadState success = asset->LoadFromFile(assetFile);
-    if (success == ASSET_LOAD_SUCCESFULL)
+    if (success == ASSET_LOAD_SUCCESSFUL)
         return asset;
     else if (success == ASSET_LOAD_PROCESSING)
     {
@@ -907,7 +907,7 @@ void AssetAPI::OnTransferAssetLoadCompleted(const QString assetRef, AssetLoadSta
         return;
     }
 
-    if (result == ASSET_LOAD_SUCCESFULL)
+    if (result == ASSET_LOAD_SUCCESSFUL)
     {
         // Add the loaded asset to the internal asset map
         AssetMap::iterator iter2 = assets.find(transfer->source.ref);

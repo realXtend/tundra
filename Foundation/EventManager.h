@@ -142,7 +142,7 @@ public:
     /** @param component is component which will get event. 
         @param category_id is events category id. 
         @param event_id is event id. 
-        @return true if registering was succesfull false if not. 
+        @return true if registering was successful false if not. 
         @note does not check that is component allready register through @p RegisterEventSubscriber(T* subscriber,int priority)
     */
     bool RegisterEventSubscriber(IComponent* component, event_category_id_t category_id, event_id_t event_id);

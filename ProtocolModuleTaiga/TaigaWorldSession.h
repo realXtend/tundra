@@ -34,7 +34,7 @@ namespace TaigaProtocol
          * @param port Server pot.
          * @param identityUrl Taiga identity URL.
          * @param thread_state Login thread state.
-         * @return true if login was successfull false if not.
+         * @return true if login was successful false if not.
          */
         bool LoginToServer(
             const QString& address,

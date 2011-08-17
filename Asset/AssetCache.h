@@ -91,11 +91,11 @@ public slots:
     QString GetCacheDirectory() const;
 
     /// Saves the given asset to cache.
-    /// @return QString the absolute path name to the asset cache entry. If not successfull returns an empty string.
+    /// @return QString the absolute path name to the asset cache entry. If not successful returns an empty string.
     QString StoreAsset(AssetPtr asset);
 
     /// Saves the specified data to the asset cache.
-    /// @return QString the absolute path name to the asset cache entry. If not successfull returns an empty string.
+    /// @return QString the absolute path name to the asset cache entry. If not successful returns an empty string.
     QString StoreAsset(const u8 *data, size_t numBytes, const QString &assetName, const QString &assetContentHash);
 
     /// Deletes the asset with the given assetRef from the cache, if it exists.

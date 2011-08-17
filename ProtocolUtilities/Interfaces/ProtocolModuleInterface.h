@@ -28,7 +28,7 @@ namespace ProtocolUtilities
         virtual void UnregisterNetworkEvents() = 0;
 
         /// Creates the UDP connection to the server.
-        ///@ return True, if the connection was succesfull, false otherwise.
+        ///@ return True, if the connection was successful, false otherwise.
         virtual bool CreateUdpConnection(const char *address, int port) = 0;
 
         /// @return Connection::State enum of the connection state.

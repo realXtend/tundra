@@ -80,7 +80,7 @@ namespace ProtocolUtilities
     public slots:
         //------------------- Connection managing functions ------------------- //
 
-        /// Creates the UDP connection after a succesfull XML-RPC login.
+        /// Creates the UDP connection after a successful XML-RPC login.
         /** @return True, if success.
         */
         bool CreateUdpConnection();
@@ -602,7 +602,7 @@ namespace ProtocolUtilities
     private:
         Q_DISABLE_COPY(WorldStream);
 
-        /// Sends all the needed packets to server when connection successfull
+        /// Sends all the needed packets to server when connection successful
         void SendLoginSuccessfullPackets();
 
         /// Sends map request packet when udp connection has been created successfully

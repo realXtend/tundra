@@ -36,7 +36,7 @@ namespace OpenSimProtocol
          * @param last_name is second part of given username.
          * @param address is world server ip-address (or dns-name?) does not contain port number.
          * @param port is a world server port (where connection is done). 
-         * @return true if login was successfull false if not. 
+         * @return true if login was successful false if not. 
          *
          * */
         bool LoginToServer(

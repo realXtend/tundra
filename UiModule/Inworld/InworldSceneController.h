@@ -38,7 +38,7 @@ namespace UiServices
         /*! Convenience function if you dont want to bother and define your UiWidgetProperties.
          *
          *  \param  widget QWidget to be added to the scene.
-         *  \return Proxy widget if succesfull, otherwise 0
+         *  \return Proxy widget if successful, otherwise 0
 
          *  \note   QGraphicsProxyWidget maintains symmetry for the following states:
          *          state, enabled, visible, geometry, layoutDirection, style, palette,
@@ -109,7 +109,7 @@ namespace UiServices
         //! Adds a Qt Widget to the settings widget as its own tab
         /*! \param widget QWidget to be added to the settings widget
          *  \param tab_name QString name of the tab shown in widget
-         *  \return trued if add succesfull, false otherwise
+         *  \return trued if add successful, false otherwise
         */
         bool AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const;
 

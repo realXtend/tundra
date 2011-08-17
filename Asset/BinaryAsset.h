@@ -34,7 +34,7 @@ public:
     {
         data.clear();
         data.insert(data.end(), data_, data_ + numBytes);
-        return ASSET_LOAD_SUCCESFULL;
+        return ASSET_LOAD_SUCCESSFUL;
     }
 
     virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const

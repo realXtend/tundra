@@ -122,7 +122,7 @@ namespace Inventory
                         parent->SetDirty(true);
                         //FetchInventoryDescendents(parent);
                         InventoryModule::LogDebug(QString("Webdav | Moved folder %1 from %2 to %3\nNote: This fucntionality is experimental,").append(
-                            "dont assume it went succesfull\n").arg(folderName, currentPath, newPath).toStdString());
+                            "dont assume it went successful\n").arg(folderName, currentPath, newPath).toStdString());
                     }
                     else
                     {

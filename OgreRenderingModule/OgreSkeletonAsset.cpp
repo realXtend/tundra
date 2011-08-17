@@ -82,7 +82,7 @@ AssetLoadState OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t nu
 
     internal_name_ = SanitateAssetIdForOgre(this->Name().toStdString());
     OgreRenderingModule::LogDebug("Ogre skeleton " + this->Name().toStdString() + " created");
-    return ASSET_LOAD_SUCCESFULL;
+    return ASSET_LOAD_SUCCESSFUL;
 }
 
 void OgreSkeletonAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result)
@@ -102,7 +102,7 @@ void OgreSkeletonAsset::operationCompleted(Ogre::BackgroundProcessTicket ticket,
         OgreRenderingModule::LogError("OgreSkeletonAsset: Could not get Skeleton from SkeletonManager after threaded loading: " + Name().toStdString());
         loadError = true;
     }
-    assetAPI->OnTransferAssetLoadCompleted(Name(), (loadError ? ASSET_LOAD_FAILED : ASSET_LOAD_SUCCESFULL));
+    assetAPI->OnTransferAssetLoadCompleted(Name(), (loadError ? ASSET_LOAD_FAILED : ASSET_LOAD_SUCCESSFUL));
 }
 
 bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const

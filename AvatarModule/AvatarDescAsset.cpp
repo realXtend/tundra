@@ -56,7 +56,7 @@ AssetLoadState AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBy
     ReadAvatarAppearance(avatarDoc);
     
     emit AppearanceChanged();
-    return ASSET_LOAD_SUCCESFULL;
+    return ASSET_LOAD_SUCCESSFUL;
 }
 
 bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const

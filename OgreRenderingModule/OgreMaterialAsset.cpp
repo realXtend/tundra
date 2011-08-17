@@ -183,7 +183,7 @@ AssetLoadState OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t nu
     
     // Mark the valid ogre resource name
     ogreAssetName = QString::fromStdString(sanitatedname);
-    return ASSET_LOAD_SUCCESFULL;
+    return ASSET_LOAD_SUCCESSFUL;
 }
 
 bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const

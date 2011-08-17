@@ -25,7 +25,7 @@ AssetLoadState ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 
     ParseReferences();
 
-    return ASSET_LOAD_SUCCESFULL;
+    return ASSET_LOAD_SUCCESSFUL;
 }
 
 bool ScriptAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const

@@ -40,7 +40,7 @@ bool IAsset::LoadFromCache()
     else
         assetAPI->RequestAssetDependencies(thisAsset);
 
-    return loadstate == ASSET_LOAD_SUCCESFULL;
+    return loadstate == ASSET_LOAD_SUCCESSFUL;
 }
 
 void IAsset::Unload()
@@ -84,7 +84,7 @@ AssetPtr IAsset::Clone(QString newAssetName) const
     }
 
     AssetLoadState loadstate = newAsset->LoadFromFileInMemory(&data[0], data.size());
-    if (loadstate == ASSET_LOAD_SUCCESFULL)
+    if (loadstate == ASSET_LOAD_SUCCESSFUL)
     {
         LogError("Cannot Clone() asset \"" + Name() + "\" to a new asset \"" + newAssetName + "\": Deserializing the new asset from bytes failed!");
         assetAPI->ForgetAsset(newAsset, false);

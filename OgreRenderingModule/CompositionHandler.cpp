@@ -141,7 +141,7 @@ namespace OgreRenderer
 
     bool CompositionHandler::AddCompositor(const std::string &compositor, Ogre::Viewport *vp, int position)
     {
-        bool succesfull = false;
+        bool successful = false;
 
         if (c_manager_!=0 && vp != 0)
         {
@@ -161,14 +161,14 @@ namespace OgreRenderer
                 }
 
                 c_manager_->setCompositorEnabled(vp, compositor, true);
-                succesfull=true;
+                successful=true;
             }
         }
         
-        if (!succesfull)
+        if (!successful)
             OgreRenderingModule::LogWarning("Failed to enable effect: " + compositor);
 
-        return succesfull;
+        return successful;
     }
 
     bool CompositionHandler::AddCompositorForViewport(const std::string &compositor, int position)
