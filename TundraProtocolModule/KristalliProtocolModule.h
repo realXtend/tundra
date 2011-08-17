@@ -23,9 +23,7 @@ namespace KristalliProtocol
 
         void Load();
         void Unload();
-        void PreInitialize();
         void Initialize();
-        void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
 

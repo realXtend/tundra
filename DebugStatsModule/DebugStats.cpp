@@ -46,7 +46,7 @@ DebugStatsModule::~DebugStatsModule()
     SAFE_DELETE(profilerWindow_);
 }
 
-void DebugStatsModule::PostInitialize()
+void DebugStatsModule::Initialize()
 {
 #ifdef _WINDOWS
     QueryPerformanceCounter(&lastCallTime);

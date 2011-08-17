@@ -35,7 +35,6 @@ public:
 
     void Load();
     void Initialize();
-    void PostInitialize();
     void Update(f64 frametime);
     void Uninitialize();
    

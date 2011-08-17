@@ -126,10 +126,6 @@ TundraLogicModule::~TundraLogicModule()
 {
 }
 
-void TundraLogicModule::PreInitialize()
-{
-}
-
 void TundraLogicModule::Load()
 {
     // Name and DynamicComponent are present always.
@@ -207,10 +203,7 @@ void TundraLogicModule::Initialize()
     
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
-}
 
-void TundraLogicModule::PostInitialize()
-{
     framework_->Console()->RegisterCommand("startserver", "Starts a server. Usage: startserver(port)",
         this, SLOT(StartServer(int)));
 

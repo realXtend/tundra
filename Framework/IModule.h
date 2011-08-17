@@ -35,17 +35,9 @@ public:
         Component is the class of the component. */
     virtual void Load() {}
 
-    /// Pre-initialization for the module.
-    /** Called before modules are initializated. Only override if you need. Do not call. */
-    virtual void PreInitialize() {}
-
     /// Initializes the module.
     /** Called when module is taken in use. Override in your own module. Do not call. */
     virtual void Initialize() {}
-
-    /// Post-initialization for the module.
-    /** At this point Initialize() has been called for all enabled modules. Only override if you need. Do not call. */
-    virtual void PostInitialize() {}
 
     /// Uninitialize the module.
     /** Called when module is removed from use. Override in your own module. Do not call. */

@@ -63,7 +63,7 @@ SceneStructureModule::~SceneStructureModule()
     SAFE_DELETE(toolTipWidget);
 }
 
-void SceneStructureModule::PostInitialize()
+void SceneStructureModule::Initialize()
 {
     framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", 
         this, SLOT(ToggleSceneStructureWindow()));

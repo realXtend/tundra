@@ -46,7 +46,7 @@ class SceneStructureModule : public IModule
 public:
     SceneStructureModule();
     ~SceneStructureModule();
-    void PostInitialize();
+    void Initialize();
 
 public slots:
     /// Instantiates new content from file to the scene.

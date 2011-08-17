@@ -83,10 +83,7 @@ void PhysicsModule::Initialize()
     
     connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
     connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
-}
 
-void PhysicsModule::PostInitialize()
-{
     framework_->Console()->RegisterCommand("physicsdebug",
         "Toggles drawing of physics debug geometry.",
         this, SLOT(ToggleDebugGeometry()));

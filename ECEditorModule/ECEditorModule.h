@@ -27,9 +27,7 @@ public:
     ECEditorModule();
     virtual ~ECEditorModule();
 
-    // IModuleImpl overrides.
     void Initialize();
-    void PostInitialize();
     void Uninitialize();
     void Update(f64 frametime);
 

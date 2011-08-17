@@ -59,10 +59,7 @@ void JavascriptModule::Initialize()
 {
     connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
     engine->globalObject().setProperty("print", engine->newFunction(Print));
-}
 
-void JavascriptModule::PostInitialize()
-{
     RegisterCoreMetaTypes();
 
     framework_->Console()->RegisterCommand(

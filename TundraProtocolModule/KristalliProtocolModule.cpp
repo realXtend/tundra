@@ -110,16 +110,12 @@ KristalliProtocolModule::~KristalliProtocolModule()
 
 void KristalliProtocolModule::Load()
 {
+    kNet::SetLogChannels(kNet::LogInfo | kNet::LogError | kNet::LogUser); // Enable all log channels.
 }
 
 void KristalliProtocolModule::Unload()
 {
     Disconnect();
-}
-
-void KristalliProtocolModule::PreInitialize()
-{
-    kNet::SetLogChannels(kNet::LogInfo | kNet::LogError | kNet::LogUser); // Enable all log channels.
 }
 
 void KristalliProtocolModule::Initialize()
@@ -129,10 +125,6 @@ void KristalliProtocolModule::Initialize()
     if (options.count("protocol") > 0)
         if (QString(options["protocol"].as<std::string>().c_str()).trimmed().toLower() == "udp")
             defaultTransport = kNet::SocketOverUDP;
-}
-
-void KristalliProtocolModule::PostInitialize()
-{
 #ifdef KNET_USE_QT
     framework_->Console()->RegisterCommand(
             "kNet", "Shows the kNet statistics window.", 

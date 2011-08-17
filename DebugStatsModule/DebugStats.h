@@ -30,7 +30,7 @@ public:
     DebugStatsModule();
     virtual ~DebugStatsModule();
 
-    void PostInitialize();
+    void Initialize();
     void Update(f64 frametime);
 
 public slots:

@@ -33,10 +33,8 @@ public:
     TundraLogicModule();
     ~TundraLogicModule();
 
-    void PreInitialize();
     void Load();
     void Initialize();
-    void PostInitialize();
     void Uninitialize();
     void Update(f64 frametime);
 

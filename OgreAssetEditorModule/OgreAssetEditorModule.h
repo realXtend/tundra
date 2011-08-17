@@ -42,14 +42,9 @@ public:
     OgreAssetEditorModule();
     ~OgreAssetEditorModule();
 
-    // IModule overrides.
     void Initialize();
-    void PostInitialize();
     void Uninitialize();
     void Update(f64 frametime);
-
-    /// Returns name of this module. Needed for logging.
-    static const std::string &NameStatic() { return typeNameStatic; }
 
 public slots:
     bool IsSupportedAssetTypes(const QString &type) const;

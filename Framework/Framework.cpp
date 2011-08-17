@@ -227,20 +227,8 @@ void Framework::Go()
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
-        LogDebug("Preinitializing module " + modules[i]->Name());
-        modules[i]->PreInitialize();
-    }
-
-    for(size_t i = 0; i < modules.size(); ++i)
-    {
         LogDebug("Initializing module " + modules[i]->Name());
         modules[i]->Initialize();
-    }
-
-    for(size_t i = 0; i < modules.size(); ++i)
-    {
-        LogDebug("PostInitializing module " + modules[i]->Name());
-        modules[i]->PostInitialize();
     }
 
     // Run our QApplication subclass.

@@ -62,10 +62,7 @@ namespace Asset
         local->AddStorageDirectory(ogreAssetDir, "Ogre Media", true);
 
         framework_->RegisterDynamicObject("assetModule", this);
-    }
 
-    void AssetModule::PostInitialize()
-    {
         framework_->Console()->RegisterCommand(
             "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
             this, SLOT(ConsoleRequestAsset(const QString &, const QString &)));
