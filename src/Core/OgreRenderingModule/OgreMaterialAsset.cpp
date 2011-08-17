@@ -510,8 +510,11 @@ void OgreMaterialAsset::SetAttribute(const QString& key, const QString& value)
     // Material must exist
     if (!IsLoaded())
         return;
-    
-    QStringList keyParts = key.toLower().split(' ');
+
+    // Remove spaces from start and end, otherwise 'texture = http://pic.png'
+    // resolved the attribute to be ''
+    QString keyTrimmedLower = key.trimmed().toLower();
+    QStringList keyParts = keyTrimmedLower.split(' ');
     if (!keyParts.size())
         return;
     

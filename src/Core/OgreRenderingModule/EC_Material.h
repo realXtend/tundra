@@ -62,7 +62,7 @@ public:
     Q_PROPERTY(QString inputMat READ getinputMat WRITE setinputMat);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, inputMat);
 
-    Q_PROPERTY(QString inputMat READ getoutputMat WRITE setoutputMat);
+    Q_PROPERTY(QString outputMat READ getoutputMat WRITE setoutputMat);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, outputMat);
 
 private slots:
