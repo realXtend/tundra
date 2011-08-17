@@ -302,10 +302,6 @@ namespace OgreRenderer
             return false;
     }
 
-    void Renderer::PostInitialize()
-    {
-    }
-
     void Renderer::SetFullScreen(bool value)
     {
         // In headless mode, we can safely ignore Fullscreen mode requests.
@@ -420,6 +416,7 @@ namespace OgreRenderer
             return renderWindow->OgreRenderWindow()->getWidth();
         return 0;
     }
+
     int Renderer::GetWindowHeight() const
     {
         if (renderWindow)
@@ -427,10 +424,6 @@ namespace OgreRenderer
         return 0;
     }
 
-    void Renderer::Update(f64 frametime)
-    {
-    }
-    
     void Renderer::SetViewDistance(float distance)
     {
         view_distance_ = distance;

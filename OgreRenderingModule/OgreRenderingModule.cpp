@@ -131,8 +131,6 @@ void OgreRenderingModule::Initialize()
 
 void OgreRenderingModule::PostInitialize()
 {
-    renderer->PostInitialize();
-
     framework_->Console()->RegisterCommand("RenderStats", "Prints out render statistics.",
         this, SLOT(ConsoleStats()));
     framework_->Console()->RegisterCommand("SetMaterialAttribute", "Sets an attribute on a material asset",
@@ -152,7 +150,6 @@ void OgreRenderingModule::Uninitialize()
 void OgreRenderingModule::Update(f64 frametime)
 {
     PROFILE(OgreRenderingModule_Update);
-    renderer->Update(frametime);
 }
 
 void OgreRenderingModule::ShowSettingsWindow()
