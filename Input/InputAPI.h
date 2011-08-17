@@ -61,7 +61,7 @@ public:
     /// Called internally by the Framework to update the polling Input API. Not for client use.
     void Update(float frametime);
 
-    /// Prints the list of input contexts to std::cout, for debugging purposes.
+    /// Prints the list of input contexts, for debugging purposes.
     void DumpInputContexts();
 
     typedef std::map<std::string, QKeySequence> KeyActionsMap;

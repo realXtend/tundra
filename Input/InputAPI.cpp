@@ -190,21 +190,19 @@ void InputAPI::DumpInputContexts()
 {
     int idx = 0;
 
-    InputContextList::iterator iter = registeredInputContexts.begin();
-    for(; iter != registeredInputContexts.end(); ++iter)
+    foreach(const boost::weak_ptr<InputContext> &inputContext, registeredInputContexts)
     {
-        boost::shared_ptr<InputContext> inputContext = iter->lock();
-        if (!inputContext)
-        {
-            std::stringstream ss;
-            ss << "Context " << (idx++) << ": expired weak_ptr.";
-            LogInfo(ss.str());
-            continue;
-        }
-        std::stringstream ss;
-        ss << "Context " << (idx++) << ": \"" << inputContext->Name().toStdString() << "\", priority " << inputContext->Priority();
-        LogInfo(ss.str());
+        InputContextPtr ic = inputContext.lock();
+        if (ic)
+            LogInfo("Context " + QString::number(idx++) + ": \"" + ic->Name() + "\", priority " + QString::number(ic->Priority()));
+        else
+            LogInfo("Context " + QString::number(idx++) + ": expired weak_ptr.");
     }
+
+    if (untrackedInputContexts.size() > 0 )
+        LogInfo("Untracked input contexts: ");
+    foreach(const InputContextPtr &ic, untrackedInputContexts)
+        LogInfo("Context " + QString::number(idx++) + ": \"" + ic->Name() + "\", priority " + QString::number(ic->Priority()));
 }
 
 InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
