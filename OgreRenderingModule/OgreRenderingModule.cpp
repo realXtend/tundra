@@ -85,7 +85,7 @@ void OgreRenderingModule::Load()
     }
 }
 
-void OgreRenderingModule::PreInitialize()
+void OgreRenderingModule::Initialize()
 {
     std::string ogre_config_filename = Application::InstallationDirectory().toStdString() + "ogre.cfg"; ///\todo Unicode support!
 #if defined (_WINDOWS) && (_DEBUG)
@@ -100,15 +100,9 @@ void OgreRenderingModule::PreInitialize()
 
     plugins_filename = Application::InstallationDirectory().toStdString() + plugins_filename; ///\todo Unicode support!
 
-    // Create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
     std::string window_title = framework_->Config()->GetApplicationIdentifier().toStdString();
 
     renderer = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
-
-}
-
-void OgreRenderingModule::Initialize()
-{
     assert (renderer);
     assert (!renderer->IsInitialized());
 
@@ -127,10 +121,7 @@ void OgreRenderingModule::Initialize()
     
     connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
     connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
-}
 
-void OgreRenderingModule::PostInitialize()
-{
     framework_->Console()->RegisterCommand("RenderStats", "Prints out render statistics.",
         this, SLOT(ConsoleStats()));
     framework_->Console()->RegisterCommand("SetMaterialAttribute", "Sets an attribute on a material asset",
