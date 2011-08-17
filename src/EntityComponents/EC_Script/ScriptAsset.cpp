@@ -2,6 +2,7 @@
 #include "DebugOperatorNew.h"
 #include <boost/regex.hpp>
 #include <QList>
+#include <QDir>
 #include "MemoryLeakCheck.h"
 
 #include "ScriptAsset.h"
@@ -71,8 +72,18 @@ void ScriptAsset::ParseReferences()
     expression = boost::regex("engine.IncludeFile\\(\\s*\"\\s*(.*?)\\s*\"\\s*\\)");
     for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {
+        // First check if this is a relative ref directly to jsmodules
+        // We don't want to add these to the references list as it will request them via asset api
+        // with a relative path and it will always fail (as we dont have working file:// schema etc.)
+        // The IncludeFile function will take care of relative refs when the script is ran.
+        QString regexResult = (*iter)[1].str().c_str();
+        if (QDir::isRelativePath(regexResult) && (regexResult.startsWith("jsmodules") ||
+            regexResult.startsWith("/jsmodules") || regexResult.startsWith("./jsmodules")))
+            continue;
+
+        // Ask AssetAPI to resolve the ref
         AssetReference ref;
-        ref.ref = assetAPI->ResolveAssetRef(Name(), (*iter)[1].str().c_str());
+        ref.ref = assetAPI->ResolveAssetRef(Name(), regexResult);
         if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
         {
             references.push_back(ref);
