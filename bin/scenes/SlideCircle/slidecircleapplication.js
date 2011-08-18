@@ -129,21 +129,25 @@ function getPoints(from, to) {
 }
 
 function HandleGotoNext() {
+    currenIndex = slideinfo.GetAttribute("curent");
     newIndex = currentIndex + 1;
-    if (newIndex >= endIndex) {
+    if (newIndex >= screennumber) {
 	newIndex = 0;
     }
     getPoints(entities[currentIndex], entities[newIndex]);
     currentIndex = newIndex;
+    slideinfo.SetAttribute("current", currentIndex);
 }
 
 function HandleGotoPrev() {
+    currenIndex = slideinfo.GetAttribute("curent");
     newIndex = currentIndex - 1;
     if (newIndex < 0) {
-	newIndex = endIndex - 1;
+	newIndex = screennumber - 1;
     }
     getPoints(entities[currentIndex], entities[newIndex]);
     currentIndex = newIndex;
+    slideinfo.SetAttribute("current", currentIndex);
 }
 
 function getBezier(t) {
@@ -256,22 +260,25 @@ function reset() {
 }
 
 function updateSettings() {
-    var dyn = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleSettings");
+    var settings = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleSettings");
     infront = dyn.GetAttribute('infront');
     close = dyn.GetAttribute('close');
     far = dyn.GetAttribute('far');
 }
 
 // We look for anything that has a EC_WebView and circulate between them
-var entities = scene.GetEntitiesWithComponentRaw("EC_WebView");
+var entities = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent", "SlideScreenInfo");
 
-var currentIndex = 0;
-var endIndex = entities.length;
+var slideinfo = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleInfo");
+
+var currentIndex = slideinfo.GetAttribute("current");
+var endIndex = slideinfo.GetAttribute("slidenumber") - 1; 
+var screennumber = entities.length
 
 var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
 var camera = scene.GetEntityByNameRaw("FreeLookCamera");
 //Handy for debug
-//var camera = scene.GetEntityByName("Monkey");
+var camera = scene.GetEntityByName("Monkey");
 
 inputmapper.RegisterMapping('n', "GotoNext", 1);
 inputmapper.RegisterMapping('p', "GotoPrev", 1);
@@ -282,12 +289,12 @@ inputmapper.RegisterMapping('r', "ResetShow", 1);
 // looking at the screen two points are counted for Bezier
 // cureves. These distances are read from the dynamic component
 
-var dyn = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleSettings");
-dyn.AttributeChanged.connect(updateSettings);
+var settings = me.GetComponentRaw("EC_DynamicComponent", "SlideCircleSettings");
+settings.AttributeChanged.connect(updateSettings);
 
-var infront = dyn.GetAttribute('infront');
-var close = dyn.GetAttribute('close');
-var far = dyn.GetAttribute('far');
+var infront = settings.GetAttribute('infront');
+var close = settings.GetAttribute('close');
+var far = settings.GetAttribute('far');
 
 var tolerance = 3;
 var max_ratio = 1.5;

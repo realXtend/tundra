@@ -27,6 +27,16 @@
    <attribute value="15" type="real" name="far"/>
    <attribute value="10" type="real" name="close"/>
   </component>
+  <component type="EC_DynamicComponent" sync="1" name="SlideCircleInfo">
+    <attribute value="6" type="int" name="slidenumber"/>
+    <attribute value="1" type="int" name="current"/>
+    <attribute value="http://www.fi/1" type="string" name="slide1"/>
+    <attribute value="http://www.fi/2" type="string" name="slide2"/>
+    <attribute value="http://www.fi/3" type="string" name="slide3"/>
+    <attribute value="http://www.fi/4" type="string" name="slide4"/>
+    <attribute value="http://www.fi/5" type="string" name="slide5"/>
+    <attribute value="http://www.fi/6" type="string" name="slide6"/>
+  </component>
  </entity>
  <entity id="2">
   <component type="EC_Mesh" sync="1">
@@ -55,6 +65,9 @@
    <attribute value="false" name="Interactive"/>
    <attribute value="true" name="Illuminating"/>
    <attribute value="-1" name="ControllerId"/>
+  </component>
+  <component type="EC_DynamicComponent" sync="1" name="SlideScreenInfo">
+    <attribute value="1" type="int" name="screennumber"/>
   </component>
  </entity>
  <entity id="3">
@@ -85,6 +98,9 @@
    <attribute value="true" name="Illuminating"/>
    <attribute value="-1" name="ControllerId"/>
   </component>
+  <component type="EC_DynamicComponent" sync="1" name="SlideScreenInfo">
+    <attribute value="2" type="int" name="screennumber"/>
+  </component>
  </entity>
  <entity id="4">
   <component type="EC_Mesh" sync="1">
@@ -114,6 +130,9 @@
    <attribute value="true" name="Illuminating"/>
    <attribute value="-1" name="ControllerId"/>
   </component>
+  <component type="EC_DynamicComponent" sync="1" name="SlideScreenInfo">
+    <attribute value="3" type="int" name="screennumber"/>
+  </component>
  </entity>
  <entity id="5">
   <component type="EC_Mesh" sync="1">
@@ -142,6 +161,9 @@
    <attribute value="false" name="Interactive"/>
    <attribute value="true" name="Illuminating"/>
    <attribute value="-1" name="ControllerId"/>
+  </component>
+  <component type="EC_DynamicComponent" sync="1" name="SlideScreenInfo">
+    <attribute value="4" type="int" name="screennumber"/>
   </component>
  </entity>
  <entity id="6">
