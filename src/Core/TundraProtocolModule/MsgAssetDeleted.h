@@ -24,7 +24,7 @@ struct MsgAssetDeleted
 		priority = defaultPriority;
 	}
 
-	enum { messageID = 121 };
+	enum { messageID = 122 };
 	static inline const char * const Name() { return "AssetDeleted"; }
 
 	static const bool defaultReliable = true;

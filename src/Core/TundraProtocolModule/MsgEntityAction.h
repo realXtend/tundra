@@ -24,7 +24,7 @@ struct MsgEntityAction
 		priority = defaultPriority;
 	}
 
-	enum { messageID = 116 };
+	enum { messageID = 120 };
 	static inline const char * const Name() { return "EntityAction"; }
 
 	static const bool defaultReliable = true;
@@ -67,7 +67,7 @@ struct MsgEntityAction
 
 	inline size_t Size() const
 	{
-		return 4 + 1 + name.size()*1 + 1 + 1 + kNet::SumArray(parameters, parameters.size());
+		return 4 + 1 + name.size()*1 + 1 + 1 + kNet::ArraySize<kNet::TypeSerializer<S_parameters> >(parameters, parameters.size());
 	}
 
 	inline void SerializeTo(kNet::DataSerializer &dst) const
@@ -79,7 +79,7 @@ struct MsgEntityAction
 		dst.Add<u8>(executionType);
 		dst.Add<u8>(parameters.size());
 		for(size_t i = 0; i < parameters.size(); ++i)
-			parameters[i].SerializeTo(dst);
+			kNet::TypeSerializer<S_parameters>::SerializeTo(dst, parameters[i]);
 	}
 
 	inline void DeserializeFrom(kNet::DataDeserializer &src)
@@ -91,7 +91,7 @@ struct MsgEntityAction
 		executionType = src.Read<u8>();
 		parameters.resize(src.Read<u8>());
 		for(size_t i = 0; i < parameters.size(); ++i)
-			parameters[i].DeserializeFrom(src);
+			kNet::TypeSerializer<S_parameters>::DeserializeFrom(src, parameters[i]);
 	}
 
 };
