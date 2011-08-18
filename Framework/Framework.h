@@ -52,12 +52,6 @@ public:
     /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
     Profiler *GetProfiler();
 #endif
-    /// Loads all available modules. Do not call normally.
-    void LoadModules();
-
-    /// Unloads all available modules. Do not call normally.
-    void UnloadModules();
-
     /// Returns the main QApplication
     Application *App() const;
 
@@ -156,8 +150,6 @@ public slots:
 private:
     Q_DISABLE_COPY(Framework)
 
-    void UpdateModules();
-    
     bool exit_signal_; ///< If true, exit application.
 #ifdef PROFILING
     Profiler *profiler; ///< Profiler.
@@ -165,7 +157,6 @@ private:
     boost::program_options::variables_map commandLineVariables; ///< program options
     boost::program_options::options_description commandLineDescriptions; ///< program option descriptions
     bool headless_; ///< Are we running in the headless mode.
-    
     Application *application; ///< The main QApplication object.
     FrameAPI *frame; ///< The Frame API.
     ConsoleAPI *console; ///< The console API.

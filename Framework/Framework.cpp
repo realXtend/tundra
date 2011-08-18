@@ -193,15 +193,15 @@ void Framework::ProcessOneFrame()
         }
         catch(const std::exception &e)
         {
-            std::cout << "UpdateModules caught an exception while updating module " << modules[i]->Name()
+            std::cout << "ProcessOneFrame caught an exception while updating module " << modules[i]->Name()
                 << ": " << (e.what() ? e.what() : "(null)") << std::endl;
-            LogCritical(std::string("UpdateModules caught an exception while updating module " + modules[i]->Name()
+            LogCritical(std::string("ProcessOneFrame caught an exception while updating module " + modules[i]->Name()
                 + ": " + (e.what() ? e.what() : "(null)")));
         }
         catch(...)
         {
-            std::cout << "UpdateModules caught an unknown exception while updating module " << modules[i]->Name() << std::endl;
-            LogCritical(std::string("UpdateModules caught an unknown exception while updating module " + modules[i]->Name()));
+            std::cout << "ProcessOneFrame caught an unknown exception while updating module " << modules[i]->Name() << std::endl;
+            LogCritical(std::string("ProcessOneFrame caught an unknown exception while updating module " + modules[i]->Name()));
         }
     }
 
