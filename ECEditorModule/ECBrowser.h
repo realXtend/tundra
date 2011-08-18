@@ -29,7 +29,7 @@ typedef std::vector<ComponentWeakPtr> ComponentWeakPtrVector;
 
 class Framework;
 
-/// Widget that will display all selected entity components and their attributes.
+/// Displays all selected entity-components and their attributes.
 /** The ECBrowser will iterate all entity's components and pass them to an ECComponentEditor,
     which is responsible to handling component's attribute editing.
 
@@ -40,33 +40,30 @@ class Framework;
 
     User can add attributes to dynamic component by using CreateAttribute() and remove attributes with RemoveAttribute().
 
-    \todo Try to find a way to remove the unnecessary paint events when we are updating the browser parameters.
-    \ingroup ECEditorModuleClient.
- */
+    @todo Try to find a way to remove the unnecessary paint events when we are updating the browser parameters.
+    @ingroup ECEditorModuleClient. */
 class ECBrowser : public QtTreePropertyBrowser
 {
     Q_OBJECT
+
 public:
     ECBrowser(Framework *framework, QWidget *parent = 0);
     virtual ~ECBrowser();
 
     /// Insert new entity to browser.
-    /// Note! to get changes visible you need to call UpdateBrowser method.
-    /** @param enity a new entity that we want to edit on the ECEditor.
-     */
+    /** @note In order to get changes visible, you need to call UpdateBrowser method afterwards.
+        @param enity a new entity that we want to edit on the ECEditor. */
     void AddEntity(EntityPtr entity);
 
     /// Remove edited entity from the browser widget.
-    /** @param entity Entity that we want to remove on the ECEditor.
-     */
+    /** @param entity Entity that we want to remove on the ECEditor. */
     void RemoveEntity(EntityPtr entity);
 
     /// Return list of entities that has added to browser widget. Return empty list if no entities have been added.
     QList<EntityPtr> GetEntities() const;
 
     /// Sets used item expand memory. Expand memory is used to load and save the expanded items in the tree widget.
-    /** @param expandMem Tree widget item expand memory.
-    */
+    /** @param expandMem Tree widget item expand memory. */
     void SetItemExpandMemory(boost::shared_ptr<TreeWidgetItemExpandMemory> expandMem) { expandMemory_ = expandMem; }
 
     /// Reads selected components from ComponentGroup and return them as QObjectList.
@@ -78,6 +75,9 @@ public slots:
 
     /// Update editor data and browser ui elements if needed.
     void UpdateBrowser();
+
+    /// Expands or collapses all items in the tree widget, depending on the current state of the widget.
+    void ExpandOrCollapseAll();
 
 signals:
     /// User want to open xml editor for that spesific component type.
@@ -92,8 +92,7 @@ signals:
         @param compType selected item component type name.
         @param compName selected item component name.
         @param attrType selected item attribute type name (Empty if attribute isn't selected).
-        @param attrName selected item attribute name (Empty if attribute isn't selected).
-    */
+        @param attrName selected item attribute name (Empty if attribute isn't selected). */
     void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
 
 protected:
@@ -123,14 +122,12 @@ private slots:
 
     /// Called when a new component have been added to a entity.
     /** @param comp a new component that has added into the entity.
-        @param type attribute change type.
-    */
+        @param type attribute change type. */
     void OnComponentAdded(IComponent* comp, AttributeChange::Type type);
 
     /// Called when component have been removed from the entity.
     /** @param comp Component that will soon get removed from the entity.
-     *  @param type attribute change type
-     */
+        @param type attribute change type */
     void OnComponentRemoved(IComponent* comp, AttributeChange::Type type);
 
     /// User has selected xml edit action from a QMenu.
@@ -148,18 +145,16 @@ private slots:
 
     /// Component's name has been changed and we need to remove component from it's previous
     /// ComponentGroup and insert component to another componentgroup.
-    /** @param newName component's new name.
-     */
+    /** @param newName component's new name. */
     void OnComponentNameChanged(const QString &newName);
 
     /// Show dialog, so that user can create a new attribute.
-    /// @Note: Only works with dynamic components.
+    /// @note Only works with dynamic components.
     void CreateAttribute();
 
     /// Remove component or attribute based on selected QTreeWidgeItem.
     /** If selected TreeWidgetItem is a root item, then we can assume that we want to remove component.
-        But if item has parent set, we can assume that selected item is attribute or it's value is selected.
-    */
+        But if item has parent set, we can assume that selected item is attribute or it's value is selected. */
     void OnDeleteAction();
 
     /// Resizes header to contents of the tree widget.
@@ -169,14 +164,12 @@ private:
     /// Try to find the right component group for given component.
     /** If right type of component group is found return it's pointer.
         If any suitable componentGroup wasn't found return null pointer.
-        @param comp component that we want to find a suitable group.
-    */
+        @param comp component that we want to find a suitable group. */
     ComponentGroup *FindSuitableGroup(ComponentPtr comp);
 
     /// Add new component to existing component group if same type of component have been already added to editor,
     /** if component type is not included, create new component group and add it to editor.
-     *  @param comp a new component that we want to add into the enity.
-     */
+        @param comp a new component that we want to add into the enity. */
     void AddNewComponentToGroup(ComponentPtr comp);
 
     /// Remove component from registered componentgroup. Do nothing if component was not found of any component groups.
@@ -206,4 +199,3 @@ private:
     Framework *framework_;
     boost::weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
 };
-

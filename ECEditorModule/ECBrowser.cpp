@@ -6,8 +6,9 @@
 #include "ECBrowser.h"
 #include "ECComponentEditor.h"
 #include "TreeWidgetItemExpandMemory.h"
-#include "Profiler.h"
+#include "TreeWidgetUtils.h"
 
+#include "Profiler.h"
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "IComponent.h"
@@ -65,7 +66,7 @@ ECBrowser::~ECBrowser()
 }
 
 void ECBrowser::AddEntity(EntityPtr entity)
-{ 
+{
     PROFILE(ECBrowser_AddNewEntity);
 
     assert(entity);
@@ -180,6 +181,16 @@ void ECBrowser::UpdateBrowser()
     }
 
     treeWidget_->setSortingEnabled(true);
+}
+
+void ECBrowser::ExpandOrCollapseAll()
+{
+    if (treeWidget_)
+    {
+        treeWidget_->blockSignals(true);
+        TreeWidgetExpandOrCollapseAll(treeWidget_);
+        treeWidget_->blockSignals(false);
+    }
 }
 
 void ECBrowser::dragEnterEvent(QDragEnterEvent *event)

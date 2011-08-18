@@ -134,6 +134,10 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     if (toggleEntitiesButton)
         connect(toggleEntitiesButton, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
 
+    QPushButton *expandOrCollapseButton = findChild<QPushButton *>("expandOrCollapseButton");
+    if (expandOrCollapseButton && ecBrowser)
+        connect(expandOrCollapseButton, SIGNAL(clicked()), ecBrowser, SLOT(ExpandOrCollapseAll()));
+
     // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
     connect(framework->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene *)), SLOT(OnDefaultSceneChanged(Scene *)));
 
