@@ -27,8 +27,6 @@
 #include "FunctionInvoker.h"
 #include "ArgumentType.h"
 
-#include <boost/filesystem.hpp>
-
 #ifdef _WINDOWS
 #include <WinSock2.h>
 #include <windows.h>
@@ -495,6 +493,7 @@ void AssetTreeWidget::OpenFileLocation()
         CloseHandle(processInfo.hProcess);
         CloseHandle(processInfo.hThread);
 #endif
+       ///\todo Cross-platform
     }
 }
 
