@@ -6,28 +6,18 @@
 
 #include "SceneFwd.h"
 #include "CoreTypes.h"
-#include "ComponentGroup.h"
 #include "AttributeChangeType.h"
 
 #include <QtTreePropertyBrowser>
 #include <QMap>
-#include <set>
 
-class QtTreePropertyBrowser;
-class QtGroupPropertyManager;
-class QtBrowserItem;
 class QTreeWidget;
 class QMenu;
 class QMimeData;
 
-class TreeWidgetItemExpandMemory;
-class ECEditorWindow;
-class ECComponentEditor;
-typedef std::vector<ComponentWeakPtr> ComponentWeakPtrVector;
-
-//typedef std::list<ComponentGroup*> ComponentGroupList;
-
 class Framework;
+class TreeWidgetItemExpandMemory;
+struct ComponentGroup;
 
 /// Displays all selected entity-components and their attributes.
 /** The ECBrowser will iterate all entity's components and pass them to an ECComponentEditor,
@@ -177,7 +167,7 @@ private:
     void RemoveComponentFromGroup(ComponentPtr comp);
 
     /// Remove whole component group object from the browser.
-    /** componentGroup component group object that we want to remove from the editor. */
+    /** @param componentGroup component group object that we want to remove from the editor. */
     void RemoveComponentGroup(ComponentGroup *componentGroup);
 
     /// Checks if entity is already added to this editor.
