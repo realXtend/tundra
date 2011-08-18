@@ -23,9 +23,9 @@
    <attribute value="true" name="Trigger on keyrepeats"/>
   </component>
   <component type="EC_DynamicComponent" sync="1" name="SlideCircleSettings">
-    <attribute value="4.0" type="real" name="infront"/>
-    <attribute value="6.0" type="real" name="close"/>
-    <attribute value="15.0" type="real" name="far"/>
+   <attribute value="8" type="real" name="infront"/>
+   <attribute value="15" type="real" name="far"/>
+   <attribute value="10" type="real" name="close"/>
   </component>
  </entity>
  <entity id="2">
@@ -38,7 +38,7 @@
    <attribute value="false" name="Cast shadows"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="0,20,0,180,0,0,1,1,1" name="Transform"/>
+   <attribute value="0,20,0,-178.391,190,3.39632e-06,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
@@ -48,11 +48,12 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_WebView" sync="1">
-   <attribute value="" name="View URL"/>
+   <attribute value="http://www.realxtend.org/" name="View URL"/>
    <attribute value="800 600" name="View Size"/>
-   <attribute value="0" name="Render Submesh"/>
+   <attribute value="1" name="Render Submesh"/>
    <attribute value="0" name="Render FPS"/>
    <attribute value="false" name="Interactive"/>
+   <attribute value="true" name="Illuminating"/>
    <attribute value="-1" name="ControllerId"/>
   </component>
  </entity>
@@ -66,7 +67,7 @@
    <attribute value="false" name="Cast shadows"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="0,-20,0,180,5,180,1,1,1" name="Transform"/>
+   <attribute value="0,-20,0,180,170,180,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
@@ -76,11 +77,12 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_WebView" sync="1">
-   <attribute value="" name="View URL"/>
+   <attribute value="http://wiki.realxtend.org/index.php/Getting_Started_with_Tundra" name="View URL"/>
    <attribute value="800 600" name="View Size"/>
-   <attribute value="0" name="Render Submesh"/>
+   <attribute value="1" name="Render Submesh"/>
    <attribute value="0" name="Render FPS"/>
    <attribute value="false" name="Interactive"/>
+   <attribute value="true" name="Illuminating"/>
    <attribute value="-1" name="ControllerId"/>
   </component>
  </entity>
@@ -94,7 +96,7 @@
    <attribute value="false" name="Cast shadows"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="20,0,0,180,0,270,1,1,1" name="Transform"/>
+   <attribute value="20,0,0,180,180,270,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
@@ -104,11 +106,12 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_WebView" sync="1">
-   <attribute value="" name="View URL"/>
+   <attribute value="http://realxtend.wordpress.com/media/" name="View URL"/>
    <attribute value="800 600" name="View Size"/>
-   <attribute value="0" name="Render Submesh"/>
+   <attribute value="1" name="Render Submesh"/>
    <attribute value="0" name="Render FPS"/>
    <attribute value="false" name="Interactive"/>
+   <attribute value="true" name="Illuminating"/>
    <attribute value="-1" name="ControllerId"/>
   </component>
  </entity>
@@ -122,7 +125,7 @@
    <attribute value="false" name="Cast shadows"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="-20,0,0,180,15,90,1,1,1" name="Transform"/>
+   <attribute value="-20,0,0,5.65221e-06,4,-90,1,1,1" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
@@ -132,11 +135,12 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_WebView" sync="1">
-   <attribute value="" name="View URL"/>
+   <attribute value="http://realxtend.wordpress.com/realxtend-association/" name="View URL"/>
    <attribute value="800 600" name="View Size"/>
-   <attribute value="0" name="Render Submesh"/>
+   <attribute value="1" name="Render Submesh"/>
    <attribute value="0" name="Render FPS"/>
    <attribute value="false" name="Interactive"/>
+   <attribute value="true" name="Illuminating"/>
    <attribute value="-1" name="ControllerId"/>
   </component>
  </entity>
@@ -159,5 +163,5 @@
    <attribute value="" name="description"/>
    <attribute value="false" name="user-defined"/>
   </component>
-  </entity>
+ </entity>
 </scene>
