@@ -84,12 +84,12 @@ signals:
         /// Create or get a tabbed scrollarea panel
         QWidget* GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name);
 
+/*
         /// Ask a filename from the user. Store the directory used.
         std::string GetOpenFileName(const std::string& filter, const std::string& prompt);
-
         /// Ask a filename from the user for saving. Store the directory used.
         std::string GetSaveFileName(const std::string& filter, const std::string& prompt);
-
+*/
         /// Last used directory for selecting avatars, attachments, textures
         std::string last_directory_;
 

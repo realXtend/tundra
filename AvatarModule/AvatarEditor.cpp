@@ -38,7 +38,7 @@ namespace Avatar
     {
         InitEditorWindow();
         last_directory_ = avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory",
-            QtUtils::GetCurrentPath().c_str()).toString().toStdString();
+            QDir::currentPath()).toString().toStdString();
     }
 
     AvatarEditor::~AvatarEditor()
@@ -570,7 +570,7 @@ namespace Avatar
         tabs->addTab(tab_scroll, name_with_space);
         return tab_panel;
     }
-
+/*
     std::string AvatarEditor::GetOpenFileName(const std::string& filter, const std::string& prompt)
     {
         std::string filename = QtUtils::GetOpenFileName(filter, prompt, last_directory_);
@@ -582,7 +582,7 @@ namespace Avatar
         }
         return filename; 
     }
-    
+
     std::string AvatarEditor::GetSaveFileName(const std::string& filter, const std::string& prompt)
     {
         std::string filename = QtUtils::GetSaveFileName(filter, prompt, last_directory_);
@@ -594,7 +594,7 @@ namespace Avatar
         }
         return filename; 
     }
-    
+*/
     bool AvatarEditor::GetAvatarDesc(Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc)
     {
         entity = avatarEntity_.lock().get();
