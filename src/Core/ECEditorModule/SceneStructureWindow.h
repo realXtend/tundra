@@ -83,18 +83,6 @@ private:
     */
     void CreateAssetItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
-    /// Decorates an entity item: changes its color and appends the text with extra information.
-    /** @param entity Entity Entity for which the item is created for.
-        @param item Entity item to be decorated.
-    */
-    void DecorateEntityItem(Entity *entity, QTreeWidgetItem *item) const;
-
-    /// Decorates a component item: changes its color and appends the text with extra information.
-    /** @param comp comp Component for which the item is created for.
-        @param item Component item to be decorated.
-    */
-    void DecorateComponentItem(IComponent *comp, QTreeWidgetItem *item) const;
-
     Framework *framework; ///< Framework.
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     SceneTreeWidget *treeWidget; ///< Scene tree widget.

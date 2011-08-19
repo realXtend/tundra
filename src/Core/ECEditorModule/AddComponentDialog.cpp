@@ -47,7 +47,7 @@ AddComponentDialog::AddComponentDialog(Framework *fw, const QList<entity_id_t> &
 
     name_line_edit_ = new QLineEdit(this);
     type_combo_box_ = new QComboBox(this);
-    sync_check_box_ = new QCheckBox(tr("NetworkSyncEnabled"), this);
+    sync_check_box_ = new QCheckBox(tr("Replicated"), this);
     sync_check_box_->setChecked(true);
     temp_check_box_ = new QCheckBox(tr("Temporary"), this);
 

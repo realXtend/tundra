@@ -11,12 +11,6 @@
 #include "Client.h"
 #include "Server.h"
 #include "TundraMessages.h"
-#include "MsgCreateEntity.h"
-#include "MsgCreateComponents.h"
-#include "MsgUpdateComponents.h"
-#include "MsgRemoveComponents.h"
-#include "MsgRemoveEntity.h"
-#include "MsgEntityIDCollision.h"
 #include "MsgEntityAction.h"
 #include "EC_DynamicComponent.h"
 #include "AssetAPI.h"
@@ -34,12 +28,6 @@
 #include "MemoryLeakCheck.h"
 
 using namespace kNet;
-
-// This define controls whether to echo scene changes back to the sending client. For some applications (ie. synced UI widgets)
-// it is nice to have off, but there might be possible determinism issues if many clients are updating the same attribute at the same time
-// Note: changes must definitely be sent also to sender if server can change the value sent by the client. Also when/if changes can be 
-// rejected, an overriding update should be sent to the sending client
-// #define ECHO_CHANGES_TO_SENDER
 
 // This variable is used for the sender echo & interpolation stop check
 kNet::MessageConnection* currentSender = 0;
@@ -113,42 +101,6 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
 {
     switch (id)
     {
-    case cCreateEntityMessage:
-        {
-            MsgCreateEntity msg(data, numBytes);
-            HandleCreateEntity(source, msg);
-        }
-        break;
-    case cRemoveEntityMessage:
-        {
-            MsgRemoveEntity msg(data, numBytes);
-            HandleRemoveEntity(source, msg);
-        }
-        break;
-    case cCreateComponentsMessage:
-        {
-            MsgCreateComponents msg(data, numBytes);
-            HandleCreateComponents(source, msg);
-        }
-        break;
-    case cUpdateComponentsMessage:
-        {
-            MsgUpdateComponents msg(data, numBytes);
-            HandleUpdateComponents(source, msg);
-        }
-        break;
-    case cRemoveComponentsMessage:
-        {
-            MsgRemoveComponents msg(data, numBytes);
-            HandleRemoveComponents(source, msg);
-        }
-        break;
-    case cEntityIDCollisionMessage:
-        {
-            MsgEntityIDCollision msg(data, numBytes);
-            HandleEntityIDCollision(source, msg);
-        }
-        break;
     case cEntityActionMessage:
         {
             MsgEntityAction msg(data, numBytes);
@@ -174,6 +126,7 @@ void SyncManager::NewUserConnected(UserConnection* user)
     // Connect to actions sent to specifically to this user
     connect(user, SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
+    /*
     // If user does not have replication state, create it, then mark all non-local entities dirty
     // so we will send them during the coming updates
     if (!user->syncState)
@@ -190,6 +143,7 @@ void SyncManager::NewUserConnected(UserConnection* user)
             break;
         state->OnEntityChanged(id);
     }
+    */
 }
 
 void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
@@ -212,11 +166,13 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         }
     }
     
-    if ((change != AttributeChange::Replicate) || (!comp->NetworkSyncEnabled()))
+    if ((change != AttributeChange::Replicate) || (!comp->IsReplicated()))
         return;
     Entity* entity = comp->ParentEntity();
     if ((!entity) || (entity->IsLocal()))
         return;
+    
+    /*
     bool dynamic = comp->HasDynamicStructure();
     
     if (isServer)
@@ -224,10 +180,10 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-#ifndef ECHO_CHANGES_TO_SENDER
+            // Do not echo the attribute change back to the sender
             if ((*i)->connection == currentSender)
                 continue;
-#endif
+
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
             {
@@ -248,6 +204,8 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
             state->OnDynamicAttributeChanged(entity->Id(), comp->TypeId(), comp->Name(), attr->Name());
     }
     
+    */
+    
     // This attribute changing might in turn cause other attributes to change on the server, and these must be echoed to all, so reset sender now
     currentSender = 0;
 }
@@ -258,11 +216,12 @@ void SyncManager::OnComponentAdded(Entity* entity, IComponent* comp, AttributeCh
     if (!entity || !comp)
         return;
 
-    if ((change != AttributeChange::Replicate) || (!comp->NetworkSyncEnabled()))
+    if ((change != AttributeChange::Replicate) || (comp->IsLocal()))
         return;
     if (entity->IsLocal())
         return;
     
+    /*
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
@@ -278,6 +237,7 @@ void SyncManager::OnComponentAdded(Entity* entity, IComponent* comp, AttributeCh
         SceneSyncState* state = &server_syncstate_;
         state->OnComponentAdded(entity->Id(), comp->TypeId(), comp->Name());
     }
+    */
 }
 
 void SyncManager::OnComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change)
@@ -285,11 +245,12 @@ void SyncManager::OnComponentRemoved(Entity* entity, IComponent* comp, Attribute
     assert(entity && comp);
     if (!entity || !comp)
         return;
-    if ((change != AttributeChange::Replicate) || (!comp->NetworkSyncEnabled()))
+    if ((change != AttributeChange::Replicate) || (comp->IsLocal()))
         return;
     if (entity->IsLocal())
         return;
     
+    /*
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
@@ -305,6 +266,7 @@ void SyncManager::OnComponentRemoved(Entity* entity, IComponent* comp, Attribute
         SceneSyncState* state = &server_syncstate_;
         state->OnComponentRemoved(entity->Id(), comp->TypeId(), comp->Name());
     }
+    */
 }
 
 void SyncManager::OnEntityCreated(Entity* entity, AttributeChange::Type change)
@@ -315,6 +277,7 @@ void SyncManager::OnEntityCreated(Entity* entity, AttributeChange::Type change)
     if ((change != AttributeChange::Replicate) || (entity->IsLocal()))
         return;
 
+    /*
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
@@ -337,6 +300,7 @@ void SyncManager::OnEntityCreated(Entity* entity, AttributeChange::Type change)
         SceneSyncState* state = &server_syncstate_;
         state->OnEntityChanged(entity->Id());
     }
+    */
 }
 
 void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
@@ -348,6 +312,8 @@ void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
         return;
     if (entity->IsLocal())
         return;
+    
+    /*
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
@@ -363,6 +329,7 @@ void SyncManager::OnEntityRemoved(Entity* entity, AttributeChange::Type change)
         SceneSyncState* state = &server_syncstate_;
         state->OnEntityRemoved(entity->Id());
     }
+    */
 }
 
 void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecTypeField type)
@@ -479,6 +446,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     
     int num_messages_sent = 0;
     
+    /*
     /// \todo Always sends everything that is dirty/removed. No priorization or limiting of sent data size yet.
     
     // Process dirty entities (added/updated/removed components)
@@ -507,7 +475,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             {
                 ComponentPtr component = components[j];
                 
-                if (component->NetworkSyncEnabled())
+                if (component->IsReplicated())
                 {
                     // Create componentstate so we can start tracking individual attributes
                     ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeId(), component->Name());
@@ -542,7 +510,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 for(std::set<std::pair<uint, QString> >::iterator j = dirtycomps.begin(); j != dirtycomps.end(); ++j)
                 {
                     ComponentPtr component = entity->GetComponent(j->first, j->second);
-                    if (component && component->NetworkSyncEnabled())
+                    if (component && component->IsReplicated())
                     {
                         ComponentSyncState* componentstate = entitystate->GetComponent(component->TypeId(), component->Name());
                         // New component
@@ -689,16 +657,13 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     
     //if (num_messages_sent)
     //    LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
+    
+    */
 }
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
 {
     assert(source);
-    if ((entityID & LocalEntity) != 0)
-    {
-        LogWarning("Received an entity sync message for a local entity. Disregarding.");
-        return false;
-    }
     
     // For now, always trust scene actions from server
     if (!owner_->IsServer())
@@ -712,6 +677,7 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
     return true;
 }
 
+/*
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg)
 {
     assert(source);
@@ -1241,6 +1207,7 @@ void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const
         state->RemoveEntity(msg.oldEntityID);
     }
 }
+*/
 
 void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg)
 {
@@ -1319,7 +1286,5 @@ SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connecti
     }
     return 0;
 }
-
-
 
 }

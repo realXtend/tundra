@@ -184,7 +184,7 @@ void TransformEditor::CreateGizmo()
     if (!s)
         return;
 
-    gizmo = s->CreateEntity(s->NextFreeIdLocal(), QStringList(QStringList() << EC_TransformGizmo::TypeNameStatic()));
+    gizmo = s->CreateEntity(0, QStringList(QStringList() << EC_TransformGizmo::TypeNameStatic()), AttributeChange::LocalOnly, false, false);
     if (!gizmo)
     {
         LogError("TransformEditor: could not create gizmo entity.");

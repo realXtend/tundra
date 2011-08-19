@@ -92,24 +92,6 @@ private slots:
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
 
 private:
-    
-    /// Handle create entity message
-    void HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg);
-    
-    /// Handle remove entity message
-    void HandleRemoveEntity(kNet::MessageConnection* source, const MsgRemoveEntity& msg);
-    
-    /// Handle create components message
-    void HandleCreateComponents(kNet::MessageConnection* source, const MsgCreateComponents& msg);
-    
-    /// Handle update components message
-    void HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg);
-    
-    /// Handle remove components message
-    void HandleRemoveComponents(kNet::MessageConnection* source, const MsgRemoveComponents& msg);
-    
-    /// Handle entityID collision message
-    void HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg);
 
     /// Handle entity action message.
     void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);

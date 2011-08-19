@@ -703,25 +703,25 @@ void SceneTreeWidget::NewEntity()
     if (scene.expired())
         return;
 
-    entity_id_t id;
     AttributeChange::Type changeType;
 
     // Show a dialog so that user can choose if he wants to create local or synchronized entity.
-    QStringList types(QStringList() << tr("Synchronized") << tr("Local"));
+    QStringList types(QStringList() << tr("Replicated") << tr("Local"));
     bool ok;
     QString type = QInputDialog::getItem(NULL, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
     if (!ok || type.isEmpty())
         return;
 
-    if (type == tr("Synchronized"))
+    bool replicated = true;
+
+    if (type == tr("Replicated"))
     {
-        id = scene.lock()->NextFreeId();
         changeType = AttributeChange::Replicate;
     }
     else if(type == tr("Local"))
     {
-        id = scene.lock()->NextFreeIdLocal();
         changeType = AttributeChange::LocalOnly;
+        replicated = false;
     }
     else
     {
@@ -730,7 +730,7 @@ void SceneTreeWidget::NewEntity()
     }
 
     // Create entity.
-    EntityPtr entity = scene.lock()->CreateEntity(id, QStringList(), changeType);
+    EntityPtr entity = scene.lock()->CreateEntity(0, QStringList(), changeType, replicated);
     assert(entity);
     scene.lock()->EmitEntityCreated(entity.get(), changeType);
 }
@@ -784,7 +784,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         assert(comp);
         if (comp)
         {
-            comp->SetNetworkSyncEnabled(dialog->GetSynchronization());
+            comp->SetReplicated(dialog->GetSynchronization());
             comp->SetTemporary(dialog->GetTemporary());
             entity->AddComponent(comp, AttributeChange::Default);
         }
@@ -1572,9 +1572,8 @@ void SceneTreeWidget::ConvertEntityToLocal()
             EntityPtr orgEntity = item->Entity();
             if (orgEntity && !orgEntity->IsLocal())
             {
-                EntityPtr newEntity = orgEntity->Clone(true, orgEntity->IsTemporary());
-                if (newEntity)
-                    scn->RemoveEntity(orgEntity->Id()); // Creation successful, remove the original.
+                orgEntity->SetReplicated(false);
+                item->SetText(orgEntity.get());
             }
         }
 }
@@ -1588,9 +1587,8 @@ void SceneTreeWidget::ConvertEntityToReplicated()
             EntityPtr orgEntity = item->Entity();
             if (orgEntity && orgEntity->IsLocal())
             {
-                EntityPtr newEntity = orgEntity->Clone(false, orgEntity->IsTemporary());
-                if (newEntity)
-                    scn->RemoveEntity(orgEntity->Id()); // Creation successful, remove the original.
+                orgEntity->SetReplicated(true);
+                item->SetText(orgEntity.get());
             }
         }
 }
@@ -1599,5 +1597,8 @@ void SceneTreeWidget::SetAsTemporary(bool temporary)
 {
     foreach(EntityItem *item, GetSelection().entities)
         if (item->Entity())
+        {
             item->Entity()->SetTemporary(temporary);
+            item->SetText(item->Entity().get());
+        }
 }

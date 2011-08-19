@@ -27,7 +27,35 @@ EntityItem::EntityItem(const EntityPtr &entity) :
 
 void EntityItem::SetText(::Entity *entity)
 {
-    setText(0, QString("%1 %2").arg(entity->Id()).arg(entity->Name()));
+    QString name = QString("%1 %2").arg(entity->Id()).arg(entity->Name());
+    setTextColor(0, QColor(Qt::black));
+    
+    bool local = entity->IsLocal();
+    bool temp = entity->IsTemporary();
+
+    QString info;
+    if (local)
+    {
+        setTextColor(0, QColor(Qt::blue));
+        info.append("Local");
+    }
+
+    if (temp)
+    {
+        setTextColor(0, QColor(Qt::red));
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append("Temporary");
+    }
+
+    if (!info.isEmpty())
+    {
+        info.prepend(" (");
+        info.append(")");
+        setText(0, name + info);
+    }
+    else
+        setText(0, name);
 }
 
 EntityPtr EntityItem::Entity() const
@@ -68,7 +96,49 @@ ComponentItem::ComponentItem(const ComponentPtr &comp, EntityItem *parent) :
 
 void ComponentItem::SetText(IComponent *comp)
 {
-    setText(0, QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()));
+    QString name = QString("%1 %2").arg(comp->TypeName()).arg(comp->Name());
+    setTextColor(0, QColor(Qt::black));
+    
+    bool sync = comp->IsReplicated();
+    bool temporary = comp->IsTemporary();
+    
+    QString info;
+    if (!sync)
+    {
+        setTextColor(0, QColor(Qt::blue));
+        info.append("Local");
+    }
+
+    if (temporary)
+    {
+        setTextColor(0, QColor(Qt::red));
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append("Temporary");
+    }
+
+    if (comp->UpdateMode() == AttributeChange::LocalOnly)
+    {
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append("UpdateMode:LocalOnly");
+    }
+
+    if (comp->UpdateMode() == AttributeChange::Disconnected)
+    {
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append("UpdateMode:Disconnected");
+    }
+
+    if (!info.isEmpty())
+    {
+        info.prepend(" (");
+        info.append(")");
+        setText(0, name + info);
+    }
+    else
+        setText(0, name);
 }
 
 ComponentPtr ComponentItem::Component() const

@@ -18,11 +18,6 @@
 class QDomDocument;
 class QDomElement;
 
-/// Local entity ID flag (high bit).
-/** If this flag is set on an Entity or a Component, the changes to that
-    Entity or Component only affect locally and are not synchronized to the network. */
-static const entity_id_t LocalEntity = 0x80000000;
-
 /// Represents a single object in a Scene.
 /** An entity is just a collection of components, the components define what
     the entity is and what it does.
@@ -52,7 +47,9 @@ class Entity : public QObject, public boost::enable_shared_from_this<Entity>
     Q_PROPERTY (uint id READ Id)
     Q_PROPERTY (QString name READ Name WRITE SetName)
     Q_PROPERTY (QString description READ Description WRITE SetDescription)
-
+    Q_PROPERTY (bool replicated READ IsReplicated WRITE SetReplicated)
+    Q_PROPERTY (bool local READ IsLocal)
+    
 public:
     typedef std::vector<ComponentPtr> ComponentVector; ///< Component container.
     typedef QMap<QString, EntityAction *> ActionMap; ///< Action container
@@ -132,13 +129,13 @@ public slots:
 
     /// Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
     /** @param type_name The type string of the component to create, obtained from IComponent::TypeName().
-        @param change Network replication mode, in case component has to be created
-        @param syncEnabled Whether new component will have network sync enabled
+        @param change Change signalling mode, in case component has to be created
+        @param replicated Whether new component will be replicated through network
         @return Pointer to the component, or an empty pointer if the component could be retrieved or created. */
-    ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+    ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// This is an overloaded function.
     /** @param name If specified, the component having the given name is returned, or created if it doesn't exist. */
-    ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+    ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// This is an overloaded function.
     /** @param typeId Identifies the component type to create by the id of the type instead of the name. */
     ComponentPtr GetOrCreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default);
@@ -148,14 +145,14 @@ public slots:
 
     /// Creates a new component and attaches it to this entity. 
     /** @param type_name type of the component
-        @param change Network replication mode, in case component has to be created
-        @param syncEnabled Whether new component will have networksync enabled
+        @param change Change signalling mode, in case component has to be created
+        @param replicated Whether new component will be replicated through network
         @return Retuns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
         is that a component with the same (typename, name) pair exists, or that components of the given typename are not recognized by the system. */
-    ComponentPtr CreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+    ComponentPtr CreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// This is an overloaded function.
     /** @param name name of the component */
-    ComponentPtr CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+    ComponentPtr CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// This is an overloaded function.
     /** @param typeId Unique type ID of the component. */
     ComponentPtr CreateComponent(u32 typeId, AttributeChange::Type change = AttributeChange::Default);
@@ -176,7 +173,7 @@ public slots:
 
         @param component The component to add to this entity. The component must be parentless, i.e.
                       previously created using SceneAPI::CreateComponent.
-        @param change Network replication mode */
+        @param change Change signalling mode */
     void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
 
     /// Remove the component from this entity.
@@ -283,12 +280,18 @@ public slots:
     /** By definition, all components of a temporary entity are temporary as well. */
     void SetTemporary(bool enable);
 
+    /// Sets whether the changes in this entity's components will be sent over the network.
+    void SetReplicated(bool enable);
+    
     /// Returns whether entity is temporary. Temporary entities won't be saved when the scene is saved.
     /** By definition, all components of a temporary entity are temporary as well. */
     bool IsTemporary() const { return temporary_; }
 
-    /// Returns if this entity is local
-    bool IsLocal() const { return (id_ & LocalEntity) != 0; }
+    /// Returns if this entity's changes will NOT be sent over the network.
+    bool IsLocal() const { return !replicated_; }
+
+    /// Returns if this entity's changes will be sent over the network.
+    bool IsReplicated() const { return replicated_; }
 
     /// Returns the identifier string for the entity.
     /** Syntax of the string: 'Entity ID <id>' or 'Entity "<name>" (ID: <id>)' if entity has a name. */
@@ -362,6 +365,7 @@ private:
     Framework* framework_; ///< Pointer to framework
     Scene* scene_; ///< Pointer to scene
     ActionMap actions_; ///< Map of registered entity actions.
+    bool replicated_; ///< Network replication flag
     bool temporary_; ///< Temporary-flag
 };
 

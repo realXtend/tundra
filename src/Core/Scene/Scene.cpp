@@ -36,8 +36,6 @@ using namespace kNet;
 
 Scene::Scene() :
     framework_(0),
-    gid_(1),
-    gid_local_(LocalEntity + 1),
     viewEnabled_(true),
     authority_(true),
     interpolating_(false)
@@ -47,8 +45,6 @@ Scene::Scene() :
 Scene::Scene(const QString &name, Framework *framework, bool viewEnabled, bool authority) :
     name_(name),
     framework_(framework),
-    gid_(1),
-    gid_local_(LocalEntity + 1),
     interpolating_(false),
     authority_(authority)
 {
@@ -66,17 +62,17 @@ Scene::~Scene()
     emit Removed(this);
 }
 
-EntityPtr Scene::CreateLocalEntity(const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
+EntityPtr Scene::CreateLocalEntity(const QStringList &components, AttributeChange::Type change, bool componentsReplicated)
 {
-    return CreateEntity(NextFreeIdLocal(), components, change, defaultNetworkSync);
+    return CreateEntity(0, components, change, false, componentsReplicated);
 }
 
-EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
+EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool replicated, bool componentsReplicated)
 {
     // Figure out new entity id
     entity_id_t newentityid = 0;
-    if(id == 0)
-        newentityid = NextFreeId();
+    if (id == 0)
+        newentityid = idGenerator_.Allocate();
     else
     {
         if(entities_.find(id) != entities_.end())
@@ -85,17 +81,20 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
             return EntityPtr();
         }
         else
+        {
             newentityid = id;
+            idGenerator_.Allocate(id);
+        }
     }
 
     EntityPtr entity = EntityPtr(new Entity(framework_, newentityid, this));
+    entity->SetReplicated(replicated);
     for(size_t i=0 ; i<(size_t)components.size() ; ++i)
     {
         ComponentPtr newComp = framework_->Scene()->CreateComponentByName(this, components[i]);
         if (newComp)
         {
-            if (!defaultNetworkSync)
-                newComp->SetNetworkSyncEnabled(false);
+            newComp->SetReplicated(componentsReplicated);
             entity->AddComponent(newComp, change); //change the param to a qstringlist or so \todo XXX
         }
     }
@@ -142,50 +141,6 @@ bool Scene::IsUniqueName(const QString& name) const
     return true;
 }
 
-entity_id_t Scene::NextFreeId()
-{
-    // Find the largest non-local entity ID in the scene.
-    // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
-    entity_id_t largestEntityId = 0;
-    for(EntityMap::const_iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-        if ((iter->first & LocalEntity) == 0)
-            largestEntityId = std::max(largestEntityId, iter->first);
-
-    // Ensure that the entity id we give out is always larger than the largest entity id currently existing in the scene.
-    gid_ = std::max(gid_ + 1, largestEntityId+1);
-
-    while(entities_.find(gid_) != entities_.end())
-    {
-        gid_ = (gid_ + 1) & (LocalEntity - 1);
-        if (!gid_) ++gid_;
-    }
-
-    assert(!HasEntity(gid_));
-    return gid_;
-}
-
-entity_id_t Scene::NextFreeIdLocal()
-{
-    // Find the largest local entity ID in the scene.
-    // NOTE: This iteration is of linear complexity. Can optimize here. (But be sure to properly test for correctness!) -jj.
-    entity_id_t largestEntityId = 0;
-    for(EntityMap::const_iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-        if ((iter->first & LocalEntity) != 0)
-            largestEntityId = std::max(largestEntityId, iter->first);
-
-    // Ensure that the entity id we give out is always larger than the largest entity id currently existing in the scene.
-    gid_local_ = std::max((gid_local_ + 1) | LocalEntity, (largestEntityId+1) | LocalEntity);
-
-    while(entities_.find(gid_local_) != entities_.end())
-    {
-        gid_local_ = (gid_local_ + 1) | LocalEntity;
-        if (gid_local_ == LocalEntity) ++gid_local_;
-    }
-
-    assert(!HasEntity(gid_local_));
-    return gid_local_;
-}
-
 void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
 {
     if (old_id == new_id)
@@ -219,6 +174,8 @@ void Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
         // If entity somehow manages to live, at least it doesn't belong to the scene anymore
         del_entity->SetScene(0);
         del_entity.reset();
+        
+        idGenerator_.Deallocate(id);
     }
 }
 
@@ -233,7 +190,6 @@ void Scene::RemoveAllEntities(bool send_events, AttributeChange::Type change)
         if (send_events)
         {
             EmitEntityRemoved(it->second.get(), change);
-
         }
         it->second->SetScene(0);
         ++it;
@@ -241,6 +197,13 @@ void Scene::RemoveAllEntities(bool send_events, AttributeChange::Type change)
     entities_.clear();
     if (send_events)
         emit SceneCleared(this);
+    
+    idGenerator_.Reset();
+}
+
+entity_id_t Scene::NextFreeId()
+{
+    return idGenerator_.Allocate();
 }
 
 EntityList Scene::GetEntitiesWithComponent(const QString &typeName, const QString &name) const
@@ -447,7 +410,8 @@ QByteArray Scene::GetSceneXML(bool gettemporary, bool getlocal) const
             QString id_str;
             id_str.setNum((int)entity->Id());
             entity_elem.setAttribute("id", id_str);
-
+            entity_elem.setAttribute("sync", QString::fromStdString(::ToString<bool>(entity->IsReplicated())));
+            
             const Entity::ComponentVector &components = entity->Components();
             for(uint i = 0; i < components.size(); ++i)
             {
@@ -585,7 +549,12 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         QString id_str = ent_elem.attribute("id");
         entity_id_t id = !id_str.isEmpty() ? ParseString<entity_id_t>(id_str.toStdString()) : 0;
         if (!useEntityIDsFromFile || id == 0) // If we don't want to use entity IDs from file, or if file doesn't contain one, generate a new one.
-            id = ((id & LocalEntity) != 0) ? NextFreeIdLocal() : NextFreeId();
+            id = NextFreeId();
+
+        QString replicatedStr = ent_elem.attribute("sync");
+        bool replicated = true;
+        if (!replicatedStr.isEmpty())
+            replicated = ParseBool(replicatedStr);
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
         {
@@ -597,16 +566,28 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         EntityPtr entity = CreateEntity(id);
         if (entity)
         {
+            entity->SetReplicated(replicated);
+            
             QDomElement comp_elem = ent_elem.firstChildElement("component");
             while(!comp_elem.isNull())
             {
+                /// \todo Read component id's from file
+                
                 QString type_name = comp_elem.attribute("type");
                 QString name = comp_elem.attribute("name");
+                QString compReplicatedStr = comp_elem.attribute("sync");
+                bool compReplicated = true;
+                if (!compReplicatedStr.isEmpty())
+                    compReplicated = ParseBool(compReplicatedStr);
+                
                 ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
                 if (new_comp)
+                {
+                    new_comp->SetReplicated(compReplicated);
                     // Trigger no signal yet when scene is in incoherent state
                     new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
-
+                }
+                
                 comp_elem = comp_elem.nextSiblingElement("component");
             }
             ret.append(entity.get());
@@ -668,8 +649,9 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
         for(uint i = 0; i < num_entities; ++i)
         {
             entity_id_t id = source.Read<u32>();
+            bool replicated = source.Read<u8>() ? true : false;
             if (!useEntityIDsFromFile || id == 0)
-                id = ((id & LocalEntity) != 0) ? NextFreeIdLocal() : NextFreeId();
+                id = NextFreeId();
 
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
             {
@@ -685,12 +667,14 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
                 return ret; // If entity creation fails, stream desync is more than likely so stop right here
             }
             
+            entity->SetReplicated(replicated);
+            
             uint num_components = source.Read<u32>();
             for(uint i = 0; i < num_components; ++i)
             {
                 u32 typeId = source.Read<u32>(); ///\todo VLE this!
                 QString name = QString::fromStdString(source.ReadString());
-                bool sync = source.Read<u8>() ? true : false;
+                bool compReplicated = source.Read<u8>() ? true : false;
                 uint data_size = source.Read<u32>();
                 
                 // Read the component data into a separate byte array, then deserialize from there.
@@ -705,7 +689,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
                     ComponentPtr new_comp = entity->GetOrCreateComponent(typeId, name);
                     if (new_comp)
                     {
-                        new_comp->SetNetworkSyncEnabled(sync);
+                        new_comp->SetReplicated(compReplicated);
                         if (data_size)
                         {
                             DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
@@ -757,7 +741,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
     {
         entity_id_t id;
         if (e.id.isEmpty() || !useEntityIDsFromFile)
-            id = e.local ? NextFreeIdLocal() : NextFreeId();
+            id = NextFreeId();
         else
             id =  ParseString<entity_id_t>(e.id.toStdString());
 
@@ -772,6 +756,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
         assert(entity);
         if (entity)
         {
+            entity->SetReplicated(!e.local);
             foreach(ComponentDesc c, e.components)
             {
                 if (c.typeName.isNull())

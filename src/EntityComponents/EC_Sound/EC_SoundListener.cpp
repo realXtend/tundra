@@ -24,8 +24,8 @@ EC_SoundListener::EC_SoundListener(Scene* scene):
     IComponent(scene),
     active(this, "active", false)
 {
-    // By default, this component is NOT network-serialized
-    SetNetworkSyncEnabled(false);
+    // By default, this component is NOT network-replicated
+    SetReplicated(false);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
     connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update()));

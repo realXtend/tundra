@@ -7,6 +7,7 @@
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
 #include "SceneDesc.h"
+#include "UniqueIdGenerator.h"
 #include "Math/float3.h"
 #include "ChangeRequest.h"
 
@@ -96,12 +97,13 @@ public slots:
 
         To create an empty entity, omit the components parameter.
 
-        @param id Id of the new entity. Use NextFreeId() or NextFreeIdLocal()
+        @param id Id of the new entity. Specify 0 to use the next free ID
         @param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
-        @param defaultNetworkSync Whether components will have network sync. Default true */
+        @param replicated Whether entity is replicated. Default true.
+        @param componentsReplicated Whether components will be replicated. Default true */
     EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(),
-        AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
+        AttributeChange::Type change = AttributeChange::Default, bool replicated = true, bool componentsReplicated = true);
 
     /// Creates new local entity that contains the specified components
     /** Entities should never be created directly, but instead created with this function.
@@ -112,7 +114,7 @@ public slots:
         @param change Notification/network replication mode
         @param defaultNetworkSync Whether components will have network sync. Default true */
     EntityPtr CreateLocalEntity(const QStringList &components = QStringList(),
-        AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
+        AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = true);
 
     /// Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
     /** @note this is meant as a response for a server-authoritative message to change the id of a client-created entity,
@@ -222,13 +224,9 @@ public slots:
         @param send_events whether to send events & signals of each delete. */
     void RemoveAllEntities(bool send_events = true, AttributeChange::Type change = AttributeChange::Default);
 
-    /// Gets the next free entity id. Can be used with CreateEntity(). 
-    /** These will be for networked entities, and should be assigned only by a point of authority (server) */
+    /// Gets and allocates the next free entity id.
+    /** Note that you can also pass id 0 to CreateEntity to automatically allocate. */
     entity_id_t NextFreeId();
-
-    /// Gets the next free local entity id. Can be used with CreateEntity().
-    /** As local entities will not be network synced, there should be no conflicts in assignment. */
-    entity_id_t NextFreeIdLocal();
 
     /// Returns list of entities with a specific component present.
     /** @param typeName Type name of the component
@@ -241,43 +239,43 @@ public slots:
     /// Emits notification of an attribute changing. Called by IComponent.
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Network replication mode */
+        @param change Change signalling mode */
     void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emits notification of an attribute having been created. Called by IComponent's with dynamic structure
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Network replication mode */
+        @param change Change signalling mode */
     void EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emits notification of an attribute about to be deleted. Called by IComponent's with dynamic structure
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Network replication mode */
+        @param change Change signalling mode */
      void EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emits a notification of a component being added to entity. Called by the entity
     /** @param entity Entity pointer
         @param comp Component pointer
-        @param change Network replication mode */
+        @param change Change signalling mode */
     void EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Emits a notification of a component being removed from entity. Called by the entity
     /** @param entity Entity pointer
         @param comp Component pointer
-        @param change Network replication mode
+        @param change Change signalling mode
         @note This is emitted before just before the component is removed. */
     void EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Emits a notification of an entity having been created
     /** @param entity Entity pointer
-        @param change Network replication mode */
+        @param change Change signalling mode */
     void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
     /// Emits a notification of an entity being removed.
     /** @note the entity pointer will be invalid shortly after!
         @param entity Entity pointer
-        @param change Network replication mode */
+        @param change Change signalling mode */
     void EmitEntityRemoved(Entity* entity, AttributeChange::Type change);
 
     /// Emits a notification of an entity action being triggered.
@@ -453,8 +451,7 @@ private:
         @param authority Whether the scene has authority ie. a singleuser or server scene, false for network client scenes */
     Scene(const QString &name, Framework *fw, bool viewEnabled, bool authority);
 
-    uint gid_; ///< Current global id for networked entities
-    uint gid_local_; ///< Current id for local entities.
+    UniqueIdGenerator idGenerator_; ///< Entity ID generator
     EntityMap entities_; ///< All entities in the scene.
     Framework *framework_; ///< Parent framework.
     QString name_; ///< Name of the scene.

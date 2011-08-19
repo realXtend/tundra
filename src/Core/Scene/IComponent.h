@@ -78,15 +78,16 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
     Q_OBJECT
     Q_PROPERTY(QString name READ Name WRITE SetName)
     Q_PROPERTY(QString typeName READ TypeName)
-    Q_PROPERTY(bool networkSyncEnabled READ NetworkSyncEnabled WRITE SetNetworkSyncEnabled)
+    Q_PROPERTY(bool replicated READ IsReplicated WRITE SetReplicated)
+    Q_PROPERTY(bool local READ IsLocal)
     Q_PROPERTY(AttributeChange::Type updateMode READ UpdateMode WRITE SetUpdateMode)
+
+    /// \todo Deprecated. Remove when all scripts have been converted to not refer to this
+    Q_PROPERTY(bool networkSyncEnabled READ IsReplicated WRITE SetReplicated)
 
 public:
     /// Constructor.
     explicit IComponent(Scene* scene);
-
-    /// Copy-constructor.
-    IComponent(const IComponent& rhs);
 
     /// Destructor, does nothing.
     virtual ~IComponent();
@@ -175,10 +176,16 @@ public slots:
     /** By default, this flag is set for all created components.
         When network synchronization is disabled, changes to the attributes of this component affect
         only locally and will not be pushed to network. */
-    void SetNetworkSyncEnabled(bool enabled);
+    void SetReplicated(bool enable);
+    
+    /// \todo Deprecated. Remove when all scripts have been converted to not refer to this
+    void SetNetworkSyncEnabld(bool enable) { SetReplicated(enable); }
 
     /// Returns true if network synchronization of the attributes of this component is enabled.
-    bool NetworkSyncEnabled() const { return networkSync; }
+    bool IsReplicated() const { return replicated; }
+
+    /// Returns true if network synchronization of the attributes of this component is NOT enabled.
+    bool IsLocal() const { return !replicated; }
 
     /// Sets the default mode for attribute change operations
     void SetUpdateMode(AttributeChange::Type defaultmode);
@@ -293,7 +300,7 @@ protected:
     AttributeVector attributes;
 
     /// Network sync enable flag
-    bool networkSync;
+    bool replicated;
 
     /// Default update mode for attribute changes
     AttributeChange::Type updateMode;

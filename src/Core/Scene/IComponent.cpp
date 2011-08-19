@@ -24,18 +24,8 @@
 IComponent::IComponent(Scene* scene) :
     parentEntity(0),
     framework(scene ? scene->GetFramework() : 0),
-    networkSync(true),
     updateMode(AttributeChange::Replicate),
-    temporary(false)
-{
-}
-
-IComponent::IComponent(const IComponent &rhs) :
-    boost::enable_shared_from_this<IComponent>(),
-    framework(rhs.framework),
-    parentEntity(rhs.parentEntity),
-    networkSync(rhs.networkSync),
-    updateMode(rhs.updateMode),
+    replicated(true),
     temporary(false)
 {
 }
@@ -83,9 +73,9 @@ Scene* IComponent::ParentScene() const
     return parentEntity->ParentScene();
 }
 
-void IComponent::SetNetworkSyncEnabled(bool enabled)
+void IComponent::SetReplicated(bool enable)
 {
-    networkSync = enabled;
+    replicated = enable;
 }
 
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
@@ -120,7 +110,7 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
     if (!Name().isEmpty())
         comp_element.setAttribute("name", Name());
     // Components with no network sync are never network-serialized. However we might be serializing to a file
-    comp_element.setAttribute("sync", QString::fromStdString(ToString<bool>(networkSync)));
+    comp_element.setAttribute("sync", QString::fromStdString(ToString<bool>(replicated)));
     
     if (!base_element.isNull())
         base_element.appendChild(comp_element);
@@ -153,7 +143,11 @@ bool IComponent::BeginDeserialization(QDomElement& comp_element)
     if (type == TypeName())
     {
         SetName(comp_element.attribute("name"));
-        SetNetworkSyncEnabled(ParseString<bool>(comp_element.attribute("sync").toStdString(), true));
+        QString replicatedStr = comp_element.attribute("sync");
+        bool replicated = true;
+        if (!replicatedStr.isEmpty())
+            replicated = ParseBool(replicatedStr);
+        SetReplicated(replicated);
         return true;
     }
     return false;

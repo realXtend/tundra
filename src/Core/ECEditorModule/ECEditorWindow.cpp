@@ -977,7 +977,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         assert(comp);
         if (comp)
         {
-            comp->SetNetworkSyncEnabled(dialog->GetSynchronization());
+            comp->SetReplicated(dialog->GetSynchronization());
             comp->SetTemporary(dialog->GetTemporary());
             entity->AddComponent(comp, AttributeChange::Default);
         }

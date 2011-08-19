@@ -280,8 +280,6 @@ void SceneStructureWindow::AddEntity(Entity* entity)
     EntityItem *item = new EntityItem(entity->shared_from_this());
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
 
-    DecorateEntityItem(entity, item);
-
     treeWidget->addTopLevelItem(item);
 
     foreach(ComponentPtr c, entity->Components())
@@ -311,8 +309,6 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
             ComponentItem *cItem = new ComponentItem(comp->shared_from_this(), eItem);
             cItem->setHidden(!showComponents);
 
-            DecorateComponentItem(comp, cItem);
-
             eItem->addChild(cItem);
 
             connect(comp, SIGNAL(ComponentNameChanged(const QString &, const QString &)),
@@ -322,7 +318,6 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
             if (comp->TypeName() == EC_Name::TypeNameStatic())
             {
                 eItem->SetText(entity);
-                DecorateEntityItem(entity, eItem);
 
                 connect(comp, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
                     SLOT(UpdateEntityName(IAttribute *)), Qt::UniqueConnection);
@@ -391,82 +386,6 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
                 parentItem->addChild(aItem);
             }
         }
-    }
-}
-
-void SceneStructureWindow::DecorateEntityItem(Entity *entity, QTreeWidgetItem *item) const
-{
-    bool local = entity->IsLocal();
-    bool temp = entity->IsTemporary();
-
-    QString info;
-    if (local)
-    {
-        item->setTextColor(0, QColor(Qt::blue));
-        info.append("Local");
-    }
-
-    if (temp)
-    {
-        item->setTextColor(0, QColor(Qt::red));
-        if (!info.isEmpty())
-            info.append(" ");
-        info.append("Temporary");
-    }
-
-    if (!info.isEmpty())
-    {
-        QString text = item->text(0);
-        if (text.size() > 0 && text[text.size()-1] != ' ')
-            text.append(" ");
-        info.prepend("(");
-        info.append(")");
-        item->setText(0, text + info);
-    }
-}
-
-void SceneStructureWindow::DecorateComponentItem(IComponent *comp, QTreeWidgetItem *item) const
-{
-    bool sync = comp->NetworkSyncEnabled();
-    bool temporary = comp->IsTemporary();
-
-    QString info;
-    if (!sync)
-    {
-        item->setTextColor(0, QColor(Qt::blue));
-        info.append("Local");
-    }
-
-    if (temporary)
-    {
-        item->setTextColor(0, QColor(Qt::red));
-        if (!info.isEmpty())
-            info.append(" ");
-        info.append("Temporary");
-    }
-
-    if (comp->UpdateMode() == AttributeChange::LocalOnly)
-    {
-        if (!info.isEmpty())
-            info.append(" ");
-        info.append("UpdateMode:LocalOnly");
-    }
-
-    if (comp->UpdateMode() == AttributeChange::Disconnected)
-    {
-        if (!info.isEmpty())
-            info.append(" ");
-        info.append("UpdateMode:Disconnected");
-    }
-
-    if (!info.isEmpty())
-    {
-        QString text = item->text(0);
-        if (text.size() > 0 && text[text.size()-1] != ' ')
-            text.append(" ");
-        info.prepend("(");
-        info.append(")");
-        item->setText(0, text + info);
     }
 }
 
@@ -640,7 +559,6 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
         if (item && (item->Id() == entity->Id()))
         {
             item->SetText(entity);
-            DecorateEntityItem(entity, item);
         }
     }
 }
@@ -660,7 +578,6 @@ void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QSt
             if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == oldName))
             {
                 cItem->SetText(comp);
-                DecorateComponentItem(comp, cItem);
             }
         }
     }

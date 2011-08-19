@@ -23,6 +23,7 @@
 Entity::Entity(Framework* framework, Scene* scene) :
     framework_(framework),
     scene_(scene),
+    replicated_(true),
     temporary_(false)
 {
 }
@@ -31,6 +32,7 @@ Entity::Entity(Framework* framework, uint id, Scene* scene) :
     framework_(framework),
     id_(id),
     scene_(scene),
+    replicated_(true),
     temporary_(false)
 {
 }
@@ -155,7 +157,7 @@ ComponentPtr Entity::GetOrCreateComponent(u32 typeId, const QString &name, Attri
     return CreateComponent(typeId, name, change);
 }
 
-ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
+ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::Type change, bool replicated)
 {
     ComponentPtr new_comp = framework_->Scene()->CreateComponentByName(scene_, type_name);
     if (!new_comp)
@@ -164,12 +166,12 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::
         return ComponentPtr();
     }
 
-    new_comp->SetNetworkSyncEnabled(syncEnabled);
+    new_comp->SetReplicated(replicated);
     AddComponent(new_comp, change);
     return new_comp;
 }
 
-ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
+ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool replicated)
 {
     ComponentPtr new_comp = framework_->Scene()->CreateComponentByName(scene_, type_name, name);
     if (!new_comp)
@@ -178,7 +180,7 @@ ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &na
         return ComponentPtr();
     }
 
-    new_comp->SetNetworkSyncEnabled(syncEnabled);
+    new_comp->SetReplicated(replicated);
     AddComponent(new_comp, change);
     return new_comp;
 }
@@ -282,6 +284,7 @@ IAttribute *Entity::GetAttribute(const QString &name) const
 void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
 {
     dst.Add<u32>(Id());
+    dst.Add<u8>(IsReplicated() ? 1 : 0);
     uint num_serializable = 0;
     foreach(const ComponentPtr &comp, Components())
         if (!comp->IsTemporary())
@@ -292,7 +295,7 @@ void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
         {
             dst.Add<u32>(comp->TypeId()); ///\todo VLE this!
             dst.AddString(comp->Name().toStdString());
-            dst.Add<u8>(comp->NetworkSyncEnabled() ? 1 : 0);
+            dst.Add<u8>(comp->IsReplicated() ? 1 : 0);
             
             // Write each component to a separate buffer, then write out its size first, so we can skip unknown components
             QByteArray comp_bytes;
@@ -319,6 +322,7 @@ void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element) const
     QString id_str;
     id_str.setNum((int)Id());
     entity_elem.setAttribute("id", id_str);
+    entity_elem.setAttribute("sync", QString::fromStdString(::ToString<bool>(IsReplicated())));
 
     foreach(const ComponentPtr c, Components())
         if (!c->IsTemporary())
@@ -372,7 +376,8 @@ EntityPtr Entity::Clone(bool local, bool temporary) const
     QDomDocument doc("Scene");
     QDomElement sceneElem = doc.createElement("scene");
     QDomElement entityElem = doc.createElement("entity");
-    entityElem.setAttribute("id", QString::number((int) local ? scene_->NextFreeIdLocal() : scene_->NextFreeId()));
+    entityElem.setAttribute("sync", QString::fromStdString(::ToString<bool>(!local)));
+    entityElem.setAttribute("id", scene_->NextFreeId());
     foreach(const ComponentPtr &c, Components())
         c->SerializeTo(doc, entityElem);
     sceneElem.appendChild(entityElem);
@@ -521,6 +526,11 @@ void Entity::EmitLeaveView(IComponent* camera)
 void Entity::SetTemporary(bool enable)
 {
     temporary_ = enable;
+}
+
+void Entity::SetReplicated(bool enable)
+{
+    replicated_ = enable;
 }
 
 QString Entity::ToString() const

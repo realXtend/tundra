@@ -21,7 +21,7 @@ public:
     /// Sets the item text accordingly to the entity information.
     /** @param entity Entity which the item represents. */
     void SetText(::Entity *entity);
-
+    
     /// Returns pointer to the entity this item represents.
     EntityPtr Entity() const;
 
