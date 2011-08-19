@@ -14,9 +14,9 @@ macro (configure_boost)
     endif ()
 
     if (APPLE)
-            set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_regex boost_program_options)
+            set (BOOST_COMPONENTS boost_filesystem boost_system boost_thread boost_regex boost_program_options)
     else ()
-            set (BOOST_COMPONENTS date_time filesystem system thread regex program_options)
+            set (BOOST_COMPONENTS filesystem system thread regex program_options)
     endif ()
  
     sagase_configure_package (BOOST 

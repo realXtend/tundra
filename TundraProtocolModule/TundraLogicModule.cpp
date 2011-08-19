@@ -479,14 +479,11 @@ void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
         LogError("Empty filename given!");
         return;
     }
-    
-    ///\todo Lacks unicode support. -jj.
-    boost::filesystem::path path(filename.toStdString());
-    std::string dirname = path.branch_path().string();
-    
+
+    QString path = QFileInfo(filename).dir().path();
+
     SceneImporter importer(scene);
-    QList<Entity *> entities = importer.Import(filename.toStdString(), dirname, Transform(),
-        "local://", AttributeChange::Default, clearScene, replace);
+    QList<Entity *> entities = importer.Import(filename, path, Transform(), "local://", AttributeChange::Default, clearScene, replace);
 
     LogInfo("Imported " + QString::number(entities.size()) + " entities.");
 }
@@ -506,13 +503,11 @@ void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float t
         return;
     }
 
-    ///\todo Lacks unicode support. -jj.
-    boost::filesystem::path path(filename.toStdString());
-    std::string dirname = path.branch_path().string();
-    
+    QString path = QFileInfo(filename).dir().path();
+
     SceneImporter importer(scene);
-    EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, Transform(float3(tx,ty,tz),
-        float3(rx,ry,rz), float3(sx,sy,sz)), std::string(), "local://", AttributeChange::Default, inspect);
+    EntityPtr entity = importer.ImportMesh(filename, path, Transform(float3(tx,ty,tz), float3(rx,ry,rz),
+        float3(sx,sy,sz)), "", "local://", AttributeChange::Default, inspect);
 }
 
 bool TundraLogicModule::IsServer() const

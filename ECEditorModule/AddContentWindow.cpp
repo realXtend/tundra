@@ -24,8 +24,6 @@
 #include "SceneImporter.h"
 #include "Transform.h"
 #include "LoggingFunctions.h"
-#include <boost/filesystem.hpp>
-
 #include "CoreException.h"
 
 #include "MemoryLeakCheck.h"
@@ -75,8 +73,7 @@ class EntityWidgetItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
-    /** @param edesc Entity description.
-    */
+    /** @param edesc Entity description. */
     explicit EntityWidgetItem(const EntityDesc &edesc) : desc(edesc)
     {
         setCheckState(cColumnEntityCreate, Qt::Checked);
@@ -104,8 +101,7 @@ class AssetWidgetItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
-    /** @param adesc Asset description.
-    */
+    /** @param adesc Asset description. */
     explicit AssetWidgetItem(const AssetDesc &adesc) : desc(adesc)
     {
         RewriteText();
@@ -139,14 +135,14 @@ const QString cDefaultStorage("DefaultStorage");
 /// A special case identifier for not altering asset refs when uploading assets.
 const QString cDoNotAlterAssetReferences("DoNotAlterAssetReferences");
 
-AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget *parent)
-:QWidget(parent),
-framework(fw),
-scene(dest),
-parentEntities_(0),
-parentAssets_(0),
-contentAdded_(false),
-position(float3::zero)
+AddContentWindow::AddContentWindow(Framework *fw, const ScenePtr &dest, QWidget *parent) :
+    QWidget(parent),
+    framework(fw),
+    scene(dest),
+    parentEntities_(0),
+    parentAssets_(0),
+    contentAdded_(false),
+    position(float3::zero)
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -347,14 +343,14 @@ void AddContentWindow::AddFiles(const QStringList &fileNames)
     assetTreeWidget->setSortingEnabled(false);
 
     SceneDesc desc;
-    foreach(QString file, fileNames)
+    foreach(const QString &file, fileNames)
     {
         AssetDesc ad;
         ad.source = file;
         ad.dataInMemory = false;
         QString type = AssetAPI::GetResourceTypeFromAssetRef(file);
         ad.typeName = type.isEmpty() ? "Binary" : type;
-        ad.destinationName = boost::filesystem::path(file.toStdString()).leaf().c_str();
+        ad.destinationName = QFileInfo(file).fileName();
         desc.assets[qMakePair(ad.source, ad.subname)]= ad;
     }
 
@@ -374,7 +370,7 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     // Disable sorting while we insert items.
     entityTreeWidget->setSortingEnabled(false);
 
-    foreach(EntityDesc e, entityDescs)
+    foreach(const EntityDesc &e, entityDescs)
     {
         EntityWidgetItem *eItem = new EntityWidgetItem(e);
         entityTreeWidget->addTopLevelItem(eItem);
@@ -413,12 +409,12 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
 {
     assetTreeWidget->setSortingEnabled(false);
 
-    foreach(AssetDesc a, assetDescs)
+    foreach(const AssetDesc &a, assetDescs)
     {
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
         assetTreeWidget->addTopLevelItem(aItem);
 
-        QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+        QString basePath = QFileInfo(sceneDesc.filename).dir().path();
         QString outFilePath;
         AssetAPI::FileQueryResult res = framework->Asset()->ResolveLocalAssetPath(a.source, basePath, outFilePath);
 
@@ -482,10 +478,9 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
 
 void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage)
 {
-    QString path(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
-
+    QString path = QFileInfo(sceneDesc.filename).dir().path();
     QList<SceneDesc::AssetMapKey> keysWithSubname;
-    foreach(SceneDesc::AssetMapKey key, sceneDesc.assets.keys())
+    foreach(const SceneDesc::AssetMapKey &key, sceneDesc.assets.keys())
         if (!key.second.isEmpty())
             keysWithSubname.append(key);
 
@@ -719,7 +714,7 @@ bool AddContentWindow::UploadAssets()
         progressStep_ = 0;
         failedUploads_ = 0;
         successfullUploads_ = 0;
-        foreach(AssetDesc ad, newDesc_.assets)
+        foreach(const AssetDesc &ad, newDesc_.assets)
         {
             try
             {
@@ -798,12 +793,11 @@ void AddContentWindow::AddEntities()
                 return;
             }
 
-            boost::filesystem::path path(newDesc_.filename.toStdString());
-            std::string dirname = path.branch_path().string();
+            QString path = QFileInfo(newDesc_.filename).dir().path();
 
             TundraLogic::SceneImporter importer(destScene);
-            entities = importer.Import(newDesc_.filename.toStdString(), dirname, Transform(),
-                dest->BaseURL(), AttributeChange::Default, false/*clearScene*/, false);
+            entities = importer.Import(newDesc_.filename, path, Transform(), dest->BaseURL(),
+                AttributeChange::Default, false/*clearScene*/, false);
         }
         else if (newDesc_.entities.isEmpty() && !newDesc_.assets.isEmpty())
         {

@@ -42,9 +42,9 @@ SceneImporter::~SceneImporter()
 {
 }
 
-EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
-    const std::string& entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect,
-    const std::string &meshName)
+EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_asset_dir, const Transform &worldtransform,
+    const QString &entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect,
+    const QString &meshName)
 {
     if (!scene_)
     {
@@ -52,13 +52,12 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
         return EntityPtr();
     }
 
-    boost::filesystem::path path(filename);
-    std::string meshleafname = path.leaf();
+    QString meshleafname = QFileInfo(filename).fileName();
 
     QStringList material_names;
     QString skeleton_name;
     if (inspect)
-        if (!ParseMeshForMaterialsAndSkeleton(filename.c_str(), material_names, skeleton_name))
+        if (!ParseMeshForMaterialsAndSkeleton(filename, material_names, skeleton_name))
             return EntityPtr();
 
     QSet<QString> material_names_set;
@@ -76,8 +75,8 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
         material_files = FindMaterialFiles(in_asset_dir);
 
     // mesh copied, add mesh name inside the file
-    if (!meshName.empty() /*&& createMesh*/)
-        meshleafname += std::string("/") + meshName;
+    if (!meshName.isEmpty() /*&& createMesh*/)
+        meshleafname += '/' + meshName;
 
     // Create a new entity in any case, with a new ID
     EntityPtr newentity = scene_->CreateEntity(0, QStringList(), change, true);
@@ -89,7 +88,7 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
     
     // If the prefab contains valid data, instantiate the components from there
     QDomDocument prefab;
-    prefab.setContent(QString::fromStdString(entity_prefab_xml));
+    prefab.setContent(entity_prefab_xml);
     QDomElement ent_elem = prefab.firstChildElement("entity");
     if (!ent_elem.isNull())
     {
@@ -122,7 +121,7 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
     EC_Mesh* meshPtr = checked_static_cast<EC_Mesh*>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
     if (meshPtr)
     {
-        meshPtr->meshRef.Set(AssetReference(prefix + QString(meshleafname.c_str())), AttributeChange::Disconnected);
+        meshPtr->meshRef.Set(AssetReference(prefix + meshleafname), AttributeChange::Disconnected);
         if (!skeleton_name.isEmpty())
             meshPtr->skeletonRef.Set(AssetReference(prefix + skeleton_name), AttributeChange::Disconnected);
         meshPtr->meshMaterial.Set(materials, AttributeChange::Disconnected);
@@ -139,7 +138,7 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
     EC_Name * namePtr = checked_static_cast<EC_Name *>(newentity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
     if (namePtr)
         ///\todo Use name of scenedesc?
-        namePtr->name.Set(QString(meshleafname.c_str()).replace(".mesh", ""), AttributeChange::Disconnected);
+        namePtr->name.Set(meshleafname.replace(".mesh", ""), AttributeChange::Disconnected);
     else
         LogError("No EC_Name was created!");
 
@@ -152,7 +151,7 @@ EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_
     return newentity;
 }
 
-QList<Entity *> SceneImporter::Import(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
+QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in_asset_dir, const Transform &worldtransform,
     const QString &prefix, AttributeChange::Type change, bool clearscene, bool replace)
 {
     QList<Entity *> ret;
@@ -169,7 +168,7 @@ QList<Entity *> SceneImporter::Import(const std::string& filename, std::string i
         else
             LogInfo("Importing scene from " + filename);
 
-        QFile file(filename.c_str());
+        QFile file(filename);
         if (!file.open(QFile::ReadOnly))
         {
             file.close();
@@ -221,7 +220,8 @@ QList<Entity *> SceneImporter::Import(const std::string& filename, std::string i
         LogInfo("Saving needed assets");
         // By default, assume the material file is scenename.material if scene is scenename.scene.
         // However, if an external reference exists, use that.
-        std::string matfilename = ReplaceSubstring(filename, ".scene", ".material");
+        QString matfilename = filename;
+        matfilename.replace(".scene", ".material");
         QDomElement externals_elem = scene_elem.firstChildElement("externals");
         if (!externals_elem.isNull())
         {
@@ -233,7 +233,7 @@ QList<Entity *> SceneImporter::Import(const std::string& filename, std::string i
                     QDomElement file_elem = item_elem.firstChildElement("file");
                     if (!file_elem.isNull())
                     {
-                        matfilename = in_asset_dir + QString(QDir::separator()).toStdString() + file_elem.attribute("name").toStdString();
+                        matfilename = in_asset_dir + '/' + file_elem.attribute("name");
                         break;
                     }
                 }
@@ -354,8 +354,8 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
     }
     else
     {
-        path = boost::filesystem::path(source.toStdString()).branch_path().string().c_str();
-        meshleafname = boost::filesystem::path(source.toStdString()).leaf().c_str();
+        path = QFileInfo(source).dir().path();
+        meshleafname = QFileInfo(source).fileName();
 
         if (!ParseMeshForMaterialsAndSkeleton(source, materialNames, skeletonName))
             return sceneDesc;
@@ -389,7 +389,7 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
         // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
         QStringList meshFiles(QStringList() << source);
         QSet<QString> usedMaterials = materialNames.toSet();
-        QStringList materialFiles = FindMaterialFiles(path.toStdString());
+        QStringList materialFiles = FindMaterialFiles(path);
 
         CreateAssetDescs(path, meshFiles, skeletons, materialFiles, usedMaterials, sceneDesc);
 
@@ -502,7 +502,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
         return sceneDesc;
     }
 
-    QString path(boost::filesystem::path(filename.toStdString()).branch_path().string().c_str());
+    QString path = QFileInfo(filename).dir().path();
 
     // By default, assume the material file is scenename.material if scene is scenename.scene.
     // However, if an external reference exists, use that.
@@ -890,11 +890,11 @@ MaterialInfoList SceneImporter::LoadAllMaterialsFromFile(const QString &filename
     return materials;
 }
 
-QStringList SceneImporter::FindMaterialFiles(const std::string &dir) const
+QStringList SceneImporter::FindMaterialFiles(const QString &dir) const
 {
     QStringList files;
 
-    boost::filesystem::recursive_directory_iterator iter(dir), end_iter;
+    boost::filesystem::recursive_directory_iterator iter(dir.toStdString()), end_iter;
     for(; iter != end_iter; ++iter)
         if (boost::filesystem::is_regular_file(iter->status()))
         {
@@ -906,7 +906,7 @@ QStringList SceneImporter::FindMaterialFiles(const std::string &dir) const
     return files;
 }
 
-void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::string& in_asset_dir)
+void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const QString& in_asset_dir)
 {
     while(!node_elem.isNull())
     {
@@ -933,7 +933,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::strin
                 // If no subentity element, have to interrogate the mesh.
                 QStringList material_names;
                 QString skeleton_name;
-                ParseMeshForMaterialsAndSkeleton(QString::fromStdString(in_asset_dir + "/" + mesh_name), material_names, skeleton_name);
+                ParseMeshForMaterialsAndSkeleton(in_asset_dir + "/" + mesh_name.c_str(), material_names, skeleton_name);
                 for(uint i = 0; i < (uint)material_names.size(); ++i)
                     material_names_.insert(material_names[i].toStdString());
                 mesh_default_materials_[mesh_name.c_str()] = material_names;
@@ -1345,7 +1345,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         ad.source = filename;
         ad.dataInMemory = false;
         ad.typeName = "mesh";
-        ad.destinationName = boost::filesystem::path(filename.toStdString()).leaf().c_str();//meshAssetDesc.source;
+        ad.destinationName = QFileInfo(filename).fileName();//meshAssetDesc.source;
         desc.assets[qMakePair(ad.source, ad.subname)] = ad;
     }
 
@@ -1409,7 +1409,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
 /*
 void SceneImporter::RewriteAssetRef(const QString &sceneFileName, QString &ref) const
 {
-    QString basePath(boost::filesystem::path(sceneFileName.toStdString()).branch_path().string().c_str());
+    QString basePath = QFileInfo(sceneFileName).dir().path();
     QString outFilePath;
     AssetAPI::FileQueryResult res = scene_->GetFramework()->Asset()->ResolveLocalAssetPath(ref, basePath, outFilePath);
     if (res == AssetAPI::FileQueryLocalFileFound)

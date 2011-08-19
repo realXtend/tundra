@@ -27,17 +27,9 @@
 #include <kNet/DataSerializer.h>
 
 #include <boost/regex.hpp>
-#include <boost/filesystem.hpp>
 
 #include <utility>
 #include "MemoryLeakCheck.h"
-
-#ifdef min
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif
 
 using namespace kNet;
 
@@ -929,7 +921,7 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
                             ad.dataInMemory = false;
 
                             // Rewrite source refs for asset descs, if necessary.
-                            QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+                            QString basePath = QFileInfo(sceneDesc.filename).dir().path();
                             framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
                             ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
@@ -995,7 +987,7 @@ void Scene::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sc
                 ad.typeName = "Script dependency";
                 ad.dataInMemory = false;
 
-                QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+                QString basePath = QFileInfo(sceneDesc.filename).dir().path();
                 framework_->Asset()->ResolveLocalAssetPath(scriptDependency, basePath, ad.source);
                 ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
                 
@@ -1114,7 +1106,7 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                                         ad.dataInMemory = false;
 
                                         // Rewrite source refs for asset descs, if necessary.
-                                        QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+                                        QString basePath = QFileInfo(sceneDesc.filename).dir().path();
                                         framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
                                         ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 

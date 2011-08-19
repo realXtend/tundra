@@ -575,11 +575,7 @@ namespace Avatar
     {
         std::string filename = QtUtils::GetOpenFileName(filter, prompt, last_directory_);
         if (!filename.empty())
-        {
-            boost::filesystem::path path(filename);
-            std::string dirname = path.branch_path().string();
-            last_directory_ = dirname;
-        }
+            last_directory_ = QFileInfo(filename.c_str()).dir().path().toStdString();
         return filename; 
     }
 
@@ -587,11 +583,7 @@ namespace Avatar
     {
         std::string filename = QtUtils::GetSaveFileName(filter, prompt, last_directory_);
         if (!filename.empty())
-        {
-            boost::filesystem::path path(filename);
-            std::string dirname = path.branch_path().string();
-            last_directory_ = dirname;
-        }
+            last_directory_ = QFileInfo(filename.c_str()).dir().path().toStdString();
         return filename; 
     }
 */
