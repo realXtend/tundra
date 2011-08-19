@@ -176,4 +176,33 @@ void EC_Material::ApplyParameters(OgreMaterialAsset* srcMatAsset)
         if (parts.size() == 2)
             destMatAsset->SetAttribute(parts[0], parts[1]);
     }
+
+    // There is a race between EC_Material and EC_Mesh when a output material is generated.
+    // Either EC_Material is first to generate the material into asset system, before EC_Mesh requests it,
+    // or EC_Mesh requests before EC_Material has time to generate the material. In the latter case
+    // the asset request will fail and the material breaks. To fix this we should inspect our
+    // mesh and reapply generated materials.
+    
+    /// @note We could and possibly should look for all EC_Meshes in the scene, as another mesh than our
+    /// own (in the same entity) could have the generated output material set!
+    if (!outputMatName.isEmpty() && ParentEntity())
+    {
+        ComponentPtr meshComp = ParentEntity()->GetComponent("EC_Mesh");
+        EC_Mesh *mesh = dynamic_cast<EC_Mesh*>(meshComp.get());
+        if (mesh)
+        {
+            QString outputResolved = framework->Asset()->ResolveAssetRef("", outputMatName);
+            AssetReferenceList materials = mesh->getmeshMaterial();
+            for(int i=0; i<materials.Size(); i++)
+            {
+                QString materialResolved = framework->Asset()->ResolveAssetRef("", materials[i].ref);
+                if (materialResolved == outputResolved)
+                {
+                    // Re-apply to make sure EC_Mesh finds the generated material via AssetAPI.
+                    mesh->setmeshMaterial(materials);
+                    break;
+                }
+            }
+        }
+    }
 }
