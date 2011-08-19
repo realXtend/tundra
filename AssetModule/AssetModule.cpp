@@ -271,7 +271,7 @@ namespace Asset
         TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
         KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
         if (tundra->IsServer())
-            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+            foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
                 if (userConn->connection != source)
                     userConn->connection->Send(msg);
 
@@ -291,7 +291,7 @@ namespace Asset
         TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
         KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
         if (tundra->IsServer())
-            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+            foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
                 if (userConn->connection != source)
                     userConn->connection->Send(msg);
 
@@ -315,7 +315,7 @@ namespace Asset
         // If we are server, send to everyone
         if (tundra->IsServer())
         {
-            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+            foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
                 userConn->connection->Send(msg);
         }
         // If we are client, send to server
@@ -342,7 +342,7 @@ namespace Asset
         // If we are server, send to everyone
         if (tundra->IsServer())
         {
-            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+            foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
                 userConn->connection->Send(msg);
         }
         // If we are client, send to server

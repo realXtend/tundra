@@ -160,6 +160,8 @@ macro (configure_ogre)
     include_directories(${OGRE_HOME}/include/OGRE) 
     include_directories(${OGRE_HOME}/include/OGRE/RenderSystems/Direct3D9)
     link_directories(${OGRE_HOME}/lib)
+    link_directories(${OGRE_HOME}/lib/debug)
+    link_directories(${OGRE_HOME}/lib/debug/opt)
 endmacro (configure_ogre)
 
 macro(link_ogre)

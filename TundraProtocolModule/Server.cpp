@@ -213,7 +213,7 @@ UserConnection* Server::GetUserConnection(int connectionID) const
     for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
     {
         if ((*iter)->userID == connectionID)
-            return (*iter);
+            return ((*iter).get());
     }
     
     return 0;

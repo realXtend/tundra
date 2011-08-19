@@ -421,6 +421,18 @@ void EC_Mesh::RemoveMesh()
     }
 }
 
+Ogre::Bone* EC_Mesh::GetBone(const QString& boneName) const
+{
+    std::string boneNameStd = boneName.toStdString();
+    if (!entity_)
+        return 0;
+    Ogre::Skeleton* skel = entity_->getSkeleton();
+    if (skel && skel->hasBone(boneNameStd))
+        return skel->getBone(boneNameStd);
+    else
+        return 0;
+}
+
 bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point, bool share_skeleton)
 {
     if (!ViewEnabled())

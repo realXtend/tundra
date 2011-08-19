@@ -24,6 +24,7 @@
 #include "Profiler.h"
 #include <QDir>
 #include <QFileSystemWatcher>
+#include "CoreStringUtils.h"
 #include "MemoryLeakCheck.h"
 
 AssetAPI::AssetAPI(Framework *fw_, bool isHeadless)

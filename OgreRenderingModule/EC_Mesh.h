@@ -304,7 +304,10 @@ public slots:
 
     /// Returns number of materials (submeshes) in the mesh entity
     uint GetNumMaterials() const;
-
+    
+    //! returns an Ogre bone safely, or null if not found.
+    Ogre::Bone* GetBone(const QString& boneName) const;
+    
     /// Gets material name from mesh
     /** @param index submesh index
         @return name if successful, empty if no entity / illegal index */
@@ -402,7 +405,7 @@ signals:
 
     /// Signal is emitted when skeleton has successfully applied to entity.
     void SkeletonChanged(QString skeleton_name);
-
+    
 private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();

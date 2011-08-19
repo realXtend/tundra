@@ -17,7 +17,7 @@
    <string notr="true">QWidget {
 	background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                        stop: 0 #E0E0E0, stop: 1 #FFFFFF);
-	titlebar-normal-icon: url(data/assets/user.png);
+	titlebar-normal-icon: url(user.png);
 }</string>
   </property>
   <widget class="QPushButton" name="participantsList">
@@ -45,8 +45,8 @@
     <bool>false</bool>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: green; 
-border-image: url(./data/assets/user.png) 3 3 3 3;
+    <string notr="true">color: green;
+border-image: url(user.png) 3 3 3 3;
 border-top: 3px transparent;
 border-bottom: 3px transparent;
 border-right: 3px transparent;
@@ -128,7 +128,7 @@ QComboBox::drop-down {
 	border-bottom-right-radius: 3px;
 }
 QComboBox::down-arrow {
-     image: url(data/assets/arrow_down.png);
+     image: url(arrow_down.png);
 }
 
 QComboBox QAbstractItemView{
@@ -158,7 +158,7 @@ QComboBox QAbstractItemView{
    </property>
    <property name="styleSheet">
     <string notr="true">color: green; 
-border-image: url(./data/assets/status_offline.png) 3 3 3 3;
+border-image: url(status_offline.png) 3 3 3 3;
 border-top: 3px transparent;
 border-bottom: 3px transparent;
 border-right: 3px transparent;

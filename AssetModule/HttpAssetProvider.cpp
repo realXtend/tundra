@@ -128,7 +128,7 @@ AssetStoragePtr HttpAssetProvider::TryDeserializeStorageFromString(const QString
         return AssetStoragePtr();
     if (!s.contains("src"))
         return AssetStoragePtr();
-
+    
     QString path;
     QString protocolPath;
     AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(s["src"], 0, 0, &protocolPath, 0, 0, &path);

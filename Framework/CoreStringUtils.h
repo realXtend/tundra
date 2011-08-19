@@ -36,6 +36,8 @@ std::wstring QStringToWString(const QString &qstr);
 QString WStringToQString(const std::wstring &str);
 
 std::wstring ToWString(const std::string &str);
+std::wstring QStringToWString(const QString &qstr);
+QString WStringToQString(const std::wstring &str);
 
 /// Converts value to a string. May throw boost::bad_lexical_cast.
 template <class T>

@@ -27,6 +27,7 @@
 #include <BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
+#include <BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h>
 #include <set>
 
 #include <OgreSceneNode.h>

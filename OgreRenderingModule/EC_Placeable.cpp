@@ -11,6 +11,7 @@
 #include "Renderer.h"
 
 #include "AttributeMetadata.h"
+#include "EC_Mesh.h"
 #include "Entity.h"
 #include "Scene.h"
 #include "Math/Quat.h"

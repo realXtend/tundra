@@ -401,7 +401,7 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
     if (isServer && (type & EntityAction::Peers) != 0)
     {
         msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
-        foreach(UserConnection* c, owner_->GetKristalliModule()->GetUserConnections())
+        foreach(UserConnectionPtr c, owner_->GetKristalliModule()->GetUserConnections())
         {
             if (c->properties["authenticated"] == "true" && c->connection)
             {
@@ -1262,7 +1262,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     if (isServer && (type & EntityAction::Peers) != 0)
     {
         msg.executionType = (u8)EntityAction::Local;
-        foreach(UserConnection* userConn, owner_->GetKristalliModule()->GetUserConnections())
+        foreach(UserConnectionPtr userConn, owner_->GetKristalliModule()->GetUserConnections())
             if (userConn->connection != source) // The EC action will not be sent to the machine that originated the request to send an action to all peers.
                 userConn->connection->Send(msg);
         handled = true;

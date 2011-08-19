@@ -303,7 +303,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
 
     source->RegisterInboundMessageHandler(this);
     
-    UserConnection* connection = new UserConnection();
+    UserConnectionPtr connection(new UserConnection());
     connection->userID = AllocateNewConnectionID();
     connection->connection = source;
     connections.push_back(connection);
@@ -314,7 +314,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
 
     ::LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
-    emit ClientConnectedEvent(connection);
+    emit ClientConnectedEvent(connection.get());
 }
 
 void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
@@ -323,10 +323,9 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->connection == source)
         {
-            emit ClientDisconnectedEvent(*iter);
+            emit ClientDisconnectedEvent(iter->get());
             
             ::LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
-            delete(*iter);
             connections.erase(iter);
             return;
         }
@@ -362,7 +361,7 @@ UserConnection* KristalliProtocolModule::GetUserConnection(MessageConnection* so
 {
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->connection == source)
-            return (*iter);
+            return iter->get();
 
     return 0;
 }
@@ -371,7 +370,7 @@ UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
 {
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->userID == id)
-            return (*iter);
+            return iter->get();
 
     return 0;
 }

@@ -97,7 +97,6 @@ public:
     
     explicit EC_HoveringText(Scene* scene);
 
-    /// Destructor.
     ~EC_HoveringText();
 
     Q_PROPERTY(QString text READ gettext WRITE settext);

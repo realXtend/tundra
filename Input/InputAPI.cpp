@@ -251,7 +251,10 @@ void InputAPI::ApplyMouseCursorOverride()
 {
     if (!IsMouseCursorVisible())
         return;
-
+    // Return if in headless and do not have the GraphicsView
+    if (!framework->Ui()->GraphicsView())
+        return;
+    
     UiGraphicsView *gv = framework->Ui()->GraphicsView();
     if (!gv) // If the tundra is running in headless, mode no graphics view is created.
         return;

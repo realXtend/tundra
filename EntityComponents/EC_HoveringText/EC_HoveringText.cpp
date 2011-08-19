@@ -22,8 +22,11 @@
 #include "AssetApi.h"
 #include "TextureAsset.h"
 
+#include "Framework.h"
+#include "OgreRenderingModule.h"
+#include "AssetApi.h"
+#include "TextureAsset.h"
 #include <Ogre.h>
-
 #include <QFile>
 #include <QPainter>
 #include <QTimer>
@@ -57,7 +60,6 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
-
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
@@ -276,7 +278,7 @@ void EC_HoveringText::Redraw()
         }       
        
         QBrush brush((QColor)backgroundColor.Get());
-
+       
         if (usingGrad.Get())
         {   
             QRect rect(0,0,texWidth.Get(), texHeight.Get());

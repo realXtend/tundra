@@ -72,6 +72,7 @@ if (HAVE_OPENDOCUMENT_SUPPORT)
 endif()
 
 add_subdirectory(StreamsModule)
+add_subdirectory(DocumentsModule)
 
 # The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
 # they will not be able to conditionally compile the EC.

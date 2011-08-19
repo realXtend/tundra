@@ -519,6 +519,9 @@ namespace OgreRenderer
         
         if (!initialized_)
             return;
+            
+        if (!initialized_)
+            return;
 
         if (frameTime > MAX_FRAME_TIME)
             frameTime = MAX_FRAME_TIME;
