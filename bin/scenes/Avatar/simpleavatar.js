@@ -39,6 +39,7 @@ function SimpleAvatar(entity, comp)
     this.flying = false;
     this.falling = false;
     this.crosshair = null;
+    this.isMouseLookLockedOnX = true;
 
     // Animation detection
     this.standAnimName = "Stand";
@@ -647,8 +648,6 @@ SimpleAvatar.prototype.ClientUpdateAvatarCamera = function() {
         return;
     var cameraplaceable = cameraentity.placeable;
 
-    if (!firstPerson)
-        this.pitch = 0;
     var cameratransform = cameraplaceable.transform;
     cameratransform.rot = new float3(this.pitch, 0, 0);
     cameratransform.pos = new float3(0, this.avatarCameraHeight, avatarCameraDistance);
@@ -727,6 +726,11 @@ SimpleAvatar.prototype.ClientHandleMouseMove = function(mouseevent) {
     if ((!firstPerson) && (input.IsMouseCursorVisible()))
         return;
 
+    if (mouseevent.IsRightButtonDown())
+        this.LockMouseMove(mouseevent.relativeX, mouseevent.relativeY);
+    else
+        this.isMouseLookLockedOnX = true;
+
     var cameraentity = scene.GetEntityByName("AvatarCamera");
     if (cameraentity == null)
         return;
@@ -742,7 +746,7 @@ SimpleAvatar.prototype.ClientHandleMouseMove = function(mouseevent) {
         this.me.Exec(2, "SetRotation", this.yaw.toString());
     }
 
-    if (mouseevent.relativeY != 0)
+    if (mouseevent.relativeY != 0 && (firstPerson || !this.isMouseLookLockedOnX))
     {
         // Look up/down
         var attrs = this.me.dynamiccomponent;
@@ -754,6 +758,13 @@ SimpleAvatar.prototype.ClientHandleMouseMove = function(mouseevent) {
         if (this.pitch > 90)
             this.pitch = 90;
     }
+}
+
+SimpleAvatar.prototype.LockMouseMove = function(x,y) {
+    if (Math.abs(y) > Math.abs(x))
+        this.isMouseLookLockedOnX = false;
+    else
+        this.isMouseLookLockedOnX = true;
 }
 
 SimpleAvatar.prototype.CommonFindAnimations = function() {
