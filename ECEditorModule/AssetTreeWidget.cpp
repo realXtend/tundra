@@ -494,6 +494,7 @@ void AssetTreeWidget::OpenFileLocation()
         CloseHandle(processInfo.hThread);
 #endif
        ///\todo Cross-platform
+       /// Might be possible to use this: http://doc.qt.nokia.com/latest/qdesktopservices.html#openUrl -jj.
     }
 }
 
