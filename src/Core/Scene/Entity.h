@@ -52,7 +52,7 @@ class Entity : public QObject, public boost::enable_shared_from_this<Entity>
     Q_PROPERTY (bool local READ IsLocal)
     
 public:
-    typedef std::map<entity_id_t, ComponentPtr> ComponentMap; ///< Component container.
+    typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
     typedef std::vector<ComponentPtr> ComponentVector; ///< Component vector container.
     typedef QMap<QString, EntityAction *> ActionMap; ///< Action container
 
@@ -115,7 +115,7 @@ public:
 
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
-    ComponentPtr GetComponentById(entity_id_t id) const;
+    ComponentPtr GetComponentById(component_id_t id) const;
     /// Returns a component with type 'type_name' or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary).
         @param type_name type of the component */

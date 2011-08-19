@@ -54,6 +54,25 @@ void IAttribute::Changed(AttributeChange::Type change)
         owner->EmitAttributeChanged(this, change);
 }
 
+// TYPEID TEMPLATE IMPLEMENTATIONS
+
+template<> u32 Attribute<QString>::TypeId() const { return cAttributeString; }
+template<> u32 Attribute<int>::TypeId() const { return cAttributeInt; }
+template<> u32 Attribute<float>::TypeId() const { return cAttributeReal; }
+template<> u32 Attribute<Color>::TypeId() const { return cAttributeColor; }
+template<> u32 Attribute<float2>::TypeId() const { return cAttributeFloat2; }
+template<> u32 Attribute<float3>::TypeId() const { return cAttributeFloat3; }
+template<> u32 Attribute<float4>::TypeId() const { return cAttributeFloat4; }
+template<> u32 Attribute<bool>::TypeId() const { return cAttributeBool; }
+template<> u32 Attribute<uint>::TypeId() const { return cAttributeUInt; }
+template<> u32 Attribute<Quat>::TypeId() const { return cAttributeQuat; }
+template<> u32 Attribute<AssetReference>::TypeId() const { return cAttributeAssetReference; }
+template<> u32 Attribute<AssetReferenceList>::TypeId() const { return cAttributeAssetReferenceList; }
+template<> u32 Attribute<EntityReference>::TypeId() const { return cAttributeEntityReference; }
+template<> u32 Attribute<QVariant>::TypeId() const { return cAttributeQVariant; }
+template<> u32 Attribute<QVariantList>::TypeId() const { return cAttributeQVariantList; }
+template<> u32 Attribute<Transform>::TypeId() const { return cAttributeTransform; }
+
 // TOSTRING TEMPLATE IMPLEMENTATIONS.
 
 template<> std::string Attribute<QString>::ToString() const

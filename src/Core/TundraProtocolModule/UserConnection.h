@@ -4,6 +4,7 @@
 
 #include "KristalliProtocolModuleApi.h"
 #include "kNet.h"
+#include "SyncState.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
@@ -15,12 +16,6 @@ namespace kNet
 }
 
 class Entity;
-
-/// Interface class for user's currently replicated scene state
-struct ISyncState
-{
-    virtual ~ISyncState() {}
-};
 
 /// Represents a client conncetion on the server side.
 class KRISTALLIPROTOCOL_MODULE_API UserConnection : public QObject, public boost::enable_shared_from_this<UserConnection>
@@ -44,8 +39,8 @@ public:
     QString loginData;
     /// Property map
     std::map<QString, QString> properties;
-    /// Scene sync state
-    boost::shared_ptr<ISyncState> syncState;
+    /// Scene sync state, used by the SyncManager
+    SceneSyncState syncState;
     
 public slots:
     /// Execute an action on an entity, sent only to the specific user

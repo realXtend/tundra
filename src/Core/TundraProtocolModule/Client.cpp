@@ -20,6 +20,8 @@
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
 
+#include "LoggingFunctions.h"
+
 #include "MemoryLeakCheck.h"
 
 #include <QDomElement>
@@ -126,6 +128,7 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
 
         SetLoginProperty("protocol", p);
         SetLoginProperty("port", QString::number(port));
+
     }
 
     KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();

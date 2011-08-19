@@ -21,6 +21,8 @@
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
 
+#include "LoggingFunctions.h"
+
 #include "MemoryLeakCheck.h"
 
 #include <QtScript>

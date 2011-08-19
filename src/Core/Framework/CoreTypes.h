@@ -64,6 +64,7 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 
 typedef unsigned int entity_id_t;
+typedef unsigned int component_id_t;
 
 typedef std::vector<std::string> StringVector;
 typedef boost::shared_ptr<StringVector> StringVectorPtr;

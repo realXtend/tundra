@@ -108,13 +108,22 @@ public slots:
 
     /// Looks up the given type name and returns the type id for that component type.
     u32 GetComponentTypeId(const QString &componentTypename);
-
+    
+    /// Looks up the attribute type name for an attribute type id
+    QString GetAttributeTypeName(u32 attributeTypeid);
+    
+    /// Looks up the type id for an attribute type name, or zero if not found
+    u32 GetAttributeTypeId(const QString &attributeTypename);
+    
     /// Creates a clone of the specified component. The new component will be detached, i.e. it has no parent entity.
     ///\todo Implement this.
 //    ComponentPtr CloneComponent(const ComponentPtr &component, const QString &newComponentName);
 
-    /// Create new attribute for spesific component.
+    /// Create new dynamic attribute for component by typename
     IAttribute *CreateAttribute(IComponent *owner, const QString &attributeTypename, const QString &newAttributeName);
+    
+    /// Create new dynamic attribute for component by typeid
+    IAttribute *SceneAPI::CreateAttribute(IComponent *owner, u32 attributeTypeid, const QString &newAttributeName);
 
     /// Returns a list of all attribute type names that can be used in the CreateAttribute function to create an attribute.
     QStringList AttributeTypes() const;
@@ -161,4 +170,5 @@ private:
     SceneMap scenes_; ///< All currently created scenes.
     ScenePtr defaultScene_; ///< Current 'default' scene. \todo Delete this.
     SceneInteract *sceneInteract; ///< Scene interact. \todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
+    QStringList attributeTypeNames;
 };

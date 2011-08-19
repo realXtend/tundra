@@ -19,6 +19,8 @@
 #include "Transform.h"
 #include "MemoryLeakCheck.h"
 
+
+
 SceneAPI::SceneAPI(Framework *framework) :
     QObject(framework),
     framework_(framework)
@@ -28,6 +30,10 @@ SceneAPI::SceneAPI(Framework *framework) :
 
     defaultScene_.reset();
     scenes_.clear();
+    
+    // Note: these must be in typeid order
+    attributeTypeNames << "string" << "int" << "real" << "color" << "float2" << "float3" << "float4" << "bool" << "uint" << "quat" <<
+        "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform";
 }
 
 SceneAPI::~SceneAPI()
@@ -207,6 +213,25 @@ u32 SceneAPI::GetComponentTypeId(const QString &componentTypename)
         return 0;
 }
 
+QString SceneAPI::GetAttributeTypeName(u32 attributeTypeid)
+{
+    attributeTypeid--; // Skip 0 which is illegal
+    if (attributeTypeid < (u32)attributeTypeNames.size())
+        return attributeTypeNames[attributeTypeid];
+    else
+        return "";
+}
+
+u32 SceneAPI::GetAttributeTypeId(const QString &attributeTypename)
+{
+    for (int i = 0; i < attributeTypeNames.size(); ++i)
+    {
+        if (!attributeTypeNames[i].compare(attributeTypename, Qt::CaseInsensitive))
+            return i + 1; // 0 is illegal, actual types start from 1
+    }
+    return 0;
+}
+
 /*
 ComponentPtr SceneAPI::CloneComponent(const ComponentPtr &component, const QString &newComponentName)
 {
@@ -220,42 +245,47 @@ ComponentPtr SceneAPI::CloneComponent(const ComponentPtr &component, const QStri
 
 IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attributeTypename, const QString &newAttributeName)
 {
+    return CreateAttribute(owner, GetAttributeTypeId(attributeTypename), newAttributeName);
+}
+
+IAttribute *SceneAPI::CreateAttribute(IComponent *owner, u32 attributeTypeid, const QString &newAttributeName)
+{
     // The dynamically created attributes are deleted at the IComponent dtor.
     IAttribute *attribute = 0;
-    if (attributeTypename == "string")
+    if (attributeTypeid == cAttributeString)
         attribute = new Attribute<QString>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "int")
+    else if (attributeTypeid == cAttributeInt)
         attribute = new Attribute<int>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "real")
+    else if (attributeTypeid == cAttributeReal)
         attribute = new Attribute<float>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "color")
+    else if (attributeTypeid == cAttributeColor)
         attribute = new Attribute<Color>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "float2")
+    else if (attributeTypeid == cAttributeFloat2)
         attribute = new Attribute<float2>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "float3")
+    else if (attributeTypeid == cAttributeFloat3)
         attribute = new Attribute<float3>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "float4")
+    else if (attributeTypeid == cAttributeFloat4)
         attribute = new Attribute<float4>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "bool")
+    else if (attributeTypeid == cAttributeBool)
         attribute = new Attribute<bool>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "uint")
+    else if (attributeTypeid == cAttributeUInt)
         attribute = new Attribute<uint>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "quat")
+    else if (attributeTypeid == cAttributeQuat)
         attribute = new Attribute<Quat>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "assetreference")
+    else if (attributeTypeid == cAttributeAssetReference)
         attribute = new Attribute<AssetReference>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "assetreferencelist")
+    else if (attributeTypeid == cAttributeAssetReferenceList)
         attribute = new Attribute<AssetReferenceList>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "entityreference")
+    else if (attributeTypeid == cAttributeEntityReference)
         attribute = new Attribute<EntityReference>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "qvariant")
+    else if (attributeTypeid == cAttributeQVariant)
         attribute = new Attribute<QVariant>(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "qvariantlist")
-        attribute = new Attribute<QVariantList >(owner, newAttributeName.toStdString().c_str());
-    else if (attributeTypename == "transform")
+    else if (attributeTypeid == cAttributeQVariantList)
+        attribute = new Attribute<QVariantList>(owner, newAttributeName.toStdString().c_str());
+    else if (attributeTypeid == cAttributeTransform)
         attribute = new Attribute<Transform>(owner, newAttributeName.toStdString().c_str());
     else
-        LogError("Cannot create attribute of type \"" + attributeTypename + "\"! This type is not known to SceneAPI::CreateAttribute!");
+        LogError("Cannot create attribute of type \"" + ToString<int>(attributeTypeid) + "\"! This type is not known to SceneAPI::CreateAttribute!");
     if (attribute)
         attribute->dynamic = true;
     return attribute;
@@ -263,10 +293,7 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
 
 QStringList SceneAPI::AttributeTypes() const
 {
-    QStringList attrTypes;
-    attrTypes << "string" << "int" << "real" << "color" << "float2" << "float3" << "float4" << "bool" << "uint" << "quat" <<
-        "assetreference" << "assetreferencelist" << "entityreference" << "qvariant" << "qvariantlist" << "transform";
-    return attrTypes;
+    return attributeTypeNames;
 }
 
 QStringList SceneAPI::ComponentTypes() const

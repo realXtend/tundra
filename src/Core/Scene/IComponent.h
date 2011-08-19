@@ -196,8 +196,8 @@ public slots:
     /// Gets the default mode for attribute change operations
     AttributeChange::Type UpdateMode() const { return updateMode; }
 
-    /// Returns component ID, which is unique within the parent entity
-    entity_id_t Id() const { return id; }
+    /// Returns component id, which is unique within the parent entity
+    component_id_t Id() const { return id; }
     
     /// Returns true if component has dynamic attribute structure
     virtual bool HasDynamicStructure() const { return false; }
@@ -309,7 +309,7 @@ protected:
     AttributeVector attributes;
 
     /// Component id, unique within the parent entity
-    entity_id_t id;
+    component_id_t id;
     
     /// Network sync enable flag
     bool replicated;
@@ -327,8 +327,8 @@ private:
     friend class ::IAttribute;
     friend class Entity;
     
-    /// Set component ID. Called by Entity
-    void SetNewId(entity_id_t newId);
+    /// Set component id. Called by Entity
+    void SetNewId(component_id_t newId);
     
     /// Called by IAttribute on initialization of each attribute
     void AddAttribute(IAttribute* attr) { attributes.push_back(attr); }

@@ -53,6 +53,9 @@ public:
 
     /// Returns the type name of the data stored in this attribute.
     virtual QString TypeName() const = 0;
+    
+    /// Returns the type ID of this attribute.
+    virtual u32 TypeId() const = 0;
 
     /// Writes attribute to binary for binary serialization
     virtual void ToBinary(kNet::DataSerializer& dest) const = 0;
@@ -193,6 +196,9 @@ public:
     /// Returns the type of the data stored in this attribute.
     virtual QString TypeName() const;
 
+    /// Returns the typeid of this attribute.
+    virtual u32 TypeId() const;
+    
     /// Returns the value as QVariant (For scripts).
     virtual QVariant ToQVariant() const;
 
@@ -207,33 +213,21 @@ private:
     T value; ///< Attribute's value.
 };
 
-// Commented out to improve compilation times, as these are not used outside IAttribute.cpp
-// currently. Can be added back if needed.
-
-/*template<> std::string Attribute<std::string>::ToString() const;
-template<> std::string Attribute<bool>::ToString() const;
-template<> std::string Attribute<int>::ToString() const;
-template<> std::string Attribute<uint>::ToString() const;
-template<> std::string Attribute<float>::ToString() const;
-template<> std::string Attribute<Vector3df>::ToString() const;
-template<> std::string Attribute<Quat>::ToString() const;
-template<> std::string Attribute<Color>::ToString() const;
-template<> std::string Attribute<AssetReference>::ToString() const;
-tempalte<> std::string Attribute<QVariant>::ToString() const;
-template<> std::string Attribute<EntityReference>::ToString() const;
-
-template<> void Attribute<std::string>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<bool>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<int>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<uint>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<float>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<Vector3df>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<Color>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<Quat>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<AssetReference>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<QVariant>::FromString(const std::string& str, ChangeType change);
-template<> void Attribute<EntityReference>::FromString(const std::string& str, ChangeType change);
-
-template<> 
-*/
-
+static const u32 cAttributeNone = 0;
+static const u32 cAttributeString = 1;
+static const u32 cAttributeInt = 2;
+static const u32 cAttributeReal = 3;
+static const u32 cAttributeColor = 4;
+static const u32 cAttributeFloat2 = 5;
+static const u32 cAttributeFloat3 = 6;
+static const u32 cAttributeFloat4 = 7;
+static const u32 cAttributeBool = 8;
+static const u32 cAttributeUInt = 9;
+static const u32 cAttributeQuat = 10;
+static const u32 cAttributeAssetReference = 11;
+static const u32 cAttributeAssetReferenceList = 12;
+static const u32 cAttributeEntityReference = 13;
+static const u32 cAttributeQVariant = 14;
+static const u32 cAttributeQVariantList = 15;
+static const u32 cAttributeTransform = 16;
+static const u32 cNumAttributeTypes = 17;

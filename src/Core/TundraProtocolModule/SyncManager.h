@@ -3,6 +3,7 @@
 #pragma once
 
 #include "IComponent.h"
+#include "Entity.h"
 #include "SyncState.h"
 
 #include <QObject>
@@ -101,7 +102,7 @@ private:
         @param destination MessageConnection where to send the messages
         @param state Syncstate to process
      */
-    void ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state);
+    void ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState& state);
     
     /// Validate the scene manipulation action. If returns false, it is ignored
     /** @param source Where the action came from

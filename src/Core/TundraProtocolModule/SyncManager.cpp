@@ -424,9 +424,7 @@ void SyncManager::Update(f64 frametime)
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
-            if (state)
-                ProcessSyncState((*i)->connection, state);
+            ProcessSyncState((*i)->connection, (*i)->syncState);
         }
     }
     else
@@ -434,11 +432,11 @@ void SyncManager::Update(f64 frametime)
         // If we are client, process just the server sync state
         kNet::MessageConnection* connection = owner_->GetKristalliModule()->GetMessageConnection();
         if (connection)
-            ProcessSyncState(connection, &server_syncstate_);
+            ProcessSyncState(connection, server_syncstate_);
     }
 }
 
-void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state)
+void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState& state)
 {
     PROFILE(SyncManager_ProcessSyncState);
     
@@ -1282,7 +1280,7 @@ SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connecti
     for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
     {
         if ((*i)->connection == connection)
-            return checked_static_cast<SceneSyncState*>((*i)->syncState.get());
+            return &(*i)->syncState;
     }
     return 0;
 }
