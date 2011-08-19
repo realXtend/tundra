@@ -8,7 +8,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-# Never compile server in consoleless mode
+# TODO: For now, set WINDOWS_APP 0 always. But we want to be able to build application in consoleless mode too.
 set (WINDOWS_APP 0)
 
 # Preprocessor defines on MSVC
@@ -29,11 +29,10 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_modules (Framework Scene Console)
+use_modules (Framework)
 
 build_executable (${TARGET_NAME} ${SOURCE_FILES})
 
-link_modules (Framework Scene Console)
+link_modules (Framework)
 
 final_target ()
-
