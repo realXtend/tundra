@@ -38,6 +38,11 @@ void BrowserUiPlugin::AddAction(QAction *action, const QString &group)
     emit ActionAddRequest(action, group);
 }
 
+void BrowserUiPlugin::OpenUrl(const QString &url, bool activateNewTab)
+{
+    OpenUrl(QUrl::fromUserInput(url), activateNewTab);
+}
+
 void BrowserUiPlugin::OpenUrl(const QUrl &url, bool activateNewTab)
 {
     emit OpenUrlRequest(url, activateNewTab);

@@ -29,7 +29,12 @@ public slots:
     void AddAction(QAction *action, const QString &group = QString());
 
     /// Opens url in the browser ui.
-    /// @param url Url.
+    /// @param url QString url.
+    /// @param activateNewTab If the new tab where the url is opened should be activated or not. Optional, defaults to true.
+    void OpenUrl(const QString &url, bool activateNewTab = true);
+
+    /// Opens url in the browser ui.
+    /// @param url QUrl url.
     /// @param activateNewTab If the new tab where the url is opened should be activated or not. Optional, defaults to true.
     void OpenUrl(const QUrl &url, bool activateNewTab = true);
 
