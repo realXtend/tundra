@@ -1842,7 +1842,7 @@ void AssetReferenceAttributeEditor::OpenAssetsWindow()
     if (assetRef)
     {
         QString assetType = AssetAPI::GetResourceTypeFromAssetRef(assetRef->Get());
-        LogInfo("Creating AssetsWindow for asset type " + assetType);
+        LogDebug("Creating AssetsWindow for asset type " + assetType);
         AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
         connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
         connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
@@ -1864,7 +1864,7 @@ void AssetReferenceAttributeEditor::HandleAssetPicked(AssetPtr asset)
 {
     if (asset)
     {
-        LogInfo("AssetReferenceAttributeEditor: Setting new value " + asset->Name());
+        LogDebug("AssetReferenceAttributeEditor: Setting new value " + asset->Name());
         SetValue(AssetReference(asset->Name()));
         Update();
     }
@@ -2097,8 +2097,8 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
             assetType = AssetAPI::GetResourceTypeFromAssetRef(refList->Get()[0]);
     }
 
-    LogInfo("OpenAssetsWindow, index " + ToString(currentIndex));
-    LogInfo("Creating AssetsWindow for asset type " + assetType);
+    LogDebug("OpenAssetsWindow, index " + ToString(currentIndex));
+    LogDebug("Creating AssetsWindow for asset type " + assetType);
     AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
@@ -2134,7 +2134,7 @@ void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
 
     if (asset)
     {
-        LogInfo("AssetReferenceListAttributeEditor: Setting new value " + asset->Name() + " for index " + QString::number(currentIndex));
+        LogDebug("AssetReferenceListAttributeEditor: Setting new value " + asset->Name() + " for index " + QString::number(currentIndex));
         AssetReferenceList newRefList = refList->Get();
         if (newRefList.IsEmpty())
             newRefList.Append(AssetReference(asset->Name()));

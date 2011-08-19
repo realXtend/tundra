@@ -20,8 +20,7 @@ class Framework;
 class AssetTreeWidget;
 
 /// The main UI for managing asset storages and assets.
-/** Most of the functionality provided by AssetsWindow is implemented in AssetTreeWidget.
-*/
+/** Most of the functionality provided by AssetsWindow is implemented in AssetTreeWidget. */
 class AssetsWindow : public QWidget
 {
     Q_OBJECT
@@ -29,15 +28,13 @@ class AssetsWindow : public QWidget
 public:
     /// Constructs the window.
     /** @param fw Framework.
-        @parent parent Parent widget.
-    */
+        @parent parent Parent widget. */
     AssetsWindow(Framework *fw, QWidget *parent = 0);
 
     /// Constructs the window to view only assets of specific type.
     /** @param assetType Asset type identifier, see AssetAPI::GetResourceTypeFromAssetRef() and AssetAPI::GetResourceTypeFromAssetRef()
         @param fw Framework.
-        @parent parent Parent widget.
-    */
+        @parent parent Parent widget. */
     AssetsWindow(const QString &assetType, Framework *fw, QWidget *parent = 0);
 
     /// Destructor.
@@ -47,29 +44,25 @@ public slots:
     /// Populates the tree widget with all assets from all asset storages.
     void PopulateTreeWidget();
 
-        /// Adds new asset to the tree widget.
-    /** @param asset New asset.
-    */
+    /// Adds new asset to the tree widget.
+    /** @param asset New asset. */
     void AddAsset(AssetPtr asset);
 
     /// Removes asset from the tree widget.
-    /** @param asset Asset to be removed.
-    */
+    /** @param asset Asset to be removed. */
     void RemoveAsset(AssetPtr asset);
 
     /// Searches for items containing @c filter (case-insensitive) and toggles their visibility.
     /** If match is found the item is set visible and expanded, otherwise it's hidden.
-        @param filter Text used as a filter.
-    */
+        @param filter Text used as a filter. */
     void Search(const QString &filter);
 
 signals:
-    /// 
-    /** @param 
-    */
+    /// Emitted when asset was picked.
+    /** @param asset Asset that was picked. */
     void AssetPicked(AssetPtr asset);
 
-    ///
+    /// Emitted when asset picking was canceled.
     void PickCanceled();
 
 private:
@@ -81,8 +74,7 @@ private:
 
     /// If @c asset has asset references, adds the asset references as children to the @c parent.
     /** @param asset Asset to be added to the tree widget.
-        @param parent The newly created (parent) item.
-    */
+        @param parent The newly created (parent) item. */
     void AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent);
 
     Framework *framework; ///< Framework pointer.
@@ -101,17 +93,14 @@ private slots:
     void CheckTreeExpandStatus(QTreeWidgetItem *item);
 
     /// Unmarks unloaded assets in the UI.
-    /** @param asset Asset which was loaded.
-    */
+    /** @param asset Asset which was loaded. */
     void HandleAssetLoaded(AssetPtr asset);
 
     /// Marks unloaded assets in the UI.
-    /** @param asset Asset which was unloaded.
-    */
+    /** @param asset Asset which was unloaded. */
     void HandleAssetUnloaded(IAsset *asset);
 
     void PickAsset(QTreeWidgetItem *);
     void PickAssetAndClose();
     void Cancel();
 };
-
