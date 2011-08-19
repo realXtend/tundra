@@ -414,7 +414,7 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
         assetTreeWidget->addTopLevelItem(aItem);
 
-        QString basePath = QDir::toNativeSeparators(QFileInfo(sceneDesc.filename).dir().path());
+        QString basePath = QFileInfo(sceneDesc.filename).dir().path();
         QString outFilePath;
         AssetAPI::FileQueryResult res = framework->Asset()->ResolveLocalAssetPath(a.source, basePath, outFilePath);
 
@@ -478,7 +478,7 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
 
 void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage)
 {
-    QString path = QDir::toNativeSeparators(QFileInfo(sceneDesc.filename).dir().path());
+    QString path = QFileInfo(sceneDesc.filename).dir().path();
     QList<SceneDesc::AssetMapKey> keysWithSubname;
     foreach(const SceneDesc::AssetMapKey &key, sceneDesc.assets.keys())
         if (!key.second.isEmpty())

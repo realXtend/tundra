@@ -921,7 +921,7 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
                             ad.dataInMemory = false;
 
                             // Rewrite source refs for asset descs, if necessary.
-                            QString basePath = QDir::toNativeSeparators(QFileInfo(sceneDesc.filename).dir().path());
+                            QString basePath = QFileInfo(sceneDesc.filename).dir().path();
                             framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
                             ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
@@ -987,7 +987,7 @@ void Scene::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sc
                 ad.typeName = "Script dependency";
                 ad.dataInMemory = false;
 
-                QString basePath = QDir::toNativeSeparators(QFileInfo(sceneDesc.filename).dir().path());
+                QString basePath = QFileInfo(sceneDesc.filename).dir().path();
                 framework_->Asset()->ResolveLocalAssetPath(scriptDependency, basePath, ad.source);
                 ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
                 
@@ -1106,7 +1106,7 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                                         ad.dataInMemory = false;
 
                                         // Rewrite source refs for asset descs, if necessary.
-                                        QString basePath = QDir::toNativeSeparators(QFileInfo(sceneDesc.filename).dir().path());
+                                        QString basePath = QFileInfo(sceneDesc.filename).dir().path();
                                         framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
                                         ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
