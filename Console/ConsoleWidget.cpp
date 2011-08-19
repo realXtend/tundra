@@ -216,6 +216,9 @@ bool ConsoleWidget::eventFilter(QObject *obj, QEvent *e)
 void ConsoleWidget::DecorateString(QString &str)
 {
     // Make all timestamp + module name blocks white
+    int block_end_index = 0;
+    // Code below disabled as we no longer have module+timestamp block.
+/*
     int block_end_index = str.indexOf("]");
     if (block_end_index != -1)
     {
@@ -228,7 +231,7 @@ void ConsoleWidget::DecorateString(QString &str)
     }
     else
         block_end_index = 0;
-
+*/
     QRegExp regexp;
     regexp.setPattern(".*Debug:.*");
     if (regexp.exactMatch(str))
