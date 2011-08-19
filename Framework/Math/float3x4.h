@@ -153,6 +153,11 @@ public:
     /** @param centerPoint If specified, rotation is performed using this point as the coordinate space origin. */
     static float3x4 RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection, const float3 &centerPoint);
 
+    /// Returns a random 3x4 matrix with each entry randomized between the range[minElem, maxElem].
+    /** Warning: The matrices returned by this function do not represent well-formed 3D transformations.
+        This function is mostly used for testing and debugging purposes only. */
+    static float3x4 RandomGeneral(LCG &lcg, float minElem, float maxElem);
+
     /// Creates a new float3x4 that rotates one coordinate system to coincide with another.
     /** This function rotates the sourceDirection vector to coincide with the targetDirection vector, and then 
             rotates sourceDirection2 (which was transformed by 1.) to targetDirection2, but keeping the constraint that 
@@ -227,12 +232,12 @@ public:
         they were. */
     static float3x4 Reflect(const Plane &p);
 
-    /// Creates a new float3x4 that performs orthographic projection. [indexTitle: MakeOrthographicProjection/YZ/XZ/XY]
-    static float3x4 MakeOrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
-    static float3x4 MakeOrthographicProjection(const Plane &target);
-    static float3x4 MakeOrthographicProjectionYZ(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
-    static float3x4 MakeOrthographicProjectionXZ(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
-    static float3x4 MakeOrthographicProjectionXY(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
+    /// Creates a new float3x4 that performs orthographic projection. [indexTitle: OrthographicProjection/YZ/XZ/XY]
+    static float3x4 OrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
+    static float3x4 OrthographicProjection(const Plane &target);
+    static float3x4 OrthographicProjectionYZ(); ///< [similarOverload: OrthographicProjection] [hideIndex]
+    static float3x4 OrthographicProjectionXZ(); ///< [similarOverload: OrthographicProjection] [hideIndex]
+    static float3x4 OrthographicProjectionXY(); ///< [similarOverload: OrthographicProjection] [hideIndex]
 
     /// Returns the given element. [noscript]
     /** Returns a reference to the element at m[row][col] (or "m[y][x]").

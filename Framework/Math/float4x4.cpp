@@ -18,6 +18,8 @@
 #include "Matrix.inl"
 #include "Quat.h"
 #include "TransformOps.h"
+#include "Plane.h"
+#include "LCG.h"
 
 float4x4::float4x4(float _00, float _01, float _02, float _03,
                    float _10, float _11, float _12, float _13,
@@ -168,6 +170,15 @@ float4x4 float4x4::RotateFromTo(const float3 &centerPoint, const float3 &sourceD
 {
     assume(false && "Not implemented!");
     return float4x4(); ///\todo
+}
+
+float4x4 float4x4::RandomGeneral(LCG &lcg, float minElem, float maxElem)
+{
+    float4x4 m;
+    for(int y = 0; y < 4; ++y)
+        for(int x = 0; x < 4; ++x)
+            m[y][x] = lcg.Float(minElem, maxElem);
+    return m;
 }
 
 float4x4 float4x4::FromQuat(const Quat &orientation)
@@ -346,6 +357,11 @@ float4x4 float4x4::ScaleAlongAxis(const float3 &axis, float scalingFactor, const
     return Translate(scaleCenter).ToFloat4x4() * Scale(axis * scalingFactor) * Translate(-scaleCenter);
 }
 
+ScaleOp float4x4::Scale(float uniformScale)
+{
+    return ScaleOp(uniformScale, uniformScale, uniformScale);
+}
+
 ScaleOp float4x4::UniformScale(float uniformScale)
 {
     return ScaleOp(uniformScale, uniformScale, uniformScale);
@@ -382,44 +398,60 @@ float4x4 float4x4::ShearZ(float xFactor, float yFactor)
 
 float4x4 float4x4::Reflect(const Plane &p)
 {
-    assume(false && "Not implemented!");
-    return float4x4(); ///\todo
+    float4x4 v;
+    SetMatrix3x4AffinePlaneReflect(v, p.normal.x, p.normal.y, p.normal.z, p.d);
+    v[3][0] = 0.f; v[3][1] = 0.f; v[3][2] = 0.f; v[3][3] = 1.f;
+    return v;
 }
 
-float4x4 float4x4::MakePerspectiveProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalFov, float verticalFov)
+float4x4 float4x4::PerspectiveProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalFov, float verticalFov)
 {
     assume(false && "Not implemented!");
     return float4x4(); ///\todo
 }
 
-float4x4 float4x4::MakeOrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize)
+float4x4 float4x4::D3DOrthoProjRH(float n, float f, float h, float v)
 {
-    assume(false && "Not implemented!");
-    return float4x4(); ///\todo
+	float4x4 p;
+	p[0][0] = 2.f / h; p[0][1] = 0;       p[0][2] = 0;           p[0][3] = -1.f;
+	p[1][0] = 0;       p[1][1] = 2.f / v; p[1][2] = 0;           p[1][3] = -1.f;
+	p[2][0] = 0;       p[2][1] = 0;       p[2][2] = 1.f / (f-n); p[2][3] = n / (n-f);
+	p[3][0] = 0;       p[3][1] = 0;       p[3][2] = 0.f;         p[3][3] = 1.f;
+/*
+	p[0][0] = 2.f / h; p[0][1] = 0;       p[0][2] = 0;           p[0][3] = 0;
+	p[1][0] = 0;       p[1][1] = 2.f / v; p[1][2] = 0;           p[1][3] = 0;
+	p[2][0] = 0;       p[2][1] = 0;       p[2][2] = 1.f / (n-f); p[2][3] = 0;
+	p[3][0] = 0;       p[3][1] = 0;       p[3][2] = n / (n-f);   p[3][3] = 1.f;
+*/
+	return p;
 }
 
-float4x4 float4x4::MakeOrthographicProjection(const Plane &target)
+float4x4 float4x4::OrthographicProjection(const Plane &p)
 {
-    assume(false && "Not implemented!");
-    return float4x4(); ///\todo
+    float4x4 v;
+    SetMatrix3x4AffinePlaneProject(v, p.normal.x, p.normal.y, p.normal.z, p.d);
+    return v;
 }
 
-float4x4 float4x4::MakeOrthographicProjectionYZ()
+float4x4 float4x4::OrthographicProjectionYZ()
 {
-    assume(false && "Not implemented!");
-    return float4x4(); ///\todo
+    float4x4 v = identity;
+    v[0][0] = 0.f;
+    return v;
 }
 
-float4x4 float4x4::MakeOrthographicProjectionXZ()
+float4x4 float4x4::OrthographicProjectionXZ()
 {
-    assume(false && "Not implemented!");
-    return float4x4(); ///\todo
+    float4x4 v = identity;
+    v[1][1] = 0.f;
+    return v;
 }
 
-float4x4 float4x4::MakeOrthographicProjectionXY()
+float4x4 float4x4::OrthographicProjectionXY()
 {
-    assume(false && "Not implemented!");
-    return float4x4(); ///\todo
+    float4x4 v = identity;
+    v[2][2] = 0.f;
+    return v;
 }
 
 float4x4 float4x4::ComplementaryProjection() const

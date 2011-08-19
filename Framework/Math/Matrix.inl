@@ -748,3 +748,40 @@ void SetMatrixRotatePart(Matrix &m, const Quat &q)
     m[1][0] =     2*(x*y + z*w); m[1][1] = 1 - 2*(x*x + z*z); m[1][2] =     2*(y*z - x*w);
     m[2][0] =     2*(x*z - y*w); m[2][1] =     2*(y*z + x*w); m[2][2] = 1 - 2*(x*x + y*y);
 }
+
+/// See e.g. http://en.wikipedia.org/wiki/Transformation_matrix#reflection
+template<typename Matrix>
+void SetMatrix3x3LinearPlaneReflect(Matrix &m, float x, float y, float z)
+{
+    assume(float3(x,y,z).IsNormalized());
+    m[0][0] = 1.f - 2.f*x*x; m[0][1] =      -2.f*y*x; m[0][2] =      -2.f*z*x;
+    m[1][0] =      -2.f*x*y; m[1][1] = 1.f - 2.f*y*y; m[1][2] =      -2.f*y*z;
+    m[2][0] =      -2.f*x*z; m[2][1] =      -2.f*y*z; m[2][2] = 1.f - 2.f*z*z;
+}
+
+template<typename Matrix>
+void SetMatrix3x4AffinePlaneReflect(Matrix &m, float x, float y, float z, float d)
+{
+    SetMatrix3x3LinearPlaneReflect(m, x, y, z);
+    m[0][3] = 2.f * d * x;
+    m[1][3] = 2.f * d * y;
+    m[2][3] = 2.f * d * z;
+}
+
+template<typename Matrix>
+void SetMatrix3x3LinearPlaneProject(Matrix &m, float x, float y, float z)
+{
+    assume(float3(x,y,z).IsNormalized());
+    m[0][0] = 1.f - x*x; m[0][1] =      -y*x; m[0][2] =      -z*x;
+    m[1][0] =      -x*y; m[1][1] = 1.f - y*y; m[1][2] =      -y*z;
+    m[2][0] =      -x*z; m[2][1] =      -y*z; m[2][2] = 1.f - z*z;
+}
+
+template<typename Matrix>
+void SetMatrix3x4AffinePlaneProject(Matrix &m, float x, float y, float z, float d)
+{
+    SetMatrix3x3LinearPlaneProject(m, x, y, z);
+    m[0][3] = d * x;
+    m[1][3] = d * y;
+    m[2][3] = d * z;
+}

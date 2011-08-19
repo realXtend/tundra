@@ -14,6 +14,8 @@
 #include "float3x3.h"
 #include "float3x4.h"
 #include "float4x4.h"
+#include "LCG.h"
+#include "assume.h"
 #include "MathFunc.h"
 
 Quat::Quat(const float *data)
@@ -299,30 +301,48 @@ void Quat::SetFromAxisAngle(const float3 &axis, float angle)
     w = cosz;
 }
 
-/// See Eric Lengyel's Mathetmatics for 3D Game Programming and Computer Graphics 2nd ed., p. 92.
+/// See Schneider, Eberly. Geometric Tools for Computer Graphics, p. 861.
 template<typename M>
 void SetQuatFrom(Quat &q, const M &m)
 {
-    // The rotation matrix is of form:
+    // The rotation matrix is of form: (Eric Lengyel's Mathematics for 3D Game Programming and Computer Graphics 2nd ed., p. 92)
     // 1 - 2y^2 - 2z^2     2xy - 2wz         2xz + 2wy
     //    2xy + 2wz     1 - 2x^2 - 2z^2      2yz - 2wx
     //    2xz - 2wy        2yz + 2wx      1 - 2x^2 - 2y^2
 
-    float r = 1.f + m[0][0] + m[1][1] + m[2][2]; // The element w is easiest picked up as a sum of the diagonals.
-    if (r > 1e-4f)
+    float r = m[0][0] + m[1][1] + m[2][2]; // The element w is easiest picked up as a sum of the diagonals.
+    // Above, r == 3 - 4(x^2+y^2+z^2) == 4(1-x^2-y^2-z^2) - 1 == 4*w^2 - 1. 
+    if (r > 0) // In this case, |w| > 1/2.
     {
-        q.w = sqrtf(r) * 0.5f;
+        q.w = sqrtf(r + 1.f) * 0.5f; // We have two choices for the sign of w, arbitrarily pick the positive.
         float inv4w = 1.f / (4.f * q.w);
         q.x = (m[2][1] - m[1][2]) * inv4w;
         q.y = (m[0][2] - m[2][0]) * inv4w;
         q.z = (m[1][0] - m[0][1]) * inv4w;
     }
-    else // W will be zero, so need to resort to an alternative extraction.
+    else if (m[0][0] > m[1][1] && m[0][0] > m[2][2]) // If |q.x| is larger than |q.y| and |q.z|, extract it first. This gives
+    {                                                // best stability, and we know below x can't be zero.
+        q.x = sqrtf(1.f + m[0][0] - m[1][1] - m[2][2]) * 0.5f; // We have two choices for the sign of x, arbitrarily pick the positive.
+        const float x4 = 1.f / (4.f * q.x);
+        q.y = (m[0][1] + m[1][0]) * x4;
+        q.z = (m[0][2] + m[2][0]) * x4;
+        q.w = (m[2][1] - m[1][2]) * x4;
+    }
+    else if (m[1][1] > m[2][2]) // |q.y| is larger than |q.x| and |q.z|
     {
-        q.w = 0.f;
-        q.x = sqrtf(1.f + m[0][0] - m[1][1] - m[2][2]) * 0.5f;
-        q.y = sqrtf(1.f + m[1][1] - m[0][0] - m[2][2]) * 0.5f;
-        q.z = sqrtf(1.f + m[2][2] - m[0][0] - m[1][1]) * 0.5f;
+        q.y = sqrtf(1.f + m[1][1] - m[0][0] - m[2][2]) * 0.5f; // We have two choices for the sign of y, arbitrarily pick the positive.
+        const float y4 = 1.f / (4.f * q.y);
+        q.x = (m[0][1] + m[1][0]) * y4;
+        q.z = (m[1][2] + m[2][1]) * y4;
+        q.w = (m[0][2] - m[2][0]) * y4;
+    }
+    else // |q.z| is larger than |q.x| or |q.y|
+    {
+        q.z = sqrtf(1.f + m[2][2] - m[0][0] - m[1][1]) * 0.5f; // We have two choices for the sign of z, arbitrarily pick the positive.
+        const float z4 = 1.f / (4.f * q.z);
+        q.x = (m[0][2] + m[2][0]) * z4;
+        q.y = (m[1][2] + m[2][1]) * z4;
+        q.w = (m[1][0] - m[0][1]) * z4;
     }
     float oldLength = q.Normalize();
     assume(oldLength > 0.f);
@@ -336,7 +356,8 @@ void Quat::Set(const float3x3 &m)
     SetQuatFrom(*this, m);
 
     // Test that the conversion float3x3->Quat->float3x3 is correct.
-    //assume(this->ToFloat3x3().Equals(m, 0.01f)); ///\todo Triggered in Circus scene server startup
+    float3x3 f = this->ToFloat3x3();
+    assume(this->ToFloat3x3().Equals(m, 0.01f));
 }
 
 void Quat::Set(const float3x4 &m)
@@ -440,6 +461,23 @@ Quat Quat::FromEulerYZX(float y, float z, float x) { return (Quat::RotateY(y) * 
 Quat Quat::FromEulerZXY(float z, float x, float y) { return (Quat::RotateZ(z) * Quat::RotateX(x) * Quat::RotateY(y)).Normalized(); }
 Quat Quat::FromEulerZYX(float z, float y, float x) { return (Quat::RotateZ(z) * Quat::RotateY(y) * Quat::RotateX(x)).Normalized(); }
 
+Quat Quat::RandomRotation(LCG &lcg)
+{
+    // Generate a random point on the 4D unitary hypersphere using the rejection sampling method.
+	for(int i = 0; i < 1000; ++i)
+	{
+		float x = lcg.Float(-1, 1);
+		float y = lcg.Float(-1, 1);
+		float z = lcg.Float(-1, 1);
+		float w = lcg.Float(-1, 1);
+		float lenSq = x*x + y*y + z*z + w*w;
+		if (lenSq >= 1e-6f && lenSq <= 1.f)
+			return Quat(x, y, z, w) / sqrt(lenSq);
+	}
+    assume(false && "Quat::RandomRotation failed!");
+	return Quat::identity;
+}
+
 ///\todo the following could be heavily optimized. Don't route through float3x3 conversion.
 
 float3 Quat::ToEulerXYX() const { return ToFloat3x3().ToEulerXYX(); }
@@ -504,16 +542,16 @@ Quat Quat::FromString(const char *str)
     if (*str == '(')
         ++str;
     Quat q;
-    q.x = strtod(str, const_cast<char**>(&str));
+    q.x = (float)strtod(str, const_cast<char**>(&str));
     if (*str == ',' || *str == ';')
         ++str;
-    q.y = strtod(str, const_cast<char**>(&str));
+    q.y = (float)strtod(str, const_cast<char**>(&str));
     if (*str == ',' || *str == ';')
         ++str;
-    q.z = strtod(str, const_cast<char**>(&str));
+    q.z = (float)strtod(str, const_cast<char**>(&str));
     if (*str == ',' || *str == ';')
         ++str;
-    q.w = strtod(str, const_cast<char**>(&str));
+    q.w = (float)strtod(str, const_cast<char**>(&str));
     return q;
 }
 
@@ -557,6 +595,14 @@ Quat Quat::operator /(const Quat &rhs) const
     Quat inverse = rhs.Inverted();
     return *this * inverse;
 }
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+std::ostream &operator <<(std::ostream &out, const Quat &rhs)
+{
+    out << rhs.ToString();
+    return out;
+}
+#endif
 
 Quat Quat::Mul(const Quat &rhs) const { return *this * rhs; } 
 Quat Quat::Mul(const float3x3 &rhs) const { return *this * Quat(rhs); } 

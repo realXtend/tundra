@@ -51,6 +51,8 @@ public:
 
     float4(const float3 &xyz, float w);
 
+    float4(const float2 &xy, float z, float w);
+
     /// Constructs this float4 from an array. The array must contain at least 4 elements.
     explicit float4(const float *data);
 
@@ -149,6 +151,16 @@ public:
     int MaxElementIndex() const;
     /// Takes the element-wise absolute value of this vector.
     float4 Abs() const;
+    /// Returns a copy of this vector with the x, y and z elements negated.
+    float4 Neg3() const;
+    /// Returns a copy of this vector with each element negated.
+    float4 Neg4() const;
+    /// Computes the element-wise reciprocal of the three first elements of this vector.
+    /** This function returns a new vector where the x, y and z elements of the original vector are replaced by the values 1/x, 1/y and 1/z. */
+    float4 Recip3() const;
+    /// Computes the element-wise reciprocal of this vector.
+    /** This function returns a new vector where each element x of the original vector is replaced by the value 1/x. This function operates on all four elements of this vector. */
+    float4 Recip4() const;
     /// Returns an element-wise minimum of this and the vector (ceil, ceil, ceil, ceil).
     float4 Min(float ceil) const;
     /// Returns an element-wise minimum of this and the given vector.
@@ -241,6 +253,10 @@ public:
     bool Equals(const float4 &other, float epsilon = 1e-3f) const;
 
     bool Equals(float x, float y, float z, float w, float epsilon = 1e-3f) const;
+
+    /// Generates a direction vector of the given length pointing at a uniformly random direction.
+    /// The w-component for the returned vector is 0.
+    static float4 RandomDir(LCG &lcg, float length = 1.f);
 
     /// Sums all four components elementwise.
     float4 operator +(const float4 &rhs) const;

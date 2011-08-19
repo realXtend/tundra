@@ -45,6 +45,13 @@ public:
     /// Specifies the maximum extent of this AABB in the world space x, y and z axes.
     float3 maxPoint;
 
+	float MinX() const { return minPoint.x; }
+	float MinY() const { return minPoint.y; }
+	float MinZ() const { return minPoint.z; }
+	float MaxX() const { return maxPoint.x; }
+	float MaxY() const { return maxPoint.y; }
+	float MaxZ() const { return maxPoint.z; }
+
     /// Sets this structure to a degenerate AABB that does not have any volume.
     /// This function is useful for initializing the AABB to "null" before a loop of calls to Enclose(),
     /// which incrementally expand the contents of this AABB to enclose the given objects.

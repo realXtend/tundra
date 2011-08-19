@@ -26,10 +26,6 @@
 #include <OgreQuaternion.h>
 #endif
 
-#ifdef BULLET_INTEROP
-#include <LinearMath/btQuaternion.h>
-#endif
-
 /// Represents a rotation or an orientation of a 3D object.
 class Quat
 {
@@ -211,6 +207,9 @@ public:
     static Quat FromEulerZXY(float z, float x, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
     static Quat FromEulerZYX(float z, float y, float x); ///< [similarOverload: FromEulerXYX] [hideIndex]
 
+    /// Returns a uniformly random unitary quaternion.
+    static Quat RandomRotation(LCG &lcg);
+
     /// Extracts the rotation part of this quaternion into Euler rotation angles (in radians).
     /// @note It is better to thinkg about the returned float3 as an array of three floats, and
     /// not as a triple of xyz, because e.g. the .y component returned by ToEulerYXZ() does
@@ -329,6 +328,11 @@ private: // Hide the unsafe operations from the user, so that he doesn't acciden
     /// @important Negating a quaternion will not produce the inverse rotation. Call Quat::Inverse() to generate the inverse rotation.
     Quat operator -() const;
 };
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+/// Prints this Quat to the given stream.
+std::ostream &operator <<(std::ostream &out, const Quat &rhs);
+#endif
 
 Quat Lerp(const Quat &a, const Quat &b, float t);
 Quat Slerp(const Quat &a, const Quat &b, float t);

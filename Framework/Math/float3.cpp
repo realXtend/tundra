@@ -16,6 +16,8 @@
 #include "float3.h"
 #include "float4.h"
 #include "float3x3.h"
+#include "Sphere.h"
+#include "AABB.h"
 #include "MathFunc.h"
 
 using namespace std;
@@ -98,7 +100,7 @@ float3 float3::Normalized() const
 {
     float3 copy = *this;
     float oldLength = copy.Normalize();
-    assume(oldLength > 0.f && "float3::Normalized() failed!"); ///\todo Triggered on Circus client when rotating avatar
+    assume(oldLength > 0.f && "float3::Normalized() failed!");
     return copy;
 }
 
@@ -169,13 +171,13 @@ float3 float3::FromString(const char *str)
     if (*str == '(')
         ++str;
     float3 f;
-    f.x = strtod(str, const_cast<char**>(&str));
+    f.x = (float)strtod(str, const_cast<char**>(&str));
     if (*str == ',' || *str == ';')
         ++str;
-    f.y = strtod(str, const_cast<char**>(&str));
+    f.y = (float)strtod(str, const_cast<char**>(&str));
     if (*str == ',' || *str == ';')
         ++str;
-    f.z = strtod(str, const_cast<char**>(&str));
+    f.z = (float)strtod(str, const_cast<char**>(&str));
     return f;
 }
 
@@ -223,6 +225,16 @@ int float3::MaxElementIndex() const
 float3 float3::Abs() const
 {
     return float3(fabs(x), fabs(y), fabs(z));
+}
+
+float3 float3::Neg() const
+{
+    return float3(-x, -y, -z);
+}
+
+float3 float3::Recip() const
+{
+    return float3(1.f/x, 1.f/y, 1.f/z);
 }
 
 float3 float3::Min(float ceil) const
@@ -511,6 +523,21 @@ float4 float3::ToPos4() const
 float4 float3::ToDir4() const
 {
     return float4(*this, 0.f);
+}
+
+float3 float3::RandomDir(LCG &lcg, float length)
+{
+    return Sphere(float3(0,0,0), length).RandomPointOnSurface(lcg);
+}
+
+float3 float3::RandomSphere(LCG &lcg, const float3 &center, float radius)
+{
+    return Sphere(center, radius).RandomPointInside(lcg);
+}
+
+float3 float3::RandomBox(LCG &lcg, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax)
+{
+    return AABB(float3(xmin, ymin, zmin), float3(xmax, ymax, zmax)).RandomPointInside(lcg);
 }
 
 float3 float3::operator +(const float3 &rhs) const

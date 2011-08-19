@@ -81,6 +81,8 @@ public:
     float Distance(const float3 &point) const;
 
     /// Returns the signed distance of this plane to the given point.
+    /// If this function returns a negative value, the given point lies in the negative halfspace of this plane.
+    /// Conversely, if a positive value is returned, then the given point lies in the positive halfspace of this plane.
     float SignedDistance(const float3 &point) const;
 
     /// Returns the affine transformation that projects orthographically onto this plane.
@@ -130,19 +132,37 @@ public:
 //    bool Intersect(const Polyhedron &polyhedron) const;
 
     /// Clips a line segment against this plane.
+    /// This function removes the part of the line segment which lies in the negative halfspace of this plane.
+    /// The clipping operation is performed in-place. If the whole line segment is clipped, the input variables
+    /// are not modified.
+    /// @return If this function returns true, the line segment after clipping did not become degenerate.
+    ///         If false is returned, the whole line segment lies in the negative halfspace, and no output line segment
+    ///         was generated.
+    bool Clip(LineSegment &line) const;
     bool Clip(float3 &a, float3 &b) const;
 
-    /// Clips a line segment against this plane.
-    bool Clip(LineSegment &line) const;
-
     /// Clips a line against this plane.
-    bool Clip(const Line &line, Ray &outRay) const;
+    /// This function removes the part of the line which lies in the negative halfspace of this plane.
+    /// @return If the clipping removed the whole line, the value 0 is returned.
+    ///         If the clipping resulted in a ray, the value 1 is returned.
+    ///         If the clipping resulted in a line, the value 2 is returned.
+    int Clip(const Line &line, Ray &outRay) const;
 
     /// Clips a triangle against this plane.
+    /// This function removes the part of the triangle which lies in the negative halfspace of this plane.
+    /// @return This function reports how many output triangles were generated.
+    ///         If the whole input triangle was clipped, the value 0 is returned.
+    ///         If this function returns 1, the value t1 will receive the generated output triangle.
+    ///         If this function returns 2, t1 and t2 will receive the generated output triangles.
     int Clip(const Triangle &triangle, Triangle &t1, Triangle &t2) const;
 
     /// Tests if two planes are parallel.
     bool IsParallel(const Plane &plane, float epsilon = 1e-3f) const;
+
+    /// Returns true if this plane contains the origin.
+    /// The test is performed up to the given epsilon.
+    /// @note A plane passes through the origin iff d == 0 for the plane.
+    bool PassesThroughOrigin(float epsilon = 1e-3f) const;
 
     /// Returns the angle of intersection between two planes, in radians.
     float DihedralAngle(const Plane &plane) const;

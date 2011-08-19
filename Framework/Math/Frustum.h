@@ -12,11 +12,21 @@
 #include "MathFwd.h"
 #include "float3.h"
 
+enum FrustumType
+{
+	InvalidFrustum,
+	OrthographicFrustum,
+	PerspectiveFrustum
+};
+
+/// Represents either an orthographic or perspective view frustum.
 class Frustum
 {
 public:
     Frustum() {}
 
+	/// Specifies whether this frustum is a perspective or an orthographic frustum.
+	FrustumType type;
     /// The eye point of this frustum.
     float3 pos;
     /// The normalized look-at direction this frustum is watching towards.
@@ -27,10 +37,20 @@ public:
     float nearPlaneDistance;
     /// Distance from the eye point to the back plane.
     float farPlaneDistance;
-    /// Horizontal field-of-view, in radians.
-    float horizontalFov;
-    /// Vertical field-of-view, in radians.
-    float verticalFov;
+	union
+	{
+	    /// Horizontal field-of-view, in radians. This field is only valid if type == PerspectiveFrustum.
+		float horizontalFov;
+		/// The width of the orthographic frustum. This field is only valid if type == OrthographicFrustum.
+		float orthographicWidth;
+	};
+	union
+	{
+	    /// Vertical field-of-view, in radians. This field is only valid if type == PerspectiveFrustum.
+		float verticalFov;
+		/// The height of the orthographic frustum. This field is only valid if type == OrthographicFrustum.
+		float orthographicHeight;
+	};
 
     /// Returns the aspect ratio of the view rectangle on the near plane.
     float AspectRatio() const;
@@ -46,8 +66,35 @@ public:
     /// Finds a ray in world space that originates at the eye point and looks in the given direction inside the frustum.
     Ray LookAt(float x, float y) const;
 
+	/// Returns a point on the near plane.
+	/// @param x A value in the range [-1, 1].
+	/// @param y A value in the range [-1, 1].
+	/// Specifying (-1, -1) returns the bottom-left corner of the near plane.
+	/// The point (1, 1) corresponds to the top-right corner of the near plane.
+	/// @note This coordinate space is called the normalized viewport coordinate space.
     float3 NearPlanePos(float x, float y) const;
+    float3 NearPlanePos(const float2 &point) const;
+
+	/// Returns a point on the far plane.
+	/// @param x A value in the range [-1, 1].
+	/// @param y A value in the range [-1, 1].
+	/// Specifying (-1, -1) returns the bottom-left corner of the far plane.
+	/// The point (1, 1) corresponds to the top-right corner of the far plane.
+	/// @note This coordinate space is called the normalized viewport coordinate space.
     float3 FarPlanePos(float x, float y) const;
+    float3 FarPlanePos(const float2 &point) const;
+
+	/// A helper function that maps a point from the normalized viewport space to the screen space.
+	/// In normalized viewport space, top-left: (-1, 1), top-right: (1, 1), bottom-left: (-1, -1), bottom-right: (-1, 1).
+	/// In screen space, top-left: (0, 0), top-right: (0, screenWidth-1), bottom-left: (0, screenHeight-1), bottom-right: (screenWidth-1, screenHeight-1).
+	/// (This mapping is affine).
+	static float2 ViewportToScreenSpace(float x, float y, int screenWidth, int screenHeight);
+	static float2 ViewportToScreenSpace(const float2 &point, int screenWidth, int screenHeight);
+
+	/// This function computes the inverse mapping of ViewportToScreenSpace.
+	/// (This mapping is affine).
+	static float2 ScreenToViewportSpace(float x, float y, int screenWidth, int screenHeight);
+	static float2 ScreenToViewportSpace(const float2 &point, int screenWidth, int screenHeight);
 
     /// Tests if a point is inside the frustum.
     bool Contains(const float3 &point) const;
@@ -95,6 +142,8 @@ public:
     /// Returns an exact polyhedron representation of this frustum.
 //    Polyhedron ToPolyhedron() const;
 
+    /// \todo Instead of returning a bool, return a value that specifies if the object lies completely
+    ///       on the negative or positive halfspace.
     bool Intersects(const Ray &ray, float &outDistance) const;
     bool Intersects(const Line &line, float &outDistance) const;
     bool Intersects(const LineSegment &lineSegment, float &outDistance) const;

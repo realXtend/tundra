@@ -478,9 +478,9 @@ bool IntersectRayAABB(const float3 &rayPos, const float3 &rayDir, const AABB &aa
 				return false;
 
         // intersection distances to plane.
-        ///\todo Optimize and precompute the reciprocal of rayDir for a faster test.
-        float t1 = (aabb.minPoint[i] - rayPos[i]) / rayDir[i];
-		float t2 = (aabb.maxPoint[i] - rayPos[i]) / rayDir[i];
+        float recipDir = 1.f / rayDir[i];
+        float t1 = (aabb.minPoint[i] - rayPos[i]) * recipDir;
+		float t2 = (aabb.maxPoint[i] - rayPos[i]) * recipDir;
 
 		if (t1 > t2) Swap(t1, t2); // swap so that t1 is the distance to nearer of the two planes.
 		if (t1 > tNear) tNear = t1; // tNear tracks distance to intersect the AABB.
@@ -507,9 +507,9 @@ bool IntersectLineAABB(const float3 &linePos, const float3 &lineDir, const AABB 
 				return false;
 
         // intersection distances to plane.
-        ///\todo Optimize and precompute the reciprocal of lineDir for a faster test.
-        float t1 = (aabb.minPoint[i] - linePos[i]) / lineDir[i];
-		float t2 = (aabb.maxPoint[i] - linePos[i]) / lineDir[i];
+        float recipDir = 1.f / lineDir[i];
+        float t1 = (aabb.minPoint[i] - linePos[i]) * recipDir;
+		float t2 = (aabb.maxPoint[i] - linePos[i]) * recipDir;
 
 		if (t1 > t2) Swap(t1, t2); // swap so that t1 is the distance to nearer of the two planes.
 		if (t1 > tNear) tNear = t1; // tNear tracks distance to intersect the AABB.

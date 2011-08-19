@@ -1073,7 +1073,7 @@ static QScriptValue float3x3_MakeOrthographicProjection_float_float_float_float(
     float farPlaneDistance = qscriptvalue_cast<float>(context->argument(1));
     float horizontalViewportSize = qscriptvalue_cast<float>(context->argument(2));
     float verticalViewportSize = qscriptvalue_cast<float>(context->argument(3));
-    float3x3 ret = float3x3::MakeOrthographicProjection(nearPlaneDistance, farPlaneDistance, horizontalViewportSize, verticalViewportSize);
+    float3x3 ret = float3x3::OrthographicProjection(nearPlaneDistance, farPlaneDistance, horizontalViewportSize, verticalViewportSize);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -1081,28 +1081,28 @@ static QScriptValue float3x3_MakeOrthographicProjection_Plane(QScriptContext *co
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x3_MakeOrthographicProjection_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Plane target = qscriptvalue_cast<Plane>(context->argument(0));
-    float3x3 ret = float3x3::MakeOrthographicProjection(target);
+    float3x3 ret = float3x3::OrthographicProjection(target);
     return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float3x3_MakeOrthographicProjectionYZ(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x3_MakeOrthographicProjectionYZ in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float3x3 ret = float3x3::MakeOrthographicProjectionYZ();
+    float3x3 ret = float3x3::OrthographicProjectionYZ();
     return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float3x3_MakeOrthographicProjectionXZ(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x3_MakeOrthographicProjectionXZ in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float3x3 ret = float3x3::MakeOrthographicProjectionXZ();
+    float3x3 ret = float3x3::OrthographicProjectionXZ();
     return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue float3x3_MakeOrthographicProjectionXY(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x3_MakeOrthographicProjectionXY in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float3x3 ret = float3x3::MakeOrthographicProjectionXY();
+    float3x3 ret = float3x3::OrthographicProjectionXY();
     return qScriptValueFromValue(engine, ret);
 }
 

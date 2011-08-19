@@ -122,6 +122,21 @@ public:
     void Enclose(const LineSegment &lineSegment);
     void Enclose(const float3 &point);
     void Enclose(const float3 *pointArray, int numPoints);
+
+	float3 RandomPointInside(LCG &lcg);
+	float3 RandomPointOnSurface(LCG &lcg);
+	static float3 RandomPointInside(LCG &lcg, const float3 &center, float radius);
+	static float3 RandomPointOnSurface(LCG &lcg, const float3 &center, float radius);
+
+	static float3 RandomUnitaryFloat3(LCG &lcg) { return Sphere(float3(0,0,0), 1.f).RandomPointOnSurface(lcg); }
+
+	/// Produces a geosphere-triangulation of this Sphere.
+	/// @param outPos [out] An array of size numVertices which will receive a triangle list of vertex positions. Cannot be null.
+	/// @param outNormal [out] An array of size numVertices which will receive vertex normals. If this parameter is null, vertex normals are not returned.
+	/// @param numVertices The size of the input arrays outPos and outNormal. This value should be of form 12 + 6*n for some n >= 0.
+	///                   To generate a perfect geosphere, pass in a number of form 3 * 4 * 3^k for some k >= 0.
+	/// @return The actual number of vertices generated (== the number of elements written to outPos and outNormal).
+	int Triangulate(float3 *outPos, float3 *outNormal, float2 *outUV, int numVertices);
 };
 
 #ifdef QT_INTEROP

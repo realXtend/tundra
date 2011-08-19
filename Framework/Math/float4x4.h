@@ -160,6 +160,11 @@ public:
     /** @param centerPoint If specified, rotation is performed using this point as the coordinate space origin. */
     static float4x4 RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection, const float3 &centerPoint);
 
+    /// Returns a random 4x4 matrix with each entry randomized between the range[minElem, maxElem].
+    /** Warning: The matrices returned by this function do not represent well-formed 3D transformations.
+        This function is mostly used for testing and debugging purposes only. */
+    static float4x4 RandomGeneral(LCG &lcg, float minElem, float maxElem);
+
     /// Creates a new float4x4 that rotates one coordinate system to coincide with another.
     /** This function rotates the sourceDirection vector to coincide with the targetDirection vector, and then 
             rotates sourceDirection2 (which was transformed by 1.) to targetDirection2, but keeping the constraint that 
@@ -204,6 +209,8 @@ public:
     static ScaleOp Scale(float sx, float sy, float sz);
     static ScaleOp Scale(const float3 &scale);
 
+	static ScaleOp Scale(float uniformScale);
+
     /// Creates a new float4x4 that scales with respect to the given center point.
     /** @param scale The amount of scale to apply to the x, y and z directions. */
     static float4x4 Scale(const float3 &scale, const float3 &scaleCenter);
@@ -237,14 +244,14 @@ public:
 
     /// Creates a new float4x4 that performs perspective projection.
     /// @note The returned matrix contains a last row that differs from [0 0 0 1].
-    static float4x4 MakePerspectiveProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalFov, float verticalFov);
+    static float4x4 PerspectiveProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalFov, float verticalFov);
 
-    /// Creates a new float4x4 that performs orthographic projection. [indexTitle: MakeOrthographicProjection/YZ/XZ/XY]
-    static float4x4 MakeOrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
-    static float4x4 MakeOrthographicProjection(const Plane &target);
-    static float4x4 MakeOrthographicProjectionYZ(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
-    static float4x4 MakeOrthographicProjectionXZ(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
-    static float4x4 MakeOrthographicProjectionXY(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
+    /// Creates a new float4x4 that performs orthographic projection. [indexTitle: OrthographicProjection/YZ/XZ/XY]
+    static float4x4 D3DOrthoProjRH(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
+    static float4x4 OrthographicProjection(const Plane &target);
+    static float4x4 OrthographicProjectionYZ(); ///< [similarOverload: OrthographicProjection] [hideIndex]
+    static float4x4 OrthographicProjectionXZ(); ///< [similarOverload: OrthographicProjection] [hideIndex]
+    static float4x4 OrthographicProjectionXY(); ///< [similarOverload: OrthographicProjection] [hideIndex]
 
     /// Computes the complementary projection of this matrix.
     /// If P is a matrix that projects from 3D space to 2D, then the complementary projection 

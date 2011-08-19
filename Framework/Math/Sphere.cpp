@@ -10,6 +10,7 @@
 #include <utility>
 #endif
 #include "MathFunc.h"
+#include "Array.h"
 #include "OBB.h"
 #include "AABB.h"
 #include "LCG.h"
@@ -18,12 +19,19 @@
 #include "Ray.h"
 #include "Plane.h"
 #include "Sphere.h"
+#include "float2.h"
 #include "float3x3.h"
 #include "float3x4.h"
 #include "float4.h"
 #include "float4x4.h"
 #include "Quat.h"
 #include "Triangle.h"
+
+#ifdef ANDROID
+#include "AndroidCore.h"
+#endif
+
+using namespace kNet; // for kNet::Array.
 
 Sphere::Sphere(const float3 &center, float radius)
 :pos(center), r(radius) 
@@ -234,8 +242,6 @@ Sphere Sphere::OptimalEnclosingSphere(const float3 *pts, int numPoints)
 /*
 Sphere Sphere::ApproximateEnclosingSphere(const float3 *pointArray, int numPoints)
 
-float3 Sphere::RandomPointInside(LCG &rng) const
-float3 Sphere::RandomPointOnSurface(LCG &rng) const
 */
 float Sphere::Distance(const float3 &point) const
 {
@@ -412,4 +418,117 @@ void Sphere::Enclose(const float3 *pointArray, int numPoints)
     ///\todo This might not be very optimal at all. Perhaps better to enclose the farthest point first.
     for(int i = 0; i < numPoints; ++i)
         Enclose(pointArray[i]);
+}
+
+int Sphere::Triangulate(float3 *outPos, float3 *outNormal, float2 *outUV, int numVertices)
+{
+	assert(outPos != 0);
+	assume(this->r > 0.f);
+
+	Array<Triangle> temp;
+
+	// Start subdividing from a tetrahedron.
+	float3 xp(r,0,0);
+	float3 xn(-r,0,0);
+	float3 yp(0,r,0);
+	float3 yn(0,-r,0);
+	float3 zp(0,0,r);
+	float3 zn(0,0,-r);
+
+	temp.push_back(Triangle(yp,xp,zp));
+	temp.push_back(Triangle(xp,yp,zn));
+	temp.push_back(Triangle(yn,zp,xp));
+	temp.push_back(Triangle(yn,xp,zn));
+	temp.push_back(Triangle(zp,xn,yp));
+	temp.push_back(Triangle(yp,xn,zn));
+	temp.push_back(Triangle(yn,xn,zp));
+	temp.push_back(Triangle(xn,yn,zn));
+
+	int oldEnd = 0;
+	while(((int)temp.size()-oldEnd+3)*3 <= numVertices)
+	{
+		Triangle cur = temp[oldEnd];
+		float3 a = ((cur.a + cur.b) * 0.5f).ScaledToLength(this->r);
+		float3 b = ((cur.a + cur.c) * 0.5f).ScaledToLength(this->r);
+		float3 c = ((cur.b + cur.c) * 0.5f).ScaledToLength(this->r);
+
+		temp.push_back(Triangle(cur.a, a, b));
+		temp.push_back(Triangle(cur.b, c, a));
+		temp.push_back(Triangle(cur.c, b, c));
+		temp.push_back(Triangle(a, c, b));
+
+		++oldEnd;
+	}
+	// Check that we really did tessellate as many new triangles as possible.
+	assert(((int)temp.size()-oldEnd)*3 <= numVertices && ((int)temp.size()-oldEnd)*3 + 9 > numVertices);
+
+	for(size_t i = oldEnd, j = 0; i < temp.size(); ++i, ++j)
+	{
+		outPos[3*j] = this->pos + temp[i].a;
+		outPos[3*j+1] = this->pos + temp[i].b;
+		outPos[3*j+2] = this->pos + temp[i].c;
+	}
+
+	if (outNormal)
+		for(size_t i = oldEnd, j = 0; i < temp.size(); ++i, ++j)
+		{
+			outNormal[3*j] = temp[i].a.Normalized();
+			outNormal[3*j+1] = temp[i].b.Normalized();
+			outNormal[3*j+2] = temp[i].c.Normalized();
+		}
+
+	if (outUV)
+		for(size_t i = oldEnd, j = 0; i < temp.size(); ++i, ++j)
+		{
+			outUV[3*j] = float2(atan2(temp[i].a.y, temp[i].a.x) / (2.f * 3.141592654f) + 0.5f, (temp[i].a.z + r) / (2.f * r));
+			outUV[3*j+1] = float2(atan2(temp[i].b.y, temp[i].b.x) / (2.f * 3.141592654f) + 0.5f, (temp[i].b.z + r) / (2.f * r));
+			outUV[3*j+2] = float2(atan2(temp[i].c.y, temp[i].c.x) / (2.f * 3.141592654f) + 0.5f, (temp[i].c.z + r) / (2.f * r));
+		}
+
+	return ((int)temp.size() - oldEnd) * 3;
+}
+
+float3 Sphere::RandomPointInside(LCG &lcg)
+{
+    assume(r > 1e-3f);
+	for(int i = 0; i < 1000; ++i)
+	{
+		float x = lcg.Float(-r, r);
+		float y = lcg.Float(-r, r);
+		float z = lcg.Float(-r, r);
+		if (x*x + y*y + z*z <= r*r)
+			return pos + float3(x,y,z);
+	}
+    assume(false && "Sphere::RandomPointInside failed!");
+
+	/// Failed to generate a point inside this sphere. Return the sphere center as fallback.
+	return pos;
+}
+
+float3 Sphere::RandomPointOnSurface(LCG &lcg)
+{
+    assume(r > 1e-3f);
+	for(int i = 0; i < 1000; ++i)
+	{
+		float x = lcg.Float(-r, r);
+		float y = lcg.Float(-r, r);
+		float z = lcg.Float(-r, r);
+		float lenSq = x*x + y*y + z*z;
+		if (lenSq >= 1e-6f && lenSq <= r*r)
+			return pos + r / sqrt(lenSq) * float3(x,y,z);
+	}
+    assume(false && "Sphere::RandomPointOnSurface failed!");
+
+	/// Failed to generate a point inside this sphere. Return an arbitrary point on the surface as fallback.
+	return pos + float3(r, 0, 0);
+}
+
+float3 Sphere::RandomPointInside(LCG &lcg, const float3 &center, float radius)
+{
+    return Sphere(center, radius).RandomPointInside(lcg);
+}
+
+float3 Sphere::RandomPointOnSurface(LCG &lcg, const float3 &center, float radius)
+{
+    return Sphere(center, radius).RandomPointOnSurface(lcg);
 }

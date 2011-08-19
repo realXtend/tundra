@@ -13,8 +13,11 @@
 
 #include <stdlib.h>
 
+#include "float2.h"
 #include "float3.h"
 #include "float4.h"
+#include "Sphere.h"
+#include "LCG.h"
 #include "float4x4.h"
 #include "MathFunc.h"
 
@@ -27,6 +30,11 @@ float4::float4(float x_, float y_, float z_, float w_)
 
 float4::float4(const float3 &xyz, float w_)
 :x(xyz.x), y(xyz.y), z(xyz.z), w(w_)
+{
+}
+
+float4::float4(const float2 &xy, float z_, float w_)
+:x(xy.x), y(xy.y), z(z_), w(w_)
 {
 }
 
@@ -246,16 +254,16 @@ float4 float4::FromString(const char *str)
     if (*str == '(')
         ++str;
     float4 f;
-    f.x = strtod(str, const_cast<char**>(&str));
+    f.x = (float)strtod(str, const_cast<char**>(&str));
     if (*str == ',' || *str == ';')
         ++str;
-    f.y = strtod(str, const_cast<char**>(&str));
+    f.y = (float)strtod(str, const_cast<char**>(&str));
     if (*str == ',' || *str == ';')
         ++str;
-    f.z = strtod(str, const_cast<char**>(&str));
+    f.z = (float)strtod(str, const_cast<char**>(&str));
     if (*str == ',' || *str == ';')
         ++str;
-    f.w = strtod(str, const_cast<char**>(&str));
+    f.w = (float)strtod(str, const_cast<char**>(&str));
     return f;
 }
 
@@ -323,6 +331,26 @@ int float4::MaxElementIndex() const
 float4 float4::Abs() const
 {
     return float4(fabs(x), fabs(y), fabs(z), fabs(w));
+}
+
+float4 float4::Neg3() const
+{
+    return float4(-x, -y, -z, w);
+}
+
+float4 float4::Neg4() const
+{
+    return float4(-x, -y, -z, -w);
+}
+
+float4 float4::Recip3() const
+{
+    return float4(1.f/x, 1.f/y, 1.f/z, w);
+}
+
+float4 float4::Recip4() const
+{
+    return float4(1.f/x, 1.f/y, 1.f/z, 1.f/w);
 }
 
 float4 float4::Min(float ceil) const
@@ -568,6 +596,11 @@ bool float4::Equals(float x_, float y_, float z_, float w_, float epsilon) const
            fabs(y - y_) < epsilon &&
            fabs(z - z_) < epsilon &&
            fabs(w - w_) < epsilon;
+}
+
+float4 float4::RandomDir(LCG &lcg, float length)
+{
+    return float4(Sphere(float3(0,0,0), length).RandomPointOnSurface(lcg), 0.f);
 }
 
 float4 float4::operator +(const float4 &rhs) const

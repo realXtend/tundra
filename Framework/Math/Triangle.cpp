@@ -73,14 +73,24 @@ Plane Triangle::GetPlane() const
     return Plane(a, b, c);
 }
 
-float3 Triangle::Normal() const
+float3 Triangle::NormalCCW() const
 {
-    return UnnormalizedNormal().Normalized();
+    return UnnormalizedNormalCCW().Normalized();
 }
 
-float3 Triangle::UnnormalizedNormal() const
+float3 Triangle::NormalCW() const
+{
+    return UnnormalizedNormalCW().Normalized();
+}
+
+float3 Triangle::UnnormalizedNormalCCW() const
 {
     return Cross(b-a, c-a);
+}
+
+float3 Triangle::UnnormalizedNormalCW() const
+{
+    return Cross(c-a, b-a);
 }
 
 float Triangle::Area2D(const float2 &p1, const float2 &p2, const float2 &p3)
@@ -112,7 +122,7 @@ bool Triangle::Contains(const float3 &point, float triangleThickness) const
     return br.y >= 0.f && br.z >= 0.f && (br.y + br.z) <= 1.f;
 }
 
-bool Triangle::Distance(const float3 &point)
+float Triangle::Distance(const float3 &point)
 {
     return ClosestPoint(point).Distance(point);
 }
@@ -335,7 +345,7 @@ bool Triangle::Intersects(const AABB &aabb) const
             return false;
     }
 
-    float3 n = UnnormalizedNormal();
+    float3 n = UnnormalizedNormalCCW();
     ProjectToAxis(n, t1, t2);
     aabb.ProjectToAxis(n, a1, a2);
     if (!RangesOverlap(t1, t2, a1, a2))

@@ -16,6 +16,7 @@
 
 #include "MathFwd.h"
 #include "MatrixProxy.h"
+#include "float3.h"
 #include "CoordinateAxisConvention.h"
 
 #ifdef OGRE_INTEROP
@@ -132,6 +133,14 @@ public:
         (when decomposed to axis-angle notation). */
     static float3x3 RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection);
 
+    /// Returns a uniformly random 3x3 matrix that performs a rotation.
+    static float3x3 RandomRotation(LCG &lcg);
+
+    /// Returns a random 3x3 matrix with each entry randomized between the range[minElem, maxElem].
+    /** Warning: The matrices returned by this function do not represent well-formed 3D transformations.
+        This function is mostly used for testing and debugging purposes only. */
+    static float3x3 RandomGeneral(LCG &lcg, float minElem, float maxElem);
+
     /// Creates a new float3x3 that performs the rotation expressed by the given quaternion.
     static float3x3 FromQuat(const Quat &orientation);
 
@@ -193,12 +202,12 @@ public:
         they were. */
     static float3x3 Reflect(const Plane &p);
 
-    /// Creates a new float3x3 that performs orthographic projection. [indexTitle: MakeOrthographicProjection/YZ/XZ/XY]
-    static float3x3 MakeOrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
-    static float3x3 MakeOrthographicProjection(const Plane &target);
-    static float3x3 MakeOrthographicProjectionYZ(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
-    static float3x3 MakeOrthographicProjectionXZ(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
-    static float3x3 MakeOrthographicProjectionXY(); ///< [similarOverload: MakeOrthographicProjection] [hideIndex]
+    /// Creates a new float3x3 that performs orthographic projection. [indexTitle: OrthographicProjection/YZ/XZ/XY]
+    static float3x3 OrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
+    static float3x3 OrthographicProjection(const Plane &target);
+    static float3x3 OrthographicProjectionYZ(); ///< [similarOverload: OrthographicProjection] [hideIndex]
+    static float3x3 OrthographicProjectionXZ(); ///< [similarOverload: OrthographicProjection] [hideIndex]
+    static float3x3 OrthographicProjectionXY(); ///< [similarOverload: OrthographicProjection] [hideIndex]
 
     /// Computes the covariance matrix of the given set of data points.
 //    static float3x3 CovarianceMatrix(const float3 *pointArray, int numPoints);

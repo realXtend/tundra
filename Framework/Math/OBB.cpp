@@ -124,7 +124,7 @@ Sphere OBB::MinimalEnclosingSphere() const
 Sphere OBB::MaximalContainedSphere() const
 {
     Sphere s;
-    s.pos;
+    s.pos = pos;
     s.r = r.MinElement();
     return s;
 }
