@@ -793,11 +793,11 @@ void AddContentWindow::AddEntities()
                 return;
             }
 
-            std::string dirname = QDir::toNativeSeparators(QFileInfo(newDesc_.filename).dir().path()).toStdString();
+            QString path = QFileInfo(newDesc_.filename).dir().path();
 
             TundraLogic::SceneImporter importer(destScene);
-            entities = importer.Import(newDesc_.filename.toStdString(), dirname, Transform(),
-                dest->BaseURL(), AttributeChange::Default, false/*clearScene*/, false);
+            entities = importer.Import(newDesc_.filename, path, Transform(), dest->BaseURL(),
+                AttributeChange::Default, false/*clearScene*/, false);
         }
         else if (newDesc_.entities.isEmpty() && !newDesc_.assets.isEmpty())
         {

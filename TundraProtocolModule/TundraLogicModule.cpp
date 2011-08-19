@@ -483,8 +483,7 @@ void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
     QString path = QDir::toNativeSeparators(QFileInfo(filename).dir().path());
 
     SceneImporter importer(scene);
-    QList<Entity *> entities = importer.Import(filename.toStdString(), path.toStdString(), Transform(),
-        "local://", AttributeChange::Default, clearScene, replace);
+    QList<Entity *> entities = importer.Import(filename, path, Transform(), "local://", AttributeChange::Default, clearScene, replace);
 
     LogInfo("Imported " + QString::number(entities.size()) + " entities.");
 }
@@ -507,8 +506,8 @@ void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float t
     QString path = QDir::toNativeSeparators(QFileInfo(filename).dir().path());
 
     SceneImporter importer(scene);
-    EntityPtr entity = importer.ImportMesh(filename.toStdString(), path.toStdString(), Transform(float3(tx,ty,tz),
-        float3(rx,ry,rz), float3(sx,sy,sz)), std::string(), "local://", AttributeChange::Default, inspect);
+    EntityPtr entity = importer.ImportMesh(filename, path, Transform(float3(tx,ty,tz), float3(rx,ry,rz),
+        float3(sx,sy,sz)), "", "local://", AttributeChange::Default, inspect);
 }
 
 bool TundraLogicModule::IsServer() const
