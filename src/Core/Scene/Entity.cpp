@@ -40,8 +40,8 @@ Entity::Entity(Framework* framework, uint id, Scene* scene) :
 Entity::~Entity()
 {
     // If components still alive, they become free-floating
-    for(size_t i=0 ; i<components_.size() ; ++i)
-        components_[i]->SetParentEntity(0);
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        i->second->SetParentEntity(0);
    
     components_.clear();
     qDeleteAll(actions_);
@@ -62,8 +62,11 @@ void Entity::AddComponent(const ComponentPtr &component, AttributeChange::Type c
             setProperty(componentTypeName.toStdString().c_str(), var);
         }
 
+        entity_id_t componentID = idGenerator_.Allocate();
+
+        component->SetNewId(componentID);
         component->SetParentEntity(this);
-        components_.push_back(component);
+        components_[componentID] = component;
         
         if (change != AttributeChange::Disconnected)
             emit ComponentAdded(component.get(), change == AttributeChange::Default ? component->UpdateMode() : change);
@@ -76,13 +79,13 @@ void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Typ
 {
     if (component)
     {
-        ComponentVector::iterator iter = std::find(components_.begin(), components_.end(), component);
+        ComponentMap::iterator iter = components_.find(component->Id());
         if (iter != components_.end())
         {
             QString componentTypeName = component->TypeName();
             componentTypeName.replace(0, 3, "");
             componentTypeName = componentTypeName.toLower();
-                
+            
             if(property(componentTypeName.toStdString().c_str()).isValid())
             {
                 QObject *obj = property(componentTypeName.toStdString().c_str()).value<QObject*>();
@@ -95,14 +98,14 @@ void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Typ
                 }
             }
             
-
             if (change != AttributeChange::Disconnected)
-                emit ComponentRemoved((*iter).get(), change == AttributeChange::Default ? component->UpdateMode() : change);
+                emit ComponentRemoved(iter->second.get(), change == AttributeChange::Default ? component->UpdateMode() : change);
             if (scene_)
-                scene_->EmitComponentRemoved(this, (*iter).get(), change);
+                scene_->EmitComponentRemoved(this, iter->second.get(), change);
 
-            (*iter)->SetParentEntity(0);
+            iter->second->SetParentEntity(0);
             components_.erase(iter);
+            idGenerator_.Deallocate(component->Id());
         }
         else
         {
@@ -211,21 +214,29 @@ ComponentPtr Entity::CreateComponent(u32 typeId, const QString &name, AttributeC
     return new_comp;
 }
 
+ComponentPtr Entity::GetComponentById(entity_id_t id) const
+{
+    ComponentMap::const_iterator i = components_.find(id);
+    if (i != components_.end())
+        return i->second;
+    else
+        return ComponentPtr();
+}
 
 ComponentPtr Entity::GetComponent(const QString &type_name) const
 {
-    for(size_t i=0 ; i<components_.size() ; ++i)
-        if (components_[i]->TypeName() == type_name)
-            return components_[i];
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        if (i->second->TypeName() == type_name)
+            return i->second;
 
     return ComponentPtr();
 }
 
 ComponentPtr Entity::GetComponent(u32 typeId) const
 {
-    for(size_t i = 0;  i <components_.size(); ++i)
-        if (components_[i]->TypeId() == typeId)
-            return components_[i];
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        if (i->second->TypeId() == typeId)
+            return i->second;
 
     return ComponentPtr();
 }
@@ -233,26 +244,26 @@ ComponentPtr Entity::GetComponent(u32 typeId) const
 Entity::ComponentVector Entity::GetComponents(const QString &type_name) const
 {
     ComponentVector ret;
-    for(size_t i = 0; i < components_.size() ; ++i)
-        if (components_[i]->TypeName() == type_name)
-            ret.push_back(components_[i]);
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        if (i->second->TypeName() == type_name)
+            ret.push_back(i->second);
     return ret;
 }
 
 ComponentPtr Entity::GetComponent(const QString &type_name, const QString& name) const
 {
-    for(size_t i=0 ; i<components_.size() ; ++i)
-        if (components_[i]->TypeName() == type_name && components_[i]->Name() == name)
-            return components_[i];
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        if (i->second->TypeName() == type_name && i->second->Name() == name)
+            return i->second;
 
     return ComponentPtr();
 }
 
 ComponentPtr Entity::GetComponent(u32 typeId, const QString& name) const
 {
-    for(size_t i = 0; i < components_.size(); ++i)
-        if (components_[i]->TypeId() == typeId && components_[i]->Name() == name)
-            return components_[i];
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        if (i->second->TypeId() == typeId && i->second->Name() == name)
+            return i->second;
 
     return ComponentPtr();
 }
@@ -261,20 +272,20 @@ QObjectList Entity::GetComponentsRaw(const QString &type_name) const
 {
     QObjectList ret;
     if (type_name.isNull())
-        for(size_t i = 0; i < components_.size() ; ++i)
-            ret.push_back(components_[i].get());
+        for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+            ret.push_back(i->second.get());
     else
-        for(size_t i = 0; i < components_.size() ; ++i)
-            if (components_[i]->TypeName() == type_name)
-                ret.push_back(components_[i].get());
+        for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+            if (i->second->TypeName() == type_name)
+                ret.push_back(i->second.get());
     return ret;
 }
 
 IAttribute *Entity::GetAttribute(const QString &name) const
 {
-    for(size_t i = 0; i < components_.size() ; ++i)
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
     {
-        IAttribute *attr = components_[i]->GetAttribute(name);
+        IAttribute *attr = i->second->GetAttribute(name);
         if (attr)
             return attr;
     }
@@ -286,23 +297,23 @@ void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
     dst.Add<u32>(Id());
     dst.Add<u8>(IsReplicated() ? 1 : 0);
     uint num_serializable = 0;
-    foreach(const ComponentPtr &comp, Components())
-        if (!comp->IsTemporary())
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        if (!i->second->IsTemporary())
             num_serializable++;
     dst.Add<u32>(num_serializable);
-    foreach(const ComponentPtr &comp, Components())
-        if (!comp->IsTemporary())
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        if (!i->second->IsTemporary())
         {
-            dst.Add<u32>(comp->TypeId()); ///\todo VLE this!
-            dst.AddString(comp->Name().toStdString());
-            dst.Add<u8>(comp->IsReplicated() ? 1 : 0);
+            dst.Add<u32>(i->second->TypeId()); ///\todo VLE this!
+            dst.AddString(i->second->Name().toStdString());
+            dst.Add<u8>(i->second->IsReplicated() ? 1 : 0);
             
             // Write each component to a separate buffer, then write out its size first, so we can skip unknown components
             QByteArray comp_bytes;
             // Assume 64KB max per component for now
             comp_bytes.resize(64 * 1024);
             kNet::DataSerializer comp_dest(comp_bytes.data(), comp_bytes.size());
-            comp->SerializeToBinary(comp_dest);
+            i->second->SerializeToBinary(comp_dest);
             comp_bytes.resize(comp_dest.BytesFilled());
             
             dst.Add<u32>(comp_bytes.size());
@@ -324,9 +335,9 @@ void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element) const
     entity_elem.setAttribute("id", id_str);
     entity_elem.setAttribute("sync", QString::fromStdString(::ToString<bool>(IsReplicated())));
 
-    foreach(const ComponentPtr c, Components())
-        if (!c->IsTemporary())
-            c->SerializeTo(doc, entity_elem);
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        if (!i->second->IsTemporary())
+            i->second->SerializeTo(doc, entity_elem);
 
     base_element.appendChild(entity_elem);
 }
@@ -361,9 +372,9 @@ bool Entity::DeserializeFromXMLString(const QString &src, AttributeChange::Type 
 AttributeVector Entity::GetAttributes(const QString &name) const
 {
     std::vector<IAttribute *> ret;
-    for(size_t i = 0; i < components_.size() ; ++i)
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
     {
-        IAttribute *attr = components_[i]->GetAttribute(name);
+        IAttribute *attr = i->second->GetAttribute(name);
         if (attr)
             ret.push_back(attr);
     }
@@ -378,8 +389,8 @@ EntityPtr Entity::Clone(bool local, bool temporary) const
     QDomElement entityElem = doc.createElement("entity");
     entityElem.setAttribute("sync", QString::fromStdString(::ToString<bool>(!local)));
     entityElem.setAttribute("id", scene_->NextFreeId());
-    foreach(const ComponentPtr &c, Components())
-        c->SerializeTo(doc, entityElem);
+    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+        i->second->SerializeTo(doc, entityElem);
     sceneElem.appendChild(entityElem);
     doc.appendChild(sceneElem);
 

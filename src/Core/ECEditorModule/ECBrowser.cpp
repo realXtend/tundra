@@ -100,9 +100,9 @@ void ECBrowser::RemoveEntity(EntityPtr entity)
             disconnect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this,
                 SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
 
-            Entity::ComponentVector components = ent_ptr->Components();
-            for(uint i = 0; i < components.size(); i++)
-                RemoveComponentFromGroup(components[i]);
+            const Entity::ComponentMap components = ent_ptr->Components();
+            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+                RemoveComponentFromGroup(i->second);
 
             entities_.erase(iter);
             break;
@@ -169,9 +169,9 @@ void ECBrowser::UpdateBrowser()
         if((*iter).expired())
             continue;
 
-        const Entity::ComponentVector components = (*iter).lock()->Components();
-        for(uint i = 0; i < components.size(); i++)
-            AddNewComponentToGroup(components[i]);
+        const Entity::ComponentMap components = (*iter).lock()->Components();
+        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            AddNewComponentToGroup(i->second);
     }
 
     for(TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.begin();

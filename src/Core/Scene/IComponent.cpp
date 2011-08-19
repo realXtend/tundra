@@ -26,12 +26,23 @@ IComponent::IComponent(Scene* scene) :
     framework(scene ? scene->GetFramework() : 0),
     updateMode(AttributeChange::Replicate),
     replicated(true),
-    temporary(false)
+    temporary(false),
+    id(0)
 {
 }
 
 IComponent::~IComponent()
 {
+    foreach(IAttribute *a, attributes)
+    {
+        if (a && a->IsDynamic())
+            SAFE_DELETE(a);
+    }
+}
+
+void IComponent::SetNewId(entity_id_t newId)
+{
+    id = newId;
 }
 
 void IComponent::SetName(const QString& name_)
@@ -81,7 +92,7 @@ void IComponent::SetReplicated(bool enable)
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
 {
     for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        if ((*iter)->Name() == name)
+        if ((*iter) && (*iter)->Name() == name)
             return (*iter)->ToQVariant();
 
     return QVariant();
@@ -91,16 +102,40 @@ QStringList IComponent::GetAttributeNames() const
 {
     QStringList attribute_list;
     for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        attribute_list.push_back((*iter)->Name());
+        if (*iter)
+            attribute_list.push_back((*iter)->Name());
     return attribute_list;
 }
 
 IAttribute* IComponent::GetAttribute(const QString &name) const
 {
     for(unsigned int i = 0; i < attributes.size(); ++i)
-        if(attributes[i]->Name() == name)
+        if(attributes[i] && attributes[i]->Name() == name)
             return attributes[i];
     return 0;
+}
+
+int IComponent::NumAttributes() const
+{
+    int ret = 0;
+    for (unsigned int i = 0; i < attributes.size(); ++i)
+        if(attributes[i])
+            ++ret;
+    return ret;
+}
+
+int IComponent::NumStaticAttributes() const
+{
+    int ret = 0;
+    for (unsigned int i = 0; i < attributes.size(); ++i)
+    {
+        // Break when the first hole or dynamically allocated attribute is encountered
+        if (attributes[i] && !attributes[i]->IsDynamic())
+            ++ret;
+        else
+            break;
+    }
+    return ret;
 }
 
 QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_element) const
@@ -204,7 +239,7 @@ void IComponent::EmitAttributeChanged(const QString& attributeName, AttributeCha
 
     // Roll through attributes and check name match
     for(uint i = 0; i < attributes.size(); ++i)
-        if (attributes[i]->Name() == attributeName)
+        if (attributes[i] && attributes[i]->Name() == attributeName)
         {
             EmitAttributeChanged(attributes[i], change);
             break;
@@ -216,7 +251,8 @@ void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
     QDomElement comp_element = BeginSerialization(doc, base_element);
 
     for(uint i = 0; i < attributes.size(); ++i)
-        WriteAttribute(doc, comp_element, attributes[i]->Name(), attributes[i]->ToString().c_str());
+        if (attributes[i])
+            WriteAttribute(doc, comp_element, attributes[i]->Name(), attributes[i]->ToString().c_str());
 }
 
 /// Returns true if the given XML element has the given child attribute.
@@ -245,7 +281,7 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
 
     for(uint i = 0; i < attributes.size(); ++i)
     {
-        if (HasAttribute(element, attributes[i]->Name()))
+        if (attributes[i] && HasAttribute(element, attributes[i]->Name()))
         {
             std::string attr_str = ReadAttribute(element, attributes[i]->Name()).toStdString();
             attributes[i]->FromString(attr_str, change);
@@ -257,25 +293,28 @@ void IComponent::SerializeToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<u8>(attributes.size());
     for(uint i = 0; i < attributes.size(); ++i)
-        attributes[i]->ToBinary(dest);
+        if (attributes[i])
+            attributes[i]->ToBinary(dest);
 }
 
 void IComponent::DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     u8 num_attributes = source.Read<u8>();
-    if (num_attributes != attributes.size())
+    if (num_attributes != NumAttributes())
     {
         std::cout << "Wrong number of attributes in DeserializeFromBinary!" << std::endl;
         return;
     }
     for(uint i = 0; i < attributes.size(); ++i)
-        attributes[i]->FromBinary(source, change);
+        if (attributes[i])
+            attributes[i]->FromBinary(source, change);
 }
 
 void IComponent::ComponentChanged(AttributeChange::Type change)
 {
     for(uint i = 0; i < attributes.size(); ++i)
-        EmitAttributeChanged(attributes[i], change);
+        if (attributes[i])
+            EmitAttributeChanged(attributes[i], change);
 }
 
 void IComponent::SetTemporary(bool enable)

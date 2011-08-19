@@ -134,10 +134,10 @@ void EcXmlEditorWidget::Refresh()
             temp_doc.appendChild(entity_elem);
         entity_elem.setAttribute("id", QString::number((int)entity->Id()));
 
-        const Entity::ComponentVector &components = entity->Components();
-        for(uint i = 0; i < components.size(); ++i)
+        const Entity::ComponentMap components = entity->Components();
+        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
         {
-            components[i]->SerializeTo(temp_doc, entity_elem);
+            i->second->SerializeTo(temp_doc, entity_elem);
             if (multiple)
                 entities_elem.appendChild(entity_elem);
             else

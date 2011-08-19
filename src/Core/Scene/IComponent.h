@@ -81,6 +81,7 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
     Q_PROPERTY(bool replicated READ IsReplicated WRITE SetReplicated)
     Q_PROPERTY(bool local READ IsLocal)
     Q_PROPERTY(AttributeChange::Type updateMode READ UpdateMode WRITE SetUpdateMode)
+    Q_PROPERTY (uint id READ Id)
 
     /// \todo Deprecated. Remove when all scripts have been converted to not refer to this
     Q_PROPERTY(bool networkSyncEnabled READ IsReplicated WRITE SetReplicated)
@@ -120,6 +121,8 @@ public:
     void SetParentEntity(Entity* entity);
 
     /// Returns the list of all Attributes in this component for reflection purposes.
+    /** *Warning*: because attribute reindexing is not performed when dynamic attributes are removed, you *must* be prepared for null pointers when examining this!
+     */
     const AttributeVector& Attributes() const { return attributes; }
 
     /// Finds and returns an attribute of type 'Attribute<T>' and given name.
@@ -131,7 +134,7 @@ public:
     Attribute<T> *GetAttribute(const QString &name) const
     {
         for(size_t i = 0; i < attributes.size(); ++i)
-            if (attributes[i]->Name() == name)
+            if (attributes[i] && attributes[i]->Name() == name)
                 return dynamic_cast<Attribute<T> *>(&attributes[i]);
         return 0;
     }
@@ -167,7 +170,7 @@ public:
         \todo: was made a slot, but interfered with a slot with the same name in EC_DynamicComponent, and this version
         doesn't work right for py&js 'cause doesn't return a QVariant .. so not a slot now as a temporary measure. */
     IAttribute* GetAttribute(const QString &name) const;
-
+    
 public slots:
     /// Returns a pointer to the Framework instance.
     Framework *GetFramework() const { return framework; }
@@ -193,11 +196,17 @@ public slots:
     /// Gets the default mode for attribute change operations
     AttributeChange::Type UpdateMode() const { return updateMode; }
 
+    /// Returns component ID, which is unique within the parent entity
+    entity_id_t Id() const { return id; }
+    
     /// Returns true if component has dynamic attribute structure
     virtual bool HasDynamicStructure() const { return false; }
 
-    /// Returns the number of Attributes in this component.
-    int NumAttributes() const { return attributes.size(); }
+    /// Returns the total number of attributes in this component.
+    int NumAttributes() const;
+    
+    /// Returns the number of static (ie. not dynamically allocated) attributes in this component. These are always in the beginning of the attribute vector.
+    int NumStaticAttributes() const;
 
     /// Informs this component that the value of a member Attribute of this component has changed.
     /** You may call this function manually to force Attribute change signal to
@@ -299,6 +308,9 @@ protected:
     /// Attribute list for introspection/reflection.
     AttributeVector attributes;
 
+    /// Component id, unique within the parent entity
+    entity_id_t id;
+    
     /// Network sync enable flag
     bool replicated;
 
@@ -313,7 +325,11 @@ protected:
 
 private:
     friend class ::IAttribute;
-
+    friend class Entity;
+    
+    /// Set component ID. Called by Entity
+    void SetNewId(entity_id_t newId);
+    
     /// Called by IAttribute on initialization of each attribute
     void AddAttribute(IAttribute* attr) { attributes.push_back(attr); }
 };

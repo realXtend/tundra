@@ -122,6 +122,9 @@ void ECComponentEditor::CreateAttributeEditors(ComponentPtr component)
 {
     foreach(IAttribute *attr, component->Attributes())
     {
+        if (!attr)
+            continue;
+        
         // Check metadata if this attribute is intended to be shown in designer/editor ui
         if (attr->Metadata())
             if (!attr->Metadata()->designable)

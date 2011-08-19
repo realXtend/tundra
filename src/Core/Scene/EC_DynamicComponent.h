@@ -153,9 +153,6 @@ public slots:
         @param change Change type. */
     void SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
 
-    /// Returns number of attributes in this component.
-    int GetNumAttributes() const { return attributes.size(); }
-
     /// Returns name of attribute with the specific @c index
     /** @param index Index of the attribute. */
     QString GetAttributeName(int index) const;

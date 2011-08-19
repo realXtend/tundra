@@ -220,7 +220,7 @@ ComponentPtr SceneAPI::CloneComponent(const ComponentPtr &component, const QStri
 
 IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attributeTypename, const QString &newAttributeName)
 {
-    // The dynamically created attributes are deleted at the EC_DynamicComponent dtor.
+    // The dynamically created attributes are deleted at the IComponent dtor.
     IAttribute *attribute = 0;
     if (attributeTypename == "string")
         attribute = new Attribute<QString>(owner, newAttributeName.toStdString().c_str());
@@ -256,6 +256,8 @@ IAttribute *SceneAPI::CreateAttribute(IComponent *owner, const QString &attribut
         attribute = new Attribute<Transform>(owner, newAttributeName.toStdString().c_str());
     else
         LogError("Cannot create attribute of type \"" + attributeTypename + "\"! This type is not known to SceneAPI::CreateAttribute!");
+    if (attribute)
+        attribute->dynamic = true;
     return attribute;
 }
 

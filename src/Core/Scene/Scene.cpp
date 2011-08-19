@@ -412,11 +412,11 @@ QByteArray Scene::GetSceneXML(bool gettemporary, bool getlocal) const
             entity_elem.setAttribute("id", id_str);
             entity_elem.setAttribute("sync", QString::fromStdString(::ToString<bool>(entity->IsReplicated())));
             
-            const Entity::ComponentVector &components = entity->Components();
-            for(uint i = 0; i < components.size(); ++i)
+            const Entity::ComponentMap &components = entity->Components();
+            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             {
-                if ((!components[i]->IsTemporary()) || (gettemporary))
-                    components[i]->SerializeTo(scene_doc, entity_elem);
+                if ((!i->second->IsTemporary()) || (gettemporary))
+                    i->second->SerializeTo(scene_doc, entity_elem);
             }
             
             scene_elem.appendChild(entity_elem);
@@ -606,9 +606,9 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         Entity* entity = ret[i];
         EmitEntityCreated(entity, change);
         // All entities & components have been loaded. Trigger change for them now.
-        const Entity::ComponentVector &components = entity->Components();
-        for(uint j = 0; j < components.size(); ++j)
-            components[j]->ComponentChanged(change);
+        const Entity::ComponentMap &components = entity->Components();
+        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            i->second->ComponentChanged(change);
     }
 
     return ret;
@@ -720,8 +720,9 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
         Entity* entity = ret[i];
         EmitEntityCreated(entity, change);
         // All entities & components have been loaded. Trigger change for them now.
-        foreach(ComponentPtr comp, entity->Components())
-            comp->ComponentChanged(change);
+        const Entity::ComponentMap &components = entity->Components();
+        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            i->second->ComponentChanged(change);
     }
     
     return ret;
@@ -787,10 +788,15 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                 else
                 {
                     foreach(IAttribute *attr, comp->Attributes())
-                        foreach(AttributeDesc a, c.attributes)
-                            if (attr->TypeName() == a.typeName && attr->Name() == a.name)
-                                // Trigger no signal yet when scene is in incoherent state
-                                attr->FromString(a.value.toStdString(), AttributeChange::Disconnected);
+                    {
+                        if (attr)
+                        {
+                            foreach(AttributeDesc a, c.attributes)
+                                if (attr->TypeName() == a.typeName && attr->Name() == a.name)
+                                    // Trigger no signal yet when scene is in incoherent state
+                                    attr->FromString(a.value.toStdString(), AttributeChange::Disconnected);
+                        }
+                    }
                 }
             }
 
@@ -802,8 +808,9 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
     foreach(Entity *entity, ret)
     {
         EmitEntityCreated(entity, change);
-        foreach(ComponentPtr component, entity->Components())
-            component->ComponentChanged(change);
+        const Entity::ComponentMap &components = entity->Components();
+        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            i->second->ComponentChanged(change);
     }
 
     return ret;
@@ -896,6 +903,9 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
                 comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                 foreach(IAttribute *a,comp->Attributes())
                 {
+                    if (!a)
+                        continue;
+                    
                     QString typeName = a->TypeName();
                     AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str() };
                     compDesc.attributes.append(attrDesc);
@@ -1081,6 +1091,9 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                             comp->DeserializeFromBinary(comp_source, AttributeChange::Disconnected);
                             foreach(IAttribute *a, comp->Attributes())
                             {
+                                if (!a)
+                                    continue;
+                                
                                 QString typeName = a->TypeName();
                                 AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str() };
                                 compDesc.attributes.append(attrDesc);
@@ -1140,8 +1153,9 @@ QByteArray Scene::GetEntityXml(Entity *entity) const
     {
         QDomElement entity_elem = scene_doc.createElement("entity");
         entity_elem.setAttribute("id", QString::number((int)entity->Id()));
-        foreach(const ComponentPtr &c, entity->Components())
-            c->SerializeTo(scene_doc, entity_elem);
+        const Entity::ComponentMap &components = entity->Components();
+        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            i->second->SerializeTo(scene_doc, entity_elem);
         scene_elem.appendChild(entity_elem);
     }
 

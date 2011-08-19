@@ -471,8 +471,9 @@ QString SceneTreeWidget::GetSelectionAsXml() const
                 QDomElement entity_elem = scene_doc.createElement("entity");
                 entity_elem.setAttribute("id", QString::number((int)entity->Id()));
 
-                foreach(ComponentPtr component, entity->Components())
-                    component->SerializeTo(scene_doc, entity_elem);
+                const Entity::ComponentMap &components = entity->Components();
+                for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+                    i->second->SerializeTo(scene_doc, entity_elem);
 
                 scene_elem.appendChild(entity_elem);
             }
@@ -1323,8 +1324,13 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
             if (!comp)
                 continue;
 
-            foreach(ComponentPtr comp, entity->Components())
-                foreach(IAttribute *attr, comp->Attributes())
+            const Entity::ComponentMap &components = entity->Components();
+            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+                foreach(IAttribute *attr, i->second->Attributes())
+                {
+                    if (!attr)
+                        continue;
+                    
                     if (attr->TypeName() == "assetreference")
                     {
                         Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
@@ -1338,6 +1344,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
                             for(int i = 0; i < assetRefs->Get().Size(); ++i)
                                 assets.insert(assetRefs->Get()[i].ref);
                     }
+                }
         }
     }
 

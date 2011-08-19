@@ -41,7 +41,8 @@ using namespace kNet;
 IAttribute::IAttribute(IComponent* owner_, const char* name_) :
     owner(owner_),
     name(name_),
-    metadata(0)
+    metadata(0),
+    dynamic(false)
 {
     if (owner)
         owner->AddAttribute(this);

@@ -240,16 +240,17 @@ void SceneStructureWindow::CreateAssetReferences()
                     continue;
 
                 foreach(IAttribute *attr, comp->Attributes())
-                    if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
+                    if (attr && (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist"))
                         CreateAssetItem(cItem, attr);
             }
         }
         else
         {
             // Create asset ref items as children of entity items.
-            foreach(ComponentPtr comp, entity->Components())
-                foreach(IAttribute *attr, comp->Attributes())
-                    if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
+            const Entity::ComponentMap &components = entity->Components();
+            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+                foreach(IAttribute *attr, i->second->Attributes())
+                    if (attr && (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist"))
                         CreateAssetItem(eItem, attr);
         }
     }
@@ -282,8 +283,9 @@ void SceneStructureWindow::AddEntity(Entity* entity)
 
     treeWidget->addTopLevelItem(item);
 
-    foreach(ComponentPtr c, entity->Components())
-        AddComponent(entity, c.get());
+    const Entity::ComponentMap &components = entity->Components();
+    for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+        AddComponent(entity, i->second.get());
 }
 
 void SceneStructureWindow::RemoveEntity(Entity* entity)
@@ -334,7 +336,7 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
 
             // Add possible asset references.
             foreach(IAttribute *attr, comp->Attributes())
-                if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
+                if (attr && (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist"))
                     CreateAssetItem(cItem, attr);
         }
     }

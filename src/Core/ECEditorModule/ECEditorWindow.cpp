@@ -478,8 +478,9 @@ void ECEditorWindow::CopyEntity()
             QDomElement entity_elem = temp_doc.createElement("entity");
             entity_elem.setAttribute("id", QString::number((int)entity->Id()));
 
-            foreach(const ComponentPtr &comp, entity->Components())
-                comp->SerializeTo(temp_doc, entity_elem);
+            const Entity::ComponentMap &components = entity->Components();
+            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+                i->second->SerializeTo(temp_doc, entity_elem);
 
             scene_elem.appendChild(entity_elem);
         }
@@ -528,23 +529,26 @@ void ECEditorWindow::PasteEntity()
         return;
 
     bool hasPlaceable = false;
-    Entity::ComponentVector components = originalEntity->Components();
-    for(uint i = 0; i < components.size(); i++)
+    const Entity::ComponentMap components =  originalEntity->Components();
+    for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
     {
         // If the entity is holding placeable component we can place it into the scene.
-        if(components[i]->TypeName() == EC_Placeable::TypeNameStatic())
+        if(i->second->TypeName() == EC_Placeable::TypeNameStatic())
         {
             hasPlaceable = true;
-            ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
+            ComponentPtr component = entity->GetOrCreateComponent(i->second->TypeName(), i->second->Name(), AttributeChange::Default);
         }
 
-        ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
-        AttributeVector attributes = components[i]->Attributes();
+        ComponentPtr component = entity->GetOrCreateComponent(i->second->TypeName(), i->second->Name(), AttributeChange::Default);
+        AttributeVector attributes = i->second->Attributes();
         for(uint j = 0; j < attributes.size(); j++)
         {
-            IAttribute *attribute = component->GetAttribute(attributes[j]->Name());
-            if(attribute)
-                attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
+            if (attributes[j])
+            {
+                IAttribute *attribute = component->GetAttribute(attributes[j]->Name());
+                if(attribute)
+                    attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
+            }
         }
     }
 
@@ -722,7 +726,9 @@ void ECEditorWindow::ShowXmlEditorForEntity()
     {
         EntityComponentSelection entityComponent;
         entityComponent.entity = entities[i];
-        entityComponent.components = entities[i]->Components();
+        const Entity::ComponentMap &components = entities[i]->Components();
+        for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            entityComponent.components.push_back(i->second);
         selection.push_back(entityComponent);
     }
 

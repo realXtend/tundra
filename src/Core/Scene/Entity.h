@@ -7,6 +7,7 @@
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "EntityAction.h"
+#include "UniqueIdGenerator.h"
 
 #include <boost/enable_shared_from_this.hpp>
 
@@ -51,7 +52,8 @@ class Entity : public QObject, public boost::enable_shared_from_this<Entity>
     Q_PROPERTY (bool local READ IsLocal)
     
 public:
-    typedef std::vector<ComponentPtr> ComponentVector; ///< Component container.
+    typedef std::map<entity_id_t, ComponentPtr> ComponentMap; ///< Component container.
+    typedef std::vector<ComponentPtr> ComponentVector; ///< Component vector container.
     typedef QMap<QString, EntityAction *> ActionMap; ///< Action container
 
     /// If entity has components that are still alive, they become free-floating.
@@ -112,6 +114,8 @@ public:
     bool operator < (const Entity &other) const { return Id() < other.Id(); }
 
 public slots:
+    /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
+    ComponentPtr GetComponentById(entity_id_t id) const;
     /// Returns a component with type 'type_name' or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary).
         @param type_name type of the component */
@@ -304,7 +308,7 @@ public slots:
     entity_id_t Id() const { return id_; }
 
     /// introspection for the entity, returns all components
-    const ComponentVector &Components() const { return components_; }
+    const ComponentMap &Components() const { return components_; }
 
     /// Returns framework
     Framework *GetFramework() const { return framework_; }
@@ -360,7 +364,8 @@ private:
     /// Emit a entity deletion signal. Called from Scene
     void EmitEntityRemoved(AttributeChange::Type change);
 
-    ComponentVector components_; ///< a list of all components
+    UniqueIdGenerator idGenerator_; ///< Component ID generator
+    ComponentMap components_; ///< a list of all components
     entity_id_t id_; ///< Unique id for this entity
     Framework* framework_; ///< Pointer to framework
     Scene* scene_; ///< Pointer to scene
