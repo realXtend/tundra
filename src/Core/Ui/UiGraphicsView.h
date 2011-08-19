@@ -50,24 +50,54 @@ signals:
     void WindowResized(int newWidth, int newHeight);    
 
     /// Emitted when DragEnterEvent is received for the main window.
-    /** @param e Event.
-    */
+    /// @note This signal is only emitted if no graphics items are under the mouse
+    /// see UiDragEnterEvent for signal that is emitted while on top ui.
+    /// @note If your graphics item is not full screen in the graphics scene, you
+    /// need to accept with DragEnterEvent and track with UiDragMoveEvent.
+    /// @param e Event.
     void DragEnterEvent(QDragEnterEvent *e);
 
     /// Emitted when DragLeaveEvent is received for the main window.
-    /** @param e Event.
-    */
+    /// @note This signal is only emitted if no graphics items are under the mouse
+    /// see UiDragLeaveEvent for signal that is emitted while on top ui.
+    /// @param e Event.
     void DragLeaveEvent(QDragLeaveEvent *e);
 
     /// Emitted when DragMoveEvent is received for the main window.
-    /** @param e Event.
-    */
+    /// @note This signal is only emitted if no graphics items are under the mouse
+    /// see UiDragMoveEvent for signal that is emitted while on top ui.
+    /// @param e Event.
     void DragMoveEvent(QDragMoveEvent *e);
 
     /// Emitted when DropEvent is received for the main window.
-    /** @param e Event.
-    */
+    /// @note This signal is only emitted if no graphics items are under the mouse
+    /// see UiDropEvent for signal that is emitted while on top ui.
+    /// @param e Event.
     void DropEvent(QDropEvent *e);
+
+    /// Emitted when DragEnterEvent is received for the main window 
+    /// and there is a graphics item under the drag.
+    /// @note See also DragEnterEvent.
+    /// @param e Event.
+    void UiDragEnterEvent(QDragEnterEvent *e);
+
+    /// Emitted when DragLeaveEvent is received for the main window
+    /// and there is a graphics item under the drag.
+    /// @note See also DragLeaveEvent.
+    /// @param e Event.
+    void UiDragLeaveEvent(QDragLeaveEvent *e);
+
+    /// Emitted when DragMoveEvent is received for the main window
+    /// and there is a graphics item under the drag.
+    /// @note See also DragMoveEvent.
+    /// @param e Event.
+    void UiDragMoveEvent(QDragMoveEvent *e);
+
+    /// Emitted when DropEvent is received for the main window
+    /// and there is a graphics item under the drag.
+    /// @note See also DropEvent.
+    /// @param e Event.
+    void UiDropEvent(QDropEvent *e);
 
 private:
     QImage *backBuffer;

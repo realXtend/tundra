@@ -209,7 +209,10 @@ void UiGraphicsView::dropEvent(QDropEvent *e)
     // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
     if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
     {
+        // Emit the UI drag event, this enabled graphics items to implement drag and drop
+        // functionality more easily than to subclass QWidget/QGraphicsWidget.
         QGraphicsView::dropEvent(e);
+        emit UiDropEvent(e);
         return;
     }
 
@@ -219,11 +222,14 @@ void UiGraphicsView::dropEvent(QDropEvent *e)
 }
 
 void UiGraphicsView::dragEnterEvent(QDragEnterEvent *e)
-{           
+{
     // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
     if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
     {
+        // Emit the UI drag event, this enabled graphics items to implement drag and drop
+        // functionality more easily than to subclass QWidget/QGraphicsWidget.
         QGraphicsView::dragEnterEvent(e);
+        emit UiDragEnterEvent(e);
         return;
     }
 
@@ -235,6 +241,7 @@ void UiGraphicsView::dragEnterEvent(QDragEnterEvent *e)
 void UiGraphicsView::dragLeaveEvent(QDragLeaveEvent *e)
 {
     emit DragLeaveEvent(e);
+    emit UiDragLeaveEvent(e);
     QGraphicsView::dragLeaveEvent(e);
 }
 
@@ -243,7 +250,10 @@ void UiGraphicsView::dragMoveEvent(QDragMoveEvent *e)
     // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
     if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
     {
+        // Emit the UI drag event, this enabled graphics items to implement drag and drop
+        // functionality more easily than to subclass QWidget/QGraphicsWidget.
         QGraphicsView::dragMoveEvent(e);
+        emit UiDragMoveEvent(e);
         return;
     }
 
