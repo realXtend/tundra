@@ -6,6 +6,7 @@
 #include "OgreRenderingModule.h"
 #include "OgreMaterialAsset.h"
 #include "FrameAPI.h"
+#include "Scene.h"
 #include "Entity.h"
 #include "EC_Material.h"
 #include "EC_Mesh.h"
@@ -180,22 +181,33 @@ void EC_Material::ApplyParameters(OgreMaterialAsset* srcMatAsset)
     // There is a race between EC_Material and EC_Mesh when a output material is generated.
     // Either EC_Material is first to generate the material into asset system, before EC_Mesh requests it,
     // or EC_Mesh requests before EC_Material has time to generate the material. In the latter case
-    // the asset request will fail and the material breaks. To fix this we should inspect our
-    // mesh and reapply generated materials.
-    
-    /// @note We could and possibly should look for all EC_Meshes in the scene, as another mesh than our
-    /// own (in the same entity) could have the generated output material set!
-    if (!outputMatName.isEmpty() && ParentEntity())
+    // the asset request will fail and the material breaks. To fix this we should inspect all
+    // meshes and if found reapply our generated materials.
+    if (!outputMatName.isEmpty() && ParentScene())
     {
-        ComponentPtr meshComp = ParentEntity()->GetComponent("EC_Mesh");
-        EC_Mesh *mesh = dynamic_cast<EC_Mesh*>(meshComp.get());
-        if (mesh)
+        QString outputResolved = framework->Asset()->ResolveAssetRef("", outputMatName);
+
+        // Iterate all EC_Meshes in scene and find out generated material, then re-apply.
+        EntityList meshEnts = ParentScene()->GetEntitiesWithComponent("EC_Mesh");
+        EntityList::iterator iter = meshEnts.begin();
+
+        while (iter != meshEnts.end())
         {
-            QString outputResolved = framework->Asset()->ResolveAssetRef("", outputMatName);
+            EntityPtr meshEnt = (*iter);
+            ++iter;
+
+            if (!meshEnt.get())
+                continue;
+
+            ComponentPtr meshComp = meshEnt->GetComponent("EC_Mesh");
+            EC_Mesh *mesh = dynamic_cast<EC_Mesh*>(meshComp.get());
+            if (!mesh)
+                continue;
+            
             AssetReferenceList materials = mesh->getmeshMaterial();
-            for(int i=0; i<materials.Size(); i++)
+            for(int k=0; k<materials.Size(); ++k)
             {
-                QString materialResolved = framework->Asset()->ResolveAssetRef("", materials[i].ref);
+                QString materialResolved = framework->Asset()->ResolveAssetRef("", materials[k].ref);
                 if (materialResolved == outputResolved)
                 {
                     // Re-apply to make sure EC_Mesh finds the generated material via AssetAPI.
