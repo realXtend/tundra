@@ -32,7 +32,6 @@ namespace Avatar
 
         void Load();
         void Initialize();
-        void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
 

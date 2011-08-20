@@ -109,7 +109,7 @@ void OgreScriptEditor::Open()
 
     if (edit_raw)
     {
-        QString script(asset->GetRawData());
+        QString script(asset->RawData());
         if (script.isEmpty() && script.isNull())
         {
             LogError("Invalid data for generating an OGRE script.");

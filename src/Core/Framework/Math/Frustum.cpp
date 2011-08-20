@@ -18,6 +18,7 @@
 #include "Sphere.h"
 #include "Triangle.h"
 #include "LineSegment.h"
+#include "float2.h"
 #include "float3x3.h"
 #include "float3x4.h"
 #include "float4.h"
@@ -74,28 +75,93 @@ Plane Frustum::BottomPlane() const
 
 float4x4 Frustum::ProjectionMatrix() const
 {
-    assume(false && "Not implemented!");
-    return float4x4();
+	assume(type == PerspectiveFrustum || type == OrthographicFrustum);
+	if (type == PerspectiveFrustum)
+	{
+		assume(false && "Not implemented!");
+		return float4x4();
+	}
+	else
+	{
+		assume(front.Equals(float3(0,0,1)));
+		assume(up.Equals(float3(0,1,0)));
+		// pos assumed to be in center. ///\todo Remove these assumptions.
+		return float4x4::D3DOrthoProjRH(nearPlaneDistance, farPlaneDistance, orthographicWidth, orthographicHeight);
+	}
 }
 
 float3 Frustum::NearPlanePos(float x, float y) const
 {
-    float frontPlaneWidth = 2.f * tan(horizontalFov*0.5f)*nearPlaneDistance;
-    float frontPlaneHeight = 2.f * tan(verticalFov*0.5f)*nearPlaneDistance;
-    x = (x - 0.5f) * 2.f * frontPlaneWidth;
-    y = (y - 0.5f) * 2.f * frontPlaneHeight;
-    float3 right = Cross(front, up).Normalized();
-    return pos + front * nearPlaneDistance + x * right - y * up;
+	assume(type == PerspectiveFrustum || type == OrthographicFrustum);
+
+	if (type == PerspectiveFrustum)
+	{
+		float frontPlaneHalfWidth = tan(horizontalFov*0.5f)*nearPlaneDistance;
+		float frontPlaneHalfHeight = tan(verticalFov*0.5f)*nearPlaneDistance;
+		x = x * frontPlaneHalfWidth; // Map [-1,1] to [-width/2, width/2].
+		y = y * frontPlaneHalfHeight;  // Map [-1,1] to [-height/2, height/2].
+		float3 right = Cross(front, up).Normalized();
+		return pos + front * nearPlaneDistance + x * right - y * up;
+	}
+	else
+	{
+		float3 right = Cross(front, up).Normalized();
+		return pos + front * nearPlaneDistance 
+		           + x * orthographicWidth * 0.5f * right
+		           + y * orthographicHeight * 0.5f * up;
+	}
+}
+
+float3 Frustum::NearPlanePos(const float2 &point) const
+{
+	return NearPlanePos(point.x, point.y);
 }
 
 float3 Frustum::FarPlanePos(float x, float y) const
 {
-    float farPlaneWidth = 2.f * tan(horizontalFov*0.5f)*farPlaneDistance;
-    float farPlaneHeight = 2.f * tan(verticalFov*0.5f)*farPlaneDistance;
-    x = (x - 0.5f) * 2.f * farPlaneWidth;
-    y = (y - 0.5f) * 2.f * farPlaneHeight;
-    float3 right = Cross(front, up).Normalized();
-    return pos + front * farPlaneDistance + x * right - y * up;
+	assume(type == PerspectiveFrustum || type == OrthographicFrustum);
+
+	if (type == PerspectiveFrustum)
+	{
+		float farPlaneHalfWidth = tan(horizontalFov*0.5f)*farPlaneDistance;
+		float farPlaneHalfHeight = tan(verticalFov*0.5f)*farPlaneDistance;
+		x = x * farPlaneHalfWidth;
+		y = y * farPlaneHalfHeight;
+		float3 right = Cross(front, up).Normalized();
+		return pos + front * farPlaneDistance + x * right - y * up;
+	}
+	else
+	{
+		float3 right = Cross(front, up).Normalized();
+		return pos + front * farPlaneDistance 
+		           + x * orthographicWidth * 0.5f * right
+		           + y * orthographicHeight * 0.5f * up;
+	}
+}
+
+float3 Frustum::FarPlanePos(const float2 &point) const
+{
+	return FarPlanePos(point.x, point.y);
+}
+
+float2 Frustum::ViewportToScreenSpace(float x, float y, int screenWidth, int screenHeight)
+{
+	return float2((x + 1.f) * 0.5f * (screenWidth-1.f), (1.f - y) * 0.5f * (screenHeight-1.f));
+}
+
+float2 Frustum::ViewportToScreenSpace(const float2 &point, int screenWidth, int screenHeight)
+{
+	return ViewportToScreenSpace(point.x, point.y, screenWidth, screenHeight);
+}
+
+float2 Frustum::ScreenToViewportSpace(float x, float y, int screenWidth, int screenHeight)
+{
+	return float2(x * 2.f / (screenWidth-1.f) - 1.f, 1.f - y * 2.f / (screenHeight - 1.f));
+}
+
+float2 Frustum::ScreenToViewportSpace(const float2 &point, int screenWidth, int screenHeight)
+{
+	return ScreenToViewportSpace(point.x, point.y, screenWidth, screenHeight);
 }
 
 Ray Frustum::LookAt(float x, float y) const
@@ -127,7 +193,7 @@ Plane Frustum::GetPlane(int faceIndex) const
     assume(0 <= faceIndex && faceIndex <= 5);
     switch(faceIndex)
     {
-        default: // For release builds where assume() is disabled, return always the first option if out-of-bounds.
+        default: // For release builds where assume() is disabled, always return the first option if out-of-bounds.
         case 0: return NearPlane();
         case 1: return FarPlane();
         case 2: return LeftPlane();

@@ -6,7 +6,6 @@
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
 #include "SceneDesc.h"
-#include "CoreDefines.h"
 #include "Math/float3.h"
 #include "ChangeRequest.h"
 
@@ -91,10 +90,10 @@ public:
     }
 
 public slots:
-    /// Creates new entity that contains the specified components
+    /// Creates new entity that contains the specified components.
     /** Entities should never be created directly, but instead created with this function.
 
-        To create an empty entity omit components parameter.
+        To create an empty entity, omit the components parameter.
 
         @param id Id of the new entity. Use NextFreeId() or NextFreeIdLocal()
         @param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
@@ -235,6 +234,9 @@ public slots:
         @param name Name of the component, optional. */
     EntityList GetEntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
+    /// Returns all entities as a list for scripting
+    EntityList GetAllEntities() const;
+
     /// Emits notification of an attribute changing. Called by IComponent.
     /** @param comp Component pointer
         @param attribute Attribute pointer
@@ -269,7 +271,7 @@ public slots:
     /// Emits a notification of an entity having been created
     /** @param entity Entity pointer
         @param change Network replication mode */
-    void EmitEntityCreated(EntityPtr entity, AttributeChange::Type change = AttributeChange::Default);
+    void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
     /// Emits a notification of an entity being removed.
     /** @note the entity pointer will be invalid shortly after!
@@ -344,7 +346,7 @@ public slots:
 
     /// Creates scene content from binary file.
     /** @param filename File name.
-        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file. 
+        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file.
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
@@ -354,7 +356,7 @@ public slots:
     /// This is an overloaded function.
     /** @param data Data buffer.
         @param numBytes Data size.
-        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file. 
+        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file.
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
@@ -363,7 +365,7 @@ public slots:
 
     /// Creates scene content from scene description.
     /** @param desc Scene description.
-        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file. 
+        @param useEntityIDsFromFile If true, the created entities will use the Entity IDs from the original file.
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
@@ -371,7 +373,7 @@ public slots:
     QList<Entity *> CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// @todo Clean these overload functions created for PythonQt and QtScript compatibility as much as possible.
-
+/*
     Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true) 
         { return CreateEntity((entity_id_t)id, components, change, defaultNetworkSync).get(); }
 /*
@@ -379,18 +381,17 @@ public slots:
         { return CreateEntity(NextFreeIdLocal(), components, change, defaultNetworkSync).get(); } 
 */
     Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
+    void DeleteEntityById(uint id, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity((entity_id_t)id, change); }
+    void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
+    void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
     QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
     QList<Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
-    void DeleteEntityById(uint id, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity((entity_id_t)id, change); }
-    void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
-    void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
-    void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
 
     bool AllowModifyEntity(UserConnection *user, Entity *entity);
 
     /// Returns IDs of loaded entities
     QVariantList LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
-
+*/
 signals:
     /// Signal when an attribute of a component has changed
     /** Network synchronization managers should connect to this. */

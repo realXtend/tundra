@@ -26,7 +26,7 @@ boost::shared_ptr<T> Entity::GetComponent(const QString& name) const
 }
 
 template<typename T>
-Attribute<T> *Entity::GetAttribute(const std::string &name) const
+Attribute<T> *Entity::GetAttribute(const QString &name) const
 {
     for(size_t i = 0; i < components_.size() ; ++i)
     {
@@ -38,7 +38,7 @@ Attribute<T> *Entity::GetAttribute(const std::string &name) const
 }
 
 template<typename T>
-std::vector<Attribute<T> > Entity::GetAttributes(const std::string &name) const
+std::vector<Attribute<T> > Entity::GetAttributes(const QString &name) const
 {
     std::vector<Attribute<T> > ret;
     for(size_t i = 0; i < components_.size() ; ++i)

@@ -214,7 +214,7 @@ UserConnection* Server::GetUserConnection(int connectionID) const
     for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
     {
         if ((*iter)->userID == connectionID)
-            return (*iter);
+            return ((*iter).get());
     }
     
     return 0;
@@ -304,7 +304,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     QDomElement keyvalueElem = rootElem.firstChildElement();
     while(!keyvalueElem.isNull())
     {
-        //::LogInfo("Logindata contains keyvalue pair " + keyvalueElem.tagName().toStdString() + " = " + keyvalueElem.attribute("value").toStdString());
+        //::LogInfo("Logindata contains keyvalue pair " + keyvalueElem.tagName() + " = " + keyvalueElem.attribute("value);
         user->SetProperty(keyvalueElem.tagName(), keyvalueElem.attribute("value"));
         keyvalueElem = keyvalueElem.nextSiblingElement();
     }
@@ -317,6 +317,8 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         MsgLoginReply reply;
         reply.success = 0;
         reply.userID = 0;
+        QByteArray responseByteData = user->properties["reason"].toAscii();
+        reply.loginReplyData.insert(reply.loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());
         user->connection->Send(reply);
         return;
     }

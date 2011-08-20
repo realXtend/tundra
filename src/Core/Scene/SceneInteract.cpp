@@ -48,7 +48,7 @@ void SceneInteract::Update()
 
 RaycastResult* SceneInteract::Raycast()
 {
-    IRenderer *renderer = framework->GetRenderer();
+    IRenderer *renderer = framework->Renderer();
     if (!renderer)
         return 0;
 

@@ -116,6 +116,12 @@ public:
     int MaxElementIndex() const;
     /// Takes the element-wise absolute value of this vector.
     float2 Abs() const;
+    /// Returns a copy of this vector with each element negated.
+    /** This function returns a new vector where each element x of the original vector is replaced by the value -x. */
+    float2 Neg() const;
+    /// Computes the element-wise reciprocal of this vector.
+    /** This function returns a new vector where each element x of the original vector is replaced by the value 1/x. */
+    float2 Recip() const;
     /// Returns an element-wise minimum of this and the vector (ceil, ceil).
     float2 Min(float ceil) const;
     /// Returns an element-wise minimum of this and the given vector.
@@ -162,6 +168,7 @@ public:
     float AngleBetweenNorm(const float2 &normalizedVector) const;
 
     /// Breaks this vector down into parallel and perpendicular components with respect to the given direction.
+    /// @param direction The direction vector along which to decompose. This vector is assumed to be normalized beforehand.
     void Decompose(const float2 &direction, float2 &outParallel, float2 &outPerpendicular) const;
 
     /// Linearly interpolates between this and the vector b.
@@ -172,15 +179,22 @@ public:
     static float2 Lerp(const float2 &a, const float2 &b, float t);
 
     /// Makes the given vectors linearly independent.
+    /// This function adjusts the vector b in-place so that it is orthogonal to the vector a.
+    /// The vector a is assumed to be non-zero, but does not have to be normalized.
+    /// The vector b may be zero (in which case it stays zero after orthonormalization. Strictly speaking, a and b will not be orthonormal after that).
+    /// After this function returns, b may be zero if it was parallel to a to start with.
     static void Orthogonalize(const float2 &a, float2 &b);
 
     /// Makes the given vectors linearly independent and normalized in length.
+    /// The vector a is assumed to be non-zero, but does not have to be normalized.
+    /// The vector b may be zero (in which case it stays zero after orthonormalization. Strictly speaking, a and b will not be orthonormal after that).
+    /// After this function returns, b may be zero if it was parallel to a to start with.
     static void Orthonormalize(float2 &a, float2 &b);
 
-    /// Generates a new float2 by filling its entries by the given scalar .
+    /// Generates a new float2 by filling its entries by the given scalar.
     static float2 FromScalar(float scalar);
 
-    /// Fills each entry of this float2 by the given scalar .
+    /// Fills each entry of this float2 by the given scalar.
     void SetFromScalar(float scalar);
 
     void Set(float x, float y);
@@ -222,6 +236,9 @@ public:
     /// @param VDir [out] This variable will receive a normalized direction vector pointing the other side of the rectangle.
     static float MinAreaRect(const float2 *pointArray, int numPoints, float2 &center, float2 &uDir, float2 &vDir);
 
+    /// Generates a direction vector of the given length pointing at a uniformly random direction.
+    static float2 RandomDir(LCG &lcg, float length = 1.f);
+
     float2 operator -() const;
 
     float2 operator +(const float2 &rhs) const;
@@ -242,7 +259,6 @@ public:
     float2 Sub(const float2 &rhs) const { return *this - rhs; }
     float2 Mul(float rhs) const { return *this * rhs; }
     float2 Div(float rhs) const { return *this / rhs; }
-    float2 Neg() const { return -*this; }
 
     /// Multiplies this vector by rhs *element-wise*.
     float2 Mul(const float2 &rhs) const;

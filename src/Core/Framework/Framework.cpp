@@ -45,13 +45,14 @@ Framework::Framework(int argc, char** argv) :
     plugin(0),
     config(0),
     ui(0),
-    //connection(0),
-    //server(0),
+#ifdef PROFILING
+    profiler(0),
+#endif
+    renderer(0)
     renderer(0),
     apiVersionInfo(0),
     applicationVersionInfo(0)
-{
-    // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
+{    // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
 
     // Api/Application name and version. Can be accessed via ApiVersionInfo() and ApplicationVersionInfo().
@@ -116,7 +117,8 @@ Framework::~Framework()
     SAFE_DELETE(audio);
     SAFE_DELETE(plugin);
 #ifdef PROFILING
-    SAFE_DELETE(profiler);
+    /// \todo Deleting the profiler currently causes a crash, therefore disabled
+    //SAFE_DELETE(profiler);
 #endif
     SAFE_DELETE(console);
     SAFE_DELETE(scene);
@@ -195,15 +197,15 @@ void Framework::ProcessOneFrame()
         }
         catch(const std::exception &e)
         {
-            std::cout << "UpdateModules caught an exception while updating module " << modules[i]->Name()
+            std::cout << "ProcessOneFrame caught an exception while updating module " << modules[i]->Name()
                 << ": " << (e.what() ? e.what() : "(null)") << std::endl;
-            LogCritical(std::string("UpdateModules caught an exception while updating module " + modules[i]->Name()
+            LogCritical(std::string("ProcessOneFrame caught an exception while updating module " + modules[i]->Name()
                 + ": " + (e.what() ? e.what() : "(null)")));
         }
         catch(...)
         {
-            std::cout << "UpdateModules caught an unknown exception while updating module " << modules[i]->Name() << std::endl;
-            LogCritical(std::string("UpdateModules caught an unknown exception while updating module " + modules[i]->Name()));
+            std::cout << "ProcessOneFrame caught an unknown exception while updating module " << modules[i]->Name() << std::endl;
+            LogCritical(std::string("ProcessOneFrame caught an unknown exception while updating module " + modules[i]->Name()));
         }
     }
 
@@ -229,20 +231,8 @@ void Framework::Go()
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
-        LogDebug("Preinitializing module " + modules[i]->Name());
-        modules[i]->PreInitialize();
-    }
-
-    for(size_t i = 0; i < modules.size(); ++i)
-    {
         LogDebug("Initializing module " + modules[i]->Name());
         modules[i]->Initialize();
-    }
-
-    for(size_t i = 0; i < modules.size(); ++i)
-    {
-        LogDebug("PostInitializing module " + modules[i]->Name());
-        modules[i]->PostInitialize();
     }
 
     // Run our QApplication subclass.
@@ -301,26 +291,9 @@ void Framework::CancelExit()
         application->UpdateFrame();
 }
 
-Application *Framework::GetApplication() const
+Application *Framework::App() const
 {
     return application;
-}
-
-static std::string FormatTime(double time)
-{
-    char str[128];
-    if (time >= 60.0)
-    {
-        double seconds = fmod(time, 60.0);
-        int minutes = (int)(time / 60.0);
-        sprintf(str, "%dmin %2.2fs", minutes, (float)seconds);
-    }
-    else if (time >= 1.0)
-        sprintf(str, "%2.2fs", (float)time);
-    else
-        sprintf(str, "%2.2fms", (float)time*1000.f);
-
-    return std::string(str);
 }
 
 #ifdef PROFILING
@@ -385,7 +358,7 @@ PluginAPI *Framework::Plugins() const
     return plugin;
 }
 
-IRenderer *Framework::GetRenderer() const
+IRenderer *Framework::Renderer() const
 {
     return renderer;
 }
@@ -412,7 +385,7 @@ void Framework::RegisterModule(IModule *module)
     module->Load();
 }
 
-IModule *Framework::GetModuleByName(const QString &name)
+IModule *Framework::GetModuleByName(const QString &name) const
 {
     for(size_t i = 0; i < modules.size(); ++i)
         if (modules[i]->Name() == name.toStdString())

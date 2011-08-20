@@ -8,14 +8,6 @@
 #include <QString>
 #include <QGesture>
 
-namespace QtInputEvents
-{
-    static const int GestureStarted = 9;
-    static const int GestureUpdated = 10;
-    static const int GestureFinished = 11;
-    static const int GestureCanceled = 11;
-}
-
 /// GestureEvent is the event data structure passed as the parameter in all in-scene Gesture events.
 class GestureEvent : public QObject
 {

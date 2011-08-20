@@ -266,12 +266,12 @@ bool AssetCache::WriteMetadata(const QString &filePath, const QNetworkCacheMetaD
     QFile metaDataFile(filePath);
     if (!metaDataFile.open(QIODevice::WriteOnly))
     {
-        LogError("AssetCache::WriteMetadata Could not open metadata file: " + filePath.toStdString());
+        LogError("AssetCache::WriteMetadata Could not open metadata file: " + filePath);
         return false;
     }
     if (!metaDataFile.resize(0))
     {
-        LogError("AssetCache::WriteMetadata Could not reset metadata file: " + filePath.toStdString());
+        LogError("AssetCache::WriteMetadata Could not reset metadata file: " + filePath);
         return false;
     }
 
@@ -310,7 +310,7 @@ void AssetCache::ClearDirectory(const QString &absoluteDirPath)
         if (entry.isFile())
         {
             if (!targetDir.remove(entry.fileName()))
-                LogWarning("AssetCache::ClearDirectory could not remove file " + entry.absoluteFilePath().toStdString());
+                LogWarning("AssetCache::ClearDirectory could not remove file " + entry.absoluteFilePath());
         }
     }
 }

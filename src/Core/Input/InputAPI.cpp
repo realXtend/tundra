@@ -193,40 +193,19 @@ void InputAPI::DumpInputContexts()
 {
     int idx = 0;
 
-    InputContextList::iterator iter = registeredInputContexts.begin();
-    for(; iter != registeredInputContexts.end(); ++iter)
+    foreach(const boost::weak_ptr<InputContext> &inputContext, registeredInputContexts)
     {
-        boost::shared_ptr<InputContext> inputContext = iter->lock();
-        if (!inputContext)
-        {
-            std::stringstream ss;
-            ss << "Context " << (idx++) << ": expired weak_ptr.";
-            LogInfo(ss.str());
-            continue;
-        }
-        std::stringstream ss;
-        ss << "Context " << (idx++) << ": \"" << inputContext->Name().toStdString() << "\", priority " << inputContext->Priority();
-        LogInfo(ss.str());
+        InputContextPtr ic = inputContext.lock();
+        if (ic)
+            LogInfo("Context " + QString::number(idx++) + ": \"" + ic->Name() + "\", priority " + QString::number(ic->Priority()));
+        else
+            LogInfo("Context " + QString::number(idx++) + ": expired weak_ptr.");
     }
-}
 
-InputContext *InputAPI::RegisterInputContextRaw(const QString &name, int priority)
-{
-    InputContextPtr context = RegisterInputContext(name, priority);
-    untrackedInputContexts.push_back(context);
-    return context.get();
-}
-
-void InputAPI::UnRegisterInputContextRaw(const QString &name)
-{
-    for(std::list<InputContextPtr>::iterator iter = untrackedInputContexts.begin();
-        iter != untrackedInputContexts.end(); ++iter)
-        if ((*iter)->Name() == name)
-        {
-            untrackedInputContexts.erase(iter);
-            return;
-        }
-    LogError("Warning: Failed to delete non-refcounted Input Context \"" + name + "\": an Input Context with that name doesn't exist!");
+    if (untrackedInputContexts.size() > 0 )
+        LogInfo("Untracked input contexts: ");
+    foreach(const InputContextPtr &ic, untrackedInputContexts)
+        LogInfo("Context " + QString::number(idx++) + ": \"" + ic->Name() + "\", priority " + QString::number(ic->Priority()));
 }
 
 InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
@@ -252,11 +231,33 @@ InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority
     return newInputContext;
 }
 
+InputContext *InputAPI::RegisterInputContextRaw(const QString &name, int priority)
+{
+    InputContextPtr context = RegisterInputContext(name, priority);
+    untrackedInputContexts.push_back(context);
+    return context.get();
+}
+
+void InputAPI::UnregisterInputContextRaw(const QString &name)
+{
+    for(std::list<InputContextPtr>::iterator iter = untrackedInputContexts.begin();
+        iter != untrackedInputContexts.end(); ++iter)
+        if ((*iter)->Name() == name)
+        {
+            untrackedInputContexts.erase(iter);
+            return;
+        }
+    LogWarning("Failed to delete non-refcounted Input Context \"" + name + "\": an Input Context with that name doesn't exist!");
+}
+
 void InputAPI::ApplyMouseCursorOverride()
-{    
+{
     if (!IsMouseCursorVisible())
         return;
-
+    // Return if in headless and do not have the GraphicsView
+    if (!framework->Ui()->GraphicsView())
+        return;
+    
     UiGraphicsView *gv = framework->Ui()->GraphicsView();
     if (!gv) // If the tundra is running in headless, mode no graphics view is created.
         return;
@@ -457,20 +458,17 @@ void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
     }
 }
 
-/// Associates the given custom action with the given key.
 void InputAPI::SetKeyBinding(const QString &actionName, QKeySequence key)
 {
     keyboardMappings[actionName.toStdString()] = QKeySequence(key);
 }
 
-/// Returns the key associated with the given action.
 QKeySequence InputAPI::KeyBinding(const QString &actionName) const
 {
     std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.find(actionName.toStdString());
     return iter != keyboardMappings.end() ? iter->second : QKeySequence();
 }
 
-/// Returns the key associated with the given action.
 QKeySequence InputAPI::KeyBinding(const QString &actionName, QKeySequence defaultKey)
 {
     std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.find(actionName.toStdString());
@@ -672,7 +670,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         QPoint mousePos = MapPointToMainGraphicsView(obj, e->pos());
 
         MouseEvent mouseEvent;
-        mouseEvent.itemUnderMouse = GetItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = ItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         switch(event->type())
         {
@@ -727,7 +725,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         MouseEvent mouseEvent;
         mouseEvent.eventType = MouseEvent::MouseMove;
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
-        mouseEvent.itemUnderMouse = GetItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = ItemAtCoords(e->x(), e->y());
         ///\todo Set whether the previous press originated over a Qt widget or scene.
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
 
@@ -790,7 +788,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         QWheelEvent *e = static_cast<QWheelEvent *>(event);
 #ifdef Q_WS_MAC
-        QGraphicsItem *itemUnderMouse = GetItemAtCoords(e->x(), e->y());
+        QGraphicsItem *itemUnderMouse = ItemAtCoords(e->x(), e->y())
         if (itemUnderMouse)
         {
             mainView->removeEventFilter(this);
@@ -805,7 +803,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         MouseEvent mouseEvent;
         mouseEvent.eventType = MouseEvent::MouseScroll;
-        mouseEvent.itemUnderMouse = GetItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = ItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         mouseEvent.button = MouseEvent::NoButton;
         mouseEvent.otherButtons = e->buttons();
@@ -855,13 +853,19 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-QGraphicsItem* InputAPI::GetItemAtCoords(int x, int y) const
+QGraphicsItem* InputAPI::ItemAtCoords(int x, int y) const
 {
     // If the mouse cursor is hidden, act as if there was no item
     if (IsMouseCursorVisible())
         return framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(x, y);
     else
         return 0;
+}
+
+void InputAPI::ClearFocus()
+{
+    if (mainView)
+        mainView->scene()->clearFocus();
 }
 
 void InputAPI::Update(float frametime)
@@ -903,4 +907,6 @@ void InputAPI::Update(float frametime)
 
     // Guarantee that we are showing the desired mouse cursor.
     ApplyMouseCursorOverride();
+
+    PruneDeadInputContexts();
 }

@@ -69,6 +69,9 @@ float3x4 operator *(const float3x4 &lhs, const ScaleOp &rhs);
 float4x4 operator *(const ScaleOp &lhs, const float4x4 &rhs);
 float4x4 operator *(const float4x4 &lhs, const ScaleOp &rhs);
 
+float3x4 operator *(const ScaleOp &lhs, const TranslateOp &rhs);
+float3x4 operator *(const TranslateOp &lhs, const ScaleOp &rhs);
+
 #ifdef QT_INTEROP
 Q_DECLARE_METATYPE(TranslateOp)
 Q_DECLARE_METATYPE(TranslateOp*)

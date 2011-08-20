@@ -559,15 +559,6 @@ static QScriptValue float2_OrientedCCW_float2_float2_float2(QScriptContext *cont
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float2_ConvexHullInPlace_float2_ptr_int(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float2_ConvexHullInPlace_float2_ptr_int in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float2 * points = qscriptvalue_cast<float2 *>(context->argument(0));
-    int nPoints = qscriptvalue_cast<int>(context->argument(1));
-    int ret = float2::ConvexHullInPlace(points, nPoints);
-    return qScriptValueFromValue(engine, ret);
-}
-
 static QScriptValue float2_FromQVector2D_QVector2D(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float2_FromQVector2D_QVector2D in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -736,7 +727,6 @@ QScriptValue register_float2_prototype(QScriptEngine *engine)
     ctor.setProperty("Orthonormalize", engine->newFunction(float2_Orthonormalize_float2_float2, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromScalar", engine->newFunction(float2_FromScalar_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("OrientedCCW", engine->newFunction(float2_OrientedCCW_float2_float2_float2, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("ConvexHullInPlace", engine->newFunction(float2_ConvexHullInPlace_float2_ptr_int, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromQVector2D", engine->newFunction(float2_FromQVector2D_QVector2D, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromString", engine->newFunction(float2_FromString_QString, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("zero", qScriptValueFromValue(engine, float2::zero), QScriptValue::Undeletable | QScriptValue::ReadOnly);

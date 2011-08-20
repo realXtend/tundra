@@ -581,17 +581,24 @@ LPDIRECT3DDEVICE9 InitD3DDevice(LPDIRECT3D9 d3d9)
 
 int ParseParameter(int argc, char **argv, const char *param, bool hasValue, int valueIfMissing)
 {
-    for(int i = 1; i+1 < argc; ++i)
-        if (!strcmp(argv[i], param))
-        {
-            if (!hasValue)
+    if (!hasValue)
+    {
+        for(int i = 1; i < argc; ++i)
+            if (!strcmp(argv[i], param))
                 return 1; // true
-            int value = atoi(argv[i+1]);
-            if (value == 0 && !!strcmp("0", argv[i+1]))
-                return valueIfMissing;
-            return value;
-        }
-
+    }
+    else
+    {
+        for(int i = 1; i+1 < argc; ++i)
+            if (!strcmp(argv[i], param))
+            {
+                int value = atoi(argv[i+1]);
+                if (value == 0 && !!strcmp("0", argv[i+1]))
+                    return valueIfMissing;
+                return value;
+            }
+    }
+    
     return valueIfMissing;
 }
 

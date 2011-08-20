@@ -4,10 +4,12 @@
 #include "DebugOperatorNew.h"
 
 #include "ECBrowser.h"
+#include "COmponentGroup.h"
 #include "ECComponentEditor.h"
 #include "TreeWidgetItemExpandMemory.h"
-#include "Profiler.h"
+#include "TreeWidgetUtils.h"
 
+#include "Profiler.h"
 #include "SceneAPI.h"
 #include "Entity.h"
 #include "IComponent.h"
@@ -65,7 +67,7 @@ ECBrowser::~ECBrowser()
 }
 
 void ECBrowser::AddEntity(EntityPtr entity)
-{ 
+{
     PROFILE(ECBrowser_AddNewEntity);
 
     assert(entity);
@@ -180,6 +182,16 @@ void ECBrowser::UpdateBrowser()
     }
 
     treeWidget_->setSortingEnabled(true);
+}
+
+void ECBrowser::ExpandOrCollapseAll()
+{
+    if (treeWidget_)
+    {
+        treeWidget_->blockSignals(true);
+        TreeWidgetExpandOrCollapseAll(treeWidget_);
+        treeWidget_->blockSignals(false);
+    }
 }
 
 void ECBrowser::dragEnterEvent(QDragEnterEvent *event)
@@ -546,40 +558,45 @@ void ECBrowser::OpenComponentXmlEditor()
 
 void ECBrowser::CopyComponent()
 {
-    QDomDocument temp_doc;
-    QDomElement entity_elem;
-    QClipboard *clipboard = QApplication::clipboard();
-
     QTreeWidgetItem *item = treeWidget_->currentItem();
     if (!item)
         return;
+
+    QDomDocument temp_doc("Scene");
+    QDomElement sceneElem = temp_doc.createElement("scene");
+    QClipboard *clipboard = QApplication::clipboard();
 
     TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.find(item);
     if (iter != itemToComponentGroups_.end())
     {
         if (!(*iter)->components_.size())
             return;
-        // Just take a first component from the componentgroup and copy it's attribute values to clipboard. 
+        ///\todo multiple component selection support
+        // Just take a first component from the componentgroup and copy its attribute values to clipboard.
         // Note! wont take account that other components might have different values in their attributes
         ComponentWeakPtr pointer = (*iter)->components_[0];
         if (!pointer.expired())
         {
-            pointer.lock()->SerializeTo(temp_doc, entity_elem);
-            QString xmlText = temp_doc.toString();
-            clipboard->setText(xmlText);
+            pointer.lock()->SerializeTo(temp_doc, sceneElem);
+            temp_doc.appendChild(sceneElem);
+            clipboard->setText(temp_doc.toString());
         }
     }
 }
 
 void ECBrowser::PasteComponent()
 {
-    QDomDocument temp_doc;
+    QDomDocument temp_doc("Scene");
     QClipboard *clipboard = QApplication::clipboard();
     if (temp_doc.setContent(clipboard->text()))
     {
+        QDomElement sceneElem = temp_doc.firstChildElement("scene");
+        if (sceneElem.isNull())
+            return;
+
         // Only single component can be pasted.
         /// @todo add suport to multi component copy/paste feature.
-        QDomElement comp_elem = temp_doc.firstChildElement("component");
+        QDomElement comp_elem = sceneElem.firstChildElement("component");
         if (comp_elem.isNull())
             return;
 
@@ -610,7 +627,7 @@ void ECBrowser::DynamicComponentChanged()
     EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender()); 
     if (!component) 
     {
-        LogError("Fail to dynamic cast sender object to EC_DynamicComponent in DynamicComponentChanged mehtod.");
+        LogError("EC_Browser::DynamicComponentChanged: Failed to dynamic cast sender object to EC_DynamicComponent.");
         return;
     }
     ComponentPtr comp_ptr;
@@ -619,7 +636,7 @@ void ECBrowser::DynamicComponentChanged()
         comp_ptr = component->shared_from_this();
     } catch(...)
     {
-        LogError("IComponent::shared_from_this failed! Component must have been deleted!");
+        LogError("EC_Browser::DynamicComponentChanged: IComponent::shared_from_this failed! Component must have been deleted!");
         return;
     }
 
@@ -741,9 +758,9 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
         {
             EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
             connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
-            connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
+            connect(dc, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
             connect(dc, SIGNAL(ComponentNameChanged(const QString&, const QString&)),
-                    SLOT(ComponentNameChanged(const QString&)), Qt::UniqueConnection);
+                    SLOT(OnComponentNameChanged(const QString&)), Qt::UniqueConnection);
         }
         return;
     }

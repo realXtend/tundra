@@ -47,10 +47,7 @@ void ECEditorModule::Initialize()
     if (!framework_->Config()->HasValue(configData, cShowAidsSetting))
         framework_->Config()->Set(configData, cShowAidsSetting, true);
     showVisualAids = framework_->Config()->Get(configData, cShowAidsSetting, QVariant(showVisualAids)).toBool();
-}
 
-void ECEditorModule::PostInitialize()
-{
     framework_->Console()->RegisterCommand("doc", "Prints the class documentation for the given symbol.",
         this, SLOT(ShowDocumentation(const QString &)));
 

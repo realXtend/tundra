@@ -47,10 +47,6 @@ OgreAssetEditorModule::~OgreAssetEditorModule()
 
 void OgreAssetEditorModule::Initialize()
 {
-}
-
-void OgreAssetEditorModule::PostInitialize()
-{
 /*
     materialWizard = new MaterialWizard;
     connect(materialWizard, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),

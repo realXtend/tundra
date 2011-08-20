@@ -101,6 +101,7 @@ AddProject(Core Ui)
 
 ############################################################################################################
 ###### REQUIRED MODULES ####################################################################################
+add_subdirectory(DocumentsModule)
 
 message ("\n=========== Configuring Required Modules ===========\n")
 
@@ -115,6 +116,7 @@ AddProject(Core EnvironmentModule)                  # Depends on OgreRenderingMo
 
 ############################################################################################################
 ###### OPTIONAL MODULES ####################################################################################
+AddEntityComponent(EntityComponents/EC_LaserPointer EC_LaserPointer)
 
 message ("\n=========== Configuring Optional Modules ===========\n")
 

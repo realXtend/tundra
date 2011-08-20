@@ -37,6 +37,7 @@ Registered by Enviroment::EnvironmentModule.
 class EC_Sky : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("EC_Sky", 10)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
@@ -64,11 +65,7 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirst);
     Q_PROPERTY(bool drawFirst READ getdrawFirst WRITE setdrawFirst);
 
-    COMPONENT_NAME("EC_Sky", 10)
 public slots:
-
-    /// View sky assets.
-    void View(const QString &attributeName);
     /// Called If some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute* attribute);
 

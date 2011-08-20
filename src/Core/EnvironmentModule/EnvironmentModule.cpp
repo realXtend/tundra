@@ -12,23 +12,22 @@
 #include "EC_Fog.h"
 #include "EC_Sky.h"
 #include "EC_EnvironmentLight.h"
+#include "EC_Terrain.h"
+
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "Renderer.h"
-
 #include "Scene.h"
-
 #include "CompositionHandler.h"
 #include "EC_Name.h"
-#include "EC_Terrain.h"
 #include "IComponentFactory.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace Environment
 {
-    EnvironmentModule::EnvironmentModule()
-    :IModule("Environment")
+    EnvironmentModule::EnvironmentModule() : IModule("Environment")
     {
     }
 
@@ -44,28 +43,10 @@ namespace Environment
         framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sky>));
         framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_EnvironmentLight>));
 
-        /// Create an asset type factory for Terrain assets. The terrain assets are handled as binary blobs - the EC_Terrain parses it when showing the asset.
+        // Create an asset type factory for Terrain assets. The terrain assets are handled as binary blobs - the EC_Terrain parses it when showing the asset.
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Terrain")));
     }
-
-    void EnvironmentModule::Initialize()
-    {
-    }
-
-    void EnvironmentModule::PostInitialize()
-    {
-    }
-
-    void EnvironmentModule::Uninitialize()
-    {
-    }
-
-    void EnvironmentModule::Update(f64 frametime)
-    {
-    }
-
 }
-
 
 extern "C"
 {

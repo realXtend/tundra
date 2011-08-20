@@ -329,7 +329,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                 switch(gizmoType)
                 {
                 case EC_TransformGizmo::Translate:
-                    //ss << ToCoreVector(curPoint-prevPoint);
+                    //ss << curPoint-prevPoint;
                     //LogInfo("Emitting Translated(" + ss.str() + ")");
                     emit Translated(curPoint-prevPoint);
                     break;
@@ -343,7 +343,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     }
                     break;
                 case EC_TransformGizmo::Scale:
-                    //ss << ToCoreVector(curPoint-prevPoint);
+                    //ss << curPoint-prevPoint;
                     //LogInfo("Emitting Scaled(" + ss.str() + ")");
                     if (input && input->IsKeyDown(Qt::Key_Shift))
                         emit Scaled(curPoint-prevPoint);

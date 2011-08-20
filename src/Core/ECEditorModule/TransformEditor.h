@@ -15,15 +15,12 @@
 
 #include <QObject>
 
-class Quaternion;
-
 /// Represents weak pointer to IAttribute.
 struct AttributeWeakPtr
 {
     /// Constructor.
     /** @param c Owner component.
-        @param a The actual attribute.
-    */
+        @param a The actual attribute. */
     AttributeWeakPtr(const ComponentPtr c, IAttribute *a) : owner(c), attribute(a) {}
 
     /// Returns pointer to the attribute or null if the owner component doens't exist anymore.
@@ -50,8 +47,7 @@ class ECEDITOR_MODULE_API TransformEditor : public QObject
 public:
     /// Constructs the editor.
     /** Creates EC_TransformGizmo if it is available.
-        @scene Scene in which the edited entities reside.
-    */
+        @scene Scene in which the edited entities reside. */
     TransformEditor(const ScenePtr &scene);
 
     /// Destroys the editor.

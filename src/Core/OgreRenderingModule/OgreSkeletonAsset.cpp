@@ -63,7 +63,7 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
 
             if (ogreSkeleton.isNull())
             {
-                LogError("Failed to create skeleton " + this->Name().toStdString());
+                LogError("Failed to create skeleton " + this->Name());
                 return false; 
             }
         }
@@ -77,7 +77,7 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, co
     }
     catch(Ogre::Exception &e)
     {
-        LogError("Failed to create skeleton " + this->Name().toStdString() + ": " + std::string(e.what()));
+        LogError("Failed to create skeleton " + this->Name() + ": " + QString(e.what()));
         Unload();
         return false;
     }
@@ -119,7 +119,7 @@ bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serial
 {
     if (ogreSkeleton.isNull())
     {
-        LogWarning("Tried to export non-existing Ogre skeleton " + Name().toStdString() + ".");
+        LogWarning("Tried to export non-existing Ogre skeleton " + Name() + ".");
         return false;
     }
     try
@@ -135,7 +135,7 @@ bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serial
             return false;
     } catch(std::exception &e)
     {
-        LogError("Failed to export Ogre skeleton " + Name().toStdString() + ":");
+        LogError("Failed to export Ogre skeleton " + Name() + ":");
         if (e.what())
             LogError(e.what());
         return false;

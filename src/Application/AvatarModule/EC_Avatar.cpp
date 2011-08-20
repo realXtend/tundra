@@ -101,7 +101,7 @@ void EC_Avatar::SetupAppearance()
     PROFILE(Avatar_SetupAppearance);
     
     Entity* entity = ParentEntity();
-    AvatarDescAssetPtr desc = GetAvatarDesc();
+    AvatarDescAssetPtr desc = AvatarDesc();
     if ((!desc) || (!entity))
         return;
     
@@ -122,7 +122,7 @@ void EC_Avatar::SetupAppearance()
 void EC_Avatar::SetupDynamicAppearance()
 {
     Entity* entity = ParentEntity();
-    AvatarDescAssetPtr desc = GetAvatarDesc();
+    AvatarDescAssetPtr desc = AvatarDesc();
     if ((!desc) || (!entity))
         return;
     
@@ -136,14 +136,14 @@ void EC_Avatar::SetupDynamicAppearance()
     AdjustHeightOffset();
 }
 
-AvatarDescAssetPtr EC_Avatar::GetAvatarDesc()
+AvatarDescAssetPtr EC_Avatar::AvatarDesc() const
 {
     return avatarAsset_.lock();
 }
 
-QString EC_Avatar::GetAvatarProperty(const QString& name)
+QString EC_Avatar::AvatarProperty(const QString& name) const
 {
-    AvatarDescAssetPtr desc = GetAvatarDesc();
+    AvatarDescAssetPtr desc = AvatarDesc();
     if (!desc)
         return QString();
     else
@@ -153,7 +153,7 @@ QString EC_Avatar::GetAvatarProperty(const QString& name)
 void EC_Avatar::AdjustHeightOffset()
 {
     Entity* entity = ParentEntity();
-    AvatarDescAssetPtr desc = GetAvatarDesc();
+    AvatarDescAssetPtr desc = AvatarDesc();
     if ((!desc) || (!entity))
         return;
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
@@ -204,7 +204,7 @@ void EC_Avatar::AdjustHeightOffset()
 void EC_Avatar::SetupMeshAndMaterials()
 {
     Entity* entity = ParentEntity();
-    AvatarDescAssetPtr desc = GetAvatarDesc();
+    AvatarDescAssetPtr desc = AvatarDesc();
     if ((!desc) || (!entity))
         return;
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
@@ -245,13 +245,13 @@ void EC_Avatar::SetupMeshAndMaterials()
     // Position approximately within the bounding box
     // Will be overridden by bone-based height adjust, if available
     mesh->SetAdjustPosition(float3(0.0f, FIXED_HEIGHT_OFFSET, 0.0f));
-    mesh->SetCastShadows(true);
+    mesh->castShadows.Set(true, AttributeChange::Default);
 }
 
 void EC_Avatar::SetupAttachments()
 {
     Entity* entity = ParentEntity();
-    AvatarDescAssetPtr desc = GetAvatarDesc();
+    AvatarDescAssetPtr desc = AvatarDesc();
     if ((!desc) || (!entity))
         return;
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
@@ -278,7 +278,7 @@ void EC_Avatar::SetupAttachments()
 void EC_Avatar::SetupMorphs()
 {
     Entity* entity = ParentEntity();
-    AvatarDescAssetPtr desc = GetAvatarDesc();
+    AvatarDescAssetPtr desc = AvatarDesc();
     if ((!desc) || (!entity))
         return;
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
@@ -300,7 +300,7 @@ void EC_Avatar::SetupMorphs()
 void EC_Avatar::SetupBoneModifiers()
 {
     Entity* entity = ParentEntity();
-    AvatarDescAssetPtr desc = GetAvatarDesc();
+    AvatarDescAssetPtr desc = AvatarDesc();
     if ((!desc) || (!entity))
         return;
     ResetBones(entity);
@@ -316,7 +316,7 @@ void EC_Avatar::SetupBoneModifiers()
 QString EC_Avatar::LookupAsset(const QString& ref)
 {
     QString descName;
-    AvatarDescAssetPtr desc = GetAvatarDesc();
+    AvatarDescAssetPtr desc = AvatarDesc();
     if (desc)
         descName = desc->Name();
     

@@ -33,7 +33,7 @@ class Framework;
            further.
         3) The event is posted to all the registered input contexts in their order of priority. See 
            RegisterInputContext().
-        4) The event is posted to the system-wide event tree. See the QtInputEvents namespace.
+        4) The event is posted to the system-wide event tree. See KeyEvent, MouseEvent and GestureEvent.
 
     At any level, the handler may set the handled member of a KeyEvent or MouseEvent to true to suppress
     the event from going forward to the lower levels.
@@ -43,8 +43,7 @@ class Framework;
     IsKeyReleased, IsMouseButtonDown, IsMouseButtonPressed and IsMouseButtonReleased.
 
     The InputContext -based API utilizes Qt signals. The polling API can be used by any object that
-    has access to InpuAPI, and the event tree -based API can be used by all modules.
-*/
+    has access to InputAPI, and the event tree -based API can be used by all modules. */
 class InputAPI : public QObject
 {
     Q_OBJECT
@@ -62,74 +61,80 @@ public:
     /// Called internally by the Framework to update the polling Input API. Not for client use.
     void Update(float frametime);
 
-    /// Prints the list of input contexts to std::cout, for debugging purposes.
+    /// Prints the list of input contexts, for debugging purposes.
     void DumpInputContexts();
 
     typedef std::map<std::string, QKeySequence> KeyActionsMap;
 
 public slots:
-    /// Creates a new input context with the given name. The name is not an ID, i.e. it does not have to be unique with 
-    /// existing contexts (although it is encouraged). When you no longer need the context, free all refcounts to it.
-    /// Remember to hold on to a shared_ptr of the input context as long as you are using the context.
+    /// Creates a new input context with the given name.
+    /** The name is not an ID, i.e. it does not have to be unique with 
+        existing contexts (although it is encouraged). When you no longer need the context, free all refcounts to it.
+        Remember to hold on to a shared_ptr of the input context as long as you are using the context. */
     InputContextPtr RegisterInputContext(const QString &name, int priority);
 
+    /// For scripting languages.
+    /** Use UnregisterInputContextRaw() to free the input context. */
     InputContext *RegisterInputContextRaw(const QString &name, int priority);
 
-    void UnRegisterInputContextRaw(const QString &name);
+    /// For scripting languages.
+    void UnregisterInputContextRaw(const QString &name);
 
     /// Sets the mouse cursor in absolute (the usual default) or relative movement (FPS-like) mode.
-    /// @param visible If true, shows mouse cursor and allows free movement. If false, hides the mouse cursor 
-    ///                and switches into relative mouse movement input mode.
+    /** @param visible If true, shows mouse cursor and allows free movement. If false, hides the mouse cursor 
+                       and switches into relative mouse movement input mode. */
     void SetMouseCursorVisible(bool visible);
 
     /// @return True if we are in absolute movement mode, and false if we are in relative mouse movement mode.
     bool IsMouseCursorVisible() const;
 
-    /// Returns true if the given key is physically held down (to the best knowledge of the input API, which may
-    /// be wrong depending on whether Qt has managed to successfully deliver the information). This ignores all
-    /// the grabs and contexts, e.g. you will get true even if a text edit has focus in a Qt widget.
-    /// @param keyCode The Qt::Key to test, http://doc.trolltech.com/4.6/qt.html#Key-enum
+    /// Returns true if the given key is physically held down.
+    /** This is done to the best knowledge of the input API, which may be wrong depending on whether Qt has managed
+        to successfully deliver the information). This ignores all the grabs and contexts, e.g. you will get true 
+        even if a text edit has focus in a Qt widget.
+        @param keyCode The Qt::Key to test, http://doc.trolltech.com/4.6/qt.html#Key-enum */
     bool IsKeyDown(Qt::Key keyCode) const;
 
-    /// Returns true if the given key was pressed down during this frame. A frame in this context means a period
-    /// between two subsequent calls to Update. During a single frame, calling this function
-    /// several times will always return true if the key was pressed down this frame, i.e. the pressed-bit is not
-    /// cleared after the first query.
-    /// Key repeats will not be reported through this function.
-    /// @param keyCode The Qt::Key to test, http://doc.trolltech.com/4.6/qt.html#Key-enum
+    /// Returns true if the given key was pressed down during this frame.
+    /** A frame in this context means a period between two subsequent calls to Update. During a single frame, calling this function
+        several times will always return true if the key was pressed down this frame, i.e. the pressed-bit is not
+        cleared after the first query.
+        Key repeats will not be reported through this function.
+        @param keyCode The Qt::Key to test, http://doc.trolltech.com/4.6/qt.html#Key-enum */
     bool IsKeyPressed(Qt::Key keyCode) const;
 
     /// Functions like IsKeyPressed, but for key releases.
-    /// @param keyCode The Qt::Key to test, http://doc.trolltech.com/4.6/qt.html#Key-enum
+    /** @param keyCode The Qt::Key to test, http://doc.trolltech.com/4.6/qt.html#Key-enum */
     bool IsKeyReleased(Qt::Key keyCode) const;
 
-    /// Returns true if the given mouse button is being held down. This ignores all mousegrabbers and contexts
-    /// and returns the actual state of the given button. 
-    /// @param mouseButton The Qt mouse button flag to query for. Go to http://doc.trolltech.com/4.6/qt.html#MouseButton-enum 
-    ///    for more information. Do not pass in a combination of the bit fields in the enum, just a single value.
+    /// Returns true if the given mouse button is being held down.
+    /** This ignores all mousegrabbers and contexts and returns the actual state of the given button.
+        @param mouseButton The Qt mouse button flag to query for. Go to http://doc.trolltech.com/4.6/qt.html#MouseButton-enum 
+           for more information. Do not pass in a combination of the bit fields in the enum, just a single value. */
     bool IsMouseButtonDown(int mouseButton) const;
 
-    /// Returns true if the given mouse button was pressed down during this frame. Behaves like IsKeyPressed,
-    /// but for mouse presses.
-    /// @param mouseButton The Qt mouse button flag to query for. Go to http://doc.trolltech.com/4.6/qt.html#MouseButton-enum 
-    ///    for more information. Do not pass in a combination of the bit fields in the enum, just a single value.
+    /// Returns true if the given mouse button was pressed down during this frame.
+    /** Behaves like IsKeyPressed, but for mouse presses.
+        @param mouseButton The Qt mouse button flag to query for. Go to http://doc.trolltech.com/4.6/qt.html#MouseButton-enum 
+           for more information. Do not pass in a combination of the bit fields in the enum, just a single value. */
     bool IsMouseButtonPressed(int mouseButton) const;
 
     /// Returns true if the given mouse button was released during this frame.
-    /// @param mouseButton The Qt mouse button flag to query for. Go to http://doc.trolltech.com/4.6/qt.html#MouseButton-enum 
-    ///    for more information. Do not pass in a combination of the bit fields in the enum, just a single value.
+    /** @param mouseButton The Qt mouse button flag to query for. Go to http://doc.trolltech.com/4.6/qt.html#MouseButton-enum 
+           for more information. Do not pass in a combination of the bit fields in the enum, just a single value. */
     bool IsMouseButtonReleased(int mouseButton) const;
 
 /* 
     ///\todo Actually ask if touch input hardware is available. Now is set to True once the first gesture
     /// comes to our event filter. Find a way to inspect hardware in the constructor, best would be to find out touch device via qt if at all possible 
 */
-    /// Return if input is handling gestures from a touch input device. If true InputContex is emitting the gesture specific signals.
-    /// Do not trust this at the moment, see todo comment. Just connect to the gesture signals and wait if they are being emitted.
+    /// Return if input is handling gestures from a touch input device.
+    /** If true InputContext is emitting the gesture specific signals. Do not trust this at the moment,
+        see todo comment. Just connect to the gesture signals and wait if they are being emitted. */
     bool IsGesturesEnabled() const { return gesturesEnabled; }
 
-    /// Returns the mouse coordinates in local client coordinate frame denoting where the given mouse button was last pressed
-    /// down. Note that this does not tell whether the mouse button is currently held down or not.
+    /// Returns the mouse coordinates in local client coordinate frame denoting where the given mouse button was last pressed down.
+    /** Note that this does not tell whether the mouse button is currently held down or not. */
     QPoint MousePressedPos(int mouseButton) const;
 
     /// Returns the current mouse position in the main window coordinate space.
@@ -147,21 +152,22 @@ public slots:
     void TriggerGestureEvent(GestureEvent &gesture);
 
     /// Returns the highest-priority input context that gets all events first to handle (even before going to Qt widgets).
-    /// You may register your own keyboard and mouse handlers in this context and block events from going to the main window
-    /// (by setting the .handled member of the event to true), but be very careful when doing so.
+    /** You may register your own keyboard and mouse handlers in this context and block events from going to the main window
+        (by setting the .handled member of the event to true), but be very careful when doing so. */
     InputContext *TopLevelInputContext() { return &topLevelInputContext; }
 
     /// Associates the given custom action with the given key.
     void SetKeyBinding(const QString &actionName, QKeySequence key);
 
     /// Returns the key associated with the given action.
-    /// @param actionName The custom action name to query. The convention is to use two-part names, separated with a period, i.e.
-    ///        "category.name". For example, "Avatar.WalkForward" might control avatar movement.
-    /// If the action does not exist, null sequence is returned.
+    /** @param actionName The custom action name to query. The convention is to use two-part names, separated with a period, i.e.
+               "category.name". For example, "Avatar.WalkForward" might control avatar movement.
+        If the action does not exist, null sequence is returned. */
     QKeySequence KeyBinding(const QString &actionName) const;
 
-    /// Returns the key associated with the given action. This is the same function as KeyBinding(const QString &actionName),
-    /// but in this form, if the action does not exist, the default key sequence is registered for it and returned.
+    /// This is an overloaded function.
+    /** This is the same function as KeyBinding(const QString &actionName), but in this form,
+        if the action does not exist, the default key sequence is registered for it and returned. */
     QKeySequence KeyBinding(const QString &actionName, QKeySequence defaultKey);
 
     /// Finds the InputContext that has the highest mouse priority, and applies the mouse cursor in it as the currently shown mouse cursor.
@@ -171,13 +177,16 @@ public slots:
 
     void SaveKeyBindingsToFile();
 
-    const KeyActionsMap &GetKeyBindings() const { return keyboardMappings; }
+    const KeyActionsMap &KeyBindings() const { return keyboardMappings; }
 
     void SetKeyBindings(const KeyActionsMap &actionMap) { keyboardMappings = actionMap; }
 
     /// Return the item at coordinates. If the mouse cursor is hidden, always returns null
-    QGraphicsItem* GetItemAtCoords(int x, int y) const;
-    
+    QGraphicsItem* ItemAtCoords(int x, int y) const;
+
+    /// Explicitly defocus any widgets and return key focus to the 3D world
+    void ClearFocus();
+
 private:
     Q_DISABLE_COPY(InputAPI)
 
@@ -216,7 +225,7 @@ private:
     /// In relative mode, only mouse relative coordinate updates are posted as events.
     bool mouseCursorVisible;
 
-    /// If true, the InputContex instances will emit gesture related events. Do not trust this bool at this point, it will only be set to true
+    /// If true, the InputContext instances will emit gesture related events. Do not trust this bool at this point, it will only be set to true
     /// once we receive the first QEvent::Gesture type event. This needs to be fixed so that we ask the OS if it has a touch input device.
     /// If you find a way to do this, please fix and remove todo from IsGesturesEnabled() comments too.
     bool gesturesEnabled;

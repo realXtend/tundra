@@ -104,8 +104,8 @@ void GetMeshInformation(
     Ogre::MeshPtr mesh = entity->getMesh();
 
     bool useSoftwareBlendingVertices = entity->hasSkeleton();
-    if (useSoftwareBlendingVertices)
-        entity->_updateAnimation();
+    //if (useSoftwareBlendingVertices)
+    //    entity->_updateAnimation();
 
     submeshstartindex.resize(mesh->getNumSubMeshes());
 
@@ -363,9 +363,15 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                         Ogre::Vector2 uv = FindUVs(ray, hit.second, vertices, texcoords, indices, j); 
                         Ogre::Vector3 point = ray.getPoint(closest_distance);
 
+                        float3 edge1 = vertices[indices[j+1]] - vertices[indices[j]];
+                        float3 edge2 = vertices[indices[j+2]] - vertices[indices[j]];
+
                         result_.entity = entity;
-                        result_.pos = float3(point.x, point.y, point.z);
+                        result_.pos = point;
+                        result_.normal = edge1.Cross(edge2);
+                        result_.normal.Normalize();
                         result_.submesh = GetSubmeshFromIndexRange(j, submeshstartindex);
+                        result_.index = j;
                         result_.u = uv.x;
                         result_.v = uv.y;
                     }
@@ -383,8 +389,10 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 Ogre::Vector3 point = ray.getPoint(closest_distance);
 
                 result_.entity = entity;
-                result_.pos = float3(point.x, point.y, point.z);
+                result_.pos = point;
+                result_.normal = -ray.getDirection();
                 result_.submesh = 0;
+                result_.index = 0;
                 result_.u = 0.0f;
                 result_.v = 0.0f;
             }

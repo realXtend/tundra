@@ -27,6 +27,7 @@
 #include <BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
+#include <BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h>
 #include <set>
 
 #include <OgreSceneNode.h>
@@ -142,9 +143,9 @@ void EC_RigidBody::ApplyForce(const float3& force, const float3& position)
     {
         Activate();
         if (position == float3::zero)
-            body_->applyCentralForce(ToBtVector3(force));
+            body_->applyCentralForce(force);
         else
-            body_->applyForce(ToBtVector3(force), ToBtVector3(position));
+            body_->applyForce(force, position);
     }
 }
 
@@ -163,7 +164,7 @@ void EC_RigidBody::ApplyTorque(const float3& torque)
     if (body_)
     {
         Activate();
-        body_->applyTorque(ToBtVector3(torque));
+        body_->applyTorque(torque);
     }
 }
 
@@ -183,9 +184,9 @@ void EC_RigidBody::ApplyImpulse(const float3& impulse, const float3& position)
     {
         Activate();
         if (position == float3::zero)
-            body_->applyCentralImpulse(ToBtVector3(impulse));
+            body_->applyCentralImpulse(impulse);
         else
-            body_->applyImpulse(ToBtVector3(impulse), ToBtVector3(position));
+            body_->applyImpulse(impulse, position);
     }
 }
 
@@ -204,7 +205,7 @@ void EC_RigidBody::ApplyTorqueImpulse(const float3& torqueImpulse)
     if (body_)
     {
         Activate();
-        body_->applyTorqueImpulse(ToBtVector3(torqueImpulse));
+        body_->applyTorqueImpulse(torqueImpulse);
     }
 }
 
@@ -468,7 +469,7 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     // Set linear & angular velocity
     if (body_)
     {
-        linearVelocity.Set(ToVector3(body_->getLinearVelocity()), AttributeChange::Default);
+        linearVelocity.Set(body_->getLinearVelocity(), AttributeChange::Default);
         const btVector3& angular = body_->getAngularVelocity();
         angularVelocity.Set(float3(angular.x() * RADTODEG, angular.y() * RADTODEG, angular.z() * RADTODEG), AttributeChange::Default);
     }
@@ -486,7 +487,8 @@ void EC_RigidBody::OnCollisionMeshAssetLoaded(AssetPtr asset)
 {
     OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(asset.get());
     if (!meshAsset || !meshAsset->ogreMesh.get())
-        LogError("EC_RigidBody::OnCollisionMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
+        LogError("EC_RigidBody::OnCollisionMeshAssetLoaded: Mesh asset load finished for asset \"" +
+            asset->Name() + "\", but Ogre::Mesh pointer was null!");
 
     Ogre::Mesh *mesh = meshAsset->ogreMesh.get();
 
@@ -534,10 +536,10 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
          body_->setDamping(linearDamping.Get(), angularDamping.Get());
     
     if (attribute == &linearFactor)
-        body_->setLinearFactor(ToBtVector3(linearFactor.Get()));
+        body_->setLinearFactor(linearFactor.Get());
     
     if (attribute == &angularFactor)
-        body_->setAngularFactor(ToBtVector3(angularFactor.Get()));
+        body_->setAngularFactor(angularFactor.Get());
     
     if ((attribute == &shapeType) || (attribute == &size))
     {
@@ -588,7 +590,7 @@ void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
     
     if (attribute == &linearVelocity)
     {
-        body_->setLinearVelocity(ToBtVector3(linearVelocity.Get()));
+        body_->setLinearVelocity(linearVelocity.Get());
         body_->activate();
     }
     
@@ -688,7 +690,7 @@ void EC_RigidBody::Rotate(const float3& rotation)
 float3 EC_RigidBody::GetLinearVelocity()
 {
     if (body_)
-        return ToVector3(body_->getLinearVelocity());
+        return body_->getLinearVelocity();
     else 
         return linearVelocity.Get();
 }
@@ -696,7 +698,7 @@ float3 EC_RigidBody::GetLinearVelocity()
 float3 EC_RigidBody::GetAngularVelocity()
 {
     if (body_)
-        return ToVector3(body_->getAngularVelocity()) * RADTODEG;
+        return body_->getAngularVelocity() * RADTODEG;
     else
         return angularVelocity.Get();
 }
@@ -817,14 +819,14 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
         the heightfield on its own. Also, Bullet's collisionshapes generally do not support arbitrary transforms, so we must construct a "compound shape"
         and add the heightfield as its child, to be able to specify the transform.
      */
-    heightField_->setLocalScaling(ToBtVector3(scale));
+    heightField_->setLocalScaling(scale);
     
     float3 positionAdjust = terrain->nodeTransformation.Get().pos;
     positionAdjust += bbCenter;
     
     btCompoundShape* compound = new btCompoundShape();
     shape_ = compound;
-    compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(positionAdjust)), heightField_);
+    compound->addChildShape(btTransform(btQuaternion(0,0,0,1), positionAdjust), heightField_);
 }
 
 void EC_RigidBody::CreateConvexHullSetShape()
@@ -838,7 +840,7 @@ void EC_RigidBody::CreateConvexHullSetShape()
         btCompoundShape* compound = new btCompoundShape();
         shape_ = compound;
         for (uint i = 0; i < convexHullSet_->hulls_.size(); ++i)
-            compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(convexHullSet_->hulls_[i].position_)), convexHullSet_->hulls_[i].hull_.get());
+            compound->addChildShape(btTransform(btQuaternion(0,0,0,1), convexHullSet_->hulls_[i].position_), convexHullSet_->hulls_[i].hull_.get());
     }
     else if (convexHullSet_->hulls_.size() == 1)
     {

@@ -31,16 +31,10 @@ EC_Sky::EC_Sky(Scene* scene) :
 {
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
-    static AttributeMetadata materialRefMetadata;
-    AttributeMetadata::ButtonInfoList materialRefButtons;
-    materialRefButtons.push_back(AttributeMetadata::ButtonInfo(materialRef.Name(), "V", "View"));
-    materialRefMetadata.buttons = materialRefButtons;
-    materialRef.SetMetadata(&materialRefMetadata);
-
-    // Find out default textures.
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
 
+    // Find out default textures.
     StringVector names;
     Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
     if (materialPtr.get() != 0)
@@ -109,7 +103,7 @@ void EC_Sky::CreateSky()
     //Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(framework->Asset()->LookupAssetRefToStorage(materialRef.Get().ref).toStdString().c_str());
     if (materialPtr.isNull())
     {
-        LogError("Could not get SkyBox material : " + currentMaterial.toStdString());
+        LogError("Could not get SkyBox material : " + currentMaterial);
         return;
     }
 
@@ -124,11 +118,6 @@ void EC_Sky::CreateSky()
     {
         LogError("Could not set SkyBox: " + std::string(e.what()));
     }
-}
-
-void EC_Sky::View(const QString &attributeName)
-{
-    /// @todo implement this.
 }
 
 void EC_Sky::OnTextureAssetLoaded(AssetPtr tex)
@@ -166,7 +155,7 @@ void EC_Sky::OnTextureAssetLoaded(AssetPtr tex)
     Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
     if (materialPtr.isNull())
     {
-        LogError("EC_Sky::OnTextureAssetLoaded: Cannot find Ogre material \"" + materialRef.Get().ref.toStdString() + "\"!");
+        LogError("EC_Sky::OnTextureAssetLoaded: Cannot find Ogre material \"" + materialRef.Get().ref + "\"!");
         return;
     }
     if (materialPtr->getNumTechniques() == 0 || materialPtr->getTechnique(0) == 0 ||
@@ -174,7 +163,8 @@ void EC_Sky::OnTextureAssetLoaded(AssetPtr tex)
         materialPtr->getTechnique(0)->getPass(0)->getNumTextureUnitStates() == 0 ||
         materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0) == 0)
     {
-        LogError("EC_Sky::OnTextureAssetLoaded: Cannot use material \"" + materialRef.Get().ref.toStdString() + "\" as Skybox material: It has 0 techniques, passes or texture unit states!");
+        LogError("EC_Sky::OnTextureAssetLoaded: Cannot use material \"" + materialRef.Get().ref +
+            "\" as Skybox material: It has 0 techniques, passes or texture unit states!");
         return;
     }
 

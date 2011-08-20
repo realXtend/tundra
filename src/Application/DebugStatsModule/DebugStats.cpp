@@ -46,14 +46,18 @@ DebugStatsModule::~DebugStatsModule()
     SAFE_DELETE(profilerWindow_);
 }
 
-void DebugStatsModule::PostInitialize()
+void DebugStatsModule::Initialize()
 {
 #ifdef _WINDOWS
     QueryPerformanceCounter(&lastCallTime);
 #endif
 
-    framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
-    framework_->Console()->RegisterCommand("exec", "Invokes an Entity Action on an entity (debugging).", this, SLOT(Exec(const QStringList &)));
+    framework_->Console()->RegisterCommand("prof", "Shows the profiling window.",
+        this, SLOT(ShowProfilingWindow()));
+    framework_->Console()->RegisterCommand("exec", "Invokes an Entity Action on an entity (debugging).",
+        this, SLOT(Exec(const QStringList &)));
+    framework_->Console()->RegisterCommand("dumpinputcontexts", "Prints the list of input contexts to std::cout, for debugging purposes.",
+        this, SLOT(DumpInputContexts()));
 
     inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -96,6 +100,11 @@ void DebugStatsModule::ShowProfilingWindow()
     profilerWindow_->show();
 }
 
+void DebugStatsModule::DumpInputContexts()
+{
+    framework_->Input()->DumpInputContexts();
+}
+
 void DebugStatsModule::Update(f64 frametime)
 {
 #ifdef _WINDOWS
@@ -104,7 +113,7 @@ void DebugStatsModule::Update(f64 frametime)
     double timeSpent = ProfilerBlock::ElapsedTimeSeconds(lastCallTime.QuadPart, now.QuadPart);
     lastCallTime = now;
 
-    frameTimes.push_back(make_pair(*(boost::uint64_t*)&now, timeSpent));
+    frameTimes.push_back(make_pair(*(u64*)&now, timeSpent));
     if (frameTimes.size() > 2048) // Maintain an upper bound in the frame history.
         frameTimes.erase(frameTimes.begin());
 

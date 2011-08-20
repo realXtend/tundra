@@ -83,7 +83,7 @@ static QScriptValue Triangle_Normal(QScriptContext *context, QScriptEngine *engi
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_Normal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
-    float3 ret = This.Normal();
+    float3 ret = This.NormalCCW();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -91,7 +91,7 @@ static QScriptValue Triangle_UnnormalizedNormal(QScriptContext *context, QScript
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Triangle_UnnormalizedNormal in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Triangle This = qscriptvalue_cast<Triangle>(context->thisObject());
-    float3 ret = This.UnnormalizedNormal();
+    float3 ret = This.UnnormalizedNormalCCW();
     return qScriptValueFromValue(engine, ret);
 }
 

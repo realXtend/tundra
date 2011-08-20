@@ -100,6 +100,7 @@ namespace OgreRenderer
 
         /// Returns currently active camera component. Returned as IComponent* for scripting convenience.
         IComponent* GetActiveCamera() const;
+
     public:
         /// Constructor
         /** @param framework Framework pointer.
@@ -115,7 +116,7 @@ namespace OgreRenderer
         virtual void SetViewDistance(float distance);
 
         /// get maximum view distance
-        virtual float GetViewDistance()const { return view_distance_; }
+        virtual float ViewDistance()const { return view_distance_; }
 
         ///Is window fullscreen?
         bool IsFullScreen() const;
@@ -155,16 +156,7 @@ namespace OgreRenderer
         std::string GetUniqueObjectName(const std::string &prefix);
 
         /// Initializes renderer. Called by OgreRenderingModule
-        /** Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before. */
         void Initialize();
-
-        /// Post-initializes renderer. Called by OgreRenderingModule
-        /** Queries event categories it needs. */
-        void PostInitialize();
-
-        /// Performs update. Called by OgreRenderingModule
-        /** Currently a no-op. */
-        void Update(f64 frametime);
 
         /// Sets current camera component used for rendering the main viewport
         /** Called by EC_Camera when activating. Null will default to the default camera, so that we don't crash when rendering. */

@@ -268,11 +268,11 @@ QObjectList Entity::GetComponentsRaw(const QString &type_name) const
     return ret;
 }
 
-IAttribute *Entity::GetAttribute(const std::string &name) const
+IAttribute *Entity::GetAttribute(const QString &name) const
 {
     for(size_t i = 0; i < components_.size() ; ++i)
     {
-        IAttribute *attr = components_[i]->GetAttribute(QString(name.c_str()));
+        IAttribute *attr = components_[i]->GetAttribute(name);
         if (attr)
             return attr;
     }
@@ -354,12 +354,12 @@ bool Entity::DeserializeFromXMLString(const QString &src, AttributeChange::Type 
     return CreateContentFromXml(entityDocument, replaceOnConflict, change);
 }*/
 
-AttributeVector Entity::GetAttributes(const std::string &name) const
+AttributeVector Entity::GetAttributes(const QString &name) const
 {
     std::vector<IAttribute *> ret;
     for(size_t i = 0; i < components_.size() ; ++i)
     {
-        IAttribute *attr = components_[i]->GetAttribute(QString(name.c_str()));
+        IAttribute *attr = components_[i]->GetAttribute(name);
         if (attr)
             ret.push_back(attr);
     }
@@ -493,7 +493,6 @@ bool Entity::HasReceivers(EntityAction *action)
     int receivers = action->receivers(SIGNAL(Triggered(QString, QString, QString, QStringList)));
     if (receivers == 0)
     {
-//            LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");
         actions_.remove(action->Name());
         SAFE_DELETE(action);
         return false;

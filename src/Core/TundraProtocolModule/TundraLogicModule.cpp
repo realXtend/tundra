@@ -90,6 +90,10 @@
 #include "EC_TransformGizmo.h"
 #endif
 
+#ifdef EC_LaserPointer_ENABLED
+#include "EC_LaserPointer.h"
+#endif
+
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
 #include "EC_AnimationController.h"
@@ -112,10 +116,6 @@ TundraLogicModule::TundraLogicModule() :
 }
 
 TundraLogicModule::~TundraLogicModule()
-{
-}
-
-void TundraLogicModule::PreInitialize()
 {
 }
 
@@ -177,6 +177,9 @@ void TundraLogicModule::Load()
 #ifdef EC_TransformGizmo_ENABLED
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_TransformGizmo>));
 #endif
+#ifdef EC_LaserPointer_ENABLED
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_LaserPointer>));
+#endif
 }
 
 void TundraLogicModule::Initialize()
@@ -187,10 +190,7 @@ void TundraLogicModule::Initialize()
     
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
-}
 
-void TundraLogicModule::PostInitialize()
-{
     framework_->Console()->RegisterCommand("startserver", "Starts a server. Usage: startserver(port)",
         this, SLOT(StartServer(int)));
 
@@ -371,12 +371,12 @@ void TundraLogicModule::StartupSceneLoaded(AssetPtr asset)
             scene->LoadSceneBinary(sceneDiskSource, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
     }
     else
-        LogError("Could not resolve disk source for loaded scene file " + asset->Name().toStdString());
+        LogError("Could not resolve disk source for loaded scene file " + asset->Name());
 }
 
 void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason)
 {
-    LogError("Failed to load startup scene from " + transfer->GetSourceUrl().toStdString() + " reason: " + reason.toStdString());
+    LogError("Failed to load startup scene from " + transfer->SourceUrl() + " reason: " + reason);
 }
 
 void TundraLogicModule::StartServer(int port)
@@ -466,14 +466,11 @@ void TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
         LogError("Empty filename given!");
         return;
     }
-    
-    ///\todo Lacks unicode support. -jj.
-    boost::filesystem::path path(filename.toStdString());
-    std::string dirname = path.branch_path().string();
-    
+
+    QString path = QFileInfo(filename).dir().path();
+
     SceneImporter importer(scene);
-    QList<Entity *> entities = importer.Import(filename.toStdString(), dirname, Transform(),
-        "local://", AttributeChange::Default, clearScene, replace);
+    QList<Entity *> entities = importer.Import(filename, path, Transform(), "local://", AttributeChange::Default, clearScene, replace);
 
     LogInfo("Imported " + QString::number(entities.size()) + " entities.");
 }
@@ -493,13 +490,11 @@ void TundraLogicModule::ImportMesh(QString filename, float tx, float ty, float t
         return;
     }
 
-    ///\todo Lacks unicode support. -jj.
-    boost::filesystem::path path(filename.toStdString());
-    std::string dirname = path.branch_path().string();
-    
+    QString path = QFileInfo(filename).dir().path();
+
     SceneImporter importer(scene);
-    EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, Transform(float3(tx,ty,tz),
-        float3(rx,ry,rz), float3(sx,sy,sz)), std::string(), "local://", AttributeChange::Default, inspect);
+    EntityPtr entity = importer.ImportMesh(filename, path, Transform(float3(tx,ty,tz), float3(rx,ry,rz),
+        float3(sx,sy,sz)), "", "local://", AttributeChange::Default, inspect);
 }
 
 bool TundraLogicModule::IsServer() const

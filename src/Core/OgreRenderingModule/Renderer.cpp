@@ -307,10 +307,6 @@ namespace OgreRenderer
             return false;
     }
 
-    void Renderer::PostInitialize()
-    {
-    }
-
     void Renderer::SetFullScreen(bool value)
     {
         // In headless mode, we can safely ignore Fullscreen mode requests.
@@ -430,6 +426,7 @@ namespace OgreRenderer
             return renderWindow->OgreRenderWindow()->getWidth();
         return 0;
     }
+
     int Renderer::GetWindowHeight() const
     {
         if (renderWindow)
@@ -437,10 +434,6 @@ namespace OgreRenderer
         return 0;
     }
 
-    void Renderer::Update(f64 frametime)
-    {
-    }
-    
     void Renderer::SetViewDistance(float distance)
     {
         view_distance_ = distance;
@@ -534,7 +527,10 @@ namespace OgreRenderer
     {
         using namespace std;
         
-        if ((!initialized_) || (framework_->IsHeadless()))
+        if (!initialized_)
+            return;
+            
+        if (!initialized_)
             return;
 
         if (frameTime > MAX_FRAME_TIME)
@@ -544,6 +540,22 @@ namespace OgreRenderer
 
         Ogre::WindowEventUtilities::messagePump(); //this was in the Update func here in tundra1. apparently critical on linux/x11 only, but should be safe always (and good/necessary even?)
 
+        // If we are headless, only update the scenegraphs of all Ogre worlds
+        if (framework_->IsHeadless())
+        {
+            for (std::map<Scene*, OgreWorldPtr>::const_iterator i = ogreWorlds_.begin(); i != ogreWorlds_.end(); ++i)
+            {
+                OgreWorld* world = i->second.get();
+                if (world)
+                {
+                    Ogre::SceneManager* mgr = world->GetSceneManager();
+                    if (mgr)
+                        mgr->_updateSceneGraph(0);
+                }
+            }
+            return;
+        }
+        
         // If rendering into different size window, dirty the UI view for now & next frame
         if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
         {

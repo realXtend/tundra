@@ -167,7 +167,7 @@ struct SceneSyncState : public ISyncState
         if (removed_entities_.find(id) != removed_entities_.end())
         {
             // This is a problem because deletions are always processed after modifications, so a deletion for an old entity can actually occur after editing a new entity.
-            LogWarning("Invoking buggy behavior: Update for ID " + QString::number(id).toStdString() + " to be sent, but that entity is also marked for deletion!");
+            LogWarning("Invoking buggy behavior: Update for ID " + QString::number(id) + " to be sent, but that entity is also marked for deletion!");
         }
     }
     

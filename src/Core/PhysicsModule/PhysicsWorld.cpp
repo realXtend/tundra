@@ -87,12 +87,12 @@ void PhysicsWorld::SetPhysicsUpdatePeriod(float updatePeriod)
 
 void PhysicsWorld::SetGravity(const float3& gravity)
 {
-    world_->setGravity(ToBtVector3(gravity));
+    world_->setGravity(gravity);
 }
 
 float3 PhysicsWorld::GetGravity() const
 {
-    return ToVector3(world_->getGravity());
+    return world_->getGravity();
 }
 
 btDiscreteDynamicsWorld* PhysicsWorld::GetWorld() const
@@ -173,8 +173,8 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             {
                 btManifoldPoint& point = contactManifold->getContactPoint(j);
                 
-                float3 position = ToVector3(point.m_positionWorldOnB);
-                float3 normal = ToVector3(point.m_normalWorldOnB);
+                float3 position = point.m_positionWorldOnB;
+                float3 normal = point.m_normalWorldOnB;
                 float distance = point.m_distance1;
                 float impulse = point.m_appliedImpulse;
                 
@@ -204,25 +204,25 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& 
     
     float3 normalizedDir = direction.Normalized();
     
-    btCollisionWorld::ClosestRayResultCallback rayCallback(ToBtVector3(origin), ToBtVector3(origin + maxdistance * normalizedDir));
+    btCollisionWorld::ClosestRayResultCallback rayCallback(origin, origin + maxdistance * normalizedDir);
     rayCallback.m_collisionFilterGroup = collisiongroup;
     rayCallback.m_collisionFilterMask = collisionmask;
     
     world_->rayTest(rayCallback.m_rayFromWorld, rayCallback.m_rayToWorld, rayCallback);
     
-    result.entity_ = 0;
-    result.distance_ = 0;
+    result.entity = 0;
+    result.distance = 0;
     
     if (rayCallback.hasHit())
     {
-        result.pos_ = ToVector3(rayCallback.m_hitPointWorld);
-        result.normal_ = ToVector3(rayCallback.m_hitNormalWorld);
-        result.distance_ = (result.pos_ - origin).Length();
+        result.pos = rayCallback.m_hitPointWorld;
+        result.normal = rayCallback.m_hitNormalWorld;
+        result.distance = (result.pos - origin).Length();
         if (rayCallback.m_collisionObject)
         {
             EC_RigidBody* body = static_cast<EC_RigidBody*>(rayCallback.m_collisionObject->getUserPointer());
             if (body)
-                result.entity_ = body->ParentEntity();
+                result.entity = body->ParentEntity();
         }
     }
     

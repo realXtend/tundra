@@ -52,7 +52,7 @@ RendererSettingsWindow::RendererSettingsWindow(Framework* fw, QWidget *parent) :
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (!spin || !renderer)
         return;
-    spin->setValue(renderer->GetViewDistance());
+    spin->setValue(renderer->ViewDistance());
     QCheckBox* cbox = settings_widget_->findChild<QCheckBox*>("fullscreen_toggle");
     if(cbox)
     {

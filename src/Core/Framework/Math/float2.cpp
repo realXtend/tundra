@@ -9,10 +9,13 @@
 #ifdef MATH_ENABLE_STL_SUPPORT
 #include <cassert>
 #include <utility>
+#include <algorithm>
 #endif
 #include <stdlib.h>
 #include "float2.h"
 #include "MathFunc.h"
+#include "LCG.h"
+#include "assume.h"
 
 using namespace std;
 
@@ -163,10 +166,10 @@ float2 float2::FromString(const char *str)
     if (*str == '(')
         ++str;
     float2 f;
-    f.x = strtod(str, const_cast<char**>(&str));
+    f.x = (float)strtod(str, const_cast<char**>(&str));
     if (*str == ',' || *str == ';')
         ++str;
-    f.y = strtod(str, const_cast<char**>(&str));
+    f.y = (float)strtod(str, const_cast<char**>(&str));
     return f;
 }
 
@@ -208,6 +211,16 @@ int float2::MaxElementIndex() const
 float2 float2::Abs() const
 {
     return float2(fabs(x), fabs(y));
+}
+
+float2 float2::Neg() const
+{
+    return float2(-x, -y);
+}
+
+float2 float2::Recip() const
+{
+    return float2(1.f/x, 1.f/y);
 }
 
 float2 float2::Min(float floor) const
@@ -316,17 +329,22 @@ float2 float2::Lerp(const float2 &a, const float2 &b, float t)
 
 void float2::Decompose(const float2 &direction, float2 &outParallel, float2 &outPerpendicular) const
 {
-    assume(false && "Not implemented!"); ///\todo
+    assume(direction.IsNormalized());
+    outParallel = this->Dot(direction) * direction;
+    outPerpendicular = *this - outParallel;
 }
 
 void float2::Orthogonalize(const float2 &a, float2 &b)
 {
-    assume(false && "Not implemented!"); ///\todo
+    assume(!a.IsZero());
+    b -= a.Dot(b) / a.Length() * a;
 }
 
 void float2::Orthonormalize(float2 &a, float2 &b)
 {
-    assume(false && "Not implemented!"); ///\todo
+    assume(!a.IsZero());
+    a.Normalize();
+    b -= a.Dot(b) * a;
 }
 
 float2 float2::FromScalar(float scalar)
@@ -372,8 +390,12 @@ float2 float2::Rotated90CCW() const
 
 bool float2::OrientedCCW(const float2 &a, const float2 &b, const float2 &c)
 {
-    assume(false && "Not implemented!"); ///\todo
-    return false;
+    // Compute the determinant
+    // | ax ay 1 |
+    // | bx by 1 |
+    // | cx cy 1 |
+    // See Christer Ericson, Real-Time Collision Detection, p.32.
+    return (a.x-c.x)*(b.y-c.y) - (a.y-c.y)*(b.x-c.x) >= 0.f;
 }
 
 class SortByPolarAngle
@@ -528,6 +550,21 @@ float float2::MinAreaRect(const float2 *pts, int numPoints, float2 &center, floa
         }
     }
     return minArea;
+}
+
+float2 float2::RandomDir(LCG &lcg, float r)
+{
+    assume(r > 1e-3f);
+    for(int i = 0; i < 1000; ++i)
+    {
+        float x = lcg.Float(-r, r);
+        float y = lcg.Float(-r, r);
+		float lenSq = x*x + y*y;
+		if (lenSq >= 1e-6f && lenSq <= r*r)
+			return r / sqrt(lenSq) * float2(x,y);
+    }
+    assume(false && "Failed to generate a random float2 direction vector!");
+    return float2(r, 0);
 }
 
 float2 float2::operator +(const float2 &rhs) const

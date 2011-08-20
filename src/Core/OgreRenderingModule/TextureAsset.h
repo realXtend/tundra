@@ -46,7 +46,7 @@ public:
     void SetContentsFillSolidColor(int newWidth, int newHeight, u32 color, Ogre::PixelFormat ogreFormat, bool regenerateMipmaps, bool dynamic);
 
     /// Sets given text to a texture.
-    void SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags = Qt::AlignCenter | Qt::TextWordWrap, bool generateMipmaps = false, bool dynamic = false);
+    void SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags = Qt::AlignCenter | Qt::TextWordWrap, bool generateMipmaps = false, bool dynamic = false, float xRadius = 20.f, float yRadius= 20.f);
 
     //void RegenerateAllMipLevels();
 

@@ -82,7 +82,7 @@ void MeshPreviewEditor::Open(const QString &asset_id)
     }
     catch (Ogre::Exception &e)
     {
-        LogError("Exception while opening mesh " + asset_id.toStdString() + " for editing.");
+        LogError("Exception while opening mesh " + asset_id + " for editing.");
         LogError(e.what());
     }
 }

@@ -14,26 +14,6 @@
 namespace OgreRenderer
 {
 
-Ogre::ColourValue ToOgreColor(const Color& color)
-{
-    return Ogre::ColourValue(color.r, color.g, color.b, color.a);
-}
-
-Color ToCoreColor(const Ogre::ColourValue& color)
-{
-   return Color(color.r, color.g, color.b, color.a);
-}
-
-Ogre::Vector3 ToOgreVector3(const float3 &vector)
-{
-    return Ogre::Vector3(vector.x, vector.y, vector.z);
-}
-
-float3 ToCoreVector(const Ogre::Vector3 &vector)
-{
-    return float3(vector.x, vector.y, vector.z);
-}
-
 std::string SanitateAssetIdForOgre(const QString& input)
 {
     /// \bug Why is this new $1 $2 logic needed? It breaks asynch asset loads

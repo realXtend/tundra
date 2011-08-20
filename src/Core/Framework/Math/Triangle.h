@@ -40,11 +40,17 @@ public:
     /// Returns the plane this triangle lies on.
     Plane GetPlane() const;
 
-    /// Returns the triangle normal. This points to the direction where this plane is viewed to wind in CCW direction.
-    float3 Normal() const;
+    /// Returns the triangle normal when the positive side of this triangle is treated to be the counter-clockwise winding order. 
+	/// That is, the resulting normal points to the direction where this plane is viewed to wind in CCW direction.
+    float3 NormalCCW() const;
+
+    /// Returns the triangle normal when the positive side of this triangle is treated to be the clockwise winding order. 
+	/// That is, the resulting normal points to the direction where this plane is viewed to wind in CW direction.
+	float3 NormalCW() const;
 
     /// Returns the unnormalized triangle normal.
-    float3 UnnormalizedNormal() const;
+    float3 UnnormalizedNormalCCW() const;
+    float3 UnnormalizedNormalCW() const;
 
     /// Returns the surface area of the given 2D triangle.
     static float Area2D(const float2 &p1, const float2 &p2, const float2 &p3);
@@ -66,7 +72,7 @@ public:
     bool Contains(const float3 &point, float triangleThickness = 1e-3f) const;
 
     /// Returns the distance of the given point to this triangle.
-    bool Distance(const float3 &point);
+    float Distance(const float3 &point);
 
     bool Intersects(const LineSegment &lineSegment, float *d, float3 *intersectionPoint) const;
     bool Intersects(const Line &line, float *d, float3 *intersectionPoint) const;

@@ -1,9 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "LoggingFunctions.h"
 #include "DebugOperatorNew.h"
+
 #include "Application.h"
 #include "Framework.h"
+#include "LoggingFunctions.h"
+
 #include <QDir>
 
 #ifdef _WIN32
@@ -29,15 +31,13 @@
 
 #include "MemoryLeakCheck.h"
 
-void setup(Framework &fw);
 int run(int argc, char **argv);
-void options(int argc, char **argv, Framework &fw);
 
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
 #endif
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
@@ -85,13 +85,13 @@ int main (int argc, char **argv)
     return return_value;
 }
 
-int run (int argc, char **argv)
+int run(int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
     // Initilizing prints
     LogInfo("Starting up Tundra");
-    LogInfo("* Working directory: " + QDir::currentPath().toStdString());
+    LogInfo("* Working directory: " + QDir::currentPath());
 
     // Parse and print command arguments
     QStringList arguments;
@@ -122,8 +122,9 @@ int run (int argc, char **argv)
     try
 #endif
     {
-        Framework fw(argc, argv);
-        fw.Go();
+        Framework* fw = new Framework(argc, argv);
+        fw->Go();
+        delete fw;
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch(std::exception& e)
@@ -253,5 +254,3 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
-
-

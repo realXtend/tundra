@@ -6,6 +6,8 @@
  *  @note   The entity must have EC_Placeable component available in advance.
  */
 
+#define OGRE_INTEROP
+
 #include "EC_Billboard.h"
 #include "IModule.h"
 #include "Renderer.h"
@@ -110,7 +112,7 @@ void EC_Billboard::CreateBillboard()
         billboard_ = 0;
     }
     
-    billboard_ = billboardSet_->createBillboard(OgreRenderer::ToOgreVector3(position.Get()));
+    billboard_ = billboardSet_->createBillboard(position.Get());
     billboard_->setDimensions(width.Get(), height.Get());
     billboard_->setRotation(Ogre::Radian(Ogre::Degree(rotation.Get())));
 }
@@ -119,7 +121,7 @@ void EC_Billboard::UpdateBillboardProperties()
 {
     if (billboard_)
     {
-        billboard_->setPosition(OgreRenderer::ToOgreVector3(position.Get()));
+        billboard_->setPosition(position.Get());
         billboard_->setDimensions(width.Get(), height.Get());
         billboard_->setRotation(Ogre::Radian(Ogre::Degree(rotation.Get())));
     }
@@ -216,7 +218,7 @@ void EC_Billboard::OnMaterialAssetLoaded(AssetPtr asset)
     if (!ogreMaterial)
     {
         LogError("OnMaterialAssetLoaded: Material asset load finished for asset \"" +
-            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreMaterialAsset!");
+            asset->Name() + "\", but downloaded asset was not of type OgreMaterialAsset!");
         return;
     }
 

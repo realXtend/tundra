@@ -62,9 +62,9 @@ public:
         @param inspect Load and inspect mesh for materials and skeleton
         @param meshName Name of mesh inside the file
         @return Entity pointer if successful, null if failed. */
-    EntityPtr ImportMesh(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
-        const std::string& entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect = true,
-        const std::string &meshName = std::string());
+    EntityPtr ImportMesh(const QString &filename, const QString &in_asset_dir, const Transform &worldtransform,
+        const QString &entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect = true,
+        const QString &meshName = "");
 
     /// Imports a dotscene.
     /** @param filename Input filename
@@ -76,7 +76,7 @@ public:
         @param replace Whether to search for entities by name and replace just the visual components (placeable, mesh) if an existing entity is found.
                Default true. If this is false, all entities will be created as new
         @return List of created entities, or an empty list if import failed. */
-    QList<Entity *> Import(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
+    QList<Entity *> Import(const QString& filename, const QString &in_asset_dir, const Transform &worldtransform,
         const QString &prefix, AttributeChange::Type change, bool clearscene = false, bool replace = true);
 
     /// Parse a mesh for materials & skeleton ref
@@ -119,12 +119,12 @@ public:
 
     /// Searches directory recursively and returns list of found material files.
     /** @param dir Directory to be searched. */
-    QStringList FindMaterialFiles(const std::string &dir) const;
+    QStringList FindMaterialFiles(const QString &dir) const;
 
 private:
     /// Process the asset references of a node, and its child nodes
     /** @param node_elem Node element. */
-    void ProcessNodeForAssets(QDomElement node_elem, const std::string& in_asset_dir);
+    void ProcessNodeForAssets(QDomElement node_elem, const QString& in_asset_dir);
 
     /// Process node and its child nodes for creation of entities & components. Done after asset pass
     /** @param [out] entities List of created entities

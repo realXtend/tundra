@@ -657,12 +657,12 @@ void EC_AnimationController::PlayAnim(const QString &name, const QString &fadein
     if (!exclusive_)
     {
         if (!EnableAnimation(name, false, fadein_, false))
-            LogWarning("Failed to play animation " + name.toStdString());
+            LogWarning("Failed to play animation " + name);
     }
     else
     {
         if (!EnableExclusiveAnimation(name, false, fadein_, false))
-            LogWarning("Failed to play animation " + name.toStdString());
+            LogWarning("Failed to play animation " + name);
     }
 }
 
@@ -686,12 +686,12 @@ void EC_AnimationController::PlayLoopedAnim(const QString &name, const QString &
     if (!exclusive_)
     {
         if (!EnableAnimation(name, true, fadein_, false))
-            LogWarning("Failed to play looped animation " + name.toStdString());
+            LogWarning("Failed to play looped animation " + name);
     }
     else
     {
         if (!EnableExclusiveAnimation(name, true, fadein_, fadein_, false))
-            LogWarning("Failed to play looped animation " + name.toStdString());
+            LogWarning("Failed to play looped animation " + name);
     }
 }
 
@@ -716,7 +716,7 @@ void EC_AnimationController::PlayReverseAnim(const QString &name, const QString 
     {
         if (!EnableAnimation(name, true, fadein_, false))
         {
-            LogWarning("Failed to play reverse animation " + name.toStdString());
+            LogWarning("Failed to play reverse animation " + name);
             return;
         }
         SetAnimationToEnd(name);
@@ -726,7 +726,7 @@ void EC_AnimationController::PlayReverseAnim(const QString &name, const QString 
     {
         if (!EnableExclusiveAnimation(name, true, fadein_, fadein_, false))
         {
-            LogWarning("Failed to play reverse animation " + name.toStdString());
+            LogWarning("Failed to play reverse animation " + name);
             return;
         }
         SetAnimationToEnd(name);
@@ -751,7 +751,7 @@ void EC_AnimationController::PlayAnimAutoStop(const QString &name, const QString
     if (!exclusive_)
     {
         if (!EnableAnimation(name, false, fadein_, false))
-            LogWarning("Failed to play animation " + name.toStdString());
+            LogWarning("Failed to play animation " + name);
         // Enable autostop, and start always from the beginning
         SetAnimationAutoStop(name, true);
         SetAnimationTimePosition(name, 0.0f);
@@ -759,7 +759,7 @@ void EC_AnimationController::PlayAnimAutoStop(const QString &name, const QString
     else
     {
         if (!EnableExclusiveAnimation(name, false, fadein_, false))
-            LogWarning("Failed to play animation " + name.toStdString());
+            LogWarning("Failed to play animation " + name);
         // Enable autostop, and start always from the beginning
         SetAnimationAutoStop(name, true);
         SetAnimationTimePosition(name, 0.0f);

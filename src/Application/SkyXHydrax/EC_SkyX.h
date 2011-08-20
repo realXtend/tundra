@@ -21,7 +21,7 @@ struct EC_SkyXImpl;
 class EC_SkyX : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_SkyX", 666)
+    COMPONENT_NAME("EC_SkyX", 32)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
@@ -44,13 +44,19 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float2, weather);
     Q_PROPERTY(float2 weather READ getweather WRITE setweather);
 
-    /// Wind speed, Volumetric clouds only.
-//    DEFINE_QPROPERTY_ATTRIBUTE(float, windSpeed);
-//    Q_PROPERTY(float windSpeed READ getwindSpeed WRITE setwindSpeed);
-
     /// Wind direction, in degrees.
     DEFINE_QPROPERTY_ATTRIBUTE(float, windDirection);
     Q_PROPERTY(float windDirection READ getwindDirection WRITE setwindDirection);
+
+    /// Wind speed, volumetric clouds only.
+//    DEFINE_QPROPERTY_ATTRIBUTE(float, windSpeed);
+//    Q_PROPERTY(float windSpeed READ getwindSpeed WRITE setwindSpeed);
+
+    /// The height at the clouds will reside.
+    /** For regular clouds this is always relative fixed offset from the active camera along the world up-axis.
+        For volumetric clouds x denotes absolute cloud field y-coord start height and y is cloud field volume height (both in world coordinates). */
+//    DEFINE_QPROPERTY_ATTRIBUTE(float, cloudHeight);
+//    Q_PROPERTY(float cloudHeight READ getcloudHeight WRITE setcloudHeight);
 
 public slots:
     /// Returns position of the sun.

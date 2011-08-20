@@ -203,9 +203,9 @@ UiProxyWidget *UiAPI::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
 
 bool UiAPI::AddProxyWidgetToScene(UiProxyWidget *widget)
 {
-    if (owner->IsHeadless())
+    if (!graphicsScene)
     {
-        LogWarning("UiAPI: You are trying to add widgets to scene on a headless run, check your code!");
+        LogWarning("UiAPI: No graphicsScene to add a proxy widget to! This cannot be done in headless mode.");
         return false;
     }
 
@@ -295,26 +295,34 @@ void UiAPI::OnProxyDestroyed(QObject* obj)
 QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *parent)
 {
     QWidget *widget = 0;
-
-    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(filePath);
+    QString resolvedRef;
+    
+    /// \todo Should be able to specify asset ref context
+    // Hack: here, we interpret anything that begins with . to be a locally relative path, that is not resolved
+    if (!filePath.startsWith('.'))
+        resolvedRef = owner->Asset()->ResolveAssetRef("", filePath);
+    else
+        resolvedRef = filePath;
+    
+    AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(resolvedRef);
     if (refType != AssetAPI::AssetRefLocalPath && refType != AssetAPI::AssetRefRelativePath)
     {
-        AssetPtr asset = owner->Asset()->GetAsset(filePath);
+        AssetPtr asset = owner->Asset()->GetAsset(resolvedRef);
         if (!asset)
         {
-            LogError(("LoadFromFile: Asset \"" + filePath + "\" is not loaded to the asset system. Call RequestAsset prior to use!").toStdString());
+            LogError("LoadFromFile: Asset \"" + resolvedRef + "\" is not loaded to the asset system. Call RequestAsset prior to use!");
             return 0;
         }
 
         QtUiAsset *uiAsset = dynamic_cast<QtUiAsset*>(asset.get());
         if (!uiAsset)
         {
-            LogError(("LoadFromFile: Asset \"" + filePath + "\" is not of type QtUiFile!").toStdString());
+            LogError("LoadFromFile: Asset \"" + resolvedRef + "\" is not of type QtUiFile!");
             return 0;
         }
         if (!uiAsset->IsLoaded())
         {
-            LogError(("LoadFromFile: Asset \"" + filePath + "\" data is not valid!").toStdString());
+            LogError("LoadFromFile: Asset \"" + resolvedRef + "\" data is not valid!");
             return 0;
         }
 
@@ -327,15 +335,15 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
     }
     else // The file is from absolute source location.
     {
-        QString path = filePath;
+        QString path = resolvedRef;
         // If the user submitted a relative path, try to lookup whether a path relative to cwd or the application installation directory was meant.
         if (QDir::isRelativePath(path))
         {
-            QString cwdPath = Application::CurrentWorkingDirectory() + filePath;
+            QString cwdPath = Application::CurrentWorkingDirectory() + resolvedRef;
             if (QFile::exists(cwdPath))
                 path = cwdPath;
             else
-                path = Application::InstallationDirectory() + filePath;
+                path = Application::InstallationDirectory() + resolvedRef;
         }
         QFile file(path);
         QUiLoader loader;
@@ -345,7 +353,7 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
 
     if (!widget)
     {
-        LogError(("LoadFromFile: Failed to load widget from file \"" + filePath + "\"!").toStdString());
+        LogError("LoadFromFile: Failed to load widget from file \"" + resolvedRef + "\"!");
         return 0;
     }
 
@@ -402,8 +410,11 @@ void UiAPI::BringWidgetToFront(QWidget *widget) const
     }
 
     ShowWidget(widget);
-    graphicsScene->setActiveWindow(widget->graphicsProxyWidget());
-    graphicsScene->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
+    if (graphicsScene)
+    {
+        graphicsScene->setActiveWindow(widget->graphicsProxyWidget());
+        graphicsScene->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
+    }
 }
 
 void UiAPI::BringProxyWidgetToFront(QGraphicsProxyWidget *widget) const
@@ -414,8 +425,11 @@ void UiAPI::BringProxyWidgetToFront(QGraphicsProxyWidget *widget) const
         return;
     }
 
-    graphicsScene->setActiveWindow(widget);
-    graphicsScene->setFocusItem(widget, Qt::ActiveWindowFocusReason);
+    if (graphicsScene)
+    {
+        graphicsScene->setActiveWindow(widget);
+        graphicsScene->setFocusItem(widget, Qt::ActiveWindowFocusReason);
+    }
 }
 
 void UiAPI::OnSceneRectChanged(const QRectF &rect)

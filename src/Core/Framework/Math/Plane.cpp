@@ -21,6 +21,7 @@
 #include "float3x4.h"
 #include "float4.h"
 #include "Quat.h"
+#include "Frustum.h"
 
 Plane::Plane(const float3 &normal_, float d_)
 :normal(normal_), d(d_)
@@ -132,8 +133,7 @@ float Plane::SignedDistance(const float3 &point) const
 
 float3x4 Plane::OrthoProjection() const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return float3x4();
+    return float3x4::OrthographicProjection(*this);
 }
 
 float3x4 Plane::ObliqueProjection(const float3 &obliqueProjectionDir) const
@@ -144,14 +144,15 @@ float3x4 Plane::ObliqueProjection(const float3 &obliqueProjectionDir) const
 
 float3x4 Plane::ReflectionMatrix() const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return float3x4();
+    return float3x4::Reflect(*this);
 }
 
 float3 Plane::Reflect(const float3 &point) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return float3();
+    assume(normal.IsNormalized());
+    float3 reflected = point - 2.f * (Dot(point, normal) + d) * normal;
+    assert(reflected.Equals(ReflectionMatrix().MulPos(point)));
+    return reflected;
 }
 
 float3 Plane::Refract(const float3 &normal, float negativeSideRefractionIndex, float positiveSideRefractionIndex) const
@@ -162,7 +163,9 @@ float3 Plane::Refract(const float3 &normal, float negativeSideRefractionIndex, f
 
 float3 Plane::Project(const float3 &point) const
 {
-    return point - (Dot(normal, point) - d) * normal;
+    float3 projected = point - (Dot(normal, point) - d) * normal;
+    assert(projected.Equals(OrthoProjection().MulPos(point)));
+    return projected;
 }
 
 float3 Plane::ObliqueProject(const float3 &point, const float3 &obliqueProjectionDir) const
@@ -246,6 +249,14 @@ bool Plane::Intersects(const Plane &plane, const Plane &plane2, Line *outLine, f
     return true;
 }
 
+/// Computes the intersection of a line and a plane.
+/// @param ptOnPlane An arbitrary point on the plane.
+/// @param planeNormal The plane normal direction vector, which must be normalized.
+/// @param lineStart The starting point of the line.
+/// @param lineDir The line direction vector. This vector does not need to be normalized.
+/// @param t [out] If this function returns true, this parameter will receive the distance along the line where intersection occurs.
+///                That is, the point lineStart + t * lineDir will be the intersection point.
+/// @return If an intersection occurs, this function returns true.
 bool IntersectLinePlane(const float3 &ptOnPlane, const float3 &planeNormal, const float3 &lineStart, const float3 &lineDir, float *t)
 {
     float denom = Dot(lineDir, planeNormal);
@@ -313,7 +324,10 @@ bool Plane::Intersects(const Triangle &triangle) const
 
 bool Plane::Intersects(const Frustum &frustum) const
 {
-    assume(false && "Not implemented!"); ///\todo
+    bool sign = IsOnPositiveSide(frustum.CornerPoint(0));
+    for(int i = 1; i < 8; ++i)
+        if (sign != IsOnPositiveSide(frustum.CornerPoint(i)))
+            return true;
     return false;
 }
 /*
@@ -325,31 +339,130 @@ bool Plane::Intersects(const Polyhedron &polyhedron) const
 */
 bool Plane::Clip(float3 &a, float3 &b) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return false;
+    float t;
+    bool intersects = IntersectLinePlane(PointOnPlane(), normal, a, b-a, &t);
+    if (!intersects || t <= 0.f || t >= 1.f)
+    {
+        if (SignedDistance(a) <= 0.f)
+            return false; // Discard the whole line segment, it's completely behind the plane.
+        else
+            return true; // The whole line segment is in the positive halfspace. Keep all of it.
+    }
+    float3 pt = a + (b-a) * t; // The intersection point.
+    // We are either interested in the line segment [a, pt] or the segment [pt, b]. Which one is in the positive side?
+    if (IsOnPositiveSide(a))
+        b = pt;
+    else
+        a = pt;
+
+    return true;
 }
 
 bool Plane::Clip(LineSegment &line) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return false;
+    return Clip(line.a, line.b);
 }
 
-bool Plane::Clip(const Line &line, Ray &outRay) const
+int Plane::Clip(const Line &line, Ray &outRay) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return false;
+    float t;
+    bool intersects = IntersectLinePlane(PointOnPlane(), normal, line.pos, line.dir, &t);
+    if (!intersects)
+    {
+        if (SignedDistance(line.pos) <= 0.f)
+            return 0; // Discard the whole line, it's completely behind the plane.
+        else
+            return 2; // The whole line is in the positive halfspace. Keep all of it.
+    }
+
+    outRay.pos = line.pos + line.dir * t; // The intersection point
+    if (Dot(line.dir, normal) >= 0.f)
+        outRay.dir = line.dir;
+    else
+        outRay.dir = -line.dir;
+
+    return 1; // Clipping resulted in a ray being generated.
 }
 
 int Plane::Clip(const Triangle &triangle, Triangle &t1, Triangle &t2) const
 {
-    assume(false && "Not implemented!"); ///\todo
-    return false;
+    bool side[3];
+    side[0] = IsOnPositiveSide(triangle.a);
+    side[1] = IsOnPositiveSide(triangle.b);
+    side[2] = IsOnPositiveSide(triangle.c);
+    int nPos = (side[0] ? 1 : 0) + (side[1] ? 1 : 0) + (side[2] ? 1 : 0);
+    if (nPos == 0) // Everything should be clipped?
+        return 0;
+    // We will output at least one triangle, so copy the input to t1 for processing.
+    t1 = triangle;
+
+    if (nPos == 3) // All vertices of the triangle are in positive side?
+        return 1;
+
+    if (nPos == 1)
+    {
+        if (side[1])
+        {
+            float3 tmp = t1.a;
+            t1.a = t1.b;
+            t1.b = t1.c;
+            t1.c = tmp;
+        }
+        else if (side[2])
+        {
+            float3 tmp = t1.a;
+            t1.a = t1.c;
+            t1.c = t1.b;
+            t1.b = tmp;
+        }
+
+        // After the above cycling, t1.a is the triangle on the positive side.
+        float t;
+        Intersects(LineSegment(t1.a, t1.b), &t);
+        t1.b = t1.a + (t1.b-t1.a)*t;
+        Intersects(LineSegment(t1.a, t1.c), &t);
+        t1.c = t1.a + (t1.c-t1.a)*t;
+        return 1;
+    }
+    // Must be nPos == 2.
+    if (!side[1])
+    {
+        float3 tmp = t1.a;
+        t1.a = t1.b;
+        t1.b = t1.c;
+        t1.c = tmp;
+    }
+    else if (!side[2])
+    {
+        float3 tmp = t1.a;
+        t1.a = t1.c;
+        t1.c = t1.b;
+        t1.b = tmp;
+    }
+    // After the above cycling, t1.a is the triangle on the negative side.
+
+    float t, r;
+    Intersects(LineSegment(t1.a, t1.b), &t);
+    float3 ab = t1.a + (t1.b-t1.a)*t;
+    Intersects(LineSegment(t1.a, t1.c), &r);
+    float3 ac = t1.a + (t1.c-t1.a)*t;
+    t1.a = ab;
+
+    t2.a = t1.c;
+    t2.b = ac;
+    t2.c = ab;
+
+    return 2;
 }
 
 bool Plane::IsParallel(const Plane &plane, float epsilon) const
 {
     return normal.Equals(plane.normal, epsilon);
+}
+
+bool Plane::PassesThroughOrigin(float epsilon) const
+{
+    return fabs(d) <= epsilon;
 }
 
 float Plane::DihedralAngle(const Plane &plane) const

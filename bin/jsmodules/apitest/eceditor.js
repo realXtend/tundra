@@ -3,10 +3,10 @@ print("Initializing ECEditor test script.");
 eceditor.SelectionChanged.connect(SelectionChanged);
 
 // Check if entity is already created.
-var editEntity = scene.GetEntityRaw(5000);
+var editEntity = scene.GetEntity(5000);
 if (!editEntity)
 {
-    editEntity = scene.CreateEntityRaw(5000);
+    editEntity = scene.CreateEntity(5000);
     editEntity.GetOrCreateComponent("EC_Gizmo");
 }
 

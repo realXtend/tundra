@@ -111,7 +111,7 @@ function mouseLeftPress(event)
         var raycastResult = renderer.Raycast(event.x, event.y);
         if (raycastResult.entity !== null)
         {
-            var entityclicked = scene.GetEntityRaw(raycastResult.entity.id);
+            var entityclicked = scene.GetEntity(raycastResult.entity.id);
             var objectcameraentity = scene.GetEntityByName("ObjectCamera");
             var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
             if ((objectcameraentity == null) || (avatarcameraentity == null))

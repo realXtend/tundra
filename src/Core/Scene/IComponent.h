@@ -127,10 +127,10 @@ public:
         @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
                 that attribute is returned, otherwise returns null. */
     template<typename T>
-    Attribute<T> *GetAttribute(const std::string &name) const ///\todo Replace std::string with QString to avoid std::string->QString conversion below!
+    Attribute<T> *GetAttribute(const QString &name) const
     {
         for(size_t i = 0; i < attributes.size(); ++i)
-            if (attributes[i]->Name() == QString(name.c_str()))
+            if (attributes[i]->Name() == name)
                 return dynamic_cast<Attribute<T> *>(&attributes[i]);
         return 0;
     }

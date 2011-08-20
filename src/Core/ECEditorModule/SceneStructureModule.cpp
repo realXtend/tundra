@@ -64,7 +64,7 @@ SceneStructureModule::~SceneStructureModule()
     SAFE_DELETE(toolTipWidget);
 }
 
-void SceneStructureModule::PostInitialize()
+void SceneStructureModule::Initialize()
 {
     framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", 
         this, SLOT(ToggleSceneStructureWindow()));
@@ -119,7 +119,7 @@ QList<Entity *> SceneStructureModule::InstantiateContent(const QStringList &file
     {
         if (!IsSupportedFileType(filename))
         {
-            LogError("Unsupported file extension: " + filename.toStdString());
+            LogError("Unsupported file extension: " + filename);
             continue;
         }
 
@@ -799,7 +799,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
         sceneDesc = scene->CreateSceneDescFromBinary(data_qt, sceneDesc);
     else
     {
-        LogError("Somehow other that " + cTundraXmlFileExtension.toStdString() + " or " + cTundraBinFileExtension.toStdString() + 
+        LogError("Somehow other that " + cTundraXmlFileExtension + " or " + cTundraBinFileExtension + 
             " file got drag and dropped to the scene? Cannot proceed with add content dialog.");
         return;
     }
@@ -814,9 +814,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
 void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QString reason)
 {
     QApplication::restoreOverrideCursor();
-    QString error = QString("Failed to download %1 with reason %2").arg(transfer->source.ref, reason);
-    LogError(error.toStdString());
-
-    if (urlToDropPos.contains(transfer->GetSourceUrl()))
-        urlToDropPos.remove(transfer->GetSourceUrl());
+    LogError(QString("Failed to download %1 with reason %2").arg(transfer->source.ref).arg(reason));
+    if (urlToDropPos.contains(transfer->SourceUrl()))
+        urlToDropPos.remove(transfer->SourceUrl());
 }

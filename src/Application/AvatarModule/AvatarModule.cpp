@@ -42,10 +42,6 @@ namespace Avatar
     void AvatarModule::Initialize()
     {
         avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
-    }
-
-    void AvatarModule::PostInitialize()
-    {
         avatar_context_ = GetFramework()->Input()->RegisterInputContext("Avatar", 100);
         if (avatar_context_)
         {

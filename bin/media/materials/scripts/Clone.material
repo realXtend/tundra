@@ -7,7 +7,6 @@ material Clone
          scene_blend alpha_blend
          lighting on
          depth_write on
-         receive_shadows on
          ambient 1 1 1
          texture_unit
          {

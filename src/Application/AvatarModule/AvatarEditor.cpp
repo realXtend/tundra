@@ -37,7 +37,8 @@ namespace Avatar
         avatar_module_(avatar_module)
     {
         InitEditorWindow();
-        last_directory_ = avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory", QString::fromStdString(QtUtils::GetCurrentPath())).toString().toStdString();
+        last_directory_ = avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory",
+            QDir::currentPath()).toString().toStdString();
     }
 
     AvatarEditor::~AvatarEditor()
@@ -415,7 +416,7 @@ namespace Avatar
             EC_Avatar* avatar = entity->GetComponent<EC_Avatar>().get();
             if (avatar)
             {
-                avatarAsset_ = avatar->GetAvatarDesc();
+                avatarAsset_ = avatar->AvatarDesc();
                 AvatarDescAsset* newDesc = avatarAsset_.lock().get();
                 if (newDesc)
                     connect(newDesc, SIGNAL(AppearanceChanged()), this, SLOT(RebuildEditView()));
@@ -435,10 +436,12 @@ namespace Avatar
 
     void AvatarEditor::LoadAvatar()
     {
+        ///\todo Remove or re-implement this function?
+        LogError("AvatarEditor::LoadAvatar deprecated and not implemented.");
+        /*
         const std::string filter = "Avatar description file (*.xml);;Avatar mesh (*.mesh)";
         std::string filename = GetOpenFileName(filter, "Choose avatar file");
 
-        /*
         if (!filename.empty())
         {
             AvatarHandlerPtr avatar_handler = avatar_module_->GetAvatarHandler();
@@ -496,14 +499,16 @@ namespace Avatar
 
     void AvatarEditor::RemoveAttachment()
     {
+        ///\todo Remove or re-implement this function?
+        LogError("AvatarEditor::RemoveAttachment deprecated and not implemented.");
+        /*
         QPushButton* button = qobject_cast<QPushButton*>(sender());
         if (!button)
             return;
 
         std::string index_str = button->objectName().toStdString();
-        uint index = ParseString<uint>(index_str);    
-        
-        /*
+        uint index = ParseString<uint>(index_str);
+
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!appearance)
             return;
@@ -522,9 +527,11 @@ namespace Avatar
     
     void AvatarEditor::AddAttachment()
     {
+        ///\todo Remove or re-implement this function?
+        LogError("AvatarEditor::AddAttachment deprecated and not implemented.");
+        /*
         const std::string filter = "Attachment description file (*.xml)";
         std::string filename = GetOpenFileName(filter, "Choose attachment file");
-        /*
         if (!filename.empty())
         {
             EntityPtr entity = GetAvatarEntity();
@@ -563,31 +570,23 @@ namespace Avatar
         tabs->addTab(tab_scroll, name_with_space);
         return tab_panel;
     }
-
+/*
     std::string AvatarEditor::GetOpenFileName(const std::string& filter, const std::string& prompt)
     {
         std::string filename = QtUtils::GetOpenFileName(filter, prompt, last_directory_);
         if (!filename.empty())
-        {
-            boost::filesystem::path path(filename);
-            std::string dirname = path.branch_path().string();
-            last_directory_ = dirname;
-        }
+            last_directory_ = QFileInfo(filename.c_str()).dir().path().toStdString();
         return filename; 
     }
-    
+
     std::string AvatarEditor::GetSaveFileName(const std::string& filter, const std::string& prompt)
     {
         std::string filename = QtUtils::GetSaveFileName(filter, prompt, last_directory_);
         if (!filename.empty())
-        {
-            boost::filesystem::path path(filename);
-            std::string dirname = path.branch_path().string();
-            last_directory_ = dirname;
-        }
+            last_directory_ = QFileInfo(filename.c_str()).dir().path().toStdString();
         return filename; 
     }
-    
+*/
     bool AvatarEditor::GetAvatarDesc(Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc)
     {
         entity = avatarEntity_.lock().get();

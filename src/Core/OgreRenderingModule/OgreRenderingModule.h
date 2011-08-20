@@ -27,9 +27,7 @@ namespace OgreRenderer
         virtual ~OgreRenderingModule();
 
         virtual void Load();
-        virtual void PreInitialize();
         virtual void Initialize();
-        virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
 

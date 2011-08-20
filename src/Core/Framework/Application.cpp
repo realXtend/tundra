@@ -67,6 +67,13 @@ Application::Application(Framework *framework_, int &argc, char **argv) :
     runDirectory.replace('\\', '/');
     addLibraryPath(runDirectory);
 
+    // In headless mode, we create windows that are never shown.
+    // Also, the user can open up debugging windows like the profiler or kNet network stats from the console,
+    // so disable the whole application from closing when these are shut down.
+    // For headful mode, we depend on explicitly checking on the closing of the main window, so we don't need
+    // this flag in any case.
+    setQuitOnLastWindowClosed(false);
+
     QDir dir("data/translations/qt_native_translations");
     QStringList qmFiles = GetQmFiles(dir);
 

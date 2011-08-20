@@ -133,7 +133,7 @@ void KeyBindingsConfigWindow::PopulateBindingsList()
 
     Clear();
 
-    const InputAPI::KeyActionsMap &keyActions = framework->Input()->GetKeyBindings();
+    const InputAPI::KeyActionsMap &keyActions = framework->Input()->KeyBindings();
     for(InputAPI::KeyActionsMap::const_iterator iter = keyActions.begin(); iter != keyActions.end(); ++iter)
     {
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(iter->first.c_str())));

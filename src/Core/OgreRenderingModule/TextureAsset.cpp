@@ -105,7 +105,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, const bo
 
             if (ogreTexture->getBuffer().isNull())
             {
-                LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
+                LogError("DeserializeFromData: Failed to create texture " + this->Name() + ": OgreTexture::getBuffer() was null!");
                 return false;
             }
 
@@ -174,7 +174,7 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
 {
     if (ogreTexture.isNull())
     {
-        LogWarning("SerializeTo: Called on an unloaded texture \"" + Name().toStdString() + "\".");
+        LogWarning("SerializeTo: Called on an unloaded texture \"" + Name() + "\".");
         return false;
     }
 
@@ -212,7 +212,7 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
         }
     } catch(std::exception &e)
     {
-        LogError("SerializeTo: Failed to export Ogre texture " + Name().toStdString() + ":");
+        LogError("SerializeTo: Failed to export Ogre texture " + Name() + ":");
         if (e.what())
             LogError(e.what());
         return false;
@@ -322,7 +322,7 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
     }
     if (ogreTexture->getBuffer().isNull())
     {
-        LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
+        LogError("DeserializeFromData: Failed to create texture " + this->Name() + ": OgreTexture::getBuffer() was null!");
         return;
     }
 
@@ -366,7 +366,8 @@ void TextureAsset::SetContents(int newWidth, int newHeight, const u8 *data, size
         ogreTexture->createInternalResources();
 }
 
-void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags, bool generateMipmaps, bool dynamic)
+void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text, const QColor &textColor, const QFont &font, const QBrush &backgroundBrush, const QPen &borderPen, int flags, bool generateMipmaps, bool dynamic,
+                                       float xRadius, float yRadius)
 {
     text = text.replace("\\n", "\n");
 
@@ -385,8 +386,9 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
         // Set background brush
         painter.setBrush(backgroundBrush);
         painter.setPen(borderPen);
-        painter.drawRoundedRect(rect, 20.0, 20.0, Qt::RelativeSize);
-
+  
+        painter.drawRoundedRect(rect, xRadius, yRadius, Qt::RelativeSize);
+        
         // Draw text
         painter.setPen(textColor);
         painter.drawText(rect, flags, text);

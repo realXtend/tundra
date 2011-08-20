@@ -196,7 +196,7 @@ bool Client::IsConnected() const
 
 void Client::SetLoginProperty(QString key, QString value)
 {
-    ::LogInfo(key.toStdString() + ":" + value.toStdString());
+    ::LogInfo(key + ":" + value);
     key = key.trimmed();
     value = value.trimmed();
     if (value.isEmpty())
@@ -334,6 +334,9 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
     }
     else
     {
+        QString response(QByteArray((const char *)&msg.loginReplyData[0], (int)msg.loginReplyData.size()));
+        if (!response.isEmpty())
+            SetLoginProperty("LoginFailed", response);
         DoLogout(true);
     }
 }

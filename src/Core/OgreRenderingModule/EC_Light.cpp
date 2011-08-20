@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#define OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "EC_Light.h"
@@ -160,9 +161,9 @@ void EC_Light::UpdateOgreLight()
     try
     {
         light_->setType(ogre_type);
-        light_->setDirection(ToOgreVector3(direction.Get()));
-        light_->setDiffuseColour(ToOgreColor(diffColor.Get()));
-        light_->setSpecularColour(ToOgreColor(specColor.Get()));
+        light_->setDirection(direction.Get());
+        light_->setDiffuseColour(diffColor.Get());
+        light_->setSpecularColour(specColor.Get());
         light_->setAttenuation(range.Get(), constAtten.Get(), linearAtten.Get(), quadraAtten.Get());
         // Note: Ogre throws exception if we try to set this when light is not spotlight
         if (type.Get() == LT_Spot)

@@ -10,6 +10,7 @@
 
 #include "IComponent.h"
 #include "Math/float3.h"
+#include "Math/float2.h"
 #include "OgreModuleFwd.h"
 #include "AssetFwd.h"
 
@@ -62,6 +63,8 @@ HoveringText shows a hovering text attached to an entity.
 <div>define color of the border</div>
 <li>float: borderThickness
 <din>define width of border</div>
+<li>float2: cornerRadius
+<din>The x and y radii of the ellipses defining the corners of the rounded billboard background rectangle. </div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -94,7 +97,6 @@ public:
     
     explicit EC_HoveringText(Scene* scene);
 
-    /// Destructor.
     ~EC_HoveringText();
 
     Q_PROPERTY(QString text READ gettext WRITE settext);
@@ -144,6 +146,9 @@ public:
 
     Q_PROPERTY(float texHeight READ gettexHeight WRITE settexHeight);
     DEFINE_QPROPERTY_ATTRIBUTE(float, texHeight);
+
+    Q_PROPERTY(float2 cornerRadius READ getcornerRadius WRITE setcornerRadius);
+    DEFINE_QPROPERTY_ATTRIBUTE(float2, cornerRadius);
 
     /// Clears the 3D subsystem resources for this object.
     void Destroy();

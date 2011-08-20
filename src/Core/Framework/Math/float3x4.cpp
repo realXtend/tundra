@@ -17,6 +17,8 @@
 #include "float4x4.h"
 #include "Matrix.inl"
 #include "Quat.h"
+#include "LCG.h"
+#include "Plane.h"
 #include "TransformOps.h"
 
 float3x4::float3x4(float _00, float _01, float _02, float _03,
@@ -152,6 +154,15 @@ float3x4 float3x4::RotateFromTo(const float3 &sourceDirection, const float3 &tar
     r.SetRotatePart(Quat::RotateFromTo(sourceDirection, targetDirection));
     r.SetTranslatePart(0, 0, 0);
     return float3x4::Translate(centerPoint) * r * float3x4::Translate(-centerPoint);
+}
+
+float3x4 float3x4::RandomGeneral(LCG &lcg, float minElem, float maxElem)
+{
+    float3x4 m;
+    for(int y = 0; y < 3; ++y)
+        for(int x = 0; x < 4; ++x)
+            m[y][x] = lcg.Float(minElem, maxElem);
+    return m;
 }
 
 float3x4 float3x4::FromQuat(const Quat &orientation)
@@ -348,38 +359,43 @@ float3x4 float3x4::ShearZ(float xFactor, float yFactor)
 
 float3x4 float3x4::Reflect(const Plane &p)
 {
-    assume(false && "Not implemented!");
-    return float3x3(); ///\todo
+    float3x4 v;
+    SetMatrix3x4AffinePlaneReflect(v, p.normal.x, p.normal.y, p.normal.z, p.d);
+    return v;
 }
 
-float3x4 float3x4::MakeOrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize)
+float3x4 float3x4::OrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize)
 {
     assume(false && "Not implemented!");
     return float3x3(); ///\todo
 }
 
-float3x4 float3x4::MakeOrthographicProjection(const Plane &target)
+float3x4 float3x4::OrthographicProjection(const Plane &p)
 {
-    assume(false && "Not implemented!");
-    return float3x3(); ///\todo
+    float3x4 v;
+    SetMatrix3x4AffinePlaneProject(v, p.normal.x, p.normal.y, p.normal.z, p.d);
+    return v;
 }
 
-float3x4 float3x4::MakeOrthographicProjectionYZ()
+float3x4 float3x4::OrthographicProjectionYZ()
 {
-    assume(false && "Not implemented!");
-    return float3x3(); ///\todo
+    float3x4 v = identity;
+    v[0][0] = 0.f;
+    return v;
 }
 
-float3x4 float3x4::MakeOrthographicProjectionXZ()
+float3x4 float3x4::OrthographicProjectionXZ()
 {
-    assume(false && "Not implemented!");
-    return float3x3(); ///\todo
+    float3x4 v = identity;
+    v[1][1] = 0.f;
+    return v;
 }
 
-float3x4 float3x4::MakeOrthographicProjectionXY()
+float3x4 float3x4::OrthographicProjectionXY()
 {
-    assume(false && "Not implemented!");
-    return float3x3(); ///\todo
+    float3x4 v = identity;
+    v[2][2] = 0.f;
+    return v;
 }
 
 MatrixProxy<float3x4::Cols> &float3x4::operator[](int row)
@@ -839,32 +855,53 @@ float4 float3x4::Transform(const float4 &vector) const
 
 void float3x4::BatchTransformPos(float3 *pointArray, int numPoints) const
 {
-    assume(false && "Not implemented!"); ///\todo
+    for(int i = 0; i < numPoints; ++i)
+        pointArray[i] = MulPos(pointArray[i]);
 }
 
 void float3x4::BatchTransformPos(float3 *pointArray, int numPoints, int stride) const
 {
-    assume(false && "Not implemented!"); ///\todo
+    assume(stride >= sizeof(float3));
+    u8 *data = reinterpret_cast<u8*>(pointArray);
+    for(int i = 0; i < numPoints; ++i)
+    {
+        float3 *v = reinterpret_cast<float3*>(data + stride*i);
+        *v = MulPos(*v);
+    }
 }
 
 void float3x4::BatchTransformDir(float3 *dirArray, int numVectors) const
 {
-    assume(false && "Not implemented!"); ///\todo
+    for(int i = 0; i < numVectors; ++i)
+        dirArray[i] = MulPos(dirArray[i]);
 }
 
 void float3x4::BatchTransformDir(float3 *dirArray, int numVectors, int stride) const
 {
-    assume(false && "Not implemented!"); ///\todo
+    assume(stride >= sizeof(float3));
+    u8 *data = reinterpret_cast<u8*>(dirArray);
+    for(int i = 0; i < numVectors; ++i)
+    {
+        float3 *v = reinterpret_cast<float3*>(data + stride*i);
+        *v = MulDir(*v);
+    }
 }
 
 void float3x4::BatchTransform(float4 *vectorArray, int numVectors) const
 {
-    assume(false && "Not implemented!"); ///\todo
+    for(int i = 0; i < numVectors; ++i)
+        vectorArray[i] = *this * vectorArray[i];
 }
 
 void float3x4::BatchTransform(float4 *vectorArray, int numVectors, int stride) const
 {
-    assume(false && "Not implemented!"); ///\todo
+    assume(stride >= sizeof(float4));
+    u8 *data = reinterpret_cast<u8*>(vectorArray);
+    for(int i = 0; i < numVectors; ++i)
+    {
+        float4 *v = reinterpret_cast<float4*>(data + stride*i);
+        *v = *this * *v;
+    }
 }
 
 float3x4 float3x4::operator *(const float3x3 &rhs) const

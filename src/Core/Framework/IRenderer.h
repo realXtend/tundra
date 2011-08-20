@@ -26,8 +26,12 @@ public:
     Entity* getentity() const { return entity; }
     Q_PROPERTY(float3 pos READ getpos);
     float3 getpos() const { return pos; }
+    Q_PROPERTY(float3 normal READ getnormal);
+    float3 getnormal() const { return normal; }
     Q_PROPERTY(unsigned submesh READ getsubmesh);
     unsigned getsubmesh() const { return submesh; }
+    Q_PROPERTY(unsigned index READ getindex);
+    unsigned getindex() const { return index; }
     Q_PROPERTY(float u READ getu);
     float getu() const { return u; }
     Q_PROPERTY(float v READ getv);
@@ -37,8 +41,12 @@ public:
     Entity* entity;
     /// World coordinates of hit position
     float3 pos;
+    /// World face normal of hit
+    float3 normal;
     /// Submesh index in entity, starting from 0
     unsigned submesh;
+    /// Triangle index in mesh
+    unsigned index;
     /// U coord in entity. 0 if no texture mapping
     float u;
     /// V coord in entity. 0 if no texture mapping
@@ -96,7 +104,7 @@ public:
     virtual void SetViewDistance(float distance) = 0;
 
     /// get maximum view distance
-    virtual float GetViewDistance() const = 0;
+    virtual float ViewDistance() const = 0;
 
     /// get visible entities last frame
     virtual const std::set<entity_id_t>& GetVisibleEntities() = 0;

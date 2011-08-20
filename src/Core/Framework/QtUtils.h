@@ -75,38 +75,4 @@ namespace QtUtils
         QWidget *parent, 
         QObject* initiator, 
         const char* slot);
-
-    /// Opens the OS's open file dialog.
-    /** @param filter The files to be shown.
-        @param caption Dialog's caption.
-        @param dir Working directory.
-        @return The absolute path to the chosen file.
-    */
-    std::string GetOpenFileName(
-        const std::string &filter,
-        const std::string &caption,
-        const std::string &dir);
-
-    /// Opens the OS's save file dialog.
-    /** @param filter The files to be shown.
-        @param caption Dialog's caption.
-        @param dir Working directory.
-        @return The absolute path to the chosen file.
-    */
-    std::string GetSaveFileName(
-        const std::string &filter,
-        const std::string &caption,
-        const std::string &dir);
-
-    /// Same as GetOpenFileName but for multiple files.
-    /** @return List of absolute paths to the chosen files.
-    */
-    StringList GetOpenFileNames(
-        const std::string &filter,
-        const std::string &caption,
-        const std::string &dir);
-
-    /// @return The absolute path of the application's current directory.
-    std::string GetCurrentPath();
 };
-

@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "MathFunc.h"
+#include "assume.h"
 #include "float3.h"
 #include "float4.h"
 #include "float3x3.h"
@@ -17,6 +18,8 @@
 #include "float4x4.h"
 #include "Matrix.inl"
 #include "Quat.h"
+#include "LCG.h"
+#include "Plane.h"
 #include "TransformOps.h"
 
 float3x3::float3x3(float _00, float _01, float _02,
@@ -73,6 +76,22 @@ float3x3 float3x3::RotateFromTo(const float3 &sourceDirection, const float3 &tar
     float3x3 r;
     r.SetRotatePart(Quat::RotateFromTo(sourceDirection, targetDirection));
     return r;
+}
+
+float3x3 float3x3::RandomRotation(LCG &lcg)
+{
+    // The easiest way to generate a random orientation is through quaternions, so convert a 
+    // random quaternion to a rotation matrix.
+    return FromQuat(Quat::RandomRotation(lcg));
+}
+
+float3x3 float3x3::RandomGeneral(LCG &lcg, float minElem, float maxElem)
+{
+    float3x3 m;
+    for(int y = 0; y < 3; ++y)
+        for(int x = 0; x < 3; ++x)
+            m[y][x] = lcg.Float(minElem, maxElem);
+    return m;
 }
 
 float3x3 float3x3::FromQuat(const Quat &orientation)
@@ -241,38 +260,45 @@ float3x3 float3x3::ShearZ(float xFactor, float yFactor)
 
 float3x3 float3x3::Reflect(const Plane &p)
 {
-    assume(false && "Not implemented!");
-    return float3x3(); ///\todo
+    assume(p.PassesThroughOrigin() && "A 3x3 matrix cannot represent reflection about planes which do not pass through the origin! Use float3x4::Reflect instead!");
+    float3x3 v;
+    SetMatrix3x3LinearPlaneReflect(v, p.normal.x, p.normal.y, p.normal.z);
+    return v;
 }
 
-float3x3 float3x3::MakeOrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize)
+float3x3 float3x3::OrthographicProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize)
 {
     assume(false && "Not implemented!");
     return float3x3(); ///\todo
 }
 
-float3x3 float3x3::MakeOrthographicProjection(const Plane &target)
+float3x3 float3x3::OrthographicProjection(const Plane &p)
 {
-    assume(false && "Not implemented!");
-    return float3x3(); ///\todo
+    assume(p.PassesThroughOrigin() && "A 3x3 matrix cannot represent projection onto planes which do not pass through the origin! Use float3x4::OrthographicProjection instead!");
+    float3x3 v;
+    SetMatrix3x3LinearPlaneProject(v, p.normal.x, p.normal.y, p.normal.z);
+    return v;
 }
 
-float3x3 float3x3::MakeOrthographicProjectionYZ()
+float3x3 float3x3::OrthographicProjectionYZ()
 {
-    assume(false && "Not implemented!");
-    return float3x3(); ///\todo
+    float3x3 v = identity;
+    v[0][0] = 0.f;
+    return v;
 }
 
-float3x3 float3x3::MakeOrthographicProjectionXZ()
+float3x3 float3x3::OrthographicProjectionXZ()
 {
-    assume(false && "Not implemented!");
-    return float3x3(); ///\todo
+    float3x3 v = identity;
+    v[1][1] = 0.f;
+    return v;
 }
 
-float3x3 float3x3::MakeOrthographicProjectionXY()
+float3x3 float3x3::OrthographicProjectionXY()
 {
-    assume(false && "Not implemented!");
-    return float3x3(); ///\todo
+    float3x3 v = identity;
+    v[2][2] = 0.f;
+    return v;
 }
 
 MatrixProxy<float3x3::Cols> &float3x3::operator[](int row)
@@ -692,26 +718,36 @@ float4 float3x3::Transform(const float4 &vector) const
 
 void float3x3::BatchTransform(float3 *pointArray, int numPoints) const
 {
-    assume(false && "Not implemented!");
-    ///\todo
+    for(int i = 0; i < numPoints; ++i)
+        pointArray[i] = *this * pointArray[i];
 }
 
 void float3x3::BatchTransform(float3 *pointArray, int numPoints, int stride) const
 {
-    assume(false && "Not implemented!");
-    ///\todo
+    assume(stride >= sizeof(float3));
+    u8 *data = reinterpret_cast<u8*>(pointArray);
+    for(int i = 0; i < numPoints; ++i)
+    {
+        float3 *v = reinterpret_cast<float3*>(data + stride*i);
+        *v = *this * *v;
+    }
 }
 
 void float3x3::BatchTransform(float4 *vectorArray, int numVectors) const
 {
-    assume(false && "Not implemented!");
-    ///\todo
+    for(int i = 0; i < numVectors; ++i)
+        vectorArray[i] = *this * vectorArray[i];
 }
 
 void float3x3::BatchTransform(float4 *vectorArray, int numVectors, int stride) const
 {
-    assume(false && "Not implemented!");
-    ///\todo
+    assume(stride >= sizeof(float4));
+    u8 *data = reinterpret_cast<u8*>(vectorArray);
+    for(int i = 0; i < numVectors; ++i)
+    {
+        float4 *v = reinterpret_cast<float4*>(data + stride*i);
+        *v = *this * *v;
+    }
 }
 
 float3x3 float3x3::operator *(const float3x3 &rhs) const
@@ -1006,6 +1042,14 @@ void float3x3::Decompose(float3x3 &rotate, float3 &scale) const
     // Test that composing back yields the original float3x3.
     assume(float3x3::FromRS(rotate, scale).Equals(*this, 0.1f));
 }
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+std::ostream &operator <<(std::ostream &out, const float3x3 &rhs)
+{
+    out << rhs.ToString();
+    return out;
+}
+#endif
 
 float3x3 float3x3::Mul(const float3x3 &rhs) const { return *this * rhs; }
 float3x4 float3x3::Mul(const float3x4 &rhs) const { return *this * rhs; }

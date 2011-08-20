@@ -725,20 +725,20 @@ void SceneTreeWidget::NewEntity()
     }
     else
     {
-        LogError("Invalid entity type:" + type.toStdString());
+        LogError("Invalid entity type:" + type);
         return;
     }
 
     // Create entity.
     EntityPtr entity = scene.lock()->CreateEntity(id, QStringList(), changeType);
     assert(entity);
-    scene.lock()->EmitEntityCreated(entity, changeType);
+    scene.lock()->EmitEntityCreated(entity.get(), changeType);
 }
 
 void SceneTreeWidget::NewComponent()
 {
     Selection sel = GetSelection();
-    if (!sel.HasEntities())
+    if (sel.IsEmpty())
         return;
 
     AddComponentDialog *dialog = new AddComponentDialog(framework, sel.EntityIds(), this);
@@ -825,11 +825,12 @@ void SceneTreeWidget::Paste()
     if (scene.expired())
         return;
 
+    ScenePtr scenePtr = scene.lock();
     QString errorMsg;
     QDomDocument scene_doc("Scene");
     if (!scene_doc.setContent(QApplication::clipboard()->text(), false, &errorMsg))
     {
-        LogError("Parsing scene XML from clipboard failed: " + errorMsg.toStdString());
+        LogError("Parsing scene XML from clipboard failed: " + errorMsg);
         return;
     }
 
@@ -850,9 +851,9 @@ void SceneTreeWidget::Paste()
         }
 
         // Get currently selected entities and paste components to them.
-        foreach(EntityItem *eItem, GetSelection().entities)
+        foreach(entity_id_t entityId, GetSelection().EntityIds())
         {
-            EntityPtr entity = eItem->Entity();
+            EntityPtr entity = scenePtr->GetEntity(entityId);
             if (entity)
             {
                 while(!componentElem.isNull())
@@ -865,7 +866,7 @@ void SceneTreeWidget::Paste()
                         if (entity->GetComponent(type, name))
                             name.append("_copy");
 
-                        ComponentPtr component = framework->Scene()->CreateComponentByName(scene.lock().get(), type, name);
+                        ComponentPtr component = framework->Scene()->CreateComponentByName(scenePtr.get(), type, name);
                         if (component)
                         {
                             entity->AddComponent(component);
@@ -1156,7 +1157,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
     QFile file(files[0]);
     if (!file.open(QIODevice::WriteOnly))
     {
-        LogError("Could not open file " + files[0].toStdString() + " for writing.");
+        LogError("Could not open file " + files[0] + " for writing.");
         return;
     }
 
@@ -1444,7 +1445,7 @@ void SceneTreeWidget::InvokeActionTriggered()
             {
                 QVariant retVal;
                 invoker.Invoke(obj, invokedItem->name, invokedItem->parameters, &retVal);
-                LogInfo("Invoked function returned " + retVal.toString().toStdString());
+                LogInfo("Invoked function returned " + retVal.toString());
             }
         }
     }
@@ -1527,7 +1528,7 @@ void SceneTreeWidget::AssetLoaded(AssetPtr asset)
             param = filename.right(filename.size() - filename.lastIndexOf('.') - 1);
         if (!asset->SaveToFile(filename, param))
         {
-            LogError("Could not save asset to file " + filename.toStdString() + ".");
+            LogError("Could not save asset to file " + filename + ".");
             QMessageBox box(QMessageBox::Warning, tr("Save asset"), tr("Failed to save asset."), QMessageBox::Ok);
             box.setInformativeText(tr("Please check the selected storage device can be written to."));
             box.exec();

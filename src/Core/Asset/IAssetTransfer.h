@@ -71,10 +71,10 @@ public slots:
     bool CachingAllowed() const { return cachingAllowed; }
 
     // Script getters for public attributes
-    QByteArray GetRawData() { return QByteArray::fromRawData((const char*)&rawAssetData[0], rawAssetData.size()); }
-    QString GetSourceUrl() { return source.ref; }
-    QString GetAssetType() { return assetType; }
-    AssetPtr GetAsset() { return asset; }
+    QByteArray RawData() const { return QByteArray::fromRawData((const char*)&rawAssetData[0], rawAssetData.size()); }
+    QString SourceUrl() const { return source.ref; }
+    QString AssetType() const { return assetType; }
+    AssetPtr Asset() const { return asset; }
 
 signals:
     /// Emitted when the raw byte download of this asset finishes. The asset pointer is set at this point.

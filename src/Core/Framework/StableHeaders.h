@@ -13,6 +13,3 @@
 #include <QtCore>
 
 #endif
-
-// incl_Framework_StableHeaders_h
-

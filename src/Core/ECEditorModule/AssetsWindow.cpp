@@ -44,12 +44,11 @@ AssetsWindow::AssetsWindow(Framework *fw, QWidget *parent) :
     PopulateTreeWidget();
 }
 
-AssetsWindow::AssetsWindow(const QString &assetType, Framework *fw, QWidget *parent) :
+AssetsWindow::AssetsWindow(const QString &assetType_, Framework *fw, QWidget *parent) :
     QWidget(parent),
-    framework(fw)
+    framework(fw),
+    assetType(assetType_)
 {
-    this->assetType = assetType;
-
     Initialize();
     PopulateTreeWidget();
 
@@ -65,16 +64,16 @@ AssetsWindow::AssetsWindow(const QString &assetType, Framework *fw, QWidget *par
     static_cast<QVBoxLayout *>(layout())->addLayout(hlayout2);
 
     connect(treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), SLOT(PickAsset(QTreeWidgetItem *)));
-    connect(pickButton, SIGNAL(clicked()), SLOT(close()));
+    connect(pickButton, SIGNAL(clicked()), SLOT(PickAssetAndClose()));
     connect(cancelButton, SIGNAL(clicked()), SLOT(Cancel()));
 }
 
 AssetsWindow::~AssetsWindow()
 {
     // Disable ResizeToContents, Qt goes sometimes into eternal loop after
-    // ~AssetsWindow() if we have lots (hudreds or thousands) of items.
+    // ~AssetsWindow() if we have lots (hundreds or thousands) of items.
+    treeWidget->blockSignals(true);
     treeWidget->header()->setResizeMode(QHeaderView::Interactive);
-
     QTreeWidgetItemIterator it(treeWidget);
     while(*it)
     {

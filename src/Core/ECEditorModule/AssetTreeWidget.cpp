@@ -27,8 +27,6 @@
 #include "FunctionInvoker.h"
 #include "ArgumentType.h"
 
-#include <boost/filesystem.hpp>
-
 #ifdef _WINDOWS
 #include <WinSock2.h>
 #include <windows.h>
@@ -478,10 +476,10 @@ void AssetTreeWidget::OpenFileLocation()
     {
 #ifdef _WINDOWS
         // Craft command line string
-        QString path = boost::filesystem::path(item->Asset()->DiskSource().toStdString()).branch_path().string().c_str();
+        QString path = QDir::toNativeSeparators(QFileInfo(item->Asset()->DiskSource()).dir().path());
         WCHAR commandLineStr[256] = {};
         WCHAR wcharPath[256] = {};
-        mbstowcs(wcharPath, QDir::toNativeSeparators(path).toStdString().c_str(), 254);
+        mbstowcs(wcharPath, path.toStdString().c_str(), 254);
         wsprintf(commandLineStr, L"explorer.exe %s", wcharPath);
 
         STARTUPINFO startupInfo;
@@ -495,6 +493,8 @@ void AssetTreeWidget::OpenFileLocation()
         CloseHandle(processInfo.hProcess);
         CloseHandle(processInfo.hThread);
 #endif
+       ///\todo Cross-platform
+       /// Might be possible to use this: http://doc.qt.nokia.com/latest/qdesktopservices.html#openUrl -jj.
     }
 }
 

@@ -242,13 +242,13 @@ private slots:
 
     /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();
-
-    /// Handle destruction of the parent placeable
-    void OnParentPlaceableDestroyed();
     
     /// Handle destruction of the parent mesh
     void OnParentMeshDestroyed();
-    
+            
+    /// Handle destruction of the parent placeable
+    void OnParentPlaceableDestroyed();
+        
     /// Handle late creation of the parent entity, and try attaching to it
     void CheckParentEntityCreated(Entity* entity, AttributeChange::Type change);
     

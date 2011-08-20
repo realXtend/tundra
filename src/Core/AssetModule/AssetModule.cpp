@@ -62,10 +62,7 @@ namespace Asset
         local->AddStorageDirectory(ogreAssetDir, "Ogre Media", true);
 
         framework_->RegisterDynamicObject("assetModule", this);
-    }
 
-    void AssetModule::PostInitialize()
-    {
         framework_->Console()->RegisterCommand(
             "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
             this, SLOT(ConsoleRequestAsset(const QString &, const QString &)));
@@ -149,7 +146,7 @@ namespace Asset
             QString storageString = storage->SerializeToString();
             if (framework_->Asset()->GetDefaultAssetStorage() == storage)
                 storageString += ";default";
-            LogInfo(storageString.toStdString());
+            LogInfo(storageString);
         }
     }
 
@@ -274,7 +271,7 @@ namespace Asset
         TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
         KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
         if (tundra->IsServer())
-            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+            foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
                 if (userConn->connection != source)
                     userConn->connection->Send(msg);
 
@@ -294,7 +291,7 @@ namespace Asset
         TundraLogic::TundraLogicModule* tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
         KristalliProtocol::KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocol::KristalliProtocolModule>();
         if (tundra->IsServer())
-            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+            foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
                 if (userConn->connection != source)
                     userConn->connection->Send(msg);
 
@@ -318,7 +315,7 @@ namespace Asset
         // If we are server, send to everyone
         if (tundra->IsServer())
         {
-            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+            foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
                 userConn->connection->Send(msg);
         }
         // If we are client, send to server
@@ -345,7 +342,7 @@ namespace Asset
         // If we are server, send to everyone
         if (tundra->IsServer())
         {
-            foreach(UserConnection* userConn, kristalli->GetUserConnections())
+            foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
                 userConn->connection->Send(msg);
         }
         // If we are client, send to server

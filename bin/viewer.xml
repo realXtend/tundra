@@ -13,6 +13,7 @@
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule and AssetModule -->
   <plugin path="SkyXHydrax" />                  <!-- SkyXHydrax depends on OgreRenderingModule -->
   <plugin path="SceneWidgetComponents" />       <!-- SceneWidgetComponents depends on OgreRenderingModule and TundraLogicModule -->
+  <plugin path="SpeexVoipModule" /> <!-- SpeexVoipModule depends on TundraProtocolModule -->
 
   <!-- The following are commented out as they are not a part of the default build -->
   <!-- <plugin path="MumbleVoipModule" /> -->           <!-- Depends on OgreRenderingModule and TundraLogicModule -->

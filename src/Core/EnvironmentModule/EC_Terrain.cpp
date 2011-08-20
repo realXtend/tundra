@@ -53,44 +53,8 @@ EC_Terrain::EC_Terrain(Scene* scene) :
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
-    
-    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 
-    static AttributeMetadata heightRefMetadata;
-    AttributeMetadata::ButtonInfoList heightRefButtons;
-    heightRefButtons.push_back(AttributeMetadata::ButtonInfo(heightMap.Name(), "V", "View"));
-    heightRefMetadata.buttons = heightRefButtons;
-    heightMap.SetMetadata(&heightRefMetadata);
-
-    static AttributeMetadata texRefMetadata0;
-    AttributeMetadata::ButtonInfoList texRefButtons;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture0.Name(), "V", "View"));
-    texRefMetadata0.buttons = texRefButtons;
-    texture0.SetMetadata(&texRefMetadata0);
-    texRefButtons.clear();
-
-    static AttributeMetadata texRefMetadata1;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture1.Name(), "V", "View"));
-    texRefMetadata1.buttons = texRefButtons;
-    texture1.SetMetadata(&texRefMetadata1);
-    texRefButtons.clear();
-
-    static AttributeMetadata texRefMetadata2;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture2.Name(), "V", "View"));
-    texRefMetadata2.buttons = texRefButtons;
-    texture2.SetMetadata(&texRefMetadata2);
-    texRefButtons.clear();
-
-    static AttributeMetadata texRefMetadata3;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture3.Name(), "V", "View"));
-    texRefMetadata3.buttons = texRefButtons;
-    texture3.SetMetadata(&texRefMetadata3);
-    texRefButtons.clear();
-
-    static AttributeMetadata texRefMetadata4;
-    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture4.Name(), "V", "View"));
-    texRefMetadata4.buttons = texRefButtons;
-    texture4.SetMetadata(&texRefMetadata4);
+    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 
     xPatches.Set(1, AttributeChange::Disconnected);
     yPatches.Set(1, AttributeChange::Disconnected);
@@ -112,34 +76,6 @@ EC_Terrain::EC_Terrain(Scene* scene) :
 EC_Terrain::~EC_Terrain()
 {
     Destroy();
-}
-
-void EC_Terrain::View(const QString &attributeName)
-{
-    if (texture0.Name() == attributeName)
-    {
-        /// \todo add implementation
-    }
-    else if(texture1.Name() == attributeName)
-    {
-        /// todo! add implementation.
-    }
-    else if(texture2.Name() == attributeName)
-    {
-        /// todo! add implementation.
-    }
-    else if(texture3.Name() == attributeName)
-    {
-        /// todo! add implementation.
-    }
-    else if(texture4.Name() == attributeName)
-    {
-        /// todo! add implementation.
-    }
-    else if(heightMap.Name() == attributeName)
-    {
-        /// todo! add implementation.
-    }
 }
 
 void EC_Terrain::UpdateSignals()
@@ -836,7 +772,7 @@ void EC_Terrain::NormalizeImage(QString filename) const
         image.load(stream);
     } catch(...)
     {
-        LogError("Execption catched when trying load image file" + filename.toStdString() + ".");
+        LogError("Execption catched when trying load image file" + filename + ".");
         return;
     }
 
@@ -881,7 +817,7 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
         image.load(stream);
     } catch(...)
     {
-        LogError("Execption catched when trying load terrain from image file" + filename.toStdString() + ".");
+        LogError("Execption catched when trying load terrain from image file" + filename + ".");
         return false;
     }
 
@@ -1146,7 +1082,7 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
     Ogre::Mesh *mesh = dynamic_cast<Ogre::Mesh*>(Ogre::MeshManager::getSingleton().getByName(ogreMeshResourceName.toStdString().c_str()).get());
     if (!mesh)
     {
-        LogError("Could not get mesh " + ogreMeshResourceName.toStdString() + ".");
+        LogError("Could not get mesh " + ogreMeshResourceName + ".");
         return;
     }
 
@@ -1256,7 +1192,7 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
     Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
     if (!terrainMaterial.get())
     {
-//        LogWarning("Ogre material " + material.Get().toStdString() + " not found!");
+//        LogWarning("Ogre material " + material.Get() + " not found!");
         return;
     }
 //    Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
@@ -1440,7 +1376,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
 // Opensim:            pos.z = thisPatch->heightData[Y*cPatchVertexWidth+X];
 
             manual->position(pos);
-            manual->normal(OgreRenderer::ToOgreVector3(CalculateNormal(thisPatch->x, thisPatch->y, X, Y)));
+            manual->normal(CalculateNormal(thisPatch->x, thisPatch->y, X, Y));
 
             // The UV set 0 contains the diffuse texture UV map. Do a planar mapping with the given specified UV scale.
             manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);

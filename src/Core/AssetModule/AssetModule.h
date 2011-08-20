@@ -31,7 +31,6 @@ namespace Asset
         virtual ~AssetModule();
 
         virtual void Initialize();
-        virtual void PostInitialize();
 
     public slots:
         void ConsoleRequestAsset(const QString &assetRef, const QString &assetType);

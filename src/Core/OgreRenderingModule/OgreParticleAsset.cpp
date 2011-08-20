@@ -160,7 +160,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes, con
     catch(Ogre::Exception& e)
     {
         LogWarning(e.what());
-        LogWarning("Failed to parse Ogre particle script " + Name().toStdString() + ".");
+        LogWarning("Failed to parse Ogre particle script " + Name() + ".");
     }
     
     // Check which templates actually succeeded
@@ -174,7 +174,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes, con
     }
     
     // Give only the name of the first template
-    internalName = SanitateAssetIdForOgre(Name().toStdString()) + "_0";
+    internalName = SanitateAssetIdForOgre(Name()) + "_0";
     
     // Theoretical success if at least one template was created.
     bool success = (GetNumTemplates() > 0);

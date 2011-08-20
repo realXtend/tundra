@@ -55,10 +55,10 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
     if (ogreMesh.isNull())
     {   
         ogreMesh = Ogre::MeshManager::getSingleton().createManual(
-            OgreRenderer::SanitateAssetIdForOgre(this->Name().toStdString()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            OgreRenderer::SanitateAssetIdForOgre(this->Name()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         if (ogreMesh.isNull())
         {
-            LogError("Failed to create mesh " + Name().toStdString());
+            LogError("Failed to create mesh " + Name());
             return false; 
         }
         ogreMesh->setAutoBuildEdgeLists(false);
@@ -109,7 +109,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, const 
     }
     catch(Ogre::Exception &e)
     {
-        ::LogError("Failed to create mesh " + this->Name().toStdString() + ": " + std::string(e.what()));
+        ::LogError("Failed to create mesh " + this->Name() + ": " + QString(e.what()));
         Unload();
         return false;
     }
@@ -202,7 +202,7 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
 {
     if (ogreMesh.isNull())
     {
-        ::LogWarning("Tried to export non-existing Ogre mesh " + Name().toStdString() + ".");
+        ::LogWarning("Tried to export non-existing Ogre mesh " + Name() + ".");
         return false;
     }
     try
@@ -218,7 +218,7 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
             return false;
     } catch(std::exception &e)
     {
-        ::LogError("Failed to export Ogre mesh " + Name().toStdString() + ":");
+        ::LogError("Failed to export Ogre mesh " + Name() + ":");
         if (e.what())
             ::LogError(e.what());
         return false;

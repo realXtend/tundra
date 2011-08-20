@@ -133,6 +133,12 @@ public:
     int MaxElementIndex() const;
     /// Takes the element-wise absolute value of this vector.
     float3 Abs() const;
+    /// Returns a copy of this vector with each element negated.
+    /** This function returns a new vector where each element x of the original vector is replaced by the value -x. */
+    float3 Neg() const;
+    /// Computes the element-wise reciprocal of this vector.
+    /** This function returns a new vector where each element x of the original vector is replaced by the value 1/x. */
+    float3 Recip() const;
     /// Returns an element-wise minimum of this and the vector (ceil, ceil, ceil).
     float3 Min(float ceil) const;
     /// Returns an element-wise minimum of this and the given vector.
@@ -239,6 +245,13 @@ public:
     /// Returns float4(x,y,z,0).
     float4 ToDir4() const;
 
+    /// Generates a direction vector of the given length pointing at a uniformly random direction.
+    static float3 RandomDir(LCG &lcg, float length = 1.f);
+    /// Generates a random point inside a sphere.
+    static float3 RandomSphere(LCG &lcg, const float3 &center, float radius);
+    /// Generates a random point inside an axis-aligned box.
+    static float3 RandomBox(LCG &lcg, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax);
+
     float3 operator -() const;
 
     float3 operator +(const float3 &rhs) const;
@@ -259,7 +272,6 @@ public:
     float3 Sub(const float3 &rhs) const { return *this - rhs; }
     float3 Mul(float rhs) const { return *this * rhs; }
     float3 Div(float rhs) const { return *this / rhs; }
-    float3 Neg() const { return -*this; }
 
     /// Multiplies this vector by rhs *element-wise*.
     float3 Mul(const float3 &rhs) const;

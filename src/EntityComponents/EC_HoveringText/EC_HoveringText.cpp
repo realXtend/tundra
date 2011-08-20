@@ -22,8 +22,11 @@
 #include "AssetAPI.h"
 #include "TextureAsset.h"
 
+#include "Framework.h"
+#include "OgreRenderingModule.h"
+#include "AssetApi.h"
+#include "TextureAsset.h"
 #include <Ogre.h>
-
 #include <QFile>
 #include <QPainter>
 #include <QTimer>
@@ -52,11 +55,11 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
     width(this, "Width", 1.0),
     height(this, "Height", 1.0),
     texWidth(this, "Texture Width", 256),
-    texHeight(this, "Texture Height", 256)
+    texHeight(this, "Texture Height", 256),
+    cornerRadius(this, "Corner radius", float2(20.0, 20.0))
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
-
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
@@ -195,9 +198,11 @@ void EC_HoveringText::ShowMessage(const QString &text)
         return;
     
     // Moved earlier to prevent gray opaque box artifact if text is empty. Original place was just before Redraw().
-    if (text.isNull() || text.isEmpty())
+    if (text.isNull() || text.isEmpty() || text.trimmed() == "")
+    {
         return;
-    
+    }
+
     OgreWorldPtr world = world_.lock();
     Ogre::SceneManager *scene = world->GetSceneManager();
     assert(scene);
@@ -273,7 +278,7 @@ void EC_HoveringText::Redraw()
         }       
        
         QBrush brush((QColor)backgroundColor.Get());
-
+       
         if (usingGrad.Get())
         {   
             QRect rect(0,0,texWidth.Get(), texHeight.Get());
@@ -290,6 +295,8 @@ void EC_HoveringText::Redraw()
         borderPen.setColor(borderCol);
         borderPen.setWidthF(borderThickness.Get());
                 
+        float2 corners =  cornerRadius.Get();
+
         // Disable mipmapping, as Ogre seems to bug with it
         texture_->SetContentsDrawText(texWidth.Get(), 
                                 texHeight.Get(), 
@@ -297,7 +304,7 @@ void EC_HoveringText::Redraw()
                                 textColor_, 
                                 font_, 
                                 brush, 
-                                borderPen, Qt::AlignCenter | Qt::TextWordWrap, false);
+                                borderPen, Qt::AlignCenter | Qt::TextWordWrap, false, corners.x, corners.y);
     }
     catch(Ogre::Exception &e)
     {

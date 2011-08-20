@@ -5,6 +5,7 @@
 #include "KristalliProtocolModuleApi.h"
 #include "kNet.h"
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include <QObject>
 
@@ -22,7 +23,7 @@ struct ISyncState
 };
 
 /// Represents a client conncetion on the server side.
-class KRISTALLIPROTOCOL_MODULE_API UserConnection : public QObject
+class KRISTALLIPROTOCOL_MODULE_API UserConnection : public QObject, public boost::enable_shared_from_this<UserConnection>
 {
     Q_OBJECT
     
@@ -66,12 +67,14 @@ public slots:
     QString GetProperty(const QString& key) const;
     
     /// Deny connection. Call as a response to server.UserAboutToConnect() if necessary
-    void DenyConnection();
+    void DenyConnection(const QString& reason);
     
 signals:
     void ActionTriggered(UserConnection* connection, Entity* entity, const QString& action, const QStringList& params);
 };
 
-typedef std::list<UserConnection*> UserConnectionList;
+typedef boost::shared_ptr<UserConnection> UserConnectionPtr;
+typedef boost::weak_ptr<UserConnection> UserConnectionWeakPtr;
+typedef std::list<UserConnectionPtr> UserConnectionList;
 
 

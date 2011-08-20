@@ -20,16 +20,16 @@
 
     <b>Attributes</b>:
     <ul>
-    <li> Color : sunColorAttr.
-    <div> Defines sun color (in Caelum) </div>
-    <li> Color : ambientColorAttr.
-    <div> Defines scene ambient color. </div>
-    <li> Color : sunDiffuseColorAttr.
-    <div> Defines sun diffuse color.  </div>
-    <li> float3 : sunDirectionAttr.
-    <div> Defines sun direction vector. </div>
-    <li> bool : sunCastShadowsAttr.
-    <div> Defines that does sun cast shadows (usable only if caelum is disabled) </div>
+    <li> Color : sunColor.
+    <div> Defines sunlight color. </div>
+    <li> Color : ambientColor.
+    <div> Defines scene ambient light color. </div>
+    <li> Color : sunDiffuseColor.
+    <div> Defines sunlight diffuse color.  </div>
+    <li> float3 : sunDirection.
+    <div> Defines sunlight direction vector. </div>
+    <li> bool : sunCastShadows.
+    <div> Defines that does sun cast shadows. </div>
     </table>
 */
 class EC_EnvironmentLight : public IComponent
@@ -43,52 +43,40 @@ public:
     virtual ~EC_EnvironmentLight();
 
     /// Defines sun color.
-    DEFINE_QPROPERTY_ATTRIBUTE(Color,  sunColorAttr);
-    Q_PROPERTY(Color sunColorAttr READ getsunColorAttr WRITE setsunColorAttr); 
+    DEFINE_QPROPERTY_ATTRIBUTE(Color,  sunColor);
+    Q_PROPERTY(Color sunColor READ getsunColor WRITE setsunColor);
 
     /// Defines ambient light color.
-    DEFINE_QPROPERTY_ATTRIBUTE(Color, ambientColorAttr);
-    Q_PROPERTY(Color ambientColorAttr READ getambientColorAttr WRITE setambientColorAttr); 
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, ambientColor);
+    Q_PROPERTY(Color ambientColor READ getambientColor WRITE setambientColor); 
 
     /// Defines sun diffuse light color.
-    DEFINE_QPROPERTY_ATTRIBUTE(Color, sunDiffuseColorAttr);
-    Q_PROPERTY(Color sunDiffuseColorAttr READ getsunDiffuseColorAttr WRITE setsunDiffuseColorAttr); 
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, sunDiffuseColor);
+    Q_PROPERTY(Color sunDiffuseColor READ getsunDiffuseColor WRITE setsunDiffuseColor); 
 
     /// Defines sun light direction.
-    DEFINE_QPROPERTY_ATTRIBUTE(float3, sunDirectionAttr);
-    Q_PROPERTY(float3 sunDirectionAttr READ getsunDirectionAttr WRITE setsunDirectionAttr); 
-
-    /// \todo Remove
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, fixedTimeAttr);
-    Q_PROPERTY(bool fixedTimeAttr READ getfixedTimeAttr WRITE setfixedTimeAttr); 
-
-    /// \todo Remove
-    DEFINE_QPROPERTY_ATTRIBUTE(float, currentTimeAttr);
-    Q_PROPERTY(float currentTimeAttr READ getcurrentTimeAttr WRITE setcurrentTimeAttr); 
+    DEFINE_QPROPERTY_ATTRIBUTE(float3, sunDirection);
+    Q_PROPERTY(float3 sunDirection READ getsunDirection WRITE setsunDirection); 
 
     /// Do we want the sunlight to cast shadows.
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, sunCastShadowsAttr);
-    Q_PROPERTY(bool sunCastShadowsAttr READ getsunCastShadowsAttr WRITE setsunCastShadowsAttr); 
-
-    /// \todo Remove
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, useCaelumAttr);
-    Q_PROPERTY(bool useCaelumAttr READ getuseCaelumAttr WRITE setuseCaelumAttr); 
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, sunCastShadows);
+    Q_PROPERTY(bool sunCastShadows READ getsunCastShadows WRITE setsunCastShadows); 
 
 public slots:
     /// Called If some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
 
     /// Update sun state
-    void UpdateSun();
+    void UpdateSunlight();
 
     /// Removes sunlight.
-    void RemoveSun();
+    void RemoveSunlight();
 
     /// Update ambient light state.
     void UpdateAmbientLight();
 
 private:
-    void CreateOgreLight();
+    void CreateSunlight();
 
     OgreWorldWeakPtr ogreWorld;
     Ogre::Light* sunlight;

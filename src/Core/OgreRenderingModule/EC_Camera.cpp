@@ -116,7 +116,7 @@ void EC_Camera::SetPlaceable(ComponentPtr placeable)
 {
     if (placeable && !dynamic_cast<EC_Placeable*>(placeable.get()))
     {
-        ::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
+        ::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic());
         return;
     }
 
@@ -143,8 +143,8 @@ void EC_Camera::SetFarClip(float farclip)
     // Enforce that farclip doesn't go past renderer's view distance
     OgreWorldPtr world = world_.lock();
     Renderer* renderer = world->GetRenderer();
-    if (farclip > renderer->GetViewDistance())
-        farclip = renderer->GetViewDistance();
+    if (farclip > renderer->ViewDistance())
+        farclip = renderer->ViewDistance();
     camera_->setFarClipDistance(farclip);
 }
 
