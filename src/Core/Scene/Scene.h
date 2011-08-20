@@ -383,15 +383,15 @@ public slots:
     Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
     void DeleteEntityById(uint id, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity((entity_id_t)id, change); }
     void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
-    void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
+  //  void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
     QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
-    QList<Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
+ //   QList<Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
 
     bool AllowModifyEntity(UserConnection *user, Entity *entity);
 
     /// Returns IDs of loaded entities
-    QVariantList LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
-*/
+//    QVariantList LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
+
 signals:
     /// Signal when an attribute of a component has changed
     /** Network synchronization managers should connect to this. */

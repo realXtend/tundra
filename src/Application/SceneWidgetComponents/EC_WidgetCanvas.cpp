@@ -36,10 +36,10 @@ EC_WidgetCanvas::EC_WidgetCanvas(Scene *scene) :
     if (framework->IsHeadless())
         return;
 	
-	if (framework->GetRenderer())
+	if (framework->Renderer())
     {
         // Create texture
-        texture_name_ = framework->GetRenderer()->GetUniqueObjectName("EC_3DCanvas_tex");
+        texture_name_ = framework->Renderer()->GetUniqueObjectName("EC_3DCanvas_tex");
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
             texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
             Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
@@ -52,7 +52,7 @@ EC_WidgetCanvas::EC_WidgetCanvas(Scene *scene) :
 
         // Create material: Make sure we have one tech with one pass with one texture unit.
         // Don't use our lit textured templates here as emissive will not work there as it has vertex etc programs in it.
-        material_name_ = framework->GetRenderer()->GetUniqueObjectName("EC_3DCanvas_mat");
+        material_name_ = framework->Renderer()->GetUniqueObjectName("EC_3DCanvas_mat");
         Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         if (material->getNumTechniques() == 0)
             material->createTechnique();

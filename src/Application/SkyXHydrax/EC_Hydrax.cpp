@@ -128,7 +128,7 @@ void EC_Hydrax::Create()
         impl->module = module;
 
         // Load all parameters from config file
-        impl->hydrax->loadCfg(configRef.Get().toStdString());
+        impl->hydrax->loadCfg(configRef.Get().ref.toStdString());
 
         position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
 
@@ -173,7 +173,7 @@ void EC_Hydrax::UpdateAttribute(IAttribute *attr)
         return;
     if (attr == &configRef)
     {
-        impl->hydrax->loadCfg(configRef.Get().toStdString());
+        impl->hydrax->loadCfg(configRef.Get().ref.toStdString());
         // Config file can alter, position, update it accordinly
         position.Set(impl->hydrax->getPosition(), AttributeChange::Disconnected);
     }

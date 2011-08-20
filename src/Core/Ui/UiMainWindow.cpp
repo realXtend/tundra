@@ -65,7 +65,7 @@ void UiMainWindow::LoadWindowSettingsFromFile()
     width += 15;
     width &= 0xfffffff0;
     
-    setWindowTitle(owner->ApplicationVersion()->GetApplicationIdentifier());
+    setWindowTitle(owner->ApplicationVersion()->GetFullIdentifier());
 
     if (fullscreen)
     {

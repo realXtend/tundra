@@ -69,7 +69,7 @@ void PluginAPI::LoadPlugin(const QString &filename)
 
 
     LogInfo("Loading plugin '" + filename + "'");
-    owner->GetApplication()->SetSplashMessage("Loading plugin " + filename);
+    owner->App()->SetSplashMessage("Loading plugin " + filename);
     QString path = Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix;
     
     ///\todo Unicode support!

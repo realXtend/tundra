@@ -117,7 +117,7 @@ void OgreRenderingModule::Initialize()
     QString cwd = Application::CurrentWorkingDirectory();
     Application::SetCurrentWorkingDirectory(Application::InstallationDirectory());
 
-    framework_->GetApplication()->SetSplashMessage("Initializing Ogre");
+    framework_->App()->SetSplashMessage("Initializing Ogre");
     renderer->Initialize();
 
     // Restore the original cwd to not disturb the environment we are running in.
@@ -135,7 +135,6 @@ void OgreRenderingModule::Initialize()
     std::string cacheResourceDir = GetFramework()->Asset()->GetAssetCache()->GetCacheDirectory().toStdString();
     if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(cacheResourceDir, CACHE_RESOURCE_GROUP))
         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(cacheResourceDir, "FileSystem", CACHE_RESOURCE_GROUP);
-}
 
     framework_->Console()->RegisterCommand("RenderStats", "Prints out render statistics.",
         this, SLOT(ConsoleStats()));

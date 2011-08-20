@@ -48,7 +48,6 @@ Framework::Framework(int argc, char** argv) :
 #ifdef PROFILING
     profiler(0),
 #endif
-    renderer(0)
     renderer(0),
     apiVersionInfo(0),
     applicationVersionInfo(0)

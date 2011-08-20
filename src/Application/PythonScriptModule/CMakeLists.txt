@@ -37,7 +37,8 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 link_modules (Framework Scene Input Ui Audio Console OgreRenderingModule TundraProtocolModule AvatarModule SceneWidgetComponents)
 
 # Link to ECs. This macro will smartly opt out ECs that are not included in the build, info for this provided by GetEntityComponents() on top.
-link_entity_components (EC_Script EC_Touchable)
+link_entity_components (EC_Script EC_Highlight EC_HoveringText EC_Touchable EC_Sound EC_SoundListener
+                        EC_PlanarMirror EC_ProximityTrigger EC_Billboard EC_ParticleSystem EC_TransformGizmo)
 
 # Use python, pythonqt and ogre
 link_package (PYTHON)
@@ -55,3 +56,5 @@ setup_install_directory (${TUNDRA_BIN}/pymodules)
 
 # make install: Install windows deps
 setup_install_windows_deps ("python26.dll;PythonQt.dll;PythonQt_QtAll.dll" Release|RelWithDebInfo "python26_d.dll;PythonQt_d.dll;PythonQt_QtAll_d.dll" Debug)
+setup_install_windows_deps_regexp ("[/]pyplugins[/]python[/]DLLs[/].*[^d][.]pyd$" Release|RelWithDebInfo "[/]pyplugins[/]python[/]DLLs[/].*[d][.]pyd$" Debug)
+setup_install_windows_deps_regexp ("[/]pyplugins[/]python[/].*[.]zip$" Release|RelWithDebInfo|Debug)
