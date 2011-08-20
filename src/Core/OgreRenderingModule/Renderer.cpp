@@ -534,8 +534,11 @@ namespace OgreRenderer
             
         PROFILE(Renderer_Render);
 
-        Ogre::WindowEventUtilities::messagePump(); //this was in the Update func here in tundra1. apparently critical on linux/x11 only, but should be safe always (and good/necessary even?)
-
+		// The message pump must be called on X11 systems,
+		// but on Windows it is redundant (Qt already manages this), and has been profiled to take as much as 10ms per frame in some situations.
+#ifdef UNIX
+        Ogre::WindowEventUtilities::messagePump();
+#endif
         // If we are headless, only update the scenegraphs of all Ogre worlds
         if (framework_->IsHeadless())
         {
