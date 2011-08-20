@@ -151,13 +151,15 @@ void SceneAPI::RegisterComponentFactory(ComponentFactoryPtr factory)
 
     ComponentFactoryMap::iterator existing = componentFactories.find(factory->TypeName());
     ComponentFactoryWeakMap::iterator existing2 = componentFactoriesByTypeid.find(factory->TypeId());
-    if (existing != componentFactories.end() || (existing2 != componentFactoriesByTypeid.end() && existing2->second.lock()))
-    {
-        ComponentFactoryPtr existingFactory = existing->second ? existing->second : existing2->second.lock();
-        if (existingFactory)
-            LogError("Cannot add a new ComponentFactory for component typename \"" + factory->TypeName() + "\" and typeid " + QString::number(factory->TypeId()) + ". Conflicting type factory with typename " + existingFactory->TypeName() + " and typeid " + QString::number(existingFactory->TypeId()) + " already exists!");
-        else
-            LogError("Cannot add a new ComponentFactory for component typename \"" + factory->TypeName() + "\" and typeid " + QString::number(factory->TypeId()) + ". Conflicting type factory exists!");
+	ComponentFactoryPtr existingFactory;
+    if (existing != componentFactories.end())
+		existingFactory = existing->second;
+	if (!existingFactory && existing2 != componentFactoriesByTypeid.end())
+		existingFactory = existing2->second.lock();
+
+	if (existingFactory)
+	{
+        LogError("Cannot add a new ComponentFactory for component typename \"" + factory->TypeName() + "\" and typeid " + QString::number(factory->TypeId()) + ". Conflicting type factory with typename " + existingFactory->TypeName() + " and typeid " + QString::number(existingFactory->TypeId()) + " already exists!");
         return;
     }
 
