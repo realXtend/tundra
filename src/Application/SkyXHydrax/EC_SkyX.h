@@ -21,7 +21,7 @@ struct EC_SkyXImpl;
 class EC_SkyX : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_SkyX", 32)
+    COMPONENT_NAME("EC_SkyX", 38)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
